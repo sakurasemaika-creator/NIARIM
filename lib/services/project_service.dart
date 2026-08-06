@@ -113,6 +113,93 @@ class ProjectService extends ChangeNotifier {
   Scene? sceneOf(String projectId, String sceneId) =>
       (_scenes[projectId] ?? []).where((s) => s.id == sceneId).firstOrNull;
 
+  // ─── シーンCRUD（仕様書05：Scene0001形式で内部管理） ───────────────────
+
+  int _nextSceneIndex(String projectId) {
+    final scenes = _scenes[projectId] ?? [];
+    int max = 0;
+    for (final s in scenes) {
+      final num = int.tryParse(s.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      if (num > max) max = num;
+    }
+    return max + 1;
+  }
+
+  /// シーンを末尾に追加する。通常レイヤー1枚・1フレームで初期化する。
+  Scene addScene(String projectId) {
+    final scenes = _scenes.putIfAbsent(projectId, () => []);
+    final n = _nextSceneIndex(projectId);
+    final sceneId = 'Scene${n.toString().padLeft(4, '0')}';
+    final layer = Layer(
+      id: _nextLayerId(projectId),
+      name: 'レイヤー1',
+      type: LayerType.normal,
+    );
+    final scene = Scene(
+      id: sceneId,
+      index: scenes.length,
+      frames: [Frame(index: 0, layers: [layer])],
+    );
+    scenes.add(scene);
+    notifyListeners();
+    return scene;
+  }
+
+  /// シーンを削除する（最低1シーンは残す。仕様書05）。描画タイルも破棄する。
+  void removeScene(String projectId, String sceneId) => removeScenes(projectId, [sceneId]);
+
+  /// 複数シーンを一括削除する（最低1シーンは残す）。
+  void removeScenes(String projectId, List<String> sceneIds) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idsToRemove = sceneIds.toSet();
+    final remaining = scenes.where((s) => !idsToRemove.contains(s.id)).toList();
+    if (remaining.isEmpty) return; // 全シーン削除は不可
+    final tm = _tileManagers[projectId];
+    for (final id in idsToRemove) {
+      tm?.removeSceneTiles(id);
+    }
+    final reindexed = remaining
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    _scenes[projectId] = reindexed;
+    notifyListeners();
+  }
+
+  /// シーン名を変更する（仕様書05：シーン名変更ダイアログ）。
+  void renameScene(String projectId, String sceneId, String newName) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(name: newName);
+    notifyListeners();
+  }
+
+  /// シーンを指定した順序（IDのリスト）へ並び替える（仕様書05：カーソル固定方式）。
+  /// sceneIdはそのまま・indexのみ新しい並び順に合わせて振り直す。
+  void reorderScenesByIds(String projectId, List<String> orderedSceneIds) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final byId = {for (final s in scenes) s.id: s};
+    final reordered = <Scene>[];
+    for (final id in orderedSceneIds) {
+      final s = byId.remove(id);
+      if (s != null) reordered.add(s);
+    }
+    // 万一渡されなかったシーンがあれば末尾へ残す（データ消失防止）
+    reordered.addAll(byId.values);
+    final reindexed = reordered
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    _scenes[projectId] = reindexed;
+    notifyListeners();
+  }
+
   List<Layer> layersOf(String projectId, String sceneId, int frameIndex) {
     final scene = sceneOf(projectId, sceneId);
     if (scene == null || frameIndex >= scene.frames.length) return [];

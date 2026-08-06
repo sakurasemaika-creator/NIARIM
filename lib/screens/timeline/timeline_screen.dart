@@ -10,18 +10,12 @@ import 'package:video_player/video_player.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/tile_manager.dart';
 import '../../models/layer.dart';
+import '../../models/scene.dart';
 import '../../services/advertising_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/premium_lock_widget.dart';
-
-// シーンをIDで管理（並び替え後もIDで選択中シーンを追従させる）
-class _Scene {
-  final String id;
-  String name;
-  _Scene({required this.id, required this.name});
-}
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -84,9 +78,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   String? _selectedSceneId;
   bool _isPlaying = false;
   Timer? _playTimer;
-  int _sceneIdCounter = 4;
-
-  late final List<_Scene> _scenes;
 
   // カーソル固定方式の移動モード
   bool _isMoveMode = false;
@@ -128,12 +119,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   @override
   void initState() {
     super.initState();
-    _scenes = [
-      _Scene(id: 'scene_1', name: 'Scene1'),
-      _Scene(id: 'scene_2', name: 'Scene2'),
-      _Scene(id: 'scene_3', name: 'Scene3'),
-    ];
-    _selectedSceneId = _scenes.first.id;
+    // _selectedSceneIdはbuild()内で実データ（ProjectService.scenesOf）が
+    // 取得でき次第、先頭シーンへ同期する。
 
     _frameScrollCtrl = ScrollController();
     _audioScrollCtrl = ScrollController();
@@ -308,6 +295,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final adService = context.watch<AdvertisingService>();
+
+    // シーンは実プロジェクトデータ（ProjectService）から取得する。
+    // 選択中シーンが未設定・削除済みの場合は先頭シーンへ同期する。
+    final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
+    if (scenes.isNotEmpty &&
+        (_selectedSceneId == null || !scenes.any((s) => s.id == _selectedSceneId))) {
+      _selectedSceneId = scenes.first.id;
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -549,6 +544,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// シーンタブ（仕様書05：カーソル固定方式で並び替え）
   Widget _buildSceneTabs() {
+    final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
     return SizedBox(
       height: _isMoveMode ? 92 : 36,
       child: Stack(
@@ -563,16 +559,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 // 移動モード中：「決定」ボタン。複数選択モード中：「移動」「削除」ボタン。通常時：「選択」ボタン
                 if (_isMoveMode)
                   TextButton(
-                    onPressed: _confirmMove,
+                    onPressed: () => _confirmMove(scenes),
                     child: const Text('決定', style: TextStyle(fontSize: 11)),
                   )
                 else if (_isSceneMultiSelect) ...[
                   TextButton(
-                    onPressed: _selectedSceneIds.isNotEmpty ? _startMoveMode : null,
+                    onPressed: _selectedSceneIds.isNotEmpty ? () => _startMoveMode(scenes) : null,
                     child: const Text('移動', style: TextStyle(fontSize: 11)),
                   ),
                   TextButton(
-                    onPressed: _selectedSceneIds.length < _scenes.length
+                    onPressed: _selectedSceneIds.length < scenes.length
                         ? _showMultiDeleteConfirm
                         : null,
                     child: const Text('削除', style: TextStyle(color: Colors.red, fontSize: 11)),
@@ -588,7 +584,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     // 移動モード：カーソル位置(n+1) + シーンチップ(n) = 2n+1
                     // 通常モード：シーンチップ(n) + ＋ボタン(1) = n+1
-                    itemCount: _isMoveMode ? _scenes.length * 2 + 1 : _scenes.length + 1,
+                    itemCount: _isMoveMode ? scenes.length * 2 + 1 : scenes.length + 1,
                     itemBuilder: (context, index) {
                       if (_isMoveMode) {
                         if (index.isEven) {
@@ -608,27 +604,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           );
                         } else {
                           final sceneIndex = index ~/ 2;
-                          final scene = _scenes[sceneIndex];
+                          final scene = scenes[sceneIndex];
                           final isMoving = _selectedSceneIds.contains(scene.id);
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
                             child: Chip(
-                              label: Text(scene.name, style: TextStyle(fontSize: 11, color: isMoving ? Colors.blue : null)),
+                              label: Text(scene.displayName, style: TextStyle(fontSize: 11, color: isMoving ? Colors.blue : null)),
                               backgroundColor: isMoving ? Theme.of(context).colorScheme.primaryContainer : null,
                             ),
                           );
                         }
                       } else {
-                        if (index == _scenes.length) {
+                        if (index == scenes.length) {
                           return TextButton(
-                            onPressed: () => setState(() {
-                              _scenes.add(_Scene(id: 'scene_$_sceneIdCounter', name: 'Scene${_scenes.length + 1}'));
-                              _sceneIdCounter++;
-                            }),
+                            onPressed: () =>
+                                context.read<ProjectService>().addScene(widget.projectId),
                             child: const Text('＋'),
                           );
                         }
-                        final scene = _scenes[index];
+                        final scene = scenes[index];
                         final isSelected = scene.id == _selectedSceneId;
                         return GestureDetector(
                           onTap: () {
@@ -664,10 +658,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         size: 12,
                                       ),
                                     ),
-                                  Text(scene.name, style: const TextStyle(fontSize: 11)),
+                                  Text(scene.displayName, style: const TextStyle(fontSize: 11)),
                                   if (!_isSceneMultiSelect)
                                     GestureDetector(
-                                      onTap: () => _showSceneMenu(scene),
+                                      onTap: () => _showSceneMenu(scene, scenes),
                                       child: const Padding(
                                         padding: EdgeInsets.only(left: 4),
                                         child: Icon(Icons.more_vert, size: 12),
@@ -687,7 +681,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 // 複数選択モード中：全選択・全解除ボタン
                 if (_isSceneMultiSelect && !_isMoveMode) ...[
                   TextButton(
-                    onPressed: () => setState(() => _selectedSceneIds.addAll(_scenes.map((s) => s.id))),
+                    onPressed: () => setState(() => _selectedSceneIds.addAll(scenes.map((s) => s.id))),
                     child: const Text('全選択', style: TextStyle(fontSize: 11)),
                   ),
                   TextButton(
@@ -712,32 +706,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   // 移動モード開始（仕様書05：複数選択モードからのみ起動）
-  void _startMoveMode() {
+  void _startMoveMode(List<Scene> scenes) {
     if (_selectedSceneIds.isEmpty) return;
     setState(() {
       _isMoveMode = true;
       // 選択中シーンの並び順で最後のシーンの直後にカーソルを初期配置
-      final lastIdx = _scenes.lastIndexWhere((s) => _selectedSceneIds.contains(s.id));
+      final lastIdx = scenes.lastIndexWhere((s) => _selectedSceneIds.contains(s.id));
       _moveCursorPos = lastIdx + 1;
     });
   }
 
   // カーソル固定方式の移動確定（仕様書05：複数選択モードからのみ起動）
-  void _confirmMove() {
+  void _confirmMove(List<Scene> scenes) {
     if (_selectedSceneIds.isEmpty) return;
+    // 選択シーンを並び順で抽出
+    final moving = scenes.where((s) => _selectedSceneIds.contains(s.id)).toList();
+    final selectedIndices = moving.map((s) => scenes.indexOf(s)).toList();
+    final removedBefore = selectedIndices.where((i) => i < _moveCursorPos).length;
+    final insertPos = (_moveCursorPos - removedBefore).clamp(0, scenes.length - moving.length);
+    final reordered = List<Scene>.from(scenes)
+      ..removeWhere((s) => _selectedSceneIds.contains(s.id))
+      ..insertAll(insertPos, moving);
+    context.read<ProjectService>().reorderScenesByIds(
+        widget.projectId, reordered.map((s) => s.id).toList());
     setState(() {
-      // 選択シーンを並び順で抽出
-      final moving = _scenes.where((s) => _selectedSceneIds.contains(s.id)).toList();
-      // カーソル位置は移動前の_scenes基準なので、削除前に挿入先インデックスを計算
-      final selectedIndices = moving.map((s) => _scenes.indexOf(s)).toList();
-      final removedBefore = selectedIndices.where((i) => i < _moveCursorPos).length;
-      final insertPos = (_moveCursorPos - removedBefore).clamp(0, _scenes.length - moving.length);
-      _scenes.removeWhere((s) => _selectedSceneIds.contains(s.id));
-      _scenes.insertAll(insertPos, moving);
-      // 移動完了後：_selectedSceneIdがまだ有効か確認（IDで追従）
-      if (!_scenes.any((s) => s.id == _selectedSceneId)) {
-        _selectedSceneId = _scenes.first.id;
-      }
       _isMoveMode = false;
       _isSceneMultiSelect = false;
       _selectedSceneIds.clear();
@@ -745,7 +737,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   // 三点メニュー（仕様書05：シーン名変更・シーン削除の2項目のみ）
-  void _showSceneMenu(_Scene scene) {
+  void _showSceneMenu(Scene scene, List<Scene> scenes) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -761,7 +753,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               leading: const Icon(Icons.delete, color: Colors.red),
               title: const Text('シーン削除', style: TextStyle(color: Colors.red)),
               // シーンが1件のみの場合は削除不可
-              onTap: _scenes.length > 1
+              onTap: scenes.length > 1
                   ? () { Navigator.pop(ctx); _showSingleDeleteConfirm(scene); }
                   : null,
             ),
@@ -772,11 +764,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   // 単体シーン削除の確認ダイアログ（仕様書05）
-  void _showSingleDeleteConfirm(_Scene scene) {
+  void _showSingleDeleteConfirm(Scene scene) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('「${scene.name}」を削除しますか？'),
+        title: Text('「${scene.displayName}」を削除しますか？'),
         content: const Text('シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
@@ -784,14 +776,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() {
-                final idx = _scenes.indexWhere((s) => s.id == scene.id);
-                if (idx < 0) return;
-                _scenes.removeAt(idx);
-                if (_selectedSceneId == scene.id) {
-                  _selectedSceneId = _scenes[idx.clamp(0, _scenes.length - 1)].id;
-                }
-              });
+              context.read<ProjectService>().removeScene(widget.projectId, scene.id);
             },
             child: const Text('削除'),
           ),
@@ -814,12 +799,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Navigator.pop(ctx);
+              context.read<ProjectService>()
+                  .removeScenes(widget.projectId, _selectedSceneIds.toList());
               setState(() {
-                _scenes.removeWhere((s) => _selectedSceneIds.contains(s.id));
-                // 選択中シーンが削除された場合は先頭へ移動
-                if (!_scenes.any((s) => s.id == _selectedSceneId)) {
-                  _selectedSceneId = _scenes.first.id;
-                }
                 _selectedSceneIds.clear();
                 _isSceneMultiSelect = false;
               });
@@ -831,8 +813,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  void _showRenameSceneDialog(_Scene scene) {
-    final controller = TextEditingController(text: scene.name);
+  void _showRenameSceneDialog(Scene scene) {
+    final controller = TextEditingController(text: scene.displayName);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -843,7 +825,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           FilledButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                setState(() => scene.name = controller.text);
+                context.read<ProjectService>()
+                    .renameScene(widget.projectId, scene.id, controller.text);
               }
               Navigator.pop(ctx);
             },

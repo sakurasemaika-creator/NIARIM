@@ -103,7 +103,7 @@ class MiraproSerializer {
       encoder.addArchiveFile(ArchiveFile(
         'Scene/${scene.id}/$_framesFile',
         0,
-        utf8.encode(jsonEncode(_serializeFrames(scene.frames))),
+        utf8.encode(jsonEncode(_serializeScene(scene))),
       ));
     }
 
@@ -160,7 +160,7 @@ class MiraproSerializer {
       encoder.addArchiveFile(ArchiveFile(
         'Scene/${scene.id}/$_framesFile',
         0,
-        utf8.encode(jsonEncode(_serializeFrames(scene.frames))),
+        utf8.encode(jsonEncode(_serializeScene(scene))),
       ));
     }
 
@@ -213,11 +213,10 @@ class MiraproSerializer {
     for (final sceneId in sceneIds) {
       final framesFile = archive.findFile('Scene/$sceneId/$_framesFile');
       if (framesFile == null) continue;
-      final frames = _deserializeFrames(
-        jsonDecode(utf8.decode(framesFile.content as List<int>)) as List<dynamic>,
-      );
+      final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
+      final (name, frames) = _deserializeScene(decoded);
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
-      scenes.add(Scene(id: sceneId, index: sceneIndex - 1, frames: frames));
+      scenes.add(Scene(id: sceneId, index: sceneIndex - 1, frames: frames, name: name));
     }
     scenes.sort((a, b) => a.index.compareTo(b.index));
 
@@ -312,6 +311,11 @@ class MiraproSerializer {
         'appVersion': '1.0.0',
       };
 
+  static Map<String, dynamic> _serializeScene(Scene scene) => {
+        'name': scene.name,
+        'frames': _serializeFrames(scene.frames),
+      };
+
   static List<dynamic> _serializeFrames(List<Frame> frames) =>
       frames.map((f) => {
             'index': f.index,
@@ -378,6 +382,18 @@ class MiraproSerializer {
         updatedAt: DateTime.parse(j['updatedAt'] as String),
         totalWorkSeconds: j['totalWorkSeconds'] as int? ?? 0,
       );
+
+  /// シーンファイル（frames.json）を読み込む。新形式は
+  /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
+  /// フレーム配列そのもの。どちらも読み込めるようにする。
+  static (String?, List<Frame>) _deserializeScene(dynamic decoded) {
+    if (decoded is Map<String, dynamic>) {
+      final name = decoded['name'] as String?;
+      final frames = _deserializeFrames(decoded['frames'] as List<dynamic>);
+      return (name, frames);
+    }
+    return (null, _deserializeFrames(decoded as List<dynamic>));
+  }
 
   static List<Frame> _deserializeFrames(List<dynamic> json) =>
       json.map((f) {

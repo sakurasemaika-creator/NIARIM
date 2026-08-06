@@ -243,6 +243,13 @@ class TileManager {
 
   void removeLayer(String layerId) => _tiles.remove(layerId);
 
+  /// 指定シーンに属する全ての合成キー（frameLayerKeyでsceneIdがプレフィックス
+  /// された全フレーム・全レイヤー分）のタイルデータを削除する（シーン削除時に使用）。
+  void removeSceneTiles(String sceneId) {
+    final prefix = '$sceneId#';
+    _tiles.removeWhere((key, _) => key.startsWith(prefix));
+  }
+
   /// 合成キーを付け替える（フレーム削除に伴う後続フレームの再インデックス等で使用）。
   /// 移動先に既存データがあれば上書きする。dirty集合も合わせて付け替える。
   void renameKey(String oldKey, String newKey) {

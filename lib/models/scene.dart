@@ -4,27 +4,35 @@ class Scene {
   final String id;
   final int index;
   final List<Frame> frames;
+  // ユーザーが変更したシーン名（仕様書05：シーン名変更ダイアログ）。
+  // 未設定の場合はdisplayNameがindexから自動生成する。
+  final String? name;
 
   const Scene({
     required this.id,
     required this.index,
     this.frames = const [],
+    this.name,
   });
 
-  String get displayName => 'Scene${index + 1}';
+  String get displayName => name ?? 'Scene${index + 1}';
 
   Scene copyWith({
     String? id,
     int? index,
     List<Frame>? frames,
+    Object? name = _sentinel,
   }) {
     return Scene(
       id: id ?? this.id,
       index: index ?? this.index,
       frames: frames ?? this.frames,
+      name: name == _sentinel ? this.name : name as String?,
     );
   }
 }
+
+const Object _sentinel = Object();
 
 class Frame {
   final int index;
