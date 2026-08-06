@@ -34,15 +34,30 @@ class _TransferScreenState extends State<TransferScreen> {
       appBar: AppBar(title: const Text('引き継ぎ（.miratra）')),
       body: desktopCentered(context, Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text('他の端末へ引き継ぐ項目を選択してください。',
+                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
           Expanded(
             child: ListView(
-              children: _items.keys.map((key) {
-                return CheckboxListTile(
-                  title: Text(key),
-                  value: _items[key],
-                  onChanged: (v) => setState(() => _items[key] = v!),
-                );
-              }).toList(),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                Card(
+                  child: Column(
+                    children: [
+                      for (final key in _items.keys) ...[
+                        if (key != _items.keys.first) const Divider(height: 1),
+                        CheckboxListTile(
+                          title: Text(key),
+                          value: _items[key],
+                          onChanged: (v) => setState(() => _items[key] = v!),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           Padding(

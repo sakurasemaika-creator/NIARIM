@@ -13,11 +13,21 @@ class GestureSettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('ジェスチャー設定')),
       body: desktopCentered(context, ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          _item(context, '2本指タップ', settings.twoFingerTap, (a) => settings.setGesture(GestureType.twoFingerTap, a)),
-          _item(context, '3本指タップ', settings.threeFingerTap, (a) => settings.setGesture(GestureType.threeFingerTap, a)),
-          _item(context, '2本指スワイプ左右', settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a)),
-          _item(context, '長押し', settings.longPress, (a) => settings.setGesture(GestureType.longPress, a)),
+          Card(
+            child: Column(
+              children: [
+                _item(context, '2本指タップ', settings.twoFingerTap, (a) => settings.setGesture(GestureType.twoFingerTap, a)),
+                const Divider(height: 1),
+                _item(context, '3本指タップ', settings.threeFingerTap, (a) => settings.setGesture(GestureType.threeFingerTap, a)),
+                const Divider(height: 1),
+                _item(context, '2本指スワイプ左右', settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a)),
+                const Divider(height: 1),
+                _item(context, '長押し', settings.longPress, (a) => settings.setGesture(GestureType.longPress, a)),
+              ],
+            ),
+          ),
         ],
       )),
     );

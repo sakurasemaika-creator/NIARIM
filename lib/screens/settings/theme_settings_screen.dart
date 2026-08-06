@@ -47,8 +47,11 @@ class ThemeSettingsScreen extends StatelessWidget {
             child: Text('テーマプリセット', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
           ...presets.map((preset) => ListTile(
+            tileColor: current.id == preset.id
+                ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
+                : null,
             leading: _PresetColorSwatch(preset: preset),
-            title: Text(preset.name),
+            title: Text(preset.name, style: const TextStyle(fontWeight: FontWeight.w600)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -218,9 +221,11 @@ class _PresetColorSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: 40,
       height: 40,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(shape: BoxShape.circle),
       child: Row(
         children: [
           Expanded(child: Container(color: preset.panelBgColor)),

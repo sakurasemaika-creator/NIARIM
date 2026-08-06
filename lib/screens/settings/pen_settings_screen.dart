@@ -21,15 +21,19 @@ class _PenSettingsScreenState extends State<PenSettingsScreen> {
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('筆圧設定', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          RadioListTile<int>(title: const Text('無効'), value: 0, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
-          RadioListTile<int>(title: const Text('サイズに反映'), value: 1, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
-          RadioListTile<int>(title: const Text('不透明度に反映'), value: 2, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
-          RadioListTile<int>(title: const Text('サイズ＋不透明度に反映'), value: 3, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
-          const Divider(height: 32),
-          const Text('筆圧カーブ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          _sectionLabel(context, '筆圧設定'),
+          Card(
+            child: Column(
+              children: [
+                RadioListTile<int>(title: const Text('無効'), value: 0, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
+                RadioListTile<int>(title: const Text('サイズに反映'), value: 1, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
+                RadioListTile<int>(title: const Text('不透明度に反映'), value: 2, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
+                RadioListTile<int>(title: const Text('サイズ＋不透明度に反映'), value: 3, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          _sectionLabel(context, '筆圧カーブ'),
           SegmentedButton<int>(
             segments: const [
               ButtonSegment(value: 0, label: Text('弱')),
@@ -40,13 +44,28 @@ class _PenSettingsScreenState extends State<PenSettingsScreen> {
             selected: {_pressureCurve},
             onSelectionChanged: (v) => setState(() => _pressureCurve = v.first),
           ),
-          const Divider(height: 32),
-          const Text('ペンボタン設定', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          ListTile(title: const Text('ボタン1'), trailing: Text(_buttonLabel(_penButton1)), onTap: () => _showButtonPicker(1)),
-          ListTile(title: const Text('ボタン2'), trailing: Text(_buttonLabel(_penButton2)), onTap: () => _showButtonPicker(2)),
+          const SizedBox(height: 20),
+          _sectionLabel(context, 'ペンボタン設定'),
+          Card(
+            child: Column(
+              children: [
+                ListTile(title: const Text('ボタン1'), trailing: Text(_buttonLabel(_penButton1)), onTap: () => _showButtonPicker(1)),
+                const Divider(height: 1),
+                ListTile(title: const Text('ボタン2'), trailing: Text(_buttonLabel(_penButton2)), onTap: () => _showButtonPicker(2)),
+              ],
+            ),
+          ),
         ],
       )),
+    );
+  }
+
+  Widget _sectionLabel(BuildContext context, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(text,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurfaceVariant)),
     );
   }
 

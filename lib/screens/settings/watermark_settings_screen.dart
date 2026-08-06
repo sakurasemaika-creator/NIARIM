@@ -29,11 +29,20 @@ class WatermarkSettingsScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.branding_watermark, size: 64, color: Colors.grey[600]),
-                    const SizedBox(height: 16),
-                    Text('登録されたウォーターマークがありません', style: TextStyle(color: Colors.grey[400])),
+                    Container(
+                      width: 96, height: 96,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.branding_watermark, size: 44, color: Theme.of(context).colorScheme.primary),
+                    ),
+                    const SizedBox(height: 20),
+                    Text('登録されたウォーターマークがありません',
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
-                    Text('右下の＋から画像を登録してください', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    Text('右下の＋から画像を登録してください',
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
                   ],
                 ),
               )
@@ -87,7 +96,7 @@ class _WatermarkTile extends StatelessWidget {
                   return const Center(child: Icon(Icons.broken_image, color: Colors.grey));
                 }
                 return Container(
-                  color: Colors.grey[850],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: Image.file(File(path), fit: BoxFit.contain),
                 );
               },

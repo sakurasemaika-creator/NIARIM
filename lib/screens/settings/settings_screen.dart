@@ -41,26 +41,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: desktopCentered(
         context,
         ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8),
           children: [
-            _item(Icons.settings, '基本', 'FPS・背景色・言語', _showBasicSettings),
-            _item(Icons.tune, '詳細', 'Undo回数・自動保存・ゴミ箱', _showDetailSettings),
-            _item(Icons.speed, 'パフォーマンス', '品質設定・タイルキャッシュ', () => context.push('/settings/performance')),
-            _item(Icons.touch_app, 'ジェスチャー', '2本指タップ・長押し', () => context.push('/settings/gestures')),
-            _item(Icons.edit, 'ペン入力', '筆圧・傾き・ペンボタン', () => context.push('/settings/pen')),
-            _item(Icons.desktop_windows, 'ワークスペース', 'ツールバー編集・パネル配置', () => context.push('/settings/workspace')),
-            _item(Icons.palette, 'UI・テーマ', 'テーマ設定・ワークスペース', () => context.push('/settings/theme')),
+            _item(Icons.settings, '基本', 'FPS・背景色・言語', _showBasicSettings, const Color(0xFFFF5C7A)),
+            _item(Icons.tune, '詳細', 'Undo回数・自動保存・ゴミ箱', _showDetailSettings, const Color(0xFF3AA6FF)),
+            _item(Icons.speed, 'パフォーマンス', '品質設定・タイルキャッシュ', () => context.push('/settings/performance'), const Color(0xFF3DDC97)),
+            _item(Icons.touch_app, 'ジェスチャー', '2本指タップ・長押し', () => context.push('/settings/gestures'), const Color(0xFFFFB020)),
+            _item(Icons.edit, 'ペン入力', '筆圧・傾き・ペンボタン', () => context.push('/settings/pen'), const Color(0xFFB15CFF)),
+            _item(Icons.desktop_windows, 'ワークスペース', 'ツールバー編集・パネル配置', () => context.push('/settings/workspace'), const Color(0xFF3AA6FF)),
+            _item(Icons.palette, 'UI・テーマ', 'テーマ設定・ワークスペース', () => context.push('/settings/theme'), const Color(0xFFFF5C7A)),
             // 無料会員のみ🔒マーク付きで表示（仕様書08）
-            _item(Icons.water, isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒', 'ユーザーウォーターマーク（Premium）', _showWatermarkSetting),
+            _item(Icons.water, isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒', 'ユーザーウォーターマーク（Premium）', _showWatermarkSetting, const Color(0xFFB15CFF)),
+            _item(Icons.import_export, '引き継ぎ', '設定・素材・ブラシを他端末へ書き出し/読み込み', () => context.push('/settings/transfer'), const Color(0xFF3DDC97)),
           ],
         ),
       ),
     );
   }
 
-  Widget _item(IconData icon, String title, String subtitle, VoidCallback onTap) {
+  Widget _item(IconData icon, String title, String subtitle, VoidCallback onTap, Color accent) {
     return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(color: accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+        child: Icon(icon, color: accent, size: 22),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
@@ -98,7 +105,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // 描画領域初期値（仕様書26）
                 const Text('描画領域初期値', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                const Text('新規プロジェクト作成時の初期値となります。', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                Text('新規プロジェクト作成時の初期値となります。',
+                    style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('描画領域を広くする'),
