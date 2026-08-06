@@ -8,6 +8,10 @@ class FrameStripWidget extends StatelessWidget {
   final String sceneId;
   final ValueChanged<int> onFrameSelected;
   final VoidCallback onTimelineTap;
+  // フレーム複数選択モード（仕様書18：大量処理実行時のフレーム一括選択）
+  final bool multiSelectMode;
+  final Set<int> selectedFrames;
+  final ValueChanged<int>? onFrameToggle;
 
   const FrameStripWidget({
     super.key,
@@ -16,6 +20,9 @@ class FrameStripWidget extends StatelessWidget {
     required this.sceneId,
     required this.onFrameSelected,
     required this.onTimelineTap,
+    this.multiSelectMode = false,
+    this.selectedFrames = const {},
+    this.onFrameToggle,
   });
 
   void _showHoldDialog(BuildContext context, ProjectService service, int frameIndex, int currentHold) {
@@ -85,11 +92,16 @@ class FrameStripWidget extends StatelessWidget {
                     ),
                   );
                 }
-                final isSelected = index == currentFrame;
+                final isChecked = selectedFrames.contains(index);
+                final isSelected = multiSelectMode ? isChecked : index == currentFrame;
                 final hold = service.frameHold(projectId, sceneId, index);
                 return GestureDetector(
-                  onTap: () => onFrameSelected(index),
-                  onLongPress: () => _showHoldDialog(context, service, index, hold),
+                  onTap: multiSelectMode
+                      ? () => onFrameToggle?.call(index)
+                      : () => onFrameSelected(index),
+                  onLongPress: multiSelectMode
+                      ? null
+                      : () => _showHoldDialog(context, service, index, hold),
                   child: Container(
                     width: 48,
                     margin: const EdgeInsets.all(4),
@@ -101,15 +113,28 @@ class FrameStripWidget extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: hold > 1
-                        ? Center(
+                    child: Stack(
+                      children: [
+                        if (hold > 1)
+                          Center(
                             child: Text('$hold',
                                 style: const TextStyle(
                                     fontSize: 11,
                                     color: Colors.amber,
                                     fontWeight: FontWeight.bold)),
-                          )
-                        : null,
+                          ),
+                        if (multiSelectMode)
+                          Positioned(
+                            right: 2,
+                            top: 2,
+                            child: Icon(
+                              isChecked ? Icons.check_box : Icons.check_box_outline_blank,
+                              size: 14,
+                              color: isChecked ? Colors.blue : Colors.grey[400],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 );
               },

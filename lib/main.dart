@@ -12,6 +12,7 @@ import 'services/brush_service.dart';
 import 'services/autosave_service.dart';
 import 'services/tone_service.dart';
 import 'services/stamp_service.dart';
+import 'services/filter_service.dart';
 import 'services/theme_service.dart';
 import 'services/save_tree_service.dart';
 import 'services/autofill_preset_service.dart';
@@ -52,6 +53,9 @@ void main() async {
   final stampService = StampService();
   await stampService.init();
 
+  final filterService = FilterService();
+  await filterService.init();
+
   final themeService = ThemeService();
   await themeService.init();
 
@@ -83,6 +87,7 @@ void main() async {
         ChangeNotifierProvider.value(value: brushService),
         ChangeNotifierProvider.value(value: toneService),
         ChangeNotifierProvider.value(value: stampService),
+        ChangeNotifierProvider.value(value: filterService),
         ChangeNotifierProvider.value(value: themeService),
         ChangeNotifierProvider.value(value: autosaveService),
         ChangeNotifierProvider.value(value: saveTreeService),

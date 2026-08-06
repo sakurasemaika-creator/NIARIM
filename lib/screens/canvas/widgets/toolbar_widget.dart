@@ -16,6 +16,7 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onTextTap;
   final VoidCallback onRulerTap;
   final VoidCallback onShapeTap;
+  final VoidCallback onFilterTap;
 
   const ToolbarWidget({
     super.key,
@@ -31,6 +32,7 @@ class ToolbarWidget extends StatelessWidget {
     required this.onTextTap,
     required this.onRulerTap,
     required this.onShapeTap,
+    required this.onFilterTap,
   });
 
   @override
@@ -86,6 +88,8 @@ class ToolbarWidget extends StatelessWidget {
             IconButton(icon: const Icon(Icons.layers, size: 20), onPressed: onLayerTap, tooltip: 'レイヤー'),
             // オニオンスキン
             IconButton(icon: const Icon(Icons.layers_outlined, size: 20), onPressed: onOnionSkinTap, tooltip: 'オニオンスキン'),
+            // フィルター（仕様書18：描画フィルター）
+            IconButton(icon: const Icon(Icons.blur_on, size: 20), onPressed: onFilterTap, tooltip: 'フィルター'),
             // ツール早替えボタン（↺）
             IconButton(icon: const Icon(Icons.loop, size: 20), onPressed: () {}, tooltip: 'ツール早替え'),
             IconButton(icon: const Icon(Icons.movie, size: 20), onPressed: onTimelineTap, tooltip: 'タイムライン'),

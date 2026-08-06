@@ -20,6 +20,7 @@ import 'widgets/brush_panel.dart';
 import 'widgets/pen_sub_tool_panel.dart';
 import 'widgets/onion_skin_panel.dart';
 import 'widgets/ruler_panel.dart';
+import 'widgets/filter_panel.dart';
 import '../../models/ruler.dart';
 
 class CanvasScreen extends StatefulWidget {
@@ -43,6 +44,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showPenSubToolPanel = false;
   bool _showOnionSkinPanel = false;
   bool _showRulerPanel = false;
+  bool _showFilterPanel = false;
+  // フレーム複数選択モード（仕様書18：大量処理実行時のフィルター一括適用）
+  bool _frameMultiSelectMode = false;
+  Set<int> _selectedFrameIndices = {};
+  // nullなら現在フレームのみへ適用、非nullなら選択中の全フレームへ一括適用
+  Set<int>? _filterBulkFrames;
   Ruler? _activeRuler;
 
   // キャンバス背景（仕様書27：白 / 透過）
@@ -270,6 +277,26 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         onClose: () => setState(() => _showRulerPanel = false),
                       ),
                     ),
+                  // フィルターパネル（仕様書18：描画フィルター）
+                  if (_showFilterPanel)
+                    Positioned(
+                      right: 16, top: 16,
+                      child: FilterPanel(
+                        projectId: widget.projectId,
+                        sceneId: _currentSceneId,
+                        layerId: _currentLayerId,
+                        frameIndex: _currentFrame,
+                        bulkFrameIndices: _filterBulkFrames,
+                        onClose: () => setState(() {
+                          _showFilterPanel = false;
+                          _filterBulkFrames = null;
+                          if (_frameMultiSelectMode) {
+                            _frameMultiSelectMode = false;
+                            _selectedFrameIndices = {};
+                          }
+                        }),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -309,13 +336,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 }
               }),
               onShapeTap: () => _showShapeMenu(context),
+              onFilterTap: () => setState(() {
+                _showFilterPanel = !_showFilterPanel;
+                _showLayerPanel = false;
+              }),
             ),
+            if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
             FrameStripWidget(
               currentFrame: _currentFrame,
               projectId: widget.projectId,
               sceneId: _currentSceneId,
               onFrameSelected: (idx) => setState(() => _currentFrame = idx),
               onTimelineTap: () => context.go('/timeline/${widget.projectId}'),
+              multiSelectMode: _frameMultiSelectMode,
+              selectedFrames: _selectedFrameIndices,
+              onFrameToggle: (idx) => setState(() {
+                if (_selectedFrameIndices.contains(idx)) {
+                  _selectedFrameIndices.remove(idx);
+                } else {
+                  _selectedFrameIndices.add(idx);
+                }
+              }),
             ),
           ],
         ),
@@ -346,6 +387,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   style: TextStyle(fontSize: 12, color: Colors.blue)),
             ),
           const Spacer(),
+          // フレーム複数選択モード切替（仕様書18：フィルター一括適用など大量処理実行時）
+          IconButton(
+            icon: Icon(
+              _frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist,
+              size: 20,
+              color: _frameMultiSelectMode ? Colors.blue : null,
+            ),
+            tooltip: 'フレーム複数選択',
+            onPressed: () => setState(() {
+              _frameMultiSelectMode = !_frameMultiSelectMode;
+              _selectedFrameIndices = {};
+            }),
+          ),
           IconButton(
             icon: const Icon(Icons.undo),
             onPressed: () => context.read<UndoManager>().undo(),
@@ -369,6 +423,52 @@ class _CanvasScreenState extends State<CanvasScreen> {
               _canvasBackground = _canvasBackground == CanvasBackground.white
                   ? CanvasBackground.transparent
                   : CanvasBackground.white;
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// フレーム複数選択モード時のアクションバー（仕様書18：大量処理実行時の
+  /// フィルター一括適用）。全選択・全解除・フィルター一括適用・キャンセルを提供する。
+  Widget _buildFrameMultiSelectBar() {
+    final total = context.watch<ProjectService>().frameCount(widget.projectId, _currentSceneId);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      child: Row(
+        children: [
+          Text('${_selectedFrameIndices.length} / $total フレーム選択中',
+              style: const TextStyle(fontSize: 12)),
+          const Spacer(),
+          TextButton(
+            onPressed: () => setState(
+                () => _selectedFrameIndices = {for (int i = 0; i < total; i++) i}),
+            child: const Text('全選択', style: TextStyle(fontSize: 12)),
+          ),
+          TextButton(
+            onPressed: () => setState(() => _selectedFrameIndices = {}),
+            child: const Text('全解除', style: TextStyle(fontSize: 12)),
+          ),
+          FilledButton.icon(
+            onPressed: _selectedFrameIndices.isEmpty
+                ? null
+                : () => setState(() {
+                      _filterBulkFrames = _selectedFrameIndices;
+                      _showFilterPanel = true;
+                    }),
+            icon: const Icon(Icons.blur_on, size: 14),
+            label: const Text('フィルター適用', style: TextStyle(fontSize: 12)),
+            style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8), minimumSize: Size.zero),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18),
+            tooltip: 'キャンセル',
+            onPressed: () => setState(() {
+              _frameMultiSelectMode = false;
+              _selectedFrameIndices = {};
             }),
           ),
         ],
