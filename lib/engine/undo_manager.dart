@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'tile_manager.dart';
 
 class UndoManager extends ChangeNotifier {
   final List<UndoAction> _undoStack = [];
@@ -53,17 +54,36 @@ abstract class UndoAction {
   String get description;
 }
 
-class DrawUndoAction extends UndoAction {
+/// 描画操作（ペン・消しゴム・バケツ・投げ縄塗り・トーン・スタンプ・
+/// 移動・変形・図形）のUndo/Redo。TileManagerが記録した変更差分
+/// （実際に変更のあったタイルのみ）を適用し直すことで元に戻す／やり直す。
+class TileUndoAction extends UndoAction {
+  final TileManager tileManager;
   final String layerId;
-  final dynamic previousData;
-  final dynamic newData;
+  final Map<String, Uint8List?> before;
+  final Map<String, Uint8List?> after;
+  final VoidCallback onApply;
 
-  DrawUndoAction({required this.layerId, required this.previousData, required this.newData});
+  TileUndoAction({
+    required this.tileManager,
+    required this.layerId,
+    required this.before,
+    required this.after,
+    required this.onApply,
+  });
 
   @override
-  void undo() { /* TODO */ }
+  void undo() {
+    tileManager.applyTileSnapshot(layerId, before);
+    onApply();
+  }
+
   @override
-  void redo() { /* TODO */ }
+  void redo() {
+    tileManager.applyTileSnapshot(layerId, after);
+    onApply();
+  }
+
   @override
   String get description => 'Draw on $layerId';
 }

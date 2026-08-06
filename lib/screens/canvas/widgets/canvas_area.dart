@@ -280,6 +280,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final snapped = widget.currentTool == DrawingTool.ruler
         ? _toCanvasPoint(_inputHandler.toStrokePoint(event))
         : _applyRulerSnap(_toCanvasPoint(_inputHandler.toStrokePoint(event)));
+    _beginTileUndo();
     _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
   }
@@ -397,6 +398,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _inputHandler.onStylusUp();
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
+    _finishTileUndo();
   }
 
   /// 自動塗り用線画レイヤーへ描画があった場合、直下の自動塗りレイヤーへ更新マークを立てる
@@ -408,6 +410,34 @@ class _CanvasAreaState extends State<CanvasArea> {
         project.id, widget.sceneId, widget.currentFrame, _layerId);
   }
 
+  // ─── Undo/Redo ─────────────────────────────────────────────────────────
+
+  String? _undoRecordingLayerKey;
+
+  /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
+  /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
+  void _beginTileUndo() {
+    _undoRecordingLayerKey = _tileKeyFor(_layerId);
+    _tileManager.beginUndoRecording(_undoRecordingLayerKey!);
+  }
+
+  /// 記録を終了し、実際に変更があった場合のみUndoManagerへ登録する。
+  void _finishTileUndo() {
+    final snapshot = _tileManager.endUndoRecording();
+    final layerKey = _undoRecordingLayerKey;
+    _undoRecordingLayerKey = null;
+    if (snapshot.before.isEmpty || layerKey == null) return;
+    context.read<app_undo.UndoManager>().push(app_undo.TileUndoAction(
+      tileManager: _tileManager,
+      layerId: layerKey,
+      before: snapshot.before,
+      after: snapshot.after,
+      onApply: () {
+        if (mounted) _scheduleComposite();
+      },
+    ));
+  }
+
   // ─── 投げ縄塗り（ペンサブツール、仕様書25） ─────────────────────────────
 
   /// 投げ縄塗りを確定する。囲って塗るモードON/OFF・ベタ/トーン・透明色=消しゴム
@@ -415,6 +445,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   Future<void> _commitLassoFill() async {
     if (_lassoPoints.length < 3) return;
     _syncBrushAndColor();
+    _beginTileUndo();
     final key = _tileKeyFor(_layerId);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -451,6 +482,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _tileManager.replaceLayerPixels(key, result);
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
+    _finishTileUndo();
   }
 
   // ─── ペンサブツール：トーン自由描画・スタンプ ─────────────────────────
@@ -465,6 +497,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (tone == null) return;
     final bs = context.read<BrushService>();
     final brushSize = bs.currentBrush?.size ?? 20;
+    _beginTileUndo();
     final key = _tileKeyFor(_layerId);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -502,6 +535,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _tileManager.replaceLayerPixels(key, result);
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
+    _finishTileUndo();
   }
 
   /// スタンプ描画を確定する（仕様書17：色情報はスタンプ自身が保持・
@@ -513,6 +547,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (stamp == null) return;
     final bs = context.read<BrushService>();
     final stampSize = bs.currentBrush?.size ?? 40;
+    _beginTileUndo();
     final key = _tileKeyFor(_layerId);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -557,6 +592,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _tileManager.replaceLayerPixels(key, result);
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
+    _finishTileUndo();
   }
 
   /// スポイトは表示中の全レイヤーを不透明度・ブレンドモード・クリッピングを
@@ -615,6 +651,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (start == null || end == null || widget.shapeKind == ShapeKind.off) return;
     if (start == end) return;
     _syncBrushAndColor();
+    _beginTileUndo();
     List<Offset> points;
     bool closeLoop;
     switch (widget.shapeKind) {
@@ -642,6 +679,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
+    _finishTileUndo();
   }
 
   // ─── 移動ツール ───────────────────────────────────────────────────────
@@ -655,10 +693,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     });
     if (start == null) return;
     if (delta.dx.abs() < 0.5 && delta.dy.abs() < 0.5) return;
+    _beginTileUndo();
     _tileManager.translateLayer(_tileKeyFor(_layerId), delta.dx, delta.dy).then((_) {
       if (!mounted) return;
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
+      _finishTileUndo();
     });
   }
 
@@ -721,10 +761,12 @@ class _CanvasAreaState extends State<CanvasArea> {
       _transformLive = null;
     });
     if (matrix == null || matrix.isIdentity()) return;
+    _beginTileUndo();
     _tileManager.transformLayer(_tileKeyFor(_layerId), matrix.storage).then((_) {
       if (!mounted) return;
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
+      _finishTileUndo();
     });
   }
 
@@ -757,6 +799,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final h = _tileManager.canvasHeight;
     final buffer = await _flattenVisibleLayers();
     if (!mounted) return;
+    _beginTileUndo();
     _bucketRefBuffer = buffer;
     _bucketVisitedMask = Uint8List(w * h);
     _bucketFillAt(canvasPos);
@@ -769,6 +812,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   void _handleBucketUp() {
     if (_bucketVisitedMask != null) _markLineartDirtyIfNeeded();
+    _finishTileUndo();
     _bucketRefBuffer = null;
     _bucketVisitedMask = null;
   }

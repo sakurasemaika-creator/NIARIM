@@ -43,6 +43,13 @@ class TileManager {
   // 実際に書き込みが発生するまで複製しない（仕様書09）。
   final Set<Uint8List> _sharedTiles = {};
 
+  // Undo記録：1回の描画操作（ストローク・バケツ・投げ縄・変形等）で実際に
+  // 触れたタイルのみを差分記録する（スパースタイル方式に合わせ、
+  // レイヤー全体ではなく変更のあったタイルだけをUndo/Redo対象とする）。
+  bool _recordingUndo = false;
+  String? _recordingLayerId;
+  final Map<String, Uint8List?> _undoBefore = {};
+
   TileManager({required this.canvasWidth, required this.canvasHeight})
       : tilesX = (canvasWidth / tileSize).ceil(),
         tilesY = (canvasHeight / tileSize).ceil();
@@ -58,6 +65,7 @@ class TileManager {
   /// ここで初めて複製し、以後はこのレイヤー専用のバッファとして書き込む。
   Uint8List getOrCreateTile(String layerId, int tx, int ty) {
     final key = _tileKey(tx, ty);
+    _recordBeforeIfNeeded(layerId, key);
     final layerMap = _tiles.putIfAbsent(layerId, () => {});
     final existing = layerMap[key];
     if (existing == null) {
@@ -200,6 +208,8 @@ class TileManager {
   /// レイヤーの全ピクセルを、キャンバス全体サイズのRGBA8888バッファで置き換える。
   /// 自動塗りエンジンの結果書き戻しや transformLayer の内部実装で使用する。
   void replaceLayerPixels(String layerId, Uint8List bytes) {
+    final oldLayerTiles = _tiles[layerId];
+    final recording = _recordingUndo && layerId == _recordingLayerId;
     final newLayerTiles = <String, Uint8List>{};
     for (int ty = 0; ty < tilesY; ty++) {
       for (int tx = 0; tx < tilesX; tx++) {
@@ -219,13 +229,30 @@ class TileManager {
         for (int i = 3; i < tile.length; i += 4) {
           if (tile[i] != 0) { hasContent = true; break; }
         }
+        final key = _tileKey(tx, ty);
+        if (recording) {
+          final oldTile = oldLayerTiles?[key];
+          final changed = hasContent
+              ? (oldTile == null || !_tileBytesEqual(oldTile, tile))
+              : oldTile != null;
+          if (changed) _recordBeforeIfNeeded(layerId, key);
+        }
         if (hasContent) {
-          newLayerTiles[_tileKey(tx, ty)] = tile;
-          _dirtyTiles.add('$layerId:${_tileKey(tx, ty)}');
+          newLayerTiles[key] = tile;
+          _dirtyTiles.add('$layerId:$key');
         }
       }
     }
     _tiles[layerId] = newLayerTiles;
+  }
+
+  bool _tileBytesEqual(Uint8List a, Uint8List b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   /// レイヤー全体を(dx, dy)だけ平行移動する（移動ツール用）。
@@ -277,6 +304,61 @@ class TileManager {
       }
     }
     return result;
+  }
+
+  // ─── Undo記録 ─────────────────────────────────────────────────────────
+
+  /// 1回の描画操作（ストローク・バケツ・投げ縄・トーン・スタンプ・移動・
+  /// 変形等）の直前に呼び、以後実際に変更されたタイルのみを記録する。
+  void beginUndoRecording(String layerId) {
+    _recordingUndo = true;
+    _recordingLayerId = layerId;
+    _undoBefore.clear();
+  }
+
+  /// 記録中であれば、指定タイルの変更前状態を（操作中の初回のみ）記録する。
+  /// 未記録のタイルが対象の場合、存在しなければnullを記録する（Undo時は
+  /// 「未描画状態」への復元を意味する）。
+  void _recordBeforeIfNeeded(String layerId, String tileKey) {
+    if (!_recordingUndo || layerId != _recordingLayerId) return;
+    if (_undoBefore.containsKey(tileKey)) return;
+    final existing = _tiles[layerId]?[tileKey];
+    _undoBefore[tileKey] = existing == null ? null : Uint8List.fromList(existing);
+  }
+
+  /// Undo記録を終了し、変更前後のタイルスナップショットを返す（変更が無ければ空）。
+  ({Map<String, Uint8List?> before, Map<String, Uint8List?> after}) endUndoRecording() {
+    _recordingUndo = false;
+    final layerId = _recordingLayerId;
+    _recordingLayerId = null;
+    if (layerId == null || _undoBefore.isEmpty) {
+      _undoBefore.clear();
+      return (before: const {}, after: const {});
+    }
+    final after = <String, Uint8List?>{};
+    for (final key in _undoBefore.keys) {
+      final current = _tiles[layerId]?[key];
+      after[key] = current == null ? null : Uint8List.fromList(current);
+    }
+    final before = Map<String, Uint8List?>.from(_undoBefore);
+    _undoBefore.clear();
+    return (before: before, after: after);
+  }
+
+  /// Undo/Redo用：タイルスナップショットをレイヤーへ適用する。
+  /// 値がnullのキーはタイルを削除する（記録時点で未描画だったことを意味する）。
+  void applyTileSnapshot(String layerId, Map<String, Uint8List?> snapshot) {
+    if (snapshot.isEmpty) return;
+    final layerMap = _tiles.putIfAbsent(layerId, () => {});
+    for (final entry in snapshot.entries) {
+      if (entry.value == null) {
+        layerMap.remove(entry.key);
+      } else {
+        layerMap[entry.key] = Uint8List.fromList(entry.value!);
+      }
+      _dirtyTiles.add('$layerId:${entry.key}');
+    }
+    if (layerMap.isEmpty) _tiles.remove(layerId);
   }
 
   /// 全タイルデータをシリアライズ（保存用）
