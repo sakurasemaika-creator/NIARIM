@@ -176,7 +176,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            if (adService.shouldShowAds) const AdBannerWidget(),
+            if (adService.shouldShowAds)
+              const AdBannerWidget(position: AdPosition.top),
             _buildTopBar(),
             Expanded(
               child: Stack(

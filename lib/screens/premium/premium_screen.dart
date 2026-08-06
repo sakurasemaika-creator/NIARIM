@@ -37,9 +37,57 @@ class PremiumScreen extends StatelessWidget {
               const SizedBox(height: 24),
               const Text('プラン', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              _planCard(context, '年額プラン（おすすめ）', '¥5,500', '実質2か月分無料', true),
+              if (!premium.storeAvailable)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'ストアに接続できません（実機・ストア審査環境以外では購入できません）',
+                    style: TextStyle(fontSize: 12, color: Colors.orange[300]),
+                  ),
+                ),
+              if (premium.purchaseError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    premium.purchaseError!,
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                ),
+              _planCard(
+                context,
+                '年額プラン（おすすめ）',
+                '¥5,500',
+                '実質2か月分無料',
+                true,
+                premium,
+                PremiumService.yearlyProductId,
+              ),
               const SizedBox(height: 12),
-              _planCard(context, '月額プラン', '¥550/月', '', false),
+              _planCard(
+                context,
+                '月額プラン',
+                '¥550/月',
+                '',
+                false,
+                premium,
+                PremiumService.monthlyProductId,
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: premium.storeAvailable
+                      ? () async {
+                          await premium.restorePurchases();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('購入情報を復元しました（該当する購入がある場合）')),
+                            );
+                          }
+                        }
+                      : null,
+                  child: const Text('購入を復元'),
+                ),
+              ),
             ],
           ],
         ),
@@ -75,7 +123,16 @@ class PremiumScreen extends StatelessWidget {
     );
   }
 
-  Widget _planCard(BuildContext context, String title, String price, String description, bool isRecommended) {
+  Widget _planCard(
+    BuildContext context,
+    String title,
+    String price,
+    String description,
+    bool isRecommended,
+    PremiumService premium,
+    String productId,
+  ) {
+    final busy = premium.purchasePending;
     return Card(
       elevation: isRecommended ? 4 : 1,
       shape: RoundedRectangleBorder(
@@ -83,7 +140,16 @@ class PremiumScreen extends StatelessWidget {
         side: isRecommended ? const BorderSide(color: Colors.amber, width: 2) : BorderSide.none,
       ),
       child: InkWell(
-        onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('課金処理は実機で動作確認してください'))),
+        onTap: (!premium.storeAvailable || busy)
+            ? null
+            : () async {
+                final ok = await premium.buy(productId);
+                if (!ok && context.mounted && premium.purchaseError != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(premium.purchaseError!)),
+                  );
+                }
+              },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -105,7 +171,10 @@ class PremiumScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              if (busy)
+                const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              else
+                Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
