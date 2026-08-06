@@ -13,14 +13,29 @@ class BrushPanel extends StatefulWidget {
 
 class _BrushPanelState extends State<BrushPanel> {
   bool _showFavoritesOnly = false;
+  bool _showSearch = false;
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final brushService = context.watch<BrushService>();
     final allBrushes = brushService.brushes;
-    final brushes = _showFavoritesOnly
-        ? allBrushes.where((b) => b.isFavorite).toList()
-        : allBrushes;
+    var brushes = _showFavoritesOnly
+        ? allBrushes.where((b) => b.isFavorite)
+        : allBrushes.where((_) => true);
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      brushes = brushes.where((b) => b.name.toLowerCase().contains(query));
+    }
+    final brushList = brushes.toList();
+    final isFiltering = _showFavoritesOnly || query.isNotEmpty;
     final current = brushService.currentBrush;
 
     return Card(
@@ -47,21 +62,46 @@ class _BrushPanelState extends State<BrushPanel> {
                     onPressed: () => setState(() => _showFavoritesOnly = !_showFavoritesOnly),
                     tooltip: 'お気に入りのみ表示',
                   ),
-                  IconButton(icon: const Icon(Icons.search, size: 16), onPressed: () {}),
+                  IconButton(
+                    icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 16),
+                    onPressed: () => setState(() {
+                      _showSearch = !_showSearch;
+                      if (!_showSearch) {
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }
+                    }),
+                    tooltip: '名前で検索',
+                  ),
                   IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
                 ],
               ),
+              if (_showSearch)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    style: const TextStyle(fontSize: 13),
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      hintText: 'ブラシ名で検索',
+                      prefixIcon: Icon(Icons.search, size: 16),
+                    ),
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                  ),
+                ),
               const Divider(),
               Expanded(
                 child: ReorderableListView.builder(
-                  itemCount: brushes.length,
+                  itemCount: brushList.length,
                   onReorder: (oldIndex, newIndex) {
-                    if (!_showFavoritesOnly) {
+                    if (!isFiltering) {
                       brushService.reorderBrush(oldIndex, newIndex);
                     }
                   },
                   itemBuilder: (context, index) {
-                    final brush = brushes[index];
+                    final brush = brushList[index];
                     final isSelected = current?.id == brush.id;
                     return ListTile(
                       key: ValueKey(brush.id),

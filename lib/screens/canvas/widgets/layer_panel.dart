@@ -37,10 +37,37 @@ class _LayerPanelState extends State<LayerPanel> {
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   model.LayerType? _selectionBaseType;
+  bool _showSearch = false;
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   List<model.Layer> _visibleLayers(List<model.Layer> layers) {
     final base = layers.where((l) => l.type != model.LayerType.selection).toList();
-    return base.where((l) => !_isHiddenByCollapsedFolder(l, base)).toList();
+    final visible = base.where((l) => !_isHiddenByCollapsedFolder(l, base)).toList();
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return visible;
+    // 検索中は名前が一致するレイヤーと、その祖先フォルダ（階層表示を保つため）のみ表示する。
+    final byId = {for (final l in base) l.id: l};
+    bool isAncestorOfMatch(model.Layer folder) {
+      return base.any((l) {
+        if (!l.name.toLowerCase().contains(query)) return false;
+        String? pid = l.parentFolderId;
+        while (pid != null) {
+          if (pid == folder.id) return true;
+          pid = byId[pid]?.parentFolderId;
+        }
+        return false;
+      });
+    }
+    return visible
+        .where((l) => l.name.toLowerCase().contains(query) || isAncestorOfMatch(l))
+        .toList();
   }
 
   /// フォルダの折りたたみ状態に基づき、祖先フォルダが折りたたまれている場合はtrue（仕様書16）
@@ -91,12 +118,37 @@ class _LayerPanelState extends State<LayerPanel> {
                   onPressed: () => _showHelp(context),
                   tooltip: 'ヘルプ',
                 ),
-                IconButton(icon: const Icon(Icons.search, size: 18), onPressed: () {}),
+                IconButton(
+                  icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 18),
+                  onPressed: () => setState(() {
+                    _showSearch = !_showSearch;
+                    if (!_showSearch) {
+                      _searchQuery = '';
+                      _searchController.clear();
+                    }
+                  }),
+                  tooltip: '名前で検索',
+                ),
                 if (!widget.dockedMode)
                   IconButton(icon: const Icon(Icons.close, size: 18), onPressed: widget.onClose),
               ],
             ),
           ),
+          if (_showSearch)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: const TextStyle(fontSize: 13),
+                decoration: const InputDecoration(
+                  isDense: true,
+                  hintText: 'レイヤー名で検索',
+                  prefixIcon: Icon(Icons.search, size: 16),
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
+              ),
+            ),
           // 選択モードバー
           if (_isSelectionMode)
             Container(
@@ -160,6 +212,7 @@ class _LayerPanelState extends State<LayerPanel> {
             child: ReorderableListView.builder(
               itemCount: layers.length,
               onReorder: (oldIdx, newIdx) {
+                if (_searchQuery.trim().isNotEmpty) return; // 検索中はフィルタ表示のため並び替え不可
                 context.read<ProjectService>().reorderLayer(
                   projectId: widget.projectId,
                   sceneId: widget.sceneId,

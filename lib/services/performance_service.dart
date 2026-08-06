@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -64,6 +65,19 @@ class PerformanceService extends ChangeNotifier {
   /// 初回起動時に自動判定されたプリセット（リセット先として表示用）
   QualityLevel get defaultPreset => _defaultPreset;
 
+  /// CPUコア数から簡易的に品質プリセットを判定する。2万円台の低スペック
+  /// 端末は概ね4コア以下、中位機は6コア前後、ハイエンド機は8コア以上が多い。
+  QualityLevel _detectQualityFromCpuCores() {
+    try {
+      final cores = Platform.numberOfProcessors;
+      if (cores <= 4) return QualityLevel.low;
+      if (cores <= 6) return QualityLevel.medium;
+      return QualityLevel.high;
+    } catch (_) {
+      return QualityLevel.medium;
+    }
+  }
+
   /// 初回起動時：端末性能を判定し、プリセットを決定。
   /// カスタム設定が未保存の場合のみ、そのプリセット値をカスタム初期値としてコピー。
   Future<void> detectDeviceCapability() async {
@@ -77,8 +91,9 @@ class PerformanceService extends ChangeNotifier {
         orElse: () => QualityLevel.medium,
       );
     } else {
-      // 初回：端末性能判定（TODO: 実際の判定ロジック）
-      _qualityLevel = QualityLevel.medium;
+      // 初回：端末性能判定。追加パッケージなしで取得できるCPUコア数を
+      // 簡易指標として使用する（低スペック端末ほどコア数が少ない傾向）。
+      _qualityLevel = _detectQualityFromCpuCores();
       await prefs.setString('quality_level', _qualityLevel.name);
     }
 

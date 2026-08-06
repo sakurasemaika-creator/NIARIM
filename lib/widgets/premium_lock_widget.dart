@@ -41,7 +41,7 @@ void showPremiumBanner(BuildContext context) {
       onClose: () => Navigator.pop(ctx),
       onRegister: () {
         Navigator.pop(ctx);
-        // TODO: Google Play アプリ内課金画面へ遷移
+        // Premium画面（実際の購入処理はPremiumService.buyで行う）へ遷移。
         // ctx ではなく呼び出し元の context を使う（ダイアログ close 後も有効）
         context.go('/premium');
       },
@@ -74,7 +74,7 @@ class _PremiumBannerDialog extends StatelessWidget {
                 'assets/images/premium_banner.webp',
                 width: double.infinity,
                 fit: BoxFit.fitWidth,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (context, error, stackTrace) => Container(
                   height: 200,
                   color: Colors.grey[850],
                   child: const Center(

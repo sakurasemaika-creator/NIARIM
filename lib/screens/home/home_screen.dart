@@ -27,6 +27,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   bool _showFavoritesOnly = false;
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
   StreamSubscription<String>? _sharedFileSub;
 
   @override
@@ -42,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     _sharedFileSub?.cancel();
     super.dispose();
   }
@@ -120,30 +124,51 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MIRANIMA'),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'プロジェクト名で検索',
+                  border: InputBorder.none,
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
+              )
+            : const Text('MIRANIMA'),
         actions: [
-          PopupMenuButton<ProjectViewMode>(
-            icon: const Icon(Icons.view_module),
-            onSelected: (mode) => setState(() => _viewMode = mode),
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: ProjectViewMode.large, child: Text('大')),
-              const PopupMenuItem(value: ProjectViewMode.medium, child: Text('中')),
-              const PopupMenuItem(value: ProjectViewMode.small, child: Text('小')),
-              const PopupMenuItem(value: ProjectViewMode.detail, child: Text('詳細')),
-            ],
-          ),
-          PopupMenuButton<ProjectSortMode>(
-            icon: const Icon(Icons.sort),
-            onSelected: (mode) => setState(() => _sortMode = mode),
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: ProjectSortMode.nameAsc, child: Text('名前 ↑')),
-              const PopupMenuItem(value: ProjectSortMode.nameDesc, child: Text('名前 ↓')),
-              const PopupMenuItem(value: ProjectSortMode.updatedAsc, child: Text('更新日時 ↑')),
-              const PopupMenuItem(value: ProjectSortMode.updatedDesc, child: Text('更新日時 ↓')),
-            ],
-          ),
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.settings), onPressed: () => context.push('/settings')),
+          if (_isSearching)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => setState(() {
+                _isSearching = false;
+                _searchQuery = '';
+                _searchController.clear();
+              }),
+            )
+          else ...[
+            PopupMenuButton<ProjectViewMode>(
+              icon: const Icon(Icons.view_module),
+              onSelected: (mode) => setState(() => _viewMode = mode),
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: ProjectViewMode.large, child: Text('大')),
+                const PopupMenuItem(value: ProjectViewMode.medium, child: Text('中')),
+                const PopupMenuItem(value: ProjectViewMode.small, child: Text('小')),
+                const PopupMenuItem(value: ProjectViewMode.detail, child: Text('詳細')),
+              ],
+            ),
+            PopupMenuButton<ProjectSortMode>(
+              icon: const Icon(Icons.sort),
+              onSelected: (mode) => setState(() => _sortMode = mode),
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: ProjectSortMode.nameAsc, child: Text('名前 ↑')),
+                const PopupMenuItem(value: ProjectSortMode.nameDesc, child: Text('名前 ↓')),
+                const PopupMenuItem(value: ProjectSortMode.updatedAsc, child: Text('更新日時 ↑')),
+                const PopupMenuItem(value: ProjectSortMode.updatedDesc, child: Text('更新日時 ↓')),
+              ],
+            ),
+            IconButton(icon: const Icon(Icons.search), onPressed: () => setState(() => _isSearching = true)),
+            IconButton(icon: const Icon(Icons.settings), onPressed: () => context.push('/settings')),
+          ],
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -222,6 +247,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           }
                         }),
                         showFavoritesOnly: _showFavoritesOnly,
+                        searchQuery: _searchQuery,
                       ),
                     ),
                   ],

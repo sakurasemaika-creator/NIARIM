@@ -16,6 +16,7 @@ class ProjectListWidget extends StatelessWidget {
   final ValueChanged<String> onSelectionChanged;
   final List<Project>? projects; // nullの場合はServiceから取得
   final bool showFavoritesOnly;
+  final String searchQuery;
 
   const ProjectListWidget({
     super.key,
@@ -27,6 +28,7 @@ class ProjectListWidget extends StatelessWidget {
     required this.onSelectionChanged,
     this.projects,
     this.showFavoritesOnly = false,
+    this.searchQuery = '',
   });
 
   List<Project> _sorted(List<Project> src) {
@@ -47,8 +49,12 @@ class ProjectListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final source = projects ?? context.watch<ProjectService>().projects;
-    final filtered = showFavoritesOnly ? source.where((p) => p.isFavorite).toList() : source;
-    final sorted = _sorted(filtered);
+    var filtered = showFavoritesOnly ? source.where((p) => p.isFavorite) : source;
+    final query = searchQuery.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      filtered = filtered.where((p) => p.name.toLowerCase().contains(query));
+    }
+    final sorted = _sorted(filtered.toList());
 
     if (sorted.isEmpty) {
       return Center(
