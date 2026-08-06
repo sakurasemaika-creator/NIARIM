@@ -9,6 +9,7 @@ import '../../engine/tile_manager.dart' show frameLayerKey;
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
+import '../../widgets/responsive.dart';
 
 /// 保存ノードのサムネイルを生成する（先頭シーン・先頭フレームを縮小合成）。
 /// 生成できない場合（シーン・フレームが存在しない等）はnullを返す。
@@ -90,9 +91,12 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
               selectedNodeId: _selectedNodeId,
               onNodeSelected: (id) => setState(() => _selectedNodeId = id),
             )
-          : _SlotView(
-              projectId: widget.projectId,
-              saveService: saveService,
+          : desktopCentered(
+              context,
+              _SlotView(
+                projectId: widget.projectId,
+                saveService: saveService,
+              ),
             ),
     );
   }
@@ -572,7 +576,9 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
   }
 
   Widget _buildButtonBody(BuildContext context, List<SaveNode> nodes) {
-    return Padding(
+    return desktopCentered(
+      context,
+      Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -603,6 +609,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
             child: const Text('キャンセル'),
           ),
         ],
+      ),
       ),
     );
   }

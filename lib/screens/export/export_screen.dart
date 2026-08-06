@@ -7,6 +7,7 @@ import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
+import '../../widgets/responsive.dart';
 
 class ExportScreen extends StatefulWidget {
   final String projectId;
@@ -35,7 +36,9 @@ class _ExportScreenState extends State<ExportScreen> {
   }
 
   Widget _buildSettings() {
-    return SingleChildScrollView(
+    return desktopCentered(
+      context,
+      SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -78,6 +81,7 @@ class _ExportScreenState extends State<ExportScreen> {
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
         ],
+      ),
       ),
     );
   }

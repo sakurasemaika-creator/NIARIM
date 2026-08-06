@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../services/project_service.dart';
+import '../../widgets/responsive.dart';
 
 class ProjectDetailScreen extends StatelessWidget {
   final String projectId;
@@ -41,7 +42,9 @@ class ProjectDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: desktopCentered(
+        context,
+        SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,6 +102,7 @@ class ProjectDetailScreen extends StatelessWidget {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -121,7 +125,7 @@ class ProjectDetailScreen extends StatelessWidget {
   String _formatDuration(int seconds) {
     final h = seconds ~/ 3600;
     final m = (seconds % 3600) ~/ 60;
-    return '${h}時間${m}分';
+    return '$h時間$m分';
   }
 
   String _formatDateTime(DateTime dt) =>

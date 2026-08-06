@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/premium_service.dart';
+import '../../widgets/responsive.dart';
 
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
@@ -11,7 +12,9 @@ class PremiumScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('MIRANIMA Premium')),
-      body: SingleChildScrollView(
+      body: desktopCentered(
+        context,
+        SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -91,6 +94,7 @@ class PremiumScreen extends StatelessWidget {
             ],
           ],
         ),
+      ),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/responsive.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -16,8 +17,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   int _fps = 12;
   int _durationSeconds = 10;
   Color _backgroundColor = Colors.white;
-  int _exportWidth = 1920;
-  int _exportHeight = 1080;
+  final int _exportWidth = 1920;
+  final int _exportHeight = 1080;
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
   bool _drawingAreaEnabled = false;
   double _drawingAreaScale = 2.0;
@@ -43,7 +44,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('新規プロジェクト')),
-      body: SingleChildScrollView(
+      body: desktopCentered(
+        context,
+        SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -133,7 +136,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ],
               ),
               Text(
-                '描画可能範囲: ${_exportWidth}×${_drawingAreaScale.toStringAsFixed(1)}倍 = ${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
+                '描画可能範囲: $_exportWidth×${_drawingAreaScale.toStringAsFixed(1)}倍 = ${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
                 style: const TextStyle(fontSize: 11, color: Colors.grey),
               ),
             ],
@@ -145,7 +148,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('総フレーム数: ${_fps * _durationSeconds}'),
-                    Text('書き出しサイズ: ${_exportWidth}×${_exportHeight}'),
+                    Text('書き出しサイズ: $_exportWidth×$_exportHeight'),
                     if (_drawingAreaEnabled)
                       Text('描画領域: ${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}'),
                   ],
@@ -161,6 +164,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
