@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -12,8 +12,10 @@ import '../../engine/layer_compositor.dart';
 import '../../engine/tile_manager.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/layer.dart';
+import '../../models/material_asset.dart';
 import '../../models/scene.dart';
 import '../../services/advertising_service.dart';
+import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/ad_banner_widget.dart';
@@ -29,8 +31,11 @@ class _TrackClip {
   int lengthFrames;
   final Color color;
   final _ClipTrackType trackType;
-  // 実ファイルパス（音声・動画の再生位置連動に使用）
+  // 実ファイルパス（音声・動画の再生位置連動に使用。プロジェクトの
+  // Materials/フォルダ内のコピーを指す。仕様書21：MaterialID方式）
   String? filePath;
+  // 参照している素材ID（仕様書21）
+  final String? materialId;
   // 音声
   double volume;       // 0.0〜1.0
   double fadeIn;       // フェードイン秒数
@@ -48,6 +53,7 @@ class _TrackClip {
     required this.color,
     required this.trackType,
     this.filePath,
+    this.materialId,
     this.volume = 1.0,
     this.fadeIn = 0.0,
     this.fadeOut = 0.0,
@@ -1194,19 +1200,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Future<void> _showAddClipDialog(String trackName, List<_TrackClip> clips, Color color, _ClipTrackType trackType) async {
-    String? pickedPath;
-    if (trackType == _ClipTrackType.audio || trackType == _ClipTrackType.video) {
-      final result = await FilePicker.platform.pickFiles(
-        type: trackType == _ClipTrackType.audio ? FileType.audio : FileType.video,
-      );
-      if (result == null || result.files.isEmpty || result.files.first.path == null) return;
-      pickedPath = result.files.first.path;
-    }
+    final fileType = switch (trackType) {
+      _ClipTrackType.audio => FileType.audio,
+      _ClipTrackType.video => FileType.video,
+      _ClipTrackType.image => FileType.image,
+    };
+    final result = await FilePicker.platform.pickFiles(type: fileType);
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    final pickedSourcePath = result.files.first.path!;
     if (!mounted) return;
+
+    // 素材管理（仕様書21）：プロジェクトのMaterials/フォルダへコピーし
+    // MaterialIDで管理する。同一内容のファイルは重複保存しない。
+    final materialType = switch (trackType) {
+      _ClipTrackType.audio => MaterialType.audio,
+      _ClipTrackType.video => MaterialType.video,
+      _ClipTrackType.image => MaterialType.image,
+    };
+    final asset = await context.read<MaterialService>().addMaterial(
+          projectId: widget.projectId,
+          sourcePath: pickedSourcePath,
+          type: materialType,
+        );
+    if (!mounted) return;
+    final pickedPath = await context.read<MaterialService>().pathOf(widget.projectId, asset.id);
     final labelCtrl = TextEditingController(
-      text: pickedPath != null
-          ? pickedPath.split(RegExp(r'[\\/]')).last.replaceAll(RegExp(r'\.[^.]+$'), '')
-          : '',
+      text: asset.originalFileName.replaceAll(RegExp(r'\.[^.]+$'), ''),
     );
     int start = _currentFrame;
     int length = 12;
@@ -1272,6 +1291,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     color: color,
                     trackType: trackType,
                     filePath: pickedPath,
+                    materialId: asset.id,
                     useEnd: length - 1,
                   ));
                 });
