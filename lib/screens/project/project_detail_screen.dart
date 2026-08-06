@@ -144,37 +144,54 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, 0),
-                  icon: const Icon(Icons.skip_previous),
-                  tooltip: '先頭フレーム',
-                ),
-                IconButton(
-                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex - 1),
-                  icon: const Icon(Icons.fast_rewind),
-                  tooltip: '1フレーム戻る',
-                ),
-                IconButton(
-                  onPressed: flat.isEmpty
-                      ? null
-                      : () => _togglePlay(projectService, flat, project.fps),
-                  icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                  tooltip: _isPlaying ? '一時停止' : '再生',
-                ),
-                IconButton(
-                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex + 1),
-                  icon: const Icon(Icons.fast_forward),
-                  tooltip: '1フレーム進む',
-                ),
-                IconButton(
-                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, flat.length - 1),
-                  icon: const Icon(Icons.skip_next),
-                  tooltip: '最終フレーム',
-                ),
-              ],
+            // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, 0),
+                    icon: const Icon(Icons.skip_previous),
+                    tooltip: '先頭フレーム',
+                  ),
+                  IconButton(
+                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex - 1),
+                    icon: const Icon(Icons.fast_rewind),
+                    tooltip: '1フレーム戻る',
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      onPressed: flat.isEmpty
+                          ? null
+                          : () => _togglePlay(projectService, flat, project.fps),
+                      icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow,
+                          color: Theme.of(context).colorScheme.onPrimary),
+                      tooltip: _isPlaying ? '一時停止' : '再生',
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex + 1),
+                    icon: const Icon(Icons.fast_forward),
+                    tooltip: '1フレーム進む',
+                  ),
+                  IconButton(
+                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, flat.length - 1),
+                    icon: const Icon(Icons.skip_next),
+                    tooltip: '最終フレーム',
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
@@ -184,6 +201,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
             const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 8),
+              child: Text('プロジェクト情報',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -220,7 +243,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label, style: const TextStyle(color: Colors.grey)), Text(value)],
+        children: [
+          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }

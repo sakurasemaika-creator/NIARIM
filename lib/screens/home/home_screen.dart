@@ -300,14 +300,15 @@ class _SharedTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shared = context.watch<ProjectService>().shared;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     if (shared.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.share_outlined, size: 64, color: Colors.grey[600]),
+            Icon(Icons.share_outlined, size: 64, color: muted.withValues(alpha: 0.6)),
             const SizedBox(height: 16),
-            Text('共有プロジェクトがありません', style: TextStyle(color: Colors.grey[400])),
+            Text('共有プロジェクトがありません', style: TextStyle(color: muted)),
           ],
         ),
       );
@@ -320,14 +321,15 @@ class _TrashTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final trash = context.watch<ProjectService>().trash;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     if (trash.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.delete_outline, size: 64, color: Colors.grey[600]),
+            Icon(Icons.delete_outline, size: 64, color: muted.withValues(alpha: 0.6)),
             const SizedBox(height: 16),
-            Text('ゴミ箱は空です', style: TextStyle(color: Colors.grey[400])),
+            Text('ゴミ箱は空です', style: TextStyle(color: muted)),
           ],
         ),
       );
@@ -337,7 +339,14 @@ class _TrashTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final project = trash[index];
         return ListTile(
-          leading: Container(width: 48, height: 48, color: Color(project.backgroundColor)),
+          leading: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Color(project.backgroundColor),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
           title: Text(project.name),
           subtitle: Text('${project.fps}fps · ${project.durationSeconds}秒'),
           trailing: Row(
@@ -451,7 +460,7 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
                   shape: BoxShape.circle,
                   color: i == _page
                       ? Theme.of(context).colorScheme.primary
-                      : Colors.grey[600],
+                      : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                 ),
               )),
             ),

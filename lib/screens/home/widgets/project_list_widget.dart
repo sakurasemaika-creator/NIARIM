@@ -57,15 +57,22 @@ class ProjectListWidget extends StatelessWidget {
     final sorted = _sorted(filtered.toList());
 
     if (sorted.isEmpty) {
+      final scheme = Theme.of(context).colorScheme;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.movie_creation_outlined, size: 64, color: Colors.grey[600]),
-            const SizedBox(height: 16),
-            Text('プロジェクトがありません', style: TextStyle(color: Colors.grey[400], fontSize: 16)),
+            Container(
+              width: 96, height: 96,
+              decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
+              child: Icon(Icons.movie_creation_outlined, size: 44, color: scheme.primary),
+            ),
+            const SizedBox(height: 20),
+            Text('プロジェクトがありません',
+                style: TextStyle(color: scheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            Text('＋ ボタンから新規作成', style: TextStyle(color: Colors.grey[500], fontSize: 14)),
+            Text('＋ ボタンから新規作成',
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
           ],
         ),
       );
@@ -105,7 +112,14 @@ class ProjectListWidget extends StatelessWidget {
     return ListTile(
       leading: isSelectionMode
           ? Checkbox(value: isSelected, onChanged: (_) => onSelectionChanged(project.id))
-          : Container(width: 48, height: 48, color: Color(project.backgroundColor)),
+          : Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Color(project.backgroundColor),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
       title: Text(project.name),
       subtitle: Text('${project.fps}fps · ${project.durationSeconds}秒'),
       trailing: isSelectionMode

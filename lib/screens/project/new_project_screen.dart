@@ -87,19 +87,37 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             const Text('背景色', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Wrap(
-              spacing: 8,
+              spacing: 12,
               children: [Colors.white, Colors.black, Colors.transparent, const Color(0xFFF5F5DC)].map((color) {
+                final isSelected = _backgroundColor == color;
+                final isLight = color == Colors.white ||
+                    color == Colors.transparent ||
+                    color == const Color(0xFFF5F5DC);
                 return GestureDetector(
                   onTap: () => setState(() => _backgroundColor = color),
                   child: Container(
-                    width: 40, height: 40,
+                    width: 40,
+                    height: 40,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: color,
+                      shape: BoxShape.circle,
                       border: Border.all(
-                        color: _backgroundColor == color ? Theme.of(context).colorScheme.primary : Colors.grey,
-                        width: _backgroundColor == color ? 3 : 1,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outlineVariant,
+                        width: isSelected ? 3 : 1,
                       ),
-                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (color == Colors.transparent)
+                          CustomPaint(size: const Size(40, 40), painter: _CheckerboardPainter())
+                        else
+                          Container(color: color),
+                        if (isSelected)
+                          Icon(Icons.check, size: 18, color: isLight ? Colors.black87 : Colors.white),
+                      ],
                     ),
                   ),
                 );
@@ -137,7 +155,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ),
               Text(
                 '描画可能範囲: $_exportWidth×${_drawingAreaScale.toStringAsFixed(1)}倍 = ${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ],
             const SizedBox(height: 24),
@@ -182,4 +200,23 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     );
     if (mounted) context.go('/canvas/${project.id}');
   }
+}
+
+/// 「透明」背景色スウォッチ用の市松模様を描画する。
+class _CheckerboardPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cell = 8.0;
+    final light = Paint()..color = Colors.grey[300]!;
+    final dark = Paint()..color = Colors.grey[400]!;
+    for (double y = 0; y < size.height; y += cell) {
+      for (double x = 0; x < size.width; x += cell) {
+        final isDark = ((x / cell).round() + (y / cell).round()) % 2 == 0;
+        canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), isDark ? dark : light);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
