@@ -1,0 +1,90 @@
+import 'text_object.dart';
+
+class Layer {
+  final String id;
+  final String name;
+  final LayerType type;
+  final int opacity;
+  final LayerBlendMode blendMode;
+  final bool isVisible;
+  final bool isLocked;
+  final bool opacityLocked;
+  final bool hasClipping;
+  final bool hasMask;
+  final String? parentFolderId;
+  final bool needsAutofillUpdate;
+  final String? partId; // 自動塗り用線画レイヤーのパーツID
+  final TextObject? textObject; // テキストレイヤーのテキストオブジェクト
+
+  const Layer({
+    required this.id,
+    required this.name,
+    required this.type,
+    this.opacity = 100,
+    this.blendMode = LayerBlendMode.normal,
+    this.isVisible = true,
+    this.isLocked = false,
+    this.opacityLocked = false,
+    this.hasClipping = false,
+    this.hasMask = false,
+    this.parentFolderId,
+    this.needsAutofillUpdate = false,
+    this.partId,
+    this.textObject,
+  });
+
+  Layer copyWith({
+    String? id,
+    String? name,
+    LayerType? type,
+    int? opacity,
+    LayerBlendMode? blendMode,
+    bool? isVisible,
+    bool? isLocked,
+    bool? opacityLocked,
+    bool? hasClipping,
+    bool? hasMask,
+    Object? parentFolderId = _sentinel,
+    bool? needsAutofillUpdate,
+    Object? partId = _sentinel,
+    TextObject? textObject,
+  }) {
+    return Layer(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      opacity: opacity ?? this.opacity,
+      blendMode: blendMode ?? this.blendMode,
+      isVisible: isVisible ?? this.isVisible,
+      isLocked: isLocked ?? this.isLocked,
+      opacityLocked: opacityLocked ?? this.opacityLocked,
+      hasClipping: hasClipping ?? this.hasClipping,
+      hasMask: hasMask ?? this.hasMask,
+      parentFolderId: parentFolderId == _sentinel ? this.parentFolderId : parentFolderId as String?,
+      needsAutofillUpdate: needsAutofillUpdate ?? this.needsAutofillUpdate,
+      partId: partId == _sentinel ? this.partId : partId as String?,
+      textObject: textObject ?? this.textObject,
+    );
+  }
+}
+
+const Object _sentinel = Object();
+
+enum LayerType {
+  normal,
+  common,
+  folder,
+  autoFillLineart, // 自動塗り用線画レイヤー（ユーザー作成可）
+  autoFill,        // 自動塗りレイヤー（ユーザー作成可）
+  text,            // テキストレイヤー（ユーザー作成可）
+  timelineImage,   // タイムライン画像素材レイヤー（タイムラインから追加。表示範囲内のフレームのみレイヤーパレットに表示）
+  timelineVideo,   // タイムライン動画素材レイヤー（タイムラインから追加。表示範囲内のフレームのみレイヤーパレットに表示）
+  watermark,       // ウォーターマークレイヤー（プレミアム限定。画像素材と同じタイムライン素材として扱う）
+  selection,       // 内部専用：選択範囲保持レイヤー。レイヤーパネル非表示・ユーザー操作不可
+}
+
+enum LayerBlendMode {
+  normal, multiply, screen, overlay, addition, subtract,
+  darken, lighten, colorBurn, colorDodge, hardLight, softLight,
+  difference, hue, saturation, color, luminosity,
+}

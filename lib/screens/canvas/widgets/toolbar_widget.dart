@@ -1,0 +1,136 @@
+import 'package:flutter/material.dart';
+import '../canvas_screen.dart';
+
+class ToolbarWidget extends StatelessWidget {
+  final DrawingTool currentTool;
+  final Color currentColor;
+  final ValueChanged<DrawingTool> onToolSelected;
+  final VoidCallback onColorTap;
+  final VoidCallback onBrushTap;
+  final VoidCallback onLayerTap;
+  final VoidCallback onTimelineTap;
+  final VoidCallback onPenLongPress;
+  final VoidCallback onOnionSkinTap;
+  final VoidCallback onTextTap;
+  final VoidCallback onRulerTap;
+
+  const ToolbarWidget({
+    super.key,
+    required this.currentTool,
+    required this.currentColor,
+    required this.onToolSelected,
+    required this.onColorTap,
+    required this.onBrushTap,
+    required this.onLayerTap,
+    required this.onTimelineTap,
+    required this.onPenLongPress,
+    required this.onOnionSkinTap,
+    required this.onTextTap,
+    required this.onRulerTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        border: Border(top: BorderSide(color: Colors.grey[800]!)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            // ペンボタン：長押しでサブツールパネル表示
+            GestureDetector(
+              onLongPress: onPenLongPress,
+              child: _toolButton(Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
+            ),
+            _toolButton(Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
+            _toolButton(Icons.format_color_fill, DrawingTool.bucket, 'バケツ'),
+            _toolButton(Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
+            _toolButton(Icons.back_hand, DrawingTool.finger, '指'),
+            _selectToolButton(context),
+            _toolButton(Icons.open_with, DrawingTool.move, '移動'),
+            _toolButton(Icons.transform, DrawingTool.transform, '変形'),
+            _toolButton(Icons.straighten, DrawingTool.ruler, '定規',
+                onTap: onRulerTap),
+            _toolButton(Icons.text_fields, DrawingTool.text, 'テキスト',
+                onTap: onTextTap),
+            const SizedBox(width: 4),
+            // 色インジケーター
+            GestureDetector(
+              onTap: onColorTap,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: currentColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+              ),
+            ),
+            IconButton(icon: const Icon(Icons.tune, size: 20), onPressed: onBrushTap, tooltip: 'ブラシ設定'),
+            IconButton(icon: const Icon(Icons.layers, size: 20), onPressed: onLayerTap, tooltip: 'レイヤー'),
+            // オニオンスキン
+            IconButton(icon: const Icon(Icons.layers_outlined, size: 20), onPressed: onOnionSkinTap, tooltip: 'オニオンスキン'),
+            // ツール早替えボタン（↺）
+            IconButton(icon: const Icon(Icons.loop, size: 20), onPressed: () {}, tooltip: 'ツール早替え'),
+            IconButton(icon: const Icon(Icons.movie, size: 20), onPressed: onTimelineTap, tooltip: 'タイムライン'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _toolButton(IconData icon, DrawingTool tool, String tooltip,
+      {VoidCallback? onTap}) {
+    final isSelected = currentTool == tool;
+    return IconButton(
+      icon: Icon(icon, size: 20),
+      onPressed: onTap ?? () => onToolSelected(tool),
+      tooltip: tooltip,
+      color: isSelected ? Colors.blue : null,
+      style: isSelected ? IconButton.styleFrom(backgroundColor: Colors.blue.withValues(alpha: 0.15)) : null,
+    );
+  }
+
+  Widget _selectToolButton(BuildContext context) {
+    final isSelected = currentTool == DrawingTool.selectRect ||
+        currentTool == DrawingTool.selectLasso ||
+        currentTool == DrawingTool.selectMagicWand;
+    final icon = switch (currentTool) {
+      DrawingTool.selectLasso => Icons.gesture,
+      DrawingTool.selectMagicWand => Icons.auto_awesome,
+      _ => Icons.crop_square,
+    };
+    return GestureDetector(
+      onLongPress: () => _showSelectMenu(context),
+      child: IconButton(
+        icon: Icon(icon, size: 20),
+        onPressed: () => onToolSelected(DrawingTool.selectRect),
+        tooltip: '選択（長押しで種別変更）',
+        color: isSelected ? Colors.blue : null,
+        style: isSelected ? IconButton.styleFrom(backgroundColor: Colors.blue.withValues(alpha: 0.15)) : null,
+      ),
+    );
+  }
+
+  void _showSelectMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(leading: const Icon(Icons.crop_square), title: const Text('矩形選択'), onTap: () { onToolSelected(DrawingTool.selectRect); Navigator.pop(ctx); }),
+            ListTile(leading: const Icon(Icons.gesture), title: const Text('投げ縄選択'), onTap: () { onToolSelected(DrawingTool.selectLasso); Navigator.pop(ctx); }),
+            ListTile(leading: const Icon(Icons.auto_awesome), title: const Text('自動選択（マジックワンド）'), onTap: () { onToolSelected(DrawingTool.selectMagicWand); Navigator.pop(ctx); }),
+          ],
+        ),
+      ),
+    );
+  }
+}

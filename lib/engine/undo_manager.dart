@@ -1,0 +1,128 @@
+import 'package:flutter/foundation.dart';
+
+class UndoManager extends ChangeNotifier {
+  final List<UndoAction> _undoStack = [];
+  final List<UndoAction> _redoStack = [];
+  int _maxUndoCount = 50;
+
+  int get undoCount => _undoStack.length;
+  int get redoCount => _redoStack.length;
+  bool get canUndo => _undoStack.isNotEmpty;
+  bool get canRedo => _redoStack.isNotEmpty;
+
+  void setMaxUndoCount(int count) {
+    _maxUndoCount = count;
+    while (_undoStack.length > _maxUndoCount) {
+      _undoStack.removeAt(0);
+    }
+  }
+
+  void push(UndoAction action) {
+    _undoStack.add(action);
+    _redoStack.clear();
+    if (_undoStack.length > _maxUndoCount) _undoStack.removeAt(0);
+    notifyListeners();
+  }
+
+  void undo() {
+    if (!canUndo) return;
+    final action = _undoStack.removeLast();
+    action.undo();
+    _redoStack.add(action);
+    notifyListeners();
+  }
+
+  void redo() {
+    if (!canRedo) return;
+    final action = _redoStack.removeLast();
+    action.redo();
+    _undoStack.add(action);
+    notifyListeners();
+  }
+
+  void clear() {
+    _undoStack.clear();
+    _redoStack.clear();
+    notifyListeners();
+  }
+}
+
+abstract class UndoAction {
+  void undo();
+  void redo();
+  String get description;
+}
+
+class DrawUndoAction extends UndoAction {
+  final String layerId;
+  final dynamic previousData;
+  final dynamic newData;
+
+  DrawUndoAction({required this.layerId, required this.previousData, required this.newData});
+
+  @override
+  void undo() { /* TODO */ }
+  @override
+  void redo() { /* TODO */ }
+  @override
+  String get description => 'Draw on $layerId';
+}
+
+/// レイヤー追加のUndo/Redo
+/// addLayer/removeLayer は ProjectService 経由で行う
+class LayerAddUndoAction extends UndoAction {
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final String layerId;
+  final int insertIndex;
+  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doAdd;
+  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doRemove;
+
+  LayerAddUndoAction({
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.layerId,
+    required this.insertIndex,
+    required void Function(String, String, int, String) doAdd,
+    required void Function(String, String, int, String) doRemove,
+  })  : _doAdd = doAdd,
+        _doRemove = doRemove;
+
+  @override
+  void undo() => _doRemove(projectId, sceneId, frameIndex, layerId);
+  @override
+  void redo() => _doAdd(projectId, sceneId, frameIndex, layerId);
+  @override
+  String get description => 'Add layer $layerId';
+}
+
+/// レイヤー削除のUndo/Redo
+class LayerRemoveUndoAction extends UndoAction {
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final String layerId;
+  final int removedIndex;
+  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doAdd;
+  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doRemove;
+
+  LayerRemoveUndoAction({
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.layerId,
+    required this.removedIndex,
+    required void Function(String, String, int, String) doAdd,
+    required void Function(String, String, int, String) doRemove,
+  })  : _doAdd = doAdd,
+        _doRemove = doRemove;
+
+  @override
+  void undo() => _doAdd(projectId, sceneId, frameIndex, layerId);
+  @override
+  void redo() => _doRemove(projectId, sceneId, frameIndex, layerId);
+  @override
+  String get description => 'Remove layer $layerId';
+}
