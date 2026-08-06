@@ -9,6 +9,9 @@ class SettingsService extends ChangeNotifier {
   // 描画領域初期値（ホーム画面設定・仕様書26）
   bool _defaultDrawingAreaEnabled = false;
   double _defaultDrawingAreaScale = 2.0;
+  // PC/DeXモードの手動切替（仕様書02：ワークスペース設定）。
+  // null=自動（画面幅で判定）、true/false=手動で強制ON/OFF。
+  bool? _forcePcMode;
 
   int get defaultFps => _defaultFps;
   int get undoLimit => _undoLimit;
@@ -16,6 +19,7 @@ class SettingsService extends ChangeNotifier {
   String get language => _language;
   bool get defaultDrawingAreaEnabled => _defaultDrawingAreaEnabled;
   double get defaultDrawingAreaScale => _defaultDrawingAreaScale;
+  bool? get forcePcMode => _forcePcMode;
 
   GestureAction _twoFingerTap = GestureAction.undo;
   GestureAction _threeFingerTap = GestureAction.redo;
@@ -36,6 +40,9 @@ class SettingsService extends ChangeNotifier {
     _defaultDrawingAreaEnabled = prefs.getBool('default_drawing_area_enabled') ?? false;
     _defaultDrawingAreaScale = prefs.getDouble('default_drawing_area_scale') ?? 2.0;
     _isFirstLaunch = prefs.getBool('first_launch') ?? true;
+    // -1=自動（未設定）、0=OFF、1=ON
+    final pcModeValue = prefs.getInt('force_pc_mode') ?? -1;
+    _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
   }
 
   bool _isFirstLaunch = true;
@@ -75,6 +82,15 @@ class SettingsService extends ChangeNotifier {
     _trashAutoDeleteDays = days;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('trash_auto_delete', days);
+    notifyListeners();
+  }
+
+  /// PC/DeXモードを手動で切り替える（仕様書02）。[value]がnullなら自動判定
+  /// （画面幅ベース）に戻す。
+  Future<void> setForcePcMode(bool? value) async {
+    _forcePcMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('force_pc_mode', value == null ? -1 : (value ? 1 : 0));
     notifyListeners();
   }
 

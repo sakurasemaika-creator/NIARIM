@@ -9,6 +9,7 @@ import '../../services/settings_service.dart';
 import '../../services/stamp_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
+import '../../widgets/responsive.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -31,7 +32,7 @@ class _TransferScreenState extends State<TransferScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('引き継ぎ（.miratra）')),
-      body: Column(
+      body: desktopCentered(context, Column(
         children: [
           Expanded(
             child: ListView(
@@ -75,7 +76,7 @@ class _TransferScreenState extends State<TransferScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 

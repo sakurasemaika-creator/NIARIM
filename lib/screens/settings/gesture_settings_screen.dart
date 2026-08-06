@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/responsive.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
   const GestureSettingsScreen({super.key});
@@ -11,21 +12,21 @@ class GestureSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('ジェスチャー設定')),
-      body: ListView(
+      body: desktopCentered(context, ListView(
         children: [
           _item(context, '2本指タップ', settings.twoFingerTap, (a) => settings.setGesture(GestureType.twoFingerTap, a)),
           _item(context, '3本指タップ', settings.threeFingerTap, (a) => settings.setGesture(GestureType.threeFingerTap, a)),
           _item(context, '2本指スワイプ左右', settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a)),
           _item(context, '長押し', settings.longPress, (a) => settings.setGesture(GestureType.longPress, a)),
         ],
-      ),
+      )),
     );
   }
 
   Widget _item(BuildContext context, String title, GestureAction current, ValueChanged<GestureAction> onChanged) {
     return ListTile(
       title: Text(title),
-      trailing: Text(_label(current), style: const TextStyle(color: Colors.blue)),
+      trailing: Text(_label(current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
       onTap: () => showModalBottomSheet(
         context: context,
         builder: (ctx) => SafeArea(

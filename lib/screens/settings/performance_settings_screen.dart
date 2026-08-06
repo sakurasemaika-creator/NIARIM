@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/performance_service.dart';
 import '../../services/save_tree_service.dart';
+import '../../widgets/responsive.dart';
 import '../save_tree/save_tree_screen.dart';
 
 class PerformanceSettingsScreen extends StatefulWidget {
@@ -81,7 +82,7 @@ class _PerformanceSettingsScreenState
 
     return Scaffold(
       appBar: AppBar(title: const Text('パフォーマンス設定')),
-      body: ListView(
+      body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const Text('品質設定',
@@ -193,7 +194,7 @@ class _PerformanceSettingsScreenState
             ],
           ],
         ],
-      ),
+      )),
     );
   }
 

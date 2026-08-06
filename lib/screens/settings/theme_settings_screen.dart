@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/theme_service.dart';
 import '../../models/app_theme_preset.dart';
+import '../../widgets/responsive.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -14,7 +15,7 @@ class ThemeSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('テーマ・外観')),
-      body: ListView(
+      body: desktopCentered(context, ListView(
         children: [
           // ベーステーマ
           const Padding(
@@ -90,7 +91,7 @@ class ThemeSettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 32),
         ],
-      ),
+      )),
     );
   }
 

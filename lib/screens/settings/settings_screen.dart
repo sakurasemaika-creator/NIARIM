@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/responsive.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -37,18 +38,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-      body: ListView(
-        children: [
-          _item(Icons.settings, '基本', 'FPS・背景色・言語', _showBasicSettings),
-          _item(Icons.tune, '詳細', 'Undo回数・自動保存・ゴミ箱', _showDetailSettings),
-          _item(Icons.speed, 'パフォーマンス', '品質設定・タイルキャッシュ', () => context.push('/settings/performance')),
-          _item(Icons.touch_app, 'ジェスチャー', '2本指タップ・長押し', () => context.push('/settings/gestures')),
-          _item(Icons.edit, 'ペン入力', '筆圧・傾き・ペンボタン', () => context.push('/settings/pen')),
-          _item(Icons.desktop_windows, 'ワークスペース', 'ツールバー編集・パネル配置', () => context.push('/settings/workspace')),
-          _item(Icons.palette, 'UI・テーマ', 'テーマ設定・ワークスペース', () => context.push('/settings/theme')),
-          // 無料会員のみ🔒マーク付きで表示（仕様書08）
-          _item(Icons.water, isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒', 'ユーザーウォーターマーク（Premium）', _showWatermarkSetting),
-        ],
+      body: desktopCentered(
+        context,
+        ListView(
+          children: [
+            _item(Icons.settings, '基本', 'FPS・背景色・言語', _showBasicSettings),
+            _item(Icons.tune, '詳細', 'Undo回数・自動保存・ゴミ箱', _showDetailSettings),
+            _item(Icons.speed, 'パフォーマンス', '品質設定・タイルキャッシュ', () => context.push('/settings/performance')),
+            _item(Icons.touch_app, 'ジェスチャー', '2本指タップ・長押し', () => context.push('/settings/gestures')),
+            _item(Icons.edit, 'ペン入力', '筆圧・傾き・ペンボタン', () => context.push('/settings/pen')),
+            _item(Icons.desktop_windows, 'ワークスペース', 'ツールバー編集・パネル配置', () => context.push('/settings/workspace')),
+            _item(Icons.palette, 'UI・テーマ', 'テーマ設定・ワークスペース', () => context.push('/settings/theme')),
+            // 無料会員のみ🔒マーク付きで表示（仕様書08）
+            _item(Icons.water, isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒', 'ユーザーウォーターマーク（Premium）', _showWatermarkSetting),
+          ],
+        ),
       ),
     );
   }

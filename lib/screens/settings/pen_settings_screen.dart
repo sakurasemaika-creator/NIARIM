@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/responsive.dart';
 
 class PenSettingsScreen extends StatefulWidget {
   const PenSettingsScreen({super.key});
@@ -17,7 +18,7 @@ class _PenSettingsScreenState extends State<PenSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('ペン入力設定')),
-      body: ListView(
+      body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const Text('筆圧設定', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -45,7 +46,7 @@ class _PenSettingsScreenState extends State<PenSettingsScreen> {
           ListTile(title: const Text('ボタン1'), trailing: Text(_buttonLabel(_penButton1)), onTap: () => _showButtonPicker(1)),
           ListTile(title: const Text('ボタン2'), trailing: Text(_buttonLabel(_penButton2)), onTap: () => _showButtonPicker(2)),
         ],
-      ),
+      )),
     );
   }
 
