@@ -106,13 +106,15 @@ class LassoFillEngine {
   }) {
     if (points.length < 3) return canvasData;
     final result = Uint8List.fromList(canvasData);
-    final visited = <int>{};
+    // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
+    // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策）。
+    final visited = Uint8List(width * height);
     final isEraser = color.a == 0;
 
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         final pos = y * width + x;
-        if (visited.contains(pos)) continue;
+        if (visited[pos] != 0) continue;
         if (!_isInsidePolygon(x.toDouble(), y.toDouble(), points)) continue;
         if (selectionMask != null && selectionMask[pos] == 0) continue;
 
@@ -123,7 +125,7 @@ class LassoFillEngine {
         final region = _floodFill(result, width, height, x, y, selectionMask: selectionMask);
         for (final pt in region) {
           final rPos = pt.dy.round() * width + pt.dx.round();
-          visited.add(rPos);
+          visited[rPos] = 1;
           final rIdx = rPos * 4;
           if (isEraser) {
             result[rIdx] = 0;
@@ -178,9 +180,11 @@ class LassoFillEngine {
     final startIdx = (startY * width + startX) * 4;
     if (data[startIdx + 3] != 0) return result;
 
-    final visited = <int>{};
+    // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
+    // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策）。
+    final visited = Uint8List(width * height);
     final startPos = startY * width + startX;
-    visited.add(startPos);
+    visited[startPos] = 1;
     final stack = <int>[startPos];
 
     while (stack.isNotEmpty) {
@@ -196,8 +200,8 @@ class LassoFillEngine {
       result.add(ui.Offset(x.toDouble(), y.toDouble()));
 
       void tryAdd(int newPos) {
-        if (!visited.contains(newPos)) {
-          visited.add(newPos);
+        if (visited[newPos] == 0) {
+          visited[newPos] = 1;
           stack.add(newPos);
         }
       }

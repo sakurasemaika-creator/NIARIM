@@ -30,9 +30,12 @@ class BucketFillEngine {
 
     if (targetR == fillR && targetG == fillG && targetB == fillB && targetA == fillA) return result;
 
-    final visited = <int>{};
+    // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
+    // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策：
+    // バケツ塗りは連続ドラッグ中に逐次呼ばれるため速度が重要）。
+    final visited = Uint8List(width * height);
     final startPos = startY * width + startX;
-    visited.add(startPos);
+    visited[startPos] = 1;
     final stack = <int>[startPos];
 
     while (stack.isNotEmpty) {
@@ -52,8 +55,8 @@ class BucketFillEngine {
       result[idx + 3] = fillA;
 
       void tryAdd(int newPos) {
-        if (!visited.contains(newPos)) {
-          visited.add(newPos);
+        if (visited[newPos] == 0) {
+          visited[newPos] = 1;
           stack.add(newPos);
         }
       }
@@ -89,9 +92,11 @@ class BucketFillEngine {
     final targetB = result[startIdx + 2];
     final targetA = result[startIdx + 3];
 
-    final visited = <int>{};
+    // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
+    // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策）。
+    final visited = Uint8List(width * height);
     final startPos = startY * width + startX;
-    visited.add(startPos);
+    visited[startPos] = 1;
     final stack = <int>[startPos];
 
     while (stack.isNotEmpty) {
@@ -118,8 +123,8 @@ class BucketFillEngine {
       // 透明部分でも隣接ピクセルへ伝播（塗らないが領域は走査する）
 
       void tryAdd(int newPos) {
-        if (!visited.contains(newPos)) {
-          visited.add(newPos);
+        if (visited[newPos] == 0) {
+          visited[newPos] = 1;
           stack.add(newPos);
         }
       }
