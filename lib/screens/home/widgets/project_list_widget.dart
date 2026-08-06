@@ -72,17 +72,19 @@ class ProjectListWidget extends StatelessWidget {
       );
     }
 
-    final crossAxisCount = switch (viewMode) {
-      ProjectViewMode.large => 2,
-      ProjectViewMode.medium => 3,
-      ProjectViewMode.small => 4,
-      ProjectViewMode.detail => 1,
+    // カード基準サイズ（大/中/小）を軸に、画面幅に応じて列数が自然に増減する
+    // グリッドを使う（PC/DeXモードの広い画面でも余白だらけにならないように）。
+    final targetExtent = switch (viewMode) {
+      ProjectViewMode.large => 240.0,
+      ProjectViewMode.medium => 170.0,
+      ProjectViewMode.small => 130.0,
+      ProjectViewMode.detail => double.infinity,
     };
 
     return GridView.builder(
       padding: const EdgeInsets.all(8),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: targetExtent,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
         childAspectRatio: 16 / 12,

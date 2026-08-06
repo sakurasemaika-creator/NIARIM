@@ -23,6 +23,7 @@ import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/responsive.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -379,21 +380,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget _buildPreview() {
     final ps = context.watch<ProjectService>();
     final sceneId = _selectedSceneId;
+    final preview = Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+      child: sceneId == null
+          ? const Center(child: Text('プレビュー', style: TextStyle(color: Colors.grey)))
+          : _TimelinePreview(
+              tileManager: ps.tileManagerOf(widget.projectId),
+              layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
+              sceneId: sceneId,
+              frameIndex: _currentFrame,
+              cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
+              effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
+            ),
+    );
     return Expanded(
       flex: 3,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
-        child: sceneId == null
-            ? const Center(child: Text('プレビュー', style: TextStyle(color: Colors.grey)))
-            : _TimelinePreview(
-                tileManager: ps.tileManagerOf(widget.projectId),
-                layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
-                sceneId: sceneId,
-                frameIndex: _currentFrame,
-                cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
-                effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
-              ),
+      // PC/DeXモード（広い画面）：横幅を制限して中央寄せにし、プレビューが
+      // 横に間延びした帯状にならないようにする。
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (!isWideScreen(context)) return preview;
+          final w = constraints.maxWidth < 640 ? constraints.maxWidth : 640.0;
+          return Center(
+            child: SizedBox(width: w, height: constraints.maxHeight, child: preview),
+          );
+        },
       ),
     );
   }
