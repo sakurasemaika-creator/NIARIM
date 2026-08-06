@@ -50,14 +50,21 @@ class _HelpScreenState extends State<HelpScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: _filtered.isEmpty
+                ? Center(
+                    child: Text('該当する項目が見つかりません',
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                  )
+                : ListView.builder(
               itemCount: _filtered.length,
               itemBuilder: (context, index) {
                 final entry = _filtered[index];
                 return ExpansionTile(
-                  title: Text(entry.title),
-                  subtitle: Text(entry.category, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                  children: [Padding(padding: const EdgeInsets.all(16), child: Text(entry.description))],
+                  leading: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.primary, size: 20),
+                  title: Text(entry.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(entry.category,
+                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                  children: [Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), child: Text(entry.description))],
                 );
               },
             ),

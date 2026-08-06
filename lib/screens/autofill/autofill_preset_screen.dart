@@ -43,7 +43,27 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         ],
       ),
       body: _filtered.isEmpty
-          ? const Center(child: Text('プリセットがありません'))
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 88, height: 88,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.palette_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('プリセットがありません',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+                  const SizedBox(height: 8),
+                  Text('右下の＋から作成できます',
+                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                ],
+              ),
+            )
           : ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: _filtered.length,
@@ -186,8 +206,8 @@ class _PresetCard extends StatelessWidget {
         leading: Container(
           width: 48, height: 48,
           decoration: BoxDecoration(
-            color: Colors.grey[700],
-            borderRadius: BorderRadius.circular(4),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
           ),
           child: preset.parts.isEmpty
               ? const Icon(Icons.palette, size: 24)
@@ -253,7 +273,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(_preset.name)),
       body: _preset.parts.isEmpty
-          ? const Center(child: Text('パーツがありません\n＋ボタンで追加してください'))
+          ? Center(
+              child: Text('パーツがありません\n＋ボタンで追加してください',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            )
           : ReorderableListView.builder(
               itemCount: _preset.parts.length,
               onReorder: (oldIdx, newIdx) {
@@ -273,7 +297,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       decoration: BoxDecoration(
                         color: Color(part.color),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey),
+                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                       ),
                     ),
                   ),

@@ -35,7 +35,7 @@ class PremiumScreen extends StatelessWidget {
             ],
             const Text('無料版 vs プレミアム', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            _comparisonTable(),
+            _comparisonTable(context),
             if (!premium.isPremium) ...[
               const SizedBox(height: 24),
               const Text('プラン', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -99,7 +99,8 @@ class PremiumScreen extends StatelessWidget {
     );
   }
 
-  Widget _comparisonTable() {
+  Widget _comparisonTable(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final items = [
       ('アニメ制作・描画機能', '○', '○'), ('タイムライン', '○', '○'), ('動画書き出し', '○', '○'),
       ('最大尺', '1.5分', '無制限'), ('公式エンドロゴ', 'あり', '削除可'), ('ウォーターマーク', '×', '○'),
@@ -107,11 +108,11 @@ class PremiumScreen extends StatelessWidget {
     ];
 
     return Table(
-      border: TableBorder.all(color: Colors.grey[700]!),
+      border: TableBorder.all(color: scheme.outlineVariant, borderRadius: BorderRadius.circular(8)),
       columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)},
       children: [
         TableRow(
-          decoration: BoxDecoration(color: Colors.grey[800]),
+          decoration: BoxDecoration(color: scheme.surfaceContainerHighest),
           children: const [
             Padding(padding: EdgeInsets.all(8), child: Text('機能', style: TextStyle(fontWeight: FontWeight.bold))),
             Padding(padding: EdgeInsets.all(8), child: Text('無料', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
@@ -171,7 +172,9 @@ class PremiumScreen extends StatelessWidget {
                         child: const Text('おすすめ', style: TextStyle(fontSize: 10, color: Colors.black)),
                       ),
                     Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    if (description.isNotEmpty) Text(description, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    if (description.isNotEmpty)
+                      Text(description,
+                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),
