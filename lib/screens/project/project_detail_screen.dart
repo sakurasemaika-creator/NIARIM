@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../engine/layer_compositor.dart';
-import '../../engine/tile_manager.dart' show frameLayerKey;
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
 
@@ -52,7 +51,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final img = await LayerCompositor.composite(
       tileManager,
       layers,
-      (l) => frameLayerKey(entry.sceneId, entry.frameIndex, l.id),
+      (l) => ps.tileKeyFor(widget.projectId, entry.sceneId, entry.frameIndex, l.id),
       tileManager.canvasWidth,
       tileManager.canvasHeight,
     );

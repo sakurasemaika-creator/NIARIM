@@ -1300,7 +1300,7 @@ class _LayerPanelState extends State<LayerPanel> {
     if (byteData == null || !context.mounted) return;
 
     tileManager.replaceLayerPixels(
-      frameLayerKey(widget.sceneId, widget.frameIndex, layer.id),
+      projectService.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, layer.id),
       byteData.buffer.asUint8List(),
     );
     projectService.updateLayer(

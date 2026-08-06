@@ -75,7 +75,10 @@ String? findClipSourceLayerId(List<Layer> layers, int index) {
 /// 共通処理。キャンバス表示・書き出し・オニオンスキン・バケツ参照などで共有する。
 class LayerCompositor {
   /// [layers]はレイヤーパネル順（先頭が最前面）。[keyOf]は各レイヤーの
-  /// TileManager合成キー（通常は`frameLayerKey(sceneId, frameIndex, layer.id)`）を返す。
+  /// TileManager合成キーを返す（通常レイヤーは`frameLayerKey(sceneId, frameIndex,
+  /// layer.id)`。共通・タイムライン素材・ウォーターマークなど表示範囲を持つ
+  /// レイヤーは`resolveTileKey`〔layer_range_resolver.dart〕でホーム位置の
+  /// キーを解決する必要がある）。
   /// [shouldRender]でfalseを返したレイヤーは描画をスキップするが、他のレイヤーの
   /// クリッピング元としては引き続き参照されうる。
   static Future<ui.Image> composite(

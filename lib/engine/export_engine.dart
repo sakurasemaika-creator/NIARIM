@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../engine/camera_engine.dart';
 import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';
+import '../engine/layer_range_resolver.dart';
 import '../engine/tile_manager.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
@@ -43,11 +44,12 @@ class ExportEngine {
     required int backgroundColor,
     List<CameraKeyframe> cameraKeyframes = const [],
     List<EffectFilterInstance> effectFilters = const [],
+    Map<String, LayerHome> layerHomes = const {},
   }) async {
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
-      (l) => frameLayerKey(sceneId, frameIndex, l.id),
+      (l) => resolveTileKey(layerHomes, sceneId, frameIndex, l.id),
       drawingWidth,
       drawingHeight,
     );
@@ -102,11 +104,14 @@ class ExportEngine {
 
     int globalIndex = 0;
     int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+    // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
+    // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する（仕様書05・16）。
+    final layerHomes = buildLayerHomeIndex(scenes);
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
         final rgba = await renderFrame(
-          layers: frame.layers,
+          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
           tileManager: tileManager,
           sceneId: scene.id,
           frameIndex: frame.index,
@@ -117,6 +122,7 @@ class ExportEngine {
           backgroundColor: backgroundColor,
           cameraKeyframes: scene.cameraKeyframes,
           effectFilters: scene.effectFilters,
+          layerHomes: layerHomes,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
@@ -157,11 +163,12 @@ class ExportEngine {
     int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
     int index = 0;
     final delayMs = (1000 / fps).round();
+    final layerHomes = buildLayerHomeIndex(scenes);
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
         final rgba = await renderFrame(
-          layers: frame.layers,
+          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
           tileManager: tileManager,
           sceneId: scene.id,
           frameIndex: frame.index,
@@ -172,6 +179,7 @@ class ExportEngine {
           backgroundColor: backgroundColor,
           cameraKeyframes: scene.cameraKeyframes,
           effectFilters: scene.effectFilters,
+          layerHomes: layerHomes,
         );
         final imgFrame = img.Image.fromBytes(
           width: width, height: height, bytes: rgba.buffer, numChannels: 4,
@@ -211,11 +219,12 @@ class ExportEngine {
 
     int globalIndex = 0;
     int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+    final layerHomes = buildLayerHomeIndex(scenes);
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
         final rgba = await renderFrame(
-          layers: frame.layers,
+          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
           tileManager: tileManager,
           sceneId: scene.id,
           frameIndex: frame.index,
@@ -226,6 +235,7 @@ class ExportEngine {
           backgroundColor: backgroundColor,
           cameraKeyframes: scene.cameraKeyframes,
           effectFilters: scene.effectFilters,
+          layerHomes: layerHomes,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),

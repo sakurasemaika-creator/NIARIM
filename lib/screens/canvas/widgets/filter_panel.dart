@@ -71,7 +71,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final w = tm.canvasWidth;
     final h = tm.canvasHeight;
     if (w <= 0 || h <= 0) return;
-    final key = frameLayerKey(widget.sceneId, widget.frameIndex, layerId);
+    final key = ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, layerId);
     final img = await tm.compositeLayerToImage(key);
 
     const maxSize = 150;
@@ -405,7 +405,7 @@ class _FilterPanelState extends State<FilterPanel> {
     FilterDef filter,
     int frameIndex,
   ) async {
-    final key = frameLayerKey(widget.sceneId, frameIndex, layerId);
+    final key = ps.tileKeyFor(widget.projectId, widget.sceneId, frameIndex, layerId);
     final img = await tm.compositeLayerToImage(key);
     final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
     img.dispose();

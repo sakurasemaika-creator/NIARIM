@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import '../engine/layer_compositor.dart';
+import '../engine/layer_range_resolver.dart';
 import '../engine/mirapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/camera_keyframe.dart';
@@ -32,6 +33,13 @@ class ProjectService extends ChangeNotifier {
   final Map<String, Layer> _removedLayers = {};
   // レイヤーIDカウンター（プロジェクトIDをキー）
   final Map<String, int> _layerIdCounters = {};
+
+  // 表示範囲を持つレイヤー（共通・タイムライン素材・ウォーターマーク）の
+  // 「ホーム位置」（実際にピクセルデータ・Layerオブジェクトが物理的に存在する
+  // シーン・フレーム）を保持するインデックス。projectId -> layerId -> 位置。
+  // これらのレイヤーは他のフレームからは layersOf() で動的に合成表示される
+  // （同一データを複数フレームへ複製せず、メモリを節約するため）。
+  final Map<String, Map<String, ({String sceneId, int frameIndex})>> _layerHomes = {};
 
   // TileManager をプロジェクトIDごとに保持
   final Map<String, TileManager> _tileManagers = {};
@@ -77,6 +85,7 @@ class ProjectService extends ChangeNotifier {
           final data = await MiraproSerializer.load(miraproFile.path);
           _projects.add(data.project);
           _scenes[data.project.id] = data.scenes;
+          _layerHomes[data.project.id] = buildLayerHomeIndex(data.scenes);
           final tm = TileManager(
             canvasWidth: data.project.drawingWidth,
             canvasHeight: data.project.drawingHeight,
@@ -167,6 +176,7 @@ class ProjectService extends ChangeNotifier {
         .map((e) => e.value.copyWith(index: e.key))
         .toList();
     _scenes[projectId] = reindexed;
+    _layerHomes[projectId]?.removeWhere((_, home) => idsToRemove.contains(home.sceneId));
     notifyListeners();
   }
 
@@ -202,10 +212,40 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 指定フレームで実際に表示すべきレイヤー一覧を返す。このフレームに物理的に
+  /// 存在するレイヤー（先頭側）に加え、他のフレームがホーム位置となっている
+  /// 表示範囲レイヤー（共通・タイムライン素材・ウォーターマーク）のうち、
+  /// 表示範囲がこのフレームを含むものを末尾へ動的に合成する（仕様書05・16：
+  /// 表示範囲内のフレームのみレイヤーパレット・キャンバスへ表示）。
   List<Layer> layersOf(String projectId, String sceneId, int frameIndex) {
     final scene = sceneOf(projectId, sceneId);
     if (scene == null || frameIndex >= scene.frames.length) return [];
-    return List.unmodifiable(scene.frames[frameIndex].layers);
+    final ownLayers = scene.frames[frameIndex].layers;
+    final homes = _layerHomes[projectId];
+    if (homes == null || homes.isEmpty) return List.unmodifiable(ownLayers);
+    return List.unmodifiable(resolveFrameLayers(
+        _scenes[projectId] ?? const [], homes, sceneId, frameIndex, ownLayers));
+  }
+
+  /// レイヤーIDから、表示範囲レイヤーの「ホーム位置」（実データが存在する
+  /// シーン・フレーム）を取得する。範囲レイヤーでない場合はnull。
+  LayerHome? homeOf(String projectId, String layerId) => _layerHomes[projectId]?[layerId];
+
+  /// プロジェクト全体の表示範囲レイヤーのホーム位置インデックスを返す
+  /// （プレビュー・書き出しでの合成キー解決用）。
+  Map<String, LayerHome> layerHomesOf(String projectId) =>
+      Map.unmodifiable(_layerHomes[projectId] ?? const {});
+
+  /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは、実際に
+  /// 表示中のフレームに関わらず常にホーム位置のタイルバッファを参照する
+  /// （複数フレームでの共有表示・共有編集を実現するため）。
+  String tileKeyFor(String projectId, String sceneId, int frameIndex, String layerId) =>
+      resolveTileKey(_layerHomes[projectId] ?? const {}, sceneId, frameIndex, layerId);
+
+  void _registerHomeIfNeeded(
+      String projectId, String sceneId, int frameIndex, Layer layer) {
+    if (!isRangeLayerType(layer.type)) return;
+    (_layerHomes[projectId] ??= {})[layer.id] = (sceneId: sceneId, frameIndex: frameIndex);
   }
 
   // ─── レイヤーID生成 ───────────────────────────────────────────────────
@@ -223,6 +263,7 @@ class ProjectService extends ChangeNotifier {
     final layer = _removedLayers[layerId];
     if (layer == null) return;
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
   }
 
   void _removeLayerById(
@@ -240,6 +281,7 @@ class ProjectService extends ChangeNotifier {
     _removedLayers[layerId] = removed;
     final newLayers = List<Layer>.from(frame.layers)..removeAt(layerIdx);
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
+    _layerHomes[projectId]?.remove(layerId);
   }
 
   void _applyLayerInsert(String projectId, String sceneId, int frameIndex,
@@ -317,6 +359,7 @@ class ProjectService extends ChangeNotifier {
     final layerId = _nextLayerId(projectId);
     final layer = Layer(id: layerId, name: name, type: type);
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
 
     _undoManager?.push(LayerAddUndoAction(
       projectId: projectId,
@@ -330,23 +373,27 @@ class ProjectService extends ChangeNotifier {
     return layer;
   }
 
-  /// レイヤーを削除し、Undoスタックに積む
+  /// レイヤーを削除し、Undoスタックに積む。表示範囲レイヤー（現在フレームに
+  /// 他フレームから合成表示されているもの）の場合は、実データのあるホーム
+  /// 位置を対象に削除する。
   void removeLayer({
     required String projectId,
     required String sceneId,
     required int frameIndex,
     required String layerId,
   }) {
-    final layers = layersOf(projectId, sceneId, frameIndex);
+    final home = _layerHomes[projectId]?[layerId] ??
+        (sceneId: sceneId, frameIndex: frameIndex);
+    final layers = layersOf(projectId, home.sceneId, home.frameIndex);
     final removedIndex = layers.indexWhere((l) => l.id == layerId);
     if (removedIndex < 0) return;
     _removedLayers[layerId] = layers[removedIndex];
-    _removeLayerById(projectId, sceneId, frameIndex, layerId);
+    _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId);
 
     _undoManager?.push(LayerRemoveUndoAction(
       projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
+      sceneId: home.sceneId,
+      frameIndex: home.frameIndex,
       layerId: layerId,
       removedIndex: removedIndex,
       doAdd: _insertLayerById,
@@ -354,27 +401,34 @@ class ProjectService extends ChangeNotifier {
     ));
   }
 
-  /// レイヤーを更新する（表示切替・ロック等）
+  /// レイヤーを更新する（表示切替・ロック等）。表示範囲レイヤーは実データの
+  /// あるホーム位置へ書き戻す（他フレームから合成表示中に編集した場合も
+  /// 正しく反映されるようにするため）。
   void updateLayer({
     required String projectId,
     required String sceneId,
     required int frameIndex,
     required Layer layer,
   }) {
+    final home = _layerHomes[projectId]?[layer.id] ??
+        (sceneId: sceneId, frameIndex: frameIndex);
     final scenes = _scenes[projectId];
     if (scenes == null) return;
-    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    final sceneIdx = scenes.indexWhere((s) => s.id == home.sceneId);
     if (sceneIdx < 0) return;
     final scene = scenes[sceneIdx];
-    if (frameIndex >= scene.frames.length) return;
-    final frame = scene.frames[frameIndex];
+    if (home.frameIndex >= scene.frames.length) return;
+    final frame = scene.frames[home.frameIndex];
     final layerIdx = frame.layers.indexWhere((l) => l.id == layer.id);
     if (layerIdx < 0) return;
     final newLayers = List<Layer>.from(frame.layers)..[layerIdx] = layer;
-    _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
+    _applyFrameUpdate(projectId, sceneIdx, home.frameIndex, newLayers);
   }
 
-  /// レイヤーを並び替える
+  /// レイヤーを並び替える。[oldIndex]が現在フレームに物理的に存在しない
+  /// レイヤー（他フレームがホームの表示範囲レイヤー）を指す場合は、この
+  /// フレームでの並び替え対象外として何もしない（表示リストの末尾に
+  /// 追加される合成レイヤーのため、フレームローカルな並び替えは対象外）。
   void reorderLayer({
     required String projectId,
     required String sceneId,
@@ -389,9 +443,11 @@ class ProjectService extends ChangeNotifier {
     final scene = scenes[sceneIdx];
     if (frameIndex >= scene.frames.length) return;
     final frame = scene.frames[frameIndex];
+    if (oldIndex < 0 || oldIndex >= frame.layers.length) return;
     final newLayers = List<Layer>.from(frame.layers);
     final layer = newLayers.removeAt(oldIndex);
-    newLayers.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, layer);
+    final target = (newIndex > oldIndex ? newIndex - 1 : newIndex).clamp(0, newLayers.length);
+    newLayers.insert(target, layer);
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
   }
 
@@ -406,6 +462,7 @@ class ProjectService extends ChangeNotifier {
     );
     _projects.add(project);
     _scenes[newId] = data.scenes;
+    _layerHomes[newId] = buildLayerHomeIndex(data.scenes);
     final tm = TileManager(
       canvasWidth: project.drawingWidth,
       canvasHeight: project.drawingHeight,
@@ -425,6 +482,7 @@ class ProjectService extends ChangeNotifier {
     if (idx < 0) return;
     _projects[idx] = data.project.copyWith(id: projectId, updatedAt: DateTime.now());
     _scenes[projectId] = data.scenes;
+    _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
     final tm = _tileManagers.putIfAbsent(
         projectId,
         () => TileManager(
@@ -607,6 +665,31 @@ class ProjectService extends ChangeNotifier {
         .map((e) => e.value.copyWith(index: e.key))
         .toList();
     scenes[sceneIdx] = scene.copyWith(frames: reindexed);
+
+    // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する。
+    // 削除されたフレーム自体がホームだったレイヤーは実データごと消滅するため
+    // インデックスから除去し、それより後ろのフレームがホームだったレイヤーは
+    // インデックスを1つ前へ詰める。
+    final homes = _layerHomes[projectId];
+    if (homes != null) {
+      final toRemove = <String>[];
+      final toShift = <String>[];
+      homes.forEach((layerId, home) {
+        if (home.sceneId != sceneId) return;
+        if (home.frameIndex == frameIndex) {
+          toRemove.add(layerId);
+        } else if (home.frameIndex > frameIndex) {
+          toShift.add(layerId);
+        }
+      });
+      for (final id in toRemove) {
+        homes.remove(id);
+      }
+      for (final id in toShift) {
+        final h = homes[id]!;
+        homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex - 1);
+      }
+    }
     notifyListeners();
   }
 
@@ -854,6 +937,7 @@ class ProjectService extends ChangeNotifier {
       _trash.add(project);
       _scenes.remove(id);
       _layerIdCounters.remove(id);
+      _layerHomes.remove(id);
       notifyListeners();
     }
   }
@@ -898,6 +982,7 @@ class ProjectService extends ChangeNotifier {
       // 変更（scenes[i] = ...）がもう片方にも波及してしまうため独立させる）。
       if (_scenes.containsKey(id)) {
         _scenes[newId] = List<Scene>.from(_scenes[id]!);
+        _layerHomes[newId] = buildLayerHomeIndex(_scenes[newId]!);
       }
 
       // レイヤーIDカウンターも引き継がないと、複製後に新規追加したレイヤーのIDが

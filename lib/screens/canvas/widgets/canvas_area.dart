@@ -196,11 +196,19 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   String get _layerId => widget.currentLayerId ?? 'Layer0001';
 
-  /// レイヤーIDをTileManager用の合成キー（シーン・フレーム・レイヤーID）へ変換する。
-  /// フレームごとに描画データを独立させるため、TileManagerとやりとりする際は
-  /// 必ずこのキーを使う（[frameLayerKey]を参照）。
-  String _tileKeyFor(String layerId, {int? frameIndex}) =>
-      frameLayerKey(widget.sceneId, frameIndex ?? widget.currentFrame, layerId);
+  /// レイヤーIDをTileManager用の合成キーへ変換する。通常レイヤーはフレームごとに
+  /// 独立したキー（[frameLayerKey]）を使うが、共通・タイムライン素材・
+  /// ウォーターマークなど表示範囲を持つレイヤーは、表示中のフレームに関わらず
+  /// 常にホーム位置（実データのあるフレーム）のキーを指す（仕様書05・16：
+  /// 複数フレームでの共有表示・共有編集のため）。
+  String _tileKeyFor(String layerId, {int? frameIndex}) {
+    final project = widget.project;
+    if (project != null) {
+      return context.read<ProjectService>().tileKeyFor(
+            project.id, widget.sceneId, frameIndex ?? widget.currentFrame, layerId);
+    }
+    return frameLayerKey(widget.sceneId, frameIndex ?? widget.currentFrame, layerId);
+  }
 
   void _syncBrushAndColor() {
     final bs = context.read<BrushService>();

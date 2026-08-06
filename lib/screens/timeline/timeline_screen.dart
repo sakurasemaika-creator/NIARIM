@@ -11,6 +11,7 @@ import 'package:video_player/video_player.dart';
 import '../../engine/camera_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
+import '../../engine/layer_range_resolver.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/undo_manager.dart';
 import '../../models/camera_keyframe.dart';
@@ -407,6 +408,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               frameIndex: _currentFrame,
               cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
               effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
+              layerHomes: ps.layerHomesOf(widget.projectId),
             ),
     );
     return Expanded(
@@ -615,10 +617,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       frameLayerKey(sceneId, _currentFrame, layer.id),
       byteData.buffer.asUint8List(),
     );
-    // rangeModeは今後の複数フレーム表示機能拡張に備えたメタデータとして
-    // allFramesを既定値に保存する。現在の描画・書き出しパイプラインは
-    // レイヤーが実際に追加されたフレームでのみ表示される点に注意
-    // （common/タイムライン素材レイヤー全般に共通する既存の制約）。
+    // 既定は「常時表示」（全フレーム）。表示範囲はレイヤーパネルの
+    // 「表示範囲変更」からいつでも変更できる（仕様書05：常時表示／
+    // エンドカード／任意フレームのみ表示はすべて表示範囲設定で実現する）。
     projectService.updateLayer(
       projectId: widget.projectId,
       sceneId: sceneId,
@@ -627,7 +628,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('ウォーターマークを追加しました（現在のフレームに表示されます）: ${asset.name}')),
+      SnackBar(content: Text('ウォーターマークを追加しました（全フレームに表示されます）: ${asset.name}')),
     );
   }
 
@@ -1576,6 +1577,7 @@ class _TimelinePreview extends StatefulWidget {
   final int frameIndex;
   final List<CameraKeyframe> cameraKeyframes;
   final List<EffectFilterInstance> effectFilters;
+  final Map<String, LayerHome> layerHomes;
 
   const _TimelinePreview({
     required this.tileManager,
@@ -1584,6 +1586,7 @@ class _TimelinePreview extends StatefulWidget {
     required this.frameIndex,
     this.cameraKeyframes = const [],
     this.effectFilters = const [],
+    this.layerHomes = const {},
   });
 
   @override
@@ -1622,7 +1625,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     final layered = await LayerCompositor.composite(
       tm,
       widget.layers,
-      (l) => frameLayerKey(widget.sceneId, widget.frameIndex, l.id),
+      (l) => resolveTileKey(widget.layerHomes, widget.sceneId, widget.frameIndex, l.id),
       tm.canvasWidth,
       tm.canvasHeight,
     );

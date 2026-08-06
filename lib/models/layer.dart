@@ -104,6 +104,14 @@ enum LayerType {
   selection,       // 内部専用：選択範囲保持レイヤー。レイヤーパネル非表示・ユーザー操作不可
 }
 
+/// 表示範囲（rangeMode/rangeStart/rangeEnd）を持ち、複数フレームにまたがって
+/// 同一のピクセルデータを共有表示しうるレイヤー種別（仕様書05・16）。
+bool isRangeLayerType(LayerType type) =>
+    type == LayerType.common ||
+    type == LayerType.timelineImage ||
+    type == LayerType.timelineVideo ||
+    type == LayerType.watermark;
+
 enum LayerBlendMode {
   normal, multiply, screen, overlay, addition, subtract,
   darken, lighten, colorBurn, colorDodge, hardLight, softLight,

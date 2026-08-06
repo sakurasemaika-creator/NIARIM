@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../engine/layer_compositor.dart';
-import '../../engine/tile_manager.dart' show frameLayerKey;
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
@@ -32,8 +31,8 @@ Future<Uint8List?> _generateSaveNodeThumbnail(
 
   final fullImage = await LayerCompositor.composite(
     tileManager,
-    frame.layers,
-    (l) => frameLayerKey(scene.id, frame.index, l.id),
+    ps.layersOf(projectId, scene.id, frame.index),
+    (l) => ps.tileKeyFor(projectId, scene.id, frame.index, l.id),
     w,
     h,
   );
