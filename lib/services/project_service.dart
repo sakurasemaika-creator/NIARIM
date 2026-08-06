@@ -491,6 +491,24 @@ class ProjectService extends ChangeNotifier {
     if (sceneIdx < 0) return;
     final scene = scenes[sceneIdx];
     if (scene.frames.length <= 1) return;
+    if (frameIndex < 0 || frameIndex >= scene.frames.length) return;
+
+    // 削除位置より後ろのフレームはindexが1つずつ前へ詰まる。描画データは
+    // frameLayerKey(sceneId, frameIndex, layerId)でTileManagerに保存されて
+    // いるため、indexの変更に合わせてタイルデータも付け替える（先頭側から
+    // 順に処理することで、まだ移動していない位置への上書きを避ける）。
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      for (int i = frameIndex + 1; i < scene.frames.length; i++) {
+        for (final layer in scene.frames[i].layers) {
+          tm.renameKey(
+            frameLayerKey(sceneId, i, layer.id),
+            frameLayerKey(sceneId, i - 1, layer.id),
+          );
+        }
+      }
+    }
+
     final newFrames = List<Frame>.from(scene.frames)..removeAt(frameIndex);
     final reindexed = newFrames
         .asMap()

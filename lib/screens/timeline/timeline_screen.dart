@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import '../../engine/layer_compositor.dart';
 import '../../engine/tile_manager.dart';
 import '../../models/layer.dart';
 import '../../services/advertising_service.dart';
@@ -393,6 +394,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
             : _TimelinePreview(
                 tileManager: ps.tileManagerOf(widget.projectId),
                 layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
+                sceneId: sceneId,
+                frameIndex: _currentFrame,
               ),
       ),
     );
@@ -1391,8 +1394,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
 class _TimelinePreview extends StatefulWidget {
   final TileManager tileManager;
   final List<Layer> layers;
+  final String sceneId;
+  final int frameIndex;
 
-  const _TimelinePreview({required this.tileManager, required this.layers});
+  const _TimelinePreview({
+    required this.tileManager,
+    required this.layers,
+    required this.sceneId,
+    required this.frameIndex,
+  });
 
   @override
   State<_TimelinePreview> createState() => _TimelinePreviewState();
@@ -1411,7 +1421,10 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   @override
   void didUpdateWidget(_TimelinePreview old) {
     super.didUpdateWidget(old);
-    if (old.layers != widget.layers || old.tileManager != widget.tileManager) {
+    if (old.layers != widget.layers ||
+        old.tileManager != widget.tileManager ||
+        old.sceneId != widget.sceneId ||
+        old.frameIndex != widget.frameIndex) {
       _rebuild();
     }
   }
@@ -1419,17 +1432,14 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   Future<void> _rebuild() async {
     if (_building) return;
     _building = true;
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
     final tm = widget.tileManager;
-    for (final layer in widget.layers.reversed) {
-      if (!layer.isVisible) continue;
-      final img = await tm.compositeLayerToImage(layer.id);
-      canvas.drawImage(img, ui.Offset.zero, ui.Paint());
-      img.dispose();
-    }
-    final pic = recorder.endRecording();
-    final img = await pic.toImage(tm.canvasWidth, tm.canvasHeight);
+    final img = await LayerCompositor.composite(
+      tm,
+      widget.layers,
+      (l) => frameLayerKey(widget.sceneId, widget.frameIndex, l.id),
+      tm.canvasWidth,
+      tm.canvasHeight,
+    );
     if (!mounted) { img.dispose(); _building = false; return; }
     setState(() {
       _image?.dispose();

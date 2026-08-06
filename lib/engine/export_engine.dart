@@ -5,6 +5,7 @@ import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/return_code.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
+import '../engine/layer_compositor.dart';
 import '../engine/tile_manager.dart';
 import '../models/layer.dart';
 import '../models/scene.dart';
@@ -12,14 +13,34 @@ import '../models/scene.dart';
 typedef ExportProgressCallback = void Function(int currentFrame, int totalFrames);
 
 class ExportEngine {
-  /// フレームを合成してRGBA Uint8Listを返す
+  /// フレームを合成してRGBA Uint8Listを返す。
+  ///
+  /// [drawingWidth]・[drawingHeight]は描画領域全体のサイズ（描画領域倍率を
+  /// 反映済み）、[width]・[height]は書き出しサイズ。描画領域が書き出し領域より
+  /// 広い場合（仕様書26）は、描画領域の中央にある書き出しサイズ分だけを
+  /// 切り出す（キャンバス表示の赤枠と同じ中央配置）。
+  /// 合成対象はTileManagerに実ピクセルデータを持つレイヤー種別（通常・
+  /// 自動塗り用線画・自動塗り）全てで、不透明度・ブレンドモード・
+  /// クリッピングを反映する（仕様書16）。
   Future<Uint8List> renderFrame({
     required List<Layer> layers,
     required TileManager tileManager,
+    required String sceneId,
+    required int frameIndex,
+    required int drawingWidth,
+    required int drawingHeight,
     required int width,
     required int height,
     required int backgroundColor,
   }) async {
+    final fullImage = await LayerCompositor.composite(
+      tileManager,
+      layers,
+      (l) => frameLayerKey(sceneId, frameIndex, l.id),
+      drawingWidth,
+      drawingHeight,
+    );
+
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
 
@@ -33,13 +54,11 @@ class ExportEngine {
       ui.Paint()..color = ui.Color.fromARGB(bgA, bgR, bgG, bgB),
     );
 
-    // 下のレイヤーから順に合成（layersは上が先頭なので逆順）
-    for (final layer in layers.reversed) {
-      if (!layer.isVisible || layer.type != LayerType.normal) continue;
-      final image = await tileManager.compositeLayerToImage(layer.id);
-      canvas.drawImage(image, ui.Offset.zero, ui.Paint());
-      image.dispose();
-    }
+    // 描画領域の中央から書き出しサイズ分だけ切り出す（赤枠＝書き出し範囲）
+    final offsetX = (drawingWidth - width) / 2;
+    final offsetY = (drawingHeight - height) / 2;
+    canvas.drawImage(fullImage, ui.Offset(-offsetX, -offsetY), ui.Paint());
+    fullImage.dispose();
 
     final picture = recorder.endRecording();
     final uiImage = await picture.toImage(width, height);
@@ -52,6 +71,8 @@ class ExportEngine {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
+    required int drawingWidth,
+    required int drawingHeight,
     required int width,
     required int height,
     required int backgroundColor,
@@ -70,6 +91,10 @@ class ExportEngine {
         final rgba = await renderFrame(
           layers: frame.layers,
           tileManager: tileManager,
+          sceneId: scene.id,
+          frameIndex: frame.index,
+          drawingWidth: drawingWidth,
+          drawingHeight: drawingHeight,
           width: width,
           height: height,
           backgroundColor: backgroundColor,
@@ -101,6 +126,8 @@ class ExportEngine {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
+    required int drawingWidth,
+    required int drawingHeight,
     required int width,
     required int height,
     required int backgroundColor,
@@ -117,6 +144,10 @@ class ExportEngine {
         final rgba = await renderFrame(
           layers: frame.layers,
           tileManager: tileManager,
+          sceneId: scene.id,
+          frameIndex: frame.index,
+          drawingWidth: drawingWidth,
+          drawingHeight: drawingHeight,
           width: width,
           height: height,
           backgroundColor: backgroundColor,
@@ -145,6 +176,8 @@ class ExportEngine {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
+    required int drawingWidth,
+    required int drawingHeight,
     required int width,
     required int height,
     required int backgroundColor,
@@ -163,6 +196,10 @@ class ExportEngine {
         final rgba = await renderFrame(
           layers: frame.layers,
           tileManager: tileManager,
+          sceneId: scene.id,
+          frameIndex: frame.index,
+          drawingWidth: drawingWidth,
+          drawingHeight: drawingHeight,
           width: width,
           height: height,
           backgroundColor: backgroundColor,

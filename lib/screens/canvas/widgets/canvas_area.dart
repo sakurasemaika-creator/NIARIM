@@ -7,10 +7,12 @@ import 'package:provider/provider.dart';
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/input_handler.dart';
+import '../../../engine/layer_compositor.dart';
 import '../../../engine/onion_skin.dart';
 import '../../../engine/ruler_engine.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../engine/undo_manager.dart' as app_undo;
+import '../../../models/layer.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../models/project.dart';
 import '../../../models/ruler.dart';
@@ -66,8 +68,15 @@ class _CanvasAreaState extends State<CanvasArea> {
   late DrawingEngine _drawingEngine;
 
   ui.Image? _compositeImage;
+  ui.Image? _belowImage;
+  ui.Image? _aboveImage;
   final Map<int, ui.Image> _onionImages = {};
   bool _isCompositing = false;
+  bool _isComposingSurroundings = false;
+
+  // 現在フレームのレイヤー一覧（レイヤーパネル順・先頭が最前面）。
+  // ProjectServiceの変更を検知して合成し直すために保持する。
+  List<Layer> _layers = const [];
 
   Offset? _selectionStart;
   Offset? _selectionEnd;
@@ -117,6 +126,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       _tileManager = TileManager(canvasWidth: 1920, canvasHeight: 1080);
     }
     _drawingEngine = DrawingEngine(tileManager: _tileManager);
+    _scheduleComposite();
+    _recomposeSurroundings(force: true);
   }
 
   @override
@@ -125,6 +136,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (old.project?.id != widget.project?.id) {
       _compositeImage?.dispose();
       _compositeImage = null;
+      _belowImage?.dispose();
+      _belowImage = null;
+      _aboveImage?.dispose();
+      _aboveImage = null;
+      _layers = const [];
       _initEngine();
     }
     _drawingEngine.isEraser = widget.isEraser;
@@ -135,12 +151,21 @@ class _CanvasAreaState extends State<CanvasArea> {
         old.currentFrame != widget.currentFrame) {
       _buildOnionImages();
     }
+    // フレーム・シーン・現在レイヤーが変わった場合は現在レイヤー画像も
+    // 合成し直す（他のレイヤー変更検知は_recomposeSurroundings内で行う）。
+    final frameChanged = old.currentFrame != widget.currentFrame ||
+        old.sceneId != widget.sceneId ||
+        old.currentLayerId != widget.currentLayerId;
+    if (frameChanged) _scheduleComposite();
+    _recomposeSurroundings(force: frameChanged);
   }
 
   @override
   void dispose() {
     _transformController.dispose();
     _compositeImage?.dispose();
+    _belowImage?.dispose();
+    _aboveImage?.dispose();
     for (final img in _onionImages.values) {
       img.dispose();
     }
@@ -150,6 +175,12 @@ class _CanvasAreaState extends State<CanvasArea> {
   // ─── 入力 ─────────────────────────────────────────────────────────────
 
   String get _layerId => widget.currentLayerId ?? 'Layer0001';
+
+  /// レイヤーIDをTileManager用の合成キー（シーン・フレーム・レイヤーID）へ変換する。
+  /// フレームごとに描画データを独立させるため、TileManagerとやりとりする際は
+  /// 必ずこのキーを使う（[frameLayerKey]を参照）。
+  String _tileKeyFor(String layerId, {int? frameIndex}) =>
+      frameLayerKey(widget.sceneId, frameIndex ?? widget.currentFrame, layerId);
 
   void _syncBrushAndColor() {
     final bs = context.read<BrushService>();
@@ -216,7 +247,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final snapped = widget.currentTool == DrawingTool.ruler
         ? _toCanvasPoint(_inputHandler.toStrokePoint(event))
         : _applyRulerSnap(_toCanvasPoint(_inputHandler.toStrokePoint(event)));
-    _drawingEngine.beginStroke(snapped, _layerId);
+    _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
   }
 
@@ -255,7 +286,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     final snapped = _applyRulerSnap(_toCanvasPoint(_inputHandler.toStrokePoint(event)));
-    _drawingEngine.continueStroke(snapped, _layerId);
+    _drawingEngine.continueStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
   }
 
@@ -316,7 +347,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   void _pickColor(Offset canvasPos) {
     final (tx, ty) = _tileManager.getTileCoord(canvasPos.dx, canvasPos.dy);
-    final tile = _tileManager.getTile(_layerId, tx, ty);
+    final tile = _tileManager.getTile(_tileKeyFor(_layerId), tx, ty);
     if (tile == null) return;
     final px = canvasPos.dx.round() % TileManager.tileSize;
     final py = canvasPos.dy.round() % TileManager.tileSize;
@@ -389,7 +420,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     _drawingEngine.commitShapePath(
       points.map((p) => StrokePoint(x: p.dx, y: p.dy)).toList(),
-      _layerId,
+      _tileKeyFor(_layerId),
       closeLoop: closeLoop,
     );
     _scheduleComposite();
@@ -407,7 +438,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     });
     if (start == null) return;
     if (delta.dx.abs() < 0.5 && delta.dy.abs() < 0.5) return;
-    _tileManager.translateLayer(_layerId, delta.dx, delta.dy).then((_) {
+    _tileManager.translateLayer(_tileKeyFor(_layerId), delta.dx, delta.dy).then((_) {
       if (!mounted) return;
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
@@ -473,7 +504,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _transformLive = null;
     });
     if (matrix == null || matrix.isIdentity()) return;
-    _tileManager.transformLayer(_layerId, matrix.storage).then((_) {
+    _tileManager.transformLayer(_tileKeyFor(_layerId), matrix.storage).then((_) {
       if (!mounted) return;
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
@@ -482,6 +513,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   // ─── バケツ連続塗り ───────────────────────────────────────────────────
 
+  /// バケツ塗りの参照用に、表示中の全レイヤーを不透明度・ブレンドモード・
+  /// クリッピングを反映して合成する（仕様書04：バケツは表示中の全レイヤーの線を参照）。
   Future<Uint8List> _flattenVisibleLayers() async {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -490,17 +523,13 @@ class _CanvasAreaState extends State<CanvasArea> {
     final layers = context
         .read<ProjectService>()
         .layersOf(project.id, widget.sceneId, widget.currentFrame);
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    for (final layer in layers.reversed) {
-      if (!layer.isVisible) continue;
-      final img = await _tileManager.compositeLayerToImage(layer.id);
-      canvas.drawImage(img, ui.Offset.zero, ui.Paint());
-      img.dispose();
-    }
-    final pic = recorder.endRecording();
-    final image = await pic.toImage(w, h);
-    pic.dispose();
+    final image = await LayerCompositor.composite(
+      _tileManager,
+      layers,
+      (l) => _tileKeyFor(l.id),
+      w,
+      h,
+    );
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();
     return byteData?.buffer.asUint8List() ?? Uint8List(w * h * 4);
@@ -563,12 +592,13 @@ class _CanvasAreaState extends State<CanvasArea> {
           mask[rowBase + px] = 1;
           final tx = px ~/ TileManager.tileSize;
           final ty = py ~/ TileManager.tileSize;
-          final tile = _tileManager.getOrCreateTile(_layerId, tx, ty);
+          final key = _tileKeyFor(_layerId);
+          final tile = _tileManager.getOrCreateTile(key, tx, ty);
           final lx = px % TileManager.tileSize;
           final ly = py % TileManager.tileSize;
           _tileManager.blendPixel(
               tile, lx, ly, result[idx], result[idx + 1], result[idx + 2], result[idx + 3]);
-          _tileManager.markDirty(_layerId, tx, ty);
+          _tileManager.markDirty(key, tx, ty);
           changed = true;
         }
       }
@@ -607,13 +637,41 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   // ─── 合成 ─────────────────────────────────────────────────────────────
 
+  /// 現在レイヤーの画像を合成する。クリッピングONの場合はクリッピング元レイヤーの
+  /// 形状でマスクした状態まで合成しておく（不透明度・ブレンドモードはpaint時に
+  /// 適用するためここでは反映しない。仕様書16）。
+  Future<ui.Image> _composeCurrentLayerImage() async {
+    final key = _tileKeyFor(_layerId);
+    final raw = await _tileManager.compositeLayerToImage(key);
+    final idx = _layers.indexWhere((l) => l.id == _layerId);
+    if (idx < 0 || !_layers[idx].hasClipping) return raw;
+    final clipSourceId = findClipSourceLayerId(_layers, idx);
+    if (clipSourceId == null) return raw;
+    final clipImg = await _tileManager.compositeLayerToImage(_tileKeyFor(clipSourceId));
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final rect = ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble());
+    canvas.saveLayer(rect, ui.Paint());
+    canvas.drawImage(clipImg, ui.Offset.zero, ui.Paint());
+    canvas.drawImage(raw, ui.Offset.zero, ui.Paint()..blendMode = ui.BlendMode.srcIn);
+    canvas.restore();
+    clipImg.dispose();
+    raw.dispose();
+    final picture = recorder.endRecording();
+    return picture.toImage(w, h);
+  }
+
   void _scheduleComposite() {
+    final project = widget.project;
+    if (project == null) return;
     if (_isCompositing) {
       setState(() {});
       return;
     }
     _isCompositing = true;
-    _tileManager.compositeLayerToImage(_layerId).then((img) {
+    _composeCurrentLayerImage().then((img) {
       if (!mounted) {
         img.dispose();
         return;
@@ -626,6 +684,69 @@ class _CanvasAreaState extends State<CanvasArea> {
     });
   }
 
+  /// 現在レイヤーより手前（above）／奥（below）にあるレイヤー群を、
+  /// 不透明度・ブレンドモード・クリッピングを反映して合成しておく
+  /// （仕様書16）。ドラッグ中の移動・変形プレビューでは現在レイヤーの画像
+  /// （_compositeImage）だけを動かせば済むよう、あえて現在レイヤーを含めず
+  /// 前後に分けてキャッシュする。
+  ///
+  /// レイヤーの追加・削除・並び替え・表示切替・不透明度・ブレンドモード変更は
+  /// ProjectServiceを経由するため、[force]がfalseの場合は前回取得したレイヤー
+  /// 一覧と参照が変わっていない限り再合成をスキップする（低スペック端末対策）。
+  Future<void> _recomposeSurroundings({bool force = false}) async {
+    final project = widget.project;
+    if (project == null) return;
+    if (_isComposingSurroundings) return;
+    final ps = context.read<ProjectService>();
+    final layers = ps.layersOf(project.id, widget.sceneId, widget.currentFrame);
+    if (!force && _sameLayerList(_layers, layers)) return;
+    _layers = layers;
+    _isComposingSurroundings = true;
+
+    final idx = layers.indexWhere((l) => l.id == _layerId);
+    final above = idx < 0 ? const <Layer>[] : layers.sublist(0, idx);
+    final below = idx < 0 ? layers : layers.sublist(idx + 1);
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+
+    final belowImg =
+        await LayerCompositor.composite(_tileManager, below, (l) => _tileKeyFor(l.id), w, h);
+    if (!mounted) {
+      belowImg.dispose();
+      _isComposingSurroundings = false;
+      return;
+    }
+    final aboveImg =
+        await LayerCompositor.composite(_tileManager, above, (l) => _tileKeyFor(l.id), w, h);
+    if (!mounted) {
+      belowImg.dispose();
+      aboveImg.dispose();
+      _isComposingSurroundings = false;
+      return;
+    }
+    setState(() {
+      _belowImage?.dispose();
+      _belowImage = belowImg;
+      _aboveImage?.dispose();
+      _aboveImage = aboveImg;
+      _isComposingSurroundings = false;
+    });
+    // 合成中にさらに変更があった場合に備えて再チェック
+    final latest = ps.layersOf(project.id, widget.sceneId, widget.currentFrame);
+    if (!_sameLayerList(_layers, latest)) _recomposeSurroundings();
+  }
+
+  bool _sameLayerList(List<Layer> a, List<Layer> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (!identical(a[i], b[i])) return false;
+    }
+    return true;
+  }
+
+  /// オニオンスキン用の前後フレーム画像を合成する。対象レイヤーは通常レイヤーと
+  /// 自動塗り用線画レイヤーのみ（仕様書22：共通・テキスト・自動塗り・タイムライン
+  /// 素材レイヤーは対象外）。
   Future<void> _buildOnionImages() async {
     if (!widget.onionSkinSettings.enabled) {
       if (_onionImages.isNotEmpty) {
@@ -638,25 +759,27 @@ class _CanvasAreaState extends State<CanvasArea> {
       }
       return;
     }
+    final project = widget.project;
+    if (project == null) return;
     final offsets = _onionSkinEngine.getVisibleFrameOffsets(widget.onionSkinSettings);
     final ps = context.read<ProjectService>();
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
     final newImages = <int, ui.Image>{};
     for (final offset in offsets) {
       final frameIdx = widget.currentFrame + offset;
       if (frameIdx < 0) continue;
-      final layers = ps.layersOf(widget.project?.id ?? '', widget.sceneId, frameIdx);
+      final layers = ps.layersOf(project.id, widget.sceneId, frameIdx);
       if (layers.isEmpty) continue;
-      final recorder = ui.PictureRecorder();
-      final canvas = ui.Canvas(recorder);
-      for (final layer in layers.reversed) {
-        if (!layer.isVisible) continue;
-        final img = await _tileManager.compositeLayerToImage(layer.id);
-        canvas.drawImage(img, ui.Offset.zero, ui.Paint());
-        img.dispose();
-      }
-      final pic = recorder.endRecording();
-      newImages[offset] =
-          await pic.toImage(_tileManager.canvasWidth, _tileManager.canvasHeight);
+      newImages[offset] = await LayerCompositor.composite(
+        _tileManager,
+        layers,
+        (l) => _tileKeyFor(l.id, frameIndex: frameIdx),
+        w,
+        h,
+        shouldRender: (layer, _) =>
+            layer.type == LayerType.normal || layer.type == LayerType.autoFillLineart,
+      );
     }
     if (!mounted) {
       for (final img in newImages.values) {
@@ -710,6 +833,12 @@ class _CanvasAreaState extends State<CanvasArea> {
               background: widget.background,
               transform: _transformController.value,
               compositeImage: _compositeImage,
+              belowImage: _belowImage,
+              aboveImage: _aboveImage,
+              currentLayerOpacity:
+                  _layers.where((l) => l.id == _layerId).firstOrNull?.opacity ?? 100,
+              currentLayerBlendMode: _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
+                  LayerBlendMode.normal,
               onionImages: Map.unmodifiable(_onionImages),
               onionSettings: widget.onionSkinSettings,
               onionEngine: _onionSkinEngine,
@@ -757,6 +886,10 @@ class _CanvasPainter extends CustomPainter {
   final CanvasBackground background;
   final Matrix4 transform;
   final ui.Image? compositeImage;
+  final ui.Image? belowImage;
+  final ui.Image? aboveImage;
+  final int currentLayerOpacity;
+  final LayerBlendMode currentLayerBlendMode;
   final Map<int, ui.Image> onionImages;
   final OnionSkinSettings onionSettings;
   final OnionSkinEngine onionEngine;
@@ -783,6 +916,10 @@ class _CanvasPainter extends CustomPainter {
     required this.lassoPoints,
     this.project,
     this.compositeImage,
+    this.belowImage,
+    this.aboveImage,
+    this.currentLayerOpacity = 100,
+    this.currentLayerBlendMode = LayerBlendMode.normal,
     this.selectionStart,
     this.selectionEnd,
     this.activeRuler,
@@ -806,14 +943,21 @@ class _CanvasPainter extends CustomPainter {
         Paint()..color = _outsideColor);
     _paintBackground(canvas, drawingRect);
 
+    // 現在レイヤーより奥（背面）のレイヤー群
+    _drawFrameImage(canvas, drawingRect, belowImage, Paint());
+
     // オニオンスキン（前フレーム）
     for (final entry in onionImages.entries) {
       if (entry.key >= 0) continue;
       _drawOnionFrame(canvas, drawingRect, entry.value, entry.key);
     }
 
-    // 描画内容
+    // 現在レイヤー（不透明度・ブレンドモードを反映）
     if (compositeImage != null) {
+      final currentPaint = Paint()
+        ..color = Color.fromARGB(
+            (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(), 255, 255, 255)
+        ..blendMode = mapLayerBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / compositeImage!.width;
       final sy = drawingRect.height / compositeImage!.height;
       if (moveDelta != null || transformLive != null) {
@@ -827,12 +971,12 @@ class _CanvasPainter extends CustomPainter {
         if (transformLive != null) {
           canvas.transform(transformLive!.storage);
         }
-        canvas.drawImage(compositeImage!, Offset.zero, Paint());
+        canvas.drawImage(compositeImage!, Offset.zero, currentPaint);
         canvas.restore();
       } else {
         final src = Rect.fromLTWH(0, 0,
             compositeImage!.width.toDouble(), compositeImage!.height.toDouble());
-        canvas.drawImageRect(compositeImage!, src, drawingRect, Paint());
+        canvas.drawImageRect(compositeImage!, src, drawingRect, currentPaint);
       }
     }
 
@@ -841,6 +985,9 @@ class _CanvasPainter extends CustomPainter {
       if (entry.key <= 0) continue;
       _drawOnionFrame(canvas, drawingRect, entry.value, entry.key);
     }
+
+    // 現在レイヤーより手前（前面）のレイヤー群
+    _drawFrameImage(canvas, drawingRect, aboveImage, Paint());
 
     // 矩形選択プレビュー
     if (selectionStart != null && selectionEnd != null) {
@@ -1002,6 +1149,15 @@ class _CanvasPainter extends CustomPainter {
     }
   }
 
+  /// belowImage/aboveImage（フレーム全体サイズの合成済み画像）を描画領域へ
+  /// スケールして描画する。不透明度・ブレンドモードは合成時に既に各レイヤーへ
+  /// 適用済みのため、ここではスケーリングのみ行う。
+  void _drawFrameImage(Canvas canvas, Rect drawingRect, ui.Image? image, Paint paint) {
+    if (image == null) return;
+    final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+    canvas.drawImageRect(image, src, drawingRect, paint);
+  }
+
   void _drawOnionFrame(
       Canvas canvas, Rect drawingRect, ui.Image img, int offset) {
     final opacity = onionEngine.getOpacityForFrame(onionSettings, offset);
@@ -1079,6 +1235,10 @@ class _CanvasPainter extends CustomPainter {
   @override
   bool shouldRepaint(_CanvasPainter old) =>
       old.compositeImage != compositeImage ||
+      old.belowImage != belowImage ||
+      old.aboveImage != aboveImage ||
+      old.currentLayerOpacity != currentLayerOpacity ||
+      old.currentLayerBlendMode != currentLayerBlendMode ||
       old.background != background ||
       old.transform != transform ||
       old.onionImages != onionImages ||

@@ -1,6 +1,30 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+/// シーンID・フレームIndex・レイヤーIDから、TileManager内部で使用する
+/// 合成キーを生成する。
+///
+/// TileManagerはlayerIdを不透明な文字列としてのみ扱うため、これ単体では
+/// フレーム間で描画データが独立しない（同じlayerIdを複数フレームが共有すると
+/// 同一のタイルバッファを指してしまう）。アプリ側（キャンバス描画・書き出し・
+/// 自動塗り・保存）は必ずこの関数で生成したキーをTileManagerへ渡すことで、
+/// フレームごとに独立した描画データを保持する（仕様書05・07：フレームは
+/// レイヤー構成〔ID〕を引き継ぐが、描画データ自体は各フレーム独立である）。
+String frameLayerKey(String sceneId, int frameIndex, String layerId) =>
+    '$sceneId#$frameIndex#$layerId';
+
+/// [frameLayerKey] の逆変換。フォーマットに一致しない場合（新規保存前の
+/// 旧形式データ等）はnullを返す。
+typedef FrameLayerKeyParts = ({String sceneId, int frameIndex, String layerId});
+
+FrameLayerKeyParts? parseFrameLayerKey(String key) {
+  final parts = key.split('#');
+  if (parts.length != 3) return null;
+  final frameIndex = int.tryParse(parts[1]);
+  if (frameIndex == null) return null;
+  return (sceneId: parts[0], frameIndex: frameIndex, layerId: parts[2]);
+}
+
 /// Sparse Tile 方式のキャンバスバッファ管理（仕様書26）
 /// 描画済みタイルのみメモリに保持し、未描画タイルは保持しない。
 class TileManager {
@@ -218,6 +242,20 @@ class TileManager {
   }
 
   void removeLayer(String layerId) => _tiles.remove(layerId);
+
+  /// 合成キーを付け替える（フレーム削除に伴う後続フレームの再インデックス等で使用）。
+  /// 移動先に既存データがあれば上書きする。dirty集合も合わせて付け替える。
+  void renameKey(String oldKey, String newKey) {
+    if (oldKey == newKey) return;
+    final tiles = _tiles.remove(oldKey);
+    if (tiles != null) _tiles[newKey] = tiles;
+    final prefix = '$oldKey:';
+    final toRename = _dirtyTiles.where((d) => d.startsWith(prefix)).toList();
+    for (final d in toRename) {
+      _dirtyTiles.remove(d);
+      _dirtyTiles.add('$newKey:${d.substring(prefix.length)}');
+    }
+  }
 
   bool hasLayer(String layerId) => _tiles.containsKey(layerId);
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
+import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
@@ -1014,7 +1015,8 @@ class _LayerPanelState extends State<LayerPanel> {
     final w = tileManager.canvasWidth;
     final h = tileManager.canvasHeight;
 
-    final lineartImg = await tileManager.compositeLayerToImage(lineartLayer.id);
+    final lineartImg = await tileManager.compositeLayerToImage(
+        frameLayerKey(widget.sceneId, widget.frameIndex, lineartLayer.id));
     final lineartBytes =
         (await lineartImg.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
     lineartImg.dispose();
@@ -1027,10 +1029,13 @@ class _LayerPanelState extends State<LayerPanel> {
         ? layers[lineartIdx + 1]
         : null;
 
-    final hasExisting = autofillLayer != null && tileManager.hasLayer(autofillLayer.id);
+    final autofillKey = autofillLayer == null
+        ? null
+        : frameLayerKey(widget.sceneId, widget.frameIndex, autofillLayer.id);
+    final hasExisting = autofillKey != null && tileManager.hasLayer(autofillKey);
     Uint8List? existingBytes;
     if (hasExisting) {
-      final img = await tileManager.compositeLayerToImage(autofillLayer.id);
+      final img = await tileManager.compositeLayerToImage(autofillKey);
       existingBytes = (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
       img.dispose();
     }
@@ -1073,7 +1078,8 @@ class _LayerPanelState extends State<LayerPanel> {
       autofillLayer = created.copyWith(partId: part.id);
     }
 
-    tileManager.replaceLayerPixels(autofillLayer.id, result);
+    tileManager.replaceLayerPixels(
+        frameLayerKey(widget.sceneId, widget.frameIndex, autofillLayer.id), result);
     projectService.updateLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,

@@ -111,7 +111,7 @@ class MiraproSerializer {
     for (final layerEntry in allTiles.entries) {
       for (final tileEntry in layerEntry.value.entries) {
         encoder.addArchiveFile(ArchiveFile(
-          '$_rootTilesDir/${layerEntry.key}_${tileEntry.key}.bin',
+          _tilePath(layerEntry.key, tileEntry.key),
           0,
           tileEntry.value,
         ));
@@ -120,6 +120,18 @@ class MiraproSerializer {
 
     encoder.close();
     return File(filePath);
+  }
+
+  /// TileManagerの合成キー（[frameLayerKey]形式）とタイル座標キーから、
+  /// アーカイブ内のファイルパスを生成する。
+  /// 新形式：Tiles/{sceneId}/{frameIndex}/{layerId}_{tileKey}.bin
+  /// キーがframeLayerKey形式でない場合（想定外）はフラットな旧形式にフォールバックする。
+  static String _tilePath(String compositeKey, String tileKey) {
+    final parsed = parseFrameLayerKey(compositeKey);
+    if (parsed == null) {
+      return '$_rootTilesDir/${compositeKey}_$tileKey.bin';
+    }
+    return '$_rootTilesDir/${parsed.sceneId}/${parsed.frameIndex}/${parsed.layerId}_$tileKey.bin';
   }
 
   /// 差分書き出し：manifest・frames.jsonは毎回書き直す（軽量なため）が、
@@ -159,7 +171,7 @@ class MiraproSerializer {
       final dirtyTiles = tileManager.getDirtyTilesForLayer(layerId);
       for (final tileEntry in layerEntry.value.entries) {
         final tileKey = tileEntry.key;
-        final entryName = '$_rootTilesDir/${layerId}_$tileKey.bin';
+        final entryName = _tilePath(layerId, tileKey);
         final oldEntry = oldFilesByName[entryName];
         if (dirtyTiles.containsKey(tileKey) || oldEntry == null) {
           // 変更あり、または旧ファイルに存在しない（新規タイル・旧形式からの移行）→再書き込み
@@ -186,22 +198,18 @@ class MiraproSerializer {
     final bytes = await File(filePath).readAsBytes();
     final archive = ZipDecoder().decodeBytes(bytes);
 
-    late Project project;
-    final scenes = <Scene>[];
-    final tileData = <String, Map<String, Uint8List>>{};
-
     final manifestFile = archive.findFile(_manifestFile);
     if (manifestFile == null) throw const FormatException('manifest.json not found');
-    project = _deserializeManifest(
+    final project = _deserializeManifest(
       jsonDecode(utf8.decode(manifestFile.content as List<int>)) as Map<String, dynamic>,
     );
 
+    final scenes = <Scene>[];
     final sceneIds = archive.files
         .map((f) => f.name)
         .where((n) => n.startsWith('Scene/') && n.endsWith('/$_framesFile'))
         .map((n) => n.split('/')[1])
         .toSet();
-
     for (final sceneId in sceneIds) {
       final framesFile = archive.findFile('Scene/$sceneId/$_framesFile');
       if (framesFile == null) continue;
@@ -210,34 +218,80 @@ class MiraproSerializer {
       );
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
       scenes.add(Scene(id: sceneId, index: sceneIndex - 1, frames: frames));
+    }
+    scenes.sort((a, b) => a.index.compareTo(b.index));
 
+    // layerIdがどのシーン・どのフレームで使われているかの索引。
+    // 旧形式（フレーム非依存で保存されたタイル）を、フレームごとに独立した
+    // 新形式へ移行する際に使用する。
+    final framesByLayerId = <String, List<(String sceneId, int frameIndex)>>{};
+    for (final scene in scenes) {
+      for (final frame in scene.frames) {
+        for (final layer in frame.layers) {
+          framesByLayerId.putIfAbsent(layer.id, () => []).add((scene.id, frame.index));
+        }
+      }
+    }
+
+    final tileData = <String, Map<String, Uint8List>>{};
+    void addTile(String compositeKey, String tileKey, Uint8List bytes) {
+      tileData.putIfAbsent(compositeKey, () => {})[tileKey] = bytes;
+    }
+
+    // 新形式：Tiles/{sceneId}/{frameIndex}/{layerId}_{tileKey}.bin
+    // 旧形式（プロジェクト全体で1箇所・フレーム非依存）：Tiles/{layerId}_{tileKey}.bin
+    //   → 当時はフレーム間で描画データが共有されていたため、該当layerIdを
+    //     使用する全フレームへ同じ内容を複製することで見た目を保ったまま
+    //     新形式（フレーム独立）へ移行する。
+    for (final file in archive.files) {
+      if (!file.name.startsWith('$_rootTilesDir/')) continue;
+      final rel = file.name.substring(_rootTilesDir.length + 1);
+      final segments = rel.split('/');
+      if (segments.length == 3) {
+        final sceneId = segments[0];
+        final frameIndex = int.tryParse(segments[1]);
+        if (frameIndex == null) continue;
+        final withoutExt = segments[2].replaceAll('.bin', '');
+        final underscoreIdx = withoutExt.indexOf('_');
+        if (underscoreIdx < 0) continue;
+        final layerId = withoutExt.substring(0, underscoreIdx);
+        final tileKey = withoutExt.substring(underscoreIdx + 1);
+        addTile(frameLayerKey(sceneId, frameIndex, layerId), tileKey,
+            Uint8List.fromList(file.content as List<int>));
+      } else {
+        final withoutExt = segments.last.replaceAll('.bin', '');
+        final underscoreIdx = withoutExt.indexOf('_');
+        if (underscoreIdx < 0) continue;
+        final layerId = withoutExt.substring(0, underscoreIdx);
+        final tileKey = withoutExt.substring(underscoreIdx + 1);
+        final targets = framesByLayerId[layerId];
+        if (targets == null) continue;
+        for (final target in targets) {
+          addTile(frameLayerKey(target.$1, target.$2, layerId), tileKey,
+              Uint8List.fromList(file.content as List<int>));
+        }
+      }
+    }
+
+    // さらに古い旧々形式（Scene毎重複保存）：Scene/{sceneId}/tiles/{layerId}_{tileKey}.bin
+    // 同一シーン内で該当layerIdを使う全フレームへ複製する。
+    for (final scene in scenes) {
       for (final file in archive.files) {
-        if (!file.name.startsWith('Scene/$sceneId/$_tilesDir/')) continue;
+        if (!file.name.startsWith('Scene/${scene.id}/$_tilesDir/')) continue;
         final fileName = file.name.split('/').last;
         final withoutExt = fileName.replaceAll('.bin', '');
         final underscoreIdx = withoutExt.indexOf('_');
         if (underscoreIdx < 0) continue;
         final layerId = withoutExt.substring(0, underscoreIdx);
         final tileKey = withoutExt.substring(underscoreIdx + 1);
-        tileData.putIfAbsent(layerId, () => {})[tileKey] =
-            Uint8List.fromList(file.content as List<int>);
+        for (final frame in scene.frames) {
+          if (!frame.layers.any((l) => l.id == layerId)) continue;
+          addTile(frameLayerKey(scene.id, frame.index, layerId), tileKey,
+              Uint8List.fromList(file.content as List<int>));
+        }
       }
     }
 
-    // 新形式：プロジェクト全体で1箇所に保存されたタイル（$_rootTilesDir/）
-    for (final file in archive.files) {
-      if (!file.name.startsWith('$_rootTilesDir/')) continue;
-      final fileName = file.name.split('/').last;
-      final withoutExt = fileName.replaceAll('.bin', '');
-      final underscoreIdx = withoutExt.indexOf('_');
-      if (underscoreIdx < 0) continue;
-      final layerId = withoutExt.substring(0, underscoreIdx);
-      final tileKey = withoutExt.substring(underscoreIdx + 1);
-      tileData.putIfAbsent(layerId, () => {})[tileKey] =
-          Uint8List.fromList(file.content as List<int>);
-    }
-
-    scenes.sort((a, b) => a.index.compareTo(b.index));
     return MiraproData(project: project, scenes: scenes, tileData: tileData);
   }
 
