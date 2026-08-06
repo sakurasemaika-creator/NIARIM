@@ -683,7 +683,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text('×$count', style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
@@ -751,7 +751,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               child: Container(
                                 width: 3,
                                 height: 28,
-                                color: isActive ? Colors.blue : Colors.grey[600],
+                                color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[600],
                               ),
                             ),
                           );
@@ -762,7 +762,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
                             child: Chip(
-                              label: Text(scene.displayName, style: TextStyle(fontSize: 11, color: isMoving ? Colors.blue : null)),
+                              label: Text(scene.displayName,
+                                  style: TextStyle(fontSize: 11,
+                                      color: isMoving ? Theme.of(context).colorScheme.primary : null)),
                               backgroundColor: isMoving ? Theme.of(context).colorScheme.primaryContainer : null,
                             ),
                           );
@@ -1017,8 +1019,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     width: _frameW,
                     margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.blue.withValues(alpha: 0.3) : Colors.grey[850],
-                      border: Border.all(color: isSelected ? Colors.blue : Colors.grey[700]!),
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+                          : Colors.grey[850],
+                      border: Border.all(
+                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[700]!),
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: Center(child: Text('${index + 1}', style: const TextStyle(fontSize: 9))),

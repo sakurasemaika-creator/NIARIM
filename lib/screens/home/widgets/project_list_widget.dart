@@ -120,6 +120,7 @@ class ProjectListWidget extends StatelessWidget {
 
   Widget _gridCard(BuildContext context, Project project) {
     final isSelected = selectedIds.contains(project.id);
+    final primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
@@ -131,7 +132,7 @@ class ProjectListWidget extends StatelessWidget {
         shape: isSelected
             ? RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.blue, width: 2),
+                side: BorderSide(color: primary, width: 2),
               )
             : null,
         child: Column(
@@ -151,9 +152,9 @@ class ProjectListWidget extends StatelessWidget {
                       top: 4, left: 4,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue : Colors.white,
+                          color: isSelected ? primary : Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.blue),
+                          border: Border.all(color: primary),
                         ),
                         child: Icon(isSelected ? Icons.check : null, size: 16, color: Colors.white),
                       ),

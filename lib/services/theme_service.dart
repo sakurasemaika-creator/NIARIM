@@ -133,7 +133,9 @@ class ThemeService extends ChangeNotifier {
       seedColor: preset.accentColor,
       brightness: brightness,
     ).copyWith(primary: preset.accentColor, secondary: preset.selectionColor);
-    const radius = 14.0;
+    // 角丸を大きめにし、Google Material標準の角丸14pxよりも柔らかい印象にする
+    // （LINE・メルカリ等、日本の人気アプリに共通するポップで丸みの強い形状）。
+    const radius = 18.0;
     const minTapSize = Size(48, 48);
 
     return ThemeData(
@@ -141,7 +143,10 @@ class ThemeService extends ChangeNotifier {
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: preset.panelBgColor,
-      splashFactory: InkSparkle.splashFactory,
+      // InkSparkle（Material Youの光るリップル）は「いかにも最新Android技術デモ」
+      // 感が強く、GPU負荷も高いため、低スペック端末を考慮しつつ落ち着いた
+      // タップフィードバックのInkRippleへ変更する。
+      splashFactory: InkRipple.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: preset.menuBgColor,
         foregroundColor: preset.textColor,
@@ -198,12 +203,12 @@ class ThemeService extends ChangeNotifier {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: preset.menuBgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: preset.menuBgColor,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
@@ -214,7 +219,9 @@ class ThemeService extends ChangeNotifier {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: preset.menuBgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        // 完全な丸み（ピル型）：日本のアプリでよく使われる柔らかいタグ・
+        // フィルターチップの形状。
+        shape: const StadiumBorder(),
         side: BorderSide.none,
       ),
       switchTheme: SwitchThemeData(
@@ -229,7 +236,9 @@ class ThemeService extends ChangeNotifier {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        // 完全な円形：角丸四角より親しみやすく、LINE等の日本製アプリで
+        // 定番のFAB形状。
+        shape: const CircleBorder(),
       ),
       tabBarTheme: TabBarThemeData(
         indicatorColor: scheme.primary,

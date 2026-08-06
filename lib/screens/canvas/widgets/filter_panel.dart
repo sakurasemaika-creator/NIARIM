@@ -195,7 +195,7 @@ class _FilterPanelState extends State<FilterPanel> {
                         margin: const EdgeInsets.only(right: 6),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: isSelected ? Colors.blue : Colors.grey[600]!,
+                            color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(4),

@@ -107,7 +107,8 @@ class _BrushPanelState extends State<BrushPanel> {
                       key: ValueKey(brush.id),
                       dense: true,
                       selected: isSelected,
-                      leading: Icon(Icons.brush, size: 16, color: isSelected ? Colors.blue : null),
+                      leading: Icon(Icons.brush, size: 16,
+                          color: isSelected ? Theme.of(context).colorScheme.primary : null),
                       title: Text(brush.name, style: const TextStyle(fontSize: 13)),
                       subtitle: Text(
                         '${brush.size.round()}px · ${brush.opacity}%',

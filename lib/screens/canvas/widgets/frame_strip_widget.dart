@@ -108,7 +108,7 @@ class FrameStripWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.grey[isSelected ? 700 : 850],
                       border: Border.all(
-                        color: isSelected ? Colors.blue : Colors.grey[700]!,
+                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[700]!,
                         width: isSelected ? 2 : 1,
                       ),
                       borderRadius: BorderRadius.circular(4),
@@ -130,7 +130,7 @@ class FrameStripWidget extends StatelessWidget {
                             child: Icon(
                               isChecked ? Icons.check_box : Icons.check_box_outline_blank,
                               size: 14,
-                              color: isChecked ? Colors.blue : Colors.grey[400],
+                              color: isChecked ? Theme.of(context).colorScheme.primary : Colors.grey[400],
                             ),
                           ),
                       ],

@@ -118,7 +118,8 @@ class _BrushTab extends StatelessWidget {
         return ListTile(
           dense: true,
           selected: isSelected,
-          leading: Icon(Icons.brush, size: 16, color: isSelected ? Colors.blue : null),
+          leading: Icon(Icons.brush, size: 16,
+              color: isSelected ? Theme.of(context).colorScheme.primary : null),
           title: Text(brush.name, style: const TextStyle(fontSize: 12)),
           subtitle: Text('${brush.size.round()}px · ${brush.opacity}%',
               style: const TextStyle(fontSize: 10)),
@@ -170,7 +171,7 @@ class _ToneTab extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: isSelected ? Colors.blue : Colors.grey[600]!,
+                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(4),
@@ -222,7 +223,7 @@ class _StampTab extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: isSelected ? Colors.blue : Colors.grey[600]!,
+                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(4),
@@ -299,7 +300,7 @@ class _LassoFillTab extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey[600]!,
+                      color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
                       width: isSelected ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(4),

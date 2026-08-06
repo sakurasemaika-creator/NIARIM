@@ -55,24 +55,24 @@ class ToolbarWidget extends StatelessWidget {
             // ペンボタン：長押しでサブツールパネル表示
             GestureDetector(
               onLongPress: onPenLongPress,
-              child: _toolButton(Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
+              child: _toolButton(context, Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
             ),
-            _toolButton(Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
+            _toolButton(context, Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
             // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示
             GestureDetector(
               onLongPress: () => _showBucketToneMenu(context),
-              child: _toolButton(Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
+              child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
             ),
-            _toolButton(Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
-            _toolButton(Icons.back_hand, DrawingTool.finger, '指'),
+            _toolButton(context, Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
+            _toolButton(context, Icons.back_hand, DrawingTool.finger, '指'),
             _selectToolButton(context),
-            _toolButton(Icons.open_with, DrawingTool.move, '移動'),
-            _toolButton(Icons.transform, DrawingTool.transform, '変形'),
-            _toolButton(Icons.straighten, DrawingTool.ruler, '定規',
+            _toolButton(context, Icons.open_with, DrawingTool.move, '移動'),
+            _toolButton(context, Icons.transform, DrawingTool.transform, '変形'),
+            _toolButton(context, Icons.straighten, DrawingTool.ruler, '定規',
                 onTap: onRulerTap),
-            _toolButton(Icons.text_fields, DrawingTool.text, 'テキスト',
+            _toolButton(context, Icons.text_fields, DrawingTool.text, 'テキスト',
                 onTap: onTextTap),
-            _toolButton(Icons.category, DrawingTool.shape, '図形（タップで種別選択）',
+            _toolButton(context, Icons.category, DrawingTool.shape, '図形（タップで種別選択）',
                 onTap: onShapeTap),
             const SizedBox(width: 4),
             // 色インジケーター
@@ -111,15 +111,16 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  Widget _toolButton(IconData icon, DrawingTool tool, String tooltip,
+  Widget _toolButton(BuildContext context, IconData icon, DrawingTool tool, String tooltip,
       {VoidCallback? onTap}) {
     final isSelected = currentTool == tool;
+    final primary = Theme.of(context).colorScheme.primary;
     return IconButton(
       icon: Icon(icon, size: 20),
       onPressed: onTap ?? () => onToolSelected(tool),
       tooltip: tooltip,
-      color: isSelected ? Colors.blue : null,
-      style: isSelected ? IconButton.styleFrom(backgroundColor: Colors.blue.withValues(alpha: 0.15)) : null,
+      color: isSelected ? primary : null,
+      style: isSelected ? IconButton.styleFrom(backgroundColor: primary.withValues(alpha: 0.15)) : null,
     );
   }
 
@@ -132,14 +133,15 @@ class ToolbarWidget extends StatelessWidget {
       DrawingTool.selectMagicWand => Icons.auto_awesome,
       _ => Icons.crop_square,
     };
+    final primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
       onLongPress: () => _showSelectMenu(context),
       child: IconButton(
         icon: Icon(icon, size: 20),
         onPressed: () => onToolSelected(DrawingTool.selectRect),
         tooltip: '選択（長押しで種別変更）',
-        color: isSelected ? Colors.blue : null,
-        style: isSelected ? IconButton.styleFrom(backgroundColor: Colors.blue.withValues(alpha: 0.15)) : null,
+        color: isSelected ? primary : null,
+        style: isSelected ? IconButton.styleFrom(backgroundColor: primary.withValues(alpha: 0.15)) : null,
       ),
     );
   }
@@ -196,7 +198,7 @@ class ToolbarWidget extends StatelessWidget {
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: isSelected ? Colors.blue : Colors.grey[600]!,
+                                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
                                 width: isSelected ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(4),

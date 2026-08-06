@@ -472,10 +472,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
           ],
           // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
           if (_currentTool == DrawingTool.text)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text('キャンバスをタップしてテキストを入力',
-                  style: TextStyle(fontSize: 12, color: Colors.blue)),
+                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary)),
             ),
           const Spacer(),
           // フレーム複数選択モード切替（仕様書18：フィルター一括適用など大量処理実行時）
@@ -483,7 +483,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             icon: Icon(
               _frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist,
               size: 20,
-              color: _frameMultiSelectMode ? Colors.blue : null,
+              color: _frameMultiSelectMode ? Theme.of(context).colorScheme.primary : null,
             ),
             tooltip: 'フレーム複数選択',
             onPressed: () => setState(() {

@@ -67,12 +67,13 @@ class RulerPanel extends StatelessWidget {
 
   Widget _rulerTile(BuildContext context, RulerType type, IconData icon, String label) {
     final isActive = activeRuler?.type == type;
+    final primary = Theme.of(context).colorScheme.primary;
     return ListTile(
       dense: true,
-      leading: Icon(icon, size: 18, color: isActive ? Colors.blue : null),
-      title: Text(label, style: TextStyle(fontSize: 12, color: isActive ? Colors.blue : null)),
+      leading: Icon(icon, size: 18, color: isActive ? primary : null),
+      title: Text(label, style: TextStyle(fontSize: 12, color: isActive ? primary : null)),
       selected: isActive,
-      selectedTileColor: Colors.blue.withValues(alpha: 0.1),
+      selectedTileColor: primary.withValues(alpha: 0.1),
       onTap: () {
         if (isActive) {
           onRulerChanged(null);
