@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
 
@@ -79,15 +80,25 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('キャンセル')),
           FilledButton(
-            onPressed: () {
-              service.saveAsChild(
+            onPressed: () async {
+              final ps = context.read<ProjectService>();
+              final project =
+                  ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+              if (project == null) {
+                Navigator.pop(ctx);
+                return;
+              }
+              await service.saveAsChild(
                 projectId: widget.projectId,
+                project: project,
+                scenes: ps.scenesOf(widget.projectId),
+                tileManager: ps.tileManagerOf(widget.projectId),
                 parentId: parentId,
                 comment: commentController.text.isEmpty
                     ? null
                     : commentController.text,
               );
-              Navigator.pop(ctx);
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('保存'),
           ),
@@ -162,15 +173,25 @@ class _SlotView extends StatelessWidget {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('キャンセル')),
           FilledButton(
-            onPressed: () {
-              saveService.saveToSlot(
+            onPressed: () async {
+              final ps = context.read<ProjectService>();
+              final project =
+                  ps.projects.where((p) => p.id == projectId).firstOrNull;
+              if (project == null) {
+                Navigator.pop(ctx);
+                return;
+              }
+              await saveService.saveToSlot(
                 projectId: projectId,
                 slotIndex: slotIndex,
+                project: project,
+                scenes: ps.scenesOf(projectId),
+                tileManager: ps.tileManagerOf(projectId),
                 comment: commentController.text.isEmpty
                     ? null
                     : commentController.text,
               );
-              Navigator.pop(ctx);
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('保存'),
           ),
@@ -179,7 +200,16 @@ class _SlotView extends StatelessWidget {
     ).then((_) => commentController.dispose());
   }
 
-  void _restore(BuildContext context, SaveNode node) {
+  Future<void> _restore(BuildContext context, SaveNode node) async {
+    final data = await saveService.loadNode(projectId, node.id);
+    if (!context.mounted) return;
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('保存データの読み込みに失敗しました')),
+      );
+      return;
+    }
+    context.read<ProjectService>().restoreFromAutosave(projectId, data);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(
@@ -325,14 +355,26 @@ class _TreeView extends StatelessWidget {
     );
   }
 
-  void _handleAction(BuildContext context, String action, SaveNode node) {
+  Future<void> _handleAction(
+      BuildContext context, String action, SaveNode node) async {
     switch (action) {
       case 'restore':
+        final data = await saveService.loadNode(projectId, node.id);
+        if (!context.mounted) return;
+        if (data == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('保存データの読み込みに失敗しました')),
+          );
+          return;
+        }
+        context.read<ProjectService>().restoreFromAutosave(projectId, data);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${node.comment ?? '保存データ'}を復元しました')),
         );
+        break;
       case 'delete':
-        saveService.deleteNode(projectId, node.id);
+        await saveService.deleteNode(projectId, node.id);
+        break;
     }
   }
 

@@ -83,6 +83,37 @@ class MiraproSerializer {
     return load('$dir/slot_$slotIndex.mirapro');
   }
 
+  // ─── セーブツリー／スロット（手動保存、仕様書08） ───────────────────────
+  // 自動保存とは完全に別領域（SaveTree/）へ、ノードID単位でスナップショットを保存する。
+
+  static Future<String> _saveTreeDir(String projectId) async {
+    final dir = await _projectDir(projectId);
+    final saveTreeDir = Directory('${dir.path}/SaveTree');
+    if (!saveTreeDir.existsSync()) saveTreeDir.createSync(recursive: true);
+    return saveTreeDir.path;
+  }
+
+  static Future<File> saveSaveTreeNode({
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    required String nodeId,
+  }) async {
+    final dir = await _saveTreeDir(project.id);
+    return _writeArchive('$dir/$nodeId.mirapro', project, scenes, tileManager);
+  }
+
+  static Future<MiraproData> loadSaveTreeNode(String projectId, String nodeId) async {
+    final dir = await _saveTreeDir(projectId);
+    return load('$dir/$nodeId.mirapro');
+  }
+
+  static Future<void> deleteSaveTreeNode(String projectId, String nodeId) async {
+    final dir = await _saveTreeDir(projectId);
+    final file = File('$dir/$nodeId.mirapro');
+    if (await file.exists()) await file.delete();
+  }
+
   /// フル書き出し：manifest・全シーンのframes.json・全タイルを新規に書き込む。
   /// タイルはプロジェクト全体で1箇所（$_rootTilesDir/）にのみ保存する。
   static Future<File> _writeArchive(

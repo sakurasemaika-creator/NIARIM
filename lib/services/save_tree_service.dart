@@ -1,9 +1,17 @@
 import 'package:flutter/foundation.dart';
+import '../engine/mirapro_serializer.dart';
+import '../engine/tile_manager.dart';
+import '../models/project.dart';
 import '../models/save_node.dart';
+import '../models/scene.dart';
 
 /// セーブツリーサービス
 /// スロット方式：固定数のスロットで管理
 /// ツリー方式：保存数制限なし・ツリー状に履歴管理
+///
+/// 各ノードはSaveTree/{nodeId}.miraproとして実データ（シーン・タイル）を
+/// ディスクへ保存する（仕様書08）。自動保存（クラッシュ復元専用）とは
+/// 完全に別領域・別ライフサイクルで管理される。
 class SaveTreeService extends ChangeNotifier {
   int _slotMax = 10;
   int get slotMax => _slotMax;
@@ -36,16 +44,23 @@ class SaveTreeService extends ChangeNotifier {
   List<SaveNode> getArchivedNodes(String projectId) =>
       List.unmodifiable(_archivedByProject[projectId] ?? []);
 
-  /// スロット方式：指定スロットへ上書き保存
-  SaveNode saveToSlot({
+  /// スロット方式：指定スロットへ上書き保存。実データ（シーン・タイル）を
+  /// SaveTree/{nodeId}.miraproへ書き込む。
+  Future<SaveNode> saveToSlot({
     required String projectId,
     required int slotIndex,
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
     String? comment,
     String? thumbnailPath,
-  }) {
+  }) async {
     assert(slotIndex >= 0 && slotIndex < _slotMax,
         'slotIndex must be 0..${ _slotMax - 1}');
     _nodesByProject.putIfAbsent(projectId, () => []);
+    final old = _nodesByProject[projectId]!
+        .where((n) => n.slotIndex == slotIndex)
+        .toList();
     _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
     final node = SaveNode(
       id: _newId(),
@@ -55,18 +70,31 @@ class SaveTreeService extends ChangeNotifier {
       thumbnailPath: thumbnailPath,
       slotIndex: slotIndex,
     );
+    await MiraproSerializer.saveSaveTreeNode(
+      project: project,
+      scenes: scenes,
+      tileManager: tileManager,
+      nodeId: node.id,
+    );
+    for (final o in old) {
+      await MiraproSerializer.deleteSaveTreeNode(projectId, o.id);
+    }
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
     return node;
   }
 
-  /// ツリー方式：親ノードから枝分かれして保存
-  SaveNode saveAsChild({
+  /// ツリー方式：親ノードから枝分かれして保存。実データ（シーン・タイル）を
+  /// SaveTree/{nodeId}.miraproへ書き込む。
+  Future<SaveNode> saveAsChild({
     required String projectId,
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
     String? parentId,
     String? comment,
     String? thumbnailPath,
-  }) {
+  }) async {
     _nodesByProject.putIfAbsent(projectId, () => []);
     final node = SaveNode(
       id: _newId(),
@@ -77,14 +105,31 @@ class SaveTreeService extends ChangeNotifier {
       parentId: parentId,
       slotIndex: -1,
     );
+    await MiraproSerializer.saveSaveTreeNode(
+      project: project,
+      scenes: scenes,
+      tileManager: tileManager,
+      nodeId: node.id,
+    );
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
     return node;
   }
 
-  void deleteNode(String projectId, String nodeId) {
+  /// 指定ノードの実データを読み込む（復元用）。ファイルが存在しない・
+  /// 破損している場合はnullを返す。
+  Future<MiraproData?> loadNode(String projectId, String nodeId) async {
+    try {
+      return await MiraproSerializer.loadSaveTreeNode(projectId, nodeId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> deleteNode(String projectId, String nodeId) async {
     _nodesByProject[projectId]?.removeWhere((n) => n.id == nodeId);
     notifyListeners();
+    await MiraproSerializer.deleteSaveTreeNode(projectId, nodeId);
   }
 
   List<SaveNode> getChildren(String projectId, String? parentId) {
@@ -103,15 +148,15 @@ class SaveTreeService extends ChangeNotifier {
   /// 保存データ変更フロー専用処理
   /// （ツリー→スロット変換・スロット数削減）
   /// [keepIds] 保持するノードID一覧
-  /// [archive] true=アーカイブ、false=完全削除
+  /// [archive] true=アーカイブ、false=完全削除（実ファイルも削除する）
   /// [newSlotMax] スロット方式の場合の新スロット数（null=ツリー方式へ変更）
-  void applyModeChange({
+  Future<void> applyModeChange({
     required String projectId,
     required List<String> keepIds,
     required bool archive,
     required bool newIsTreeMode,
     int? newSlotMax,
-  }) {
+  }) async {
     final all = _nodesByProject[projectId] ?? [];
     final keep = all.where((n) => keepIds.contains(n.id)).toList();
     final discard = all.where((n) => !keepIds.contains(n.id)).toList();
@@ -119,6 +164,11 @@ class SaveTreeService extends ChangeNotifier {
     if (archive) {
       _archivedByProject.putIfAbsent(projectId, () => []);
       _archivedByProject[projectId]!.addAll(discard);
+    } else {
+      // 完全削除：実データ（SaveTree/{nodeId}.mirapro）も削除する
+      for (final n in discard) {
+        await MiraproSerializer.deleteSaveTreeNode(projectId, n.id);
+      }
     }
 
     // スロット方式の場合、選択ノードにスロット番号を再割り当て
