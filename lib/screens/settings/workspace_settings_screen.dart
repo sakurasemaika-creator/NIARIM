@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
+import '../../services/workspace_preset_service.dart';
 import '../../widgets/responsive.dart';
 
-class WorkspaceSettingsScreen extends StatefulWidget {
+class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
-
-  @override
-  State<WorkspaceSettingsScreen> createState() => _WorkspaceSettingsScreenState();
-}
-
-class _WorkspaceSettingsScreenState extends State<WorkspaceSettingsScreen> {
-  bool _isLeftHanded = false;
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsService>();
+    final presetService = context.watch<WorkspacePresetService>();
     return Scaffold(
       appBar: AppBar(title: const Text('ワークスペース設定')),
       body: desktopCentered(context, ListView(
@@ -23,7 +18,12 @@ class _WorkspaceSettingsScreenState extends State<WorkspaceSettingsScreen> {
         children: [
           const Text('パネル配置', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          SwitchListTile(title: const Text('左利きモード'), subtitle: const Text('パネルを右側に配置'), value: _isLeftHanded, onChanged: (v) => setState(() => _isLeftHanded = v)),
+          SwitchListTile(
+            title: const Text('左利きモード'),
+            subtitle: const Text('パネルを右側に配置'),
+            value: settings.isLeftHanded,
+            onChanged: (v) => settings.setLeftHanded(v),
+          ),
           const SizedBox(height: 8),
           const Text('PCモード（DeX）', style: TextStyle(fontWeight: FontWeight.bold)),
           const Text('画面幅の広い環境ではプロ向けのドッキングUIへ自動で切り替わります。'
@@ -48,18 +48,80 @@ class _WorkspaceSettingsScreenState extends State<WorkspaceSettingsScreen> {
             onChanged: (v) => settings.setForcePcMode(v),
           ),
           const Divider(height: 32),
-          const Text('ツールバー編集', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          ...[('Gペン', true), ('消しゴム', true), ('バケツ', true), ('スポイト', true), ('定規', false), ('テキスト', false), ('フィルター', false)]
-              .map((t) => CheckboxListTile(title: Text(t.$1), value: t.$2, onChanged: (v) {}, dense: true)),
-          const Divider(height: 32),
           const Text('ワークスペース保存', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text('左利きモード・PCモード設定を名前を付けて保存し、後から呼び出せます。',
+              style: TextStyle(fontSize: 11, color: Colors.grey)),
           const SizedBox(height: 8),
-          FilledButton.icon(onPressed: () {}, icon: const Icon(Icons.save), label: const Text('現在のワークスペースを保存')),
+          FilledButton.icon(
+            onPressed: () => _showSaveDialog(context, settings, presetService),
+            icon: const Icon(Icons.save),
+            label: const Text('現在のワークスペースを保存'),
+          ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.folder_open), label: const Text('ワークスペースを読み込み')),
+          OutlinedButton.icon(
+            onPressed: presetService.presets.isEmpty
+                ? null
+                : () => _showLoadSheet(context, settings, presetService),
+            icon: const Icon(Icons.folder_open),
+            label: Text(presetService.presets.isEmpty ? 'ワークスペースを読み込み（未保存）' : 'ワークスペースを読み込み'),
+          ),
         ],
       )),
+    );
+  }
+
+  void _showSaveDialog(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('ワークスペースを保存'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: '名前（例：アニメ用・線画用）', border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          FilledButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+              presetService.save(name, isLeftHanded: settings.isLeftHanded, forcePcMode: settings.forcePcMode);
+              Navigator.pop(ctx);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    ).then((_) => controller.dispose());
+  }
+
+  void _showLoadSheet(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final preset in presetService.presets)
+              ListTile(
+                leading: const Icon(Icons.dashboard_customize),
+                title: Text(preset.name),
+                subtitle: Text(preset.isLeftHanded ? '左利き' : '右利き'),
+                onTap: () {
+                  settings.setLeftHanded(preset.isLeftHanded);
+                  settings.setForcePcMode(preset.forcePcMode);
+                  Navigator.pop(ctx);
+                },
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => presetService.delete(preset.id),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

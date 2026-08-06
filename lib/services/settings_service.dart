@@ -12,6 +12,9 @@ class SettingsService extends ChangeNotifier {
   // PC/DeXモードの手動切替（仕様書02：ワークスペース設定）。
   // null=自動（画面幅で判定）、true/false=手動で強制ON/OFF。
   bool? _forcePcMode;
+  // 左利きモード（仕様書08）：ONの場合、キャンバスのドッキングパネルを
+  // 左右反転して配置する。
+  bool _isLeftHanded = false;
 
   int get defaultFps => _defaultFps;
   int get undoLimit => _undoLimit;
@@ -20,6 +23,7 @@ class SettingsService extends ChangeNotifier {
   bool get defaultDrawingAreaEnabled => _defaultDrawingAreaEnabled;
   double get defaultDrawingAreaScale => _defaultDrawingAreaScale;
   bool? get forcePcMode => _forcePcMode;
+  bool get isLeftHanded => _isLeftHanded;
 
   GestureAction _twoFingerTap = GestureAction.undo;
   GestureAction _threeFingerTap = GestureAction.redo;
@@ -43,6 +47,16 @@ class SettingsService extends ChangeNotifier {
     // -1=自動（未設定）、0=OFF、1=ON
     final pcModeValue = prefs.getInt('force_pc_mode') ?? -1;
     _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
+    _isLeftHanded = prefs.getBool('is_left_handed') ?? false;
+    _twoFingerTap = _gestureActionFromName(prefs.getString('gesture_two_finger_tap'), GestureAction.undo);
+    _threeFingerTap = _gestureActionFromName(prefs.getString('gesture_three_finger_tap'), GestureAction.redo);
+    _twoFingerSwipe = _gestureActionFromName(prefs.getString('gesture_two_finger_swipe'), GestureAction.frameMove);
+    _longPress = _gestureActionFromName(prefs.getString('gesture_long_press'), GestureAction.eyedropper);
+  }
+
+  GestureAction _gestureActionFromName(String? name, GestureAction fallback) {
+    if (name == null) return fallback;
+    return GestureAction.values.asNameMap()[name] ?? fallback;
   }
 
   bool _isFirstLaunch = true;
@@ -94,16 +108,29 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 左利きモードを切り替える（仕様書08：キャンバスのドッキングパネル配置を反転）。
+  Future<void> setLeftHanded(bool value) async {
+    _isLeftHanded = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_left_handed', value);
+    notifyListeners();
+  }
+
   Future<void> setGesture(GestureType type, GestureAction action) async {
+    final prefs = await SharedPreferences.getInstance();
     switch (type) {
       case GestureType.twoFingerTap:
         _twoFingerTap = action;
+        await prefs.setString('gesture_two_finger_tap', action.name);
       case GestureType.threeFingerTap:
         _threeFingerTap = action;
+        await prefs.setString('gesture_three_finger_tap', action.name);
       case GestureType.twoFingerSwipe:
         _twoFingerSwipe = action;
+        await prefs.setString('gesture_two_finger_swipe', action.name);
       case GestureType.longPress:
         _longPress = action;
+        await prefs.setString('gesture_long_press', action.name);
     }
     notifyListeners();
   }

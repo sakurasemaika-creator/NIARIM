@@ -7,6 +7,7 @@ import '../../services/project_service.dart';
 import '../../services/brush_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/quick_tool_service.dart';
+import '../../services/settings_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../engine/undo_manager.dart';
 import '../../models/onion_skin_settings.dart';
@@ -186,6 +187,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
     final isDesktop = isWideScreen(context);
     final dockedToolPanel = isDesktop ? _activeToolPanel() : null;
+    // 左利きモード（仕様書08）：フローティング／ドッキングパネルを左右反転し、
+    // 描画する手の側にパネルが重ならないようにする。
+    final leftHanded = context.watch<SettingsService>().isLeftHanded;
 
     return Scaffold(
       body: SafeArea(
@@ -198,8 +202,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Row(
                 children: [
                   // PC/DeXモード：ツールオプション系パネルはフローティングではなく
-                  // キャンバス左側の常時ドッキングパネルとして表示する。
-                  if (dockedToolPanel != null)
+                  // キャンバス左側（左利きモード時は右側）の常時ドッキングパネル
+                  // として表示する。
+                  if (dockedToolPanel != null && !leftHanded)
                     SizedBox(width: 280, child: dockedToolPanel),
                   Expanded(
                     child: Stack(
@@ -227,7 +232,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                   if (_showLayerPanel && !isDesktop)
                     Positioned(
-                      right: 0, top: 0, bottom: 0, width: 250,
+                      left: leftHanded ? 0 : null,
+                      right: leftHanded ? null : 0,
+                      top: 0, bottom: 0, width: 250,
                       child: LayerPanel(
                         onClose: () => setState(() => _showLayerPanel = false),
                         projectId: widget.projectId,
@@ -236,27 +243,29 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     ),
                   if (_showColorPicker && !isDesktop)
-                    Positioned(left: 16, bottom: 16, child: _colorPickerPanel()),
+                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: null, bottom: 16, child: _colorPickerPanel()),
                   if (_showBrushPanel && !isDesktop)
-                    Positioned(left: 16, top: 16, child: _brushPanel()),
+                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _brushPanel()),
                   // ペンサブツールパネル（ブラシ/トーン/スタンプ/投げ縄塗り）
                   if (_showPenSubToolPanel && !isDesktop)
-                    Positioned(left: 16, top: 16, child: _penSubToolPanel()),
+                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _penSubToolPanel()),
                   // オニオンスキンパネル
                   if (_showOnionSkinPanel && !isDesktop)
-                    Positioned(right: 16, top: 16, child: _onionSkinPanel()),
+                    _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 16, bottom: null, child: _onionSkinPanel()),
                   // 定規パネル
                   if (_showRulerPanel && !isDesktop)
-                    Positioned(left: 16, top: 16, child: _rulerPanel()),
+                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _rulerPanel()),
                   // フィルターパネル（仕様書18：描画フィルター）
                   if (_showFilterPanel && !isDesktop)
-                    Positioned(right: 16, top: 16, child: _filterPanel()),
+                    _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 16, bottom: null, child: _filterPanel()),
                   // 早替えツール設定パネル（仕様書02・08）
                   if (_showQuickToolPanel && !isDesktop)
-                    Positioned(right: 16, bottom: 16, child: _quickToolPanel()),
+                    _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: null, bottom: 16, child: _quickToolPanel()),
                       ],
                     ),
                   ),
+                  if (dockedToolPanel != null && leftHanded)
+                    SizedBox(width: 280, child: dockedToolPanel),
                   if (isDesktop)
                     SizedBox(
                       width: 280,
@@ -409,6 +418,26 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   Widget _quickToolPanel() =>
       QuickToolPanel(onClose: () => setState(() => _showQuickToolPanel = false));
+
+  /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの
+  /// 配置側。左利きモード時は[leftHanded]により全パネルをまとめて左右反転する
+  /// （仕様書08：描画する手の側にパネルが重ならないようにする）。
+  Widget _sidedPanel({
+    required bool anchorLeft,
+    required bool leftHanded,
+    required double? top,
+    required double? bottom,
+    required Widget child,
+  }) {
+    final onLeft = anchorLeft != leftHanded;
+    return Positioned(
+      left: onLeft ? 16 : null,
+      right: onLeft ? null : 16,
+      top: top,
+      bottom: bottom,
+      child: child,
+    );
+  }
 
   /// ツール早替えボタンタップ時：登録順に次のツールへ切り替える（仕様書02・08）。
   void _applyNextQuickTool() {

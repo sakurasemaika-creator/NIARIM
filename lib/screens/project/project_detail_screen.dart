@@ -1,23 +1,108 @@
+import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../engine/layer_compositor.dart';
+import '../../engine/tile_manager.dart' show frameLayerKey;
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
 
-class ProjectDetailScreen extends StatelessWidget {
+class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
   const ProjectDetailScreen({super.key, required this.projectId});
 
   @override
+  State<ProjectDetailScreen> createState() => _ProjectDetailScreenState();
+}
+
+/// シーンをまたいだ絶対フレーム位置（プレビュー再生用）。
+typedef _FlatFrame = ({String sceneId, int frameIndex});
+
+class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
+  int _frameIndex = 0;
+  bool _isPlaying = false;
+  bool _rendering = false;
+  Timer? _timer;
+  ui.Image? _previewImage;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _previewImage?.dispose();
+    super.dispose();
+  }
+
+  List<_FlatFrame> _flatten(ProjectService ps) {
+    final result = <_FlatFrame>[];
+    for (final scene in ps.scenesOf(widget.projectId)) {
+      for (int i = 0; i < scene.frames.length; i++) {
+        result.add((sceneId: scene.id, frameIndex: i));
+      }
+    }
+    return result;
+  }
+
+  Future<void> _renderFrame(ProjectService ps, List<_FlatFrame> flat) async {
+    if (_rendering || flat.isEmpty) return;
+    _rendering = true;
+    final entry = flat[_frameIndex.clamp(0, flat.length - 1)];
+    final tileManager = ps.tileManagerOf(widget.projectId);
+    final layers = ps.layersOf(widget.projectId, entry.sceneId, entry.frameIndex);
+    final img = await LayerCompositor.composite(
+      tileManager,
+      layers,
+      (l) => frameLayerKey(entry.sceneId, entry.frameIndex, l.id),
+      tileManager.canvasWidth,
+      tileManager.canvasHeight,
+    );
+    _rendering = false;
+    if (!mounted) {
+      img.dispose();
+      return;
+    }
+    final old = _previewImage;
+    setState(() => _previewImage = img);
+    old?.dispose();
+  }
+
+  void _seekTo(ProjectService ps, List<_FlatFrame> flat, int index) {
+    if (flat.isEmpty) return;
+    setState(() => _frameIndex = index.clamp(0, flat.length - 1));
+    _renderFrame(ps, flat);
+  }
+
+  void _togglePlay(ProjectService ps, List<_FlatFrame> flat, int fps) {
+    if (flat.isEmpty) return;
+    if (_isPlaying) {
+      _timer?.cancel();
+      setState(() => _isPlaying = false);
+      return;
+    }
+    setState(() => _isPlaying = true);
+    final interval = Duration(milliseconds: (1000 / fps).round().clamp(16, 1000));
+    _timer = Timer.periodic(interval, (_) {
+      if (!mounted) return;
+      setState(() => _frameIndex = (_frameIndex + 1) % flat.length);
+      _renderFrame(ps, flat);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final projectService = context.watch<ProjectService>();
-    final project = projectService.projects.where((p) => p.id == projectId).firstOrNull;
+    final project = projectService.projects.where((p) => p.id == widget.projectId).firstOrNull;
 
     if (project == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('プロジェクト')),
         body: const Center(child: Text('プロジェクトが見つかりません')),
       );
+    }
+
+    final flat = _flatten(projectService);
+    if (_previewImage == null && !_rendering) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _renderFrame(projectService, flat));
     }
 
     return Scaffold(
@@ -29,8 +114,8 @@ class ProjectDetailScreen extends StatelessWidget {
             onSelected: (action) {
               switch (action) {
                 case 'rename': _showRenameDialog(context, project.name);
-                case 'duplicate': projectService.duplicateProject(projectId);
-                case 'delete': projectService.deleteProject(projectId); context.pop();
+                case 'duplicate': projectService.duplicateProject(widget.projectId);
+                case 'delete': projectService.deleteProject(widget.projectId); context.pop();
               }
             },
             itemBuilder: (_) => [
@@ -53,23 +138,48 @@ class ProjectDetailScreen extends StatelessWidget {
               aspectRatio: 16 / 9,
               child: Container(
                 decoration: BoxDecoration(color: Color(project.backgroundColor), borderRadius: BorderRadius.circular(8)),
-                child: const Center(child: Icon(Icons.play_circle_outline, size: 48, color: Colors.white38)),
+                clipBehavior: Clip.antiAlias,
+                child: _previewImage != null
+                    ? RawImage(image: _previewImage, fit: BoxFit.contain)
+                    : const Center(child: Icon(Icons.play_circle_outline, size: 48, color: Colors.white38)),
               ),
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(onPressed: () {}, icon: const Icon(Icons.skip_previous)),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.fast_rewind)),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.play_arrow)),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.fast_forward)),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.skip_next)),
+                IconButton(
+                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, 0),
+                  icon: const Icon(Icons.skip_previous),
+                  tooltip: '先頭フレーム',
+                ),
+                IconButton(
+                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex - 1),
+                  icon: const Icon(Icons.fast_rewind),
+                  tooltip: '1フレーム戻る',
+                ),
+                IconButton(
+                  onPressed: flat.isEmpty
+                      ? null
+                      : () => _togglePlay(projectService, flat, project.fps),
+                  icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                  tooltip: _isPlaying ? '一時停止' : '再生',
+                ),
+                IconButton(
+                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex + 1),
+                  icon: const Icon(Icons.fast_forward),
+                  tooltip: '1フレーム進む',
+                ),
+                IconButton(
+                  onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, flat.length - 1),
+                  icon: const Icon(Icons.skip_next),
+                  tooltip: '最終フレーム',
+                ),
               ],
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
-              onPressed: () => context.push('/canvas/$projectId'),
+              onPressed: () => context.push('/canvas/${widget.projectId}'),
               icon: const Icon(Icons.edit),
               label: const Text('編集開始'),
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
@@ -95,7 +205,7 @@ class ProjectDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
-              onPressed: () => context.push('/save-tree/$projectId'),
+              onPressed: () => context.push('/save-tree/${widget.projectId}'),
               icon: const Icon(Icons.account_tree),
               label: const Text('セーブツリー'),
             ),
@@ -142,7 +252,7 @@ class ProjectDetailScreen extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
           FilledButton(
             onPressed: () {
-              context.read<ProjectService>().renameProject(projectId, controller.text);
+              context.read<ProjectService>().renameProject(widget.projectId, controller.text);
               Navigator.pop(ctx);
             },
             child: const Text('変更'),
