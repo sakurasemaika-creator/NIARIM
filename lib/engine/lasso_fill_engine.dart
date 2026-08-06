@@ -2,6 +2,44 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:math' as math;
 
+/// 投げ縄塗りの確定処理（低スペック端末でのUIスレッドブロック防止のため
+/// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
+Uint8List runLassoFillInIsolate(
+    ({
+      bool enclosed,
+      List<ui.Offset> points,
+      ui.Color color,
+      Uint8List canvasData,
+      int width,
+      int height,
+      Uint8List? toneTexture,
+      int toneTextureWidth,
+      int toneTextureHeight,
+    }) args) {
+  final engine = LassoFillEngine();
+  return args.enclosed
+      ? engine.fillEnclosed(
+          points: args.points,
+          color: args.color,
+          canvasData: args.canvasData,
+          width: args.width,
+          height: args.height,
+          toneTexture: args.toneTexture,
+          toneTextureWidth: args.toneTextureWidth,
+          toneTextureHeight: args.toneTextureHeight,
+        )
+      : engine.fillLasso(
+          points: args.points,
+          color: args.color,
+          canvasData: args.canvasData,
+          width: args.width,
+          height: args.height,
+          toneTexture: args.toneTexture,
+          toneTextureWidth: args.toneTextureWidth,
+          toneTextureHeight: args.toneTextureHeight,
+        );
+}
+
 /// 投げ縄塗りエンジン
 /// 仕様：25_投げ縄塗り仕様.md
 class LassoFillEngine {

@@ -2,6 +2,35 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+/// スタンプ描画の確定処理（低スペック端末でのUIスレッドブロック防止のため
+/// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
+Uint8List runStampStrokeInIsolate(
+    ({
+      Uint8List canvasData,
+      int width,
+      int height,
+      Uint8List texture,
+      int texSize,
+      List<ui.Offset> points,
+      double stampSize,
+      bool rotation,
+      double scatter,
+      double density,
+    }) args) {
+  return StampEngine().stampAlongPath(
+    canvasData: args.canvasData,
+    width: args.width,
+    height: args.height,
+    texture: args.texture,
+    texSize: args.texSize,
+    points: args.points,
+    stampSize: args.stampSize,
+    rotation: args.rotation,
+    scatter: args.scatter,
+    density: args.density,
+  );
+}
+
 /// スタンプ描画エンジン（仕様書17：色情報はスタンプ画像自体が保持・
 /// ブラシサイズに連動・回転／密度／散布に対応）。
 class StampEngine {

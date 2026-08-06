@@ -1,6 +1,48 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+/// トーン自由描画の確定処理（低スペック端末でのUIスレッドブロック防止のため
+/// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
+Uint8List runToneStrokeInIsolate(
+    ({
+      bool erase,
+      List<ui.Offset> points,
+      double brushSize,
+      ui.Color color,
+      Uint8List canvasData,
+      int canvasWidth,
+      int canvasHeight,
+      Uint8List toneTexture,
+      int toneWidth,
+      int toneHeight,
+      int opacity,
+    }) args) {
+  final engine = ToneEngine();
+  return args.erase
+      ? engine.eraseToneStroke(
+          points: args.points,
+          brushSize: args.brushSize,
+          canvasData: args.canvasData,
+          canvasWidth: args.canvasWidth,
+          canvasHeight: args.canvasHeight,
+          toneTexture: args.toneTexture,
+          toneWidth: args.toneWidth,
+          toneHeight: args.toneHeight,
+        )
+      : engine.drawToneStroke(
+          points: args.points,
+          brushSize: args.brushSize,
+          color: args.color,
+          canvasData: args.canvasData,
+          canvasWidth: args.canvasWidth,
+          canvasHeight: args.canvasHeight,
+          toneTexture: args.toneTexture,
+          toneWidth: args.toneWidth,
+          toneHeight: args.toneHeight,
+          opacity: args.opacity,
+        );
+}
+
 /// トーン描画エンジン
 /// サイズ一定・ループ・回転なし・密度なし・散布なし
 class ToneEngine {

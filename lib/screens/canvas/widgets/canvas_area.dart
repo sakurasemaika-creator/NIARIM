@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -74,9 +75,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   final InputHandler _inputHandler = InputHandler();
   final OnionSkinEngine _onionSkinEngine = OnionSkinEngine();
   final RulerEngine _rulerEngine = RulerEngine();
-  final ToneEngine _toneEngine = ToneEngine();
-  final StampEngine _stampEngine = StampEngine();
-  final LassoFillEngine _lassoFillEngine = LassoFillEngine();
+  // トーン・スタンプ・投げ縄塗りの本処理はisolate側で都度インスタンス化するため
+  // （runToneStrokeInIsolate等を参照）、ここではエンジンインスタンスを保持しない。
 
   late TileManager _tileManager;
   late DrawingEngine _drawingEngine;
@@ -434,15 +434,19 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
 
     final points = _lassoPoints.map((p) => ui.Offset(p.dx, p.dy)).toList();
-    final result = widget.lassoFillEnclosedMode
-        ? _lassoFillEngine.fillEnclosed(
-            points: points, color: color, canvasData: canvasData, width: w, height: h,
-            toneTexture: toneTexture, toneTextureWidth: toneSize, toneTextureHeight: toneSize,
-          )
-        : _lassoFillEngine.fillLasso(
-            points: points, color: color, canvasData: canvasData, width: w, height: h,
-            toneTexture: toneTexture, toneTextureWidth: toneSize, toneTextureHeight: toneSize,
-          );
+    // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
+    // 塗りつぶし処理はバックグラウンドisolateで実行する。
+    final result = await compute(runLassoFillInIsolate, (
+      enclosed: widget.lassoFillEnclosedMode,
+      points: points,
+      color: color,
+      canvasData: canvasData,
+      width: w,
+      height: h,
+      toneTexture: toneTexture,
+      toneTextureWidth: toneSize,
+      toneTextureHeight: toneSize,
+    ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);
     _scheduleComposite();
@@ -479,18 +483,21 @@ class _CanvasAreaState extends State<CanvasArea> {
       (c.b * 255).round().clamp(0, 255),
     );
     final points = _subToolStrokePoints.map((p) => ui.Offset(p.dx, p.dy)).toList();
-    final result = widget.isEraser
-        ? _toneEngine.eraseToneStroke(
-            points: points, brushSize: brushSize, canvasData: canvasData,
-            canvasWidth: w, canvasHeight: h,
-            toneTexture: texture, toneWidth: toneSize, toneHeight: toneSize,
-          )
-        : _toneEngine.drawToneStroke(
-            points: points, brushSize: brushSize, color: color, canvasData: canvasData,
-            canvasWidth: w, canvasHeight: h,
-            toneTexture: texture, toneWidth: toneSize, toneHeight: toneSize,
-            opacity: bs.currentBrush?.opacity ?? 100,
-          );
+    // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
+    // 描画処理はバックグラウンドisolateで実行する。
+    final result = await compute(runToneStrokeInIsolate, (
+      erase: widget.isEraser,
+      points: points,
+      brushSize: brushSize,
+      color: color,
+      canvasData: canvasData,
+      canvasWidth: w,
+      canvasHeight: h,
+      toneTexture: texture,
+      toneWidth: toneSize,
+      toneHeight: toneSize,
+      opacity: bs.currentBrush?.opacity ?? 100,
+    ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);
     _scheduleComposite();
@@ -532,12 +539,20 @@ class _CanvasAreaState extends State<CanvasArea> {
       sampled.add(ui.Offset(_subToolStrokePoints.first.dx, _subToolStrokePoints.first.dy));
     }
 
-    final result = _stampEngine.stampAlongPath(
-      canvasData: canvasData, width: w, height: h,
-      texture: texture, texSize: texSize,
-      points: sampled, stampSize: stampSize,
-      rotation: stamp.rotation, scatter: stamp.scatter * stampSize, density: stamp.density,
-    );
+    // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
+    // スタンプ合成処理はバックグラウンドisolateで実行する。
+    final result = await compute(runStampStrokeInIsolate, (
+      canvasData: canvasData,
+      width: w,
+      height: h,
+      texture: texture,
+      texSize: texSize,
+      points: sampled,
+      stampSize: stampSize,
+      rotation: stamp.rotation,
+      scatter: stamp.scatter * stampSize,
+      density: stamp.density,
+    ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);
     _scheduleComposite();
