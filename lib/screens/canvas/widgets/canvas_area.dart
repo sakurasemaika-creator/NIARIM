@@ -544,17 +544,20 @@ class _CanvasAreaState extends State<CanvasArea> {
     _markLineartDirtyIfNeeded();
   }
 
-  void _pickColor(Offset canvasPos) {
-    final (tx, ty) = _tileManager.getTileCoord(canvasPos.dx, canvasPos.dy);
-    final tile = _tileManager.getTile(_tileKeyFor(_layerId), tx, ty);
-    if (tile == null) return;
-    final px = canvasPos.dx.round() % TileManager.tileSize;
-    final py = canvasPos.dy.round() % TileManager.tileSize;
-    if (px < 0 || py < 0) return;
-    final idx = (py * TileManager.tileSize + px) * 4;
-    if (idx + 3 >= tile.length) return;
-    widget.onEyedropper?.call(
-        Color.fromARGB(tile[idx + 3], tile[idx], tile[idx + 1], tile[idx + 2]));
+  /// スポイトは表示中の全レイヤーを不透明度・ブレンドモード・クリッピングを
+  /// 反映して合成した色をサンプリングする（仕様書16：表示されている見た目の色を拾う）。
+  Future<void> _pickColor(Offset canvasPos) async {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final px = canvasPos.dx.round();
+    final py = canvasPos.dy.round();
+    if (px < 0 || py < 0 || px >= w || py >= h) return;
+    final buffer = await _flattenVisibleLayers();
+    if (!mounted) return;
+    final idx = (py * w + px) * 4;
+    if (idx + 3 >= buffer.length) return;
+    widget.onEyedropper?.call(Color.fromARGB(
+        buffer[idx + 3], buffer[idx], buffer[idx + 1], buffer[idx + 2]));
   }
 
   // ─── 図形ツール ───────────────────────────────────────────────────────
@@ -770,14 +773,35 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (mask == null || reference == null) return;
     if (mask[y * w + x] != 0) return;
 
-    final result = _bucketEngine.fill(
-      canvasData: reference,
-      width: w,
-      height: h,
-      startX: x,
-      startY: y,
-      fillColor: _drawingEngine.currentColor,
-    );
+    final toneService = context.read<ToneService>();
+    final tone = toneService.bucketUseTone
+        ? (toneService.lastBucketTone ?? toneService.currentTone)
+        : null;
+    final Uint8List result;
+    if (tone != null) {
+      const toneSize = 64;
+      final texture = generateBuiltInToneTexture(tone, size: toneSize);
+      result = _bucketEngine.fillWithTone(
+        canvasData: reference,
+        width: w,
+        height: h,
+        startX: x,
+        startY: y,
+        toneColor: _drawingEngine.currentColor,
+        toneTexture: texture,
+        toneWidth: toneSize,
+        toneHeight: toneSize,
+      );
+    } else {
+      result = _bucketEngine.fill(
+        canvasData: reference,
+        width: w,
+        height: h,
+        startX: x,
+        startY: y,
+        fillColor: _drawingEngine.currentColor,
+      );
+    }
 
     bool changed = false;
     for (int py = 0; py < h; py++) {

@@ -17,6 +17,8 @@ class ToneService extends ChangeNotifier {
   Tone? _lastLassoTone;
   // 投げ縄塗り：ベタ塗り／トーンの選択状態（仕様書25）
   bool _lassoUseTone = false;
+  // バケツ塗り：ベタ塗り／トーンの選択状態（仕様書04・17）
+  bool _bucketUseTone = false;
 
   List<Tone> get tones => List.unmodifiable(_tones);
   List<ToneFolder> get folders => List.unmodifiable(_folders);
@@ -24,9 +26,15 @@ class ToneService extends ChangeNotifier {
   Tone? get lastBucketTone => _lastBucketTone;
   Tone? get lastLassoTone => _lastLassoTone;
   bool get lassoUseTone => _lassoUseTone;
+  bool get bucketUseTone => _bucketUseTone;
 
   void setLassoUseTone(bool value) {
     _lassoUseTone = value;
+    notifyListeners();
+  }
+
+  void setBucketUseTone(bool value) {
+    _bucketUseTone = value;
     notifyListeners();
   }
 

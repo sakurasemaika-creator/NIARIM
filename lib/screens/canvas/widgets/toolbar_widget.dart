@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../services/tone_service.dart';
 import '../canvas_screen.dart';
 
 class ToolbarWidget extends StatelessWidget {
@@ -50,7 +52,11 @@ class ToolbarWidget extends StatelessWidget {
               child: _toolButton(Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
             ),
             _toolButton(Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
-            _toolButton(Icons.format_color_fill, DrawingTool.bucket, 'バケツ'),
+            // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示
+            GestureDetector(
+              onLongPress: () => _showBucketToneMenu(context),
+              child: _toolButton(Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
+            ),
             _toolButton(Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
             _toolButton(Icons.back_hand, DrawingTool.finger, '指'),
             _selectToolButton(context),
@@ -118,6 +124,87 @@ class ToolbarWidget extends StatelessWidget {
         tooltip: '選択（長押しで種別変更）',
         color: isSelected ? Colors.blue : null,
         style: isSelected ? IconButton.styleFrom(backgroundColor: Colors.blue.withValues(alpha: 0.15)) : null,
+      ),
+    );
+  }
+
+  /// バケツツールのベタ塗り／トーン切り替えメニュー（仕様書04・17）。
+  void _showBucketToneMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Consumer<ToneService>(
+        builder: (ctx, toneService, _) {
+          final tones = toneService.tones;
+          final useTone = toneService.bucketUseTone;
+          final lastBucketTone = toneService.lastBucketTone;
+          return SafeArea(
+            child: SizedBox(
+              height: 320,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.format_color_fill, size: 18),
+                    title: const Text('ベタ塗り', style: TextStyle(fontSize: 13)),
+                    selected: !useTone,
+                    onTap: () {
+                      toneService.setBucketUseTone(false);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  const Divider(height: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Text('トーン一覧', style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                  ),
+                  Expanded(
+                    child: GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 4,
+                        mainAxisSpacing: 4,
+                      ),
+                      itemCount: tones.length,
+                      itemBuilder: (context, index) {
+                        final tone = tones[index];
+                        final isSelected = useTone && lastBucketTone?.id == tone.id;
+                        return GestureDetector(
+                          onTap: () {
+                            toneService.setBucketUseTone(true);
+                            toneService.setLastBucketTone(tone);
+                            Navigator.pop(ctx);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isSelected ? Colors.blue : Colors.grey[600]!,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                              color: Colors.grey[800],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.grid_on, size: 16),
+                                const SizedBox(height: 2),
+                                Text(tone.name, style: const TextStyle(fontSize: 7),
+                                    textAlign: TextAlign.center, maxLines: 2),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
