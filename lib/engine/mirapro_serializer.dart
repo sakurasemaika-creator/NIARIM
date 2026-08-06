@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' show Color, Offset, TextAlign;
 import 'package:archive/archive_io.dart';
 import 'package:path_provider/path_provider.dart';
+import '../models/camera_keyframe.dart';
 import '../models/layer.dart';
 import '../models/project.dart';
 import '../models/scene.dart';
@@ -214,9 +215,14 @@ class MiraproSerializer {
       final framesFile = archive.findFile('Scene/$sceneId/$_framesFile');
       if (framesFile == null) continue;
       final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
-      final (name, frames) = _deserializeScene(decoded);
+      final (name, frames, cameraKeyframes) = _deserializeScene(decoded);
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
-      scenes.add(Scene(id: sceneId, index: sceneIndex - 1, frames: frames, name: name));
+      scenes.add(Scene(
+          id: sceneId,
+          index: sceneIndex - 1,
+          frames: frames,
+          name: name,
+          cameraKeyframes: cameraKeyframes));
     }
     scenes.sort((a, b) => a.index.compareTo(b.index));
 
@@ -314,6 +320,15 @@ class MiraproSerializer {
   static Map<String, dynamic> _serializeScene(Scene scene) => {
         'name': scene.name,
         'frames': _serializeFrames(scene.frames),
+        'cameraKeyframes': scene.cameraKeyframes
+            .map((k) => {
+                  'frameIndex': k.frameIndex,
+                  'x': k.x,
+                  'y': k.y,
+                  'zoom': k.zoom,
+                  'rotation': k.rotation,
+                })
+            .toList(),
       };
 
   static List<dynamic> _serializeFrames(List<Frame> frames) =>
@@ -386,13 +401,23 @@ class MiraproSerializer {
   /// シーンファイル（frames.json）を読み込む。新形式は
   /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
   /// フレーム配列そのもの。どちらも読み込めるようにする。
-  static (String?, List<Frame>) _deserializeScene(dynamic decoded) {
+  static (String?, List<Frame>, List<CameraKeyframe>) _deserializeScene(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final name = decoded['name'] as String?;
       final frames = _deserializeFrames(decoded['frames'] as List<dynamic>);
-      return (name, frames);
+      final cameraJson = decoded['cameraKeyframes'] as List<dynamic>? ?? const [];
+      final cameraKeyframes = cameraJson
+          .map((j) => CameraKeyframe(
+                frameIndex: (j as Map<String, dynamic>)['frameIndex'] as int,
+                x: (j['x'] as num?)?.toDouble() ?? 0,
+                y: (j['y'] as num?)?.toDouble() ?? 0,
+                zoom: (j['zoom'] as num?)?.toDouble() ?? 1.0,
+                rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
+              ))
+          .toList();
+      return (name, frames, cameraKeyframes);
     }
-    return (null, _deserializeFrames(decoded as List<dynamic>));
+    return (null, _deserializeFrames(decoded as List<dynamic>), const <CameraKeyframe>[]);
   }
 
   static List<Frame> _deserializeFrames(List<dynamic> json) =>

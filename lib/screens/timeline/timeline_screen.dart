@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import '../../engine/camera_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/tile_manager.dart';
+import '../../models/camera_keyframe.dart';
 import '../../models/layer.dart';
 import '../../models/scene.dart';
 import '../../services/advertising_service.dart';
@@ -55,16 +57,6 @@ class _TrackClip {
   });
 }
 
-// カメラキーフレーム（タイムライン内部管理用）
-class _CameraKf {
-  int frame;
-  double x;
-  double y;
-  double zoom;
-  double rotation;
-  _CameraKf(this.frame, {this.x = 0, this.y = 0, this.zoom = 1.0, this.rotation = 0});
-}
-
 class TimelineScreen extends StatefulWidget {
   final String projectId;
   const TimelineScreen({super.key, required this.projectId});
@@ -87,7 +79,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final List<_TrackClip> _audioClips = [];
   final List<_TrackClip> _videoClips = [];
   final List<_TrackClip> _imageClips = [];
-  final List<_CameraKf> _cameraKfs = [];
   int _clipIdCounter = 0;
 
   // 音声・動画クリップの再生位置連動（仕様書05）
@@ -391,6 +382,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
                 sceneId: sceneId,
                 frameIndex: _currentFrame,
+                cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
               ),
       ),
     );
@@ -984,6 +976,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildCameraTrack() {
     final total = _totalFrames;
+    final sceneId = _selectedSceneId;
+    final cameraKfs = sceneId == null
+        ? const <CameraKeyframe>[]
+        : context.watch<ProjectService>().cameraKeyframesOf(widget.projectId, sceneId);
     return Container(
       height: 32,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -1006,7 +1002,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
                 // キーフレームマーカー
-                ..._cameraKfs.map((kf) => _buildCameraKfMarker(kf)),
+                ...cameraKfs.map((kf) => _buildCameraKfMarker(kf)),
                 // ＋ボタン
                 Positioned(
                   right: 4,
@@ -1032,12 +1028,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildCameraKfMarker(_CameraKf kf) {
+  Widget _buildCameraKfMarker(CameraKeyframe kf) {
     return AnimatedBuilder(
       animation: _cameraScrollCtrl,
       builder: (ctx, child) {
         final scrollOffset = _cameraScrollCtrl.hasClients ? _cameraScrollCtrl.offset : 0.0;
-        final cx = kf.frame * _cellW + _cellW / 2 - scrollOffset;
+        final cx = kf.frameIndex * _cellW + _cellW / 2 - scrollOffset;
         return Positioned(
           left: cx - 7,
           top: 9,
@@ -1170,22 +1166,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _addCameraKf() {
-    setState(() {
-      if (_cameraKfs.any((k) => k.frame == _currentFrame)) return;
-      _cameraKfs.add(_CameraKf(_currentFrame));
-      _cameraKfs.sort((a, b) => a.frame.compareTo(b.frame));
-    });
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final ps = context.read<ProjectService>();
+    final existing = ps.cameraKeyframesOf(widget.projectId, sceneId);
+    if (existing.any((k) => k.frameIndex == _currentFrame)) return;
+    ps.addCameraKeyframe(widget.projectId, sceneId, CameraKeyframe(frameIndex: _currentFrame));
   }
 
-  void _showEditCameraKfDialog(_CameraKf kf) {
+  void _showEditCameraKfDialog(CameraKeyframe kf) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _CameraKfSheet(
         kf: kf,
         totalFrames: _totalFrames,
-        onDelete: () => setState(() => _cameraKfs.remove(kf)),
-        onChanged: () => setState(() {}),
+        onDelete: (currentFrameIndex) => context
+            .read<ProjectService>()
+            .removeCameraKeyframe(widget.projectId, sceneId, currentFrameIndex),
+        onSave: (oldFrameIndex, newKf) => context
+            .read<ProjectService>()
+            .updateCameraKeyframe(widget.projectId, sceneId, oldFrameIndex, newKf),
       ),
     );
   }
@@ -1379,12 +1382,14 @@ class _TimelinePreview extends StatefulWidget {
   final List<Layer> layers;
   final String sceneId;
   final int frameIndex;
+  final List<CameraKeyframe> cameraKeyframes;
 
   const _TimelinePreview({
     required this.tileManager,
     required this.layers,
     required this.sceneId,
     required this.frameIndex,
+    this.cameraKeyframes = const [],
   });
 
   @override
@@ -1392,6 +1397,7 @@ class _TimelinePreview extends StatefulWidget {
 }
 
 class _TimelinePreviewState extends State<_TimelinePreview> {
+  final CameraEngine _cameraEngine = CameraEngine();
   ui.Image? _image;
   bool _building = false;
 
@@ -1407,7 +1413,8 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     if (old.layers != widget.layers ||
         old.tileManager != widget.tileManager ||
         old.sceneId != widget.sceneId ||
-        old.frameIndex != widget.frameIndex) {
+        old.frameIndex != widget.frameIndex ||
+        old.cameraKeyframes != widget.cameraKeyframes) {
       _rebuild();
     }
   }
@@ -1416,13 +1423,26 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     if (_building) return;
     _building = true;
     final tm = widget.tileManager;
-    final img = await LayerCompositor.composite(
+    final layered = await LayerCompositor.composite(
       tm,
       widget.layers,
       (l) => frameLayerKey(widget.sceneId, widget.frameIndex, l.id),
       tm.canvasWidth,
       tm.canvasHeight,
     );
+
+    // カメラ変換を適用する（仕様書05：カメラは表示のみを変更する）
+    final kf = _cameraEngine.valueAt(widget.cameraKeyframes, widget.frameIndex);
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.save();
+    _cameraEngine.apply(canvas, kf, tm.canvasWidth.toDouble(), tm.canvasHeight.toDouble());
+    canvas.drawImage(layered, ui.Offset.zero, ui.Paint());
+    canvas.restore();
+    layered.dispose();
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(tm.canvasWidth, tm.canvasHeight);
+
     if (!mounted) { img.dispose(); _building = false; return; }
     setState(() {
       _image?.dispose();
@@ -1812,27 +1832,30 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
 // ─── カメラKFシート ────────────────────────────────────────────────────────
 
 class _CameraKfSheet extends StatefulWidget {
-  final _CameraKf kf;
+  final CameraKeyframe kf;
   final int totalFrames;
-  final VoidCallback onDelete;
-  final VoidCallback onChanged;
+  final ValueChanged<int> onDelete;
+  final void Function(int oldFrameIndex, CameraKeyframe newKf) onSave;
   const _CameraKfSheet({
     required this.kf,
     required this.totalFrames,
     required this.onDelete,
-    required this.onChanged,
+    required this.onSave,
   });
   @override
   State<_CameraKfSheet> createState() => _CameraKfSheetState();
 }
 
 class _CameraKfSheetState extends State<_CameraKfSheet> {
-  late _CameraKf _kf;
+  late CameraKeyframe _kf;
 
   @override
   void initState() { super.initState(); _kf = widget.kf; }
 
-  void _notify() { widget.onChanged(); setState(() {}); }
+  void _update(CameraKeyframe newKf) {
+    widget.onSave(_kf.frameIndex, newKf);
+    setState(() => _kf = newKf);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1852,11 +1875,11 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Expanded(child: Text('カメラ KF: F${_kf.frame + 1}',
+                Expanded(child: Text('カメラ KF: F${_kf.frameIndex + 1}',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () { Navigator.pop(context); widget.onDelete(); },
+                  onPressed: () { Navigator.pop(context); widget.onDelete(_kf.frameIndex); },
                 ),
               ],
             ),
@@ -1867,10 +1890,10 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
               controller: scrollCtrl,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _row('X 移動', _kf.x, -1920, 1920, (v) { _kf.x = v; _notify(); }, _kf.x.toStringAsFixed(0)),
-                _row('Y 移動', _kf.y, -1080, 1080, (v) { _kf.y = v; _notify(); }, _kf.y.toStringAsFixed(0)),
-                _row('ズーム', _kf.zoom, 0.1, 5.0, (v) { _kf.zoom = v; _notify(); }, '×${_kf.zoom.toStringAsFixed(2)}'),
-                _row('回転', _kf.rotation, -180, 180, (v) { _kf.rotation = v; _notify(); }, '${_kf.rotation.toStringAsFixed(1)}°'),
+                _row('X 移動', _kf.x, -1920, 1920, (v) => _update(_kf.copyWith(x: v)), _kf.x.toStringAsFixed(0)),
+                _row('Y 移動', _kf.y, -1080, 1080, (v) => _update(_kf.copyWith(y: v)), _kf.y.toStringAsFixed(0)),
+                _row('ズーム', _kf.zoom, 0.1, 5.0, (v) => _update(_kf.copyWith(zoom: v)), '×${_kf.zoom.toStringAsFixed(2)}'),
+                _row('回転', _kf.rotation, -180, 180, (v) => _update(_kf.copyWith(rotation: v)), '${_kf.rotation.toStringAsFixed(1)}°'),
                 const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1879,14 +1902,14 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                       const SizedBox(width: 72, child: Text('フレーム', style: TextStyle(fontSize: 12))),
                       Expanded(
                         child: Slider(
-                          value: _kf.frame.toDouble(),
+                          value: _kf.frameIndex.toDouble(),
                           min: 0,
                           max: (widget.totalFrames - 1).toDouble(),
                           divisions: widget.totalFrames > 1 ? widget.totalFrames - 1 : 1,
-                          onChanged: (v) { _kf.frame = v.round(); _notify(); },
+                          onChanged: (v) => _update(_kf.copyWith(frameIndex: v.round())),
                         ),
                       ),
-                      SizedBox(width: 48, child: Text('F${_kf.frame + 1}',
+                      SizedBox(width: 48, child: Text('F${_kf.frameIndex + 1}',
                           style: const TextStyle(fontSize: 11), textAlign: TextAlign.right)),
                     ],
                   ),

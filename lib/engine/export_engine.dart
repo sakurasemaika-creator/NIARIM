@@ -5,14 +5,18 @@ import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/return_code.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
+import '../engine/camera_engine.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/tile_manager.dart';
+import '../models/camera_keyframe.dart';
 import '../models/layer.dart';
 import '../models/scene.dart';
 
 typedef ExportProgressCallback = void Function(int currentFrame, int totalFrames);
 
 class ExportEngine {
+  final CameraEngine _cameraEngine = CameraEngine();
+
   /// フレームを合成してRGBA Uint8Listを返す。
   ///
   /// [drawingWidth]・[drawingHeight]は描画領域全体のサイズ（描画領域倍率を
@@ -21,7 +25,8 @@ class ExportEngine {
   /// 切り出す（キャンバス表示の赤枠と同じ中央配置）。
   /// 合成対象はTileManagerに実ピクセルデータを持つレイヤー種別（通常・
   /// 自動塗り用線画・自動塗り）全てで、不透明度・ブレンドモード・
-  /// クリッピングを反映する（仕様書16）。
+  /// クリッピングを反映する（仕様書16）。[cameraKeyframes]が設定されている
+  /// 場合はカメラのXY移動・拡大・回転を書き出し結果へ反映する（仕様書05）。
   Future<Uint8List> renderFrame({
     required List<Layer> layers,
     required TileManager tileManager,
@@ -32,6 +37,7 @@ class ExportEngine {
     required int width,
     required int height,
     required int backgroundColor,
+    List<CameraKeyframe> cameraKeyframes = const [],
   }) async {
     final fullImage = await LayerCompositor.composite(
       tileManager,
@@ -57,7 +63,11 @@ class ExportEngine {
     // 描画領域の中央から書き出しサイズ分だけ切り出す（赤枠＝書き出し範囲）
     final offsetX = (drawingWidth - width) / 2;
     final offsetY = (drawingHeight - height) / 2;
+    final kf = _cameraEngine.valueAt(cameraKeyframes, frameIndex);
+    canvas.save();
+    _cameraEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
     canvas.drawImage(fullImage, ui.Offset(-offsetX, -offsetY), ui.Paint());
+    canvas.restore();
     fullImage.dispose();
 
     final picture = recorder.endRecording();
@@ -98,6 +108,7 @@ class ExportEngine {
           width: width,
           height: height,
           backgroundColor: backgroundColor,
+          cameraKeyframes: scene.cameraKeyframes,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
@@ -151,6 +162,7 @@ class ExportEngine {
           width: width,
           height: height,
           backgroundColor: backgroundColor,
+          cameraKeyframes: scene.cameraKeyframes,
         );
         final imgFrame = img.Image.fromBytes(
           width: width, height: height, bytes: rgba.buffer, numChannels: 4,
@@ -203,6 +215,7 @@ class ExportEngine {
           width: width,
           height: height,
           backgroundColor: backgroundColor,
+          cameraKeyframes: scene.cameraKeyframes,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),

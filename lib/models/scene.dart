@@ -1,3 +1,4 @@
+import 'camera_keyframe.dart';
 import 'layer.dart';
 
 class Scene {
@@ -7,12 +8,15 @@ class Scene {
   // ユーザーが変更したシーン名（仕様書05：シーン名変更ダイアログ）。
   // 未設定の場合はdisplayNameがindexから自動生成する。
   final String? name;
+  // カメラのXY移動・拡大・回転キーフレーム（仕様書05）。シーンごとに管理する。
+  final List<CameraKeyframe> cameraKeyframes;
 
   const Scene({
     required this.id,
     required this.index,
     this.frames = const [],
     this.name,
+    this.cameraKeyframes = const [],
   });
 
   String get displayName => name ?? 'Scene${index + 1}';
@@ -22,12 +26,14 @@ class Scene {
     int? index,
     List<Frame>? frames,
     Object? name = _sentinel,
+    List<CameraKeyframe>? cameraKeyframes,
   }) {
     return Scene(
       id: id ?? this.id,
       index: index ?? this.index,
       frames: frames ?? this.frames,
       name: name == _sentinel ? this.name : name as String?,
+      cameraKeyframes: cameraKeyframes ?? this.cameraKeyframes,
     );
   }
 }

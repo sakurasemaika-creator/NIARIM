@@ -5,6 +5,7 @@ import 'package:flutter/painting.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/mirapro_serializer.dart';
 import '../engine/tile_manager.dart';
+import '../models/camera_keyframe.dart';
 import '../models/layer.dart';
 import '../models/project.dart';
 import '../models/scene.dart';
@@ -606,6 +607,46 @@ class ProjectService extends ChangeNotifier {
         .toList();
     scenes[sceneIdx] = scene.copyWith(frames: reindexed);
     notifyListeners();
+  }
+
+  // ─── カメラキーフレーム（仕様書05：XY移動・拡大・回転） ─────────────────
+
+  List<CameraKeyframe> cameraKeyframesOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.cameraKeyframes ?? const []);
+
+  void _updateSceneCameraKeyframes(
+      String projectId, String sceneId, List<CameraKeyframe> keyframes) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final sorted = List<CameraKeyframe>.from(keyframes)
+      ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    scenes[idx] = scenes[idx].copyWith(cameraKeyframes: sorted);
+    notifyListeners();
+  }
+
+  /// キーフレームを追加する。同じframeIndexが既にあれば置き換える。
+  void addCameraKeyframe(String projectId, String sceneId, CameraKeyframe kf) {
+    final current = cameraKeyframesOf(projectId, sceneId);
+    final without = current.where((k) => k.frameIndex != kf.frameIndex).toList();
+    _updateSceneCameraKeyframes(projectId, sceneId, [...without, kf]);
+  }
+
+  /// 既存キーフレーム（[oldFrameIndex]で特定）を[newKf]で置き換える。
+  /// newKf.frameIndexが他のキーフレームと重複する場合はその既存分を消す。
+  void updateCameraKeyframe(
+      String projectId, String sceneId, int oldFrameIndex, CameraKeyframe newKf) {
+    final current = cameraKeyframesOf(projectId, sceneId);
+    final without =
+        current.where((k) => k.frameIndex != oldFrameIndex && k.frameIndex != newKf.frameIndex).toList();
+    _updateSceneCameraKeyframes(projectId, sceneId, [...without, newKf]);
+  }
+
+  void removeCameraKeyframe(String projectId, String sceneId, int frameIndex) {
+    final current = cameraKeyframesOf(projectId, sceneId);
+    _updateSceneCameraKeyframes(
+        projectId, sceneId, current.where((k) => k.frameIndex != frameIndex).toList());
   }
 
   // ─── レイヤー結合 ─────────────────────────────────────────────────────
