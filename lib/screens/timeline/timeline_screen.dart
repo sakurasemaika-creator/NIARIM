@@ -666,8 +666,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             }
                           },
                           onDoubleTap: _isSceneMultiSelect ? null : () => setState(() => _selectedSceneId = scene.id),
+                          // 長押し：このシーンを選択済みの状態でシーン複数選択モードを開始する
                           onLongPress: () {
-                            // TODO: 該当シーンの全フレームをフレーム複数選択状態にする（フレーム複数選択モード実装時に連携）
+                            if (_isSceneMultiSelect) return;
+                            setState(() {
+                              _isSceneMultiSelect = true;
+                              _selectedSceneIds.add(scene.id);
+                            });
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),

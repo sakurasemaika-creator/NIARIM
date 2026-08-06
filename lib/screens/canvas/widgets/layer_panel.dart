@@ -618,11 +618,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 title: const Text('素材差し替え'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  // TODO: 素材差し替えピッカー連携
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('素材差し替え（実装予定）')),
-                  );
+                  _replaceMaterial(context, layer);
                 },
               ),
             if (isCommon)
@@ -1257,6 +1253,68 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 画像を選択し、キャンバスサイズへアスペクト比維持で中央フィットさせて
   /// ラスタライズし、通常レイヤーとして追加する（仕様書16：画像読み込みは
   /// タイムライン素材ではなく描画レイヤーとして扱う）。
+  /// レイヤーのピクセル内容を新しい画像で丸ごと差し替える（位置・トランスフォームは
+  /// 維持したまま、キャンバス全体に収まるよう中央寄せ・アスペクト比維持で描き直す）。
+  Future<void> _replaceMaterial(BuildContext context, model.Layer layer) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final path = result.files.first.path;
+    if (path == null) return;
+
+    final bytes = await File(path).readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    if (!context.mounted) {
+      image.dispose();
+      return;
+    }
+
+    final projectService = context.read<ProjectService>();
+    final tileManager = projectService.tileManagerOf(widget.projectId);
+    final w = tileManager.canvasWidth;
+    final h = tileManager.canvasHeight;
+
+    final scale = math.min(w / image.width, h / image.height);
+    final drawW = image.width * scale;
+    final drawH = image.height * scale;
+    final dx = (w - drawW) / 2;
+    final dy = (h - drawH) / 2;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      image,
+      ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      ui.Rect.fromLTWH(dx, dy, drawW, drawH),
+      ui.Paint(),
+    );
+    final picture = recorder.endRecording();
+    final rendered = await picture.toImage(w, h);
+    image.dispose();
+    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    rendered.dispose();
+    if (byteData == null || !context.mounted) return;
+
+    tileManager.replaceLayerPixels(
+      frameLayerKey(widget.sceneId, widget.frameIndex, layer.id),
+      byteData.buffer.asUint8List(),
+    );
+    projectService.updateLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layer: layer,
+    );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('素材を差し替えました: ${layer.name}')),
+    );
+  }
+
   Future<void> _importImage(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
