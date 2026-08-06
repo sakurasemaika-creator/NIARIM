@@ -6,9 +6,11 @@ import 'package:ffmpeg_kit_flutter_min_gpl/return_code.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import '../engine/camera_engine.dart';
+import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/tile_manager.dart';
 import '../models/camera_keyframe.dart';
+import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/scene.dart';
 
@@ -16,6 +18,7 @@ typedef ExportProgressCallback = void Function(int currentFrame, int totalFrames
 
 class ExportEngine {
   final CameraEngine _cameraEngine = CameraEngine();
+  final FilterEngine _filterEngine = FilterEngine();
 
   /// フレームを合成してRGBA Uint8Listを返す。
   ///
@@ -26,7 +29,8 @@ class ExportEngine {
   /// 合成対象はTileManagerに実ピクセルデータを持つレイヤー種別（通常・
   /// 自動塗り用線画・自動塗り）全てで、不透明度・ブレンドモード・
   /// クリッピングを反映する（仕様書16）。[cameraKeyframes]が設定されている
-  /// 場合はカメラのXY移動・拡大・回転を書き出し結果へ反映する（仕様書05）。
+  /// 場合はカメラのXY移動・拡大・回転を、[effectFilters]が設定されている場合は
+  /// 演出フィルターを書き出し結果へ反映する（仕様書05・18）。
   Future<Uint8List> renderFrame({
     required List<Layer> layers,
     required TileManager tileManager,
@@ -38,6 +42,7 @@ class ExportEngine {
     required int height,
     required int backgroundColor,
     List<CameraKeyframe> cameraKeyframes = const [],
+    List<EffectFilterInstance> effectFilters = const [],
   }) async {
     final fullImage = await LayerCompositor.composite(
       tileManager,
@@ -74,7 +79,9 @@ class ExportEngine {
     final uiImage = await picture.toImage(width, height);
     final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
     uiImage.dispose();
-    return byteData!.buffer.asUint8List();
+    final rgba = byteData!.buffer.asUint8List();
+    if (effectFilters.isEmpty) return rgba;
+    return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
   }
 
   Future<String> exportMp4({
@@ -109,6 +116,7 @@ class ExportEngine {
           height: height,
           backgroundColor: backgroundColor,
           cameraKeyframes: scene.cameraKeyframes,
+          effectFilters: scene.effectFilters,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
@@ -163,6 +171,7 @@ class ExportEngine {
           height: height,
           backgroundColor: backgroundColor,
           cameraKeyframes: scene.cameraKeyframes,
+          effectFilters: scene.effectFilters,
         );
         final imgFrame = img.Image.fromBytes(
           width: width, height: height, bytes: rgba.buffer, numChannels: 4,
@@ -216,6 +225,7 @@ class ExportEngine {
           height: height,
           backgroundColor: backgroundColor,
           cameraKeyframes: scene.cameraKeyframes,
+          effectFilters: scene.effectFilters,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),

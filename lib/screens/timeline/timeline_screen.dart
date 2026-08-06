@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
@@ -8,9 +9,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../../engine/camera_engine.dart';
+import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/tile_manager.dart';
 import '../../models/camera_keyframe.dart';
+import '../../models/effect_filter_instance.dart';
 import '../../models/layer.dart';
 import '../../models/material_asset.dart';
 import '../../models/scene.dart';
@@ -389,6 +392,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 sceneId: sceneId,
                 frameIndex: _currentFrame,
                 cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
+                effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
               ),
       ),
     );
@@ -1325,10 +1329,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _showEffectFilterDialog() {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _EffectFilterSheet(
+        projectId: widget.projectId,
+        sceneId: sceneId,
         totalFrames: _totalFrames,
         currentFrame: _currentFrame,
       ),
@@ -1403,6 +1411,7 @@ class _TimelinePreview extends StatefulWidget {
   final String sceneId;
   final int frameIndex;
   final List<CameraKeyframe> cameraKeyframes;
+  final List<EffectFilterInstance> effectFilters;
 
   const _TimelinePreview({
     required this.tileManager,
@@ -1410,6 +1419,7 @@ class _TimelinePreview extends StatefulWidget {
     required this.sceneId,
     required this.frameIndex,
     this.cameraKeyframes = const [],
+    this.effectFilters = const [],
   });
 
   @override
@@ -1418,6 +1428,7 @@ class _TimelinePreview extends StatefulWidget {
 
 class _TimelinePreviewState extends State<_TimelinePreview> {
   final CameraEngine _cameraEngine = CameraEngine();
+  final FilterEngine _filterEngine = FilterEngine();
   ui.Image? _image;
   bool _building = false;
 
@@ -1434,7 +1445,8 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
         old.tileManager != widget.tileManager ||
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
-        old.cameraKeyframes != widget.cameraKeyframes) {
+        old.cameraKeyframes != widget.cameraKeyframes ||
+        old.effectFilters != widget.effectFilters) {
       _rebuild();
     }
   }
@@ -1461,7 +1473,24 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     canvas.restore();
     layered.dispose();
     final picture = recorder.endRecording();
-    final img = await picture.toImage(tm.canvasWidth, tm.canvasHeight);
+    var img = await picture.toImage(tm.canvasWidth, tm.canvasHeight);
+
+    // 演出フィルター（仕様書18）：合成・カメラ適用後の映像へ非破壊で適用する
+    if (widget.effectFilters.isNotEmpty) {
+      final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+      if (byteData != null) {
+        final filtered = _filterEngine.applyEffectFilters(
+          byteData.buffer.asUint8List(),
+          tm.canvasWidth,
+          tm.canvasHeight,
+          widget.effectFilters,
+          widget.frameIndex,
+        );
+        final composed = img;
+        img = await _decodeRgba(filtered, tm.canvasWidth, tm.canvasHeight);
+        composed.dispose();
+      }
+    }
 
     if (!mounted) { img.dispose(); _building = false; return; }
     setState(() {
@@ -1469,6 +1498,12 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       _image = img;
       _building = false;
     });
+  }
+
+  Future<ui.Image> _decodeRgba(Uint8List bytes, int width, int height) {
+    final completer = Completer<ui.Image>();
+    ui.decodeImageFromPixels(bytes, width, height, ui.PixelFormat.rgba8888, completer.complete);
+    return completer.future;
   }
 
   @override
@@ -1488,57 +1523,42 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
 
 
 // ─── 演出フィルターシート ───────────────────────────────────────────────────
+// 選択中シーンのProjectService.effectFiltersOf()を直接読み書きする（仕様書18：
+// タイムライン非破壊編集。プレビュー再生・書き出し時にFilterEngineが適用する）。
 
-enum _EffectType { fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise }
-
-class _EffectEntry {
-  _EffectType type;
-  int startFrame;
-  int endFrame;
-  bool enabled;
-  double param1;
-  Color fadeColor;
-  _EffectEntry({
-    required this.type,
-    required this.startFrame,
-    required this.endFrame,
-    this.enabled = true,
-    this.param1 = 5.0,
-    this.fadeColor = Colors.black,
-  });
-}
-
-class _EffectFilterSheet extends StatefulWidget {
+class _EffectFilterSheet extends StatelessWidget {
+  final String projectId;
+  final String sceneId;
   final int totalFrames;
   final int currentFrame;
-  const _EffectFilterSheet({required this.totalFrames, required this.currentFrame});
-  @override
-  State<_EffectFilterSheet> createState() => _EffectFilterSheetState();
-}
-
-class _EffectFilterSheetState extends State<_EffectFilterSheet> {
-  final List<_EffectEntry> _effects = [];
+  const _EffectFilterSheet({
+    required this.projectId,
+    required this.sceneId,
+    required this.totalFrames,
+    required this.currentFrame,
+  });
 
   static const _typeLabels = {
-    _EffectType.fade: 'フェード',
-    _EffectType.gaussianBlur: 'ガウスぼかし',
-    _EffectType.lensBlur: 'レンズぼかし',
-    _EffectType.mosaic: 'モザイク',
-    _EffectType.chromaticAberration: '色収差',
-    _EffectType.noise: 'ノイズ',
+    EffectFilterType.fade: 'フェード',
+    EffectFilterType.gaussianBlur: 'ガウスぼかし',
+    EffectFilterType.lensBlur: 'レンズぼかし',
+    EffectFilterType.mosaic: 'モザイク',
+    EffectFilterType.chromaticAberration: '色収差',
+    EffectFilterType.noise: 'ノイズ',
   };
 
   static const _typeIcons = {
-    _EffectType.fade: Icons.gradient,
-    _EffectType.gaussianBlur: Icons.blur_on,
-    _EffectType.lensBlur: Icons.lens_blur,
-    _EffectType.mosaic: Icons.grid_4x4,
-    _EffectType.chromaticAberration: Icons.color_lens,
-    _EffectType.noise: Icons.grain,
+    EffectFilterType.fade: Icons.gradient,
+    EffectFilterType.gaussianBlur: Icons.blur_on,
+    EffectFilterType.lensBlur: Icons.lens_blur,
+    EffectFilterType.mosaic: Icons.grid_4x4,
+    EffectFilterType.chromaticAberration: Icons.color_lens,
+    EffectFilterType.noise: Icons.grain,
   };
 
   @override
   Widget build(BuildContext context) {
+    final effects = context.watch<ProjectService>().effectFiltersOf(projectId, sceneId);
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.6,
@@ -1567,15 +1587,15 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: _effects.isEmpty
+            child: effects.isEmpty
                 ? const Center(
                     child: Text('フィルターがありません\n＋追加ボタンで追加してください',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey)))
                 : ListView.builder(
                     controller: scrollCtrl,
-                    itemCount: _effects.length,
-                    itemBuilder: (ctx, i) => _buildEffectTile(_effects[i], i),
+                    itemCount: effects.length,
+                    itemBuilder: (ctx, i) => _buildEffectTile(context, effects[i]),
                   ),
           ),
         ],
@@ -1583,7 +1603,10 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
     );
   }
 
-  Widget _buildEffectTile(_EffectEntry e, int index) {
+  void _update(BuildContext context, EffectFilterInstance e) =>
+      context.read<ProjectService>().updateEffectFilter(projectId, sceneId, e);
+
+  Widget _buildEffectTile(BuildContext context, EffectFilterInstance e) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ExpansionTile(
@@ -1593,10 +1616,11 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Switch(value: e.enabled, onChanged: (v) => setState(() => e.enabled = v)),
+            Switch(value: e.enabled, onChanged: (v) => _update(context, e.copyWith(enabled: v))),
             IconButton(
               icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-              onPressed: () => setState(() => _effects.removeAt(index)),
+              onPressed: () =>
+                  context.read<ProjectService>().removeEffectFilter(projectId, sceneId, e.id),
             ),
           ],
         ),
@@ -1606,14 +1630,14 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _rangeRow('開始', e.startFrame, 0, widget.totalFrames - 1,
-                    (v) => setState(() => e.startFrame = v.clamp(0, e.endFrame))),
-                _rangeRow('終了', e.endFrame, 0, widget.totalFrames - 1,
-                    (v) => setState(() => e.endFrame = v.clamp(e.startFrame, widget.totalFrames - 1))),
-                if (e.type == _EffectType.fade)
-                  ..._fadeParams(e)
+                _rangeRow('開始', e.startFrame, 0, totalFrames - 1,
+                    (v) => _update(context, e.copyWith(startFrame: v.clamp(0, e.endFrame)))),
+                _rangeRow('終了', e.endFrame, 0, totalFrames - 1,
+                    (v) => _update(context, e.copyWith(endFrame: v.clamp(e.startFrame, totalFrames - 1)))),
+                if (e.type == EffectFilterType.fade)
+                  ..._fadeParams(context, e)
                 else
-                  ..._strengthParam(e),
+                  ..._strengthParam(context, e),
               ],
             ),
           ),
@@ -1640,9 +1664,9 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
     );
   }
 
-  List<Widget> _strengthParam(_EffectEntry e) {
-    final label = e.type == _EffectType.mosaic ? 'サイズ' : '強度';
-    final maxVal = e.type == _EffectType.mosaic ? 64.0 : 20.0;
+  List<Widget> _strengthParam(BuildContext context, EffectFilterInstance e) {
+    final label = e.type == EffectFilterType.mosaic ? 'サイズ' : '強度';
+    final maxVal = e.type == EffectFilterType.mosaic ? 64.0 : 20.0;
     return [
       Row(
         children: [
@@ -1653,7 +1677,7 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
               min: 1, max: maxVal,
               divisions: maxVal.round() - 1,
               label: e.param1.round().toString(),
-              onChanged: (v) => setState(() => e.param1 = v),
+              onChanged: (v) => _update(context, e.copyWith(param1: v)),
             ),
           ),
           SizedBox(width: 36, child: Text(e.param1.round().toString(), style: const TextStyle(fontSize: 11))),
@@ -1662,14 +1686,14 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
     ];
   }
 
-  List<Widget> _fadeParams(_EffectEntry e) {
+  List<Widget> _fadeParams(BuildContext context, EffectFilterInstance e) {
     return [
       Row(
         children: [
           const SizedBox(width: 36, child: Text('色', style: TextStyle(fontSize: 11))),
           const SizedBox(width: 8),
           GestureDetector(
-            onTap: () => _pickFadeColor(e),
+            onTap: () => _pickFadeColor(context, e),
             child: Container(
               width: 32, height: 32,
               decoration: BoxDecoration(
@@ -1689,7 +1713,7 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
     ];
   }
 
-  void _pickFadeColor(_EffectEntry e) {
+  void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1699,7 +1723,7 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
           children: [
             for (final c in [Colors.black, Colors.white, Colors.red, Colors.blue])
               GestureDetector(
-                onTap: () { setState(() => e.fadeColor = c); Navigator.pop(ctx); },
+                onTap: () { _update(context, e.copyWith(fadeColor: c)); Navigator.pop(ctx); },
                 child: Container(
                   width: 40, height: 40,
                   decoration: BoxDecoration(
@@ -1716,6 +1740,7 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
   }
 
   void _showAddEffectDialog(BuildContext context) {
+    final ps = context.read<ProjectService>();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1724,18 +1749,16 @@ class _EffectFilterSheetState extends State<_EffectFilterSheet> {
           width: 280,
           child: ListView(
             shrinkWrap: true,
-            children: _EffectType.values.map((type) => ListTile(
+            children: EffectFilterType.values.map((type) => ListTile(
               leading: Icon(_typeIcons[type]),
               title: Text(_typeLabels[type]!),
               onTap: () {
-                setState(() => _effects.add(_EffectEntry(
+                ps.addEffectFilter(projectId, sceneId, EffectFilterInstance(
+                  id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
                   type: type,
-                  startFrame: widget.currentFrame,
-                  endFrame: (widget.currentFrame + 11).clamp(0, widget.totalFrames - 1),
-                  enabled: true,
-                  param1: 5.0,
-                  fadeColor: Colors.black,
-                )));
+                  startFrame: currentFrame,
+                  endFrame: (currentFrame + 11).clamp(0, totalFrames - 1),
+                ));
                 Navigator.pop(ctx);
               },
             )).toList(),

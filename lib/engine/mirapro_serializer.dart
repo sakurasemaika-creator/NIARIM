@@ -5,10 +5,12 @@ import 'dart:ui' show Color, Offset, TextAlign;
 import 'package:archive/archive_io.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/camera_keyframe.dart';
+import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/project.dart';
 import '../models/scene.dart';
 import '../models/text_object.dart';
+import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
 
 /// .mirapro ファイルの保存・読み込み（仕様書06・07）
@@ -258,14 +260,15 @@ class MiraproSerializer {
       final framesFile = archive.findFile('Scene/$sceneId/$_framesFile');
       if (framesFile == null) continue;
       final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
-      final (name, frames, cameraKeyframes) = _deserializeScene(decoded);
+      final (name, frames, cameraKeyframes, effectFilters) = _deserializeScene(decoded);
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
       scenes.add(Scene(
           id: sceneId,
           index: sceneIndex - 1,
           frames: frames,
           name: name,
-          cameraKeyframes: cameraKeyframes));
+          cameraKeyframes: cameraKeyframes,
+          effectFilters: effectFilters));
     }
     scenes.sort((a, b) => a.index.compareTo(b.index));
 
@@ -372,6 +375,17 @@ class MiraproSerializer {
                   'rotation': k.rotation,
                 })
             .toList(),
+        'effectFilters': scene.effectFilters
+            .map((e) => {
+                  'id': e.id,
+                  'type': e.type.name,
+                  'startFrame': e.startFrame,
+                  'endFrame': e.endFrame,
+                  'enabled': e.enabled,
+                  'param1': e.param1,
+                  'fadeColor': e.fadeColor.toARGB32(),
+                })
+            .toList(),
       };
 
   static List<dynamic> _serializeFrames(List<Frame> frames) =>
@@ -444,7 +458,8 @@ class MiraproSerializer {
   /// シーンファイル（frames.json）を読み込む。新形式は
   /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
   /// フレーム配列そのもの。どちらも読み込めるようにする。
-  static (String?, List<Frame>, List<CameraKeyframe>) _deserializeScene(dynamic decoded) {
+  static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>)
+      _deserializeScene(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final name = decoded['name'] as String?;
       final frames = _deserializeFrames(decoded['frames'] as List<dynamic>);
@@ -458,9 +473,27 @@ class MiraproSerializer {
                 rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
               ))
           .toList();
-      return (name, frames, cameraKeyframes);
+      final effectJson = decoded['effectFilters'] as List<dynamic>? ?? const [];
+      final effectFilters = effectJson.map((j) {
+        final m = j as Map<String, dynamic>;
+        return EffectFilterInstance(
+          id: m['id'] as String,
+          type: EffectFilterType.values.byName(m['type'] as String),
+          startFrame: m['startFrame'] as int,
+          endFrame: m['endFrame'] as int,
+          enabled: m['enabled'] as bool? ?? true,
+          param1: (m['param1'] as num?)?.toDouble() ?? 5.0,
+          fadeColor: Color(m['fadeColor'] as int? ?? 0xFF000000),
+        );
+      }).toList();
+      return (name, frames, cameraKeyframes, effectFilters);
     }
-    return (null, _deserializeFrames(decoded as List<dynamic>), const <CameraKeyframe>[]);
+    return (
+      null,
+      _deserializeFrames(decoded as List<dynamic>),
+      const <CameraKeyframe>[],
+      const <EffectFilterInstance>[],
+    );
   }
 
   static List<Frame> _deserializeFrames(List<dynamic> json) =>

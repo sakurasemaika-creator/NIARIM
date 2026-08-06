@@ -1,8 +1,42 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import '../models/effect_filter_instance.dart';
 
 class FilterEngine {
+  /// タイムラインの演出フィルター一覧を、[frameIndex]が範囲内かつ有効なものだけ、
+  /// タイムライン上の並び順（[effects]の順）に適用する（仕様書18：演出フィルター）。
+  Uint8List applyEffectFilters(
+    Uint8List data,
+    int width,
+    int height,
+    List<EffectFilterInstance> effects,
+    int frameIndex,
+  ) {
+    var result = data;
+    for (final e in effects) {
+      if (!e.enabled || frameIndex < e.startFrame || frameIndex > e.endFrame) continue;
+      result = switch (e.type) {
+        EffectFilterType.fade => applyFade(
+            result,
+            width,
+            height,
+            e.fadeColor,
+            e.endFrame > e.startFrame
+                ? (frameIndex - e.startFrame) / (e.endFrame - e.startFrame)
+                : 1.0,
+          ),
+        EffectFilterType.gaussianBlur => applyGaussianBlur(result, width, height, e.param1),
+        EffectFilterType.lensBlur => applyLensBlur(result, width, height, e.param1),
+        EffectFilterType.mosaic => applyMosaic(result, width, height, e.param1.round()),
+        EffectFilterType.chromaticAberration =>
+          applyChromaticAberration(result, width, height, e.param1, 0),
+        EffectFilterType.noise =>
+          applyNoise(result, width, height, (e.param1 / 20).clamp(0.0, 1.0), NoiseType.gaussian),
+      };
+    }
+    return result;
+  }
   Uint8List applyGaussianBlur(Uint8List data, int width, int height, double strength) {
     final radius = strength.round().clamp(1, 20);
     final kernel = _gaussianKernel(radius);

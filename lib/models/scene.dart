@@ -1,4 +1,5 @@
 import 'camera_keyframe.dart';
+import 'effect_filter_instance.dart';
 import 'layer.dart';
 
 class Scene {
@@ -10,6 +11,8 @@ class Scene {
   final String? name;
   // カメラのXY移動・拡大・回転キーフレーム（仕様書05）。シーンごとに管理する。
   final List<CameraKeyframe> cameraKeyframes;
+  // 演出フィルター（仕様書18）。シーンごとに管理し、プレビュー再生・書き出し時のみ適用する非破壊編集。
+  final List<EffectFilterInstance> effectFilters;
 
   const Scene({
     required this.id,
@@ -17,6 +20,7 @@ class Scene {
     this.frames = const [],
     this.name,
     this.cameraKeyframes = const [],
+    this.effectFilters = const [],
   });
 
   String get displayName => name ?? 'Scene${index + 1}';
@@ -27,6 +31,7 @@ class Scene {
     List<Frame>? frames,
     Object? name = _sentinel,
     List<CameraKeyframe>? cameraKeyframes,
+    List<EffectFilterInstance>? effectFilters,
   }) {
     return Scene(
       id: id ?? this.id,
@@ -34,6 +39,7 @@ class Scene {
       frames: frames ?? this.frames,
       name: name == _sentinel ? this.name : name as String?,
       cameraKeyframes: cameraKeyframes ?? this.cameraKeyframes,
+      effectFilters: effectFilters ?? this.effectFilters,
     );
   }
 }

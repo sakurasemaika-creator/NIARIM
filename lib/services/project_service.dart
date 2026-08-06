@@ -6,6 +6,7 @@ import '../engine/layer_compositor.dart';
 import '../engine/mirapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/camera_keyframe.dart';
+import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/project.dart';
 import '../models/scene.dart';
@@ -647,6 +648,38 @@ class ProjectService extends ChangeNotifier {
     final current = cameraKeyframesOf(projectId, sceneId);
     _updateSceneCameraKeyframes(
         projectId, sceneId, current.where((k) => k.frameIndex != frameIndex).toList());
+  }
+
+  // ─── 演出フィルター（仕様書18：タイムライン非破壊編集） ─────────────────
+
+  List<EffectFilterInstance> effectFiltersOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.effectFilters ?? const []);
+
+  void _updateSceneEffectFilters(
+      String projectId, String sceneId, List<EffectFilterInstance> filters) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(effectFilters: filters);
+    notifyListeners();
+  }
+
+  void addEffectFilter(String projectId, String sceneId, EffectFilterInstance filter) {
+    _updateSceneEffectFilters(
+        projectId, sceneId, [...effectFiltersOf(projectId, sceneId), filter]);
+  }
+
+  void updateEffectFilter(String projectId, String sceneId, EffectFilterInstance filter) {
+    final updated = effectFiltersOf(projectId, sceneId)
+        .map((f) => f.id == filter.id ? filter : f)
+        .toList();
+    _updateSceneEffectFilters(projectId, sceneId, updated);
+  }
+
+  void removeEffectFilter(String projectId, String sceneId, String filterId) {
+    _updateSceneEffectFilters(projectId, sceneId,
+        effectFiltersOf(projectId, sceneId).where((f) => f.id != filterId).toList());
   }
 
   // ─── レイヤー結合 ─────────────────────────────────────────────────────
