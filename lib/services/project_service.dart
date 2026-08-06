@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import '../engine/layer_compositor.dart';
 import '../engine/mirapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/layer.dart';
@@ -517,6 +519,87 @@ class ProjectService extends ChangeNotifier {
         .toList();
     scenes[sceneIdx] = scene.copyWith(frames: reindexed);
     notifyListeners();
+  }
+
+  // ─── レイヤー結合 ─────────────────────────────────────────────────────
+
+  /// 結合可能なレイヤー種別（仕様書16）。共通レイヤー・フォルダ・
+  /// タイムライン素材（画像/動画/ウォーターマーク）・テキストは結合不可。
+  static const _mergeableLayerTypes = {
+    LayerType.normal,
+    LayerType.autoFillLineart,
+    LayerType.autoFill,
+  };
+
+  /// 選択したレイヤー群を1枚の通常レイヤーへ結合する（仕様書16）。
+  /// - 自動塗り用線画・自動塗りレイヤーが含まれる場合は結合後に通常レイヤーへ
+  ///   変換される（パーツID・更新マークは破棄）。
+  /// - ブレンドモード・不透明度・クリッピングは一番下（配列末尾側＝背面）の
+  ///   レイヤーの設定を引き継ぐ。
+  /// - タイル内容は選択レイヤーを表示順で合成した結果になる。
+  /// 2枚未満、または結合不可の種別が含まれる場合は何もしない。
+  Future<void> mergeLayers({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required List<String> layerIds,
+  }) async {
+    if (layerIds.length < 2) return;
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final indices = <int>[];
+    for (final id in layerIds) {
+      final idx = layers.indexWhere((l) => l.id == id);
+      if (idx < 0) return;
+      indices.add(idx);
+    }
+    if (indices.any((i) => !_mergeableLayerTypes.contains(layers[i].type))) return;
+
+    indices.sort();
+    final bottomIndex = indices.last;
+    final bottomLayer = layers[bottomIndex];
+    final selectedLayers = indices.map((i) => layers[i]).toList();
+
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      final mergedImage = await LayerCompositor.composite(
+        tm,
+        selectedLayers,
+        (l) => frameLayerKey(sceneId, frameIndex, l.id),
+        tm.canvasWidth,
+        tm.canvasHeight,
+      );
+      final byteData = await mergedImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+      mergedImage.dispose();
+      if (byteData != null) {
+        tm.replaceLayerPixels(
+            frameLayerKey(sceneId, frameIndex, bottomLayer.id), byteData.buffer.asUint8List());
+      }
+      for (final layer in selectedLayers) {
+        if (layer.id == bottomLayer.id) continue;
+        tm.removeLayer(frameLayerKey(sceneId, frameIndex, layer.id));
+      }
+    }
+
+    // 合成が非同期で完了するまでの間に他の変更が入っている可能性があるため、
+    // 反映直前に最新のレイヤーリストを取得し直す。
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (frameIndex >= scene.frames.length) return;
+    final latestLayers = List<Layer>.from(scene.frames[frameIndex].layers);
+    final removeIds =
+        selectedLayers.map((l) => l.id).where((id) => id != bottomLayer.id).toSet();
+    latestLayers.removeWhere((l) => removeIds.contains(l.id));
+    final insertAt = latestLayers.indexWhere((l) => l.id == bottomLayer.id);
+    if (insertAt < 0) return;
+    latestLayers[insertAt] = bottomLayer.copyWith(
+      type: LayerType.normal,
+      partId: null,
+      needsAutofillUpdate: false,
+    );
+    _applyFrameUpdate(projectId, sceneIdx, frameIndex, latestLayers);
   }
 
   // ─── Project CRUD ─────────────────────────────────────────────────────

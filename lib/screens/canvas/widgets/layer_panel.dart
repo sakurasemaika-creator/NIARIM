@@ -297,10 +297,15 @@ class _LayerPanelState extends State<LayerPanel> {
                   onPressed: _canDeleteSelected(layers) ? () => _deleteSelectedLayer(context, layers) : null,
                   tooltip: '削除',
                 ),
+                if (_isSelectionMode)
+                  IconButton(
+                    icon: const Icon(Icons.merge_type, size: 18),
+                    onPressed: _canMergeSelected() ? () => _mergeSelectedLayers(context) : null,
+                    tooltip: '結合',
+                  ),
                 if (_selectedIndex >= 0 &&
                     _selectedIndex < layers.length &&
                     !_isTimelineMaterial(layers[_selectedIndex].type)) ...[
-                  IconButton(icon: const Icon(Icons.merge_type, size: 18), onPressed: () {}, tooltip: '結合'),
                   IconButton(
                     icon: const Icon(Icons.more_horiz, size: 18),
                     onPressed: () => _showLayerOptions(context, layers),
@@ -327,6 +332,39 @@ class _LayerPanelState extends State<LayerPanel> {
       model.LayerType.watermark       => const Icon(Icons.branding_watermark, size: 12, color: Colors.pink),
       _ => const SizedBox(width: 12),
     };
+  }
+
+  /// 結合可能な選択状態か（仕様書16：共通レイヤー・フォルダ・タイムライン
+  /// 素材は結合不可、2枚以上選択している必要がある）。
+  bool _canMergeSelected() {
+    if (!_isSelectionMode || _selectedIds.length < 2) return false;
+    final type = _selectionBaseType;
+    if (type == null) return false;
+    const mergeable = {
+      model.LayerType.normal,
+      model.LayerType.autoFillLineart,
+      model.LayerType.autoFill,
+    };
+    return mergeable.contains(type);
+  }
+
+  Future<void> _mergeSelectedLayers(BuildContext context) async {
+    if (!_canMergeSelected()) return;
+    final service = context.read<ProjectService>();
+    final ids = _selectedIds.toList();
+    await service.mergeLayers(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layerIds: ids,
+    );
+    if (!mounted) return;
+    setState(() {
+      _selectedIds.clear();
+      _isSelectionMode = false;
+      _selectionBaseType = null;
+      _selectedIndex = 0;
+    });
   }
 
   bool _isTimelineMaterial(model.LayerType type) =>
