@@ -1,4 +1,6 @@
-﻿import 'dart:typed_data';
+﻿import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1195,6 +1197,9 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
+  /// 画像を選択し、キャンバスサイズへアスペクト比維持で中央フィットさせて
+  /// ラスタライズし、通常レイヤーとして追加する（仕様書16：画像読み込みは
+  /// タイムライン素材ではなく描画レイヤーとして扱う）。
   Future<void> _importImage(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -1202,19 +1207,68 @@ class _LayerPanelState extends State<LayerPanel> {
     );
     if (result == null || result.files.isEmpty) return;
     final file = result.files.first;
+    final path = file.path;
+    if (path == null) return;
     final name = file.name.replaceAll(RegExp(r'\.[^.]+$'), '');
-    if (!context.mounted) return;
-    context.read<ProjectService>().addLayer(
+
+    final bytes = await File(path).readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    if (!context.mounted) {
+      image.dispose();
+      return;
+    }
+
+    final projectService = context.read<ProjectService>();
+    final tileManager = projectService.tileManagerOf(widget.projectId);
+    final w = tileManager.canvasWidth;
+    final h = tileManager.canvasHeight;
+
+    final scale = math.min(w / image.width, h / image.height);
+    final drawW = image.width * scale;
+    final drawH = image.height * scale;
+    final dx = (w - drawW) / 2;
+    final dy = (h - drawH) / 2;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      image,
+      ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      ui.Rect.fromLTWH(dx, dy, drawW, drawH),
+      ui.Paint(),
+    );
+    final picture = recorder.endRecording();
+    final rendered = await picture.toImage(w, h);
+    image.dispose();
+    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    rendered.dispose();
+    if (byteData == null || !context.mounted) return;
+
+    final layer = projectService.addLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
-      type: model.LayerType.timelineImage,
+      type: model.LayerType.normal,
       name: name,
+    );
+    tileManager.replaceLayerPixels(
+      frameLayerKey(widget.sceneId, widget.frameIndex, layer.id),
+      byteData.buffer.asUint8List(),
+    );
+    // addLayer時点のnotifyListenersはピクセル書き込み前のため、書き込み後に
+    // 再度更新を通知してキャンバス側の合成表示を最新化する（自動塗り適用と同じ手順）。
+    projectService.updateLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layer: layer,
     );
     setState(() => _selectedIndex = 0);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('loaded: $name')),
+      SnackBar(content: Text('画像を読み込みました: $name')),
     );
   }
 }
