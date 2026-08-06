@@ -46,6 +46,9 @@ void main() async {
 
   final projectService = ProjectService();
   await projectService.init();
+  // ゴミ箱の自動削除設定（設定画面：OFF/30日/60日/90日）に基づき、
+  // 保持期限を過ぎたプロジェクトを起動時に完全削除する
+  await projectService.sweepExpiredTrash(settingsService.trashAutoDeleteDays);
 
   final brushService = BrushService();
   await brushService.init();
@@ -79,6 +82,7 @@ void main() async {
   final shareIntentService = ShareIntentService();
   await shareIntentService.init();
   final undoManager = app_undo.UndoManager();
+  undoManager.setMaxUndoCount(settingsService.undoLimit);
   projectService.setUndoManager(undoManager);
   // 品質設定に応じてスロット数・保存方式を初期設定
   // ツリー方式の場合はスロット数設定不要

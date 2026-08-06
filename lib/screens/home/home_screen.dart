@@ -338,6 +338,10 @@ class _TrashTab extends StatelessWidget {
       itemCount: trash.length,
       itemBuilder: (context, index) {
         final project = trash[index];
+        final deletedAt = context.read<ProjectService>().deletedAtOf(project.id);
+        final deletedLabel = deletedAt == null
+            ? ''
+            : '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')} 削除';
         return ListTile(
           leading: Container(
             width: 48,
@@ -348,7 +352,9 @@ class _TrashTab extends StatelessWidget {
             ),
           ),
           title: Text(project.name),
-          subtitle: Text('${project.fps}fps · ${project.durationSeconds}秒'),
+          subtitle: Text(deletedLabel.isEmpty
+              ? '${project.fps}fps · ${project.durationSeconds}秒'
+              : '$deletedLabel · ${project.fps}fps · ${project.durationSeconds}秒'),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

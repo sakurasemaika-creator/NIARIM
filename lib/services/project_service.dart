@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/mirapro_serializer.dart';
@@ -25,7 +26,10 @@ class ProjectService extends ChangeNotifier {
   final List<Project> _trash = [];
   final List<Project> _shared = [];
   final List<ProjectFolder> _folders = [];
-  TrashAutoDeletionDays _trashAutoDeletion = TrashAutoDeletionDays.off;
+  // ゴミ箱へ移動した日時（projectId -> deletedAt）。自動削除設定（設定画面の
+  // 日数）に基づく期限切れ判定に使用する。SharedPreferencesへ永続化することで
+  // アプリ再起動後もゴミ箱の状態（どのプロジェクトが削除済みか）を維持する。
+  final Map<String, DateTime> _trashDeletedAt = {};
 
   // プロジェクトIDをキーにシーンリストを管理
   final Map<String, List<Scene>> _scenes = {};
@@ -65,15 +69,13 @@ class ProjectService extends ChangeNotifier {
   List<Project> get shared => List.unmodifiable(_shared);
   List<ProjectFolder> get folders => List.unmodifiable(_folders);
   List<Project> get favorites => _projects.where((p) => p.isFavorite).toList();
-  TrashAutoDeletionDays get trashAutoDeletion => _trashAutoDeletion;
 
-  void setTrashAutoDeletion(TrashAutoDeletionDays days) {
-    _trashAutoDeletion = days;
-    notifyListeners();
-  }
+  /// プロジェクトがゴミ箱へ移動された日時（ゴミ箱一覧の削除日時表示用）
+  DateTime? deletedAtOf(String projectId) => _trashDeletedAt[projectId];
 
   Future<void> init() async {
     try {
+      await _loadTrashState();
       final basePath = await MiraproSerializer.projectsBasePath();
       final baseDir = Directory(basePath);
       if (!baseDir.existsSync()) return;
@@ -83,8 +85,14 @@ class ProjectService extends ChangeNotifier {
         if (!miraproFile.existsSync()) continue;
         try {
           final data = await MiraproSerializer.load(miraproFile.path);
-          _projects.add(data.project);
-          _applyLoadedProjectData(data);
+          if (_trashDeletedAt.containsKey(projectId)) {
+            // ゴミ箱内のプロジェクト：一覧には出さず、シーンデータもメモリに
+            // 載せない（deleteProject()直後と同じ状態を再現する）
+            _trash.add(data.project);
+          } else {
+            _projects.add(data.project);
+            _applyLoadedProjectData(data);
+          }
         } catch (_) {
           // 破損ファイルはスキップ
         }
@@ -92,6 +100,57 @@ class ProjectService extends ChangeNotifier {
       notifyListeners();
     } catch (_) {
       // ストレージアクセス失敗時は空状態で起動
+    }
+  }
+
+  // ─── ゴミ箱の状態永続化（仕様書06・19：ゴミ箱・自動削除設定） ───────────
+  // 従来はゴミ箱への移動が純粋にメモリ上の状態でしかなく、アプリを再起動する
+  // と全プロジェクトディレクトリを無条件に読み込み直すため削除が取り消された
+  // ように見えるバグがあった。ゴミ箱移動日時をSharedPreferencesへ保存し、
+  // 起動時にどのプロジェクトがゴミ箱内かを復元することで解消する。
+
+  static const _trashPrefsKey = 'trashed_projects';
+
+  Future<void> _loadTrashState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList(_trashPrefsKey) ?? [];
+      for (final entry in raw) {
+        final sep = entry.indexOf('|');
+        if (sep < 0) continue;
+        final id = entry.substring(0, sep);
+        final dt = DateTime.tryParse(entry.substring(sep + 1));
+        if (dt != null) _trashDeletedAt[id] = dt;
+      }
+    } catch (_) {
+      // 読み込み失敗時はゴミ箱状態なしとして続行
+    }
+  }
+
+  Future<void> _persistTrashState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = _trashDeletedAt.entries
+          .map((e) => '${e.key}|${e.value.toIso8601String()}')
+          .toList();
+      await prefs.setStringList(_trashPrefsKey, list);
+    } catch (_) {
+      // 保存失敗時も続行（次回操作時に再試行される）
+    }
+  }
+
+  /// ゴミ箱の自動削除設定（設定画面で選んだ日数）に従い、保持期限を過ぎた
+  /// プロジェクトを完全削除する。days<=0（OFF）の場合は何もしない。
+  Future<void> sweepExpiredTrash(int days) async {
+    if (days <= 0) return;
+    final now = DateTime.now();
+    final expired = _trash.where((p) {
+      final deletedAt = _trashDeletedAt[p.id];
+      if (deletedAt == null) return false;
+      return now.difference(deletedAt).inDays >= days;
+    }).map((p) => p.id).toList();
+    for (final id in expired) {
+      await permanentDelete(id);
     }
   }
 
@@ -962,6 +1021,8 @@ class ProjectService extends ChangeNotifier {
       _scenes.remove(id);
       _layerIdCounters.remove(id);
       _layerHomes.remove(id);
+      _trashDeletedAt[id] = DateTime.now();
+      await _persistTrashState();
       notifyListeners();
     }
   }
@@ -971,6 +1032,8 @@ class ProjectService extends ChangeNotifier {
     if (idx >= 0) {
       final project = _trash.removeAt(idx);
       _projects.add(project);
+      _trashDeletedAt.remove(id);
+      await _persistTrashState();
       // deleteProject()でメモリ上のシーン・レイヤーホーム索引・タイルマネージャ・
       // レイヤーIDカウンターを破棄しているため、ディスク上の.miraproファイルから
       // 再読み込みして復元する（ファイル自体はdeleteProject()時に削除していない）。
@@ -985,6 +1048,8 @@ class ProjectService extends ChangeNotifier {
     final idx = _trash.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       _trash.removeAt(idx);
+      _trashDeletedAt.remove(id);
+      await _persistTrashState();
       // ディスク上のプロジェクトフォルダ（.mirapro・自動保存・セーブツリー等）を
       // 完全に削除する（仕様書06・19：完全削除は元に戻せない）。
       try {
@@ -1091,5 +1156,3 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-enum TrashAutoDeletionDays { off, days30, days60, days90 }
