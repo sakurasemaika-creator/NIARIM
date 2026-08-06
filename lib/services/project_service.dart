@@ -84,15 +84,7 @@ class ProjectService extends ChangeNotifier {
         try {
           final data = await MiraproSerializer.load(miraproFile.path);
           _projects.add(data.project);
-          _scenes[data.project.id] = data.scenes;
-          _layerHomes[data.project.id] = buildLayerHomeIndex(data.scenes);
-          final tm = TileManager(
-            canvasWidth: data.project.drawingWidth,
-            canvasHeight: data.project.drawingHeight,
-          );
-          tm.importAll(data.tileData);
-          _tileManagers[data.project.id] = tm;
-          _layerIdCounters[data.project.id] = _maxLayerCounter(data.scenes);
+          _applyLoadedProjectData(data);
         } catch (_) {
           // 破損ファイルはスキップ
         }
@@ -100,6 +92,38 @@ class ProjectService extends ChangeNotifier {
       notifyListeners();
     } catch (_) {
       // ストレージアクセス失敗時は空状態で起動
+    }
+  }
+
+  /// ディスクから読み込んだプロジェクトデータをメモリ上のマップへ反映する。
+  /// init()（起動時の全件読み込み）とrestoreProject()（ゴミ箱からの復元時の
+  /// 再読み込み）で共通利用する。
+  void _applyLoadedProjectData(MiraproData data) {
+    final projectId = data.project.id;
+    _scenes[projectId] = data.scenes;
+    _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
+    final tm = TileManager(
+      canvasWidth: data.project.drawingWidth,
+      canvasHeight: data.project.drawingHeight,
+    );
+    tm.importAll(data.tileData);
+    _tileManagers[projectId] = tm;
+    _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
+  }
+
+  /// projectIdの.miraproファイルをディスクから再読み込みする。
+  /// ファイルが存在しない・読み込みに失敗した場合は何もしない（呼び出し元で
+  /// _scenesが空のままになるが、これは元々ファイルが存在しない異常系であり
+  /// これ以上復元しようがないため）。
+  Future<void> _reloadProjectDataFromDisk(String projectId) async {
+    try {
+      final basePath = await MiraproSerializer.projectsBasePath();
+      final miraproFile = File('$basePath/$projectId/$projectId.mirapro');
+      if (!miraproFile.existsSync()) return;
+      final data = await MiraproSerializer.load(miraproFile.path);
+      _applyLoadedProjectData(data);
+    } catch (_) {
+      // 読み込み失敗時は何もしない
     }
   }
 
@@ -947,13 +971,33 @@ class ProjectService extends ChangeNotifier {
     if (idx >= 0) {
       final project = _trash.removeAt(idx);
       _projects.add(project);
+      // deleteProject()でメモリ上のシーン・レイヤーホーム索引・タイルマネージャ・
+      // レイヤーIDカウンターを破棄しているため、ディスク上の.miraproファイルから
+      // 再読み込みして復元する（ファイル自体はdeleteProject()時に削除していない）。
+      if (!_scenes.containsKey(id)) {
+        await _reloadProjectDataFromDisk(id);
+      }
       notifyListeners();
     }
   }
 
   Future<void> permanentDelete(String id) async {
-    _trash.removeWhere((p) => p.id == id);
-    notifyListeners();
+    final idx = _trash.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      _trash.removeAt(idx);
+      // ディスク上のプロジェクトフォルダ（.mirapro・自動保存・セーブツリー等）を
+      // 完全に削除する（仕様書06・19：完全削除は元に戻せない）。
+      try {
+        final basePath = await MiraproSerializer.projectsBasePath();
+        final dir = Directory('$basePath/$id');
+        if (dir.existsSync()) {
+          await dir.delete(recursive: true);
+        }
+      } catch (_) {
+        // 削除に失敗してもアプリ側の状態は既に消去済みのため続行する
+      }
+      notifyListeners();
+    }
   }
 
   Future<void> renameProject(String id, String newName) async {
