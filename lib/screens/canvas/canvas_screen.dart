@@ -6,6 +6,7 @@ import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
 import '../../services/brush_service.dart';
 import '../../services/performance_service.dart';
+import '../../services/quick_tool_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../engine/undo_manager.dart';
 import '../../models/onion_skin_settings.dart';
@@ -21,6 +22,7 @@ import 'widgets/pen_sub_tool_panel.dart';
 import 'widgets/onion_skin_panel.dart';
 import 'widgets/ruler_panel.dart';
 import 'widgets/filter_panel.dart';
+import 'widgets/quick_tool_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
 
@@ -46,6 +48,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showOnionSkinPanel = false;
   bool _showRulerPanel = false;
   bool _showFilterPanel = false;
+  bool _showQuickToolPanel = false;
   // フレーム複数選択モード（仕様書18：大量処理実行時のフィルター一括適用）
   bool _frameMultiSelectMode = false;
   Set<int> _selectedFrameIndices = {};
@@ -248,6 +251,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   // フィルターパネル（仕様書18：描画フィルター）
                   if (_showFilterPanel && !isDesktop)
                     Positioned(right: 16, top: 16, child: _filterPanel()),
+                  // 早替えツール設定パネル（仕様書02・08）
+                  if (_showQuickToolPanel && !isDesktop)
+                    Positioned(right: 16, bottom: 16, child: _quickToolPanel()),
                       ],
                     ),
                   ),
@@ -305,6 +311,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 _showFilterPanel = !_showFilterPanel;
                 _showLayerPanel = false;
               }),
+              onQuickToolTap: _applyNextQuickTool,
+              onQuickToolLongPress: () => setState(() {
+                _showQuickToolPanel = !_showQuickToolPanel;
+                _showLayerPanel = false;
+              }),
             ),
             if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
             FrameStripWidget(
@@ -340,6 +351,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (_showOnionSkinPanel) return _onionSkinPanel();
     if (_showRulerPanel) return _rulerPanel();
     if (_showFilterPanel) return _filterPanel();
+    if (_showQuickToolPanel) return _quickToolPanel();
     return null;
   }
 
@@ -394,6 +406,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
           }
         }),
       );
+
+  Widget _quickToolPanel() =>
+      QuickToolPanel(onClose: () => setState(() => _showQuickToolPanel = false));
+
+  /// ツール早替えボタンタップ時：登録順に次のツールへ切り替える（仕様書02・08）。
+  void _applyNextQuickTool() {
+    final entry = context.read<QuickToolService>().next();
+    if (entry == null) return;
+    setState(() => _currentTool = DrawingTool.values.byName(entry.toolKey));
+    final brushId = entry.brushId;
+    if (brushId != null) {
+      context.read<BrushService>().selectBrush(brushId);
+    }
+    final size = entry.sizeOverride;
+    if (size != null) {
+      context.read<BrushService>().updateCurrentBrushSize(size);
+      setState(() => _brushSize = size);
+    }
+  }
 
   Widget _buildTopBar() {
     return Padding(

@@ -17,6 +17,8 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onRulerTap;
   final VoidCallback onShapeTap;
   final VoidCallback onFilterTap;
+  final VoidCallback onQuickToolTap;
+  final VoidCallback onQuickToolLongPress;
 
   const ToolbarWidget({
     super.key,
@@ -33,6 +35,8 @@ class ToolbarWidget extends StatelessWidget {
     required this.onRulerTap,
     required this.onShapeTap,
     required this.onFilterTap,
+    required this.onQuickToolTap,
+    required this.onQuickToolLongPress,
   });
 
   @override
@@ -91,7 +95,15 @@ class ToolbarWidget extends StatelessWidget {
             // フィルター（仕様書18：描画フィルター）
             IconButton(icon: const Icon(Icons.blur_on, size: 20), onPressed: onFilterTap, tooltip: 'フィルター'),
             // ツール早替えボタン（↺）
-            IconButton(icon: const Icon(Icons.loop, size: 20), onPressed: () {}, tooltip: 'ツール早替え'),
+            // ツール早替えボタン：タップで登録順に切替、長押しで管理ポップアップ（仕様書02・08）
+            GestureDetector(
+              onLongPress: onQuickToolLongPress,
+              child: IconButton(
+                icon: const Icon(Icons.loop, size: 20),
+                onPressed: onQuickToolTap,
+                tooltip: 'ツール早替え（長押しで編集）',
+              ),
+            ),
             IconButton(icon: const Icon(Icons.movie, size: 20), onPressed: onTimelineTap, tooltip: 'タイムライン'),
           ],
         ),

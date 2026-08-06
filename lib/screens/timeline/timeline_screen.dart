@@ -12,6 +12,7 @@ import '../../engine/camera_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/tile_manager.dart';
+import '../../engine/undo_manager.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/effect_filter_instance.dart';
 import '../../models/layer.dart';
@@ -349,19 +350,31 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildTopBar() {
+    final projectName = context.watch<ProjectService>()
+        .projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull
+        ?.name ??
+        'プロジェクト名';
+    final undoManager = context.watch<UndoManager>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
           IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/canvas/${widget.projectId}')),
-          const Expanded(child: Text('プロジェクト名', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
-          IconButton(icon: const Icon(Icons.undo), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.redo), onPressed: () {}),
+          Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
+          IconButton(
+            icon: const Icon(Icons.undo),
+            onPressed: undoManager.canUndo ? undoManager.undo : null,
+          ),
+          IconButton(
+            icon: const Icon(Icons.redo),
+            onPressed: undoManager.canRedo ? undoManager.redo : null,
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {
-              if (action == 'save') {} // TODO: 保存処理
-              if (action == 'project_save') {} // TODO: プロジェクト保存処理
+              if (action == 'save' || action == 'project_save') _saveProject();
               if (action == 'autofill') _showAutofillDialog();
               if (action == 'save_tree') context.push('/save-tree/${widget.projectId}');
             },
@@ -456,7 +469,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // ウォーターマーク：無料会員は🔒付き表示、タップで共通Premiumバナー
           _buildWatermarkButton(isPremium),
           IconButton(icon: const Icon(Icons.movie_filter, size: 18), onPressed: () => _showEffectFilterDialog(), tooltip: '演出フィルター'),
-          IconButton(icon: const Icon(Icons.camera, size: 18), onPressed: () {}, tooltip: 'カメラ'),
+          IconButton(icon: const Icon(Icons.camera, size: 18), onPressed: _addCameraKf, tooltip: 'カメラキーフレーム追加'),
           IconButton(icon: const Icon(Icons.upload_file, size: 18), onPressed: () => context.push('/export/${widget.projectId}'), tooltip: '書き出し'),
         ],
       ),
@@ -1352,6 +1365,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
         totalFrames: _totalFrames,
         currentFrame: _currentFrame,
       ),
+    );
+  }
+
+  /// 明示的保存（三点メニューの「保存」「プロジェクト保存」共通）。
+  Future<void> _saveProject() async {
+    await context.read<ProjectService>().saveProject(widget.projectId);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('プロジェクトを保存しました')),
     );
   }
 
