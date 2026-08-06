@@ -270,7 +270,7 @@ class _OnionSideSection extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text('ON（固定）',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                    style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ),
           ],
         ),
@@ -300,8 +300,7 @@ class _OnionSideSection extends StatelessWidget {
               ] else ...[
                 const SizedBox(width: 8),
                 Text('$frames枚（固定）',
-                    style:
-                        TextStyle(fontSize: 11, color: Colors.grey[500])),
+                    style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ],
             ],
           ),

@@ -69,7 +69,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               height: 150,
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [Colors.white, HSVColor.fromAHSV(1, _hue, 1, 1).toColor()]),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(12),
               ),
               foregroundDecoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -77,7 +77,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   end: Alignment.bottomCenter,
                   colors: [Colors.transparent, Colors.black],
                 ),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
             const SizedBox(height: 8),
@@ -111,11 +111,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               ],
             ),
             const SizedBox(height: 12),
-            const Text('最近使った色', style: TextStyle(fontSize: 11, color: Colors.grey)),
+            Text('最近使った色',
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 4),
             Wrap(
-              spacing: 4,
-              runSpacing: 4,
+              spacing: 6,
+              runSpacing: 6,
               children: _recentColors.map((color) {
                 return GestureDetector(
                   onTap: () {
@@ -124,12 +125,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     widget.onColorChanged(color);
                   },
                   child: Container(
-                    width: 22,
-                    height: 22,
+                    width: 24,
+                    height: 24,
                     decoration: BoxDecoration(
                       color: color,
-                      border: Border.all(color: Colors.grey[600]!),
-                      borderRadius: BorderRadius.circular(3),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                     ),
                   ),
                 );
