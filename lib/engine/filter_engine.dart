@@ -2,6 +2,27 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/effect_filter_instance.dart';
+import '../models/filter_def.dart';
+
+/// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
+/// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
+Uint8List applyDrawFilterInIsolate(
+    (Uint8List data, int width, int height, FilterDef filter) args) {
+  final (data, width, height, filter) = args;
+  final engine = FilterEngine();
+  return switch (filter.kind) {
+    FilterKind.gaussianBlur => engine.applyGaussianBlur(data, width, height, filter.strength),
+    FilterKind.lensBlur => engine.applyLensBlur(data, width, height, filter.strength),
+    FilterKind.animeStyle => engine.applyAnimeStyle(
+        data,
+        width,
+        height,
+        strength: filter.strength,
+        colorCount: filter.colorLevels,
+        edgeStrength: filter.edgeStrength,
+      ),
+  };
+}
 
 class FilterEngine {
   /// タイムラインの演出フィルター一覧を、[frameIndex]が範囲内かつ有効なものだけ、

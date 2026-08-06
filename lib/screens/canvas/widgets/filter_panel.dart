@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/filter_engine.dart';
@@ -410,7 +411,11 @@ class _FilterPanelState extends State<FilterPanel> {
     img.dispose();
     if (byteData == null) return;
     final data = byteData.buffer.asUint8List();
-    final result = _runFilter(filter, data, tm.canvasWidth, tm.canvasHeight);
+    // 低スペック端末でのUIスレッドブロックを避けるため、本適用（フル解像度）は
+    // バックグラウンドisolateで実行する。プレビュー（縮小画像）は_runFilterのまま
+    // メインisolateで即時処理する（isolate起動コストの方が高くつくため）。
+    final result =
+        await compute(applyDrawFilterInIsolate, (data, tm.canvasWidth, tm.canvasHeight, filter));
     tm.replaceLayerPixels(key, result);
 
     // TileManager書き込み後にupdateLayer()を呼び直し、キャンバス側の合成表示を

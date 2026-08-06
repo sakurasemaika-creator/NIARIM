@@ -16,6 +16,8 @@ class LayerPanel extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final int frameIndex;
+  // PC/DeXモードの常時ドッキング表示時はtrue。閉じるボタンを非表示にする。
+  final bool dockedMode;
 
   const LayerPanel({
     super.key,
@@ -23,6 +25,7 @@ class LayerPanel extends StatefulWidget {
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    this.dockedMode = false,
   });
 
   @override
@@ -89,7 +92,8 @@ class _LayerPanelState extends State<LayerPanel> {
                   tooltip: 'ヘルプ',
                 ),
                 IconButton(icon: const Icon(Icons.search, size: 18), onPressed: () {}),
-                IconButton(icon: const Icon(Icons.close, size: 18), onPressed: widget.onClose),
+                if (!widget.dockedMode)
+                  IconButton(icon: const Icon(Icons.close, size: 18), onPressed: widget.onClose),
               ],
             ),
           ),

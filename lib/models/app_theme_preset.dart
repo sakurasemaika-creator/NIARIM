@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-/// UIテーマプリセットモデル
+/// UIテーマプリセットモデル（仕様書24）
 class AppThemePreset {
   final String id;
   final String name;
@@ -52,28 +52,30 @@ class AppThemePreset {
     );
   }
 
+  // 既定テーマ：珊瑚ピンクを差し色にしたポップなフラットデザイン
+  // （Material標準色をそのまま使わず、暖色寄りの配色でオリジナリティを出す）。
   static const defaultDark = AppThemePreset(
     id: 'default_dark',
-    name: 'Default Dark',
+    name: 'ポップ（ダーク）',
     baseTheme: BaseTheme.dark,
-    accentColor: Color(0xFF6750A4),
-    textColor: Color(0xFFFFFFFF),
-    panelBgColor: Color(0xFF1E1E2E),
-    menuBgColor: Color(0xFF2A2A3E),
-    selectionColor: Color(0xFF6750A4),
-    updateMarkColor: Color(0xFFFF9800),
+    accentColor: Color(0xFFFF5C7A),
+    textColor: Color(0xFFF5F1F0),
+    panelBgColor: Color(0xFF17161C),
+    menuBgColor: Color(0xFF201F27),
+    selectionColor: Color(0xFFFF5C7A),
+    updateMarkColor: Color(0xFFFFB020),
   );
 
   static const defaultLight = AppThemePreset(
     id: 'default_light',
-    name: 'Default Light',
+    name: 'ポップ（ライト）',
     baseTheme: BaseTheme.light,
-    accentColor: Color(0xFF6750A4),
-    textColor: Color(0xFF000000),
-    panelBgColor: Color(0xFFF5F5F5),
+    accentColor: Color(0xFFFF5C7A),
+    textColor: Color(0xFF2B2730),
+    panelBgColor: Color(0xFFFAF7F5),
     menuBgColor: Color(0xFFFFFFFF),
-    selectionColor: Color(0xFF6750A4),
-    updateMarkColor: Color(0xFFFF9800),
+    selectionColor: Color(0xFFFF5C7A),
+    updateMarkColor: Color(0xFFFFB020),
   );
 }
 

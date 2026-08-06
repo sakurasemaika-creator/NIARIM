@@ -22,6 +22,7 @@ import 'widgets/onion_skin_panel.dart';
 import 'widgets/ruler_panel.dart';
 import 'widgets/filter_panel.dart';
 import '../../models/ruler.dart';
+import '../../widgets/responsive.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
@@ -178,6 +179,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
+    // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
+    // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
+    final isDesktop = isWideScreen(context);
 
     return Scaffold(
       body: SafeArea(
@@ -187,8 +191,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
               const AdBannerWidget(position: AdPosition.top),
             _buildTopBar(),
             Expanded(
-              child: Stack(
+              child: Row(
                 children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
                   CanvasArea(
                     onTapForText: _currentTool == DrawingTool.text
                         ? onCanvasTapForText
@@ -210,7 +217,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     activeRuler: _activeRuler,
                     shapeKind: _shapeKind,
                   ),
-                  if (_showLayerPanel)
+                  if (_showLayerPanel && !isDesktop)
                     Positioned(
                       right: 0, top: 0, bottom: 0, width: 250,
                       child: LayerPanel(
@@ -295,6 +302,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             _selectedFrameIndices = {};
                           }
                         }),
+                      ),
+                    ),
+                      ],
+                    ),
+                  ),
+                  if (isDesktop)
+                    SizedBox(
+                      width: 280,
+                      child: LayerPanel(
+                        onClose: () {},
+                        projectId: widget.projectId,
+                        sceneId: _currentSceneId,
+                        frameIndex: _currentFrame,
+                        dockedMode: true,
                       ),
                     ),
                 ],

@@ -21,41 +21,41 @@ class ThemeService extends ChangeNotifier {
   }
 
   Future<void> init() async {
-    _presets.addAll([
+    _presets.addAll(const [
       AppThemePreset.defaultDark,
       AppThemePreset.defaultLight,
-      const AppThemePreset(
-        id: 'blue',
-        name: 'Blue',
+      AppThemePreset(
+        id: 'sky',
+        name: 'スカイ',
         baseTheme: BaseTheme.dark,
-        accentColor: Color(0xFF2196F3),
-        textColor: Color(0xFFFFFFFF),
-        panelBgColor: Color(0xFF0D1B2A),
-        menuBgColor: Color(0xFF1B2A3B),
-        selectionColor: Color(0xFF2196F3),
-        updateMarkColor: Color(0xFFFF9800),
+        accentColor: Color(0xFF3AA6FF),
+        textColor: Color(0xFFF2F6FA),
+        panelBgColor: Color(0xFF11181F),
+        menuBgColor: Color(0xFF182430),
+        selectionColor: Color(0xFF3AA6FF),
+        updateMarkColor: Color(0xFFFFB020),
       ),
-      const AppThemePreset(
-        id: 'green',
-        name: 'Green',
+      AppThemePreset(
+        id: 'mint',
+        name: 'ミント',
         baseTheme: BaseTheme.dark,
-        accentColor: Color(0xFF4CAF50),
-        textColor: Color(0xFFFFFFFF),
-        panelBgColor: Color(0xFF0D1F0D),
-        menuBgColor: Color(0xFF1B2E1B),
-        selectionColor: Color(0xFF4CAF50),
-        updateMarkColor: Color(0xFFFF9800),
+        accentColor: Color(0xFF3DDC97),
+        textColor: Color(0xFFF1FAF5),
+        panelBgColor: Color(0xFF101A15),
+        menuBgColor: Color(0xFF17251D),
+        selectionColor: Color(0xFF3DDC97),
+        updateMarkColor: Color(0xFFFFB020),
       ),
-      const AppThemePreset(
-        id: 'purple',
-        name: 'Purple',
+      AppThemePreset(
+        id: 'orchid',
+        name: 'オーキッド',
         baseTheme: BaseTheme.dark,
-        accentColor: Color(0xFF9C27B0),
-        textColor: Color(0xFFFFFFFF),
-        panelBgColor: Color(0xFF1A0D1F),
-        menuBgColor: Color(0xFF2A1B2E),
-        selectionColor: Color(0xFF9C27B0),
-        updateMarkColor: Color(0xFFFF9800),
+        accentColor: Color(0xFFB15CFF),
+        textColor: Color(0xFFF6F1FA),
+        panelBgColor: Color(0xFF19141F),
+        menuBgColor: Color(0xFF241C2D),
+        selectionColor: Color(0xFFB15CFF),
+        updateMarkColor: Color(0xFFFFB020),
       ),
     ]);
   }
@@ -89,6 +89,9 @@ class ThemeService extends ChangeNotifier {
     }
   }
 
+  /// ポップなフラットデザインのThemeDataを構築する（仕様書24）。
+  /// Material標準の角丸・階調をそのまま使わず、フラット・大きめタップ領域・
+  /// 丸みの強い形状で統一し、スマホでの誤タップを減らす。
   ThemeData _buildTheme(AppThemePreset preset) {
     final brightness = switch (preset.baseTheme) {
       BaseTheme.light => Brightness.light,
@@ -96,19 +99,114 @@ class ThemeService extends ChangeNotifier {
       // system: OSのbrightnessを参照。updateSystemBrightness()で外部から注入すること
       BaseTheme.system => systemBrightness,
     };
+    final scheme = ColorScheme.fromSeed(
+      seedColor: preset.accentColor,
+      brightness: brightness,
+    ).copyWith(primary: preset.accentColor, secondary: preset.selectionColor);
+    const radius = 14.0;
+    const minTapSize = Size(48, 48);
+
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: preset.accentColor,
-        brightness: brightness,
-      ),
+      colorScheme: scheme,
       scaffoldBackgroundColor: preset.panelBgColor,
+      splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: preset.menuBgColor,
         foregroundColor: preset.textColor,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: preset.textColor,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ),
       ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        color: preset.menuBgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(64, 48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(64, 48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 44),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(minimumSize: minTapSize),
+      ),
+      listTileTheme: ListTileThemeData(
+        minVerticalPadding: 12,
+        iconColor: scheme.primary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: preset.menuBgColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: preset.menuBgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: preset.menuBgColor,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: preset.menuBgColor,
+        contentTextStyle: TextStyle(color: preset.textColor),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: preset.menuBgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        side: BorderSide.none,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected) ? scheme.primary : null,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) =>
+              states.contains(WidgetState.selected) ? scheme.primary.withValues(alpha: 0.5) : null,
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+      ),
+      tabBarTheme: TabBarThemeData(
+        indicatorColor: scheme.primary,
+        labelColor: scheme.primary,
+        unselectedLabelColor: preset.textColor.withValues(alpha: 0.6),
+      ),
+      dividerTheme: DividerThemeData(color: preset.textColor.withValues(alpha: 0.08)),
     );
   }
 }

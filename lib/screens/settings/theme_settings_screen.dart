@@ -47,7 +47,7 @@ class ThemeSettingsScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (current.id == preset.id)
-                  const Icon(Icons.check, color: Colors.blue, size: 16),
+                  Icon(Icons.check, color: Theme.of(context).colorScheme.primary, size: 16),
                 IconButton(
                   icon: Icon(
                     preset.isFavorite ? Icons.star : Icons.star_outline,
