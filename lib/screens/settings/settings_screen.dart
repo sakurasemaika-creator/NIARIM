@@ -72,10 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       showPremiumBanner(context);
       return;
     }
-    // TODO: ウォーターマーク設定画面
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('ウォーターマーク設定（実装中）')),
-    );
+    context.push('/settings/watermark');
   }
 
   void _showBasicSettings() {

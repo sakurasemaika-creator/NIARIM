@@ -19,6 +19,7 @@ import 'services/autofill_preset_service.dart';
 import 'services/material_service.dart';
 import 'services/quick_tool_service.dart';
 import 'services/workspace_preset_service.dart';
+import 'services/watermark_service.dart';
 import 'services/share_intent_service.dart';
 
 void main() async {
@@ -72,6 +73,9 @@ void main() async {
   final workspacePresetService = WorkspacePresetService();
   await workspacePresetService.init();
 
+  final watermarkService = WatermarkService();
+  await watermarkService.init();
+
   final shareIntentService = ShareIntentService();
   await shareIntentService.init();
   final undoManager = app_undo.UndoManager();
@@ -102,6 +106,7 @@ void main() async {
         ChangeNotifierProvider.value(value: materialService),
         ChangeNotifierProvider.value(value: quickToolService),
         ChangeNotifierProvider.value(value: workspacePresetService),
+        ChangeNotifierProvider.value(value: watermarkService),
         Provider<ShareIntentService>.value(value: shareIntentService),
         ChangeNotifierProvider<app_undo.UndoManager>.value(value: undoManager),
       ],

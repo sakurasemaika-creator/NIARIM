@@ -18,10 +18,12 @@ import '../../models/effect_filter_instance.dart';
 import '../../models/layer.dart';
 import '../../models/material_asset.dart';
 import '../../models/scene.dart';
+import '../../models/watermark_asset.dart';
 import '../../services/advertising_service.dart';
 import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
+import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
@@ -480,12 +482,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (isPremium) {
       return IconButton(
         icon: const Icon(Icons.branding_watermark, size: 18),
-        onPressed: () {
-          // TODO: ウォーターマーク一覧から選択して追加
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('ウォーターマーク追加（実装中）')),
-          );
-        },
+        onPressed: _showWatermarkPicker,
         tooltip: '＋ウォーターマーク',
       );
     }
@@ -503,6 +500,134 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// 登録済みウォーターマーク一覧から選択して追加する（仕様書05・13：
+  /// ウォーターマークは専用トラックを持たず、画像素材と同じレイヤー機構
+  /// 〔LayerType.watermark〕を使ってタイムライン素材として追加する）。
+  void _showWatermarkPicker() {
+    final watermarkService = context.read<WatermarkService>();
+    final assets = watermarkService.assets;
+    if (assets.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('ウォーターマーク未登録'),
+          content: const Text('設定画面の「ウォーターマーク」からあらかじめ画像を登録してください。'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push('/settings/watermark');
+              },
+              child: const Text('設定を開く'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('ウォーターマークを選択', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            for (final asset in assets)
+              ListTile(
+                leading: const Icon(Icons.branding_watermark),
+                title: Text(asset.name),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _addWatermarkLayer(asset);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 選択したウォーターマーク画像をラスタライズし、LayerType.watermarkの
+  /// レイヤーとして現在シーンへ追加する（表示範囲はデフォルトで全フレーム＝
+  /// 常時表示。以後の表示範囲・不透明度・差し替えはレイヤーパネルから調整できる）。
+  Future<void> _addWatermarkLayer(WatermarkAsset asset) async {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final watermarkService = context.read<WatermarkService>();
+    final path = await watermarkService.pathOf(asset.id);
+    if (path == null || !mounted) return;
+
+    final bytes = await File(path).readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    if (!mounted) {
+      image.dispose();
+      return;
+    }
+
+    final projectService = context.read<ProjectService>();
+    final tileManager = projectService.tileManagerOf(widget.projectId);
+    final w = tileManager.canvasWidth;
+    final h = tileManager.canvasHeight;
+
+    // 右下に控えめなサイズ（キャンバス幅の25%程度）で配置する一般的な
+    // ウォーターマーク位置をデフォルトとする。位置・大きさは追加後に
+    // 変形ツールで自由に調整できる。
+    final targetW = w * 0.25;
+    final scale = targetW / image.width;
+    final drawW = image.width * scale;
+    final drawH = image.height * scale;
+    const margin = 16.0;
+    final dx = w - drawW - margin;
+    final dy = h - drawH - margin;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      image,
+      ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      ui.Rect.fromLTWH(dx, dy, drawW, drawH),
+      ui.Paint(),
+    );
+    final picture = recorder.endRecording();
+    final rendered = await picture.toImage(w, h);
+    image.dispose();
+    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    rendered.dispose();
+    if (byteData == null || !mounted) return;
+
+    final layer = projectService.addLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: _currentFrame,
+      type: LayerType.watermark,
+      name: asset.name,
+    );
+    tileManager.replaceLayerPixels(
+      frameLayerKey(sceneId, _currentFrame, layer.id),
+      byteData.buffer.asUint8List(),
+    );
+    // rangeModeは今後の複数フレーム表示機能拡張に備えたメタデータとして
+    // allFramesを既定値に保存する。現在の描画・書き出しパイプラインは
+    // レイヤーが実際に追加されたフレームでのみ表示される点に注意
+    // （common/タイムライン素材レイヤー全般に共通する既存の制約）。
+    projectService.updateLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: _currentFrame,
+      layer: layer.copyWith(rangeMode: LayerRangeMode.allFrames),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('ウォーターマークを追加しました（現在のフレームに表示されます）: ${asset.name}')),
     );
   }
 

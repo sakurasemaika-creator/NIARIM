@@ -3,12 +3,18 @@ import '../models/layer.dart';
 import 'tile_manager.dart';
 
 /// レイヤー種別のうちTileManagerに実ピクセルデータを持つもの
-/// （通常・自動塗り用線画・自動塗り）。フォルダ・共通・テキスト・
-/// タイムライン素材・選択レイヤーは対象外（それぞれ別経路で描画する）。
+/// （通常・自動塗り用線画・自動塗り・共通・タイムライン画像/動画素材・
+/// ウォーターマーク。いずれも frameLayerKey 経由でタイルへラスタライズ
+/// 済みのピクセルを持つ）。フォルダ（表示構造のみ）・テキスト（ベクター
+/// データ、別経路での描画が必要）・選択レイヤー（内部専用）は対象外。
 const Set<LayerType> pixelLayerTypes = {
   LayerType.normal,
   LayerType.autoFillLineart,
   LayerType.autoFill,
+  LayerType.common,
+  LayerType.timelineImage,
+  LayerType.timelineVideo,
+  LayerType.watermark,
 };
 
 /// LayerBlendMode（仕様書16の17種）をdart:uiのBlendModeへ変換する。

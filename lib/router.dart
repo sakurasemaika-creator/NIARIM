@@ -11,6 +11,7 @@ import 'screens/settings/pen_settings_screen.dart';
 import 'screens/settings/workspace_settings_screen.dart';
 import 'screens/settings/transfer_screen.dart';
 import 'screens/settings/theme_settings_screen.dart';
+import 'screens/settings/watermark_settings_screen.dart';
 import 'screens/export/export_screen.dart';
 import 'screens/help/help_screen.dart';
 import 'screens/premium/premium_screen.dart';
@@ -45,6 +46,7 @@ final appRouter = GoRouter(
     GoRoute(path: '/settings/workspace', builder: (context, state) => const WorkspaceSettingsScreen()),
     GoRoute(path: '/settings/transfer', builder: (context, state) => const TransferScreen()),
     GoRoute(path: '/settings/theme', builder: (context, state) => const ThemeSettingsScreen()),
+    GoRoute(path: '/settings/watermark', builder: (context, state) => const WatermarkSettingsScreen()),
     GoRoute(path: '/help', builder: (context, state) => const HelpScreen()),
     GoRoute(path: '/premium', builder: (context, state) => const PremiumScreen()),
     GoRoute(path: '/autofill-presets', builder: (context, state) => const AutofillPresetScreen()),
