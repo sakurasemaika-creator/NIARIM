@@ -12,10 +12,14 @@ class DrawingEngine {
   ui.Color currentColor = const ui.Color(0xFF000000);
   bool isEraser = false;
 
+  // 手ブレ補正用：直近の平滑化済み座標（仕様書03・17：ON/OFF・強度調整）
+  StrokePoint? _smoothed;
+
   DrawingEngine({required this.tileManager});
 
   void beginStroke(StrokePoint point, String layerId) {
     _currentStroke.clear();
+    _smoothed = point;
     _currentStroke.add(point);
     _stampBrush(point.x, point.y, point.pressure, point.tiltX, point.tiltY, layerId);
   }
@@ -25,16 +29,41 @@ class DrawingEngine {
       beginStroke(point, layerId);
       return;
     }
-    _currentStroke.add(point);
+    final effective = _applyStabilization(point);
+    _currentStroke.add(effective);
     _renderStrokeSegment(
       _currentStroke[_currentStroke.length - 2],
-      point,
+      effective,
       layerId,
     );
   }
 
   void endStroke() {
     _currentStroke.clear();
+    _smoothed = null;
+  }
+
+  /// 手ブレ補正：入力座標を直近の平滑化済み座標へ指数移動平均で追従させる。
+  /// strengthが高いほど追従を遅くし、線が滑らかになる（軽量・毎ピクセル計算なし）。
+  StrokePoint _applyStabilization(StrokePoint raw) {
+    final brush = currentBrush;
+    if (brush == null || !brush.stabilization) {
+      _smoothed = raw;
+      return raw;
+    }
+    final prev = _smoothed ?? raw;
+    final strength = brush.stabilizationStrength.clamp(0, 100) / 100.0;
+    final factor = (1.0 - strength * 0.85).clamp(0.05, 1.0);
+    final smoothedPoint = StrokePoint(
+      x: prev.x + (raw.x - prev.x) * factor,
+      y: prev.y + (raw.y - prev.y) * factor,
+      pressure: raw.pressure,
+      tiltX: raw.tiltX,
+      tiltY: raw.tiltY,
+      inputType: raw.inputType,
+    );
+    _smoothed = smoothedPoint;
+    return smoothedPoint;
   }
 
   /// 図形ツール確定描画（線・四角形・円）。現在のブラシ設定（サイズ・不透明度・
@@ -209,6 +238,24 @@ class DrawingEngine {
 
             if (isEraser) {
               tileManager.erasePixel(tile, px, py, finalAlpha);
+            } else if (currentBrush!.mixingMode != BrushMixingMode.off) {
+              final idx = (py * TileManager.tileSize + px) * 4;
+              if (tile[idx + 3] > 0) {
+                final below =
+                    ui.Color.fromARGB(tile[idx + 3], tile[idx], tile[idx + 1], tile[idx + 2]);
+                final selected = ui.Color.fromARGB(255, ri, gi, bi);
+                final rate = currentBrush!.mixingRate / 100.0;
+                final mixed = currentBrush!.mixingMode == BrushMixingMode.bleed
+                    ? bleedColor(below, selected, rate, _currentStroke.length)
+                    : mixColor(below, selected, rate);
+                tileManager.blendPixel(
+                  tile, px, py,
+                  (mixed.r * 255).round(), (mixed.g * 255).round(), (mixed.b * 255).round(),
+                  finalAlpha,
+                );
+              } else {
+                tileManager.blendPixel(tile, px, py, ri, gi, bi, finalAlpha);
+              }
             } else {
               tileManager.blendPixel(tile, px, py, ri, gi, bi, finalAlpha);
             }

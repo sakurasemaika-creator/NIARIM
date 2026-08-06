@@ -246,32 +246,16 @@ class _StampTab extends StatelessWidget {
 
 /// 投げ縄塗りタブ
 /// ベタ塗り（一番上のボタン）＋トーン一覧
-class _LassoFillTab extends StatefulWidget {
+class _LassoFillTab extends StatelessWidget {
   final VoidCallback onClose;
   const _LassoFillTab({required this.onClose});
-
-  @override
-  State<_LassoFillTab> createState() => _LassoFillTabState();
-}
-
-class _LassoFillTabState extends State<_LassoFillTab> {
-  bool _useTone = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // ToneServiceのlastLassoToneが存在すればトーン選択状態を復元
-    final lastLassoTone = context.read<ToneService>().lastLassoTone;
-    if (lastLassoTone != null && !_useTone) {
-      _useTone = true;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final toneService = context.watch<ToneService>();
     final tones = toneService.tones;
     final lastLassoTone = toneService.lastLassoTone;
+    final useTone = toneService.lassoUseTone;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,10 +265,10 @@ class _LassoFillTabState extends State<_LassoFillTab> {
           dense: true,
           leading: const Icon(Icons.format_color_fill, size: 18),
           title: const Text('ベタ塗り', style: TextStyle(fontSize: 13)),
-          selected: !_useTone,
+          selected: !useTone,
           onTap: () {
-            setState(() => _useTone = false);
-            widget.onClose();
+            toneService.setLassoUseTone(false);
+            onClose();
           },
         ),
         const Divider(height: 1),
@@ -304,13 +288,13 @@ class _LassoFillTabState extends State<_LassoFillTab> {
             itemCount: tones.length,
             itemBuilder: (context, index) {
               final tone = tones[index];
-              final isSelected = _useTone && lastLassoTone?.id == tone.id;
+              final isSelected = useTone && lastLassoTone?.id == tone.id;
               return GestureDetector(
                 onTap: () {
-                  setState(() => _useTone = true);
+                  toneService.setLassoUseTone(true);
                   toneService.setLastLassoTone(tone);
                   toneService.selectTone(tone.id);
-                  widget.onClose();
+                  onClose();
                 },
                 child: Container(
                   decoration: BoxDecoration(

@@ -194,6 +194,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     currentLayerId: _currentLayerId,
                     isEraser: _currentTool == DrawingTool.eraser,
                     currentTool: _currentTool,
+                    currentSubTool: _currentSubTool,
+                    lassoFillEnclosedMode: _lassoFillEnclosedMode,
                     onionSkinSettings: _onionSkinSettings,
                     currentFrame: _currentFrame,
                     sceneId: _currentSceneId,

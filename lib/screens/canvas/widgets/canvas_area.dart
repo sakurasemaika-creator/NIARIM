@@ -7,10 +7,14 @@ import 'package:provider/provider.dart';
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/input_handler.dart';
+import '../../../engine/lasso_fill_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/onion_skin.dart';
+import '../../../engine/procedural_texture.dart';
 import '../../../engine/ruler_engine.dart';
+import '../../../engine/stamp_engine.dart';
 import '../../../engine/tile_manager.dart';
+import '../../../engine/tone_engine.dart';
 import '../../../engine/undo_manager.dart' as app_undo;
 import '../../../models/layer.dart';
 import '../../../models/onion_skin_settings.dart';
@@ -19,7 +23,10 @@ import '../../../models/ruler.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/settings_service.dart';
+import '../../../services/stamp_service.dart';
+import '../../../services/tone_service.dart';
 import '../canvas_screen.dart';
+import 'pen_sub_tool_panel.dart' show PenSubTool;
 
 /// 変形ツールの操作モード（移動・拡大縮小・回転）
 enum _TransformMode { translate, scale, rotate }
@@ -32,6 +39,8 @@ class CanvasArea extends StatefulWidget {
   final String? currentLayerId;
   final bool isEraser;
   final DrawingTool currentTool;
+  final PenSubTool currentSubTool;
+  final bool lassoFillEnclosedMode;
   final OnionSkinSettings onionSkinSettings;
   final int currentFrame;
   final String sceneId;
@@ -47,6 +56,8 @@ class CanvasArea extends StatefulWidget {
     this.currentLayerId,
     this.isEraser = false,
     this.currentTool = DrawingTool.pen,
+    this.currentSubTool = PenSubTool.brush,
+    this.lassoFillEnclosedMode = false,
     this.onionSkinSettings = const OnionSkinSettings(),
     this.currentFrame = 0,
     this.sceneId = '',
@@ -63,6 +74,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   final InputHandler _inputHandler = InputHandler();
   final OnionSkinEngine _onionSkinEngine = OnionSkinEngine();
   final RulerEngine _rulerEngine = RulerEngine();
+  final ToneEngine _toneEngine = ToneEngine();
+  final StampEngine _stampEngine = StampEngine();
+  final LassoFillEngine _lassoFillEngine = LassoFillEngine();
 
   late TileManager _tileManager;
   late DrawingEngine _drawingEngine;
@@ -82,6 +96,12 @@ class _CanvasAreaState extends State<CanvasArea> {
   Offset? _selectionEnd;
   List<Offset> _lassoPoints = [];
   int _touchCount = 0;
+
+  // ─── ペンサブツール：トーン自由描画・スタンプ ─────────────────────────
+  // ライブ中は軌跡のプレビューのみ表示し、指を離した時点で一括してタイルへ
+  // 書き戻す（毎ポインタ移動でキャンバス全体を読み書きすると低スペック端末で
+  // 重くなるため）。
+  List<Offset> _subToolStrokePoints = [];
 
   bool _engineInitialized = false;
 
@@ -241,6 +261,19 @@ class _CanvasAreaState extends State<CanvasArea> {
       _handleBucketDown(canvasPos);
       return;
     }
+    if (widget.currentTool == DrawingTool.lasso) {
+      if (type == InputType.touch) return;
+      setState(() { _lassoPoints = [canvasPos]; });
+      return;
+    }
+    if (widget.currentTool == DrawingTool.pen &&
+        (widget.currentSubTool == PenSubTool.tone ||
+            widget.currentSubTool == PenSubTool.stamp)) {
+      if (type == InputType.touch) return;
+      _syncBrushAndColor();
+      setState(() { _subToolStrokePoints = [canvasPos]; });
+      return;
+    }
 
     if (type == InputType.touch) return;
     _syncBrushAndColor();
@@ -278,6 +311,18 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.bucket) {
       if (type == InputType.touch) return;
       _handleBucketMove(canvasPos);
+      return;
+    }
+    if (widget.currentTool == DrawingTool.lasso) {
+      if (type == InputType.touch) return;
+      setState(() => _lassoPoints.add(canvasPos));
+      return;
+    }
+    if (widget.currentTool == DrawingTool.pen &&
+        (widget.currentSubTool == PenSubTool.tone ||
+            widget.currentSubTool == PenSubTool.stamp)) {
+      if (type == InputType.touch) return;
+      setState(() => _subToolStrokePoints.add(canvasPos));
       return;
     }
     if (type == InputType.touch) return;
@@ -321,6 +366,24 @@ class _CanvasAreaState extends State<CanvasArea> {
       if (type == InputType.touch) _inputHandler.onStylusUp();
       return;
     }
+    if (widget.currentTool == DrawingTool.lasso) {
+      _commitLassoFill();
+      setState(() => _lassoPoints = []);
+      if (type == InputType.touch) _inputHandler.onStylusUp();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.pen && widget.currentSubTool == PenSubTool.tone) {
+      _commitToneStroke();
+      setState(() => _subToolStrokePoints = []);
+      if (type == InputType.touch) _inputHandler.onStylusUp();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.pen && widget.currentSubTool == PenSubTool.stamp) {
+      _commitStampStroke();
+      setState(() => _subToolStrokePoints = []);
+      if (type == InputType.touch) _inputHandler.onStylusUp();
+      return;
+    }
     if (type == InputType.touch) {
       _inputHandler.onStylusUp();
       return;
@@ -343,6 +406,142 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (project == null) return;
     context.read<ProjectService>().markLineartDirty(
         project.id, widget.sceneId, widget.currentFrame, _layerId);
+  }
+
+  // ─── 投げ縄塗り（ペンサブツール、仕様書25） ─────────────────────────────
+
+  /// 投げ縄塗りを確定する。囲って塗るモードON/OFF・ベタ/トーン・透明色=消しゴム
+  /// の判定は LassoFillEngine 側で行う。
+  Future<void> _commitLassoFill() async {
+    if (_lassoPoints.length < 3) return;
+    _syncBrushAndColor();
+    final key = _tileKeyFor(_layerId);
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final img = await _tileManager.compositeLayerToImage(key);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+    img.dispose();
+    if (byteData == null || !mounted) return;
+    final canvasData = byteData.buffer.asUint8List();
+    final color = _drawingEngine.currentColor;
+
+    Uint8List? toneTexture;
+    const toneSize = 64;
+    final toneService = context.read<ToneService>();
+    if (toneService.lassoUseTone) {
+      final tone = toneService.lastLassoTone ?? toneService.currentTone;
+      if (tone != null) toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
+    }
+
+    final points = _lassoPoints.map((p) => ui.Offset(p.dx, p.dy)).toList();
+    final result = widget.lassoFillEnclosedMode
+        ? _lassoFillEngine.fillEnclosed(
+            points: points, color: color, canvasData: canvasData, width: w, height: h,
+            toneTexture: toneTexture, toneTextureWidth: toneSize, toneTextureHeight: toneSize,
+          )
+        : _lassoFillEngine.fillLasso(
+            points: points, color: color, canvasData: canvasData, width: w, height: h,
+            toneTexture: toneTexture, toneTextureWidth: toneSize, toneTextureHeight: toneSize,
+          );
+    if (!mounted) return;
+    _tileManager.replaceLayerPixels(key, result);
+    _scheduleComposite();
+    _markLineartDirtyIfNeeded();
+  }
+
+  // ─── ペンサブツール：トーン自由描画・スタンプ ─────────────────────────
+
+  /// トーン自由描画を確定する（仕様書17：現在色で描画・サイズ一定・
+  /// 回転なし・密度なし・散布なし）。ドラッグ中はプレビューのみで、
+  /// 指を離した時点でまとめてタイルへ反映する。
+  Future<void> _commitToneStroke() async {
+    if (_subToolStrokePoints.isEmpty) return;
+    final toneService = context.read<ToneService>();
+    final tone = toneService.currentTone;
+    if (tone == null) return;
+    final bs = context.read<BrushService>();
+    final brushSize = bs.currentBrush?.size ?? 20;
+    final key = _tileKeyFor(_layerId);
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final img = await _tileManager.compositeLayerToImage(key);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+    img.dispose();
+    if (byteData == null || !mounted) return;
+    final canvasData = byteData.buffer.asUint8List();
+    const toneSize = 64;
+    final texture = generateBuiltInToneTexture(tone, size: toneSize);
+    final c = bs.currentColor;
+    final color = ui.Color.fromARGB(
+      (c.a * 255).round().clamp(0, 255),
+      (c.r * 255).round().clamp(0, 255),
+      (c.g * 255).round().clamp(0, 255),
+      (c.b * 255).round().clamp(0, 255),
+    );
+    final points = _subToolStrokePoints.map((p) => ui.Offset(p.dx, p.dy)).toList();
+    final result = widget.isEraser
+        ? _toneEngine.eraseToneStroke(
+            points: points, brushSize: brushSize, canvasData: canvasData,
+            canvasWidth: w, canvasHeight: h,
+            toneTexture: texture, toneWidth: toneSize, toneHeight: toneSize,
+          )
+        : _toneEngine.drawToneStroke(
+            points: points, brushSize: brushSize, color: color, canvasData: canvasData,
+            canvasWidth: w, canvasHeight: h,
+            toneTexture: texture, toneWidth: toneSize, toneHeight: toneSize,
+            opacity: bs.currentBrush?.opacity ?? 100,
+          );
+    if (!mounted) return;
+    _tileManager.replaceLayerPixels(key, result);
+    _scheduleComposite();
+    _markLineartDirtyIfNeeded();
+  }
+
+  /// スタンプ描画を確定する（仕様書17：色情報はスタンプ自身が保持・
+  /// ブラシサイズ連動・回転／密度／散布対応）。
+  Future<void> _commitStampStroke() async {
+    if (_subToolStrokePoints.isEmpty) return;
+    final stampService = context.read<StampService>();
+    final stamp = stampService.currentStamp;
+    if (stamp == null) return;
+    final bs = context.read<BrushService>();
+    final stampSize = bs.currentBrush?.size ?? 40;
+    final key = _tileKeyFor(_layerId);
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final img = await _tileManager.compositeLayerToImage(key);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+    img.dispose();
+    if (byteData == null || !mounted) return;
+    final canvasData = byteData.buffer.asUint8List();
+    const texSize = 128;
+    final texture = await generateBuiltInStampTexture(stamp, size: texSize);
+    if (!mounted) return;
+
+    // ストローク点をスタンプ間隔で間引く（密度が高すぎるとほぼ塗りつぶしになるため）
+    final spacing = math.max(stampSize * 0.6, 4.0);
+    final sampled = <ui.Offset>[];
+    Offset? last;
+    for (final p in _subToolStrokePoints) {
+      if (last == null || (p - last).distance >= spacing) {
+        sampled.add(ui.Offset(p.dx, p.dy));
+        last = p;
+      }
+    }
+    if (sampled.isEmpty) {
+      sampled.add(ui.Offset(_subToolStrokePoints.first.dx, _subToolStrokePoints.first.dy));
+    }
+
+    final result = _stampEngine.stampAlongPath(
+      canvasData: canvasData, width: w, height: h,
+      texture: texture, texSize: texSize,
+      points: sampled, stampSize: stampSize,
+      rotation: stamp.rotation, scatter: stamp.scatter * stampSize, density: stamp.density,
+    );
+    if (!mounted) return;
+    _tileManager.replaceLayerPixels(key, result);
+    _scheduleComposite();
+    _markLineartDirtyIfNeeded();
   }
 
   void _pickColor(Offset canvasPos) {
@@ -845,6 +1044,7 @@ class _CanvasAreaState extends State<CanvasArea> {
               selectionStart: _selectionStart,
               selectionEnd: _selectionEnd,
               lassoPoints: _lassoPoints,
+              subToolStrokePoints: _subToolStrokePoints,
               activeRuler: widget.activeRuler,
               shapeKind: widget.shapeKind,
               shapeStart: _shapeStart,
@@ -896,6 +1096,7 @@ class _CanvasPainter extends CustomPainter {
   final Offset? selectionStart;
   final Offset? selectionEnd;
   final List<Offset> lassoPoints;
+  final List<Offset> subToolStrokePoints;
   final Ruler? activeRuler;
   final ShapeKind shapeKind;
   final Offset? shapeStart;
@@ -914,6 +1115,7 @@ class _CanvasPainter extends CustomPainter {
     required this.onionSettings,
     required this.onionEngine,
     required this.lassoPoints,
+    this.subToolStrokePoints = const [],
     this.project,
     this.compositeImage,
     this.belowImage,
@@ -1022,6 +1224,24 @@ class _CanvasPainter extends CustomPainter {
         ..color = Colors.blue
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0);
+    }
+
+    // トーン自由描画・スタンプのストロークプレビュー（確定は指を離した時点）
+    if (subToolStrokePoints.length > 1) {
+      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
+      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      final path = Path();
+      path.moveTo(
+        drawingRect.left + subToolStrokePoints.first.dx * sx,
+        drawingRect.top + subToolStrokePoints.first.dy * sy,
+      );
+      for (final p in subToolStrokePoints.skip(1)) {
+        path.lineTo(drawingRect.left + p.dx * sx, drawingRect.top + p.dy * sy);
+      }
+      canvas.drawPath(path, Paint()
+        ..color = Colors.orange
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0);
     }
 
     // 図形ツール：ゴムバンドプレビュー（指を離すまで確定しない）
@@ -1245,6 +1465,7 @@ class _CanvasPainter extends CustomPainter {
       old.selectionStart != selectionStart ||
       old.selectionEnd != selectionEnd ||
       old.lassoPoints != lassoPoints ||
+      old.subToolStrokePoints != subToolStrokePoints ||
       old.activeRuler != activeRuler ||
       old.shapeKind != shapeKind ||
       old.shapeStart != shapeStart ||
