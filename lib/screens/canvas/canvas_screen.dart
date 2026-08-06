@@ -182,6 +182,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
     final isDesktop = isWideScreen(context);
+    final dockedToolPanel = isDesktop ? _activeToolPanel() : null;
 
     return Scaffold(
       body: SafeArea(
@@ -193,6 +194,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
             Expanded(
               child: Row(
                 children: [
+                  // PC/DeXモード：ツールオプション系パネルはフローティングではなく
+                  // キャンバス左側の常時ドッキングパネルとして表示する。
+                  if (dockedToolPanel != null)
+                    SizedBox(width: 280, child: dockedToolPanel),
                   Expanded(
                     child: Stack(
                       children: [
@@ -227,83 +232,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         frameIndex: _currentFrame,
                       ),
                     ),
-                  if (_showColorPicker)
-                    Positioned(
-                      left: 16, bottom: 16,
-                      child: ColorPickerPanel(
-                        currentColor: _currentColor,
-                        onColorChanged: (color) {
-                          setState(() => _currentColor = color);
-                          context.read<BrushService>().setCurrentColor(color);
-                        },
-                        onClose: () => setState(() => _showColorPicker = false),
-                      ),
-                    ),
-                  if (_showBrushPanel)
-                    Positioned(
-                      left: 16, top: 16,
-                      child: BrushPanel(onClose: () => setState(() => _showBrushPanel = false)),
-                    ),
+                  if (_showColorPicker && !isDesktop)
+                    Positioned(left: 16, bottom: 16, child: _colorPickerPanel()),
+                  if (_showBrushPanel && !isDesktop)
+                    Positioned(left: 16, top: 16, child: _brushPanel()),
                   // ペンサブツールパネル（ブラシ/トーン/スタンプ/投げ縄塗り）
-                  if (_showPenSubToolPanel)
-                    Positioned(
-                      left: 16, top: 16,
-                      child: PenSubToolPanel(
-                        currentTool: _currentTool,
-                        currentSubTool: _currentSubTool,
-                        onSubToolSelected: (subTool) {
-                          setState(() {
-                            _currentSubTool = subTool;
-                            if (subTool == PenSubTool.lassoFill) {
-                              _currentTool = DrawingTool.lasso;
-                            } else {
-                              _currentTool = DrawingTool.pen;
-                            }
-                          });
-                        },
-                        onClose: () => setState(() => _showPenSubToolPanel = false),
-                      ),
-                    ),
+                  if (_showPenSubToolPanel && !isDesktop)
+                    Positioned(left: 16, top: 16, child: _penSubToolPanel()),
                   // オニオンスキンパネル
-                  if (_showOnionSkinPanel)
-                    Positioned(
-                      right: 16, top: 16,
-                      child: OnionSkinPanel(
-                        settings: _onionSkinSettings,
-                        onChanged: (s) => setState(() => _onionSkinSettings = s),
-                        onClose: () => setState(() => _showOnionSkinPanel = false),
-                      ),
-                    ),
+                  if (_showOnionSkinPanel && !isDesktop)
+                    Positioned(right: 16, top: 16, child: _onionSkinPanel()),
                   // 定規パネル
-                  if (_showRulerPanel)
-                    Positioned(
-                      left: 16, top: 16,
-                      child: RulerPanel(
-                        activeRuler: _activeRuler,
-                        onRulerChanged: (r) => setState(() => _activeRuler = r),
-                        onClose: () => setState(() => _showRulerPanel = false),
-                      ),
-                    ),
+                  if (_showRulerPanel && !isDesktop)
+                    Positioned(left: 16, top: 16, child: _rulerPanel()),
                   // フィルターパネル（仕様書18：描画フィルター）
-                  if (_showFilterPanel)
-                    Positioned(
-                      right: 16, top: 16,
-                      child: FilterPanel(
-                        projectId: widget.projectId,
-                        sceneId: _currentSceneId,
-                        layerId: _currentLayerId,
-                        frameIndex: _currentFrame,
-                        bulkFrameIndices: _filterBulkFrames,
-                        onClose: () => setState(() {
-                          _showFilterPanel = false;
-                          _filterBulkFrames = null;
-                          if (_frameMultiSelectMode) {
-                            _frameMultiSelectMode = false;
-                            _selectedFrameIndices = {};
-                          }
-                        }),
-                      ),
-                    ),
+                  if (_showFilterPanel && !isDesktop)
+                    Positioned(right: 16, top: 16, child: _filterPanel()),
                       ],
                     ),
                   ),
@@ -384,6 +328,72 @@ class _CanvasScreenState extends State<CanvasScreen> {
       ),
     );
   }
+
+  // PC/DeXモード（広い画面）：現在開いているツールオプション系パネルを1つ
+  // 返す（複数同時に開いていた場合は優先度の高いものを返す）。左側の
+  // 常時ドッキングパネルに使う。フローティング表示（スマホ）と同じ
+  // パネルインスタンスを流用する。
+  Widget? _activeToolPanel() {
+    if (_showColorPicker) return _colorPickerPanel();
+    if (_showPenSubToolPanel) return _penSubToolPanel();
+    if (_showBrushPanel) return _brushPanel();
+    if (_showOnionSkinPanel) return _onionSkinPanel();
+    if (_showRulerPanel) return _rulerPanel();
+    if (_showFilterPanel) return _filterPanel();
+    return null;
+  }
+
+  Widget _colorPickerPanel() => ColorPickerPanel(
+        currentColor: _currentColor,
+        onColorChanged: (color) {
+          setState(() => _currentColor = color);
+          context.read<BrushService>().setCurrentColor(color);
+        },
+        onClose: () => setState(() => _showColorPicker = false),
+      );
+
+  Widget _brushPanel() =>
+      BrushPanel(onClose: () => setState(() => _showBrushPanel = false));
+
+  Widget _penSubToolPanel() => PenSubToolPanel(
+        currentTool: _currentTool,
+        currentSubTool: _currentSubTool,
+        onSubToolSelected: (subTool) {
+          setState(() {
+            _currentSubTool = subTool;
+            _currentTool = subTool == PenSubTool.lassoFill ? DrawingTool.lasso : DrawingTool.pen;
+          });
+        },
+        onClose: () => setState(() => _showPenSubToolPanel = false),
+      );
+
+  Widget _onionSkinPanel() => OnionSkinPanel(
+        settings: _onionSkinSettings,
+        onChanged: (s) => setState(() => _onionSkinSettings = s),
+        onClose: () => setState(() => _showOnionSkinPanel = false),
+      );
+
+  Widget _rulerPanel() => RulerPanel(
+        activeRuler: _activeRuler,
+        onRulerChanged: (r) => setState(() => _activeRuler = r),
+        onClose: () => setState(() => _showRulerPanel = false),
+      );
+
+  Widget _filterPanel() => FilterPanel(
+        projectId: widget.projectId,
+        sceneId: _currentSceneId,
+        layerId: _currentLayerId,
+        frameIndex: _currentFrame,
+        bulkFrameIndices: _filterBulkFrames,
+        onClose: () => setState(() {
+          _showFilterPanel = false;
+          _filterBulkFrames = null;
+          if (_frameMultiSelectMode) {
+            _frameMultiSelectMode = false;
+            _selectedFrameIndices = {};
+          }
+        }),
+      );
 
   Widget _buildTopBar() {
     return Padding(
