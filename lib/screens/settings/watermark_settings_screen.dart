@@ -93,7 +93,7 @@ class _WatermarkTile extends StatelessWidget {
               builder: (context, snapshot) {
                 final path = snapshot.data;
                 if (path == null) {
-                  return const Center(child: Icon(Icons.broken_image, color: Colors.grey));
+                  return Center(child: Icon(Icons.broken_image, color: Theme.of(context).colorScheme.onSurfaceVariant));
                 }
                 return Container(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,

@@ -282,14 +282,15 @@ class _LayerPanelState extends State<LayerPanel> {
                       const SizedBox(width: 4),
                       _layerTypeIcon(layer.type),
                       const SizedBox(width: 4),
-                      Container(width: 24, height: 24, color: Colors.grey[700]),
+                      Container(width: 24, height: 24, color: Theme.of(context).colorScheme.surfaceContainerHighest),
                     ],
                   ),
                   title: Text(layer.name, style: const TextStyle(fontSize: 12)),
                   subtitle: layer.type == model.LayerType.common
                       ? Text(_rangeSummary(layer), style: const TextStyle(fontSize: 9, color: Colors.blue))
                       : layer.hasClipping
-                          ? const Text('クリッピング', style: TextStyle(fontSize: 9, color: Colors.blue))
+                          ? Text('クリッピング',
+                              style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.primary))
                           : null,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -301,7 +302,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           child: const Icon(Icons.error, color: Colors.orange, size: 14),
                         ),
                       if (layer.opacityLocked)
-                        const Icon(Icons.opacity, size: 14, color: Colors.blue),
+                        Icon(Icons.opacity, size: 14, color: Theme.of(context).colorScheme.primary),
                       if (layer.isLocked)
                         const Icon(Icons.lock, size: 14),
                       if (_isTimelineMaterial(layer.type) ||
@@ -889,7 +890,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 title: const Text('ブレンドモード'),
                 trailing: Text(
                   _blendModeName(layer.blendMode),
-                  style: const TextStyle(fontSize: 12, color: Colors.blue),
+                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -1035,9 +1036,11 @@ class _LayerPanelState extends State<LayerPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。', style: TextStyle(fontSize: 11, color: Colors.grey)),
+              Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。',
+                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 4),
-              const Text('※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。', style: TextStyle(fontSize: 11, color: Colors.grey)),
+              Text('※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。',
+                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 12),
               RadioListTile<int>(
                 title: const Text('塗りなおし'),

@@ -292,7 +292,7 @@ class _SaveNodeThumbnail extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.grey[700],
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
       ),
       clipBehavior: Clip.antiAlias,
@@ -300,17 +300,17 @@ class _SaveNodeThumbnail extends StatelessWidget {
           ? Image.file(
               File(path),
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => _placeholderIcon(),
+              errorBuilder: (context, error, stackTrace) => _placeholderIcon(context),
             )
-          : _placeholderIcon(),
+          : _placeholderIcon(context),
     );
   }
 
-  Widget _placeholderIcon() => Center(
+  Widget _placeholderIcon(BuildContext context) => Center(
         child: Icon(
           node != null ? Icons.image : Icons.add,
           size: size / 2,
-          color: Colors.grey[500],
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
 }
@@ -641,7 +641,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
             '選択中：${_selectedIds.length} / $_limit件',
             style: TextStyle(
               fontSize: 12,
-              color: limitReached ? Colors.orange : Colors.grey,
+              color: limitReached ? Colors.orange : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -768,7 +768,7 @@ class _SelectableSlotView extends StatelessWidget {
           ),
           title: Text(
             node.comment ?? 'スロット ${slotIndex + 1}',
-            style: TextStyle(color: isDisabled ? Colors.grey : null),
+            style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
           ),
           subtitle: Text(_formatDate(node.savedAt)),
           onTap: isDisabled ? null : () => onToggle(node.id),
@@ -829,7 +829,7 @@ class _SelectableTreeView extends StatelessWidget {
             ),
             title: Text(
               node.comment ?? '保存',
-              style: TextStyle(color: isDisabled ? Colors.grey : null),
+              style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
             ),
             subtitle: Text(_formatDate(node.savedAt)),
             onTap: isDisabled ? null : () => onToggle(node.id),

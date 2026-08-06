@@ -35,8 +35,9 @@ class QuickToolPanel extends StatelessWidget {
               const Divider(),
               Expanded(
                 child: entries.isEmpty
-                    ? const Center(
-                        child: Text('登録されたツールがありません', style: TextStyle(color: Colors.grey, fontSize: 12)))
+                    ? Center(
+                        child: Text('登録されたツールがありません',
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)))
                     : ReorderableListView.builder(
                         itemCount: entries.length,
                         onReorder: service.reorder,

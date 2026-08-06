@@ -1524,9 +1524,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。', style: TextStyle(fontSize: 11, color: Colors.grey)),
+              Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。',
+                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 4),
-              const Text('※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。', style: TextStyle(fontSize: 11, color: Colors.grey)),
+              Text('※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。',
+                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 12),
               RadioGroup<int>(
                 groupValue: selected,
