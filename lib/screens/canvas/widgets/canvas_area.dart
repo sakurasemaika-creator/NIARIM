@@ -97,6 +97,13 @@ class _CanvasAreaState extends State<CanvasArea> {
   List<Offset> _lassoPoints = [];
   int _touchCount = 0;
 
+  // ─── 選択範囲（矩形選択・投げ縄選択・自動選択で共通利用、仕様書03・16） ──
+  // ドラッグ中は_selectionStart/_selectionEnd・_lassoPointsでプレビューのみ
+  // 表示し、確定時に1px=1byteのマスクへ変換して保持する。投げ縄塗り・バケツ
+  // 塗りはこのマスクを参照して選択範囲内のみ描画する。
+  Uint8List? _selectionMask;
+  ui.Image? _selectionOverlayImage;
+
   // ─── ペンサブツール：トーン自由描画・スタンプ ─────────────────────────
   // ライブ中は軌跡のプレビューのみ表示し、指を離した時点で一括してタイルへ
   // 書き戻す（毎ポインタ移動でキャンバス全体を読み書きすると低スペック端末で
@@ -176,7 +183,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final frameChanged = old.currentFrame != widget.currentFrame ||
         old.sceneId != widget.sceneId ||
         old.currentLayerId != widget.currentLayerId;
-    if (frameChanged) _scheduleComposite();
+    if (frameChanged) {
+      _scheduleComposite();
+      // 選択範囲はフレームごとの一時状態のため、フレーム切替時にクリアする
+      _clearSelectionMask();
+    }
     _recomposeSurroundings(force: frameChanged);
   }
 
@@ -186,10 +197,113 @@ class _CanvasAreaState extends State<CanvasArea> {
     _compositeImage?.dispose();
     _belowImage?.dispose();
     _aboveImage?.dispose();
+    _selectionOverlayImage?.dispose();
     for (final img in _onionImages.values) {
       img.dispose();
     }
     super.dispose();
+  }
+
+  // ─── 選択範囲マスク（矩形選択・投げ縄選択・自動選択で共通、仕様書03・16・25） ──
+
+  void _clearSelectionMask() {
+    if (_selectionMask == null && _selectionOverlayImage == null) return;
+    _selectionOverlayImage?.dispose();
+    _selectionOverlayImage = null;
+    setState(() => _selectionMask = null);
+  }
+
+  Uint8List _rectSelectionMask(Offset a, Offset b, int w, int h) {
+    final mask = Uint8List(w * h);
+    final left = a.dx < b.dx ? a.dx : b.dx;
+    final right = a.dx < b.dx ? b.dx : a.dx;
+    final top = a.dy < b.dy ? a.dy : b.dy;
+    final bottom = a.dy < b.dy ? b.dy : a.dy;
+    final x0 = left.floor().clamp(0, w);
+    final x1 = right.ceil().clamp(0, w);
+    final y0 = top.floor().clamp(0, h);
+    final y1 = bottom.ceil().clamp(0, h);
+    for (int y = y0; y < y1; y++) {
+      final rowBase = y * w;
+      for (int x = x0; x < x1; x++) {
+        mask[rowBase + x] = 1;
+      }
+    }
+    return mask;
+  }
+
+  Uint8List _polygonSelectionMask(List<Offset> points, int w, int h) {
+    final mask = Uint8List(w * h);
+    if (points.length < 3) return mask;
+    // 投げ縄塗り(LassoFillEngine)と同じRay Casting法。1回限りの確定処理
+    // なので走査コストは許容範囲（毎フレーム再計算はしない）。
+    bool inside(double px, double py) {
+      int crossings = 0;
+      final n = points.length;
+      for (int i = 0; i < n; i++) {
+        final pa = points[i];
+        final pb = points[(i + 1) % n];
+        if ((pa.dy <= py && pb.dy > py) || (pb.dy <= py && pa.dy > py)) {
+          final t = (py - pa.dy) / (pb.dy - pa.dy);
+          if (px < pa.dx + t * (pb.dx - pa.dx)) crossings++;
+        }
+      }
+      return crossings % 2 != 0;
+    }
+
+    for (int y = 0; y < h; y++) {
+      final rowBase = y * w;
+      for (int x = 0; x < w; x++) {
+        if (inside(x + 0.5, y + 0.5)) mask[rowBase + x] = 1;
+      }
+    }
+    return mask;
+  }
+
+  /// 自動選択（マジックワンド）：タップ位置から表示中の全レイヤー合成色を基準に
+  /// フラッドフィルし、選択範囲マスクを生成する（仕様書03：選択ツール）。
+  Future<void> _magicWandSelectAt(Offset canvasPos) async {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final x = canvasPos.dx.round();
+    final y = canvasPos.dy.round();
+    if (x < 0 || x >= w || y < 0 || y >= h) return;
+    final buffer = await _flattenVisibleLayers();
+    if (!mounted) return;
+    final mask = _bucketEngine.selectionMask(
+      canvasData: buffer,
+      width: w,
+      height: h,
+      startX: x,
+      startY: y,
+    );
+    _setSelectionMask(mask, w, h);
+  }
+
+  /// 選択範囲マスクを確定し、プレビュー用オーバーレイ画像を非同期で生成する。
+  void _setSelectionMask(Uint8List mask, int w, int h) {
+    _selectionOverlayImage?.dispose();
+    _selectionOverlayImage = null;
+    _selectionMask = mask;
+    setState(() {});
+    final rgba = Uint8List(w * h * 4);
+    for (int i = 0; i < w * h; i++) {
+      if (mask[i] == 0) continue;
+      final idx = i * 4;
+      // 選択範囲を半透明の水色でハイライト表示（キャンバス上のガイド表示、
+      // 書き出しには含まれない）。
+      rgba[idx] = 0x21;
+      rgba[idx + 1] = 0x96;
+      rgba[idx + 2] = 0xF3;
+      rgba[idx + 3] = 0x55;
+    }
+    ui.decodeImageFromPixels(rgba, w, h, ui.PixelFormat.rgba8888, (img) {
+      if (!mounted || !identical(_selectionMask, mask)) {
+        img.dispose();
+        return;
+      }
+      setState(() => _selectionOverlayImage = img);
+    });
   }
 
   // ─── 入力 ─────────────────────────────────────────────────────────────
@@ -235,6 +349,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.selectRect) {
+      _clearSelectionMask();
       setState(() {
         _selectionStart = canvasPos;
         _selectionEnd = canvasPos;
@@ -242,7 +357,13 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
+      _clearSelectionMask();
       setState(() { _lassoPoints = [canvasPos]; });
+      return;
+    }
+    if (widget.currentTool == DrawingTool.selectMagicWand) {
+      _clearSelectionMask();
+      _magicWandSelectAt(canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.shape && widget.shapeKind != ShapeKind.off) {
@@ -348,14 +469,27 @@ class _CanvasAreaState extends State<CanvasArea> {
     final type = _inputHandler.classifyInput(event);
 
     if (widget.currentTool == DrawingTool.selectRect) {
+      final start = _selectionStart;
+      final end = _selectionEnd;
       setState(() {
         _selectionStart = null;
         _selectionEnd = null;
       });
+      if (start != null && end != null && start != end) {
+        final w = _tileManager.canvasWidth;
+        final h = _tileManager.canvasHeight;
+        _setSelectionMask(_rectSelectionMask(start, end, w, h), w, h);
+      }
       return;
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
+      final points = List<Offset>.of(_lassoPoints);
       setState(() => _lassoPoints = []);
+      if (points.length >= 3) {
+        final w = _tileManager.canvasWidth;
+        final h = _tileManager.canvasHeight;
+        _setSelectionMask(_polygonSelectionMask(points, w, h), w, h);
+      }
       return;
     }
     if (widget.currentTool == DrawingTool.shape) {
@@ -485,6 +619,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       toneTexture: toneTexture,
       toneTextureWidth: toneSize,
       toneTextureHeight: toneSize,
+      selectionMask: _selectionMask,
     ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);
@@ -858,6 +993,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         toneTexture: texture,
         toneWidth: toneSize,
         toneHeight: toneSize,
+        selectionMask: _selectionMask,
       );
     } else {
       result = _bucketEngine.fill(
@@ -867,6 +1003,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         startX: x,
         startY: y,
         fillColor: _drawingEngine.currentColor,
+        selectionMask: _selectionMask,
       );
     }
 
@@ -1137,6 +1274,7 @@ class _CanvasAreaState extends State<CanvasArea> {
                 onionEngine: _onionSkinEngine,
                 selectionStart: _selectionStart,
                 selectionEnd: _selectionEnd,
+                selectionOverlayImage: _selectionOverlayImage,
                 lassoPoints: _lassoPoints,
                 subToolStrokePoints: _subToolStrokePoints,
                 activeRuler: widget.activeRuler,
@@ -1190,6 +1328,7 @@ class _CanvasPainter extends CustomPainter {
   final OnionSkinEngine onionEngine;
   final Offset? selectionStart;
   final Offset? selectionEnd;
+  final ui.Image? selectionOverlayImage;
   final List<Offset> lassoPoints;
   final List<Offset> subToolStrokePoints;
   final Ruler? activeRuler;
@@ -1219,6 +1358,7 @@ class _CanvasPainter extends CustomPainter {
     this.currentLayerBlendMode = LayerBlendMode.normal,
     this.selectionStart,
     this.selectionEnd,
+    this.selectionOverlayImage,
     this.activeRuler,
     this.shapeKind = ShapeKind.off,
     this.shapeStart,
@@ -1285,6 +1425,11 @@ class _CanvasPainter extends CustomPainter {
 
     // 現在レイヤーより手前（前面）のレイヤー群
     _drawFrameImage(canvas, drawingRect, aboveImage, Paint());
+
+    // 確定済み選択範囲（矩形選択・投げ縄選択・自動選択で共通、仕様書03・16・25）
+    if (selectionOverlayImage != null) {
+      _drawFrameImage(canvas, drawingRect, selectionOverlayImage, Paint());
+    }
 
     // 矩形選択プレビュー
     if (selectionStart != null && selectionEnd != null) {
@@ -1559,6 +1704,7 @@ class _CanvasPainter extends CustomPainter {
       old.onionImages != onionImages ||
       old.selectionStart != selectionStart ||
       old.selectionEnd != selectionEnd ||
+      old.selectionOverlayImage != selectionOverlayImage ||
       old.lassoPoints != lassoPoints ||
       old.subToolStrokePoints != subToolStrokePoints ||
       old.activeRuler != activeRuler ||

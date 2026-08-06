@@ -137,6 +137,55 @@ class BucketFillEngine {
     return result;
   }
 
+  /// 自動選択（マジックワンド）：指定座標からフラッドフィルし、色を変更せず
+  /// 選択マスク（1byte/px、1=選択・0=非選択）のみを返す。
+  Uint8List selectionMask({
+    required Uint8List canvasData,
+    required int width,
+    required int height,
+    required int startX,
+    required int startY,
+    double tolerance = 30.0,
+  }) {
+    final mask = Uint8List(width * height);
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height) return mask;
+    final startIdx = (startY * width + startX) * 4;
+    final targetR = canvasData[startIdx];
+    final targetG = canvasData[startIdx + 1];
+    final targetB = canvasData[startIdx + 2];
+    final targetA = canvasData[startIdx + 3];
+
+    final visited = Uint8List(width * height);
+    final startPos = startY * width + startX;
+    visited[startPos] = 1;
+    final stack = <int>[startPos];
+
+    while (stack.isNotEmpty) {
+      final pos = stack.removeLast();
+      final x = pos % width;
+      final y = pos ~/ width;
+
+      final idx = pos * 4;
+      if (!_colorMatch(canvasData[idx], canvasData[idx + 1], canvasData[idx + 2], canvasData[idx + 3],
+          targetR, targetG, targetB, targetA, tolerance)) continue;
+
+      mask[pos] = 1;
+
+      void tryAdd(int newPos) {
+        if (visited[newPos] == 0) {
+          visited[newPos] = 1;
+          stack.add(newPos);
+        }
+      }
+
+      if (x > 0) tryAdd(pos - 1);
+      if (x < width - 1) tryAdd(pos + 1);
+      if (y > 0) tryAdd(pos - width);
+      if (y < height - 1) tryAdd(pos + width);
+    }
+    return mask;
+  }
+
   bool _colorMatch(int r, int g, int b, int a, int tr, int tg, int tb, int ta, double tolerance) {
     return (r - tr).abs() <= tolerance &&
         (g - tg).abs() <= tolerance &&

@@ -15,6 +15,7 @@ Uint8List runLassoFillInIsolate(
       Uint8List? toneTexture,
       int toneTextureWidth,
       int toneTextureHeight,
+      Uint8List? selectionMask,
     }) args) {
   final engine = LassoFillEngine();
   return args.enclosed
@@ -27,6 +28,7 @@ Uint8List runLassoFillInIsolate(
           toneTexture: args.toneTexture,
           toneTextureWidth: args.toneTextureWidth,
           toneTextureHeight: args.toneTextureHeight,
+          selectionMask: args.selectionMask,
         )
       : engine.fillLasso(
           points: args.points,
@@ -37,6 +39,7 @@ Uint8List runLassoFillInIsolate(
           toneTexture: args.toneTexture,
           toneTextureWidth: args.toneTextureWidth,
           toneTextureHeight: args.toneTextureHeight,
+          selectionMask: args.selectionMask,
         );
 }
 
