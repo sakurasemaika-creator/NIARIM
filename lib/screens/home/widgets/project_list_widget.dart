@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../engine/mirapro_serializer.dart';
 import '../../../models/project.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
@@ -169,6 +171,7 @@ class ProjectListWidget extends StatelessWidget {
         const PopupMenuItem(value: 'open', child: Text('開く')),
         const PopupMenuItem(value: 'rename', child: Text('名前変更')),
         const PopupMenuItem(value: 'duplicate', child: Text('複製')),
+        const PopupMenuItem(value: 'share', child: Text('.mirashareを作成')),
         PopupMenuItem(
           value: 'favorite',
           child: Text(project.isFavorite ? 'お気に入り解除' : 'お気に入り'),
@@ -191,12 +194,35 @@ class ProjectListWidget extends StatelessWidget {
         _showRenameDialog(context, project);
       case 'duplicate':
         service.duplicateProject(project.id);
+      case 'share':
+        _createMirashare(context, project);
       case 'favorite':
         service.toggleFavorite(project.id);
       case 'move':
         _showMoveToFolderDialog(context, project);
       case 'delete':
         service.deleteProject(project.id);
+    }
+  }
+
+  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06）。
+  Future<void> _createMirashare(BuildContext context, Project project) async {
+    final service = context.read<ProjectService>();
+    final scenes = service.scenesOf(project.id);
+    final tileManager = service.tileManagerOf(project.id);
+    try {
+      final file = await MiraproSerializer.saveShare(
+        project: project,
+        scenes: scenes,
+        tileManager: tileManager,
+      );
+      if (!context.mounted) return;
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('.mirashareの作成に失敗しました: $e')),
+      );
     }
   }
 

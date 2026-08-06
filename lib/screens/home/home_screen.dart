@@ -1,9 +1,14 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import '../../engine/mirapro_serializer.dart';
 import '../../services/advertising_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
+import '../../services/share_intent_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
@@ -22,18 +27,76 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   bool _showFavoritesOnly = false;
+  StreamSubscription<String>? _sharedFileSub;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkFirstLaunch());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkFirstLaunch();
+      _initShareIntentHandling();
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _sharedFileSub?.cancel();
     super.dispose();
+  }
+
+  /// .mirashare受信フロー（仕様書06）：OSから共有ファイルを開いた場合の処理。
+  void _initShareIntentHandling() {
+    final service = context.read<ShareIntentService>();
+    final initialUri = service.pendingInitialUri;
+    if (initialUri != null) {
+      service.pendingInitialUri = null;
+      _handleSharedUri(initialUri);
+    }
+    _sharedFileSub = service.onFileReceived.listen(_handleSharedUri);
+  }
+
+  Future<void> _handleSharedUri(String uri) async {
+    String localPath;
+    if (uri.startsWith('file://')) {
+      localPath = Uri.parse(uri).toFilePath();
+    } else {
+      final bytes = await context.read<ShareIntentService>().readUriBytes(uri);
+      if (bytes == null) return;
+      final tmpDir = await getTemporaryDirectory();
+      final file = File(
+          '${tmpDir.path}/shared_${DateTime.now().millisecondsSinceEpoch}.mirashare');
+      await file.writeAsBytes(bytes);
+      localPath = file.path;
+    }
+    if (!mounted) return;
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('共有ファイル'),
+        content: const Text('この共有ファイルを複製して通常プロジェクトとして保存しますか？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('保存')),
+        ],
+      ),
+    );
+    if (proceed != true) return;
+    try {
+      final data = await MiraproSerializer.loadShare(localPath);
+      if (!mounted) return;
+      await context.read<ProjectService>().importSharedProject(data);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('プロジェクトタブへ追加しました')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('共有ファイルの読み込みに失敗しました: $e')),
+      );
+    }
   }
 
   void _checkFirstLaunch() {

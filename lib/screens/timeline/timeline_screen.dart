@@ -1,8 +1,12 @@
 ﻿import 'dart:async';
+import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:audioplayers/audioplayers.dart' as ap;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import '../../engine/tile_manager.dart';
 import '../../models/layer.dart';
 import '../../services/advertising_service.dart';
@@ -28,6 +32,8 @@ class _TrackClip {
   int lengthFrames;
   final Color color;
   final _ClipTrackType trackType;
+  // 実ファイルパス（音声・動画の再生位置連動に使用）
+  String? filePath;
   // 音声
   double volume;       // 0.0〜1.0
   double fadeIn;       // フェードイン秒数
@@ -44,6 +50,7 @@ class _TrackClip {
     required this.lengthFrames,
     required this.color,
     required this.trackType,
+    this.filePath,
     this.volume = 1.0,
     this.fadeIn = 0.0,
     this.fadeOut = 0.0,
@@ -90,6 +97,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final List<_TrackClip> _imageClips = [];
   final List<_CameraKf> _cameraKfs = [];
   int _clipIdCounter = 0;
+
+  // 音声・動画クリップの再生位置連動（仕様書05）
+  final Map<String, ap.AudioPlayer> _audioPlayers = {};
+  final Map<String, VideoPlayerController> _videoControllers = {};
+
+  // EndCard Track（プレミアム編集項目、仕様書06・13）
+  bool _endCardVisible = true;
+  int _endCardLengthSeconds = 5;
+  String? _endCardCustomPath;
 
   // フレーム幅（px）
   static const double _frameW = 36.0;
@@ -156,6 +172,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final ctrl in _trackScrollCtrls) {
       ctrl.dispose();
     }
+    for (final p in _audioPlayers.values) {
+      p.dispose();
+    }
+    for (final v in _videoControllers.values) {
+      v.dispose();
+    }
     super.dispose();
   }
 
@@ -171,6 +193,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_isPlaying) {
       _playTimer?.cancel();
       setState(() => _isPlaying = false);
+      _pauseAllMedia();
     } else {
       final ps = context.read<ProjectService>();
       final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
@@ -182,9 +205,102 @@ class _TimelineScreenState extends State<TimelineScreen> {
           setState(() {
             _currentFrame = (_currentFrame + 1) % total;
           });
+          _syncMediaPlayback();
         },
       );
       setState(() => _isPlaying = true);
+      _syncMediaPlayback();
+    }
+  }
+
+  void _pauseAllMedia() {
+    for (final p in _audioPlayers.values) {
+      p.pause();
+    }
+    for (final v in _videoControllers.values) {
+      if (v.value.isInitialized && v.value.isPlaying) v.pause();
+    }
+  }
+
+  /// 現在フレームに応じて音声・動画クリップの再生位置・再生状態を同期する。
+  /// 仕様書05：音声＝再生位置変更・フェードイン/アウト・音量変更、動画＝再生位置変更。
+  void _syncMediaPlayback() {
+    final ps = context.read<ProjectService>();
+    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final fps = (project?.fps ?? 24).toDouble();
+    for (final clip in _audioClips) {
+      _syncAudioClip(clip, fps);
+    }
+    for (final clip in _videoClips) {
+      _syncVideoClip(clip, fps);
+    }
+  }
+
+  bool _clipInRange(_TrackClip clip) =>
+      _currentFrame >= clip.startFrame && _currentFrame < clip.startFrame + clip.lengthFrames;
+
+  Future<void> _syncAudioClip(_TrackClip clip, double fps) async {
+    final path = clip.filePath;
+    if (path == null) return;
+    final player = _audioPlayers.putIfAbsent(clip.id, () => ap.AudioPlayer());
+    if (!_clipInRange(clip) || !_isPlaying) {
+      if (player.state == ap.PlayerState.playing) await player.pause();
+      return;
+    }
+    final elapsedFrames = _currentFrame - clip.startFrame;
+    // フェードイン・フェードアウトを音量へ反映
+    double vol = clip.volume;
+    final elapsedSec = elapsedFrames / fps;
+    final remainingSec = (clip.lengthFrames - elapsedFrames) / fps;
+    if (clip.fadeIn > 0 && elapsedSec < clip.fadeIn) {
+      vol *= (elapsedSec / clip.fadeIn).clamp(0.0, 1.0);
+    }
+    if (clip.fadeOut > 0 && remainingSec < clip.fadeOut) {
+      vol *= (remainingSec / clip.fadeOut).clamp(0.0, 1.0);
+    }
+    await player.setVolume(vol.clamp(0.0, 1.0));
+    if (player.state != ap.PlayerState.playing) {
+      final targetFrame = clip.useStart + elapsedFrames;
+      await player.play(
+        ap.DeviceFileSource(path),
+        position: Duration(milliseconds: (targetFrame / fps * 1000).round()),
+      );
+    }
+  }
+
+  Future<void> _syncVideoClip(_TrackClip clip, double fps) async {
+    final path = clip.filePath;
+    if (path == null) return;
+    var controller = _videoControllers[clip.id];
+    if (!_clipInRange(clip)) {
+      if (controller != null && controller.value.isInitialized && controller.value.isPlaying) {
+        await controller.pause();
+      }
+      return;
+    }
+    if (controller == null) {
+      controller = VideoPlayerController.file(File(path));
+      _videoControllers[clip.id] = controller;
+      try {
+        await controller.initialize();
+      } catch (_) {
+        return;
+      }
+      if (mounted) setState(() {});
+    }
+    if (!controller.value.isInitialized) return;
+    await controller.setVolume(clip.videoOpacity.clamp(0.0, 1.0));
+    final elapsedFrames = _currentFrame - clip.startFrame;
+    final targetFrame = clip.useStart + elapsedFrames;
+    final targetPos = Duration(milliseconds: (targetFrame / fps * 1000).round());
+    if (!_isPlaying) {
+      if (controller.value.isPlaying) await controller.pause();
+      await controller.seekTo(targetPos);
+      return;
+    }
+    if (!controller.value.isPlaying) {
+      await controller.seekTo(targetPos);
+      await controller.play();
     }
   }
 
@@ -310,9 +426,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          IconButton(icon: const Icon(Icons.image, size: 18), onPressed: () {}, tooltip: '＋画像'),
-          IconButton(icon: const Icon(Icons.videocam, size: 18), onPressed: () {}, tooltip: '＋動画'),
-          IconButton(icon: const Icon(Icons.audiotrack, size: 18), onPressed: () {}, tooltip: '＋音源'),
+          IconButton(
+            icon: const Icon(Icons.image, size: 18),
+            onPressed: () => _showAddClipDialog('画像', _imageClips, Colors.green[700]!, _ClipTrackType.image),
+            tooltip: '＋画像',
+          ),
+          IconButton(
+            icon: const Icon(Icons.videocam, size: 18),
+            onPressed: () => _showAddClipDialog('動画', _videoClips, Colors.blue[700]!, _ClipTrackType.video),
+            tooltip: '＋動画',
+          ),
+          IconButton(
+            icon: const Icon(Icons.audiotrack, size: 18),
+            onPressed: () => _showAddClipDialog('音声', _audioClips, Colors.orange[700]!, _ClipTrackType.audio),
+            tooltip: '＋音源',
+          ),
           // ウォーターマーク：無料会員は🔒付き表示、タップで共通Premiumバナー
           _buildWatermarkButton(isPremium),
           IconButton(icon: const Icon(Icons.movie_filter, size: 18), onPressed: () => _showEffectFilterDialog(), tooltip: '演出フィルター'),
@@ -963,11 +1091,96 @@ class _TimelineScreenState extends State<TimelineScreen> {
               GestureDetector(
                 onTap: () => showPremiumBanner(context),
                 child: const Icon(Icons.lock, size: 14, color: Colors.amber),
+              )
+            else ...[
+              const Spacer(),
+              Text(
+                _endCardVisible
+                    ? '${_endCardCustomPath != null ? '差替済' : 'MIRANIMAロゴ'}・$_endCardLengthSeconds秒'
+                    : '非表示',
+                style: const TextStyle(fontSize: 9, color: Colors.grey),
               ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: Icon(_endCardVisible ? Icons.visibility : Icons.visibility_off, size: 14),
+                onPressed: () => setState(() => _endCardVisible = !_endCardVisible),
+                tooltip: '表示ON/OFF',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.timer, size: 14),
+                onPressed: _showEndCardLengthDialog,
+                tooltip: '長さ変更',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.swap_horiz, size: 14),
+                onPressed: _pickEndCardReplacement,
+                tooltip: '差し替え',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete, size: 14, color: Colors.red),
+                onPressed: () => setState(() {
+                  _endCardCustomPath = null;
+                  _endCardVisible = false;
+                }),
+                tooltip: '削除',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  void _showEndCardLengthDialog() {
+    int length = _endCardLengthSeconds;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: const Text('エンドカードの長さ'),
+          content: Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: length.toDouble(),
+                  min: 1, max: 15, divisions: 14,
+                  label: '$length秒',
+                  onChanged: (v) => setS(() => length = v.round()),
+                ),
+              ),
+              Text('$length秒'),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            FilledButton(
+              onPressed: () {
+                setState(() => _endCardLengthSeconds = length);
+                Navigator.pop(ctx);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickEndCardReplacement() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.video);
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    setState(() {
+      _endCardCustomPath = result.files.first.path;
+      _endCardVisible = true;
+    });
   }
 
   void _addCameraKf() {
@@ -991,8 +1204,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  void _showAddClipDialog(String trackName, List<_TrackClip> clips, Color color, _ClipTrackType trackType) {
-    final labelCtrl = TextEditingController();
+  Future<void> _showAddClipDialog(String trackName, List<_TrackClip> clips, Color color, _ClipTrackType trackType) async {
+    String? pickedPath;
+    if (trackType == _ClipTrackType.audio || trackType == _ClipTrackType.video) {
+      final result = await FilePicker.platform.pickFiles(
+        type: trackType == _ClipTrackType.audio ? FileType.audio : FileType.video,
+      );
+      if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+      pickedPath = result.files.first.path;
+    }
+    if (!mounted) return;
+    final labelCtrl = TextEditingController(
+      text: pickedPath != null
+          ? pickedPath.split(RegExp(r'[\\/]')).last.replaceAll(RegExp(r'\.[^.]+$'), '')
+          : '',
+    );
     int start = _currentFrame;
     int length = 12;
     showDialog(
@@ -1056,6 +1282,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     lengthFrames: length,
                     color: color,
                     trackType: trackType,
+                    filePath: pickedPath,
                     useEnd: length - 1,
                   ));
                 });

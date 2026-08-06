@@ -189,4 +189,50 @@ class ExportEngine {
     framesDir.deleteSync(recursive: true);
     return outputPath;
   }
+
+  /// 無料版：本編動画の末尾へMIRANIMAロゴのエンドカード（約5秒）を自動追加する（仕様書06・13）。
+  /// エンドカード素材は都度FFmpegで単色背景＋テキストのプレースホルダーとして生成する。
+  /// 生成・結合に失敗した場合は書き出し自体を失敗させず、本編動画をそのまま返す。
+  Future<String> appendEndCard({
+    required String videoPath,
+    required String format, // 'mp4' | 'webm'
+    required int width,
+    required int height,
+    int logoDurationSeconds = 5,
+  }) async {
+    final tmpDir = await getTemporaryDirectory();
+    final endCardPath =
+        '${tmpDir.path}/endcard_${DateTime.now().millisecondsSinceEpoch}.$format';
+    final codecArgs = format == 'webm'
+        ? '-c:v libvpx-vp9 -pix_fmt yuva420p'
+        : '-c:v libx264 -pix_fmt yuv420p';
+
+    final genSession = await FFmpegKit.execute(
+      '-y -f lavfi -i "color=c=black:s=${width}x$height:d=$logoDurationSeconds:r=30" '
+      '-vf "drawtext=text=\'MIRANIMA\':fontcolor=white:fontsize=${(width * 0.08).round()}:'
+      'x=(w-text_w)/2:y=(h-text_h)/2" $codecArgs "$endCardPath"',
+    );
+    if (!ReturnCode.isSuccess(await genSession.getReturnCode())) {
+      return videoPath;
+    }
+
+    final outputPath =
+        '${tmpDir.path}/output_endcard_${DateTime.now().millisecondsSinceEpoch}.$format';
+    final concatSession = await FFmpegKit.execute(
+      '-y -i "$videoPath" -i "$endCardPath" '
+      '-filter_complex "[0:v]scale=$width:$height,setsar=1[v0];[1:v]scale=$width:$height,setsar=1[v1];'
+      '[v0][v1]concat=n=2:v=1:a=0[outv]" '
+      '-map "[outv]" $codecArgs "$outputPath"',
+    );
+    if (!ReturnCode.isSuccess(await concatSession.getReturnCode())) {
+      return videoPath;
+    }
+    try {
+      File(endCardPath).deleteSync();
+      File(videoPath).deleteSync();
+    } catch (_) {
+      // 一時ファイル削除失敗は無視する
+    }
+    return outputPath;
+  }
 }

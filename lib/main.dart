@@ -14,6 +14,8 @@ import 'services/tone_service.dart';
 import 'services/stamp_service.dart';
 import 'services/theme_service.dart';
 import 'services/save_tree_service.dart';
+import 'services/autofill_preset_service.dart';
+import 'services/share_intent_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +55,12 @@ void main() async {
   await themeService.init();
 
   final autosaveService = AutosaveService();
+  await autosaveService.init();
   final saveTreeService = SaveTreeService();
+  final autofillPresetService = AutofillPresetService();
+
+  final shareIntentService = ShareIntentService();
+  await shareIntentService.init();
   final undoManager = app_undo.UndoManager();
   projectService.setUndoManager(undoManager);
   // 品質設定に応じてスロット数・保存方式を初期設定
@@ -77,6 +84,8 @@ void main() async {
         ChangeNotifierProvider.value(value: themeService),
         ChangeNotifierProvider.value(value: autosaveService),
         ChangeNotifierProvider.value(value: saveTreeService),
+        ChangeNotifierProvider.value(value: autofillPresetService),
+        Provider<ShareIntentService>.value(value: shareIntentService),
         ChangeNotifierProvider<app_undo.UndoManager>.value(value: undoManager),
       ],
       child: const MiranimaApp(),

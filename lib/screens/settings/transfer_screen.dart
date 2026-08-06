@@ -1,4 +1,14 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../engine/miratra_serializer.dart';
+import '../../services/autofill_preset_service.dart';
+import '../../services/brush_service.dart';
+import '../../services/settings_service.dart';
+import '../../services/stamp_service.dart';
+import '../../services/theme_service.dart';
+import '../../services/tone_service.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -15,6 +25,7 @@ class _TransferScreenState extends State<TransferScreen> {
     'プリセット': true,
     'UIテーマ': true,
   };
+  bool _isBusy = false;
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +49,26 @@ class _TransferScreenState extends State<TransferScreen> {
             child: Row(
               children: [
                 TextButton(
-                  onPressed: () => setState(() => _items.updateAll((_, __) => true)),
+                  onPressed: _isBusy ? null : _import,
+                  child: const Text('読み込み'),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, __) => true)),
                   child: const Text('全選択'),
                 ),
                 TextButton(
-                  onPressed: () => setState(() => _items.updateAll((_, __) => false)),
+                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, __) => false)),
                   child: const Text('全解除'),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 FilledButton.icon(
-                  onPressed: _items.values.any((v) => v) ? _export : null,
-                  icon: const Icon(Icons.file_upload),
+                  onPressed: (!_isBusy && _items.values.any((v) => v)) ? _export : null,
+                  icon: _isBusy
+                      ? const SizedBox(
+                          width: 16, height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.file_upload),
                   label: const Text('書き出し'),
                 ),
               ],
@@ -59,10 +79,65 @@ class _TransferScreenState extends State<TransferScreen> {
     );
   }
 
-  void _export() {
-    // TODO: Export .miratra file with selected items
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('.miratraファイルを書き出しました')),
+  Future<void> _export() async {
+    setState(() => _isBusy = true);
+    try {
+      final file = await MiratraSerializer.export(
+        selectedItems: _items,
+        settings: context.read<SettingsService>(),
+        brush: context.read<BrushService>(),
+        tone: context.read<ToneService>(),
+        stamp: context.read<StampService>(),
+        autofillPresets: context.read<AutofillPresetService>(),
+        theme: context.read<ThemeService>(),
+      );
+      if (!mounted) return;
+      await Share.shareXFiles([XFile(file.path)]);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('.miratraファイルを書き出しました')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('書き出しに失敗しました: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  Future<void> _import() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['miratra'],
     );
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (!mounted) return;
+    setState(() => _isBusy = true);
+    try {
+      final data = await MiratraSerializer.load(result.files.first.path!);
+      if (!mounted) return;
+      MiratraSerializer.applyTo(
+        data,
+        settings: context.read<SettingsService>(),
+        brush: context.read<BrushService>(),
+        tone: context.read<ToneService>(),
+        stamp: context.read<StampService>(),
+        autofillPresets: context.read<AutofillPresetService>(),
+        theme: context.read<ThemeService>(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('.miratraファイルを読み込みました')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('読み込みに失敗しました: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
   }
 }

@@ -17,7 +17,8 @@ class PremiumService extends ChangeNotifier {
     notifyListeners();
   }
 
-  int get maxProjectDurationSeconds => _isPremium ? 999999 : 300;
+  // 無料版の最大動画尺（仕様書12実装チェックリスト：90秒）
+  int get maxProjectDurationSeconds => _isPremium ? 999999 : 90;
 
   bool isFeatureAvailable(PremiumFeature feature) => _isPremium;
 }

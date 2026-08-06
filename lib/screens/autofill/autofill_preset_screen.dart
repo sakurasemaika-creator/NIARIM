@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/autofill_preset.dart';
+import '../../services/autofill_preset_service.dart';
+import '../../services/project_service.dart';
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -9,24 +12,10 @@ class AutofillPresetScreen extends StatefulWidget {
 }
 
 class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
-  final List<AutofillPreset> _presets = [
-    AutofillPreset(id: 'p1', name: '主人公', parts: [
-      AutofillPart(id: 'p1_1', name: '髪', color: 0xFF4A3728),
-      AutofillPart(id: 'p1_2', name: '肌', color: 0xFFFFD5B0),
-      AutofillPart(id: 'p1_3', name: '瞳', color: 0xFF3A6EA5),
-      AutofillPart(id: 'p1_4', name: '服', color: 0xFF2C5F8A),
-    ]),
-    AutofillPreset(id: 'p2', name: 'ヒロイン', parts: [
-      AutofillPart(id: 'p2_1', name: '髪', color: 0xFFE8C4A0),
-      AutofillPart(id: 'p2_2', name: '肌', color: 0xFFFFE0C8),
-      AutofillPart(id: 'p2_3', name: '瞳', color: 0xFF8B4513),
-      AutofillPart(id: 'p2_4', name: '服', color: 0xFFFF6B9D),
-      AutofillPart(id: 'p2_5', name: 'リボン', color: 0xFFFF1493),
-    ]),
-  ];
-
   String _searchQuery = '';
   bool _isSearching = false;
+
+  List<AutofillPreset> get _presets => context.watch<AutofillPresetService>().presets;
 
   List<AutofillPreset> get _filtered => _searchQuery.isEmpty
       ? _presets
@@ -88,11 +77,11 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                setState(() => _presets.add(AutofillPreset(
+                context.read<AutofillPresetService>().addPreset(AutofillPreset(
                   id: 'p_${DateTime.now().millisecondsSinceEpoch}',
                   name: nameCtrl.text,
                   parts: [],
-                )));
+                ));
               }
               Navigator.pop(ctx);
             },
@@ -119,10 +108,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                setState(() {
-                  final idx = _presets.indexWhere((p) => p.id == preset.id);
-                  if (idx >= 0) _presets[idx] = preset.copyWith(name: nameCtrl.text);
-                });
+                context.read<AutofillPresetService>().updatePreset(preset.copyWith(name: nameCtrl.text));
               }
               Navigator.pop(ctx);
             },
@@ -143,7 +129,12 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              setState(() => _presets.removeWhere((p) => p.id == preset.id));
+              // 削除されるパーツを使用中の線画レイヤーへ更新マークを伝播（対応プリセット消失前に通知）
+              final ps = context.read<ProjectService>();
+              for (final part in preset.parts) {
+                ps.markAutofillUpdateForPartId(part.id);
+              }
+              context.read<AutofillPresetService>().removePreset(preset.id);
               Navigator.pop(ctx);
             },
             child: const Text('削除'),
@@ -154,15 +145,20 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   }
 
   void _showPresetDetail(AutofillPreset preset) {
+    final presetService = context.read<AutofillPresetService>();
+    final projectService = context.read<ProjectService>();
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => _PresetDetailScreen(
           preset: preset,
-          onUpdate: (updated) => setState(() {
-            final idx = _presets.indexWhere((p) => p.id == updated.id);
-            if (idx >= 0) _presets[idx] = updated;
-          }),
+          onUpdate: (updated, {String? changedPartId}) {
+            presetService.updatePreset(updated);
+            // パーツ色・名前の変更を、当該パーツIDを参照する全フレームの自動塗りレイヤーへ伝播（仕様書04）
+            if (changedPartId != null) {
+              projectService.markAutofillUpdateForPartId(changedPartId);
+            }
+          },
         ),
       ),
     );
@@ -226,9 +222,11 @@ class _PresetCard extends StatelessWidget {
   }
 }
 
+typedef _PresetUpdateCallback = void Function(AutofillPreset updated, {String? changedPartId});
+
 class _PresetDetailScreen extends StatefulWidget {
   final AutofillPreset preset;
-  final ValueChanged<AutofillPreset> onUpdate;
+  final _PresetUpdateCallback onUpdate;
 
   const _PresetDetailScreen({required this.preset, required this.onUpdate});
 
@@ -245,9 +243,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     _preset = widget.preset;
   }
 
-  void _save(AutofillPreset updated) {
+  void _save(AutofillPreset updated, {String? changedPartId}) {
     setState(() => _preset = updated);
-    widget.onUpdate(updated);
+    widget.onUpdate(updated, changedPartId: changedPartId);
   }
 
   @override
@@ -292,7 +290,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         onPressed: () {
                           final parts = List<AutofillPart>.from(_preset.parts)
                             ..removeWhere((p) => p.id == part.id);
-                          _save(_preset.copyWith(parts: parts));
+                          _save(_preset.copyWith(parts: parts), changedPartId: part.id);
                         },
                       ),
                     ],
@@ -359,7 +357,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 final parts = _preset.parts.map((p) =>
                   p.id == part.id ? AutofillPart(id: p.id, name: nameCtrl.text, color: p.color) : p
                 ).toList();
-                _save(_preset.copyWith(parts: parts));
+                _save(_preset.copyWith(parts: parts), changedPartId: part.id);
               }
               Navigator.pop(ctx);
             },
@@ -387,7 +385,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               final parts = _preset.parts.map((p) =>
                 p.id == part.id ? AutofillPart(id: p.id, name: p.name, color: c) : p
               ).toList();
-              _save(_preset.copyWith(parts: parts));
+              _save(_preset.copyWith(parts: parts), changedPartId: part.id);
               Navigator.pop(ctx);
             },
             child: Container(

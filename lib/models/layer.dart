@@ -16,6 +16,12 @@ class Layer {
   final String? partId; // 自動塗り用線画レイヤーのパーツID
   final TextObject? textObject; // テキストレイヤーのテキストオブジェクト
 
+  // 共通レイヤー・タイムライン素材レイヤーの表示範囲（仕様書05・16）
+  final LayerRangeMode rangeMode;
+  final int? rangeStart; // 1始まり・ユーザー表示値
+  final int? rangeEnd;
+  final bool isExpanded; // フォルダの展開・折りたたみ状態（仕様書16）
+
   const Layer({
     required this.id,
     required this.name,
@@ -31,6 +37,10 @@ class Layer {
     this.needsAutofillUpdate = false,
     this.partId,
     this.textObject,
+    this.rangeMode = LayerRangeMode.allFrames,
+    this.rangeStart,
+    this.rangeEnd,
+    this.isExpanded = true,
   });
 
   Layer copyWith({
@@ -48,6 +58,10 @@ class Layer {
     bool? needsAutofillUpdate,
     Object? partId = _sentinel,
     TextObject? textObject,
+    LayerRangeMode? rangeMode,
+    Object? rangeStart = _sentinel,
+    Object? rangeEnd = _sentinel,
+    bool? isExpanded,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -64,9 +78,16 @@ class Layer {
       needsAutofillUpdate: needsAutofillUpdate ?? this.needsAutofillUpdate,
       partId: partId == _sentinel ? this.partId : partId as String?,
       textObject: textObject ?? this.textObject,
+      rangeMode: rangeMode ?? this.rangeMode,
+      rangeStart: rangeStart == _sentinel ? this.rangeStart : rangeStart as int?,
+      rangeEnd: rangeEnd == _sentinel ? this.rangeEnd : rangeEnd as int?,
+      isExpanded: isExpanded ?? this.isExpanded,
     );
   }
 }
+
+/// 共通レイヤー・タイムライン素材レイヤーの表示範囲モード（仕様書16）
+enum LayerRangeMode { allFrames, currentScene, sceneRange, frameRange }
 
 const Object _sentinel = Object();
 

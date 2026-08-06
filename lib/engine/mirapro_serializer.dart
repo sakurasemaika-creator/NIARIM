@@ -18,10 +18,13 @@ import 'tile_manager.dart';
 class MiraproSerializer {
   static const String _manifestFile = 'manifest.json';
   static const String _framesFile = 'frames.json';
-  static const String _tilesDir = 'tiles';
+  static const String _tilesDir = 'tiles'; // 旧形式（Scene毎重複保存）の読み込み互換用
+  static const String _rootTilesDir = 'Tiles'; // 新形式：プロジェクト全体で1箇所のみ保存
 
   // ─── 保存 ─────────────────────────────────────────────────────────────
 
+  /// プロジェクトを保存する。既存の.miraproがある場合は差分保存（変更されたタイルのみ
+  /// 再書き込みし、未変更タイルは前回保存分をそのまま引き継ぐ）を行う（仕様書09：差分保存）。
   static Future<File> save({
     required Project project,
     required List<Scene> scenes,
@@ -29,7 +32,64 @@ class MiraproSerializer {
   }) async {
     final dir = await _projectDir(project.id);
     final filePath = '${dir.path}/${project.id}.mirapro';
+    final exists = await File(filePath).exists();
+    final result = exists
+        ? await _writeArchiveDiff(filePath, project, scenes, tileManager)
+        : await _writeArchive(filePath, project, scenes, tileManager);
+    // 保存完了時点を基準に、次回保存までの変更差分を追跡し直す
+    tileManager.consumeDirtyTiles();
+    return result;
+  }
 
+  /// .mirashare として保存する（内容は.miraproと同一形式、拡張子のみ異なる）。
+  /// 仕様書06：共有用ファイル。受信側で複製して通常プロジェクトとして追加する。
+  static Future<File> saveShare({
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    String? outputDir,
+  }) async {
+    final dir = outputDir ?? (await _projectDir(project.id)).path;
+    final safeName = project.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final filePath = '$dir/$safeName.mirashare';
+    return _writeArchive(filePath, project, scenes, tileManager);
+  }
+
+  /// .mirashare を読み込む（.miraproと同一形式なので load() をそのまま利用できる）。
+  static Future<MiraproData> loadShare(String filePath) => load(filePath);
+
+  // ─── 自動保存（クラッシュ復元専用・最大3件固定、仕様書06・09） ────────
+
+  static Future<String> _autosaveDir(String projectId) async {
+    final dir = await _projectDir(projectId);
+    final autosaveDir = Directory('${dir.path}/autosave');
+    if (!autosaveDir.existsSync()) autosaveDir.createSync(recursive: true);
+    return autosaveDir.path;
+  }
+
+  static Future<File> saveAutosave({
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    required int slotIndex,
+  }) async {
+    final dir = await _autosaveDir(project.id);
+    return _writeArchive('$dir/slot_$slotIndex.mirapro', project, scenes, tileManager);
+  }
+
+  static Future<MiraproData> loadAutosave(String projectId, int slotIndex) async {
+    final dir = await _autosaveDir(projectId);
+    return load('$dir/slot_$slotIndex.mirapro');
+  }
+
+  /// フル書き出し：manifest・全シーンのframes.json・全タイルを新規に書き込む。
+  /// タイルはプロジェクト全体で1箇所（$_rootTilesDir/）にのみ保存する。
+  static Future<File> _writeArchive(
+    String filePath,
+    Project project,
+    List<Scene> scenes,
+    TileManager tileManager,
+  ) async {
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
 
@@ -40,28 +100,84 @@ class MiraproSerializer {
     ));
 
     for (final scene in scenes) {
-      final scenePrefix = 'Scene/${scene.id}';
-
       encoder.addArchiveFile(ArchiveFile(
-        '$scenePrefix/$_framesFile',
+        'Scene/${scene.id}/$_framesFile',
         0,
         utf8.encode(jsonEncode(_serializeFrames(scene.frames))),
       ));
+    }
 
-      final allTiles = tileManager.exportAll();
-      for (final layerEntry in allTiles.entries) {
-        for (final tileEntry in layerEntry.value.entries) {
-          encoder.addArchiveFile(ArchiveFile(
-            '$scenePrefix/$_tilesDir/${layerEntry.key}_${tileEntry.key}.bin',
-            0,
-            tileEntry.value,
-          ));
-        }
+    final allTiles = tileManager.exportAll();
+    for (final layerEntry in allTiles.entries) {
+      for (final tileEntry in layerEntry.value.entries) {
+        encoder.addArchiveFile(ArchiveFile(
+          '$_rootTilesDir/${layerEntry.key}_${tileEntry.key}.bin',
+          0,
+          tileEntry.value,
+        ));
       }
     }
 
     encoder.close();
     return File(filePath);
+  }
+
+  /// 差分書き出し：manifest・frames.jsonは毎回書き直す（軽量なため）が、
+  /// タイルは前回保存（dirtyでないもの）から流用し、変更されたタイルのみ新規に書き込む。
+  static Future<File> _writeArchiveDiff(
+    String filePath,
+    Project project,
+    List<Scene> scenes,
+    TileManager tileManager,
+  ) async {
+    final oldBytes = await File(filePath).readAsBytes();
+    final oldArchive = ZipDecoder().decodeBytes(oldBytes);
+    final oldFilesByName = {for (final f in oldArchive.files) f.name: f};
+
+    final tmpPath = '$filePath.tmp';
+    final encoder = ZipFileEncoder();
+    encoder.create(tmpPath);
+
+    encoder.addArchiveFile(ArchiveFile(
+      _manifestFile,
+      0,
+      utf8.encode(jsonEncode(_serializeManifest(project))),
+    ));
+
+    for (final scene in scenes) {
+      encoder.addArchiveFile(ArchiveFile(
+        'Scene/${scene.id}/$_framesFile',
+        0,
+        utf8.encode(jsonEncode(_serializeFrames(scene.frames))),
+      ));
+    }
+
+    final allTiles = tileManager.exportAll();
+    for (final layerEntry in allTiles.entries) {
+      final layerId = layerEntry.key;
+      // 変更されたタイルキー（非破壊：グローバルなdirty集合は消費しない）
+      final dirtyTiles = tileManager.getDirtyTilesForLayer(layerId);
+      for (final tileEntry in layerEntry.value.entries) {
+        final tileKey = tileEntry.key;
+        final entryName = '$_rootTilesDir/${layerId}_$tileKey.bin';
+        final oldEntry = oldFilesByName[entryName];
+        if (dirtyTiles.containsKey(tileKey) || oldEntry == null) {
+          // 変更あり、または旧ファイルに存在しない（新規タイル・旧形式からの移行）→再書き込み
+          encoder.addArchiveFile(ArchiveFile(entryName, 0, tileEntry.value));
+        } else {
+          // 未変更タイル：前回保存分をそのまま引き継ぐ
+          encoder.addArchiveFile(ArchiveFile(entryName, 0, oldEntry.content as List<int>));
+        }
+      }
+    }
+
+    encoder.close();
+
+    final tmpFile = File(tmpPath);
+    final targetFile = File(filePath);
+    if (await targetFile.exists()) await targetFile.delete();
+    await tmpFile.rename(filePath);
+    return targetFile;
   }
 
   // ─── 読み込み ─────────────────────────────────────────────────────────
@@ -108,6 +224,19 @@ class MiraproSerializer {
       }
     }
 
+    // 新形式：プロジェクト全体で1箇所に保存されたタイル（$_rootTilesDir/）
+    for (final file in archive.files) {
+      if (!file.name.startsWith('$_rootTilesDir/')) continue;
+      final fileName = file.name.split('/').last;
+      final withoutExt = fileName.replaceAll('.bin', '');
+      final underscoreIdx = withoutExt.indexOf('_');
+      if (underscoreIdx < 0) continue;
+      final layerId = withoutExt.substring(0, underscoreIdx);
+      final tileKey = withoutExt.substring(underscoreIdx + 1);
+      tileData.putIfAbsent(layerId, () => {})[tileKey] =
+          Uint8List.fromList(file.content as List<int>);
+    }
+
     scenes.sort((a, b) => a.index.compareTo(b.index));
     return MiraproData(project: project, scenes: scenes, tileData: tileData);
   }
@@ -149,6 +278,10 @@ class MiraproSerializer {
         'parentFolderId': l.parentFolderId,
         'needsAutofillUpdate': l.needsAutofillUpdate,
         'partId': l.partId,
+        'rangeMode': l.rangeMode.name,
+        'rangeStart': l.rangeStart,
+        'rangeEnd': l.rangeEnd,
+        'isExpanded': l.isExpanded,
         if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
       };
 
@@ -220,6 +353,12 @@ class MiraproSerializer {
         parentFolderId: j['parentFolderId'] as String?,
         needsAutofillUpdate: j['needsAutofillUpdate'] as bool? ?? false,
         partId: j['partId'] as String?,
+        rangeMode: LayerRangeMode.values.firstWhere(
+            (e) => e.name == j['rangeMode'],
+            orElse: () => LayerRangeMode.allFrames),
+        rangeStart: j['rangeStart'] as int?,
+        rangeEnd: j['rangeEnd'] as int?,
+        isExpanded: j['isExpanded'] as bool? ?? true,
         textObject: j['textObject'] != null
             ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
             : null,

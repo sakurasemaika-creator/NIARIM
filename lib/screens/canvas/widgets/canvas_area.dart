@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/input_handler.dart';
 import '../../../engine/onion_skin.dart';
@@ -16,6 +19,9 @@ import '../../../services/project_service.dart';
 import '../../../services/settings_service.dart';
 import '../canvas_screen.dart';
 
+/// 変形ツールの操作モード（移動・拡大縮小・回転）
+enum _TransformMode { translate, scale, rotate }
+
 class CanvasArea extends StatefulWidget {
   final ValueChanged<Offset>? onTapForText;
   final ValueChanged<Color>? onEyedropper;
@@ -28,6 +34,7 @@ class CanvasArea extends StatefulWidget {
   final int currentFrame;
   final String sceneId;
   final Ruler? activeRuler;
+  final ShapeKind shapeKind;
 
   const CanvasArea({
     super.key,
@@ -42,6 +49,7 @@ class CanvasArea extends StatefulWidget {
     this.currentFrame = 0,
     this.sceneId = '',
     this.activeRuler,
+    this.shapeKind = ShapeKind.off,
   });
 
   @override
@@ -67,6 +75,24 @@ class _CanvasAreaState extends State<CanvasArea> {
   int _touchCount = 0;
 
   bool _engineInitialized = false;
+
+  // ─── 図形ツール（線・四角形・円） ─────────────────────────────────────
+  Offset? _shapeStart;
+  Offset? _shapeEnd;
+
+  // ─── 移動ツール ───────────────────────────────────────────────────────
+  Offset? _moveStart;
+  Offset _moveDelta = Offset.zero;
+
+  // ─── 変形ツール ───────────────────────────────────────────────────────
+  _TransformMode _transformMode = _TransformMode.translate;
+  Offset? _transformStart;
+  Offset? _transformCenter;
+  Matrix4? _transformLive;
+
+  // ─── バケツ連続塗り ───────────────────────────────────────────────────
+  Uint8List? _bucketRefBuffer;
+  Uint8List? _bucketVisitedMask;
 
   @override
   void initState() {
@@ -160,6 +186,30 @@ class _CanvasAreaState extends State<CanvasArea> {
       setState(() { _lassoPoints = [canvasPos]; });
       return;
     }
+    if (widget.currentTool == DrawingTool.shape && widget.shapeKind != ShapeKind.off) {
+      setState(() {
+        _shapeStart = canvasPos;
+        _shapeEnd = canvasPos;
+      });
+      return;
+    }
+    if (widget.currentTool == DrawingTool.move) {
+      setState(() {
+        _moveStart = canvasPos;
+        _moveDelta = Offset.zero;
+      });
+      return;
+    }
+    if (widget.currentTool == DrawingTool.transform) {
+      _beginTransform(canvasPos);
+      return;
+    }
+    if (widget.currentTool == DrawingTool.bucket) {
+      if (type == InputType.touch) return;
+      _syncBrushAndColor();
+      _handleBucketDown(canvasPos);
+      return;
+    }
 
     if (type == InputType.touch) return;
     _syncBrushAndColor();
@@ -180,6 +230,23 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
       setState(() => _lassoPoints.add(canvasPos));
+      return;
+    }
+    if (widget.currentTool == DrawingTool.shape && _shapeStart != null) {
+      setState(() => _shapeEnd = _snapShapeEnd(_shapeStart!, canvasPos, widget.shapeKind));
+      return;
+    }
+    if (widget.currentTool == DrawingTool.move && _moveStart != null) {
+      setState(() => _moveDelta = canvasPos - _moveStart!);
+      return;
+    }
+    if (widget.currentTool == DrawingTool.transform && _transformStart != null) {
+      _updateTransform(canvasPos);
+      return;
+    }
+    if (widget.currentTool == DrawingTool.bucket) {
+      if (type == InputType.touch) return;
+      _handleBucketMove(canvasPos);
       return;
     }
     if (type == InputType.touch) return;
@@ -206,6 +273,23 @@ class _CanvasAreaState extends State<CanvasArea> {
       setState(() => _lassoPoints = []);
       return;
     }
+    if (widget.currentTool == DrawingTool.shape) {
+      _commitShape();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.move) {
+      _commitMove();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.transform) {
+      _commitTransform();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.bucket) {
+      _handleBucketUp();
+      if (type == InputType.touch) _inputHandler.onStylusUp();
+      return;
+    }
     if (type == InputType.touch) {
       _inputHandler.onStylusUp();
       return;
@@ -218,6 +302,16 @@ class _CanvasAreaState extends State<CanvasArea> {
     _drawingEngine.endStroke();
     _inputHandler.onStylusUp();
     _scheduleComposite();
+    _markLineartDirtyIfNeeded();
+  }
+
+  /// 自動塗り用線画レイヤーへ描画があった場合、直下の自動塗りレイヤーへ更新マークを立てる
+  /// （仕様書16：needsAutofillUpdate自動セット）。
+  void _markLineartDirtyIfNeeded() {
+    final project = widget.project;
+    if (project == null) return;
+    context.read<ProjectService>().markLineartDirty(
+        project.id, widget.sceneId, widget.currentFrame, _layerId);
   }
 
   void _pickColor(Offset canvasPos) {
@@ -231,6 +325,255 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (idx + 3 >= tile.length) return;
     widget.onEyedropper?.call(
         Color.fromARGB(tile[idx + 3], tile[idx], tile[idx + 1], tile[idx + 2]));
+  }
+
+  // ─── 図形ツール ───────────────────────────────────────────────────────
+
+  /// 四角形・円のドラッグ終点を、縦横比1:1付近で正方形・真円へ自動スナップする。
+  Offset _snapShapeEnd(Offset start, Offset end, ShapeKind kind) {
+    if (kind != ShapeKind.rect && kind != ShapeKind.circle) return end;
+    final dx = end.dx - start.dx;
+    final dy = end.dy - start.dy;
+    if (dx == 0 || dy == 0) return end;
+    final ratio = dx.abs() / dy.abs();
+    if (ratio > 0.9 && ratio < 1.1) {
+      final side = math.max(dx.abs(), dy.abs());
+      return Offset(
+        start.dx + side * (dx.isNegative ? -1 : 1),
+        start.dy + side * (dy.isNegative ? -1 : 1),
+      );
+    }
+    return end;
+  }
+
+  List<Offset> _ellipsePoints(Offset start, Offset end, {int segments = 48}) {
+    final cx = (start.dx + end.dx) / 2;
+    final cy = (start.dy + end.dy) / 2;
+    final rx = (end.dx - start.dx).abs() / 2;
+    final ry = (end.dy - start.dy).abs() / 2;
+    return List.generate(segments, (i) {
+      final t = (i / segments) * 2 * math.pi;
+      return Offset(cx + rx * math.cos(t), cy + ry * math.sin(t));
+    });
+  }
+
+  void _commitShape() {
+    final start = _shapeStart;
+    final end = _shapeEnd;
+    setState(() {
+      _shapeStart = null;
+      _shapeEnd = null;
+    });
+    if (start == null || end == null || widget.shapeKind == ShapeKind.off) return;
+    if (start == end) return;
+    _syncBrushAndColor();
+    List<Offset> points;
+    bool closeLoop;
+    switch (widget.shapeKind) {
+      case ShapeKind.line:
+        points = [start, end];
+        closeLoop = false;
+      case ShapeKind.rect:
+        points = [
+          start,
+          Offset(end.dx, start.dy),
+          end,
+          Offset(start.dx, end.dy),
+        ];
+        closeLoop = true;
+      case ShapeKind.circle:
+        points = _ellipsePoints(start, end);
+        closeLoop = true;
+      case ShapeKind.off:
+        return;
+    }
+    _drawingEngine.commitShapePath(
+      points.map((p) => StrokePoint(x: p.dx, y: p.dy)).toList(),
+      _layerId,
+      closeLoop: closeLoop,
+    );
+    _scheduleComposite();
+    _markLineartDirtyIfNeeded();
+  }
+
+  // ─── 移動ツール ───────────────────────────────────────────────────────
+
+  void _commitMove() {
+    final start = _moveStart;
+    final delta = _moveDelta;
+    setState(() {
+      _moveStart = null;
+      _moveDelta = Offset.zero;
+    });
+    if (start == null) return;
+    if (delta.dx.abs() < 0.5 && delta.dy.abs() < 0.5) return;
+    _tileManager.translateLayer(_layerId, delta.dx, delta.dy).then((_) {
+      if (!mounted) return;
+      _scheduleComposite();
+      _markLineartDirtyIfNeeded();
+    });
+  }
+
+  // ─── 変形ツール ───────────────────────────────────────────────────────
+
+  void _beginTransform(Offset canvasPos) {
+    final w = _tileManager.canvasWidth.toDouble();
+    final h = _tileManager.canvasHeight.toDouble();
+    final center = Offset(w / 2, h / 2);
+    final threshold = math.min(w, h) * 0.05;
+    final scaleHandle = Offset(w, h);
+    final rotateHandle = Offset(w / 2, -40);
+    _TransformMode mode;
+    if ((canvasPos - scaleHandle).distance < threshold) {
+      mode = _TransformMode.scale;
+    } else if ((canvasPos - rotateHandle).distance < threshold) {
+      mode = _TransformMode.rotate;
+    } else {
+      mode = _TransformMode.translate;
+    }
+    setState(() {
+      _transformMode = mode;
+      _transformStart = canvasPos;
+      _transformCenter = center;
+      _transformLive = Matrix4.identity();
+    });
+  }
+
+  void _updateTransform(Offset canvasPos) {
+    final start = _transformStart;
+    final center = _transformCenter;
+    if (start == null || center == null) return;
+    Matrix4 m;
+    switch (_transformMode) {
+      case _TransformMode.translate:
+        final d = canvasPos - start;
+        m = Matrix4.translationValues(d.dx, d.dy, 0);
+      case _TransformMode.scale:
+        final startDist = (start - center).distance;
+        final curDist = (canvasPos - center).distance;
+        final s = startDist > 1 ? (curDist / startDist).clamp(0.1, 10.0) : 1.0;
+        m = Matrix4.translationValues(center.dx, center.dy, 0) *
+            Matrix4.diagonal3Values(s, s, 1) *
+            Matrix4.translationValues(-center.dx, -center.dy, 0);
+      case _TransformMode.rotate:
+        final a0 = math.atan2(start.dy - center.dy, start.dx - center.dx);
+        final a1 = math.atan2(canvasPos.dy - center.dy, canvasPos.dx - center.dx);
+        m = Matrix4.translationValues(center.dx, center.dy, 0) *
+            Matrix4.rotationZ(a1 - a0) *
+            Matrix4.translationValues(-center.dx, -center.dy, 0);
+    }
+    setState(() => _transformLive = m);
+  }
+
+  void _commitTransform() {
+    final matrix = _transformLive;
+    setState(() {
+      _transformStart = null;
+      _transformCenter = null;
+      _transformLive = null;
+    });
+    if (matrix == null || matrix.isIdentity()) return;
+    _tileManager.transformLayer(_layerId, matrix.storage).then((_) {
+      if (!mounted) return;
+      _scheduleComposite();
+      _markLineartDirtyIfNeeded();
+    });
+  }
+
+  // ─── バケツ連続塗り ───────────────────────────────────────────────────
+
+  Future<Uint8List> _flattenVisibleLayers() async {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final project = widget.project;
+    if (project == null) return Uint8List(w * h * 4);
+    final layers = context
+        .read<ProjectService>()
+        .layersOf(project.id, widget.sceneId, widget.currentFrame);
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    for (final layer in layers.reversed) {
+      if (!layer.isVisible) continue;
+      final img = await _tileManager.compositeLayerToImage(layer.id);
+      canvas.drawImage(img, ui.Offset.zero, ui.Paint());
+      img.dispose();
+    }
+    final pic = recorder.endRecording();
+    final image = await pic.toImage(w, h);
+    pic.dispose();
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    image.dispose();
+    return byteData?.buffer.asUint8List() ?? Uint8List(w * h * 4);
+  }
+
+  Future<void> _handleBucketDown(Offset canvasPos) async {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final buffer = await _flattenVisibleLayers();
+    if (!mounted) return;
+    _bucketRefBuffer = buffer;
+    _bucketVisitedMask = Uint8List(w * h);
+    _bucketFillAt(canvasPos);
+  }
+
+  void _handleBucketMove(Offset canvasPos) {
+    if (_bucketRefBuffer == null) return;
+    _bucketFillAt(canvasPos);
+  }
+
+  void _handleBucketUp() {
+    if (_bucketVisitedMask != null) _markLineartDirtyIfNeeded();
+    _bucketRefBuffer = null;
+    _bucketVisitedMask = null;
+  }
+
+  final BucketFillEngine _bucketEngine = BucketFillEngine();
+
+  /// 開始点からフラッドフィルし、変化したピクセルのみ現在レイヤーへ反映する。
+  /// スワイプ中の連続塗り：既に塗った領域（訪問済みマスク）は再計算しない。
+  void _bucketFillAt(Offset canvasPos) {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final x = canvasPos.dx.round();
+    final y = canvasPos.dy.round();
+    if (x < 0 || x >= w || y < 0 || y >= h) return;
+    final mask = _bucketVisitedMask;
+    final reference = _bucketRefBuffer;
+    if (mask == null || reference == null) return;
+    if (mask[y * w + x] != 0) return;
+
+    final result = _bucketEngine.fill(
+      canvasData: reference,
+      width: w,
+      height: h,
+      startX: x,
+      startY: y,
+      fillColor: _drawingEngine.currentColor,
+    );
+
+    bool changed = false;
+    for (int py = 0; py < h; py++) {
+      final rowBase = py * w;
+      for (int px = 0; px < w; px++) {
+        final idx = (rowBase + px) * 4;
+        if (result[idx] != reference[idx] ||
+            result[idx + 1] != reference[idx + 1] ||
+            result[idx + 2] != reference[idx + 2] ||
+            result[idx + 3] != reference[idx + 3]) {
+          mask[rowBase + px] = 1;
+          final tx = px ~/ TileManager.tileSize;
+          final ty = py ~/ TileManager.tileSize;
+          final tile = _tileManager.getOrCreateTile(_layerId, tx, ty);
+          final lx = px % TileManager.tileSize;
+          final ly = py % TileManager.tileSize;
+          _tileManager.blendPixel(
+              tile, lx, ly, result[idx], result[idx + 1], result[idx + 2], result[idx + 3]);
+          _tileManager.markDirty(_layerId, tx, ty);
+          changed = true;
+        }
+      }
+    }
+    if (changed) _scheduleComposite();
   }
 
   StrokePoint _applyRulerSnap(StrokePoint sp) {
@@ -374,6 +717,12 @@ class _CanvasAreaState extends State<CanvasArea> {
               selectionEnd: _selectionEnd,
               lassoPoints: _lassoPoints,
               activeRuler: widget.activeRuler,
+              shapeKind: widget.shapeKind,
+              shapeStart: _shapeStart,
+              shapeEnd: _shapeEnd,
+              moveDelta: widget.currentTool == DrawingTool.move ? _moveDelta : null,
+              transformLive: widget.currentTool == DrawingTool.transform ? _transformLive : null,
+              showTransformHandles: widget.currentTool == DrawingTool.transform,
             ),
             size: Size.infinite,
           ),
@@ -415,6 +764,12 @@ class _CanvasPainter extends CustomPainter {
   final Offset? selectionEnd;
   final List<Offset> lassoPoints;
   final Ruler? activeRuler;
+  final ShapeKind shapeKind;
+  final Offset? shapeStart;
+  final Offset? shapeEnd;
+  final Offset? moveDelta;
+  final Matrix4? transformLive;
+  final bool showTransformHandles;
 
   static const Color _outsideColor = Color(0xFF3A3A3A);
   static const double _checkerSize = 16.0;
@@ -431,6 +786,12 @@ class _CanvasPainter extends CustomPainter {
     this.selectionStart,
     this.selectionEnd,
     this.activeRuler,
+    this.shapeKind = ShapeKind.off,
+    this.shapeStart,
+    this.shapeEnd,
+    this.moveDelta,
+    this.transformLive,
+    this.showTransformHandles = false,
   });
 
   @override
@@ -453,9 +814,26 @@ class _CanvasPainter extends CustomPainter {
 
     // 描画内容
     if (compositeImage != null) {
-      final src = Rect.fromLTWH(0, 0,
-          compositeImage!.width.toDouble(), compositeImage!.height.toDouble());
-      canvas.drawImageRect(compositeImage!, src, drawingRect, Paint());
+      final sx = drawingRect.width / compositeImage!.width;
+      final sy = drawingRect.height / compositeImage!.height;
+      if (moveDelta != null || transformLive != null) {
+        // 移動・変形ツール：ドラッグ中はコミット前のプレビューとして表示する
+        canvas.save();
+        canvas.translate(drawingRect.left, drawingRect.top);
+        canvas.scale(sx, sy);
+        if (moveDelta != null) {
+          canvas.translate(moveDelta!.dx, moveDelta!.dy);
+        }
+        if (transformLive != null) {
+          canvas.transform(transformLive!.storage);
+        }
+        canvas.drawImage(compositeImage!, Offset.zero, Paint());
+        canvas.restore();
+      } else {
+        final src = Rect.fromLTWH(0, 0,
+            compositeImage!.width.toDouble(), compositeImage!.height.toDouble());
+        canvas.drawImageRect(compositeImage!, src, drawingRect, Paint());
+      }
     }
 
     // オニオンスキン（後フレーム）
@@ -497,6 +875,49 @@ class _CanvasPainter extends CustomPainter {
         ..color = Colors.blue
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0);
+    }
+
+    // 図形ツール：ゴムバンドプレビュー（指を離すまで確定しない）
+    if (shapeStart != null && shapeEnd != null && shapeKind != ShapeKind.off) {
+      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
+      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      Offset ts(Offset p) =>
+          drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+      final shapePaint = Paint()
+        ..color = Colors.black87
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+      switch (shapeKind) {
+        case ShapeKind.line:
+          canvas.drawLine(ts(shapeStart!), ts(shapeEnd!), shapePaint);
+        case ShapeKind.rect:
+          canvas.drawRect(Rect.fromPoints(ts(shapeStart!), ts(shapeEnd!)), shapePaint);
+        case ShapeKind.circle:
+          canvas.drawOval(Rect.fromPoints(ts(shapeStart!), ts(shapeEnd!)), shapePaint);
+        case ShapeKind.off:
+          break;
+      }
+    }
+
+    // 変形ツール：バウンディングボックス・拡縮ハンドル・回転ハンドル
+    if (showTransformHandles) {
+      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
+      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      Offset ts(Offset p) =>
+          drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+      final w = (project?.exportWidth ?? 1920).toDouble();
+      final h = (project?.exportHeight ?? 1080).toDouble();
+      final boxPaint = Paint()
+        ..color = Colors.blue
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      canvas.drawRect(Rect.fromPoints(ts(Offset.zero), ts(Offset(w, h))), boxPaint);
+      void handle(Offset p) {
+        canvas.drawCircle(p, 8, Paint()..color = Colors.blue.withValues(alpha: 0.85));
+        canvas.drawCircle(p, 8, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+      }
+      handle(ts(Offset(w, h))); // 拡縮ハンドル
+      handle(ts(Offset(w / 2, -40))); // 回転ハンドル
     }
 
     if (hasExtended) {
@@ -665,6 +1086,12 @@ class _CanvasPainter extends CustomPainter {
       old.selectionEnd != selectionEnd ||
       old.lassoPoints != lassoPoints ||
       old.activeRuler != activeRuler ||
+      old.shapeKind != shapeKind ||
+      old.shapeStart != shapeStart ||
+      old.shapeEnd != shapeEnd ||
+      old.moveDelta != moveDelta ||
+      old.transformLive != transformLive ||
+      old.showTransformHandles != showTransformHandles ||
       old.project?.drawingAreaScale != project?.drawingAreaScale ||
       old.project?.exportWidth != project?.exportWidth ||
       old.project?.exportHeight != project?.exportHeight;

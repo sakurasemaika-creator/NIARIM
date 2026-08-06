@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../services/advertising_service.dart';
+import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
 import '../../services/brush_service.dart';
 import '../../services/performance_service.dart';
@@ -50,11 +51,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 投げ縄塗り：囲って塗るモード
   bool _lassoFillEnclosedMode = false;
 
+  // 図形ツール：現在選択中の種別（OFF/線/四角形/円）
+  ShapeKind _shapeKind = ShapeKind.off;
+
   OnionSkinSettings _onionSkinSettings = const OnionSkinSettings();
   QualityLevel? _lastQualityLevel;
   PerformanceService? _perf;
 
   String? _currentLayerId;
+  bool _autosaveAttached = false;
 
   @override
   void didChangeDependencies() {
@@ -81,12 +86,52 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _perf!.addListener(_onPerfChanged);
       _syncOnionFromPerf();
     }
+    // 自動保存（クラッシュ復元専用）をこのプロジェクトへ接続する（仕様書06・09）
+    if (!_autosaveAttached) {
+      _autosaveAttached = true;
+      final autosave = context.read<AutosaveService>();
+      autosave.attach(
+        context.read<ProjectService>(),
+        widget.projectId,
+        undoManager: context.read<UndoManager>(),
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkCrashRecovery(autosave));
+    }
   }
 
   @override
   void dispose() {
     _perf?.removeListener(_onPerfChanged);
+    if (_autosaveAttached) context.read<AutosaveService>().detach();
     super.dispose();
+  }
+
+  /// クラッシュ・ファイル破損時の復元用：プロジェクトの最終保存より新しい自動保存があれば復元を提案する。
+  Future<void> _checkCrashRecovery(AutosaveService autosave) async {
+    if (!mounted) return;
+    final slot = autosave.latestSlotFor(widget.projectId);
+    if (slot == null) return;
+    final project = context.read<ProjectService>()
+        .projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    if (project == null || !slot.savedAt.isAfter(project.updatedAt)) return;
+    if (!mounted) return;
+    final restore = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('自動保存データがあります'),
+        content: const Text('前回の保存より新しい自動保存データが見つかりました。復元しますか？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('無視')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('復元')),
+        ],
+      ),
+    );
+    if (restore != true || !mounted) return;
+    final data = await autosave.restore(widget.projectId, slot.slotIndex);
+    if (data == null || !mounted) return;
+    context.read<ProjectService>().restoreFromAutosave(widget.projectId, data);
   }
 
   void _onPerfChanged() => _syncOnionFromPerf();
@@ -153,6 +198,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     currentFrame: _currentFrame,
                     sceneId: _currentSceneId,
                     activeRuler: _activeRuler,
+                    shapeKind: _shapeKind,
                   ),
                   if (_showLayerPanel)
                     Positioned(
@@ -259,6 +305,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   _currentTool = DrawingTool.ruler;
                 }
               }),
+              onShapeTap: () => _showShapeMenu(context),
             ),
             FrameStripWidget(
               currentFrame: _currentFrame,
@@ -326,6 +373,68 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
+  /// 図形ツールタップ時のポップアップ（仕様書03：OFF/線/四角形/円）
+  void _showShapeMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.not_interested),
+              title: const Text('OFF（通常ブラシへ戻る）'),
+              selected: _shapeKind == ShapeKind.off,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.off;
+                  _currentTool = DrawingTool.pen;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.show_chart),
+              title: const Text('線'),
+              selected: _shapeKind == ShapeKind.line,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.line;
+                  _currentTool = DrawingTool.shape;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.crop_square),
+              title: const Text('四角形'),
+              selected: _shapeKind == ShapeKind.rect,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.rect;
+                  _currentTool = DrawingTool.shape;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.circle_outlined),
+              title: const Text('円'),
+              selected: _shapeKind == ShapeKind.circle,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.circle;
+                  _currentTool = DrawingTool.shape;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   String get _currentSceneId {
     final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
     return scenes.isNotEmpty ? scenes.first.id : 'Scene0001';
@@ -382,5 +491,8 @@ enum DrawingTool {
   pen, eraser, bucket, lasso, eyedropper, finger,
   selectRect, selectLasso, selectMagicWand,
   move, transform,
-  ruler, text,
+  ruler, text, shape,
 }
+
+/// 図形ツールの種別（仕様書03：タップでポップアップ表示・OFF/線/四角形/円）
+enum ShapeKind { off, line, rect, circle }

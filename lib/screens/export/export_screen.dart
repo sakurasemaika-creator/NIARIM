@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../engine/export_engine.dart';
+import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
+import '../../widgets/premium_lock_widget.dart';
 
 class ExportScreen extends StatefulWidget {
   final String projectId;
@@ -97,10 +99,29 @@ class _ExportScreenState extends State<ExportScreen> {
   }
 
   Future<void> _startExport() async {
+    final projectService = context.read<ProjectService>();
+    final premiumService = context.read<PremiumService>();
+
+    // 自動塗り未更新警告（仕様書04・06：書き出し前の未更新警告）
+    if (projectService.hasOutdatedAutofillLayers(widget.projectId)) {
+      final proceed = await _confirmOutdatedAutofill();
+      if (proceed != true) return;
+    }
+
+    // 無料版の最大動画尺チェック（仕様書13・19）
+    if (!premiumService.isPremium) {
+      final scenesPreview = projectService.scenesOf(widget.projectId);
+      final totalFramesPreview = scenesPreview.fold(0, (sum, s) => sum + s.frames.length);
+      final seconds = totalFramesPreview / _fps;
+      if (seconds > premiumService.maxProjectDurationSeconds) {
+        final proceed = await _confirmDurationExceeded(seconds, premiumService.maxProjectDurationSeconds);
+        if (proceed != true) return;
+      }
+    }
+
     setState(() { _isExporting = true; _error = null; _progress = 0; });
 
     try {
-      final projectService = context.read<ProjectService>();
       final project = projectService.projects.where((p) => p.id == widget.projectId).firstOrNull;
       if (project == null) throw Exception('プロジェクトが見つかりません');
 
@@ -148,12 +169,59 @@ class _ExportScreenState extends State<ExportScreen> {
           );
       }
 
+      // 無料版：書き出し時にエンドカード（MIRANIMAロゴ・約5秒）を本編末尾へ自動追加する（仕様書06・13）
+      if (!premiumService.isPremium &&
+          (_format == ExportFormat.mp4 || _format == ExportFormat.webm)) {
+        outputPath = await engine.appendEndCard(
+          videoPath: outputPath,
+          format: _format == ExportFormat.mp4 ? 'mp4' : 'webm',
+          width: project.exportWidth,
+          height: project.exportHeight,
+        );
+      }
+
       if (!mounted) return;
       setState(() => _isExporting = false);
       _showCompleteDialog(outputPath, totalFrames);
     } catch (e) {
       if (mounted) setState(() { _isExporting = false; _error = '書き出し失敗: $e'; });
     }
+  }
+
+  Future<bool?> _confirmOutdatedAutofill() {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('自動塗りが最新ではありません'),
+        content: const Text('更新されていない自動塗りレイヤーがあります。このまま書き出しますか？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('続行')),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _confirmDurationExceeded(double seconds, int maxSeconds) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('動画尺の上限を超えています'),
+        content: Text(
+            '無料版の最大動画尺は$maxSeconds秒です。\n現在のプロジェクトは約${seconds.round()}秒あります。\nPremiumにアップグレードすると尺の制限がなくなります。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx, false);
+              showPremiumBanner(context);
+            },
+            child: const Text('Premiumを見る'),
+          ),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('このまま続行')),
+        ],
+      ),
+    );
   }
 
   void _showCompleteDialog(String outputPath, int totalFrames) {

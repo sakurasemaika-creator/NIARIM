@@ -37,6 +37,26 @@ class DrawingEngine {
     _currentStroke.clear();
   }
 
+  /// 図形ツール確定描画（線・四角形・円）。現在のブラシ設定（サイズ・不透明度・
+  /// フェード等を除く形状ラスタライズ）を使い、パス上をブラシでなぞって描画する。
+  /// 仕様書03：ブラシ・トーンどちらでも描画可能、ブラシサイズ・不透明度を反映。
+  void commitShapePath(List<StrokePoint> pathPoints, String layerId, {bool closeLoop = false}) {
+    if (currentBrush == null || pathPoints.isEmpty) return;
+    _currentStroke.clear();
+    final first = pathPoints.first;
+    _currentStroke.add(first);
+    _stampBrush(first.x, first.y, first.pressure, first.tiltX, first.tiltY, layerId);
+    for (int i = 1; i < pathPoints.length; i++) {
+      final to = pathPoints[i];
+      _renderStrokeSegment(_currentStroke.last, to, layerId);
+      _currentStroke.add(to);
+    }
+    if (closeLoop && pathPoints.length > 1) {
+      _renderStrokeSegment(_currentStroke.last, first, layerId);
+    }
+    _currentStroke.clear();
+  }
+
   void _renderStrokeSegment(StrokePoint from, StrokePoint to, String layerId) {
     if (currentBrush == null) return;
     final brush = currentBrush!;

@@ -15,6 +15,10 @@ class TileManager {
   final Map<String, Map<String, Uint8List>> _tiles = {};
   final Set<String> _dirtyTiles = {};
 
+  // Copy-on-Write：copyLayerで参照共有されたタイルバッファの集合。
+  // 実際に書き込みが発生するまで複製しない（仕様書09）。
+  final Set<Uint8List> _sharedTiles = {};
+
   TileManager({required this.canvasWidth, required this.canvasHeight})
       : tilesX = (canvasWidth / tileSize).ceil(),
         tilesY = (canvasHeight / tileSize).ceil();
@@ -25,14 +29,24 @@ class TileManager {
 
   // ─── タイルバッファ取得・生成 ─────────────────────────────────────────
 
-  /// 指定タイルのピクセルバッファを返す。存在しない場合は透明で初期化して返す。
+  /// 指定タイルのピクセルバッファを返す（書き込み用）。存在しない場合は透明で初期化して返す。
+  /// Copy-on-Write：返すバッファが他レイヤーと共有中（copyLayer直後で未実体化）の場合は
+  /// ここで初めて複製し、以後はこのレイヤー専用のバッファとして書き込む。
   Uint8List getOrCreateTile(String layerId, int tx, int ty) {
     final key = _tileKey(tx, ty);
-    _tiles.putIfAbsent(layerId, () => {});
-    return _tiles[layerId]!.putIfAbsent(
-      key,
-      () => Uint8List(tileSize * tileSize * 4), // 透明（全ゼロ）
-    );
+    final layerMap = _tiles.putIfAbsent(layerId, () => {});
+    final existing = layerMap[key];
+    if (existing == null) {
+      final fresh = Uint8List(tileSize * tileSize * 4); // 透明（全ゼロ）
+      layerMap[key] = fresh;
+      return fresh;
+    }
+    if (_sharedTiles.contains(existing)) {
+      final materialized = Uint8List.fromList(existing);
+      layerMap[key] = materialized;
+      return materialized;
+    }
+    return existing;
   }
 
   Uint8List? getTile(String layerId, int tx, int ty) =>
@@ -125,13 +139,82 @@ class TileManager {
 
   // ─── レイヤー管理 ─────────────────────────────────────────────────────
 
+  /// レイヤーを複製する（Copy-on-Write方式）。
+  /// タイルバッファは複製時点ではコピーせず参照を共有し、
+  /// どちらか一方に書き込みが発生した時点（getOrCreateTile）で初めて実体化する。
   void copyLayer(String sourceLayerId, String targetLayerId) {
-    if (_tiles.containsKey(sourceLayerId)) {
-      _tiles[targetLayerId] = {
-        for (final e in _tiles[sourceLayerId]!.entries)
-          e.key: Uint8List.fromList(e.value),
-      };
+    final source = _tiles[sourceLayerId];
+    if (source == null) return;
+    final target = <String, Uint8List>{};
+    for (final e in source.entries) {
+      _sharedTiles.add(e.value);
+      target[e.key] = e.value;
     }
+    _tiles[targetLayerId] = target;
+  }
+
+  /// レイヤー全体を指定した4x4行列（Matrix4.storage形式・列優先）で変換し、
+  /// 結果をタイルへ書き戻す（移動・変形ツール用、仕様書03）。
+  Future<void> transformLayer(String layerId, Float64List matrix) async {
+    final composite = await compositeLayerToImage(layerId);
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.save();
+    canvas.transform(matrix);
+    canvas.drawImage(composite, ui.Offset.zero, ui.Paint());
+    canvas.restore();
+    composite.dispose();
+    final picture = recorder.endRecording();
+    final transformed = await picture.toImage(canvasWidth, canvasHeight);
+    picture.dispose();
+    final byteData = await transformed.toByteData(format: ui.ImageByteFormat.rawRgba);
+    transformed.dispose();
+    if (byteData == null) return;
+    replaceLayerPixels(layerId, byteData.buffer.asUint8List());
+  }
+
+  /// レイヤーの全ピクセルを、キャンバス全体サイズのRGBA8888バッファで置き換える。
+  /// 自動塗りエンジンの結果書き戻しや transformLayer の内部実装で使用する。
+  void replaceLayerPixels(String layerId, Uint8List bytes) {
+    final newLayerTiles = <String, Uint8List>{};
+    for (int ty = 0; ty < tilesY; ty++) {
+      for (int tx = 0; tx < tilesX; tx++) {
+        final tile = Uint8List(tileSize * tileSize * 4);
+        bool hasContent = false;
+        final originY = ty * tileSize;
+        final originX = tx * tileSize;
+        final maxLocalY = (canvasHeight - originY).clamp(0, tileSize);
+        final maxLocalX = (canvasWidth - originX).clamp(0, tileSize);
+        for (int y = 0; y < maxLocalY; y++) {
+          final worldY = originY + y;
+          final rowSrc = (worldY * canvasWidth + originX) * 4;
+          final rowDst = (y * tileSize) * 4;
+          final byteLen = maxLocalX * 4;
+          tile.setRange(rowDst, rowDst + byteLen, bytes, rowSrc);
+        }
+        for (int i = 3; i < tile.length; i += 4) {
+          if (tile[i] != 0) { hasContent = true; break; }
+        }
+        if (hasContent) {
+          newLayerTiles[_tileKey(tx, ty)] = tile;
+          _dirtyTiles.add('$layerId:${_tileKey(tx, ty)}');
+        }
+      }
+    }
+    _tiles[layerId] = newLayerTiles;
+  }
+
+  /// レイヤー全体を(dx, dy)だけ平行移動する（移動ツール用）。
+  Future<void> translateLayer(String layerId, double dx, double dy) {
+    final m = Float64List.fromList(const [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+    ]);
+    m[12] = dx;
+    m[13] = dy;
+    return transformLayer(layerId, m);
   }
 
   void removeLayer(String layerId) => _tiles.remove(layerId);

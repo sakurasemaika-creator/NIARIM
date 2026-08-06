@@ -304,6 +304,140 @@ class ProjectService extends ChangeNotifier {
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
   }
 
+  /// .mirashare を複製して通常プロジェクトとして追加する（仕様書06：共有フロー）。
+  /// 新規プロジェクトIDを採番し、共有元ファイル自体は変更しない。
+  Future<Project> importSharedProject(MiraproData data) async {
+    final newId = 'proj_${DateTime.now().millisecondsSinceEpoch}';
+    final project = data.project.copyWith(
+      id: newId,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    _projects.add(project);
+    _scenes[newId] = data.scenes;
+    final tm = TileManager(
+      canvasWidth: project.drawingWidth,
+      canvasHeight: project.drawingHeight,
+    );
+    tm.importAll(data.tileData);
+    _tileManagers[newId] = tm;
+    _layerIdCounters[newId] = _maxLayerCounter(data.scenes);
+    _saveAsync(newId);
+    notifyListeners();
+    return project;
+  }
+
+  /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用、仕様書06・09）。
+  /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
+  void restoreFromAutosave(String projectId, MiraproData data) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    _projects[idx] = data.project.copyWith(id: projectId, updatedAt: DateTime.now());
+    _scenes[projectId] = data.scenes;
+    final tm = _tileManagers.putIfAbsent(
+        projectId,
+        () => TileManager(
+            canvasWidth: data.project.drawingWidth, canvasHeight: data.project.drawingHeight));
+    tm.importAll(data.tileData);
+    _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
+    notifyListeners();
+  }
+
+  // ─── 自動塗り連携 ─────────────────────────────────────────────────────
+
+  /// 自動塗り用線画レイヤーの直下にある自動塗りレイヤーへ更新マークを立てる。
+  /// 線画レイヤーへ描画があった際に呼び出す（仕様書16：needsAutofillUpdate自動セット）。
+  void markLineartDirty(
+      String projectId, String sceneId, int frameIndex, String lineartLayerId) {
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final idx = layers.indexWhere((l) => l.id == lineartLayerId);
+    if (idx < 0 || layers[idx].type != LayerType.autoFillLineart) return;
+    if (idx + 1 < layers.length && layers[idx + 1].type == LayerType.autoFill) {
+      final target = layers[idx + 1];
+      if (!target.needsAutofillUpdate) {
+        updateLayer(
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          layer: target.copyWith(needsAutofillUpdate: true),
+        );
+      }
+    }
+  }
+
+  /// 自動塗りプリセットのパーツ色・名前が変更／削除された際、当該パーツIDを参照する
+  /// 全プロジェクト・全フレームの自動塗りレイヤーへ更新マークを伝播する（仕様書04）。
+  void markAutofillUpdateForPartId(String partId) {
+    bool changed = false;
+    for (final entry in _scenes.entries) {
+      final scenes = entry.value;
+      for (int si = 0; si < scenes.length; si++) {
+        final scene = scenes[si];
+        for (int fi = 0; fi < scene.frames.length; fi++) {
+          final layers = scene.frames[fi].layers;
+          for (int li = 0; li < layers.length; li++) {
+            final lineart = layers[li];
+            if (lineart.type != LayerType.autoFillLineart || lineart.partId != partId) continue;
+            if (li + 1 >= layers.length || layers[li + 1].type != LayerType.autoFill) continue;
+            final autofillLayer = layers[li + 1];
+            if (autofillLayer.needsAutofillUpdate) continue;
+            final newLayers = List<Layer>.from(layers);
+            newLayers[li + 1] = autofillLayer.copyWith(needsAutofillUpdate: true);
+            final newFrames = List<Frame>.from(scene.frames);
+            newFrames[fi] = scene.frames[fi].copyWith(layers: newLayers);
+            scenes[si] = scene.copyWith(frames: newFrames);
+            changed = true;
+          }
+        }
+      }
+    }
+    if (changed) notifyListeners();
+  }
+
+  /// 自動塗り用線画レイヤーへプリセットのパーツを割り当てる。表示名はパーツ名に連動し、
+  /// 直下に自動塗りレイヤーが存在する場合はそちらの表示名・パーツIDも一括更新する（仕様書04）。
+  void assignAutofillPart({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String lineartLayerId,
+    required String partId,
+    required String partName,
+  }) {
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final idx = layers.indexWhere((l) => l.id == lineartLayerId);
+    if (idx < 0 || layers[idx].type != LayerType.autoFillLineart) return;
+    updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: layers[idx].copyWith(partId: partId, name: '$partName（線画）'),
+    );
+    if (idx + 1 < layers.length && layers[idx + 1].type == LayerType.autoFill) {
+      updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: layers[idx + 1].copyWith(partId: partId, name: '$partName（自動塗り）'),
+      );
+    }
+  }
+
+  /// 書き出し前の未更新警告用：指定プロジェクトの全シーン・全フレームに
+  /// needsAutofillUpdate==true の自動塗りレイヤーが存在するかを判定する（仕様書04・06）。
+  bool hasOutdatedAutofillLayers(String projectId) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return false;
+    for (final scene in scenes) {
+      for (final frame in scene.frames) {
+        if (frame.layers.any((l) => l.type == LayerType.autoFill && l.needsAutofillUpdate)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   // ─── Frame API ────────────────────────────────────────────────────────
 
   int frameCount(String projectId, String sceneId) =>

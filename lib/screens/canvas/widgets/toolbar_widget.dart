@@ -13,6 +13,7 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onOnionSkinTap;
   final VoidCallback onTextTap;
   final VoidCallback onRulerTap;
+  final VoidCallback onShapeTap;
 
   const ToolbarWidget({
     super.key,
@@ -27,6 +28,7 @@ class ToolbarWidget extends StatelessWidget {
     required this.onOnionSkinTap,
     required this.onTextTap,
     required this.onRulerTap,
+    required this.onShapeTap,
   });
 
   @override
@@ -58,6 +60,8 @@ class ToolbarWidget extends StatelessWidget {
                 onTap: onRulerTap),
             _toolButton(Icons.text_fields, DrawingTool.text, 'テキスト',
                 onTap: onTextTap),
+            _toolButton(Icons.category, DrawingTool.shape, '図形（タップで種別選択）',
+                onTap: onShapeTap),
             const SizedBox(width: 4),
             // 色インジケーター
             GestureDetector(

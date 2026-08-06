@@ -1,16 +1,24 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../engine/mirapro_serializer.dart';
+import '../engine/undo_manager.dart';
 import 'project_service.dart';
 
+/// 自動保存（クラッシュ・ファイル破損時の復元専用、仕様書06・09）。
+/// 最大3件固定・古い順に自動削除。手動保存（セーブスロット・セーブツリー）とは完全に独立。
+/// 描画などで変更が発生したタイミング（Undo更新と連動）で自動保存する。
 class AutosaveService extends ChangeNotifier {
   static const int maxSlots = 3;
   static const Duration _interval = Duration(minutes: 3);
+  static const Duration _debounceAfterChange = Duration(seconds: 5);
 
   final List<AutosaveSlot> _slots = [];
   int _nextSlotIndex = 0;
   Timer? _timer;
+  Timer? _debounce;
   ProjectService? _projectService;
+  UndoManager? _undoManager;
   String? _currentProjectId;
 
   List<AutosaveSlot> get slots => List.unmodifiable(_slots);
@@ -34,17 +42,32 @@ class AutosaveService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void attach(ProjectService projectService, String projectId) {
+  /// プロジェクトを開いた際に呼び出す。定期保存タイマーとUndo更新連動を開始する。
+  void attach(ProjectService projectService, String projectId, {UndoManager? undoManager}) {
     _projectService = projectService;
     _currentProjectId = projectId;
     _timer?.cancel();
     _timer = Timer.periodic(_interval, (_) => _autoSave());
+    _undoManager?.removeListener(_onProjectChanged);
+    _undoManager = undoManager;
+    _undoManager?.addListener(_onProjectChanged);
   }
 
+  /// プロジェクトを離れた際に呼び出す。
   void detach() {
     _timer?.cancel();
     _timer = null;
+    _debounce?.cancel();
+    _debounce = null;
+    _undoManager?.removeListener(_onProjectChanged);
+    _undoManager = null;
     _currentProjectId = null;
+  }
+
+  /// Undo更新（描画・レイヤー操作等）と連動した自動保存（デバウンス）。
+  void _onProjectChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(_debounceAfterChange, _autoSave);
   }
 
   Future<void> _autoSave() async {
@@ -54,23 +77,52 @@ class AutosaveService extends ChangeNotifier {
     await save(id, ps);
   }
 
+  /// 指定プロジェクトを自動保存スロットへ書き出す（3件固定・古い順に上書き）。
   Future<void> save(String projectId, ProjectService projectService) async {
+    final project = projectService.projects.where((p) => p.id == projectId).firstOrNull;
+    if (project == null) return;
+    final scenes = projectService.scenesOf(projectId);
+    final tileManager = projectService.tileManagerOf(projectId);
+
     final slotIndex = _nextSlotIndex % maxSlots;
     _nextSlotIndex++;
-    _slots.removeWhere((s) => s.slotIndex == slotIndex && s.projectId == projectId);
+    try {
+      await MiraproSerializer.saveAutosave(
+        project: project,
+        scenes: scenes,
+        tileManager: tileManager,
+        slotIndex: slotIndex,
+      );
+    } catch (_) {
+      return; // 保存失敗はサイレントに無視（自動保存は補助機能のため）
+    }
+    _slots.removeWhere((s) => s.slotIndex == slotIndex);
     _slots.add(AutosaveSlot(
       projectId: projectId,
       savedAt: DateTime.now(),
       slotIndex: slotIndex,
     ));
-    await projectService.saveProject(projectId);
+    while (_slots.length > maxSlots) {
+      _slots.removeAt(0);
+    }
     await _persist();
     notifyListeners();
   }
 
-  Future<void> restore(String projectId, int slotIndex) async {
-    // 実際の復元はProjectServiceのload経由で行う（現状はスナップショット通知のみ）
-    notifyListeners();
+  /// 指定プロジェクト・最新の自動保存スロットを返す（クラッシュ復元候補の検出用）。
+  AutosaveSlot? latestSlotFor(String projectId) {
+    final matches = _slots.where((s) => s.projectId == projectId).toList()
+      ..sort((a, b) => b.savedAt.compareTo(a.savedAt));
+    return matches.isEmpty ? null : matches.first;
+  }
+
+  /// 自動保存データを読み込む（実際の反映はProjectService.restoreFromAutosave経由）。
+  Future<MiraproData?> restore(String projectId, int slotIndex) async {
+    try {
+      return await MiraproSerializer.loadAutosave(projectId, slotIndex);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _persist() async {
@@ -87,6 +139,8 @@ class AutosaveService extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    _debounce?.cancel();
+    _undoManager?.removeListener(_onProjectChanged);
     super.dispose();
   }
 }
