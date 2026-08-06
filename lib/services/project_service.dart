@@ -630,9 +630,36 @@ class ProjectService extends ChangeNotifier {
         updatedAt: DateTime.now(),
       );
       _projects.add(copy);
+
+      // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
+      // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
+      // 変更（scenes[i] = ...）がもう片方にも波及してしまうため独立させる）。
       if (_scenes.containsKey(id)) {
-        _scenes[newId] = _scenes[id]!;
+        _scenes[newId] = List<Scene>.from(_scenes[id]!);
       }
+
+      // レイヤーIDカウンターも引き継がないと、複製後に新規追加したレイヤーのIDが
+      // 複製元から引き継いだ既存レイヤーIDと衝突する。
+      if (_layerIdCounters.containsKey(id)) {
+        _layerIdCounters[newId] = _layerIdCounters[id]!;
+      }
+
+      // 描画データ（タイル）も複製先IDへコピーする。TileManager.importAllは
+      // ピクセルバッファをUint8List.fromListで複製するため、複製元・複製先は
+      // 完全に独立したバッファになる。
+      final sourceTm = _tileManagers[id];
+      final newTm = TileManager(
+        canvasWidth: copy.drawingWidth,
+        canvasHeight: copy.drawingHeight,
+      );
+      if (sourceTm != null) {
+        newTm.importAll(sourceTm.exportAll());
+      }
+      _tileManagers[newId] = newTm;
+
+      // 複製結果をディスクへ保存する（保存しないと再起動後に消えてしまう）。
+      _saveAsync(newId);
+
       notifyListeners();
     }
   }
