@@ -114,7 +114,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 parentId != null ? '選択中のノードの子として保存します。' : 'ルートノードとして保存します。',
-                style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
               ),
             ),
             TextField(
@@ -293,7 +293,7 @@ class _SaveNodeThumbnail extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: Colors.grey[700],
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(10),
       ),
       clipBehavior: Clip.antiAlias,
       child: path != null
@@ -390,8 +390,26 @@ class _TreeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final roots = nodes.where((n) => n.parentId == null).toList();
     if (roots.isEmpty) {
-      return const Center(
-          child: Text('保存データがありません\n上部の「保存」ボタンで最初のノードを作成できます'));
+      final scheme = Theme.of(context).colorScheme;
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 88, height: 88,
+              decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
+              child: Icon(Icons.account_tree_outlined, size: 40, color: scheme.primary),
+            ),
+            const SizedBox(height: 20),
+            Text('保存データがありません',
+                style: TextStyle(fontWeight: FontWeight.w600, color: scheme.onSurface)),
+            const SizedBox(height: 8),
+            Text('上部の「保存」ボタンで最初のノードを作成できます',
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      );
     }
     return ListView(
       children: roots.map((root) => _buildTreeNode(context, root, 0)).toList(),
