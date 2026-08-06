@@ -53,7 +53,7 @@ class SaveTreeService extends ChangeNotifier {
     required List<Scene> scenes,
     required TileManager tileManager,
     String? comment,
-    String? thumbnailPath,
+    Uint8List? thumbnailPngBytes,
   }) async {
     assert(slotIndex >= 0 && slotIndex < _slotMax,
         'slotIndex must be 0..${ _slotMax - 1}');
@@ -62,19 +62,25 @@ class SaveTreeService extends ChangeNotifier {
         .where((n) => n.slotIndex == slotIndex)
         .toList();
     _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
+    final nodeId = _newId();
+    await MiraproSerializer.saveSaveTreeNode(
+      project: project,
+      scenes: scenes,
+      tileManager: tileManager,
+      nodeId: nodeId,
+    );
+    String? thumbnailPath;
+    if (thumbnailPngBytes != null) {
+      thumbnailPath = await MiraproSerializer.saveSaveTreeThumbnail(
+          projectId, nodeId, thumbnailPngBytes);
+    }
     final node = SaveNode(
-      id: _newId(),
+      id: nodeId,
       projectId: projectId,
       savedAt: DateTime.now(),
       comment: comment,
       thumbnailPath: thumbnailPath,
       slotIndex: slotIndex,
-    );
-    await MiraproSerializer.saveSaveTreeNode(
-      project: project,
-      scenes: scenes,
-      tileManager: tileManager,
-      nodeId: node.id,
     );
     for (final o in old) {
       await MiraproSerializer.deleteSaveTreeNode(projectId, o.id);
@@ -93,23 +99,29 @@ class SaveTreeService extends ChangeNotifier {
     required TileManager tileManager,
     String? parentId,
     String? comment,
-    String? thumbnailPath,
+    Uint8List? thumbnailPngBytes,
   }) async {
     _nodesByProject.putIfAbsent(projectId, () => []);
+    final nodeId = _newId();
+    await MiraproSerializer.saveSaveTreeNode(
+      project: project,
+      scenes: scenes,
+      tileManager: tileManager,
+      nodeId: nodeId,
+    );
+    String? thumbnailPath;
+    if (thumbnailPngBytes != null) {
+      thumbnailPath = await MiraproSerializer.saveSaveTreeThumbnail(
+          projectId, nodeId, thumbnailPngBytes);
+    }
     final node = SaveNode(
-      id: _newId(),
+      id: nodeId,
       projectId: projectId,
       savedAt: DateTime.now(),
       comment: comment,
       thumbnailPath: thumbnailPath,
       parentId: parentId,
       slotIndex: -1,
-    );
-    await MiraproSerializer.saveSaveTreeNode(
-      project: project,
-      scenes: scenes,
-      tileManager: tileManager,
-      nodeId: node.id,
     );
     _nodesByProject[projectId]!.add(node);
     notifyListeners();

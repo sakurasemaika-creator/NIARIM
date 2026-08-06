@@ -1,8 +1,56 @@
+import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../engine/layer_compositor.dart';
+import '../../engine/tile_manager.dart' show frameLayerKey;
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
+
+/// 保存ノードのサムネイルを生成する（先頭シーン・先頭フレームを縮小合成）。
+/// 生成できない場合（シーン・フレームが存在しない等）はnullを返す。
+Future<Uint8List?> _generateSaveNodeThumbnail(
+    ProjectService ps, String projectId) async {
+  final scenes = ps.scenesOf(projectId);
+  if (scenes.isEmpty) return null;
+  final scene = scenes.first;
+  if (scene.frames.isEmpty) return null;
+  final frame = scene.frames.first;
+  final tileManager = ps.tileManagerOf(projectId);
+  final w = tileManager.canvasWidth;
+  final h = tileManager.canvasHeight;
+  if (w <= 0 || h <= 0) return null;
+
+  const thumbMax = 200;
+  final scale = thumbMax / math.max(w, h);
+  final tw = (w * scale).round().clamp(1, thumbMax);
+  final th = (h * scale).round().clamp(1, thumbMax);
+
+  final fullImage = await LayerCompositor.composite(
+    tileManager,
+    frame.layers,
+    (l) => frameLayerKey(scene.id, frame.index, l.id),
+    w,
+    h,
+  );
+  final recorder = ui.PictureRecorder();
+  final canvas = ui.Canvas(recorder);
+  canvas.drawImageRect(
+    fullImage,
+    ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+    ui.Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
+    ui.Paint(),
+  );
+  fullImage.dispose();
+  final picture = recorder.endRecording();
+  final thumbImage = await picture.toImage(tw, th);
+  final byteData = await thumbImage.toByteData(format: ui.ImageByteFormat.png);
+  thumbImage.dispose();
+  return byteData?.buffer.asUint8List();
+}
 
 class SaveTreeScreen extends StatefulWidget {
   final String projectId;
@@ -88,6 +136,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
                 Navigator.pop(ctx);
                 return;
               }
+              final thumb = await _generateSaveNodeThumbnail(ps, widget.projectId);
               await service.saveAsChild(
                 projectId: widget.projectId,
                 project: project,
@@ -97,6 +146,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
                 comment: commentController.text.isEmpty
                     ? null
                     : commentController.text,
+                thumbnailPngBytes: thumb,
               );
               if (ctx.mounted) Navigator.pop(ctx);
             },
@@ -181,6 +231,7 @@ class _SlotView extends StatelessWidget {
                 Navigator.pop(ctx);
                 return;
               }
+              final thumb = await _generateSaveNodeThumbnail(ps, projectId);
               await saveService.saveToSlot(
                 projectId: projectId,
                 slotIndex: slotIndex,
@@ -190,6 +241,7 @@ class _SlotView extends StatelessWidget {
                 comment: commentController.text.isEmpty
                     ? null
                     : commentController.text,
+                thumbnailPngBytes: thumb,
               );
               if (ctx.mounted) Navigator.pop(ctx);
             },
@@ -222,6 +274,44 @@ class _SlotView extends StatelessWidget {
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
 
+/// セーブノードのサムネイル画像。thumbnailPathが無い・読み込めない場合は
+/// プレースホルダーアイコンを表示する。
+class _SaveNodeThumbnail extends StatelessWidget {
+  final SaveNode? node;
+  final double size;
+
+  const _SaveNodeThumbnail({required this.node, this.size = 48});
+
+  @override
+  Widget build(BuildContext context) {
+    final path = node?.thumbnailPath;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey[700],
+        borderRadius: BorderRadius.circular(4),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: path != null
+          ? Image.file(
+              File(path),
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => _placeholderIcon(),
+            )
+          : _placeholderIcon(),
+    );
+  }
+
+  Widget _placeholderIcon() => Center(
+        child: Icon(
+          node != null ? Icons.image : Icons.add,
+          size: size / 2,
+          color: Colors.grey[500],
+        ),
+      );
+}
+
 class _SlotTile extends StatelessWidget {
   final int slotIndex;
   final SaveNode? node;
@@ -240,19 +330,7 @@ class _SlotTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Colors.grey[700],
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Center(
-          child: node != null
-              ? const Icon(Icons.image, size: 24)
-              : Icon(Icons.add, size: 24, color: Colors.grey[500]),
-        ),
-      ),
+      leading: _SaveNodeThumbnail(node: node),
       title: Text('スロット${slotIndex + 1}${node?.comment != null ? '　${node!.comment}' : ''}'),
       subtitle: node != null
           ? Text(_formatDate(node!.savedAt))
@@ -331,11 +409,13 @@ class _TreeView extends StatelessWidget {
                 .colorScheme
                 .primaryContainer
                 .withValues(alpha: 0.3),
-            leading: Icon(
-              Icons.commit,
-              size: 20,
-              color: isSelected ? Theme.of(context).colorScheme.primary : null,
-            ),
+            leading: node.thumbnailPath != null
+                ? _SaveNodeThumbnail(node: node, size: 40)
+                : Icon(
+                    Icons.commit,
+                    size: 20,
+                    color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                  ),
             title: Text(node.comment ?? '保存'),
             subtitle: Text(_formatDate(node.savedAt)),
             onTap: () => onNodeSelected(isSelected ? null : node.id),

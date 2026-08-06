@@ -108,10 +108,22 @@ class MiraproSerializer {
     return load('$dir/$nodeId.mirapro');
   }
 
+  /// セーブノードのサムネイル画像（PNG）を保存し、保存先パスを返す。
+  static Future<String> saveSaveTreeThumbnail(
+      String projectId, String nodeId, Uint8List pngBytes) async {
+    final dir = await _saveTreeDir(projectId);
+    final path = '$dir/${nodeId}_thumb.png';
+    await File(path).writeAsBytes(pngBytes);
+    return path;
+  }
+
+  /// ノードの実データ（.mirapro）とサムネイル画像を両方削除する。
   static Future<void> deleteSaveTreeNode(String projectId, String nodeId) async {
     final dir = await _saveTreeDir(projectId);
     final file = File('$dir/$nodeId.mirapro');
     if (await file.exists()) await file.delete();
+    final thumb = File('$dir/${nodeId}_thumb.png');
+    if (await thumb.exists()) await thumb.delete();
   }
 
   /// フル書き出し：manifest・全シーンのframes.json・全タイルを新規に書き込む。
