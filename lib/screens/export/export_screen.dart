@@ -6,6 +6,7 @@ import '../../engine/export_engine.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/progress_dialog.dart';
 
 class ExportScreen extends StatefulWidget {
   final String projectId;
@@ -21,6 +22,7 @@ class _ExportScreenState extends State<ExportScreen> {
   bool _isExporting = false;
   double _progress = 0;
   String? _error;
+  void Function(void Function())? _progressDialogSetState;
 
   int get _fps => _preset == ExportPreset.highQuality ? 60 : 30;
 
@@ -28,7 +30,7 @@ class _ExportScreenState extends State<ExportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('書き出し')),
-      body: _isExporting ? _buildProgress() : _buildSettings(),
+      body: _buildSettings(),
     );
   }
 
@@ -70,28 +72,10 @@ class _ExportScreenState extends State<ExportScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: _startExport,
+            onPressed: _isExporting ? null : _startExport,
             icon: const Icon(Icons.file_download),
             label: const Text('書き出し開始'),
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgress() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text('書き出し中... ${(_progress * 100).round()}%'),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: LinearProgressIndicator(value: _progress),
           ),
         ],
       ),
@@ -120,6 +104,7 @@ class _ExportScreenState extends State<ExportScreen> {
     }
 
     setState(() { _isExporting = true; _error = null; _progress = 0; });
+    _showProgressDialog();
 
     try {
       final project = projectService.projects.where((p) => p.id == widget.projectId).firstOrNull;
@@ -132,7 +117,9 @@ class _ExportScreenState extends State<ExportScreen> {
       final totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
 
       void onProgress(int current, int total) {
-        if (mounted) setState(() => _progress = current / total);
+        if (!mounted) return;
+        _progress = current / total;
+        _progressDialogSetState?.call(() {});
       }
 
       String outputPath;
@@ -186,12 +173,38 @@ class _ExportScreenState extends State<ExportScreen> {
         );
       }
 
+      _closeProgressDialog();
       if (!mounted) return;
       setState(() => _isExporting = false);
       _showCompleteDialog(outputPath, totalFrames);
     } catch (e) {
+      _closeProgressDialog();
       if (mounted) setState(() { _isExporting = false; _error = '書き出し失敗: $e'; });
     }
+  }
+
+  /// 処理中ダイアログ（仕様書13：動画書き出し・GIF生成・透過WebM生成時に
+  /// プログレスバー下部へ正方形広告を表示、処理完了時に自動消去）。
+  void _showProgressDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          _progressDialogSetState = setDialogState;
+          return ProgressDialog(
+            title: '書き出し中',
+            progress: _progress,
+            subtitle: _format.name.toUpperCase(),
+          );
+        },
+      ),
+    ).whenComplete(() => _progressDialogSetState = null);
+  }
+
+  void _closeProgressDialog() {
+    _progressDialogSetState = null;
+    if (mounted) Navigator.of(context, rootNavigator: true).pop();
   }
 
   Future<bool?> _confirmOutdatedAutofill() {
