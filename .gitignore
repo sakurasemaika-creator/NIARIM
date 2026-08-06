@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Gradleビルド出力（android/build, android/app/build等）
+/android/**/build/
+/android/.gradle/

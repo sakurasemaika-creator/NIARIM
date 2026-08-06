@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "com.miranima.miranima"
-    compileSdk = flutter.compileSdkVersion
+    // google_mobile_ads 7.x系はcompileSdk 36を要求するため、Flutter側の既定値が
+    // それより低い場合に備えて下限を明示する。
+    compileSdk = maxOf(flutter.compileSdkVersion, 36)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -19,7 +21,9 @@ android {
         applicationId = "com.miranima.miranima"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // google_mobile_ads 7.x系はminSdk 24を要求するため、Flutter側の既定値が
+        // それより低い場合に備えて下限を明示する。
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
