@@ -77,6 +77,32 @@ class AppThemePreset {
     selectionColor: Color(0xFFFF5C7A),
     updateMarkColor: Color(0xFFFFB020),
   );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'baseTheme': baseTheme.name,
+        'accentColor': accentColor.toARGB32(),
+        'textColor': textColor.toARGB32(),
+        'panelBgColor': panelBgColor.toARGB32(),
+        'menuBgColor': menuBgColor.toARGB32(),
+        'selectionColor': selectionColor.toARGB32(),
+        'updateMarkColor': updateMarkColor.toARGB32(),
+        'isFavorite': isFavorite,
+      };
+
+  factory AppThemePreset.fromJson(Map<String, dynamic> json) => AppThemePreset(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        baseTheme: BaseTheme.values.asNameMap()[json['baseTheme'] as String?] ?? BaseTheme.dark,
+        accentColor: Color(json['accentColor'] as int),
+        textColor: Color(json['textColor'] as int),
+        panelBgColor: Color(json['panelBgColor'] as int),
+        menuBgColor: Color(json['menuBgColor'] as int),
+        selectionColor: Color(json['selectionColor'] as int),
+        updateMarkColor: Color(json['updateMarkColor'] as int),
+        isFavorite: json['isFavorite'] as bool? ?? false,
+      );
 }
 
 enum BaseTheme { light, dark, system }

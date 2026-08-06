@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../services/theme_service.dart';
 import '../../models/app_theme_preset.dart';
 import '../../widgets/responsive.dart';
@@ -86,7 +91,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             child: OutlinedButton.icon(
               icon: const Icon(Icons.file_upload),
               label: const Text('.mirathemeを読み込む'),
-              onPressed: () {},
+              onPressed: () => _importTheme(context, themeService),
             ),
           ),
           const SizedBox(height: 32),
@@ -114,10 +119,49 @@ class ThemeSettingsScreen extends StatelessWidget {
       case 'delete':
         service.deletePreset(preset.id);
       case 'export':
-        // TODO: .mirathemeファイルとして書き出し
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('.miratheme書き出しは未実装です')),
-        );
+        _exportTheme(context, preset);
+    }
+  }
+
+  Future<void> _exportTheme(BuildContext context, AppThemePreset preset) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+      final file = File('${dir.path}/$safeName.miratheme');
+      await file.writeAsString(jsonEncode(preset.toJson()));
+      if (!context.mounted) return;
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('書き出しに失敗しました: $e')),
+      );
+    }
+  }
+
+  Future<void> _importTheme(BuildContext context, ThemeService service) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['miratheme'],
+    );
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (!context.mounted) return;
+    try {
+      final content = await File(result.files.first.path!).readAsString();
+      final json = jsonDecode(content) as Map<String, dynamic>;
+      final preset = AppThemePreset.fromJson(json)
+          .copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
+      service.savePreset(preset);
+      service.applyPreset(preset.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('.mirathemeを読み込みました')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('読み込みに失敗しました: $e')),
+      );
     }
   }
 

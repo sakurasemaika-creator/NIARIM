@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_theme_preset.dart';
 
 class ThemeService extends ChangeNotifier {
+  static const _prefsPresetsKey = 'theme_presets';
+  static const _prefsCurrentIdKey = 'theme_current_id';
+
   final List<AppThemePreset> _presets = [];
   AppThemePreset _current = AppThemePreset.defaultDark;
 
@@ -20,50 +25,71 @@ class ThemeService extends ChangeNotifier {
     }
   }
 
+  static const List<AppThemePreset> _builtInPresets = [
+    AppThemePreset.defaultDark,
+    AppThemePreset.defaultLight,
+    AppThemePreset(
+      id: 'sky',
+      name: 'スカイ',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF3AA6FF),
+      textColor: Color(0xFFF2F6FA),
+      panelBgColor: Color(0xFF11181F),
+      menuBgColor: Color(0xFF182430),
+      selectionColor: Color(0xFF3AA6FF),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'mint',
+      name: 'ミント',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF3DDC97),
+      textColor: Color(0xFFF1FAF5),
+      panelBgColor: Color(0xFF101A15),
+      menuBgColor: Color(0xFF17251D),
+      selectionColor: Color(0xFF3DDC97),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'orchid',
+      name: 'オーキッド',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFFB15CFF),
+      textColor: Color(0xFFF6F1FA),
+      panelBgColor: Color(0xFF19141F),
+      menuBgColor: Color(0xFF241C2D),
+      selectionColor: Color(0xFFB15CFF),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+  ];
+
   Future<void> init() async {
-    _presets.addAll(const [
-      AppThemePreset.defaultDark,
-      AppThemePreset.defaultLight,
-      AppThemePreset(
-        id: 'sky',
-        name: 'スカイ',
-        baseTheme: BaseTheme.dark,
-        accentColor: Color(0xFF3AA6FF),
-        textColor: Color(0xFFF2F6FA),
-        panelBgColor: Color(0xFF11181F),
-        menuBgColor: Color(0xFF182430),
-        selectionColor: Color(0xFF3AA6FF),
-        updateMarkColor: Color(0xFFFFB020),
-      ),
-      AppThemePreset(
-        id: 'mint',
-        name: 'ミント',
-        baseTheme: BaseTheme.dark,
-        accentColor: Color(0xFF3DDC97),
-        textColor: Color(0xFFF1FAF5),
-        panelBgColor: Color(0xFF101A15),
-        menuBgColor: Color(0xFF17251D),
-        selectionColor: Color(0xFF3DDC97),
-        updateMarkColor: Color(0xFFFFB020),
-      ),
-      AppThemePreset(
-        id: 'orchid',
-        name: 'オーキッド',
-        baseTheme: BaseTheme.dark,
-        accentColor: Color(0xFFB15CFF),
-        textColor: Color(0xFFF6F1FA),
-        panelBgColor: Color(0xFF19141F),
-        menuBgColor: Color(0xFF241C2D),
-        selectionColor: Color(0xFFB15CFF),
-        updateMarkColor: Color(0xFFFFB020),
-      ),
-    ]);
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_prefsPresetsKey);
+    if (raw == null || raw.isEmpty) {
+      _presets.addAll(_builtInPresets);
+    } else {
+      _presets.addAll(raw.map((s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+    }
+    final currentId = prefs.getString(_prefsCurrentIdKey);
+    if (currentId != null) {
+      _current = _presets.firstWhere((p) => p.id == currentId, orElse: () => _presets.first);
+    } else if (_presets.isNotEmpty) {
+      _current = _presets.first;
+    }
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_prefsPresetsKey, _presets.map((p) => jsonEncode(p.toJson())).toList());
+    await prefs.setString(_prefsCurrentIdKey, _current.id);
   }
 
   void applyPreset(String id) {
     final preset = _presets.firstWhere((p) => p.id == id, orElse: () => _current);
     _current = preset;
     notifyListeners();
+    _persist();
   }
 
   void savePreset(AppThemePreset preset) {
@@ -73,12 +99,15 @@ class ThemeService extends ChangeNotifier {
     } else {
       _presets.add(preset);
     }
+    if (_current.id == preset.id) _current = preset;
     notifyListeners();
+    _persist();
   }
 
   void deletePreset(String id) {
     _presets.removeWhere((p) => p.id == id);
     notifyListeners();
+    _persist();
   }
 
   void toggleFavorite(String id) {
@@ -86,6 +115,7 @@ class ThemeService extends ChangeNotifier {
     if (idx >= 0) {
       _presets[idx] = _presets[idx].copyWith(isFavorite: !_presets[idx].isFavorite);
       notifyListeners();
+      _persist();
     }
   }
 
