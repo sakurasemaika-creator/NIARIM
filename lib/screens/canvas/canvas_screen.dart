@@ -9,9 +9,12 @@ import '../../services/performance_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
+import '../../models/layer.dart' as model;
 import '../../models/onion_skin_settings.dart';
 import '../../models/project.dart';
+import '../../models/text_object.dart' as model;
 import 'widgets/canvas_area.dart';
 import 'widgets/toolbar_widget.dart';
 import 'widgets/frame_strip_widget.dart';
@@ -247,6 +250,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         projectId: widget.projectId,
                         sceneId: _currentSceneId,
                         frameIndex: _currentFrame,
+                        onEditTextLayer: _onEditTextLayerTapped,
                       ),
                     ),
                   if (_showColorPicker && !isDesktop)
@@ -282,6 +286,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         sceneId: _currentSceneId,
                         frameIndex: _currentFrame,
                         dockedMode: true,
+                        onEditTextLayer: _onEditTextLayerTapped,
                       ),
                     ),
                 ],
@@ -648,41 +653,161 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showTextInputDialog(position);
   }
 
-  void _showTextInputDialog(Offset position) {
-    final controller = TextEditingController();
+  /// レイヤーパネルからテキストレイヤーをタップした時に呼び出す編集入口
+  /// （仕様書15：既存テキストをタップすると編集開始。本実装ではレイヤー
+  /// パネル経由とする。キャンバス上でのテキストボックス当たり判定による
+  /// 直接タップ編集は今回のスコープ外）。
+  void editTextLayer(String layerId, model.TextObject text) {
+    _showTextInputDialog(text.position, existingLayerId: layerId, existing: text);
+  }
+
+  void _onEditTextLayerTapped(model.Layer layer) {
+    final text = layer.textObject;
+    if (text == null) return;
+    editTextLayer(layer.id, text);
+  }
+
+  static const _textColorPalette = [
+    0xFF000000, 0xFFFFFFFF, 0xFFFF0000, 0xFF0066FF,
+    0xFFFFCC00, 0xFF00CC66, 0xFFFF66CC, 0xFF888888,
+  ];
+
+  void _showTextInputDialog(Offset position, {String? existingLayerId, model.TextObject? existing}) {
+    final controller = TextEditingController(text: existing?.text ?? '');
+    double fontSize = existing?.fontSize ?? 24;
+    int color = existing?.color.toARGB32() ?? 0xFF000000;
+    bool isBold = existing?.isBold ?? false;
+    bool isItalic = existing?.isItalic ?? false;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('テキスト入力'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: null,
-          decoration: const InputDecoration(
-            hintText: 'テキストを入力してください',
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text(existingLayerId == null ? 'テキスト入力' : 'テキスト編集'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  maxLines: null,
+                  decoration: const InputDecoration(hintText: 'テキストを入力してください'),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Text('サイズ', style: TextStyle(fontSize: 12)),
+                    Expanded(
+                      child: Slider(
+                        value: fontSize,
+                        min: 8, max: 200,
+                        label: fontSize.round().toString(),
+                        onChanged: (v) => setS(() => fontSize = v),
+                      ),
+                    ),
+                    Text('${fontSize.round()}', style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    FilterChip(
+                      label: const Text('太字'),
+                      selected: isBold,
+                      onSelected: (v) => setS(() => isBold = v),
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: const Text('斜体'),
+                      selected: isItalic,
+                      onSelected: (v) => setS(() => isItalic = v),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  children: _textColorPalette.map((c) => GestureDetector(
+                    onTap: () => setS(() => color = c),
+                    child: Container(
+                      width: 28, height: 28,
+                      decoration: BoxDecoration(
+                        color: Color(c),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: color == c ? Theme.of(ctx).colorScheme.primary : Colors.grey,
+                          width: color == c ? 2 : 1,
+                        ),
+                      ),
+                    ),
+                  )).toList(),
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                context.read<ProjectService>().addTextLayer(
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('キャンセル'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (controller.text.isEmpty) { Navigator.pop(ctx); return; }
+                final ps = context.read<ProjectService>();
+                final sceneId = _currentSceneId;
+                model.Layer layer;
+                model.TextObject textObject;
+                if (existingLayerId != null && existing != null) {
+                  final current = ps
+                      .layersOf(widget.projectId, sceneId, _currentFrame)
+                      .where((l) => l.id == existingLayerId)
+                      .firstOrNull;
+                  if (current == null) { Navigator.pop(ctx); return; }
+                  layer = current;
+                  textObject = existing.copyWith(
+                    text: controller.text,
+                    fontSize: fontSize,
+                    color: Color(color),
+                    isBold: isBold,
+                    isItalic: isItalic,
+                  );
+                } else {
+                  layer = ps.addTextLayer(
+                    projectId: widget.projectId,
+                    sceneId: sceneId,
+                    frameIndex: _currentFrame,
+                    text: controller.text,
+                    position: position,
+                  );
+                  textObject = (layer.textObject ?? model.TextObject(id: layer.id, text: controller.text, position: position))
+                      .copyWith(
+                    fontSize: fontSize,
+                    color: Color(color),
+                    isBold: isBold,
+                    isItalic: isItalic,
+                  );
+                }
+                final tileManager = ps.tileManagerOf(widget.projectId);
+                final bytes = await rasterizeTextObject(
+                    textObject, tileManager.canvasWidth, tileManager.canvasHeight);
+                if (bytes != null) {
+                  tileManager.replaceLayerPixels(
+                    ps.tileKeyFor(widget.projectId, sceneId, _currentFrame, layer.id),
+                    bytes,
+                  );
+                }
+                ps.updateLayer(
                   projectId: widget.projectId,
-                  sceneId: _currentSceneId,
+                  sceneId: sceneId,
                   frameIndex: _currentFrame,
-                  text: controller.text,
-                  position: position,
+                  layer: layer.copyWith(textObject: textObject),
                 );
-              }
-              Navigator.pop(ctx);
-            },
-            child: const Text('OK'),
-          ),
-        ],
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       ),
     ).then((_) => controller.dispose());
   }

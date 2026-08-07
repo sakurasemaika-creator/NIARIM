@@ -36,7 +36,46 @@ class TextObject {
     this.opacity = 1.0,
     this.outline,
   });
+
+  TextObject copyWith({
+    String? text,
+    String? fontFamily,
+    double? fontSize,
+    Color? color,
+    bool? isBold,
+    bool? isItalic,
+    double? lineHeight,
+    double? letterSpacing,
+    TextWritingDirection? direction,
+    TextAlign? align,
+    Offset? position,
+    double? rotation,
+    double? scale,
+    double? opacity,
+    Object? outline = _sentinel,
+  }) {
+    return TextObject(
+      id: id,
+      text: text ?? this.text,
+      fontFamily: fontFamily ?? this.fontFamily,
+      fontSize: fontSize ?? this.fontSize,
+      color: color ?? this.color,
+      isBold: isBold ?? this.isBold,
+      isItalic: isItalic ?? this.isItalic,
+      lineHeight: lineHeight ?? this.lineHeight,
+      letterSpacing: letterSpacing ?? this.letterSpacing,
+      direction: direction ?? this.direction,
+      align: align ?? this.align,
+      position: position ?? this.position,
+      rotation: rotation ?? this.rotation,
+      scale: scale ?? this.scale,
+      opacity: opacity ?? this.opacity,
+      outline: identical(outline, _sentinel) ? this.outline : outline as TextOutline?,
+    );
+  }
 }
+
+const Object _sentinel = Object();
 
 class TextOutline {
   final bool enabled;

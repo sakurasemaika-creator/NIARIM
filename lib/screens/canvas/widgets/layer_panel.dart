@@ -18,6 +18,9 @@ class LayerPanel extends StatefulWidget {
   final int frameIndex;
   // PC/DeXモードの常時ドッキング表示時はtrue。閉じるボタンを非表示にする。
   final bool dockedMode;
+  // テキストレイヤーをタップした時の編集入口（仕様書15：既存テキストを
+  // タップすると編集開始）。nullの場合はテキストレイヤーも通常選択のみ行う。
+  final void Function(model.Layer layer)? onEditTextLayer;
 
   const LayerPanel({
     super.key,
@@ -26,6 +29,7 @@ class LayerPanel extends StatefulWidget {
     required this.sceneId,
     required this.frameIndex,
     this.dockedMode = false,
+    this.onEditTextLayer,
   });
 
   @override
@@ -314,22 +318,29 @@ class _LayerPanelState extends State<LayerPanel> {
                         ),
                     ],
                   ),
-                  onTap: () => setState(() {
-                    if (_isSelectionMode) {
-                      if (layer.type != _selectionBaseType) return;
-                      if (_selectedIds.contains(layer.id)) {
-                        _selectedIds.remove(layer.id);
-                        if (_selectedIds.isEmpty) {
-                          _isSelectionMode = false;
-                          _selectionBaseType = null;
+                  onTap: () {
+                    setState(() {
+                      if (_isSelectionMode) {
+                        if (layer.type != _selectionBaseType) return;
+                        if (_selectedIds.contains(layer.id)) {
+                          _selectedIds.remove(layer.id);
+                          if (_selectedIds.isEmpty) {
+                            _isSelectionMode = false;
+                            _selectionBaseType = null;
+                          }
+                        } else {
+                          _selectedIds.add(layer.id);
                         }
                       } else {
-                        _selectedIds.add(layer.id);
+                        _selectedIndex = index;
                       }
-                    } else {
-                      _selectedIndex = index;
+                    });
+                    if (!_isSelectionMode &&
+                        layer.type == model.LayerType.text &&
+                        widget.onEditTextLayer != null) {
+                      widget.onEditTextLayer!(layer);
                     }
-                  }),
+                  },
                   onLongPress: () => setState(() {
                     if (!_isSelectionMode) {
                       _isSelectionMode = true;
