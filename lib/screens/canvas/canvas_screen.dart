@@ -6,6 +6,7 @@ import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
 import '../../services/brush_service.dart';
 import '../../services/font_service.dart';
+import '../../services/material_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
@@ -80,6 +81,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   String? _currentLayerId;
   bool _autosaveAttached = false;
   bool _workTrackingStarted = false;
+  bool _missingMaterialChecked = false;
 
   @override
   void didChangeDependencies() {
@@ -122,6 +124,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _workTrackingStarted = true;
       context.read<ProjectService>().beginWorkTracking(widget.projectId);
     }
+    // 不足素材の検出（仕様書21：プロジェクトを開いた際に参照先の素材が
+    // 見つからない場合は「不足素材があります」と表示。「再検索」で再確認）
+    if (!_missingMaterialChecked) {
+      _missingMaterialChecked = true;
+      final materialService = context.read<MaterialService>();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkMissingMaterials(materialService));
+    }
   }
 
   @override
@@ -158,6 +167,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final data = await autosave.restore(widget.projectId, slot.slotIndex);
     if (data == null || !mounted) return;
     context.read<ProjectService>().restoreFromAutosave(widget.projectId, data);
+  }
+
+  /// 不足素材の検出（仕様書21）。プロジェクトを開いた際に参照先の素材ファイルが
+  /// 見つからない場合、「不足素材があります」と「再検索」ボタンを表示する。
+  Future<void> _checkMissingMaterials(MaterialService materialService) async {
+    final missing = await materialService.detectMissing(widget.projectId);
+    if (!mounted || missing.isEmpty) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('不足素材があります'),
+        action: SnackBarAction(
+          label: '再検索',
+          onPressed: () => _checkMissingMaterials(materialService),
+        ),
+        duration: const Duration(seconds: 6),
+      ),
+    );
   }
 
   void _onPerfChanged() => _syncOnionFromPerf();
