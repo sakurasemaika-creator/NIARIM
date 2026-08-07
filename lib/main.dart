@@ -22,6 +22,7 @@ import 'services/workspace_preset_service.dart';
 import 'services/watermark_service.dart';
 import 'services/share_intent_service.dart';
 import 'services/font_service.dart';
+import 'services/first_use_tooltip_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,9 @@ void main() async {
   final fontService = FontService();
   await fontService.init();
 
+  final firstUseTooltipService = FirstUseTooltipService();
+  await firstUseTooltipService.init();
+
   final shareIntentService = ShareIntentService();
   await shareIntentService.init();
   final undoManager = app_undo.UndoManager();
@@ -116,6 +120,7 @@ void main() async {
         ChangeNotifierProvider.value(value: workspacePresetService),
         ChangeNotifierProvider.value(value: watermarkService),
         ChangeNotifierProvider.value(value: fontService),
+        ChangeNotifierProvider.value(value: firstUseTooltipService),
         Provider<ShareIntentService>.value(value: shareIntentService),
         ChangeNotifierProvider<app_undo.UndoManager>.value(value: undoManager),
       ],

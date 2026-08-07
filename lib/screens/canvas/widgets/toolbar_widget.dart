@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../services/tone_service.dart';
+import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 
 class ToolbarWidget extends StatelessWidget {
@@ -71,10 +72,20 @@ class ToolbarWidget extends StatelessWidget {
             _selectToolButton(context),
             _toolButton(context, Icons.open_with, DrawingTool.move, '移動'),
             _toolButton(context, Icons.transform, DrawingTool.transform, '変形'),
-            _toolButton(context, Icons.straighten, DrawingTool.ruler, '定規',
-                onTap: onRulerTap),
-            _toolButton(context, Icons.text_fields, DrawingTool.text, 'テキスト',
-                onTap: onTextTap),
+            // 初回タップ時の吹き出し説明（仕様書14）
+            FirstUseTooltip(
+              tooltipKey: 'ruler_tool',
+              message: '定規を使うとまっすぐな線や綺麗な図形が描けます。',
+              child: _toolButton(context, Icons.straighten, DrawingTool.ruler, '定規',
+                  onTap: onRulerTap),
+            ),
+            // 初回タップ時の吹き出し説明（仕様書15）
+            FirstUseTooltip(
+              tooltipKey: 'text_tool',
+              message: '文字を自由に配置できます。フォントや色、アウトラインも変更できます。',
+              child: _toolButton(context, Icons.text_fields, DrawingTool.text, 'テキスト',
+                  onTap: onTextTap),
+            ),
             _toolButton(context, Icons.category, DrawingTool.shape, '図形（タップで種別選択）',
                 onTap: onShapeTap),
             const SizedBox(width: 4),
