@@ -295,8 +295,13 @@ class ProjectListWidget extends StatelessWidget {
               },
             ),
             ...folders.map((folder) => ListTile(
-              leading: const Icon(Icons.folder),
+              leading: Icon(Icons.folder, color: folder.color != null ? Color(folder.color!) : null),
               title: Text(folder.name),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 20),
+                tooltip: 'フォルダを編集',
+                onPressed: () => _showEditFolderDialog(context, folder),
+              ),
               onTap: () {
                 context.read<ProjectService>().moveToFolder(project.id, folder.id);
                 Navigator.pop(ctx);
@@ -339,6 +344,92 @@ class ProjectListWidget extends StatelessWidget {
             child: const Text('作成'),
           ),
         ],
+      ),
+    );
+  }
+
+  // フォルダ名変更・色変更・削除（仕様書02・19：フォルダ管理）
+  static const _folderColors = [
+    0xFFFF5C7A, 0xFFFFB020, 0xFFFFE066, 0xFF3DDC97,
+    0xFF3AA6FF, 0xFFB15CFF, 0xFF9E9E9E,
+  ];
+
+  void _showEditFolderDialog(BuildContext context, ProjectFolder folder) {
+    final controller = TextEditingController(text: folder.name);
+    int? selectedColor = folder.color;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: const Text('フォルダを編集'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              const Text('フォルダ色', style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _colorDot(null, selectedColor, (v) => setS(() => selectedColor = v)),
+                  ..._folderColors.map((c) => _colorDot(c, selectedColor, (v) => setS(() => selectedColor = v))),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () {
+                context.read<ProjectService>().deleteFolder(folder.id);
+                Navigator.pop(ctx);
+              },
+              child: const Text('削除'),
+            ),
+            const Spacer(),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            FilledButton(
+              onPressed: () {
+                final service = context.read<ProjectService>();
+                if (controller.text.isNotEmpty && controller.text != folder.name) {
+                  service.renameFolder(folder.id, controller.text);
+                }
+                if (selectedColor != folder.color) {
+                  service.setFolderColor(folder.id, selectedColor);
+                }
+                Navigator.pop(ctx);
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _colorDot(int? color, int? selected, ValueChanged<int?> onTap) {
+    final isSelected = color == selected;
+    return GestureDetector(
+      onTap: () => onTap(color),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: color != null ? Color(color) : Colors.transparent,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? Colors.black : Colors.grey,
+            width: isSelected ? 3 : 1,
+          ),
+        ),
+        child: color == null ? const Icon(Icons.block, size: 16, color: Colors.grey) : null,
       ),
     );
   }

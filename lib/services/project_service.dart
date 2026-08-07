@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
@@ -18,8 +19,25 @@ import '../engine/undo_manager.dart';
 class ProjectFolder {
   final String id;
   final String name;
-  ProjectFolder({required this.id, required this.name});
+  final int? color; // ARGB。nullの場合はデフォルトのフォルダアイコン色を使う
+  ProjectFolder({required this.id, required this.name, this.color});
+
+  ProjectFolder copyWith({String? name, Object? color = _folderSentinel}) => ProjectFolder(
+        id: id,
+        name: name ?? this.name,
+        color: identical(color, _folderSentinel) ? this.color : color as int?,
+      );
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'color': color};
+
+  factory ProjectFolder.fromJson(Map<String, dynamic> json) => ProjectFolder(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        color: json['color'] as int?,
+      );
 }
+
+const _folderSentinel = Object();
 
 class ProjectService extends ChangeNotifier {
   final List<Project> _projects = [];
@@ -76,6 +94,7 @@ class ProjectService extends ChangeNotifier {
   Future<void> init() async {
     try {
       await _loadTrashState();
+      await _loadFolders();
       final basePath = await MiraproSerializer.projectsBasePath();
       final baseDir = Directory(basePath);
       if (!baseDir.existsSync()) return;
@@ -1142,8 +1161,27 @@ class ProjectService extends ChangeNotifier {
       name: name,
     );
     _folders.add(folder);
+    await _persistFolders();
     notifyListeners();
     return folder;
+  }
+
+  Future<void> renameFolder(String folderId, String name) async {
+    final idx = _folders.indexWhere((f) => f.id == folderId);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(name: name);
+    await _persistFolders();
+    notifyListeners();
+  }
+
+  /// フォルダの色を変更する（仕様書02・19：フォルダ管理・色変更対応）。
+  /// colorにnullを渡すとデフォルト色（未設定）へ戻す。
+  Future<void> setFolderColor(String folderId, int? color) async {
+    final idx = _folders.indexWhere((f) => f.id == folderId);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(color: color);
+    await _persistFolders();
+    notifyListeners();
   }
 
   Future<void> deleteFolder(String folderId) async {
@@ -1153,6 +1191,38 @@ class ProjectService extends ChangeNotifier {
         _projects[i] = _projects[i].copyWith(folderId: null);
       }
     }
+    await _persistFolders();
     notifyListeners();
+  }
+
+  // ─── フォルダの永続化 ─────────────────────────────────────────────────
+  // 従来は_foldersが純粋なメモリ上のリストのみで管理されており、アプリを
+  // 再起動するとフォルダ（名前・色）がすべて消え、フォルダに割り当てていた
+  // プロジェクトも見た目上「フォルダなし」になってしまうバグがあった。
+  // SharedPreferencesへJSON形式で保存することで解消する。
+
+  static const _foldersPrefsKey = 'project_folders';
+
+  Future<void> _loadFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_foldersPrefsKey);
+      if (raw == null) return;
+      final list = jsonDecode(raw) as List<dynamic>;
+      _folders
+        ..clear()
+        ..addAll(list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)));
+    } catch (_) {
+      // 読み込み失敗時はフォルダなしとして続行
+    }
+  }
+
+  Future<void> _persistFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_foldersPrefsKey, jsonEncode(_folders.map((f) => f.toJson()).toList()));
+    } catch (_) {
+      // 保存失敗時も続行（次回操作時に再試行される）
+    }
   }
 }
