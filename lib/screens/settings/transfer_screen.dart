@@ -70,11 +70,11 @@ class _TransferScreenState extends State<TransferScreen> {
                 ),
                 const Spacer(),
                 TextButton(
-                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, __) => true)),
+                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => true)),
                   child: const Text('全選択'),
                 ),
                 TextButton(
-                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, __) => false)),
+                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => false)),
                   child: const Text('全解除'),
                 ),
                 const SizedBox(width: 8),

@@ -47,7 +47,9 @@ class BucketFillEngine {
 
       final idx = pos * 4;
       if (!_colorMatch(result[idx], result[idx + 1], result[idx + 2], result[idx + 3],
-          targetR, targetG, targetB, targetA, tolerance)) continue;
+          targetR, targetG, targetB, targetA, tolerance)) {
+        continue;
+      }
 
       result[idx] = fillR;
       result[idx + 1] = fillG;
@@ -108,7 +110,9 @@ class BucketFillEngine {
 
       final idx = pos * 4;
       if (!_colorMatch(result[idx], result[idx + 1], result[idx + 2], result[idx + 3],
-          targetR, targetG, targetB, targetA, tolerance)) continue;
+          targetR, targetG, targetB, targetA, tolerance)) {
+        continue;
+      }
 
       // トーンテクスチャをループ配置（透明部分はスキップするが必ずvisited済みにする）
       final tx = x % toneWidth;
@@ -167,7 +171,9 @@ class BucketFillEngine {
 
       final idx = pos * 4;
       if (!_colorMatch(canvasData[idx], canvasData[idx + 1], canvasData[idx + 2], canvasData[idx + 3],
-          targetR, targetG, targetB, targetA, tolerance)) continue;
+          targetR, targetG, targetB, targetA, tolerance)) {
+        continue;
+      }
 
       mask[pos] = 1;
 
