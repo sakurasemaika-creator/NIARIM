@@ -30,11 +30,15 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   static const List<int> fpsOptions = [8, 12, 24, 30];
 
-  // 書き出しサイズプリセット（仕様書07：例として明記されているサイズ）。
+  // 書き出しサイズプリセット（仕様書07・26：上限はFull HD相当。1:1・
+  // アナログ放送比率・公開先メディアの比率別に用意する）。
   static const List<(int, int, String)> sizePresets = [
-    (1920, 1080, 'Full HD'),
-    (1280, 720, 'HD'),
-    (3840, 2160, '4K'),
+    (1920, 1080, 'Full HD (16:9・YouTube等横動画向け)'),
+    (1280, 720, 'HD (16:9・軽量版)'),
+    (1080, 1080, '1:1 スクエア (Twitter/Instagram投稿向け)'),
+    (1080, 1920, '9:16 縦型 (YouTubeショート/リール・ストーリーズ向け)'),
+    (1080, 1350, '4:5 縦長 (Instagramフィード投稿向け)'),
+    (1440, 1080, '4:3 (アナログ放送比率)'),
   ];
 
   @override
@@ -64,13 +68,16 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     });
   }
 
+  // 上限はFull HD相当（長辺1920px）とする。
+  static const int _maxCustomEdge = 1920;
+
   void _applyCustomSize() {
     final w = int.tryParse(_customWidthController.text);
     final h = int.tryParse(_customHeightController.text);
     if (w == null || h == null) return;
     setState(() {
-      _exportWidth = w.clamp(64, 7680);
-      _exportHeight = h.clamp(64, 7680);
+      _exportWidth = w.clamp(64, _maxCustomEdge);
+      _exportHeight = h.clamp(64, _maxCustomEdge);
     });
   }
 
@@ -125,6 +132,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             ),
             if (_customSize) ...[
               const SizedBox(height: 8),
+              Text('長辺は最大1920pxまで指定できます',
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(
