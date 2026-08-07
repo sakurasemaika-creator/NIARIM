@@ -22,6 +22,15 @@ class Layer {
   final int? rangeEnd;
   final bool isExpanded; // フォルダの展開・折りたたみ状態（仕様書16）
 
+  // タイムライン画像・動画素材レイヤーが参照する素材ID（仕様書21：MaterialID方式）。
+  // タイムライン画像・動画素材レイヤー（LayerType.timelineImage/timelineVideo）
+  // でのみ使用する。
+  final String? materialId;
+  // 動画素材の使用範囲（素材内でのトリム開始・終了フレーム、仕様書05）。
+  // LayerType.timelineVideoでのみ使用する。
+  final int? sourceTrimStart;
+  final int? sourceTrimEnd;
+
   const Layer({
     required this.id,
     required this.name,
@@ -41,6 +50,9 @@ class Layer {
     this.rangeStart,
     this.rangeEnd,
     this.isExpanded = true,
+    this.materialId,
+    this.sourceTrimStart,
+    this.sourceTrimEnd,
   });
 
   Layer copyWith({
@@ -62,6 +74,9 @@ class Layer {
     Object? rangeStart = _sentinel,
     Object? rangeEnd = _sentinel,
     bool? isExpanded,
+    Object? materialId = _sentinel,
+    Object? sourceTrimStart = _sentinel,
+    Object? sourceTrimEnd = _sentinel,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -82,6 +97,9 @@ class Layer {
       rangeStart: rangeStart == _sentinel ? this.rangeStart : rangeStart as int?,
       rangeEnd: rangeEnd == _sentinel ? this.rangeEnd : rangeEnd as int?,
       isExpanded: isExpanded ?? this.isExpanded,
+      materialId: materialId == _sentinel ? this.materialId : materialId as String?,
+      sourceTrimStart: sourceTrimStart == _sentinel ? this.sourceTrimStart : sourceTrimStart as int?,
+      sourceTrimEnd: sourceTrimEnd == _sentinel ? this.sourceTrimEnd : sourceTrimEnd as int?,
     );
   }
 }

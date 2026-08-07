@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' show Color, Offset, TextAlign;
 import 'package:archive/archive_io.dart';
 import 'package:path_provider/path_provider.dart';
+import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
@@ -260,7 +261,7 @@ class MiraproSerializer {
       final framesFile = archive.findFile('Scene/$sceneId/$_framesFile');
       if (framesFile == null) continue;
       final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
-      final (name, frames, cameraKeyframes, effectFilters) = _deserializeScene(decoded);
+      final (name, frames, cameraKeyframes, effectFilters, audioClips) = _deserializeScene(decoded);
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
       scenes.add(Scene(
           id: sceneId,
@@ -268,7 +269,8 @@ class MiraproSerializer {
           frames: frames,
           name: name,
           cameraKeyframes: cameraKeyframes,
-          effectFilters: effectFilters));
+          effectFilters: effectFilters,
+          audioClips: audioClips));
     }
     scenes.sort((a, b) => a.index.compareTo(b.index));
 
@@ -386,6 +388,18 @@ class MiraproSerializer {
                   'fadeColor': e.fadeColor.toARGB32(),
                 })
             .toList(),
+        'audioClips': scene.audioClips
+            .map((a) => {
+                  'id': a.id,
+                  'label': a.label,
+                  'materialId': a.materialId,
+                  'startFrame': a.startFrame,
+                  'lengthFrames': a.lengthFrames,
+                  'volume': a.volume,
+                  'fadeIn': a.fadeIn,
+                  'fadeOut': a.fadeOut,
+                })
+            .toList(),
       };
 
   static List<dynamic> _serializeFrames(List<Frame> frames) =>
@@ -412,6 +426,9 @@ class MiraproSerializer {
         'rangeStart': l.rangeStart,
         'rangeEnd': l.rangeEnd,
         'isExpanded': l.isExpanded,
+        'materialId': l.materialId,
+        'sourceTrimStart': l.sourceTrimStart,
+        'sourceTrimEnd': l.sourceTrimEnd,
         if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
       };
 
@@ -458,7 +475,7 @@ class MiraproSerializer {
   /// シーンファイル（frames.json）を読み込む。新形式は
   /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
   /// フレーム配列そのもの。どちらも読み込めるようにする。
-  static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>)
+  static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>, List<AudioClip>)
       _deserializeScene(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final name = decoded['name'] as String?;
@@ -486,13 +503,28 @@ class MiraproSerializer {
           fadeColor: Color(m['fadeColor'] as int? ?? 0xFF000000),
         );
       }).toList();
-      return (name, frames, cameraKeyframes, effectFilters);
+      final audioJson = decoded['audioClips'] as List<dynamic>? ?? const [];
+      final audioClips = audioJson.map((j) {
+        final m = j as Map<String, dynamic>;
+        return AudioClip(
+          id: m['id'] as String,
+          label: m['label'] as String,
+          materialId: m['materialId'] as String?,
+          startFrame: m['startFrame'] as int,
+          lengthFrames: m['lengthFrames'] as int,
+          volume: (m['volume'] as num?)?.toDouble() ?? 1.0,
+          fadeIn: (m['fadeIn'] as num?)?.toDouble() ?? 0.0,
+          fadeOut: (m['fadeOut'] as num?)?.toDouble() ?? 0.0,
+        );
+      }).toList();
+      return (name, frames, cameraKeyframes, effectFilters, audioClips);
     }
     return (
       null,
       _deserializeFrames(decoded as List<dynamic>),
       const <CameraKeyframe>[],
       const <EffectFilterInstance>[],
+      const <AudioClip>[],
     );
   }
 
@@ -530,6 +562,9 @@ class MiraproSerializer {
         rangeStart: j['rangeStart'] as int?,
         rangeEnd: j['rangeEnd'] as int?,
         isExpanded: j['isExpanded'] as bool? ?? true,
+        materialId: j['materialId'] as String?,
+        sourceTrimStart: j['sourceTrimStart'] as int?,
+        sourceTrimEnd: j['sourceTrimEnd'] as int?,
         textObject: j['textObject'] != null
             ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
             : null,

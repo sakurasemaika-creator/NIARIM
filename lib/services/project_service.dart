@@ -8,6 +8,7 @@ import '../engine/layer_compositor.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/mirapro_serializer.dart';
 import '../engine/tile_manager.dart';
+import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
@@ -865,6 +866,37 @@ class ProjectService extends ChangeNotifier {
   void removeEffectFilter(String projectId, String sceneId, String filterId) {
     _updateSceneEffectFilters(projectId, sceneId,
         effectFiltersOf(projectId, sceneId).where((f) => f.id != filterId).toList());
+  }
+
+  // ─── 音声トラック（仕様書05：タイムライン音声クリップ） ─────────────────
+  // シーンに直接紐づく（音声は視覚的なピクセルを持たずレイヤーではないため）。
+
+  List<AudioClip> audioClipsOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.audioClips ?? const []);
+
+  void _updateSceneAudioClips(String projectId, String sceneId, List<AudioClip> clips) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(audioClips: clips);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  void addAudioClip(String projectId, String sceneId, AudioClip clip) {
+    _updateSceneAudioClips(projectId, sceneId, [...audioClipsOf(projectId, sceneId), clip]);
+  }
+
+  void updateAudioClip(String projectId, String sceneId, AudioClip clip) {
+    final updated =
+        audioClipsOf(projectId, sceneId).map((c) => c.id == clip.id ? clip : c).toList();
+    _updateSceneAudioClips(projectId, sceneId, updated);
+  }
+
+  void removeAudioClip(String projectId, String sceneId, String clipId) {
+    _updateSceneAudioClips(
+        projectId, sceneId, audioClipsOf(projectId, sceneId).where((c) => c.id != clipId).toList());
   }
 
   // ─── レイヤー結合 ─────────────────────────────────────────────────────

@@ -14,6 +14,7 @@ import '../../engine/layer_compositor.dart';
 import '../../engine/layer_range_resolver.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/undo_manager.dart';
+import '../../models/audio_clip.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/effect_filter_instance.dart';
 import '../../models/layer.dart';
@@ -93,7 +94,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final List<_TrackClip> _audioClips = [];
   final List<_TrackClip> _videoClips = [];
   final List<_TrackClip> _imageClips = [];
-  int _clipIdCounter = 0;
 
   // 音声・動画クリップの再生位置連動（仕様書05）
   final Map<String, ap.AudioPlayer> _audioPlayers = {};
@@ -307,6 +307,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (scenes.isNotEmpty &&
         (_selectedSceneId == null || !scenes.any((s) => s.id == _selectedSceneId))) {
       _selectedSceneId = scenes.first.id;
+    }
+    // タイムライン素材クリップ（音声・画像・動画）を永続データから復元する。
+    // シーンが切り替わった時のみ実行する（毎buildでの再読み込みを避ける）。
+    if (_selectedSceneId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _ensureClipsLoaded(_selectedSceneId!);
+      });
     }
 
     return Scaffold(
@@ -1446,21 +1453,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
             FilledButton(
-              onPressed: () {
-                setState(() {
-                  clips.add(_TrackClip(
-                    id: 'clip_${_clipIdCounter++}',
-                    label: labelCtrl.text.isEmpty ? trackName : labelCtrl.text,
-                    startFrame: start,
-                    lengthFrames: length,
-                    color: color,
-                    trackType: trackType,
-                    filePath: pickedPath,
-                    materialId: asset.id,
-                    useEnd: length - 1,
-                  ));
-                });
+              onPressed: () async {
+                final sceneId = _selectedSceneId;
                 Navigator.pop(ctx);
+                if (sceneId == null) return;
+                final newClip = await _createPersistedClip(
+                  sceneId: sceneId,
+                  label: labelCtrl.text.isEmpty ? trackName : labelCtrl.text,
+                  startFrame: start,
+                  lengthFrames: length,
+                  color: color,
+                  trackType: trackType,
+                  filePath: pickedPath,
+                  asset: asset,
+                );
+                if (newClip != null && mounted) {
+                  setState(() => clips.add(newClip));
+                }
               },
               child: const Text('追加'),
             ),
@@ -1470,7 +1479,288 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ).then((_) => labelCtrl.dispose());
   }
 
+  // ─── タイムライン素材クリップの永続化（仕様書05・16・21） ───────────────
+  // 音声はシーンのAudioClipsとして、画像・動画はLayerType.timelineImage/
+  // timelineVideoのレイヤー（common・watermarkと同じ表示範囲の仕組み）として
+  // 永続化する。従来はこの永続化が一切なく、タイムライン画面を離れる・
+  // アプリを再起動するとクリップが全て消える重大なバグがあった。
+
+  /// 新規クリップを作成し、種別に応じてAudioClip／Layerとして永続化する。
+  /// 永続化後のIDを_TrackClip.idとして使うことで、以後の更新・削除時に
+  /// 迷わず対応する永続データを引けるようにする。
+  Future<_TrackClip?> _createPersistedClip({
+    required String sceneId,
+    required String label,
+    required int startFrame,
+    required int lengthFrames,
+    required Color color,
+    required _ClipTrackType trackType,
+    required String? filePath,
+    required MaterialAsset asset,
+  }) async {
+    final projectService = context.read<ProjectService>();
+
+    if (trackType == _ClipTrackType.audio) {
+      final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
+      projectService.addAudioClip(widget.projectId, sceneId, AudioClip(
+        id: id,
+        label: label,
+        materialId: asset.id,
+        startFrame: startFrame,
+        lengthFrames: lengthFrames,
+      ));
+      return _TrackClip(
+        id: id,
+        label: label,
+        startFrame: startFrame,
+        lengthFrames: lengthFrames,
+        color: color,
+        trackType: trackType,
+        filePath: filePath,
+        materialId: asset.id,
+        useEnd: lengthFrames - 1,
+      );
+    }
+
+    // 画像・動画：LayerType.timelineImage/timelineVideoのレイヤーとして追加する。
+    // 静止画はそのままラスタライズ、動画は代表画像（プレースホルダー）を
+    // レイヤーのピクセルとして保持し、実際の再生プレビューはVideoPlayer
+    // コントローラ（既存の仕組み）で行う。
+    final w = projectService.tileManagerOf(widget.projectId).canvasWidth;
+    final h = projectService.tileManagerOf(widget.projectId).canvasHeight;
+    final bytes = trackType == _ClipTrackType.image && filePath != null
+        ? await _rasterizeImageFile(filePath, w, h)
+        : await _placeholderVideoFrame(w, h);
+    if (bytes == null || !mounted) return null;
+
+    final layer = projectService.addLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: _currentFrame,
+      type: trackType == _ClipTrackType.video ? LayerType.timelineVideo : LayerType.timelineImage,
+      name: label,
+    );
+    final tileManager = projectService.tileManagerOf(widget.projectId);
+    tileManager.replaceLayerPixels(
+      projectService.tileKeyFor(widget.projectId, sceneId, _currentFrame, layer.id),
+      bytes,
+    );
+    projectService.updateLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: _currentFrame,
+      layer: layer.copyWith(
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: startFrame + 1,
+        rangeEnd: startFrame + lengthFrames,
+        materialId: asset.id,
+        sourceTrimStart: trackType == _ClipTrackType.video ? 0 : null,
+        sourceTrimEnd: trackType == _ClipTrackType.video ? lengthFrames - 1 : null,
+      ),
+    );
+
+    return _TrackClip(
+      id: layer.id,
+      label: label,
+      startFrame: startFrame,
+      lengthFrames: lengthFrames,
+      color: color,
+      trackType: trackType,
+      filePath: filePath,
+      materialId: asset.id,
+      useEnd: lengthFrames - 1,
+    );
+  }
+
+  /// 画像ファイルをキャンバスサイズへラスタライズする（中央配置・アスペクト比維持）。
+  Future<Uint8List?> _rasterizeImageFile(String filePath, int w, int h) async {
+    final fileBytes = await File(filePath).readAsBytes();
+    final codec = await ui.instantiateImageCodec(fileBytes);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    final scale = (w / image.width < h / image.height) ? w / image.width : h / image.height;
+    final drawW = image.width * scale;
+    final drawH = image.height * scale;
+    final dx = (w - drawW) / 2;
+    final dy = (h - drawH) / 2;
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      image,
+      ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      ui.Rect.fromLTWH(dx, dy, drawW, drawH),
+      ui.Paint(),
+    );
+    final picture = recorder.endRecording();
+    final rendered = await picture.toImage(w, h);
+    image.dispose();
+    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    rendered.dispose();
+    return byteData?.buffer.asUint8List();
+  }
+
+  /// 動画クリップのレイヤーピクセル代表画像（プレースホルダー）を生成する。
+  /// 実際の動画フレームのデコードは行わない（低スペック端末対策・処理の単純化）。
+  /// 編集中のライブプレビューはVideoPlayerControllerで別途表示する。
+  Future<Uint8List?> _placeholderVideoFrame(int w, int h) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawRect(ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+        ui.Paint()..color = const ui.Color(0xFF1A1A1A));
+    final iconSize = (w < h ? w : h) * 0.15;
+    final cx = w / 2;
+    final cy = h / 2;
+    final path = ui.Path()
+      ..moveTo(cx - iconSize / 2, cy - iconSize / 2)
+      ..lineTo(cx - iconSize / 2, cy + iconSize / 2)
+      ..lineTo(cx + iconSize / 2, cy)
+      ..close();
+    canvas.drawPath(path, ui.Paint()..color = const ui.Color(0xFF666666));
+    final picture = recorder.endRecording();
+    final rendered = await picture.toImage(w, h);
+    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    rendered.dispose();
+    return byteData?.buffer.asUint8List();
+  }
+
+  void _deletePersistedClip(_TrackClip clip, String sceneId) {
+    final projectService = context.read<ProjectService>();
+    if (clip.trackType == _ClipTrackType.audio) {
+      projectService.removeAudioClip(widget.projectId, sceneId, clip.id);
+    } else {
+      projectService.removeLayer(
+        projectId: widget.projectId,
+        sceneId: sceneId,
+        frameIndex: _currentFrame,
+        layerId: clip.id,
+      );
+    }
+  }
+
+  /// クリップ詳細シートを閉じた時点で、編集内容（音量・フェード・不透明度・
+  /// 使用範囲）をまとめて永続化する（スライダー操作のたびに保存すると低スペック
+  /// 端末で負荷が高いため、シートを閉じた時点でまとめて反映する）。
+  void _persistClipUpdate(_TrackClip clip, String sceneId) {
+    final stillExists = _audioClips.contains(clip) ||
+        _videoClips.contains(clip) ||
+        _imageClips.contains(clip);
+    if (!stillExists) return; // 削除済みなら何もしない
+    final projectService = context.read<ProjectService>();
+    if (clip.trackType == _ClipTrackType.audio) {
+      projectService.updateAudioClip(widget.projectId, sceneId, AudioClip(
+        id: clip.id,
+        label: clip.label,
+        materialId: clip.materialId,
+        startFrame: clip.startFrame,
+        lengthFrames: clip.lengthFrames,
+        volume: clip.volume,
+        fadeIn: clip.fadeIn,
+        fadeOut: clip.fadeOut,
+      ));
+    } else {
+      // レイヤーの実データが物理的に存在する「ホーム」フレームを使う
+      // （表示範囲を持つレイヤーは_currentFrameが範囲外の場合があるため）。
+      final home = projectService.homeOf(widget.projectId, clip.id) ??
+          (sceneId: sceneId, frameIndex: _currentFrame);
+      final layer = projectService
+          .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+          .where((l) => l.id == clip.id)
+          .firstOrNull;
+      if (layer == null) return;
+      projectService.updateLayer(
+        projectId: widget.projectId,
+        sceneId: home.sceneId,
+        frameIndex: home.frameIndex,
+        layer: layer.copyWith(
+          opacity: (clip.videoOpacity * 100).round(),
+          sourceTrimStart: clip.useStart,
+          sourceTrimEnd: clip.useEnd,
+        ),
+      );
+    }
+  }
+
+  /// シーンの永続データ（AudioClips・タイムライン画像/動画レイヤー）から
+  /// _audioClips/_videoClips/_imageClipsを再構築する。シーン切替・画面初期化時に
+  /// 呼び出す（従来はここが存在せず、画面を開き直すたびにクリップが消えていた）。
+  String? _clipsLoadedForSceneId;
+
+  void _ensureClipsLoaded(String sceneId) {
+    if (_clipsLoadedForSceneId == sceneId) return;
+    _clipsLoadedForSceneId = sceneId;
+    _loadClipsFromProject(sceneId);
+  }
+
+  Future<void> _loadClipsFromProject(String sceneId) async {
+    final projectService = context.read<ProjectService>();
+    final materialService = context.read<MaterialService>();
+    final scene = projectService.sceneOf(widget.projectId, sceneId);
+    if (scene == null) return;
+
+    final audio = <_TrackClip>[];
+    for (final a in scene.audioClips) {
+      final path = a.materialId == null
+          ? null
+          : await materialService.pathOf(widget.projectId, a.materialId!);
+      audio.add(_TrackClip(
+        id: a.id,
+        label: a.label,
+        startFrame: a.startFrame,
+        lengthFrames: a.lengthFrames,
+        color: Colors.orange[700]!,
+        trackType: _ClipTrackType.audio,
+        filePath: path,
+        materialId: a.materialId,
+        volume: a.volume,
+        fadeIn: a.fadeIn,
+        fadeOut: a.fadeOut,
+        useEnd: a.lengthFrames - 1,
+      ));
+    }
+
+    final video = <_TrackClip>[];
+    final image = <_TrackClip>[];
+    for (final frame in scene.frames) {
+      for (final layer in frame.layers) {
+        if (layer.type != LayerType.timelineVideo && layer.type != LayerType.timelineImage) continue;
+        final start = (layer.rangeStart ?? 1) - 1;
+        final end = layer.rangeEnd ?? (start + 1);
+        final length = (end - start).clamp(1, 1 << 30);
+        final path = layer.materialId == null
+            ? null
+            : await materialService.pathOf(widget.projectId, layer.materialId!);
+        final clip = _TrackClip(
+          id: layer.id,
+          label: layer.name,
+          startFrame: start,
+          lengthFrames: length,
+          color: layer.type == LayerType.timelineVideo ? Colors.blue[700]! : Colors.green[700]!,
+          trackType: layer.type == LayerType.timelineVideo ? _ClipTrackType.video : _ClipTrackType.image,
+          filePath: path,
+          materialId: layer.materialId,
+          useStart: layer.sourceTrimStart ?? 0,
+          useEnd: layer.sourceTrimEnd ?? (length - 1),
+          videoOpacity: layer.opacity / 100.0,
+        );
+        if (layer.type == LayerType.timelineVideo) {
+          video.add(clip);
+        } else {
+          image.add(clip);
+        }
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _audioClips..clear()..addAll(audio);
+      _videoClips..clear()..addAll(video);
+      _imageClips..clear()..addAll(image);
+    });
+  }
+
   void _showEditClipDialog(_TrackClip clip) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1483,10 +1773,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _videoClips.remove(clip);
             _imageClips.remove(clip);
           });
+          _deletePersistedClip(clip, sceneId);
         },
         onChanged: () => setState(() {}),
       ),
-    );
+    ).then((_) => _persistClipUpdate(clip, sceneId));
   }
 
   void _showEffectFilterDialog() {

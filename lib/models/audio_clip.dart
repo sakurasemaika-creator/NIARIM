@@ -1,0 +1,46 @@
+/// タイムライン音声トラックのクリップ（仕様書05：音声）。
+/// レイヤーではなくシーンに直接紐づく（音声は視覚的なピクセルを持たないため）。
+class AudioClip {
+  final String id;
+  final String label;
+  final String? materialId; // 参照している素材ID（仕様書21：MaterialID方式）
+  final int startFrame;
+  final int lengthFrames;
+  final double volume; // 0.0〜1.0
+  final double fadeIn; // フェードイン秒数
+  final double fadeOut; // フェードアウト秒数
+
+  const AudioClip({
+    required this.id,
+    required this.label,
+    this.materialId,
+    required this.startFrame,
+    required this.lengthFrames,
+    this.volume = 1.0,
+    this.fadeIn = 0.0,
+    this.fadeOut = 0.0,
+  });
+
+  AudioClip copyWith({
+    String? label,
+    Object? materialId = _sentinel,
+    int? startFrame,
+    int? lengthFrames,
+    double? volume,
+    double? fadeIn,
+    double? fadeOut,
+  }) {
+    return AudioClip(
+      id: id,
+      label: label ?? this.label,
+      materialId: materialId == _sentinel ? this.materialId : materialId as String?,
+      startFrame: startFrame ?? this.startFrame,
+      lengthFrames: lengthFrames ?? this.lengthFrames,
+      volume: volume ?? this.volume,
+      fadeIn: fadeIn ?? this.fadeIn,
+      fadeOut: fadeOut ?? this.fadeOut,
+    );
+  }
+}
+
+const Object _sentinel = Object();
