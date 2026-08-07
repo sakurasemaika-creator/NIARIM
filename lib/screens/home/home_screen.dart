@@ -14,6 +14,7 @@ import '../../services/share_intent_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
+import '../../widgets/help_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -173,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               )
             : const Text('MIRANIMA'),
         actions: [
+          const HelpButton(),
           if (_isSearching)
             IconButton(
               icon: const Icon(Icons.close),

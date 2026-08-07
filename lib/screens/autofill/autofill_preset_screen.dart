@@ -6,6 +6,7 @@ import '../../models/layer.dart' show LayerBlendMode;
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
+import '../../widgets/help_button.dart';
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -36,6 +37,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
               )
             : const Text('自動塗りプリセット'),
         actions: [
+          const HelpButton(),
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: () => setState(() {

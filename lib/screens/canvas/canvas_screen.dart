@@ -12,6 +12,7 @@ import '../../services/performance_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/help_button.dart';
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
 import '../../models/layer.dart' as model;
@@ -666,6 +667,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   : CanvasBackground.white;
             }),
           ),
+          const HelpButton(),
         ],
       ),
     );

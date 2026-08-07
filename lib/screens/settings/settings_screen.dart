@@ -7,6 +7,7 @@ import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -84,6 +85,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: Icons.font_download_outlined, title: 'フォント管理', subtitle: 'TTF/OTFの追加・検索・削除',
         keywords: 'フォント ttf otf', onTap: () => context.push('/settings/fonts'), accent: const Color(0xFFFFB020),
       ),
+      (
+        icon: Icons.description_outlined, title: '利用規約・ライセンス', subtitle: 'フォントクレジット・OSSライセンス',
+        keywords: '利用規約 ライセンス クレジット フォント license', onTap: () => context.push('/settings/license'),
+        accent: const Color(0xFF3AA6FF),
+      ),
     ];
     final filtered = _query.isEmpty
         ? entries
@@ -97,6 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ? TextField(controller: _searchController, autofocus: true, decoration: const InputDecoration(hintText: '設定を検索...', border: InputBorder.none))
             : const Text('設定'),
         actions: [
+          const HelpButton(),
           IconButton(
             icon: Icon(_showSearch ? Icons.close : Icons.search),
             onPressed: () => setState(() { _showSearch = !_showSearch; if (!_showSearch) _searchController.clear(); }),

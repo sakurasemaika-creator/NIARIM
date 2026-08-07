@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -84,7 +85,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('新規プロジェクト')),
+      appBar: AppBar(title: const Text('新規プロジェクト'), actions: const [HelpButton()]),
       body: desktopCentered(
         context,
         SingleChildScrollView(

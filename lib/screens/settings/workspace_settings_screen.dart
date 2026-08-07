@@ -6,6 +6,7 @@ import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/workspace_preset_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -15,7 +16,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     final settings = context.watch<SettingsService>();
     final presetService = context.watch<WorkspacePresetService>();
     return Scaffold(
-      appBar: AppBar(title: const Text('ワークスペース設定')),
+      appBar: AppBar(title: const Text('ワークスペース設定'), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

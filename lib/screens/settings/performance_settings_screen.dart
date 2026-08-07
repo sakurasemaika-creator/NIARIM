@@ -5,6 +5,7 @@ import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../widgets/responsive.dart';
 import '../save_tree/save_tree_screen.dart';
+import '../../widgets/help_button.dart';
 
 class PerformanceSettingsScreen extends StatefulWidget {
   const PerformanceSettingsScreen({super.key});
@@ -109,7 +110,7 @@ class _PerformanceSettingsScreenState
     final perf = context.watch<PerformanceService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('パフォーマンス設定')),
+      appBar: AppBar(title: const Text('パフォーマンス設定'), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

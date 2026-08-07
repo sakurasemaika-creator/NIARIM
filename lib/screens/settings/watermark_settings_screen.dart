@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/watermark_asset.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定、仕様書01・08・13）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -20,7 +21,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
     final assets = service.assets;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ウォーターマーク')),
+      appBar: AppBar(title: const Text('ウォーターマーク'), actions: const [HelpButton()]),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddSheet(context, service),
         child: const Icon(Icons.add),

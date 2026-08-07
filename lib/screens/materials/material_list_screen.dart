@@ -5,6 +5,7 @@ import '../../models/material_asset.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 /// 素材一覧画面（仕様書21：素材管理仕様）。
 /// サムネイル・種類アイコン・ファイル名・容量等を一覧表示し、
@@ -48,6 +49,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
       appBar: AppBar(
         title: const Text('素材管理'),
         actions: [
+          const HelpButton(),
           if (unusedCount > 0)
             TextButton(
               onPressed: _confirmRemoveUnused,

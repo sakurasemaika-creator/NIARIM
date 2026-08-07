@@ -10,6 +10,7 @@ import '../../services/stamp_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -31,7 +32,7 @@ class _TransferScreenState extends State<TransferScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('引き継ぎ（.miratra）')),
+      appBar: AppBar(title: const Text('引き継ぎ（.miratra）'), actions: const [HelpButton()]),
       body: desktopCentered(context, Column(
         children: [
           Padding(

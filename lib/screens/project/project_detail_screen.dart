@@ -12,6 +12,7 @@ import '../../services/font_service.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
 
@@ -116,6 +117,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       appBar: AppBar(
         title: Text(project.name),
         actions: [
+          const HelpButton(),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {

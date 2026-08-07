@@ -8,6 +8,7 @@ import '../../services/project_service.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 class ExportScreen extends StatefulWidget {
   final String projectId;
@@ -37,7 +38,7 @@ class _ExportScreenState extends State<ExportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('書き出し')),
+      appBar: AppBar(title: const Text('書き出し'), actions: const [HelpButton()]),
       body: _buildSettings(),
     );
   }

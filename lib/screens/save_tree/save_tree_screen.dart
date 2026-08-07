@@ -10,6 +10,7 @@ import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値（仕様書23：「容量が大きくなる場合はユーザーへ通知」）。ツリー方式は
@@ -79,6 +80,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
       appBar: AppBar(
         title: Text(isTreeMode ? 'セーブ（ツリー方式）' : 'セーブ（スロット方式）'),
         actions: [
+          const HelpButton(),
           if (isTreeMode)
             FilledButton.icon(
               icon: const Icon(Icons.save, size: 16),

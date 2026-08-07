@@ -35,6 +35,7 @@ import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -471,6 +472,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               const PopupMenuItem(value: 'save_tree', child: Text('セーブツリー')),
             ],
           ),
+          const HelpButton(),
         ],
       ),
     );

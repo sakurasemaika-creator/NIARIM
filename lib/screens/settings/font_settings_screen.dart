@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 /// フォント管理画面（仕様書15：設定 → フォント管理 → ＋追加）。
 /// TTF/OTFの追加・一覧表示・検索・削除・名前変更・詳細表示に対応する。
@@ -36,6 +37,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
               )
             : const Text('フォント管理'),
         actions: [
+          const HelpButton(),
           IconButton(
             icon: Icon(_showSearch ? Icons.close : Icons.search),
             onPressed: () => setState(() { _showSearch = !_showSearch; _query = ''; }),

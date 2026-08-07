@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 /// ペン入力設定（仕様書08）。
 /// 筆圧の「無効／サイズ／不透明度／両方」反映モードは仕様書17により
@@ -27,7 +28,7 @@ class PenSettingsScreen extends StatelessWidget {
     final settings = context.watch<SettingsService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ペン入力設定')),
+      appBar: AppBar(title: const Text('ペン入力設定'), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

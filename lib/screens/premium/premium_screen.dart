@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
@@ -11,7 +12,7 @@ class PremiumScreen extends StatelessWidget {
     final premium = context.watch<PremiumService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('MIRANIMA Premium')),
+      appBar: AppBar(title: const Text('MIRANIMA Premium'), actions: const [HelpButton()]),
       body: desktopCentered(
         context,
         SingleChildScrollView(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
   const GestureSettingsScreen({super.key});
@@ -11,7 +12,7 @@ class GestureSettingsScreen extends StatelessWidget {
     final settings = context.watch<SettingsService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ジェスチャー設定')),
+      appBar: AppBar(title: const Text('ジェスチャー設定'), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

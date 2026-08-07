@@ -9,6 +9,7 @@ import '../../services/theme_service.dart';
 import '../../models/app_theme_preset.dart';
 import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
+import '../../widgets/help_button.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -20,7 +21,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     final current = themeService.current;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('テーマ・外観')),
+      appBar: AppBar(title: const Text('テーマ・外観'), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         children: [
           // ベーステーマ
