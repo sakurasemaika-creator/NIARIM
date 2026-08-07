@@ -106,12 +106,16 @@ class ProjectService extends ChangeNotifier {
         if (!miraproFile.existsSync()) continue;
         try {
           final data = await MiraproSerializer.load(miraproFile.path);
+          // 容量（仕様書07・19：Manifest「容量」）は実ファイルサイズから都度算出する
+          // （保存済みの数値をそのまま信用すると、外部要因での差分等でズレうるため）。
+          final sizeBytes = miraproFile.lengthSync();
+          final project = data.project.copyWith(sizeBytes: sizeBytes);
           if (_trashDeletedAt.containsKey(projectId)) {
             // ゴミ箱内のプロジェクト：一覧には出さず、シーンデータもメモリに
             // 載せない（deleteProject()直後と同じ状態を再現する）
-            _trash.add(data.project);
+            _trash.add(project);
           } else {
-            _projects.add(data.project);
+            _projects.add(project);
             _applyLoadedProjectData(data);
           }
         } catch (_) {
@@ -1435,6 +1439,7 @@ class ProjectService extends ChangeNotifier {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       _projects[idx] = _projects[idx].copyWith(name: newName);
+      _saveAsync(id);
       notifyListeners();
     }
   }
@@ -1490,6 +1495,7 @@ class ProjectService extends ChangeNotifier {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       _projects[idx] = _projects[idx].copyWith(isFavorite: !_projects[idx].isFavorite);
+      _saveAsync(id);
       notifyListeners();
     }
   }
@@ -1498,6 +1504,17 @@ class ProjectService extends ChangeNotifier {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx >= 0) {
       _projects[idx] = _projects[idx].copyWith(folderId: folderId);
+      _saveAsync(projectId);
+      notifyListeners();
+    }
+  }
+
+  /// プロジェクトのタグ一覧を置き換える（仕様書19：詳細情報画面のタグ機能）。
+  Future<void> setProjectTags(String projectId, List<String> tags) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx >= 0) {
+      _projects[idx] = _projects[idx].copyWith(tags: tags);
+      _saveAsync(projectId);
       notifyListeners();
     }
   }

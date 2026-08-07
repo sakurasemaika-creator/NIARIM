@@ -20,6 +20,8 @@ class Project {
   final bool isFavorite;
   final String? thumbnailPath;
   final int sizeBytes;
+  // タグ（仕様書19：詳細情報画面のタグ機能）
+  final List<String> tags;
   // 書き出しサイズ（仕様書26）
   final int exportWidth;
   final int exportHeight;
@@ -40,6 +42,7 @@ class Project {
     this.isFavorite = false,
     this.thumbnailPath,
     this.sizeBytes = 0,
+    this.tags = const [],
     this.exportWidth = 1920,
     this.exportHeight = 1080,
     this.drawingAreaScale = 1.0,
@@ -65,6 +68,7 @@ class Project {
     bool? isFavorite,
     Object? thumbnailPath = _projectSentinel,
     int? sizeBytes,
+    List<String>? tags,
     int? exportWidth,
     int? exportHeight,
     double? drawingAreaScale,
@@ -82,6 +86,7 @@ class Project {
       isFavorite: isFavorite ?? this.isFavorite,
       thumbnailPath: thumbnailPath == _projectSentinel ? this.thumbnailPath : thumbnailPath as String?,
       sizeBytes: sizeBytes ?? this.sizeBytes,
+      tags: tags ?? this.tags,
       exportWidth: exportWidth ?? this.exportWidth,
       exportHeight: exportHeight ?? this.exportHeight,
       drawingAreaScale: drawingAreaScale ?? this.drawingAreaScale,

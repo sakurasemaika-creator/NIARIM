@@ -3,7 +3,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../engine/layer_compositor.dart';
+import '../../engine/mirapro_serializer.dart';
+import '../../models/project.dart';
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
 
@@ -114,6 +117,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               switch (action) {
                 case 'rename': _showRenameDialog(context, project.name);
                 case 'duplicate': projectService.duplicateProject(widget.projectId);
+                case 'move': _showMoveToFolderDialog(context, projectService);
                 case 'materials': context.push('/materials/${widget.projectId}');
                 case 'delete': projectService.deleteProject(widget.projectId); context.pop();
               }
@@ -202,6 +206,41 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               label: const Text('編集開始'),
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
+            const SizedBox(height: 16),
+            // フォルダ・タグ・お気に入り・共有のクイックアクセス（仕様書19の詳細画面モックアップ）
+            Row(
+              children: [
+                Expanded(
+                  child: _quickAction(
+                    icon: Icons.folder_outlined,
+                    label: 'フォルダ',
+                    onTap: () => _showMoveToFolderDialog(context, projectService),
+                  ),
+                ),
+                Expanded(
+                  child: _quickAction(
+                    icon: Icons.sell_outlined,
+                    label: 'タグ',
+                    onTap: () => _showTagsDialog(context, projectService, project),
+                  ),
+                ),
+                Expanded(
+                  child: _quickAction(
+                    icon: project.isFavorite ? Icons.star : Icons.star_border,
+                    label: 'お気に入り',
+                    iconColor: project.isFavorite ? Colors.amber : null,
+                    onTap: () => projectService.toggleFavorite(widget.projectId),
+                  ),
+                ),
+                Expanded(
+                  child: _quickAction(
+                    icon: Icons.ios_share,
+                    label: '共有',
+                    onTap: () => _createMirashare(context, projectService, project),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 8),
@@ -238,6 +277,139 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       ),
       ),
     );
+  }
+
+  Widget _quickAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? iconColor,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          children: [
+            Icon(icon, color: iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant),
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMoveToFolderDialog(BuildContext context, ProjectService service) {
+    final folders = service.folders;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('フォルダへ移動', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_open),
+              title: const Text('フォルダなし'),
+              onTap: () {
+                service.moveToFolder(widget.projectId, null);
+                Navigator.pop(ctx);
+              },
+            ),
+            ...folders.map((folder) => ListTile(
+                  leading: Icon(Icons.folder, color: folder.color != null ? Color(folder.color!) : null),
+                  title: Text(folder.name),
+                  onTap: () {
+                    service.moveToFolder(widget.projectId, folder.id);
+                    Navigator.pop(ctx);
+                  },
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTagsDialog(BuildContext context, ProjectService service, Project project) {
+    final tags = List<String>.from(project.tags);
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('タグ'),
+          content: SizedBox(
+            width: 320,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: tags
+                      .map((tag) => Chip(
+                            label: Text(tag),
+                            onDeleted: () => setDialogState(() => tags.remove(tag)),
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'タグを追加',
+                    border: OutlineInputBorder(),
+                  ),
+                  onSubmitted: (value) {
+                    final t = value.trim();
+                    if (t.isNotEmpty && !tags.contains(t)) {
+                      setDialogState(() => tags.add(t));
+                    }
+                    controller.clear();
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            FilledButton(
+              onPressed: () {
+                service.setProjectTags(widget.projectId, tags);
+                Navigator.pop(ctx);
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) => controller.dispose());
+  }
+
+  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・19）。
+  Future<void> _createMirashare(BuildContext context, ProjectService service, Project project) async {
+    final scenes = service.scenesOf(project.id);
+    final tileManager = service.tileManagerOf(project.id);
+    try {
+      final file = await MiraproSerializer.saveShare(
+        project: project,
+        scenes: scenes,
+        tileManager: tileManager,
+      );
+      if (!context.mounted) return;
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('.mirashareの作成に失敗しました: $e')),
+      );
+    }
   }
 
   Widget _infoRow(String label, String value) {

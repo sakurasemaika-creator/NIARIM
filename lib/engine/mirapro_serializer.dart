@@ -419,6 +419,13 @@ class MiraproSerializer {
         'updatedAt': DateTime.now().toIso8601String(),
         'totalWorkSeconds': p.totalWorkSeconds,
         'appVersion': currentAppVersion,
+        // 仕様書19：お気に入り登録・フォルダ管理・タグはホーム画面の永続状態の
+        // 一部であり、マニフェストへ保存しないとアプリ再起動のたびに失われる
+        // （実際にそのバグが発生していたため追加した）。
+        'isFavorite': p.isFavorite,
+        'folderId': p.folderId,
+        'tags': p.tags,
+        'thumbnailPath': p.thumbnailPath,
       };
 
   static Map<String, dynamic> _serializeScene(Scene scene) => {
@@ -527,6 +534,10 @@ class MiraproSerializer {
         createdAt: DateTime.parse(j['createdAt'] as String),
         updatedAt: DateTime.parse(j['updatedAt'] as String),
         totalWorkSeconds: j['totalWorkSeconds'] as int? ?? 0,
+        isFavorite: j['isFavorite'] as bool? ?? false,
+        folderId: j['folderId'] as String?,
+        tags: (j['tags'] as List<dynamic>? ?? const []).map((e) => e as String).toList(),
+        thumbnailPath: j['thumbnailPath'] as String?,
       );
 
   /// シーンファイル（frames.json）を読み込む。新形式は
