@@ -2059,7 +2059,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Future<void> _pickEndCardReplacement() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.video);
+    final result = await FilePicker.pickFiles(type: FileType.video);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     setState(() {
       _endCardCustomPath = result.files.first.path;
@@ -2101,7 +2101,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _ClipTrackType.video => FileType.video,
       _ClipTrackType.image => FileType.image,
     };
-    final result = await FilePicker.platform.pickFiles(type: fileType);
+    final result = await FilePicker.pickFiles(type: fileType);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     final pickedSourcePath = result.files.first.path!;
     if (!mounted) return;

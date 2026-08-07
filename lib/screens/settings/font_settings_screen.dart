@@ -111,7 +111,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   }
 
   Future<void> _addFont() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['ttf', 'otf'],
     );

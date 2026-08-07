@@ -223,7 +223,7 @@ class _TonePanelState extends State<TonePanel> {
   }
 
   Future<void> _createFromImage(BuildContext context, ToneService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    final result = await FilePicker.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!context.mounted) return;
     final name = await promptCreativeAssetName(context, title: '自作トーン');
@@ -232,7 +232,7 @@ class _TonePanelState extends State<TonePanel> {
   }
 
   Future<void> _importTone(BuildContext context, ToneService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['miratone']);
+    final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['miratone']);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     try {
       await service.importToneFile(result.files.first.path!);
@@ -298,7 +298,7 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
               icon: const Icon(Icons.image_outlined, size: 16),
               label: const Text('テクスチャ画像を変更'),
               onPressed: () async {
-                final result = await FilePicker.platform.pickFiles(type: FileType.image);
+                final result = await FilePicker.pickFiles(type: FileType.image);
                 if (result == null || result.files.isEmpty || result.files.first.path == null) return;
                 if (!context.mounted) return;
                 final service = context.read<ToneService>();

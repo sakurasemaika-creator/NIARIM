@@ -98,7 +98,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
   }
 
   Future<void> _addImageWatermark(BuildContext context, WatermarkService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    final result = await FilePicker.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     await service.addWatermark(result.files.first.path!);
     if (!context.mounted) return;

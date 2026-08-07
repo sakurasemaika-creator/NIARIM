@@ -125,7 +125,7 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   Future<void> _import() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['miratra'],
     );

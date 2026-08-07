@@ -225,7 +225,7 @@ class ThemeSettingsScreen extends StatelessWidget {
   }
 
   Future<void> _importTheme(BuildContext context, ThemeService service) async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['miratheme'],
     );

@@ -19,7 +19,11 @@ dependencies:
   video_player: ^2.8.2
   audioplayers: ^5.2.1
   image: ^4.1.4
-  file_picker: ^6.1.1
+  # v6系はAndroidネイティブ側がFlutter v1埋め込み(PluginRegistry.Registrar)に
+  # 依存しており、最新Flutterでビルド不能（v1埋め込みは削除済み）だったため
+  # 現行の安定版へ更新した。アプリが使用するAPI（FilePicker.platform.
+  # pickFiles()・PlatformFile.path/.name）に変更は無い。
+  file_picker: ^11.0.3
   share_plus: ^7.2.1
   permission_handler: ^11.1.0
   archive: ^3.4.9

@@ -257,7 +257,7 @@ class _BrushPanelState extends State<BrushPanel> {
   }
 
   Future<void> _createFromImage(BuildContext context, BrushService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    final result = await FilePicker.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!context.mounted) return;
     final name = await promptCreativeAssetName(context, title: '自作ブラシ');
@@ -266,7 +266,7 @@ class _BrushPanelState extends State<BrushPanel> {
   }
 
   Future<void> _importBrush(BuildContext context, BrushService service) async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
         type: FileType.custom, allowedExtensions: ['mirabrush']);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     try {

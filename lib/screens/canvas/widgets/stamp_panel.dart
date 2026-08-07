@@ -224,7 +224,7 @@ class _StampPanelState extends State<StampPanel> {
   }
 
   Future<void> _createFromImage(BuildContext context, StampService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    final result = await FilePicker.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!context.mounted) return;
     final name = await promptCreativeAssetName(context, title: '自作スタンプ');
@@ -233,7 +233,7 @@ class _StampPanelState extends State<StampPanel> {
   }
 
   Future<void> _importStamp(BuildContext context, StampService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['mirastamp']);
+    final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['mirastamp']);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     try {
       await service.importStampFile(result.files.first.path!);
@@ -313,7 +313,7 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
             icon: const Icon(Icons.image_outlined, size: 16),
             label: const Text('スタンプ画像を変更'),
             onPressed: () async {
-              final result = await FilePicker.platform.pickFiles(type: FileType.image);
+              final result = await FilePicker.pickFiles(type: FileType.image);
               if (result == null || result.files.isEmpty || result.files.first.path == null) return;
               if (!context.mounted) return;
               final service = context.read<StampService>();
