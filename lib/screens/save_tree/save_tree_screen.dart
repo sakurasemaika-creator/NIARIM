@@ -5,10 +5,17 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../engine/layer_compositor.dart';
+import '../../engine/mirapro_serializer.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
 import '../../widgets/responsive.dart';
+
+/// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
+/// 閾値（仕様書23：「容量が大きくなる場合はユーザーへ通知」）。ツリー方式は
+/// 各ノードが差分でなく完全なアーカイブとして保存され保存件数に比例して
+/// 増え続けるため、スロット方式（件数上限あり）と異なり自然には頭打ちにならない。
+const int _saveTreeSizeWarningThresholdBytes = 300 * 1024 * 1024; // 300MB
 
 /// 保存ノードのサムネイルを生成する（先頭シーン・先頭フレームを縮小合成）。
 /// 生成できない場合（シーン・フレームが存在しない等）はnullを返す。
@@ -152,6 +159,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
                 thumbnailPngBytes: thumb,
               );
               if (ctx.mounted) Navigator.pop(ctx);
+              await _warnIfSaveTreeSizeLarge(context, widget.projectId);
             },
             child: const Text('保存'),
           ),
@@ -159,6 +167,21 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
       ),
     ).then((_) => commentController.dispose());
   }
+}
+
+/// セーブツリーの合計容量が閾値を超えている場合に通知する
+/// （仕様書23：「容量が大きくなる場合はユーザーへ通知」）。
+Future<void> _warnIfSaveTreeSizeLarge(BuildContext context, String projectId) async {
+  final sizeBytes = await MiraproSerializer.saveTreeSizeBytes(projectId);
+  if (sizeBytes < _saveTreeSizeWarningThresholdBytes) return;
+  if (!context.mounted) return;
+  final mb = (sizeBytes / (1024 * 1024)).toStringAsFixed(0);
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('セーブツリーの容量が大きくなっています（約${mb}MB）。不要な保存データの削除をおすすめします。'),
+      duration: const Duration(seconds: 5),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────

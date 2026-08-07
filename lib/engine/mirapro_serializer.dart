@@ -246,6 +246,27 @@ class MiraproSerializer {
     if (await thumb.exists()) await thumb.delete();
   }
 
+  /// セーブツリー（SaveTree/、アーカイブ含む）が実際にディスク上で占めている
+  /// 合計バイト数を取得する（仕様書23：「容量が大きくなる場合はユーザーへ通知」）。
+  /// ツリー方式は各ノードが差分ではなく完全なアーカイブとして保存されるため、
+  /// 保存件数に比例して単純に増え続ける点に注意。
+  static Future<int> saveTreeSizeBytes(String projectId) async {
+    final dir = await _saveTreeDir(projectId);
+    final saveTreeDir = Directory(dir);
+    if (!saveTreeDir.existsSync()) return 0;
+    var total = 0;
+    for (final entity in saveTreeDir.listSync(recursive: true)) {
+      if (entity is File) {
+        try {
+          total += entity.lengthSync();
+        } catch (_) {
+          // 削除競合等で読めない場合はスキップ
+        }
+      }
+    }
+    return total;
+  }
+
   /// フル書き出し：manifest・全シーンのframes.json・全タイルを新規に書き込む。
   /// タイルはプロジェクト全体で1箇所（$_rootTilesDir/）にのみ保存する。
   static Future<File> _writeArchive(
