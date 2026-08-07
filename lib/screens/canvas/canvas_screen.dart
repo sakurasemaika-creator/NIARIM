@@ -818,6 +818,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             : model.TextWritingDirection.vertical;
                       }),
                     ),
+                    // 縦書き時のみ：ルビ・縦中横・半角英数字回転の説明（仕様書15）
+                    if (direction == model.TextWritingDirection.vertical)
+                      IconButton(
+                        icon: const Icon(Icons.help_outline, size: 18),
+                        tooltip: '縦書きの組版について',
+                        onPressed: () => _showVerticalTextHelp(context),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1002,6 +1009,36 @@ class _CanvasScreenState extends State<CanvasScreen> {
         ),
       ),
     ).then((_) => controller.dispose());
+  }
+
+  /// 縦書きの組版に関する説明（仕様書15：半角英数字の回転・縦中横・ルビ）。
+  void _showVerticalTextHelp(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('縦書きの組版について'),
+        content: const SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('半角英数字の回転', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('英字・記号は自動的に90°回転して表示されます。'),
+              SizedBox(height: 8),
+              Text('縦中横', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('半角数字が2桁連続すると、1文字分の高さに横並びで自動的に収まります（例：12）。'),
+              SizedBox(height: 8),
+              Text('ルビ（ふりがな）', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('「{漢字|かんじ}」のように入力すると、右側に小さくふりがなが表示されます。'
+                  '縦書き時のみ有効です。'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+        ],
+      ),
+    );
   }
 }
 
