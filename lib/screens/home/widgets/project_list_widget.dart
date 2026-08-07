@@ -1,10 +1,12 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../engine/mirapro_serializer.dart';
+import '../../../models/material_asset.dart';
 import '../../../models/project.dart';
+import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 
@@ -243,16 +245,22 @@ class ProjectListWidget extends StatelessWidget {
     }
   }
 
-  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06）。
+  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・21）。
   Future<void> _createMirashare(BuildContext context, Project project) async {
+    final includeTypes = await showMaterialIncludeDialog(context);
+    if (includeTypes == null || !context.mounted) return; // キャンセル
     final service = context.read<ProjectService>();
+    final materialService = context.read<MaterialService>();
     final scenes = service.scenesOf(project.id);
     final tileManager = service.tileManagerOf(project.id);
     try {
+      final bundle = await materialService.buildShareBundle(project.id, includeTypes);
       final file = await MiraproSerializer.saveShare(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
+        materialFiles: bundle.files.isEmpty ? null : bundle.files,
+        materialsManifest: bundle.manifest,
       );
       if (!context.mounted) return;
       await Share.shareXFiles([XFile(file.path)]);
@@ -448,4 +456,51 @@ class ProjectListWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+/// .mirashare作成時の素材同梱選択ダイアログ（仕様書06・21：画像/動画/音声を
+/// 種類ごとに選択できる。デフォルトは全種類ON）。キャンセル時はnullを返す。
+Future<Set<MaterialType>?> showMaterialIncludeDialog(BuildContext context) {
+  final selected = <MaterialType>{MaterialType.image, MaterialType.video, MaterialType.audio};
+  return showDialog<Set<MaterialType>>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setDialogState) => AlertDialog(
+        title: const Text('素材の同梱'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('同梱しない場合、受信側で不足素材の警告が表示されます。',
+                style: TextStyle(fontSize: 12)),
+            CheckboxListTile(
+              value: selected.contains(MaterialType.image),
+              title: const Text('画像'),
+              contentPadding: EdgeInsets.zero,
+              onChanged: (v) => setDialogState(
+                  () => v == true ? selected.add(MaterialType.image) : selected.remove(MaterialType.image)),
+            ),
+            CheckboxListTile(
+              value: selected.contains(MaterialType.video),
+              title: const Text('動画'),
+              contentPadding: EdgeInsets.zero,
+              onChanged: (v) => setDialogState(
+                  () => v == true ? selected.add(MaterialType.video) : selected.remove(MaterialType.video)),
+            ),
+            CheckboxListTile(
+              value: selected.contains(MaterialType.audio),
+              title: const Text('音声'),
+              contentPadding: EdgeInsets.zero,
+              onChanged: (v) => setDialogState(
+                  () => v == true ? selected.add(MaterialType.audio) : selected.remove(MaterialType.audio)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, selected), child: const Text('作成')),
+        ],
+      ),
+    ),
+  );
 }

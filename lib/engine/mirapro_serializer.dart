@@ -25,6 +25,7 @@ class MiraproSerializer {
   static const String _framesFile = 'frames.json';
   static const String _tilesDir = 'tiles'; // 旧形式（Scene毎重複保存）の読み込み互換用
   static const String _rootTilesDir = 'Tiles'; // 新形式：プロジェクト全体で1箇所のみ保存
+  static const String _materialsArchiveDir = 'Materials'; // 同梱素材（仕様書06・21、.mirashareのみ）
 
   // アプリの.miraproフォーマットバージョン（仕様書06・12：内部データManifest）。
   // manifest.jsonへ書き込み、読み込み時は_migrateManifestJson()で過去バージョンとの
@@ -102,20 +103,44 @@ class MiraproSerializer {
 
   /// .mirashare として保存する（内容は.miraproと同一形式、拡張子のみ異なる）。
   /// 仕様書06：共有用ファイル。受信側で複製して通常プロジェクトとして追加する。
+  ///
+  /// [materialFiles]・[materialsManifest] を渡すと、選択した種類の素材の実ファイルを
+  /// Materials/ として同梱する（仕様書21：共有時の素材同梱チェックボックス）。
+  /// 画像・動画レイヤーはピクセルタイルへラスタライズ済みのため同梱がなくても表示は
+  /// 崩れないが、音声はMaterialService経由でファイルを都度再生するため、同梱しないと
+  /// 受信側で「不足素材」となり再生できない。
   static Future<File> saveShare({
     required Project project,
     required List<Scene> scenes,
     required TileManager tileManager,
     String? outputDir,
+    Map<String, Uint8List>? materialFiles,
+    String? materialsManifest,
   }) async {
     final dir = outputDir ?? (await _projectDir(project.id)).path;
     final safeName = project.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
     final filePath = '$dir/$safeName.mirashare';
-    return _writeArchive(filePath, project, scenes, tileManager);
+    return _writeArchive(filePath, project, scenes, tileManager,
+        materialFiles: materialFiles, materialsManifest: materialsManifest);
   }
 
   /// .mirashare を読み込む（.miraproと同一形式なので load() をそのまま利用できる）。
   static Future<MiraproData> loadShare(String filePath) => load(filePath);
+
+  /// .mirashareに同梱された素材ファイルを、新規プロジェクトのMaterials/フォルダへ
+  /// 書き出す（仕様書06・21：共有時の素材同梱）。同梱がない場合は何もしない。
+  static Future<void> restoreBundledMaterials(String projectId, MiraproData data) async {
+    if (data.materialFiles.isEmpty && data.materialsManifest == null) return;
+    final dir = await _projectDir(projectId);
+    final materialsDir = Directory('${dir.path}/Materials');
+    if (!materialsDir.existsSync()) materialsDir.createSync(recursive: true);
+    for (final entry in data.materialFiles.entries) {
+      await File('${materialsDir.path}/${entry.key}').writeAsBytes(entry.value);
+    }
+    if (data.materialsManifest != null) {
+      await File('${materialsDir.path}/materials.json').writeAsString(data.materialsManifest!);
+    }
+  }
 
   // ─── 自動保存（クラッシュ復元専用・最大3件固定、仕様書06・09） ────────
 
@@ -199,8 +224,10 @@ class MiraproSerializer {
     String filePath,
     Project project,
     List<Scene> scenes,
-    TileManager tileManager,
-  ) async {
+    TileManager tileManager, {
+    Map<String, Uint8List>? materialFiles,
+    String? materialsManifest,
+  }) async {
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
 
@@ -227,6 +254,19 @@ class MiraproSerializer {
           tileEntry.value,
         ));
       }
+    }
+
+    // 同梱素材（仕様書06・21：.mirashare作成時に選択した画像/動画/音声）
+    if (materialFiles != null) {
+      for (final entry in materialFiles.entries) {
+        encoder.addArchiveFile(
+            ArchiveFile('$_materialsArchiveDir/${entry.key}', entry.value.length, entry.value));
+      }
+    }
+    if (materialsManifest != null) {
+      final bytes = utf8.encode(materialsManifest);
+      encoder.addArchiveFile(
+          ArchiveFile('$_materialsArchiveDir/materials.json', bytes.length, bytes));
     }
 
     encoder.close();
@@ -410,7 +450,29 @@ class MiraproSerializer {
       }
     }
 
-    return MiraproData(project: project, scenes: scenes, tileData: tileData);
+    // 同梱素材（仕様書06・21：.mirashare作成時に選択した画像/動画/音声の実ファイル）。
+    // 画像・動画レイヤーの表示自体はタイルへラスタライズ済みのため同梱がなくても
+    // 崩れないが、音声はタイル化されずMaterialService経由でファイルを都度再生する
+    // ため、同梱しないと受信側で音声が再生できなくなる。
+    final materialFiles = <String, Uint8List>{};
+    String? materialsManifest;
+    for (final file in archive.files) {
+      if (!file.name.startsWith('$_materialsArchiveDir/')) continue;
+      final name = file.name.substring(_materialsArchiveDir.length + 1);
+      if (name == 'materials.json') {
+        materialsManifest = utf8.decode(file.content as List<int>);
+      } else if (name.isNotEmpty) {
+        materialFiles[name] = Uint8List.fromList(file.content as List<int>);
+      }
+    }
+
+    return MiraproData(
+      project: project,
+      scenes: scenes,
+      tileData: tileData,
+      materialFiles: materialFiles,
+      materialsManifest: materialsManifest,
+    );
   }
 
   // ─── シリアライズ ─────────────────────────────────────────────────────
@@ -702,10 +764,16 @@ class MiraproData {
   final Project project;
   final List<Scene> scenes;
   final Map<String, Map<String, Uint8List>> tileData;
+  // 同梱素材（仕様書06・21：.mirashareに同梱された画像/動画/音声の実ファイル）。
+  // 通常の.mirapro読み込みでは常に空。
+  final Map<String, Uint8List> materialFiles;
+  final String? materialsManifest;
 
   const MiraproData({
     required this.project,
     required this.scenes,
     required this.tileData,
+    this.materialFiles = const {},
+    this.materialsManifest,
   });
 }

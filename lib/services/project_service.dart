@@ -660,6 +660,8 @@ class ProjectService extends ChangeNotifier {
     tm.importAll(data.tileData);
     _tileManagers[newId] = tm;
     _layerIdCounters[newId] = _maxLayerCounter(data.scenes);
+    // 同梱素材（仕様書06・21：共有時に選択した画像/動画/音声）をMaterials/へ復元する。
+    await MiraproSerializer.restoreBundledMaterials(newId, data);
     _saveAsync(newId);
     notifyListeners();
     return project;

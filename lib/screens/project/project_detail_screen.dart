@@ -7,8 +7,10 @@ import 'package:share_plus/share_plus.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/mirapro_serializer.dart';
 import '../../models/project.dart';
+import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
+import '../home/widgets/project_list_widget.dart' show showMaterialIncludeDialog;
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -392,15 +394,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     ).then((_) => controller.dispose());
   }
 
-  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・19）。
+  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・19・21）。
   Future<void> _createMirashare(BuildContext context, ProjectService service, Project project) async {
+    final includeTypes = await showMaterialIncludeDialog(context);
+    if (includeTypes == null || !context.mounted) return; // キャンセル
+    final materialService = context.read<MaterialService>();
     final scenes = service.scenesOf(project.id);
     final tileManager = service.tileManagerOf(project.id);
     try {
+      final bundle = await materialService.buildShareBundle(project.id, includeTypes);
       final file = await MiraproSerializer.saveShare(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
+        materialFiles: bundle.files.isEmpty ? null : bundle.files,
+        materialsManifest: bundle.manifest,
       );
       if (!context.mounted) return;
       await Share.shareXFiles([XFile(file.path)]);

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,10 +8,20 @@ import '../models/material_asset.dart';
 /// 画像・音声・動画をプロジェクト内`Materials/`フォルダへコピーし、
 /// ファイル名ではなく素材ID（Material0001形式）で参照する。
 /// 同一内容のファイルはプロジェクト内に1つだけ保存し、重複保存を防ぐ。
+///
+/// メタデータ（MaterialAssetのリスト）は`Materials/materials.json`へ永続化する。
+/// 従来はインメモリのみで保持しており、アプリ再起動のたびに素材メタデータが
+/// 失われ、素材一覧・不足素材検出・重複防止（addMaterial）・差し替えが
+/// 機能しなくなっていた（実ファイルはMaterials/に残るが、それを指す
+/// MaterialAssetの情報が消えるため）。各公開メソッドの先頭で
+/// [_ensureLoaded] を呼び、初回アクセス時に自動でmaterials.jsonから復元する。
 class MaterialService extends ChangeNotifier {
   final Map<String, List<MaterialAsset>> _materials = {}; // projectId -> assets
   final Map<String, int> _counters = {}; // projectId -> 次の連番
+  final Map<String, Future<void>> _loading = {}; // projectId -> 読み込み中Future（同時読み込み防止）
 
+  /// materialsOf()はUIのbuild内で同期的に呼ばれるため、事前に
+  /// ensureLoaded()を呼んでおく必要がある（material_list_screen.dart等）。
   List<MaterialAsset> materialsOf(String projectId) =>
       List.unmodifiable(_materials[projectId] ?? const []);
 
@@ -20,6 +31,79 @@ class MaterialService extends ChangeNotifier {
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }
+
+  /// [projectId]の素材メタデータをmaterials.jsonから読み込む（初回のみ）。
+  /// 既に読み込み済みの場合は何もしない。
+  Future<void> ensureLoaded(String projectId) async {
+    if (_materials.containsKey(projectId)) return;
+    final inFlight = _loading[projectId];
+    if (inFlight != null) return inFlight;
+    final future = _loadFromDisk(projectId);
+    _loading[projectId] = future;
+    try {
+      await future;
+    } finally {
+      _loading.remove(projectId);
+    }
+  }
+
+  Future<void> _loadFromDisk(String projectId) async {
+    final dir = await _materialsDir(projectId);
+    final file = File('${dir.path}/materials.json');
+    if (!file.existsSync()) {
+      _materials[projectId] = [];
+      _counters[projectId] = 0;
+      return;
+    }
+    try {
+      final json = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      _counters[projectId] = json['nextCounter'] as int? ?? 0;
+      _materials[projectId] = (json['materials'] as List<dynamic>? ?? [])
+          .map((e) => _deserialize(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      // 破損している場合は空として扱う（実ファイルはMaterials/に残っているため
+      // 完全な喪失ではないが、メタデータの復元はできない）。
+      _materials[projectId] = [];
+      _counters[projectId] = 0;
+    }
+    notifyListeners();
+  }
+
+  Future<void> _saveManifest(String projectId) async {
+    final dir = await _materialsDir(projectId);
+    final file = File('${dir.path}/materials.json');
+    final list = _materials[projectId] ?? const [];
+    final json = {
+      'nextCounter': _counters[projectId] ?? 0,
+      'materials': list.map(_serialize).toList(),
+    };
+    await file.writeAsString(jsonEncode(json));
+  }
+
+  Map<String, dynamic> _serialize(MaterialAsset m) => {
+        'id': m.id,
+        'originalFileName': m.originalFileName,
+        'type': m.type.name,
+        'sizeBytes': m.sizeBytes,
+        'addedAt': m.addedAt.toIso8601String(),
+        'width': m.width,
+        'height': m.height,
+        'durationMs': m.duration?.inMilliseconds,
+      };
+
+  MaterialAsset _deserialize(Map<String, dynamic> j) => MaterialAsset(
+        id: j['id'] as String,
+        originalFileName: j['originalFileName'] as String,
+        type: MaterialType.values
+            .firstWhere((t) => t.name == j['type'], orElse: () => MaterialType.image),
+        sizeBytes: j['sizeBytes'] as int,
+        addedAt: DateTime.parse(j['addedAt'] as String),
+        width: j['width'] as int?,
+        height: j['height'] as int?,
+        duration:
+            j['durationMs'] != null ? Duration(milliseconds: j['durationMs'] as int) : null,
+      );
 
   String _nextId(String projectId) {
     final n = (_counters[projectId] ?? 0) + 1;
@@ -35,6 +119,7 @@ class MaterialService extends ChangeNotifier {
     required String sourcePath,
     required MaterialType type,
   }) async {
+    await ensureLoaded(projectId);
     final bytes = await File(sourcePath).readAsBytes();
     final dir = await _materialsDir(projectId);
 
@@ -56,6 +141,7 @@ class MaterialService extends ChangeNotifier {
     );
     await File('${dir.path}/${asset.storageName}').writeAsBytes(bytes);
     _materials.putIfAbsent(projectId, () => []).add(asset);
+    await _saveManifest(projectId);
     notifyListeners();
     return asset;
   }
@@ -71,6 +157,7 @@ class MaterialService extends ChangeNotifier {
   /// 素材IDの実ファイルパスを解決する。ファイルが見つからない場合はnull
   /// を返す（仕様書21：不足素材の検出）。
   Future<String?> pathOf(String projectId, String materialId) async {
+    await ensureLoaded(projectId);
     final asset = assetOf(projectId, materialId);
     if (asset == null) return null;
     final dir = await _materialsDir(projectId);
@@ -88,6 +175,7 @@ class MaterialService extends ChangeNotifier {
     required String materialId,
     required bool Function(String materialId) isUsed,
   }) async {
+    await ensureLoaded(projectId);
     if (isUsed(materialId)) return false;
     final list = _materials[projectId];
     if (list == null) return false;
@@ -97,6 +185,7 @@ class MaterialService extends ChangeNotifier {
     final file = File('${dir.path}/${list[idx].storageName}');
     if (file.existsSync()) await file.delete();
     list.removeAt(idx);
+    await _saveManifest(projectId);
     notifyListeners();
     return true;
   }
@@ -106,6 +195,7 @@ class MaterialService extends ChangeNotifier {
     required String projectId,
     required bool Function(String materialId) isUsed,
   }) async {
+    await ensureLoaded(projectId);
     final list = List<MaterialAsset>.from(_materials[projectId] ?? const []);
     int removed = 0;
     for (final m in list) {
@@ -118,11 +208,39 @@ class MaterialService extends ChangeNotifier {
   /// 登録済み素材のうち、実ファイルが見つからないものを返す
   /// （仕様書21：プロジェクトを開いた際の不足素材検出）。
   Future<List<MaterialAsset>> detectMissing(String projectId) async {
+    await ensureLoaded(projectId);
     final dir = await _materialsDir(projectId);
     final missing = <MaterialAsset>[];
     for (final m in _materials[projectId] ?? const []) {
       if (!File('${dir.path}/${m.storageName}').existsSync()) missing.add(m);
     }
     return missing;
+  }
+
+  /// 指定した種類の素材のみを対象に、.mirashare同梱用のファイルbyte列と
+  /// マニフェストJSONを作成する（仕様書06・21：共有時の素材同梱チェックボックス）。
+  /// [includeTypes]が空、または対象素材が実ファイルとして見つからない場合は
+  /// filesが空・manifestがnullの結果を返す。
+  Future<({Map<String, Uint8List> files, String? manifest})> buildShareBundle(
+      String projectId, Set<MaterialType> includeTypes) async {
+    await ensureLoaded(projectId);
+    if (includeTypes.isEmpty) return (files: <String, Uint8List>{}, manifest: null);
+    final selected =
+        (_materials[projectId] ?? const []).where((m) => includeTypes.contains(m.type));
+    final dir = await _materialsDir(projectId);
+    final files = <String, Uint8List>{};
+    final included = <MaterialAsset>[];
+    for (final m in selected) {
+      final f = File('${dir.path}/${m.storageName}');
+      if (!f.existsSync()) continue;
+      files[m.storageName] = await f.readAsBytes();
+      included.add(m);
+    }
+    if (files.isEmpty) return (files: <String, Uint8List>{}, manifest: null);
+    final manifest = jsonEncode({
+      'nextCounter': _counters[projectId] ?? 0,
+      'materials': included.map(_serialize).toList(),
+    });
+    return (files: files, manifest: manifest);
   }
 }
