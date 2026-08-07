@@ -723,7 +723,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// シーンタブ（仕様書05：カーソル固定方式で並び替え）
   Widget _buildSceneTabs() {
-    final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
+    final projectService = context.watch<ProjectService>();
+    final scenes = projectService.scenesOf(widget.projectId);
     return SizedBox(
       height: _isMoveMode ? 92 : 36,
       child: Stack(
@@ -852,6 +853,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       ),
                                     ),
                                   Text(scene.displayName, style: const TextStyle(fontSize: 11)),
+                                  // シーン内に自動塗り未更新のフレームがある場合の❗マーク
+                                  // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
+                                  if (projectService.sceneHasOutdatedAutofillLayers(widget.projectId, scene.id))
+                                    GestureDetector(
+                                      onTap: () => _showAutofillUpdateHelp(context),
+                                      child: const Padding(
+                                        padding: EdgeInsets.only(left: 4),
+                                        child: Icon(Icons.error, color: Colors.orange, size: 12),
+                                      ),
+                                    ),
                                   if (!_isSceneMultiSelect)
                                     GestureDetector(
                                       onTap: () => _showSceneMenu(scene, scenes),
@@ -1030,9 +1041,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ).then((_) => controller.dispose());
   }
 
+  // タイムライン側❗マークのヘルプ（仕様書04：レイヤーパネル側と同一文言）
+  void _showAutofillUpdateHelp(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('自動塗り更新マーク'),
+        content: const Text('このシーン・フレームには最新ではない自動塗りレイヤーが含まれています。'
+            'レイヤーパネルで対象レイヤーをタップすると更新できます。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+        ],
+      ),
+    );
+  }
+
   /// フレーム一覧（仕様書05：シーンと同じ複数選択・カーソル固定移動の操作体系）。
   Widget _buildFrameList() {
     final total = _totalFrames;
+    final projectService = context.watch<ProjectService>();
+    final frameListSceneId = _selectedSceneId;
     return SizedBox(
       height: _isFrameMoveMode ? 92 : 50,
       child: Stack(
@@ -1132,6 +1160,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         }
                         final isSelected = index == _currentFrame;
                         final isChecked = _selectedFrameIndices.contains(index);
+                        // このフレームに自動塗り未更新のレイヤーがある場合の❗マーク
+                        // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
+                        final hasOutdatedAutofill = frameListSceneId != null &&
+                            projectService.frameHasOutdatedAutofillLayers(
+                                widget.projectId, frameListSceneId, index);
                         return GestureDetector(
                           onTap: () {
                             if (_isFrameMultiSelect) {
@@ -1172,6 +1205,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             child: Stack(
                               children: [
                                 Center(child: Text('${index + 1}', style: const TextStyle(fontSize: 9))),
+                                if (hasOutdatedAutofill)
+                                  Positioned(
+                                    left: 1, top: 1,
+                                    child: GestureDetector(
+                                      onTap: () => _showAutofillUpdateHelp(context),
+                                      child: const Icon(Icons.error, color: Colors.orange, size: 10),
+                                    ),
+                                  ),
                                 if (_isFrameMultiSelect)
                                   Positioned(
                                     right: 1, top: 1,

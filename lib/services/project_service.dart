@@ -753,6 +753,29 @@ class ProjectService extends ChangeNotifier {
     return false;
   }
 
+  /// タイムライン❗マーク表示用：指定フレームにneedsAutofillUpdate==trueの
+  /// 自動塗りレイヤーが存在するかを判定する（仕様書04：更新マークはレイヤー・
+  /// タイムライン両方に表示）。
+  bool frameHasOutdatedAutofillLayers(String projectId, String sceneId, int frameIndex) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) return false;
+    return scene.frames[frameIndex].layers
+        .any((l) => l.type == LayerType.autoFill && l.needsAutofillUpdate);
+  }
+
+  /// タイムライン❗マーク表示用：指定シーン内のいずれかのフレームに
+  /// needsAutofillUpdate==trueの自動塗りレイヤーが存在するかを判定する。
+  bool sceneHasOutdatedAutofillLayers(String projectId, String sceneId) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null) return false;
+    for (final frame in scene.frames) {
+      if (frame.layers.any((l) => l.type == LayerType.autoFill && l.needsAutofillUpdate)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // ─── Frame API ────────────────────────────────────────────────────────
 
   int frameCount(String projectId, String sceneId) =>
