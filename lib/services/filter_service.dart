@@ -1,11 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/filter_def.dart';
 
 /// 描画フィルターサービス（仕様書18）。
 /// フィルター一覧・現在選択中フィルター・お気に入り・検索を管理する。
 /// 実際のピクセル処理はFilterEngineが担当し、本サービスは定義とパラメータの
 /// 状態管理のみを行う（ToneService／StampServiceと同じ設計方針）。
+/// パラメータ・お気に入りはSharedPreferencesへ永続化する（端末単位）。
+/// 従来はインメモリのみで、アプリ再起動のたびに失われていた。
 class FilterService extends ChangeNotifier {
+  static const _prefsKey = 'draw_filters';
+
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
   String _searchQuery = '';
@@ -26,15 +32,30 @@ class FilterService extends ChangeNotifier {
     }).toList();
   }
 
+  static List<FilterDef> _defaultFilters() => const [
+        FilterDef(id: 'Filter0001', name: 'ガウスぼかし', kind: FilterKind.gaussianBlur, strength: 8),
+        FilterDef(id: 'Filter0002', name: 'レンズぼかし', kind: FilterKind.lensBlur, strength: 8),
+        FilterDef(id: 'Filter0003', name: 'アニメ風加工', kind: FilterKind.animeStyle, colorLevels: 6, edgeStrength: 0.4),
+        FilterDef(id: 'Filter0004', name: 'トーンカーブ', kind: FilterKind.toneCurve),
+        FilterDef(id: 'Filter0005', name: 'レベル補正', kind: FilterKind.levels),
+      ];
+
   Future<void> init() async {
-    _filters.addAll(const [
-      FilterDef(id: 'Filter0001', name: 'ガウスぼかし', kind: FilterKind.gaussianBlur, strength: 8),
-      FilterDef(id: 'Filter0002', name: 'レンズぼかし', kind: FilterKind.lensBlur, strength: 8),
-      FilterDef(id: 'Filter0003', name: 'アニメ風加工', kind: FilterKind.animeStyle, colorLevels: 6, edgeStrength: 0.4),
-      FilterDef(id: 'Filter0004', name: 'トーンカーブ', kind: FilterKind.toneCurve),
-      FilterDef(id: 'Filter0005', name: 'レベル補正', kind: FilterKind.levels),
-    ]);
-    _currentFilterId = _filters.first.id;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_prefsKey);
+    _filters.clear();
+    if (raw == null) {
+      _filters.addAll(_defaultFilters());
+      await _persist();
+    } else {
+      _filters.addAll(raw.map((s) => FilterDef.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+    }
+    _currentFilterId = _filters.firstOrNull?.id;
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_prefsKey, _filters.map((f) => jsonEncode(f.toJson())).toList());
   }
 
   void selectFilter(String id) {
@@ -66,6 +87,7 @@ class FilterService extends ChangeNotifier {
       toneCurvePreset: toneCurvePreset,
     );
     notifyListeners();
+    _persist();
   }
 
   void toggleFavorite(String id) {
@@ -73,6 +95,7 @@ class FilterService extends ChangeNotifier {
     if (idx >= 0) {
       _filters[idx] = _filters[idx].copyWith(isFavorite: !_filters[idx].isFavorite);
       notifyListeners();
+      _persist();
     }
   }
 

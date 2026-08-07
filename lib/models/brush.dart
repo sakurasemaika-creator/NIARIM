@@ -84,6 +84,68 @@ class Brush {
       customImagePath: customImagePath ?? this.customImagePath,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'size': size,
+        'opacity': opacity,
+        'spacing': spacing,
+        'blurRadius': blurRadius,
+        'stabilization': stabilization,
+        'stabilizationStrength': stabilizationStrength,
+        'dotPenMode': dotPenMode,
+        'pressureMode': pressureMode.name,
+        'pressureStrength': pressureStrength,
+        'fadeMode': fadeMode.name,
+        'fadeCustom': fadeCustom == null
+            ? null
+            : {
+                'startValue': fadeCustom!.startValue,
+                'endValue': fadeCustom!.endValue,
+                'distancePx': fadeCustom!.distancePx,
+              },
+        'strokeDecay': strokeDecay,
+        'mixingMode': mixingMode.name,
+        'mixingRate': mixingRate,
+        'isFavorite': isFavorite,
+        'folderId': folderId,
+        'customImagePath': customImagePath,
+      };
+
+  factory Brush.fromJson(Map<String, dynamic> j) => Brush(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        size: (j['size'] as num).toDouble(),
+        opacity: j['opacity'] as int,
+        spacing: j['spacing'] as int,
+        blurRadius: j['blurRadius'] as int,
+        stabilization: j['stabilization'] as bool,
+        stabilizationStrength: j['stabilizationStrength'] as int,
+        dotPenMode: j['dotPenMode'] as bool,
+        pressureMode: PressureMode.values
+            .firstWhere((e) => e.name == j['pressureMode'], orElse: () => PressureMode.off),
+        pressureStrength: j['pressureStrength'] as int,
+        fadeMode:
+            FadeMode.values.firstWhere((e) => e.name == j['fadeMode'], orElse: () => FadeMode.off),
+        fadeCustom: j['fadeCustom'] == null
+            ? null
+            : FadeCustomSettings(
+                startValue: ((j['fadeCustom'] as Map<String, dynamic>)['startValue'] as num)
+                    .toDouble(),
+                endValue:
+                    ((j['fadeCustom'] as Map<String, dynamic>)['endValue'] as num).toDouble(),
+                distancePx:
+                    ((j['fadeCustom'] as Map<String, dynamic>)['distancePx'] as num).toDouble(),
+              ),
+        strokeDecay: j['strokeDecay'] as bool,
+        mixingMode: BrushMixingMode.values
+            .firstWhere((e) => e.name == j['mixingMode'], orElse: () => BrushMixingMode.off),
+        mixingRate: j['mixingRate'] as int,
+        isFavorite: j['isFavorite'] as bool? ?? false,
+        folderId: j['folderId'] as String?,
+        customImagePath: j['customImagePath'] as String?,
+      );
 }
 
 enum PressureMode { off, size, opacity, sizeAndOpacity }

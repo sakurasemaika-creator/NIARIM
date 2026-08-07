@@ -77,4 +77,37 @@ class FilterDef {
       toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'kind': kind.name,
+        'isFavorite': isFavorite,
+        'strength': strength,
+        'colorLevels': colorLevels,
+        'edgeStrength': edgeStrength,
+        'inputBlack': inputBlack,
+        'inputWhite': inputWhite,
+        'outputBlack': outputBlack,
+        'outputWhite': outputWhite,
+        'toneCurvePreset': toneCurvePreset.name,
+      };
+
+  factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        kind: FilterKind.values
+            .firstWhere((e) => e.name == j['kind'], orElse: () => FilterKind.gaussianBlur),
+        isFavorite: j['isFavorite'] as bool? ?? false,
+        strength: (j['strength'] as num?)?.toDouble() ?? 8,
+        colorLevels: j['colorLevels'] as int? ?? 6,
+        edgeStrength: (j['edgeStrength'] as num?)?.toDouble() ?? 0.4,
+        inputBlack: j['inputBlack'] as int? ?? 0,
+        inputWhite: j['inputWhite'] as int? ?? 255,
+        outputBlack: j['outputBlack'] as int? ?? 0,
+        outputWhite: j['outputWhite'] as int? ?? 255,
+        toneCurvePreset: ToneCurvePreset.values.firstWhere(
+            (e) => e.name == j['toneCurvePreset'],
+            orElse: () => ToneCurvePreset.linear),
+      );
 }

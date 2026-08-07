@@ -29,4 +29,20 @@ class Tone {
       folderId: folderId ?? this.folderId,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'texturePath': texturePath,
+        'isFavorite': isFavorite,
+        'folderId': folderId,
+      };
+
+  factory Tone.fromJson(Map<String, dynamic> j) => Tone(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        texturePath: j['texturePath'] as String?,
+        isFavorite: j['isFavorite'] as bool? ?? false,
+        folderId: j['folderId'] as String?,
+      );
 }

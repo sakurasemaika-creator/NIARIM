@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/tone.dart';
 
 class ToneFolder {
@@ -8,7 +10,12 @@ class ToneFolder {
   ToneFolder({required this.id, required this.name, this.isFavorite = false});
 }
 
+/// トーン管理サービス（仕様書04・17・25）。SharedPreferencesへ永続化する
+/// （端末単位。プロジェクトファイルには含めない）。従来はインメモリのみで、
+/// お気に入り・追加・削除・編集のすべてがアプリ再起動のたびに失われていた。
 class ToneService extends ChangeNotifier {
+  static const _prefsKey = 'tones';
+
   final List<Tone> _tones = [];
   final List<ToneFolder> _folders = [];
   Tone? _currentTone;
@@ -38,16 +45,31 @@ class ToneService extends ChangeNotifier {
     notifyListeners();
   }
 
+  static List<Tone> _defaultTones() => [
+        const Tone(id: 'Tone0001', name: '網点 10%'),
+        const Tone(id: 'Tone0002', name: '網点 30%'),
+        const Tone(id: 'Tone0003', name: '網点 50%'),
+        const Tone(id: 'Tone0004', name: '網点 70%'),
+        const Tone(id: 'Tone0005', name: 'ライン 細'),
+        const Tone(id: 'Tone0006', name: 'ライン 太'),
+      ];
+
   Future<void> init() async {
-    _tones.addAll([
-      const Tone(id: 'Tone0001', name: '網点 10%'),
-      const Tone(id: 'Tone0002', name: '網点 30%'),
-      const Tone(id: 'Tone0003', name: '網点 50%'),
-      const Tone(id: 'Tone0004', name: '網点 70%'),
-      const Tone(id: 'Tone0005', name: 'ライン 細'),
-      const Tone(id: 'Tone0006', name: 'ライン 太'),
-    ]);
-    _currentTone = _tones.first;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_prefsKey);
+    _tones.clear();
+    if (raw == null) {
+      _tones.addAll(_defaultTones());
+      await _persist();
+    } else {
+      _tones.addAll(raw.map((s) => Tone.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+    }
+    _currentTone = _tones.firstOrNull;
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_prefsKey, _tones.map((t) => jsonEncode(t.toJson())).toList());
   }
 
   void selectTone(String id) {
@@ -70,17 +92,20 @@ class ToneService extends ChangeNotifier {
     if (idx >= 0) {
       _tones[idx] = _tones[idx].copyWith(isFavorite: !_tones[idx].isFavorite);
       notifyListeners();
+      _persist();
     }
   }
 
   void addTone(Tone tone) {
     _tones.add(tone);
     notifyListeners();
+    _persist();
   }
 
   void deleteTone(String id) {
     _tones.removeWhere((t) => t.id == id);
     notifyListeners();
+    _persist();
   }
 
   void updateTone(Tone tone) {
@@ -88,6 +113,7 @@ class ToneService extends ChangeNotifier {
     if (idx >= 0) {
       _tones[idx] = tone;
       notifyListeners();
+      _persist();
     }
   }
 }
