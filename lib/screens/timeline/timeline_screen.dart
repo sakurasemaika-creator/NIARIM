@@ -14,6 +14,7 @@ import '../../engine/camera_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/layer_range_resolver.dart';
+import '../../engine/text_render.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/undo_manager.dart';
 import '../../models/audio_clip.dart';
@@ -22,6 +23,7 @@ import '../../models/effect_filter_instance.dart';
 import '../../models/layer.dart';
 import '../../models/material_asset.dart';
 import '../../models/scene.dart';
+import '../../models/text_object.dart';
 import '../../models/watermark_asset.dart';
 import '../../services/advertising_service.dart';
 import '../../services/autofill_preset_service.dart';
@@ -597,7 +599,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('ウォーターマーク未登録'),
-          content: const Text('設定画面の「ウォーターマーク」からあらかじめ画像を登録してください。'),
+          content: const Text('設定画面の「ウォーターマーク」からあらかじめ画像または文字を登録してください。'),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
             FilledButton(
@@ -624,7 +626,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
             for (final asset in assets)
               ListTile(
-                leading: const Icon(Icons.branding_watermark),
+                leading: Icon(asset.type == WatermarkAssetType.text ? Icons.text_fields : Icons.branding_watermark),
                 title: Text(asset.name),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -637,15 +639,57 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 選択したウォーターマーク画像をラスタライズし、LayerType.watermarkの
-  /// レイヤーとして現在シーンへ追加する（表示範囲はデフォルトで全フレーム＝
-  /// 常時表示。以後の表示範囲・不透明度・差し替えはレイヤーパネルから調整できる）。
+  /// 選択したウォーターマーク（画像 or 文字入力、仕様書01・13）をラスタライズし、
+  /// LayerType.watermarkのレイヤーとして現在シーンへ追加する（表示範囲は
+  /// デフォルトで全フレーム＝常時表示。以後の表示範囲・不透明度・差し替えは
+  /// レイヤーパネルから調整できる）。
   Future<void> _addWatermarkLayer(WatermarkAsset asset) async {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    final projectService = context.read<ProjectService>();
+    final tileManager = projectService.tileManagerOf(widget.projectId);
+    final w = tileManager.canvasWidth;
+    final h = tileManager.canvasHeight;
+
+    final pixels = asset.type == WatermarkAssetType.text
+        ? await _rasterizeTextWatermark(asset, w, h)
+        : await _rasterizeImageWatermark(asset, w, h);
+    if (pixels == null || !mounted) return;
+
+    final layer = projectService.addLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: _currentFrame,
+      type: LayerType.watermark,
+      name: asset.name,
+    );
+    tileManager.replaceLayerPixels(
+      frameLayerKey(sceneId, _currentFrame, layer.id),
+      pixels,
+    );
+    // 既定は「常時表示」（全フレーム）。表示範囲はレイヤーパネルの
+    // 「表示範囲変更」からいつでも変更できる（仕様書05：常時表示／
+    // エンドカード／任意フレームのみ表示はすべて表示範囲設定で実現する）。
+    projectService.updateLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: _currentFrame,
+      layer: layer.copyWith(rangeMode: LayerRangeMode.allFrames),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('ウォーターマークを追加しました（全フレームに表示されます）: ${asset.name}')),
+    );
+  }
+
+  /// 画像ウォーターマークをキャンバス全体サイズのRGBAピクセルへラスタライズする。
+  /// 右下に控えめなサイズ（キャンバス幅の25%程度）で配置する一般的な
+  /// ウォーターマーク位置をデフォルトとする。位置・大きさは追加後に
+  /// 変形ツールで自由に調整できる。
+  Future<Uint8List?> _rasterizeImageWatermark(WatermarkAsset asset, int w, int h) async {
     final watermarkService = context.read<WatermarkService>();
     final path = await watermarkService.pathOf(asset.id);
-    if (path == null || !mounted) return;
+    if (path == null || !mounted) return null;
 
     final bytes = await File(path).readAsBytes();
     final codec = await ui.instantiateImageCodec(bytes);
@@ -653,17 +697,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final image = frame.image;
     if (!mounted) {
       image.dispose();
-      return;
+      return null;
     }
 
-    final projectService = context.read<ProjectService>();
-    final tileManager = projectService.tileManagerOf(widget.projectId);
-    final w = tileManager.canvasWidth;
-    final h = tileManager.canvasHeight;
-
-    // 右下に控えめなサイズ（キャンバス幅の25%程度）で配置する一般的な
-    // ウォーターマーク位置をデフォルトとする。位置・大きさは追加後に
-    // 変形ツールで自由に調整できる。
     final targetW = w * 0.25;
     final scale = targetW / image.width;
     final drawW = image.width * scale;
@@ -685,32 +721,28 @@ class _TimelineScreenState extends State<TimelineScreen> {
     image.dispose();
     final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
     rendered.dispose();
-    if (byteData == null || !mounted) return;
+    return byteData?.buffer.asUint8List();
+  }
 
-    final layer = projectService.addLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: _currentFrame,
-      type: LayerType.watermark,
-      name: asset.name,
+  /// 文字入力ウォーターマークをキャンバス全体サイズのRGBAピクセルへ
+  /// ラスタライズする（仕様書01・13：「設定項目：画像選択 / 文字入力」）。
+  /// 既存のテキストレイヤー描画エンジン（text_render.dart）を再利用し、
+  /// 画像ウォーターマークと同様に右下へ控えめなサイズで配置する。
+  /// 以後の位置・大きさは追加後に変形ツールで自由に調整できる。
+  Future<Uint8List?> _rasterizeTextWatermark(WatermarkAsset asset, int w, int h) async {
+    final text = asset.text ?? '';
+    if (text.isEmpty) return null;
+    final fontSize = h * 0.045;
+    final color = ui.Color(asset.textColor ?? 0xFFFFFFFF);
+    final textObject = TextObject(
+      id: asset.id,
+      text: text,
+      fontSize: fontSize,
+      color: color,
+      align: TextAlign.right,
+      position: Offset(w * 0.1, h - fontSize * 1.6 - h * 0.02),
     );
-    tileManager.replaceLayerPixels(
-      frameLayerKey(sceneId, _currentFrame, layer.id),
-      byteData.buffer.asUint8List(),
-    );
-    // 既定は「常時表示」（全フレーム）。表示範囲はレイヤーパネルの
-    // 「表示範囲変更」からいつでも変更できる（仕様書05：常時表示／
-    // エンドカード／任意フレームのみ表示はすべて表示範囲設定で実現する）。
-    projectService.updateLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: _currentFrame,
-      layer: layer.copyWith(rangeMode: LayerRangeMode.allFrames),
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('ウォーターマークを追加しました（全フレームに表示されます）: ${asset.name}')),
-    );
+    return rasterizeTextObject(textObject, w, h);
   }
 
   // 移動モード中の吹き出しプレビュー（仕様書05）

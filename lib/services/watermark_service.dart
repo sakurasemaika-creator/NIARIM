@@ -42,7 +42,24 @@ class WatermarkService extends ChangeNotifier {
     final fileName = '$id.$ext';
     await File(sourcePath).copy('${dir.path}/$fileName');
     final name = sourcePath.split(RegExp(r'[\\/]')).last.replaceAll(RegExp(r'\.[^.]+$'), '');
-    final asset = WatermarkAsset(id: id, name: name, fileName: fileName);
+    final asset = WatermarkAsset(id: id, name: name, type: WatermarkAssetType.image, fileName: fileName);
+    _assets.add(asset);
+    await _persist();
+    notifyListeners();
+    return asset;
+  }
+
+  /// 入力した文字列をウォーターマークとして登録する（仕様書01・13：
+  /// 「設定項目：画像選択 / 文字入力」の文字入力側）。
+  Future<WatermarkAsset> addTextWatermark(String text, {required int color}) async {
+    final id = 'wm_${DateTime.now().millisecondsSinceEpoch}_${_counter++}';
+    final asset = WatermarkAsset(
+      id: id,
+      name: text.length > 12 ? '${text.substring(0, 12)}…' : text,
+      type: WatermarkAssetType.text,
+      text: text,
+      textColor: color,
+    );
     _assets.add(asset);
     await _persist();
     notifyListeners();
@@ -52,18 +69,22 @@ class WatermarkService extends ChangeNotifier {
   Future<void> removeWatermark(String id) async {
     final idx = _assets.indexWhere((a) => a.id == id);
     if (idx < 0) return;
-    final dir = await _watermarksDir();
-    final file = File('${dir.path}/${_assets[idx].fileName}');
-    if (file.existsSync()) await file.delete();
+    final fileName = _assets[idx].fileName;
+    if (fileName != null) {
+      final dir = await _watermarksDir();
+      final file = File('${dir.path}/$fileName');
+      if (file.existsSync()) await file.delete();
+    }
     _assets.removeAt(idx);
     await _persist();
     notifyListeners();
   }
 
-  /// ウォーターマークIDの実ファイルパスを解決する（見つからない場合はnull）。
+  /// ウォーターマークIDの実ファイルパスを解決する（画像タイプのみ・
+  /// 見つからない場合や文字タイプの場合はnull）。
   Future<String?> pathOf(String id) async {
     final asset = _assets.where((a) => a.id == id).firstOrNull;
-    if (asset == null) return null;
+    if (asset == null || asset.fileName == null) return null;
     final dir = await _watermarksDir();
     final file = File('${dir.path}/${asset.fileName}');
     return file.existsSync() ? file.path : null;

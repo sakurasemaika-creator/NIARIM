@@ -1,21 +1,42 @@
-/// 登録済みウォーターマーク画像（プレミアム限定、仕様書08・13）。
+/// ウォーターマークの種別（仕様書01・13：「設定項目：画像選択 / 文字入力 / …」）。
+enum WatermarkAssetType { image, text }
+
+/// 登録済みウォーターマーク（プレミアム限定、仕様書08・13）。
 /// 設定画面の「ウォーターマーク」カテゴリで複数登録・管理する。
+/// [type]がimageの場合は[fileName]（アプリのwatermarksディレクトリ内の
+/// ファイル名）を、textの場合は[text]/[textColor]を使用する。
 class WatermarkAsset {
   final String id;
   final String name;
-  final String fileName; // アプリのwatermarksディレクトリ内のファイル名
+  final WatermarkAssetType type;
+  final String? fileName;
+  final String? text;
+  final int? textColor; // ARGB int（type==textの場合のみ使用）
 
   const WatermarkAsset({
     required this.id,
     required this.name,
-    required this.fileName,
+    this.type = WatermarkAssetType.image,
+    this.fileName,
+    this.text,
+    this.textColor,
   });
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'fileName': fileName};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'type': type.name,
+        'fileName': fileName,
+        'text': text,
+        'textColor': textColor,
+      };
 
   factory WatermarkAsset.fromJson(Map<String, dynamic> json) => WatermarkAsset(
         id: json['id'] as String,
         name: json['name'] as String,
-        fileName: json['fileName'] as String,
+        type: WatermarkAssetType.values.asNameMap()[json['type'] as String?] ?? WatermarkAssetType.image,
+        fileName: json['fileName'] as String?,
+        text: json['text'] as String?,
+        textColor: json['textColor'] as int?,
       );
 }
