@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
@@ -295,7 +296,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     child: Container(
                       width: 32, height: 32,
                       decoration: BoxDecoration(
-                        color: Color(part.color),
+                        color: part.gradient == null ? Color(part.color) : null,
+                        gradient: part.gradient == null
+                            ? null
+                            : LinearGradient(
+                                colors: part.gradient!.colors.map(Color.new).toList(),
+                                stops: part.gradient!.stops,
+                              ),
                         shape: BoxShape.circle,
                         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                       ),
@@ -379,7 +386,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
                 final parts = _preset.parts.map((p) =>
-                  p.id == part.id ? AutofillPart(id: p.id, name: nameCtrl.text, color: p.color) : p
+                  p.id == part.id ? p.copyWith(name: nameCtrl.text) : p
                 ).toList();
                 _save(_preset.copyWith(parts: parts), changedPartId: part.id);
               }
@@ -392,22 +399,23 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     ).then((_) => nameCtrl.dispose());
   }
 
+  static const _paletteColors = [
+    0xFFFF0000, 0xFFFF6600, 0xFFFFCC00, 0xFF00CC00,
+    0xFF0066FF, 0xFF9900CC, 0xFFFF99CC, 0xFF996633,
+    0xFFFFD5B0, 0xFF4A3728, 0xFF2C5F8A, 0xFFCCCCCC,
+  ];
+
   void _showColorPicker(AutofillPart part) {
-    final colors = [
-      0xFFFF0000, 0xFFFF6600, 0xFFFFCC00, 0xFF00CC00,
-      0xFF0066FF, 0xFF9900CC, 0xFFFF99CC, 0xFF996633,
-      0xFFFFD5B0, 0xFF4A3728, 0xFF2C5F8A, 0xFFCCCCCC,
-    ];
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('${part.name}の色'),
         content: Wrap(
           spacing: 8, runSpacing: 8,
-          children: colors.map((c) => GestureDetector(
+          children: _paletteColors.map((c) => GestureDetector(
             onTap: () {
               final parts = _preset.parts.map((p) =>
-                p.id == part.id ? AutofillPart(id: p.id, name: p.name, color: c) : p
+                p.id == part.id ? p.copyWith(color: c, gradient: null) : p
               ).toList();
               _save(_preset.copyWith(parts: parts), changedPartId: part.id);
               Navigator.pop(ctx);
@@ -423,9 +431,176 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           )).toList(),
         ),
         actions: [
+          TextButton(
+            onPressed: () { Navigator.pop(ctx); _showGradientEditor(part); },
+            child: const Text('グラデーション設定'),
+          ),
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
         ],
       ),
     );
   }
+
+  /// グラデーション編集ダイアログ（仕様書20：塗り色設定・グラデーション）。
+  /// 自由な色比率編集の代わりに均等配置とし、種類・角度（直線時）・
+  /// 中心位置（放射時、既定は中央）・色（2〜5色）を編集する簡略実装。
+  void _showGradientEditor(AutofillPart part) {
+    var gradient = part.gradient ?? AutofillGradient.defaultTwoColor(part.color, 0xFFFFFFFF);
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text('${part.name}のグラデーション'),
+          content: SizedBox(
+            width: 320,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 32,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      gradient: LinearGradient(
+                        colors: gradient.colors.map(Color.new).toList(),
+                        stops: gradient.stops,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('種類', style: TextStyle(fontSize: 12)),
+                  Wrap(
+                    spacing: 6,
+                    children: AutofillGradientType.values.map((t) => ChoiceChip(
+                      label: Text(_gradientTypeLabel(t), style: const TextStyle(fontSize: 11)),
+                      selected: gradient.type == t,
+                      onSelected: (selected) {
+                        if (selected) setS(() => gradient = gradient.copyWith(type: t));
+                      },
+                    )).toList(),
+                  ),
+                  if (gradient.type == AutofillGradientType.linear) ...[
+                    const SizedBox(height: 8),
+                    Text('角度: ${gradient.angle.round()}°', style: const TextStyle(fontSize: 12)),
+                    Slider(
+                      value: gradient.angle,
+                      min: 0, max: 359,
+                      onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v)),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text('色', style: TextStyle(fontSize: 12)),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: gradient.colors.length >= 5 ? null : () {
+                          final colors = [...gradient.colors, 0xFFFFFFFF];
+                          setS(() => gradient = gradient.copyWith(
+                                colors: colors,
+                                stops: _evenStops(colors.length),
+                              ));
+                        },
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text('色を追加', style: TextStyle(fontSize: 11)),
+                      ),
+                    ],
+                  ),
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    children: List.generate(gradient.colors.length, (i) => GestureDetector(
+                      onTap: () => _pickGradientStopColor(ctx, gradient, i, (updated) {
+                        setS(() => gradient = updated);
+                      }),
+                      onLongPress: gradient.colors.length <= 2 ? null : () {
+                        final colors = List<int>.from(gradient.colors)..removeAt(i);
+                        setS(() => gradient = gradient.copyWith(
+                              colors: colors,
+                              stops: _evenStops(colors.length),
+                            ));
+                      },
+                      child: Container(
+                        width: 36, height: 36,
+                        decoration: BoxDecoration(
+                          color: Color(gradient.colors[i]),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey),
+                        ),
+                      ),
+                    )),
+                  ),
+                  const Text('長押しで削除（2色未満にはできません）',
+                      style: TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                final parts = _preset.parts.map((p) =>
+                  p.id == part.id ? p.copyWith(gradient: null) : p
+                ).toList();
+                _save(_preset.copyWith(parts: parts), changedPartId: part.id);
+                Navigator.pop(ctx);
+              },
+              child: const Text('グラデーション解除'),
+            ),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            FilledButton(
+              onPressed: () {
+                final parts = _preset.parts.map((p) =>
+                  p.id == part.id ? p.copyWith(gradient: gradient) : p
+                ).toList();
+                _save(_preset.copyWith(parts: parts), changedPartId: part.id);
+                Navigator.pop(ctx);
+              },
+              child: const Text('適用'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<double> _evenStops(int count) {
+    if (count <= 1) return const [0.0];
+    return List.generate(count, (i) => i / (count - 1));
+  }
+
+  void _pickGradientStopColor(
+    BuildContext context, AutofillGradient gradient, int index, ValueChanged<AutofillGradient> onPicked) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('色を選択'),
+        content: Wrap(
+          spacing: 8, runSpacing: 8,
+          children: _paletteColors.map((c) => GestureDetector(
+            onTap: () {
+              final colors = List<int>.from(gradient.colors);
+              colors[index] = c;
+              onPicked(gradient.copyWith(colors: colors));
+              Navigator.pop(ctx);
+            },
+            child: Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: Color(c),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey),
+              ),
+            ),
+          )).toList(),
+        ),
+      ),
+    );
+  }
+
+  String _gradientTypeLabel(AutofillGradientType t) => switch (t) {
+        AutofillGradientType.linear => '直線',
+        AutofillGradientType.radialCenterOut => '放射：中央→外側',
+        AutofillGradientType.radialOutCenter => '放射：外側→中央',
+      };
 }
