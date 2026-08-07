@@ -735,6 +735,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     bool outlineEnabled = existing?.outline?.enabled ?? false;
     int outlineColor = existing?.outline?.color.toARGB32() ?? 0xFF000000;
     double outlineWidth = existing?.outline?.width ?? 3;
+    model.TextWritingDirection direction = existing?.direction ?? model.TextWritingDirection.horizontal;
     final fontService = context.read<FontService>();
     showDialog(
       context: context,
@@ -794,6 +795,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       label: const Text('斜体'),
                       selected: isItalic,
                       onSelected: (v) => setS(() => isItalic = v),
+                    ),
+                    const SizedBox(width: 8),
+                    // 縦書き・横書きのワンタップ切替（仕様書15）
+                    ActionChip(
+                      avatar: Icon(
+                        direction == model.TextWritingDirection.vertical
+                            ? Icons.text_rotate_vertical
+                            : Icons.text_rotation_none,
+                        size: 16,
+                      ),
+                      label: Text(direction == model.TextWritingDirection.vertical ? '縦書き' : '横書き'),
+                      onPressed: () => setS(() {
+                        direction = direction == model.TextWritingDirection.vertical
+                            ? model.TextWritingDirection.horizontal
+                            : model.TextWritingDirection.vertical;
+                      }),
                     ),
                   ],
                 ),
@@ -929,6 +946,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     lineHeight: lineHeight,
                     letterSpacing: letterSpacing,
                     align: textAlign,
+                    direction: direction,
                     outline: model.TextOutline(
                         enabled: outlineEnabled, color: Color(outlineColor), width: outlineWidth),
                   );
@@ -950,6 +968,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     lineHeight: lineHeight,
                     letterSpacing: letterSpacing,
                     align: textAlign,
+                    direction: direction,
                     outline: model.TextOutline(
                         enabled: outlineEnabled, color: Color(outlineColor), width: outlineWidth),
                   );
