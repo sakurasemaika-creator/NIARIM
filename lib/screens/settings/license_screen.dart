@@ -53,6 +53,15 @@ class LicenseScreen extends StatelessWidget {
             note: 'Android OS標準搭載フォントをそのまま使用（追加の同梱・'
                 '個別クレジット表記は不要）。',
           ),
+          const _FontCredit(
+            usage: 'テキストツール同梱フォント（フォント選択から利用可能）',
+            name: 'Noto Sans JP / Noto Serif JP / M PLUS Rounded 1c / '
+                'Mochiy Pop One / Yusei Magic / Hachi Maru Pop / Reggae One',
+            author: 'Google Fonts（各フォントの制作者）',
+            license: 'SIL Open Font License 1.1',
+            note: '個人・商用問わず無償で利用可能。Noto Serif JPは白光明朝'
+                'のフォント未対応文字の補完（フォールバック）にも使用する。',
+          ),
           const SizedBox(height: 24),
           _SectionTitle('オープンソースソフトウェアライセンス'),
           ListTile(

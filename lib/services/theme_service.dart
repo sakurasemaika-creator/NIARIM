@@ -173,13 +173,19 @@ class ThemeService extends ChangeNotifier {
     // Text等が明示的に色指定していない場合に使うデフォルト文字色
     // （仕様書24「文字色 | UI全体の文字色」）。
     final baseTextTheme = ThemeData(brightness: brightness, useMaterial3: true).textTheme;
-    // アプリ全体の基本フォント（仕様書24：白光明朝）。数値表示は個別の
+    // アプリ全体の基本フォント（仕様書24：白光明朝）。白光明朝に無い文字
+    // （対応外の漢字・記号等）は、Android標準フォントへ直接落ちて浮いて
+    // 見えないよう、まず源ノ明朝相当（Noto Serif JP）で穴埋めし、それでも
+    // 無い場合のみ端末標準フォントへフォールバックする。数値表示は個別の
     // ウィジェット側でAndroid標準フォント（未指定＝Roboto/Noto Sans）を
     // 明示的に指定して上書きする。
-    final textTheme = baseTextTheme.apply(
-      fontFamily: 'HakkouMincho',
-      bodyColor: preset.textColor,
-      displayColor: preset.textColor,
+    final textTheme = _withFontFallback(
+      baseTextTheme.apply(
+        fontFamily: 'HakkouMincho',
+        bodyColor: preset.textColor,
+        displayColor: preset.textColor,
+      ),
+      const ['NotoSerifJP'],
     );
 
     return ThemeData(
@@ -293,6 +299,30 @@ class ThemeService extends ChangeNotifier {
         unselectedLabelColor: preset.textColor.withValues(alpha: 0.6),
       ),
       dividerTheme: DividerThemeData(color: preset.textColor.withValues(alpha: 0.08)),
+    );
+  }
+
+  /// [textTheme]の全スタイルへ[fallback]（フォント未対応文字の代替フォント
+  /// 列）を適用したコピーを返す。TextTheme.apply()にはfontFamilyFallback
+  /// を指定するオプションが無いため、各スタイルへ個別にcopyWith()する。
+  TextTheme _withFontFallback(TextTheme textTheme, List<String> fallback) {
+    TextStyle? apply(TextStyle? style) => style?.copyWith(fontFamilyFallback: fallback);
+    return textTheme.copyWith(
+      displayLarge: apply(textTheme.displayLarge),
+      displayMedium: apply(textTheme.displayMedium),
+      displaySmall: apply(textTheme.displaySmall),
+      headlineLarge: apply(textTheme.headlineLarge),
+      headlineMedium: apply(textTheme.headlineMedium),
+      headlineSmall: apply(textTheme.headlineSmall),
+      titleLarge: apply(textTheme.titleLarge),
+      titleMedium: apply(textTheme.titleMedium),
+      titleSmall: apply(textTheme.titleSmall),
+      bodyLarge: apply(textTheme.bodyLarge),
+      bodyMedium: apply(textTheme.bodyMedium),
+      bodySmall: apply(textTheme.bodySmall),
+      labelLarge: apply(textTheme.labelLarge),
+      labelMedium: apply(textTheme.labelMedium),
+      labelSmall: apply(textTheme.labelSmall),
     );
   }
 }

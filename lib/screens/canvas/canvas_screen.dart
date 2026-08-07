@@ -15,6 +15,7 @@ import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/help_button.dart';
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
+import '../../models/bundled_fonts.dart';
 import '../../models/layer.dart' as model;
 import '../../models/onion_skin_settings.dart';
 import '../../models/project.dart';
@@ -844,13 +845,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   decoration: const InputDecoration(hintText: 'テキストを入力してください'),
                 ),
                 const SizedBox(height: 12),
-                if (fontService.fonts.isNotEmpty)
-                  DropdownButtonFormField<String>(
+                DropdownButtonFormField<String>(
                     initialValue: fontFamily,
                     isExpanded: true,
                     decoration: const InputDecoration(labelText: 'フォント', isDense: true),
                     items: [
                       const DropdownMenuItem(value: 'Roboto', child: Text('標準フォント')),
+                      // あらかじめ同梱しているフリーフォント（全てSIL Open Font
+                      // License、Google Fonts配布分。ライセンス表記は設定画面
+                      // 「利用規約・ライセンス」参照）
+                      for (final f in kBundledFonts)
+                        DropdownMenuItem(
+                          value: f.family,
+                          child: Text(f.displayName, style: TextStyle(fontFamily: f.family)),
+                        ),
                       ...fontService.fonts.map((f) => DropdownMenuItem(
                             value: fontService.familyNameOf(f),
                             child: Text(f.displayName, style: TextStyle(fontFamily: fontService.familyNameOf(f))),

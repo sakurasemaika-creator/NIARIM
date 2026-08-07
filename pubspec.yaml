@@ -54,3 +54,29 @@ flutter:
     - family: Kuramubon
       fonts:
         - asset: assets/fonts/Kuramubon.otf
+    # 白光明朝のフォールバック用（源ノ明朝相当。GoogleがSource Han Serifを
+    # ベースにビルドしたNoto Serif JP、SIL Open Font License 1.1）。
+    # テキストツールの選択肢としても使用する。
+    - family: NotoSerifJP
+      fonts:
+        - asset: assets/fonts/NotoSerifJP.ttf
+    # 以下、テキストツール用にあらかじめ同梱するフリーフォント（いずれも
+    # Google Fontsのofl/配下＝SIL Open Font License、日本語対応）。
+    - family: NotoSansJP
+      fonts:
+        - asset: assets/fonts/NotoSansJP.ttf
+    - family: MPLUSRounded1c
+      fonts:
+        - asset: assets/fonts/MPLUSRounded1c-Regular.ttf
+    - family: MochiyPopOne
+      fonts:
+        - asset: assets/fonts/MochiyPopOne-Regular.ttf
+    - family: YuseiMagic
+      fonts:
+        - asset: assets/fonts/YuseiMagic-Regular.ttf
+    - family: HachiMaruPop
+      fonts:
+        - asset: assets/fonts/HachiMaruPop-Regular.ttf
+    - family: ReggaeOne
+      fonts:
+        - asset: assets/fonts/ReggaeOne-Regular.ttf
