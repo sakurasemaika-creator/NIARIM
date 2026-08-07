@@ -17,13 +17,25 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   int _fps = 12;
   int _durationSeconds = 10;
   Color _backgroundColor = Colors.white;
-  final int _exportWidth = 1920;
-  final int _exportHeight = 1080;
+  // 書き出しサイズ（仕様書07・26：1920×1080/1280×720/3840×2160等から選択、
+  // またはカスタムサイズを指定できる）。
+  int _exportWidth = 1920;
+  int _exportHeight = 1080;
+  bool _customSize = false;
+  late final TextEditingController _customWidthController;
+  late final TextEditingController _customHeightController;
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
   bool _drawingAreaEnabled = false;
   double _drawingAreaScale = 2.0;
 
   static const List<int> fpsOptions = [8, 12, 24, 30];
+
+  // 書き出しサイズプリセット（仕様書07：例として明記されているサイズ）。
+  static const List<(int, int, String)> sizePresets = [
+    (1920, 1080, 'Full HD'),
+    (1280, 720, 'HD'),
+    (3840, 2160, '4K'),
+  ];
 
   @override
   void initState() {
@@ -32,12 +44,34 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _fps = settings.defaultFps;
     _drawingAreaEnabled = settings.defaultDrawingAreaEnabled;
     _drawingAreaScale = settings.defaultDrawingAreaScale;
+    _customWidthController = TextEditingController(text: '$_exportWidth');
+    _customHeightController = TextEditingController(text: '$_exportHeight');
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _customWidthController.dispose();
+    _customHeightController.dispose();
     super.dispose();
+  }
+
+  void _selectPreset(int width, int height) {
+    setState(() {
+      _customSize = false;
+      _exportWidth = width;
+      _exportHeight = height;
+    });
+  }
+
+  void _applyCustomSize() {
+    final w = int.tryParse(_customWidthController.text);
+    final h = int.tryParse(_customHeightController.text);
+    if (w == null || h == null) return;
+    setState(() {
+      _exportWidth = w.clamp(64, 7680);
+      _exportHeight = h.clamp(64, 7680);
+    });
   }
 
   @override
@@ -66,6 +100,53 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 onSelected: (selected) { if (selected) setState(() => _fps = fps); },
               )).toList(),
             ),
+            const SizedBox(height: 24),
+            const Text('サイズ', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ...sizePresets.map((preset) {
+                  final (w, h, label) = preset;
+                  final selected = !_customSize && _exportWidth == w && _exportHeight == h;
+                  return ChoiceChip(
+                    label: Text('$label ($w×$h)'),
+                    selected: selected,
+                    onSelected: (s) { if (s) _selectPreset(w, h); },
+                  );
+                }),
+                ChoiceChip(
+                  label: const Text('カスタム'),
+                  selected: _customSize,
+                  onSelected: (s) => setState(() => _customSize = s),
+                ),
+              ],
+            ),
+            if (_customSize) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _customWidthController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: '幅(px)', border: OutlineInputBorder()),
+                      onChanged: (_) => _applyCustomSize(),
+                    ),
+                  ),
+                  const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('×')),
+                  Expanded(
+                    child: TextField(
+                      controller: _customHeightController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: '高さ(px)', border: OutlineInputBorder()),
+                      onChanged: (_) => _applyCustomSize(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 24),
             const Text('長さ（秒）', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
