@@ -1516,7 +1516,7 @@ class _LayerPanelState extends State<LayerPanel> {
   /// レイヤーのピクセル内容を新しい画像で丸ごと差し替える（位置・トランスフォームは
   /// 維持したまま、キャンバス全体に収まるよう中央寄せ・アスペクト比維持で描き直す）。
   Future<void> _replaceMaterial(BuildContext context, model.Layer layer) async {
-    final result = await FilePicker.pickFiles(
+    final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: false,
     );
@@ -1576,7 +1576,7 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   Future<void> _importImage(BuildContext context) async {
-    final result = await FilePicker.pickFiles(
+    final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: false,
     );
