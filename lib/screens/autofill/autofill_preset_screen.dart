@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
+import '../../models/layer.dart' show LayerBlendMode;
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
+import '../../services/tone_service.dart';
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -257,6 +259,8 @@ class _PresetDetailScreen extends StatefulWidget {
 
 class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   late AutofillPreset _preset;
+  String _partSearchQuery = '';
+  bool _isSearchingParts = false;
 
   @override
   void initState() {
@@ -269,30 +273,68 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     widget.onUpdate(updated, changedPartId: changedPartId);
   }
 
+  List<AutofillPart> get _filteredParts => _partSearchQuery.isEmpty
+      ? _preset.parts
+      : _preset.parts.where((p) => p.name.contains(_partSearchQuery)).toList();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_preset.name)),
+      appBar: AppBar(
+        title: _isSearchingParts
+            ? TextField(
+                autofocus: true,
+                decoration: const InputDecoration(hintText: 'パーツ名で検索', border: InputBorder.none),
+                onChanged: (v) => setState(() => _partSearchQuery = v),
+              )
+            : Text(_preset.name),
+        actions: [
+          // 検索（仕様書20：「検索・並び替え・お気に入り登録に対応」）
+          IconButton(
+            icon: Icon(_isSearchingParts ? Icons.close : Icons.search),
+            onPressed: () => setState(() {
+              _isSearchingParts = !_isSearchingParts;
+              if (!_isSearchingParts) _partSearchQuery = '';
+            }),
+          ),
+        ],
+      ),
       body: _preset.parts.isEmpty
           ? Center(
               child: Text('パーツがありません\n＋ボタンで追加してください',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             )
-          : ReorderableListView.builder(
-              itemCount: _preset.parts.length,
-              onReorder: (oldIdx, newIdx) {
-                final parts = List<AutofillPart>.from(_preset.parts);
-                final item = parts.removeAt(oldIdx);
-                parts.insert(newIdx > oldIdx ? newIdx - 1 : newIdx, item);
-                _save(_preset.copyWith(parts: parts));
-              },
-              itemBuilder: (context, index) {
-                final part = _preset.parts[index];
-                return ListTile(
+          // 検索中は並び替え無効の通常リスト、非検索時のみドラッグ並び替え可能な
+          // ReorderableListViewを使う（フィルタ中はインデックスが元リストとずれるため）
+          : _partSearchQuery.isNotEmpty
+              ? ListView.builder(
+                  itemCount: _filteredParts.length,
+                  itemBuilder: (context, index) => _partTile(_filteredParts[index]),
+                )
+              : ReorderableListView.builder(
+                  itemCount: _preset.parts.length,
+                  onReorder: (oldIdx, newIdx) {
+                    final parts = List<AutofillPart>.from(_preset.parts);
+                    final item = parts.removeAt(oldIdx);
+                    parts.insert(newIdx > oldIdx ? newIdx - 1 : newIdx, item);
+                    _save(_preset.copyWith(parts: parts));
+                  },
+                  itemBuilder: (context, index) => _partTile(_preset.parts[index]),
+                ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddPartDialog,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  /// パーツ一覧の1行（仕様書20：「[サムネイル] パーツ名 [色チップ] ✓設定完了マーク」）。
+  Widget _partTile(AutofillPart part) {
+    return ListTile(
                   key: ValueKey(part.id),
                   leading: GestureDetector(
-                    onTap: () => _showColorPicker(part),
+                    onTap: () => _showPartDetailDialog(part),
                     child: Container(
                       width: 32, height: 32,
                       decoration: BoxDecoration(
@@ -309,9 +351,28 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ),
                   ),
                   title: Text(part.name),
+                  // ✓設定完了マーク（仕様書20：保存チェック）
+                  subtitle: part.isConfigured
+                      ? null
+                      : const Text('トーンが未選択です', style: TextStyle(fontSize: 10, color: Colors.red)),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Icon(
+                        part.isConfigured ? Icons.check_circle : Icons.error_outline,
+                        size: 16,
+                        color: part.isConfigured ? Colors.green : Colors.red,
+                      ),
+                      IconButton(
+                        icon: Icon(part.isFavorite ? Icons.star : Icons.star_border,
+                            size: 18, color: part.isFavorite ? Colors.amber : null),
+                        onPressed: () {
+                          final parts = _preset.parts
+                              .map((p) => p.id == part.id ? p.copyWith(isFavorite: !p.isFavorite) : p)
+                              .toList();
+                          _save(_preset.copyWith(parts: parts));
+                        },
+                      ),
                       IconButton(
                         icon: const Icon(Icons.edit, size: 18),
                         onPressed: () => _showEditPartDialog(part),
@@ -327,13 +388,6 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ],
                   ),
                 );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddPartDialog,
-        child: const Icon(Icons.add),
-      ),
-    );
   }
 
   void _showAddPartDialog() {
@@ -405,38 +459,205 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     0xFFFFD5B0, 0xFF4A3728, 0xFF2C5F8A, 0xFFCCCCCC,
   ];
 
-  void _showColorPicker(AutofillPart part) {
+  static const _lineColorModeLabels = {
+    AutofillLineColorMode.specified: '指定色',
+    AutofillLineColorMode.sameAsFill: '塗り色と同じ',
+    AutofillLineColorMode.traceAdjust: '色トレス・線画馴染ませ',
+  };
+
+  static const _blendModeLabels = {
+    LayerBlendMode.normal: '通常',
+    LayerBlendMode.multiply: '乗算',
+    LayerBlendMode.screen: 'スクリーン',
+    LayerBlendMode.overlay: 'オーバーレイ',
+    LayerBlendMode.addition: '加算',
+    LayerBlendMode.subtract: '減算',
+    LayerBlendMode.darken: '比較（暗）',
+    LayerBlendMode.lighten: '比較（明）',
+    LayerBlendMode.colorBurn: '焼き込みカラー',
+    LayerBlendMode.colorDodge: '覆い焼きカラー',
+    LayerBlendMode.hardLight: 'ハードライト',
+    LayerBlendMode.softLight: 'ソフトライト',
+    LayerBlendMode.difference: '差の絶対値',
+    LayerBlendMode.hue: '色相',
+    LayerBlendMode.saturation: '彩度',
+    LayerBlendMode.color: 'カラー',
+    LayerBlendMode.luminosity: '輝度',
+  };
+
+  /// 詳細設定ポップアップ（仕様書20：色チップタップ時。塗り色・線画色・
+  /// グラデーション・トーン・ブレンドモード・不透明度をすべてリアルタイム
+  /// プレビュー付きで設定する）。
+  void _showPartDetailDialog(AutofillPart part) {
+    var current = part;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('${part.name}の色'),
-        content: Wrap(
-          spacing: 8, runSpacing: 8,
-          children: _paletteColors.map((c) => GestureDetector(
-            onTap: () {
-              final parts = _preset.parts.map((p) =>
-                p.id == part.id ? p.copyWith(color: c, gradient: null) : p
-              ).toList();
-              _save(_preset.copyWith(parts: parts), changedPartId: part.id);
-              Navigator.pop(ctx);
-            },
-            child: Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(
-                color: Color(c),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          final tones = context.watch<ToneService>().tones;
+          return AlertDialog(
+            title: Text('${part.name}の詳細設定'),
+            content: SizedBox(
+              width: 340,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // リアルタイムプレビュー
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color: current.gradient == null ? Color(current.color) : null,
+                        gradient: current.gradient == null
+                            ? null
+                            : LinearGradient(
+                                colors: current.gradient!.colors.map(Color.new).toList(),
+                                stops: current.gradient!.stops,
+                              ),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('塗り色', style: Theme.of(ctx).textTheme.titleSmall),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 8, runSpacing: 8,
+                      children: _paletteColors.map((c) => GestureDetector(
+                        onTap: () => setS(() => current = current.copyWith(color: c, gradient: null)),
+                        child: Container(
+                          width: 28, height: 28,
+                          decoration: BoxDecoration(
+                            color: Color(c),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: current.gradient == null && current.color == c
+                                    ? Theme.of(ctx).colorScheme.primary
+                                    : Colors.grey,
+                                width: current.gradient == null && current.color == c ? 2 : 1),
+                          ),
+                        ),
+                      )).toList(),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final updated = await _showGradientEditor(current);
+                        if (updated != null) setS(() => current = updated);
+                      },
+                      icon: const Icon(Icons.gradient, size: 16),
+                      label: Text(current.gradient == null ? 'グラデーション設定' : 'グラデーション編集',
+                          style: const TextStyle(fontSize: 12)),
+                    ),
+                    Text('不透明度（塗りレイヤー）: ${current.opacity}%', style: const TextStyle(fontSize: 12)),
+                    Slider(
+                      value: current.opacity.toDouble(),
+                      min: 0, max: 100, divisions: 100,
+                      onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
+                    ),
+                    const Divider(),
+                    Text('線画色', style: Theme.of(ctx).textTheme.titleSmall),
+                    ...AutofillLineColorMode.values.map((m) => RadioListTile<AutofillLineColorMode>(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(_lineColorModeLabels[m]!, style: const TextStyle(fontSize: 13)),
+                          value: m,
+                          groupValue: current.lineColorMode,
+                          onChanged: (v) => setS(() => current = current.copyWith(lineColorMode: v)),
+                        )),
+                    if (current.lineColorMode == AutofillLineColorMode.specified) ...[
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8, runSpacing: 8,
+                        children: _paletteColors.map((c) => GestureDetector(
+                          onTap: () => setS(() => current = current.copyWith(lineColor: c)),
+                          child: Container(
+                            width: 24, height: 24,
+                            decoration: BoxDecoration(
+                              color: Color(c),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: current.lineColor == c ? Theme.of(ctx).colorScheme.primary : Colors.grey,
+                                  width: current.lineColor == c ? 2 : 1),
+                            ),
+                          ),
+                        )).toList(),
+                      ),
+                    ],
+                    if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
+                      Text('色相: ${current.traceHue.round()}', style: const TextStyle(fontSize: 11)),
+                      Slider(
+                        value: current.traceHue, min: -180, max: 180,
+                        onChanged: (v) => setS(() => current = current.copyWith(traceHue: v)),
+                      ),
+                      Text('彩度: ${current.traceSaturation.round()}', style: const TextStyle(fontSize: 11)),
+                      Slider(
+                        value: current.traceSaturation, min: 0, max: 100,
+                        onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v)),
+                      ),
+                      Text('明度: ${current.traceLightness.round()}', style: const TextStyle(fontSize: 11)),
+                      Slider(
+                        value: current.traceLightness, min: -100, max: 100,
+                        onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v)),
+                      ),
+                    ],
+                    Text('不透明度（線画レイヤー）: ${current.lineOpacity}%', style: const TextStyle(fontSize: 12)),
+                    Slider(
+                      value: current.lineOpacity.toDouble(),
+                      min: 0, max: 100, divisions: 100,
+                      onChanged: (v) => setS(() => current = current.copyWith(lineOpacity: v.round())),
+                    ),
+                    const Divider(),
+                    Text('トーン', style: Theme.of(ctx).textTheme.titleSmall),
+                    CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('トーンを使用', style: TextStyle(fontSize: 13)),
+                      value: current.useTone,
+                      onChanged: (v) => setS(() => current = current.copyWith(useTone: v)),
+                    ),
+                    if (current.useTone)
+                      Wrap(
+                        spacing: 6, runSpacing: 6,
+                        children: tones.map((t) {
+                          final selected = current.toneId == t.id;
+                          return ChoiceChip(
+                            label: Text(t.name, style: const TextStyle(fontSize: 10)),
+                            selected: selected,
+                            onSelected: (_) => setS(() => current = current.copyWith(toneId: t.id)),
+                          );
+                        }).toList(),
+                      ),
+                    const Divider(),
+                    Text('ブレンドモード', style: Theme.of(ctx).textTheme.titleSmall),
+                    DropdownButtonFormField<LayerBlendMode>(
+                      initialValue: current.blendMode,
+                      isExpanded: true,
+                      decoration: const InputDecoration(isDense: true),
+                      items: LayerBlendMode.values
+                          .map((m) => DropdownMenuItem(
+                              value: m, child: Text(_blendModeLabels[m]!, style: const TextStyle(fontSize: 13))))
+                          .toList(),
+                      onChanged: (v) => setS(() => current = current.copyWith(blendMode: v)),
+                    ),
+                  ],
+                ),
               ),
             ),
-          )).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () { Navigator.pop(ctx); _showGradientEditor(part); },
-            child: const Text('グラデーション設定'),
-          ),
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
-        ],
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+              FilledButton(
+                onPressed: () {
+                  final parts =
+                      _preset.parts.map((p) => p.id == part.id ? current : p).toList();
+                  _save(_preset.copyWith(parts: parts), changedPartId: part.id);
+                  Navigator.pop(ctx);
+                },
+                child: const Text('適用'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -444,9 +665,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// グラデーション編集ダイアログ（仕様書20：塗り色設定・グラデーション）。
   /// 自由な色比率編集の代わりに均等配置とし、種類・角度（直線時）・
   /// 中心位置（放射時、既定は中央）・色（2〜5色）を編集する簡略実装。
-  void _showGradientEditor(AutofillPart part) {
+  Future<AutofillPart?> _showGradientEditor(AutofillPart part) {
     var gradient = part.gradient ?? AutofillGradient.defaultTwoColor(part.color, 0xFFFFFFFF);
-    showDialog(
+    return showDialog<AutofillPart>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
@@ -538,24 +759,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                final parts = _preset.parts.map((p) =>
-                  p.id == part.id ? p.copyWith(gradient: null) : p
-                ).toList();
-                _save(_preset.copyWith(parts: parts), changedPartId: part.id);
-                Navigator.pop(ctx);
-              },
+              onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: null)),
               child: const Text('グラデーション解除'),
             ),
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
             FilledButton(
-              onPressed: () {
-                final parts = _preset.parts.map((p) =>
-                  p.id == part.id ? p.copyWith(gradient: gradient) : p
-                ).toList();
-                _save(_preset.copyWith(parts: parts), changedPartId: part.id);
-                Navigator.pop(ctx);
-              },
+              onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: gradient)),
               child: const Text('適用'),
             ),
           ],

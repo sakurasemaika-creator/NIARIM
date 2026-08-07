@@ -419,6 +419,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
           context.read<BrushService>().setCurrentColor(color);
         },
         onClose: () => setState(() => _showColorPicker = false),
+        // カラーピッカー内のスポイトボタン（仕様書20）：スポイトツールへ切り替えて
+        // キャンバス上の色を取得できるようにする
+        onEyedropperTap: () => setState(() {
+          _currentTool = DrawingTool.eyedropper;
+          _showColorPicker = false;
+        }),
       );
 
   Widget _brushPanel() =>

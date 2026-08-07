@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
+import '../../../engine/procedural_texture.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
+import '../../../services/tone_service.dart';
 import '../../../widgets/first_use_tooltip.dart';
 
 class LayerPanel extends StatefulWidget {
@@ -1317,6 +1319,15 @@ class _LayerPanelState extends State<LayerPanel> {
       img.dispose();
     }
 
+    // トーン設定（仕様書20：ONにするとトーン一覧から選択したトーンを現在色で
+    // 描画する。バケツトーンエンジンと同じテクスチャ生成・ループ配置方式）。
+    Uint8List? toneTexture;
+    const toneSize = 64;
+    if (part.useTone && part.toneId != null) {
+      final tone = context.read<ToneService>().tones.where((t) => t.id == part.toneId).firstOrNull;
+      if (tone != null) toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
+    }
+
     final engine = autofill.AutofillEngine();
     // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る
     final effectiveMode = hasExisting ? mode : autofill.AutofillMode.repaint;
@@ -1327,6 +1338,9 @@ class _LayerPanelState extends State<LayerPanel> {
       width: w,
       height: h,
       part: part,
+      toneTexture: toneTexture,
+      toneWidth: toneSize,
+      toneHeight: toneSize,
     );
     if (result == null) return;
     if (!context.mounted) return;
@@ -1357,6 +1371,10 @@ class _LayerPanelState extends State<LayerPanel> {
 
     tileManager.replaceLayerPixels(
         frameLayerKey(widget.sceneId, widget.frameIndex, autofillLayer.id), result);
+    // 塗り色の不透明度は100%固定とし、プリセットの不透明度はレイヤー不透明度として
+    // 反映する（仕様書20：レイヤー不透明度、理由：手動加筆時の重ね描きで濃さが
+    // 変化するのを防ぐため）。ブレンドモードは塗りレイヤー・線画レイヤーの両方へ
+    // 反映する。
     projectService.updateLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
@@ -1364,8 +1382,26 @@ class _LayerPanelState extends State<LayerPanel> {
       layer: autofillLayer.copyWith(
         partId: part.id,
         needsAutofillUpdate: false,
+        opacity: part.opacity,
+        blendMode: part.blendMode,
         opacityLocked: effectiveMode == autofill.AutofillMode.colorUpdate ? true : autofillLayer.opacityLocked,
       ),
+    );
+
+    // 線画色設定（仕様書20：指定色／塗り色と同じ／色トレス・線画馴染ませ）を
+    // 線画レイヤーへ適用する。不透明度はレイヤー不透明度として反映し、
+    // ブレンドモードは塗りレイヤーと同じ値を自動反映する。
+    final recoloredLineart =
+        engine.recolorLineart(lineartData: lineartBytes, width: w, height: h, part: part);
+    if (!identical(recoloredLineart, lineartBytes)) {
+      tileManager.replaceLayerPixels(
+          frameLayerKey(widget.sceneId, widget.frameIndex, lineartLayer.id), recoloredLineart);
+    }
+    projectService.updateLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layer: lineartLayer.copyWith(opacity: part.lineOpacity, blendMode: part.blendMode),
     );
     setState(() {});
   }
