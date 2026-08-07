@@ -576,7 +576,10 @@ class _LayerPanelState extends State<LayerPanel> {
       case model.LayerRangeMode.currentScene:
         return '現在シーン';
       case model.LayerRangeMode.sceneRange:
-        return 'シーン指定';
+        if (layer.rangeSceneId == null) return 'シーン指定';
+        final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
+        final scene = scenes.where((s) => s.id == layer.rangeSceneId).firstOrNull;
+        return scene != null ? scene.displayName : 'シーン指定';
       case model.LayerRangeMode.frameRange:
         final s = layer.rangeStart ?? 1;
         final e = layer.rangeEnd ?? s;
@@ -699,18 +702,30 @@ class _LayerPanelState extends State<LayerPanel> {
     ).then((_) => nameCtrl.dispose());
   }
 
-  void _showRangeChangeDialog(BuildContext context, model.Layer layer) {
-    final totalFrames = context.read<ProjectService>().frameCount(widget.projectId, widget.sceneId);
+  /// 表示範囲設定ダイアログ（仕様書16：共通レイヤー・タイムライン素材レイヤー）。
+  /// 既存レイヤーの変更（[onConfirm]省略時はupdateLayerを直接呼ぶ）・新規作成時の
+  /// 設定（[onConfirm]を渡すとその関数へ結果を渡すのみで自動更新しない）の両方に使う。
+  void _showRangeChangeDialog(
+    BuildContext context,
+    model.Layer layer, {
+    String? title,
+    String confirmLabel = 'OK',
+    void Function(model.LayerRangeMode mode, int start, int end, String? rangeSceneId)? onConfirm,
+  }) {
+    final ps = context.read<ProjectService>();
+    final totalFrames = ps.frameCount(widget.projectId, widget.sceneId);
+    final scenes = ps.scenesOf(widget.projectId);
     final startCtrl = TextEditingController(
         text: (layer.rangeStart ?? 1).toString());
     final endCtrl = TextEditingController(
         text: (layer.rangeEnd ?? (totalFrames > 0 ? totalFrames : 1)).toString());
     model.LayerRangeMode mode = layer.rangeMode;
+    String? sceneId = layer.rangeSceneId ?? widget.sceneId;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('表示範囲'),
+          title: Text(title ?? '表示範囲'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -759,6 +774,26 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
                 RadioListTile<model.LayerRangeMode>(
                   dense: true,
+                  title: const Text('シーン指定'),
+                  value: model.LayerRangeMode.sceneRange,
+                  groupValue: mode,
+                  onChanged: (v) => setS(() => mode = v!),
+                ),
+                if (mode == model.LayerRangeMode.sceneRange)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+                    child: DropdownButtonFormField<String>(
+                      initialValue: scenes.any((s) => s.id == sceneId) ? sceneId : scenes.firstOrNull?.id,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: '対象シーン', isDense: true),
+                      items: scenes
+                          .map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName)))
+                          .toList(),
+                      onChanged: (v) => setS(() => sceneId = v),
+                    ),
+                  ),
+                RadioListTile<model.LayerRangeMode>(
+                  dense: true,
                   title: const Text('フレーム範囲指定'),
                   value: model.LayerRangeMode.frameRange,
                   groupValue: mode,
@@ -773,19 +808,25 @@ class _LayerPanelState extends State<LayerPanel> {
               onPressed: () {
                 final start = int.tryParse(startCtrl.text) ?? 1;
                 final end = int.tryParse(endCtrl.text) ?? start;
-                context.read<ProjectService>().updateLayer(
-                  projectId: widget.projectId,
-                  sceneId: widget.sceneId,
-                  frameIndex: widget.frameIndex,
-                  layer: layer.copyWith(
-                    rangeMode: mode,
-                    rangeStart: start,
-                    rangeEnd: end,
-                  ),
-                );
+                final resolvedSceneId = mode == model.LayerRangeMode.sceneRange ? sceneId : null;
+                if (onConfirm != null) {
+                  onConfirm(mode, start, end, resolvedSceneId);
+                } else {
+                  context.read<ProjectService>().updateLayer(
+                    projectId: widget.projectId,
+                    sceneId: widget.sceneId,
+                    frameIndex: widget.frameIndex,
+                    layer: layer.copyWith(
+                      rangeMode: mode,
+                      rangeStart: start,
+                      rangeEnd: end,
+                      rangeSceneId: resolvedSceneId,
+                    ),
+                  );
+                }
                 Navigator.pop(ctx);
               },
-              child: const Text('OK'),
+              child: Text(confirmLabel),
             ),
           ],
         ),
@@ -811,7 +852,7 @@ class _LayerPanelState extends State<LayerPanel> {
             ListTile(
               leading: const Icon(Icons.link, color: Colors.blue),
               title: const Text('共通レイヤー'),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.common, '共通'); },
+              onTap: () { Navigator.pop(ctx); _addCommonLayer(context); },
             ),
             ListTile(
               leading: const Icon(Icons.folder),
@@ -833,6 +874,41 @@ class _LayerPanelState extends State<LayerPanel> {
           ],
         ),
       ),
+    );
+  }
+
+  /// 共通レイヤーの新規追加（仕様書16「追加時の設定」）。追加前に表示範囲
+  /// （共通レイヤー範囲）を設定するダイアログを表示してから作成する。
+  void _addCommonLayer(BuildContext context) {
+    final layers = context.read<ProjectService>().layersOf(
+        widget.projectId, widget.sceneId, widget.frameIndex);
+    final visible = _visibleLayers(layers);
+    final placeholder = model.Layer(
+      id: '', name: '', type: model.LayerType.common,
+    );
+    _showRangeChangeDialog(
+      context,
+      placeholder,
+      title: '共通レイヤー範囲',
+      confirmLabel: '作成',
+      onConfirm: (mode, start, end, rangeSceneId) {
+        final ps = context.read<ProjectService>();
+        final created = ps.addLayer(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          type: model.LayerType.common,
+          name: '共通${visible.length + 1}',
+        );
+        ps.updateLayer(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layer: created.copyWith(
+            rangeMode: mode, rangeStart: start, rangeEnd: end, rangeSceneId: rangeSceneId),
+        );
+        setState(() => _selectedIndex = 0);
+      },
     );
   }
 
@@ -930,8 +1006,92 @@ class _LayerPanelState extends State<LayerPanel> {
                 value: layer.hasMask,
                 onChanged: (v) { update((l) => l.copyWith(hasMask: v)); Navigator.pop(ctx); },
               ),
+              if (layer.type == model.LayerType.normal)
+                ListTile(
+                  leading: const Icon(Icons.link, color: Colors.blue),
+                  title: const Text('共通レイヤーへ変更'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showConvertToCommonDialog(context, layer);
+                  },
+                ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// 共通レイヤー化ダイアログ（仕様書16）。「現在レイヤーを共通化」／
+  /// 「表示中レイヤーを複製して全統合して共通化」の2択→表示範囲設定→変換実行。
+  void _showConvertToCommonDialog(BuildContext context, model.Layer layer) {
+    int selected = 0;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: const Text('共通レイヤーへ変更'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<int>(
+                title: const Text('現在レイヤーを共通化'),
+                subtitle: const Text('このレイヤーのみを共通レイヤーとして設定します', style: TextStyle(fontSize: 11)),
+                value: 0,
+                groupValue: selected,
+                onChanged: (v) => setS(() => selected = v!),
+              ),
+              RadioListTile<int>(
+                title: const Text('表示中レイヤーを複製して全統合して共通化'),
+                subtitle: const Text('表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します', style: TextStyle(fontSize: 11)),
+                value: 1,
+                groupValue: selected,
+                onChanged: (v) => setS(() => selected = v!),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                final placeholder = model.Layer(id: '', name: '', type: model.LayerType.common);
+                _showRangeChangeDialog(
+                  context,
+                  placeholder,
+                  title: '共通レイヤー範囲',
+                  confirmLabel: '作成',
+                  onConfirm: (mode, start, end, rangeSceneId) {
+                    final ps = context.read<ProjectService>();
+                    if (selected == 0) {
+                      ps.convertLayerToCommon(
+                        projectId: widget.projectId,
+                        sceneId: widget.sceneId,
+                        frameIndex: widget.frameIndex,
+                        layer: layer,
+                        rangeMode: mode,
+                        rangeStart: start,
+                        rangeEnd: end,
+                        rangeSceneId: rangeSceneId,
+                      );
+                    } else {
+                      ps.addFlattenedCommonLayer(
+                        projectId: widget.projectId,
+                        sceneId: widget.sceneId,
+                        frameIndex: widget.frameIndex,
+                        rangeMode: mode,
+                        rangeStart: start,
+                        rangeEnd: end,
+                        rangeSceneId: rangeSceneId,
+                      );
+                    }
+                    setState(() => _selectedIndex = 0);
+                  },
+                );
+              },
+              child: const Text('OK'),
+            ),
+          ],
         ),
       ),
     );
@@ -977,7 +1137,7 @@ class _LayerPanelState extends State<LayerPanel> {
     model.LayerBlendMode.darken      => '比較（暗）',
     model.LayerBlendMode.lighten     => '比較（明）',
     model.LayerBlendMode.colorBurn   => '焼き込みカラー',
-    model.LayerBlendMode.colorDodge  => '発光カラー',
+    model.LayerBlendMode.colorDodge  => '覆い焼きカラー',
     model.LayerBlendMode.hardLight   => 'ハードライト',
     model.LayerBlendMode.softLight   => 'ソフトライト',
     model.LayerBlendMode.difference  => '差の絶対値',

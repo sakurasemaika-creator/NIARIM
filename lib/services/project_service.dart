@@ -1122,6 +1122,85 @@ class ProjectService extends ChangeNotifier {
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, latestLayers);
   }
 
+  /// 通常レイヤーを共通レイヤーへ変換する（仕様書16：共通レイヤー化ダイアログ
+  /// 「現在レイヤーを共通化」）。既存のピクセルデータ・位置はそのまま、
+  /// 変換した時点のフレームを新しいホーム位置として登録する。
+  void convertLayerToCommon({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required Layer layer,
+    required LayerRangeMode rangeMode,
+    required int rangeStart,
+    required int rangeEnd,
+    String? rangeSceneId,
+  }) {
+    updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: layer.copyWith(
+        type: LayerType.common,
+        rangeMode: rangeMode,
+        rangeStart: rangeStart,
+        rangeEnd: rangeEnd,
+        rangeSceneId: rangeSceneId,
+      ),
+    );
+    (_layerHomes[projectId] ??= {})[layer.id] = (sceneId: sceneId, frameIndex: frameIndex);
+    notifyListeners();
+  }
+
+  /// 表示中の全レイヤーを1枚に統合し、新しい共通レイヤーとして追加する
+  /// （仕様書16：共通レイヤー化ダイアログ「表示中レイヤーを複製して全統合して
+  /// 共通化」）。元のレイヤーは変更しない。
+  Future<void> addFlattenedCommonLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required LayerRangeMode rangeMode,
+    required int rangeStart,
+    required int rangeEnd,
+    String? rangeSceneId,
+  }) async {
+    final tm = _tileManagers[projectId];
+    if (tm == null) return;
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    if (layers.isEmpty) return;
+    final flattened = await LayerCompositor.composite(
+      tm,
+      layers,
+      (l) => tileKeyFor(projectId, sceneId, frameIndex, l.id),
+      tm.canvasWidth,
+      tm.canvasHeight,
+    );
+    final byteData = await flattened.toByteData(format: ui.ImageByteFormat.rawRgba);
+    flattened.dispose();
+    if (byteData == null) return;
+
+    final visible = layers.where((l) => l.parentFolderId == null).length;
+    final created = addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      type: LayerType.common,
+      name: '共通${visible + 1}',
+    );
+    tm.replaceLayerPixels(
+        frameLayerKey(sceneId, frameIndex, created.id), byteData.buffer.asUint8List());
+    updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: created.copyWith(
+        rangeMode: rangeMode,
+        rangeStart: rangeStart,
+        rangeEnd: rangeEnd,
+        rangeSceneId: rangeSceneId,
+      ),
+    );
+  }
+
   // ─── Project CRUD ─────────────────────────────────────────────────────
 
   Future<Project> createProject({

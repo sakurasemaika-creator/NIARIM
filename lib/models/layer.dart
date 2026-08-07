@@ -20,6 +20,8 @@ class Layer {
   final LayerRangeMode rangeMode;
   final int? rangeStart; // 1始まり・ユーザー表示値
   final int? rangeEnd;
+  // rangeMode == sceneRange の場合に対象となるシーンID（仕様書16：「シーン指定」）
+  final String? rangeSceneId;
   final bool isExpanded; // フォルダの展開・折りたたみ状態（仕様書16）
 
   // タイムライン画像・動画素材レイヤーが参照する素材ID（仕様書21：MaterialID方式）。
@@ -49,6 +51,7 @@ class Layer {
     this.rangeMode = LayerRangeMode.allFrames,
     this.rangeStart,
     this.rangeEnd,
+    this.rangeSceneId,
     this.isExpanded = true,
     this.materialId,
     this.sourceTrimStart,
@@ -73,6 +76,7 @@ class Layer {
     LayerRangeMode? rangeMode,
     Object? rangeStart = _sentinel,
     Object? rangeEnd = _sentinel,
+    Object? rangeSceneId = _sentinel,
     bool? isExpanded,
     Object? materialId = _sentinel,
     Object? sourceTrimStart = _sentinel,
@@ -96,6 +100,7 @@ class Layer {
       rangeMode: rangeMode ?? this.rangeMode,
       rangeStart: rangeStart == _sentinel ? this.rangeStart : rangeStart as int?,
       rangeEnd: rangeEnd == _sentinel ? this.rangeEnd : rangeEnd as int?,
+      rangeSceneId: rangeSceneId == _sentinel ? this.rangeSceneId : rangeSceneId as String?,
       isExpanded: isExpanded ?? this.isExpanded,
       materialId: materialId == _sentinel ? this.materialId : materialId as String?,
       sourceTrimStart: sourceTrimStart == _sentinel ? this.sourceTrimStart : sourceTrimStart as int?,

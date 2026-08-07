@@ -30,8 +30,10 @@ bool rangeAppliesToFrame(
     case LayerRangeMode.allFrames:
       return true;
     case LayerRangeMode.currentScene:
-    case LayerRangeMode.sceneRange: // UI未提供のためcurrentSceneと同様に扱う
       return homeSceneId == targetSceneId;
+    case LayerRangeMode.sceneRange:
+      // 対象シーンが未指定の場合はホームのシーンをそのまま対象とする
+      return (layer.rangeSceneId ?? homeSceneId) == targetSceneId;
     case LayerRangeMode.frameRange:
       if (homeSceneId != targetSceneId) return false;
       final start = (layer.rangeStart ?? 1) - 1;
