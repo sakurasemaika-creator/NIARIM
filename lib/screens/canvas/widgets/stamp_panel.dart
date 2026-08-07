@@ -247,7 +247,7 @@ class _StampPanelState extends State<StampPanel> {
     try {
       final file = await service.exportStamp(stamp.id);
       if (!context.mounted) return;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('スタンプの書き出しに失敗しました: $e')));

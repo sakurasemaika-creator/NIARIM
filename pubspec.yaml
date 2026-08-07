@@ -33,7 +33,16 @@ dependencies:
   # miguelpruivo/flutter_file_picker#1973）。10.3.10はv2埋め込み対応済みで
   # かつこの問題が無いことを確認済みのため、バージョンを固定する。
   file_picker: 10.3.10
-  share_plus: ^7.2.1
+  # share_plus 7.2.2が依存するAndroidネイティブ側はcompileSdk 33のまま
+  # 固定されており、audioplayers_androidと同様のAARメタデータ不整合で
+  # ビルド不能だった。12.0.0以降のandroid/build.gradleは
+  # `compileSdk = flutter.compileSdkVersion`（Flutter SDK側の推奨値へ追従）
+  # へ変更されており解消される。13.1.0以降はwin32 ^6.0.1を要求し
+  # file_picker 10.3.10（win32 ^5.9.0要求）と競合するため、その手前の
+  # 12.0.2（win32 ^5.5.3、file_picker側と両立）を採用した。11.0.0で
+  # `Share`クラスは非推奨化され`SharePlus.instance.share(ShareParams(...))`
+  # へ置き換えられたため、全8箇所の呼び出しを新APIへ移行した。
+  share_plus: ^12.0.2
   permission_handler: ^11.1.0
   archive: ^3.4.9
   # ffmpeg_kit_flutter_min_gplは配布元(arthenica/ffmpeg-kit)が2025年に

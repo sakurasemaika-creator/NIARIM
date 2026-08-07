@@ -246,7 +246,7 @@ class _TonePanelState extends State<TonePanel> {
     try {
       final file = await service.exportTone(tone.id);
       if (!context.mounted) return;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('トーンの書き出しに失敗しました: $e')));

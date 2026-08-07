@@ -304,7 +304,7 @@ class _ExportScreenState extends State<ExportScreen> {
             child: const Text('キャンバスへ戻る'),
           ),
           FilledButton.icon(
-            onPressed: () { Navigator.pop(ctx); Share.shareXFiles([XFile(outputPath)]); },
+            onPressed: () { Navigator.pop(ctx); SharePlus.instance.share(ShareParams(files: [XFile(outputPath)])); },
             icon: const Icon(Icons.share),
             label: const Text('共有'),
           ),

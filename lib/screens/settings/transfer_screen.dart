@@ -109,7 +109,7 @@ class _TransferScreenState extends State<TransferScreen> {
         theme: context.read<ThemeService>(),
       );
       if (!mounted) return;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('.miratraファイルを書き出しました')),

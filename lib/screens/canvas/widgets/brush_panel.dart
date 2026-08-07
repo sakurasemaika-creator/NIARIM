@@ -282,7 +282,7 @@ class _BrushPanelState extends State<BrushPanel> {
     try {
       final file = await service.exportBrush(brush.id);
       if (!context.mounted) return;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)

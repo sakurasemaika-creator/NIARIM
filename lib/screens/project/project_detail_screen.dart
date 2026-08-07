@@ -423,7 +423,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         fontsManifest: fontBundle.manifest,
       );
       if (!context.mounted) return;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

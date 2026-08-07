@@ -215,7 +215,7 @@ class ThemeSettingsScreen extends StatelessWidget {
       final file = File('${dir.path}/$safeName.miratheme');
       await file.writeAsString(jsonEncode(preset.toJson()));
       if (!context.mounted) return;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
