@@ -92,6 +92,11 @@ class _CanvasAreaState extends State<CanvasArea> {
   final InputHandler _inputHandler = InputHandler();
   final OnionSkinEngine _onionSkinEngine = OnionSkinEngine();
   final RulerEngine _rulerEngine = RulerEngine();
+
+  // 中クリックドラッグでの平行移動（仕様書08：Galaxy DeXモード・マウス入力）。
+  // 現在のツールに関係なく、中クリックドラッグ中は常にキャンバスを平行移動する。
+  bool _middleClickPanning = false;
+  Offset? _middleClickLastScreenPos;
   // トーン・スタンプ・投げ縄塗りの本処理はisolate側で都度インスタンス化するため
   // （runToneStrokeInIsolate等を参照）、ここではエンジンインスタンスを保持しない。
 
@@ -366,6 +371,23 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
+  /// マウスホイールでのズーム（仕様書08：Galaxy DeXモード・マウス入力）。
+  /// カーソル位置を中心に拡大縮小する。InteractiveViewerのminScale/maxScaleと
+  /// 同じ範囲（0.1〜10.0）に収める。
+  void _handlePointerSignal(PointerSignalEvent event) {
+    if (event is! PointerScrollEvent) return;
+    final scaleFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
+    final focal = event.localPosition;
+    final zoomMatrix = Matrix4.identity()
+      ..translateByDouble(focal.dx, focal.dy, 0, 1)
+      ..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1)
+      ..translateByDouble(-focal.dx, -focal.dy, 0, 1);
+    final newMatrix = zoomMatrix * _transformController.value;
+    final newScale = newMatrix.getMaxScaleOnAxis();
+    if (newScale < 0.1 || newScale > 10.0) return;
+    setState(() => _transformController.value = newMatrix);
+  }
+
   void _onPointerDown(PointerEvent event) {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
@@ -387,6 +409,14 @@ class _CanvasAreaState extends State<CanvasArea> {
         _handleGesture(context, settings.penButton2);
         return;
       }
+    }
+
+    // 中クリックドラッグ：現在のツールに関係なくキャンバスを平行移動する
+    // （仕様書08：Galaxy DeXモード・マウス入力）。
+    if (event.kind == PointerDeviceKind.mouse && event.buttons & kMiddleMouseButton != 0) {
+      _middleClickPanning = true;
+      _middleClickLastScreenPos = event.localPosition;
+      return;
     }
 
     if (widget.currentTool == DrawingTool.pan) {
@@ -475,6 +505,17 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _onPointerMove(PointerEvent event) {
+    if (_middleClickPanning) {
+      final last = _middleClickLastScreenPos;
+      if (last != null) {
+        final delta = event.localPosition - last;
+        setState(() => _transformController.value =
+            (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+                _transformController.value);
+      }
+      _middleClickLastScreenPos = event.localPosition;
+      return;
+    }
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
 
@@ -531,6 +572,11 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _onPointerUp(PointerEvent event) {
+    if (_middleClickPanning) {
+      _middleClickPanning = false;
+      _middleClickLastScreenPos = null;
+      return;
+    }
     final type = _inputHandler.classifyInput(event);
 
     if (widget.currentTool == DrawingTool.pan) return;
@@ -1538,6 +1584,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           }
           _onPointerUp(e);
         },
+        onPointerSignal: _handlePointerSignal,
         child: InteractiveViewer(
           transformationController: _transformController,
           minScale: 0.1,

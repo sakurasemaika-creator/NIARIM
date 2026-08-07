@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../services/advertising_service.dart';
@@ -235,7 +236,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = context.watch<SettingsService>().isLeftHanded;
 
-    return Scaffold(
+    // DeXモード・マウス/キーボード入力（仕様書08）：Ctrl+Z/Ctrl+Y/Ctrl+Shift+Zで
+    // Undo/Redoを行えるようにする。
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyZ, control: true): () =>
+            context.read<UndoManager>().undo(),
+        const SingleActivator(LogicalKeyboardKey.keyY, control: true): () =>
+            context.read<UndoManager>().redo(),
+        const SingleActivator(LogicalKeyboardKey.keyZ, control: true, shift: true): () =>
+            context.read<UndoManager>().redo(),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -397,6 +411,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
               }),
             ),
           ],
+        ),
+      ),
         ),
       ),
     );
