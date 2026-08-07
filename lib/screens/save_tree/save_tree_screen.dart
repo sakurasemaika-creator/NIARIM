@@ -498,6 +498,10 @@ Future<void> showSaveModeChangeFlowIfNeeded({
   required SaveTreeService saveService,
   required bool newIsTreeMode,
   int? newSlotMax,
+  // 設定画面から複数プロジェクトへ順番に適用する場合、どのプロジェクトの
+  // 変更画面かを示すために使う（仕様書23）。単一プロジェクト文脈からの
+  // 呼び出しでは省略可能。
+  String? projectName,
 }) async {
   final nodes = saveService.getNodes(projectId);
   final currentIsTree = saveService.isTreeMode;
@@ -539,6 +543,7 @@ Future<void> showSaveModeChangeFlowIfNeeded({
       saveService: saveService,
       newIsTreeMode: false,
       newSlotMax: limit,
+      projectName: projectName,
     ),
   ));
 }
@@ -548,12 +553,14 @@ class _SaveModeChangeScreen extends StatefulWidget {
   final SaveTreeService saveService;
   final bool newIsTreeMode;
   final int? newSlotMax;
+  final String? projectName;
 
   const _SaveModeChangeScreen({
     required this.projectId,
     required this.saveService,
     required this.newIsTreeMode,
     required this.newSlotMax,
+    this.projectName,
   });
 
   @override
@@ -578,7 +585,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
     final nodes = widget.saveService.getNodes(widget.projectId);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('保存データ変更'),
+        title: Text(widget.projectName == null ? '保存データ変更' : '保存データ変更（${widget.projectName}）'),
         leading: _showSelectionList
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),

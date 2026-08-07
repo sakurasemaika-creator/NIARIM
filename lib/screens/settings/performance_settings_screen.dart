@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/performance_service.dart';
+import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../widgets/responsive.dart';
 import '../save_tree/save_tree_screen.dart';
@@ -31,9 +32,8 @@ class _PerformanceSettingsScreenState
         newSlot < prevSlot;
     if (modeChanged || slotReduced) {
       if (!context.mounted) return;
-      await showSaveModeChangeFlowIfNeeded(
+      await _applyToAllProjects(
         context: context,
-        projectId: '',
         saveService: saveService,
         newIsTreeMode: newMode == SaveMode.tree,
         newSlotMax: newMode == SaveMode.slot ? newSlot : null,
@@ -50,9 +50,8 @@ class _PerformanceSettingsScreenState
     final saveService = context.read<SaveTreeService>();
     final newIsTree = newMode == SaveMode.tree;
     final newSlotMax = newIsTree ? null : perf.slotCount;
-    await showSaveModeChangeFlowIfNeeded(
+    await _applyToAllProjects(
       context: context,
-      projectId: '',
       saveService: saveService,
       newIsTreeMode: newIsTree,
       newSlotMax: newSlotMax,
@@ -65,15 +64,44 @@ class _PerformanceSettingsScreenState
   Future<void> _onCustomSlotCountChanged(
       BuildContext context, int newCount, PerformanceService perf) async {
     final saveService = context.read<SaveTreeService>();
-    await showSaveModeChangeFlowIfNeeded(
+    await _applyToAllProjects(
       context: context,
-      projectId: '',
       saveService: saveService,
       newIsTreeMode: false,
       newSlotMax: newCount,
     );
     if (!context.mounted) return;
     perf.setCustomSlotCount(newCount);
+  }
+
+  /// 保存方式・保存可能数は端末全体の設定（仕様書09）だが、実際の保存データは
+  /// プロジェクトごとに管理されている（仕様書23）。この画面はどのプロジェクトも
+  /// 開いていない文脈で呼ばれるため、保存データを持つ全プロジェクトを1件ずつ
+  /// チェックし、新しい上限を超えるものがあれば変更画面（保持するデータの選択・
+  /// アーカイブ/完全削除）を順番に経由する。超えないプロジェクトは即時反映される。
+  Future<void> _applyToAllProjects({
+    required BuildContext context,
+    required SaveTreeService saveService,
+    required bool newIsTreeMode,
+    int? newSlotMax,
+  }) async {
+    final projects = context.read<ProjectService>().projects;
+    for (final project in projects) {
+      if (!context.mounted) return;
+      await showSaveModeChangeFlowIfNeeded(
+        context: context,
+        projectId: project.id,
+        saveService: saveService,
+        newIsTreeMode: newIsTreeMode,
+        newSlotMax: newSlotMax,
+        projectName: project.name,
+      );
+    }
+    // プロジェクトが1件もない場合、上のループ内では誰もsetTreeMode/setSlotMaxを
+    // 呼ばないため、ここで明示的に反映する（既にどれかのプロジェクトで
+    // 反映済みの場合は冪等なので害はない）。
+    saveService.setTreeMode(newIsTreeMode);
+    if (!newIsTreeMode && newSlotMax != null) saveService.setSlotMax(newSlotMax);
   }
 
   @override
