@@ -402,6 +402,25 @@ class ProjectService extends ChangeNotifier {
   Map<String, LayerHome> layerHomesOf(String projectId) =>
       Map.unmodifiable(_layerHomes[projectId] ?? const {});
 
+  /// タイムライン共通レイヤートラックUI用：プロジェクト内の全共通レイヤーと
+  /// そのホーム位置（実データが物理的に存在するシーン・フレーム）を返す
+  /// （仕様書05・16：共通レイヤーの表示範囲をタイムライン上で確認・変更する）。
+  List<({Layer layer, LayerHome home})> commonLayersOf(String projectId) {
+    final homes = _layerHomes[projectId];
+    if (homes == null) return const [];
+    final result = <({Layer layer, LayerHome home})>[];
+    for (final entry in homes.entries) {
+      final home = entry.value;
+      final scene = sceneOf(projectId, home.sceneId);
+      if (scene == null || home.frameIndex >= scene.frames.length) continue;
+      final layer = scene.frames[home.frameIndex].layers.where((l) => l.id == entry.key).firstOrNull;
+      if (layer != null && layer.type == LayerType.common) {
+        result.add((layer: layer, home: home));
+      }
+    }
+    return result;
+  }
+
   /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは、実際に
   /// 表示中のフレームに関わらず常にホーム位置のタイルバッファを参照する
   /// （複数フレームでの共有表示・共有編集を実現するため）。

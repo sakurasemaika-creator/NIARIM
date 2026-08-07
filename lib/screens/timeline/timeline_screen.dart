@@ -119,7 +119,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   late final ScrollController _videoScrollCtrl;
   late final ScrollController _imageScrollCtrl;
   late final ScrollController _cameraScrollCtrl;
+  late final ScrollController _commonLayerScrollCtrl;
   bool _syncingScroll = false;
+
+  // 共通レイヤートラックのドラッグハンドル操作用の累積ピクセル（仕様書16：
+  // タイムライン上では左右のドラッグハンドルでも表示範囲を変更できる）
+  double _commonDragAccumPx = 0;
 
   // シーン複数選択モード（仕様書05：「選択」ボタンで開始）
   bool _isSceneMultiSelect = false;
@@ -143,6 +148,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _videoScrollCtrl = ScrollController();
     _imageScrollCtrl = ScrollController();
     _cameraScrollCtrl = ScrollController();
+    _commonLayerScrollCtrl = ScrollController();
 
     for (final ctrl in _trackScrollCtrls) {
       ctrl.addListener(() => _syncFrom(ctrl));
@@ -158,6 +164,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _videoScrollCtrl,
     _imageScrollCtrl,
     _cameraScrollCtrl,
+    _commonLayerScrollCtrl,
   ];
 
   void _syncFrom(ScrollController source) {
@@ -344,6 +351,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _buildToolbar(),
             _buildSceneTabs(),
             _buildFrameList(),
+            // 共通レイヤートラック（仕様書05：タイムライン表示順はフレーム・
+            // シーン・共通レイヤー・画像・動画・音源・エンドカードの順）
+            _buildCommonLayerTrack(),
             _buildClipTrack(
               icon: Icons.image,
               label: '画像',
@@ -1476,6 +1486,305 @@ class _TimelineScreenState extends State<TimelineScreen> {
         );
       },
     );
+  }
+
+  /// 共通レイヤー専用トラック（仕様書05・16）。共通レイヤーは通常レイヤーとは
+  /// 別に表示範囲（rangeMode）を持ち、複数フレーム・複数シーンにまたがって
+  /// 同一の描画内容を共有表示する。現在選択中のシーンに表示範囲が適用される
+  /// 共通レイヤーのみを1レイヤーにつき1行で表示する。
+  Widget _buildCommonLayerTrack() {
+    final projectService = context.watch<ProjectService>();
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return const SizedBox.shrink();
+    final total = _totalFrames;
+    final rows = <({Layer layer, LayerHome home, int start, int end})>[];
+    for (final entry in projectService.commonLayersOf(widget.projectId)) {
+      final layer = entry.layer;
+      final home = entry.home;
+      int start;
+      int end;
+      switch (layer.rangeMode) {
+        case LayerRangeMode.allFrames:
+          start = 0;
+          end = total - 1;
+          break;
+        case LayerRangeMode.currentScene:
+          if (home.sceneId != sceneId) continue;
+          start = 0;
+          end = total - 1;
+          break;
+        case LayerRangeMode.sceneRange:
+          if ((layer.rangeSceneId ?? home.sceneId) != sceneId) continue;
+          start = 0;
+          end = total - 1;
+          break;
+        case LayerRangeMode.frameRange:
+          if (home.sceneId != sceneId) continue;
+          start = ((layer.rangeStart ?? 1) - 1).clamp(0, total - 1);
+          end = ((layer.rangeEnd ?? start + 1) - 1).clamp(start, total - 1);
+          break;
+      }
+      rows.add((layer: layer, home: home, start: start, end: end));
+    }
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              for (final r in rows)
+                SizedBox(height: 32, child: _buildTrackLabel(Icons.link, r.layer.name)),
+            ],
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _commonLayerScrollCtrl,
+              scrollDirection: Axis.horizontal,
+              physics: const ClampingScrollPhysics(),
+              child: SizedBox(
+                width: total * _cellW,
+                child: Column(
+                  children: [
+                    for (final r in rows)
+                      SizedBox(
+                        height: 32,
+                        child: Stack(
+                          children: [
+                            Row(
+                              children: [
+                                for (int i = 0; i < total; i++)
+                                  Container(
+                                    width: _cellW,
+                                    decoration: BoxDecoration(
+                                      border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            _buildCommonLayerBar(r.layer, r.home, r.start, r.end, total),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 共通レイヤーの表示範囲バー。シングルタップで表示範囲設定ダイアログを開き、
+  /// 左右のドラッグハンドルで開始・終了フレームを直接変更できる（仕様書16：
+  /// 「タイムライン上では左右のドラッグハンドルでも表示範囲を変更できる」）。
+  Widget _buildCommonLayerBar(Layer layer, LayerHome home, int start, int end, int total) {
+    final left = start * _cellW + _frameMargin;
+    final width = (end - start + 1) * _cellW - _frameMargin * 2;
+
+    void applyDrag(int newStart, int newEnd) {
+      newStart = newStart.clamp(0, total - 1);
+      newEnd = newEnd.clamp(newStart, total - 1);
+      context.read<ProjectService>().updateLayer(
+            projectId: widget.projectId,
+            sceneId: home.sceneId,
+            frameIndex: home.frameIndex,
+            layer: layer.copyWith(
+              rangeMode: LayerRangeMode.frameRange,
+              rangeStart: newStart + 1,
+              rangeEnd: newEnd + 1,
+              rangeSceneId: null,
+            ),
+          );
+    }
+
+    return Positioned(
+      left: left,
+      top: 3,
+      width: width.clamp(8.0, double.infinity),
+      height: 26,
+      child: GestureDetector(
+        onTap: () => _showCommonLayerRangeDialog(layer, home),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: Colors.blue[200]!, width: 1),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    layer.name,
+                    style: const TextStyle(fontSize: 9, color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              // 左ドラッグハンドル：開始フレームを変更
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragStart: (_) => _commonDragAccumPx = 0,
+                  onHorizontalDragUpdate: (details) {
+                    _commonDragAccumPx += details.delta.dx;
+                    final frameDelta = (_commonDragAccumPx / _cellW).truncate();
+                    if (frameDelta == 0) return;
+                    _commonDragAccumPx -= frameDelta * _cellW;
+                    applyDrag(start + frameDelta, end);
+                  },
+                  child: Container(width: 8, color: Colors.white24,
+                      child: const Icon(Icons.drag_indicator, size: 8, color: Colors.white70)),
+                ),
+              ),
+              // 右ドラッグハンドル：終了フレームを変更
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragStart: (_) => _commonDragAccumPx = 0,
+                  onHorizontalDragUpdate: (details) {
+                    _commonDragAccumPx += details.delta.dx;
+                    final frameDelta = (_commonDragAccumPx / _cellW).truncate();
+                    if (frameDelta == 0) return;
+                    _commonDragAccumPx -= frameDelta * _cellW;
+                    applyDrag(start, end + frameDelta);
+                  },
+                  child: Container(width: 8, color: Colors.white24,
+                      child: const Icon(Icons.drag_indicator, size: 8, color: Colors.white70)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 共通レイヤーの表示範囲設定ダイアログ（仕様書16「三点メニュー（共通レイヤー専用）」
+  /// の「表示フレーム範囲変更」と同一内容。レイヤーパネル側の同名ダイアログとUIを揃える）。
+  void _showCommonLayerRangeDialog(Layer layer, LayerHome home) {
+    final ps = context.read<ProjectService>();
+    final totalFrames = ps.frameCount(widget.projectId, home.sceneId);
+    final scenes = ps.scenesOf(widget.projectId);
+    final startCtrl = TextEditingController(text: (layer.rangeStart ?? 1).toString());
+    final endCtrl = TextEditingController(
+        text: (layer.rangeEnd ?? (totalFrames > 0 ? totalFrames : 1)).toString());
+    LayerRangeMode mode = layer.rangeMode;
+    String? rangeSceneId = layer.rangeSceneId ?? home.sceneId;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: const Text('表示範囲'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: startCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: '開始フレーム', border: OutlineInputBorder()),
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('〜')),
+                    Expanded(
+                      child: TextField(
+                        controller: endCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: '終了フレーム', border: OutlineInputBorder()),
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                RadioListTile<LayerRangeMode>(
+                  dense: true,
+                  title: const Text('全フレーム'),
+                  value: LayerRangeMode.allFrames,
+                  groupValue: mode,
+                  onChanged: (v) => setS(() => mode = v!),
+                ),
+                RadioListTile<LayerRangeMode>(
+                  dense: true,
+                  title: const Text('現在シーン'),
+                  value: LayerRangeMode.currentScene,
+                  groupValue: mode,
+                  onChanged: (v) => setS(() => mode = v!),
+                ),
+                RadioListTile<LayerRangeMode>(
+                  dense: true,
+                  title: const Text('シーン固定'),
+                  value: LayerRangeMode.sceneRange,
+                  groupValue: mode,
+                  onChanged: (v) => setS(() => mode = v!),
+                ),
+                if (mode == LayerRangeMode.sceneRange)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+                    child: DropdownButtonFormField<String>(
+                      initialValue: scenes.any((s) => s.id == rangeSceneId) ? rangeSceneId : scenes.firstOrNull?.id,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: '対象シーン', isDense: true),
+                      items: scenes
+                          .map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName)))
+                          .toList(),
+                      onChanged: (v) => setS(() => rangeSceneId = v),
+                    ),
+                  ),
+                RadioListTile<LayerRangeMode>(
+                  dense: true,
+                  title: const Text('フレーム範囲指定'),
+                  value: LayerRangeMode.frameRange,
+                  groupValue: mode,
+                  onChanged: (v) => setS(() => mode = v!),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            FilledButton(
+              onPressed: () {
+                final start = int.tryParse(startCtrl.text) ?? 1;
+                final end = int.tryParse(endCtrl.text) ?? start;
+                final resolvedSceneId = mode == LayerRangeMode.sceneRange ? rangeSceneId : null;
+                ps.updateLayer(
+                  projectId: widget.projectId,
+                  sceneId: home.sceneId,
+                  frameIndex: home.frameIndex,
+                  layer: layer.copyWith(
+                    rangeMode: mode,
+                    rangeStart: start,
+                    rangeEnd: end,
+                    rangeSceneId: resolvedSceneId,
+                  ),
+                );
+                Navigator.pop(ctx);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) {
+      startCtrl.dispose();
+      endCtrl.dispose();
+    });
   }
 
   Widget _buildCameraTrack() {
