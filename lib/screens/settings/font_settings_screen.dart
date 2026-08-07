@@ -117,11 +117,18 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     final path = result.files.first.path!;
     final name = result.files.first.name.replaceAll(RegExp(r'\.[^.]+$'), '');
     if (!mounted) return;
-    final asset = await context.read<FontService>().addFont(path, name);
-    if (!mounted) return;
-    if (asset == null) {
+    try {
+      final asset = await context.read<FontService>().addFont(path, name);
+      if (!mounted) return;
+      if (asset == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('このフォントは読み込めません。')),
+        );
+      }
+    } on FontCorruptedException {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('このフォントは読み込めません。')),
+        const SnackBar(content: Text('フォントが破損しています。')),
       );
     }
   }

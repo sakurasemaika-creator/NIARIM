@@ -700,6 +700,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     bool isBold = existing?.isBold ?? false;
     bool isItalic = existing?.isItalic ?? false;
     String fontFamily = existing?.fontFamily ?? 'Roboto';
+    double lineHeight = existing?.lineHeight ?? 1.2;
+    double letterSpacing = existing?.letterSpacing ?? 0;
+    TextAlign textAlign = existing?.align ?? TextAlign.left;
+    bool outlineEnabled = existing?.outline?.enabled ?? false;
+    int outlineColor = existing?.outline?.color.toARGB32() ?? 0xFF000000;
+    double outlineWidth = existing?.outline?.width ?? 3;
     final fontService = context.read<FontService>();
     showDialog(
       context: context,
@@ -780,6 +786,88 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     ),
                   )).toList(),
                 ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Text('行間', style: TextStyle(fontSize: 12)),
+                    Expanded(
+                      child: Slider(
+                        value: lineHeight, min: 0.8, max: 3.0,
+                        label: lineHeight.toStringAsFixed(1),
+                        onChanged: (v) => setS(() => lineHeight = v),
+                      ),
+                    ),
+                    Text(lineHeight.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Text('文字間隔', style: TextStyle(fontSize: 12)),
+                    Expanded(
+                      child: Slider(
+                        value: letterSpacing, min: -2, max: 20,
+                        label: letterSpacing.toStringAsFixed(0),
+                        onChanged: (v) => setS(() => letterSpacing = v),
+                      ),
+                    ),
+                    Text(letterSpacing.toStringAsFixed(0), style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text('揃え', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 8),
+                    SegmentedButton<TextAlign>(
+                      segments: const [
+                        ButtonSegment(value: TextAlign.left, icon: Icon(Icons.format_align_left, size: 16)),
+                        ButtonSegment(value: TextAlign.center, icon: Icon(Icons.format_align_center, size: 16)),
+                        ButtonSegment(value: TextAlign.right, icon: Icon(Icons.format_align_right, size: 16)),
+                      ],
+                      selected: {textAlign},
+                      onSelectionChanged: (v) => setS(() => textAlign = v.first),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                FilterChip(
+                  label: const Text('アウトライン'),
+                  selected: outlineEnabled,
+                  onSelected: (v) => setS(() => outlineEnabled = v),
+                ),
+                if (outlineEnabled) ...[
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    children: _textColorPalette.map((c) => GestureDetector(
+                      onTap: () => setS(() => outlineColor = c),
+                      child: Container(
+                        width: 22, height: 22,
+                        decoration: BoxDecoration(
+                          color: Color(c),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: outlineColor == c ? Theme.of(ctx).colorScheme.primary : Colors.grey,
+                            width: outlineColor == c ? 2 : 1,
+                          ),
+                        ),
+                      ),
+                    )).toList(),
+                  ),
+                  Row(
+                    children: [
+                      const Text('太さ', style: TextStyle(fontSize: 12)),
+                      Expanded(
+                        child: Slider(
+                          value: outlineWidth, min: 0, max: 20,
+                          label: outlineWidth.round().toString(),
+                          onChanged: (v) => setS(() => outlineWidth = v),
+                        ),
+                      ),
+                      Text('${outlineWidth.round()}', style: const TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -809,6 +897,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     isBold: isBold,
                     isItalic: isItalic,
                     fontFamily: fontFamily,
+                    lineHeight: lineHeight,
+                    letterSpacing: letterSpacing,
+                    align: textAlign,
+                    outline: model.TextOutline(
+                        enabled: outlineEnabled, color: Color(outlineColor), width: outlineWidth),
                   );
                 } else {
                   layer = ps.addTextLayer(
@@ -825,6 +918,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     isBold: isBold,
                     isItalic: isItalic,
                     fontFamily: fontFamily,
+                    lineHeight: lineHeight,
+                    letterSpacing: letterSpacing,
+                    align: textAlign,
+                    outline: model.TextOutline(
+                        enabled: outlineEnabled, color: Color(outlineColor), width: outlineWidth),
                   );
                 }
                 final tileManager = ps.tileManagerOf(widget.projectId);

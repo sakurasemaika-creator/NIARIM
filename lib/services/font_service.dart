@@ -40,12 +40,17 @@ class FontService extends ChangeNotifier {
           if (n >= _counter) _counter = n + 1;
         }
       }
-      // 起動のたびにFontLoaderへ再登録する（登録状態はプロセス単位で消えるため）
+      // 起動のたびにFontLoaderへ再登録する（登録状態はプロセス単位で消えるため）。
+      // 1件が破損していても他のフォントの登録は継続する。
       final dir = await _fontsDir();
       for (final font in _fonts) {
         final file = File('${dir.path}/${font.fileName}');
         if (!file.existsSync()) continue;
-        await _registerFont(font, file);
+        try {
+          await _registerFont(font, file);
+        } catch (_) {
+          // 破損フォント：このフォントの登録のみスキップして続行
+        }
       }
     } catch (_) {
       // 読み込み失敗時はフォントなしとして続行
@@ -68,7 +73,10 @@ class FontService extends ChangeNotifier {
     }
   }
 
-  /// TTF/OTFファイルを追加する。対応形式以外はnullを返す（仕様書15：エラー表示）。
+  /// TTF/OTFファイルを追加する。対応形式以外はnullを返す（仕様書15：
+  /// 「このフォントは読み込めません。」）。読み込みはできても登録（パース）に
+  /// 失敗した場合は[FontCorruptedException]を投げる（仕様書15：
+  /// 「フォントが破損しています。」）。
   Future<FontAsset?> addFont(String sourcePath, String displayName) async {
     final ext = sourcePath.split('.').last.toLowerCase();
     if (ext != 'ttf' && ext != 'otf') return null;
@@ -88,7 +96,15 @@ class FontService extends ChangeNotifier {
       sizeBytes: await destFile.length(),
       addedAt: DateTime.now(),
     );
-    await _registerFont(asset, destFile);
+    try {
+      await _registerFont(asset, destFile);
+    } catch (_) {
+      // 破損フォント：コピーしたファイルを片付けてから通知する
+      try {
+        if (destFile.existsSync()) await destFile.delete();
+      } catch (_) {}
+      throw FontCorruptedException();
+    }
     _fonts.add(asset);
     await _persist();
     notifyListeners();
@@ -120,3 +136,7 @@ class FontService extends ChangeNotifier {
     // 引き続き描画可能（既存テキストが壊れて表示されることを防ぐ副次的な効果）。
   }
 }
+
+/// フォントファイルの読み込み（パース）に失敗した場合の例外（仕様書15：
+/// 「フォントが破損しています。」）。拡張子は正しいが内容が壊れているケースを表す。
+class FontCorruptedException implements Exception {}
