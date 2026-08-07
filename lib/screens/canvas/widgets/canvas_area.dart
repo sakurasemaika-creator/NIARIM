@@ -340,6 +340,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
 
+    // 制作時間カウント（仕様書19）：キャンバスへの操作のたびに無操作タイマーをリセットする
+    if (widget.project != null) {
+      context.read<ProjectService>().pingWorkActivity();
+    }
+
     if (widget.currentTool == DrawingTool.text && widget.onTapForText != null) {
       widget.onTapForText!(canvasPos);
       return;

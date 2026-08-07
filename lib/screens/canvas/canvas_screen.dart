@@ -72,6 +72,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   String? _currentLayerId;
   bool _autosaveAttached = false;
+  bool _workTrackingStarted = false;
 
   @override
   void didChangeDependencies() {
@@ -109,12 +110,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
       );
       WidgetsBinding.instance.addPostFrameCallback((_) => _checkCrashRecovery(autosave));
     }
+    // 制作時間カウント（仕様書19：描画モードのみカウント）
+    if (!_workTrackingStarted) {
+      _workTrackingStarted = true;
+      context.read<ProjectService>().beginWorkTracking(widget.projectId);
+    }
   }
 
   @override
   void dispose() {
     _perf?.removeListener(_onPerfChanged);
     if (_autosaveAttached) context.read<AutosaveService>().detach();
+    if (_workTrackingStarted) context.read<ProjectService>().endWorkTracking();
     super.dispose();
   }
 

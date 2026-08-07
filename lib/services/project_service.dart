@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -235,6 +236,50 @@ class ProjectService extends ChangeNotifier {
       }
     }
     return false;
+  }
+
+  // ─── 制作時間カウント（仕様書19：描画モード・タイムラインモードのみ
+  // カウント、一定時間無操作でカウント停止・操作再開でカウント再開） ─────
+  // 秒単位の細かい精度ではなく、一定間隔（tick）ごとに直近の操作有無を
+  // 見て加算するかどうかを決める簡易実装。低スペック端末での負荷を
+  // 抑えるためnotifyListeners()もtick間隔でのみ発生する。
+
+  Timer? _workTimer;
+  String? _trackedProjectId;
+  DateTime _lastActivity = DateTime.now();
+  static const _workTickInterval = Duration(seconds: 10);
+  static const _workInactivityThreshold = Duration(minutes: 1);
+
+  /// キャンバスモード・タイムラインモードへ入った時に呼び出す。
+  void beginWorkTracking(String projectId) {
+    _trackedProjectId = projectId;
+    _lastActivity = DateTime.now();
+    _workTimer?.cancel();
+    _workTimer = Timer.periodic(_workTickInterval, (_) => _tickWorkTime());
+  }
+
+  /// 描画・タップ・スクラブ等の操作があるたびに呼び出す（無操作判定のリセット）。
+  void pingWorkActivity() {
+    _lastActivity = DateTime.now();
+  }
+
+  /// キャンバスモード・タイムラインモードを離れる時に呼び出す。
+  void endWorkTracking() {
+    _workTimer?.cancel();
+    _workTimer = null;
+    _trackedProjectId = null;
+  }
+
+  void _tickWorkTime() {
+    final projectId = _trackedProjectId;
+    if (projectId == null) return;
+    // 直近一定時間操作がなければカウントを一時停止する
+    if (DateTime.now().difference(_lastActivity) > _workInactivityThreshold) return;
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    _projects[idx] = _projects[idx]
+        .copyWith(totalWorkSeconds: _projects[idx].totalWorkSeconds + _workTickInterval.inSeconds);
+    notifyListeners();
   }
 
   // ─── Scene/Frame/Layer アクセサ ───────────────────────────────────────

@@ -136,6 +136,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final ctrl in _trackScrollCtrls) {
       ctrl.addListener(() => _syncFrom(ctrl));
     }
+
+    // 制作時間カウント（仕様書19：タイムラインモードのみカウント）
+    context.read<ProjectService>().beginWorkTracking(widget.projectId);
   }
 
   List<ScrollController> get _trackScrollCtrls => [
@@ -171,6 +174,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final v in _videoControllers.values) {
       v.dispose();
     }
+    context.read<ProjectService>().endWorkTracking();
     super.dispose();
   }
 
@@ -317,7 +321,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
 
     return Scaffold(
-      body: SafeArea(
+      body: Listener(
+        // 制作時間カウント（仕様書19）：操作のたびに無操作タイマーをリセットする
+        onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
+        child: SafeArea(
         child: Column(
           children: [
             _buildTopBar(),
@@ -354,6 +361,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _buildEndCardTrack(),
             if (adService.shouldShowAds) const AdBannerWidget(),
           ],
+        ),
         ),
       ),
     );
