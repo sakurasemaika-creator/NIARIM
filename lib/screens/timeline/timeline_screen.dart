@@ -125,6 +125,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _isSceneMultiSelect = false;
   final Set<String> _selectedSceneIds = {};
 
+  // フレーム複数選択モード（仕様書05：シーンと同じ操作体系。「選択」ボタン、または
+  // シーンチップの長押し「シーン内フレームを全選択」から開始）
+  bool _isFrameMultiSelect = false;
+  final Set<int> _selectedFrameIndices = {};
+  bool _isFrameMoveMode = false;
+  int _frameMoveCursorPos = 0;
+
   @override
   void initState() {
     super.initState();
@@ -813,12 +820,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             }
                           },
                           onDoubleTap: _isSceneMultiSelect ? null : () => setState(() => _selectedSceneId = scene.id),
-                          // 長押し：このシーンを選択済みの状態でシーン複数選択モードを開始する
+                          // 長押し：シーン内フレームを全選択し、フレーム複数選択モードへ
+                          // 移行する（仕様書05：フレーム一覧と操作体系を統一）。
+                          // シーン自体の複数選択（移動・削除）は上部の「選択」ボタンから行う。
                           onLongPress: () {
-                            if (_isSceneMultiSelect) return;
+                            if (_isSceneMultiSelect || _isFrameMultiSelect) return;
+                            final frameCount =
+                                context.read<ProjectService>().frameCount(widget.projectId, scene.id);
                             setState(() {
-                              _isSceneMultiSelect = true;
-                              _selectedSceneIds.add(scene.id);
+                              _selectedSceneId = scene.id;
+                              _isFrameMultiSelect = true;
+                              _selectedFrameIndices
+                                ..clear()
+                                ..addAll(List.generate(frameCount, (i) => i));
                             });
                           },
                           child: Padding(
@@ -1016,104 +1030,303 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ).then((_) => controller.dispose());
   }
 
+  /// フレーム一覧（仕様書05：シーンと同じ複数選択・カーソル固定移動の操作体系）。
   Widget _buildFrameList() {
     final total = _totalFrames;
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Colors.grey[800]!))),
-      child: Row(
+    return SizedBox(
+      height: _isFrameMoveMode ? 92 : 50,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          _buildTrackLabel(Icons.movie_filter, 'フレーム'),
-          Expanded(
-            child: ListView.builder(
-              controller: _frameScrollCtrl,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              itemCount: total + 1, // +1 は追加ボタン
-              itemBuilder: (context, index) {
-                if (index == total) {
-                  return GestureDetector(
-                    onTap: () {
-                      final sceneId = _selectedSceneId;
-                      if (sceneId == null) return;
-                      context.read<ProjectService>().addFrame(widget.projectId, sceneId);
-                    },
-                    child: Container(
-                      width: _frameW,
-                      margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[600]!),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: const Center(child: Icon(Icons.add, size: 16, color: Colors.grey)),
+          Positioned(
+            left: 0, right: 0, bottom: 0, height: 50,
+            child: Container(
+              decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Colors.grey[800]!))),
+              child: Row(
+                children: [
+                  _buildTrackLabel(Icons.movie_filter, 'フレーム'),
+                  // 移動モード中：「決定」。複数選択モード中：「移動」「複製」「削除」。通常時：「選択」
+                  if (_isFrameMoveMode)
+                    TextButton(
+                      onPressed: _confirmFrameMove,
+                      child: const Text('決定', style: TextStyle(fontSize: 11)),
+                    )
+                  else if (_isFrameMultiSelect) ...[
+                    TextButton(
+                      onPressed: _selectedFrameIndices.isNotEmpty ? _startFrameMoveMode : null,
+                      child: const Text('移動', style: TextStyle(fontSize: 11)),
                     ),
-                  );
-                }
-                final isSelected = index == _currentFrame;
-                return GestureDetector(
-                  onTap: () => setState(() => _currentFrame = index),
-                  onLongPress: () => _showFrameMenu(index),
-                  child: Container(
-                    width: _frameW,
-                    margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                          : Colors.grey[850],
-                      border: Border.all(
-                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[700]!),
-                      borderRadius: BorderRadius.circular(3),
+                    TextButton(
+                      onPressed: _selectedFrameIndices.isNotEmpty ? _duplicateSelectedFrames : null,
+                      child: const Text('複製', style: TextStyle(fontSize: 11)),
                     ),
-                    child: Center(child: Text('${index + 1}', style: const TextStyle(fontSize: 9))),
+                    TextButton(
+                      onPressed: (_selectedFrameIndices.isNotEmpty && _selectedFrameIndices.length < total)
+                          ? _deleteSelectedFrames
+                          : null,
+                      child: const Text('削除', style: TextStyle(color: Colors.red, fontSize: 11)),
+                    ),
+                  ] else
+                    TextButton(
+                      onPressed: () => setState(() => _isFrameMultiSelect = true),
+                      child: const Text('選択', style: TextStyle(fontSize: 11)),
+                    ),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: _frameScrollCtrl,
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      // 移動モード：カーソル位置(n+1) + フレームチップ(n) = 2n+1
+                      // 通常モード：フレームチップ(n) + ＋ボタン(1) = n+1
+                      itemCount: _isFrameMoveMode ? total * 2 + 1 : total + 1,
+                      itemBuilder: (context, index) {
+                        if (_isFrameMoveMode) {
+                          if (index.isEven) {
+                            final cursorPos = index ~/ 2;
+                            final isActive = _frameMoveCursorPos == cursorPos;
+                            return GestureDetector(
+                              onTap: () => setState(() => _frameMoveCursorPos = cursorPos),
+                              child: Container(
+                                width: 12,
+                                alignment: Alignment.center,
+                                child: Container(
+                                  width: 3, height: 28,
+                                  color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[600],
+                                ),
+                              ),
+                            );
+                          } else {
+                            final frameIndex = index ~/ 2;
+                            final isMoving = _selectedFrameIndices.contains(frameIndex);
+                            return Container(
+                              width: _frameW,
+                              margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
+                              decoration: BoxDecoration(
+                                color: isMoving ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[850],
+                                border: Border.all(color: Colors.grey[700]!),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Center(child: Text('${frameIndex + 1}',
+                                  style: TextStyle(fontSize: 9,
+                                      color: isMoving ? Theme.of(context).colorScheme.primary : null))),
+                            );
+                          }
+                        }
+                        if (index == total) {
+                          return GestureDetector(
+                            onTap: () {
+                              final sceneId = _selectedSceneId;
+                              if (sceneId == null) return;
+                              context.read<ProjectService>().addFrame(widget.projectId, sceneId);
+                            },
+                            child: Container(
+                              width: _frameW,
+                              margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey[600]!),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Center(child: Icon(Icons.add, size: 16, color: Colors.grey)),
+                            ),
+                          );
+                        }
+                        final isSelected = index == _currentFrame;
+                        final isChecked = _selectedFrameIndices.contains(index);
+                        return GestureDetector(
+                          onTap: () {
+                            if (_isFrameMultiSelect) {
+                              if (isChecked) {
+                                setState(() {
+                                  _selectedFrameIndices.remove(index);
+                                  if (_selectedFrameIndices.isEmpty) _isFrameMultiSelect = false;
+                                });
+                              }
+                              // 未選択フレームは何もしない（シーンと同じ操作体系、仕様書05）
+                            } else {
+                              setState(() => _currentFrame = index);
+                            }
+                          },
+                          // 長押し：このフレームを選択済みの状態でフレーム複数選択モードを開始する
+                          onLongPress: () {
+                            if (_isFrameMultiSelect) return;
+                            setState(() {
+                              _isFrameMultiSelect = true;
+                              _selectedFrameIndices.add(index);
+                            });
+                          },
+                          child: Container(
+                            width: _frameW,
+                            margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
+                            decoration: BoxDecoration(
+                              color: isChecked
+                                  ? Theme.of(context).colorScheme.primaryContainer
+                                  : isSelected
+                                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+                                      : Colors.grey[850],
+                              border: Border.all(
+                                  color: (isSelected || isChecked)
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.grey[700]!),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(child: Text('${index + 1}', style: const TextStyle(fontSize: 9))),
+                                if (_isFrameMultiSelect)
+                                  Positioned(
+                                    right: 1, top: 1,
+                                    child: Icon(
+                                      isChecked ? Icons.check_circle : Icons.radio_button_unchecked,
+                                      size: 10,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                );
-              },
+                  // 複数選択モード中：全選択・全解除ボタン
+                  if (_isFrameMultiSelect && !_isFrameMoveMode) ...[
+                    TextButton(
+                      onPressed: () => setState(() => _selectedFrameIndices.addAll(List.generate(total, (i) => i))),
+                      child: const Text('全選択', style: TextStyle(fontSize: 11)),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() { _selectedFrameIndices.clear(); _isFrameMultiSelect = false; }),
+                      child: const Text('全解除', style: TextStyle(fontSize: 11)),
+                    ),
+                  ],
+                  // 移動モード中：キャンセルボタン
+                  if (_isFrameMoveMode)
+                    TextButton(
+                      onPressed: () => setState(() => _isFrameMoveMode = false),
+                      child: const Text('キャンセル', style: TextStyle(fontSize: 11)),
+                    ),
+                ],
+              ),
             ),
           ),
+          // 移動モード中：吹き出しプレビューをフレーム一覧の上に表示
+          if (_isFrameMoveMode) _buildFrameCursorBubble(),
         ],
       ),
     );
   }
 
-  /// フレーム長押し時のメニュー（仕様書05：フレームのコピー・削除）。
-  void _showFrameMenu(int frameIndex) {
-    final sceneId = _selectedSceneId;
-    if (sceneId == null) return;
-    final canDelete = _totalFrames > 1;
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+  Widget _buildFrameCursorBubble() {
+    final count = _selectedFrameIndices.length;
+    final cardCount = count.clamp(1, 3);
+    return Positioned(
+      bottom: 50, left: 0, right: 0,
+      child: Center(
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text('F${frameIndex + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            for (int i = cardCount - 1; i >= 1; i--)
+              Positioned(
+                left: i * 3.0, top: -(i * 3.0),
+                child: Transform.rotate(
+                  angle: (i.isOdd ? 1 : -1) * 0.025,
+                  child: Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey[400]!),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Icon(Icons.movie_filter, size: 18, color: Colors.white54),
             ),
-            ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('フレームを複製'),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.read<ProjectService>().duplicateFrame(widget.projectId, sceneId, frameIndex);
-                setState(() => _currentFrame = frameIndex + 1);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.delete, color: canDelete ? Colors.red : Colors.grey),
-              title: Text('フレームを削除', style: TextStyle(color: canDelete ? null : Colors.grey)),
-              onTap: canDelete
-                  ? () {
-                      Navigator.pop(ctx);
-                      context.read<ProjectService>().removeFrame(widget.projectId, sceneId, frameIndex);
-                      setState(() => _currentFrame = _currentFrame.clamp(0, _totalFrames - 1));
-                    }
-                  : null,
-            ),
+            if (count > 1)
+              Positioned(
+                right: -8, top: -8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('×$count', style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  /// 選択中フレームを複製する（後ろのindexから処理し、複製に伴うindexずれを回避）。
+  void _duplicateSelectedFrames() {
+    if (_selectedFrameIndices.isEmpty) return;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final ps = context.read<ProjectService>();
+    final sorted = _selectedFrameIndices.toList()..sort();
+    for (final idx in sorted.reversed) {
+      ps.duplicateFrame(widget.projectId, sceneId, idx);
+    }
+    setState(() {
+      _selectedFrameIndices.clear();
+      _isFrameMultiSelect = false;
+    });
+  }
+
+  /// 選択中フレームを削除する（後ろのindexから処理し、削除に伴うindexずれを回避）。
+  /// 最後の1枚は削除されない（ProjectService.removeFrame側で保証）。
+  void _deleteSelectedFrames() {
+    if (_selectedFrameIndices.isEmpty) return;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final ps = context.read<ProjectService>();
+    final sorted = _selectedFrameIndices.toList()..sort();
+    for (final idx in sorted.reversed) {
+      ps.removeFrame(widget.projectId, sceneId, idx);
+    }
+    setState(() {
+      _selectedFrameIndices.clear();
+      _isFrameMultiSelect = false;
+      _currentFrame = _currentFrame.clamp(0, _totalFrames - 1);
+    });
+  }
+
+  // 移動モード開始（仕様書05：複数選択モードからのみ起動）
+  void _startFrameMoveMode() {
+    if (_selectedFrameIndices.isEmpty) return;
+    setState(() {
+      _isFrameMoveMode = true;
+      final sorted = _selectedFrameIndices.toList()..sort();
+      _frameMoveCursorPos = sorted.last + 1;
+    });
+  }
+
+  // カーソル固定方式の移動確定（仕様書05：複数選択モードからのみ起動）
+  void _confirmFrameMove() {
+    if (_selectedFrameIndices.isEmpty) return;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final total = _totalFrames;
+    final moving = _selectedFrameIndices.toList()..sort();
+    final removedBefore = moving.where((i) => i < _frameMoveCursorPos).length;
+    final insertPos = (_frameMoveCursorPos - removedBefore).clamp(0, total - moving.length);
+    final remaining = [for (int i = 0; i < total; i++) if (!_selectedFrameIndices.contains(i)) i];
+    final newOrder = List<int>.from(remaining)..insertAll(insertPos, moving);
+    context.read<ProjectService>().reorderFrames(widget.projectId, sceneId, newOrder);
+    setState(() {
+      _isFrameMoveMode = false;
+      _isFrameMultiSelect = false;
+      _selectedFrameIndices.clear();
+      _currentFrame = _currentFrame.clamp(0, _totalFrames - 1);
+    });
   }
 
   Widget _buildTrackLabel(IconData icon, String label) {

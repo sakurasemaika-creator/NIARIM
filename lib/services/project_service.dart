@@ -938,6 +938,58 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// フレームをカーソル固定方式で並び替える（仕様書05：シーン移動と同じ操作体系を
+  /// フレームにも適用）。[oldIndicesInNewOrder]は現在のフレームindexを新しい並び順
+  /// で並べたリスト（全フレーム数と同じ長さの並び替え）。
+  void reorderFrames(String projectId, String sceneId, List<int> oldIndicesInNewOrder) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (oldIndicesInNewOrder.length != scene.frames.length) return;
+
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      // 入れ替えでの衝突を避けるため、いったん一時キーへ退避してから最終位置へ
+      // 付け替える。
+      final tempToFinal = <String, String>{};
+      for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++) {
+        final oldIdx = oldIndicesInNewOrder[newIdx];
+        for (final layer in scene.frames[oldIdx].layers) {
+          final oldKey = frameLayerKey(sceneId, oldIdx, layer.id);
+          final tempKey = '__reorder_tmp__${oldIdx}_${layer.id}';
+          tm.renameKey(oldKey, tempKey);
+          tempToFinal[tempKey] = frameLayerKey(sceneId, newIdx, layer.id);
+        }
+      }
+      tempToFinal.forEach((tempKey, finalKey) => tm.renameKey(tempKey, finalKey));
+    }
+
+    final newFrames = <Frame>[
+      for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++)
+        scene.frames[oldIndicesInNewOrder[newIdx]].copyWith(index: newIdx),
+    ];
+    scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+
+    // 表示範囲レイヤーのホームインデックスも新しい並び順へ追従させる
+    final homes = _layerHomes[projectId];
+    if (homes != null) {
+      final oldToNew = <int, int>{
+        for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++)
+          oldIndicesInNewOrder[newIdx]: newIdx,
+      };
+      final updates = <String, LayerHome>{};
+      homes.forEach((layerId, home) {
+        if (home.sceneId == sceneId && oldToNew.containsKey(home.frameIndex)) {
+          updates[layerId] = (sceneId: sceneId, frameIndex: oldToNew[home.frameIndex]!);
+        }
+      });
+      updates.forEach((id, home) => homes[id] = home);
+    }
+    notifyListeners();
+  }
+
   // ─── カメラキーフレーム（仕様書05：XY移動・拡大・回転） ─────────────────
 
   List<CameraKeyframe> cameraKeyframesOf(String projectId, String sceneId) =>
