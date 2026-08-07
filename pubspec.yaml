@@ -23,7 +23,11 @@ dependencies:
   share_plus: ^7.2.1
   permission_handler: ^11.1.0
   archive: ^3.4.9
-  ffmpeg_kit_flutter_min_gpl: ^6.0.3
+  # ffmpeg_kit_flutter_min_gplは配布元(arthenica/ffmpeg-kit)が2025年に
+  # アーカイブされ、Mavenリポジトリから成果物が失われビルド不能になったため、
+  # 保守が続いているフォークへ移行した（ビルド時にネイティブライブラリを
+  # 自動ダウンロードする方式で、失われたMaven依存を回避できる）。
+  ffmpeg_kit_flutter_new_min_gpl: ^2.6.2
 
 dev_dependencies:
   flutter_test:
