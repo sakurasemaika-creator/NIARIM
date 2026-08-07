@@ -277,9 +277,22 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       ? _preset.parts
       : _preset.parts.where((p) => p.name.contains(_partSearchQuery)).toList();
 
+  /// 未設定パーツ一覧（仕様書20：保存チェック「未設定項目が1つでもある場合は
+  /// 保存不可」）。
+  List<AutofillPart> get _unconfiguredParts =>
+      _preset.parts.where((p) => !p.isConfigured).toList();
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final unconfigured = _unconfiguredParts;
+    return PopScope(
+      // 未設定パーツがある間はこの画面を離れられない（仕様書20：保存不可）。
+      canPop: unconfigured.isEmpty,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _showUnconfiguredBlockDialog(unconfigured);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: _isSearchingParts
             ? TextField(
@@ -299,7 +312,58 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
         ],
       ),
-      body: _preset.parts.isEmpty
+      body: Column(
+        children: [
+          // 未設定パーツがある場合の警告バナー（仕様書20：「赤文字で不足している
+          // パーツ名と設定内容を表示」）
+          if (unconfigured.isNotEmpty)
+            Container(
+              width: double.infinity,
+              color: Colors.red.withValues(alpha: 0.12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                '未設定のパーツが${unconfigured.length}件あります：'
+                '${unconfigured.map((p) => p.name).join('・')}（トーン未選択）\n'
+                'すべて設定するまでこの画面を閉じられません。',
+                style: const TextStyle(color: Colors.red, fontSize: 11),
+              ),
+            ),
+          Expanded(child: _partListBody()),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddPartDialog,
+        child: const Icon(Icons.add),
+      ),
+      ),
+    );
+  }
+
+  void _showUnconfiguredBlockDialog(List<AutofillPart> unconfigured) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('未設定のパーツがあります'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('保存する前に、以下のパーツを設定してください（仕様書20：保存チェック）。'),
+            const SizedBox(height: 8),
+            for (final p in unconfigured)
+              Text('・${p.name}：トーンが未選択です',
+                  style: const TextStyle(color: Colors.red, fontSize: 13)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('設定へ戻る')),
+        ],
+      ),
+    );
+  }
+
+  Widget _partListBody() {
+    return _preset.parts.isEmpty
           ? Center(
               child: Text('パーツがありません\n＋ボタンで追加してください',
                   textAlign: TextAlign.center,
@@ -321,12 +385,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     _save(_preset.copyWith(parts: parts));
                   },
                   itemBuilder: (context, index) => _partTile(_preset.parts[index]),
-                ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddPartDialog,
-        child: const Icon(Icons.add),
-      ),
-    );
+                );
   }
 
   /// パーツ一覧の1行（仕様書20：「[サムネイル] パーツ名 [色チップ] ✓設定完了マーク」）。

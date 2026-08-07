@@ -72,6 +72,7 @@ void main() async {
   await autosaveService.init();
   final saveTreeService = SaveTreeService();
   final autofillPresetService = AutofillPresetService();
+  await autofillPresetService.init();
   final materialService = MaterialService();
   final quickToolService = QuickToolService();
   await quickToolService.init();
