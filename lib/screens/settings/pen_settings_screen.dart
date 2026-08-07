@@ -1,57 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
 
-class PenSettingsScreen extends StatefulWidget {
+/// ペン入力設定（仕様書08）。
+/// 筆圧の「無効／サイズ／不透明度／両方」反映モードは仕様書17により
+/// ブラシ個別設定のため、ブラシ設定パネル側で管理する（ここでは扱わない）。
+/// このため、この画面では「筆圧カーブ（アプリ全体に適用）」と「ペンボタン設定」を扱う。
+class PenSettingsScreen extends StatelessWidget {
   const PenSettingsScreen({super.key});
 
-  @override
-  State<PenSettingsScreen> createState() => _PenSettingsScreenState();
-}
-
-class _PenSettingsScreenState extends State<PenSettingsScreen> {
-  int _pressureMode = 1;
-  int _pressureCurve = 1;
-  String _penButton1 = 'eraser';
-  String _penButton2 = 'eyedropper';
+  // ペンボタンに割り当て可能なアクション（仕様書08：消しゴム切替・スポイト・
+  // Undo・Redo・ツール早替え・なし）。ジェスチャー設定の全アクションとは異なる
+  // 限定リストであることに注意。
+  static const _penButtonActions = [
+    GestureAction.eraserToggle,
+    GestureAction.eyedropper,
+    GestureAction.undo,
+    GestureAction.redo,
+    GestureAction.nextTool,
+    GestureAction.none,
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsService>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('ペン入力設定')),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _sectionLabel(context, '筆圧設定'),
-          Card(
-            child: Column(
+          _sectionLabel(context, '筆圧カーブ（アプリ全体に適用）'),
+          Text('弱い設定ほど筆圧の立ち上がりが緩やかに、強い設定ほど鋭くなります。',
+              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          const SizedBox(height: 8),
+          SegmentedButton<PenPressureCurve>(
+            segments: const [
+              ButtonSegment(value: PenPressureCurve.weak, label: Text('弱')),
+              ButtonSegment(value: PenPressureCurve.normal, label: Text('普通')),
+              ButtonSegment(value: PenPressureCurve.strong, label: Text('強')),
+              ButtonSegment(value: PenPressureCurve.custom, label: Text('カスタム')),
+            ],
+            selected: {settings.penPressureCurve},
+            onSelectionChanged: (v) => settings.setPenPressureCurve(v.first),
+          ),
+          if (settings.penPressureCurve == PenPressureCurve.custom) ...[
+            const SizedBox(height: 8),
+            Row(
               children: [
-                RadioListTile<int>(title: const Text('無効'), value: 0, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
-                RadioListTile<int>(title: const Text('サイズに反映'), value: 1, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
-                RadioListTile<int>(title: const Text('不透明度に反映'), value: 2, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
-                RadioListTile<int>(title: const Text('サイズ＋不透明度に反映'), value: 3, groupValue: _pressureMode, onChanged: (v) => setState(() => _pressureMode = v!)),
+                const Text('立ち上がり'),
+                Expanded(
+                  child: Slider(
+                    min: 0.3, max: 3.0,
+                    value: settings.customPressureExponent,
+                    divisions: 27,
+                    label: settings.customPressureExponent.toStringAsFixed(1),
+                    onChanged: (v) => settings.setCustomPressureExponent(v),
+                  ),
+                ),
+                SizedBox(width: 40, child: Text(settings.customPressureExponent.toStringAsFixed(1), textAlign: TextAlign.center)),
               ],
             ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, '筆圧カーブ'),
-          SegmentedButton<int>(
-            segments: const [
-              ButtonSegment(value: 0, label: Text('弱')),
-              ButtonSegment(value: 1, label: Text('普通')),
-              ButtonSegment(value: 2, label: Text('強')),
-              ButtonSegment(value: 3, label: Text('カスタム')),
-            ],
-            selected: {_pressureCurve},
-            onSelectionChanged: (v) => setState(() => _pressureCurve = v.first),
-          ),
+          ],
+          const SizedBox(height: 4),
+          Text('※ 筆圧の「サイズ／不透明度に反映」設定はブラシごとの個別設定です（ブラシ設定パネルで変更）。',
+              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 20),
           _sectionLabel(context, 'ペンボタン設定'),
           Card(
             child: Column(
               children: [
-                ListTile(title: const Text('ボタン1'), trailing: Text(_buttonLabel(_penButton1)), onTap: () => _showButtonPicker(1)),
+                _buttonItem(context, 'ボタン1', settings.penButton1, (a) => settings.setPenButton(1, a)),
                 const Divider(height: 1),
-                ListTile(title: const Text('ボタン2'), trailing: Text(_buttonLabel(_penButton2)), onTap: () => _showButtonPicker(2)),
+                _buttonItem(context, 'ボタン2', settings.penButton2, (a) => settings.setPenButton(2, a)),
               ],
             ),
           ),
@@ -69,27 +91,36 @@ class _PenSettingsScreenState extends State<PenSettingsScreen> {
     );
   }
 
-  String _buttonLabel(String action) => switch (action) {
-    'eraser' => '消しゴム切替', 'eyedropper' => 'スポイト', 'undo' => 'Undo',
-    'redo' => 'Redo', 'next_tool' => 'ツール早替え', 'none' => 'なし', _ => action,
-  };
-
-  void _showButtonPicker(int buttonNumber) {
-    final actions = ['eraser', 'eyedropper', 'undo', 'redo', 'next_tool', 'none'];
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: actions.map((action) => ListTile(
-            title: Text(_buttonLabel(action)),
-            onTap: () {
-              setState(() { if (buttonNumber == 1) _penButton1 = action; else _penButton2 = action; });
-              Navigator.pop(ctx);
-            },
-          )).toList(),
+  Widget _buttonItem(BuildContext context, String title, GestureAction current, ValueChanged<GestureAction> onChanged) {
+    return ListTile(
+      title: Text(title),
+      trailing: Text(_actionLabel(current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+      onTap: () => showModalBottomSheet(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _penButtonActions.map((action) => RadioListTile<GestureAction>(
+              title: Text(_actionLabel(action)),
+              value: action,
+              groupValue: current,
+              onChanged: (v) { if (v != null) onChanged(v); Navigator.pop(ctx); },
+            )).toList(),
+          ),
         ),
       ),
     );
   }
+
+  String _actionLabel(GestureAction action) => switch (action) {
+    GestureAction.undo => 'Undo',
+    GestureAction.redo => 'Redo',
+    GestureAction.eyedropper => 'スポイト',
+    GestureAction.eraserToggle => '消しゴム切替',
+    GestureAction.nextTool => 'ツール早替え',
+    GestureAction.none => 'なし',
+    GestureAction.panTool => '手のひらツール',
+    GestureAction.brushToggle => 'ブラシ切替',
+    GestureAction.frameMove => 'フレーム移動',
+  };
 }

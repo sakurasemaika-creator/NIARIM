@@ -41,6 +41,9 @@ class CanvasScreen extends StatefulWidget {
 
 class _CanvasScreenState extends State<CanvasScreen> {
   DrawingTool _currentTool = DrawingTool.pen;
+  // ジェスチャー／ペンボタンでの消しゴム切替・ブラシ切替・手のひらツール
+  // トグル用に、切替前のツールを一時的に覚えておく（仕様書08）。
+  DrawingTool? _toolBeforeGestureToggle;
   PenSubTool _currentSubTool = PenSubTool.brush;
   double _brushSize = 5;
   int _brushOpacity = 100;
@@ -240,6 +243,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     sceneId: _currentSceneId,
                     activeRuler: _activeRuler,
                     shapeKind: _shapeKind,
+                    onGestureToolChange: (tool) => setState(() => _currentTool = tool),
+                    onGestureToggleTool: _handleGestureToggleTool,
+                    onNextQuickTool: _applyNextQuickTool,
                   ),
                   if (_showLayerPanel && !isDesktop)
                     Positioned(
@@ -466,6 +472,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
       context.read<BrushService>().updateCurrentBrushSize(size);
       setState(() => _brushSize = size);
     }
+  }
+
+  /// ジェスチャー／ペンボタンからのトグル切替（消しゴム切替・ブラシ切替・
+  /// 手のひらツール）。既にそのツールならトグル前のツールへ戻す（仕様書08）。
+  void _handleGestureToggleTool(DrawingTool tool) {
+    setState(() {
+      if (_currentTool == tool) {
+        _currentTool = _toolBeforeGestureToggle ?? DrawingTool.pen;
+        _toolBeforeGestureToggle = null;
+      } else {
+        _toolBeforeGestureToggle = _currentTool;
+        _currentTool = tool;
+      }
+    });
   }
 
   Widget _buildTopBar() {
@@ -838,6 +858,9 @@ enum DrawingTool {
   selectRect, selectLasso, selectMagicWand,
   move, transform,
   ruler, text, shape,
+  // 手のひらツール（仕様書08）：ジェスチャー／ペンボタンからのみ到達する一時ツール。
+  // ツールバーには表示せず、描画を行わずキャンバスの平行移動のみを行う。
+  pan,
 }
 
 /// 図形ツールの種別（仕様書03：タップでポップアップ表示・OFF/線/四角形/円）

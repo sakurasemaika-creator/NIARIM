@@ -22,6 +22,7 @@ import '../../../models/onion_skin_settings.dart';
 import '../../../models/project.dart';
 import '../../../models/ruler.dart';
 import '../../../services/brush_service.dart';
+import '../../../services/performance_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../services/stamp_service.dart';
@@ -47,6 +48,12 @@ class CanvasArea extends StatefulWidget {
   final String sceneId;
   final Ruler? activeRuler;
   final ShapeKind shapeKind;
+  // ジェスチャー／ペンボタンによるツール切替の通知先（仕様書08）。
+  // onGestureToolChange：直接切り替え（スポイト等、押し続けの必要がないもの）
+  // onGestureToggleTool：現在のツールとトグル切替（消しゴム切替・ブラシ切替・手のひらツール）
+  final ValueChanged<DrawingTool>? onGestureToolChange;
+  final ValueChanged<DrawingTool>? onGestureToggleTool;
+  final VoidCallback? onNextQuickTool;
 
   const CanvasArea({
     super.key,
@@ -64,6 +71,9 @@ class CanvasArea extends StatefulWidget {
     this.sceneId = '',
     this.activeRuler,
     this.shapeKind = ShapeKind.off,
+    this.onGestureToolChange,
+    this.onGestureToggleTool,
+    this.onNextQuickTool,
   });
 
   @override
@@ -336,6 +346,19 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
+  /// 筆圧カーブ（仕様書08：アプリ全体に適用）と、品質設定の「傾き検知」ON/OFF
+  /// （仕様書08：低品質・中品質はOFF固定）を反映したStrokePointを生成する。
+  StrokePoint _rawToStrokePoint(PointerEvent event) {
+    final settings = context.read<SettingsService>();
+    final tiltEnabled = context.read<PerformanceService>().tiltEnabled;
+    final raw = _inputHandler.toStrokePoint(event, pressureCurve: settings.applyPressureCurve);
+    if (tiltEnabled) return raw;
+    return StrokePoint(
+      x: raw.x, y: raw.y, pressure: raw.pressure,
+      tiltX: 0, tiltY: 0, inputType: raw.inputType,
+    );
+  }
+
   void _onPointerDown(PointerEvent event) {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
@@ -343,6 +366,25 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 制作時間カウント（仕様書19）：キャンバスへの操作のたびに無操作タイマーをリセットする
     if (widget.project != null) {
       context.read<ProjectService>().pingWorkActivity();
+    }
+
+    // ペンボタン検出（仕様書08：対応端末のみ）。バレルボタン押下時は割り当てられた
+    // アクションを実行し、描画は開始しない。
+    if (type == InputType.stylus) {
+      final settings = context.read<SettingsService>();
+      if (event.buttons & kPrimaryStylusButton != 0) {
+        _handleGesture(context, settings.penButton1);
+        return;
+      }
+      if (event.buttons & kSecondaryStylusButton != 0) {
+        _handleGesture(context, settings.penButton2);
+        return;
+      }
+    }
+
+    if (widget.currentTool == DrawingTool.pan) {
+      // 手のひらツール：描画を行わずInteractiveViewerによる平行移動へ委ねる
+      return;
     }
 
     if (widget.currentTool == DrawingTool.text && widget.onTapForText != null) {
@@ -412,8 +454,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (type == InputType.touch) return;
     _syncBrushAndColor();
     final snapped = widget.currentTool == DrawingTool.ruler
-        ? _toCanvasPoint(_inputHandler.toStrokePoint(event))
-        : _applyRulerSnap(_toCanvasPoint(_inputHandler.toStrokePoint(event)));
+        ? _toCanvasPoint(_rawToStrokePoint(event))
+        : _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
     _beginTileUndo();
     _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
@@ -423,6 +465,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
 
+    if (widget.currentTool == DrawingTool.pan) return;
     if (widget.currentTool == DrawingTool.selectRect && _selectionStart != null) {
       setState(() => _selectionEnd = canvasPos);
       return;
@@ -465,7 +508,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         widget.currentTool == DrawingTool.eyedropper) {
       return;
     }
-    final snapped = _applyRulerSnap(_toCanvasPoint(_inputHandler.toStrokePoint(event)));
+    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
     _drawingEngine.continueStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
   }
@@ -473,6 +516,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _onPointerUp(PointerEvent event) {
     final type = _inputHandler.classifyInput(event);
 
+    if (widget.currentTool == DrawingTool.pan) return;
     if (widget.currentTool == DrawingTool.selectRect) {
       final start = _selectionStart;
       final end = _selectionEnd;
@@ -1257,8 +1301,8 @@ class _CanvasAreaState extends State<CanvasArea> {
           transformationController: _transformController,
           minScale: 0.1,
           maxScale: 10.0,
-          panEnabled: !_inputHandler.isStylusActive,
-          scaleEnabled: !_inputHandler.isStylusActive,
+          panEnabled: !_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan,
+          scaleEnabled: !_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan,
           // 低スペック端末対策：キャンバスの再描画を他ウィジェットから分離し、
           // ストローク中の再描画コストを最小限に抑える。
           child: RepaintBoundary(
@@ -1306,12 +1350,21 @@ class _CanvasAreaState extends State<CanvasArea> {
       case GestureAction.redo:
         undoManager.redo();
       case GestureAction.eyedropper:
-        // スポイトは次のタップ座標が必要なため状態変更のみ
-        break;
+        // スポイトは次のタップ座標が必要なため、ツールをスポイトへ直接切り替える
+        widget.onGestureToolChange?.call(DrawingTool.eyedropper);
       case GestureAction.eraserToggle:
-        // 親ウィジェットへの通知が必要なため現状はno-op
+        widget.onGestureToggleTool?.call(DrawingTool.eraser);
+      case GestureAction.brushToggle:
+        widget.onGestureToggleTool?.call(DrawingTool.pen);
+      case GestureAction.panTool:
+        widget.onGestureToggleTool?.call(DrawingTool.pan);
+      case GestureAction.nextTool:
+        widget.onNextQuickTool?.call();
+      case GestureAction.frameMove:
+        // 2本指スワイプ専用の連続操作を想定した機能のため、単発ジェスチャー／
+        // ペンボタンからの割り当ては未対応（仕様書08）
         break;
-      default:
+      case GestureAction.none:
         break;
     }
   }

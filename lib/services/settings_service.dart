@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,6 +36,63 @@ class SettingsService extends ChangeNotifier {
   GestureAction get twoFingerSwipe => _twoFingerSwipe;
   GestureAction get longPress => _longPress;
 
+  // ─── ペン入力設定（仕様書08：筆圧カーブ・ペンボタン） ─────────────────
+  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは仕様書17（ブラシ仕様）
+  // により「ブラシ個別設定」と明記されているため、ブラシ設定側(Brush.pressureMode)
+  // のみで管理する（グローバル設定としては持たない＝仕様書08との重複記載を解消）。
+  // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
+  PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
+  GestureAction _penButton1 = GestureAction.eraserToggle;
+  GestureAction _penButton2 = GestureAction.eyedropper;
+
+  PenPressureCurve get penPressureCurve => _penPressureCurve;
+  GestureAction get penButton1 => _penButton1;
+  GestureAction get penButton2 => _penButton2;
+
+  /// 筆圧カーブに応じて生の筆圧値（0.0〜1.0）を補正する（仕様書08：
+  /// 筆圧カーブはアプリ全体に適用）。弱＝立ち上がりを緩やかに、
+  /// 強＝立ち上がりを鋭くする指数カーブ。
+  double applyPressureCurve(double rawPressure) {
+    final p = rawPressure.clamp(0.0, 1.0);
+    final exponent = switch (_penPressureCurve) {
+      PenPressureCurve.weak => 1.6,
+      PenPressureCurve.normal => 1.0,
+      PenPressureCurve.strong => 0.6,
+      PenPressureCurve.custom => _customPressureExponent,
+    };
+    if (exponent == 1.0) return p;
+    return math.pow(p, exponent).toDouble();
+  }
+
+  double _customPressureExponent = 1.0;
+  double get customPressureExponent => _customPressureExponent;
+
+  Future<void> setPenPressureCurve(PenPressureCurve curve) async {
+    _penPressureCurve = curve;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pen_pressure_curve', curve.name);
+    notifyListeners();
+  }
+
+  Future<void> setCustomPressureExponent(double exponent) async {
+    _customPressureExponent = exponent.clamp(0.3, 3.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('pen_pressure_custom_exponent', _customPressureExponent);
+    notifyListeners();
+  }
+
+  Future<void> setPenButton(int buttonNumber, GestureAction action) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (buttonNumber == 1) {
+      _penButton1 = action;
+      await prefs.setString('pen_button_1', action.name);
+    } else {
+      _penButton2 = action;
+      await prefs.setString('pen_button_2', action.name);
+    }
+    notifyListeners();
+  }
+
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _defaultFps = prefs.getInt('default_fps') ?? 12;
@@ -52,6 +110,10 @@ class SettingsService extends ChangeNotifier {
     _threeFingerTap = _gestureActionFromName(prefs.getString('gesture_three_finger_tap'), GestureAction.redo);
     _twoFingerSwipe = _gestureActionFromName(prefs.getString('gesture_two_finger_swipe'), GestureAction.frameMove);
     _longPress = _gestureActionFromName(prefs.getString('gesture_long_press'), GestureAction.eyedropper);
+    _penPressureCurve = PenPressureCurve.values.asNameMap()[prefs.getString('pen_pressure_curve')] ?? PenPressureCurve.normal;
+    _customPressureExponent = prefs.getDouble('pen_pressure_custom_exponent') ?? 1.0;
+    _penButton1 = _gestureActionFromName(prefs.getString('pen_button_1'), GestureAction.eraserToggle);
+    _penButton2 = _gestureActionFromName(prefs.getString('pen_button_2'), GestureAction.eyedropper);
   }
 
   GestureAction _gestureActionFromName(String? name, GestureAction fallback) {
@@ -142,3 +204,6 @@ enum GestureAction {
   undo, redo, eyedropper, panTool, eraserToggle,
   brushToggle, frameMove, nextTool, none,
 }
+
+/// 筆圧カーブ（仕様書08・17：アプリ全体に適用）。
+enum PenPressureCurve { weak, normal, strong, custom }
