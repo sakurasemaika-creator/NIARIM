@@ -313,7 +313,25 @@ class _SharedTab extends StatelessWidget {
         ),
       );
     }
-    return const Center(child: Text('共有一覧'));
+    return ListView.builder(
+      itemCount: shared.length,
+      itemBuilder: (context, index) {
+        final project = shared[index];
+        return ListTile(
+          leading: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Color(project.backgroundColor),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          title: Text(project.name),
+          subtitle: Text('${project.fps}fps · ${project.durationSeconds}秒'),
+          onTap: () => context.push('/project/${project.id}'),
+        );
+      },
+    );
   }
 }
 
@@ -399,100 +417,21 @@ class _TrashTab extends StatelessWidget {
 enum ProjectViewMode { large, medium, small, detail }
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
 
-// ─── 初回起動チュートリアルダイアログ ────────────────────────────────────────
+// ─── 初回起動ポップアップ ─────────────────────────────────────────────────
+// 仕様書02・11・19：初回起動時は「手書きアニメーションを制作できます」の
+// ポップアップのみを表示する（複数ページのチュートリアルは表示しない）。
 
-class _FirstLaunchDialog extends StatefulWidget {
+class _FirstLaunchDialog extends StatelessWidget {
   final VoidCallback onDone;
   const _FirstLaunchDialog({required this.onDone});
 
   @override
-  State<_FirstLaunchDialog> createState() => _FirstLaunchDialogState();
-}
-
-class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
-  int _page = 0;
-
-  static const _pages = [
-    _TutorialPage(
-      icon: Icons.movie_creation_outlined,
-      title: 'MIRANIMAへようこそ',
-      body: '手書きアニメーションを\n簡単に制作できるアプリです。',
-    ),
-    _TutorialPage(
-      icon: Icons.brush,
-      title: 'キャンバスで描く',
-      body: 'ペン・消しゴム・バケツなど\n豊富なツールで自由に描けます。',
-    ),
-    _TutorialPage(
-      icon: Icons.layers,
-      title: 'レイヤーで管理',
-      body: '複数のレイヤーを重ねて\n複雑な絵も描けます。',
-    ),
-    _TutorialPage(
-      icon: Icons.movie,
-      title: 'タイムラインで動かす',
-      body: 'フレームを追加して\nアニメーションを作りましょう。',
-    ),
-  ];
-
-  @override
   Widget build(BuildContext context) {
-    final page = _pages[_page];
-    final isLast = _page == _pages.length - 1;
-
     return AlertDialog(
-      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-      content: SizedBox(
-        width: 280,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(page.icon, size: 64, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(
-              page.title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(page.body, style: const TextStyle(fontSize: 14), textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_pages.length, (i) => Container(
-                width: 8, height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: i == _page
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                ),
-              )),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+      content: const Text('手書きアニメーションを制作できます'),
       actions: [
-        if (_page > 0)
-          TextButton(
-            onPressed: () => setState(() => _page--),
-            child: const Text('戻る'),
-          ),
-        const Spacer(),
-        FilledButton(
-          onPressed: isLast ? widget.onDone : () => setState(() => _page++),
-          child: Text(isLast ? 'はじめる' : '次へ'),
-        ),
+        FilledButton(onPressed: onDone, child: const Text('はじめる')),
       ],
     );
   }
-}
-
-class _TutorialPage {
-  final IconData icon;
-  final String title;
-  final String body;
-  const _TutorialPage({required this.icon, required this.title, required this.body});
 }
