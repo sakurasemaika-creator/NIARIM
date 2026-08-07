@@ -22,6 +22,8 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onFilterTap;
   final VoidCallback onQuickToolTap;
   final VoidCallback onQuickToolLongPress;
+  // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+  final VoidCallback onSaveTap;
   // スタンプ選択中かどうか（仕様書17：色アイコンに🚫重ね表示・タップで専用トースト）
   final bool isStampSelected;
 
@@ -42,6 +44,7 @@ class ToolbarWidget extends StatelessWidget {
     required this.onFilterTap,
     required this.onQuickToolTap,
     required this.onQuickToolLongPress,
+    required this.onSaveTap,
     this.isStampSelected = false,
   });
 
@@ -171,6 +174,8 @@ class ToolbarWidget extends StatelessWidget {
               ),
             ),
             IconButton(icon: const Icon(Icons.movie, size: 20), onPressed: onTimelineTap, tooltip: 'タイムライン'),
+            // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+            IconButton(icon: const Icon(Icons.save_outlined, size: 20), onPressed: onSaveTap, tooltip: '保存（セーブツリー）'),
           ],
         ),
       ),

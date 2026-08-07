@@ -403,6 +403,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 _showQuickToolPanel = !_showQuickToolPanel;
                 _showLayerPanel = false;
               }),
+              // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+              onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
             ),
             if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
             FrameStripWidget(
