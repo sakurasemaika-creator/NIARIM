@@ -47,6 +47,9 @@ class CanvasArea extends StatefulWidget {
   final int currentFrame;
   final String sceneId;
   final Ruler? activeRuler;
+  // 定規のハンドルドラッグ（移動・回転・サイズ変更・消失点移動）による更新通知
+  // （仕様書14）。ライブ更新・Undo確定の両方でこのコールバックを呼ぶ。
+  final ValueChanged<Ruler?>? onRulerChanged;
   final ShapeKind shapeKind;
   // ジェスチャー／ペンボタンによるツール切替の通知先（仕様書08）。
   // onGestureToolChange：直接切り替え（スポイト等、押し続けの必要がないもの）
@@ -72,6 +75,7 @@ class CanvasArea extends StatefulWidget {
     this.currentFrame = 0,
     this.sceneId = '',
     this.activeRuler,
+    this.onRulerChanged,
     this.shapeKind = ShapeKind.off,
     this.onGestureToolChange,
     this.onGestureToggleTool,
@@ -434,6 +438,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       _beginTransform(canvasPos);
       return;
     }
+    if (widget.currentTool == DrawingTool.ruler) {
+      _handleRulerDown(canvasPos);
+      return;
+    }
     if (widget.currentTool == DrawingTool.bucket) {
       if (type == InputType.touch) return;
       _syncBrushAndColor();
@@ -456,6 +464,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     if (type == InputType.touch) return;
     _syncBrushAndColor();
+    // 透視定規：新しいストロークの開始点として、消失点スナップの基準をリセットする。
+    _rulerEngine.beginStroke();
     final snapped = widget.currentTool == DrawingTool.ruler
         ? _toCanvasPoint(_rawToStrokePoint(event))
         : _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
@@ -487,6 +497,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.transform && _transformStart != null) {
       _updateTransform(canvasPos);
+      return;
+    }
+    if (widget.currentTool == DrawingTool.ruler) {
+      _handleRulerMove(canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
@@ -554,6 +568,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.transform) {
       _commitTransform();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.ruler) {
+      _handleRulerUp();
       return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
@@ -1178,6 +1196,144 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
+  // ─── 定規の編集（移動・回転・サイズ変更・消失点移動、仕様書14） ───────────
+  // 定規ツール選択中はキャンバスタップがハンドル操作として扱われる。
+  // ハンドル座標は_paintRulerの描画と同じ座標系（ルーラーの position/
+  // vanishingPoint と同じ、export解像度基準）で計算する。
+
+  String? _rulerHandleId;
+  Ruler? _rulerDragStartRuler;
+
+  double get _rulerHitTolerance {
+    final scale = _transformController.value.getMaxScaleOnAxis();
+    return scale > 0 ? 28.0 / scale : 28.0;
+  }
+
+  Offset _rotatePoint(Offset v, double angle) {
+    final c = math.cos(angle);
+    final s = math.sin(angle);
+    return Offset(v.dx * c - v.dy * s, v.dx * s + v.dy * c);
+  }
+
+  /// 現在のルーラーのハンドル一覧（ハンドルID→キャンバス座標）を返す。
+  /// _paintRulerが描画するハンドル位置と対応させている。
+  Map<String, Offset> _rulerHandlePositions(Ruler r) {
+    switch (r.type) {
+      case RulerType.line:
+        return {
+          'move': r.position,
+          'rotate': r.position + Offset.fromDirection(r.rotation, 220),
+        };
+      case RulerType.ellipse:
+        final rx = r.settings.radiusX ?? 200;
+        final ry = r.settings.radiusY ?? 120;
+        return {
+          'move': r.position,
+          'resizeX': r.position + _rotatePoint(Offset(rx, 0), r.rotation),
+          'resizeY': r.position + _rotatePoint(Offset(0, ry), r.rotation),
+          'rotate': r.position + _rotatePoint(Offset(rx + 50, 0), r.rotation),
+        };
+      case RulerType.radial:
+        return {
+          'move': r.position,
+          'rotate': r.position + Offset.fromDirection(r.rotation, 160),
+        };
+      case RulerType.onePointPerspective:
+        return {'vp1': r.settings.vanishingPoint1 ?? r.position};
+      case RulerType.twoPointPerspective:
+        return {
+          'vp1': r.settings.vanishingPoint1 ?? const Offset(200, 540),
+          'vp2': r.settings.vanishingPoint2 ?? const Offset(1720, 540),
+        };
+      case RulerType.threePointPerspective:
+        return {
+          'vp1': r.settings.vanishingPoint1 ?? const Offset(200, 540),
+          'vp2': r.settings.vanishingPoint2 ?? const Offset(1720, 540),
+          'vp3': r.settings.vanishingPoint3 ?? const Offset(960, 100),
+        };
+      case RulerType.circle:
+        return {'move': r.position};
+    }
+  }
+
+  /// ハンドルをドラッグした結果の新しいRulerを計算する。
+  Ruler _rulerWithHandleAt(Ruler r, String handleId, Offset canvasPos) {
+    switch (handleId) {
+      case 'move':
+        return r.copyWith(position: canvasPos);
+      case 'rotate':
+        return r.copyWith(rotation: (canvasPos - r.position).direction);
+      case 'resizeX':
+      case 'resizeY':
+        final local = _rotatePoint(canvasPos - r.position, -r.rotation);
+        double newRx = r.settings.radiusX ?? 200;
+        double newRy = r.settings.radiusY ?? 120;
+        if (handleId == 'resizeX') {
+          newRx = local.dx.abs().clamp(10.0, 4000.0);
+        } else {
+          newRy = local.dy.abs().clamp(10.0, 4000.0);
+        }
+        // 正円スナップ（仕様書14：横幅≒縦幅になると自動で正円に吸い付く）
+        final maxR = math.max(newRx, newRy);
+        if (maxR > 0 && (newRx - newRy).abs() / maxR < 0.08) {
+          if (handleId == 'resizeX') {
+            newRy = newRx;
+          } else {
+            newRx = newRy;
+          }
+        }
+        return r.copyWith(settings: r.settings.copyWith(radiusX: newRx, radiusY: newRy));
+      case 'vp1':
+        return r.copyWith(settings: r.settings.copyWith(vanishingPoint1: canvasPos));
+      case 'vp2':
+        return r.copyWith(settings: r.settings.copyWith(vanishingPoint2: canvasPos));
+      case 'vp3':
+        return r.copyWith(settings: r.settings.copyWith(vanishingPoint3: canvasPos));
+      default:
+        return r;
+    }
+  }
+
+  void _handleRulerDown(Offset canvasPos) {
+    final ruler = widget.activeRuler;
+    if (ruler == null) return;
+    final handles = _rulerHandlePositions(ruler);
+    String? bestId;
+    double bestDist = _rulerHitTolerance;
+    for (final entry in handles.entries) {
+      final d = (entry.value - canvasPos).distance;
+      if (d <= bestDist) {
+        bestDist = d;
+        bestId = entry.key;
+      }
+    }
+    if (bestId == null) return;
+    _rulerHandleId = bestId;
+    _rulerDragStartRuler = ruler;
+  }
+
+  void _handleRulerMove(Offset canvasPos) {
+    final handleId = _rulerHandleId;
+    final ruler = widget.activeRuler;
+    if (handleId == null || ruler == null) return;
+    widget.onRulerChanged?.call(_rulerWithHandleAt(ruler, handleId, canvasPos));
+  }
+
+  void _handleRulerUp() {
+    final handleId = _rulerHandleId;
+    final before = _rulerDragStartRuler;
+    _rulerHandleId = null;
+    _rulerDragStartRuler = null;
+    if (handleId == null || before == null) return;
+    final after = widget.activeRuler;
+    if (after == null || identical(before, after)) return;
+    context.read<app_undo.UndoManager>().push(app_undo.RulerUndoAction(
+      before: before,
+      after: after,
+      onApply: (ruler) => widget.onRulerChanged?.call(ruler),
+    ));
+  }
+
   // ─── 座標変換 ─────────────────────────────────────────────────────────
 
   StrokePoint _toCanvasPoint(StrokePoint screen) {
@@ -1702,23 +1858,34 @@ class _CanvasPainter extends CustomPainter {
     switch (r.type) {
       case RulerType.line:
         final c = ts(r.position);
-        canvas.drawLine(Offset(0, c.dy), Offset(size.width, c.dy), paint);
+        final len = size.longestSide;
+        final dir = Offset.fromDirection(r.rotation, len);
+        canvas.drawLine(c - dir, c + dir, paint);
         handle(c);
+        handle(ts(r.position) + Offset.fromDirection(r.rotation, 220 * sx));
       case RulerType.ellipse:
         final rx = (r.settings.radiusX ?? 200) * sx;
         final ry = (r.settings.radiusY ?? 120) * sy;
         final c = ts(r.position);
-        canvas.drawOval(Rect.fromCenter(center: c, width: rx * 2, height: ry * 2), paint);
+        canvas.save();
+        canvas.translate(c.dx, c.dy);
+        canvas.rotate(r.rotation);
+        canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: rx * 2, height: ry * 2), paint);
+        canvas.restore();
         handle(c);
+        handle(c + _rotateOffset(Offset(rx, 0), r.rotation));
+        handle(c + _rotateOffset(Offset(0, ry), r.rotation));
+        handle(c + _rotateOffset(Offset(rx + 50 * sx, 0), r.rotation));
       case RulerType.radial:
         final divs = r.settings.divisions ?? 12;
         final c = ts(r.position);
         final len = size.longestSide;
         for (int i = 0; i < divs; i++) {
-          final a = (i / divs) * 3.14159265 * 2;
+          final a = (i / divs) * 3.14159265 * 2 + r.rotation;
           canvas.drawLine(c, c + Offset.fromDirection(a, len), paint);
         }
         handle(c);
+        handle(c + Offset.fromDirection(r.rotation, 160 * sx));
       case RulerType.onePointPerspective:
         final vp = ts(r.settings.vanishingPoint1 ?? r.position);
         for (int i = 0; i <= 8; i++) {
@@ -1752,6 +1919,12 @@ class _CanvasPainter extends CustomPainter {
       case RulerType.circle:
         break;
     }
+  }
+
+  Offset _rotateOffset(Offset v, double angle) {
+    final c = math.cos(angle);
+    final s = math.sin(angle);
+    return Offset(v.dx * c - v.dy * s, v.dx * s + v.dy * c);
   }
 
   /// belowImage/aboveImage（フレーム全体サイズの合成済み画像）を描画領域へ

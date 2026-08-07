@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../models/ruler.dart';
 import 'tile_manager.dart';
 
 class UndoManager extends ChangeNotifier {
@@ -145,4 +146,24 @@ class LayerRemoveUndoAction extends UndoAction {
   void redo() => _doRemove(projectId, sceneId, frameIndex, layerId);
   @override
   String get description => 'Remove layer $layerId';
+}
+
+/// 定規の作成・削除・移動・回転・サイズ変更・消失点変更のUndo/Redo（仕様書14）。
+class RulerUndoAction extends UndoAction {
+  final Ruler? before;
+  final Ruler? after;
+  final ValueChanged<Ruler?> onApply;
+
+  RulerUndoAction({
+    required this.before,
+    required this.after,
+    required this.onApply,
+  });
+
+  @override
+  void undo() => onApply(before);
+  @override
+  void redo() => onApply(after);
+  @override
+  String get description => '定規を編集';
 }

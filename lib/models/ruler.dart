@@ -16,6 +16,24 @@ class Ruler {
     this.isVisible = true,
     required this.settings,
   });
+
+  Ruler copyWith({
+    RulerType? type,
+    Offset? position,
+    double? rotation,
+    bool? isLocked,
+    bool? isVisible,
+    RulerSettings? settings,
+  }) {
+    return Ruler(
+      type: type ?? this.type,
+      position: position ?? this.position,
+      rotation: rotation ?? this.rotation,
+      isLocked: isLocked ?? this.isLocked,
+      isVisible: isVisible ?? this.isVisible,
+      settings: settings ?? this.settings,
+    );
+  }
 }
 
 enum RulerType {
@@ -39,4 +57,22 @@ class RulerSettings {
     this.radiusX,
     this.radiusY,
   });
+
+  RulerSettings copyWith({
+    int? divisions,
+    Offset? vanishingPoint1,
+    Offset? vanishingPoint2,
+    Offset? vanishingPoint3,
+    double? radiusX,
+    double? radiusY,
+  }) {
+    return RulerSettings(
+      divisions: divisions ?? this.divisions,
+      vanishingPoint1: vanishingPoint1 ?? this.vanishingPoint1,
+      vanishingPoint2: vanishingPoint2 ?? this.vanishingPoint2,
+      vanishingPoint3: vanishingPoint3 ?? this.vanishingPoint3,
+      radiusX: radiusX ?? this.radiusX,
+      radiusY: radiusY ?? this.radiusY,
+    );
+  }
 }

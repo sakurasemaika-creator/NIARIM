@@ -272,6 +272,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     currentFrame: _currentFrame,
                     sceneId: _currentSceneId,
                     activeRuler: _activeRuler,
+                    onRulerChanged: _setActiveRulerLive,
                     shapeKind: _shapeKind,
                     onGestureToolChange: (tool) => setState(() => _currentTool = tool),
                     onGestureToggleTool: _handleGestureToggleTool,
@@ -454,9 +455,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   Widget _rulerPanel() => RulerPanel(
         activeRuler: _activeRuler,
-        onRulerChanged: (r) => setState(() => _activeRuler = r),
+        onRulerChanged: _setActiveRulerWithUndo,
         onClose: () => setState(() => _showRulerPanel = false),
       );
+
+  /// CanvasArea側のハンドルドラッグによるライブ更新・Undo/Redoの巻き戻し反映用。
+  /// ドラッグ確定時のUndo登録自体はcanvas_area.dart側（_handleRulerUp）が
+  /// 1回だけ行うため、ここでは単純にstateを反映するのみでUndoは登録しない
+  /// （毎フレーム登録するとUndoスタックが埋まってしまうため）。
+  void _setActiveRulerLive(Ruler? r) {
+    setState(() => _activeRuler = r);
+  }
+
+  /// 定規パネルからの選択・削除など、1回で完結する変更をUndoへ登録しつつ反映する
+  /// （仕様書14：Undo通常対応）。
+  void _setActiveRulerWithUndo(Ruler? newRuler) {
+    final old = _activeRuler;
+    if (identical(old, newRuler)) return;
+    setState(() => _activeRuler = newRuler);
+    context.read<UndoManager>().push(RulerUndoAction(
+      before: old,
+      after: newRuler,
+      onApply: _setActiveRulerLive,
+    ));
+  }
 
   Widget _filterPanel() => FilterPanel(
         projectId: widget.projectId,
