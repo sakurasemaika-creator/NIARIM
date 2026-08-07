@@ -2694,6 +2694,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
         );
         if (result == AutofillBatchResult.applied) applied++;
       }
+      // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（仕様書04：
+      // 「線画レイヤーなし・塗りレイヤーあり」の行）は、選択中のモードに
+      // 関わらず不透明度ロック＋最新色での塗りつぶしのみを行う。
+      final orphanedLayers = layers.where((l) => isOrphanedAutofillLayer(layers, l));
+      for (final orphanedLayer in orphanedLayers) {
+        final result = await runAutofillForOrphanedLayer(
+          projectService: ps,
+          presetService: presetService,
+          projectId: widget.projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          autofillLayer: orphanedLayer,
+        );
+        if (result == AutofillBatchResult.applied) applied++;
+      }
       progress = (i + 1) / targets.length;
       setDialogState?.call(() {});
     }

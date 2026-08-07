@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
 import '../../../engine/procedural_texture.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
@@ -599,6 +600,11 @@ class _LayerPanelState extends State<LayerPanel> {
   void _showTimelineLayerMenu(BuildContext context, model.Layer layer) {
     final isCommon = layer.type == model.LayerType.common;
     final isLineart = layer.type == model.LayerType.autoFillLineart;
+    // 対応する線画レイヤーを持たない自動塗りレイヤー（仕様書04：線画レイヤーを
+    // 削除した後に残った状態）かどうかを判定する。
+    final allLayers = context.read<ProjectService>().layersOf(
+        widget.projectId, widget.sceneId, widget.frameIndex);
+    final isOrphanedAutofill = isOrphanedAutofillLayer(allLayers, layer);
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -634,6 +640,18 @@ class _LayerPanelState extends State<LayerPanel> {
                 onTap: () {
                   Navigator.pop(ctx);
                   _showAutofillDialog(context, layer, isLineartLayer: true);
+                },
+              ),
+            // 線画レイヤーを削除して残った孤立した自動塗りレイヤー（仕様書04）：
+            // 領域再判定はできないため、不透明度ロック＋最新色での塗りつぶしのみ実行
+            if (isOrphanedAutofill)
+              ListTile(
+                leading: const Icon(Icons.format_color_fill),
+                title: const Text('最新の色で塗りつぶす'),
+                subtitle: const Text('対応する線画レイヤーが見つからないため色更新のみ実行します', style: TextStyle(fontSize: 11)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _runOrphanedAutofill(context, layer);
                 },
               ),
             if (!isCommon && !isLineart)
@@ -1194,6 +1212,13 @@ class _LayerPanelState extends State<LayerPanel> {
       }
     }
     if (lineartLayer == null) {
+      // 線画レイヤーを削除して自動塗りレイヤーのみが残っている場合（仕様書04：
+      // 「線画レイヤーなし・塗りレイヤーあり」の行）は、参照する線画が無いため
+      // 領域の再判定はできない。不透明度ロック＋最新色での塗りつぶしのみを行う。
+      if (layer.type == model.LayerType.autoFill && layer.partId != null) {
+        _runOrphanedAutofill(context, layer);
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('対応する自動塗り用線画レイヤーが見つかりません。')),
       );
@@ -1395,6 +1420,30 @@ class _LayerPanelState extends State<LayerPanel> {
       layer: lineartLayer.copyWith(opacity: part.lineOpacity, blendMode: part.blendMode),
     );
     setState(() {});
+  }
+
+  /// 対応する自動塗り用線画レイヤーが存在しない自動塗りレイヤー（線画レイヤーを
+  /// 削除した後に残った状態）を処理する（仕様書04「4パターンまとめ」：
+  /// 「線画レイヤーなし・塗りレイヤーあり」の行）。参照する線画が無いため
+  /// 領域の再判定はできず、不透明度ロック＋最新色での塗りつぶしのみを行う
+  /// （モード選択の余地がないため確認ダイアログは出さず直接実行する）。
+  Future<void> _runOrphanedAutofill(BuildContext context, model.Layer autofillLayer) async {
+    final projectService = context.read<ProjectService>();
+    final presetService = context.read<AutofillPresetService>();
+    final result = await runAutofillForOrphanedLayer(
+      projectService: projectService,
+      presetService: presetService,
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      autofillLayer: autofillLayer,
+    );
+    if (!context.mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
+        result == AutofillBatchResult.applied
+            ? '対応する線画レイヤーが見つからないため、最新の色で塗りつぶしました。'
+            : 'パーツが未設定、または塗り形状がないため処理できませんでした。')));
   }
 
   /// 自動塗り用線画レイヤーへプリセットパーツを割り当てるダイアログ（仕様書04：パーツID管理）。

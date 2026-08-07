@@ -106,3 +106,60 @@ Future<AutofillBatchResult> runAutofillForLayer({
   );
   return AutofillBatchResult.applied;
 }
+
+/// 対応する自動塗り用線画レイヤーが存在しない自動塗りレイヤー（線画レイヤーを
+/// 削除した後に残った状態）を処理する（仕様書04「4パターンまとめ」：
+/// 「線画レイヤーなし・塗りレイヤーあり」の行）。参照する線画が無いため領域の
+/// 再判定はできず、常に不透明度ロック＋最新色での塗りつぶし（色更新と同じ
+/// 処理）のみを行う。
+Future<AutofillBatchResult> runAutofillForOrphanedLayer({
+  required ProjectService projectService,
+  required AutofillPresetService presetService,
+  required String projectId,
+  required String sceneId,
+  required int frameIndex,
+  required Layer autofillLayer,
+}) async {
+  final partId = autofillLayer.partId;
+  if (partId == null) return AutofillBatchResult.skipped;
+  final part = presetService.findPart(partId);
+  if (part == null) return AutofillBatchResult.skipped;
+
+  final tileManager = projectService.tileManagerOf(projectId);
+  final key = frameLayerKey(sceneId, frameIndex, autofillLayer.id);
+  if (!tileManager.hasLayer(key)) return AutofillBatchResult.skipped;
+
+  final w = tileManager.canvasWidth;
+  final h = tileManager.canvasHeight;
+  final img = await tileManager.compositeLayerToImage(key);
+  final existingBytes =
+      (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+  img.dispose();
+
+  final result = AutofillEngine().colorUpdate(
+    existingData: existingBytes,
+    width: w,
+    height: h,
+    part: part,
+  );
+
+  tileManager.replaceLayerPixels(key, result);
+  projectService.updateLayer(
+    projectId: projectId,
+    sceneId: sceneId,
+    frameIndex: frameIndex,
+    layer: autofillLayer.copyWith(partId: part.id, needsAutofillUpdate: false, opacityLocked: true),
+  );
+  return AutofillBatchResult.applied;
+}
+
+/// [layers]内で[autofillLayer]（LayerType.autoFill）が、直上に対応する
+/// LayerType.autoFillLineartレイヤーを持たない「孤立した自動塗りレイヤー」
+/// かどうかを判定する（仕様書04：自動塗りレイヤーは対応する線画レイヤーの
+/// 直下に配置されるという配置ルールに基づく判定）。
+bool isOrphanedAutofillLayer(List<Layer> layers, Layer autofillLayer) {
+  if (autofillLayer.type != LayerType.autoFill) return false;
+  final idx = layers.indexWhere((l) => l.id == autofillLayer.id);
+  if (idx <= 0) return true;
+  return layers[idx - 1].type != LayerType.autoFillLineart;
+}
