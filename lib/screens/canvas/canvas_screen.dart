@@ -818,13 +818,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             : model.TextWritingDirection.vertical;
                       }),
                     ),
-                    // 縦書き時のみ：ルビ・縦中横・半角英数字回転の説明（仕様書15）
-                    if (direction == model.TextWritingDirection.vertical)
-                      IconButton(
-                        icon: const Icon(Icons.help_outline, size: 18),
-                        tooltip: '縦書きの組版について',
-                        onPressed: () => _showVerticalTextHelp(context),
-                      ),
+                    // ルビ・縦中横・半角英数字回転の説明（仕様書15。ルビは縦書き・
+                    // 横書きどちらでも使えるため、書字方向によらず常に表示する）
+                    IconButton(
+                      icon: const Icon(Icons.help_outline, size: 18),
+                      tooltip: '組版・ルビについて',
+                      onPressed: () => _showVerticalTextHelp(context),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1011,26 +1011,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
     ).then((_) => controller.dispose());
   }
 
-  /// 縦書きの組版に関する説明（仕様書15：半角英数字の回転・縦中横・ルビ）。
+  /// 組版・ルビに関する説明（仕様書15：半角英数字の回転・縦中横・ルビ）。
   void _showVerticalTextHelp(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('縦書きの組版について'),
+        title: const Text('組版・ルビについて'),
         content: const SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('半角英数字の回転', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('半角英数字の回転（縦書きのみ）', style: TextStyle(fontWeight: FontWeight.bold)),
               Text('英字・記号は自動的に90°回転して表示されます。'),
               SizedBox(height: 8),
-              Text('縦中横', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('縦中横（縦書きのみ）', style: TextStyle(fontWeight: FontWeight.bold)),
               Text('半角数字が2桁連続すると、1文字分の高さに横並びで自動的に収まります（例：12）。'),
               SizedBox(height: 8),
               Text('ルビ（ふりがな）', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('「{漢字|かんじ}」のように入力すると、右側に小さくふりがなが表示されます。'
-                  '縦書き時のみ有効です。'),
+              Text('「{漢字|かんじ}」のように入力すると、基底文字の上（横書き）または右側'
+                  '（縦書き）に小さくふりがなが表示されます。縦書き・横書きどちらでも使えますが、'
+                  'ルビを含むテキストは横書きでの自動折り返しが効かなくなります（手動改行のみ対応）。'),
             ],
           ),
         ),

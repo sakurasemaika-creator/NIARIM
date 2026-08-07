@@ -3,9 +3,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/text_object.dart';
 
-/// ルビ注釈の記法：`{漢字|かんじ}`。縦書き専用（横書きでは基底テキストのみを
-/// 表示し、記法自体は取り除く。仕様書15にルビの横書き表示までは規定がなく、
-/// 伝統的な縦書き用途を優先した範囲対応）。
+/// ルビ注釈の記法：`{漢字|かんじ}`。縦書き・横書きの両方に対応する
+/// （仕様書15）。ルビを含まない場合は通常のParagraphBuilder一括レイアウト
+/// （自動折り返し対応）を使い、ルビを含む場合のみ実行単位ごとの手動配置
+/// （自動折り返し非対応）へ切り替える。
 final RegExp _rubyPattern = RegExp(r'\{([^{}|]+)\|([^{}|]+)\}');
 
 /// テキストレイヤーのラスタライズ（仕様書15：テキストツール・フォント仕様）。
@@ -20,15 +21,18 @@ Future<Uint8List?> rasterizeTextObject(TextObject text, int canvasWidth, int can
   return _rasterizeHorizontal(text, canvasWidth, canvasHeight);
 }
 
-/// 横書きでは{base|ruby}記法をそのまま表示せず、baseのみを残す（ルビ注釈は
-/// 縦書き専用のため）。
-String _stripRubyForHorizontal(String input) =>
-    input.replaceAllMapped(_rubyPattern, (m) => m.group(1)!);
+Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int canvasHeight) {
+  if (_rubyPattern.hasMatch(text.text)) {
+    return _rasterizeHorizontalWithRuby(text, canvasWidth, canvasHeight);
+  }
+  return _rasterizeHorizontalSimple(text, canvasWidth, canvasHeight);
+}
 
-Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int canvasHeight) async {
+/// ルビを含まない横書き（従来実装）。ParagraphBuilder一括レイアウトのため
+/// 自動折り返し（幅制約超過時の改行）に対応する。
+Future<Uint8List?> _rasterizeHorizontalSimple(TextObject text, int canvasWidth, int canvasHeight) async {
   final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
   final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
-  final plainText = _stripRubyForHorizontal(text.text);
 
   final style = ui.TextStyle(
     color: text.color.withValues(alpha: text.color.a * text.opacity),
@@ -45,7 +49,7 @@ Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int ca
   );
   final builder = ui.ParagraphBuilder(paragraphStyle)
     ..pushStyle(style)
-    ..addText(plainText);
+    ..addText(text.text);
   final paragraph = builder.build()
     ..layout(const ui.ParagraphConstraints(width: 2000));
 
@@ -78,7 +82,7 @@ Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int ca
     );
     final outlineBuilder = ui.ParagraphBuilder(paragraphStyle)
       ..pushStyle(outlineStyle)
-      ..addText(plainText);
+      ..addText(text.text);
     final outlineParagraph = outlineBuilder.build()
       ..layout(const ui.ParagraphConstraints(width: 2000));
     const steps = 8;
@@ -91,6 +95,148 @@ Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int ca
   }
 
   canvas.drawParagraph(paragraph, ui.Offset.zero);
+  canvas.restore();
+
+  final picture = recorder.endRecording();
+  final image = await picture.toImage(canvasWidth, canvasHeight);
+  final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  image.dispose();
+  return byteData?.buffer.asUint8List();
+}
+
+/// 横書きの1レイアウト実行単位（ルビなしの地の文、またはルビ付き基底文字列）。
+class _HRun {
+  final String text;
+  final String? ruby;
+  const _HRun({required this.text, this.ruby});
+}
+
+/// 1行分のテキストを、ルビ記法（{base|ruby}）の有無で実行単位へ分解する。
+List<_HRun> _parseRubyRuns(String line) {
+  final runs = <_HRun>[];
+  int cursor = 0;
+  for (final match in _rubyPattern.allMatches(line)) {
+    if (match.start > cursor) {
+      runs.add(_HRun(text: line.substring(cursor, match.start)));
+    }
+    runs.add(_HRun(text: match.group(1)!, ruby: match.group(2)!));
+    cursor = match.end;
+  }
+  if (cursor < line.length) {
+    runs.add(_HRun(text: line.substring(cursor)));
+  }
+  return runs;
+}
+
+/// ルビ（{base|ruby}記法）を含む横書き。実行単位ごとに個別レイアウトして
+/// 左→右に手動配置するため、ParagraphBuilder一括レイアウトの自動折り返し
+/// （幅制約超過時の改行）には対応しない（既知の簡略化。手動改行\nのみ対応）。
+/// ルビは各基底実行の直上に、基底の幅へ収まるよう小さいフォントサイズで
+/// 中央揃えに表示する（縦書きのルビは列の右側、横書きのルビは行の上側という
+/// 一般的な配置慣習に合わせる）。
+Future<Uint8List?> _rasterizeHorizontalWithRuby(TextObject text, int canvasWidth, int canvasHeight) async {
+  final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
+  final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
+
+  ui.TextStyle styleFor(ui.Color color, {double? size}) => ui.TextStyle(
+        color: color,
+        fontSize: size ?? text.fontSize,
+        fontFamily: text.fontFamily,
+        fontStyle: fontStyle,
+        fontWeight: fontWeight,
+      );
+
+  ui.Paragraph buildRun(String s, ui.TextStyle style) {
+    final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.left))
+      ..pushStyle(style)
+      ..addText(s);
+    return builder.build()..layout(const ui.ParagraphConstraints(width: 4000));
+  }
+
+  final lines = text.text.split('\n').map(_parseRubyRuns).toList();
+  final hasAnyRuby = lines.any((runs) => runs.any((r) => r.ruby != null));
+  final lineAdvance = text.fontSize * text.lineHeight;
+  // ルビ用の上部余白（そのテキストにルビが1つでもあれば全行分を確保し、
+  // 行ごとの高さのばらつきを避けて見た目の行間を揃える）。
+  final rubyReserve = hasAnyRuby ? text.fontSize * 0.6 : 0.0;
+  final lineSlot = lineAdvance + rubyReserve;
+
+  // 各行・各実行のレイアウト結果（幅）を先に計算し、行全体の幅・全体の
+  // 幅（揃え計算用）を求める。
+  final mainStyle = styleFor(text.color.withValues(alpha: text.color.a * text.opacity));
+  final lineWidths = <double>[];
+  final lineRunWidths = <List<double>>[];
+  for (final runs in lines) {
+    final widths = runs.map((r) => buildRun(r.text, mainStyle).longestLine).toList();
+    lineRunWidths.add(widths);
+    lineWidths.add(widths.fold<double>(0, (sum, w) => sum + w));
+  }
+  final totalWidth = lineWidths.isEmpty ? 0.0 : lineWidths.reduce(math.max);
+  final totalHeight = lines.length * lineSlot;
+  if (totalWidth <= 0 || totalHeight <= 0) return null;
+
+  final recorder = ui.PictureRecorder();
+  final canvas = ui.Canvas(recorder);
+  canvas.save();
+  final centerX = text.position.dx + totalWidth / 2;
+  final centerY = text.position.dy + totalHeight / 2;
+  canvas.translate(centerX, centerY);
+  canvas.rotate(text.rotation * math.pi / 180);
+  canvas.scale(text.scale);
+  canvas.translate(-totalWidth / 2, -totalHeight / 2);
+
+  final outline = text.outline;
+  final hasOutline = outline != null && outline.enabled && outline.width > 0;
+
+  void drawRuby(String ruby, double runX, double runWidth, double baseY, ui.Color color) {
+    final rubySize = text.fontSize * 0.5;
+    final rubyStyle = styleFor(color, size: rubySize);
+    final paragraph = buildRun(ruby, rubyStyle);
+    final rx = runX + (runWidth - paragraph.longestLine) / 2;
+    final ry = baseY - rubyReserve + (rubyReserve - rubySize) / 2;
+    canvas.drawParagraph(paragraph, ui.Offset(rx, ry.clamp(0.0, baseY)));
+  }
+
+  void drawLines(ui.TextStyle style, ui.Color color, ui.Offset extraOffset, {required bool withRuby}) {
+    for (int lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+      final runs = lines[lineIdx];
+      final widths = lineRunWidths[lineIdx];
+      final lineWidth = lineWidths[lineIdx];
+      final startX = switch (text.align) {
+        ui.TextAlign.center => (totalWidth - lineWidth) / 2,
+        ui.TextAlign.right => totalWidth - lineWidth,
+        _ => 0.0,
+      } + extraOffset.dx;
+      final y = lineIdx * lineSlot + rubyReserve + extraOffset.dy;
+
+      double x = startX;
+      for (int i = 0; i < runs.length; i++) {
+        final run = runs[i];
+        final width = widths[i];
+        final paragraph = buildRun(run.text, style);
+        canvas.drawParagraph(paragraph, ui.Offset(x, y));
+        if (withRuby && run.ruby != null) {
+          drawRuby(run.ruby!, x, width, y, color);
+        }
+        x += width;
+      }
+    }
+  }
+
+  if (hasOutline) {
+    final outlineStyle = styleFor(outline.color);
+    const steps = 8;
+    for (int i = 0; i < steps; i++) {
+      final angle = (i / steps) * 2 * math.pi;
+      final dx = outline.width * math.cos(angle);
+      final dy = outline.width * math.sin(angle);
+      // ルビは縁取りせず、本文のみに縁取りを適用する
+      drawLines(outlineStyle, outline.color, ui.Offset(dx, dy), withRuby: false);
+    }
+  }
+  final mainColor = text.color.withValues(alpha: text.color.a * text.opacity);
+  drawLines(mainStyle, mainColor, ui.Offset.zero, withRuby: true);
+
   canvas.restore();
 
   final picture = recorder.endRecording();
