@@ -2901,10 +2901,16 @@ class _EffectFilterSheet extends StatelessWidget {
                     child: Text('フィルターがありません\n＋追加ボタンで追加してください',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey)))
-                : ListView.builder(
-                    controller: scrollCtrl,
+                // ドラッグで並び替え可能（仕様書18：「複数フィルターの適用順」は
+                // タイムライン上の並び順に従うため、並び替えが適用順を左右する）
+                : ReorderableListView.builder(
+                    scrollController: scrollCtrl,
                     itemCount: effects.length,
-                    itemBuilder: (ctx, i) => _buildEffectTile(context, effects[i]),
+                    onReorder: (oldIndex, newIndex) => context
+                        .read<ProjectService>()
+                        .reorderEffectFilters(projectId, sceneId, oldIndex, newIndex),
+                    itemBuilder: (ctx, i) =>
+                        _buildEffectTile(context, effects[i], key: ValueKey(effects[i].id)),
                   ),
           ),
         ],
@@ -2915,8 +2921,30 @@ class _EffectFilterSheet extends StatelessWidget {
   void _update(BuildContext context, EffectFilterInstance e) =>
       context.read<ProjectService>().updateEffectFilter(projectId, sceneId, e);
 
-  Widget _buildEffectTile(BuildContext context, EffectFilterInstance e) {
+  /// 演出フィルターを複製する（仕様書18「フィルター操作＞複製」）。
+  /// 複製先は元フィルターの直後へ挿入する。
+  void _duplicate(BuildContext context, EffectFilterInstance e, List<EffectFilterInstance> effects) {
+    final service = context.read<ProjectService>();
+    final copy = EffectFilterInstance(
+      id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
+      type: e.type,
+      startFrame: e.startFrame,
+      endFrame: e.endFrame,
+      enabled: e.enabled,
+      param1: e.param1,
+      fadeColor: e.fadeColor,
+    );
+    service.addEffectFilter(projectId, sceneId, copy);
+    final index = effects.indexWhere((f) => f.id == e.id);
+    if (index >= 0 && index + 1 < effects.length) {
+      service.reorderEffectFilters(projectId, sceneId, effects.length, index + 1);
+    }
+  }
+
+  Widget _buildEffectTile(BuildContext context, EffectFilterInstance e, {Key? key}) {
+    final effects = context.read<ProjectService>().effectFiltersOf(projectId, sceneId);
     return Card(
+      key: key,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ExpansionTile(
         leading: Icon(_typeIcons[e.type], size: 20),
@@ -2926,6 +2954,11 @@ class _EffectFilterSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Switch(value: e.enabled, onChanged: (v) => _update(context, e.copyWith(enabled: v))),
+            IconButton(
+              icon: const Icon(Icons.copy, size: 18),
+              tooltip: '複製',
+              onPressed: () => _duplicate(context, e, effects),
+            ),
             IconButton(
               icon: const Icon(Icons.delete, size: 18, color: Colors.red),
               onPressed: () =>

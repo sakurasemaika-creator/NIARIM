@@ -1150,6 +1150,16 @@ class ProjectService extends ChangeNotifier {
         effectFiltersOf(projectId, sceneId).where((f) => f.id != filterId).toList());
   }
 
+  /// 演出フィルターの並び替え（仕様書18：「複数フィルターの適用順」は
+  /// タイムライン上の並び順に従うため、並び替えが適用順そのものを変える）。
+  void reorderEffectFilters(String projectId, String sceneId, int oldIndex, int newIndex) {
+    final list = effectFiltersOf(projectId, sceneId).toList();
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    _updateSceneEffectFilters(projectId, sceneId, list);
+  }
+
   // ─── 音声トラック（仕様書05：タイムライン音声クリップ） ─────────────────
   // シーンに直接紐づく（音声は視覚的なピクセルを持たずレイヤーではないため）。
 
