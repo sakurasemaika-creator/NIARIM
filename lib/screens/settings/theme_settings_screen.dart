@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../services/theme_service.dart';
 import '../../models/app_theme_preset.dart';
 import '../../widgets/responsive.dart';
+import '../canvas/widgets/color_picker_panel.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -40,6 +41,50 @@ class ThemeSettingsScreen extends StatelessWidget {
             },
             dense: true,
           )),
+          const Divider(),
+          // カラーカスタマイズ（仕様書24：「すべてカラーピッカー（HSV/RGB/HEX）で
+          // 自由に設定できる」）。変更は即座にアプリ全体（現在のプリセット）へ
+          // 反映される。
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text('カラーカスタマイズ', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          _ColorCustomizeTile(
+            label: 'アクセントカラー',
+            color: current.accentColor,
+            onTap: () => _showColorPickerDialog(
+                context, themeService, (p, c) => p.copyWith(accentColor: c), current.accentColor),
+          ),
+          _ColorCustomizeTile(
+            label: '文字色',
+            color: current.textColor,
+            onTap: () => _showColorPickerDialog(
+                context, themeService, (p, c) => p.copyWith(textColor: c), current.textColor),
+          ),
+          _ColorCustomizeTile(
+            label: 'パネル背景色',
+            color: current.panelBgColor,
+            onTap: () => _showColorPickerDialog(
+                context, themeService, (p, c) => p.copyWith(panelBgColor: c), current.panelBgColor),
+          ),
+          _ColorCustomizeTile(
+            label: 'メニュー背景色',
+            color: current.menuBgColor,
+            onTap: () => _showColorPickerDialog(
+                context, themeService, (p, c) => p.copyWith(menuBgColor: c), current.menuBgColor),
+          ),
+          _ColorCustomizeTile(
+            label: '選択色',
+            color: current.selectionColor,
+            onTap: () => _showColorPickerDialog(
+                context, themeService, (p, c) => p.copyWith(selectionColor: c), current.selectionColor),
+          ),
+          _ColorCustomizeTile(
+            label: '更新マーク色',
+            color: current.updateMarkColor,
+            onTap: () => _showColorPickerDialog(
+                context, themeService, (p, c) => p.copyWith(updateMarkColor: c), current.updateMarkColor),
+          ),
           const Divider(),
           // プリセット一覧（ドラッグで並び替え可能、仕様書24）
           const Padding(
@@ -110,6 +155,32 @@ class ThemeSettingsScreen extends StatelessWidget {
           const SizedBox(height: 32),
         ],
       )),
+    );
+  }
+
+  /// カラーピッカーダイアログを表示する（仕様書24：カラーカスタマイズ）。
+  /// ドラッグ中は`ThemeService.previewCurrent()`でアプリ全体へ即時反映し
+  /// （見た目確認用、未保存）、ダイアログを閉じた時点で確定保存する。
+  void _showColorPickerDialog(
+    BuildContext context,
+    ThemeService service,
+    AppThemePreset Function(AppThemePreset preset, Color color) update,
+    Color initialColor,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: ColorPickerPanel(
+          currentColor: initialColor,
+          onColorChanged: (c) => service.previewCurrent(update(service.current, c)),
+          onClose: () {
+            service.commitCurrent();
+            Navigator.pop(ctx);
+          },
+        ),
+      ),
     );
   }
 
@@ -221,6 +292,39 @@ class ThemeSettingsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// カラーカスタマイズ項目1件（仕様書24）：色見本＋ラベル＋タップでカラー
+/// ピッカーを開く。
+class _ColorCustomizeTile extends StatelessWidget {
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ColorCustomizeTile({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      dense: true,
+      leading: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+      ),
+      title: Text(label),
+      trailing: const Icon(Icons.chevron_right, size: 18),
+      onTap: onTap,
     );
   }
 }

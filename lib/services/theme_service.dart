@@ -92,6 +92,21 @@ class ThemeService extends ChangeNotifier {
     _persist();
   }
 
+  /// カラーピッカーでのライブプレビュー用（仕様書24：「変更はアプリ全体へ
+  /// 即時反映される」）。ドラッグ中に毎回SharedPreferencesへ書き込むのを
+  /// 避けるため、通知のみ行い永続化はしない。確定はcommitCurrent()で行う。
+  void previewCurrent(AppThemePreset preset) {
+    _current = preset;
+    notifyListeners();
+  }
+
+  /// previewCurrent()でのライブプレビュー結果を確定保存する（プリセット
+  /// 一覧にも反映：組み込みプリセットを編集した場合はそのプリセット自体が
+  /// 上書きされる。これは仕様書24の「上書き保存」と同じ挙動）。
+  void commitCurrent() {
+    savePreset(_current);
+  }
+
   void savePreset(AppThemePreset preset) {
     final idx = _presets.indexWhere((p) => p.id == preset.id);
     if (idx >= 0) {
@@ -138,19 +153,34 @@ class ThemeService extends ChangeNotifier {
       // system: OSのbrightnessを参照。updateSystemBrightness()で外部から注入すること
       BaseTheme.system => systemBrightness,
     };
+    // 「文字色」（仕様書24：UI全体の文字色）はonSurface系にも反映し、
+    // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
+    // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
+    // しまわないようにする。
     final scheme = ColorScheme.fromSeed(
       seedColor: preset.accentColor,
       brightness: brightness,
-    ).copyWith(primary: preset.accentColor, secondary: preset.selectionColor);
+    ).copyWith(
+      primary: preset.accentColor,
+      secondary: preset.selectionColor,
+      onSurface: preset.textColor,
+      onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
+    );
     // 角丸を大きめにし、Google Material標準の角丸14pxよりも柔らかい印象にする
     // （LINE・メルカリ等、日本の人気アプリに共通するポップで丸みの強い形状）。
     const radius = 18.0;
     const minTapSize = Size(48, 48);
+    // Text等が明示的に色指定していない場合に使うデフォルト文字色
+    // （仕様書24「文字色 | UI全体の文字色」）。
+    final baseTextTheme = ThemeData(brightness: brightness, useMaterial3: true).textTheme;
+    final textTheme = baseTextTheme.apply(bodyColor: preset.textColor, displayColor: preset.textColor);
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
+      textTheme: textTheme,
+      primaryTextTheme: textTheme,
       scaffoldBackgroundColor: preset.panelBgColor,
       // InkSparkle（Material Youの光るリップル）は「いかにも最新Android技術デモ」
       // 感が強く、GPU負荷も高いため、低スペック端末を考慮しつつ落ち着いた
