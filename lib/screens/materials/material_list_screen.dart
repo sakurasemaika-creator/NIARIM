@@ -93,6 +93,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                           _formatSize(m.sizeBytes),
                           if (m.width != null && m.height != null) '${m.width}×${m.height}',
                           if (m.duration != null) _formatDuration(m.duration!),
+                          _formatDate(m.addedAt),
                           used ? '使用中' : '未使用',
                           if (isMissing) '⚠ 不足',
                         ].join(' ・ '),
@@ -153,6 +154,11 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
     final s = d.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
+
+  // 素材は追加後に編集する手段がないため、追加日時＝最終更新日時として
+  // 表示する（仕様書21：「詳細表示」の「最終更新日時」）。
+  String _formatDate(DateTime d) =>
+      '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
 
   void _confirmRemoveOne(MaterialAsset m) {
     showDialog(
