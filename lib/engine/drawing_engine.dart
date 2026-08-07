@@ -66,9 +66,11 @@ class DrawingEngine {
     return smoothedPoint;
   }
 
-  /// 図形ツール確定描画（線・四角形・円）。現在のブラシ設定（サイズ・不透明度・
-  /// フェード等を除く形状ラスタライズ）を使い、パス上をブラシでなぞって描画する。
-  /// 仕様書03：ブラシ・トーンどちらでも描画可能、ブラシサイズ・不透明度を反映。
+  /// 図形ツール確定描画（線・四角形・円）のブラシ版。現在のブラシ設定
+  /// （サイズ・不透明度・フェード等を除く形状ラスタライズ）を使い、パス上を
+  /// ブラシでなぞって描画する。トーンでの図形描画は本メソッドではなく
+  /// 呼び出し側（canvas_area.dartの_commitShapeWithTone）がToneEngineへ
+  /// 直接分岐する（仕様書03：ブラシ・トーンどちらでも描画可能）。
   void commitShapePath(List<StrokePoint> pathPoints, String layerId, {bool closeLoop = false}) {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();

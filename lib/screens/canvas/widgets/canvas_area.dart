@@ -867,14 +867,96 @@ class _CanvasAreaState extends State<CanvasArea> {
       case ShapeKind.off:
         return;
     }
-    _drawingEngine.commitShapePath(
-      points.map((p) => StrokePoint(x: p.dx, y: p.dy)).toList(),
-      _tileKeyFor(_layerId),
-      closeLoop: closeLoop,
+    // 図形はブラシ・トーンどちらでも描画可能（仕様書03）。ペンサブツールが
+    // トーンの場合はトーンストロークエンジンで、それ以外はブラシで描画する。
+    if (widget.currentSubTool == PenSubTool.tone) {
+      _commitShapeWithTone(points, closeLoop);
+    } else {
+      _drawingEngine.commitShapePath(
+        points.map((p) => StrokePoint(x: p.dx, y: p.dy)).toList(),
+        _tileKeyFor(_layerId),
+        closeLoop: closeLoop,
+      );
+      _scheduleComposite();
+      _markLineartDirtyIfNeeded();
+      _finishTileUndo();
+    }
+  }
+
+  /// 図形をトーンで塗る（仕様書03：ブラシ・トーンどちらでも描画可能）。
+  /// トーン自由描画（_commitToneStroke）と同じ仕組みで、図形の輪郭線上に
+  /// 一定間隔で補間した密な点列をトーンストロークとして描画する。
+  Future<void> _commitShapeWithTone(List<Offset> pathPoints, bool closeLoop) async {
+    final toneService = context.read<ToneService>();
+    final tone = toneService.currentTone;
+    if (tone == null) {
+      _finishTileUndo();
+      return;
+    }
+    final bs = context.read<BrushService>();
+    final brushSize = bs.currentBrush?.size ?? 20;
+    final key = _tileKeyFor(_layerId);
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final img = await _tileManager.compositeLayerToImage(key);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+    img.dispose();
+    if (byteData == null || !mounted) {
+      _finishTileUndo();
+      return;
+    }
+    final canvasData = byteData.buffer.asUint8List();
+    const toneSize = 64;
+    final texture = generateBuiltInToneTexture(tone, size: toneSize);
+    final c = bs.currentColor;
+    final color = ui.Color.fromARGB(
+      (c.a * 255).round().clamp(0, 255),
+      (c.r * 255).round().clamp(0, 255),
+      (c.g * 255).round().clamp(0, 255),
+      (c.b * 255).round().clamp(0, 255),
     );
+    final densePoints = _densifyPath(pathPoints, closeLoop, math.max(1.0, brushSize / 3));
+    // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
+    // 描画処理はバックグラウンドisolateで実行する。
+    final result = await compute(runToneStrokeInIsolate, (
+      erase: false,
+      points: densePoints,
+      brushSize: brushSize,
+      color: color,
+      canvasData: canvasData,
+      canvasWidth: w,
+      canvasHeight: h,
+      toneTexture: texture,
+      toneWidth: toneSize,
+      toneHeight: toneSize,
+      opacity: bs.currentBrush?.opacity ?? 100,
+    ));
+    if (!mounted) return;
+    _tileManager.replaceLayerPixels(key, result);
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
     _finishTileUndo();
+  }
+
+  /// パス（[points]、[closeLoop]なら終点→始点も繋ぐ）を[spacing]間隔で
+  /// 補間した密な点列に変換する（トーンストロークは点ごとにスタンプするため、
+  /// 図形の頂点間を塗りつぶさずに済むよう補間が必要）。
+  List<ui.Offset> _densifyPath(List<Offset> points, bool closeLoop, double spacing) {
+    if (points.isEmpty) return const [];
+    final segments = <Offset>[...points];
+    if (closeLoop) segments.add(points.first);
+    final result = <ui.Offset>[ui.Offset(points.first.dx, points.first.dy)];
+    for (int i = 0; i < segments.length - 1; i++) {
+      final from = segments[i];
+      final to = segments[i + 1];
+      final dist = (to - from).distance;
+      final steps = math.max(1, (dist / spacing).ceil());
+      for (int s = 1; s <= steps; s++) {
+        final t = s / steps;
+        result.add(ui.Offset(from.dx + (to.dx - from.dx) * t, from.dy + (to.dy - from.dy) * t));
+      }
+    }
+    return result;
   }
 
   // ─── 移動ツール ───────────────────────────────────────────────────────
