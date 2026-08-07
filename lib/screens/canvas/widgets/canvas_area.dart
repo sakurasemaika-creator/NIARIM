@@ -54,6 +54,8 @@ class CanvasArea extends StatefulWidget {
   final ValueChanged<DrawingTool>? onGestureToolChange;
   final ValueChanged<DrawingTool>? onGestureToggleTool;
   final VoidCallback? onNextQuickTool;
+  // オニオンスキンON/OFF切替（仕様書22：ジェスチャーに割り当て可能）
+  final VoidCallback? onToggleOnionSkin;
 
   const CanvasArea({
     super.key,
@@ -74,6 +76,7 @@ class CanvasArea extends StatefulWidget {
     this.onGestureToolChange,
     this.onGestureToggleTool,
     this.onNextQuickTool,
+    this.onToggleOnionSkin,
   });
 
   @override
@@ -1360,6 +1363,8 @@ class _CanvasAreaState extends State<CanvasArea> {
         widget.onGestureToggleTool?.call(DrawingTool.pan);
       case GestureAction.nextTool:
         widget.onNextQuickTool?.call();
+      case GestureAction.onionSkinToggle:
+        widget.onToggleOnionSkin?.call();
       case GestureAction.frameMove:
         // 2本指スワイプ専用の連続操作を想定した機能のため、単発ジェスチャー／
         // ペンボタンからの割り当ては未対応（仕様書08）

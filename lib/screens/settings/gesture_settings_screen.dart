@@ -63,6 +63,7 @@ class GestureSettingsScreen extends StatelessWidget {
     GestureAction.brushToggle => 'ブラシ切替',
     GestureAction.frameMove => 'フレーム移動',
     GestureAction.nextTool => 'ツール早替え',
+    GestureAction.onionSkinToggle => 'オニオンスキンON/OFF',
     GestureAction.none => '何もしない',
   };
 }

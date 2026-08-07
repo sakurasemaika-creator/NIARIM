@@ -203,6 +203,8 @@ enum GestureType { twoFingerTap, threeFingerTap, twoFingerSwipe, longPress }
 enum GestureAction {
   undo, redo, eyedropper, panTool, eraserToggle,
   brushToggle, frameMove, nextTool, none,
+  // オニオンスキンON/OFF切替（仕様書22：ジェスチャーに割り当て可能）
+  onionSkinToggle,
 }
 
 /// 筆圧カーブ（仕様書08・17：アプリ全体に適用）。

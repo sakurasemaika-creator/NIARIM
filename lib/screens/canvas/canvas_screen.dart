@@ -272,6 +272,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     onGestureToolChange: (tool) => setState(() => _currentTool = tool),
                     onGestureToggleTool: _handleGestureToggleTool,
                     onNextQuickTool: _applyNextQuickTool,
+                    onToggleOnionSkin: () => setState(() =>
+                        _onionSkinSettings = _onionSkinSettings.copyWith(enabled: !_onionSkinSettings.enabled)),
                   ),
                   if (_showLayerPanel && !isDesktop)
                     Positioned(

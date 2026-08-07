@@ -122,5 +122,6 @@ class PenSettingsScreen extends StatelessWidget {
     GestureAction.panTool => '手のひらツール',
     GestureAction.brushToggle => 'ブラシ切替',
     GestureAction.frameMove => 'フレーム移動',
+    GestureAction.onionSkinToggle => 'オニオンスキンON/OFF',
   };
 }
