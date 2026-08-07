@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -7,11 +8,68 @@ import '../models/tone.dart';
 /// [Tone.texturePath] / [Stamp.imagePath] が未設定（アプリ組み込みの初期
 /// トーン・スタンプにはテクスチャ画像が同梱されていない）の場合に、名前から
 /// 簡易的な代替テクスチャを生成するユーティリティ。
-/// ユーザーが画像を登録した場合は、そちらの読み込み（未実装・将来対応）を
-/// 優先すべきだが、当面はこの生成結果をフォールバックとして使う。
+/// ユーザーが画像を登録した場合（自作トーン・自作スタンプ）は、そちらの
+/// 画像を読み込んで使用し、このパターン生成はフォールバックとして使う。
 
-/// 組み込みトーン向けの簡易パターン（網点／ライン）を生成する。
+/// 画像ファイルを読み込み、size×sizeのRGBAバイト列にデコードする。
+/// 失敗した場合はnullを返す。
+Future<Uint8List?> _loadImageRgba(String path, int size) async {
+  final file = File(path);
+  if (!await file.exists()) return null;
+  try {
+    final bytes = await file.readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes, targetWidth: size, targetHeight: size);
+    final frame = await codec.getNextFrame();
+    final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    frame.image.dispose();
+    return byteData?.buffer.asUint8List();
+  } catch (_) {
+    return null;
+  }
+}
+
+/// トーンは自身の色を持たず、現在色×パターンの2値マスクとして扱われる
+/// （autofill_engine.dart等はalphaチャンネルの有無のみを見る）。読み込んだ
+/// 画像は輝度が低い（暗い）ほど「インクあり」とみなし、alphaへ変換する。
+Uint8List _toToneAlphaMask(Uint8List rgba) {
+  final out = Uint8List(rgba.length);
+  for (int i = 0; i < rgba.length; i += 4) {
+    final luminance = rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
+    final ink = ((255 - luminance) * rgba[i + 3] / 255).round();
+    out[i + 3] = ink.clamp(0, 255);
+  }
+  return out;
+}
+
+/// トーン画像のデコード結果キャッシュ（`texturePath#size`をキーにする）。
+/// バケツ塗りのドラッグ中（_bucketFillAt）は同期処理のため、事前に
+/// [ensureToneTextureLoaded] で読み込みを済ませておく必要がある。
+final Map<String, Uint8List> _toneImageCache = {};
+
+String _toneCacheKey(String path, int size) => '$path#$size';
+
+/// [tone.texturePath] が指す画像を事前読み込みし、キャッシュへ格納する。
+/// トーンを使った描画（投げ縄塗り・トーン自由描画・バケツ塗り等）の
+/// 開始前に呼び出しておくことで、[generateBuiltInToneTexture] の同期呼び出し
+/// でも自作画像を反映できるようにする。
+Future<void> ensureToneTextureLoaded(Tone tone, {int size = 64}) async {
+  final path = tone.texturePath;
+  if (path == null) return;
+  final key = _toneCacheKey(path, size);
+  if (_toneImageCache.containsKey(key)) return;
+  final rgba = await _loadImageRgba(path, size);
+  if (rgba != null) _toneImageCache[key] = _toToneAlphaMask(rgba);
+}
+
+/// トーンのテクスチャを取得する。自作トーン（[Tone.texturePath]が設定済み）
+/// で[ensureToneTextureLoaded]済みの場合はその画像由来のパターンを、
+/// それ以外は組み込みトーン向けの簡易パターン（網点／ライン）を返す。
 Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
+  final path = tone.texturePath;
+  if (path != null) {
+    final cached = _toneImageCache[_toneCacheKey(path, size)];
+    if (cached != null) return cached;
+  }
   final data = Uint8List(size * size * 4);
   final name = tone.name;
   if (name.contains('網点')) {
@@ -54,10 +112,17 @@ void _fillLinePattern(Uint8List data, int size, int thickness) {
   }
 }
 
-/// 組み込みスタンプ向けの簡易図形（三角形・五角形・六角形・星・ハート・
-/// 吹き出し・矢印）をラスタライズして返す。スタンプは現在色を使わず自身の
-/// 色情報を保持する仕様（仕様書17）のため、固定色（黒）で焼き込む。
+/// スタンプのテクスチャを取得する。自作スタンプ（[Stamp.imagePath]が
+/// 設定済み）の場合はその画像をそのまま（RGBA・自身の色情報を保持したまま）
+/// 使用し、それ以外は組み込みスタンプ向けの簡易図形（三角形・五角形・
+/// 六角形・星・ハート・吹き出し・矢印）を固定色（黒）でラスタライズする
+/// （仕様書17：スタンプは現在色を使わず自身の色情報を保持する仕様）。
 Future<Uint8List> generateBuiltInStampTexture(Stamp stamp, {int size = 128}) async {
+  final path = stamp.imagePath;
+  if (path != null) {
+    final loaded = await _loadImageRgba(path, size);
+    if (loaded != null) return loaded;
+  }
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   final paint = ui.Paint()..color = const ui.Color(0xFF222222);

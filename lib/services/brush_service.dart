@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../engine/brush_texture_cache.dart';
 import '../models/brush.dart';
 
 /// ブラシ管理サービス（仕様書17・21）。
@@ -84,6 +85,19 @@ class BrushService extends ChangeNotifier {
     }
     final currentId = prefs.getString(_currentIdKey);
     _currentBrush = _brushes.where((b) => b.id == currentId).firstOrNull ?? _brushes.firstOrNull;
+    _preloadTextureIfNeeded(_currentBrush);
+  }
+
+  /// 自作ブラシ画像（[Brush.customImagePath]）を事前デコードしてキャッシュへ
+  /// 入れる。DrawingEngineの描画ホットパスは同期処理のため、実際に描画する
+  /// 前（選択時・作成時・復元時）に済ませておく必要がある（失敗しても
+  /// キャッシュが空のままフォールバックされるだけなので待たない）。
+  void _preloadTextureIfNeeded(Brush? brush) {
+    final path = brush?.customImagePath;
+    if (path != null) {
+      // ignore: unawaited_futures
+      preloadBrushTexture(path);
+    }
   }
 
   Future<void> _persist() async {
@@ -108,6 +122,7 @@ class BrushService extends ChangeNotifier {
 
   void selectBrush(String id) {
     _currentBrush = _brushes.firstWhere((b) => b.id == id);
+    _preloadTextureIfNeeded(_currentBrush);
     notifyListeners();
     _persistCurrent();
   }
@@ -128,6 +143,7 @@ class BrushService extends ChangeNotifier {
 
   void addBrush(Brush brush) {
     _brushes.add(brush);
+    _preloadTextureIfNeeded(brush);
     notifyListeners();
     _persist();
   }
@@ -168,6 +184,7 @@ class BrushService extends ChangeNotifier {
     if (idx >= 0) {
       _brushes[idx] = brush;
       if (_currentBrush?.id == brush.id) _currentBrush = brush;
+      _preloadTextureIfNeeded(brush);
       notifyListeners();
       _persist();
     }

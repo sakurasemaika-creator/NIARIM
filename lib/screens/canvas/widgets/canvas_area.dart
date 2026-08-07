@@ -719,7 +719,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final toneService = context.read<ToneService>();
     if (toneService.lassoUseTone) {
       final tone = toneService.lastLassoTone ?? toneService.currentTone;
-      if (tone != null) toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
+      if (tone != null) {
+        await ensureToneTextureLoaded(tone, size: toneSize);
+        if (!mounted) return;
+        toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
+      }
     }
 
     final points = _lassoPoints.map((p) => ui.Offset(p.dx, p.dy)).toList();
@@ -766,6 +770,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (byteData == null || !mounted) return;
     final canvasData = byteData.buffer.asUint8List();
     const toneSize = 64;
+    await ensureToneTextureLoaded(tone, size: toneSize);
+    if (!mounted) return;
     final texture = generateBuiltInToneTexture(tone, size: toneSize);
     final c = bs.currentColor;
     final color = ui.Color.fromARGB(
@@ -971,6 +977,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     final canvasData = byteData.buffer.asUint8List();
     const toneSize = 64;
+    await ensureToneTextureLoaded(tone, size: toneSize);
+    if (!mounted) {
+      _finishTileUndo();
+      return;
+    }
     final texture = generateBuiltInToneTexture(tone, size: toneSize);
     final c = bs.currentColor;
     final color = ui.Color.fromARGB(
@@ -1140,6 +1151,15 @@ class _CanvasAreaState extends State<CanvasArea> {
     final h = _tileManager.canvasHeight;
     final buffer = await _flattenVisibleLayers();
     if (!mounted) return;
+    // バケツ塗り中（_bucketFillAt）はポインタ移動のたびに同期呼び出しされる
+    // ため、トーン画像は開始時点で事前読み込みしてキャッシュへ入れておく。
+    final toneService = context.read<ToneService>();
+    final tone =
+        toneService.bucketUseTone ? (toneService.lastBucketTone ?? toneService.currentTone) : null;
+    if (tone != null) {
+      await ensureToneTextureLoaded(tone, size: 64);
+      if (!mounted) return;
+    }
     _beginTileUndo();
     _bucketRefBuffer = buffer;
     _bucketVisitedMask = Uint8List(w * h);

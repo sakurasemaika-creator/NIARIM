@@ -1,6 +1,8 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/brush.dart';
+import 'brush_texture_cache.dart';
 import 'tile_manager.dart';
 
 class DrawingEngine {
@@ -152,10 +154,14 @@ class DrawingEngine {
     // 傾き変形
     final tilt = calcTiltTransform(tiltX, tiltY);
 
-    // ブラシスタンプを円形（またはドットペン）で描画
+    // 自作ブラシ（仕様書17：ブラシ画像からのブラシ作成）が選択され、
+    // 事前読み込み済みの場合はその形状を、それ以外は円形（またはドットペン）
+    // でスタンプする。
+    final texturePath = brush.customImagePath;
+    final customTexture = texturePath != null ? getCachedBrushTexture(texturePath) : null;
     _renderCircleStamp(
       x, y, radius, alphaInt, tilt,
-      layerId, brush.dotPenMode, brush.blurRadius,
+      layerId, brush.dotPenMode, brush.blurRadius, customTexture,
     );
   }
 
@@ -168,6 +174,7 @@ class DrawingEngine {
     String layerId,
     bool dotPenMode,
     int blurRadius,
+    Uint8List? customTexture,
   ) {
     final r = currentColor.r;
     final g = currentColor.g;
@@ -211,13 +218,27 @@ class DrawingEngine {
             final sinA = math.sin(-tilt.angle);
             final rdx = dx * cosA - dy * sinA;
             final rdy = dx * sinA + dy * cosA;
-            final dist = math.sqrt(
-              (rdx / tilt.scaleX) * (rdx / tilt.scaleX) +
-              (rdy / tilt.scaleY) * (rdy / tilt.scaleY),
-            );
+            final ux = rdx / tilt.scaleX;
+            final uy = rdy / tilt.scaleY;
+            final dist = math.sqrt(ux * ux + uy * uy);
 
             double pixelAlpha;
-            if (dotPenMode) {
+            if (customTexture != null) {
+              // 自作ブラシ画像：楕円内をテクスチャのアルファでサンプリング
+              // （ドットペン・ぼかし半径は画像自体の形状に委ねるため未適用）。
+              if (dist > radius) {
+                pixelAlpha = 0.0;
+              } else {
+                final nx = (ux / radius).clamp(-1.0, 1.0);
+                final ny = (uy / radius).clamp(-1.0, 1.0);
+                final texX =
+                    (((nx + 1) / 2) * (brushTextureSize - 1)).round().clamp(0, brushTextureSize - 1);
+                final texY =
+                    (((ny + 1) / 2) * (brushTextureSize - 1)).round().clamp(0, brushTextureSize - 1);
+                final texIdx = (texY * brushTextureSize + texX) * 4;
+                pixelAlpha = customTexture[texIdx + 3] / 255.0;
+              }
+            } else if (dotPenMode) {
               // ドットペン：エッジをシャープに
               pixelAlpha = dist <= radius ? 1.0 : 0.0;
             } else if (blur > 0) {
