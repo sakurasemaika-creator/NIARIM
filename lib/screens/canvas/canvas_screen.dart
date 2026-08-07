@@ -138,6 +138,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _perf?.removeListener(_onPerfChanged);
     if (_autosaveAttached) context.read<AutosaveService>().detach();
     if (_workTrackingStarted) context.read<ProjectService>().endWorkTracking();
+    // プロジェクトカードのサムネイルを編集終了時に更新する（仕様書19）。
+    // 非同期処理だがdispose()自体は同期のままfire-and-forgetで発火する
+    // （ProjectService内部状態のみを参照するため、Widget破棄後も安全）。
+    context.read<ProjectService>().generateAndSaveThumbnail(widget.projectId);
     super.dispose();
   }
 

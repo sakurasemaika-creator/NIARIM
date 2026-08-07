@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
@@ -1517,6 +1518,60 @@ class ProjectService extends ChangeNotifier {
       _saveAsync(projectId);
       notifyListeners();
     }
+  }
+
+  /// プロジェクト一覧カード表示用のサムネイルを生成し、Project.thumbnailPathへ反映する
+  /// （仕様書19：先頭シーン・先頭フレームを縮小合成してPNG化する。セーブノードの
+  /// サムネイル生成（save_tree_screen.dart）と同じ方式）。
+  /// 生成できない場合（シーン・フレームが存在しない等）は何もしない。
+  Future<void> generateAndSaveThumbnail(String projectId) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    final scenes = _scenes[projectId];
+    final tm = _tileManagers[projectId];
+    if (scenes == null || scenes.isEmpty || tm == null) return;
+    final scene = scenes.first;
+    if (scene.frames.isEmpty) return;
+    final frame = scene.frames.first;
+    final w = tm.canvasWidth;
+    final h = tm.canvasHeight;
+    if (w <= 0 || h <= 0) return;
+
+    const thumbMax = 200;
+    final scale = thumbMax / math.max(w, h);
+    final tw = (w * scale).round().clamp(1, thumbMax);
+    final th = (h * scale).round().clamp(1, thumbMax);
+
+    final fullImage = await LayerCompositor.composite(
+      tm,
+      layersOf(projectId, scene.id, frame.index),
+      (l) => tileKeyFor(projectId, scene.id, frame.index, l.id),
+      w,
+      h,
+    );
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      fullImage,
+      ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+      ui.Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
+      ui.Paint(),
+    );
+    fullImage.dispose();
+    final picture = recorder.endRecording();
+    final thumbImage = await picture.toImage(tw, th);
+    picture.dispose();
+    final byteData = await thumbImage.toByteData(format: ui.ImageByteFormat.png);
+    thumbImage.dispose();
+    final pngBytes = byteData?.buffer.asUint8List();
+    if (pngBytes == null) return;
+
+    final path = await MiraproSerializer.saveProjectThumbnail(projectId, pngBytes);
+    final curIdx = _projects.indexWhere((p) => p.id == projectId);
+    if (curIdx < 0) return;
+    _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);
+    _saveAsync(projectId);
+    notifyListeners();
   }
 
   Future<ProjectFolder> createFolder(String name) async {

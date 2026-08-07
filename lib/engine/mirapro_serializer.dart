@@ -175,6 +175,15 @@ class MiraproSerializer {
     return path;
   }
 
+  /// プロジェクトカード表示用のサムネイル画像（PNG）を保存し、保存先パスを返す
+  /// （仕様書19：プロジェクト一覧のカードサムネイル）。
+  static Future<String> saveProjectThumbnail(String projectId, Uint8List pngBytes) async {
+    final dir = await _projectDir(projectId);
+    final path = '${dir.path}/thumbnail.png';
+    await File(path).writeAsBytes(pngBytes);
+    return path;
+  }
+
   /// ノードの実データ（.mirapro）とサムネイル画像を両方削除する。
   static Future<void> deleteSaveTreeNode(String projectId, String nodeId) async {
     final dir = await _saveTreeDir(projectId);

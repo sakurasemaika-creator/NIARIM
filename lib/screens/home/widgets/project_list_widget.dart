@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -107,17 +108,33 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  /// プロジェクトカードのサムネイル（仕様書19）。生成済みのPNGがあればそれを表示し、
+  /// 未生成・読み込み失敗の場合は背景色のプレースホルダーへフォールバックする。
+  Widget _thumbnail(Project project) {
+    final placeholder = Container(
+      color: Color(project.backgroundColor),
+      child: const Center(child: Icon(Icons.image, color: Colors.white38)),
+    );
+    final path = project.thumbnailPath;
+    if (path == null) return placeholder;
+    return Image.file(
+      File(path),
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => placeholder,
+    );
+  }
+
   Widget _detailTile(BuildContext context, Project project) {
     final isSelected = selectedIds.contains(project.id);
     return ListTile(
       leading: isSelectionMode
           ? Checkbox(value: isSelected, onChanged: (_) => onSelectionChanged(project.id))
-          : Container(
+          : SizedBox(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
-                color: Color(project.backgroundColor),
+              child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
+                child: _thumbnail(project),
               ),
             ),
       title: Text(project.name),
@@ -154,11 +171,9 @@ class ProjectListWidget extends StatelessWidget {
           children: [
             Expanded(
               child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  Container(
-                    color: Color(project.backgroundColor),
-                    child: const Center(child: Icon(Icons.image, color: Colors.white38)),
-                  ),
+                  _thumbnail(project),
                   if (project.isFavorite)
                     const Positioned(top: 4, right: 4, child: Icon(Icons.star, color: Colors.amber, size: 16)),
                   if (isSelectionMode)
