@@ -67,8 +67,13 @@ ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
 /// クリッピング元レイヤー」のIDを探す（仕様書16）。
 /// クリッピング元もさらにクリッピングされている場合は、非クリッピングの
 /// レイヤーが見つかるまで下（配列の後方）を辿る。
+/// 「フォルダを跨ぐクリッピングは禁止」（仕様書16）のため、同じ
+/// parentFolderId（同一フォルダ内、またはどちらもトップレベル）の
+/// レイヤーのみを探索対象とし、フォルダ境界に達したら探索を打ち切る。
 String? findClipSourceLayerId(List<Layer> layers, int index) {
+  final parentFolderId = layers[index].parentFolderId;
   for (int i = index + 1; i < layers.length; i++) {
+    if (layers[i].parentFolderId != parentFolderId) return null;
     if (!layers[i].hasClipping) return layers[i].id;
   }
   return null;
