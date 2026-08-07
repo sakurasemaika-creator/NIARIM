@@ -1029,11 +1029,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
               controller: _frameScrollCtrl,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(vertical: 4),
-              itemCount: total,
+              itemCount: total + 1, // +1 は追加ボタン
               itemBuilder: (context, index) {
+                if (index == total) {
+                  return GestureDetector(
+                    onTap: () {
+                      final sceneId = _selectedSceneId;
+                      if (sceneId == null) return;
+                      context.read<ProjectService>().addFrame(widget.projectId, sceneId);
+                    },
+                    child: Container(
+                      width: _frameW,
+                      margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[600]!),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: const Center(child: Icon(Icons.add, size: 16, color: Colors.grey)),
+                    ),
+                  );
+                }
                 final isSelected = index == _currentFrame;
                 return GestureDetector(
                   onTap: () => setState(() => _currentFrame = index),
+                  onLongPress: () => _showFrameMenu(index),
                   child: Container(
                     width: _frameW,
                     margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
@@ -1052,6 +1071,47 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// フレーム長押し時のメニュー（仕様書05：フレームのコピー・削除）。
+  void _showFrameMenu(int frameIndex) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final canDelete = _totalFrames > 1;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text('F${frameIndex + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: const Text('フレームを複製'),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.read<ProjectService>().duplicateFrame(widget.projectId, sceneId, frameIndex);
+                setState(() => _currentFrame = frameIndex + 1);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete, color: canDelete ? Colors.red : Colors.grey),
+              title: Text('フレームを削除', style: TextStyle(color: canDelete ? null : Colors.grey)),
+              onTap: canDelete
+                  ? () {
+                      Navigator.pop(ctx);
+                      context.read<ProjectService>().removeFrame(widget.projectId, sceneId, frameIndex);
+                      setState(() => _currentFrame = _currentFrame.clamp(0, _totalFrames - 1));
+                    }
+                  : null,
+            ),
+          ],
+        ),
       ),
     );
   }

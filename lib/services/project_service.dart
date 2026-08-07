@@ -798,6 +798,85 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// フレームを複製し、指定位置の直後へ挿入する（仕様書05：フレームのコピー）。
+  /// レイヤー構成・描画データ（タイル）の両方を複製する。表示範囲レイヤー
+  /// （common・timelineImage・timelineVideo・watermark）はホームが別フレームに
+  /// 存在する参照であり、フレーム単位の複製対象ではないため除外する。
+  void duplicateFrame(String projectId, String sceneId, int frameIndex) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (frameIndex < 0 || frameIndex >= scene.frames.length) return;
+    final source = scene.frames[frameIndex];
+    final insertAt = frameIndex + 1;
+
+    // 挿入位置以降のフレームはindexが1つずつ後ろへずれる。描画データは
+    // frameLayerKey(sceneId, frameIndex, layerId)でTileManagerに保存されている
+    // ため、後ろ側から順に付け替えることでまだ移動していない位置への
+    // 上書きを避ける。
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      for (int i = scene.frames.length - 1; i >= insertAt; i--) {
+        for (final layer in scene.frames[i].layers) {
+          tm.renameKey(
+            frameLayerKey(sceneId, i, layer.id),
+            frameLayerKey(sceneId, i + 1, layer.id),
+          );
+        }
+      }
+    }
+
+    // 複製対象レイヤー（表示範囲レイヤー・内部専用selectionレイヤーは除外）。
+    // 新しいレイヤーIDを割り当て、Copy-on-Writeでタイルデータも複製する。
+    final sourceLayers = source.layers
+        .where((l) => !isRangeLayerType(l.type) && l.type != LayerType.selection)
+        .toList();
+    final idMap = <String, String>{};
+    final newLayers = sourceLayers.map((l) {
+      final newId = _nextLayerId(projectId);
+      idMap[l.id] = newId;
+      return l.copyWith(id: newId);
+    }).toList();
+
+    if (tm != null) {
+      for (final layer in sourceLayers) {
+        final newId = idMap[layer.id]!;
+        tm.copyLayer(
+          frameLayerKey(sceneId, frameIndex, layer.id),
+          frameLayerKey(sceneId, insertAt, newId),
+        );
+      }
+    }
+
+    final newFrame = Frame(index: insertAt, layers: newLayers, hold: source.hold);
+    final newFrames = List<Frame>.from(scene.frames)..insert(insertAt, newFrame);
+    final reindexed = newFrames
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    scenes[sceneIdx] = scene.copyWith(frames: reindexed);
+
+    // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する（挿入位置
+    // 以降がホームだったレイヤーは1つ後ろへ詰める）。
+    final homes = _layerHomes[projectId];
+    if (homes != null) {
+      final toShift = <String>[];
+      homes.forEach((layerId, home) {
+        if (home.sceneId == sceneId && home.frameIndex >= insertAt) {
+          toShift.add(layerId);
+        }
+      });
+      for (final id in toShift) {
+        final h = homes[id]!;
+        homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex + 1);
+      }
+    }
+    notifyListeners();
+  }
+
   /// フレームを削除する（最低1フレームは残す）
   void removeFrame(String projectId, String sceneId, int frameIndex) {
     final scenes = _scenes[projectId];
