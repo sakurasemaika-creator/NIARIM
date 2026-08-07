@@ -17,7 +17,13 @@ dependencies:
   google_mobile_ads: ^7.0.0
   in_app_purchase: ^3.1.13
   video_player: ^2.8.2
-  audioplayers: ^5.2.1
+  # audioplayers 5.2.1が依存するaudioplayers_android 4.0.3はcompileSdk 33で
+  # ビルドされており、その一部のandroidx依存関係がcompileSdk 34以上を要求する
+  # ためAARメタデータ検証（checkReleaseAarMetadata）に失敗しビルド不能だった。
+  # 6.8.1のaudioplayers_androidはcompileSdk 36へ更新済みで解消される。使用API
+  # （AudioPlayer/play/pause/setVolume/state/PlayerState/DeviceFileSource）に
+  # 5→6系の破壊的変更は影響しないことをCHANGELOGで確認済み。
+  audioplayers: ^6.8.1
   image: ^4.1.4
   # v6系はAndroidネイティブ側がFlutter v1埋め込み(PluginRegistry.Registrar)に
   # 依存しており、最新Flutterでビルド不能（v1埋め込みは削除済み）だったため
