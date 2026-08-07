@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' show Color, Offset, TextAlign;
 import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path_provider/path_provider.dart';
 import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
@@ -31,20 +32,52 @@ class MiraproSerializer {
   // まだ発生しないが、将来フォーマットが変わった際にここへ分岐を追加する。
   static const String currentAppVersion = '1.0.0';
 
+  /// セマンティックバージョン文字列（例："1.2.3"）を比較する。
+  /// aがbより新しければ正、古ければ負、同じなら0を返す。パースできない
+  /// 部分（不正・破損データ）は0として扱い、例外を投げず安全に処理する。
+  static int _compareVersions(String a, String b) {
+    final pa = a.split('.').map((s) => int.tryParse(s) ?? 0).toList();
+    final pb = b.split('.').map((s) => int.tryParse(s) ?? 0).toList();
+    final len = pa.length > pb.length ? pa.length : pb.length;
+    for (int i = 0; i < len; i++) {
+      final va = i < pa.length ? pa[i] : 0;
+      final vb = i < pb.length ? pb[i] : 0;
+      if (va != vb) return va - vb;
+    }
+    return 0;
+  }
+
   /// [json]（manifest.json由来）のappVersionを確認し、旧バージョン形式との差異を
-  /// 現行フォーマットへ変換する。現時点ではv1.0.0のみのため変換対象はなく、
-  /// フィールド欠落時のデフォルト補完のみ行う（仕様書12：「AppVersionによる将来
-  /// バージョン自動変換対応」）。
+  /// 現行フォーマットへ変換する（仕様書12：「AppVersionによる将来バージョン
+  /// 自動変換対応」）。
+  ///
+  /// 将来フォーマットを変更する際は、下の「旧バージョン」分岐へ
+  /// `if (_compareVersions(version, 'X.Y.Z') < 0) { json = ...; }` の形で
+  /// 変換ステップを追加していく（バージョンが上がるごとに積み上げる）。
+  /// 現時点ではv1.0.0のみが存在し、これより古いバージョンは存在しないため
+  /// 実際の変換ステップはまだ無いが、バージョン比較・ログ出力の基盤は
+  /// 今回整備した。
   static Map<String, dynamic> _migrateManifestJson(Map<String, dynamic> json) {
     final version = json['appVersion'] as String? ?? '1.0.0';
-    switch (version) {
-      case '1.0.0':
-        return json;
-      default:
-        // 未知の（将来の、または破損した）バージョン文字列。現状フィールド構成を
-        // そのまま試みるが、将来ここへ具体的な変換ロジックを追加する。
-        return json;
+    if (version == currentAppVersion) return json;
+
+    final cmp = _compareVersions(version, currentAppVersion);
+    if (cmp < 0) {
+      // 保存時のバージョンが現行より古い：ここに将来、バージョンごとの
+      // 変換ステップを追加していく。現状は変換対象がないためフィールド構成は
+      // そのまま引き継ぐ（欠落フィールドは各_deserialize*側の`??`デフォルトで
+      // 補完される）。
+      debugPrint('[MiraproSerializer] 旧バージョン($version)のプロジェクトを読み込みました'
+          '（現行:$currentAppVersion）。既知の変換ステップはありません。');
+    } else if (cmp > 0) {
+      // 保存時のバージョンが現行より新しい：このアプリより新しいバージョンで
+      // 保存されたファイルを開こうとしている（アプリの更新忘れ等）。未知の
+      // 追加フィールドはJSONデコード時に単に無視されるため致命的ではないが、
+      // 診断用にログへ残す。
+      debugPrint('[MiraproSerializer] 現行より新しいバージョン($version)のプロジェクトです'
+          '（現行:$currentAppVersion）。アプリの更新が必要な可能性があります。');
     }
+    return json;
   }
 
   // ─── 保存 ─────────────────────────────────────────────────────────────
