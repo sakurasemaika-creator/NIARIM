@@ -4,6 +4,7 @@ import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../models/stamp.dart';
+import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 
 /// ペンツール長押し・上スワイプで表示されるサブツールタブUI
@@ -75,11 +76,24 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
             TabBar(
               controller: _tabController,
               labelStyle: const TextStyle(fontSize: 11),
-              tabs: const [
-                Tab(text: 'ブラシ'),
-                Tab(text: 'トーン'),
-                Tab(text: 'スタンプ'),
-                Tab(text: '投げ縄塗り'),
+              // 各サブツールタブの初回使用時に吹き出し説明を表示する（仕様書02・11）
+              tabs: [
+                const Tab(text: 'ブラシ'),
+                FirstUseTooltip(
+                  tooltipKey: 'pen_subtool_tone',
+                  message: 'トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。',
+                  child: const Tab(text: 'トーン'),
+                ),
+                FirstUseTooltip(
+                  tooltipKey: 'pen_subtool_stamp',
+                  message: '決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。',
+                  child: const Tab(text: 'スタンプ'),
+                ),
+                FirstUseTooltip(
+                  tooltipKey: 'pen_subtool_lasso',
+                  message: '投げ縄で囲んだ範囲を一括で塗りつぶせます。',
+                  child: const Tab(text: '投げ縄塗り'),
+                ),
               ],
             ),
             Expanded(

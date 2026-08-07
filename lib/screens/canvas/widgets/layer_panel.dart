@@ -10,6 +10,7 @@ import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/first_use_tooltip.dart';
 
 class LayerPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -299,11 +300,17 @@ class _LayerPanelState extends State<LayerPanel> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // 自動塗り更新マーク：初回使用時の吹き出し説明（仕様書04・11：
+                      // 「自動塗り：初回使用時に吹き出し説明」）
                       if (layer.needsAutofillUpdate)
-                        GestureDetector(
-                          onTap: () => _showAutofillDialog(context, layer),
-                          onLongPress: () => _showAutofillUpdateHelp(context),
-                          child: const Icon(Icons.error, color: Colors.orange, size: 14),
+                        FirstUseTooltip(
+                          tooltipKey: 'autofill_mark',
+                          message: '線画が更新されました。タップすると自動塗りを最新の状態に更新できます。',
+                          child: GestureDetector(
+                            onTap: () => _showAutofillDialog(context, layer),
+                            onLongPress: () => _showAutofillUpdateHelp(context),
+                            child: const Icon(Icons.error, color: Colors.orange, size: 14),
+                          ),
                         ),
                       if (layer.opacityLocked)
                         Icon(Icons.opacity, size: 14, color: Theme.of(context).colorScheme.primary),
@@ -1165,6 +1172,9 @@ class _LayerPanelState extends State<LayerPanel> {
               SizedBox(height: 8),
               Text('マスク', style: TextStyle(fontWeight: FontWeight.bold)),
               Text('マスクで描画範囲を制御します。白い部分が表示、黒い部分が非表示になります。'),
+              SizedBox(height: 8),
+              Text('共通レイヤー', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('複数のフレームで同じ内容を共有するレイヤーです。表示するフレーム範囲を設定できます。'),
             ],
           ),
         ),

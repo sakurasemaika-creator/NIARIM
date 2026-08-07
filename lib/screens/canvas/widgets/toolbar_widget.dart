@@ -56,16 +56,24 @@ class ToolbarWidget extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            // ペンボタン：長押しでサブツールパネル表示
-            GestureDetector(
-              onLongPress: onPenLongPress,
-              child: _toolButton(context, Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
+            // ペンボタン：長押しでサブツールパネル表示（仕様書02・17：初回使用時の吹き出し説明）
+            FirstUseTooltip(
+              tooltipKey: 'pen_tool',
+              message: 'ペンを長押しすると、ブラシ・トーン・スタンプ・投げ縄塗りを切り替えられます。',
+              child: GestureDetector(
+                onLongPress: onPenLongPress,
+                child: _toolButton(context, Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
+              ),
             ),
             _toolButton(context, Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
-            // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示
-            GestureDetector(
-              onLongPress: () => _showBucketToneMenu(context),
-              child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
+            // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
+            FirstUseTooltip(
+              tooltipKey: 'bucket_tool',
+              message: 'バケツを長押しすると、ベタ塗りとトーン塗りを切り替えられます。',
+              child: GestureDetector(
+                onLongPress: () => _showBucketToneMenu(context),
+                child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
+              ),
             ),
             _toolButton(context, Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
             _toolButton(context, Icons.back_hand, DrawingTool.finger, '指'),
@@ -124,18 +132,32 @@ class ToolbarWidget extends StatelessWidget {
             ),
             IconButton(icon: const Icon(Icons.tune, size: 20), onPressed: onBrushTap, tooltip: 'ブラシ設定'),
             IconButton(icon: const Icon(Icons.layers, size: 20), onPressed: onLayerTap, tooltip: 'レイヤー'),
-            // オニオンスキン
-            IconButton(icon: const Icon(Icons.layers_outlined, size: 20), onPressed: onOnionSkinTap, tooltip: 'オニオンスキン'),
+            // オニオンスキン（初回使用時の吹き出し説明、仕様書02・11）
+            FirstUseTooltip(
+              tooltipKey: 'onion_skin',
+              message: '前後のフレームを薄く重ねて表示し、動きの参考にできます。',
+              child: IconButton(
+                  icon: const Icon(Icons.layers_outlined, size: 20), onPressed: onOnionSkinTap, tooltip: 'オニオンスキン'),
+            ),
             // フィルター（仕様書18：描画フィルター）
-            IconButton(icon: const Icon(Icons.blur_on, size: 20), onPressed: onFilterTap, tooltip: 'フィルター'),
+            FirstUseTooltip(
+              tooltipKey: 'draw_filter',
+              message: 'レイヤーにぼかし・トーンカーブなどのフィルターを適用できます。',
+              child: IconButton(
+                  icon: const Icon(Icons.blur_on, size: 20), onPressed: onFilterTap, tooltip: 'フィルター'),
+            ),
             // ツール早替えボタン（↺）
             // ツール早替えボタン：タップで登録順に切替、長押しで管理ポップアップ（仕様書02・08）
-            GestureDetector(
-              onLongPress: onQuickToolLongPress,
-              child: IconButton(
-                icon: const Icon(Icons.loop, size: 20),
-                onPressed: onQuickToolTap,
-                tooltip: 'ツール早替え（長押しで編集）',
+            FirstUseTooltip(
+              tooltipKey: 'quick_tool',
+              message: 'タップで登録したツールを順番に切り替えられます。長押しで登録内容を編集できます。',
+              child: GestureDetector(
+                onLongPress: onQuickToolLongPress,
+                child: IconButton(
+                  icon: const Icon(Icons.loop, size: 20),
+                  onPressed: onQuickToolTap,
+                  tooltip: 'ツール早替え（長押しで編集）',
+                ),
               ),
             ),
             IconButton(icon: const Icon(Icons.movie, size: 20), onPressed: onTimelineTap, tooltip: 'タイムライン'),
