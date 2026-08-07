@@ -110,6 +110,15 @@ class ThemeService extends ChangeNotifier {
     _persist();
   }
 
+  /// テーマプリセットの並び替え（仕様書24：「並び替え | ドラッグで順序変更」）。
+  void reorder(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = _presets.removeAt(oldIndex);
+    _presets.insert(newIndex, item);
+    notifyListeners();
+    _persist();
+  }
+
   void toggleFavorite(String id) {
     final idx = _presets.indexWhere((p) => p.id == id);
     if (idx >= 0) {

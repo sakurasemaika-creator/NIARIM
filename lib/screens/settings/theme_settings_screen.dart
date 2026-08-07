@@ -41,44 +41,54 @@ class ThemeSettingsScreen extends StatelessWidget {
             dense: true,
           )),
           const Divider(),
-          // プリセット一覧
+          // プリセット一覧（ドラッグで並び替え可能、仕様書24）
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: Text('テーマプリセット', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          ...presets.map((preset) => ListTile(
-            tileColor: current.id == preset.id
-                ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
-                : null,
-            leading: _PresetColorSwatch(preset: preset),
-            title: Text(preset.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (current.id == preset.id)
-                  Icon(Icons.check, color: Theme.of(context).colorScheme.primary, size: 16),
-                IconButton(
-                  icon: Icon(
-                    preset.isFavorite ? Icons.star : Icons.star_outline,
-                    size: 16,
-                    color: preset.isFavorite ? Colors.amber : null,
+          ReorderableListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            onReorder: themeService.reorder,
+            children: [
+              for (final preset in presets)
+                ListTile(
+                  key: ValueKey(preset.id),
+                  tileColor: current.id == preset.id
+                      ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
+                      : null,
+                  leading: _PresetColorSwatch(preset: preset),
+                  title: Text(preset.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (current.id == preset.id)
+                        Icon(Icons.check, color: Theme.of(context).colorScheme.primary, size: 16),
+                      IconButton(
+                        icon: Icon(
+                          preset.isFavorite ? Icons.star : Icons.star_outline,
+                          size: 16,
+                          color: preset.isFavorite ? Colors.amber : null,
+                        ),
+                        onPressed: () => themeService.toggleFavorite(preset.id),
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert, size: 16),
+                        onSelected: (action) => _handleAction(context, action, preset, themeService),
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(value: 'rename', child: Text('名前変更')),
+                          const PopupMenuItem(value: 'duplicate', child: Text('複製')),
+                          const PopupMenuItem(value: 'export', child: Text('書き出し (.miratheme)')),
+                          const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
+                        ],
+                      ),
+                      const Icon(Icons.drag_handle, size: 18),
+                    ],
                   ),
-                  onPressed: () => themeService.toggleFavorite(preset.id),
+                  onTap: () => themeService.applyPreset(preset.id),
                 ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 16),
-                  onSelected: (action) => _handleAction(context, action, preset, themeService),
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(value: 'rename', child: Text('名前変更')),
-                    const PopupMenuItem(value: 'duplicate', child: Text('複製')),
-                    const PopupMenuItem(value: 'export', child: Text('書き出し (.miratheme)')),
-                    const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
-                  ],
-                ),
-              ],
-            ),
-            onTap: () => themeService.applyPreset(preset.id),
-          )),
+            ],
+          ),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),

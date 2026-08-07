@@ -24,8 +24,15 @@ class _ExportScreenState extends State<ExportScreen> {
   double _progress = 0;
   String? _error;
   void Function(void Function())? _progressDialogSetState;
+  // 「カスタム」選択時のみ編集可能なFPS（仕様書06・11：「カスタム」タップで
+  // アコーディオン展開して詳細設定を表示する）
+  int _customFps = 30;
 
-  int get _fps => _preset == ExportPreset.highQuality ? 60 : 30;
+  int get _fps => switch (_preset) {
+        ExportPreset.standard => 30,
+        ExportPreset.highQuality => 60,
+        ExportPreset.custom => _customFps,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +65,43 @@ class _ExportScreenState extends State<ExportScreen> {
             ],
             selected: {_preset},
             onSelectionChanged: (v) => setState(() => _preset = v.first),
+          ),
+          // 「カスタム」選択時のみ詳細設定を展開表示する（仕様書06・11：
+          // 「初心者はプリセットを選ぶだけで書き出しが完了する。詳細設定は
+          // 「カスタム」タップ時のみ表示」）。
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _preset != ExportPreset.custom
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('詳細設定', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Text('FPS'),
+                                Expanded(
+                                  child: Slider(
+                                    value: _customFps.toDouble(),
+                                    min: 12, max: 60, divisions: 48,
+                                    label: '$_customFps',
+                                    onChanged: (v) => setState(() => _customFps = v.round()),
+                                  ),
+                                ),
+                                SizedBox(width: 36, child: Text('$_customFps', textAlign: TextAlign.center)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
           ),
           const SizedBox(height: 24),
           const Text('形式', style: TextStyle(fontWeight: FontWeight.bold)),
