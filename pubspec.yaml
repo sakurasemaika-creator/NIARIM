@@ -43,6 +43,10 @@ dependencies:
   # `Share`クラスは非推奨化され`SharePlus.instance.share(ShareParams(...))`
   # へ置き換えられたため、全8箇所の呼び出しを新APIへ移行した。
   share_plus: ^12.0.2
+  # 追加フリーフォントのオンデマンドダウンロード（フォント管理画面）用。
+  # Dartチーム公式のHTTPクライアントで、ネイティブ依存を持たない
+  # 純Dartパッケージのため他依存のようなAndroidビルド不整合のリスクが低い。
+  http: ^1.2.2
   permission_handler: ^11.1.0
   archive: ^3.4.9
   # ffmpeg_kit_flutter_min_gplは配布元(arthenica/ffmpeg-kit)が2025年に
@@ -73,28 +77,13 @@ flutter:
       fonts:
         - asset: assets/fonts/Kuramubon.otf
     # 白光明朝のフォールバック用（源ノ明朝相当。GoogleがSource Han Serifを
-    # ベースにビルドしたNoto Serif JP、SIL Open Font License 1.1）。
-    # テキストツールの選択肢としても使用する。
+    # ベースにビルドしたNoto Serif JP、SIL Open Font License 1.1）。常時
+    # 必要なため同梱し、テキストツールの選択肢としても使用する。
+    # それ以外のテキストツール用フリーフォント（旧NotoSansJP・
+    # MPLUSRounded1c・MochiyPopOne・YuseiMagic・HachiMaruPop・ReggaeOne）は
+    # 初期インストール容量を抑えるため同梱をやめ、設定画面「フォント管理」
+    # からのオンデマンドダウンロード方式へ移行した
+    # （lib/models/downloadable_font.dart参照）。
     - family: NotoSerifJP
       fonts:
         - asset: assets/fonts/NotoSerifJP.ttf
-    # 以下、テキストツール用にあらかじめ同梱するフリーフォント（いずれも
-    # Google Fontsのofl/配下＝SIL Open Font License、日本語対応）。
-    - family: NotoSansJP
-      fonts:
-        - asset: assets/fonts/NotoSansJP.ttf
-    - family: MPLUSRounded1c
-      fonts:
-        - asset: assets/fonts/MPLUSRounded1c-Regular.ttf
-    - family: MochiyPopOne
-      fonts:
-        - asset: assets/fonts/MochiyPopOne-Regular.ttf
-    - family: YuseiMagic
-      fonts:
-        - asset: assets/fonts/YuseiMagic-Regular.ttf
-    - family: HachiMaruPop
-      fonts:
-        - asset: assets/fonts/HachiMaruPop-Regular.ttf
-    - family: ReggaeOne
-      fonts:
-        - asset: assets/fonts/ReggaeOne-Regular.ttf

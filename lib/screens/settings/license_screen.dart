@@ -54,13 +54,24 @@ class LicenseScreen extends StatelessWidget {
                 '個別クレジット表記は不要）。',
           ),
           const _FontCredit(
-            usage: 'テキストツール同梱フォント（フォント選択から利用可能）',
-            name: 'Noto Sans JP / Noto Serif JP / M PLUS Rounded 1c / '
-                'Mochiy Pop One / Yusei Magic / Hachi Maru Pop / Reggae One',
+            usage: 'テキストツール同梱フォント',
+            name: 'Noto Serif JP',
+            author: 'Google Fonts',
+            license: 'SIL Open Font License 1.1',
+            note: '個人・商用問わず無償で利用可能。白光明朝のフォント未対応'
+                '文字の補完（フォールバック）にも使用する。',
+          ),
+          const _FontCredit(
+            usage: 'テキストツール追加フリーフォント（設定 → フォント管理から'
+                'ダウンロードして利用可能。初回のみネット接続が必要）',
+            name: 'Noto Sans JP / M PLUS Rounded 1c / Mochiy Pop One / '
+                'Yusei Magic / Hachi Maru Pop / Reggae One',
             author: 'Google Fonts（各フォントの制作者）',
             license: 'SIL Open Font License 1.1',
-            note: '個人・商用問わず無償で利用可能。Noto Serif JPは白光明朝'
-                'のフォント未対応文字の補完（フォールバック）にも使用する。',
+            note: '個人・商用問わず無償で利用可能。初期インストール容量を'
+                '抑えるため同梱せず、Google Fontsの配布元（GitHub: '
+                'google/fonts）から取得する。ダウンロード後は端末内に'
+                '保存され、以降オフラインでも利用できる。',
           ),
           const SizedBox(height: 24),
           _SectionTitle('オープンソースソフトウェアライセンス'),

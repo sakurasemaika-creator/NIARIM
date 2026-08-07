@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/downloadable_font.dart';
 import '../models/font_asset.dart';
 
 /// フォント管理サービス（仕様書15・21：ユーザーフォント追加）。
@@ -162,6 +164,45 @@ class FontService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [entry]が既にダウンロード・登録済みかどうか（追加フリーフォント一覧の
+  /// ダウンロードボタン表示に使用）。
+  bool isCatalogFontDownloaded(DownloadableFontEntry entry) =>
+      _fonts.any((f) => f.id == entry.id);
+
+  /// カタログの追加フリーフォント（[DownloadableFontEntry]）をネットワーク
+  /// 経由で取得し、[importBundledFont]と同じ仕組みで端末内に保存・登録する。
+  /// 一度ダウンロードすれば以降はオフラインでも利用できる。
+  /// 失敗時は[FontDownloadException]を投げる。
+  Future<void> downloadCatalogFont(DownloadableFontEntry entry) async {
+    if (isCatalogFontDownloaded(entry)) return;
+    final http.Response response;
+    try {
+      response = await http
+          .get(Uri.parse(entry.sourceUrl))
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      throw FontDownloadException('ネットワークに接続できません。');
+    }
+    if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+      throw FontDownloadException('このフォントは読み込めません。');
+    }
+    try {
+      await importBundledFont(
+        id: entry.id,
+        displayName: entry.displayName,
+        fileName: entry.fileName,
+        bytes: response.bodyBytes,
+      );
+    } catch (_) {
+      throw FontDownloadException('フォントが破損しています。');
+    }
+    if (!isCatalogFontDownloaded(entry)) {
+      // importBundledFont内部でパース失敗した場合は例外を投げず静かに
+      // スキップされるため、登録できたかどうかをここで確認する。
+      throw FontDownloadException('フォントが破損しています。');
+    }
+  }
+
   Future<void> renameFont(String id, String newName) async {
     final idx = _fonts.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -191,3 +232,10 @@ class FontService extends ChangeNotifier {
 /// フォントファイルの読み込み（パース）に失敗した場合の例外（仕様書15：
 /// 「フォントが破損しています。」）。拡張子は正しいが内容が壊れているケースを表す。
 class FontCorruptedException implements Exception {}
+
+/// 追加フリーフォントのダウンロードに失敗した場合の例外（[FontService.
+/// downloadCatalogFont]用）。[message]はそのままユーザーへ表示できる文言。
+class FontDownloadException implements Exception {
+  final String message;
+  const FontDownloadException(this.message);
+}
