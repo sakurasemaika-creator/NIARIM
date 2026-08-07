@@ -39,6 +39,61 @@ class TileManager {
   final Map<String, Map<String, Uint8List>> _tiles = {};
   final Set<String> _dirtyTiles = {};
 
+  // タイルキャッシュ：compositeLayerToImage()の合成結果（レイヤー1枚分の
+  // ui.Image、キャンバス全体サイズ）をlayerIdごとにキャッシュし、そのレイヤーの
+  // タイルに変更が無い限り再デコード・再合成しない。呼び出し元は返された画像を
+  // 自由にdispose()できるよう、キャッシュ本体ではなく都度clone()を返す
+  // （ui.Imageはネイティブ側で参照カウントされるため、clone()した
+  // ハンドルの破棄はキャッシュ本体に影響しない）。
+  // 無効化は_tilesを変更するメソッド側で個別に行う（markDirtyは一部の
+  // 描画パスでしか呼ばれておらず、キャッシュ無効化の単一の信頼できる
+  // シグナルにはできないため、_tiles変更箇所ごとに明示的に呼ぶ）。
+  //
+  // キャッシュ画像はキャンバス全体サイズのRGBAを保持する（例：1080×1920なら
+  // 1枚あたり約8MB）。低スペック端末での無制限なメモリ増加を避けるため、
+  // LRU方式で一定件数（_compositeCacheMax）を超えたら最も古いものから破棄
+  // する。通常の描画・スクラブ操作で同時にアクティブなレイヤー数は少数
+  // （1フレーム分の表示レイヤー程度）のため、この上限で実用上のキャッシュ
+  // 効果は十分に得られる。書き出し等、多数の異なるレイヤーを1回ずつしか
+  // 触れない処理ではキャッシュ効果は薄いが、上限があるためメモリへの
+  // 悪影響も出ない。値は意図的に控えめに設定しており（16件で最大
+  // 概算約130MB程度）、端末性能に応じて可変にする改善は将来の課題とする。
+  static const int _compositeCacheMax = 16;
+  final Map<String, ui.Image> _compositeCache = {}; // 挿入順=LRU順（Dart既定のMapはLinkedHashMap）
+
+  void _invalidateCache(String layerId) {
+    _compositeCache.remove(layerId)?.dispose();
+  }
+
+  void _touchCache(String layerId, ui.Image image) {
+    // 既存エントリを削除してから再挿入することでLRU順（末尾=最新）を保つ
+    _compositeCache.remove(layerId);
+    _compositeCache[layerId] = image;
+    while (_compositeCache.length > _compositeCacheMax) {
+      final oldestKey = _compositeCache.keys.first;
+      _compositeCache.remove(oldestKey)?.dispose();
+    }
+  }
+
+  void _invalidateCachePrefix(String prefix) {
+    final keys = _compositeCache.keys.where((k) => k.startsWith(prefix)).toList();
+    for (final k in keys) {
+      _compositeCache.remove(k)?.dispose();
+    }
+  }
+
+  void _invalidateCacheAll() {
+    for (final img in _compositeCache.values) {
+      img.dispose();
+    }
+    _compositeCache.clear();
+  }
+
+  /// このTileManagerが保持するネイティブリソース（キャッシュ画像）を解放する。
+  void dispose() {
+    _invalidateCacheAll();
+  }
+
   // Copy-on-Write：copyLayerで参照共有されたタイルバッファの集合。
   // 実際に書き込みが発生するまで複製しない（仕様書09）。
   final Set<Uint8List> _sharedTiles = {};
@@ -66,6 +121,10 @@ class TileManager {
   Uint8List getOrCreateTile(String layerId, int tx, int ty) {
     final key = _tileKey(tx, ty);
     _recordBeforeIfNeeded(layerId, key);
+    // 呼び出し規約上、getOrCreateTileは必ず書き込み目的で呼ばれる
+    // （返したバッファへ直後にblendPixel/erasePixelで書き込まれる）ため、
+    // ここでキャッシュを無効化する。
+    _invalidateCache(layerId);
     final layerMap = _tiles.putIfAbsent(layerId, () => {});
     final existing = layerMap[key];
     if (existing == null) {
@@ -136,7 +195,16 @@ class TileManager {
 
   /// 指定レイヤーの全タイルを合成した ui.Image を生成する。
   /// 非同期だが描画ループから呼ぶため Future を返す。
+  /// タイルキャッシュ：直前の呼び出しからそのレイヤーのタイルに変更が
+  /// 無ければ、全タイルの再デコード・再合成を省略しキャッシュ済み画像の
+  /// clone()を返す（呼び出し元は返された画像を自由にdispose()できる）。
   Future<ui.Image> compositeLayerToImage(String layerId) async {
+    final cached = _compositeCache[layerId];
+    if (cached != null) {
+      _touchCache(layerId, cached); // LRU順を更新（末尾へ移動）
+      return cached.clone();
+    }
+
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     final layerTiles = _tiles[layerId];
@@ -155,7 +223,10 @@ class TileManager {
       }
     }
     final picture = recorder.endRecording();
-    return picture.toImage(canvasWidth, canvasHeight);
+    final image = await picture.toImage(canvasWidth, canvasHeight);
+    picture.dispose();
+    _touchCache(layerId, image);
+    return image.clone();
   }
 
   Future<ui.Image> _tileToImage(Uint8List pixels) async {
@@ -183,6 +254,7 @@ class TileManager {
       target[e.key] = e.value;
     }
     _tiles[targetLayerId] = target;
+    _invalidateCache(targetLayerId);
   }
 
   /// レイヤー全体を指定した4x4行列（Matrix4.storage形式・列優先）で変換し、
@@ -244,6 +316,7 @@ class TileManager {
       }
     }
     _tiles[layerId] = newLayerTiles;
+    _invalidateCache(layerId);
   }
 
   bool _tileBytesEqual(Uint8List a, Uint8List b) {
@@ -268,13 +341,17 @@ class TileManager {
     return transformLayer(layerId, m);
   }
 
-  void removeLayer(String layerId) => _tiles.remove(layerId);
+  void removeLayer(String layerId) {
+    _tiles.remove(layerId);
+    _invalidateCache(layerId);
+  }
 
   /// 指定シーンに属する全ての合成キー（frameLayerKeyでsceneIdがプレフィックス
   /// された全フレーム・全レイヤー分）のタイルデータを削除する（シーン削除時に使用）。
   void removeSceneTiles(String sceneId) {
     final prefix = '$sceneId#';
     _tiles.removeWhere((key, _) => key.startsWith(prefix));
+    _invalidateCachePrefix(prefix);
   }
 
   /// 合成キーを付け替える（フレーム削除に伴う後続フレームの再インデックス等で使用）。
@@ -283,6 +360,8 @@ class TileManager {
     if (oldKey == newKey) return;
     final tiles = _tiles.remove(oldKey);
     if (tiles != null) _tiles[newKey] = tiles;
+    _invalidateCache(oldKey);
+    _invalidateCache(newKey);
     final prefix = '$oldKey:';
     final toRename = _dirtyTiles.where((d) => d.startsWith(prefix)).toList();
     for (final d in toRename) {
@@ -359,6 +438,7 @@ class TileManager {
       _dirtyTiles.add('$layerId:${entry.key}');
     }
     if (layerMap.isEmpty) _tiles.remove(layerId);
+    _invalidateCache(layerId);
   }
 
   /// 全タイルデータをシリアライズ（保存用）
@@ -373,5 +453,6 @@ class TileManager {
           tileEntry.key: Uint8List.fromList(tileEntry.value),
       };
     }
+    _invalidateCacheAll();
   }
 }
