@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -7,10 +8,12 @@ import 'package:share_plus/share_plus.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/mirapro_serializer.dart';
 import '../../models/project.dart';
+import '../../services/font_service.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
-import '../home/widgets/project_list_widget.dart' show showMaterialIncludeDialog;
+import '../home/widgets/project_list_widget.dart'
+    show showMaterialIncludeDialog, buildFontShareBundle;
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -396,19 +399,26 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・19・21）。
   Future<void> _createMirashare(BuildContext context, ProjectService service, Project project) async {
-    final includeTypes = await showMaterialIncludeDialog(context);
-    if (includeTypes == null || !context.mounted) return; // キャンセル
+    final includeOptions = await showMaterialIncludeDialog(context);
+    if (includeOptions == null || !context.mounted) return; // キャンセル
     final materialService = context.read<MaterialService>();
+    final fontService = context.read<FontService>();
     final scenes = service.scenesOf(project.id);
     final tileManager = service.tileManagerOf(project.id);
     try {
-      final bundle = await materialService.buildShareBundle(project.id, includeTypes);
+      final bundle = await materialService.buildShareBundle(
+          project.id, includeOptions.materialTypes);
+      final fontBundle = includeOptions.includeFonts
+          ? await buildFontShareBundle(service, fontService, project.id)
+          : (files: <String, Uint8List>{}, manifest: null);
       final file = await MiraproSerializer.saveShare(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
         materialFiles: bundle.files.isEmpty ? null : bundle.files,
         materialsManifest: bundle.manifest,
+        fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
+        fontsManifest: fontBundle.manifest,
       );
       if (!context.mounted) return;
       await Share.shareXFiles([XFile(file.path)]);

@@ -331,6 +331,23 @@ class ProjectService extends ChangeNotifier {
   List<Scene> scenesOf(String projectId) =>
       List.unmodifiable(_scenes[projectId] ?? []);
 
+  /// プロジェクト内で実際に使用されているフォントのファミリー名一覧を取得する
+  /// （仕様書15：プロジェクト共有時の「フォントを含める」判定・不足フォント
+  /// 検出に使用）。アプリ標準フォントも含まれるが、共有・不足検出側で
+  /// ユーザー追加フォント（FontService管理分）のみへ絞り込んで扱う。
+  Set<String> usedFontFamiliesOf(String projectId) {
+    final result = <String>{};
+    for (final scene in scenesOf(projectId)) {
+      for (final frame in scene.frames) {
+        for (final layer in frame.layers) {
+          final family = layer.textObject?.fontFamily;
+          if (family != null) result.add(family);
+        }
+      }
+    }
+    return result;
+  }
+
   Scene? sceneOf(String projectId, String sceneId) =>
       (_scenes[projectId] ?? []).where((s) => s.id == sceneId).firstOrNull;
 

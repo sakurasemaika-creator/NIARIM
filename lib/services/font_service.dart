@@ -111,6 +111,57 @@ class FontService extends ChangeNotifier {
     return asset;
   }
 
+  /// フォントファイルの生データを取得する（仕様書15：プロジェクト共有時の
+  /// フォント同梱に使用）。
+  Future<Uint8List?> readFontBytes(FontAsset asset) async {
+    final dir = await _fontsDir();
+    final file = File('${dir.path}/${asset.fileName}');
+    if (!file.existsSync()) return null;
+    return file.readAsBytes();
+  }
+
+  /// 共有ファイル（.mirashare）に同梱されたフォントを取り込む（仕様書15：
+  /// 「「フォントを含める」を選択した場合のみフォントを同梱」）。
+  /// [id]・[fileName]を送信元と同じものに保つことで、familyNameOf()が
+  /// 生成するファミリー名（インポートしたテキストレイヤーのfontFamilyが
+  /// 参照する値）が送信元と一致し、正しくフォントが解決されるようにする。
+  /// 既に同じIDのフォントが登録済みの場合は何もしない（重複防止）。
+  Future<void> importBundledFont({
+    required String id,
+    required String displayName,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    if (_fonts.any((f) => f.id == id)) return;
+    final dir = await _fontsDir();
+    final destFile = File('${dir.path}/$fileName');
+    try {
+      await destFile.writeAsBytes(bytes);
+    } catch (_) {
+      return;
+    }
+    final asset = FontAsset(
+      id: id,
+      displayName: displayName,
+      fileName: fileName,
+      sizeBytes: bytes.length,
+      addedAt: DateTime.now(),
+    );
+    try {
+      await _registerFont(asset, destFile);
+    } catch (_) {
+      try {
+        if (destFile.existsSync()) await destFile.delete();
+      } catch (_) {}
+      return;
+    }
+    _fonts.add(asset);
+    final n = int.tryParse(id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    if (n >= _counter) _counter = n + 1;
+    await _persist();
+    notifyListeners();
+  }
+
   Future<void> renameFont(String id, String newName) async {
     final idx = _fonts.indexWhere((f) => f.id == id);
     if (idx < 0) return;

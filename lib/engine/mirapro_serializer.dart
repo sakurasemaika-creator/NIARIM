@@ -26,6 +26,7 @@ class MiraproSerializer {
   static const String _tilesDir = 'tiles'; // 旧形式（Scene毎重複保存）の読み込み互換用
   static const String _rootTilesDir = 'Tiles'; // 新形式：プロジェクト全体で1箇所のみ保存
   static const String _materialsArchiveDir = 'Materials'; // 同梱素材（仕様書06・21、.mirashareのみ）
+  static const String _fontsArchiveDir = 'Fonts'; // 同梱フォント（仕様書15、.mirashareのみ）
 
   // アプリの.miraproフォーマットバージョン（仕様書06・12：内部データManifest）。
   // manifest.jsonへ書き込み、読み込み時は_migrateManifestJson()で過去バージョンとの
@@ -116,12 +117,15 @@ class MiraproSerializer {
     String? outputDir,
     Map<String, Uint8List>? materialFiles,
     String? materialsManifest,
+    Map<String, Uint8List>? fontFiles,
+    String? fontsManifest,
   }) async {
     final dir = outputDir ?? (await _projectDir(project.id)).path;
     final safeName = project.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
     final filePath = '$dir/$safeName.mirashare';
     return _writeArchive(filePath, project, scenes, tileManager,
-        materialFiles: materialFiles, materialsManifest: materialsManifest);
+        materialFiles: materialFiles, materialsManifest: materialsManifest,
+        fontFiles: fontFiles, fontsManifest: fontsManifest);
   }
 
   /// .mirashare を読み込む（.miraproと同一形式なので load() をそのまま利用できる）。
@@ -140,6 +144,30 @@ class MiraproSerializer {
     if (data.materialsManifest != null) {
       await File('${materialsDir.path}/materials.json').writeAsString(data.materialsManifest!);
     }
+  }
+
+  /// .mirashareに同梱されたフォントのメタデータ・実データ一覧を取得する
+  /// （仕様書15：プロジェクト共有時の「フォントを含める」）。実際の登録
+  /// （FontLoaderへの読み込み・一覧への追加）はFontServiceが行うため、
+  /// engine層であるここではアーカイブのパースのみ行う。
+  static List<({String id, String displayName, String fileName, Uint8List bytes})> bundledFonts(
+      MiraproData data) {
+    if (data.fontsManifest == null) return const [];
+    final list = jsonDecode(data.fontsManifest!) as List<dynamic>;
+    final result = <({String id, String displayName, String fileName, Uint8List bytes})>[];
+    for (final e in list) {
+      final map = e as Map<String, dynamic>;
+      final fileName = map['fileName'] as String?;
+      final bytes = fileName != null ? data.fontFiles[fileName] : null;
+      if (fileName == null || bytes == null) continue;
+      result.add((
+        id: map['id'] as String,
+        displayName: map['displayName'] as String,
+        fileName: fileName,
+        bytes: bytes,
+      ));
+    }
+    return result;
   }
 
   // ─── 自動保存（クラッシュ復元専用・最大3件固定、仕様書06・09） ────────
@@ -227,6 +255,8 @@ class MiraproSerializer {
     TileManager tileManager, {
     Map<String, Uint8List>? materialFiles,
     String? materialsManifest,
+    Map<String, Uint8List>? fontFiles,
+    String? fontsManifest,
   }) async {
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
@@ -267,6 +297,18 @@ class MiraproSerializer {
       final bytes = utf8.encode(materialsManifest);
       encoder.addArchiveFile(
           ArchiveFile('$_materialsArchiveDir/materials.json', bytes.length, bytes));
+    }
+
+    // 同梱フォント（仕様書15：.mirashare作成時に選択した「フォントを含める」）
+    if (fontFiles != null) {
+      for (final entry in fontFiles.entries) {
+        encoder.addArchiveFile(
+            ArchiveFile('$_fontsArchiveDir/${entry.key}', entry.value.length, entry.value));
+      }
+    }
+    if (fontsManifest != null) {
+      final bytes = utf8.encode(fontsManifest);
+      encoder.addArchiveFile(ArchiveFile('$_fontsArchiveDir/fonts.json', bytes.length, bytes));
     }
 
     encoder.close();
@@ -466,12 +508,27 @@ class MiraproSerializer {
       }
     }
 
+    // 同梱フォント（仕様書15：.mirashare作成時に選択した「フォントを含める」）
+    final fontFiles = <String, Uint8List>{};
+    String? fontsManifest;
+    for (final file in archive.files) {
+      if (!file.name.startsWith('$_fontsArchiveDir/')) continue;
+      final name = file.name.substring(_fontsArchiveDir.length + 1);
+      if (name == 'fonts.json') {
+        fontsManifest = utf8.decode(file.content as List<int>);
+      } else if (name.isNotEmpty) {
+        fontFiles[name] = Uint8List.fromList(file.content as List<int>);
+      }
+    }
+
     return MiraproData(
       project: project,
       scenes: scenes,
       tileData: tileData,
       materialFiles: materialFiles,
       materialsManifest: materialsManifest,
+      fontFiles: fontFiles,
+      fontsManifest: fontsManifest,
     );
   }
 
@@ -766,6 +823,10 @@ class MiraproData {
   // 通常の.mirapro読み込みでは常に空。
   final Map<String, Uint8List> materialFiles;
   final String? materialsManifest;
+  // 同梱フォント（仕様書15：.mirashareに同梱されたユーザー追加フォントの実
+  // ファイル）。通常の.mirapro読み込みでは常に空。
+  final Map<String, Uint8List> fontFiles;
+  final String? fontsManifest;
 
   const MiraproData({
     required this.project,
@@ -773,5 +834,7 @@ class MiraproData {
     required this.tileData,
     this.materialFiles = const {},
     this.materialsManifest,
+    this.fontFiles = const {},
+    this.fontsManifest,
   });
 }

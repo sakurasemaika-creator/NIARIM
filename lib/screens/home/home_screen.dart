@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../../engine/mirapro_serializer.dart';
 import '../../services/advertising_service.dart';
+import '../../services/font_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
@@ -99,7 +100,34 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     try {
       final data = await MiraproSerializer.loadShare(localPath);
       if (!mounted) return;
-      await context.read<ProjectService>().importSharedProject(data);
+      final projectService = context.read<ProjectService>();
+      final project = await projectService.importSharedProject(data);
+      if (!mounted) return;
+      // 同梱フォント（仕様書15：「フォントを含める」選択時）を取り込み登録する。
+      final fontService = context.read<FontService>();
+      final bundledFonts = MiraproSerializer.bundledFonts(data);
+      for (final font in bundledFonts) {
+        await fontService.importBundledFont(
+          id: font.id,
+          displayName: font.displayName,
+          fileName: font.fileName,
+          bytes: font.bytes,
+        );
+      }
+      // 不足フォント検出（仕様書15：「不足フォントがあります。○○」）：
+      // プロジェクトが使用するユーザー追加フォントのうち、同梱もされておらず
+      // 端末側にも存在しないものを警告する。
+      if (!mounted) return;
+      final usedFamilies = projectService.usedFontFamiliesOf(project.id);
+      final installedFamilies = fontService.fonts.map(fontService.familyNameOf).toSet();
+      final missing = usedFamilies.where((f) =>
+          f.startsWith('UserFont_') && !installedFamilies.contains(f));
+      if (missing.isNotEmpty) {
+        final names = missing.map((f) => f.replaceFirst('UserFont_', '')).join('、');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('不足フォントがあります。$names')),
+        );
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('プロジェクトタブへ追加しました')),

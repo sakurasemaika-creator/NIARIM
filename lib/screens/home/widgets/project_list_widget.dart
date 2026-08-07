@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../engine/mirapro_serializer.dart';
 import '../../../models/material_asset.dart';
 import '../../../models/project.dart';
+import '../../../services/font_service.dart';
 import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
@@ -419,20 +422,27 @@ class ProjectListWidget extends StatelessWidget {
 
   /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・21）。
   Future<void> _createMirashare(BuildContext context, Project project) async {
-    final includeTypes = await showMaterialIncludeDialog(context);
-    if (includeTypes == null || !context.mounted) return; // キャンセル
+    final includeOptions = await showMaterialIncludeDialog(context);
+    if (includeOptions == null || !context.mounted) return; // キャンセル
     final service = context.read<ProjectService>();
     final materialService = context.read<MaterialService>();
+    final fontService = context.read<FontService>();
     final scenes = service.scenesOf(project.id);
     final tileManager = service.tileManagerOf(project.id);
     try {
-      final bundle = await materialService.buildShareBundle(project.id, includeTypes);
+      final bundle = await materialService.buildShareBundle(
+          project.id, includeOptions.materialTypes);
+      final fontBundle = includeOptions.includeFonts
+          ? await buildFontShareBundle(service, fontService, project.id)
+          : (files: <String, Uint8List>{}, manifest: null);
       final file = await MiraproSerializer.saveShare(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
         materialFiles: bundle.files.isEmpty ? null : bundle.files,
         materialsManifest: bundle.manifest,
+        fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
+        fontsManifest: fontBundle.manifest,
       );
       if (!context.mounted) return;
       await Share.shareXFiles([XFile(file.path)]);
@@ -661,11 +671,14 @@ class ProjectListWidget extends StatelessWidget {
   }
 }
 
-/// .mirashare作成時の素材同梱選択ダイアログ（仕様書06・21：画像/動画/音声を
-/// 種類ごとに選択できる。デフォルトは全種類ON）。キャンセル時はnullを返す。
-Future<Set<MaterialType>?> showMaterialIncludeDialog(BuildContext context) {
+/// .mirashare作成時の同梱選択ダイアログ（仕様書06・15・21：画像/動画/音声を
+/// 種類ごとに選択できる。デフォルトは全種類ON。「フォントを含める」を
+/// 選択した場合のみユーザー追加フォントも同梱する）。キャンセル時はnullを返す。
+Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncludeDialog(
+    BuildContext context) {
   final selected = <MaterialType>{MaterialType.image, MaterialType.video, MaterialType.audio};
-  return showDialog<Set<MaterialType>>(
+  bool includeFonts = true;
+  return showDialog<({Set<MaterialType> materialTypes, bool includeFonts})>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(
@@ -697,13 +710,43 @@ Future<Set<MaterialType>?> showMaterialIncludeDialog(BuildContext context) {
               onChanged: (v) => setDialogState(
                   () => v == true ? selected.add(MaterialType.audio) : selected.remove(MaterialType.audio)),
             ),
+            const Divider(),
+            CheckboxListTile(
+              value: includeFonts,
+              title: const Text('フォントを含める'),
+              subtitle: const Text('使用中のユーザー追加フォントを同梱します', style: TextStyle(fontSize: 11)),
+              contentPadding: EdgeInsets.zero,
+              onChanged: (v) => setDialogState(() => includeFonts = v ?? true),
+            ),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, selected), child: const Text('作成')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, (materialTypes: selected, includeFonts: includeFonts)),
+            child: const Text('作成'),
+          ),
         ],
       ),
     ),
   );
+}
+
+/// プロジェクトで使用中のユーザー追加フォントをまとめ、.mirashareへ同梱する
+/// ためのファイル群とマニフェストを作成する（仕様書15：プロジェクト共有時の
+/// 「フォントを含める」）。使用フォントがアプリ標準フォントのみの場合は空を返す。
+Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(
+    ProjectService projectService, FontService fontService, String projectId) async {
+  final usedFamilies = projectService.usedFontFamiliesOf(projectId);
+  final files = <String, Uint8List>{};
+  final manifestList = <Map<String, dynamic>>[];
+  for (final font in fontService.fonts) {
+    if (!usedFamilies.contains(fontService.familyNameOf(font))) continue;
+    final bytes = await fontService.readFontBytes(font);
+    if (bytes == null) continue;
+    files[font.fileName] = bytes;
+    manifestList.add({'id': font.id, 'displayName': font.displayName, 'fileName': font.fileName});
+  }
+  if (files.isEmpty) return (files: <String, Uint8List>{}, manifest: null);
+  return (files: files, manifest: jsonEncode(manifestList));
 }
