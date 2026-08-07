@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/toolbar_item.dart';
 
 class SettingsService extends ChangeNotifier {
   int _defaultFps = 12;
@@ -16,6 +17,9 @@ class SettingsService extends ChangeNotifier {
   // 左利きモード（仕様書08）：ONの場合、キャンバスのドッキングパネルを
   // 左右反転して配置する。
   bool _isLeftHanded = false;
+  // ツールバー編集（仕様書08：表示するツールをチェックボックスで選択・ドラッグで並び替え）
+  List<ToolbarItemId> _toolbarOrder = List.of(ToolbarItemId.values);
+  Set<ToolbarItemId> _hiddenToolbarItems = {};
 
   int get defaultFps => _defaultFps;
   int get undoLimit => _undoLimit;
@@ -25,6 +29,8 @@ class SettingsService extends ChangeNotifier {
   double get defaultDrawingAreaScale => _defaultDrawingAreaScale;
   bool? get forcePcMode => _forcePcMode;
   bool get isLeftHanded => _isLeftHanded;
+  List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
+  Set<ToolbarItemId> get hiddenToolbarItems => Set.unmodifiable(_hiddenToolbarItems);
 
   GestureAction _twoFingerTap = GestureAction.undo;
   GestureAction _threeFingerTap = GestureAction.redo;
@@ -106,6 +112,18 @@ class SettingsService extends ChangeNotifier {
     final pcModeValue = prefs.getInt('force_pc_mode') ?? -1;
     _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
     _isLeftHanded = prefs.getBool('is_left_handed') ?? false;
+    final toolbarOrderNames = prefs.getStringList('toolbar_order');
+    if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
+      final map = ToolbarItemId.values.asNameMap();
+      final restored = toolbarOrderNames.map((n) => map[n]).whereType<ToolbarItemId>().toList();
+      // バージョンアップで項目が追加された場合、欠けている項目は末尾へ補完
+      for (final id in ToolbarItemId.values) {
+        if (!restored.contains(id)) restored.add(id);
+      }
+      _toolbarOrder = restored;
+    }
+    final hiddenNames = prefs.getStringList('toolbar_hidden') ?? const [];
+    _hiddenToolbarItems = hiddenNames.map((n) => ToolbarItemId.values.asNameMap()[n]).whereType<ToolbarItemId>().toSet();
     _twoFingerTap = _gestureActionFromName(prefs.getString('gesture_two_finger_tap'), GestureAction.undo);
     _threeFingerTap = _gestureActionFromName(prefs.getString('gesture_three_finger_tap'), GestureAction.redo);
     _twoFingerSwipe = _gestureActionFromName(prefs.getString('gesture_two_finger_swipe'), GestureAction.frameMove);
@@ -175,6 +193,47 @@ class SettingsService extends ChangeNotifier {
     _isLeftHanded = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_left_handed', value);
+    notifyListeners();
+  }
+
+  /// ツールバーの表示順を変更する（仕様書08：ドラッグで並び替え）。
+  Future<void> setToolbarOrder(List<ToolbarItemId> order) async {
+    _toolbarOrder = List.of(order);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('toolbar_order', _toolbarOrder.map((e) => e.name).toList());
+    notifyListeners();
+  }
+
+  /// ツールバー項目の表示/非表示を切り替える（仕様書08：チェックボックスで選択）。
+  Future<void> setToolbarItemVisible(ToolbarItemId id, bool visible) async {
+    if (visible) {
+      _hiddenToolbarItems.remove(id);
+    } else {
+      _hiddenToolbarItems.add(id);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('toolbar_hidden', _hiddenToolbarItems.map((e) => e.name).toList());
+    notifyListeners();
+  }
+
+  /// ツールバー編集を初期状態（全項目表示・デフォルト順）へ戻す。
+  Future<void> resetToolbarDefault() async {
+    _toolbarOrder = List.of(ToolbarItemId.values);
+    _hiddenToolbarItems = {};
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('toolbar_order', _toolbarOrder.map((e) => e.name).toList());
+    await prefs.setStringList('toolbar_hidden', const []);
+    notifyListeners();
+  }
+
+  /// ワークスペースプリセットの読込用：並び順・非表示項目をまとめて適用する
+  /// （仕様書08：「切り替えると表示ツール・早替えツール・パネル配置が一括で変わる」）。
+  Future<void> applyToolbarPreset(List<ToolbarItemId> order, Set<ToolbarItemId> hidden) async {
+    _toolbarOrder = order.isEmpty ? List.of(ToolbarItemId.values) : List.of(order);
+    _hiddenToolbarItems = Set.of(hidden);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('toolbar_order', _toolbarOrder.map((e) => e.name).toList());
+    await prefs.setStringList('toolbar_hidden', _hiddenToolbarItems.map((e) => e.name).toList());
     notifyListeners();
   }
 

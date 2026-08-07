@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/quick_tool_entry.dart';
+import '../../models/toolbar_item.dart';
+import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/workspace_preset_service.dart';
 import '../../widgets/responsive.dart';
@@ -16,6 +19,51 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _sectionLabel(context, 'ツールバー編集'),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text('表示するツールをチェックボックスで選択し、ドラッグで並び替えできます（仕様書08）。',
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
+          Card(
+            child: Column(
+              children: [
+                ReorderableListView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onReorder: (oldIndex, newIndex) {
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    final order = List<ToolbarItemId>.of(settings.toolbarOrder);
+                    final item = order.removeAt(oldIndex);
+                    order.insert(newIndex, item);
+                    settings.setToolbarOrder(order);
+                  },
+                  children: [
+                    for (final id in settings.toolbarOrder)
+                      CheckboxListTile(
+                        key: ValueKey(id),
+                        title: Text(id.label),
+                        value: !settings.hiddenToolbarItems.contains(id),
+                        onChanged: (v) => settings.setToolbarItemVisible(id, v ?? true),
+                        secondary: const Icon(Icons.drag_handle),
+                        controlAffinity: ListTileControlAffinity.leading,
+                      ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => settings.resetToolbarDefault(),
+                      child: const Text('デフォルトに戻す'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           _sectionLabel(context, 'パネル配置'),
           Card(
             child: SwitchListTile(
@@ -61,7 +109,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           _sectionLabel(context, 'ワークスペース保存'),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text('左利きモード・PCモード設定を名前を付けて保存し、後から呼び出せます。',
+            child: Text('左利きモード・PCモード・ツールバー・ツール早替え設定を名前を付けて保存し、後から呼び出せます。',
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           FilledButton.icon(
@@ -95,6 +143,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
 
   void _showSaveDialog(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
     final controller = TextEditingController();
+    final quickToolService = context.read<QuickToolService>();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -110,7 +159,14 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             onPressed: () {
               final name = controller.text.trim();
               if (name.isEmpty) return;
-              presetService.save(name, isLeftHanded: settings.isLeftHanded, forcePcMode: settings.forcePcMode);
+              presetService.save(
+                name,
+                isLeftHanded: settings.isLeftHanded,
+                forcePcMode: settings.forcePcMode,
+                toolbarOrder: settings.toolbarOrder.map((e) => e.name).toList(),
+                hiddenToolbarItems: settings.hiddenToolbarItems.map((e) => e.name).toList(),
+                quickToolEntries: quickToolService.entries.map((e) => e.toJson()).toList(),
+              );
               Navigator.pop(ctx);
             },
             child: const Text('保存'),
@@ -121,6 +177,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
   }
 
   void _showLoadSheet(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+    final quickToolService = context.read<QuickToolService>();
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -135,6 +192,12 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 onTap: () {
                   settings.setLeftHanded(preset.isLeftHanded);
                   settings.setForcePcMode(preset.forcePcMode);
+                  // 表示ツール・早替えツールも一括で切り替える（仕様書08）
+                  settings.applyToolbarPreset(preset.toolbarOrderIds, preset.hiddenToolbarItemIds);
+                  if (preset.quickToolEntries.isNotEmpty) {
+                    quickToolService.replaceAll(
+                        preset.quickToolEntries.map((e) => QuickToolEntry.fromJson(e)).toList());
+                  }
                   Navigator.pop(ctx);
                 },
                 trailing: IconButton(

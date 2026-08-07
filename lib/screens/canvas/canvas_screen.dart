@@ -545,8 +545,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
         }),
       );
 
-  Widget _quickToolPanel() =>
-      QuickToolPanel(onClose: () => setState(() => _showQuickToolPanel = false));
+  Widget _quickToolPanel() => QuickToolPanel(
+        onClose: () => setState(() => _showQuickToolPanel = false),
+        currentTool: _currentTool,
+        currentBrushId: context.read<BrushService>().currentBrush?.id,
+        currentBrushName: context.read<BrushService>().currentBrush?.name,
+        currentSize: _brushSize,
+      );
 
   /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの
   /// 配置側。左利きモード時は[leftHanded]により全パネルをまとめて左右反転する

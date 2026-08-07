@@ -18,6 +18,15 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _searchController = TextEditingController();
   bool _showSearch = false;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _query = _searchController.text.trim().toLowerCase());
+    });
+  }
 
   @override
   void dispose() {
@@ -28,6 +37,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<PremiumService>().isPremium;
+    // 仕様書08：「設定内検索バーあり（項目が増えても検索で到達可能）」。
+    // 各項目にタイトル・サブタイトルに加えて検索キーワードを持たせ、
+    // 部分一致でカテゴリ一覧を絞り込む。
+    final entries = [
+      (
+        icon: Icons.settings, title: '基本', subtitle: 'FPS・背景色・言語',
+        keywords: 'fps 背景色 言語 描画領域初期値', onTap: _showBasicSettings, accent: const Color(0xFFFF5C7A),
+      ),
+      (
+        icon: Icons.tune, title: '詳細', subtitle: 'Undo回数・自動保存・ゴミ箱',
+        keywords: 'undo 自動保存 ゴミ箱 削除', onTap: _showDetailSettings, accent: const Color(0xFF3AA6FF),
+      ),
+      (
+        icon: Icons.speed, title: 'パフォーマンス', subtitle: '品質設定・タイルキャッシュ',
+        keywords: '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知',
+        onTap: () => context.push('/settings/performance'), accent: const Color(0xFF3DDC97),
+      ),
+      (
+        icon: Icons.touch_app, title: 'ジェスチャー', subtitle: '2本指タップ・長押し',
+        keywords: 'タップ スワイプ 長押し ペンボタン', onTap: () => context.push('/settings/gestures'), accent: const Color(0xFFFFB020),
+      ),
+      (
+        icon: Icons.edit, title: 'ペン入力', subtitle: '筆圧・傾き・ペンボタン',
+        keywords: '筆圧 傾き ペンボタン 筆圧カーブ', onTap: () => context.push('/settings/pen'), accent: const Color(0xFFB15CFF),
+      ),
+      (
+        icon: Icons.desktop_windows, title: 'ワークスペース', subtitle: 'ツールバー編集・パネル配置',
+        keywords: 'ツールバー パネル配置 右利き 左利き dex デックス', onTap: () => context.push('/settings/workspace'), accent: const Color(0xFF3AA6FF),
+      ),
+      (
+        icon: Icons.palette, title: 'UI・テーマ', subtitle: 'テーマ設定・ワークスペース',
+        keywords: 'テーマ 配色 ベースカラー アクセントカラー', onTap: () => context.push('/settings/theme'), accent: const Color(0xFFFF5C7A),
+      ),
+      // 無料会員のみ🔒マーク付きで表示（仕様書08）
+      (
+        icon: Icons.water, title: isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒',
+        subtitle: 'ユーザーウォーターマーク（Premium）', keywords: 'ウォーターマーク premium プレミアム',
+        onTap: _showWatermarkSetting, accent: const Color(0xFFB15CFF),
+      ),
+      (
+        icon: Icons.import_export, title: '引き継ぎ', subtitle: '設定・素材・ブラシを他端末へ書き出し/読み込み',
+        keywords: '引き継ぎ エクスポート インポート 他端末 miratra', onTap: () => context.push('/settings/transfer'), accent: const Color(0xFF3DDC97),
+      ),
+      (
+        icon: Icons.font_download_outlined, title: 'フォント管理', subtitle: 'TTF/OTFの追加・検索・削除',
+        keywords: 'フォント ttf otf', onTap: () => context.push('/settings/fonts'), accent: const Color(0xFFFFB020),
+      ),
+    ];
+    final filtered = _query.isEmpty
+        ? entries
+        : entries.where((e) =>
+            e.title.toLowerCase().contains(_query) ||
+            e.subtitle.toLowerCase().contains(_query) ||
+            e.keywords.toLowerCase().contains(_query)).toList();
     return Scaffold(
       appBar: AppBar(
         title: _showSearch
@@ -42,22 +105,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: desktopCentered(
         context,
-        ListView(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          children: [
-            _item(Icons.settings, '基本', 'FPS・背景色・言語', _showBasicSettings, const Color(0xFFFF5C7A)),
-            _item(Icons.tune, '詳細', 'Undo回数・自動保存・ゴミ箱', _showDetailSettings, const Color(0xFF3AA6FF)),
-            _item(Icons.speed, 'パフォーマンス', '品質設定・タイルキャッシュ', () => context.push('/settings/performance'), const Color(0xFF3DDC97)),
-            _item(Icons.touch_app, 'ジェスチャー', '2本指タップ・長押し', () => context.push('/settings/gestures'), const Color(0xFFFFB020)),
-            _item(Icons.edit, 'ペン入力', '筆圧・傾き・ペンボタン', () => context.push('/settings/pen'), const Color(0xFFB15CFF)),
-            _item(Icons.desktop_windows, 'ワークスペース', 'ツールバー編集・パネル配置', () => context.push('/settings/workspace'), const Color(0xFF3AA6FF)),
-            _item(Icons.palette, 'UI・テーマ', 'テーマ設定・ワークスペース', () => context.push('/settings/theme'), const Color(0xFFFF5C7A)),
-            // 無料会員のみ🔒マーク付きで表示（仕様書08）
-            _item(Icons.water, isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒', 'ユーザーウォーターマーク（Premium）', _showWatermarkSetting, const Color(0xFFB15CFF)),
-            _item(Icons.import_export, '引き継ぎ', '設定・素材・ブラシを他端末へ書き出し/読み込み', () => context.push('/settings/transfer'), const Color(0xFF3DDC97)),
-            _item(Icons.font_download_outlined, 'フォント管理', 'TTF/OTFの追加・検索・削除', () => context.push('/settings/fonts'), const Color(0xFFFFB020)),
-          ],
-        ),
+        filtered.isEmpty
+            ? const Center(child: Text('該当する設定項目が見つかりません', style: TextStyle(color: Colors.grey)))
+            : ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: [
+                  for (final e in filtered) _item(e.icon, e.title, e.subtitle, e.onTap, e.accent),
+                ],
+              ),
       ),
     );
   }

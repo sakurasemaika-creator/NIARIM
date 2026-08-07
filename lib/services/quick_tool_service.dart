@@ -58,6 +58,17 @@ class QuickToolService extends ChangeNotifier {
     _persist();
   }
 
+  /// ワークスペースプリセットの読込用：登録内容を丸ごと置き換える（仕様書08：
+  /// 「切り替えると表示ツール・早替えツール・パネル配置が一括で変わる」）。
+  void replaceAll(List<QuickToolEntry> newEntries) {
+    _entries
+      ..clear()
+      ..addAll(newEntries);
+    _currentIndex = -1;
+    notifyListeners();
+    _persist();
+  }
+
   void reorder(int oldIndex, int newIndex) {
     if (newIndex > oldIndex) newIndex -= 1;
     final item = _entries.removeAt(oldIndex);

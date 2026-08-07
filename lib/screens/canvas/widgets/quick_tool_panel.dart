@@ -3,12 +3,26 @@ import 'package:provider/provider.dart';
 import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/quick_tool_service.dart';
+import '../canvas_screen.dart' show DrawingTool;
 
 /// 早替えツール設定ポップアップ（仕様書02・08）。
 /// ↺ボタンの長押しで表示する。ドラッグで順番変更・削除・追加ができる。
 class QuickToolPanel extends StatelessWidget {
   final VoidCallback onClose;
-  const QuickToolPanel({super.key, required this.onClose});
+  // 「現在のブラシを追加」用（仕様書08：使用中のブラシ設定をそのまま登録可能）
+  final DrawingTool currentTool;
+  final String? currentBrushId;
+  final String? currentBrushName;
+  final double currentSize;
+
+  const QuickToolPanel({
+    super.key,
+    required this.onClose,
+    required this.currentTool,
+    this.currentBrushId,
+    this.currentBrushName,
+    required this.currentSize,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +91,24 @@ class QuickToolPanel extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録（仕様書08）
+            if (currentTool == DrawingTool.pen && currentBrushId != null)
+              ListTile(
+                leading: const Icon(Icons.bolt, color: Colors.amber),
+                title: const Text('現在のブラシを追加'),
+                subtitle: Text('$currentBrushName ${currentSize.round()}px'),
+                onTap: () {
+                  service.addEntry(QuickToolEntry(
+                    id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
+                    label: '$currentBrushName ${currentSize.round()}px',
+                    toolKey: 'pen',
+                    brushId: currentBrushId,
+                    sizeOverride: currentSize,
+                  ));
+                  Navigator.pop(ctx);
+                },
+              ),
+            if (currentTool == DrawingTool.pen && currentBrushId != null) const Divider(height: 1),
             for (final brush in brushService.brushes)
               ListTile(
                 leading: const Icon(Icons.brush),

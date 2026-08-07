@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../models/toolbar_item.dart';
+import '../../../services/settings_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
@@ -43,8 +45,60 @@ class ToolbarWidget extends StatelessWidget {
     this.isStampSelected = false,
   });
 
+  /// ツールバー編集（仕様書08）でカスタマイズ可能な項目を、現在の並び順・
+  /// 表示設定に従って構築する。
+  Widget _buildToolItem(BuildContext context, ToolbarItemId id) {
+    return switch (id) {
+      // ペンボタン：長押しでサブツールパネル表示（仕様書02・17：初回使用時の吹き出し説明）
+      ToolbarItemId.pen => FirstUseTooltip(
+          tooltipKey: 'pen_tool',
+          message: 'ペンを長押しすると、ブラシ・トーン・スタンプ・投げ縄塗りを切り替えられます。',
+          child: GestureDetector(
+            onLongPress: onPenLongPress,
+            child: _toolButton(context, Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
+          ),
+        ),
+      ToolbarItemId.eraser => _toolButton(context, Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
+      // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
+      ToolbarItemId.bucket => FirstUseTooltip(
+          tooltipKey: 'bucket_tool',
+          message: 'バケツを長押しすると、ベタ塗りとトーン塗りを切り替えられます。',
+          child: GestureDetector(
+            onLongPress: () => _showBucketToneMenu(context),
+            child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
+          ),
+        ),
+      ToolbarItemId.eyedropper => _toolButton(context, Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
+      ToolbarItemId.finger => _toolButton(context, Icons.back_hand, DrawingTool.finger, '指'),
+      ToolbarItemId.select => _selectToolButton(context),
+      ToolbarItemId.move => _toolButton(context, Icons.open_with, DrawingTool.move, '移動'),
+      ToolbarItemId.transform => _toolButton(context, Icons.transform, DrawingTool.transform, '変形'),
+      // 初回タップ時の吹き出し説明（仕様書14）
+      ToolbarItemId.ruler => FirstUseTooltip(
+          tooltipKey: 'ruler_tool',
+          message: '定規を使うとまっすぐな線や綺麗な図形が描けます。',
+          child: _toolButton(context, Icons.straighten, DrawingTool.ruler, '定規', onTap: onRulerTap),
+        ),
+      // 初回タップ時の吹き出し説明（仕様書15）
+      ToolbarItemId.text => FirstUseTooltip(
+          tooltipKey: 'text_tool',
+          message: '文字を自由に配置できます。フォントや色、アウトラインも変更できます。',
+          child: _toolButton(context, Icons.text_fields, DrawingTool.text, 'テキスト', onTap: onTextTap),
+        ),
+      ToolbarItemId.shape =>
+        _toolButton(context, Icons.category, DrawingTool.shape, '図形（タップで種別選択）', onTap: onShapeTap),
+      // フィルター（仕様書18：描画フィルター）
+      ToolbarItemId.filter => FirstUseTooltip(
+          tooltipKey: 'draw_filter',
+          message: 'レイヤーにぼかし・トーンカーブなどのフィルターを適用できます。',
+          child: IconButton(icon: const Icon(Icons.blur_on, size: 20), onPressed: onFilterTap, tooltip: 'フィルター'),
+        ),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsService>();
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -56,46 +110,9 @@ class ToolbarWidget extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            // ペンボタン：長押しでサブツールパネル表示（仕様書02・17：初回使用時の吹き出し説明）
-            FirstUseTooltip(
-              tooltipKey: 'pen_tool',
-              message: 'ペンを長押しすると、ブラシ・トーン・スタンプ・投げ縄塗りを切り替えられます。',
-              child: GestureDetector(
-                onLongPress: onPenLongPress,
-                child: _toolButton(context, Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
-              ),
-            ),
-            _toolButton(context, Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
-            // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
-            FirstUseTooltip(
-              tooltipKey: 'bucket_tool',
-              message: 'バケツを長押しすると、ベタ塗りとトーン塗りを切り替えられます。',
-              child: GestureDetector(
-                onLongPress: () => _showBucketToneMenu(context),
-                child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
-              ),
-            ),
-            _toolButton(context, Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
-            _toolButton(context, Icons.back_hand, DrawingTool.finger, '指'),
-            _selectToolButton(context),
-            _toolButton(context, Icons.open_with, DrawingTool.move, '移動'),
-            _toolButton(context, Icons.transform, DrawingTool.transform, '変形'),
-            // 初回タップ時の吹き出し説明（仕様書14）
-            FirstUseTooltip(
-              tooltipKey: 'ruler_tool',
-              message: '定規を使うとまっすぐな線や綺麗な図形が描けます。',
-              child: _toolButton(context, Icons.straighten, DrawingTool.ruler, '定規',
-                  onTap: onRulerTap),
-            ),
-            // 初回タップ時の吹き出し説明（仕様書15）
-            FirstUseTooltip(
-              tooltipKey: 'text_tool',
-              message: '文字を自由に配置できます。フォントや色、アウトラインも変更できます。',
-              child: _toolButton(context, Icons.text_fields, DrawingTool.text, 'テキスト',
-                  onTap: onTextTap),
-            ),
-            _toolButton(context, Icons.category, DrawingTool.shape, '図形（タップで種別選択）',
-                onTap: onShapeTap),
+            // ツールバー編集（仕様書08）でカスタマイズ可能な項目を並び順・表示設定通りに表示
+            for (final id in settings.toolbarOrder)
+              if (!settings.hiddenToolbarItems.contains(id)) _buildToolItem(context, id),
             const SizedBox(width: 4),
             // 色インジケーター（仕様書17：スタンプ選択中は色情報を保持しているため
             // 色変更不可を🚫重ね表示で示し、タップで専用トーストを表示する）
@@ -138,13 +155,6 @@ class ToolbarWidget extends StatelessWidget {
               message: '前後のフレームを薄く重ねて表示し、動きの参考にできます。',
               child: IconButton(
                   icon: const Icon(Icons.layers_outlined, size: 20), onPressed: onOnionSkinTap, tooltip: 'オニオンスキン'),
-            ),
-            // フィルター（仕様書18：描画フィルター）
-            FirstUseTooltip(
-              tooltipKey: 'draw_filter',
-              message: 'レイヤーにぼかし・トーンカーブなどのフィルターを適用できます。',
-              child: IconButton(
-                  icon: const Icon(Icons.blur_on, size: 20), onPressed: onFilterTap, tooltip: 'フィルター'),
             ),
             // ツール早替えボタン（↺）
             // ツール早替えボタン：タップで登録順に切替、長押しで管理ポップアップ（仕様書02・08）
