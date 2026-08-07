@@ -25,6 +25,28 @@ class MiraproSerializer {
   static const String _tilesDir = 'tiles'; // 旧形式（Scene毎重複保存）の読み込み互換用
   static const String _rootTilesDir = 'Tiles'; // 新形式：プロジェクト全体で1箇所のみ保存
 
+  // アプリの.miraproフォーマットバージョン（仕様書06・12：内部データManifest）。
+  // manifest.jsonへ書き込み、読み込み時は_migrateManifestJson()で過去バージョンとの
+  // 差異を吸収する拡張点として使う。現在はv1.0.0のみが存在するため実際の変換処理は
+  // まだ発生しないが、将来フォーマットが変わった際にここへ分岐を追加する。
+  static const String currentAppVersion = '1.0.0';
+
+  /// [json]（manifest.json由来）のappVersionを確認し、旧バージョン形式との差異を
+  /// 現行フォーマットへ変換する。現時点ではv1.0.0のみのため変換対象はなく、
+  /// フィールド欠落時のデフォルト補完のみ行う（仕様書12：「AppVersionによる将来
+  /// バージョン自動変換対応」）。
+  static Map<String, dynamic> _migrateManifestJson(Map<String, dynamic> json) {
+    final version = json['appVersion'] as String? ?? '1.0.0';
+    switch (version) {
+      case '1.0.0':
+        return json;
+      default:
+        // 未知の（将来の、または破損した）バージョン文字列。現状フィールド構成を
+        // そのまま試みるが、将来ここへ具体的な変換ロジックを追加する。
+        return json;
+    }
+  }
+
   // ─── 保存 ─────────────────────────────────────────────────────────────
 
   /// プロジェクトを保存する。既存の.miraproがある場合は差分保存（変更されたタイルのみ
@@ -247,9 +269,10 @@ class MiraproSerializer {
 
     final manifestFile = archive.findFile(_manifestFile);
     if (manifestFile == null) throw const FormatException('manifest.json not found');
-    final project = _deserializeManifest(
+    final manifestJson = _migrateManifestJson(
       jsonDecode(utf8.decode(manifestFile.content as List<int>)) as Map<String, dynamic>,
     );
+    final project = _deserializeManifest(manifestJson);
 
     final scenes = <Scene>[];
     final sceneIds = archive.files
@@ -362,7 +385,7 @@ class MiraproSerializer {
         'createdAt': p.createdAt.toIso8601String(),
         'updatedAt': DateTime.now().toIso8601String(),
         'totalWorkSeconds': p.totalWorkSeconds,
-        'appVersion': '1.0.0',
+        'appVersion': currentAppVersion,
       };
 
   static Map<String, dynamic> _serializeScene(Scene scene) => {
