@@ -173,12 +173,20 @@ class ThemeService extends ChangeNotifier {
     // Text等が明示的に色指定していない場合に使うデフォルト文字色
     // （仕様書24「文字色 | UI全体の文字色」）。
     final baseTextTheme = ThemeData(brightness: brightness, useMaterial3: true).textTheme;
-    final textTheme = baseTextTheme.apply(bodyColor: preset.textColor, displayColor: preset.textColor);
+    // アプリ全体の基本フォント（仕様書24：白光明朝）。数値表示は個別の
+    // ウィジェット側でAndroid標準フォント（未指定＝Roboto/Noto Sans）を
+    // 明示的に指定して上書きする。
+    final textTheme = baseTextTheme.apply(
+      fontFamily: 'HakkouMincho',
+      bodyColor: preset.textColor,
+      displayColor: preset.textColor,
+    );
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
+      fontFamily: 'HakkouMincho',
       textTheme: textTheme,
       primaryTextTheme: textTheme,
       scaffoldBackgroundColor: preset.panelBgColor,

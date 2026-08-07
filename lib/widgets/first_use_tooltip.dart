@@ -71,7 +71,12 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                   Expanded(
                     child: Text(
                       widget.message,
-                      style: TextStyle(color: Theme.of(ctx).colorScheme.onPrimary, fontSize: 12),
+                      // チュートリアル・説明テキスト用フォント（仕様書24：くらむぼん）
+                      style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.onPrimary,
+                        fontSize: 12,
+                        fontFamily: 'Kuramubon',
+                      ),
                     ),
                   ),
                   Icon(Icons.close, size: 14, color: Theme.of(ctx).colorScheme.onPrimary),

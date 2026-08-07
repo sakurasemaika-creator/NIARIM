@@ -43,3 +43,14 @@ flutter:
   assets:
     - assets/
     - assets/logo/
+  fonts:
+    # アプリ全体の基本フォント（仕様書24。白光明朝：lavsic氏作、SIL Open
+    # Font License 1.1、Noto Serif派生）
+    - family: HakkouMincho
+      fonts:
+        - asset: assets/fonts/HakkouMincho.ttf
+    # チュートリアル・説明・演出テキスト用フォント（くらむぼん：フロップ
+    # デザイン制作、SIL Open Font License 1.1、DelaGothic派生）
+    - family: Kuramubon
+      fonts:
+        - asset: assets/fonts/Kuramubon.otf

@@ -63,7 +63,13 @@ class _HelpScreenState extends State<HelpScreen> {
                   title: Text(entry.title, style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text(entry.category,
                       style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                  children: [Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), child: Text(entry.description))],
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      // 説明テキスト用フォント（仕様書24：くらむぼん）
+                      child: Text(entry.description, style: const TextStyle(fontFamily: 'Kuramubon')),
+                    ),
+                  ],
                 );
               },
             ),

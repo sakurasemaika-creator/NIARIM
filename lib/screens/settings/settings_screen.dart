@@ -85,11 +85,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: Icons.font_download_outlined, title: 'フォント管理', subtitle: 'TTF/OTFの追加・検索・削除',
         keywords: 'フォント ttf otf', onTap: () => context.push('/settings/fonts'), accent: const Color(0xFFFFB020),
       ),
-      (
-        icon: Icons.description_outlined, title: '利用規約・ライセンス', subtitle: 'フォントクレジット・OSSライセンス',
-        keywords: '利用規約 ライセンス クレジット フォント license', onTap: () => context.push('/settings/license'),
-        accent: const Color(0xFF3AA6FF),
-      ),
     ];
     final filtered = _query.isEmpty
         ? entries
@@ -118,6 +113,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
                   for (final e in filtered) _item(e.icon, e.title, e.subtitle, e.onTap, e.accent),
+                  if (_query.isEmpty) ...[
+                    const Divider(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: TextButton(
+                        onPressed: () => context.push('/settings/license'),
+                        child: Text('利用規約・ライセンス',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ],
               ),
       ),
