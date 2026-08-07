@@ -342,6 +342,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ToolbarWidget(
               currentTool: _currentTool,
               currentColor: _currentColor,
+              isStampSelected: _currentSubTool == PenSubTool.stamp,
               onToolSelected: (tool) => setState(() => _currentTool = tool),
               onColorTap: () => setState(() => _showColorPicker = !_showColorPicker),
               onBrushTap: () => setState(() {

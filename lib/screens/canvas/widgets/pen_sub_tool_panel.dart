@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
+import '../../../models/stamp.dart';
 import '../canvas_screen.dart';
 
 /// ペンツール長押し・上スワイプで表示されるサブツールタブUI
@@ -220,6 +221,8 @@ class _StampTab extends StatelessWidget {
             stampService.selectStamp(stamp.id);
             onClose();
           },
+          // 長押しでスタンプ設定（回転・密度・散布、仕様書17）を編集
+          onLongPress: () => _showStampSettingsDialog(context, stampService, stamp),
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -241,6 +244,71 @@ class _StampTab extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// スタンプ設定ダイアログ（仕様書17：回転ON/OFF・密度・散布）
+  void _showStampSettingsDialog(BuildContext context, StampService service, Stamp stamp) {
+    bool rotation = stamp.rotation;
+    double density = stamp.density;
+    double scatter = stamp.scatter;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text(stamp.name),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SwitchListTile(
+                dense: true,
+                title: const Text('回転'),
+                subtitle: const Text('ストローク方向に合わせてランダムに回転', style: TextStyle(fontSize: 11)),
+                value: rotation,
+                onChanged: (v) => setS(() => rotation = v),
+              ),
+              Row(
+                children: [
+                  const Text('密度', style: TextStyle(fontSize: 12)),
+                  Expanded(
+                    child: Slider(
+                      value: density, min: 0.1, max: 1.0,
+                      label: '${(density * 100).round()}%',
+                      onChanged: (v) => setS(() => density = v),
+                    ),
+                  ),
+                  Text('${(density * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+              Row(
+                children: [
+                  const Text('散布', style: TextStyle(fontSize: 12)),
+                  Expanded(
+                    child: Slider(
+                      value: scatter, min: 0, max: 1.0,
+                      label: '${(scatter * 100).round()}%',
+                      onChanged: (v) => setS(() => scatter = v),
+                    ),
+                  ),
+                  Text('${(scatter * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            FilledButton(
+              onPressed: () {
+                service.updateStamp(stamp.copyWith(
+                    rotation: rotation, density: density, scatter: scatter));
+                Navigator.pop(ctx);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

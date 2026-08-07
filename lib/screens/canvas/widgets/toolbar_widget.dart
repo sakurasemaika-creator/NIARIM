@@ -19,6 +19,8 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onFilterTap;
   final VoidCallback onQuickToolTap;
   final VoidCallback onQuickToolLongPress;
+  // スタンプ選択中かどうか（仕様書17：色アイコンに🚫重ね表示・タップで専用トースト）
+  final bool isStampSelected;
 
   const ToolbarWidget({
     super.key,
@@ -37,6 +39,7 @@ class ToolbarWidget extends StatelessWidget {
     required this.onFilterTap,
     required this.onQuickToolTap,
     required this.onQuickToolLongPress,
+    this.isStampSelected = false,
   });
 
   @override
@@ -75,17 +78,37 @@ class ToolbarWidget extends StatelessWidget {
             _toolButton(context, Icons.category, DrawingTool.shape, '図形（タップで種別選択）',
                 onTap: onShapeTap),
             const SizedBox(width: 4),
-            // 色インジケーター
+            // 色インジケーター（仕様書17：スタンプ選択中は色情報を保持しているため
+            // 色変更不可を🚫重ね表示で示し、タップで専用トーストを表示する）
             GestureDetector(
-              onTap: onColorTap,
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: currentColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
+              onTap: isStampSelected
+                  ? () => ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('スタンプは色情報を保持しているため色変更できません')),
+                      )
+                  : onColorTap,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: currentColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                  ),
+                  if (isStampSelected)
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(Icons.block, color: Colors.red, size: 20),
+                    ),
+                ],
               ),
             ),
             IconButton(icon: const Icon(Icons.tune, size: 20), onPressed: onBrushTap, tooltip: 'ブラシ設定'),

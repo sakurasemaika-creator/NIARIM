@@ -208,6 +208,9 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           // 間隔
           _sliderRow('間隔', _brush.spacing.toDouble(), 1, 100,
               (v) => setState(() => _brush = _brush.copyWith(spacing: v.round()))),
+          // ぼかし半径（仕様書17：0〜100・デフォルト0）
+          _sliderRow('ぼかし半径', _brush.blurRadius.toDouble(), 0, 100,
+              (v) => setState(() => _brush = _brush.copyWith(blurRadius: v.round()))),
           const Divider(),
           // 手ブレ補正
           SwitchListTile(
