@@ -21,6 +21,30 @@ Uint8List applyDrawFilterInIsolate(
         colorCount: filter.colorLevels,
         edgeStrength: filter.edgeStrength,
       ),
+    FilterKind.toneCurve => engine.applyToneCurve(
+        data, width, height, toneCurvePoints(filter.toneCurvePreset)),
+    FilterKind.levels => engine.applyLevels(
+        data, width, height,
+        inputBlack: filter.inputBlack,
+        inputWhite: filter.inputWhite,
+        outputBlack: filter.outputBlack,
+        outputWhite: filter.outputWhite,
+      ),
+  };
+}
+
+/// トーンカーブのプリセット形状を制御点（0.0〜1.0の正規化座標）へ変換する
+/// （仕様書20：トーンカーブ。プレビュー・本適用の両方から共通利用する）。
+List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
+  return switch (preset) {
+    ToneCurvePreset.linear => const [ui.Offset(0, 0), ui.Offset(1, 1)],
+    ToneCurvePreset.brighten => const [ui.Offset(0, 0), ui.Offset(0.5, 0.65), ui.Offset(1, 1)],
+    ToneCurvePreset.darken => const [ui.Offset(0, 0), ui.Offset(0.5, 0.35), ui.Offset(1, 1)],
+    ToneCurvePreset.highContrast =>
+      const [ui.Offset(0, 0), ui.Offset(0.25, 0.15), ui.Offset(0.75, 0.85), ui.Offset(1, 1)],
+    ToneCurvePreset.lowContrast =>
+      const [ui.Offset(0, 0.15), ui.Offset(0.5, 0.5), ui.Offset(1, 0.85)],
+    ToneCurvePreset.invert => const [ui.Offset(0, 1), ui.Offset(1, 0)],
   };
 }
 

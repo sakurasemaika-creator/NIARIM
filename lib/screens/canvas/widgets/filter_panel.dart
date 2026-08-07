@@ -9,7 +9,9 @@ import '../../../engine/filter_engine.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../models/filter_def.dart';
 import '../../../services/filter_service.dart';
+import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
 
 /// 描画フィルターパネル（仕様書18）。
@@ -188,8 +190,11 @@ class _FilterPanelState extends State<FilterPanel> {
                   itemBuilder: (context, index) {
                     final f = filters[index];
                     final isSelected = f.id == current?.id;
-                    return GestureDetector(
-                      onTap: () => filterService.selectFilter(f.id),
+                    final premiumFeature = _premiumFeatureFor(f.kind);
+                    final isLocked = premiumFeature != null &&
+                        !context.watch<PremiumService>().isFeatureAvailable(premiumFeature);
+                    final chip = GestureDetector(
+                      onTap: isLocked ? null : () => filterService.selectFilter(f.id),
                       child: Container(
                         width: 72,
                         margin: const EdgeInsets.only(right: 6),
@@ -216,22 +221,26 @@ class _FilterPanelState extends State<FilterPanel> {
                                 ],
                               ),
                             ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: () => filterService.toggleFavorite(f.id),
-                                child: Icon(
-                                  f.isFavorite ? Icons.star : Icons.star_outline,
-                                  size: 12,
-                                  color: f.isFavorite ? Colors.amber : Colors.grey,
+                            if (!isLocked)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () => filterService.toggleFavorite(f.id),
+                                  child: Icon(
+                                    f.isFavorite ? Icons.star : Icons.star_outline,
+                                    size: 12,
+                                    color: f.isFavorite ? Colors.amber : Colors.grey,
+                                  ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ),
                     );
+                    return isLocked
+                        ? PremiumLockWidget(feature: premiumFeature, child: chip)
+                        : chip;
                   },
                 ),
               ),
@@ -294,6 +303,33 @@ class _FilterPanelState extends State<FilterPanel> {
                             decimals: 2,
                           ),
                         ],
+                        if (current.kind == FilterKind.toneCurve)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: ToneCurvePreset.values.map((p) => ChoiceChip(
+                                label: Text(_toneCurveLabel(p), style: const TextStyle(fontSize: 10)),
+                                selected: current.toneCurvePreset == p,
+                                onSelected: (selected) {
+                                  if (!selected) return;
+                                  filterService.updateFilterParams(current.id, toneCurvePreset: p);
+                                  _updatePreview();
+                                },
+                              )).toList(),
+                            ),
+                          ),
+                        if (current.kind == FilterKind.levels) ...[
+                          _levelSlider(filterService, current, '入力：黒', current.inputBlack,
+                              (v) => filterService.updateFilterParams(current.id, inputBlack: v)),
+                          _levelSlider(filterService, current, '入力：白', current.inputWhite,
+                              (v) => filterService.updateFilterParams(current.id, inputWhite: v)),
+                          _levelSlider(filterService, current, '出力：黒', current.outputBlack,
+                              (v) => filterService.updateFilterParams(current.id, outputBlack: v)),
+                          _levelSlider(filterService, current, '出力：白', current.outputWhite,
+                              (v) => filterService.updateFilterParams(current.id, outputWhite: v)),
+                        ],
                       ],
                     ),
                   ),
@@ -316,6 +352,27 @@ class _FilterPanelState extends State<FilterPanel> {
       ),
     );
   }
+
+  Widget _levelSlider(FilterService service, FilterDef current, String label, int value,
+      ValueChanged<int> onChanged) {
+    return _paramSlider(
+      service,
+      label,
+      value.toDouble(),
+      0,
+      255,
+      (v) { onChanged(v.round()); _updatePreview(); },
+    );
+  }
+
+  String _toneCurveLabel(ToneCurvePreset preset) => switch (preset) {
+        ToneCurvePreset.linear => '標準',
+        ToneCurvePreset.brighten => '明るく',
+        ToneCurvePreset.darken => '暗く',
+        ToneCurvePreset.highContrast => 'コントラスト強',
+        ToneCurvePreset.lowContrast => 'コントラスト弱',
+        ToneCurvePreset.invert => '反転',
+      };
 
   Widget _paramSlider(FilterService service, String label, double value, double min, double max,
       ValueChanged<double> onChanged, {int decimals = 0}) {
@@ -363,6 +420,16 @@ class _FilterPanelState extends State<FilterPanel> {
           colorCount: filter.colorLevels,
           edgeStrength: filter.edgeStrength,
         );
+      case FilterKind.toneCurve:
+        return _engine.applyToneCurve(data, width, height, toneCurvePoints(filter.toneCurvePreset));
+      case FilterKind.levels:
+        return _engine.applyLevels(
+          data, width, height,
+          inputBlack: filter.inputBlack,
+          inputWhite: filter.inputWhite,
+          outputBlack: filter.outputBlack,
+          outputWhite: filter.outputWhite,
+        );
     }
   }
 
@@ -374,6 +441,22 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.blur_circular;
       case FilterKind.animeStyle:
         return Icons.auto_awesome;
+      case FilterKind.toneCurve:
+        return Icons.show_chart;
+      case FilterKind.levels:
+        return Icons.bar_chart;
+    }
+  }
+
+  /// プレミアム限定フィルターの対応PremiumFeatureを返す（対象外ならnull）。
+  PremiumFeature? _premiumFeatureFor(FilterKind kind) {
+    switch (kind) {
+      case FilterKind.toneCurve:
+        return PremiumFeature.toneCurve;
+      case FilterKind.levels:
+        return PremiumFeature.levelAdjustment;
+      default:
+        return null;
     }
   }
 

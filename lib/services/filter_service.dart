@@ -31,6 +31,8 @@ class FilterService extends ChangeNotifier {
       FilterDef(id: 'Filter0001', name: 'ガウスぼかし', kind: FilterKind.gaussianBlur, strength: 8),
       FilterDef(id: 'Filter0002', name: 'レンズぼかし', kind: FilterKind.lensBlur, strength: 8),
       FilterDef(id: 'Filter0003', name: 'アニメ風加工', kind: FilterKind.animeStyle, colorLevels: 6, edgeStrength: 0.4),
+      FilterDef(id: 'Filter0004', name: 'トーンカーブ', kind: FilterKind.toneCurve),
+      FilterDef(id: 'Filter0005', name: 'レベル補正', kind: FilterKind.levels),
     ]);
     _currentFilterId = _filters.first.id;
   }
@@ -40,13 +42,28 @@ class FilterService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateFilterParams(String id, {double? strength, int? colorLevels, double? edgeStrength}) {
+  void updateFilterParams(
+    String id, {
+    double? strength,
+    int? colorLevels,
+    double? edgeStrength,
+    int? inputBlack,
+    int? inputWhite,
+    int? outputBlack,
+    int? outputWhite,
+    ToneCurvePreset? toneCurvePreset,
+  }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
     _filters[idx] = _filters[idx].copyWith(
       strength: strength,
       colorLevels: colorLevels,
       edgeStrength: edgeStrength,
+      inputBlack: inputBlack,
+      inputWhite: inputWhite,
+      outputBlack: outputBlack,
+      outputWhite: outputWhite,
+      toneCurvePreset: toneCurvePreset,
     );
     notifyListeners();
   }

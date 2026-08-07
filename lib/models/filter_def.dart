@@ -1,6 +1,11 @@
 /// 描画フィルターの種別（仕様書18：初期実装フィルター）。
 /// 実際のピクセル処理はlib/engine/filter_engine.dartのFilterEngineが行う。
-enum FilterKind { gaussianBlur, lensBlur, animeStyle }
+/// toneCurve・levelsはプレミアム限定（仕様書01・13・20）。
+enum FilterKind { gaussianBlur, lensBlur, animeStyle, toneCurve, levels }
+
+/// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
+/// 本格的な自由曲線編集の代わりに、よく使う形状をプリセットとして提供する。
+enum ToneCurvePreset { linear, brighten, darken, highContrast, lowContrast, invert }
 
 /// フィルター定義＋現在のパラメータ値。
 ///
@@ -20,6 +25,13 @@ class FilterDef {
   final double strength;
   final int colorLevels;
   final double edgeStrength;
+  // レベル補正（levelsのみ使用。仕様書20：入力・出力レベル）
+  final int inputBlack;
+  final int inputWhite;
+  final int outputBlack;
+  final int outputWhite;
+  // トーンカーブ（toneCurveのみ使用）
+  final ToneCurvePreset toneCurvePreset;
 
   const FilterDef({
     required this.id,
@@ -29,6 +41,11 @@ class FilterDef {
     this.strength = 8,
     this.colorLevels = 6,
     this.edgeStrength = 0.4,
+    this.inputBlack = 0,
+    this.inputWhite = 255,
+    this.outputBlack = 0,
+    this.outputWhite = 255,
+    this.toneCurvePreset = ToneCurvePreset.linear,
   });
 
   FilterDef copyWith({
@@ -39,6 +56,11 @@ class FilterDef {
     double? strength,
     int? colorLevels,
     double? edgeStrength,
+    int? inputBlack,
+    int? inputWhite,
+    int? outputBlack,
+    int? outputWhite,
+    ToneCurvePreset? toneCurvePreset,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -48,6 +70,11 @@ class FilterDef {
       strength: strength ?? this.strength,
       colorLevels: colorLevels ?? this.colorLevels,
       edgeStrength: edgeStrength ?? this.edgeStrength,
+      inputBlack: inputBlack ?? this.inputBlack,
+      inputWhite: inputWhite ?? this.inputWhite,
+      outputBlack: outputBlack ?? this.outputBlack,
+      outputWhite: outputWhite ?? this.outputWhite,
+      toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
     );
   }
 }
