@@ -1,0 +1,210 @@
+import 'dart:io';
+import 'package:flutter/material.dart' hide MaterialType;
+import 'package:provider/provider.dart';
+import '../../models/material_asset.dart';
+import '../../services/material_service.dart';
+import '../../services/project_service.dart';
+import '../../widgets/responsive.dart';
+
+/// 素材一覧画面（仕様書21：素材管理仕様）。
+/// サムネイル・種類アイコン・ファイル名・容量等を一覧表示し、
+/// 使用中でない素材の個別削除・一括削除・不足素材の検出を行う。
+class MaterialListScreen extends StatefulWidget {
+  final String projectId;
+  const MaterialListScreen({super.key, required this.projectId});
+
+  @override
+  State<MaterialListScreen> createState() => _MaterialListScreenState();
+}
+
+class _MaterialListScreenState extends State<MaterialListScreen> {
+  List<MaterialAsset> _missing = const [];
+  bool _checkedMissing = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_checkedMissing) {
+      _checkedMissing = true;
+      _detectMissing();
+    }
+  }
+
+  Future<void> _detectMissing() async {
+    final missing = await context.read<MaterialService>().detectMissing(widget.projectId);
+    if (mounted) setState(() => _missing = missing);
+  }
+
+  bool _isUsed(String materialId) =>
+      context.read<ProjectService>().isMaterialUsed(widget.projectId, materialId);
+
+  @override
+  Widget build(BuildContext context) {
+    final materials = context.watch<MaterialService>().materialsOf(widget.projectId);
+    final scheme = Theme.of(context).colorScheme;
+    final unusedCount = materials.where((m) => !_isUsed(m.id)).length;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('素材管理'),
+        actions: [
+          if (unusedCount > 0)
+            TextButton(
+              onPressed: _confirmRemoveUnused,
+              child: Text('未使用素材を削除 ($unusedCount)'),
+            ),
+        ],
+      ),
+      body: desktopCentered(
+        context,
+        materials.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 88, height: 88,
+                      decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
+                      child: Icon(Icons.perm_media_outlined, size: 40, color: scheme.primary),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('素材がありません', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text('タイムラインから画像・動画・音声を追加すると\nここに一覧表示されます',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(8),
+                itemCount: materials.length,
+                itemBuilder: (context, index) {
+                  final m = materials[index];
+                  final used = _isUsed(m.id);
+                  final isMissing = _missing.any((e) => e.id == m.id);
+                  return Card(
+                    child: ListTile(
+                      leading: _thumbnail(m, scheme),
+                      title: Text(m.originalFileName, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(
+                        [
+                          m.id,
+                          _formatSize(m.sizeBytes),
+                          if (m.width != null && m.height != null) '${m.width}×${m.height}',
+                          if (m.duration != null) _formatDuration(m.duration!),
+                          used ? '使用中' : '未使用',
+                          if (isMissing) '⚠ 不足',
+                        ].join(' ・ '),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isMissing ? Colors.red : scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        tooltip: used ? '使用中のため削除できません' : '削除',
+                        onPressed: used ? null : () => _confirmRemoveOne(m),
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+
+  Widget _thumbnail(MaterialAsset m, ColorScheme scheme) {
+    return FutureBuilder<String?>(
+      future: context.read<MaterialService>().pathOf(widget.projectId, m.id),
+      builder: (context, snapshot) {
+        final path = snapshot.data;
+        if (m.type == MaterialType.image && path != null && File(path).existsSync()) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(File(path), width: 48, height: 48, fit: BoxFit.cover),
+          );
+        }
+        final icon = switch (m.type) {
+          MaterialType.image => Icons.image_outlined,
+          MaterialType.video => Icons.videocam_outlined,
+          MaterialType.audio => Icons.audiotrack_outlined,
+        };
+        return Container(
+          width: 48, height: 48,
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: scheme.onSurfaceVariant),
+        );
+      },
+    );
+  }
+
+  String _formatSize(int bytes) {
+    if (bytes < 1024) return '${bytes}B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+  }
+
+  String _formatDuration(Duration d) {
+    final m = d.inMinutes;
+    final s = d.inSeconds % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  void _confirmRemoveOne(MaterialAsset m) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('素材を削除しますか？'),
+        content: Text(m.originalFileName),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              await context.read<MaterialService>().removeMaterial(
+                    projectId: widget.projectId,
+                    materialId: m.id,
+                    isUsed: _isUsed,
+                  );
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            child: const Text('削除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmRemoveUnused() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('未使用素材を一括削除しますか？'),
+        content: const Text('プロジェクト内のどこからも参照されていない素材をまとめて削除します。この操作は元に戻せません。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              final removed = await context.read<MaterialService>().removeUnused(
+                    projectId: widget.projectId,
+                    isUsed: _isUsed,
+                  );
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('$removed件の未使用素材を削除しました')),
+                );
+              }
+            },
+            child: const Text('削除'),
+          ),
+        ],
+      ),
+    );
+  }
+}

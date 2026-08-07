@@ -114,6 +114,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               switch (action) {
                 case 'rename': _showRenameDialog(context, project.name);
                 case 'duplicate': projectService.duplicateProject(widget.projectId);
+                case 'materials': context.push('/materials/${widget.projectId}');
                 case 'delete': projectService.deleteProject(widget.projectId); context.pop();
               }
             },
@@ -121,6 +122,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               const PopupMenuItem(value: 'rename', child: Text('名前変更')),
               const PopupMenuItem(value: 'duplicate', child: Text('複製')),
               const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
+              const PopupMenuItem(value: 'materials', child: Text('素材管理')),
               const PopupMenuItem(value: 'delete', child: Text('ゴミ箱へ移動', style: TextStyle(color: Colors.red))),
             ],
           ),

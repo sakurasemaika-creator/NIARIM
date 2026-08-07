@@ -219,6 +219,24 @@ class ProjectService extends ChangeNotifier {
     return max;
   }
 
+  /// materialIdがプロジェクト内のどこかで参照されているか判定する
+  /// （仕様書21：使用中でない素材のみ削除可能）。タイムライン画像・動画
+  /// レイヤーのmaterialId、および各シーンの音声クリップのmaterialIdを
+  /// 対象に走査する。
+  bool isMaterialUsed(String projectId, String materialId) {
+    for (final scene in _scenes[projectId] ?? const <Scene>[]) {
+      for (final clip in scene.audioClips) {
+        if (clip.materialId == materialId) return true;
+      }
+      for (final frame in scene.frames) {
+        for (final layer in frame.layers) {
+          if (layer.materialId == materialId) return true;
+        }
+      }
+    }
+    return false;
+  }
+
   // ─── Scene/Frame/Layer アクセサ ───────────────────────────────────────
 
   List<Scene> scenesOf(String projectId) =>

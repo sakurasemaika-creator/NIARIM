@@ -17,6 +17,7 @@ import 'screens/help/help_screen.dart';
 import 'screens/premium/premium_screen.dart';
 import 'screens/autofill/autofill_preset_screen.dart';
 import 'screens/save_tree/save_tree_screen.dart';
+import 'screens/materials/material_list_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -53,6 +54,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/save-tree/:id',
       builder: (context, state) => SaveTreeScreen(projectId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/materials/:id',
+      builder: (context, state) => MaterialListScreen(projectId: state.pathParameters['id']!),
     ),
   ],
 );
