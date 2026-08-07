@@ -8,6 +8,8 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import '../../engine/autofill_batch_runner.dart';
+import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
@@ -22,12 +24,14 @@ import '../../models/material_asset.dart';
 import '../../models/scene.dart';
 import '../../models/watermark_asset.dart';
 import '../../services/advertising_service.dart';
+import '../../services/autofill_preset_service.dart';
 import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 
 // タイムライントラッククリップ
@@ -1814,64 +1818,186 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _showAutofillDialog() {
     int selected = 0;
+    // 実行対象は選択フレーム・シーン単位・全フレームから選べる（仕様書04）。
+    // フレーム一覧に複数選択機能がないため「選択フレーム」は「現在のフレームのみ」で代替する。
+    _AutofillScope scope = _AutofillScope.currentFrame;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: const Text('自動塗り方法'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。',
-                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
-              const SizedBox(height: 4),
-              Text('※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。',
-                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
-              const SizedBox(height: 12),
-              RadioGroup<int>(
-                groupValue: selected,
-                onChanged: (v) => setS(() => selected = v!),
-                child: Column(
-                  children: [
-                    RadioListTile<int>(
-                      title: const Text('塗りなおし'),
-                      subtitle: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('誤って自動塗りの形状を変えてしまった場合におすすめ', style: TextStyle(fontSize: 11)),
-                          Text('※ 一から領域を判定して塗りなおします。現在の自動塗りレイヤーの形状は破棄されます。', style: TextStyle(fontSize: 11)),
-                        ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。',
+                    style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 4),
+                Text('※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。',
+                    style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 12),
+                RadioGroup<int>(
+                  groupValue: selected,
+                  onChanged: (v) => setS(() => selected = v!),
+                  child: Column(
+                    children: [
+                      RadioListTile<int>(
+                        title: const Text('塗りなおし'),
+                        subtitle: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('誤って自動塗りの形状を変えてしまった場合におすすめ', style: TextStyle(fontSize: 11)),
+                            Text('※ 一から領域を判定して塗りなおします。現在の自動塗りレイヤーの形状は破棄されます。', style: TextStyle(fontSize: 11)),
+                          ],
+                        ),
+                        value: 0,
+                        dense: true,
                       ),
-                      value: 0,
-                      dense: true,
-                    ),
-                    RadioListTile<int>(
-                      title: const Text('色更新'),
-                      subtitle: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('自動塗りの形状を手動で調整した場合におすすめ', style: TextStyle(fontSize: 11)),
-                          Text('※ 不透明度ロックをして最新の色で塗りつぶします。現在の自動塗りレイヤーの形状は維持されます。', style: TextStyle(fontSize: 11)),
-                        ],
+                      RadioListTile<int>(
+                        title: const Text('色更新'),
+                        subtitle: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('自動塗りの形状を手動で調整した場合におすすめ', style: TextStyle(fontSize: 11)),
+                            Text('※ 不透明度ロックをして最新の色で塗りつぶします。現在の自動塗りレイヤーの形状は維持されます。', style: TextStyle(fontSize: 11)),
+                          ],
+                        ),
+                        value: 1,
+                        dense: true,
                       ),
-                      value: 1,
-                      dense: true,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const Divider(),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Text('実行対象', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                ),
+                RadioGroup<_AutofillScope>(
+                  groupValue: scope,
+                  onChanged: (v) => setS(() => scope = v!),
+                  child: Column(
+                    children: [
+                      RadioListTile<_AutofillScope>(
+                        title: const Text('現在のフレームのみ'),
+                        value: _AutofillScope.currentFrame,
+                        dense: true,
+                      ),
+                      RadioListTile<_AutofillScope>(
+                        title: const Text('シーン単位（現在のシーンの全フレーム）'),
+                        value: _AutofillScope.currentScene,
+                        dense: true,
+                      ),
+                      RadioListTile<_AutofillScope>(
+                        title: const Text('全フレーム（プロジェクト全体）'),
+                        value: _AutofillScope.allScenes,
+                        dense: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
-            FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('実行')),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _runBatchAutofill(
+                  scope,
+                  selected == 0 ? AutofillMode.repaint : AutofillMode.colorUpdate,
+                );
+              },
+              child: const Text('実行'),
+            ),
           ],
         ),
       ),
     );
   }
+
+  /// 自動塗り一括実行（仕様書04：タイムラインモードからの実行、対象は
+  /// 現在フレーム／シーン単位／全フレームから選択）。対象範囲内の全フレームを
+  /// 走査し、自動塗り用線画レイヤーごとにruleAutofillForLayerを実行する。
+  Future<void> _runBatchAutofill(_AutofillScope scope, AutofillMode mode) async {
+    final ps = context.read<ProjectService>();
+    final presetService = context.read<AutofillPresetService>();
+    final scenes = ps.scenesOf(widget.projectId);
+    if (scenes.isEmpty) return;
+
+    // 対象(sceneId, frameIndex)一覧を構築
+    final targets = <(String, int)>[];
+    switch (scope) {
+      case _AutofillScope.currentFrame:
+        final sceneId = _selectedSceneId ?? scenes.first.id;
+        targets.add((sceneId, _currentFrame));
+      case _AutofillScope.currentScene:
+        final sceneId = _selectedSceneId ?? scenes.first.id;
+        final count = ps.frameCount(widget.projectId, sceneId);
+        for (int f = 0; f < count; f++) {
+          targets.add((sceneId, f));
+        }
+      case _AutofillScope.allScenes:
+        for (final scene in scenes) {
+          final count = ps.frameCount(widget.projectId, scene.id);
+          for (int f = 0; f < count; f++) {
+            targets.add((scene.id, f));
+          }
+        }
+    }
+
+    double progress = 0;
+    int applied = 0;
+    void Function(void Function())? setDialogState;
+    if (!mounted) return;
+    unawaited(showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          setDialogState = setS;
+          return ProgressDialog(
+            title: '自動塗り実行中',
+            progress: progress,
+            subtitle: '${targets.length}フレーム',
+          );
+        },
+      ),
+    ));
+    await Future.delayed(const Duration(milliseconds: 16));
+
+    for (int i = 0; i < targets.length; i++) {
+      final (sceneId, frameIndex) = targets[i];
+      final layers = ps.layersOf(widget.projectId, sceneId, frameIndex);
+      final lineartLayers = layers.where((l) => l.type == LayerType.autoFillLineart);
+      for (final lineartLayer in lineartLayers) {
+        final result = await runAutofillForLayer(
+          projectService: ps,
+          presetService: presetService,
+          projectId: widget.projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          lineartLayer: lineartLayer,
+          mode: mode,
+        );
+        if (result == AutofillBatchResult.applied) applied++;
+      }
+      progress = (i + 1) / targets.length;
+      setDialogState?.call(() {});
+    }
+
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('自動塗りが完了しました（$applied件処理）')),
+    );
+  }
 }
+
+enum _AutofillScope { currentFrame, currentScene, allScenes }
 
 
 // ─── タイムラインプレビューウィジェット ───────────────────────────────────

@@ -1042,7 +1042,7 @@ class _LayerPanelState extends State<LayerPanel> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('自動塗り方式'),
+          title: const Text('自動塗り方法'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
