@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../../engine/mirapro_serializer.dart';
 import '../../services/advertising_service.dart';
+import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
@@ -31,11 +32,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String _searchQuery = '';
   final _searchController = TextEditingController();
   StreamSubscription<String>? _sharedFileSub;
+  // 現在開いているフォルダ（仕様書19：フォルダは複数階層に対応・
+  // パンくずリストで現在位置を表示）。nullはルート直下。
+  String? _currentFolderId;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    // 仕様書19：「低スペック端末では小表示を自動推奨」。ユーザーが表示切替
+    // メニューからいつでも変更できる初期値としてのみ適用する。
+    if (context.read<PerformanceService>().qualityLevel == QualityLevel.low) {
+      _viewMode = ProjectViewMode.small;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstLaunch();
       _initShareIntentHandling();
@@ -190,8 +199,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 children: [
                   TextButton(
                     onPressed: () {
-                      final projects = context.read<ProjectService>().projects;
-                      setState(() => _selectedIds.addAll(projects.map((p) => p.id)));
+                      // 現在開いているフォルダ直下のプロジェクト・フォルダを両方選択
+                      // （仕様書19：「対象：プロジェクト・フォルダ両方」）。
+                      final service = context.read<ProjectService>();
+                      final projectIds = service.projects
+                          .where((p) => p.folderId == _currentFolderId)
+                          .map((p) => p.id);
+                      final folderIds = service.folders
+                          .where((f) => f.parentFolderId == _currentFolderId)
+                          .map((f) => f.id);
+                      setState(() => _selectedIds..addAll(projectIds)..addAll(folderIds));
                     },
                     child: const Text('全選択'),
                   ),
@@ -232,6 +249,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ],
                       ),
                     ),
+                    // フォルダ内移動時のパンくずリスト（仕様書19）。検索中は
+                    // 全体から検索するため非表示にする。
+                    if (_searchQuery.trim().isEmpty) _buildBreadcrumb(),
                     Expanded(
                       child: ProjectListWidget(
                         viewMode: _viewMode,
@@ -248,6 +268,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         }),
                         showFavoritesOnly: _showFavoritesOnly,
                         searchQuery: _searchQuery,
+                        currentFolderId: _currentFolderId,
+                        onOpenFolder: (id) => setState(() => _currentFolderId = id),
                       ),
                     ),
                   ],
@@ -268,18 +290,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _deleteSelected() {
+    // ゴミ箱はプロジェクトのみが対象（仕様書19：ゴミ箱＝「削除したプロジェクト」）。
+    // 選択にフォルダが含まれていても、フォルダ自体はここでは削除しない。
+    final service = context.read<ProjectService>();
+    final projectIds = service.projects.map((p) => p.id).toSet();
+    final targetIds = _selectedIds.where(projectIds.contains).toList();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('ゴミ箱へ移動'),
-        content: Text('${_selectedIds.length}件をゴミ箱へ移動しますか？'),
+        content: Text('${targetIds.length}件をゴミ箱へ移動しますか？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              final service = context.read<ProjectService>();
-              for (final id in _selectedIds) {
+              for (final id in targetIds) {
                 service.deleteProject(id);
               }
               setState(() {
@@ -291,6 +317,48 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: const Text('移動'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// フォルダ階層のパンくずリスト（仕様書19：「フォルダ内移動時はパンくずリストで
+  /// 現在位置を表示する」）。ホームアイコンでルートへ、各フォルダ名でその階層へ移動。
+  Widget _buildBreadcrumb() {
+    if (_currentFolderId == null) return const SizedBox.shrink();
+    final folders = context.watch<ProjectService>().folders;
+    final chain = <ProjectFolder>[];
+    String? current = _currentFolderId;
+    while (current != null) {
+      final folder = folders.where((f) => f.id == current).firstOrNull;
+      if (folder == null) break;
+      chain.insert(0, folder);
+      current = folder.parentFolderId;
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            InkWell(
+              onTap: () => setState(() => _currentFolderId = null),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(Icons.home, size: 18),
+              ),
+            ),
+            for (final folder in chain) ...[
+              const Icon(Icons.chevron_right, size: 16),
+              InkWell(
+                onTap: () => setState(() => _currentFolderId = folder.id),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(folder.name, style: const TextStyle(fontSize: 13)),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

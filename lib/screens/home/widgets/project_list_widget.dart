@@ -10,6 +10,21 @@ import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 
+/// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
+/// （仕様書19：「フォルダとプロジェクトを同一一覧内で並び替え」）。
+class _Entry {
+  final ProjectFolder? folder;
+  final Project? project;
+  const _Entry.folder(ProjectFolder f) : folder = f, project = null;
+  const _Entry.project(Project p) : project = p, folder = null;
+
+  bool get isFolder => folder != null;
+  String get id => isFolder ? folder!.id : project!.id;
+  String get name => isFolder ? folder!.name : project!.name;
+  DateTime get sortDate => isFolder ? folder!.createdAt : project!.updatedAt;
+  bool get isFavorite => isFolder ? folder!.isFavorite : project!.isFavorite;
+}
+
 class ProjectListWidget extends StatelessWidget {
   final ProjectViewMode viewMode;
   final ProjectSortMode sortMode;
@@ -20,6 +35,9 @@ class ProjectListWidget extends StatelessWidget {
   final List<Project>? projects; // nullの場合はServiceから取得
   final bool showFavoritesOnly;
   final String searchQuery;
+  // 現在開いているフォルダ（nullはルート直下、仕様書19：フォルダ階層）
+  final String? currentFolderId;
+  final ValueChanged<String> onOpenFolder;
 
   const ProjectListWidget({
     super.key,
@@ -29,35 +47,53 @@ class ProjectListWidget extends StatelessWidget {
     required this.selectedIds,
     required this.onLongPress,
     required this.onSelectionChanged,
+    required this.currentFolderId,
+    required this.onOpenFolder,
     this.projects,
     this.showFavoritesOnly = false,
     this.searchQuery = '',
   });
 
-  List<Project> _sorted(List<Project> src) {
-    final list = List<Project>.from(src);
+  List<_Entry> _sorted(List<_Entry> src) {
+    final list = List<_Entry>.from(src);
     switch (sortMode) {
       case ProjectSortMode.nameAsc:
         list.sort((a, b) => a.name.compareTo(b.name));
       case ProjectSortMode.nameDesc:
         list.sort((a, b) => b.name.compareTo(a.name));
       case ProjectSortMode.updatedAsc:
-        list.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+        list.sort((a, b) => a.sortDate.compareTo(b.sortDate));
       case ProjectSortMode.updatedDesc:
-        list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        list.sort((a, b) => b.sortDate.compareTo(a.sortDate));
     }
     return list;
   }
 
   @override
   Widget build(BuildContext context) {
-    final source = projects ?? context.watch<ProjectService>().projects;
-    var filtered = showFavoritesOnly ? source.where((p) => p.isFavorite) : source;
+    final projectService = context.watch<ProjectService>();
+    final source = projects ?? projectService.projects;
+    final allFolders = projectService.folders;
     final query = searchQuery.trim().toLowerCase();
+
+    List<_Entry> entries;
     if (query.isNotEmpty) {
-      filtered = filtered.where((p) => p.name.toLowerCase().contains(query));
+      // 検索時はフォルダ階層を無視して全体から名前一致するものを表示
+      // （仕様書19：「検索対象：プロジェクト名 / フォルダ名」）。
+      entries = [
+        ...allFolders.where((f) => f.name.toLowerCase().contains(query)).map((f) => _Entry.folder(f)),
+        ...source.where((p) => p.name.toLowerCase().contains(query)).map((p) => _Entry.project(p)),
+      ];
+    } else {
+      entries = [
+        ...allFolders.where((f) => f.parentFolderId == currentFolderId).map((f) => _Entry.folder(f)),
+        ...source.where((p) => p.folderId == currentFolderId).map((p) => _Entry.project(p)),
+      ];
     }
-    final sorted = _sorted(filtered.toList());
+    if (showFavoritesOnly) {
+      entries = entries.where((e) => e.isFavorite).toList();
+    }
+    final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
       final scheme = Theme.of(context).colorScheme;
@@ -126,7 +162,9 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _detailTile(BuildContext context, Project project) {
+  Widget _detailTile(BuildContext context, _Entry entry) {
+    if (entry.isFolder) return _folderDetailTile(context, entry.folder!);
+    final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
     return ListTile(
       leading: isSelectionMode
@@ -151,7 +189,29 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _gridCard(BuildContext context, Project project) {
+  Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
+    final isSelected = selectedIds.contains(folder.id);
+    final color = folder.color != null ? Color(folder.color!) : null;
+    return ListTile(
+      leading: isSelectionMode
+          ? Checkbox(value: isSelected, onChanged: (_) => onSelectionChanged(folder.id))
+          : Icon(Icons.folder, color: color, size: 32),
+      title: Text(folder.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (folder.isFavorite) const Icon(Icons.star, color: Colors.amber, size: 18),
+          if (!isSelectionMode) _folderMenu(context, folder),
+        ],
+      ),
+      onTap: isSelectionMode ? () => onSelectionChanged(folder.id) : () => onOpenFolder(folder.id),
+      onLongPress: onLongPress,
+    );
+  }
+
+  Widget _gridCard(BuildContext context, _Entry entry) {
+    if (entry.isFolder) return _folderGridCard(context, entry.folder!);
+    final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
     final primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
@@ -203,6 +263,59 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  Widget _folderGridCard(BuildContext context, ProjectFolder folder) {
+    final isSelected = selectedIds.contains(folder.id);
+    final primary = Theme.of(context).colorScheme.primary;
+    final color = folder.color != null ? Color(folder.color!) : primary;
+    return GestureDetector(
+      onTap: isSelectionMode ? () => onSelectionChanged(folder.id) : () => onOpenFolder(folder.id),
+      onLongPress: onLongPress,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: isSelected
+            ? RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: primary, width: 2),
+              )
+            : null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(
+                    color: color.withValues(alpha: 0.15),
+                    child: Center(child: Icon(Icons.folder, color: color, size: 44)),
+                  ),
+                  if (folder.isFavorite)
+                    const Positioned(top: 4, right: 4, child: Icon(Icons.star, color: Colors.amber, size: 16)),
+                  if (isSelectionMode)
+                    Positioned(
+                      top: 4, left: 4,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected ? primary : Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: primary),
+                        ),
+                        child: Icon(isSelected ? Icons.check : null, size: 16, color: Colors.white),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4),
+              child: Text(folder.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _projectMenu(BuildContext context, Project project) {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: 18),
@@ -225,6 +338,26 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  Widget _folderMenu(BuildContext context, ProjectFolder folder) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, size: 18),
+      onSelected: (action) => _handleFolderAction(context, action, folder),
+      itemBuilder: (_) => [
+        const PopupMenuItem(value: 'open', child: Text('開く')),
+        const PopupMenuItem(value: 'edit', child: Text('名前・色を編集')),
+        PopupMenuItem(
+          value: 'favorite',
+          child: Text(folder.isFavorite ? 'お気に入り解除' : 'お気に入り'),
+        ),
+        const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
+        const PopupMenuItem(
+          value: 'delete',
+          child: Text('削除', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    );
+  }
+
   void _handleAction(BuildContext context, String action, Project project) {
     final service = context.read<ProjectService>();
     switch (action) {
@@ -239,10 +372,49 @@ class ProjectListWidget extends StatelessWidget {
       case 'favorite':
         service.toggleFavorite(project.id);
       case 'move':
-        _showMoveToFolderDialog(context, project);
+        _showMoveProjectToFolderDialog(context, project);
       case 'delete':
         service.deleteProject(project.id);
     }
+  }
+
+  void _handleFolderAction(BuildContext context, String action, ProjectFolder folder) {
+    final service = context.read<ProjectService>();
+    switch (action) {
+      case 'open':
+        onOpenFolder(folder.id);
+      case 'edit':
+        _showEditFolderDialog(context, folder);
+      case 'favorite':
+        service.toggleFolderFavorite(folder.id);
+      case 'move':
+        _showMoveFolderToFolderDialog(context, folder);
+      case 'delete':
+        _confirmDeleteFolder(context, folder);
+    }
+  }
+
+  /// フォルダ削除時、中のプロジェクト・子フォルダをルートへ戻す旨を確認する
+  /// （仕様書19：「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する」）。
+  void _confirmDeleteFolder(BuildContext context, ProjectFolder folder) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('フォルダを削除しますか？'),
+        content: Text('「${folder.name}」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              context.read<ProjectService>().deleteFolder(folder.id);
+              Navigator.pop(ctx);
+            },
+            child: const Text('削除'),
+          ),
+        ],
+      ),
+    );
   }
 
   /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・21）。
@@ -297,8 +469,40 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  void _showMoveToFolderDialog(BuildContext context, Project project) {
-    final folders = context.read<ProjectService>().folders;
+  void _showMoveProjectToFolderDialog(BuildContext context, Project project) {
+    _showFolderPickerSheet(
+      context,
+      excludeFolderId: null,
+      onSelect: (folderId) => context.read<ProjectService>().moveToFolder(project.id, folderId),
+      onCreateAndSelect: (name) async {
+        final service = context.read<ProjectService>();
+        final folder = await service.createFolder(name);
+        await service.moveToFolder(project.id, folder.id);
+      },
+    );
+  }
+
+  void _showMoveFolderToFolderDialog(BuildContext context, ProjectFolder folder) {
+    _showFolderPickerSheet(
+      context,
+      // 自分自身の直下へは移動できない（循環防止はサービス側でも二重にガードする）
+      excludeFolderId: folder.id,
+      onSelect: (folderId) => context.read<ProjectService>().moveFolderTo(folder.id, folderId),
+      onCreateAndSelect: (name) async {
+        final service = context.read<ProjectService>();
+        final newFolder = await service.createFolder(name);
+        await service.moveFolderTo(folder.id, newFolder.id);
+      },
+    );
+  }
+
+  void _showFolderPickerSheet(
+    BuildContext context, {
+    required String? excludeFolderId,
+    required ValueChanged<String?> onSelect,
+    required Future<void> Function(String name) onCreateAndSelect,
+  }) {
+    final folders = context.read<ProjectService>().folders.where((f) => f.id != excludeFolderId).toList();
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -311,9 +515,9 @@ class ProjectListWidget extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),
-              title: const Text('フォルダなし'),
+              title: const Text('フォルダなし（ルート）'),
               onTap: () {
-                context.read<ProjectService>().moveToFolder(project.id, null);
+                onSelect(null);
                 Navigator.pop(ctx);
               },
             ),
@@ -326,7 +530,7 @@ class ProjectListWidget extends StatelessWidget {
                 onPressed: () => _showEditFolderDialog(context, folder),
               ),
               onTap: () {
-                context.read<ProjectService>().moveToFolder(project.id, folder.id);
+                onSelect(folder.id);
                 Navigator.pop(ctx);
               },
             )),
@@ -335,7 +539,7 @@ class ProjectListWidget extends StatelessWidget {
               title: const Text('新規フォルダを作成'),
               onTap: () {
                 Navigator.pop(ctx);
-                _showCreateFolderDialog(context, project);
+                _showCreateFolderNameDialog(context, onCreateAndSelect);
               },
             ),
           ],
@@ -344,7 +548,7 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  void _showCreateFolderDialog(BuildContext context, Project project) {
+  void _showCreateFolderNameDialog(BuildContext context, Future<void> Function(String name) onCreate) {
     final controller = TextEditingController();
     showDialog(
       context: context,
@@ -359,9 +563,8 @@ class ProjectListWidget extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
           FilledButton(
             onPressed: () async {
-              final service = context.read<ProjectService>();
-              final folder = await service.createFolder(controller.text);
-              await service.moveToFolder(project.id, folder.id);
+              if (controller.text.trim().isEmpty) return;
+              await onCreate(controller.text.trim());
               if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('作成'),
@@ -411,8 +614,8 @@ class ProjectListWidget extends StatelessWidget {
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               onPressed: () {
-                context.read<ProjectService>().deleteFolder(folder.id);
                 Navigator.pop(ctx);
+                _confirmDeleteFolder(context, folder);
               },
               child: const Text('削除'),
             ),

@@ -23,20 +23,55 @@ class ProjectFolder {
   final String id;
   final String name;
   final int? color; // ARGB。nullの場合はデフォルトのフォルダアイコン色を使う
-  ProjectFolder({required this.id, required this.name, this.color});
+  // 仕様書19：「フォルダは複数階層に対応」。nullはルート直下。
+  final String? parentFolderId;
+  // 仕様書19：「フォルダもお気に入り登録可能」
+  final bool isFavorite;
+  // 更新日時ソート時にプロジェクトと同じ基準で並べられるようにするための作成日時
+  final DateTime createdAt;
 
-  ProjectFolder copyWith({String? name, Object? color = _folderSentinel}) => ProjectFolder(
+  ProjectFolder({
+    required this.id,
+    required this.name,
+    this.color,
+    this.parentFolderId,
+    this.isFavorite = false,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
+
+  ProjectFolder copyWith({
+    String? name,
+    Object? color = _folderSentinel,
+    Object? parentFolderId = _folderSentinel,
+    bool? isFavorite,
+  }) =>
+      ProjectFolder(
         id: id,
         name: name ?? this.name,
         color: identical(color, _folderSentinel) ? this.color : color as int?,
+        parentFolderId: identical(parentFolderId, _folderSentinel)
+            ? this.parentFolderId
+            : parentFolderId as String?,
+        isFavorite: isFavorite ?? this.isFavorite,
+        createdAt: createdAt,
       );
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'color': color};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'color': color,
+        'parentFolderId': parentFolderId,
+        'isFavorite': isFavorite,
+        'createdAt': createdAt.toIso8601String(),
+      };
 
   factory ProjectFolder.fromJson(Map<String, dynamic> json) => ProjectFolder(
         id: json['id'] as String,
         name: json['name'] as String,
         color: json['color'] as int?,
+        parentFolderId: json['parentFolderId'] as String?,
+        isFavorite: json['isFavorite'] as bool? ?? false,
+        createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
       );
 }
 
@@ -47,6 +82,10 @@ class ProjectService extends ChangeNotifier {
   final List<Project> _trash = [];
   final List<Project> _shared = [];
   final List<ProjectFolder> _folders = [];
+  // ID採番用カウンター。DateTime.now().millisecondsSinceEpoch単独だと、
+  // 同一ミリ秒内に連続生成した場合にIDが衝突しうるため併用する。
+  int _idCounter = 0;
+  String _nextId(String prefix) => '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_idCounter++}';
   // ゴミ箱へ移動した日時（projectId -> deletedAt）。自動削除設定（設定画面の
   // 日数）に基づく期限切れ判定に使用する。SharedPreferencesへ永続化することで
   // アプリ再起動後もゴミ箱の状態（どのプロジェクトが削除済みか）を維持する。
@@ -644,7 +683,7 @@ class ProjectService extends ChangeNotifier {
   /// .mirashare を複製して通常プロジェクトとして追加する（仕様書06：共有フロー）。
   /// 新規プロジェクトIDを採番し、共有元ファイル自体は変更しない。
   Future<Project> importSharedProject(MiraproData data) async {
-    final newId = 'proj_${DateTime.now().millisecondsSinceEpoch}';
+    final newId = _nextId('proj');
     final project = data.project.copyWith(
       id: newId,
       createdAt: DateTime.now(),
@@ -1313,7 +1352,7 @@ class ProjectService extends ChangeNotifier {
     int exportHeight = 1080,
     double drawingAreaScale = 1.0,
   }) async {
-    final projectId = 'proj_${DateTime.now().millisecondsSinceEpoch}';
+    final projectId = _nextId('proj');
     final project = Project(
       id: projectId,
       name: name,
@@ -1451,7 +1490,7 @@ class ProjectService extends ChangeNotifier {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       final original = _projects[idx];
-      final newId = 'proj_${DateTime.now().millisecondsSinceEpoch}';
+      final newId = _nextId('proj');
       final copy = original.copyWith(
         id: newId,
         name: '${original.name} (コピー)',
@@ -1576,10 +1615,13 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<ProjectFolder> createFolder(String name) async {
+  /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
+  /// （仕様書19：「フォルダは複数階層に対応」）。nullはルート直下。
+  Future<ProjectFolder> createFolder(String name, {String? parentFolderId}) async {
     final folder = ProjectFolder(
-      id: 'folder_${DateTime.now().millisecondsSinceEpoch}',
+      id: _nextId('folder'),
       name: name,
+      parentFolderId: parentFolderId,
     );
     _folders.add(folder);
     await _persistFolders();
@@ -1605,11 +1647,50 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// フォルダのお気に入り登録を切り替える（仕様書19：「フォルダもお気に入り登録可能」）。
+  Future<void> toggleFolderFavorite(String folderId) async {
+    final idx = _folders.indexWhere((f) => f.id == folderId);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(isFavorite: !_folders[idx].isFavorite);
+    await _persistFolders();
+    notifyListeners();
+  }
+
+  /// フォルダを別のフォルダへ移動する（[newParentId]がnullならルート直下へ）。
+  /// 自分自身または自分の子孫フォルダへの移動は無視する（循環防止）。
+  Future<void> moveFolderTo(String folderId, String? newParentId) async {
+    if (folderId == newParentId) return;
+    if (newParentId != null && _isDescendantFolder(newParentId, folderId)) return;
+    final idx = _folders.indexWhere((f) => f.id == folderId);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(parentFolderId: newParentId);
+    await _persistFolders();
+    notifyListeners();
+  }
+
+  /// [candidateId]が[ancestorId]の子孫フォルダかどうかを判定する。
+  bool _isDescendantFolder(String candidateId, String ancestorId) {
+    String? current = candidateId;
+    while (current != null) {
+      if (current == ancestorId) return true;
+      current = _folders.where((f) => f.id == current).firstOrNull?.parentFolderId;
+    }
+    return false;
+  }
+
+  /// フォルダ削除時、直下のプロジェクト・子フォルダはルート（トップレベル）へ戻す
+  /// （仕様書19：「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを
+  /// 表示する」。確認ダイアログ自体はUI側で表示し、本メソッドは確定後の処理）。
   Future<void> deleteFolder(String folderId) async {
     _folders.removeWhere((f) => f.id == folderId);
     for (int i = 0; i < _projects.length; i++) {
       if (_projects[i].folderId == folderId) {
         _projects[i] = _projects[i].copyWith(folderId: null);
+      }
+    }
+    for (int i = 0; i < _folders.length; i++) {
+      if (_folders[i].parentFolderId == folderId) {
+        _folders[i] = _folders[i].copyWith(parentFolderId: null);
       }
     }
     await _persistFolders();
