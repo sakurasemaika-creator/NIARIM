@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'screens/splash/splash_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/project/new_project_screen.dart';
 import 'screens/project/project_detail_screen.dart';
@@ -23,7 +24,8 @@ import 'screens/settings/font_settings_screen.dart';
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(path: '/new-project', builder: (context, state) => const NewProjectScreen()),
     GoRoute(
       path: '/project/:id',

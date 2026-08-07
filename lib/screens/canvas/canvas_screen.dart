@@ -610,7 +610,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/'), tooltip: '戻る'),
+          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home'), tooltip: '戻る'),
           // 投げ縄塗り選択中：囲って塗るモードスイッチ
           if (_currentTool == DrawingTool.lasso && _currentSubTool == PenSubTool.lassoFill) ...[
             const SizedBox(width: 8),
