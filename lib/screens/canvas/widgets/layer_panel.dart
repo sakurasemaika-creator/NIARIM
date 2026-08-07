@@ -1009,12 +1009,6 @@ class _LayerPanelState extends State<LayerPanel> {
                 value: layer.hasClipping,
                 onChanged: (v) { update((l) => l.copyWith(hasClipping: v)); Navigator.pop(ctx); },
               ),
-              SwitchListTile(
-                title: const Text('マスク'),
-                subtitle: const Text('白=表示・黒=非表示で描画範囲を制御', style: TextStyle(fontSize: 11)),
-                value: layer.hasMask,
-                onChanged: (v) { update((l) => l.copyWith(hasMask: v)); Navigator.pop(ctx); },
-              ),
               if (layer.type == model.LayerType.normal)
                 ListTile(
                   leading: const Icon(Icons.link, color: Colors.blue),
@@ -1170,10 +1164,7 @@ class _LayerPanelState extends State<LayerPanel> {
               Text('レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。'),
               SizedBox(height: 8),
               Text('クリッピング', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('下のレイヤーの不透明ピクセル範囲内のみ描画します。'),
-              SizedBox(height: 8),
-              Text('マスク', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('マスクで描画範囲を制御します。白い部分が表示、黒い部分が非表示になります。'),
+              Text('下のレイヤーの不透明ピクセル範囲内のみ描画します。描画範囲を制御したい場合はこちらを使用してください。'),
               SizedBox(height: 8),
               Text('共通レイヤー', style: TextStyle(fontWeight: FontWeight.bold)),
               Text('複数のフレームで同じ内容を共有するレイヤーです。表示するフレーム範囲を設定できます。'),

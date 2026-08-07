@@ -10,7 +10,6 @@ class Layer {
   final bool isLocked;
   final bool opacityLocked;
   final bool hasClipping;
-  final bool hasMask;
   final String? parentFolderId;
   final bool needsAutofillUpdate;
   final String? partId; // 自動塗り用線画レイヤーのパーツID
@@ -43,7 +42,6 @@ class Layer {
     this.isLocked = false,
     this.opacityLocked = false,
     this.hasClipping = false,
-    this.hasMask = false,
     this.parentFolderId,
     this.needsAutofillUpdate = false,
     this.partId,
@@ -68,7 +66,6 @@ class Layer {
     bool? isLocked,
     bool? opacityLocked,
     bool? hasClipping,
-    bool? hasMask,
     Object? parentFolderId = _sentinel,
     bool? needsAutofillUpdate,
     Object? partId = _sentinel,
@@ -92,7 +89,6 @@ class Layer {
       isLocked: isLocked ?? this.isLocked,
       opacityLocked: opacityLocked ?? this.opacityLocked,
       hasClipping: hasClipping ?? this.hasClipping,
-      hasMask: hasMask ?? this.hasMask,
       parentFolderId: parentFolderId == _sentinel ? this.parentFolderId : parentFolderId as String?,
       needsAutofillUpdate: needsAutofillUpdate ?? this.needsAutofillUpdate,
       partId: partId == _sentinel ? this.partId : partId as String?,
