@@ -1,0 +1,55 @@
+name: Build APK
+
+# 手動実行のみ。GitHubの画面/アプリの「Actions」タブから「Run workflow」で起動する。
+on:
+  workflow_dispatch:
+    inputs:
+      build-type:
+        description: "ビルド種別"
+        required: true
+        type: choice
+        options:
+          - debug
+          - release
+        default: debug
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリ取得
+        uses: actions/checkout@v4
+
+      - name: JDK 17 セットアップ
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Flutter セットアップ
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 依存関係取得
+        run: flutter pub get
+
+      - name: 静的解析
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: APKビルド（debug）
+        if: ${{ inputs.build-type == 'debug' }}
+        run: flutter build apk --debug
+
+      - name: APKビルド（release）
+        if: ${{ inputs.build-type == 'release' }}
+        run: flutter build apk --release
+
+      - name: APKをArtifactsへアップロード
+        uses: actions/upload-artifact@v4
+        with:
+          name: miranima-${{ inputs.build-type }}-apk
+          path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
+          retention-days: 14
