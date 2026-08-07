@@ -93,6 +93,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // カーソル固定方式の移動モード
   bool _isMoveMode = false;
   int _moveCursorPos = 0;
+  // 移動・複製時のカーソル吹き出しに表示する先頭サムネイル（仕様書05：
+  // 「先頭のサムネイルのみ実画像を表示」）。シーン移動・フレーム移動で共用する。
+  ui.Image? _moveThumbnail;
 
   // トラッククリップ
   final List<_TrackClip> _audioClips = [];
@@ -192,8 +195,50 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final v in _videoControllers.values) {
       v.dispose();
     }
+    _moveThumbnail?.dispose();
     context.read<ProjectService>().endWorkTracking();
     super.dispose();
+  }
+
+  /// 移動モードのカーソル吹き出し用に、指定シーン・フレームの先頭サムネイルを
+  /// 生成する（仕様書05：「先頭のサムネイルのみ実画像を表示」）。
+  /// 小さいプレビュー用に縮小したui.Imageを返す。生成できない場合はnull。
+  Future<void> _loadMoveThumbnail(String sceneId, {int frameIndex = 0}) async {
+    final ps = context.read<ProjectService>();
+    final scene = ps.scenesOf(widget.projectId).where((s) => s.id == sceneId).firstOrNull;
+    if (scene == null || scene.frames.isEmpty) return;
+    final frame = scene.frames[frameIndex.clamp(0, scene.frames.length - 1)];
+    final tileManager = ps.tileManagerOf(widget.projectId);
+    final w = tileManager.canvasWidth;
+    final h = tileManager.canvasHeight;
+    if (w <= 0 || h <= 0) return;
+    const size = 48;
+    final fullImage = await LayerCompositor.composite(
+      tileManager,
+      ps.layersOf(widget.projectId, sceneId, frame.index),
+      (l) => ps.tileKeyFor(widget.projectId, sceneId, frame.index, l.id),
+      w,
+      h,
+    );
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      fullImage,
+      ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+      ui.Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()),
+      ui.Paint(),
+    );
+    fullImage.dispose();
+    final picture = recorder.endRecording();
+    final thumb = await picture.toImage(size, size);
+    picture.dispose();
+    if (!mounted) {
+      thumb.dispose();
+      return;
+    }
+    final old = _moveThumbnail;
+    setState(() => _moveThumbnail = thumb);
+    old?.dispose();
   }
 
   int get _totalFrames {
@@ -701,15 +746,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
               ),
-            // 先頭サムネイル（実画像は未実装のためグレープレースホルダー）
+            // 先頭サムネイル（仕様書05：「先頭のサムネイルのみ実画像を表示」）
             Container(
               width: 48,
               height: 48,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Icon(Icons.movie, size: 20, color: Colors.white54),
+              child: _moveThumbnail != null
+                  ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
+                  : const Icon(Icons.movie, size: 20, color: Colors.white54),
             ),
             // 枚数バッジ（右上）
             if (count > 1)
@@ -928,6 +976,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       final lastIdx = scenes.lastIndexWhere((s) => _selectedSceneIds.contains(s.id));
       _moveCursorPos = lastIdx + 1;
     });
+    final first = scenes.where((s) => _selectedSceneIds.contains(s.id)).firstOrNull;
+    if (first != null) _loadMoveThumbnail(first.id);
   }
 
   // カーソル固定方式の移動確定（仕様書05：複数選択モードからのみ起動）
@@ -1292,11 +1342,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
             Container(
               width: 40, height: 40,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Icon(Icons.movie_filter, size: 18, color: Colors.white54),
+              child: _moveThumbnail != null
+                  ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
+                  : const Icon(Icons.movie_filter, size: 18, color: Colors.white54),
             ),
             if (count > 1)
               Positioned(
@@ -1353,11 +1406,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 移動モード開始（仕様書05：複数選択モードからのみ起動）
   void _startFrameMoveMode() {
     if (_selectedFrameIndices.isEmpty) return;
+    final sorted = _selectedFrameIndices.toList()..sort();
     setState(() {
       _isFrameMoveMode = true;
-      final sorted = _selectedFrameIndices.toList()..sort();
       _frameMoveCursorPos = sorted.last + 1;
     });
+    final sceneId = _selectedSceneId;
+    if (sceneId != null) _loadMoveThumbnail(sceneId, frameIndex: sorted.first);
   }
 
   // カーソル固定方式の移動確定（仕様書05：複数選択モードからのみ起動）

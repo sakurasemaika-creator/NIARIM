@@ -22,7 +22,10 @@ class GestureSettingsScreen extends StatelessWidget {
                 const Divider(height: 1),
                 _item(context, '3本指タップ', settings.threeFingerTap, (a) => settings.setGesture(GestureType.threeFingerTap, a)),
                 const Divider(height: 1),
-                _item(context, '2本指スワイプ左右', settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a)),
+                // 2本指スワイプ左右のみ、連続動作前提の「フレーム移動」を選択肢に含める
+                // （仕様書08：フレーム移動は2本指スワイプ専用の初期割り当て）。
+                _item(context, '2本指スワイプ左右', settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a),
+                    options: GestureAction.values),
                 const Divider(height: 1),
                 _item(context, '長押し', settings.longPress, (a) => settings.setGesture(GestureType.longPress, a)),
               ],
@@ -33,7 +36,16 @@ class GestureSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _item(BuildContext context, String title, GestureAction current, ValueChanged<GestureAction> onChanged) {
+  // 「フレーム移動」は2本指スワイプのような連続操作前提の機能のため、
+  // タップ・長押しのような単発トリガーへ割り当てても何も起こらない
+  // （仕様書08：カスタマイズ可能な割り当て候補にフレーム移動は含まれない）。
+  // 選べても無反応になるだけの死んだ選択肢を防ぐため、既定では除外する。
+  static final List<GestureAction> _defaultOptions =
+      GestureAction.values.where((a) => a != GestureAction.frameMove).toList();
+
+  Widget _item(BuildContext context, String title, GestureAction current, ValueChanged<GestureAction> onChanged,
+      {List<GestureAction>? options}) {
+    final choices = options ?? _defaultOptions;
     return ListTile(
       title: Text(title),
       trailing: Text(_label(current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
@@ -42,7 +54,7 @@ class GestureSettingsScreen extends StatelessWidget {
         builder: (ctx) => SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: GestureAction.values.map((action) => RadioListTile<GestureAction>(
+            children: choices.map((action) => RadioListTile<GestureAction>(
               title: Text(_label(action)),
               value: action,
               groupValue: current,
