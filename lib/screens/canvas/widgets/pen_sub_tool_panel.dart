@@ -14,6 +14,10 @@ class PenSubToolPanel extends StatefulWidget {
   final PenSubTool currentSubTool;
   final ValueChanged<PenSubTool> onSubToolSelected;
   final VoidCallback onClose;
+  // ブラシ/トーン/スタンプの全機能管理パネル（フォルダ・自作・検索・
+  // 読み込み書き出し、仕様書17）を開く。現在表示中のタブに応じて呼び出し側で
+  // 対象を判断する。投げ縄塗りタブには管理パネルが存在しないためnull許容。
+  final void Function(PenSubTool subTool)? onManage;
 
   const PenSubToolPanel({
     super.key,
@@ -21,6 +25,7 @@ class PenSubToolPanel extends StatefulWidget {
     required this.currentSubTool,
     required this.onSubToolSelected,
     required this.onClose,
+    this.onManage,
   });
 
   @override
@@ -73,27 +78,49 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
         height: 480,
         child: Column(
           children: [
-            TabBar(
-              controller: _tabController,
-              labelStyle: const TextStyle(fontSize: 11),
-              // 各サブツールタブの初回使用時に吹き出し説明を表示する（仕様書02・11）
-              tabs: [
-                const Tab(text: 'ブラシ'),
-                FirstUseTooltip(
-                  tooltipKey: 'pen_subtool_tone',
-                  message: 'トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。',
-                  child: const Tab(text: 'トーン'),
+            Row(
+              children: [
+                Expanded(
+                  child: TabBar(
+                    controller: _tabController,
+                    labelStyle: const TextStyle(fontSize: 11),
+                    // 各サブツールタブの初回使用時に吹き出し説明を表示する（仕様書02・11）
+                    tabs: [
+                      const Tab(text: 'ブラシ'),
+                      FirstUseTooltip(
+                        tooltipKey: 'pen_subtool_tone',
+                        message: 'トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。',
+                        child: const Tab(text: 'トーン'),
+                      ),
+                      FirstUseTooltip(
+                        tooltipKey: 'pen_subtool_stamp',
+                        message: '決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。',
+                        child: const Tab(text: 'スタンプ'),
+                      ),
+                      FirstUseTooltip(
+                        tooltipKey: 'pen_subtool_lasso',
+                        message: '投げ縄で囲んだ範囲を一括で塗りつぶせます。',
+                        child: const Tab(text: '投げ縄塗り'),
+                      ),
+                    ],
+                  ),
                 ),
-                FirstUseTooltip(
-                  tooltipKey: 'pen_subtool_stamp',
-                  message: '決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。',
-                  child: const Tab(text: 'スタンプ'),
-                ),
-                FirstUseTooltip(
-                  tooltipKey: 'pen_subtool_lasso',
-                  message: '投げ縄で囲んだ範囲を一括で塗りつぶせます。',
-                  child: const Tab(text: '投げ縄塗り'),
-                ),
+                // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く
+                // （仕様書17）。投げ縄塗りタブでは非表示。
+                if (widget.onManage != null && _tabController.index != 3)
+                  IconButton(
+                    icon: const Icon(Icons.tune, size: 16),
+                    tooltip: '管理',
+                    onPressed: () {
+                      final subTool = switch (_tabController.index) {
+                        0 => PenSubTool.brush,
+                        1 => PenSubTool.tone,
+                        2 => PenSubTool.stamp,
+                        _ => PenSubTool.brush,
+                      };
+                      widget.onManage!(subTool);
+                    },
+                  ),
               ],
             ),
             Expanded(

@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/tone.dart';
 
@@ -8,13 +11,31 @@ class ToneFolder {
   final String name;
   final bool isFavorite;
   ToneFolder({required this.id, required this.name, this.isFavorite = false});
+
+  ToneFolder copyWith({String? name, bool? isFavorite}) => ToneFolder(
+        id: id,
+        name: name ?? this.name,
+        isFavorite: isFavorite ?? this.isFavorite,
+      );
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'isFavorite': isFavorite};
+
+  factory ToneFolder.fromJson(Map<String, dynamic> j) => ToneFolder(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        isFavorite: j['isFavorite'] as bool? ?? false,
+      );
 }
 
-/// トーン管理サービス（仕様書04・17・25）。SharedPreferencesへ永続化する
+/// トーン管理サービス（仕様書04・17・21・25）。SharedPreferencesへ永続化する
 /// （端末単位。プロジェクトファイルには含めない）。従来はインメモリのみで、
-/// お気に入り・追加・削除・編集のすべてがアプリ再起動のたびに失われていた。
+/// お気に入り・追加・削除・編集のすべてがアプリ再起動のたびに失われていた
+/// （Task#83で修正）。自作トーン・フォルダ管理・読み込み/書き出しは
+/// Task#84で追加した。テクスチャ画像はアプリ全体の`Tones/`フォルダへ
+/// コピーして保存する。
 class ToneService extends ChangeNotifier {
   static const _prefsKey = 'tones';
+  static const _foldersKey = 'tone_folders';
 
   final List<Tone> _tones = [];
   final List<ToneFolder> _folders = [];
@@ -64,12 +85,23 @@ class ToneService extends ChangeNotifier {
     } else {
       _tones.addAll(raw.map((s) => Tone.fromJson(jsonDecode(s) as Map<String, dynamic>)));
     }
+    final foldersRaw = prefs.getStringList(_foldersKey);
+    _folders.clear();
+    if (foldersRaw != null) {
+      _folders.addAll(
+          foldersRaw.map((s) => ToneFolder.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+    }
     _currentTone = _tones.firstOrNull;
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_prefsKey, _tones.map((t) => jsonEncode(t.toJson())).toList());
+  }
+
+  Future<void> _persistFolders() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_foldersKey, _folders.map((f) => jsonEncode(f.toJson())).toList());
   }
 
   void selectTone(String id) {
@@ -115,5 +147,135 @@ class ToneService extends ChangeNotifier {
       notifyListeners();
       _persist();
     }
+  }
+
+  // ─── フォルダ管理（仕様書17） ─────────────────────────────────────────
+
+  Future<ToneFolder> createFolder(String name) async {
+    final folder = ToneFolder(id: 'ToneFolder${DateTime.now().millisecondsSinceEpoch}', name: name);
+    _folders.add(folder);
+    notifyListeners();
+    await _persistFolders();
+    return folder;
+  }
+
+  void renameFolder(String id, String name) {
+    final idx = _folders.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(name: name);
+    notifyListeners();
+    _persistFolders();
+  }
+
+  void toggleFolderFavorite(String id) {
+    final idx = _folders.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(isFavorite: !_folders[idx].isFavorite);
+    notifyListeners();
+    _persistFolders();
+  }
+
+  void reorderFolder(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    final folder = _folders.removeAt(oldIndex);
+    _folders.insert(newIndex, folder);
+    notifyListeners();
+    _persistFolders();
+  }
+
+  void deleteFolder(String id) {
+    _folders.removeWhere((f) => f.id == id);
+    for (int i = 0; i < _tones.length; i++) {
+      if (_tones[i].folderId == id) {
+        _tones[i] = _tones[i].copyWith(folderId: null);
+      }
+    }
+    notifyListeners();
+    _persistFolders();
+    _persist();
+  }
+
+  void moveToFolder(String toneId, String? folderId) {
+    final idx = _tones.indexWhere((t) => t.id == toneId);
+    if (idx < 0) return;
+    _tones[idx] = _tones[idx].copyWith(folderId: folderId);
+    notifyListeners();
+    _persist();
+  }
+
+  // ─── 自作トーン（画像からの新規作成、仕様書17） ──────────────────────────
+
+  Future<Directory> _tonesDir() async {
+    final base = await getApplicationDocumentsDirectory();
+    final dir = Directory('${base.path}/miranima/Tones');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    return dir;
+  }
+
+  Future<Tone> createToneFromImage(String sourcePath, {String? name}) async {
+    final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
+    final ext = sourcePath.split('.').last;
+    final dir = await _tonesDir();
+    final destPath = '${dir.path}/$id.$ext';
+    await File(sourcePath).copy(destPath);
+    final tone = Tone(
+      id: id,
+      name: name?.trim().isNotEmpty == true ? name!.trim() : '自作トーン',
+      texturePath: destPath,
+    );
+    addTone(tone);
+    return tone;
+  }
+
+  // ─── 読み込み・書き出し（仕様書17：個別ファイル単位） ───────────────────
+
+  static const _bundleDataFile = 'data.json';
+
+  Future<File> exportTone(String id) async {
+    final tone = _tones.firstWhere((t) => t.id == id);
+    final base = await getApplicationDocumentsDirectory();
+    final safeName = tone.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final filePath = '${base.path}/$safeName.miratone';
+    final encoder = ZipFileEncoder();
+    encoder.create(filePath);
+    encoder.addArchiveFile(
+        ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(tone.toJson()))));
+    final texturePath = tone.texturePath;
+    if (texturePath != null && File(texturePath).existsSync()) {
+      final bytes = await File(texturePath).readAsBytes();
+      final ext = texturePath.split('.').last;
+      encoder.addArchiveFile(ArchiveFile('image.$ext', bytes.length, bytes));
+    }
+    encoder.close();
+    return File(filePath);
+  }
+
+  Future<Tone> importToneFile(String filePath) async {
+    final bytes = await File(filePath).readAsBytes();
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final dataFile = archive.findFile(_bundleDataFile);
+    if (dataFile == null) throw const FormatException('data.json not found');
+    final json = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
+    final imported = Tone.fromJson(json);
+    final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
+    final imageFile = archive.files.where((f) => f.name.startsWith('image.')).firstOrNull;
+    String? newTexturePath;
+    if (imageFile != null) {
+      final ext = imageFile.name.split('.').last;
+      final dir = await _tonesDir();
+      newTexturePath = '${dir.path}/$id.$ext';
+      await File(newTexturePath).writeAsBytes(imageFile.content as List<int>);
+    }
+    // texturePathは元端末のパスをそのまま引き継げないため、copyWith（??で
+    // nullを無視する実装）を使わず、常にnewTexturePath（nullなら未設定）で
+    // 明示的に上書きする。
+    final tone = Tone(
+      id: id,
+      name: imported.name,
+      texturePath: newTexturePath,
+      isFavorite: imported.isFavorite,
+    );
+    addTone(tone);
+    return tone;
   }
 }

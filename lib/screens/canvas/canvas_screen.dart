@@ -25,6 +25,8 @@ import 'widgets/brush_size_slider.dart';
 import 'widgets/layer_panel.dart';
 import 'widgets/color_picker_panel.dart';
 import 'widgets/brush_panel.dart';
+import 'widgets/tone_panel.dart';
+import 'widgets/stamp_panel.dart';
 import 'widgets/pen_sub_tool_panel.dart';
 import 'widgets/onion_skin_panel.dart';
 import 'widgets/ruler_panel.dart';
@@ -54,6 +56,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showLayerPanel = false;
   bool _showColorPicker = false;
   bool _showBrushPanel = false;
+  // トーン・スタンプの全機能管理パネル（仕様書17：フォルダ・自作・検索・
+  // 読み込み書き出し）。ペンサブツールタブの「管理」ボタンから開く。
+  bool _showTonePanel = false;
+  bool _showStampPanel = false;
   bool _showPenSubToolPanel = false;
   bool _showOnionSkinPanel = false;
   bool _showRulerPanel = false;
@@ -311,6 +317,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: null, bottom: 16, child: _colorPickerPanel()),
                   if (_showBrushPanel && !isDesktop)
                     _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _brushPanel()),
+                  // トーン・スタンプの全機能管理パネル（仕様書17）
+                  if (_showTonePanel && !isDesktop)
+                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _tonePanel()),
+                  if (_showStampPanel && !isDesktop)
+                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _stampPanel()),
                   // ペンサブツールパネル（ブラシ/トーン/スタンプ/投げ縄塗り）
                   if (_showPenSubToolPanel && !isDesktop)
                     _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _penSubToolPanel()),
@@ -426,6 +437,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (_showColorPicker) return _colorPickerPanel();
     if (_showPenSubToolPanel) return _penSubToolPanel();
     if (_showBrushPanel) return _brushPanel();
+    if (_showTonePanel) return _tonePanel();
+    if (_showStampPanel) return _stampPanel();
     if (_showOnionSkinPanel) return _onionSkinPanel();
     if (_showRulerPanel) return _rulerPanel();
     if (_showFilterPanel) return _filterPanel();
@@ -451,6 +464,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _brushPanel() =>
       BrushPanel(onClose: () => setState(() => _showBrushPanel = false));
 
+  Widget _tonePanel() =>
+      TonePanel(onClose: () => setState(() => _showTonePanel = false));
+
+  Widget _stampPanel() =>
+      StampPanel(onClose: () => setState(() => _showStampPanel = false));
+
   Widget _penSubToolPanel() => PenSubToolPanel(
         currentTool: _currentTool,
         currentSubTool: _currentSubTool,
@@ -461,6 +480,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
           });
         },
         onClose: () => setState(() => _showPenSubToolPanel = false),
+        // フル機能管理パネル（フォルダ・自作・検索・読み込み書き出し、仕様書17）
+        onManage: (subTool) => setState(() {
+          _showPenSubToolPanel = false;
+          switch (subTool) {
+            case PenSubTool.brush:
+              _showBrushPanel = true;
+            case PenSubTool.tone:
+              _showTonePanel = true;
+            case PenSubTool.stamp:
+              _showStampPanel = true;
+            case PenSubTool.lassoFill:
+              break;
+          }
+        }),
       );
 
   Widget _onionSkinPanel() => OnionSkinPanel(

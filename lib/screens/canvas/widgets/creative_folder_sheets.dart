@@ -1,0 +1,185 @@
+import 'package:flutter/material.dart';
+
+/// ブラシ・トーン・スタンプで共通のフォルダ管理UI（仕様書17：フォルダ管理）。
+/// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
+/// レコード型でフォルダ情報を受け取り、操作はコールバックで委譲する。
+
+/// フォルダ管理シート（新規作成・名前変更・並び替え・お気に入り登録・削除）。
+void showFolderManagementSheet(
+  BuildContext context, {
+  required List<({String id, String name, bool isFavorite})> Function() getFolders,
+  required Future<void> Function(String name) onCreate,
+  required void Function(String id, String name) onRename,
+  required void Function(String id) onToggleFavorite,
+  required void Function(int oldIndex, int newIndex) onReorder,
+  required void Function(String id) onDelete,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setSheetState) {
+        final folders = getFolders();
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (_, controller) => Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    const Text('フォルダ管理', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    TextButton.icon(
+                      icon: const Icon(Icons.create_new_folder, size: 18),
+                      label: const Text('新規作成'),
+                      onPressed: () async {
+                        final name = await _promptFolderName(ctx, title: '新規フォルダ');
+                        if (name == null || name.trim().isEmpty) return;
+                        await onCreate(name.trim());
+                        setSheetState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              if (folders.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('フォルダはまだありません', style: TextStyle(color: Colors.grey)),
+                ),
+              Expanded(
+                child: ReorderableListView.builder(
+                  scrollController: controller,
+                  itemCount: folders.length,
+                  onReorder: (oldIndex, newIndex) {
+                    onReorder(oldIndex, newIndex);
+                    setSheetState(() {});
+                  },
+                  itemBuilder: (context, index) {
+                    final f = folders[index];
+                    return ListTile(
+                      key: ValueKey(f.id),
+                      leading: const Icon(Icons.folder),
+                      title: Text(f.name),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(f.isFavorite ? Icons.star : Icons.star_outline,
+                                color: f.isFavorite ? Colors.amber : null, size: 18),
+                            onPressed: () {
+                              onToggleFavorite(f.id);
+                              setSheetState(() {});
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 18),
+                            onPressed: () async {
+                              final name = await _promptFolderName(ctx, title: '名前変更', initial: f.name);
+                              if (name == null || name.trim().isEmpty) return;
+                              onRename(f.id, name.trim());
+                              setSheetState(() {});
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                            onPressed: () {
+                              onDelete(f.id);
+                              setSheetState(() {});
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+}
+
+Future<String?> _promptFolderName(BuildContext context, {required String title, String? initial}) {
+  final controller = TextEditingController(text: initial);
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('OK')),
+      ],
+    ),
+  ).then((v) { controller.dispose(); return v; });
+}
+
+/// 素材を指定フォルダへ移動するシート（「フォルダなし」も選択可能）。
+void showMoveToCreativeFolderSheet(
+  BuildContext context, {
+  required List<({String id, String name})> folders,
+  required void Function(String? folderId) onSelect,
+}) {
+  showModalBottomSheet(
+    context: context,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('フォルダへ移動', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_open),
+            title: const Text('フォルダなし'),
+            onTap: () {
+              onSelect(null);
+              Navigator.pop(ctx);
+            },
+          ),
+          ...folders.map((f) => ListTile(
+                leading: const Icon(Icons.folder),
+                title: Text(f.name),
+                onTap: () {
+                  onSelect(f.id);
+                  Navigator.pop(ctx);
+                },
+              )),
+        ],
+      ),
+    ),
+  );
+}
+
+/// 新規名を入力するダイアログ（自作ブラシ/トーン/スタンプ作成時の名前入力）。
+Future<String?> promptCreativeAssetName(BuildContext context, {required String title, String initial = ''}) {
+  final controller = TextEditingController(text: initial);
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        decoration: const InputDecoration(labelText: '名前', border: OutlineInputBorder()),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('作成')),
+      ],
+    ),
+  ).then((v) { controller.dispose(); return v; });
+}

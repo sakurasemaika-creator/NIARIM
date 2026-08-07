@@ -1,7 +1,10 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
+import 'creative_folder_sheets.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -16,6 +19,9 @@ class _BrushPanelState extends State<BrushPanel> {
   bool _showSearch = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  // null=全て表示・''(空文字)=フォルダなしのみ・その他=そのフォルダIDのみ
+  String? _folderFilter;
+  static const _allFolders = '__all__';
 
   @override
   void dispose() {
@@ -27,22 +33,29 @@ class _BrushPanelState extends State<BrushPanel> {
   Widget build(BuildContext context) {
     final brushService = context.watch<BrushService>();
     final allBrushes = brushService.brushes;
+    final folders = brushService.folders;
     var brushes = _showFavoritesOnly
         ? allBrushes.where((b) => b.isFavorite)
         : allBrushes.where((_) => true);
+    if (_folderFilter == '') {
+      brushes = brushes.where((b) => b.folderId == null);
+    } else if (_folderFilter != null && _folderFilter != _allFolders) {
+      brushes = brushes.where((b) => b.folderId == _folderFilter);
+    }
     final query = _searchQuery.trim().toLowerCase();
     if (query.isNotEmpty) {
       brushes = brushes.where((b) => b.name.toLowerCase().contains(query));
     }
     final brushList = brushes.toList();
-    final isFiltering = _showFavoritesOnly || query.isNotEmpty;
+    final isFiltering = _showFavoritesOnly || query.isNotEmpty ||
+        (_folderFilter != null && _folderFilter != _allFolders);
     final current = brushService.currentBrush;
 
     return Card(
       elevation: 8,
       child: SizedBox(
-        width: 260,
-        height: 420,
+        width: 280,
+        height: 460,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -76,6 +89,44 @@ class _BrushPanelState extends State<BrushPanel> {
                   IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
                 ],
               ),
+              // フォルダ管理・自作ブラシ・読み込み（仕様書17・21）
+              Row(
+                children: [
+                  TextButton.icon(
+                    icon: const Icon(Icons.folder_outlined, size: 15),
+                    label: const Text('フォルダ', style: TextStyle(fontSize: 11)),
+                    onPressed: () => _openFolderManagement(context, brushService),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
+                    label: const Text('自作', style: TextStyle(fontSize: 11)),
+                    onPressed: () => _createFromImage(context, brushService),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.file_upload_outlined, size: 15),
+                    label: const Text('読込', style: TextStyle(fontSize: 11)),
+                    onPressed: () => _importBrush(context, brushService),
+                  ),
+                ],
+              ),
+              if (folders.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: SizedBox(
+                    height: 30,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _folderChip(context, '全て', _folderFilter == null || _folderFilter == _allFolders,
+                            () => setState(() => _folderFilter = null)),
+                        _folderChip(context, 'フォルダなし', _folderFilter == '',
+                            () => setState(() => _folderFilter = '')),
+                        ...folders.map((f) => _folderChip(
+                            context, f.name, _folderFilter == f.id, () => setState(() => _folderFilter = f.id))),
+                      ],
+                    ),
+                  ),
+                ),
               if (_showSearch)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
@@ -93,7 +144,9 @@ class _BrushPanelState extends State<BrushPanel> {
                 ),
               const Divider(),
               Expanded(
-                child: ReorderableListView.builder(
+                child: brushList.isEmpty
+                    ? const Center(child: Text('ブラシがありません', style: TextStyle(color: Colors.grey, fontSize: 12)))
+                    : ReorderableListView.builder(
                   itemCount: brushList.length,
                   onReorder: (oldIndex, newIndex) {
                     if (!isFiltering) {
@@ -131,6 +184,8 @@ class _BrushPanelState extends State<BrushPanel> {
                             itemBuilder: (_) => [
                               const PopupMenuItem(value: 'edit', child: Text('編集')),
                               const PopupMenuItem(value: 'duplicate', child: Text('複製')),
+                              const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
+                              const PopupMenuItem(value: 'export', child: Text('書き出し')),
                               const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
                             ],
                           ),
@@ -149,6 +204,18 @@ class _BrushPanelState extends State<BrushPanel> {
     );
   }
 
+  Widget _folderChip(BuildContext context, String label, bool selected, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 4),
+      child: ChoiceChip(
+        label: Text(label, style: const TextStyle(fontSize: 11)),
+        selected: selected,
+        onSelected: (_) => onTap(),
+        visualDensity: VisualDensity.compact,
+      ),
+    );
+  }
+
   void _handleBrushAction(BuildContext context, String action, Brush brush) {
     final service = context.read<BrushService>();
     switch (action) {
@@ -156,6 +223,14 @@ class _BrushPanelState extends State<BrushPanel> {
         _showBrushSettings(context, brush);
       case 'duplicate':
         service.duplicateBrush(brush.id);
+      case 'move':
+        showMoveToCreativeFolderSheet(
+          context,
+          folders: service.folders.map((f) => (id: f.id, name: f.name)).toList(),
+          onSelect: (folderId) => service.moveToFolder(brush.id, folderId),
+        );
+      case 'export':
+        _exportBrush(context, service, brush);
       case 'delete':
         service.deleteBrush(brush.id);
     }
@@ -167,6 +242,52 @@ class _BrushPanelState extends State<BrushPanel> {
       isScrollControlled: true,
       builder: (ctx) => _BrushSettingsSheet(brush: brush),
     );
+  }
+
+  void _openFolderManagement(BuildContext context, BrushService service) {
+    showFolderManagementSheet(
+      context,
+      getFolders: () => service.folders.map((f) => (id: f.id, name: f.name, isFavorite: f.isFavorite)).toList(),
+      onCreate: (name) => service.createFolder(name),
+      onRename: (id, name) => service.renameFolder(id, name),
+      onToggleFavorite: (id) => service.toggleFolderFavorite(id),
+      onReorder: (oldIndex, newIndex) => service.reorderFolder(oldIndex, newIndex),
+      onDelete: (id) => service.deleteFolder(id),
+    );
+  }
+
+  Future<void> _createFromImage(BuildContext context, BrushService service) async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (!context.mounted) return;
+    final name = await promptCreativeAssetName(context, title: '自作ブラシ');
+    if (name == null) return;
+    await service.createBrushFromImage(result.files.first.path!, name: name);
+  }
+
+  Future<void> _importBrush(BuildContext context, BrushService service) async {
+    final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom, allowedExtensions: ['mirabrush']);
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    try {
+      await service.importBrushFile(result.files.first.path!);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('ブラシの読み込みに失敗しました: $e')));
+    }
+  }
+
+  Future<void> _exportBrush(BuildContext context, BrushService service, Brush brush) async {
+    try {
+      final file = await service.exportBrush(brush.id);
+      if (!context.mounted) return;
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('ブラシの書き出しに失敗しました: $e')));
+    }
   }
 }
 
