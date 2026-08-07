@@ -86,6 +86,18 @@ class ProjectService extends ChangeNotifier {
   // 同一ミリ秒内に連続生成した場合にIDが衝突しうるため併用する。
   int _idCounter = 0;
   String _nextId(String prefix) => '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_idCounter++}';
+
+  // TileManagerの合成キャッシュ上限（仕様書01：低スペック端末対応）。
+  // 端末性能判定（PerformanceService.qualityLevel）に応じてmain.dartから
+  // configureTileCacheBudget()で絞り込む。未設定時は既定値16（従来通り）。
+  // 見た目・機能には影響せず、低スペック端末でのメモリ使用量のみを抑える。
+  int _tileCacheBudget = 16;
+
+  /// 端末性能に応じてTileManagerの合成キャッシュ上限を設定する。
+  /// 以後新規作成されるTileManagerへ適用される（既存インスタンスは対象外）。
+  void configureTileCacheBudget(int maxEntries) {
+    _tileCacheBudget = maxEntries;
+  }
   // ゴミ箱へ移動した日時（projectId -> deletedAt）。自動削除設定（設定画面の
   // 日数）に基づく期限切れ判定に使用する。SharedPreferencesへ永続化することで
   // アプリ再起動後もゴミ箱の状態（どのプロジェクトが削除済みか）を維持する。
@@ -114,6 +126,7 @@ class ProjectService extends ChangeNotifier {
       return TileManager(
         canvasWidth: p?.drawingWidth ?? 1920,
         canvasHeight: p?.drawingHeight ?? 1080,
+        compositeCacheMax: _tileCacheBudget,
       );
     });
   }
@@ -229,6 +242,7 @@ class ProjectService extends ChangeNotifier {
     final tm = TileManager(
       canvasWidth: data.project.drawingWidth,
       canvasHeight: data.project.drawingHeight,
+      compositeCacheMax: _tileCacheBudget,
     );
     tm.importAll(data.tileData);
     _tileManagers[projectId] = tm;
@@ -712,6 +726,7 @@ class ProjectService extends ChangeNotifier {
     final tm = TileManager(
       canvasWidth: project.drawingWidth,
       canvasHeight: project.drawingHeight,
+      compositeCacheMax: _tileCacheBudget,
     );
     tm.importAll(data.tileData);
     _tileManagers[newId] = tm;
@@ -734,7 +749,9 @@ class ProjectService extends ChangeNotifier {
     final tm = _tileManagers.putIfAbsent(
         projectId,
         () => TileManager(
-            canvasWidth: data.project.drawingWidth, canvasHeight: data.project.drawingHeight));
+            canvasWidth: data.project.drawingWidth,
+            canvasHeight: data.project.drawingHeight,
+            compositeCacheMax: _tileCacheBudget));
     tm.importAll(data.tileData);
     _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
     notifyListeners();
@@ -1417,6 +1434,7 @@ class ProjectService extends ChangeNotifier {
     _tileManagers[projectId] = TileManager(
       canvasWidth: project.drawingWidth,
       canvasHeight: project.drawingHeight,
+      compositeCacheMax: _tileCacheBudget,
     );
 
     // 初回保存
@@ -1547,6 +1565,7 @@ class ProjectService extends ChangeNotifier {
       final newTm = TileManager(
         canvasWidth: copy.drawingWidth,
         canvasHeight: copy.drawingHeight,
+        compositeCacheMax: _tileCacheBudget,
       );
       if (sourceTm != null) {
         newTm.importAll(sourceTm.exportAll());

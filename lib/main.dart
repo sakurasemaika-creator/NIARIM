@@ -48,6 +48,16 @@ void main() async {
   await advertisingService.init();
 
   final projectService = ProjectService();
+  // 端末性能判定（仕様書01：低スペック端末対応）に応じて、TileManagerの
+  // 合成キャッシュ上限を絞る。見た目・機能は変わらず、低スペック端末での
+  // メモリ使用量のみを抑える（init()より前に設定し、起動時読み込み分の
+  // TileManagerにも反映させる）。
+  projectService.configureTileCacheBudget(switch (performanceService.qualityLevel) {
+    QualityLevel.low => 6, // 最大概算約48MB程度
+    QualityLevel.medium => 10, // 最大概算約80MB程度
+    QualityLevel.high => 16, // 従来通り（最大概算約130MB程度）
+    QualityLevel.custom => 10,
+  });
   await projectService.init();
   // ゴミ箱の自動削除設定（設定画面：OFF/30日/60日/90日）に基づき、
   // 保持期限を過ぎたプロジェクトを起動時に完全削除する

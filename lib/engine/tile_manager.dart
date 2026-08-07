@@ -51,14 +51,16 @@ class TileManager {
   //
   // キャッシュ画像はキャンバス全体サイズのRGBAを保持する（例：1080×1920なら
   // 1枚あたり約8MB）。低スペック端末での無制限なメモリ増加を避けるため、
-  // LRU方式で一定件数（_compositeCacheMax）を超えたら最も古いものから破棄
+  // LRU方式で一定件数（compositeCacheMax）を超えたら最も古いものから破棄
   // する。通常の描画・スクラブ操作で同時にアクティブなレイヤー数は少数
   // （1フレーム分の表示レイヤー程度）のため、この上限で実用上のキャッシュ
   // 効果は十分に得られる。書き出し等、多数の異なるレイヤーを1回ずつしか
   // 触れない処理ではキャッシュ効果は薄いが、上限があるためメモリへの
-  // 悪影響も出ない。値は意図的に控えめに設定しており（16件で最大
-  // 概算約130MB程度）、端末性能に応じて可変にする改善は将来の課題とする。
-  static const int _compositeCacheMax = 16;
+  // 悪影響も出ない。既定値16（最大概算約130MB程度）は変更していないが、
+  // 端末性能判定（仕様書01・PerformanceService）に応じてProjectService
+  // 経由で小さい値へ絞れるよう、コンストラクタで上書きできるようにしてある
+  // （見た目・機能は変わらず、再合成の頻度がわずかに増えるのみ）。
+  final int compositeCacheMax;
   final Map<String, ui.Image> _compositeCache = {}; // 挿入順=LRU順（Dart既定のMapはLinkedHashMap）
 
   void _invalidateCache(String layerId) {
@@ -69,7 +71,7 @@ class TileManager {
     // 既存エントリを削除してから再挿入することでLRU順（末尾=最新）を保つ
     _compositeCache.remove(layerId);
     _compositeCache[layerId] = image;
-    while (_compositeCache.length > _compositeCacheMax) {
+    while (_compositeCache.length > compositeCacheMax) {
       final oldestKey = _compositeCache.keys.first;
       _compositeCache.remove(oldestKey)?.dispose();
     }
@@ -105,8 +107,11 @@ class TileManager {
   String? _recordingLayerId;
   final Map<String, Uint8List?> _undoBefore = {};
 
-  TileManager({required this.canvasWidth, required this.canvasHeight})
-      : tilesX = (canvasWidth / tileSize).ceil(),
+  TileManager({
+    required this.canvasWidth,
+    required this.canvasHeight,
+    this.compositeCacheMax = 16,
+  })  : tilesX = (canvasWidth / tileSize).ceil(),
         tilesY = (canvasHeight / tileSize).ceil();
 
   String _tileKey(int tx, int ty) => '$tx,$ty';

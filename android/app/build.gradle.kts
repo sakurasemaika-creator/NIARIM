@@ -34,6 +34,17 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+
+            // APK容量削減（仕様書01：低スペック端末対応）。R8はJava/Kotlinの
+            // プラグイングルーコードのみを対象とし、FlutterのDartコード
+            // （AOTコンパイル済みネイティブコード）には影響しないため、
+            // アプリの見た目・機能は変わらない。
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
