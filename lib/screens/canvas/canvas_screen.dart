@@ -5,6 +5,7 @@ import '../../services/advertising_service.dart';
 import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
 import '../../services/brush_service.dart';
+import '../../services/font_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
@@ -678,6 +679,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     int color = existing?.color.toARGB32() ?? 0xFF000000;
     bool isBold = existing?.isBold ?? false;
     bool isItalic = existing?.isItalic ?? false;
+    String fontFamily = existing?.fontFamily ?? 'Roboto';
+    final fontService = context.read<FontService>();
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -695,6 +698,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   decoration: const InputDecoration(hintText: 'テキストを入力してください'),
                 ),
                 const SizedBox(height: 12),
+                if (fontService.fonts.isNotEmpty)
+                  DropdownButtonFormField<String>(
+                    initialValue: fontFamily,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'フォント', isDense: true),
+                    items: [
+                      const DropdownMenuItem(value: 'Roboto', child: Text('標準フォント')),
+                      ...fontService.fonts.map((f) => DropdownMenuItem(
+                            value: fontService.familyNameOf(f),
+                            child: Text(f.displayName, style: TextStyle(fontFamily: fontService.familyNameOf(f))),
+                          )),
+                    ],
+                    onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                  ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     const Text('サイズ', style: TextStyle(fontSize: 12)),
@@ -770,6 +788,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     color: Color(color),
                     isBold: isBold,
                     isItalic: isItalic,
+                    fontFamily: fontFamily,
                   );
                 } else {
                   layer = ps.addTextLayer(
@@ -785,6 +804,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     color: Color(color),
                     isBold: isBold,
                     isItalic: isItalic,
+                    fontFamily: fontFamily,
                   );
                 }
                 final tileManager = ps.tileManagerOf(widget.projectId);

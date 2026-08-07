@@ -21,6 +21,7 @@ import 'services/quick_tool_service.dart';
 import 'services/workspace_preset_service.dart';
 import 'services/watermark_service.dart';
 import 'services/share_intent_service.dart';
+import 'services/font_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +80,9 @@ void main() async {
   final watermarkService = WatermarkService();
   await watermarkService.init();
 
+  final fontService = FontService();
+  await fontService.init();
+
   final shareIntentService = ShareIntentService();
   await shareIntentService.init();
   final undoManager = app_undo.UndoManager();
@@ -111,6 +115,7 @@ void main() async {
         ChangeNotifierProvider.value(value: quickToolService),
         ChangeNotifierProvider.value(value: workspacePresetService),
         ChangeNotifierProvider.value(value: watermarkService),
+        ChangeNotifierProvider.value(value: fontService),
         Provider<ShareIntentService>.value(value: shareIntentService),
         ChangeNotifierProvider<app_undo.UndoManager>.value(value: undoManager),
       ],

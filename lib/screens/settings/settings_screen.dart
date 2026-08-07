@@ -55,6 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // 無料会員のみ🔒マーク付きで表示（仕様書08）
             _item(Icons.water, isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒', 'ユーザーウォーターマーク（Premium）', _showWatermarkSetting, const Color(0xFFB15CFF)),
             _item(Icons.import_export, '引き継ぎ', '設定・素材・ブラシを他端末へ書き出し/読み込み', () => context.push('/settings/transfer'), const Color(0xFF3DDC97)),
+            _item(Icons.font_download_outlined, 'フォント管理', 'TTF/OTFの追加・検索・削除', () => context.push('/settings/fonts'), const Color(0xFFFFB020)),
           ],
         ),
       ),

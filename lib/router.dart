@@ -18,6 +18,7 @@ import 'screens/premium/premium_screen.dart';
 import 'screens/autofill/autofill_preset_screen.dart';
 import 'screens/save_tree/save_tree_screen.dart';
 import 'screens/materials/material_list_screen.dart';
+import 'screens/settings/font_settings_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -59,5 +60,6 @@ final appRouter = GoRouter(
       path: '/materials/:id',
       builder: (context, state) => MaterialListScreen(projectId: state.pathParameters['id']!),
     ),
+    GoRoute(path: '/settings/fonts', builder: (context, state) => const FontSettingsScreen()),
   ],
 );
