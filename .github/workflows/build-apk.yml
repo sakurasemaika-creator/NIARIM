@@ -25,6 +25,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          # Gradle依存関係（~/.gradle/caches・~/.gradle/wrapper）を
+          # android/配下のGradleファイルのハッシュ単位でキャッシュする。
+          # キャッシュが無いと毎回全依存関係をゼロからダウンロードし直し、
+          # ビルドが遅くなる・ネットワーク詰まりでハングしやすくなる原因になる。
+          cache: gradle
 
       - name: Flutter セットアップ
         uses: subosito/flutter-action@v2
