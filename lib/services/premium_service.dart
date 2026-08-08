@@ -2,10 +2,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/monetization_gate.dart';
 
 /// プレミアム加入状態・課金処理を管理する（仕様書13）。
 /// 実際の課金はGoogle Play Billing（in_app_purchase）経由で行い、
 /// purchaseStreamの結果を受けてisPremiumを更新する。
+/// `isMonetizationEnabled`がfalseの間（税務上の都合による一時停止期間）は
+/// ストアへの接続・商品情報取得・購入操作を一切行わない。
 class PremiumService extends ChangeNotifier {
   // ストアに登録するサブスクリプション商品ID
   static const String monthlyProductId = 'miranima_premium_monthly';
@@ -21,6 +24,10 @@ class PremiumService extends ChangeNotifier {
   bool _storeAvailable = false;
   bool get storeAvailable => _storeAvailable;
 
+  /// 課金一時停止期間中（税務上の都合）かどうか。trueの間はPremiumScreenで
+  /// 購入導線を隠し、代わりに準備中の案内を表示する。
+  bool get isMonetizationPaused => !isMonetizationEnabled;
+
   bool _purchasePending = false;
   bool get purchasePending => _purchasePending;
 
@@ -33,6 +40,12 @@ class PremiumService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _isPremium = prefs.getBool('is_premium') ?? false;
+
+    if (!isMonetizationEnabled) {
+      // 課金一時停止期間：ストアへは一切接続しない。
+      _storeAvailable = false;
+      return;
+    }
 
     try {
       _storeAvailable = await _iap.isAvailable();
@@ -59,6 +72,11 @@ class PremiumService extends ChangeNotifier {
   /// 戻り値は購入フローの開始に成功したかどうか。実際の購入完了・失敗結果は
   /// purchaseStream経由で非同期に届き、isPremiumへ反映される。
   Future<bool> buy(String productId) async {
+    if (!isMonetizationEnabled) {
+      _purchaseError = 'プレミアム機能は準備中です。もうしばらくお待ちください。';
+      notifyListeners();
+      return false;
+    }
     if (!_storeAvailable) {
       _purchaseError = 'ストアに接続できません';
       notifyListeners();
