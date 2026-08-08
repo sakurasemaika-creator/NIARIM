@@ -1,10 +1,12 @@
 # リリースビルドのAPK容量削減（R8による未使用コード除去・難読化）向けの
 # 追加keepルール（仕様書01：低スペック端末対応）。
 #
-# 【現在R8は無効】android/app/build.gradle.ktsでisMinifyEnabled=falseの
-# ため、以下のルールは現時点では効果を持たない（R8再有効化時に備えて
-# 残してある）。R8再有効化の経緯・注意点はbuild.gradle.ktsのコメントと
-# docs/AI設計書/12_実装チェックリスト.mdの追記を参照。
+# 【診断のため一時的に再有効化中】実機での起動時クラッシュの原因調査用に
+# build.gradle.ktsでisMinifyEnabled=trueへ戻している。このビルドは
+# 実機へインストールする目的ではなく、usage.txt（R8が実際に除去した
+# クラス一覧）をCI artifactとして取得する目的のみに使う。経緯は
+# build.gradle.ktsのコメントとdocs/AI設計書/12_実装チェックリスト.md
+# の追記を参照。
 #
 # FlutterのDartコード自体はAOTコンパイルされたネイティブコードであり、
 # ここでのR8処理（Java/Kotlinバイトコードのみが対象）の影響を受けない。

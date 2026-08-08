@@ -35,18 +35,20 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
 
-            // 【一時的に無効化】本来はAPK容量削減（仕様書01：低スペック端末
-            // 対応）のためR8を有効にしたいが、R8有効時のリリースビルドが
-            // 実機（Android 16）で起動直後にクラッシュする不具合が発生し、
-            // 複数回のkeepルール調査・修正を試みても解消できなかった。
-            // デバッグビルド（R8無効）は同一端末で正常に起動することを
-            // 確認済みのため、R8が原因である可能性が高いと判断し、実機で
-            // 動作するアプリを優先して一旦無効化する。原因調査は
-            // build/app/outputs/mapping/release/usage.txt
-            // （R8が実際に除去したクラス一覧）を用いて別途進める。
-            // 詳細はdocs/AI設計書/12_実装チェックリスト.mdの追記を参照。
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // 【診断目的で一時的に再有効化】R8有効時のリリースビルドが実機
+            // （Android 16）で起動直後にクラッシュする不具合の原因調査用。
+            // R8無効ビルドは実機で正常起動を確認済みのため、このビルド自体は
+            // 実機へインストールせず、build/app/outputs/mapping/release/
+            // usage.txt（R8が実際に除去したクラス一覧）をCI artifactとして
+            // 取得し、除去されているクラスを特定した上でkeepルールを直す
+            // 目的のみに使う。詳細はdocs/AI設計書/12_実装チェックリスト.md
+            // の追記を参照。
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
