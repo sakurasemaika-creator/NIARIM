@@ -58,3 +58,18 @@ jobs:
           name: miranima-${{ inputs.build-type }}-apk
           path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
           retention-days: 14
+
+      # リリースビルドの起動時クラッシュ切り分け用（実機ログが取得できない
+      # ため、R8が実際に何を除去したかをmapping/usageファイルから直接
+      # 確認する）。R8有効時（isMinifyEnabled=true）のみ生成される。
+      - name: R8マッピング/使用状況レポートをArtifactsへアップロード
+        if: ${{ inputs.build-type == 'release' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: miranima-release-r8-reports
+          path: |
+            build/app/outputs/mapping/release/mapping.txt
+            build/app/outputs/mapping/release/seeds.txt
+            build/app/outputs/mapping/release/usage.txt
+          retention-days: 14
+          if-no-files-found: warn
