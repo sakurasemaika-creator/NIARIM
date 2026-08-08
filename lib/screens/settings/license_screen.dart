@@ -62,14 +62,19 @@ class LicenseScreen extends StatelessWidget {
                 '文字の補完（フォールバック）にも使用する。',
           ),
           const _FontCredit(
-            usage: 'テキストツール追加フリーフォント（設定 → フォント管理から'
-                'ダウンロードして利用可能。初回のみネット接続が必要）',
-            name: 'Noto Sans JP / M PLUS Rounded 1c / Mochiy Pop One / '
-                'Yusei Magic / Hachi Maru Pop / Reggae One',
-            author: 'Google Fonts（各フォントの制作者）',
-            license: 'SIL Open Font License 1.1',
-            note: '個人・商用問わず無償で利用可能。初期インストール容量を'
-                '抑えるため同梱せず、Google Fontsの配布元（GitHub: '
+            usage: 'テキストツール追加フリーフォント（設定 → フォント管理 → '
+                '追加フリーフォントを探す、からダウンロードして利用可能。'
+                '初回のみネット接続が必要）',
+            name: 'Google Fonts 全書体（約2000書体。SIL Open Font License /'
+                ' Apache License 2.0 / Ubuntu Font License いずれかで'
+                '配布されているもの全て）',
+            author: 'Google Fonts（各フォントの制作者・詳細はダウンロード'
+                '画面から各フォント名で確認可能）',
+            license: 'SIL Open Font License 1.1 / Apache License 2.0 / '
+                'Ubuntu Font License 1.0（フォントごとに異なる。いずれも'
+                '個人・商用問わず無償で利用可能）',
+            note: '初期インストール容量を抑えるため同梱せず、Google Fontsの'
+                '配布元（GitHub: '
                 'google/fonts）から取得する。ダウンロード後は端末内に'
                 '保存され、以降オフラインでも利用できる。',
           ),

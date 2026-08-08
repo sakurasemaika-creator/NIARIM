@@ -15,8 +15,13 @@ import '../models/font_asset.dart';
 class FontService extends ChangeNotifier {
   final List<FontAsset> _fonts = [];
   int _counter = 0;
+  List<DownloadableFontEntry> _catalog = [];
 
   List<FontAsset> get fonts => List.unmodifiable(_fonts);
+
+  /// 追加フリーフォントカタログ（オンデマンドダウンロード対象、約2000書体。
+  /// assets/font_catalog/font_catalog.jsonから読み込む）。
+  List<DownloadableFontEntry> get catalog => List.unmodifiable(_catalog);
 
   /// [displayName]からFontLoaderへ登録したファミリー名を得る（IDベースで一意）。
   String familyNameOf(FontAsset asset) => 'UserFont_${asset.id}';
@@ -31,6 +36,11 @@ class FontService extends ChangeNotifier {
   }
 
   Future<void> init() async {
+    try {
+      _catalog = await loadDownloadableFontCatalog();
+    } catch (_) {
+      // カタログ読み込み失敗時も既存フォントの初期化は継続する
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_prefsKey);

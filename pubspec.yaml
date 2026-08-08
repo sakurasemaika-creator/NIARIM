@@ -65,6 +65,7 @@ flutter:
   assets:
     - assets/
     - assets/logo/
+    - assets/font_catalog/
   fonts:
     # アプリ全体の基本フォント（仕様書24。白光明朝：lavsic氏作、SIL Open
     # Font License 1.1、Noto Serif派生）

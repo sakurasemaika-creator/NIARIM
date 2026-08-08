@@ -1,78 +1,73 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
+
 /// テキストツール用の「追加フリーフォント」カタログ（オンデマンド
 /// ダウンロード方式。仕様書15）。
 ///
-/// いずれもGoogle Fonts配布分（SIL Open Font License、日本語対応）で、
-/// 初期インストール容量を抑えるためアプリには同梱せず、設定画面
-/// 「フォント管理」からユーザーが選んだものだけをGitHub上のgoogle/fonts
-/// リポジトリ（OFLライセンスの配布元そのもの）から取得する。ダウンロード
-/// 後はFontService.importBundledFont()経由でユーザーフォントと同じ仕組みで
-/// 端末内に保存・登録されるため、以降はオフラインでも利用できる
+/// Google Fonts配布分（SIL Open Font License / Apache License 2.0 /
+/// Ubuntu Font License、いずれも個人・商用問わず無償で利用可能）の
+/// 全ファミリー（約2000書体）を対象とする。初期インストール容量を
+/// 抑えるため実体（TTF/OTF）はアプリに同梱せず、カタログ情報
+/// （フォント名・ダウンロードURL等のテキストデータのみ）を
+/// `assets/font_catalog/font_catalog.json`としてアプリに同梱し、
+/// 選んだフォントだけをGitHub上のgoogle/fontsリポジトリ（OFL等の
+/// 配布元そのもの）から取得する。ダウンロード後はFontService.
+/// importBundledFont()経由でユーザーフォントと同じ仕組みで端末内に
+/// 保存・登録されるため、以降はオフラインでも利用できる
 /// （再ダウンロードは不要）。
 class DownloadableFontEntry {
   /// FontService内で安定的に使うID（FontAsset.id・フォントファミリー名の
-  /// 元になるため、後から変更しないこと）。
+  /// 元になるため、後から変更しないこと）。カタログ生成スクリプト
+  /// （scripts/build_font_catalog.py）で"dlfont_<ディレクトリ名>"の
+  /// 形式で採番している。
   final String id;
   final String displayName;
   final String fileName;
   final String sourceUrl;
-  final double approxSizeMB;
+
+  /// Google Fontsのカテゴリ分類（原文英語）。
+  /// SANS_SERIF / SERIF / DISPLAY / HANDWRITING / MONOSPACE。
+  final String category;
+  final String license;
 
   const DownloadableFontEntry({
     required this.id,
     required this.displayName,
     required this.fileName,
     required this.sourceUrl,
-    required this.approxSizeMB,
+    required this.category,
+    required this.license,
   });
+
+  factory DownloadableFontEntry.fromJson(Map<String, dynamic> j) => DownloadableFontEntry(
+        id: j['id'] as String,
+        displayName: j['displayName'] as String,
+        fileName: j['fileName'] as String,
+        sourceUrl: j['sourceUrl'] as String,
+        category: j['category'] as String? ?? 'SANS_SERIF',
+        license: j['license'] as String? ?? 'SIL Open Font License 1.1',
+      );
 }
 
-const kDownloadableFonts = [
-  DownloadableFontEntry(
-    id: 'dlfont_notosansjp',
-    displayName: 'ノトサンス（ゴシック）',
-    fileName: 'NotoSansJP.ttf',
-    sourceUrl:
-        'https://raw.githubusercontent.com/google/fonts/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf',
-    approxSizeMB: 9.6,
-  ),
-  DownloadableFontEntry(
-    id: 'dlfont_mplusrounded1c',
-    displayName: 'M PLUS Rounded（丸ゴシック）',
-    fileName: 'MPLUSRounded1c-Regular.ttf',
-    sourceUrl:
-        'https://raw.githubusercontent.com/google/fonts/main/ofl/mplusrounded1c/MPLUSRounded1c-Regular.ttf',
-    approxSizeMB: 3.4,
-  ),
-  DownloadableFontEntry(
-    id: 'dlfont_mochiypopone',
-    displayName: 'もちぽっぷ',
-    fileName: 'MochiyPopOne-Regular.ttf',
-    sourceUrl:
-        'https://raw.githubusercontent.com/google/fonts/main/ofl/mochiypopone/MochiyPopOne-Regular.ttf',
-    approxSizeMB: 5.2,
-  ),
-  DownloadableFontEntry(
-    id: 'dlfont_yuseimagic',
-    displayName: '遊筆マジック（手書き風）',
-    fileName: 'YuseiMagic-Regular.ttf',
-    sourceUrl:
-        'https://raw.githubusercontent.com/google/fonts/main/ofl/yuseimagic/YuseiMagic-Regular.ttf',
-    approxSizeMB: 3.1,
-  ),
-  DownloadableFontEntry(
-    id: 'dlfont_hachimarupop',
-    displayName: 'はちまるポップ',
-    fileName: 'HachiMaruPop-Regular.ttf',
-    sourceUrl:
-        'https://raw.githubusercontent.com/google/fonts/main/ofl/hachimarupop/HachiMaruPop-Regular.ttf',
-    approxSizeMB: 4.4,
-  ),
-  DownloadableFontEntry(
-    id: 'dlfont_reggaeone',
-    displayName: 'レゲエワン（漫画・SFX向け）',
-    fileName: 'ReggaeOne-Regular.ttf',
-    sourceUrl:
-        'https://raw.githubusercontent.com/google/fonts/main/ofl/reggaeone/ReggaeOne-Regular.ttf',
-    approxSizeMB: 2.2,
-  ),
-];
+/// カテゴリ（原文英語）→フィルターチップ表示用の日本語ラベル。
+const kFontCategoryLabels = {
+  'SANS_SERIF': 'ゴシック',
+  'SERIF': '明朝・セリフ',
+  'DISPLAY': '装飾',
+  'HANDWRITING': '手書き風',
+  'MONOSPACE': '等幅',
+};
+
+/// `assets/font_catalog/font_catalog.json`を読み込み、
+/// [DownloadableFontEntry]のリストとして返す。
+Future<List<DownloadableFontEntry>> loadDownloadableFontCatalog() async {
+  try {
+    final raw = await rootBundle.loadString('assets/font_catalog/font_catalog.json');
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => DownloadableFontEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  } catch (_) {
+    return const [];
+  }
+}

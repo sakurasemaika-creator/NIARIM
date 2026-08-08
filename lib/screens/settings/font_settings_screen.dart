@@ -1,11 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/downloadable_font.dart';
 import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import 'font_catalog_screen.dart';
 
 /// フォント管理画面（仕様書15：設定 → フォント管理 → ＋追加）。
 /// TTF/OTFの追加・一覧表示・検索・削除・名前変更・詳細表示に対応する。
@@ -19,7 +19,6 @@ class FontSettingsScreen extends StatefulWidget {
 class _FontSettingsScreenState extends State<FontSettingsScreen> {
   bool _showSearch = false;
   String _query = '';
-  final Set<String> _downloadingIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +51,21 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
           padding: const EdgeInsets.all(8),
           children: [
             if (_query.isEmpty) ...[
-              _buildDownloadSection(context, service, scheme),
+              Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: scheme.primaryContainer,
+                    child: Icon(Icons.travel_explore, color: scheme.primary),
+                  ),
+                  title: const Text('追加フリーフォントを探す'),
+                  subtitle: Text('Google Fonts全${service.catalog.length}書体からダウンロード（初回のみネット接続が必要）',
+                      style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const FontCatalogScreen()),
+                  ),
+                ),
+              ),
               const Divider(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -113,67 +126,6 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
         child: const Icon(Icons.add),
       ),
     );
-  }
-
-  /// テキストツール用の追加フリーフォントをダウンロードで追加できる一覧
-  /// （仕様書15：オンデマンドダウンロード方式）。ダウンロード済みのものは
-  /// チェック表示のみとし、フォント本体は下の「追加済みフォント」一覧から
-  /// 通常のユーザーフォントと同様に削除・名前変更できる。
-  Widget _buildDownloadSection(BuildContext context, FontService service, ColorScheme scheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Text('追加フリーフォント（ダウンロード）',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: scheme.onSurfaceVariant)),
-        ),
-        for (final entry in kDownloadableFonts)
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.font_download_outlined),
-              title: Text(entry.displayName),
-              subtitle: Text('約${entry.approxSizeMB.toStringAsFixed(1)}MB ・ SIL Open Font License',
-                  style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
-              trailing: _downloadTrailing(context, service, entry),
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('初回のみネット接続が必要です。ダウンロード後はオフラインでも使えます。',
-              style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
-        ),
-      ],
-    );
-  }
-
-  Widget _downloadTrailing(BuildContext context, FontService service, DownloadableFontEntry entry) {
-    if (service.isCatalogFontDownloaded(entry)) {
-      return const Icon(Icons.check_circle, color: Colors.green);
-    }
-    if (_downloadingIds.contains(entry.id)) {
-      return const SizedBox(
-        width: 20, height: 20,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
-    }
-    return IconButton(
-      icon: const Icon(Icons.download_outlined),
-      onPressed: () => _downloadCatalogFont(entry),
-    );
-  }
-
-  Future<void> _downloadCatalogFont(DownloadableFontEntry entry) async {
-    setState(() => _downloadingIds.add(entry.id));
-    try {
-      await context.read<FontService>().downloadCatalogFont(entry);
-    } on FontDownloadException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } finally {
-      if (mounted) setState(() => _downloadingIds.remove(entry.id));
-    }
   }
 
   String _formatSize(int bytes) {
