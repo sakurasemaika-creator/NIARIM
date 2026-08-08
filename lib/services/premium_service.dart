@@ -7,8 +7,14 @@ import '../config/monetization_gate.dart';
 /// プレミアム加入状態・課金処理を管理する（仕様書13）。
 /// 実際の課金はGoogle Play Billing（in_app_purchase）経由で行い、
 /// purchaseStreamの結果を受けてisPremiumを更新する。
+///
 /// `isMonetizationEnabled`がfalseの間（税務上の都合による一時停止期間）は
-/// ストアへの接続・商品情報取得・購入操作を一切行わない。
+/// ストアへの接続・商品情報取得・購入操作を一切行わない。この期間は
+/// 「リリース記念キャンペーン」として、全ユーザーへプレミアム機能を無料で
+/// 開放する（[isPremium]がtrueを返す）。金銭のやり取りは一切発生しない
+/// （広告非表示・購入不可のまま）ため税務上の位置づけは変わらず、
+/// ユーザー視点では前向きな施策として提示できる。実際に購入したかどうかは
+/// [hasPurchasedPremium]で区別する。
 class PremiumService extends ChangeNotifier {
   // ストアに登録するサブスクリプション商品ID
   static const String monthlyProductId = 'miranima_premium_monthly';
@@ -19,14 +25,21 @@ class PremiumService extends ChangeNotifier {
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   bool _isPremium = false;
-  bool get isPremium => _isPremium;
+
+  /// 実際に購入済みかどうか（課金・ストア関連の判定に使用）。
+  bool get hasPurchasedPremium => _isPremium;
+
+  /// プレミアム機能を利用できるかどうか（機能制限の判定に使用）。
+  /// 実際の購入済み、またはリリース記念キャンペーン期間中はtrue。
+  bool get isPremium => _isPremium || isLaunchCampaignActive;
 
   bool _storeAvailable = false;
   bool get storeAvailable => _storeAvailable;
 
-  /// 課金一時停止期間中（税務上の都合）かどうか。trueの間はPremiumScreenで
-  /// 購入導線を隠し、代わりに準備中の案内を表示する。
-  bool get isMonetizationPaused => !isMonetizationEnabled;
+  /// リリース記念キャンペーン期間中（＝課金一時停止期間、税務上の都合）
+  /// かどうか。trueの間はPremiumScreenで購入導線を隠し、代わりに
+  /// 「プレミアム機能を無料開放中」の案内を表示する。
+  bool get isLaunchCampaignActive => !isMonetizationEnabled;
 
   bool _purchasePending = false;
   bool get purchasePending => _purchasePending;
@@ -73,7 +86,7 @@ class PremiumService extends ChangeNotifier {
   /// purchaseStream経由で非同期に届き、isPremiumへ反映される。
   Future<bool> buy(String productId) async {
     if (!isMonetizationEnabled) {
-      _purchaseError = 'プレミアム機能は準備中です。もうしばらくお待ちください。';
+      _purchaseError = 'ただいまキャンペーン期間中につき、プレミアム機能は無料でご利用いただけます。';
       notifyListeners();
       return false;
     }
@@ -137,9 +150,9 @@ class PremiumService extends ChangeNotifier {
   }
 
   // 無料版の最大動画尺（仕様書12実装チェックリスト：90秒）
-  int get maxProjectDurationSeconds => _isPremium ? 999999 : 90;
+  int get maxProjectDurationSeconds => isPremium ? 999999 : 90;
 
-  bool isFeatureAvailable(PremiumFeature feature) => _isPremium;
+  bool isFeatureAvailable(PremiumFeature feature) => isPremium;
 
   @override
   void dispose() {

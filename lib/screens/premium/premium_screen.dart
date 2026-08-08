@@ -20,7 +20,10 @@ class PremiumScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (premium.isPremium) ...[
+            if (premium.isLaunchCampaignActive) ...[
+              _campaignBanner(context),
+              const SizedBox(height: 24),
+            ] else if (premium.hasPurchasedPremium) ...[
               const Card(
                 color: Color(0xFF2E7D32),
                 child: Padding(
@@ -37,86 +40,102 @@ class PremiumScreen extends StatelessWidget {
             const Text('無料版 vs プレミアム', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             _comparisonTable(context),
-            if (!premium.isPremium) ...[
+            if (premium.isLaunchCampaignActive) ...[
+              const SizedBox(height: 8),
+              Text('※ キャンペーン期間中は無料版でも上記プレミアム機能を全てご利用いただけます',
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ],
+            if (!premium.isLaunchCampaignActive && !premium.hasPurchasedPremium) ...[
               const SizedBox(height: 24),
               const Text('プラン', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              if (premium.isMonetizationPaused)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Icon(Icons.hourglass_empty, color: Theme.of(context).colorScheme.primary),
-                          const SizedBox(width: 8),
-                          const Text('プレミアム機能は準備中です', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ]),
-                        const SizedBox(height: 8),
-                        const Text('購入は現在ご利用いただけません。もうしばらくお待ちください。',
-                            style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
+              if (!premium.storeAvailable)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'ストアに接続できません（実機・ストア審査環境以外では購入できません）',
+                    style: TextStyle(fontSize: 12, color: Colors.orange[300]),
                   ),
-                )
-              else ...[
-                if (!premium.storeAvailable)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      'ストアに接続できません（実機・ストア審査環境以外では購入できません）',
-                      style: TextStyle(fontSize: 12, color: Colors.orange[300]),
-                    ),
-                  ),
-                if (premium.purchaseError != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      premium.purchaseError!,
-                      style: const TextStyle(fontSize: 12, color: Colors.red),
-                    ),
-                  ),
-                _planCard(
-                  context,
-                  '年額プラン（おすすめ）',
-                  '¥5,500',
-                  '実質2か月分無料',
-                  true,
-                  premium,
-                  PremiumService.yearlyProductId,
                 ),
-                const SizedBox(height: 12),
-                _planCard(
-                  context,
-                  '月額プラン',
-                  '¥550/月',
-                  '',
-                  false,
-                  premium,
-                  PremiumService.monthlyProductId,
+              if (premium.purchaseError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    premium.purchaseError!,
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Center(
-                  child: TextButton(
-                    onPressed: premium.storeAvailable
-                        ? () async {
-                            await premium.restorePurchases();
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('購入情報を復元しました（該当する購入がある場合）')),
-                              );
-                            }
+              _planCard(
+                context,
+                '年額プラン（おすすめ）',
+                '¥5,500',
+                '実質2か月分無料',
+                true,
+                premium,
+                PremiumService.yearlyProductId,
+              ),
+              const SizedBox(height: 12),
+              _planCard(
+                context,
+                '月額プラン',
+                '¥550/月',
+                '',
+                false,
+                premium,
+                PremiumService.monthlyProductId,
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: premium.storeAvailable
+                      ? () async {
+                          await premium.restorePurchases();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('購入情報を復元しました（該当する購入がある場合）')),
+                            );
                           }
-                        : null,
-                    child: const Text('購入を復元'),
-                  ),
+                        }
+                      : null,
+                  child: const Text('購入を復元'),
                 ),
-              ],
+              ),
             ],
           ],
         ),
       ),
+      ),
+    );
+  }
+
+  /// リリース記念キャンペーンバナー（仕様書13：課金一時停止期間中は全員へ
+  /// プレミアム機能を無料開放する）。
+  Widget _campaignBanner(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.celebration, color: Colors.amber),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text('リリース記念！有料会員限定機能解放キャンペーン',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            const Text(
+              '期間中は無料版でも全てのプレミアム機能（尺無制限・エンドロゴ編集・'
+              'ウォーターマーク・トーンカーブ・レベル補正）を無料でご利用いただけます。',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            const Text('～12月31日23:59まで', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }
