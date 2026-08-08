@@ -91,15 +91,6 @@ class LicenseScreen extends StatelessWidget {
               applicationName: 'MIRANIMA',
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'WebM書き出しにはFFmpeg（GPL 3.0、ffmpeg_kit_flutter_new_min_gpl経由）を'
-            '使用しています。改変版ソースコードの入手先：'
-            'https://github.com/sk3llo/ffmpeg_kit_flutter\n'
-            'MP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、'
-            'FFmpegは使用していません。',
-            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
-          ),
         ],
       ),
     );

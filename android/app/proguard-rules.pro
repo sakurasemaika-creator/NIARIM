@@ -19,17 +19,12 @@
    public *;
 }
 
-# ffmpeg_kit_flutter_new_min_gpl（WebM/VP9書き出し専用。JNIネイティブ
-# メソッドを使用）。旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**
-# パッケージから移行した際、新パッケージ（com.antonkarpenko.**）への
+# ffmpeg_kit_flutter_new_min_gpl（動画書き出し。JNIネイティブメソッドを使用）。
+# 旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**パッケージから移行した際、
+# 新パッケージ（com.antonkarpenko.**。プラグイン本体・依存するネイティブ
+# ライブラリcom.antonkarpenko:ffmpeg-kit-min-gplともに同名前空間）への
 # keepルール更新が漏れており、リリースビルドでJNIブリッジ・セッション
 # 管理クラスがR8に除去され起動時クラッシュを起こしていた（実機確認）。
-# その後、MP4書き出し（H.264）はGPLライセンス・特許ロイヤリティの論点を
-# 避けるためAndroid標準のハードウェアエンコーダー（MediaCodec、
-# HardwareVideoEncoder.kt）へ切り替えたが、WebM側で試したLGPL版
-# （ffmpeg_kit_flutter_new_video）は実機で起動時クラッシュしたため
-# _min_gplへ戻している（詳細はpubspec.yamlのコメント参照）。
-# パッケージ本体の名前空間はcom.antonkarpenko.ffmpegkitのまま変わらない。
 -keep class com.antonkarpenko.ffmpegkit.** { *; }
 -keep class com.antonkarpenko.smartexception.** { *; }
 

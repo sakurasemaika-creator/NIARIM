@@ -3,12 +3,9 @@ package com.miranima.miranima
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import kotlin.concurrent.thread
 
 /**
  * .mirashare受信フロー（仕様書06）：
@@ -17,10 +14,8 @@ import kotlin.concurrent.thread
  */
 class MainActivity : FlutterActivity() {
     private val channelName = "com.miranima.miranima/share_intent"
-    private val hwVideoEncoderChannelName = "com.miranima.miranima/hw_video_encoder"
     private var methodChannel: MethodChannel? = null
     private var pendingUri: String? = null
-    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,37 +45,6 @@ class MainActivity : FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
-
-        // MP4書き出し用ハードウェアH.264エンコーダー呼び出し（仕様書13：
-        // GPLライセンス・特許ロイヤリティ対応のためFFmpeg/libx264を使わない）。
-        // MediaCodec/MediaMuxerの処理はUIスレッドをブロックしないよう
-        // 別スレッドで実行し、結果はメインスレッドへ戻してから応答する。
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, hwVideoEncoderChannelName)
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "encodeMp4" -> {
-                        @Suppress("UNCHECKED_CAST")
-                        val framePaths = call.argument<List<String>>("framePaths")
-                        val fps = call.argument<Int>("fps")
-                        val width = call.argument<Int>("width")
-                        val height = call.argument<Int>("height")
-                        val outputPath = call.argument<String>("outputPath")
-                        if (framePaths == null || fps == null || width == null || height == null || outputPath == null) {
-                            result.error("INVALID_ARGS", "framePaths/fps/width/height/outputPathが不足しています", null)
-                            return@setMethodCallHandler
-                        }
-                        thread(name = "hw-video-encoder") {
-                            try {
-                                HardwareVideoEncoder.encode(framePaths, fps, width, height, outputPath)
-                                mainHandler.post { result.success(null) }
-                            } catch (e: Exception) {
-                                mainHandler.post { result.error("ENCODE_FAILED", e.message, null) }
-                            }
-                        }
-                    }
-                    else -> result.notImplemented()
-                }
-            }
     }
 
     override fun onNewIntent(intent: Intent) {

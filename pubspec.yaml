@@ -54,20 +54,13 @@ dependencies:
   # 保守が続いているフォークへ移行した（ビルド時にネイティブライブラリを
   # 自動ダウンロードする方式で、失われたMaven依存を回避できる）。
   #
-  # MP4書き出し（H.264）はAndroid標準のハードウェアエンコーダー
-  # （MediaCodec、android/app側のネイティブ実装）を使うため、FFmpegの
-  # libx264（GPL）には依存しなくなった。WebM書き出し（VP9）用途のみ
-  # FFmpegを使い続けるため、GPLコーデックを含まないLGPL版の"_video"
-  # パッケージへ一度切り替えたが、実機で起動時クラッシュが発生した
-  # （ffmpeg-kit-video 2.2.1のネイティブライブラリ読み込み失敗が
-  # 疑われる。FFmpegKitFlutterPluginがプラグイン接続時
-  # （＝アプリ起動のたび）にFFmpegKitConfigへ触れる際、ネイティブ
-  # ライブラリのロードに失敗するとUnsatisfiedLinkError（Exceptionでは
-  # なくError）が送出され、GeneratedPluginRegistrant側のcatch(Exception)
-  # で捕捉できずアプリ全体がクラッシュする経路があるため）。この
-  # パッケージは実機での動作実績が無く検証手段も無いため、動作実績のある
-  # "_min_gpl"へ一旦戻した（WebMのみ再びGPLライセンスの論点が残る状態。
-  # 実機で安全に検証できる状況が整い次第、非GPL版への再移行を検討する）。
+  # 【重要】libx264のGPLライセンス・H.264特許ロイヤリティ対応として、
+  # MP4書き出しをAndroid標準のハードウェアエンコーダー（MediaCodec）へ、
+  # WebM用のFFmpeg依存を非GPL版（"_video"パッケージ）へ切り替える対応を
+  # 一度実施したが、実機（Android 16）で起動直後にクラッシュする不具合が
+  # 発生したため両方とも全面revertした（詳細はdocs/AI設計書/
+  # 12_実装チェックリスト.mdの追記を参照）。再挑戦する際は必ず実機で
+  # 動作確認できる体制を整えてから行うこと。
   ffmpeg_kit_flutter_new_min_gpl: ^2.6.2
 
 dev_dependencies:

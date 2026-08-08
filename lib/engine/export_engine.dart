@@ -14,7 +14,6 @@ import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/scene.dart';
-import '../services/hw_video_encoder.dart';
 
 typedef ExportProgressCallback = void Function(int currentFrame, int totalFrames);
 
@@ -87,44 +86,6 @@ class ExportEngine {
     return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
   }
 
-  /// 無料版のエンドカード（MIRANIMAロゴ、約5秒）のフレーム画像をPNGとして
-  /// 生成する（仕様書06・13）。FFmpegのdrawtextフィルターに依存せず、
-  /// 他のテキスト描画と同じdart:uiのParagraphBuilderで焼き込む。
-  Future<Uint8List> _renderEndCardPng({required int width, required int height}) async {
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    canvas.drawRect(
-      ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-      ui.Paint()..color = const ui.Color(0xFF000000),
-    );
-
-    final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
-      ..pushStyle(ui.TextStyle(
-        color: const ui.Color(0xFFFFFFFF),
-        fontSize: width * 0.08,
-        fontWeight: ui.FontWeight.bold,
-      ))
-      ..addText('MIRANIMA');
-    final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: width.toDouble()));
-    canvas.drawParagraph(paragraph, ui.Offset(0, (height - paragraph.height) / 2));
-
-    final picture = recorder.endRecording();
-    final uiImage = await picture.toImage(width, height);
-    final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
-    uiImage.dispose();
-    final rgba = byteData!.buffer.asUint8List();
-    return img.encodePng(
-      img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
-    );
-  }
-
-  /// MP4書き出し（仕様書13）。Android標準のハードウェアH.264エンコーダー
-  /// （MediaCodec、android/app側のネイティブ実装）を使う。FFmpeg/libx264
-  /// （GPLライセンス）は使わないことで、コピーレフト・H.264特許
-  /// ロイヤリティの論点を回避する。[appendEndCard]がtrueの場合、無料版の
-  /// エンドカード（約5秒）を本編フレーム列の末尾へ同一エンコード内で
-  /// 追加する（動画結合ではなく同一パスの重複指定でエンコーダー側が
-  /// 静止フレームとして扱う）。
   Future<String> exportMp4({
     required List<Scene> scenes,
     required TileManager tileManager,
@@ -134,7 +95,6 @@ class ExportEngine {
     required int width,
     required int height,
     required int backgroundColor,
-    bool appendEndCard = false,
     ExportProgressCallback? onProgress,
   }) async {
     final tmpDir = await getTemporaryDirectory();
@@ -147,7 +107,6 @@ class ExportEngine {
     // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
     // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する（仕様書05・16）。
     final layerHomes = buildLayerHomeIndex(scenes);
-    final framePaths = <String>[];
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
@@ -170,29 +129,20 @@ class ExportEngine {
         );
         final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
         await file.writeAsBytes(pngBytes);
-        framePaths.add(file.path);
         onProgress?.call(globalIndex + 1, totalFrames);
         globalIndex++;
       }
     }
 
-    if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(width: width, height: height);
-      final endCardFile = File('${framesDir.path}/endcard.png');
-      await endCardFile.writeAsBytes(endCardBytes);
-      for (int i = 0; i < fps * 5; i++) {
-        framePaths.add(endCardFile.path);
-      }
-    }
-
     final outputPath = '${tmpDir.path}/output_${DateTime.now().millisecondsSinceEpoch}.mp4';
-    await HardwareVideoEncoder.encodeMp4(
-      framePaths: framePaths,
-      fps: fps,
-      width: width,
-      height: height,
-      outputPath: outputPath,
+    final session = await FFmpegKit.execute(
+      '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
+      '-c:v libx264 -pix_fmt yuv420p "$outputPath"',
     );
+    final rc = await session.getReturnCode();
+    if (!ReturnCode.isSuccess(rc)) {
+      throw Exception('FFmpeg failed: ${await session.getOutput()}');
+    }
     framesDir.deleteSync(recursive: true);
     return outputPath;
   }
@@ -251,13 +201,6 @@ class ExportEngine {
     return outputPath;
   }
 
-  /// WebM書き出し（VP9、仕様書13）。libvpxはBSDライセンスかつVP9自体が
-  /// ロイヤリティフリーのため、引き続きFFmpeg（GPLコーデックを含まない
-  /// LGPL版のffmpeg_kit_flutter_new_video）で問題ない。[appendEndCard]が
-  /// trueの場合、無料版のエンドカードをフレーム列の末尾へ同一シーケンス内で
-  /// 追加する（FFmpegのdrawtext/concatフィルターには依存しない。ffmpegの
-  /// image2デマルチプレクサは連番ファイルを要求するため、エンドカード画像を
-  /// 必要フレーム数ぶん物理的に複製する）。
   Future<String> exportWebm({
     required List<Scene> scenes,
     required TileManager tileManager,
@@ -267,7 +210,6 @@ class ExportEngine {
     required int width,
     required int height,
     required int backgroundColor,
-    bool appendEndCard = false,
     ExportProgressCallback? onProgress,
   }) async {
     final tmpDir = await getTemporaryDirectory();
@@ -305,15 +247,6 @@ class ExportEngine {
       }
     }
 
-    if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(width: width, height: height);
-      for (int i = 0; i < fps * 5; i++) {
-        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
-        await file.writeAsBytes(endCardBytes);
-        globalIndex++;
-      }
-    }
-
     final outputPath = '${tmpDir.path}/output_${DateTime.now().millisecondsSinceEpoch}.webm';
     final session = await FFmpegKit.execute(
       '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
@@ -324,6 +257,52 @@ class ExportEngine {
       throw Exception('FFmpeg failed: ${await session.getOutput()}');
     }
     framesDir.deleteSync(recursive: true);
+    return outputPath;
+  }
+
+  /// 無料版：本編動画の末尾へMIRANIMAロゴのエンドカード（約5秒）を自動追加する（仕様書06・13）。
+  /// エンドカード素材は都度FFmpegで単色背景＋テキストのプレースホルダーとして生成する。
+  /// 生成・結合に失敗した場合は書き出し自体を失敗させず、本編動画をそのまま返す。
+  Future<String> appendEndCard({
+    required String videoPath,
+    required String format, // 'mp4' | 'webm'
+    required int width,
+    required int height,
+    int logoDurationSeconds = 5,
+  }) async {
+    final tmpDir = await getTemporaryDirectory();
+    final endCardPath =
+        '${tmpDir.path}/endcard_${DateTime.now().millisecondsSinceEpoch}.$format';
+    final codecArgs = format == 'webm'
+        ? '-c:v libvpx-vp9 -pix_fmt yuva420p'
+        : '-c:v libx264 -pix_fmt yuv420p';
+
+    final genSession = await FFmpegKit.execute(
+      '-y -f lavfi -i "color=c=black:s=${width}x$height:d=$logoDurationSeconds:r=30" '
+      '-vf "drawtext=text=\'MIRANIMA\':fontcolor=white:fontsize=${(width * 0.08).round()}:'
+      'x=(w-text_w)/2:y=(h-text_h)/2" $codecArgs "$endCardPath"',
+    );
+    if (!ReturnCode.isSuccess(await genSession.getReturnCode())) {
+      return videoPath;
+    }
+
+    final outputPath =
+        '${tmpDir.path}/output_endcard_${DateTime.now().millisecondsSinceEpoch}.$format';
+    final concatSession = await FFmpegKit.execute(
+      '-y -i "$videoPath" -i "$endCardPath" '
+      '-filter_complex "[0:v]scale=$width:$height,setsar=1[v0];[1:v]scale=$width:$height,setsar=1[v1];'
+      '[v0][v1]concat=n=2:v=1:a=0[outv]" '
+      '-map "[outv]" $codecArgs "$outputPath"',
+    );
+    if (!ReturnCode.isSuccess(await concatSession.getReturnCode())) {
+      return videoPath;
+    }
+    try {
+      File(endCardPath).deleteSync();
+      File(videoPath).deleteSync();
+    } catch (_) {
+      // 一時ファイル削除失敗は無視する
+    }
     return outputPath;
   }
 }

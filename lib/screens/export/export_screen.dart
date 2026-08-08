@@ -171,12 +171,6 @@ class _ExportScreenState extends State<ExportScreen> {
         _progressDialogSetState?.call(() {});
       }
 
-      // 無料版：書き出し時にエンドカード（MIRANIMAロゴ・約5秒）を本編末尾へ
-      // 自動追加する（仕様書06・13）。mp4/webmとも、動画の結合ではなく
-      // フレーム生成の段階で末尾へ焼き込む（endcard_frame参照）。
-      final shouldAppendEndCard = !premiumService.isPremium &&
-          (_format == ExportFormat.mp4 || _format == ExportFormat.webm);
-
       String outputPath;
       switch (_format) {
         case ExportFormat.mp4:
@@ -189,7 +183,6 @@ class _ExportScreenState extends State<ExportScreen> {
             width: project.exportWidth,
             height: project.exportHeight,
             backgroundColor: project.backgroundColor,
-            appendEndCard: shouldAppendEndCard,
             onProgress: onProgress,
           );
         case ExportFormat.gif:
@@ -214,9 +207,19 @@ class _ExportScreenState extends State<ExportScreen> {
             width: project.exportWidth,
             height: project.exportHeight,
             backgroundColor: project.backgroundColor,
-            appendEndCard: shouldAppendEndCard,
             onProgress: onProgress,
           );
+      }
+
+      // 無料版：書き出し時にエンドカード（MIRANIMAロゴ・約5秒）を本編末尾へ自動追加する（仕様書06・13）
+      if (!premiumService.isPremium &&
+          (_format == ExportFormat.mp4 || _format == ExportFormat.webm)) {
+        outputPath = await engine.appendEndCard(
+          videoPath: outputPath,
+          format: _format == ExportFormat.mp4 ? 'mp4' : 'webm',
+          width: project.exportWidth,
+          height: project.exportHeight,
+        );
       }
 
       _closeProgressDialog();
