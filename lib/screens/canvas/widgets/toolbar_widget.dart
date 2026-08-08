@@ -160,16 +160,24 @@ class ToolbarWidget extends StatelessWidget {
                   icon: const Icon(Icons.layers_outlined, size: 20), onPressed: onOnionSkinTap, tooltip: 'オニオンスキン'),
             ),
             // ツール早替えボタン（↺）
-            // ツール早替えボタン：タップで登録順に切替、長押しで管理ポップアップ（仕様書02・08）
+            // ツール早替えボタン：タップで登録順に切替、長押しまたは上スワイプで
+            // 管理ポップアップ（登録・並び替え）を表示（仕様書02・08）
             FirstUseTooltip(
               tooltipKey: 'quick_tool',
-              message: 'タップで登録したツールを順番に切り替えられます。長押しで登録内容を編集できます。',
+              message: 'タップで登録したツールを順番に切り替えられます。長押しまたは上にスワイプで登録内容を編集できます。',
               child: GestureDetector(
                 onLongPress: onQuickToolLongPress,
+                onVerticalDragEnd: (details) {
+                  // 上方向への素早いスワイプで長押しと同じ編集ポップアップを開く
+                  // （primaryVelocityは下向き正・上向き負）。
+                  if ((details.primaryVelocity ?? 0) < -200) {
+                    onQuickToolLongPress();
+                  }
+                },
                 child: IconButton(
                   icon: const Icon(Icons.loop, size: 20),
                   onPressed: onQuickToolTap,
-                  tooltip: 'ツール早替え（長押しで編集）',
+                  tooltip: 'ツール早替え（長押し/上スワイプで編集）',
                 ),
               ),
             ),

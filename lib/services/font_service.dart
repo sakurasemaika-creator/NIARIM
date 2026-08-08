@@ -221,6 +221,16 @@ class FontService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// お気に入り登録／解除を切り替える（フォント選択画面「ダウンロード済み」
+  /// タブでの絞り込みに使用）。
+  Future<void> toggleFavorite(String id) async {
+    final idx = _fonts.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _fonts[idx] = _fonts[idx].copyWith(isFavorite: !_fonts[idx].isFavorite);
+    await _persist();
+    notifyListeners();
+  }
+
   Future<void> removeFont(String id) async {
     final idx = _fonts.indexWhere((f) => f.id == id);
     if (idx < 0) return;

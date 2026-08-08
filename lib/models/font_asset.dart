@@ -6,6 +6,7 @@ class FontAsset {
   final String fileName; // 実ファイル名（拡張子込み。Fonts/フォルダ内）
   final int sizeBytes;
   final DateTime addedAt;
+  final bool isFavorite;
 
   const FontAsset({
     required this.id,
@@ -13,16 +14,18 @@ class FontAsset {
     required this.fileName,
     required this.sizeBytes,
     required this.addedAt,
+    this.isFavorite = false,
   });
 
   String get extension => fileName.split('.').last.toUpperCase();
 
-  FontAsset copyWith({String? displayName}) => FontAsset(
+  FontAsset copyWith({String? displayName, bool? isFavorite}) => FontAsset(
         id: id,
         displayName: displayName ?? this.displayName,
         fileName: fileName,
         sizeBytes: sizeBytes,
         addedAt: addedAt,
+        isFavorite: isFavorite ?? this.isFavorite,
       );
 
   Map<String, dynamic> toJson() => {
@@ -31,6 +34,7 @@ class FontAsset {
         'fileName': fileName,
         'sizeBytes': sizeBytes,
         'addedAt': addedAt.toIso8601String(),
+        'isFavorite': isFavorite,
       };
 
   factory FontAsset.fromJson(Map<String, dynamic> j) => FontAsset(
@@ -39,5 +43,6 @@ class FontAsset {
         fileName: j['fileName'] as String,
         sizeBytes: j['sizeBytes'] as int,
         addedAt: DateTime.parse(j['addedAt'] as String),
+        isFavorite: j['isFavorite'] as bool? ?? false,
       );
 }
