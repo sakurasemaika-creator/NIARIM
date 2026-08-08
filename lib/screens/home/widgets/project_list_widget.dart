@@ -564,10 +564,23 @@ class ProjectListWidget extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('新規フォルダ'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 8),
+            // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
+            // ヒント（フォルダは複数階層に対応しているため実現可能）。
+            Text(
+              '同じ作品の複数話数やシリーズをまとめる場合にも使えます',
+              style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+            ),
+          ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
