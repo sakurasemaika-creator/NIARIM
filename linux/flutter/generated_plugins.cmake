@@ -4,7 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_linux
-  ffmpeg_kit_flutter_new_video
+  ffmpeg_kit_flutter_new_min_gpl
   url_launcher_linux
 )
 
