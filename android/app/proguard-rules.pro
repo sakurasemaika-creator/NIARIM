@@ -19,15 +19,24 @@
    public *;
 }
 
-# ffmpeg_kit_flutter_min_gpl（動画書き出し。JNIネイティブメソッドを使用）
--keep class com.arthenica.ffmpegkit.** { *; }
--keep class com.arthenica.smartexception.** { *; }
+# ffmpeg_kit_flutter_new_min_gpl（動画書き出し。JNIネイティブメソッドを使用）。
+# 旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**パッケージから移行した際、
+# 新パッケージ（com.antonkarpenko.**。プラグイン本体・依存するネイティブ
+# ライブラリcom.antonkarpenko:ffmpeg-kit-min-gplともに同名前空間）への
+# keepルール更新が漏れており、リリースビルドでJNIブリッジ・セッション
+# 管理クラスがR8に除去され起動時クラッシュを起こしていた（実機確認）。
+-keep class com.antonkarpenko.ffmpegkit.** { *; }
+-keep class com.antonkarpenko.smartexception.** { *; }
 
 # in_app_purchase（課金。Play Billingとの連携でリフレクションを使用する場合がある）
 -keep class com.android.billingclient.** { *; }
 
-# video_player / audioplayers（メディア再生。ExoPlayer関連）
--keep class com.google.android.exoplayer2.** { *; }
+# video_player（メディア再生。内部でAndroidX Media3
+# （旧ExoPlayer2のcom.google.android.exoplayer2.**から移行済み）を使用）
+-keep class androidx.media3.** { *; }
+
+# share_plus（共有シート。dev.fluttercommunity.plus.share名前空間）
+-keep class dev.fluttercommunity.plus.share.** { *; }
 
 # file_picker
 -keep class com.mr.flutter.plugin.filepicker.** { *; }
