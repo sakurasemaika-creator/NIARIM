@@ -1,6 +1,11 @@
 # リリースビルドのAPK容量削減（R8による未使用コード除去・難読化）向けの
 # 追加keepルール（仕様書01：低スペック端末対応）。
 #
+# 【現在R8は無効】android/app/build.gradle.ktsでisMinifyEnabled=falseの
+# ため、以下のルールは現時点では効果を持たない（R8再有効化時に備えて
+# 残してある）。R8再有効化の経緯・注意点はbuild.gradle.ktsのコメントと
+# docs/AI設計書/12_実装チェックリスト.mdの追記を参照。
+#
 # FlutterのDartコード自体はAOTコンパイルされたネイティブコードであり、
 # ここでのR8処理（Java/Kotlinバイトコードのみが対象）の影響を受けない。
 # そのためアプリの見た目・機能はこの設定変更では変わらない。対象は
@@ -19,10 +24,9 @@
    public *;
 }
 
-# ffmpeg_kit_flutter_new_min_gpl（動画書き出し。JNIネイティブメソッドを使用）。
-# 旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**パッケージから移行した際、
-# 新パッケージ（com.antonkarpenko.**。プラグイン本体・依存するネイティブ
-# ライブラリcom.antonkarpenko:ffmpeg-kit-min-gplともに同名前空間）への
+# ffmpeg_kit_flutter_new_video（WebM/VP9書き出し専用。JNIネイティブ
+# メソッドを使用）。旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**
+# パッケージから移行した際、新パッケージ（com.antonkarpenko.**）への
 # keepルール更新が漏れており、リリースビルドでJNIブリッジ・セッション
 # 管理クラスがR8に除去され起動時クラッシュを起こしていた（実機確認）。
 -keep class com.antonkarpenko.ffmpegkit.** { *; }
