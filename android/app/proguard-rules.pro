@@ -1,13 +1,6 @@
 # リリースビルドのAPK容量削減（R8による未使用コード除去・難読化）向けの
 # 追加keepルール（仕様書01：低スペック端末対応）。
 #
-# 【診断のため一時的に再有効化中】実機での起動時クラッシュの原因調査用に
-# build.gradle.ktsでisMinifyEnabled=trueへ戻している。このビルドは
-# 実機へインストールする目的ではなく、usage.txt（R8が実際に除去した
-# クラス一覧）をCI artifactとして取得する目的のみに使う。経緯は
-# build.gradle.ktsのコメントとdocs/AI設計書/12_実装チェックリスト.md
-# の追記を参照。
-#
 # FlutterのDartコード自体はAOTコンパイルされたネイティブコードであり、
 # ここでのR8処理（Java/Kotlinバイトコードのみが対象）の影響を受けない。
 # そのためアプリの見た目・機能はこの設定変更では変わらない。対象は
@@ -17,6 +10,19 @@
 # 通常は追加設定なしで動作するが、リフレクション・JNIを利用するものは
 # 明示的なkeepが無いと難読化・除去で壊れる可能性があるため、念のため
 # 保守的にkeepしておく。
+
+# 自作コード（com.miranima.miranima配下）。usage.txtでの実機起動時
+# クラッシュ原因調査により、HardwareVideoEncoder（Kotlinのobject）の
+# シングルトンインスタンスフィールド（INSTANCE）がR8に除去されている
+# ことが判明した。MainActivity.ktはMethodChannelハンドラー（ラムダ式）
+# 内からこのオブジェクトを呼び出しているが、R8の到達可能性解析がこの
+# パターンを正しく追跡できず「未使用」と誤判定していたと考えられる。
+# INSTANCEフィールドが無い状態でMainActivityのクラスが読み込まれる際
+# （＝アプリ起動時）にNoSuchFieldErrorが発生し、起動直後のクラッシュを
+# 起こしていた（usage.txtで確認）。自作コードは全体でも小規模なため、
+# 個別の除去パターンを追いかけるのではなく丸ごとkeepすることで、同種の
+# 問題が今後別のクラスで再発することも防ぐ。
+-keep class com.miranima.miranima.** { *; }
 
 # google_mobile_ads（広告SDK。公式ドキュメント推奨のkeepルール）
 -keep public class com.google.android.gms.ads.** {

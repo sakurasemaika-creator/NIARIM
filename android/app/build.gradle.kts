@@ -35,14 +35,19 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
 
-            // 【診断目的で一時的に再有効化】R8有効時のリリースビルドが実機
-            // （Android 16）で起動直後にクラッシュする不具合の原因調査用。
-            // R8無効ビルドは実機で正常起動を確認済みのため、このビルド自体は
-            // 実機へインストールせず、build/app/outputs/mapping/release/
-            // usage.txt（R8が実際に除去したクラス一覧）をCI artifactとして
-            // 取得し、除去されているクラスを特定した上でkeepルールを直す
-            // 目的のみに使う。詳細はdocs/AI設計書/12_実装チェックリスト.md
-            // の追記を参照。
+            // APK容量削減（仕様書01：低スペック端末対応）。R8はJava/Kotlinの
+            // プラグイングルーコードのみを対象とし、FlutterのDartコード
+            // （AOTコンパイル済みネイティブコード）には影響しないため、
+            // アプリの見た目・機能は変わらない。
+            //
+            // 【経緯】実機（Android 16）で起動直後にクラッシュする不具合の
+            // 原因をusage.txt（R8が実際に除去したクラス一覧）で調査した結果、
+            // com.miranima.miranima.HardwareVideoEncoder（Kotlinのobject）の
+            // シングルトンインスタンスフィールドがR8に除去されていたことが
+            // 判明した。proguard-rules.proに`-keep class
+            // com.miranima.miranima.** { *; }`を追加して修正済み。ただし
+            // この修正込みでのR8有効ビルドの実機起動確認はまだ済んでいない
+            // ため、次のビルドで改めて実機確認が必要。
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
