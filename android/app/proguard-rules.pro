@@ -32,6 +32,22 @@
    public *;
 }
 
+# WorkManager（google_mobile_adsが内部でバックグラウンド処理に使用。
+# 実機のバグレポート（AndroidRuntimeのFATAL EXCEPTION）で、以下の例外に
+# より起動直後にクラッシュしていたことを確認した：
+#   java.lang.RuntimeException: Unable to get provider
+#   androidx.startup.InitializationProvider: ...
+#   Failed to create an instance of androidx.work.impl.WorkDatabase
+# androidx.startup.InitializationProviderはContentProviderとして
+# Application.onCreate()より前（handleBindApplication時）に初期化される
+# ため、通常の未捕捉例外ハンドラーでは捕捉できない。WorkManagerが内部で
+# 使うRoom生成クラス（WorkDatabase実装）がR8の最適化（class merging等）
+# で壊れることによる既知の問題。
+-keep class androidx.work.** { *; }
+-keep class * extends androidx.room.RoomDatabase
+-keep class androidx.startup.** { *; }
+-dontwarn androidx.work.**
+
 # ffmpeg_kit_flutter_new_min_gpl（動画書き出し。JNIネイティブメソッドを使用）。
 # 旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**パッケージから移行した際、
 # 新パッケージ（com.antonkarpenko.**）へのkeepルール更新が漏れており、
