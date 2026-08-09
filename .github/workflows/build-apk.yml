@@ -73,3 +73,33 @@ jobs:
             build/app/outputs/mapping/release/usage.txt
           retention-days: 14
           if-no-files-found: warn
+
+      # Artifactのダウンロードが環境によっては行えないため、ジョブログ
+      # からも直接確認できるよう、注目パッケージに関するusage.txtの
+      # 該当行をログへ出力する（診断用、一時的）。
+      - name: usage.txtの注目パッケージ該当行を出力
+        if: ${{ inputs.build-type == 'release' }}
+        run: |
+          F=build/app/outputs/mapping/release/usage.txt
+          if [ -f "$F" ]; then
+            echo "=== usage.txt 総行数 ==="
+            wc -l "$F"
+            for PKG in \
+              "com.antonkarpenko" \
+              "androidx.media3" \
+              "dev.fluttercommunity.plus.share" \
+              "com.mr.flutter.plugin.filepicker" \
+              "com.google.android.gms.ads" \
+              "com.google.ads" \
+              "com.android.billingclient" \
+              "com.miranima.miranima" \
+              "io.flutter.plugins" \
+              "io.flutter.embedding" \
+              "io.flutter.plugin.common.MethodChannel" \
+              "GeneratedPluginRegistrant"; do
+              echo "=== grep: $PKG ==="
+              grep -F "$PKG" "$F" || echo "(該当なし)"
+            done
+          else
+            echo "usage.txt が見つかりません（R8が実行されていない可能性）"
+          fi
