@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:label="miranima"
-        android:name=".MainApplication"
+        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -44,13 +44,6 @@
                     android:pathPattern=".*\\.mirashare"/>
             </intent-filter>
         </activity>
-        <!-- 【診断用・一時的】未捕捉例外のスタックトレースを表示するだけの
-             最小限の画面。原因特定後、MainApplication.kt・CrashActivity.kt
-             と合わせて削除すること。 -->
-        <activity
-            android:name=".CrashActivity"
-            android:exported="false"
-            android:theme="@style/LaunchTheme" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

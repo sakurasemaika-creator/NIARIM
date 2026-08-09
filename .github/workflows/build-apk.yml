@@ -59,9 +59,9 @@ jobs:
           path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
           retention-days: 14
 
-      # リリースビルドの起動時クラッシュ切り分け用（実機ログが取得できない
-      # ため、R8が実際に何を除去したかをmapping/usageファイルから直接
-      # 確認する）。R8有効時（isMinifyEnabled=true）のみ生成される。
+      # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
+      # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存
+      # しておく）。R8有効時（isMinifyEnabled=true）のみ生成される。
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
         if: ${{ inputs.build-type == 'release' }}
         uses: actions/upload-artifact@v4
@@ -73,33 +73,3 @@ jobs:
             build/app/outputs/mapping/release/usage.txt
           retention-days: 14
           if-no-files-found: warn
-
-      # Artifactのダウンロードが環境によっては行えないため、ジョブログ
-      # からも直接確認できるよう、注目パッケージに関するusage.txtの
-      # 該当件数・冒頭数行のみをログへ出力する（診断用、一時的。
-      # ログ取得側の切り詰め対策として、パッケージごとの出力を厳しく
-      # 制限し、最重要のものを先頭に置く）。
-      - name: usage.txtの注目パッケージ該当行を出力
-        if: ${{ inputs.build-type == 'release' }}
-        run: |
-          F=build/app/outputs/mapping/release/usage.txt
-          if [ -f "$F" ]; then
-            echo "TOTAL_LINES=$(wc -l < "$F")"
-            for PKG in \
-              "com.miranima.miranima" \
-              "com.antonkarpenko" \
-              "dev.fluttercommunity.plus.share" \
-              "com.mr.flutter.plugin.filepicker" \
-              "com.google.android.gms.ads" \
-              "com.google.ads" \
-              "com.android.billingclient" \
-              "GeneratedPluginRegistrant" \
-              "androidx.media3" \
-              "io.flutter.plugin.common.MethodChannel"; do
-              COUNT=$(grep -F -c "$PKG" "$F" || true)
-              echo "### $PKG : ${COUNT:-0}件"
-              grep -F "$PKG" "$F" | head -8 || true
-            done
-          else
-            echo "usage.txt が見つかりません（R8が実行されていない可能性）"
-          fi
