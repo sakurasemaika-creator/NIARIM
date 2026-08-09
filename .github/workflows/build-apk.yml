@@ -76,29 +76,29 @@ jobs:
 
       # Artifactのダウンロードが環境によっては行えないため、ジョブログ
       # からも直接確認できるよう、注目パッケージに関するusage.txtの
-      # 該当行をログへ出力する（診断用、一時的）。
+      # 該当件数・冒頭数行のみをログへ出力する（診断用、一時的。
+      # ログ取得側の切り詰め対策として、パッケージごとの出力を厳しく
+      # 制限し、最重要のものを先頭に置く）。
       - name: usage.txtの注目パッケージ該当行を出力
         if: ${{ inputs.build-type == 'release' }}
         run: |
           F=build/app/outputs/mapping/release/usage.txt
           if [ -f "$F" ]; then
-            echo "=== usage.txt 総行数 ==="
-            wc -l "$F"
+            echo "TOTAL_LINES=$(wc -l < "$F")"
             for PKG in \
+              "com.miranima.miranima" \
               "com.antonkarpenko" \
-              "androidx.media3" \
               "dev.fluttercommunity.plus.share" \
               "com.mr.flutter.plugin.filepicker" \
               "com.google.android.gms.ads" \
               "com.google.ads" \
               "com.android.billingclient" \
-              "com.miranima.miranima" \
-              "io.flutter.plugins" \
-              "io.flutter.embedding" \
-              "io.flutter.plugin.common.MethodChannel" \
-              "GeneratedPluginRegistrant"; do
-              echo "=== grep: $PKG ==="
-              grep -F "$PKG" "$F" || echo "(該当なし)"
+              "GeneratedPluginRegistrant" \
+              "androidx.media3" \
+              "io.flutter.plugin.common.MethodChannel"; do
+              COUNT=$(grep -F -c "$PKG" "$F" || true)
+              echo "### $PKG : ${COUNT:-0}件"
+              grep -F "$PKG" "$F" | head -8 || true
             done
           else
             echo "usage.txt が見つかりません（R8が実行されていない可能性）"
