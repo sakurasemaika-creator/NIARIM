@@ -32,11 +32,11 @@
    public *;
 }
 
-# ffmpeg_kit_flutter_new_video（WebM/VP9書き出し専用。JNIネイティブ
-# メソッドを使用）。旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**
-# パッケージから移行した際、新パッケージ（com.antonkarpenko.**）への
-# keepルール更新が漏れており、リリースビルドでJNIブリッジ・セッション
-# 管理クラスがR8に除去され起動時クラッシュを起こしていた（実機確認）。
+# ffmpeg_kit_flutter_new_min_gpl（動画書き出し。JNIネイティブメソッドを使用）。
+# 旧ffmpeg_kit_flutter_min_gplのcom.arthenica.**パッケージから移行した際、
+# 新パッケージ（com.antonkarpenko.**）へのkeepルール更新が漏れており、
+# リリースビルドでJNIブリッジ・セッション管理クラスがR8に除去され
+# 起動時クラッシュを起こしていた（実機確認）。
 -keep class com.antonkarpenko.ffmpegkit.** { *; }
 -keep class com.antonkarpenko.smartexception.** { *; }
 
