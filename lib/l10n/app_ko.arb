@@ -770,5 +770,35 @@
   "perfSettingsCopyPresetDialogBody": "사용자 지정 설정으로 복사할 프리셋을 선택하세요.",
   "perfSettingsCopyDescLow": "앞뒤 1장 표시・경량 동작",
   "perfSettingsCopyDescMedium": "앞뒤 3장 표시・표준",
-  "perfSettingsCopyDescHigh": "앞뒤 5장 표시・고화질"
+  "perfSettingsCopyDescHigh": "앞뒤 5장 표시・고화질",
+  "filterPanelTitle": "필터",
+  "filterPanelTitleBulk": "필터({count}프레임에 일괄 적용)",
+  "@filterPanelTitleBulk": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterSearchHint": "필터 검색",
+  "filterStrengthBlurRadius": "강도(흐림 반경)",
+  "filterColorLevels": "색상 수",
+  "filterEdgeStrength": "엣지 강조",
+  "filterToneCurveLinear": "표준",
+  "filterToneCurveBrighten": "밝게",
+  "filterToneCurveDarken": "어둡게",
+  "filterToneCurveHighContrast": "고대비",
+  "filterToneCurveLowContrast": "저대비",
+  "filterToneCurveInvert": "반전",
+  "filterLevelsInputBlack": "입력: 검정",
+  "filterLevelsInputWhite": "입력: 흰색",
+  "filterLevelsOutputBlack": "출력: 검정",
+  "filterLevelsOutputWhite": "출력: 흰색",
+  "filterApplyButton": "적용",
+  "filterApplyBulkButton": "{count}프레임에 적용",
+  "@filterApplyBulkButton": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterEmpty": "필터가 없습니다",
+  "filterApplyingTitle": "필터 적용 중",
+  "filterApplyingSubtitle": "{name}　{count}프레임",
+  "@filterApplyingSubtitle": {
+    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+  }
 }

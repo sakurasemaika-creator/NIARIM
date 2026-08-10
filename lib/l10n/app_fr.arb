@@ -770,5 +770,35 @@
   "perfSettingsCopyPresetDialogBody": "Choisissez un préréglage à copier dans vos paramètres personnalisés.",
   "perfSettingsCopyDescLow": "Affiche 1 image de chaque côté · léger",
   "perfSettingsCopyDescMedium": "Affiche 3 images de chaque côté · standard",
-  "perfSettingsCopyDescHigh": "Affiche 5 images de chaque côté · haute qualité"
+  "perfSettingsCopyDescHigh": "Affiche 5 images de chaque côté · haute qualité",
+  "filterPanelTitle": "Filtre",
+  "filterPanelTitleBulk": "Filtre (appliqué à {count} images)",
+  "@filterPanelTitleBulk": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterSearchHint": "Rechercher un filtre",
+  "filterStrengthBlurRadius": "Intensité (rayon de flou)",
+  "filterColorLevels": "Nombre de couleurs",
+  "filterEdgeStrength": "Accentuation des contours",
+  "filterToneCurveLinear": "Standard",
+  "filterToneCurveBrighten": "Éclaircir",
+  "filterToneCurveDarken": "Assombrir",
+  "filterToneCurveHighContrast": "Contraste élevé",
+  "filterToneCurveLowContrast": "Contraste faible",
+  "filterToneCurveInvert": "Inverser",
+  "filterLevelsInputBlack": "Entrée : Noir",
+  "filterLevelsInputWhite": "Entrée : Blanc",
+  "filterLevelsOutputBlack": "Sortie : Noir",
+  "filterLevelsOutputWhite": "Sortie : Blanc",
+  "filterApplyButton": "Appliquer",
+  "filterApplyBulkButton": "Appliquer à {count} images",
+  "@filterApplyBulkButton": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterEmpty": "Aucun filtre",
+  "filterApplyingTitle": "Application du filtre",
+  "filterApplyingSubtitle": "{name}　{count} images",
+  "@filterApplyingSubtitle": {
+    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+  }
 }

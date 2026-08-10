@@ -770,5 +770,35 @@
   "perfSettingsCopyPresetDialogBody": "Elige un preajuste para copiar en tus ajustes personalizados.",
   "perfSettingsCopyDescLow": "Muestra 1 fotograma en cada dirección · ligero",
   "perfSettingsCopyDescMedium": "Muestra 3 fotogramas en cada dirección · estándar",
-  "perfSettingsCopyDescHigh": "Muestra 5 fotogramas en cada dirección · alta calidad"
+  "perfSettingsCopyDescHigh": "Muestra 5 fotogramas en cada dirección · alta calidad",
+  "filterPanelTitle": "Filtro",
+  "filterPanelTitleBulk": "Filtro (aplicando a {count} fotogramas)",
+  "@filterPanelTitleBulk": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterSearchHint": "Buscar filtros",
+  "filterStrengthBlurRadius": "Intensidad (radio de desenfoque)",
+  "filterColorLevels": "Número de colores",
+  "filterEdgeStrength": "Realce de bordes",
+  "filterToneCurveLinear": "Estándar",
+  "filterToneCurveBrighten": "Aclarar",
+  "filterToneCurveDarken": "Oscurecer",
+  "filterToneCurveHighContrast": "Contraste alto",
+  "filterToneCurveLowContrast": "Contraste bajo",
+  "filterToneCurveInvert": "Invertir",
+  "filterLevelsInputBlack": "Entrada: Negro",
+  "filterLevelsInputWhite": "Entrada: Blanco",
+  "filterLevelsOutputBlack": "Salida: Negro",
+  "filterLevelsOutputWhite": "Salida: Blanco",
+  "filterApplyButton": "Aplicar",
+  "filterApplyBulkButton": "Aplicar a {count} fotogramas",
+  "@filterApplyBulkButton": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterEmpty": "No hay filtros",
+  "filterApplyingTitle": "Aplicando filtro",
+  "filterApplyingSubtitle": "{name}　{count} fotogramas",
+  "@filterApplyingSubtitle": {
+    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+  }
 }

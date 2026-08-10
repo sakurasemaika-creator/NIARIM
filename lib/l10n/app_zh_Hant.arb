@@ -770,5 +770,35 @@
   "perfSettingsCopyPresetDialogBody": "請選擇要複製到自訂設定的預設。",
   "perfSettingsCopyDescLow": "前後各顯示1張・輕量運作",
   "perfSettingsCopyDescMedium": "前後各顯示3張・標準",
-  "perfSettingsCopyDescHigh": "前後各顯示5張・高畫質"
+  "perfSettingsCopyDescHigh": "前後各顯示5張・高畫質",
+  "filterPanelTitle": "濾鏡",
+  "filterPanelTitleBulk": "濾鏡（批次套用到{count}格）",
+  "@filterPanelTitleBulk": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterSearchHint": "搜尋濾鏡",
+  "filterStrengthBlurRadius": "強度（模糊半徑）",
+  "filterColorLevels": "顏色數",
+  "filterEdgeStrength": "邊緣強調",
+  "filterToneCurveLinear": "標準",
+  "filterToneCurveBrighten": "變亮",
+  "filterToneCurveDarken": "變暗",
+  "filterToneCurveHighContrast": "高對比度",
+  "filterToneCurveLowContrast": "低對比度",
+  "filterToneCurveInvert": "反轉",
+  "filterLevelsInputBlack": "輸入：黑",
+  "filterLevelsInputWhite": "輸入：白",
+  "filterLevelsOutputBlack": "輸出：黑",
+  "filterLevelsOutputWhite": "輸出：白",
+  "filterApplyButton": "套用",
+  "filterApplyBulkButton": "套用到{count}格",
+  "@filterApplyBulkButton": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterEmpty": "沒有濾鏡",
+  "filterApplyingTitle": "套用濾鏡中",
+  "filterApplyingSubtitle": "{name}　{count}格",
+  "@filterApplyingSubtitle": {
+    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+  }
 }

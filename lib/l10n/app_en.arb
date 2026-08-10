@@ -770,5 +770,35 @@
   "perfSettingsCopyPresetDialogBody": "Choose a preset to copy into your custom settings.",
   "perfSettingsCopyDescLow": "Shows 1 frame each way · lightweight",
   "perfSettingsCopyDescMedium": "Shows 3 frames each way · standard",
-  "perfSettingsCopyDescHigh": "Shows 5 frames each way · high quality"
+  "perfSettingsCopyDescHigh": "Shows 5 frames each way · high quality",
+  "filterPanelTitle": "Filter",
+  "filterPanelTitleBulk": "Filter (applying to {count} frames)",
+  "@filterPanelTitleBulk": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterSearchHint": "Search filters",
+  "filterStrengthBlurRadius": "Strength (blur radius)",
+  "filterColorLevels": "Color levels",
+  "filterEdgeStrength": "Edge strength",
+  "filterToneCurveLinear": "Standard",
+  "filterToneCurveBrighten": "Brighten",
+  "filterToneCurveDarken": "Darken",
+  "filterToneCurveHighContrast": "High contrast",
+  "filterToneCurveLowContrast": "Low contrast",
+  "filterToneCurveInvert": "Invert",
+  "filterLevelsInputBlack": "Input: Black",
+  "filterLevelsInputWhite": "Input: White",
+  "filterLevelsOutputBlack": "Output: Black",
+  "filterLevelsOutputWhite": "Output: White",
+  "filterApplyButton": "Apply",
+  "filterApplyBulkButton": "Apply to {count} frames",
+  "@filterApplyBulkButton": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterEmpty": "No filters",
+  "filterApplyingTitle": "Applying filter",
+  "filterApplyingSubtitle": "{name}　{count} frames",
+  "@filterApplyingSubtitle": {
+    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+  }
 }

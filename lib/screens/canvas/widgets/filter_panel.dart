@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/filter_engine.dart';
 import '../../../engine/tile_manager.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/filter_def.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
@@ -123,6 +124,7 @@ class _FilterPanelState extends State<FilterPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final filterService = context.watch<FilterService>();
     final filters = _showFavoritesOnly
         ? filterService.visibleFilters.where((f) => f.isFavorite).toList()
@@ -148,7 +150,7 @@ class _FilterPanelState extends State<FilterPanel> {
               Row(
                 children: [
                   Text(
-                    bulk != null ? 'フィルター（${bulk.length}フレームへ一括適用）' : 'フィルター',
+                    bulk != null ? l10n.filterPanelTitleBulk(bulk.length) : l10n.filterPanelTitle,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   const Spacer(),
@@ -159,7 +161,7 @@ class _FilterPanelState extends State<FilterPanel> {
                       color: _showFavoritesOnly ? Colors.amber : null,
                     ),
                     onPressed: () => setState(() => _showFavoritesOnly = !_showFavoritesOnly),
-                    tooltip: 'お気に入りのみ表示',
+                    tooltip: l10n.creativePanelFavoritesOnlyTooltip,
                   ),
                   IconButton(
                     icon: const Icon(Icons.search, size: 16),
@@ -172,10 +174,10 @@ class _FilterPanelState extends State<FilterPanel> {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: TextField(
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
-                      hintText: 'フィルター検索',
-                      prefixIcon: Icon(Icons.search, size: 16),
+                      hintText: l10n.filterSearchHint,
+                      prefixIcon: const Icon(Icons.search, size: 16),
                     ),
                     style: const TextStyle(fontSize: 12),
                     onChanged: filterService.setSearchQuery,
@@ -278,7 +280,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             current.kind == FilterKind.lensBlur)
                           _paramSlider(
                             filterService,
-                            '強さ（ぼかし半径）',
+                            l10n.filterStrengthBlurRadius,
                             current.strength,
                             1,
                             20,
@@ -287,7 +289,7 @@ class _FilterPanelState extends State<FilterPanel> {
                         if (current.kind == FilterKind.animeStyle) ...[
                           _paramSlider(
                             filterService,
-                            '色数',
+                            l10n.filterColorLevels,
                             current.colorLevels.toDouble(),
                             2,
                             32,
@@ -295,7 +297,7 @@ class _FilterPanelState extends State<FilterPanel> {
                           ),
                           _paramSlider(
                             filterService,
-                            'エッジ強調',
+                            l10n.filterEdgeStrength,
                             current.edgeStrength,
                             0,
                             1,
@@ -310,7 +312,7 @@ class _FilterPanelState extends State<FilterPanel> {
                               spacing: 4,
                               runSpacing: 4,
                               children: ToneCurvePreset.values.map((p) => ChoiceChip(
-                                label: Text(_toneCurveLabel(p), style: const TextStyle(fontSize: 10)),
+                                label: Text(_toneCurveLabel(l10n, p), style: const TextStyle(fontSize: 10)),
                                 selected: current.toneCurvePreset == p,
                                 onSelected: (selected) {
                                   if (!selected) return;
@@ -321,13 +323,13 @@ class _FilterPanelState extends State<FilterPanel> {
                             ),
                           ),
                         if (current.kind == FilterKind.levels) ...[
-                          _levelSlider(filterService, current, '入力：黒', current.inputBlack,
+                          _levelSlider(filterService, current, l10n.filterLevelsInputBlack, current.inputBlack,
                               (v) => filterService.updateFilterParams(current.id, inputBlack: v)),
-                          _levelSlider(filterService, current, '入力：白', current.inputWhite,
+                          _levelSlider(filterService, current, l10n.filterLevelsInputWhite, current.inputWhite,
                               (v) => filterService.updateFilterParams(current.id, inputWhite: v)),
-                          _levelSlider(filterService, current, '出力：黒', current.outputBlack,
+                          _levelSlider(filterService, current, l10n.filterLevelsOutputBlack, current.outputBlack,
                               (v) => filterService.updateFilterParams(current.id, outputBlack: v)),
-                          _levelSlider(filterService, current, '出力：白', current.outputWhite,
+                          _levelSlider(filterService, current, l10n.filterLevelsOutputWhite, current.outputWhite,
                               (v) => filterService.updateFilterParams(current.id, outputWhite: v)),
                         ],
                       ],
@@ -342,10 +344,10 @@ class _FilterPanelState extends State<FilterPanel> {
                           width: 14, height: 14,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : const Icon(Icons.check, size: 16),
-                  label: Text(bulk != null ? '${bulk.length}フレームへ適用' : '適用'),
+                  label: Text(bulk != null ? l10n.filterApplyBulkButton(bulk.length) : l10n.filterApplyButton),
                 ),
               ] else
-                const Expanded(child: Center(child: Text('フィルターがありません'))),
+                Expanded(child: Center(child: Text(l10n.filterEmpty))),
             ],
           ),
         ),
@@ -365,13 +367,13 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
-  String _toneCurveLabel(ToneCurvePreset preset) => switch (preset) {
-        ToneCurvePreset.linear => '標準',
-        ToneCurvePreset.brighten => '明るく',
-        ToneCurvePreset.darken => '暗く',
-        ToneCurvePreset.highContrast => 'コントラスト強',
-        ToneCurvePreset.lowContrast => 'コントラスト弱',
-        ToneCurvePreset.invert => '反転',
+  String _toneCurveLabel(AppLocalizations l10n, ToneCurvePreset preset) => switch (preset) {
+        ToneCurvePreset.linear => l10n.filterToneCurveLinear,
+        ToneCurvePreset.brighten => l10n.filterToneCurveBrighten,
+        ToneCurvePreset.darken => l10n.filterToneCurveDarken,
+        ToneCurvePreset.highContrast => l10n.filterToneCurveHighContrast,
+        ToneCurvePreset.lowContrast => l10n.filterToneCurveLowContrast,
+        ToneCurvePreset.invert => l10n.filterToneCurveInvert,
       };
 
   Widget _paramSlider(FilterService service, String label, double value, double min, double max,
@@ -526,6 +528,7 @@ class _FilterPanelState extends State<FilterPanel> {
     FilterDef filter,
     Set<int> frames,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final sorted = frames.toList()..sort();
     double progress = 0;
     void Function(void Function())? setDialogState;
@@ -538,9 +541,9 @@ class _FilterPanelState extends State<FilterPanel> {
         builder: (ctx, setS) {
           setDialogState = setS;
           return ProgressDialog(
-            title: 'フィルター適用中',
+            title: l10n.filterApplyingTitle,
             progress: progress,
-            subtitle: '${filter.name}　${sorted.length}フレーム',
+            subtitle: l10n.filterApplyingSubtitle(filter.name, sorted.length),
           );
         },
       ),

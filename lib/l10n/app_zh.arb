@@ -770,5 +770,35 @@
   "perfSettingsCopyPresetDialogBody": "请选择要复制到自定义设置的预设。",
   "perfSettingsCopyDescLow": "前后各显示1张・轻量运行",
   "perfSettingsCopyDescMedium": "前后各显示3张・标准",
-  "perfSettingsCopyDescHigh": "前后各显示5张・高画质"
+  "perfSettingsCopyDescHigh": "前后各显示5张・高画质",
+  "filterPanelTitle": "滤镜",
+  "filterPanelTitleBulk": "滤镜（批量应用到{count}帧）",
+  "@filterPanelTitleBulk": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterSearchHint": "搜索滤镜",
+  "filterStrengthBlurRadius": "强度（模糊半径）",
+  "filterColorLevels": "颜色数",
+  "filterEdgeStrength": "边缘强调",
+  "filterToneCurveLinear": "标准",
+  "filterToneCurveBrighten": "变亮",
+  "filterToneCurveDarken": "变暗",
+  "filterToneCurveHighContrast": "高对比度",
+  "filterToneCurveLowContrast": "低对比度",
+  "filterToneCurveInvert": "反转",
+  "filterLevelsInputBlack": "输入：黑",
+  "filterLevelsInputWhite": "输入：白",
+  "filterLevelsOutputBlack": "输出：黑",
+  "filterLevelsOutputWhite": "输出：白",
+  "filterApplyButton": "应用",
+  "filterApplyBulkButton": "应用到{count}帧",
+  "@filterApplyBulkButton": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "filterEmpty": "没有滤镜",
+  "filterApplyingTitle": "正在应用滤镜",
+  "filterApplyingSubtitle": "{name}　{count}帧",
+  "@filterApplyingSubtitle": {
+    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+  }
 }
