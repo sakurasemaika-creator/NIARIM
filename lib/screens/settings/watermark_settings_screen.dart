@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/watermark_asset.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/responsive.dart';
@@ -17,11 +18,14 @@ class WatermarkSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final service = context.watch<WatermarkService>();
     final assets = service.assets;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ウォーターマーク'), actions: const [HelpButton(topic: 'ウォーターマーク')]),
+      // topic: 'ウォーターマーク' はhelp_screen.dart側の項目タイトル（日本語固定の
+      // 内部検索キー）と一致させる必要があるため、翻訳対象から除外している。
+      appBar: AppBar(title: Text(l10n.settingsWatermarkTitle), actions: const [HelpButton(topic: 'ウォーターマーク')]),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddSheet(context, service),
         child: const Icon(Icons.add),
@@ -42,10 +46,10 @@ class WatermarkSettingsScreen extends StatelessWidget {
                       child: Icon(Icons.branding_watermark, size: 44, color: Theme.of(context).colorScheme.primary),
                     ),
                     const SizedBox(height: 20),
-                    Text('登録されたウォーターマークがありません',
+                    Text(l10n.watermarkEmptyTitle,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
-                    Text('右下の＋から画像または文字を登録してください',
+                    Text(l10n.watermarkEmptyHint,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
                   ],
                 ),
@@ -69,6 +73,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
   }
 
   void _showAddSheet(BuildContext context, WatermarkService service) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -77,7 +82,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.image_outlined),
-              title: const Text('画像から追加'),
+              title: Text(l10n.watermarkAddFromImage),
               onTap: () {
                 Navigator.pop(ctx);
                 _addImageWatermark(context, service);
@@ -85,7 +90,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.text_fields),
-              title: const Text('文字を入力'),
+              title: Text(l10n.watermarkAddText),
               onTap: () {
                 Navigator.pop(ctx);
                 _showTextWatermarkDialog(context, service);
@@ -98,16 +103,18 @@ class WatermarkSettingsScreen extends StatelessWidget {
   }
 
   Future<void> _addImageWatermark(BuildContext context, WatermarkService service) async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     await service.addWatermark(result.files.first.path!);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('ウォーターマークを登録しました')),
+      SnackBar(content: Text(l10n.watermarkAddedSnackbar)),
     );
   }
 
   void _showTextWatermarkDialog(BuildContext context, WatermarkService service) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     const presetColors = [
       Colors.white, Colors.black, Colors.red, Colors.orange,
@@ -118,7 +125,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('文字ウォーターマークを追加'),
+          title: Text(l10n.watermarkTextDialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,10 +133,10 @@ class WatermarkSettingsScreen extends StatelessWidget {
               TextField(
                 controller: controller,
                 autofocus: true,
-                decoration: const InputDecoration(labelText: '表示する文字', border: OutlineInputBorder()),
+                decoration: InputDecoration(labelText: l10n.watermarkTextFieldLabel, border: const OutlineInputBorder()),
               ),
               const SizedBox(height: 12),
-              const Text('文字色', style: TextStyle(fontSize: 12)),
+              Text(l10n.watermarkTextColorLabel, style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 6),
               Wrap(
                 spacing: 8,
@@ -154,7 +161,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () async {
                 final text = controller.text.trim();
@@ -162,7 +169,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
                 await service.addTextWatermark(text, color: selected.toARGB32());
                 if (ctx.mounted) Navigator.pop(ctx);
               },
-              child: const Text('追加'),
+              child: Text(l10n.commonAdd),
             ),
           ],
         ),
@@ -178,6 +185,7 @@ class _WatermarkTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final service = context.read<WatermarkService>();
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -226,7 +234,7 @@ class _WatermarkTile extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.delete, size: 16, color: Colors.red),
                   onPressed: onDelete,
-                  tooltip: '削除',
+                  tooltip: l10n.commonDelete,
                 ),
               ],
             ),

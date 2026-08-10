@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/material_asset.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';
@@ -41,19 +42,20 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final materials = context.watch<MaterialService>().materialsOf(widget.projectId);
     final scheme = Theme.of(context).colorScheme;
     final unusedCount = materials.where((m) => !_isUsed(m.id)).length;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('素材管理'),
+        title: Text(l10n.materialListTitle),
         actions: [
           const HelpButton(),
           if (unusedCount > 0)
             TextButton(
               onPressed: _confirmRemoveUnused,
-              child: Text('未使用素材を削除 ($unusedCount)'),
+              child: Text(l10n.materialRemoveUnused(unusedCount)),
             ),
         ],
       ),
@@ -70,9 +72,9 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                       child: Icon(Icons.perm_media_outlined, size: 40, color: scheme.primary),
                     ),
                     const SizedBox(height: 16),
-                    const Text('素材がありません', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(l10n.materialEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text('タイムラインから画像・動画・音声を追加すると\nここに一覧表示されます',
+                    Text(l10n.materialEmptyHint,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
                   ],
@@ -96,8 +98,8 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                           if (m.width != null && m.height != null) '${m.width}×${m.height}',
                           if (m.duration != null) _formatDuration(m.duration!),
                           _formatDate(m.addedAt),
-                          used ? '使用中' : '未使用',
-                          if (isMissing) '⚠ 不足',
+                          used ? l10n.materialUsedLabel : l10n.materialUnusedLabel,
+                          if (isMissing) l10n.materialMissingLabel,
                         ].join(' ・ '),
                         style: TextStyle(
                           fontSize: 11,
@@ -106,7 +108,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        tooltip: used ? '使用中のため削除できません' : '削除',
+                        tooltip: used ? l10n.materialDeleteTooltipUsed : l10n.commonDelete,
                         onPressed: used ? null : () => _confirmRemoveOne(m),
                       ),
                     ),
@@ -163,13 +165,14 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
       '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
 
   void _confirmRemoveOne(MaterialAsset m) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('素材を削除しますか？'),
+        title: Text(l10n.materialRemoveOneConfirmTitle),
         content: Text(m.originalFileName),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
@@ -180,7 +183,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                   );
               if (ctx.mounted) Navigator.pop(ctx);
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -188,13 +191,14 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
   }
 
   void _confirmRemoveUnused() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('未使用素材を一括削除しますか？'),
-        content: const Text('プロジェクト内のどこからも参照されていない素材をまとめて削除します。この操作は元に戻せません。'),
+        title: Text(l10n.materialRemoveUnusedConfirmTitle),
+        content: Text(l10n.materialRemoveUnusedConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
@@ -205,11 +209,11 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
               if (ctx.mounted) Navigator.pop(ctx);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$removed件の未使用素材を削除しました')),
+                  SnackBar(content: Text(l10n.materialRemovedSnackbar(removed))),
                 );
               }
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),

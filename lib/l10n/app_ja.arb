@@ -200,5 +200,81 @@
   "folderNameLabel": "フォルダ名",
   "folderMoveToTitle": "フォルダへ移動",
   "folderNone": "フォルダなし",
-  "creativeAssetNameLabel": "名前"
+  "creativeAssetNameLabel": "名前",
+
+  "commonAdd": "追加",
+
+  "quickToolPanelTitle": "早替えツール設定",
+  "quickToolEmpty": "登録されたツールがありません",
+  "quickToolAddCurrentBrush": "現在のブラシを追加",
+  "quickToolEraser": "消しゴム",
+  "quickToolEyedropper": "スポイト",
+  "quickToolBucket": "バケツ",
+  "quickToolSizeDialogTitle": "{brushName}のサイズ",
+  "@quickToolSizeDialogTitle": {
+    "placeholders": {"brushName": {"type": "String"}}
+  },
+
+  "materialListTitle": "素材管理",
+  "materialRemoveUnused": "未使用素材を削除 ({count})",
+  "@materialRemoveUnused": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "materialEmptyTitle": "素材がありません",
+  "materialEmptyHint": "タイムラインから画像・動画・音声を追加すると\nここに一覧表示されます",
+  "materialUsedLabel": "使用中",
+  "materialUnusedLabel": "未使用",
+  "materialMissingLabel": "⚠ 不足",
+  "materialDeleteTooltipUsed": "使用中のため削除できません",
+  "materialRemoveOneConfirmTitle": "素材を削除しますか？",
+  "materialRemoveUnusedConfirmTitle": "未使用素材を一括削除しますか？",
+  "materialRemoveUnusedConfirmBody": "プロジェクト内のどこからも参照されていない素材をまとめて削除します。この操作は元に戻せません。",
+  "materialRemovedSnackbar": "{count}件の未使用素材を削除しました",
+  "@materialRemovedSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+
+  "watermarkEmptyTitle": "登録されたウォーターマークがありません",
+  "watermarkEmptyHint": "右下の＋から画像または文字を登録してください",
+  "watermarkAddFromImage": "画像から追加",
+  "watermarkAddText": "文字を入力",
+  "watermarkAddedSnackbar": "ウォーターマークを登録しました",
+  "watermarkTextDialogTitle": "文字ウォーターマークを追加",
+  "watermarkTextFieldLabel": "表示する文字",
+  "watermarkTextColorLabel": "文字色",
+
+  "premiumActiveLabel": "Premium有効",
+  "premiumVsTitle": "無料版 vs プレミアム",
+  "premiumCampaignFreeNote": "※ キャンペーン期間中は無料版でも上記プレミアム機能を全てご利用いただけます",
+  "premiumPlanSectionTitle": "プラン",
+  "premiumStoreUnavailable": "ストアに接続できません（実機・ストア審査環境以外では購入できません）",
+  "premiumYearlyTitle": "年額プラン（おすすめ）",
+  "premiumYearlyDescription": "実質2か月分無料",
+  "premiumMonthlyTitle": "月額プラン",
+  "premiumRestorePurchases": "購入を復元",
+  "premiumRestoredSnackbar": "購入情報を復元しました（該当する購入がある場合）",
+  "premiumCampaignBannerTitle": "リリース記念！有料会員限定機能解放キャンペーン",
+  "premiumCampaignBannerBody": "期間中は無料版でも全てのプレミアム機能（尺無制限・エンドロゴ編集・ウォーターマーク・トーンカーブ・レベル補正）を無料でご利用いただけます。",
+  "premiumCampaignEndLabel": "～{date}まで",
+  "@premiumCampaignEndLabel": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "premiumComparisonFeature": "機能",
+  "premiumComparisonFree": "無料",
+  "premiumFeatureDrawing": "アニメ制作・描画機能",
+  "premiumFeatureTimeline": "タイムライン",
+  "premiumFeatureExport": "動画書き出し",
+  "premiumFeatureMaxDuration": "最大尺",
+  "premiumFeatureEndLogo": "公式エンドロゴ",
+  "premiumFeatureWatermark": "ウォーターマーク",
+  "premiumFeatureToneCurve": "トーンカーブ",
+  "premiumFeatureLevelCorrection": "レベル補正",
+  "premiumFeatureAds": "広告",
+  "premiumValueYes": "あり",
+  "premiumValueNo": "なし",
+  "premiumValueRemovable": "削除可",
+  "premiumValueUnlimited": "無制限",
+  "premiumValueDuration90Sec": "1.5分",
+  "premiumPlanRecommendedBadge": "おすすめ",
+  "premiumMonthlyPrice": "¥550/月"
 }

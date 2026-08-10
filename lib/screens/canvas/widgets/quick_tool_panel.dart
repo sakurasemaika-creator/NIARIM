@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/quick_tool_service.dart';
@@ -26,6 +27,7 @@ class QuickToolPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final service = context.watch<QuickToolService>();
     final entries = service.entries;
 
@@ -41,7 +43,7 @@ class QuickToolPanel extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Text('早替えツール設定', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(icon: const Icon(Icons.close, size: 16), onPressed: onClose),
                 ],
@@ -50,7 +52,7 @@ class QuickToolPanel extends StatelessWidget {
               Expanded(
                 child: entries.isEmpty
                     ? Center(
-                        child: Text('登録されたツールがありません',
+                        child: Text(l10n.quickToolEmpty,
                             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)))
                     : ReorderableListView.builder(
                         itemCount: entries.length,
@@ -73,7 +75,7 @@ class QuickToolPanel extends StatelessWidget {
               const Divider(height: 1),
               TextButton.icon(
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('追加'),
+                label: Text(l10n.commonAdd),
                 onPressed: () => _showAddDialog(context, service),
               ),
             ],
@@ -85,6 +87,7 @@ class QuickToolPanel extends StatelessWidget {
 
   void _showAddDialog(BuildContext context, QuickToolService service) {
     final brushService = context.read<BrushService>();
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -95,7 +98,7 @@ class QuickToolPanel extends StatelessWidget {
             if (currentTool == DrawingTool.pen && currentBrushId != null)
               ListTile(
                 leading: const Icon(Icons.bolt, color: Colors.amber),
-                title: const Text('現在のブラシを追加'),
+                title: Text(l10n.quickToolAddCurrentBrush),
                 subtitle: Text('$currentBrushName ${currentSize.round()}px'),
                 onTap: () {
                   service.addEntry(QuickToolEntry(
@@ -120,25 +123,25 @@ class QuickToolPanel extends StatelessWidget {
               ),
             ListTile(
               leading: const Icon(Icons.auto_fix_high),
-              title: const Text('消しゴム'),
+              title: Text(l10n.quickToolEraser),
               onTap: () {
-                _addSimple(service, 'eraser', '消しゴム');
+                _addSimple(service, 'eraser', l10n.quickToolEraser);
                 Navigator.pop(ctx);
               },
             ),
             ListTile(
               leading: const Icon(Icons.colorize),
-              title: const Text('スポイト'),
+              title: Text(l10n.quickToolEyedropper),
               onTap: () {
-                _addSimple(service, 'eyedropper', 'スポイト');
+                _addSimple(service, 'eyedropper', l10n.quickToolEyedropper);
                 Navigator.pop(ctx);
               },
             ),
             ListTile(
               leading: const Icon(Icons.format_color_fill),
-              title: const Text('バケツ'),
+              title: Text(l10n.quickToolBucket),
               onTap: () {
-                _addSimple(service, 'bucket', 'バケツ');
+                _addSimple(service, 'bucket', l10n.quickToolBucket);
                 Navigator.pop(ctx);
               },
             ),
@@ -159,11 +162,12 @@ class QuickToolPanel extends StatelessWidget {
   void _showSizeDialog(
       BuildContext context, QuickToolService service, String brushId, String brushName, double defaultSize) {
     double size = defaultSize;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text('$brushNameのサイズ'),
+          title: Text(l10n.quickToolSizeDialogTitle(brushName)),
           content: Row(
             children: [
               Expanded(
@@ -178,7 +182,7 @@ class QuickToolPanel extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 service.addEntry(QuickToolEntry(
@@ -190,7 +194,7 @@ class QuickToolPanel extends StatelessWidget {
                 ));
                 Navigator.pop(ctx);
               },
-              child: const Text('追加'),
+              child: Text(l10n.commonAdd),
             ),
           ],
         ),
