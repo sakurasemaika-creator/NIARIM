@@ -41,6 +41,9 @@ import '../../widgets/help_button.dart';
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
 
+// クリップの長押しドラッグ操作の種別（仕様書05・タスク#99）。
+enum _ClipDragMode { move, resizeLeft, resizeRight }
+
 class _TrackClip {
   final String id;
   String label;
@@ -108,6 +111,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final List<_TrackClip> _audioClips = [];
   final List<_TrackClip> _videoClips = [];
   final List<_TrackClip> _imageClips = [];
+
+  // クリップの長押しドラッグ（表示開始位置の移動）・端のハンドルドラッグ
+  // （使用範囲の変更）用の一時状態（仕様書05・タスク#99）。ジェスチャー中は
+  // setState()のたびに_buildClipWidget()が再構築されるため、絶対座標の
+  // アンカー（ドラッグ開始時点のグローバルX座標・開始フレーム位置・
+  // 開始長さ）をStateフィールドとして保持し、毎回そこからの差分で
+  // 目標値を再計算する（差分の累積方式だと再構築のたびにリセットされ
+  // 正しく動作しないため）。
+  String? _draggingClipId;
+  _ClipDragMode? _clipDragMode;
+  double _clipDragStartX = 0;
+  int _clipDragStartFrame = 0;
+  int _clipDragStartLength = 0;
 
   // 音声・動画クリップの再生位置連動（仕様書05）
   final Map<String, ap.AudioPlayer> _audioPlayers = {};
@@ -1623,33 +1639,125 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final scrollOffset = scrollCtrl.hasClients ? scrollCtrl.offset : 0.0;
         final left = clip.startFrame * _cellW - scrollOffset;
         final width = clip.lengthFrames * _cellW - _frameMargin * 2;
-        if (left + width < 0 || left > MediaQuery.of(context).size.width) {
+        final isDragging = _draggingClipId == clip.id;
+        // ドラッグ中のクリップは画面外カリングの対象から外す。カリングで
+        // ウィジェット自体が消えるとポインターを掴んでいたRenderObjectが
+        // 失われ、ジェスチャーが途中で切れてしまうため。
+        if (!isDragging &&
+            (left + width < 0 || left > MediaQuery.of(context).size.width)) {
           return const SizedBox.shrink();
         }
+        const handleW = 8.0;
         return Positioned(
           left: left.clamp(0.0, double.infinity),
           top: 3,
-          width: width.clamp(8.0, double.infinity),
+          width: width.clamp(handleW * 2 + 4, double.infinity),
           height: 26,
           child: GestureDetector(
             onTap: () => _showEditClipDialog(clip),
-            child: Container(
-              decoration: BoxDecoration(
-                color: clip.color.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                clip.label,
-                style: const TextStyle(fontSize: 9, color: Colors.white),
-                overflow: TextOverflow.ellipsis,
-              ),
+            // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
+            // （仕様書05：「開始フレーム変更：タイムライン上で表示開始
+            // 位置を変更」、タスク#99）。
+            onLongPressStart: (d) => _beginClipDrag(clip, _ClipDragMode.move, d.globalPosition.dx),
+            onLongPressMoveUpdate: (d) => _updateClipDrag(clip, d.globalPosition.dx),
+            onLongPressEnd: (_) => _endClipDrag(clip),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: clip.color.withValues(alpha: isDragging ? 1.0 : 0.85),
+                      borderRadius: BorderRadius.circular(3),
+                      border: isDragging ? Border.all(color: Colors.white, width: 1.5) : null,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      clip.label,
+                      style: const TextStyle(fontSize: 9, color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                // 左右端のドラッグハンドル：表示範囲（長さ）を変更する
+                // （仕様書05：「使用範囲変更：タイムライン上でドラッグ
+                // ハンドルにより変更」、タスク#99）。
+                _buildClipResizeHandle(clip, handleW, isLeft: true),
+                _buildClipResizeHandle(clip, handleW, isLeft: false),
+              ],
             ),
           ),
         );
       },
     );
+  }
+
+  Widget _buildClipResizeHandle(_TrackClip clip, double handleW, {required bool isLeft}) {
+    final mode = isLeft ? _ClipDragMode.resizeLeft : _ClipDragMode.resizeRight;
+    return Positioned(
+      left: isLeft ? 0 : null,
+      right: isLeft ? null : 0,
+      top: 0,
+      bottom: 0,
+      width: handleW,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragStart: (d) => _beginClipDrag(clip, mode, d.globalPosition.dx),
+        onHorizontalDragUpdate: (d) => _updateClipDrag(clip, d.globalPosition.dx),
+        onHorizontalDragEnd: (_) => _endClipDrag(clip),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeLeftRight,
+          child: Container(color: Colors.white.withValues(alpha: 0.25)),
+        ),
+      ),
+    );
+  }
+
+  void _beginClipDrag(_TrackClip clip, _ClipDragMode mode, double globalX) {
+    setState(() {
+      _draggingClipId = clip.id;
+      _clipDragMode = mode;
+      _clipDragStartX = globalX;
+      _clipDragStartFrame = clip.startFrame;
+      _clipDragStartLength = clip.lengthFrames;
+    });
+  }
+
+  void _updateClipDrag(_TrackClip clip, double globalX) {
+    if (_draggingClipId != clip.id || _clipDragMode == null) return;
+    final deltaFrames = ((globalX - _clipDragStartX) / _cellW).round();
+    final total = _totalFrames;
+    switch (_clipDragMode!) {
+      case _ClipDragMode.move:
+        final maxStart = total - _clipDragStartLength;
+        final newStart = (_clipDragStartFrame + deltaFrames).clamp(0, maxStart < 0 ? 0 : maxStart);
+        if (newStart != clip.startFrame) setState(() => clip.startFrame = newStart);
+      case _ClipDragMode.resizeLeft:
+        // 右端（startFrame + lengthFrames）を固定し、左端だけ伸縮する。
+        final fixedEnd = _clipDragStartFrame + _clipDragStartLength;
+        final newStart = (_clipDragStartFrame + deltaFrames).clamp(0, fixedEnd - 1);
+        final newLength = fixedEnd - newStart;
+        if (newStart != clip.startFrame || newLength != clip.lengthFrames) {
+          setState(() {
+            clip.startFrame = newStart;
+            clip.lengthFrames = newLength;
+          });
+        }
+      case _ClipDragMode.resizeRight:
+        final maxLength = total - _clipDragStartFrame;
+        final newLength = (_clipDragStartLength + deltaFrames).clamp(1, maxLength < 1 ? 1 : maxLength);
+        if (newLength != clip.lengthFrames) setState(() => clip.lengthFrames = newLength);
+    }
+  }
+
+  void _endClipDrag(_TrackClip clip) {
+    if (_draggingClipId != clip.id) return;
+    setState(() {
+      _draggingClipId = null;
+      _clipDragMode = null;
+    });
+    final sceneId = _selectedSceneId;
+    if (sceneId != null) _persistClipUpdate(clip, sceneId);
   }
 
   /// 共通レイヤー専用トラック（仕様書05・16）。共通レイヤーは通常レイヤーとは
@@ -2474,6 +2582,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
           opacity: (clip.videoOpacity * 100).round(),
           sourceTrimStart: clip.useStart,
           sourceTrimEnd: clip.useEnd,
+          // 表示開始位置・使用範囲（タイムライン上のドラッグ移動・
+          // ハンドルによるリサイズ、タスク#99）。従来はここが抜けており、
+          // ドラッグ操作で見た目上は移動・リサイズできても実際には
+          // 永続化されない不具合があった。
+          rangeStart: clip.startFrame + 1,
+          rangeEnd: clip.startFrame + clip.lengthFrames,
         ),
       );
     }
