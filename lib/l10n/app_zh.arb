@@ -425,5 +425,24 @@
   "licenseOssListTitle": "所用库的许可列表",
   "licenseOssListSubtitle": "显示本应用所使用的OSS软件包的许可信息",
   "licenseFfmpegNote": "WebM导出使用了FFmpeg（LGPL 3.0，通过ffmpeg_kit_flutter_new_video调用）。修改版源代码获取地址：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4导出直接使用设备内置的硬件编码器，未使用FFmpeg。",
-  "licenseFontCreditMeta": "作者：{author}　许可：{license}"
+  "licenseFontCreditMeta": "作者：{author}　许可：{license}",
+
+  "toolbarPenTooltip": "笔（长按打开子工具）",
+  "toolbarPenFirstUseTip": "长按笔工具，可切换画笔・网点・图章・套索填色。",
+  "toolbarBucketTooltip": "填充桶（长按切换纯色/网点填充）",
+  "toolbarBucketFirstUseTip": "长按填充桶，可在纯色填充和网点填充之间切换。",
+  "toolbarSelectTooltip": "选择（长按变更类型）",
+  "toolbarShapeTooltip": "图形（点击选择种类）",
+  "toolbarTextFirstUseTip": "可自由放置文字，也能更改字体、颜色和描边。",
+  "toolbarQuickToolFirstUseTip": "点击可依次切换已注册的工具。长按或向上滑动可编辑已注册的内容。",
+  "toolbarStampColorLockedSnackbar": "图章保留了自身的颜色信息，因此无法更改颜色",
+  "toolbarBrushSettingsTooltip": "画笔设置",
+  "toolbarLayerTooltip": "图层",
+  "toolbarQuickToolTooltip": "快捷工具（长按/向上滑动可编辑）",
+  "toolbarSaveTooltip": "保存（存档树）",
+  "toolbarBucketFlatFill": "纯色填充",
+  "toolbarBucketToneListLabel": "网点列表",
+  "toolbarSelectRect": "矩形选择",
+  "toolbarSelectLasso": "套索选择",
+  "toolbarSelectMagicWand": "自动选择（魔术棒）"
 }

@@ -425,5 +425,24 @@
   "licenseOssListTitle": "Lista de licencias de bibliotecas",
   "licenseOssListSubtitle": "Muestra las licencias de los paquetes OSS que usa esta aplicación",
   "licenseFfmpegNote": "La exportación WebM usa FFmpeg (LGPL 3.0, a través de ffmpeg_kit_flutter_new_video). Origen del código fuente modificado: https://github.com/sk3llo/ffmpeg_kit_flutter\nLa exportación MP4 usa directamente el codificador de hardware integrado del dispositivo y no utiliza FFmpeg.",
-  "licenseFontCreditMeta": "Autor: {author}   Licencia: {license}"
+  "licenseFontCreditMeta": "Autor: {author}   Licencia: {license}",
+
+  "toolbarPenTooltip": "Pluma (mantén pulsado para subherramientas)",
+  "toolbarPenFirstUseTip": "Mantén pulsada la pluma para alternar entre pincel, trama, sello y relleno de lazo.",
+  "toolbarBucketTooltip": "Cubo de pintura (mantén pulsado para cambiar el relleno)",
+  "toolbarBucketFirstUseTip": "Mantén pulsado el cubo de pintura para alternar entre relleno plano y relleno de trama.",
+  "toolbarSelectTooltip": "Selección (mantén pulsado para cambiar el tipo)",
+  "toolbarShapeTooltip": "Forma (toca para elegir el tipo)",
+  "toolbarTextFirstUseTip": "Coloca texto libremente. También puedes cambiar la fuente, el color y el contorno.",
+  "toolbarQuickToolFirstUseTip": "Toca para recorrer tus herramientas registradas en orden. Mantén pulsado o desliza hacia arriba para editar tus herramientas registradas.",
+  "toolbarStampColorLockedSnackbar": "Los sellos conservan su propio color, por lo que no se puede cambiar",
+  "toolbarBrushSettingsTooltip": "Ajustes del pincel",
+  "toolbarLayerTooltip": "Capas",
+  "toolbarQuickToolTooltip": "Herramienta rápida (mantén pulsado/desliza hacia arriba para editar)",
+  "toolbarSaveTooltip": "Guardar (árbol de guardado)",
+  "toolbarBucketFlatFill": "Relleno plano",
+  "toolbarBucketToneListLabel": "Tramas",
+  "toolbarSelectRect": "Selección rectangular",
+  "toolbarSelectLasso": "Selección de lazo",
+  "toolbarSelectMagicWand": "Selección automática (varita mágica)"
 }

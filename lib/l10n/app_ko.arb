@@ -425,5 +425,24 @@
   "licenseOssListTitle": "사용 라이브러리 라이선스 목록",
   "licenseOssListSubtitle": "본 앱이 사용하는 OSS 패키지의 라이선스를 표시합니다",
   "licenseFfmpegNote": "WebM 내보내기에는 FFmpeg（LGPL 3.0, ffmpeg_kit_flutter_new_video 경유）를 사용하고 있습니다. 수정판 소스 코드 입수처: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 내보내기는 기기 내장 하드웨어 인코더를 직접 사용하며, FFmpeg는 사용하지 않습니다.",
-  "licenseFontCreditMeta": "작성자: {author}   라이선스: {license}"
+  "licenseFontCreditMeta": "작성자: {author}   라이선스: {license}",
+
+  "toolbarPenTooltip": "펜（길게 눌러 서브 도구）",
+  "toolbarPenFirstUseTip": "펜을 길게 누르면 브러시・톤・스탬프・올가미 채우기를 전환할 수 있습니다.",
+  "toolbarBucketTooltip": "페인트통（길게 눌러 단색/톤 전환）",
+  "toolbarBucketFirstUseTip": "페인트통을 길게 누르면 단색 채우기와 톤 채우기를 전환할 수 있습니다.",
+  "toolbarSelectTooltip": "선택（길게 눌러 종류 변경）",
+  "toolbarShapeTooltip": "도형（탭하여 종류 선택）",
+  "toolbarTextFirstUseTip": "문자를 자유롭게 배치할 수 있습니다. 글꼴・색・테두리도 변경할 수 있습니다.",
+  "toolbarQuickToolFirstUseTip": "탭하면 등록한 도구를 순서대로 전환할 수 있습니다. 길게 누르거나 위로 스와이프하면 등록 내용을 편집할 수 있습니다.",
+  "toolbarStampColorLockedSnackbar": "스탬프는 색상 정보를 유지하고 있어 색을 변경할 수 없습니다",
+  "toolbarBrushSettingsTooltip": "브러시 설정",
+  "toolbarLayerTooltip": "레이어",
+  "toolbarQuickToolTooltip": "빠른 도구（길게 누르기/위로 스와이프로 편집）",
+  "toolbarSaveTooltip": "저장（세이브 트리）",
+  "toolbarBucketFlatFill": "단색 채우기",
+  "toolbarBucketToneListLabel": "톤 목록",
+  "toolbarSelectRect": "사각형 선택",
+  "toolbarSelectLasso": "올가미 선택",
+  "toolbarSelectMagicWand": "자동 선택（매직 완드）"
 }

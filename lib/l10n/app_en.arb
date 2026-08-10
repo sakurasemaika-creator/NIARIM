@@ -425,5 +425,24 @@
   "licenseOssListTitle": "List of Library Licenses",
   "licenseOssListSubtitle": "Shows the licenses of the OSS packages used by this app",
   "licenseFfmpegNote": "WebM export uses FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source for the modified version: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 export uses the device's built-in hardware encoder directly and does not use FFmpeg.",
-  "licenseFontCreditMeta": "Author: {author}   License: {license}"
+  "licenseFontCreditMeta": "Author: {author}   License: {license}",
+
+  "toolbarPenTooltip": "Pen (long-press for sub-tools)",
+  "toolbarPenFirstUseTip": "Long-press the pen to switch between brush, tone, stamp, and lasso fill.",
+  "toolbarBucketTooltip": "Bucket (long-press to switch flat/tone fill)",
+  "toolbarBucketFirstUseTip": "Long-press the bucket to switch between flat fill and tone fill.",
+  "toolbarSelectTooltip": "Select (long-press to change type)",
+  "toolbarShapeTooltip": "Shape (tap to choose type)",
+  "toolbarTextFirstUseTip": "Freely place text. You can also change the font, color, and outline.",
+  "toolbarQuickToolFirstUseTip": "Tap to cycle through your registered tools in order. Long-press or swipe up to edit your registered tools.",
+  "toolbarStampColorLockedSnackbar": "Stamps carry their own color, so the color can't be changed",
+  "toolbarBrushSettingsTooltip": "Brush Settings",
+  "toolbarLayerTooltip": "Layers",
+  "toolbarQuickToolTooltip": "Quick Tool (long-press/swipe up to edit)",
+  "toolbarSaveTooltip": "Save (Save Tree)",
+  "toolbarBucketFlatFill": "Flat Fill",
+  "toolbarBucketToneListLabel": "Tones",
+  "toolbarSelectRect": "Rectangle Select",
+  "toolbarSelectLasso": "Lasso Select",
+  "toolbarSelectMagicWand": "Auto Select (Magic Wand)"
 }

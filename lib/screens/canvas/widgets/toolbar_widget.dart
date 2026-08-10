@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/toolbar_item.dart';
 import '../../../services/settings_service.dart';
 import '../../../services/tone_service.dart';
@@ -42,47 +43,48 @@ class ToolbarWidget extends StatelessWidget {
 
   /// ツールバー編集（仕様書08）でカスタマイズ可能な項目を、現在の並び順・
   /// 表示設定に従って構築する。
-  Widget _buildToolItem(BuildContext context, ToolbarItemId id) {
+  Widget _buildToolItem(BuildContext context, AppLocalizations l10n, ToolbarItemId id) {
     return switch (id) {
       // ペンボタン：長押しでサブツールパネル表示（仕様書02・17：初回使用時の吹き出し説明）
       ToolbarItemId.pen => FirstUseTooltip(
           tooltipKey: 'pen_tool',
-          message: 'ペンを長押しすると、ブラシ・トーン・スタンプ・投げ縄塗りを切り替えられます。',
+          message: l10n.toolbarPenFirstUseTip,
           child: GestureDetector(
             onLongPress: onPenLongPress,
-            child: _toolButton(context, Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
+            child: _toolButton(context, Icons.brush, DrawingTool.pen, l10n.toolbarPenTooltip),
           ),
         ),
       // 消しゴムと選択ツールのアイコンを入れ替え（仕様書08・タスク#95：
       // 消しゴムに「魔法の杖」風のauto_fix_highが割り当てられており、
       // 選択ツールの自動選択（マジックワンド）用アイコンと紛らわしかった）。
-      ToolbarItemId.eraser => _toolButton(context, Icons.crop_square, DrawingTool.eraser, '消しゴム'),
+      ToolbarItemId.eraser => _toolButton(context, Icons.crop_square, DrawingTool.eraser, l10n.toolbarItemEraser),
       // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
       ToolbarItemId.bucket => FirstUseTooltip(
           tooltipKey: 'bucket_tool',
-          message: 'バケツを長押しすると、ベタ塗りとトーン塗りを切り替えられます。',
+          message: l10n.toolbarBucketFirstUseTip,
           child: GestureDetector(
             onLongPress: () => _showBucketToneMenu(context),
-            child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, 'バケツ（長押しでベタ/トーン切替）'),
+            child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, l10n.toolbarBucketTooltip),
           ),
         ),
-      ToolbarItemId.eyedropper => _toolButton(context, Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
-      ToolbarItemId.finger => _toolButton(context, Icons.back_hand, DrawingTool.finger, '指'),
-      ToolbarItemId.select => _selectToolButton(context),
-      ToolbarItemId.transform => _toolButton(context, Icons.transform, DrawingTool.transform, '変形'),
+      ToolbarItemId.eyedropper => _toolButton(context, Icons.colorize, DrawingTool.eyedropper, l10n.toolbarItemEyedropper),
+      ToolbarItemId.finger => _toolButton(context, Icons.back_hand, DrawingTool.finger, l10n.toolbarItemFinger),
+      ToolbarItemId.select => _selectToolButton(context, l10n),
+      ToolbarItemId.transform => _toolButton(context, Icons.transform, DrawingTool.transform, l10n.toolbarItemTransform),
       // 初回タップ時の吹き出し説明（仕様書15）
       ToolbarItemId.text => FirstUseTooltip(
           tooltipKey: 'text_tool',
-          message: '文字を自由に配置できます。フォントや色、アウトラインも変更できます。',
-          child: _toolButton(context, Icons.text_fields, DrawingTool.text, 'テキスト', onTap: onTextTap),
+          message: l10n.toolbarTextFirstUseTip,
+          child: _toolButton(context, Icons.text_fields, DrawingTool.text, l10n.toolbarItemText, onTap: onTextTap),
         ),
       ToolbarItemId.shape =>
-        _toolButton(context, Icons.category, DrawingTool.shape, '図形（タップで種別選択）', onTap: onShapeTap),
+        _toolButton(context, Icons.category, DrawingTool.shape, l10n.toolbarShapeTooltip, onTap: onShapeTap),
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
     return Container(
       height: 48,
@@ -97,14 +99,14 @@ class ToolbarWidget extends StatelessWidget {
           children: [
             // ツールバー編集（仕様書08）でカスタマイズ可能な項目を並び順・表示設定通りに表示
             for (final id in settings.toolbarOrder)
-              if (!settings.hiddenToolbarItems.contains(id)) _buildToolItem(context, id),
+              if (!settings.hiddenToolbarItems.contains(id)) _buildToolItem(context, l10n, id),
             const SizedBox(width: 4),
             // 色インジケーター（仕様書17：スタンプ選択中は色情報を保持しているため
             // 色変更不可を🚫重ね表示で示し、タップで専用トーストを表示する）
             GestureDetector(
               onTap: isStampSelected
                   ? () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('スタンプは色情報を保持しているため色変更できません')),
+                        SnackBar(content: Text(l10n.toolbarStampColorLockedSnackbar)),
                       )
                   : onColorTap,
               child: Stack(
@@ -132,8 +134,8 @@ class ToolbarWidget extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(icon: const Icon(Icons.tune, size: 20), onPressed: onBrushTap, tooltip: 'ブラシ設定'),
-            IconButton(icon: const Icon(Icons.layers, size: 20), onPressed: onLayerTap, tooltip: 'レイヤー'),
+            IconButton(icon: const Icon(Icons.tune, size: 20), onPressed: onBrushTap, tooltip: l10n.toolbarBrushSettingsTooltip),
+            IconButton(icon: const Icon(Icons.layers, size: 20), onPressed: onLayerTap, tooltip: l10n.toolbarLayerTooltip),
             // オニオンスキンは仕様書08・タスク#95によりここから削除し、
             // キャンバス上部バーの「設定/編集」メニューへ集約した。
             // ツール早替えボタン（↺）
@@ -141,7 +143,7 @@ class ToolbarWidget extends StatelessWidget {
             // 管理ポップアップ（登録・並び替え）を表示（仕様書02・08）
             FirstUseTooltip(
               tooltipKey: 'quick_tool',
-              message: 'タップで登録したツールを順番に切り替えられます。長押しまたは上にスワイプで登録内容を編集できます。',
+              message: l10n.toolbarQuickToolFirstUseTip,
               child: GestureDetector(
                 onLongPress: onQuickToolLongPress,
                 onVerticalDragEnd: (details) {
@@ -154,7 +156,7 @@ class ToolbarWidget extends StatelessWidget {
                 child: IconButton(
                   icon: const Icon(Icons.loop, size: 20),
                   onPressed: onQuickToolTap,
-                  tooltip: 'ツール早替え（長押し/上スワイプで編集）',
+                  tooltip: l10n.toolbarQuickToolTooltip,
                 ),
               ),
             ),
@@ -162,7 +164,7 @@ class ToolbarWidget extends StatelessWidget {
             // 削除し、フレーム一覧右下のボタン（frame_strip_widget.dart）
             // へ統一した（同じ役割のボタンが2箇所にあり冗長だったため）。
             // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
-            IconButton(icon: const Icon(Icons.save_outlined, size: 20), onPressed: onSaveTap, tooltip: '保存（セーブツリー）'),
+            IconButton(icon: const Icon(Icons.save_outlined, size: 20), onPressed: onSaveTap, tooltip: l10n.toolbarSaveTooltip),
           ],
         ),
       ),
@@ -182,7 +184,7 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  Widget _selectToolButton(BuildContext context) {
+  Widget _selectToolButton(BuildContext context, AppLocalizations l10n) {
     final isSelected = currentTool == DrawingTool.selectRect ||
         currentTool == DrawingTool.selectLasso ||
         currentTool == DrawingTool.selectMagicWand;
@@ -194,11 +196,11 @@ class ToolbarWidget extends StatelessWidget {
     };
     final primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
-      onLongPress: () => _showSelectMenu(context),
+      onLongPress: () => _showSelectMenu(context, l10n),
       child: IconButton(
         icon: Icon(icon, size: 20),
         onPressed: () => onToolSelected(DrawingTool.selectRect),
-        tooltip: '選択（長押しで種別変更）',
+        tooltip: l10n.toolbarSelectTooltip,
         color: isSelected ? primary : null,
         style: isSelected ? IconButton.styleFrom(backgroundColor: primary.withValues(alpha: 0.15)) : null,
       ),
@@ -207,6 +209,7 @@ class ToolbarWidget extends StatelessWidget {
 
   /// バケツツールのベタ塗り／トーン切り替えメニュー（仕様書04・17）。
   void _showBucketToneMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -224,7 +227,7 @@ class ToolbarWidget extends StatelessWidget {
                   ListTile(
                     dense: true,
                     leading: const Icon(Icons.format_color_fill, size: 18),
-                    title: const Text('ベタ塗り', style: TextStyle(fontSize: 13)),
+                    title: Text(l10n.toolbarBucketFlatFill, style: const TextStyle(fontSize: 13)),
                     selected: !useTone,
                     onTap: () {
                       toneService.setBucketUseTone(false);
@@ -234,7 +237,7 @@ class ToolbarWidget extends StatelessWidget {
                   const Divider(height: 1),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    child: Text('トーン一覧', style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                    child: Text(l10n.toolbarBucketToneListLabel, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
                   ),
                   Expanded(
                     child: GridView.builder(
@@ -286,16 +289,16 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  void _showSelectMenu(BuildContext context) {
+  void _showSelectMenu(BuildContext context, AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: const Icon(Icons.auto_fix_high), title: const Text('矩形選択'), onTap: () { onToolSelected(DrawingTool.selectRect); Navigator.pop(ctx); }),
-            ListTile(leading: const Icon(Icons.gesture), title: const Text('投げ縄選択'), onTap: () { onToolSelected(DrawingTool.selectLasso); Navigator.pop(ctx); }),
-            ListTile(leading: const Icon(Icons.auto_awesome), title: const Text('自動選択（マジックワンド）'), onTap: () { onToolSelected(DrawingTool.selectMagicWand); Navigator.pop(ctx); }),
+            ListTile(leading: const Icon(Icons.auto_fix_high), title: Text(l10n.toolbarSelectRect), onTap: () { onToolSelected(DrawingTool.selectRect); Navigator.pop(ctx); }),
+            ListTile(leading: const Icon(Icons.gesture), title: Text(l10n.toolbarSelectLasso), onTap: () { onToolSelected(DrawingTool.selectLasso); Navigator.pop(ctx); }),
+            ListTile(leading: const Icon(Icons.auto_awesome), title: Text(l10n.toolbarSelectMagicWand), onTap: () { onToolSelected(DrawingTool.selectMagicWand); Navigator.pop(ctx); }),
           ],
         ),
       ),

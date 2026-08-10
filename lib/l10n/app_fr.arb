@@ -425,5 +425,24 @@
   "licenseOssListTitle": "Liste des licences des bibliothèques",
   "licenseOssListSubtitle": "Affiche les licences des paquets OSS utilisés par cette application",
   "licenseFfmpegNote": "L'export WebM utilise FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source de la version modifiée : https://github.com/sk3llo/ffmpeg_kit_flutter\nL'export MP4 utilise directement l'encodeur matériel intégré de l'appareil et n'utilise pas FFmpeg.",
-  "licenseFontCreditMeta": "Auteur : {author}   Licence : {license}"
+  "licenseFontCreditMeta": "Auteur : {author}   Licence : {license}",
+
+  "toolbarPenTooltip": "Plume (appui long pour les sous-outils)",
+  "toolbarPenFirstUseTip": "Appuyez longuement sur la plume pour basculer entre pinceau, trame, tampon et remplissage au lasso.",
+  "toolbarBucketTooltip": "Pot de peinture (appui long pour changer de remplissage)",
+  "toolbarBucketFirstUseTip": "Appuyez longuement sur le pot de peinture pour basculer entre remplissage uni et remplissage en trame.",
+  "toolbarSelectTooltip": "Sélection (appui long pour changer de type)",
+  "toolbarShapeTooltip": "Forme (appuyez pour choisir le type)",
+  "toolbarTextFirstUseTip": "Placez du texte librement. Vous pouvez aussi changer la police, la couleur et le contour.",
+  "toolbarQuickToolFirstUseTip": "Appuyez pour parcourir vos outils enregistrés dans l'ordre. Appui long ou balayage vers le haut pour modifier vos outils enregistrés.",
+  "toolbarStampColorLockedSnackbar": "Les tampons ont leur propre couleur, celle-ci ne peut donc pas être modifiée",
+  "toolbarBrushSettingsTooltip": "Réglages du pinceau",
+  "toolbarLayerTooltip": "Calques",
+  "toolbarQuickToolTooltip": "Outil rapide (appui long/balayage vers le haut pour modifier)",
+  "toolbarSaveTooltip": "Enregistrer (arbre de sauvegarde)",
+  "toolbarBucketFlatFill": "Remplissage uni",
+  "toolbarBucketToneListLabel": "Trames",
+  "toolbarSelectRect": "Sélection rectangulaire",
+  "toolbarSelectLasso": "Sélection au lasso",
+  "toolbarSelectMagicWand": "Sélection automatique (baguette magique)"
 }

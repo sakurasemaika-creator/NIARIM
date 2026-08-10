@@ -425,5 +425,24 @@
   "licenseOssListTitle": "使用函式庫的授權清單",
   "licenseOssListSubtitle": "顯示本App使用的OSS套件授權資訊",
   "licenseFfmpegNote": "WebM匯出使用了FFmpeg（LGPL 3.0，透過ffmpeg_kit_flutter_new_video呼叫）。修改版原始碼取得處：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4匯出直接使用裝置內建的硬體編碼器，未使用FFmpeg。",
-  "licenseFontCreditMeta": "作者：{author}　授權：{license}"
+  "licenseFontCreditMeta": "作者：{author}　授權：{license}",
+
+  "toolbarPenTooltip": "筆（長按開啟子工具）",
+  "toolbarPenFirstUseTip": "長按筆工具，可切換筆刷・網點・印章・套索填色。",
+  "toolbarBucketTooltip": "油漆桶（長按切換純色/網點填滿）",
+  "toolbarBucketFirstUseTip": "長按油漆桶，可在純色填滿和網點填滿之間切換。",
+  "toolbarSelectTooltip": "選取（長按變更類型）",
+  "toolbarShapeTooltip": "圖形（點擊選擇種類）",
+  "toolbarTextFirstUseTip": "可自由放置文字，也能變更字型、顏色和外框線。",
+  "toolbarQuickToolFirstUseTip": "點擊可依序切換已登錄的工具。長按或向上滑動可編輯已登錄的內容。",
+  "toolbarStampColorLockedSnackbar": "印章保留了自身的顏色資訊，因此無法變更顏色",
+  "toolbarBrushSettingsTooltip": "筆刷設定",
+  "toolbarLayerTooltip": "圖層",
+  "toolbarQuickToolTooltip": "快速切換工具（長按/向上滑動可編輯）",
+  "toolbarSaveTooltip": "儲存（儲存樹）",
+  "toolbarBucketFlatFill": "純色填滿",
+  "toolbarBucketToneListLabel": "網點清單",
+  "toolbarSelectRect": "矩形選取",
+  "toolbarSelectLasso": "套索選取",
+  "toolbarSelectMagicWand": "自動選取（魔術棒）"
 }

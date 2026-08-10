@@ -483,5 +483,24 @@
   "licenseFontCreditMeta": "作者：{author}　ライセンス：{license}",
   "@licenseFontCreditMeta": {
     "placeholders": {"author": {"type": "String"}, "license": {"type": "String"}}
-  }
+  },
+
+  "toolbarPenTooltip": "ペン（長押しでサブツール）",
+  "toolbarPenFirstUseTip": "ペンを長押しすると、ブラシ・トーン・スタンプ・投げ縄塗りを切り替えられます。",
+  "toolbarBucketTooltip": "バケツ（長押しでベタ/トーン切替）",
+  "toolbarBucketFirstUseTip": "バケツを長押しすると、ベタ塗りとトーン塗りを切り替えられます。",
+  "toolbarSelectTooltip": "選択（長押しで種別変更）",
+  "toolbarShapeTooltip": "図形（タップで種別選択）",
+  "toolbarTextFirstUseTip": "文字を自由に配置できます。フォントや色、アウトラインも変更できます。",
+  "toolbarQuickToolFirstUseTip": "タップで登録したツールを順番に切り替えられます。長押しまたは上にスワイプで登録内容を編集できます。",
+  "toolbarStampColorLockedSnackbar": "スタンプは色情報を保持しているため色変更できません",
+  "toolbarBrushSettingsTooltip": "ブラシ設定",
+  "toolbarLayerTooltip": "レイヤー",
+  "toolbarQuickToolTooltip": "ツール早替え（長押し/上スワイプで編集）",
+  "toolbarSaveTooltip": "保存（セーブツリー）",
+  "toolbarBucketFlatFill": "ベタ塗り",
+  "toolbarBucketToneListLabel": "トーン一覧",
+  "toolbarSelectRect": "矩形選択",
+  "toolbarSelectLasso": "投げ縄選択",
+  "toolbarSelectMagicWand": "自動選択（マジックワンド）"
 }
