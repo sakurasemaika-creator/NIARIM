@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../services/premium_service.dart';
-import '../../services/project_service.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -49,12 +47,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         keywords: 'fps 背景色 言語 描画領域初期値', onTap: _showBasicSettings, accent: const Color(0xFFFF5C7A),
       ),
       (
-        icon: Icons.tune, title: '詳細', subtitle: 'Undo回数・自動保存・ゴミ箱',
-        keywords: 'undo 自動保存 ゴミ箱 削除', onTap: _showDetailSettings, accent: const Color(0xFF3AA6FF),
-      ),
-      (
-        icon: Icons.speed, title: 'パフォーマンス', subtitle: '品質設定・タイルキャッシュ',
-        keywords: '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知',
+        // 容量・重さに影響する設定（Undo回数・ゴミ箱自動削除等）は全て
+        // パフォーマンス設定へ統合した（旧「詳細」カテゴリは廃止）。
+        icon: Icons.speed, title: 'パフォーマンス', subtitle: '品質設定・Undo回数・ゴミ箱・タイルキャッシュ',
+        keywords: '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除',
         onTap: () => context.push('/settings/performance'), accent: const Color(0xFF3DDC97),
       ),
       (
@@ -277,84 +273,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showDetailSettings() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.6, minChildSize: 0.3, maxChildSize: 0.9, expand: false,
-        builder: (_, controller) => Consumer<SettingsService>(
-          builder: (context, settings, _) => ListView(
-            controller: controller,
-            padding: const EdgeInsets.all(16),
-            children: [
-              const Text('詳細設定', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              ListTile(
-                title: const Text('Undo回数'),
-                trailing: Text('${settings.undoLimit}回'),
-                onTap: () => _showUndoLimitDialog(settings),
-              ),
-              const ListTile(title: Text('自動保存スロット数'), trailing: Text('3（固定・クラッシュ復元専用）')),
-              ListTile(
-                title: const Text('ゴミ箱の自動削除'),
-                trailing: Text(settings.trashAutoDeleteDays == 0 ? 'OFF' : '${settings.trashAutoDeleteDays}日'),
-                onTap: () => _showTrashAutoDeleteDialog(settings),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showUndoLimitDialog(SettingsService settings) {
-    const options = [10, 20, 30, 50, 100, 200];
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Undo回数'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.map((n) => RadioListTile<int>(
-            title: Text('$n回'),
-            value: n,
-            groupValue: settings.undoLimit,
-            onChanged: (v) {
-              if (v == null) return;
-              settings.setUndoLimit(v);
-              context.read<UndoManager>().setMaxUndoCount(v);
-              Navigator.pop(ctx);
-            },
-          )).toList(),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
-      ),
-    );
-  }
-
-  void _showTrashAutoDeleteDialog(SettingsService settings) {
-    const options = {0: 'OFF', 30: '30日', 60: '60日', 90: '90日'};
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('ゴミ箱の自動削除'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.entries.map((e) => RadioListTile<int>(
-            title: Text(e.value),
-            value: e.key,
-            groupValue: settings.trashAutoDeleteDays,
-            onChanged: (v) {
-              if (v == null) return;
-              settings.setTrashAutoDelete(v);
-              context.read<ProjectService>().sweepExpiredTrash(v);
-              Navigator.pop(ctx);
-            },
-          )).toList(),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
-      ),
-    );
-  }
 }

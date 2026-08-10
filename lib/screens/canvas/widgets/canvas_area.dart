@@ -2060,7 +2060,14 @@ class _CanvasPainter extends CustomPainter {
 
   void _paintBackground(Canvas canvas, Rect rect) {
     if (background == CanvasBackground.white) {
-      canvas.drawRect(rect, Paint()..color = Colors.white);
+      // 新規プロジェクト作成画面で選択した背景色（Project.backgroundColor）
+      // をキャンバス表示にも反映する。以前は常に白固定で描画しており、
+      // 作成時に選んだ色がキャンバス上に一切反映されない不具合があった
+      // （書き出し結果には正しく反映されていた＝export_screen.dartは
+      // 既にproject.backgroundColorを使用していたため、表示側だけが
+      // 実際の設定と食い違っていた）。
+      final color = project != null ? Color(project!.backgroundColor) : Colors.white;
+      canvas.drawRect(rect, Paint()..color = color);
     } else {
       _paintChecker(canvas, rect);
     }

@@ -20,8 +20,22 @@ class AutosaveService extends ChangeNotifier {
   ProjectService? _projectService;
   UndoManager? _undoManager;
   String? _currentProjectId;
+  // クラッシュ復元確認ダイアログを、同一アプリセッション中に同じ
+  // プロジェクトへ再度提示しないようにするための記録。CanvasScreenは
+  // タイムラインモードとの往復（context.go）のたびに再生成されるため、
+  // Widget側の状態だけで「一度確認済み」を覚えることができない。
+  // AutosaveServiceはアプリ起動時に1つだけ生成されアプリ全体で共有される
+  // ため、ここに記録することで「編集再開のたびに自動保存ダイアログが
+  // 毎回出る」不具合を防ぐ。
+  final Set<String> _promptedProjectIds = {};
 
   List<AutosaveSlot> get slots => List.unmodifiable(_slots);
+
+  /// このアプリセッション中に既にクラッシュ復元確認を行ったプロジェクトか。
+  bool hasPromptedThisSession(String projectId) => _promptedProjectIds.contains(projectId);
+
+  /// クラッシュ復元確認を行った（結果に関わらず）ことを記録する。
+  void markPrompted(String projectId) => _promptedProjectIds.add(projectId);
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();

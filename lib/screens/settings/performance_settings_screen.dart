@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../engine/undo_manager.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
+import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
 import '../save_tree/save_tree_screen.dart';
 import '../../widgets/help_button.dart';
@@ -108,6 +110,7 @@ class _PerformanceSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final perf = context.watch<PerformanceService>();
+    final settings = context.watch<SettingsService>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('パフォーマンス設定'), actions: const [HelpButton()]),
@@ -128,6 +131,24 @@ class _PerformanceSettingsScreenState
                   if (v != null) _onQualityChanged(v);
                 },
               )),
+          const Divider(height: 32),
+          // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
+          // 移設。品質プリセットとは独立して常に変更可能）。
+          const Text('容量・動作に関わる設定',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          ListTile(
+            title: const Text('Undo回数'),
+            subtitle: const Text('多いほどメモリを消費する'),
+            trailing: Text('${settings.undoLimit}回'),
+            onTap: () => _showUndoLimitDialog(context, settings),
+          ),
+          ListTile(
+            title: const Text('ゴミ箱の自動削除'),
+            subtitle: const Text('削除済みプロジェクトの保持期間'),
+            trailing: Text(settings.trashAutoDeleteDays == 0 ? 'OFF' : '${settings.trashAutoDeleteDays}日'),
+            onTap: () => _showTrashAutoDeleteDialog(context, settings),
+          ),
           const Divider(height: 32),
           const Text('現在の設定',
               style:
@@ -224,6 +245,56 @@ class _PerformanceSettingsScreenState
           ],
         ],
       )),
+    );
+  }
+
+  void _showUndoLimitDialog(BuildContext context, SettingsService settings) {
+    const options = [10, 20, 30, 50, 100, 200];
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Undo回数'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((n) => RadioListTile<int>(
+            title: Text('$n回'),
+            value: n,
+            groupValue: settings.undoLimit,
+            onChanged: (v) {
+              if (v == null) return;
+              settings.setUndoLimit(v);
+              context.read<UndoManager>().setMaxUndoCount(v);
+              Navigator.pop(ctx);
+            },
+          )).toList(),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
+      ),
+    );
+  }
+
+  void _showTrashAutoDeleteDialog(BuildContext context, SettingsService settings) {
+    const options = {0: 'OFF', 30: '30日', 60: '60日', 90: '90日'};
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('ゴミ箱の自動削除'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.entries.map((e) => RadioListTile<int>(
+            title: Text(e.value),
+            value: e.key,
+            groupValue: settings.trashAutoDeleteDays,
+            onChanged: (v) {
+              if (v == null) return;
+              settings.setTrashAutoDelete(v);
+              context.read<ProjectService>().sweepExpiredTrash(v);
+              Navigator.pop(ctx);
+            },
+          )).toList(),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
+      ),
     );
   }
 

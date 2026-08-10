@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
@@ -74,6 +75,19 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
       _exportWidth = width;
       _exportHeight = height;
     });
+  }
+
+  // 長さ（秒）の表示用フォーマット。プレミアム会員は最大2時間まで
+  // 選択できるため、60秒を超える場合は分/時間表記へ切り替える。
+  static String _formatDuration(int seconds) {
+    if (seconds < 60) return '$seconds秒';
+    final h = seconds ~/ 3600;
+    final m = (seconds % 3600) ~/ 60;
+    final s = seconds % 60;
+    if (h > 0) {
+      return s > 0 ? '$h時間$m分$s秒' : (m > 0 ? '$h時間$m分' : '$h時間');
+    }
+    return s > 0 ? '$m分$s秒' : '$m分';
   }
 
   // 上限はFull HD相当（長辺1920px）とする。
@@ -166,22 +180,41 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ),
             ],
             const SizedBox(height: 24),
-            const Text('長さ（秒）', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Slider(
-                    min: 1, max: 60,
-                    value: _durationSeconds.toDouble(),
-                    divisions: 59,
-                    label: '$_durationSeconds秒',
-                    onChanged: (v) => setState(() => _durationSeconds = v.round()),
+            Builder(builder: (context) {
+              // 長さの上限（仕様書07）：無料会員は最大90秒、プレミアム会員は
+              // 最大2時間（7200秒）。以前は会員種別を問わず60秒固定だったため、
+              // 無料会員の上限にも満たない誤った制限になっていた。
+              final isPremium = context.watch<PremiumService>().isPremium;
+              final maxDuration = isPremium ? 7200 : 90;
+              if (_durationSeconds > maxDuration) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) setState(() => _durationSeconds = maxDuration);
+                });
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('長さ（最大${_formatDuration(maxDuration)}${isPremium ? '' : '・プレミアムなら最大2時間'}）',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          min: 1,
+                          max: maxDuration.toDouble(),
+                          value: _durationSeconds.clamp(1, maxDuration).toDouble(),
+                          divisions: maxDuration - 1,
+                          label: _formatDuration(_durationSeconds),
+                          onChanged: (v) => setState(() => _durationSeconds = v.round()),
+                        ),
+                      ),
+                      SizedBox(width: 72, child: Text(_formatDuration(_durationSeconds), textAlign: TextAlign.center)),
+                    ],
                   ),
-                ),
-                SizedBox(width: 60, child: Text('$_durationSeconds秒', textAlign: TextAlign.center)),
-              ],
-            ),
+                ],
+              );
+            }),
             const SizedBox(height: 24),
             const Text('背景色', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),

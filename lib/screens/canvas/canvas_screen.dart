@@ -155,8 +155,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   /// クラッシュ・ファイル破損時の復元用：プロジェクトの最終保存より新しい自動保存があれば復元を提案する。
+  ///
+  /// CanvasScreenはタイムラインモードとの往復（context.go）のたびにWidget
+  /// ごと再生成されるため、Widget側の状態フラグだけでは「編集を再開した
+  /// だけ」「タイムラインからキャンバスへ戻っただけ」でも毎回この確認が
+  /// 出てしまっていた（アプリセッション中に一度も明示保存していない限り
+  /// 自動保存の方が新しいままになるため）。AutosaveService側にアプリ
+  /// セッション単位で「確認済みか」を記録することで、本来の目的（アプリ
+  /// クラッシュ・強制終了からの復元）以外では表示しないようにする。
   Future<void> _checkCrashRecovery(AutosaveService autosave) async {
     if (!mounted) return;
+    if (autosave.hasPromptedThisSession(widget.projectId)) return;
+    autosave.markPrompted(widget.projectId);
     final slot = autosave.latestSlotFor(widget.projectId);
     if (slot == null) return;
     final project = context.read<ProjectService>()
@@ -661,7 +671,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   : Icons.grid_4x4,
               size: 20,
             ),
-            tooltip: _canvasBackground == CanvasBackground.white ? '背景：白' : '背景：透過',
+            // 「白」ではなくプロジェクトの背景色をキャンバスに反映するため
+            // ラベルも実態に合わせて変更（canvas_area.dartの_paintBackground参照）。
+            tooltip: _canvasBackground == CanvasBackground.white ? '背景：プロジェクト背景色' : '背景：透過',
             onPressed: () => setState(() {
               _canvasBackground = _canvasBackground == CanvasBackground.white
                   ? CanvasBackground.transparent
