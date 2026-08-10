@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/tone.dart';
 import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
@@ -32,6 +33,7 @@ class _TonePanelState extends State<TonePanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final toneService = context.watch<ToneService>();
     final allTones = toneService.tones;
     final folders = toneService.folders;
@@ -60,13 +62,13 @@ class _TonePanelState extends State<TonePanel> {
             children: [
               Row(
                 children: [
-                  const Text('トーン', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.toneTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(
                     icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
                         color: _showFavoritesOnly ? Colors.amber : null),
                     onPressed: () => setState(() => _showFavoritesOnly = !_showFavoritesOnly),
-                    tooltip: 'お気に入りのみ表示',
+                    tooltip: l10n.creativePanelFavoritesOnlyTooltip,
                   ),
                   IconButton(
                     icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 16),
@@ -74,7 +76,7 @@ class _TonePanelState extends State<TonePanel> {
                       _showSearch = !_showSearch;
                       if (!_showSearch) { _searchQuery = ''; _searchController.clear(); }
                     }),
-                    tooltip: '名前で検索',
+                    tooltip: l10n.creativePanelSearchTooltip,
                   ),
                   IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
                 ],
@@ -83,17 +85,17 @@ class _TonePanelState extends State<TonePanel> {
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: const Text('フォルダ', style: TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11)),
                     onPressed: () => _openFolderManagement(context, toneService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                    label: const Text('自作', style: TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11)),
                     onPressed: () => _createFromImage(context, toneService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: const Text('読込', style: TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11)),
                     onPressed: () => _importTone(context, toneService),
                   ),
                 ],
@@ -106,9 +108,9 @@ class _TonePanelState extends State<TonePanel> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _folderChip('全て', _folderFilter == null || _folderFilter == _allFolders,
+                        _folderChip(l10n.creativePanelFolderAllChip, _folderFilter == null || _folderFilter == _allFolders,
                             () => setState(() => _folderFilter = null)),
-                        _folderChip('フォルダなし', _folderFilter == '', () => setState(() => _folderFilter = '')),
+                        _folderChip(l10n.folderNone, _folderFilter == '', () => setState(() => _folderFilter = '')),
                         ...folders.map((f) => _folderChip(
                             f.name, _folderFilter == f.id, () => setState(() => _folderFilter = f.id))),
                       ],
@@ -122,15 +124,15 @@ class _TonePanelState extends State<TonePanel> {
                     controller: _searchController,
                     autofocus: true,
                     style: const TextStyle(fontSize: 13),
-                    decoration: const InputDecoration(
-                        isDense: true, hintText: 'トーン名で検索', prefixIcon: Icon(Icons.search, size: 16)),
+                    decoration: InputDecoration(
+                        isDense: true, hintText: l10n.toneSearchHint, prefixIcon: const Icon(Icons.search, size: 16)),
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
                 ),
               const Divider(),
               Expanded(
                 child: toneList.isEmpty
-                    ? const Center(child: Text('トーンがありません', style: TextStyle(color: Colors.grey, fontSize: 12)))
+                    ? Center(child: Text(l10n.toneEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
                     : ListView.builder(
                         itemCount: toneList.length,
                         itemBuilder: (context, index) {
@@ -154,10 +156,10 @@ class _TonePanelState extends State<TonePanel> {
                                   icon: const Icon(Icons.more_vert, size: 14),
                                   onSelected: (action) => _handleAction(context, action, tone),
                                   itemBuilder: (_) => [
-                                    const PopupMenuItem(value: 'edit', child: Text('編集')),
-                                    const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
-                                    const PopupMenuItem(value: 'export', child: Text('書き出し')),
-                                    const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
+                                    PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
+                                    PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+                                    PopupMenuItem(value: 'export', child: Text(l10n.transferExport)),
+                                    PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                                   ],
                                 ),
                               ],
@@ -226,7 +228,8 @@ class _TonePanelState extends State<TonePanel> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!context.mounted) return;
-    final name = await promptCreativeAssetName(context, title: '自作トーン');
+    final l10n = AppLocalizations.of(context)!;
+    final name = await promptCreativeAssetName(context, title: l10n.toneCreateDialogTitle);
     if (name == null) return;
     await service.createToneFromImage(result.files.first.path!, name: name);
   }
@@ -238,7 +241,8 @@ class _TonePanelState extends State<TonePanel> {
       await service.importToneFile(result.files.first.path!);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('トーンの読み込みに失敗しました: $e')));
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.toneImportFailedSnackbar(e.toString()))));
     }
   }
 
@@ -249,7 +253,8 @@ class _TonePanelState extends State<TonePanel> {
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('トーンの書き出しに失敗しました: $e')));
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.toneExportFailedSnackbar(e.toString()))));
     }
   }
 }
@@ -279,6 +284,7 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // 仕様書17：トーンの編集可能項目は名前・テクスチャ画像のみ
     return SafeArea(
       child: Padding(
@@ -287,16 +293,16 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('トーンを編集', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(l10n.toneEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: '名前', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
               icon: const Icon(Icons.image_outlined, size: 16),
-              label: const Text('テクスチャ画像を変更'),
+              label: Text(l10n.toneChangeTextureButton),
               onPressed: () async {
                 final result = await FilePicker.platform.pickFiles(type: FileType.image);
                 if (result == null || result.files.isEmpty || result.files.first.path == null) return;
@@ -313,7 +319,7 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
                 context.read<ToneService>().updateTone(widget.tone.copyWith(name: _nameController.text));
                 Navigator.pop(context);
               },
-              child: const Text('保存'),
+              child: Text(l10n.commonSave),
             ),
           ],
         ),

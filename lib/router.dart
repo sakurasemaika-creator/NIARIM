@@ -21,6 +21,7 @@ import 'screens/save_tree/save_tree_screen.dart';
 import 'screens/materials/material_list_screen.dart';
 import 'screens/settings/font_settings_screen.dart';
 import 'screens/settings/license_screen.dart';
+import 'screens/settings/privacy_policy_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -69,5 +70,6 @@ final appRouter = GoRouter(
     ),
     GoRoute(path: '/settings/fonts', builder: (context, state) => const FontSettingsScreen()),
     GoRoute(path: '/settings/license', builder: (context, state) => const LicenseScreen()),
+    GoRoute(path: '/settings/privacy-policy', builder: (context, state) => const PrivacyPolicyScreen()),
   ],
 );

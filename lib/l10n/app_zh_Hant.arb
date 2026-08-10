@@ -444,5 +444,24 @@
   "toolbarBucketToneListLabel": "網點清單",
   "toolbarSelectRect": "矩形選取",
   "toolbarSelectLasso": "套索選取",
-  "toolbarSelectMagicWand": "自動選取（魔術棒）"
+  "toolbarSelectMagicWand": "自動選取（魔術棒）",
+
+  "creativePanelFavoritesOnlyTooltip": "僅顯示我的最愛",
+  "creativePanelSearchTooltip": "依名稱搜尋",
+  "creativePanelFolderButton": "資料夾",
+  "creativePanelCreateButton": "自製",
+  "creativePanelImportButton": "匯入",
+  "creativePanelFolderAllChip": "全部",
+  "creativePanelEditAction": "編輯",
+
+  "toneTitle": "網點",
+  "toneEmpty": "沒有網點",
+  "toneSearchHint": "以網點名稱搜尋",
+  "toneEditTitle": "編輯網點",
+  "toneChangeTextureButton": "變更材質圖片",
+  "toneCreateDialogTitle": "自製網點",
+  "toneImportFailedSnackbar": "網點讀取失敗：{error}",
+  "toneExportFailedSnackbar": "網點匯出失敗：{error}",
+
+  "privacyPolicyScreenTitle": "隱私權政策"
 }

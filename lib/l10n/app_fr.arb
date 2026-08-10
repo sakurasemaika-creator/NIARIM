@@ -444,5 +444,24 @@
   "toolbarBucketToneListLabel": "Trames",
   "toolbarSelectRect": "Sélection rectangulaire",
   "toolbarSelectLasso": "Sélection au lasso",
-  "toolbarSelectMagicWand": "Sélection automatique (baguette magique)"
+  "toolbarSelectMagicWand": "Sélection automatique (baguette magique)",
+
+  "creativePanelFavoritesOnlyTooltip": "Afficher uniquement les favoris",
+  "creativePanelSearchTooltip": "Rechercher par nom",
+  "creativePanelFolderButton": "Dossier",
+  "creativePanelCreateButton": "Créer",
+  "creativePanelImportButton": "Importer",
+  "creativePanelFolderAllChip": "Tous",
+  "creativePanelEditAction": "Modifier",
+
+  "toneTitle": "Trames",
+  "toneEmpty": "Aucune trame",
+  "toneSearchHint": "Rechercher par nom de trame",
+  "toneEditTitle": "Modifier la trame",
+  "toneChangeTextureButton": "Changer l'image de texture",
+  "toneCreateDialogTitle": "Trame personnalisée",
+  "toneImportFailedSnackbar": "Échec du chargement de la trame : {error}",
+  "toneExportFailedSnackbar": "Échec de l'exportation de la trame : {error}",
+
+  "privacyPolicyScreenTitle": "Politique de confidentialité"
 }

@@ -444,5 +444,24 @@
   "toolbarBucketToneListLabel": "Tones",
   "toolbarSelectRect": "Rectangle Select",
   "toolbarSelectLasso": "Lasso Select",
-  "toolbarSelectMagicWand": "Auto Select (Magic Wand)"
+  "toolbarSelectMagicWand": "Auto Select (Magic Wand)",
+
+  "creativePanelFavoritesOnlyTooltip": "Show Favorites Only",
+  "creativePanelSearchTooltip": "Search by Name",
+  "creativePanelFolderButton": "Folder",
+  "creativePanelCreateButton": "Create",
+  "creativePanelImportButton": "Import",
+  "creativePanelFolderAllChip": "All",
+  "creativePanelEditAction": "Edit",
+
+  "toneTitle": "Tones",
+  "toneEmpty": "No tones",
+  "toneSearchHint": "Search by tone name",
+  "toneEditTitle": "Edit Tone",
+  "toneChangeTextureButton": "Change Texture Image",
+  "toneCreateDialogTitle": "Custom Tone",
+  "toneImportFailedSnackbar": "Failed to load the tone: {error}",
+  "toneExportFailedSnackbar": "Failed to export the tone: {error}",
+
+  "privacyPolicyScreenTitle": "Privacy Policy"
 }

@@ -444,5 +444,24 @@
   "toolbarBucketToneListLabel": "톤 목록",
   "toolbarSelectRect": "사각형 선택",
   "toolbarSelectLasso": "올가미 선택",
-  "toolbarSelectMagicWand": "자동 선택（매직 완드）"
+  "toolbarSelectMagicWand": "자동 선택（매직 완드）",
+
+  "creativePanelFavoritesOnlyTooltip": "즐겨찾기만 표시",
+  "creativePanelSearchTooltip": "이름으로 검색",
+  "creativePanelFolderButton": "폴더",
+  "creativePanelCreateButton": "직접 제작",
+  "creativePanelImportButton": "불러오기",
+  "creativePanelFolderAllChip": "전체",
+  "creativePanelEditAction": "편집",
+
+  "toneTitle": "톤",
+  "toneEmpty": "톤이 없습니다",
+  "toneSearchHint": "톤 이름으로 검색",
+  "toneEditTitle": "톤 편집",
+  "toneChangeTextureButton": "텍스처 이미지 변경",
+  "toneCreateDialogTitle": "직접 제작한 톤",
+  "toneImportFailedSnackbar": "톤을 불러오지 못했습니다: {error}",
+  "toneExportFailedSnackbar": "톤 내보내기에 실패했습니다: {error}",
+
+  "privacyPolicyScreenTitle": "개인정보처리방침"
 }

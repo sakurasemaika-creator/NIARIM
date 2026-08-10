@@ -444,5 +444,24 @@
   "toolbarBucketToneListLabel": "Tramas",
   "toolbarSelectRect": "Selección rectangular",
   "toolbarSelectLasso": "Selección de lazo",
-  "toolbarSelectMagicWand": "Selección automática (varita mágica)"
+  "toolbarSelectMagicWand": "Selección automática (varita mágica)",
+
+  "creativePanelFavoritesOnlyTooltip": "Mostrar solo favoritos",
+  "creativePanelSearchTooltip": "Buscar por nombre",
+  "creativePanelFolderButton": "Carpeta",
+  "creativePanelCreateButton": "Crear",
+  "creativePanelImportButton": "Importar",
+  "creativePanelFolderAllChip": "Todas",
+  "creativePanelEditAction": "Editar",
+
+  "toneTitle": "Tramas",
+  "toneEmpty": "No hay tramas",
+  "toneSearchHint": "Buscar por nombre de trama",
+  "toneEditTitle": "Editar trama",
+  "toneChangeTextureButton": "Cambiar imagen de textura",
+  "toneCreateDialogTitle": "Trama personalizada",
+  "toneImportFailedSnackbar": "Error al cargar la trama: {error}",
+  "toneExportFailedSnackbar": "Error al exportar la trama: {error}",
+
+  "privacyPolicyScreenTitle": "Política de privacidad"
 }

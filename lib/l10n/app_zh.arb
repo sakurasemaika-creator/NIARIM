@@ -444,5 +444,24 @@
   "toolbarBucketToneListLabel": "网点列表",
   "toolbarSelectRect": "矩形选择",
   "toolbarSelectLasso": "套索选择",
-  "toolbarSelectMagicWand": "自动选择（魔术棒）"
+  "toolbarSelectMagicWand": "自动选择（魔术棒）",
+
+  "creativePanelFavoritesOnlyTooltip": "仅显示收藏",
+  "creativePanelSearchTooltip": "按名称搜索",
+  "creativePanelFolderButton": "文件夹",
+  "creativePanelCreateButton": "自制",
+  "creativePanelImportButton": "导入",
+  "creativePanelFolderAllChip": "全部",
+  "creativePanelEditAction": "编辑",
+
+  "toneTitle": "网点",
+  "toneEmpty": "没有网点",
+  "toneSearchHint": "按网点名称搜索",
+  "toneEditTitle": "编辑网点",
+  "toneChangeTextureButton": "更改纹理图片",
+  "toneCreateDialogTitle": "自制网点",
+  "toneImportFailedSnackbar": "网点读取失败：{error}",
+  "toneExportFailedSnackbar": "网点导出失败：{error}",
+
+  "privacyPolicyScreenTitle": "隐私政策"
 }

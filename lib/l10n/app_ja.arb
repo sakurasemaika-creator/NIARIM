@@ -502,5 +502,30 @@
   "toolbarBucketToneListLabel": "トーン一覧",
   "toolbarSelectRect": "矩形選択",
   "toolbarSelectLasso": "投げ縄選択",
-  "toolbarSelectMagicWand": "自動選択（マジックワンド）"
+  "toolbarSelectMagicWand": "自動選択（マジックワンド）",
+
+  "creativePanelFavoritesOnlyTooltip": "お気に入りのみ表示",
+  "creativePanelSearchTooltip": "名前で検索",
+  "creativePanelFolderButton": "フォルダ",
+  "creativePanelCreateButton": "自作",
+  "creativePanelImportButton": "読込",
+  "creativePanelFolderAllChip": "全て",
+  "creativePanelEditAction": "編集",
+
+  "toneTitle": "トーン",
+  "toneEmpty": "トーンがありません",
+  "toneSearchHint": "トーン名で検索",
+  "toneEditTitle": "トーンを編集",
+  "toneChangeTextureButton": "テクスチャ画像を変更",
+  "toneCreateDialogTitle": "自作トーン",
+  "toneImportFailedSnackbar": "トーンの読み込みに失敗しました: {error}",
+  "@toneImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "toneExportFailedSnackbar": "トーンの書き出しに失敗しました: {error}",
+  "@toneExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+
+  "privacyPolicyScreenTitle": "プライバシーポリシー"
 }

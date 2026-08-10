@@ -122,6 +122,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: TextButton(
+                        onPressed: () => context.push('/settings/privacy-policy'),
+                        child: Text(l10n.privacyPolicyScreenTitle,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                   ],
                 ],
