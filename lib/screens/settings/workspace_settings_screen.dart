@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/quick_tool_entry.dart';
 import '../../models/toolbar_item.dart';
 import '../../services/quick_tool_service.dart';
@@ -13,17 +14,19 @@ class WorkspaceSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
     final presetService = context.watch<WorkspacePresetService>();
     return Scaffold(
-      appBar: AppBar(title: const Text('ワークスペース設定'), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.workspaceScreenTitle), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _sectionLabel(context, 'ツールバー編集'),
+          _sectionLabel(context, l10n.workspaceToolbarEditSection),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text('表示するツールをチェックボックスで選択し、ドラッグで並び替えできます（仕様書08）。',
+            // 仕様書08：ツールバー編集機能に対応する説明文。
+            child: Text(l10n.workspaceToolbarEditHint,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           // 実際のキャンバス画面での横並び配置を模したプレビュー
@@ -50,7 +53,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                     for (final id in settings.toolbarOrder)
                       CheckboxListTile(
                         key: ValueKey(id),
-                        title: Text(id.label),
+                        title: Text(id.label(l10n)),
                         value: !settings.hiddenToolbarItems.contains(id),
                         onChanged: (v) => settings.setToolbarItemVisible(id, v ?? true),
                         secondary: const Icon(Icons.drag_handle),
@@ -64,7 +67,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () => settings.resetToolbarDefault(),
-                      child: const Text('デフォルトに戻す'),
+                      child: Text(l10n.workspaceResetToolbarDefault),
                     ),
                   ),
                 ),
@@ -72,7 +75,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          _sectionLabel(context, 'パネル配置'),
+          _sectionLabel(context, l10n.workspacePanelLayoutSection),
           Builder(builder: (context) {
             // スマホモードではツールバーが画面下部に固定表示されるため、
             // 左右反転（左利きモード）が意味を持つのはパネルを常時
@@ -81,38 +84,38 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             final isPc = isWideScreen(context);
             return Card(
               child: SwitchListTile(
-                title: const Text('左利きモード'),
-                subtitle: Text(isPc ? 'パネルを右側に配置' : 'PC/DeXモードでのみ設定できます'),
+                title: Text(l10n.workspaceLeftHandedMode),
+                subtitle: Text(isPc ? l10n.workspaceLeftHandedSubtitlePc : l10n.workspaceLeftHandedSubtitleMobile),
                 value: settings.isLeftHanded,
                 onChanged: isPc ? (v) => settings.setLeftHanded(v) : null,
               ),
             );
           }),
           const SizedBox(height: 20),
-          _sectionLabel(context, 'PCモード（DeX）'),
+          _sectionLabel(context, l10n.workspacePcModeSection),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text('画面幅の広い環境ではプロ向けのドッキングUIへ自動で切り替わります。'
-                '手動で固定したい場合はここで指定してください（仕様書02）。',
+            // 仕様書02：PC/DeXモードの手動固定機能に対応する説明文。
+            child: Text(l10n.workspacePcModeHint,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           Card(
             child: Column(
               children: [
                 RadioListTile<bool?>(
-                  title: const Text('自動（画面幅で判定・推奨）'),
+                  title: Text(l10n.workspacePcModeAuto),
                   value: null,
                   groupValue: settings.forcePcMode,
                   onChanged: (v) => settings.setForcePcMode(v),
                 ),
                 RadioListTile<bool?>(
-                  title: const Text('常にPCモード'),
+                  title: Text(l10n.workspacePcModeAlwaysPc),
                   value: true,
                   groupValue: settings.forcePcMode,
                   onChanged: (v) => settings.setForcePcMode(v),
                 ),
                 RadioListTile<bool?>(
-                  title: const Text('常にスマホモード'),
+                  title: Text(l10n.workspacePcModeAlwaysMobile),
                   value: false,
                   groupValue: settings.forcePcMode,
                   onChanged: (v) => settings.setForcePcMode(v),
@@ -121,16 +124,16 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          _sectionLabel(context, 'ワークスペース保存'),
+          _sectionLabel(context, l10n.workspaceSaveSection),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text('左利きモード・PCモード・ツールバー・ツール早替え設定を名前を付けて保存し、後から呼び出せます。',
+            child: Text(l10n.workspaceSaveHint,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           FilledButton.icon(
             onPressed: () => _showSaveDialog(context, settings, presetService),
             icon: const Icon(Icons.save),
-            label: const Text('現在のワークスペースを保存'),
+            label: Text(l10n.workspaceSaveCurrentButton),
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
           const SizedBox(height: 8),
@@ -139,7 +142,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 ? null
                 : () => _showLoadSheet(context, settings, presetService),
             icon: const Icon(Icons.folder_open),
-            label: Text(presetService.presets.isEmpty ? 'ワークスペースを読み込み（未保存）' : 'ワークスペースを読み込み'),
+            label: Text(presetService.presets.isEmpty ? l10n.workspaceLoadButtonEmpty : l10n.workspaceLoadButton),
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
         ],
@@ -157,19 +160,20 @@ class WorkspaceSettingsScreen extends StatelessWidget {
   }
 
   void _showSaveDialog(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     final quickToolService = context.read<QuickToolService>();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('ワークスペースを保存'),
+        title: Text(l10n.workspaceSaveDialogTitle),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(labelText: '名前（例：アニメ用・線画用）', border: OutlineInputBorder()),
+          decoration: InputDecoration(labelText: l10n.workspaceSaveDialogLabel, border: const OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               final name = controller.text.trim();
@@ -184,7 +188,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               );
               Navigator.pop(ctx);
             },
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -192,6 +196,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
   }
 
   void _showLoadSheet(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+    final l10n = AppLocalizations.of(context)!;
     final quickToolService = context.read<QuickToolService>();
     showModalBottomSheet(
       context: context,
@@ -203,7 +208,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.dashboard_customize),
                 title: Text(preset.name),
-                subtitle: Text(preset.isLeftHanded ? '左利き' : '右利き'),
+                subtitle: Text(preset.isLeftHanded ? l10n.workspaceLoadLeftHanded : l10n.workspaceLoadRightHanded),
                 onTap: () {
                   settings.setLeftHanded(preset.isLeftHanded);
                   settings.setForcePcMode(preset.forcePcMode);
@@ -238,6 +243,7 @@ class _ToolbarPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final visible = order.where((id) => !hidden.contains(id)).toList();
     final scheme = Theme.of(context).colorScheme;
     return Container(
@@ -249,7 +255,7 @@ class _ToolbarPreview extends StatelessWidget {
       ),
       child: visible.isEmpty
           ? Center(
-              child: Text('表示するツールがありません',
+              child: Text(l10n.workspaceEmptyToolbar,
                   style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
             )
           : SingleChildScrollView(
@@ -261,7 +267,7 @@ class _ToolbarPreview extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Tooltip(
-                        message: id.label,
+                        message: id.label(l10n),
                         child: Icon(id.icon, size: 20, color: scheme.onSurface),
                       ),
                     ),

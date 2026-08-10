@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show IconData, Icons;
+import '../l10n/app_localizations.dart';
 
 /// ツールバーに表示するツール項目（仕様書08：ワークスペース設定＞ツールバー編集）。
 /// 表示ON/OFF・並び順をカスタマイズ可能な項目のみを列挙する。
@@ -25,16 +26,16 @@ enum ToolbarItemId {
 }
 
 extension ToolbarItemLabel on ToolbarItemId {
-  String get label => switch (this) {
-        ToolbarItemId.pen => 'Gペン',
-        ToolbarItemId.eraser => '消しゴム',
-        ToolbarItemId.bucket => 'バケツ',
-        ToolbarItemId.eyedropper => 'スポイト',
-        ToolbarItemId.finger => '指',
-        ToolbarItemId.select => '選択',
-        ToolbarItemId.transform => '変形',
-        ToolbarItemId.text => 'テキスト',
-        ToolbarItemId.shape => '図形',
+  String label(AppLocalizations l10n) => switch (this) {
+        ToolbarItemId.pen => l10n.toolbarItemPen,
+        ToolbarItemId.eraser => l10n.toolbarItemEraser,
+        ToolbarItemId.bucket => l10n.toolbarItemBucket,
+        ToolbarItemId.eyedropper => l10n.toolbarItemEyedropper,
+        ToolbarItemId.finger => l10n.toolbarItemFinger,
+        ToolbarItemId.select => l10n.toolbarItemSelect,
+        ToolbarItemId.transform => l10n.toolbarItemTransform,
+        ToolbarItemId.text => l10n.toolbarItemText,
+        ToolbarItemId.shape => l10n.toolbarItemShape,
       };
 }
 
