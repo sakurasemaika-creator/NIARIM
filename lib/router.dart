@@ -52,7 +52,11 @@ final appRouter = GoRouter(
     GoRoute(path: '/settings/transfer', builder: (context, state) => const TransferScreen()),
     GoRoute(path: '/settings/theme', builder: (context, state) => const ThemeSettingsScreen()),
     GoRoute(path: '/settings/watermark', builder: (context, state) => const WatermarkSettingsScreen()),
-    GoRoute(path: '/help', builder: (context, state) => const HelpScreen()),
+    GoRoute(
+      path: '/help',
+      builder: (context, state) =>
+          HelpScreen(initialTopic: state.uri.queryParameters['topic']),
+    ),
     GoRoute(path: '/premium', builder: (context, state) => const PremiumScreen()),
     GoRoute(path: '/autofill-presets', builder: (context, state) => const AutofillPresetScreen()),
     GoRoute(

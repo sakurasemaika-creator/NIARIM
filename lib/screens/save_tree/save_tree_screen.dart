@@ -80,7 +80,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
       appBar: AppBar(
         title: Text(isTreeMode ? 'セーブ（ツリー方式）' : 'セーブ（スロット方式）'),
         actions: [
-          const HelpButton(),
+          const HelpButton(topic: 'セーブツリー'),
           if (isTreeMode)
             FilledButton.icon(
               icon: const Icon(Icons.save, size: 16),

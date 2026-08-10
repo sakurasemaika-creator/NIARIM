@@ -113,7 +113,7 @@ class _PerformanceSettingsScreenState
     final settings = context.watch<SettingsService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('パフォーマンス設定'), actions: const [HelpButton()]),
+      appBar: AppBar(title: const Text('パフォーマンス設定'), actions: const [HelpButton(topic: 'パフォーマンス設定')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

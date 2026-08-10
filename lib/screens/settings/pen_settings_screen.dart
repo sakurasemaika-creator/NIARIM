@@ -28,7 +28,7 @@ class PenSettingsScreen extends StatelessWidget {
     final settings = context.watch<SettingsService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ペン入力設定'), actions: const [HelpButton()]),
+      appBar: AppBar(title: const Text('ペン入力設定'), actions: const [HelpButton(topic: '筆圧カーブ')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -13,7 +13,7 @@ class PremiumScreen extends StatelessWidget {
     final premium = context.watch<PremiumService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('MIRANIMA Premium'), actions: const [HelpButton()]),
+      appBar: AppBar(title: const Text('MIRANIMA Premium'), actions: const [HelpButton(topic: 'プレミアム')]),
       body: desktopCentered(
         context,
         SingleChildScrollView(

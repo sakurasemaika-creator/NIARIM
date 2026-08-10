@@ -24,7 +24,7 @@ class FontSettingsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('フォント管理'),
-          actions: const [HelpButton()],
+          actions: const [HelpButton(topic: 'フォント管理')],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'ダウンロード済み'),

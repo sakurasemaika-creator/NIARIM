@@ -472,7 +472,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               const PopupMenuItem(value: 'save_tree', child: Text('セーブツリー')),
             ],
           ),
-          const HelpButton(),
+          const HelpButton(topic: 'タイムライン'),
         ],
       ),
     );

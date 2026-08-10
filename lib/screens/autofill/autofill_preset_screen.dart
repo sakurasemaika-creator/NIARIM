@@ -45,7 +45,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
               )
             : const Text('自動塗りプリセット'),
         actions: [
-          const HelpButton(),
+          const HelpButton(topic: '自動塗り'),
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: () => setState(() {

@@ -32,7 +32,7 @@ class _TransferScreenState extends State<TransferScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('引き継ぎ（.miratra）'), actions: const [HelpButton()]),
+      appBar: AppBar(title: const Text('引き継ぎ（.miratra）'), actions: const [HelpButton(topic: '引き継ぎ（.miratra）')]),
       body: desktopCentered(context, Column(
         children: [
           Padding(

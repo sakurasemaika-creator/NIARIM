@@ -21,7 +21,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
     final assets = service.assets;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ウォーターマーク'), actions: const [HelpButton()]),
+      appBar: AppBar(title: const Text('ウォーターマーク'), actions: const [HelpButton(topic: 'ウォーターマーク')]),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddSheet(context, service),
         child: const Icon(Icons.add),

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class HelpScreen extends StatefulWidget {
-  const HelpScreen({super.key});
+  // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
+  // 場合のトピック名（_HelpEntry.titleと一致させる）。指定されると検索欄に
+  // 自動入力され、該当項目が自動展開された状態で表示される。
+  final String? initialTopic;
+  const HelpScreen({super.key, this.initialTopic});
 
   @override
   State<HelpScreen> createState() => _HelpScreenState();
@@ -10,6 +14,16 @@ class HelpScreen extends StatefulWidget {
 class _HelpScreenState extends State<HelpScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final topic = widget.initialTopic;
+    if (topic != null && topic.isNotEmpty) {
+      _searchQuery = topic;
+      _searchController.text = topic;
+    }
+  }
 
   // ヘルプの説明文は、チュートリアル（初回タップ時に出る短い吹き出し）とは
   // 別の役割を持つ。チュートリアルは「今何をタップすればいいか」を一瞬で
@@ -228,6 +242,9 @@ class _HelpScreenState extends State<HelpScreen> {
               itemBuilder: (context, index) {
                 final entry = _filtered[index];
                 return ExpansionTile(
+                  // 各画面のヘルプボタンから遷移した場合、該当項目を
+                  // 自動展開して探す手間を省く。
+                  initiallyExpanded: widget.initialTopic != null && entry.title == widget.initialTopic,
                   leading: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.primary, size: 20),
                   // 項目名用フォント（仕様書24：くらむぼん。以前は説明文と
                   // 逆になっており、項目名が白光明朝・説明文がくらむぼんに
