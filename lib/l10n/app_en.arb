@@ -55,6 +55,8 @@
   "settingsLanguage": "Language",
   "settingsLanguageJapanese": "日本語",
   "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "简体中文",
+  "settingsLanguageKorean": "한국어",
   "settingsSearchHint": "Search settings...",
   "settingsPerformanceTitle": "Performance",
   "settingsPerformanceSubtitle": "Quality settings, undo history, trash, tile cache",

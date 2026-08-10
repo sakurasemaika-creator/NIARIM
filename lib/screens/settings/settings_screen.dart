@@ -145,6 +145,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// 言語コードから、その言語自身の表記による表示名を返す（仕様書08＋
+  /// タスク#102：言語名は現在のUI言語に関わらず、その言語自身の文字で
+  /// 表示する。「日本語」「English」「简体中文」「한국어」）。
+  String _languageLabel(AppLocalizations l10n, String code) => switch (code) {
+        'ja' => l10n.settingsLanguageJapanese,
+        'en' => l10n.settingsLanguageEnglish,
+        'zh' => l10n.settingsLanguageChinese,
+        'ko' => l10n.settingsLanguageKorean,
+        _ => code,
+      };
+
   void _showWatermarkSetting() {
     if (!context.read<PremiumService>().isPremium) {
       showPremiumBanner(context);
@@ -197,26 +208,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ListTile(
                   title: Text(l10n.settingsLanguage),
-                  trailing: Text(settings.language == 'ja' ? l10n.settingsLanguageJapanese : l10n.settingsLanguageEnglish,
+                  trailing: Text(_languageLabel(l10n, settings.language),
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () async {
+                    // 対応言語：日本語・English・简体中文・한국어（仕様書08＋タスク#102）。
+                    final languages = <String>['ja', 'en', 'zh', 'ko'];
                     final selected = await showDialog<String>(
                       context: ctx,
                       builder: (dctx) => SimpleDialog(
                         title: Text(l10n.settingsLanguage),
                         children: [
-                          SimpleDialogOption(
-                            onPressed: () => Navigator.pop(dctx, 'ja'),
-                            child: Text(l10n.settingsLanguageJapanese,
-                                style: TextStyle(
-                                    fontWeight: settings.language == 'ja' ? FontWeight.bold : FontWeight.normal)),
-                          ),
-                          SimpleDialogOption(
-                            onPressed: () => Navigator.pop(dctx, 'en'),
-                            child: Text(l10n.settingsLanguageEnglish,
-                                style: TextStyle(
-                                    fontWeight: settings.language == 'en' ? FontWeight.bold : FontWeight.normal)),
-                          ),
+                          for (final code in languages)
+                            SimpleDialogOption(
+                              onPressed: () => Navigator.pop(dctx, code),
+                              child: Text(_languageLabel(l10n, code),
+                                  style: TextStyle(
+                                      fontWeight:
+                                          settings.language == code ? FontWeight.bold : FontWeight.normal)),
+                            ),
                         ],
                       ),
                     );

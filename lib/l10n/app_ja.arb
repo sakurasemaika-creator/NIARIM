@@ -77,6 +77,8 @@
   "settingsLanguage": "言語",
   "settingsLanguageJapanese": "日本語",
   "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "简体中文",
+  "settingsLanguageKorean": "한국어",
   "settingsSearchHint": "設定を検索...",
   "settingsPerformanceTitle": "パフォーマンス",
   "settingsPerformanceSubtitle": "品質設定・Undo回数・ゴミ箱・タイルキャッシュ",
