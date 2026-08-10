@@ -578,5 +578,20 @@
   "themeSaveAsNewButton": "現在の設定を新しいプリセットとして保存",
   "themeImportButton": ".niathemeを読み込む",
   "themePresetNameDialogTitle": "プリセット名",
-  "themeDefaultPresetName": "マイテーマ"
+  "themeDefaultPresetName": "マイテーマ",
+
+  "onionSkinTitle": "オニオンスキン",
+  "onionSkinPrevFrame": "前フレーム",
+  "onionSkinNextFrame": "後フレーム",
+  "onionSkinFrameInterval": "フレーム間隔",
+  "onionSkinFadeByDistance": "近いほど濃く表示",
+  "onionSkinColorPickerTitle": "色を選択",
+  "onionSkinOnFixed": "ON（固定）",
+  "onionSkinFrameCount": "表示枚数",
+  "onionSkinFrameCountFixed": "{count}枚（固定）",
+  "@onionSkinFrameCountFixed": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "onionSkinColorLabel": "色",
+  "onionSkinOpacityLabel": "透明度"
 }

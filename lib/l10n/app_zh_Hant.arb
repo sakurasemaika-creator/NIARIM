@@ -499,5 +499,17 @@
   "themeSaveAsNewButton": "將目前設定儲存為新預設",
   "themeImportButton": "匯入.niatheme",
   "themePresetNameDialogTitle": "預設名稱",
-  "themeDefaultPresetName": "我的主題"
+  "themeDefaultPresetName": "我的主題",
+
+  "onionSkinTitle": "洋蔥皮",
+  "onionSkinPrevFrame": "前一影格",
+  "onionSkinNextFrame": "後一影格",
+  "onionSkinFrameInterval": "影格間隔",
+  "onionSkinFadeByDistance": "越近越深",
+  "onionSkinColorPickerTitle": "選擇顏色",
+  "onionSkinOnFixed": "開啟（固定）",
+  "onionSkinFrameCount": "顯示張數",
+  "onionSkinFrameCountFixed": "{count}張（固定）",
+  "onionSkinColorLabel": "顏色",
+  "onionSkinOpacityLabel": "不透明度"
 }

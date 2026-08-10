@@ -499,5 +499,17 @@
   "themeSaveAsNewButton": "将当前设置保存为新预设",
   "themeImportButton": "导入.niatheme",
   "themePresetNameDialogTitle": "预设名称",
-  "themeDefaultPresetName": "我的主题"
+  "themeDefaultPresetName": "我的主题",
+
+  "onionSkinTitle": "洋葱皮",
+  "onionSkinPrevFrame": "前一帧",
+  "onionSkinNextFrame": "后一帧",
+  "onionSkinFrameInterval": "帧间隔",
+  "onionSkinFadeByDistance": "越近越深",
+  "onionSkinColorPickerTitle": "选择颜色",
+  "onionSkinOnFixed": "开启（固定）",
+  "onionSkinFrameCount": "显示帧数",
+  "onionSkinFrameCountFixed": "{count}帧（固定）",
+  "onionSkinColorLabel": "颜色",
+  "onionSkinOpacityLabel": "不透明度"
 }

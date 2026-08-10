@@ -499,5 +499,17 @@
   "themeSaveAsNewButton": "Enregistrer les réglages actuels comme nouveau préréglage",
   "themeImportButton": "Importer un fichier .niatheme",
   "themePresetNameDialogTitle": "Nom du préréglage",
-  "themeDefaultPresetName": "Mon thème"
+  "themeDefaultPresetName": "Mon thème",
+
+  "onionSkinTitle": "Papier calque",
+  "onionSkinPrevFrame": "Image précédente",
+  "onionSkinNextFrame": "Image suivante",
+  "onionSkinFrameInterval": "Intervalle d'images",
+  "onionSkinFadeByDistance": "Plus foncé si proche",
+  "onionSkinColorPickerTitle": "Choisir une couleur",
+  "onionSkinOnFixed": "Activé (fixe)",
+  "onionSkinFrameCount": "Nombre d'images",
+  "onionSkinFrameCountFixed": "{count} image(s) (fixe)",
+  "onionSkinColorLabel": "Couleur",
+  "onionSkinOpacityLabel": "Opacité"
 }

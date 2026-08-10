@@ -499,5 +499,17 @@
   "themeSaveAsNewButton": "Guardar ajustes actuales como nuevo preajuste",
   "themeImportButton": "Importar .niatheme",
   "themePresetNameDialogTitle": "Nombre del preajuste",
-  "themeDefaultPresetName": "Mi tema"
+  "themeDefaultPresetName": "Mi tema",
+
+  "onionSkinTitle": "Papel cebolla",
+  "onionSkinPrevFrame": "Fotograma anterior",
+  "onionSkinNextFrame": "Fotograma siguiente",
+  "onionSkinFrameInterval": "Intervalo de fotogramas",
+  "onionSkinFadeByDistance": "Más oscuro cuanto más cerca",
+  "onionSkinColorPickerTitle": "Elegir un color",
+  "onionSkinOnFixed": "Activado (fijo)",
+  "onionSkinFrameCount": "Número de fotogramas",
+  "onionSkinFrameCountFixed": "{count} fotograma(s) (fijo)",
+  "onionSkinColorLabel": "Color",
+  "onionSkinOpacityLabel": "Opacidad"
 }

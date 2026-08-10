@@ -499,5 +499,17 @@
   "themeSaveAsNewButton": "Save Current Settings as New Preset",
   "themeImportButton": "Import .niatheme",
   "themePresetNameDialogTitle": "Preset Name",
-  "themeDefaultPresetName": "My Theme"
+  "themeDefaultPresetName": "My Theme",
+
+  "onionSkinTitle": "Onion Skin",
+  "onionSkinPrevFrame": "Previous Frame",
+  "onionSkinNextFrame": "Next Frame",
+  "onionSkinFrameInterval": "Frame Interval",
+  "onionSkinFadeByDistance": "Darker When Closer",
+  "onionSkinColorPickerTitle": "Choose a Color",
+  "onionSkinOnFixed": "ON (Fixed)",
+  "onionSkinFrameCount": "Frame Count",
+  "onionSkinFrameCountFixed": "{count} frame(s) (Fixed)",
+  "onionSkinColorLabel": "Color",
+  "onionSkinOpacityLabel": "Opacity"
 }

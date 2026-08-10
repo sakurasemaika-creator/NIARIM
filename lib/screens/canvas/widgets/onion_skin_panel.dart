@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../services/performance_service.dart';
 
@@ -45,6 +46,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final perf = context.watch<PerformanceService>();
     final isCustom = perf.qualityLevel == QualityLevel.custom;
 
@@ -84,8 +86,8 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
               // ヘッダー：オニオンスキン全体ON/OFF
               Row(
                 children: [
-                  const Text('オニオンスキン',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.onionSkinTitle,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
                   Switch(
                     value: _settings.enabled,
@@ -101,7 +103,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                 const Divider(),
                 // ── 前フレーム ──
                 _OnionSideSection(
-                  label: '前フレーム',
+                  label: l10n.onionSkinPrevFrame,
                   showToggle: _settings.showPrev,
                   frames: _settings.prevFrames,
                   color: _settings.prevColor,
@@ -122,7 +124,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                 const Divider(),
                 // ── 後フレーム ──
                 _OnionSideSection(
-                  label: '後フレーム',
+                  label: l10n.onionSkinNextFrame,
                   showToggle: _settings.showNext,
                   frames: _settings.nextFrames,
                   color: _settings.nextColor,
@@ -142,7 +144,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                 ),
                 const Divider(),
                 // ── 共通設定 ──
-                const Text('フレーム間隔', style: TextStyle(fontSize: 12)),
+                Text(l10n.onionSkinFrameInterval, style: const TextStyle(fontSize: 12)),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 4,
@@ -163,8 +165,8 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                 SwitchListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('近いほど濃く表示',
-                      style: TextStyle(fontSize: 12)),
+                  title: Text(l10n.onionSkinFadeByDistance,
+                      style: const TextStyle(fontSize: 12)),
                   value: _settings.fadeByDistance,
                   onChanged: (v) =>
                       _update(_settings.copyWith(fadeByDistance: v)),
@@ -178,6 +180,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
   }
 
   void _showColorPicker(Color current, ValueChanged<Color> onChanged) {
+    final l10n = AppLocalizations.of(context)!;
     const presets = [
       Colors.red, Colors.blue, Colors.green, Colors.orange,
       Colors.purple, Colors.cyan, Colors.yellow, Colors.white,
@@ -185,7 +188,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('色を選択'),
+        title: Text(l10n.onionSkinColorPickerTitle),
         content: Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -213,7 +216,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
+            child: Text(l10n.commonCancel),
           ),
         ],
       ),
@@ -251,6 +254,7 @@ class _OnionSideSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -269,7 +273,7 @@ class _OnionSideSection extends StatelessWidget {
             else
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text('ON（固定）',
+                child: Text(l10n.onionSkinOnFixed,
                     style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ),
           ],
@@ -279,9 +283,9 @@ class _OnionSideSection extends StatelessWidget {
           // 表示枚数
           Row(
             children: [
-              const SizedBox(
+              SizedBox(
                   width: 56,
-                  child: Text('表示枚数', style: TextStyle(fontSize: 11))),
+                  child: Text(l10n.onionSkinFrameCount, style: const TextStyle(fontSize: 11))),
               if (isCustom) ...[
                 Expanded(
                   child: Slider(
@@ -299,7 +303,7 @@ class _OnionSideSection extends StatelessWidget {
                 ),
               ] else ...[
                 const SizedBox(width: 8),
-                Text('$frames枚（固定）',
+                Text(l10n.onionSkinFrameCountFixed(frames),
                     style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ],
             ],
@@ -307,9 +311,9 @@ class _OnionSideSection extends StatelessWidget {
           // 色
           Row(
             children: [
-              const SizedBox(
+              SizedBox(
                   width: 56,
-                  child: Text('色', style: TextStyle(fontSize: 11))),
+                  child: Text(l10n.onionSkinColorLabel, style: const TextStyle(fontSize: 11))),
               const SizedBox(width: 8),
               GestureDetector(
                 onTap: () => onShowColorPicker(color, onColorChanged),
@@ -329,9 +333,9 @@ class _OnionSideSection extends StatelessWidget {
           // 透明度
           Row(
             children: [
-              const SizedBox(
+              SizedBox(
                   width: 56,
-                  child: Text('透明度', style: TextStyle(fontSize: 11))),
+                  child: Text(l10n.onionSkinOpacityLabel, style: const TextStyle(fontSize: 11))),
               Expanded(
                 child: Slider(
                   min: 0,
