@@ -638,5 +638,77 @@
   },
   "exportSaveLocationHint": "端末の「写真」アプリやファイルアプリで開くには、下の「共有」から保存先アプリを選んでください。",
   "exportBackToProjectsButton": "プロジェクト一覧へ戻る",
-  "exportBackToCanvasButton": "キャンバスへ戻る"
+  "exportBackToCanvasButton": "キャンバスへ戻る",
+  "newProjectScreenTitle": "新規プロジェクト",
+  "newProjectDefaultName": "新規プロジェクト",
+  "newProjectNameLabel": "プロジェクト名",
+  "newProjectSizeLabel": "サイズ",
+  "newProjectPresetFullHd": "Full HD (16:9・YouTube等横動画向け)",
+  "newProjectPresetHd": "HD (16:9・軽量版)",
+  "newProjectPresetSquare": "1:1 スクエア (Twitter/Instagram投稿向け)",
+  "newProjectPresetVertical": "9:16 縦型 (YouTubeショート/リール・ストーリーズ向け)",
+  "newProjectPresetPortrait": "4:5 縦長 (Instagramフィード投稿向け)",
+  "newProjectPresetAnalog": "4:3 (アナログ放送比率)",
+  "newProjectCustomSize": "カスタム",
+  "newProjectMaxEdgeHint": "長辺は最大1920pxまで指定できます",
+  "newProjectWidthLabel": "幅(px)",
+  "newProjectHeightLabel": "高さ(px)",
+  "newProjectWidthShort": "幅",
+  "newProjectHeightShort": "高さ",
+  "newProjectDurationLabel": "長さ（最大{max}）",
+  "@newProjectDurationLabel": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationLabelWithPremiumHint": "長さ（最大{max}・プレミアムなら最大2時間）",
+  "@newProjectDurationLabelWithPremiumHint": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationSeconds": "{n}秒",
+  "@newProjectDurationSeconds": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "newProjectDurationHms": "{h}時間{m}分{s}秒",
+  "@newProjectDurationHms": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationHm": "{h}時間{m}分",
+  "@newProjectDurationHm": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+  },
+  "newProjectDurationH": "{h}時間",
+  "@newProjectDurationH": {
+    "placeholders": {"h": {"type": "int"}}
+  },
+  "newProjectDurationMs": "{m}分{s}秒",
+  "@newProjectDurationMs": {
+    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationM": "{m}分",
+  "@newProjectDurationM": {
+    "placeholders": {"m": {"type": "int"}}
+  },
+  "newProjectBackgroundColorLabel": "背景色",
+  "newProjectDrawingAreaTitle": "描画領域を広くする",
+  "newProjectDrawingAreaSubtitle": "書き出し範囲外にも描画できる領域を追加します",
+  "newProjectScaleLabel": "倍率",
+  "newProjectScaleValue": "{value}倍",
+  "@newProjectScaleValue": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "newProjectDrawableAreaInfo": "描画可能範囲: {width}×{scale} = {result}",
+  "@newProjectDrawableAreaInfo": {
+    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+  },
+  "newProjectTotalFrames": "総フレーム数: {count}",
+  "@newProjectTotalFrames": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "newProjectExportSizeInfo": "書き出しサイズ: {size}",
+  "@newProjectExportSizeInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  },
+  "newProjectDrawingAreaInfo": "描画領域: {size}",
+  "@newProjectDrawingAreaInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  }
 }

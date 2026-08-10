@@ -544,5 +544,77 @@
   "exportSaveLocationLabel": "Saved to: In-app storage ({fileName})",
   "exportSaveLocationHint": "To open it in your device's Photos app or file manager, use \"Share\" below to choose where to save it.",
   "exportBackToProjectsButton": "Back to Projects",
-  "exportBackToCanvasButton": "Back to Canvas"
+  "exportBackToCanvasButton": "Back to Canvas",
+  "newProjectScreenTitle": "New Project",
+  "newProjectDefaultName": "New Project",
+  "newProjectNameLabel": "Project name",
+  "newProjectSizeLabel": "Size",
+  "newProjectPresetFullHd": "Full HD (16:9 – for YouTube and other landscape videos)",
+  "newProjectPresetHd": "HD (16:9 – lightweight)",
+  "newProjectPresetSquare": "1:1 Square (for Twitter/Instagram posts)",
+  "newProjectPresetVertical": "9:16 Vertical (for YouTube Shorts/Reels/Stories)",
+  "newProjectPresetPortrait": "4:5 Portrait (for Instagram feed posts)",
+  "newProjectPresetAnalog": "4:3 (classic broadcast ratio)",
+  "newProjectCustomSize": "Custom",
+  "newProjectMaxEdgeHint": "The longer side can be set up to 1920px",
+  "newProjectWidthLabel": "Width (px)",
+  "newProjectHeightLabel": "Height (px)",
+  "newProjectWidthShort": "Width",
+  "newProjectHeightShort": "Height",
+  "newProjectDurationLabel": "Length (max {max})",
+  "@newProjectDurationLabel": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationLabelWithPremiumHint": "Length (max {max}; up to 2 hours with Premium)",
+  "@newProjectDurationLabelWithPremiumHint": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationSeconds": "{n}s",
+  "@newProjectDurationSeconds": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "newProjectDurationHms": "{h}h {m}m {s}s",
+  "@newProjectDurationHms": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationHm": "{h}h {m}m",
+  "@newProjectDurationHm": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+  },
+  "newProjectDurationH": "{h}h",
+  "@newProjectDurationH": {
+    "placeholders": {"h": {"type": "int"}}
+  },
+  "newProjectDurationMs": "{m}m {s}s",
+  "@newProjectDurationMs": {
+    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationM": "{m}m",
+  "@newProjectDurationM": {
+    "placeholders": {"m": {"type": "int"}}
+  },
+  "newProjectBackgroundColorLabel": "Background color",
+  "newProjectDrawingAreaTitle": "Expand drawing area",
+  "newProjectDrawingAreaSubtitle": "Adds space you can draw on outside the export frame",
+  "newProjectScaleLabel": "Scale",
+  "newProjectScaleValue": "{value}×",
+  "@newProjectScaleValue": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "newProjectDrawableAreaInfo": "Drawable area: {width}×{scale} = {result}",
+  "@newProjectDrawableAreaInfo": {
+    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+  },
+  "newProjectTotalFrames": "Total frames: {count}",
+  "@newProjectTotalFrames": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "newProjectExportSizeInfo": "Export size: {size}",
+  "@newProjectExportSizeInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  },
+  "newProjectDrawingAreaInfo": "Drawing area: {size}",
+  "@newProjectDrawingAreaInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  }
 }

@@ -544,5 +544,77 @@
   "exportSaveLocationLabel": "儲存位置：App內（{fileName}）",
   "exportSaveLocationHint": "若要在裝置的「相片」App或檔案App中開啟，請從下方的「分享」選擇要儲存到的App。",
   "exportBackToProjectsButton": "返回專案列表",
-  "exportBackToCanvasButton": "返回畫布"
+  "exportBackToCanvasButton": "返回畫布",
+  "newProjectScreenTitle": "新增專案",
+  "newProjectDefaultName": "新增專案",
+  "newProjectNameLabel": "專案名稱",
+  "newProjectSizeLabel": "尺寸",
+  "newProjectPresetFullHd": "Full HD（16:9・適合YouTube等橫式影片）",
+  "newProjectPresetHd": "HD（16:9・輕量版）",
+  "newProjectPresetSquare": "1:1 正方形（適合Twitter/Instagram發佈）",
+  "newProjectPresetVertical": "9:16 直式（適合YouTube Shorts/Reels/限時動態）",
+  "newProjectPresetPortrait": "4:5 直長（適合Instagram動態消息發佈）",
+  "newProjectPresetAnalog": "4:3（類比廣播比例）",
+  "newProjectCustomSize": "自訂",
+  "newProjectMaxEdgeHint": "長邊最大可設定為1920px",
+  "newProjectWidthLabel": "寬度(px)",
+  "newProjectHeightLabel": "高度(px)",
+  "newProjectWidthShort": "寬",
+  "newProjectHeightShort": "高",
+  "newProjectDurationLabel": "時長（最大{max}）",
+  "@newProjectDurationLabel": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationLabelWithPremiumHint": "時長（最大{max}，升級Premium可達最長2小時）",
+  "@newProjectDurationLabelWithPremiumHint": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationSeconds": "{n}秒",
+  "@newProjectDurationSeconds": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "newProjectDurationHms": "{h}小時{m}分{s}秒",
+  "@newProjectDurationHms": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationHm": "{h}小時{m}分",
+  "@newProjectDurationHm": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+  },
+  "newProjectDurationH": "{h}小時",
+  "@newProjectDurationH": {
+    "placeholders": {"h": {"type": "int"}}
+  },
+  "newProjectDurationMs": "{m}分{s}秒",
+  "@newProjectDurationMs": {
+    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationM": "{m}分",
+  "@newProjectDurationM": {
+    "placeholders": {"m": {"type": "int"}}
+  },
+  "newProjectBackgroundColorLabel": "背景色",
+  "newProjectDrawingAreaTitle": "擴大繪圖區域",
+  "newProjectDrawingAreaSubtitle": "新增可在匯出範圍外繪製的區域",
+  "newProjectScaleLabel": "倍率",
+  "newProjectScaleValue": "{value}倍",
+  "@newProjectScaleValue": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "newProjectDrawableAreaInfo": "可繪製範圍：{width}×{scale} = {result}",
+  "@newProjectDrawableAreaInfo": {
+    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+  },
+  "newProjectTotalFrames": "總影格數：{count}",
+  "@newProjectTotalFrames": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "newProjectExportSizeInfo": "匯出尺寸：{size}",
+  "@newProjectExportSizeInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  },
+  "newProjectDrawingAreaInfo": "繪圖區域：{size}",
+  "@newProjectDrawingAreaInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  }
 }

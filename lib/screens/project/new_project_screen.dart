@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
@@ -15,7 +16,10 @@ class NewProjectScreen extends StatefulWidget {
 }
 
 class _NewProjectScreenState extends State<NewProjectScreen> {
-  final _nameController = TextEditingController(text: '新規プロジェクト');
+  final _nameController = TextEditingController();
+  // プロジェクト名の初期値はローカライズが必要なため、didChangeDependencies内で
+  // 一度だけ設定する（initStateの時点ではAppLocalizationsの参照が確定しない）。
+  bool _nameInitialized = false;
   int _fps = 12;
   int _durationSeconds = 10;
   Color _backgroundColor = Colors.white;
@@ -36,13 +40,14 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   // 書き出しサイズプリセット（仕様書07・26：上限はFull HD相当。1:1・
   // アナログ放送比率・公開先メディアの比率別に用意する）。
+  // 3つ目の要素は表示文言の内部キー（_presetLabelでl10nの文言に変換する）。
   static const List<(int, int, String)> sizePresets = [
-    (1920, 1080, 'Full HD (16:9・YouTube等横動画向け)'),
-    (1280, 720, 'HD (16:9・軽量版)'),
-    (1080, 1080, '1:1 スクエア (Twitter/Instagram投稿向け)'),
-    (1080, 1920, '9:16 縦型 (YouTubeショート/リール・ストーリーズ向け)'),
-    (1080, 1350, '4:5 縦長 (Instagramフィード投稿向け)'),
-    (1440, 1080, '4:3 (アナログ放送比率)'),
+    (1920, 1080, 'fullHd'),
+    (1280, 720, 'hd'),
+    (1080, 1080, 'square'),
+    (1080, 1920, 'vertical'),
+    (1080, 1350, 'portrait'),
+    (1440, 1080, 'analog'),
   ];
 
   @override
@@ -62,11 +67,43 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_nameInitialized) {
+      _nameController.text = AppLocalizations.of(context)!.newProjectDefaultName;
+      _nameInitialized = true;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _customWidthController.dispose();
     _customHeightController.dispose();
     super.dispose();
+  }
+
+  // サイズプリセットの表示文言をロケールに応じて取得する。
+  String _presetLabel(AppLocalizations l10n, int width, int height) {
+    for (final preset in sizePresets) {
+      if (preset.$1 == width && preset.$2 == height) {
+        switch (preset.$3) {
+          case 'fullHd':
+            return l10n.newProjectPresetFullHd;
+          case 'hd':
+            return l10n.newProjectPresetHd;
+          case 'square':
+            return l10n.newProjectPresetSquare;
+          case 'vertical':
+            return l10n.newProjectPresetVertical;
+          case 'portrait':
+            return l10n.newProjectPresetPortrait;
+          case 'analog':
+            return l10n.newProjectPresetAnalog;
+        }
+      }
+    }
+    return '';
   }
 
   void _selectPreset(int width, int height) {
@@ -84,15 +121,16 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   // 長さ（秒）の表示用フォーマット。プレミアム会員は最大2時間まで
   // 選択できるため、60秒を超える場合は分/時間表記へ切り替える。
-  static String _formatDuration(int seconds) {
-    if (seconds < 60) return '$seconds秒';
+  static String _formatDuration(AppLocalizations l10n, int seconds) {
+    if (seconds < 60) return l10n.newProjectDurationSeconds(seconds);
     final h = seconds ~/ 3600;
     final m = (seconds % 3600) ~/ 60;
     final s = seconds % 60;
     if (h > 0) {
-      return s > 0 ? '$h時間$m分$s秒' : (m > 0 ? '$h時間$m分' : '$h時間');
+      if (s > 0) return l10n.newProjectDurationHms(h, m, s);
+      return m > 0 ? l10n.newProjectDurationHm(h, m) : l10n.newProjectDurationH(h);
     }
-    return s > 0 ? '$m分$s秒' : '$m分';
+    return s > 0 ? l10n.newProjectDurationMs(m, s) : l10n.newProjectDurationM(m);
   }
 
   // 上限はFull HD相当（長辺1920px）とする。
@@ -124,8 +162,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('新規プロジェクト'), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.newProjectScreenTitle), actions: const [HelpButton()]),
       body: desktopCentered(
         context,
         SingleChildScrollView(
@@ -135,7 +174,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'プロジェクト名', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: l10n.newProjectNameLabel, border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 24),
             const Text('FPS', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -149,14 +188,15 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               )).toList(),
             ),
             const SizedBox(height: 24),
-            const Text('サイズ', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(l10n.newProjectSizeLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 ...sizePresets.map((preset) {
-                  final (w, h, label) = preset;
+                  final (w, h, _) = preset;
+                  final label = _presetLabel(l10n, w, h);
                   final selected = !_customSize && _exportWidth == w && _exportHeight == h;
                   return ChoiceChip(
                     label: Text('$label ($w×$h)'),
@@ -165,7 +205,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   );
                 }),
                 ChoiceChip(
-                  label: const Text('カスタム'),
+                  label: Text(l10n.newProjectCustomSize),
                   selected: _customSize,
                   onSelected: (s) => setState(() => _customSize = s),
                 ),
@@ -173,7 +213,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             ),
             if (_customSize) ...[
               const SizedBox(height: 8),
-              Text('長辺は最大1920pxまで指定できます',
+              Text(l10n.newProjectMaxEdgeHint,
                   style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 4),
               Row(
@@ -182,7 +222,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     child: TextField(
                       controller: _customWidthController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: '幅(px)', border: OutlineInputBorder()),
+                      decoration: InputDecoration(labelText: l10n.newProjectWidthLabel, border: const OutlineInputBorder()),
                       onChanged: (_) => _applyCustomSize(),
                     ),
                   ),
@@ -191,7 +231,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     child: TextField(
                       controller: _customHeightController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: '高さ(px)', border: OutlineInputBorder()),
+                      decoration: InputDecoration(labelText: l10n.newProjectHeightLabel, border: const OutlineInputBorder()),
                       onChanged: (_) => _applyCustomSize(),
                     ),
                   ),
@@ -199,7 +239,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ),
               const SizedBox(height: 12),
               Row(children: [
-                const SizedBox(width: 56, child: Text('幅', textAlign: TextAlign.center)),
+                SizedBox(width: 56, child: Text(l10n.newProjectWidthShort, textAlign: TextAlign.center)),
                 Expanded(
                   child: Slider(
                     min: 64, max: _maxCustomEdge.toDouble(),
@@ -210,7 +250,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ),
               ]),
               Row(children: [
-                const SizedBox(width: 56, child: Text('高さ', textAlign: TextAlign.center)),
+                SizedBox(width: 56, child: Text(l10n.newProjectHeightShort, textAlign: TextAlign.center)),
                 Expanded(
                   child: Slider(
                     min: 64, max: _maxCustomEdge.toDouble(),
@@ -255,10 +295,14 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   if (mounted) setState(() => _durationSeconds = maxDuration);
                 });
               }
+              final maxDurationText = _formatDuration(l10n, maxDuration);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('長さ（最大${_formatDuration(maxDuration)}${isPremium ? '' : '・プレミアムなら最大2時間'}）',
+                  Text(
+                      isPremium
+                          ? l10n.newProjectDurationLabel(maxDurationText)
+                          : l10n.newProjectDurationLabelWithPremiumHint(maxDurationText),
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Row(
@@ -269,18 +313,18 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           max: maxDuration.toDouble(),
                           value: _durationSeconds.clamp(1, maxDuration).toDouble(),
                           divisions: maxDuration - 1,
-                          label: _formatDuration(_durationSeconds),
+                          label: _formatDuration(l10n, _durationSeconds),
                           onChanged: (v) => setState(() => _durationSeconds = v.round()),
                         ),
                       ),
-                      SizedBox(width: 72, child: Text(_formatDuration(_durationSeconds), textAlign: TextAlign.center)),
+                      SizedBox(width: 72, child: Text(_formatDuration(l10n, _durationSeconds), textAlign: TextAlign.center)),
                     ],
                   ),
                 ],
               );
             }),
             const SizedBox(height: 24),
-            const Text('背景色', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(l10n.newProjectBackgroundColorLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 12,
@@ -323,8 +367,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             // 描画領域設定（仕様書26）
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('描画領域を広くする', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('書き出し範囲外にも描画できる領域を追加します'),
+              title: Text(l10n.newProjectDrawingAreaTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(l10n.newProjectDrawingAreaSubtitle),
               value: _drawingAreaEnabled,
               onChanged: (v) => setState(() => _drawingAreaEnabled = v),
             ),
@@ -332,25 +376,29 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Text('倍率', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.newProjectScaleLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Slider(
                       min: 1.0, max: 10.0,
                       value: _drawingAreaScale,
                       divisions: 18, // 0.5刻み
-                      label: '${_drawingAreaScale.toStringAsFixed(1)}倍',
+                      label: l10n.newProjectScaleValue(_drawingAreaScale.toStringAsFixed(1)),
                       onChanged: (v) => setState(() => _drawingAreaScale = v),
                     ),
                   ),
                   SizedBox(
                     width: 48,
-                    child: Text('${_drawingAreaScale.toStringAsFixed(1)}倍', textAlign: TextAlign.center),
+                    child: Text(l10n.newProjectScaleValue(_drawingAreaScale.toStringAsFixed(1)), textAlign: TextAlign.center),
                   ),
                 ],
               ),
               Text(
-                '描画可能範囲: $_exportWidth×${_drawingAreaScale.toStringAsFixed(1)}倍 = ${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
+                l10n.newProjectDrawableAreaInfo(
+                  '$_exportWidth',
+                  l10n.newProjectScaleValue(_drawingAreaScale.toStringAsFixed(1)),
+                  '${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
+                ),
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ],
@@ -361,10 +409,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('総フレーム数: ${_fps * _durationSeconds}'),
-                    Text('書き出しサイズ: $_exportWidth×$_exportHeight'),
+                    Text(l10n.newProjectTotalFrames(_fps * _durationSeconds)),
+                    Text(l10n.newProjectExportSizeInfo('$_exportWidth×$_exportHeight')),
                     if (_drawingAreaEnabled)
-                      Text('描画領域: ${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}'),
+                      Text(l10n.newProjectDrawingAreaInfo(
+                          '${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}')),
                   ],
                 ),
               ),
@@ -373,7 +422,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             FilledButton.icon(
               onPressed: _createProject,
               icon: const Icon(Icons.add),
-              label: const Text('作成'),
+              label: Text(l10n.commonCreate),
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
           ],
@@ -385,8 +434,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   Future<void> _createProject() async {
     final projectService = context.read<ProjectService>();
+    final defaultName = AppLocalizations.of(context)!.newProjectDefaultName;
     final project = await projectService.createProject(
-      name: _nameController.text.trim().isEmpty ? '新規プロジェクト' : _nameController.text.trim(),
+      name: _nameController.text.trim().isEmpty ? defaultName : _nameController.text.trim(),
       fps: _fps,
       durationSeconds: _durationSeconds,
       backgroundColor: _backgroundColor.toARGB32(),

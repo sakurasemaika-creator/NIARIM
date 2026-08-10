@@ -544,5 +544,77 @@
   "exportSaveLocationLabel": "Enregistré dans : stockage de l'application ({fileName})",
   "exportSaveLocationHint": "Pour l'ouvrir dans l'application Photos ou le gestionnaire de fichiers de votre appareil, utilisez « Partager » ci-dessous pour choisir où l'enregistrer.",
   "exportBackToProjectsButton": "Retour aux projets",
-  "exportBackToCanvasButton": "Retour au canevas"
+  "exportBackToCanvasButton": "Retour au canevas",
+  "newProjectScreenTitle": "Nouveau projet",
+  "newProjectDefaultName": "Nouveau projet",
+  "newProjectNameLabel": "Nom du projet",
+  "newProjectSizeLabel": "Taille",
+  "newProjectPresetFullHd": "Full HD (16:9 – pour YouTube et autres vidéos horizontales)",
+  "newProjectPresetHd": "HD (16:9 – version légère)",
+  "newProjectPresetSquare": "1:1 Carré (pour Twitter/Instagram)",
+  "newProjectPresetVertical": "9:16 Vertical (pour YouTube Shorts/Reels/Stories)",
+  "newProjectPresetPortrait": "4:5 Portrait (pour les posts du fil Instagram)",
+  "newProjectPresetAnalog": "4:3 (format de diffusion analogique classique)",
+  "newProjectCustomSize": "Personnalisé",
+  "newProjectMaxEdgeHint": "Le côté le plus long peut être défini jusqu'à 1920 px",
+  "newProjectWidthLabel": "Largeur (px)",
+  "newProjectHeightLabel": "Hauteur (px)",
+  "newProjectWidthShort": "Largeur",
+  "newProjectHeightShort": "Hauteur",
+  "newProjectDurationLabel": "Durée (max {max})",
+  "@newProjectDurationLabel": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationLabelWithPremiumHint": "Durée (max {max} ; jusqu'à 2 heures avec Premium)",
+  "@newProjectDurationLabelWithPremiumHint": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationSeconds": "{n} s",
+  "@newProjectDurationSeconds": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "newProjectDurationHms": "{h} h {m} min {s} s",
+  "@newProjectDurationHms": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationHm": "{h} h {m} min",
+  "@newProjectDurationHm": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+  },
+  "newProjectDurationH": "{h} h",
+  "@newProjectDurationH": {
+    "placeholders": {"h": {"type": "int"}}
+  },
+  "newProjectDurationMs": "{m} min {s} s",
+  "@newProjectDurationMs": {
+    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationM": "{m} min",
+  "@newProjectDurationM": {
+    "placeholders": {"m": {"type": "int"}}
+  },
+  "newProjectBackgroundColorLabel": "Couleur de fond",
+  "newProjectDrawingAreaTitle": "Agrandir la zone de dessin",
+  "newProjectDrawingAreaSubtitle": "Ajoute une zone où dessiner en dehors du cadre d'exportation",
+  "newProjectScaleLabel": "Échelle",
+  "newProjectScaleValue": "{value}×",
+  "@newProjectScaleValue": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "newProjectDrawableAreaInfo": "Zone dessinable : {width}×{scale} = {result}",
+  "@newProjectDrawableAreaInfo": {
+    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+  },
+  "newProjectTotalFrames": "Nombre total d'images : {count}",
+  "@newProjectTotalFrames": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "newProjectExportSizeInfo": "Taille d'exportation : {size}",
+  "@newProjectExportSizeInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  },
+  "newProjectDrawingAreaInfo": "Zone de dessin : {size}",
+  "@newProjectDrawingAreaInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  }
 }

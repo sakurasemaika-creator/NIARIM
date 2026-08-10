@@ -544,5 +544,77 @@
   "exportSaveLocationLabel": "保存位置：应用内（{fileName}）",
   "exportSaveLocationHint": "如需在设备的「照片」应用或文件管理器中打开，请从下方的「分享」中选择要保存到的应用。",
   "exportBackToProjectsButton": "返回项目列表",
-  "exportBackToCanvasButton": "返回画布"
+  "exportBackToCanvasButton": "返回画布",
+  "newProjectScreenTitle": "新建项目",
+  "newProjectDefaultName": "新建项目",
+  "newProjectNameLabel": "项目名称",
+  "newProjectSizeLabel": "尺寸",
+  "newProjectPresetFullHd": "Full HD（16:9・适合YouTube等横版视频）",
+  "newProjectPresetHd": "HD（16:9・轻量版）",
+  "newProjectPresetSquare": "1:1 正方形（适合Twitter/Instagram发布）",
+  "newProjectPresetVertical": "9:16 竖版（适合YouTube Shorts/Reels/Stories）",
+  "newProjectPresetPortrait": "4:5 竖长（适合Instagram信息流发布）",
+  "newProjectPresetAnalog": "4:3（模拟广播比例）",
+  "newProjectCustomSize": "自定义",
+  "newProjectMaxEdgeHint": "长边最大可设置为1920px",
+  "newProjectWidthLabel": "宽度(px)",
+  "newProjectHeightLabel": "高度(px)",
+  "newProjectWidthShort": "宽",
+  "newProjectHeightShort": "高",
+  "newProjectDurationLabel": "时长（最大{max}）",
+  "@newProjectDurationLabel": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationLabelWithPremiumHint": "时长（最大{max}，升级Premium可达最长2小时）",
+  "@newProjectDurationLabelWithPremiumHint": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationSeconds": "{n}秒",
+  "@newProjectDurationSeconds": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "newProjectDurationHms": "{h}小时{m}分{s}秒",
+  "@newProjectDurationHms": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationHm": "{h}小时{m}分",
+  "@newProjectDurationHm": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+  },
+  "newProjectDurationH": "{h}小时",
+  "@newProjectDurationH": {
+    "placeholders": {"h": {"type": "int"}}
+  },
+  "newProjectDurationMs": "{m}分{s}秒",
+  "@newProjectDurationMs": {
+    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationM": "{m}分",
+  "@newProjectDurationM": {
+    "placeholders": {"m": {"type": "int"}}
+  },
+  "newProjectBackgroundColorLabel": "背景色",
+  "newProjectDrawingAreaTitle": "扩大绘图区域",
+  "newProjectDrawingAreaSubtitle": "添加可在导出范围外绘制的区域",
+  "newProjectScaleLabel": "倍率",
+  "newProjectScaleValue": "{value}倍",
+  "@newProjectScaleValue": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "newProjectDrawableAreaInfo": "可绘制范围：{width}×{scale} = {result}",
+  "@newProjectDrawableAreaInfo": {
+    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+  },
+  "newProjectTotalFrames": "总帧数：{count}",
+  "@newProjectTotalFrames": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "newProjectExportSizeInfo": "导出尺寸：{size}",
+  "@newProjectExportSizeInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  },
+  "newProjectDrawingAreaInfo": "绘图区域：{size}",
+  "@newProjectDrawingAreaInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  }
 }

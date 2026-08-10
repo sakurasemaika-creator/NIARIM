@@ -544,5 +544,77 @@
   "exportSaveLocationLabel": "저장 위치: 앱 내부（{fileName}）",
   "exportSaveLocationHint": "기기의 「사진」 앱이나 파일 앱에서 열려면 아래의 「공유」에서 저장할 앱을 선택하세요.",
   "exportBackToProjectsButton": "프로젝트 목록으로 돌아가기",
-  "exportBackToCanvasButton": "캔버스로 돌아가기"
+  "exportBackToCanvasButton": "캔버스로 돌아가기",
+  "newProjectScreenTitle": "새 프로젝트",
+  "newProjectDefaultName": "새 프로젝트",
+  "newProjectNameLabel": "프로젝트 이름",
+  "newProjectSizeLabel": "크기",
+  "newProjectPresetFullHd": "Full HD (16:9・유튜브 등 가로 영상용)",
+  "newProjectPresetHd": "HD (16:9・경량판)",
+  "newProjectPresetSquare": "1:1 정사각형 (트위터/인스타그램 게시물용)",
+  "newProjectPresetVertical": "9:16 세로형 (유튜브 쇼츠/릴스・스토리용)",
+  "newProjectPresetPortrait": "4:5 세로형 (인스타그램 피드 게시물용)",
+  "newProjectPresetAnalog": "4:3 (아날로그 방송 비율)",
+  "newProjectCustomSize": "사용자 지정",
+  "newProjectMaxEdgeHint": "긴 변은 최대 1920px까지 설정할 수 있습니다",
+  "newProjectWidthLabel": "너비(px)",
+  "newProjectHeightLabel": "높이(px)",
+  "newProjectWidthShort": "너비",
+  "newProjectHeightShort": "높이",
+  "newProjectDurationLabel": "길이(최대 {max})",
+  "@newProjectDurationLabel": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationLabelWithPremiumHint": "길이(최대 {max}, Premium 이용 시 최대 2시간)",
+  "@newProjectDurationLabelWithPremiumHint": {
+    "placeholders": {"max": {"type": "String"}}
+  },
+  "newProjectDurationSeconds": "{n}초",
+  "@newProjectDurationSeconds": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "newProjectDurationHms": "{h}시간 {m}분 {s}초",
+  "@newProjectDurationHms": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationHm": "{h}시간 {m}분",
+  "@newProjectDurationHm": {
+    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+  },
+  "newProjectDurationH": "{h}시간",
+  "@newProjectDurationH": {
+    "placeholders": {"h": {"type": "int"}}
+  },
+  "newProjectDurationMs": "{m}분 {s}초",
+  "@newProjectDurationMs": {
+    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+  },
+  "newProjectDurationM": "{m}분",
+  "@newProjectDurationM": {
+    "placeholders": {"m": {"type": "int"}}
+  },
+  "newProjectBackgroundColorLabel": "배경색",
+  "newProjectDrawingAreaTitle": "그리기 영역 넓히기",
+  "newProjectDrawingAreaSubtitle": "내보내기 범위 밖에도 그릴 수 있는 영역을 추가합니다",
+  "newProjectScaleLabel": "배율",
+  "newProjectScaleValue": "{value}배",
+  "@newProjectScaleValue": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "newProjectDrawableAreaInfo": "그릴 수 있는 범위: {width}×{scale} = {result}",
+  "@newProjectDrawableAreaInfo": {
+    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+  },
+  "newProjectTotalFrames": "총 프레임 수: {count}",
+  "@newProjectTotalFrames": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "newProjectExportSizeInfo": "내보내기 크기: {size}",
+  "@newProjectExportSizeInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  },
+  "newProjectDrawingAreaInfo": "그리기 영역: {size}",
+  "@newProjectDrawingAreaInfo": {
+    "placeholders": {"size": {"type": "String"}}
+  }
 }
