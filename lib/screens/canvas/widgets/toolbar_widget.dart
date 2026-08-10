@@ -61,7 +61,10 @@ class ToolbarWidget extends StatelessWidget {
             child: _toolButton(context, Icons.brush, DrawingTool.pen, 'ペン（長押しでサブツール）'),
           ),
         ),
-      ToolbarItemId.eraser => _toolButton(context, Icons.auto_fix_high, DrawingTool.eraser, '消しゴム'),
+      // 消しゴムと選択ツールのアイコンを入れ替え（仕様書08・タスク#95：
+      // 消しゴムに「魔法の杖」風のauto_fix_highが割り当てられており、
+      // 選択ツールの自動選択（マジックワンド）用アイコンと紛らわしかった）。
+      ToolbarItemId.eraser => _toolButton(context, Icons.crop_square, DrawingTool.eraser, '消しゴム'),
       // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
       ToolbarItemId.bucket => FirstUseTooltip(
           tooltipKey: 'bucket_tool',
@@ -74,7 +77,6 @@ class ToolbarWidget extends StatelessWidget {
       ToolbarItemId.eyedropper => _toolButton(context, Icons.colorize, DrawingTool.eyedropper, 'スポイト'),
       ToolbarItemId.finger => _toolButton(context, Icons.back_hand, DrawingTool.finger, '指'),
       ToolbarItemId.select => _selectToolButton(context),
-      ToolbarItemId.move => _toolButton(context, Icons.open_with, DrawingTool.move, '移動'),
       ToolbarItemId.transform => _toolButton(context, Icons.transform, DrawingTool.transform, '変形'),
       // 初回タップ時の吹き出し説明（仕様書14）
       ToolbarItemId.ruler => FirstUseTooltip(
@@ -207,10 +209,11 @@ class ToolbarWidget extends StatelessWidget {
     final isSelected = currentTool == DrawingTool.selectRect ||
         currentTool == DrawingTool.selectLasso ||
         currentTool == DrawingTool.selectMagicWand;
+    // 消しゴムと選択ツールのアイコンを入れ替え（仕様書08・タスク#95）。
     final icon = switch (currentTool) {
       DrawingTool.selectLasso => Icons.gesture,
       DrawingTool.selectMagicWand => Icons.auto_awesome,
-      _ => Icons.crop_square,
+      _ => Icons.auto_fix_high,
     };
     final primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
@@ -313,7 +316,7 @@ class ToolbarWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: const Icon(Icons.crop_square), title: const Text('矩形選択'), onTap: () { onToolSelected(DrawingTool.selectRect); Navigator.pop(ctx); }),
+            ListTile(leading: const Icon(Icons.auto_fix_high), title: const Text('矩形選択'), onTap: () { onToolSelected(DrawingTool.selectRect); Navigator.pop(ctx); }),
             ListTile(leading: const Icon(Icons.gesture), title: const Text('投げ縄選択'), onTap: () { onToolSelected(DrawingTool.selectLasso); Navigator.pop(ctx); }),
             ListTile(leading: const Icon(Icons.auto_awesome), title: const Text('自動選択（マジックワンド）'), onTap: () { onToolSelected(DrawingTool.selectMagicWand); Navigator.pop(ctx); }),
           ],
