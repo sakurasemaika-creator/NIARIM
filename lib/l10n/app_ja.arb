@@ -738,5 +738,44 @@
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
   },
-  "penSubToolStampRotationSubtitle": "ストローク方向に合わせてランダムに回転"
+  "penSubToolStampRotationSubtitle": "ストローク方向に合わせてランダムに回転",
+  "brushSearchHint": "ブラシ名で検索",
+  "brushEmpty": "ブラシがありません",
+  "brushCreateDialogTitle": "自作ブラシ",
+  "brushImportFailedSnackbar": "ブラシの読み込みに失敗しました: {error}",
+  "@brushImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushExportFailedSnackbar": "ブラシの書き出しに失敗しました: {error}",
+  "@brushExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushSettingsSizeLabel": "サイズ",
+  "brushSettingsOpacityLabel": "不透明度",
+  "brushSettingsSpacingLabel": "間隔",
+  "brushSettingsBlurRadiusLabel": "ぼかし半径",
+  "brushSettingsStabilizationTitle": "手ブレ補正",
+  "brushSettingsStabilizationStrengthLabel": "補正強度",
+  "brushSettingsDotPenModeTitle": "ドットペンモード",
+  "brushSettingsPressureModeTitle": "筆圧設定",
+  "brushSettingsPressureOff": "無効",
+  "brushSettingsPressureSize": "サイズに反映",
+  "brushSettingsPressureOpacity": "不透明度に反映",
+  "brushSettingsPressureSizeAndOpacity": "サイズ＋不透明度に反映",
+  "brushSettingsFadeModeTitle": "フェード",
+  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeWeak": "弱",
+  "brushSettingsFadeMedium": "中",
+  "brushSettingsFadeStrong": "強",
+  "brushSettingsFadeCustom": "カスタム",
+  "brushSettingsFadeStartValueLabel": "開始値(%)",
+  "brushSettingsFadeEndValueLabel": "終了値(%)",
+  "brushSettingsFadeDistanceLabel": "距離(px)",
+  "brushSettingsStrokeDecayTitle": "ストローク減衰",
+  "brushSettingsStrokeDecaySubtitle": "描き続けるほど不透明度が下がる",
+  "brushSettingsMixingTitle": "混色",
+  "brushSettingsMixingOff": "OFF",
+  "brushSettingsMixingSimple": "簡易混色",
+  "brushSettingsMixingBleed": "にじみ",
+  "brushSettingsMixingRateLabel": "混色率"
 }

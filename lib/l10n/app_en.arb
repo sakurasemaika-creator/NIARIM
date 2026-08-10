@@ -644,5 +644,44 @@
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
   },
-  "penSubToolStampRotationSubtitle": "Randomly rotate to match the stroke direction"
+  "penSubToolStampRotationSubtitle": "Randomly rotate to match the stroke direction",
+  "brushSearchHint": "Search by brush name",
+  "brushEmpty": "No brushes",
+  "brushCreateDialogTitle": "Custom brush",
+  "brushImportFailedSnackbar": "Failed to load brush: {error}",
+  "@brushImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushExportFailedSnackbar": "Failed to export brush: {error}",
+  "@brushExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushSettingsSizeLabel": "Size",
+  "brushSettingsOpacityLabel": "Opacity",
+  "brushSettingsSpacingLabel": "Spacing",
+  "brushSettingsBlurRadiusLabel": "Blur radius",
+  "brushSettingsStabilizationTitle": "Stroke stabilization",
+  "brushSettingsStabilizationStrengthLabel": "Stabilization strength",
+  "brushSettingsDotPenModeTitle": "Dot pen mode",
+  "brushSettingsPressureModeTitle": "Pressure sensitivity",
+  "brushSettingsPressureOff": "Off",
+  "brushSettingsPressureSize": "Affects size",
+  "brushSettingsPressureOpacity": "Affects opacity",
+  "brushSettingsPressureSizeAndOpacity": "Affects size + opacity",
+  "brushSettingsFadeModeTitle": "Fade",
+  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeWeak": "Weak",
+  "brushSettingsFadeMedium": "Medium",
+  "brushSettingsFadeStrong": "Strong",
+  "brushSettingsFadeCustom": "Custom",
+  "brushSettingsFadeStartValueLabel": "Start value (%)",
+  "brushSettingsFadeEndValueLabel": "End value (%)",
+  "brushSettingsFadeDistanceLabel": "Distance (px)",
+  "brushSettingsStrokeDecayTitle": "Stroke decay",
+  "brushSettingsStrokeDecaySubtitle": "Opacity decreases the longer you keep drawing",
+  "brushSettingsMixingTitle": "Color mixing",
+  "brushSettingsMixingOff": "OFF",
+  "brushSettingsMixingSimple": "Simple mixing",
+  "brushSettingsMixingBleed": "Bleed",
+  "brushSettingsMixingRateLabel": "Mixing rate"
 }

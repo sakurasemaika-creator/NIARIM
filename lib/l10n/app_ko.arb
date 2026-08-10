@@ -644,5 +644,44 @@
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
   },
-  "penSubToolStampRotationSubtitle": "획 방향에 맞춰 무작위로 회전"
+  "penSubToolStampRotationSubtitle": "획 방향에 맞춰 무작위로 회전",
+  "brushSearchHint": "브러시 이름으로 검색",
+  "brushEmpty": "브러시가 없습니다",
+  "brushCreateDialogTitle": "커스텀 브러시",
+  "brushImportFailedSnackbar": "브러시 불러오기에 실패했습니다: {error}",
+  "@brushImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushExportFailedSnackbar": "브러시 내보내기에 실패했습니다: {error}",
+  "@brushExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushSettingsSizeLabel": "크기",
+  "brushSettingsOpacityLabel": "불투명도",
+  "brushSettingsSpacingLabel": "간격",
+  "brushSettingsBlurRadiusLabel": "흐림 반경",
+  "brushSettingsStabilizationTitle": "손떨림 보정",
+  "brushSettingsStabilizationStrengthLabel": "보정 강도",
+  "brushSettingsDotPenModeTitle": "도트 펜 모드",
+  "brushSettingsPressureModeTitle": "필압 설정",
+  "brushSettingsPressureOff": "사용 안 함",
+  "brushSettingsPressureSize": "크기에 반영",
+  "brushSettingsPressureOpacity": "불투명도에 반영",
+  "brushSettingsPressureSizeAndOpacity": "크기＋불투명도에 반영",
+  "brushSettingsFadeModeTitle": "페이드",
+  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeWeak": "약",
+  "brushSettingsFadeMedium": "중",
+  "brushSettingsFadeStrong": "강",
+  "brushSettingsFadeCustom": "사용자 지정",
+  "brushSettingsFadeStartValueLabel": "시작값(%)",
+  "brushSettingsFadeEndValueLabel": "종료값(%)",
+  "brushSettingsFadeDistanceLabel": "거리(px)",
+  "brushSettingsStrokeDecayTitle": "스트로크 감쇠",
+  "brushSettingsStrokeDecaySubtitle": "계속 그릴수록 불투명도가 낮아집니다",
+  "brushSettingsMixingTitle": "혼색",
+  "brushSettingsMixingOff": "OFF",
+  "brushSettingsMixingSimple": "간이 혼색",
+  "brushSettingsMixingBleed": "번짐",
+  "brushSettingsMixingRateLabel": "혼색 비율"
 }

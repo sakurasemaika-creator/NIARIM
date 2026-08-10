@@ -644,5 +644,44 @@
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
   },
-  "penSubToolStampRotationSubtitle": "Rotación aleatoria según la dirección del trazo"
+  "penSubToolStampRotationSubtitle": "Rotación aleatoria según la dirección del trazo",
+  "brushSearchHint": "Buscar por nombre de pincel",
+  "brushEmpty": "No hay pinceles",
+  "brushCreateDialogTitle": "Pincel personalizado",
+  "brushImportFailedSnackbar": "Error al cargar el pincel: {error}",
+  "@brushImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushExportFailedSnackbar": "Error al exportar el pincel: {error}",
+  "@brushExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushSettingsSizeLabel": "Tamaño",
+  "brushSettingsOpacityLabel": "Opacidad",
+  "brushSettingsSpacingLabel": "Espaciado",
+  "brushSettingsBlurRadiusLabel": "Radio de desenfoque",
+  "brushSettingsStabilizationTitle": "Estabilización del trazo",
+  "brushSettingsStabilizationStrengthLabel": "Intensidad de estabilización",
+  "brushSettingsDotPenModeTitle": "Modo lápiz de puntos",
+  "brushSettingsPressureModeTitle": "Sensibilidad a la presión",
+  "brushSettingsPressureOff": "Desactivado",
+  "brushSettingsPressureSize": "Afecta al tamaño",
+  "brushSettingsPressureOpacity": "Afecta a la opacidad",
+  "brushSettingsPressureSizeAndOpacity": "Afecta al tamaño y la opacidad",
+  "brushSettingsFadeModeTitle": "Desvanecido",
+  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeWeak": "Débil",
+  "brushSettingsFadeMedium": "Medio",
+  "brushSettingsFadeStrong": "Fuerte",
+  "brushSettingsFadeCustom": "Personalizado",
+  "brushSettingsFadeStartValueLabel": "Valor inicial (%)",
+  "brushSettingsFadeEndValueLabel": "Valor final (%)",
+  "brushSettingsFadeDistanceLabel": "Distancia (px)",
+  "brushSettingsStrokeDecayTitle": "Atenuación del trazo",
+  "brushSettingsStrokeDecaySubtitle": "La opacidad disminuye cuanto más tiempo dibujas",
+  "brushSettingsMixingTitle": "Mezcla de color",
+  "brushSettingsMixingOff": "OFF",
+  "brushSettingsMixingSimple": "Mezcla simple",
+  "brushSettingsMixingBleed": "Sangrado",
+  "brushSettingsMixingRateLabel": "Tasa de mezcla"
 }

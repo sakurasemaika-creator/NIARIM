@@ -644,5 +644,44 @@
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
   },
-  "penSubToolStampRotationSubtitle": "根据笔画方向随机旋转"
+  "penSubToolStampRotationSubtitle": "根据笔画方向随机旋转",
+  "brushSearchHint": "按画笔名称搜索",
+  "brushEmpty": "没有画笔",
+  "brushCreateDialogTitle": "自制画笔",
+  "brushImportFailedSnackbar": "画笔读取失败：{error}",
+  "@brushImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushExportFailedSnackbar": "画笔导出失败：{error}",
+  "@brushExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "brushSettingsSizeLabel": "大小",
+  "brushSettingsOpacityLabel": "不透明度",
+  "brushSettingsSpacingLabel": "间距",
+  "brushSettingsBlurRadiusLabel": "模糊半径",
+  "brushSettingsStabilizationTitle": "防抖",
+  "brushSettingsStabilizationStrengthLabel": "防抖强度",
+  "brushSettingsDotPenModeTitle": "点状笔模式",
+  "brushSettingsPressureModeTitle": "笔压设置",
+  "brushSettingsPressureOff": "无效",
+  "brushSettingsPressureSize": "反映到大小",
+  "brushSettingsPressureOpacity": "反映到不透明度",
+  "brushSettingsPressureSizeAndOpacity": "反映到大小＋不透明度",
+  "brushSettingsFadeModeTitle": "淡出",
+  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeWeak": "弱",
+  "brushSettingsFadeMedium": "中",
+  "brushSettingsFadeStrong": "强",
+  "brushSettingsFadeCustom": "自定义",
+  "brushSettingsFadeStartValueLabel": "起始值(%)",
+  "brushSettingsFadeEndValueLabel": "结束值(%)",
+  "brushSettingsFadeDistanceLabel": "距离(px)",
+  "brushSettingsStrokeDecayTitle": "笔画衰减",
+  "brushSettingsStrokeDecaySubtitle": "持续绘制不透明度会降低",
+  "brushSettingsMixingTitle": "混色",
+  "brushSettingsMixingOff": "OFF",
+  "brushSettingsMixingSimple": "简易混色",
+  "brushSettingsMixingBleed": "晕染",
+  "brushSettingsMixingRateLabel": "混色率"
 }
