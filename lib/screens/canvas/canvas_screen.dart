@@ -420,7 +420,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 _closeAllOverlayPanels();
                 _showLayerPanel = next;
               }),
-              onTimelineTap: () => context.go('/timeline/${widget.projectId}'),
               onPenLongPress: () => setState(() {
                 final next = !_showPenSubToolPanel;
                 _closeAllOverlayPanels();

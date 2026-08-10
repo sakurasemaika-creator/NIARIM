@@ -13,7 +13,6 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onColorTap;
   final VoidCallback onBrushTap;
   final VoidCallback onLayerTap;
-  final VoidCallback onTimelineTap;
   final VoidCallback onPenLongPress;
   final VoidCallback onOnionSkinTap;
   final VoidCallback onTextTap;
@@ -35,7 +34,6 @@ class ToolbarWidget extends StatelessWidget {
     required this.onColorTap,
     required this.onBrushTap,
     required this.onLayerTap,
-    required this.onTimelineTap,
     required this.onPenLongPress,
     required this.onOnionSkinTap,
     required this.onTextTap,
@@ -183,7 +181,9 @@ class ToolbarWidget extends StatelessWidget {
                 ),
               ),
             ),
-            IconButton(icon: const Icon(Icons.movie, size: 20), onPressed: onTimelineTap, tooltip: 'タイムライン'),
+            // タイムラインへの切替ボタンは仕様書08・タスク#95によりここから
+            // 削除し、フレーム一覧右下のボタン（frame_strip_widget.dart）
+            // へ統一した（同じ役割のボタンが2箇所にあり冗長だったため）。
             // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
             IconButton(icon: const Icon(Icons.save_outlined, size: 20), onPressed: onSaveTap, tooltip: '保存（セーブツリー）'),
           ],
