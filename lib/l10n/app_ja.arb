@@ -593,5 +593,50 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "onionSkinColorLabel": "色",
-  "onionSkinOpacityLabel": "透明度"
+  "onionSkinOpacityLabel": "透明度",
+
+  "exportScreenTitle": "書き出し",
+  "exportPresetSection": "プリセット",
+  "exportPresetStandard": "標準",
+  "exportPresetHighQuality": "高画質",
+  "exportPresetCustom": "カスタム",
+  "exportAdvancedSettings": "詳細設定",
+  "exportFpsLabel": "FPS",
+  "exportFormatSection": "形式",
+  "exportFormatMp4": "MP4",
+  "exportFormatMp4Subtitle": "汎用動画形式",
+  "exportFormatGif": "GIF",
+  "exportFormatGifSubtitle": "アニメーションGIF",
+  "exportFormatWebmSubtitle": "透明背景動画",
+  "exportStartButton": "書き出し開始",
+  "exportProjectNotFoundError": "プロジェクトが見つかりません",
+  "exportFailedError": "書き出し失敗: {error}",
+  "@exportFailedError": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "exportInProgressTitle": "書き出し中",
+  "exportCancelledSnackbar": "書き出しをキャンセルしました",
+  "exportCancelHint": "最終処理中のため、完了後にキャンセルを反映します",
+  "exportOutdatedAutofillTitle": "自動塗りが最新ではありません",
+  "exportOutdatedAutofillBody": "更新されていない自動塗りレイヤーがあります。このまま書き出しますか？",
+  "exportContinueButton": "続行",
+  "exportDurationExceededTitle": "動画尺の上限を超えています",
+  "exportDurationExceededBody": "無料版の最大動画尺は{max}秒です。\n現在のプロジェクトは約{current}秒あります。\nPremiumにアップグレードすると尺の制限がなくなります。",
+  "@exportDurationExceededBody": {
+    "placeholders": {"max": {"type": "int"}, "current": {"type": "int"}}
+  },
+  "exportViewPremiumButton": "Premiumを見る",
+  "exportContinueAnywayButton": "このまま続行",
+  "exportCompleteTitle": "書き出し完了",
+  "exportCompleteFramesBody": "{count} フレームの書き出しが完了しました。",
+  "@exportCompleteFramesBody": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "exportSaveLocationLabel": "保存先：アプリ内（{fileName}）",
+  "@exportSaveLocationLabel": {
+    "placeholders": {"fileName": {"type": "String"}}
+  },
+  "exportSaveLocationHint": "端末の「写真」アプリやファイルアプリで開くには、下の「共有」から保存先アプリを選んでください。",
+  "exportBackToProjectsButton": "プロジェクト一覧へ戻る",
+  "exportBackToCanvasButton": "キャンバスへ戻る"
 }
