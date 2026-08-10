@@ -473,26 +473,32 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
-      if (type == InputType.touch) return;
+      // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
+      // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _syncBrushAndColor();
       _handleBucketDown(canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.lasso) {
-      if (type == InputType.touch) return;
+      // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
+      // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       setState(() { _lassoPoints = [canvasPos]; });
       return;
     }
     if (widget.currentTool == DrawingTool.pen &&
         (widget.currentSubTool == PenSubTool.tone ||
             widget.currentSubTool == PenSubTool.stamp)) {
-      if (type == InputType.touch) return;
+      // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
+      // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _syncBrushAndColor();
       setState(() { _subToolStrokePoints = [canvasPos]; });
       return;
     }
 
-    if (type == InputType.touch) return;
+    if (type == InputType.touch && _inputHandler.isStylusActive) return;
     _syncBrushAndColor();
     // 透視定規：新しいストロークの開始点として、消失点スナップの基準をリセットする。
     _rulerEngine.beginStroke();
@@ -545,23 +551,29 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
-      if (type == InputType.touch) return;
+      // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
+      // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _handleBucketMove(canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.lasso) {
-      if (type == InputType.touch) return;
+      // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
+      // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       setState(() => _lassoPoints.add(canvasPos));
       return;
     }
     if (widget.currentTool == DrawingTool.pen &&
         (widget.currentSubTool == PenSubTool.tone ||
             widget.currentSubTool == PenSubTool.stamp)) {
-      if (type == InputType.touch) return;
+      // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
+      // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       setState(() => _subToolStrokePoints.add(canvasPos));
       return;
     }
-    if (type == InputType.touch) return;
+    if (type == InputType.touch && _inputHandler.isStylusActive) return;
     if (widget.currentTool == DrawingTool.text ||
         widget.currentTool == DrawingTool.eyedropper) {
       return;
@@ -622,29 +634,38 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.bucket) {
       _handleBucketUp();
-      if (type == InputType.touch) _inputHandler.onStylusUp();
+      // スタイラス操作の終了はポインター種別に関わらずここで確定する
+      // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
+      _inputHandler.onStylusUp();
       return;
     }
     if (widget.currentTool == DrawingTool.lasso) {
       _commitLassoFill();
       setState(() => _lassoPoints = []);
-      if (type == InputType.touch) _inputHandler.onStylusUp();
+      // スタイラス操作の終了はポインター種別に関わらずここで確定する
+      // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
+      _inputHandler.onStylusUp();
       return;
     }
     if (widget.currentTool == DrawingTool.pen && widget.currentSubTool == PenSubTool.tone) {
       _commitToneStroke();
       setState(() => _subToolStrokePoints = []);
-      if (type == InputType.touch) _inputHandler.onStylusUp();
+      // スタイラス操作の終了はポインター種別に関わらずここで確定する
+      // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
+      _inputHandler.onStylusUp();
       return;
     }
     if (widget.currentTool == DrawingTool.pen && widget.currentSubTool == PenSubTool.stamp) {
       _commitStampStroke();
       setState(() => _subToolStrokePoints = []);
-      if (type == InputType.touch) _inputHandler.onStylusUp();
+      // スタイラス操作の終了はポインター種別に関わらずここで確定する
+      // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
+      _inputHandler.onStylusUp();
       return;
     }
-    if (type == InputType.touch) {
-      _inputHandler.onStylusUp();
+    // パームリジェクションで無視されたタッチ（スタイラス使用中の誤タッチ）はここで終了。
+    // スタイラス未使用時のタッチ描画は下のendStroke()まで到達させ、正しく確定させる。
+    if (type == InputType.touch && _inputHandler.isStylusActive) {
       return;
     }
     if (widget.currentTool == DrawingTool.text ||
