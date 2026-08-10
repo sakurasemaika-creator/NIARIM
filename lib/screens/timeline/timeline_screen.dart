@@ -125,6 +125,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _clipDragStartFrame = 0;
   int _clipDragStartLength = 0;
 
+  // カメラキーフレームマーカーの長押し不要ドラッグ用の一時状態（仕様書05
+  // 「カメラ：XY移動・拡大・回転・キーフレーム」・タスク#100）。持ち方は
+  // クリップドラッグと同じアンカー方式だが、ProjectServiceへの反映は
+  // ドラッグ終了時の1回のみに留める（ドラッグ中に毎回notifyListeners()
+  // すると、プレビューが持つcameraKeyframesの再合成が連続発生し重くなる
+  // ため、ローカルStateだけで暫定位置を表示する）。
+  int? _draggingCameraKfOriginalFrame;
+  int? _draggingCameraKfLiveFrame;
+  double _cameraKfDragStartX = 0;
+  int _cameraKfDragStartFrame = 0;
+
   // 音声・動画クリップの再生位置連動（仕様書05）
   final Map<String, ap.AudioPlayer> _audioPlayers = {};
   final Map<String, VideoPlayerController> _videoControllers = {};
@@ -2118,20 +2129,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
       animation: _cameraScrollCtrl,
       builder: (ctx, child) {
         final scrollOffset = _cameraScrollCtrl.hasClients ? _cameraScrollCtrl.offset : 0.0;
-        final cx = kf.frameIndex * _cellW + _cellW / 2 - scrollOffset;
+        final isDragging = _draggingCameraKfOriginalFrame == kf.frameIndex;
+        final displayFrame = isDragging ? (_draggingCameraKfLiveFrame ?? kf.frameIndex) : kf.frameIndex;
+        final cx = displayFrame * _cellW + _cellW / 2 - scrollOffset;
         return Positioned(
           left: cx - 7,
           top: 9,
           child: GestureDetector(
             onTap: () => _showEditCameraKfDialog(kf),
+            // ドラッグでキーフレーム位置（フレーム）を変更する（仕様書05：
+            // 「カメラ：XY移動・拡大・回転・キーフレーム」、タスク#100）。
+            onHorizontalDragStart: (d) => _beginCameraKfDrag(kf, d.globalPosition.dx),
+            onHorizontalDragUpdate: (d) => _updateCameraKfDrag(d.globalPosition.dx),
+            onHorizontalDragEnd: (_) => _endCameraKfDrag(kf),
             child: Transform.rotate(
               angle: 0.785, // 45°
               child: Container(
-                width: 14,
-                height: 14,
+                width: isDragging ? 18 : 14,
+                height: isDragging ? 18 : 14,
                 decoration: BoxDecoration(
                   color: Colors.purple[400],
-                  border: Border.all(color: Colors.white, width: 1.5),
+                  border: Border.all(color: Colors.white, width: isDragging ? 2 : 1.5),
                 ),
               ),
             ),
@@ -2139,6 +2157,44 @@ class _TimelineScreenState extends State<TimelineScreen> {
         );
       },
     );
+  }
+
+  void _beginCameraKfDrag(CameraKeyframe kf, double globalX) {
+    setState(() {
+      _draggingCameraKfOriginalFrame = kf.frameIndex;
+      _draggingCameraKfLiveFrame = kf.frameIndex;
+      _cameraKfDragStartX = globalX;
+      _cameraKfDragStartFrame = kf.frameIndex;
+    });
+  }
+
+  void _updateCameraKfDrag(double globalX) {
+    if (_draggingCameraKfOriginalFrame == null) return;
+    final total = _totalFrames;
+    final deltaFrames = ((globalX - _cameraKfDragStartX) / _cellW).round();
+    final newFrame = (_cameraKfDragStartFrame + deltaFrames).clamp(0, total > 0 ? total - 1 : 0);
+    if (newFrame != _draggingCameraKfLiveFrame) {
+      setState(() => _draggingCameraKfLiveFrame = newFrame);
+    }
+  }
+
+  void _endCameraKfDrag(CameraKeyframe kf) {
+    final originalFrame = _draggingCameraKfOriginalFrame;
+    final liveFrame = _draggingCameraKfLiveFrame;
+    setState(() {
+      _draggingCameraKfOriginalFrame = null;
+      _draggingCameraKfLiveFrame = null;
+    });
+    final sceneId = _selectedSceneId;
+    if (sceneId == null || originalFrame == null || liveFrame == null || liveFrame == originalFrame) {
+      return;
+    }
+    context.read<ProjectService>().updateCameraKeyframe(
+          widget.projectId,
+          sceneId,
+          originalFrame,
+          kf.copyWith(frameIndex: liveFrame),
+        );
   }
 
   /// EndCard Track（無料版：ロック状態、プレミアム：編集可能）
