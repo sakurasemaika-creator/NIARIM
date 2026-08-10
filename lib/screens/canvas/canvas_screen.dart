@@ -13,6 +13,7 @@ import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/first_use_tooltip.dart';
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
 import '../../models/bundled_fonts.dart';
@@ -86,6 +87,106 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showFilterPanel = false;
     _showQuickToolPanel = false;
   }
+
+  /// 定規ボタン（仕様書08・タスク#95：下部ツールバーからキャンバス上部
+  /// バーの常設ボタンへ昇格）。定規パネルの開閉と定規ツールへの切替を
+  /// 同時に行う（従来の下部ツールバー版と同じ挙動）。
+  void _toggleRuler() => setState(() {
+        final next = !_showRulerPanel;
+        _closeAllOverlayPanels();
+        _showRulerPanel = next;
+        if (_currentTool != DrawingTool.ruler) {
+          _currentTool = DrawingTool.ruler;
+        }
+      });
+
+  /// オニオンスキンパネルの開閉（仕様書08・タスク#95：キャンバス上部
+  /// バーの「設定/編集」メニューへ集約）。
+  void _toggleOnionSkinPanel() => setState(() {
+        final next = !_showOnionSkinPanel;
+        _closeAllOverlayPanels();
+        _showOnionSkinPanel = next;
+      });
+
+  /// フィルターパネルの開閉（仕様書08・タスク#95：キャンバス上部バーの
+  /// 「設定/編集」メニューへ集約）。
+  void _toggleFilterPanel() => setState(() {
+        final next = !_showFilterPanel;
+        _closeAllOverlayPanels();
+        _showFilterPanel = next;
+      });
+
+  /// 背景切替（白/プロジェクト背景色 ⟷ 透過、仕様書27・タスク#95：
+  /// キャンバス上部バーの「設定/編集」メニューへ集約）。
+  void _toggleBackground() => setState(() {
+        _canvasBackground = _canvasBackground == CanvasBackground.white
+            ? CanvasBackground.transparent
+            : CanvasBackground.white;
+      });
+
+  /// フレーム複数選択モードの切替（仕様書18・タスク#95：キャンバス上部
+  /// バーの「設定/編集」メニューへ集約。大量処理実行時のフィルター
+  /// 一括適用などに使用）。
+  void _toggleFrameMultiSelect() => setState(() {
+        _frameMultiSelectMode = !_frameMultiSelectMode;
+        _selectedFrameIndices = {};
+      });
+
+  /// キャンバス上部バーの「設定/編集」メニュー（仕様書08・タスク#95：
+  /// 背景色・オニオンスキン・フィルター・フレーム範囲選択を集約）。
+  void _showEditMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(_canvasBackground == CanvasBackground.white
+                  ? Icons.check_box_outline_blank
+                  : Icons.grid_4x4),
+              title: const Text('背景切替'),
+              subtitle: Text(_canvasBackground == CanvasBackground.white
+                  ? '現在：プロジェクト背景色（タップで透過へ）'
+                  : '現在：透過（タップでプロジェクト背景色へ）'),
+              onTap: () {
+                _toggleBackground();
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.layers_outlined),
+              title: const Text('オニオンスキン'),
+              subtitle: const Text('前後のフレームを薄く重ねて表示'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _toggleOnionSkinPanel();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.blur_on),
+              title: const Text('フィルター'),
+              subtitle: const Text('ぼかし・トーンカーブなどを適用'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _toggleFilterPanel();
+              },
+            ),
+            ListTile(
+              leading: Icon(_frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist),
+              title: const Text('フレーム複数選択'),
+              subtitle: const Text('大量処理（フィルター一括適用など）に使用'),
+              onTap: () {
+                _toggleFrameMultiSelect();
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // フレーム複数選択モード（仕様書18：大量処理実行時のフィルター一括適用）
   bool _frameMultiSelectMode = false;
   Set<int> _selectedFrameIndices = {};
@@ -425,26 +526,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 _closeAllOverlayPanels();
                 _showPenSubToolPanel = next;
               }),
-              onOnionSkinTap: () => setState(() {
-                final next = !_showOnionSkinPanel;
-                _closeAllOverlayPanels();
-                _showOnionSkinPanel = next;
-              }),
               onTextTap: () => setState(() => _currentTool = DrawingTool.text),
-              onRulerTap: () => setState(() {
-                final next = !_showRulerPanel;
-                _closeAllOverlayPanels();
-                _showRulerPanel = next;
-                if (_currentTool != DrawingTool.ruler) {
-                  _currentTool = DrawingTool.ruler;
-                }
-              }),
               onShapeTap: () => _showShapeMenu(context),
-              onFilterTap: () => setState(() {
-                final next = !_showFilterPanel;
-                _closeAllOverlayPanels();
-                _showFilterPanel = next;
-              }),
               onQuickToolTap: _applyNextQuickTool,
               onQuickToolLongPress: () => setState(() {
                 final next = !_showQuickToolPanel;
@@ -676,18 +759,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary)),
             ),
           const Spacer(),
-          // フレーム複数選択モード切替（仕様書18：フィルター一括適用など大量処理実行時）
-          IconButton(
-            icon: Icon(
-              _frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist,
-              size: 20,
-              color: _frameMultiSelectMode ? Theme.of(context).colorScheme.primary : null,
+          // 定規ボタン（仕様書08・タスク#95：下部ツールバーから昇格した常設ボタン）
+          FirstUseTooltip(
+            tooltipKey: 'ruler_tool',
+            message: '定規を使うとまっすぐな線や綺麗な図形が描けます。',
+            child: IconButton(
+              icon: Icon(Icons.straighten, size: 20,
+                  color: _currentTool == DrawingTool.ruler ? Theme.of(context).colorScheme.primary : null),
+              tooltip: '定規',
+              onPressed: _toggleRuler,
             ),
-            tooltip: 'フレーム複数選択',
-            onPressed: () => setState(() {
-              _frameMultiSelectMode = !_frameMultiSelectMode;
-              _selectedFrameIndices = {};
-            }),
           ),
           IconButton(
             icon: const Icon(Icons.undo),
@@ -699,22 +780,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => context.read<UndoManager>().redo(),
             tooltip: 'Redo',
           ),
-          // 背景切替ボタン（仕様書27：白 / 透過）
+          // 設定/編集メニュー（仕様書08・タスク#95：背景色・オニオンスキン・
+          // フィルター・フレーム範囲選択を集約。旧・個別ボタンを整理統合した）。
           IconButton(
-            icon: Icon(
-              _canvasBackground == CanvasBackground.white
-                  ? Icons.check_box_outline_blank
-                  : Icons.grid_4x4,
-              size: 20,
-            ),
-            // 「白」ではなくプロジェクトの背景色をキャンバスに反映するため
-            // ラベルも実態に合わせて変更（canvas_area.dartの_paintBackground参照）。
-            tooltip: _canvasBackground == CanvasBackground.white ? '背景：プロジェクト背景色' : '背景：透過',
-            onPressed: () => setState(() {
-              _canvasBackground = _canvasBackground == CanvasBackground.white
-                  ? CanvasBackground.transparent
-                  : CanvasBackground.white;
-            }),
+            icon: const Icon(Icons.settings, size: 20),
+            tooltip: '設定/編集',
+            onPressed: () => _showEditMenu(context),
           ),
           const HelpButton(),
         ],

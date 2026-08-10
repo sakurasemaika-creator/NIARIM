@@ -14,11 +14,8 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onBrushTap;
   final VoidCallback onLayerTap;
   final VoidCallback onPenLongPress;
-  final VoidCallback onOnionSkinTap;
   final VoidCallback onTextTap;
-  final VoidCallback onRulerTap;
   final VoidCallback onShapeTap;
-  final VoidCallback onFilterTap;
   final VoidCallback onQuickToolTap;
   final VoidCallback onQuickToolLongPress;
   // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
@@ -35,11 +32,8 @@ class ToolbarWidget extends StatelessWidget {
     required this.onBrushTap,
     required this.onLayerTap,
     required this.onPenLongPress,
-    required this.onOnionSkinTap,
     required this.onTextTap,
-    required this.onRulerTap,
     required this.onShapeTap,
-    required this.onFilterTap,
     required this.onQuickToolTap,
     required this.onQuickToolLongPress,
     required this.onSaveTap,
@@ -76,12 +70,6 @@ class ToolbarWidget extends StatelessWidget {
       ToolbarItemId.finger => _toolButton(context, Icons.back_hand, DrawingTool.finger, '指'),
       ToolbarItemId.select => _selectToolButton(context),
       ToolbarItemId.transform => _toolButton(context, Icons.transform, DrawingTool.transform, '変形'),
-      // 初回タップ時の吹き出し説明（仕様書14）
-      ToolbarItemId.ruler => FirstUseTooltip(
-          tooltipKey: 'ruler_tool',
-          message: '定規を使うとまっすぐな線や綺麗な図形が描けます。',
-          child: _toolButton(context, Icons.straighten, DrawingTool.ruler, '定規', onTap: onRulerTap),
-        ),
       // 初回タップ時の吹き出し説明（仕様書15）
       ToolbarItemId.text => FirstUseTooltip(
           tooltipKey: 'text_tool',
@@ -90,12 +78,6 @@ class ToolbarWidget extends StatelessWidget {
         ),
       ToolbarItemId.shape =>
         _toolButton(context, Icons.category, DrawingTool.shape, '図形（タップで種別選択）', onTap: onShapeTap),
-      // フィルター（仕様書18：描画フィルター）
-      ToolbarItemId.filter => FirstUseTooltip(
-          tooltipKey: 'draw_filter',
-          message: 'レイヤーにぼかし・トーンカーブなどのフィルターを適用できます。',
-          child: IconButton(icon: const Icon(Icons.blur_on, size: 20), onPressed: onFilterTap, tooltip: 'フィルター'),
-        ),
     };
   }
 
@@ -152,13 +134,8 @@ class ToolbarWidget extends StatelessWidget {
             ),
             IconButton(icon: const Icon(Icons.tune, size: 20), onPressed: onBrushTap, tooltip: 'ブラシ設定'),
             IconButton(icon: const Icon(Icons.layers, size: 20), onPressed: onLayerTap, tooltip: 'レイヤー'),
-            // オニオンスキン（初回使用時の吹き出し説明、仕様書02・11）
-            FirstUseTooltip(
-              tooltipKey: 'onion_skin',
-              message: '前後のフレームを薄く重ねて表示し、動きの参考にできます。',
-              child: IconButton(
-                  icon: const Icon(Icons.layers_outlined, size: 20), onPressed: onOnionSkinTap, tooltip: 'オニオンスキン'),
-            ),
+            // オニオンスキンは仕様書08・タスク#95によりここから削除し、
+            // キャンバス上部バーの「設定/編集」メニューへ集約した。
             // ツール早替えボタン（↺）
             // ツール早替えボタン：タップで登録順に切替、長押しまたは上スワイプで
             // 管理ポップアップ（登録・並び替え）を表示（仕様書02・08）

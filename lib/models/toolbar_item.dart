@@ -2,11 +2,16 @@ import 'package:flutter/material.dart' show IconData, Icons;
 
 /// ツールバーに表示するツール項目（仕様書08：ワークスペース設定＞ツールバー編集）。
 /// 表示ON/OFF・並び順をカスタマイズ可能な項目のみを列挙する。
-/// （色インジケーター・ブラシ設定・レイヤー・オニオンスキン・ツール早替え・
-/// タイムラインは常設の操作導線のためカスタマイズ対象外）
+/// （色インジケーター・ブラシ設定・レイヤー・ツール早替えは常設の操作導線
+/// のためカスタマイズ対象外）
 /// 移動（move）は仕様書08・タスク#95により削除した：2本指でのキャンバス
 /// 平行移動（タスク#89で実装済み）と役割が重複するツール専用ボタンのため。
 /// DrawingTool.move自体（機能）は削除しておらず、引き続き到達可能。
+/// 定規（ruler）は仕様書08・タスク#95によりキャンバス上部バーの常設ボタン
+/// へ昇格したため、ここからは削除した（重複ボタン防止）。
+/// フィルター（filter）・オニオンスキンは仕様書08・タスク#95により上部
+/// バーの「設定/編集」メニューへ集約したため、フィルターはここから削除
+/// した（オニオンスキンは元々カスタマイズ対象外の常設項目だった）。
 enum ToolbarItemId {
   pen,
   eraser,
@@ -15,10 +20,8 @@ enum ToolbarItemId {
   finger,
   select,
   transform,
-  ruler,
   text,
   shape,
-  filter,
 }
 
 extension ToolbarItemLabel on ToolbarItemId {
@@ -30,10 +33,8 @@ extension ToolbarItemLabel on ToolbarItemId {
         ToolbarItemId.finger => '指',
         ToolbarItemId.select => '選択',
         ToolbarItemId.transform => '変形',
-        ToolbarItemId.ruler => '定規',
         ToolbarItemId.text => 'テキスト',
         ToolbarItemId.shape => '図形',
-        ToolbarItemId.filter => 'フィルター',
       };
 }
 
@@ -52,9 +53,7 @@ extension ToolbarItemIcon on ToolbarItemId {
         ToolbarItemId.finger => Icons.back_hand,
         ToolbarItemId.select => Icons.auto_fix_high,
         ToolbarItemId.transform => Icons.transform,
-        ToolbarItemId.ruler => Icons.straighten,
         ToolbarItemId.text => Icons.text_fields,
         ToolbarItemId.shape => Icons.category,
-        ToolbarItemId.filter => Icons.blur_on,
       };
 }
