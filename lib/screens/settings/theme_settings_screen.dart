@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/theme_service.dart';
 import '../../models/app_theme_preset.dart';
 import '../../widgets/responsive.dart';
@@ -16,21 +17,22 @@ class ThemeSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final themeService = context.watch<ThemeService>();
     final presets = themeService.presets;
     final current = themeService.current;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('テーマ・外観'), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.themeSettingsTitle), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         children: [
           // ベーステーマ
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-            child: Text('ベーステーマ', style: TextStyle(fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text(l10n.themeSettingsBaseThemeSection, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
           ...BaseTheme.values.map((theme) => RadioListTile<BaseTheme>(
-            title: Text(_baseThemeLabel(theme)),
+            title: Text(_baseThemeLabel(l10n, theme)),
             value: theme,
             groupValue: current.baseTheme,
             onChanged: (v) {
@@ -46,51 +48,51 @@ class ThemeSettingsScreen extends StatelessWidget {
           // カラーカスタマイズ（仕様書24：「すべてカラーピッカー（HSV/RGB/HEX）で
           // 自由に設定できる」）。変更は即座にアプリ全体（現在のプリセット）へ
           // 反映される。
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Text('カラーカスタマイズ', style: TextStyle(fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text(l10n.themeColorCustomizeSection, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
           _ColorCustomizeTile(
-            label: 'アクセントカラー',
+            label: l10n.themeColorAccent,
             color: current.accentColor,
             onTap: () => _showColorPickerDialog(
                 context, themeService, (p, c) => p.copyWith(accentColor: c), current.accentColor),
           ),
           _ColorCustomizeTile(
-            label: '文字色',
+            label: l10n.themeColorText,
             color: current.textColor,
             onTap: () => _showColorPickerDialog(
                 context, themeService, (p, c) => p.copyWith(textColor: c), current.textColor),
           ),
           _ColorCustomizeTile(
-            label: 'パネル背景色',
+            label: l10n.themeColorPanelBg,
             color: current.panelBgColor,
             onTap: () => _showColorPickerDialog(
                 context, themeService, (p, c) => p.copyWith(panelBgColor: c), current.panelBgColor),
           ),
           _ColorCustomizeTile(
-            label: 'メニュー背景色',
+            label: l10n.themeColorMenuBg,
             color: current.menuBgColor,
             onTap: () => _showColorPickerDialog(
                 context, themeService, (p, c) => p.copyWith(menuBgColor: c), current.menuBgColor),
           ),
           _ColorCustomizeTile(
-            label: '選択色',
+            label: l10n.themeColorSelection,
             color: current.selectionColor,
             onTap: () => _showColorPickerDialog(
                 context, themeService, (p, c) => p.copyWith(selectionColor: c), current.selectionColor),
           ),
           _ColorCustomizeTile(
-            label: '更新マーク色',
+            label: l10n.themeColorUpdateMark,
             color: current.updateMarkColor,
             onTap: () => _showColorPickerDialog(
                 context, themeService, (p, c) => p.copyWith(updateMarkColor: c), current.updateMarkColor),
           ),
           const Divider(),
           // プリセット一覧（ドラッグで並び替え可能、仕様書24）
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Text('テーマプリセット', style: TextStyle(fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text(l10n.themePresetSection, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
           ReorderableListView(
             shrinkWrap: true,
@@ -122,10 +124,10 @@ class ThemeSettingsScreen extends StatelessWidget {
                         icon: const Icon(Icons.more_vert, size: 16),
                         onSelected: (action) => _handleAction(context, action, preset, themeService),
                         itemBuilder: (_) => [
-                          const PopupMenuItem(value: 'rename', child: Text('名前変更')),
-                          const PopupMenuItem(value: 'duplicate', child: Text('複製')),
-                          const PopupMenuItem(value: 'export', child: Text('書き出し (.niatheme)')),
-                          const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
+                          PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+                          PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+                          PopupMenuItem(value: 'export', child: Text(l10n.themeExportMenuItem)),
+                          PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                         ],
                       ),
                       const Icon(Icons.drag_handle, size: 18),
@@ -140,7 +142,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: OutlinedButton.icon(
               icon: const Icon(Icons.add),
-              label: const Text('現在の設定を新しいプリセットとして保存'),
+              label: Text(l10n.themeSaveAsNewButton),
               onPressed: () => _saveCurrentAsNew(context, themeService),
             ),
           ),
@@ -149,7 +151,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: OutlinedButton.icon(
               icon: const Icon(Icons.file_upload),
-              label: const Text('.niathemeを読み込む'),
+              label: Text(l10n.themeImportButton),
               onPressed: () => _importTheme(context, themeService),
             ),
           ),
@@ -185,20 +187,21 @@ class ThemeSettingsScreen extends StatelessWidget {
     );
   }
 
-  String _baseThemeLabel(BaseTheme theme) => switch (theme) {
-    BaseTheme.light => 'ライト',
-    BaseTheme.dark => 'ダーク',
-    BaseTheme.system => 'システム設定に合わせる',
+  String _baseThemeLabel(AppLocalizations l10n, BaseTheme theme) => switch (theme) {
+    BaseTheme.light => l10n.themeBaseLight,
+    BaseTheme.dark => l10n.themeBaseDark,
+    BaseTheme.system => l10n.themeBaseSystem,
   };
 
   void _handleAction(BuildContext context, String action, AppThemePreset preset, ThemeService service) {
+    final l10n = AppLocalizations.of(context)!;
     switch (action) {
       case 'rename':
         _showRenameDialog(context, preset, service);
       case 'duplicate':
         final copy = preset.copyWith(
           id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
-          name: '${preset.name} (コピー)',
+          name: l10n.themePresetDuplicateName(preset.name),
         );
         service.savePreset(copy);
       case 'delete':
@@ -218,8 +221,9 @@ class ThemeSettingsScreen extends StatelessWidget {
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('書き出しに失敗しました: $e')),
+        SnackBar(content: Text(l10n.themeExportFailedSnackbar(e.toString()))),
       );
     }
   }
@@ -231,6 +235,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     );
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     try {
       final content = await File(result.files.first.path!).readAsString();
       final json = jsonDecode(content) as Map<String, dynamic>;
@@ -240,31 +245,32 @@ class ThemeSettingsScreen extends StatelessWidget {
       service.applyPreset(preset.id);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('.niathemeを読み込みました')),
+        SnackBar(content: Text(l10n.themeImportSuccessSnackbar)),
       );
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('読み込みに失敗しました: $e')),
+        SnackBar(content: Text(l10n.themeImportFailedSnackbar(e.toString()))),
       );
     }
   }
 
   void _showRenameDialog(BuildContext context, AppThemePreset preset, ThemeService service) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: preset.name);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('名前変更'),
+        title: Text(l10n.commonRename),
         content: TextField(controller: controller, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               service.savePreset(preset.copyWith(name: controller.text));
               Navigator.pop(ctx);
             },
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -272,14 +278,15 @@ class ThemeSettingsScreen extends StatelessWidget {
   }
 
   void _saveCurrentAsNew(BuildContext context, ThemeService service) {
-    final controller = TextEditingController(text: 'マイテーマ');
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: l10n.themeDefaultPresetName);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('プリセット名'),
+        title: Text(l10n.themePresetNameDialogTitle),
         content: TextField(controller: controller, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               final newPreset = service.current.copyWith(
@@ -289,7 +296,7 @@ class ThemeSettingsScreen extends StatelessWidget {
               service.savePreset(newPreset);
               Navigator.pop(ctx);
             },
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),

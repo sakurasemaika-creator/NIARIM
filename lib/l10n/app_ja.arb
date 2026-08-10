@@ -545,5 +545,38 @@
   "stampRotationLabel": "回転",
   "stampDensityLabel": "密度",
   "stampScatterLabel": "散布",
-  "stampChangeImageButton": "スタンプ画像を変更"
+  "stampChangeImageButton": "スタンプ画像を変更",
+
+  "themeSettingsTitle": "テーマ・外観",
+  "themeSettingsBaseThemeSection": "ベーステーマ",
+  "themeBaseLight": "ライト",
+  "themeBaseDark": "ダーク",
+  "themeBaseSystem": "システム設定に合わせる",
+  "themeColorCustomizeSection": "カラーカスタマイズ",
+  "themeColorAccent": "アクセントカラー",
+  "themeColorText": "文字色",
+  "themeColorPanelBg": "パネル背景色",
+  "themeColorMenuBg": "メニュー背景色",
+  "themeColorSelection": "選択色",
+  "themeColorUpdateMark": "更新マーク色",
+  "themePresetSection": "テーマプリセット",
+  "themePresetDuplicateName": "{name} (コピー)",
+  "@themePresetDuplicateName": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "themeDuplicateAction": "複製",
+  "themeExportMenuItem": "書き出し (.niatheme)",
+  "themeExportFailedSnackbar": "書き出しに失敗しました: {error}",
+  "@themeExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "themeImportSuccessSnackbar": ".niathemeを読み込みました",
+  "themeImportFailedSnackbar": "読み込みに失敗しました: {error}",
+  "@themeImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "themeSaveAsNewButton": "現在の設定を新しいプリセットとして保存",
+  "themeImportButton": ".niathemeを読み込む",
+  "themePresetNameDialogTitle": "プリセット名",
+  "themeDefaultPresetName": "マイテーマ"
 }
