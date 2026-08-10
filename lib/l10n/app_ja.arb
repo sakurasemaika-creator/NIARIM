@@ -1,0 +1,41 @@
+{
+  "@@locale": "ja",
+  "appTitle": "MIRANIMA",
+  "@appTitle": {"description": "アプリ名。翻訳しない固有名詞"},
+
+  "homeTabProjects": "プロジェクト",
+  "homeTabShared": "共有",
+  "homeTabTrash": "ゴミ箱",
+  "homeSearchHint": "プロジェクト名で検索",
+  "homeFavoritesOnly": "お気に入り",
+  "homeAddSheetNewProject": "新規プロジェクト",
+  "homeAddSheetNewFolder": "新規フォルダ",
+  "homeSelectionAllSelect": "全選択",
+  "homeSelectionAllDeselect": "全解除",
+  "homeSelectionCount": "{count}件選択中",
+  "@homeSelectionCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "homeMoveToTrash": "ゴミ箱へ移動",
+  "homeMoveToTrashConfirm": "{count}件をゴミ箱へ移動しますか？",
+  "@homeMoveToTrashConfirm": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "commonMove": "移動",
+
+  "settingsScreenTitle": "設定",
+  "settingsBasicTitle": "基本",
+  "settingsBasicSubtitle": "FPS・背景色・言語",
+  "settingsBasicSheetTitle": "基本設定",
+  "settingsDefaultFps": "デフォルトFPS",
+  "settingsDefaultFpsSubtitle": "新規プロジェクト作成画面の初期値",
+  "settingsLanguage": "言語",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageEnglish": "English",
+
+  "commonCancel": "キャンセル",
+  "commonCreate": "作成",
+  "commonChange": "変更",
+  "commonDelete": "削除",
+  "commonSave": "保存"
+}

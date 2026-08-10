@@ -1,0 +1,34 @@
+{
+  "@@locale": "en",
+  "appTitle": "MIRANIMA",
+
+  "homeTabProjects": "Projects",
+  "homeTabShared": "Shared",
+  "homeTabTrash": "Trash",
+  "homeSearchHint": "Search by project name",
+  "homeFavoritesOnly": "Favorites",
+  "homeAddSheetNewProject": "New Project",
+  "homeAddSheetNewFolder": "New Folder",
+  "homeSelectionAllSelect": "Select All",
+  "homeSelectionAllDeselect": "Deselect All",
+  "homeSelectionCount": "{count} selected",
+  "homeMoveToTrash": "Move to Trash",
+  "homeMoveToTrashConfirm": "Move {count} item(s) to trash?",
+  "commonMove": "Move",
+
+  "settingsScreenTitle": "Settings",
+  "settingsBasicTitle": "Basic",
+  "settingsBasicSubtitle": "FPS, background color, language",
+  "settingsBasicSheetTitle": "Basic Settings",
+  "settingsDefaultFps": "Default FPS",
+  "settingsDefaultFpsSubtitle": "Initial value for new projects",
+  "settingsLanguage": "Language",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageEnglish": "English",
+
+  "commonCancel": "Cancel",
+  "commonCreate": "Create",
+  "commonChange": "Change",
+  "commonDelete": "Delete",
+  "commonSave": "Save"
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../engine/undo_manager.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
@@ -38,12 +39,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<PremiumService>().isPremium;
+    final l10n = AppLocalizations.of(context)!;
     // 仕様書08：「設定内検索バーあり（項目が増えても検索で到達可能）」。
     // 各項目にタイトル・サブタイトルに加えて検索キーワードを持たせ、
     // 部分一致でカテゴリ一覧を絞り込む。
     final entries = [
       (
-        icon: Icons.settings, title: '基本', subtitle: 'FPS・背景色・言語',
+        icon: Icons.settings, title: l10n.settingsBasicTitle, subtitle: l10n.settingsBasicSubtitle,
         keywords: 'fps 背景色 言語 描画領域初期値', onTap: _showBasicSettings, accent: const Color(0xFFFF5C7A),
       ),
       (
@@ -96,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: _showSearch
             ? TextField(controller: _searchController, autofocus: true, decoration: const InputDecoration(hintText: '設定を検索...', border: InputBorder.none))
-            : const Text('設定'),
+            : Text(l10n.settingsScreenTitle),
         actions: [
           const HelpButton(),
           IconButton(
@@ -156,6 +158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showBasicSettings() {
+    final l10n = AppLocalizations.of(context)!;
     final settings = context.read<SettingsService>();
     var enabled = settings.defaultDrawingAreaEnabled;
     var scale = settings.defaultDrawingAreaScale;
@@ -170,10 +173,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
               controller: controller,
               padding: const EdgeInsets.all(16),
               children: [
-                const Text('基本設定', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(l10n.settingsBasicSheetTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
-                ListTile(title: const Text('デフォルトFPS'), trailing: Text('${settings.defaultFps}')),
-                ListTile(title: const Text('言語'), trailing: Text(settings.language == 'ja' ? '日本語' : 'English')),
+                ListTile(
+                  title: Text(l10n.settingsDefaultFps),
+                  subtitle: Text(l10n.settingsDefaultFpsSubtitle),
+                  trailing: Text('${settings.defaultFps} fps', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  onTap: () async {
+                    // 新規プロジェクト作成画面のFPS選択肢と統一（8/12/24のみ）。
+                    final selected = await showDialog<int>(
+                      context: ctx,
+                      builder: (dctx) => SimpleDialog(
+                        title: Text(l10n.settingsDefaultFps),
+                        children: [8, 12, 24].map((fps) => SimpleDialogOption(
+                          onPressed: () => Navigator.pop(dctx, fps),
+                          child: Text('$fps fps',
+                              style: TextStyle(
+                                  fontWeight: settings.defaultFps == fps ? FontWeight.bold : FontWeight.normal)),
+                        )).toList(),
+                      ),
+                    );
+                    if (selected != null) {
+                      await settings.setDefaultFps(selected);
+                      setS(() {});
+                    }
+                  },
+                ),
+                ListTile(
+                  title: Text(l10n.settingsLanguage),
+                  trailing: Text(settings.language == 'ja' ? '日本語' : 'English',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  onTap: () async {
+                    final selected = await showDialog<String>(
+                      context: ctx,
+                      builder: (dctx) => SimpleDialog(
+                        title: Text(l10n.settingsLanguage),
+                        children: [
+                          SimpleDialogOption(
+                            onPressed: () => Navigator.pop(dctx, 'ja'),
+                            child: Text('日本語',
+                                style: TextStyle(
+                                    fontWeight: settings.language == 'ja' ? FontWeight.bold : FontWeight.normal)),
+                          ),
+                          SimpleDialogOption(
+                            onPressed: () => Navigator.pop(dctx, 'en'),
+                            child: Text('English',
+                                style: TextStyle(
+                                    fontWeight: settings.language == 'en' ? FontWeight.bold : FontWeight.normal)),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (selected != null) {
+                      await settings.setLanguage(selected);
+                      setS(() {});
+                    }
+                  },
+                ),
                 const Divider(),
                 // 描画領域初期値（仕様書26）
                 const Text('描画領域初期値', style: TextStyle(fontWeight: FontWeight.bold)),

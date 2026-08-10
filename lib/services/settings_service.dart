@@ -156,6 +156,15 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// UI表示言語（'ja'/'en'）。MaterialAppのlocaleに反映され、
+  /// AppLocalizationsで参照される全画面の表示言語が切り替わる。
+  Future<void> setLanguage(String languageCode) async {
+    _language = languageCode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language', languageCode);
+    notifyListeners();
+  }
+
   Future<void> setDefaultDrawingArea({required bool enabled, required double scale}) async {
     _defaultDrawingAreaEnabled = enabled;
     _defaultDrawingAreaScale = scale.clamp(1.0, 10.0);

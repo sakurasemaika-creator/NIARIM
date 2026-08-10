@@ -1,3 +1,8 @@
+# 多言語対応（ARBファイルから`flutter pub get`時に自動生成されるコード。
+# lib/l10n/app_ja.arb・app_en.arbが唯一の翻訳ソース。生成物はコミットしない）
+lib/l10n/app_localizations.dart
+lib/l10n/app_localizations_*.dart
+
 # Miscellaneous
 *.class
 *.log

@@ -29,7 +29,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   bool _drawingAreaEnabled = false;
   double _drawingAreaScale = 2.0;
 
-  static const List<int> fpsOptions = [8, 12, 24, 30];
+  // 30fpsは手描きアニメーションでは中割りの負担が大きく現実的でないため
+  // 選択肢から除外している（基本設定画面のデフォルトFPS選択肢とも統一）。
+  static const List<int> fpsOptions = [8, 12, 24];
 
   // 書き出しサイズプリセット（仕様書07・26：上限はFull HD相当。1:1・
   // アナログ放送比率・公開先メディアの比率別に用意する）。
@@ -46,7 +48,12 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   void initState() {
     super.initState();
     final settings = context.read<SettingsService>();
-    _fps = settings.defaultFps;
+    // 基本設定側の保存値が旧仕様（廃止した30fps等）の場合に備え、選択肢に
+    // 存在しない値は最も近い許容値へフォールバックする。
+    _fps = fpsOptions.contains(settings.defaultFps)
+        ? settings.defaultFps
+        : fpsOptions.reduce((a, b) =>
+            (a - settings.defaultFps).abs() < (b - settings.defaultFps).abs() ? a : b);
     _drawingAreaEnabled = settings.defaultDrawingAreaEnabled;
     _drawingAreaScale = settings.defaultDrawingAreaScale;
     _customWidthController = TextEditingController(text: '$_exportWidth');

@@ -9,6 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # 多言語対応（設定画面「言語」：日本語/English）。Flutter公式の
+  # ローカライズ基盤。仕様書08「言語」設定の実装（従来はタップしても
+  # 何も起きない未実装状態だった）。
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
   provider: ^6.1.1
   go_router: ^13.0.0
   shared_preferences: ^2.2.2
@@ -75,6 +81,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - assets/

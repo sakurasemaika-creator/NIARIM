@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../../engine/mirapro_serializer.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/advertising_service.dart';
 import '../../services/font_service.dart';
 import '../../services/performance_service.dart';
@@ -167,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final adService = context.watch<AdvertisingService>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -174,13 +176,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'プロジェクト名で検索',
+                decoration: InputDecoration(
+                  hintText: l10n.homeSearchHint,
                   border: InputBorder.none,
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
-            : const Text('MIRANIMA'),
+            : Text(l10n.appTitle),
         actions: [
           const HelpButton(),
           if (_isSearching)
@@ -219,10 +221,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'プロジェクト'),
-            Tab(text: '共有'),
-            Tab(text: 'ゴミ箱'),
+          tabs: [
+            Tab(text: l10n.homeTabProjects),
+            Tab(text: l10n.homeTabShared),
+            Tab(text: l10n.homeTabTrash),
           ],
         ),
       ),
@@ -248,22 +250,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           .map((f) => f.id);
                       setState(() => _selectedIds..addAll(projectIds)..addAll(folderIds));
                     },
-                    child: const Text('全選択'),
+                    child: Text(l10n.homeSelectionAllSelect),
                   ),
                   TextButton(
                     onPressed: () => setState(() {
                       _selectedIds.clear();
                       _isSelectionMode = false;
                     }),
-                    child: const Text('全解除'),
+                    child: Text(l10n.homeSelectionAllDeselect),
                   ),
                   const Spacer(),
-                  Text('${_selectedIds.length}件選択中'),
+                  Text(l10n.homeSelectionCount(_selectedIds.length)),
                   if (_selectedIds.isNotEmpty) ...[
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: _deleteSelected,
-                      tooltip: 'ゴミ箱へ移動',
+                      tooltip: l10n.homeMoveToTrash,
                     ),
                   ],
                 ],
@@ -280,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       child: Row(
                         children: [
                           FilterChip(
-                            label: const Text('お気に入り'),
+                            label: Text(l10n.homeFavoritesOnly),
                             selected: _showFavoritesOnly,
                             onSelected: (v) => setState(() => _showFavoritesOnly = v),
                           ),
@@ -335,6 +337,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   /// フォルダとプロジェクトを同一一覧内で扱う設計のため、どちらも一覧の
   /// ＋ボタンから作成できる必要がある）。
   void _showAddChoiceSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -343,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           children: [
             ListTile(
               leading: const Icon(Icons.note_add_outlined),
-              title: const Text('新規プロジェクト'),
+              title: Text(l10n.homeAddSheetNewProject),
               onTap: () {
                 Navigator.pop(ctx);
                 context.push('/new-project');
@@ -351,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
             ListTile(
               leading: const Icon(Icons.create_new_folder_outlined),
-              title: const Text('新規フォルダ'),
+              title: Text(l10n.homeAddSheetNewFolder),
               onTap: () {
                 Navigator.pop(ctx);
                 // 現在開いているフォルダの直下に作成する（ルートに固定しない）。
@@ -372,16 +375,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _deleteSelected() {
     // ゴミ箱はプロジェクトのみが対象（仕様書19：ゴミ箱＝「削除したプロジェクト」）。
     // 選択にフォルダが含まれていても、フォルダ自体はここでは削除しない。
+    final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
     final projectIds = service.projects.map((p) => p.id).toSet();
     final targetIds = _selectedIds.where(projectIds.contains).toList();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('ゴミ箱へ移動'),
-        content: Text('${targetIds.length}件をゴミ箱へ移動しますか？'),
+        title: Text(l10n.homeMoveToTrash),
+        content: Text(l10n.homeMoveToTrashConfirm(targetIds.length)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -394,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               });
               Navigator.pop(ctx);
             },
-            child: const Text('移動'),
+            child: Text(l10n.commonMove),
           ),
         ],
       ),
