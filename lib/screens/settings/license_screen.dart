@@ -16,7 +16,7 @@ class LicenseScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('利用規約・ライセンス'), actions: const [HelpButton()]),
-      body: ListView(
+      body: SafeArea(child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _SectionTitle('利用規約'),
@@ -101,7 +101,7 @@ class LicenseScreen extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
-      ),
+      )),
     );
   }
 }

@@ -16,13 +16,22 @@ bool isWideScreen(BuildContext context) {
 
 /// 設定画面等のリスト系コンテンツをPC/DeXモードで中央寄せ・横幅制限する。
 /// スマホの狭い画面ではそのまま全幅表示する。
+///
+/// あわせて、Android標準のジェスチャーナビゲーション/戻るボタン等の
+/// システムUIとアプリ内のボタン・テキストが重なる不具合対策として
+/// SafeAreaで包む。以前はScaffold.bodyへ直接置かれるだけの画面が
+/// 多く、画面下端のボタンがシステムナビゲーションバーと重なる場合が
+/// あった（Scaffoldはbody全体を自動ではセーフエリア化しない）。この
+/// 関数を使う画面はここで一括対応される。
 Widget desktopCentered(BuildContext context, Widget child, {double maxWidth = 720}) {
-  if (!isWideScreen(context)) return child;
-  return Align(
-    alignment: Alignment.topCenter,
-    child: ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth),
-      child: child,
+  if (!isWideScreen(context)) return SafeArea(child: child);
+  return SafeArea(
+    child: Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: child,
+      ),
     ),
   );
 }

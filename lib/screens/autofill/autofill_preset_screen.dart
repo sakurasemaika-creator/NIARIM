@@ -47,7 +47,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-      body: _filtered.isEmpty
+      body: SafeArea(child: _filtered.isEmpty
           ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -78,7 +78,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                 onDelete: () => _confirmDelete(_filtered[index]),
                 onTap: () => _showPresetDetail(_filtered[index]),
               ),
-            ),
+            )),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),
@@ -314,7 +314,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: SafeArea(child: Column(
         children: [
           // 未設定パーツがある場合の警告バナー（仕様書20：「赤文字で不足している
           // パーツ名と設定内容を表示」）
@@ -332,7 +332,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             ),
           Expanded(child: _partListBody()),
         ],
-      ),
+      )),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddPartDialog,
         child: const Icon(Icons.add),
