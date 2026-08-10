@@ -898,77 +898,89 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         }
                         final scene = scenes[index];
                         final isSelected = scene.id == _selectedSceneId;
-                        return GestureDetector(
-                          onTap: () {
-                            if (_isSceneMultiSelect) {
-                              if (_selectedSceneIds.contains(scene.id)) {
+                        // 三点メニューのアイコンはChoiceChip（Material/InkWellで
+                        // タップを内部処理する）のlabel内にネストしたGestureDetector
+                        // として置くと、外側のGestureDetectorとジェスチャーの
+                        // ヒットテスト領域が競合し、タップが外側（改名ダイアログ等）
+                        // へ吸われて反応しないことがあった。そのためChipの外側の
+                        // 兄弟要素として独立させ、確実にタップを拾えるようにする。
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                if (_isSceneMultiSelect) {
+                                  if (_selectedSceneIds.contains(scene.id)) {
+                                    setState(() {
+                                      _selectedSceneIds.remove(scene.id);
+                                      if (_selectedSceneIds.isEmpty) _isSceneMultiSelect = false;
+                                    });
+                                  }
+                                  // 未選択シーンは何もしない（仕様書05）
+                                } else {
+                                  _showRenameSceneDialog(scene);
+                                }
+                              },
+                              onDoubleTap: _isSceneMultiSelect ? null : () => setState(() => _selectedSceneId = scene.id),
+                              // 長押し：シーン内フレームを全選択し、フレーム複数選択モードへ
+                              // 移行する（仕様書05：フレーム一覧と操作体系を統一）。
+                              // シーン自体の複数選択（移動・削除）は上部の「選択」ボタンから行う。
+                              onLongPress: () {
+                                if (_isSceneMultiSelect || _isFrameMultiSelect) return;
+                                final frameCount =
+                                    context.read<ProjectService>().frameCount(widget.projectId, scene.id);
                                 setState(() {
-                                  _selectedSceneIds.remove(scene.id);
-                                  if (_selectedSceneIds.isEmpty) _isSceneMultiSelect = false;
+                                  _selectedSceneId = scene.id;
+                                  _isFrameMultiSelect = true;
+                                  _selectedFrameIndices
+                                    ..clear()
+                                    ..addAll(List.generate(frameCount, (i) => i));
                                 });
-                              }
-                              // 未選択シーンは何もしない（仕様書05）
-                            } else {
-                              _showRenameSceneDialog(scene);
-                            }
-                          },
-                          onDoubleTap: _isSceneMultiSelect ? null : () => setState(() => _selectedSceneId = scene.id),
-                          // 長押し：シーン内フレームを全選択し、フレーム複数選択モードへ
-                          // 移行する（仕様書05：フレーム一覧と操作体系を統一）。
-                          // シーン自体の複数選択（移動・削除）は上部の「選択」ボタンから行う。
-                          onLongPress: () {
-                            if (_isSceneMultiSelect || _isFrameMultiSelect) return;
-                            final frameCount =
-                                context.read<ProjectService>().frameCount(widget.projectId, scene.id);
-                            setState(() {
-                              _selectedSceneId = scene.id;
-                              _isFrameMultiSelect = true;
-                              _selectedFrameIndices
-                                ..clear()
-                                ..addAll(List.generate(frameCount, (i) => i));
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                            child: ChoiceChip(
-                              label: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (_isSceneMultiSelect)
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 4),
-                                      child: Icon(
-                                        _selectedSceneIds.contains(scene.id)
-                                            ? Icons.check_circle
-                                            : Icons.radio_button_unchecked,
-                                        size: 12,
-                                      ),
-                                    ),
-                                  Text(scene.displayName, style: const TextStyle(fontSize: 11)),
-                                  // シーン内に自動塗り未更新のフレームがある場合の❗マーク
-                                  // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
-                                  if (projectService.sceneHasOutdatedAutofillLayers(widget.projectId, scene.id))
-                                    GestureDetector(
-                                      onTap: () => _showAutofillUpdateHelp(context),
-                                      child: const Padding(
-                                        padding: EdgeInsets.only(left: 4),
-                                        child: Icon(Icons.error, color: Colors.orange, size: 12),
-                                      ),
-                                    ),
-                                  if (!_isSceneMultiSelect)
-                                    GestureDetector(
-                                      onTap: () => _showSceneMenu(scene, scenes),
-                                      child: const Padding(
-                                        padding: EdgeInsets.only(left: 4),
-                                        child: Icon(Icons.more_vert, size: 12),
-                                      ),
-                                    ),
-                                ],
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                child: ChoiceChip(
+                                  label: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (_isSceneMultiSelect)
+                                        Padding(
+                                          padding: const EdgeInsets.only(right: 4),
+                                          child: Icon(
+                                            _selectedSceneIds.contains(scene.id)
+                                                ? Icons.check_circle
+                                                : Icons.radio_button_unchecked,
+                                            size: 12,
+                                          ),
+                                        ),
+                                      Text(scene.displayName, style: const TextStyle(fontSize: 11)),
+                                      // シーン内に自動塗り未更新のフレームがある場合の❗マーク
+                                      // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
+                                      if (projectService.sceneHasOutdatedAutofillLayers(widget.projectId, scene.id))
+                                        GestureDetector(
+                                          onTap: () => _showAutofillUpdateHelp(context),
+                                          child: const Padding(
+                                            padding: EdgeInsets.only(left: 4),
+                                            child: Icon(Icons.error, color: Colors.orange, size: 12),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  selected: isSelected,
+                                  onSelected: (_) {},
+                                ),
                               ),
-                              selected: isSelected,
-                              onSelected: (_) {},
                             ),
-                          ),
+                            if (!_isSceneMultiSelect)
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => _showSceneMenu(scene, scenes),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 2),
+                                  child: Icon(Icons.more_vert, size: 14),
+                                ),
+                              ),
+                          ],
                         );
                       }
                     },
