@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:video_player/video_player.dart';
+import '../../engine/export_engine.dart';
 import '../../engine/mirapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/advertising_service.dart';
@@ -45,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         setState(() => _currentTabIndex = _tabController.index);
@@ -225,6 +228,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             Tab(text: l10n.homeTabProjects),
             Tab(text: l10n.homeTabShared),
             Tab(text: l10n.homeTabTrash),
+            Tab(text: l10n.homeTabWorks),
           ],
         ),
       ),
@@ -316,6 +320,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
                 _SharedTab(),
                 _TrashTab(),
+                const _WorksTab(),
               ],
             ),
           ),
@@ -559,6 +564,284 @@ class _TrashTab extends StatelessWidget {
               Navigator.pop(ctx);
             },
             child: const Text('削除'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 「作品一覧」タブ（仕様書06・仕様書AI設計書#101）：書き出し済みの動画・GIF
+/// ファイルをアプリ内保存先（ExportEngine.exportsDir、
+/// getApplicationDocumentsDirectory()/exports）から一覧表示する。
+/// タップでアプリ内プレビュー、共有ボタンでOSの共有シートから写真アプリ等へ
+/// 「開く」ことができる（share_plusは書き出し完了ダイアログで既に使用している
+/// 実績のある仕組みのため、新規ネイティブ依存を追加せずに実現できる）。
+class _WorksTab extends StatefulWidget {
+  const _WorksTab();
+
+  @override
+  State<_WorksTab> createState() => _WorksTabState();
+}
+
+class _WorksTabState extends State<_WorksTab> {
+  late Future<List<File>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = ExportEngine.listExportedFiles();
+  }
+
+  Future<void> _reload() async {
+    setState(() => _future = ExportEngine.listExportedFiles());
+    await _future;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return FutureBuilder<List<File>>(
+      future: _future,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final files = snapshot.data!;
+        if (files.isEmpty) {
+          return RefreshIndicator(
+            onRefresh: _reload,
+            child: ListView(
+              children: [
+                SizedBox(
+                  height: 400,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.video_library_outlined, size: 64, color: muted.withValues(alpha: 0.6)),
+                        const SizedBox(height: 16),
+                        Text('書き出した作品がありません', style: TextStyle(color: muted)),
+                        const SizedBox(height: 4),
+                        Text('キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: muted, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: _reload,
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            itemCount: files.length,
+            itemBuilder: (context, index) {
+              final file = files[index];
+              return _WorkListItem(
+                file: file,
+                onDeleted: _reload,
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _WorkListItem extends StatelessWidget {
+  final File file;
+  final VoidCallback onDeleted;
+  const _WorkListItem({required this.file, required this.onDeleted});
+
+  String get _extension => file.path.split('.').last.toLowerCase();
+
+  IconData get _icon {
+    switch (_extension) {
+      case 'gif':
+        return Icons.gif_box_outlined;
+      case 'webm':
+        return Icons.movie_filter_outlined;
+      default:
+        return Icons.movie_outlined;
+    }
+  }
+
+  String _formatSize(int bytes) {
+    if (bytes < 1024) return '${bytes}B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+  }
+
+  String _formatDate(DateTime dt) {
+    return '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stat = file.statSync();
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: scheme.primaryContainer,
+          child: Icon(_icon, color: scheme.primary),
+        ),
+        title: Text(
+          file.path.split('/').last,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
+          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+        ),
+        onTap: () => _openPreview(context),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 「写真アプリで開く」＝OSの共有シート経由（新規ネイティブ実装不要）。
+            IconButton(
+              icon: const Icon(Icons.ios_share, size: 20),
+              tooltip: '共有・写真アプリ等で開く',
+              onPressed: () => SharePlus.instance.share(ShareParams(files: [XFile(file.path)])),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+              tooltip: '削除',
+              onPressed: () => _confirmDelete(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openPreview(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: _WorkPreview(file: file),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${file.path.split('/').last}を削除しますか？'),
+        content: const Text('端末内の書き出しファイルが削除されます。元に戻すことはできません。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              if (file.existsSync()) file.deleteSync();
+              Navigator.pop(ctx);
+              onDeleted();
+            },
+            child: const Text('削除'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// アプリ内プレビュー：MP4/WebMはVideoPlayerController（timeline_screen.dart
+/// で既に実績のある仕組み）、GIFはFlutter標準のImage.file（アニメーション
+/// GIFを自動再生する）を用いる。いずれも新規ネイティブ依存なし。
+class _WorkPreview extends StatefulWidget {
+  final File file;
+  const _WorkPreview({required this.file});
+
+  @override
+  State<_WorkPreview> createState() => _WorkPreviewState();
+}
+
+class _WorkPreviewState extends State<_WorkPreview> {
+  VideoPlayerController? _controller;
+  bool _isGif = false;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isGif = widget.file.path.toLowerCase().endsWith('.gif');
+    if (!_isGif) {
+      _controller = VideoPlayerController.file(widget.file)
+        ..initialize().then((_) {
+          if (!mounted) return;
+          setState(() {});
+          _controller?.play();
+          _controller?.setLooping(true);
+        }).catchError((_) {
+          if (mounted) setState(() => _failed = true);
+        });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget content;
+    if (_isGif) {
+      content = Image.file(widget.file, fit: BoxFit.contain);
+    } else if (_failed) {
+      content = const Padding(
+        padding: EdgeInsets.all(24),
+        child: Text('プレビューを再生できません'),
+      );
+    } else if (_controller != null && _controller!.value.isInitialized) {
+      content = AspectRatio(
+        aspectRatio: _controller!.value.aspectRatio,
+        child: GestureDetector(
+          onTap: () => setState(() {
+            _controller!.value.isPlaying ? _controller!.pause() : _controller!.play();
+          }),
+          child: VideoPlayer(_controller!),
+        ),
+      );
+    } else {
+      content = const Padding(
+        padding: EdgeInsets.all(24),
+        child: SizedBox(width: 32, height: 32, child: CircularProgressIndicator()),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(child: content),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.ios_share, size: 18),
+                label: const Text('共有・写真アプリ等で開く'),
+                onPressed: () =>
+                    SharePlus.instance.share(ShareParams(files: [XFile(widget.file.path)])),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('閉じる'),
+              ),
+            ],
           ),
         ],
       ),

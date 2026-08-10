@@ -50,11 +50,24 @@ class ExportEngine {
   /// 配下）に固定の`exports`フォルダを作り、そこへ保存するよう変更した。
   /// フレーム生成用の中間PNGファイルは引き続き一時領域（`export_frames`等）
   /// を使い、書き出し完了後に削除する（最終出力ファイルのみ永続化する）。
-  Future<Directory> _exportsDir() async {
+  ///
+  /// staticかつpublicにしているのは、「作品一覧」タブ（プロジェクト一覧
+  /// 画面）から過去の書き出し結果を一覧表示するために、ExportEngineの
+  /// インスタンスを作らずアクセスできるようにするため。
+  static Future<Directory> exportsDir() async {
     final docs = await getApplicationDocumentsDirectory();
     final dir = Directory('${docs.path}/exports');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
+  }
+
+  /// 作品一覧タブ用：exportsフォルダ内の書き出し済みファイル一覧を
+  /// 更新日時の新しい順で返す。
+  static Future<List<File>> listExportedFiles() async {
+    final dir = await exportsDir();
+    final files = dir.listSync().whereType<File>().toList();
+    files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+    return files;
   }
 
   /// フレームを合成してRGBA Uint8Listを返す。
@@ -225,7 +238,7 @@ class ExportEngine {
       }
     }
 
-    final exportsDir = await _exportsDir();
+    final exportsDir = await ExportEngine.exportsDir();
     final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.mp4';
     await HardwareVideoEncoder.encodeMp4(
       framePaths: framePaths,
@@ -288,7 +301,7 @@ class ExportEngine {
     }
 
     final gifBytes = img.encodeGif(gifImage!);
-    final exportsDir = await _exportsDir();
+    final exportsDir = await ExportEngine.exportsDir();
     final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.gif';
     await File(outputPath).writeAsBytes(gifBytes);
     return outputPath;
@@ -362,7 +375,7 @@ class ExportEngine {
       }
     }
 
-    final exportsDir = await _exportsDir();
+    final exportsDir = await ExportEngine.exportsDir();
     final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.webm';
     final session = await FFmpegKit.execute(
       '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
