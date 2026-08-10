@@ -93,6 +93,8 @@
   "commonRestore": "복원",
   "commonClose": "닫기",
   "commonRename": "이름 변경",
+  "commonCopy": "복사",
+  "commonPaste": "붙여넣기",
 
   "gestureSettingsTitle": "제스처 설정",
   "gestureTwoFingerTap": "두 손가락 탭",
@@ -616,5 +618,17 @@
   "newProjectDrawingAreaInfo": "그리기 영역: {size}",
   "@newProjectDrawingAreaInfo": {
     "placeholders": {"size": {"type": "String"}}
-  }
+  },
+  "colorPickerTitle": "색상 선택",
+  "colorPickerHexCopiedSnackbar": "HEX 값을 복사했습니다",
+  "colorPickerRecentColorsLabel": "최근 사용한 색상",
+  "colorPickerRecentColorsEmpty": "아직 없습니다",
+  "colorPickerPaletteLabel": "팔레트",
+  "colorPickerNewPaletteTooltip": "새 팔레트",
+  "colorPickerManagePaletteTooltip": "팔레트 관리",
+  "colorPickerPaletteEmptyHint": "아직 색상이 없습니다. 「＋」를 눌러 현재 색상을 추가할 수 있습니다.",
+  "colorPickerAddCurrentColorButton": "현재 색상을 팔레트에 추가",
+  "colorPickerPaletteNameLabel": "팔레트 이름",
+  "colorPickerFavoriteAdd": "즐겨찾기 등록",
+  "colorPickerFavoriteRemove": "즐겨찾기 해제"
 }

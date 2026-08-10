@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
 import 'hsv_color_wheel.dart';
@@ -97,6 +98,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final paletteService = context.watch<PaletteService>();
     return Card(
       elevation: 8,
@@ -111,13 +113,13 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             children: [
               Row(
                 children: [
-                  const Text('色選択', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
                   // スポイトボタン（仕様書20：カラーピッカー内のスポイトボタン）
                   if (widget.onEyedropperTap != null)
                     IconButton(
                       icon: const Icon(Icons.colorize, size: 18),
-                      tooltip: 'スポイト',
+                      tooltip: l10n.toolbarItemEyedropper,
                       onPressed: widget.onEyedropperTap,
                     ),
                   IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
@@ -179,16 +181,16 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   // HEXコピー・貼り付け（仕様書20：「HEXは入力・コピー・貼り付けすべて対応」）
                   IconButton(
                     icon: const Icon(Icons.copy, size: 16),
-                    tooltip: 'コピー',
+                    tooltip: l10n.commonCopy,
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: '#${_hexController.text}'));
                       ScaffoldMessenger.of(context)
-                          .showSnackBar(const SnackBar(content: Text('HEXをコピーしました')));
+                          .showSnackBar(SnackBar(content: Text(l10n.colorPickerHexCopiedSnackbar)));
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.paste, size: 16),
-                    tooltip: '貼り付け',
+                    tooltip: l10n.commonPaste,
                     onPressed: () async {
                       final data = await Clipboard.getData(Clipboard.kTextPlain);
                       final text = data?.text;
@@ -204,11 +206,11 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text('最近使った色',
+              Text(l10n.colorPickerRecentColorsLabel,
                   style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 4),
               if (paletteService.recentColors.isEmpty)
-                Text('まだありません', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline))
+                Text(l10n.colorPickerRecentColorsEmpty, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline))
               else
                 Wrap(
                   spacing: 6,
@@ -232,7 +234,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 8),
-              _paletteSection(context, paletteService),
+              _paletteSection(context, l10n, paletteService),
             ],
           ),
         ),
@@ -243,25 +245,25 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   /// パレットセクション（仕様書20：「ユーザーが任意の色を登録できる」
   /// 「パレットの作成・名前変更・削除が可能」「複数パレットを切替えて使用」
   /// 「色の追加・削除・ドラッグで並び替えが可能」「お気に入り登録に対応」）。
-  Widget _paletteSection(BuildContext context, PaletteService paletteService) {
+  Widget _paletteSection(BuildContext context, AppLocalizations l10n, PaletteService paletteService) {
     final active = paletteService.activePalette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Text('パレット',
+            Text(l10n.colorPickerPaletteLabel,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const Spacer(),
             IconButton(
               icon: const Icon(Icons.add, size: 16),
-              tooltip: '新しいパレット',
-              onPressed: () => _showCreatePaletteDialog(context, paletteService),
+              tooltip: l10n.colorPickerNewPaletteTooltip,
+              onPressed: () => _showCreatePaletteDialog(context, l10n, paletteService),
             ),
             IconButton(
               icon: const Icon(Icons.more_horiz, size: 16),
-              tooltip: 'パレット管理',
-              onPressed: active == null ? null : () => _showPaletteMenu(context, paletteService, active),
+              tooltip: l10n.colorPickerManagePaletteTooltip,
+              onPressed: active == null ? null : () => _showPaletteMenu(context, l10n, paletteService, active),
             ),
           ],
         ),
@@ -290,7 +292,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
         if (active == null)
           const SizedBox.shrink()
         else if (active.colors.isEmpty)
-          Text('色がまだありません。「＋」で現在の色を追加できます。',
+          Text(l10n.colorPickerPaletteEmptyHint,
               style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline))
         else
           Wrap(
@@ -320,38 +322,38 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               paletteService.addColorToPalette(active.id, _currentColor.toARGB32());
             },
             icon: const Icon(Icons.add, size: 14),
-            label: const Text('現在の色をパレットに追加', style: TextStyle(fontSize: 11)),
+            label: Text(l10n.colorPickerAddCurrentColorButton, style: const TextStyle(fontSize: 11)),
           ),
       ],
     );
   }
 
-  void _showCreatePaletteDialog(BuildContext context, PaletteService paletteService) {
+  void _showCreatePaletteDialog(BuildContext context, AppLocalizations l10n, PaletteService paletteService) {
     final ctrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('新しいパレット'),
+        title: Text(l10n.colorPickerNewPaletteTooltip),
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          decoration: const InputDecoration(labelText: 'パレット名', border: OutlineInputBorder()),
+          decoration: InputDecoration(labelText: l10n.colorPickerPaletteNameLabel, border: const OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (ctrl.text.isNotEmpty) paletteService.createPalette(ctrl.text);
               Navigator.pop(ctx);
             },
-            child: const Text('作成'),
+            child: Text(l10n.commonCreate),
           ),
         ],
       ),
     ).then((_) => ctrl.dispose());
   }
 
-  void _showPaletteMenu(BuildContext context, PaletteService paletteService, ColorPalette palette) {
+  void _showPaletteMenu(BuildContext context, AppLocalizations l10n, PaletteService paletteService, ColorPalette palette) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -360,29 +362,29 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
           children: [
             ListTile(
               leading: Icon(palette.isFavorite ? Icons.star : Icons.star_border, color: Colors.amber),
-              title: Text(palette.isFavorite ? 'お気に入り解除' : 'お気に入り登録'),
+              title: Text(palette.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd),
               onTap: () { Navigator.pop(ctx); paletteService.toggleFavorite(palette.id); },
             ),
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('名前変更'),
+              title: Text(l10n.commonRename),
               onTap: () {
                 Navigator.pop(ctx);
                 final ctrl = TextEditingController(text: palette.name);
                 showDialog(
                   context: context,
                   builder: (dctx) => AlertDialog(
-                    title: const Text('名前変更'),
+                    title: Text(l10n.commonRename),
                     content: TextField(controller: ctrl, autofocus: true,
                         decoration: const InputDecoration(border: OutlineInputBorder())),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('キャンセル')),
+                      TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
                       FilledButton(
                         onPressed: () {
                           if (ctrl.text.isNotEmpty) paletteService.renamePalette(palette.id, ctrl.text);
                           Navigator.pop(dctx);
                         },
-                        child: const Text('変更'),
+                        child: Text(l10n.commonChange),
                       ),
                     ],
                   ),
@@ -391,7 +393,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('削除', style: TextStyle(color: Colors.red)),
+              title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
               onTap: paletteService.palettes.length > 1
                   ? () { Navigator.pop(ctx); paletteService.deletePalette(palette.id); }
                   : null,

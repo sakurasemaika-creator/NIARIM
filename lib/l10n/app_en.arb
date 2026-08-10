@@ -93,6 +93,8 @@
   "commonRestore": "Restore",
   "commonClose": "Close",
   "commonRename": "Rename",
+  "commonCopy": "Copy",
+  "commonPaste": "Paste",
 
   "gestureSettingsTitle": "Gesture Settings",
   "gestureTwoFingerTap": "Two-Finger Tap",
@@ -616,5 +618,17 @@
   "newProjectDrawingAreaInfo": "Drawing area: {size}",
   "@newProjectDrawingAreaInfo": {
     "placeholders": {"size": {"type": "String"}}
-  }
+  },
+  "colorPickerTitle": "Color picker",
+  "colorPickerHexCopiedSnackbar": "Copied HEX code",
+  "colorPickerRecentColorsLabel": "Recent colors",
+  "colorPickerRecentColorsEmpty": "None yet",
+  "colorPickerPaletteLabel": "Palette",
+  "colorPickerNewPaletteTooltip": "New palette",
+  "colorPickerManagePaletteTooltip": "Manage palette",
+  "colorPickerPaletteEmptyHint": "No colors yet. Tap \"+\" to add the current color.",
+  "colorPickerAddCurrentColorButton": "Add current color to palette",
+  "colorPickerPaletteNameLabel": "Palette name",
+  "colorPickerFavoriteAdd": "Add to favorites",
+  "colorPickerFavoriteRemove": "Remove from favorites"
 }

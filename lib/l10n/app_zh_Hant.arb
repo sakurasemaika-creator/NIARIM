@@ -93,6 +93,8 @@
   "commonRestore": "復原",
   "commonClose": "關閉",
   "commonRename": "重新命名",
+  "commonCopy": "複製",
+  "commonPaste": "貼上",
 
   "gestureSettingsTitle": "手勢設定",
   "gestureTwoFingerTap": "雙指點按",
@@ -616,5 +618,17 @@
   "newProjectDrawingAreaInfo": "繪圖區域：{size}",
   "@newProjectDrawingAreaInfo": {
     "placeholders": {"size": {"type": "String"}}
-  }
+  },
+  "colorPickerTitle": "選擇顏色",
+  "colorPickerHexCopiedSnackbar": "已複製HEX值",
+  "colorPickerRecentColorsLabel": "最近使用的顏色",
+  "colorPickerRecentColorsEmpty": "尚無記錄",
+  "colorPickerPaletteLabel": "調色盤",
+  "colorPickerNewPaletteTooltip": "新增調色盤",
+  "colorPickerManagePaletteTooltip": "調色盤管理",
+  "colorPickerPaletteEmptyHint": "還沒有顏色。點擊「＋」可新增目前的顏色。",
+  "colorPickerAddCurrentColorButton": "將目前的顏色新增到調色盤",
+  "colorPickerPaletteNameLabel": "調色盤名稱",
+  "colorPickerFavoriteAdd": "加入最愛",
+  "colorPickerFavoriteRemove": "取消最愛"
 }

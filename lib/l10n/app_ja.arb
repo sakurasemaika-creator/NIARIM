@@ -118,6 +118,8 @@
   "commonRestore": "復元",
   "commonClose": "閉じる",
   "commonRename": "名前変更",
+  "commonCopy": "コピー",
+  "commonPaste": "貼り付け",
 
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
@@ -710,5 +712,17 @@
   "newProjectDrawingAreaInfo": "描画領域: {size}",
   "@newProjectDrawingAreaInfo": {
     "placeholders": {"size": {"type": "String"}}
-  }
+  },
+  "colorPickerTitle": "色選択",
+  "colorPickerHexCopiedSnackbar": "HEXをコピーしました",
+  "colorPickerRecentColorsLabel": "最近使った色",
+  "colorPickerRecentColorsEmpty": "まだありません",
+  "colorPickerPaletteLabel": "パレット",
+  "colorPickerNewPaletteTooltip": "新しいパレット",
+  "colorPickerManagePaletteTooltip": "パレット管理",
+  "colorPickerPaletteEmptyHint": "色がまだありません。「＋」で現在の色を追加できます。",
+  "colorPickerAddCurrentColorButton": "現在の色をパレットに追加",
+  "colorPickerPaletteNameLabel": "パレット名",
+  "colorPickerFavoriteAdd": "お気に入り登録",
+  "colorPickerFavoriteRemove": "お気に入り解除"
 }
