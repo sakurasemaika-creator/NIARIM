@@ -152,6 +152,12 @@ class _CanvasAreaState extends State<CanvasArea> {
   Uint8List? _bucketRefBuffer;
   Uint8List? _bucketVisitedMask;
 
+  // ─── 指ツール（歪み、仕様書03） ───────────────────────────────────────
+  // ストローク中はこのバッファを読み書きの起点にする（ストローク終了時に
+  // 破棄）。指でなぞった方向へピクセルを押し流すLiquify系の「押す」効果。
+  Uint8List? _warpBuffer;
+  Offset? _warpLastPos;
+
   @override
   void initState() {
     super.initState();
@@ -497,6 +503,12 @@ class _CanvasAreaState extends State<CanvasArea> {
       setState(() { _subToolStrokePoints = [canvasPos]; });
       return;
     }
+    if (widget.currentTool == DrawingTool.finger) {
+      // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
+      _handleFingerDown(canvasPos);
+      return;
+    }
 
     if (type == InputType.touch && _inputHandler.isStylusActive) return;
     _syncBrushAndColor();
@@ -571,6 +583,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
       if (type == InputType.touch && _inputHandler.isStylusActive) return;
       setState(() => _subToolStrokePoints.add(canvasPos));
+      return;
+    }
+    if (widget.currentTool == DrawingTool.finger) {
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
+      _handleFingerMove(canvasPos);
       return;
     }
     if (type == InputType.touch && _inputHandler.isStylusActive) return;
@@ -658,6 +675,13 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.pen && widget.currentSubTool == PenSubTool.stamp) {
       _commitStampStroke();
       setState(() => _subToolStrokePoints = []);
+      // スタイラス操作の終了はポインター種別に関わらずここで確定する
+      // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
+      _inputHandler.onStylusUp();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.finger) {
+      _handleFingerUp();
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
       _inputHandler.onStylusUp();
@@ -1270,6 +1294,130 @@ class _CanvasAreaState extends State<CanvasArea> {
       }
     }
     if (changed) _scheduleComposite();
+  }
+
+  // ─── 指ツール（歪み、仕様書03） ───────────────────────────────────────
+  // 指でなぞった方向にピクセルを押し流す「Liquify」系の歪み効果。
+  // ストローク開始時に現在レイヤーの合成画像をバッファへ読み込み、以後の
+  // 移動ごとにドラッグ方向・距離に応じて円形の範囲内のピクセルを再配置する
+  // （中心付近ほど大きく動き、範囲の外縁でなめらかに0へ収束する）。
+
+  void _handleFingerDown(Offset canvasPos) {
+    _beginTileUndo();
+    _warpLastPos = canvasPos;
+    _tileManager.compositeLayerToImage(_tileKeyFor(_layerId)).then((image) async {
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      if (!mounted) return;
+      _warpBuffer = byteData?.buffer.asUint8List();
+    });
+  }
+
+  void _handleFingerMove(Offset canvasPos) {
+    final buffer = _warpBuffer;
+    final last = _warpLastPos;
+    if (buffer == null || last == null) {
+      _warpLastPos = canvasPos;
+      return;
+    }
+    final delta = canvasPos - last;
+    _warpLastPos = canvasPos;
+    // バッファ読み込み完了前（非同期）にごく僅かに動いただけの場合は無視する。
+    if (delta.distance < 0.5) return;
+    _applyFingerWarp(buffer, canvasPos, delta);
+  }
+
+  void _handleFingerUp() {
+    _warpBuffer = null;
+    _warpLastPos = null;
+    if (_undoRecordingLayerKey != null) {
+      _markLineartDirtyIfNeeded();
+      _finishTileUndo();
+    }
+  }
+
+  /// [center]を中心とした円形範囲内のピクセルを、[delta]方向へ押し流す。
+  /// [buffer]はストローク開始時点のスナップショットを直接書き換えていく
+  /// （読み取り元は毎回そのイベント開始前の状態をコピーして使うため、同一
+  /// 移動イベント内での自己参照によるにじみは生じない）。
+  void _applyFingerWarp(Uint8List buffer, Offset center, Offset delta) {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final brushSize = context.read<BrushService>().currentBrush?.size ?? 20;
+    final radius = brushSize * 1.5;
+    if (radius < 2) return;
+    final minX = (center.dx - radius).floor().clamp(0, w - 1);
+    final maxX = (center.dx + radius).ceil().clamp(0, w - 1);
+    final minY = (center.dy - radius).floor().clamp(0, h - 1);
+    final maxY = (center.dy + radius).ceil().clamp(0, h - 1);
+    if (minX > maxX || minY > maxY) return;
+
+    // 読み取り元は今回の移動イベント開始時点のスナップショット（範囲分のみ複製）。
+    final srcSnapshot = Uint8List.fromList(buffer);
+
+    bool changed = false;
+    final key = _tileKeyFor(_layerId);
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        final dist = math.sqrt(
+            (x - center.dx) * (x - center.dx) + (y - center.dy) * (y - center.dy));
+        if (dist > radius) continue;
+        final t = 1.0 - (dist / radius);
+        final falloff = t * t * (3.0 - 2.0 * t); // smoothstep
+        if (falloff <= 0) continue;
+        final srcX = x - delta.dx * falloff;
+        final srcY = y - delta.dy * falloff;
+        final sampled = _sampleBilinear(srcSnapshot, w, h, srcX, srcY);
+        final idx = (y * w + x) * 4;
+        buffer[idx] = sampled[0];
+        buffer[idx + 1] = sampled[1];
+        buffer[idx + 2] = sampled[2];
+        buffer[idx + 3] = sampled[3];
+
+        final tx = x ~/ TileManager.tileSize;
+        final ty = y ~/ TileManager.tileSize;
+        final tile = _tileManager.getOrCreateTile(key, tx, ty);
+        final lx = x % TileManager.tileSize;
+        final ly = y % TileManager.tileSize;
+        _tileManager.setPixel(tile, lx, ly, sampled[0], sampled[1], sampled[2], sampled[3]);
+        _tileManager.markDirty(key, tx, ty);
+        changed = true;
+      }
+    }
+    if (changed) _scheduleComposite();
+  }
+
+  /// (x, y)地点（実数座標）のRGBAをバイリニア補間でサンプリングする。
+  /// 範囲外は透明を返す。
+  List<int> _sampleBilinear(Uint8List buffer, int w, int h, double x, double y) {
+    if (x < 0 || y < 0 || x >= w - 1 || y >= h - 1) {
+      final ix = x.round().clamp(0, w - 1);
+      final iy = y.round().clamp(0, h - 1);
+      if (x < -1 || y < -1 || x > w || y > h) return const [0, 0, 0, 0];
+      final idx = (iy * w + ix) * 4;
+      return [buffer[idx], buffer[idx + 1], buffer[idx + 2], buffer[idx + 3]];
+    }
+    final x0 = x.floor();
+    final y0 = y.floor();
+    final x1 = x0 + 1;
+    final y1 = y0 + 1;
+    final fx = x - x0;
+    final fy = y - y0;
+    List<int> at(int px, int py) {
+      final idx = (py * w + px) * 4;
+      return [buffer[idx], buffer[idx + 1], buffer[idx + 2], buffer[idx + 3]];
+    }
+    final c00 = at(x0, y0);
+    final c10 = at(x1, y0);
+    final c01 = at(x0, y1);
+    final c11 = at(x1, y1);
+    final result = <int>[];
+    for (int i = 0; i < 4; i++) {
+      final top = c00[i] * (1 - fx) + c10[i] * fx;
+      final bottom = c01[i] * (1 - fx) + c11[i] * fx;
+      result.add((top * (1 - fy) + bottom * fy).round().clamp(0, 255));
+    }
+    return result;
   }
 
   StrokePoint _applyRulerSnap(StrokePoint sp) {

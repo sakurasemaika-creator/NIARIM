@@ -196,6 +196,17 @@ class TileManager {
     }
   }
 
+  /// タイル内の (px, py) をRGBA値でそのまま上書きする（アルファブレンドしない）。
+  /// 指ツール（歪み）のように既存ピクセルを別の場所へ再配置する用途向け。
+  void setPixel(Uint8List tile, int px, int py, int r, int g, int b, int a) {
+    if (px < 0 || px >= tileSize || py < 0 || py >= tileSize) return;
+    final idx = (py * tileSize + px) * 4;
+    tile[idx] = r;
+    tile[idx + 1] = g;
+    tile[idx + 2] = b;
+    tile[idx + 3] = a;
+  }
+
   // ─── レイヤー合成 → ui.Image ─────────────────────────────────────────
 
   /// 指定レイヤーの全タイルを合成した ui.Image を生成する。
