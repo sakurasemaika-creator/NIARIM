@@ -18,9 +18,44 @@ import '../services/hw_video_encoder.dart';
 
 typedef ExportProgressCallback = void Function(int currentFrame, int totalFrames);
 
+/// 書き出し中のキャンセル要求を伝えるためのトークン（仕様書06・13：
+/// 誤タップ対応のキャンセルボタン）。フレーム生成ループの各反復で
+/// チェックされ、キャンセルされていれば[ExportCancelledException]を
+/// 投げてループを打ち切る。ハードウェアエンコーダー（MediaCodec）・
+/// FFmpegセッションによる最終エンコード処理自体は安全に中断する手段が
+/// ないため、その段階でキャンセルされた場合は処理を最後まで実行した上で
+/// 呼び出し側（export_screen.dart）が出力ファイルを破棄する。
+class ExportCancelToken {
+  bool _cancelled = false;
+  bool get isCancelled => _cancelled;
+  void cancel() => _cancelled = true;
+}
+
+/// [ExportCancelToken]経由でユーザーが書き出しをキャンセルしたことを示す。
+class ExportCancelledException implements Exception {
+  const ExportCancelledException();
+  @override
+  String toString() => 'ExportCancelledException: 書き出しがキャンセルされました';
+}
+
 class ExportEngine {
   final CameraEngine _cameraEngine = CameraEngine();
   final FilterEngine _filterEngine = FilterEngine();
+
+  /// 書き出し結果（MP4/GIF/WebM）の保存先。以前は`getTemporaryDirectory()`
+  /// （OSがいつ削除してもよいキャッシュ領域）に書き出しており、書き出し
+  /// 完了後にアプリがバックグラウンドに回っただけで消えてしまう場合が
+  /// あった。書き出し先が分からず不安という指摘もあったため、アプリの
+  /// 永続領域（他の保存データと同じ`getApplicationDocumentsDirectory()`
+  /// 配下）に固定の`exports`フォルダを作り、そこへ保存するよう変更した。
+  /// フレーム生成用の中間PNGファイルは引き続き一時領域（`export_frames`等）
+  /// を使い、書き出し完了後に削除する（最終出力ファイルのみ永続化する）。
+  Future<Directory> _exportsDir() async {
+    final docs = await getApplicationDocumentsDirectory();
+    final dir = Directory('${docs.path}/exports');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    return dir;
+  }
 
   /// フレームを合成してRGBA Uint8Listを返す。
   ///
@@ -136,6 +171,7 @@ class ExportEngine {
     required int backgroundColor,
     bool appendEndCard = false,
     ExportProgressCallback? onProgress,
+    ExportCancelToken? cancelToken,
   }) async {
     final tmpDir = await getTemporaryDirectory();
     final framesDir = Directory('${tmpDir.path}/export_frames');
@@ -151,6 +187,10 @@ class ExportEngine {
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
+        if (cancelToken?.isCancelled == true) {
+          framesDir.deleteSync(recursive: true);
+          throw const ExportCancelledException();
+        }
         final rgba = await renderFrame(
           layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
           tileManager: tileManager,
@@ -185,7 +225,8 @@ class ExportEngine {
       }
     }
 
-    final outputPath = '${tmpDir.path}/output_${DateTime.now().millisecondsSinceEpoch}.mp4';
+    final exportsDir = await _exportsDir();
+    final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.mp4';
     await HardwareVideoEncoder.encodeMp4(
       framePaths: framePaths,
       fps: fps,
@@ -207,6 +248,7 @@ class ExportEngine {
     required int height,
     required int backgroundColor,
     ExportProgressCallback? onProgress,
+    ExportCancelToken? cancelToken,
   }) async {
     // image v4: アニメーションGIFはimg.Imageにフレームを追加する
     img.Image? gifImage;
@@ -217,6 +259,7 @@ class ExportEngine {
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
+        if (cancelToken?.isCancelled == true) throw const ExportCancelledException();
         final rgba = await renderFrame(
           layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
           tileManager: tileManager,
@@ -245,8 +288,8 @@ class ExportEngine {
     }
 
     final gifBytes = img.encodeGif(gifImage!);
-    final tmpDir = await getTemporaryDirectory();
-    final outputPath = '${tmpDir.path}/output_${DateTime.now().millisecondsSinceEpoch}.gif';
+    final exportsDir = await _exportsDir();
+    final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.gif';
     await File(outputPath).writeAsBytes(gifBytes);
     return outputPath;
   }
@@ -269,6 +312,7 @@ class ExportEngine {
     required int backgroundColor,
     bool appendEndCard = false,
     ExportProgressCallback? onProgress,
+    ExportCancelToken? cancelToken,
   }) async {
     final tmpDir = await getTemporaryDirectory();
     final framesDir = Directory('${tmpDir.path}/export_webm_frames');
@@ -281,6 +325,10 @@ class ExportEngine {
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
+        if (cancelToken?.isCancelled == true) {
+          framesDir.deleteSync(recursive: true);
+          throw const ExportCancelledException();
+        }
         final rgba = await renderFrame(
           layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
           tileManager: tileManager,
@@ -314,7 +362,8 @@ class ExportEngine {
       }
     }
 
-    final outputPath = '${tmpDir.path}/output_${DateTime.now().millisecondsSinceEpoch}.webm';
+    final exportsDir = await _exportsDir();
+    final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.webm';
     final session = await FFmpegKit.execute(
       '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
       '-c:v libvpx-vp9 -pix_fmt yuva420p "$outputPath"',

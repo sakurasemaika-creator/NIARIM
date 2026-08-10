@@ -9,12 +9,20 @@ class ProgressDialog extends StatefulWidget {
   final String title;
   final double progress;
   final String? subtitle;
+  // キャンセルボタン（仕様書06・13：誤タップ対応）。nullの場合は非表示
+  // （キャンセルに対応していない処理からの呼び出しとの後方互換のため）。
+  final VoidCallback? onCancel;
+  // キャンセル要求後、実際に中断できないフェーズ（例：最終エンコード中）
+  // であることをユーザーに伝えるための注記。
+  final String? cancelHint;
 
   const ProgressDialog({
     super.key,
     required this.title,
     required this.progress,
     this.subtitle,
+    this.onCancel,
+    this.cancelHint,
   });
 
   @override
@@ -67,8 +75,21 @@ class _ProgressDialogState extends State<ProgressDialog> {
                 child: AdWidget(ad: ad),
               ),
           ],
+          if (widget.cancelHint != null) ...[
+            const SizedBox(height: 8),
+            Text(widget.cancelHint!,
+                style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          ],
         ],
       ),
+      actions: widget.onCancel == null
+          ? null
+          : [
+              TextButton(
+                onPressed: widget.onCancel,
+                child: const Text('キャンセル'),
+              ),
+            ],
     );
   }
 }

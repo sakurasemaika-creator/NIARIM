@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,11 @@ class _ExportScreenState extends State<ExportScreen> {
   double _progress = 0;
   String? _error;
   void Function(void Function())? _progressDialogSetState;
+  // 誤タップ対応のキャンセルボタン（仕様書06・13）。フレーム生成中のみ
+  // 実際に中断できる（最終エンコード処理自体は安全に中断する手段がない
+  // ため、その段階でのキャンセルは処理完了後に出力ファイルを破棄する形で
+  // 反映される）。
+  ExportCancelToken? _cancelToken;
   // 「カスタム」選択時のみ編集可能なFPS（仕様書06・11：「カスタム」タップで
   // アコーディオン展開して詳細設定を表示する）
   int _customFps = 30;
@@ -152,6 +158,8 @@ class _ExportScreenState extends State<ExportScreen> {
       }
     }
 
+    final cancelToken = ExportCancelToken();
+    _cancelToken = cancelToken;
     setState(() { _isExporting = true; _error = null; _progress = 0; });
     _showProgressDialog();
 
@@ -191,6 +199,7 @@ class _ExportScreenState extends State<ExportScreen> {
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
             onProgress: onProgress,
+            cancelToken: cancelToken,
           );
         case ExportFormat.gif:
           outputPath = await engine.exportGif(
@@ -203,6 +212,7 @@ class _ExportScreenState extends State<ExportScreen> {
             height: project.exportHeight,
             backgroundColor: project.backgroundColor,
             onProgress: onProgress,
+            cancelToken: cancelToken,
           );
         case ExportFormat.webm:
           outputPath = await engine.exportWebm(
@@ -216,16 +226,30 @@ class _ExportScreenState extends State<ExportScreen> {
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
             onProgress: onProgress,
+            cancelToken: cancelToken,
           );
       }
 
       _closeProgressDialog();
       if (!mounted) return;
-      setState(() => _isExporting = false);
+      setState(() { _isExporting = false; _cancelToken = null; });
+      if (cancelToken.isCancelled) {
+        // 最終エンコード段階でキャンセルされていた場合：処理自体は完了して
+        // いるが、ユーザーの意図はキャンセルのため出力ファイルを破棄する
+        // （最終エンコードは安全に中断する手段がないため事後処理となる）。
+        try { File(outputPath).deleteSync(); } catch (_) {}
+        _showCancelledSnackBar();
+        return;
+      }
       _showCompleteDialog(outputPath, totalFrames);
+    } on ExportCancelledException {
+      _closeProgressDialog();
+      if (!mounted) return;
+      setState(() { _isExporting = false; _cancelToken = null; });
+      _showCancelledSnackBar();
     } catch (e) {
       _closeProgressDialog();
-      if (mounted) setState(() { _isExporting = false; _error = '書き出し失敗: $e'; });
+      if (mounted) setState(() { _isExporting = false; _cancelToken = null; _error = '書き出し失敗: $e'; });
     }
   }
 
@@ -242,10 +266,23 @@ class _ExportScreenState extends State<ExportScreen> {
             title: '書き出し中',
             progress: _progress,
             subtitle: _format.name.toUpperCase(),
+            onCancel: () {
+              _cancelToken?.cancel();
+              setDialogState(() {});
+            },
+            cancelHint: _cancelToken?.isCancelled == true
+                ? '最終処理中のため、完了後にキャンセルを反映します'
+                : null,
           );
         },
       ),
     ).whenComplete(() => _progressDialogSetState = null);
+  }
+
+  void _showCancelledSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('書き出しをキャンセルしました')),
+    );
   }
 
   void _closeProgressDialog() {
@@ -290,12 +327,34 @@ class _ExportScreenState extends State<ExportScreen> {
   }
 
   void _showCompleteDialog(String outputPath, int totalFrames) {
+    final fileName = outputPath.split('/').last;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('書き出し完了'),
-        content: Text('$totalFrames フレームの書き出しが完了しました。'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$totalFrames フレームの書き出しが完了しました。'),
+            const SizedBox(height: 12),
+            // 保存先はアプリ内の永続領域（他端末のファイルアプリ等からは
+            // 直接見えないアプリ専用領域）。端末の「写真」アプリや
+            // ファイルアプリで見つけたい場合は「共有」から保存先を選ぶ
+            // 必要があることを明示する（従来は保存先が一切表示されず
+            // 分かりにくいという指摘があった）。
+            Text('保存先：アプリ内（$fileName）',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('端末の「写真」アプリやファイルアプリで開くには、下の「共有」から保存先アプリを選んでください。',
+                style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+          ],
+        ),
         actions: [
+          TextButton(
+            onPressed: () { Navigator.pop(ctx); context.go('/home'); },
+            child: const Text('プロジェクト一覧へ戻る'),
+          ),
           TextButton(
             onPressed: () { Navigator.pop(ctx); context.go('/canvas/${widget.projectId}'); },
             child: const Text('キャンバスへ戻る'),
@@ -303,7 +362,7 @@ class _ExportScreenState extends State<ExportScreen> {
           FilledButton.icon(
             onPressed: () { Navigator.pop(ctx); SharePlus.instance.share(ShareParams(files: [XFile(outputPath)])); },
             icon: const Icon(Icons.share),
-            label: const Text('共有'),
+            label: const Text('共有・写真アプリ等で開く'),
           ),
         ],
       ),
