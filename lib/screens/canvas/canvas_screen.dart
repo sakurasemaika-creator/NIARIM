@@ -67,6 +67,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showRulerPanel = false;
   bool _showFilterPanel = false;
   bool _showQuickToolPanel = false;
+
+  /// モバイルレイアウトのオーバーレイパネル（レイヤー・色・ブラシ・トーン・
+  /// スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・早替え
+  /// ツール設定）は、右側/左側に重なって同時表示されると片方が下敷きになり
+  /// 閉じるボタンを押せなくなる不具合があった（「レイヤーパネルが一度表示
+  /// すると非表示に戻せない」の原因）。いずれかを開く前に必ずこれを呼び、
+  /// 常に高々1枚のみが表示された状態を保つ。
+  void _closeAllOverlayPanels() {
+    _showLayerPanel = false;
+    _showColorPicker = false;
+    _showBrushPanel = false;
+    _showTonePanel = false;
+    _showStampPanel = false;
+    _showPenSubToolPanel = false;
+    _showOnionSkinPanel = false;
+    _showRulerPanel = false;
+    _showFilterPanel = false;
+    _showQuickToolPanel = false;
+  }
   // フレーム複数選択モード（仕様書18：大量処理実行時のフィルター一括適用）
   bool _frameMultiSelectMode = false;
   Set<int> _selectedFrameIndices = {};
@@ -386,34 +405,52 @@ class _CanvasScreenState extends State<CanvasScreen> {
               currentColor: _currentColor,
               isStampSelected: _currentSubTool == PenSubTool.stamp,
               onToolSelected: (tool) => setState(() => _currentTool = tool),
-              onColorTap: () => setState(() => _showColorPicker = !_showColorPicker),
-              onBrushTap: () => setState(() {
-                _showBrushPanel = !_showBrushPanel;
-                _showPenSubToolPanel = false;
+              onColorTap: () => setState(() {
+                final next = !_showColorPicker;
+                _closeAllOverlayPanels();
+                _showColorPicker = next;
               }),
-              onLayerTap: () => setState(() => _showLayerPanel = !_showLayerPanel),
+              onBrushTap: () => setState(() {
+                final next = !_showBrushPanel;
+                _closeAllOverlayPanels();
+                _showBrushPanel = next;
+              }),
+              onLayerTap: () => setState(() {
+                final next = !_showLayerPanel;
+                _closeAllOverlayPanels();
+                _showLayerPanel = next;
+              }),
               onTimelineTap: () => context.go('/timeline/${widget.projectId}'),
               onPenLongPress: () => setState(() {
-                _showPenSubToolPanel = !_showPenSubToolPanel;
-                _showBrushPanel = false;
+                final next = !_showPenSubToolPanel;
+                _closeAllOverlayPanels();
+                _showPenSubToolPanel = next;
               }),
-              onOnionSkinTap: () => setState(() => _showOnionSkinPanel = !_showOnionSkinPanel),
+              onOnionSkinTap: () => setState(() {
+                final next = !_showOnionSkinPanel;
+                _closeAllOverlayPanels();
+                _showOnionSkinPanel = next;
+              }),
               onTextTap: () => setState(() => _currentTool = DrawingTool.text),
               onRulerTap: () => setState(() {
-                _showRulerPanel = !_showRulerPanel;
+                final next = !_showRulerPanel;
+                _closeAllOverlayPanels();
+                _showRulerPanel = next;
                 if (_currentTool != DrawingTool.ruler) {
                   _currentTool = DrawingTool.ruler;
                 }
               }),
               onShapeTap: () => _showShapeMenu(context),
               onFilterTap: () => setState(() {
-                _showFilterPanel = !_showFilterPanel;
-                _showLayerPanel = false;
+                final next = !_showFilterPanel;
+                _closeAllOverlayPanels();
+                _showFilterPanel = next;
               }),
               onQuickToolTap: _applyNextQuickTool,
               onQuickToolLongPress: () => setState(() {
-                _showQuickToolPanel = !_showQuickToolPanel;
-                _showLayerPanel = false;
+                final next = !_showQuickToolPanel;
+                _closeAllOverlayPanels();
+                _showQuickToolPanel = next;
               }),
               // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
               onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
