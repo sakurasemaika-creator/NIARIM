@@ -206,7 +206,20 @@ class ThemeService extends ChangeNotifier {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(
+        // 画面名（AppBarタイトル）がデフォルトフォント（Roboto等の端末標準）
+        // で表示されてしまう不具合を修正。ThemeData.fontFamily='HakkouMincho'
+        // をルートで設定していても、appBarTheme.titleTextStyleへ独自の
+        // TextStyle()をベタ書きするとfontFamilyが未指定のまま上書きされ、
+        // 継承されない。textTheme.titleLarge（_withFontFallbackでNotoSerifJP
+        // フォールバック済み）を土台にして色・サイズ・太さだけ上書きすることで、
+        // 白光明朝＋フォールバックが正しく適用されるようにした。
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          color: preset.textColor,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ) ?? TextStyle(
+          fontFamily: 'HakkouMincho',
+          fontFamilyFallback: const ['NotoSerifJP'],
           color: preset.textColor,
           fontSize: 18,
           fontWeight: FontWeight.w700,

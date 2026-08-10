@@ -66,14 +66,21 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _sectionLabel(context, 'パネル配置'),
-          Card(
-            child: SwitchListTile(
-              title: const Text('左利きモード'),
-              subtitle: const Text('パネルを右側に配置'),
-              value: settings.isLeftHanded,
-              onChanged: (v) => settings.setLeftHanded(v),
-            ),
-          ),
+          Builder(builder: (context) {
+            // スマホモードではツールバーが画面下部に固定表示されるため、
+            // 左右反転（左利きモード）が意味を持つのはパネルを常時
+            // ドッキング表示するPC/DeXモードの場合のみ。スマホモードでは
+            // 無効化し、その旨を案内する。
+            final isPc = isWideScreen(context);
+            return Card(
+              child: SwitchListTile(
+                title: const Text('左利きモード'),
+                subtitle: Text(isPc ? 'パネルを右側に配置' : 'PC/DeXモードでのみ設定できます'),
+                value: settings.isLeftHanded,
+                onChanged: isPc ? (v) => settings.setLeftHanded(v) : null,
+              ),
+            );
+          }),
           const SizedBox(height: 20),
           _sectionLabel(context, 'PCモード（DeX）'),
           Padding(
