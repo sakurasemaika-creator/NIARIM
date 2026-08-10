@@ -173,6 +173,20 @@ class _CanvasAreaState extends State<CanvasArea> {
   Offset? _transformCenter;
   Matrix4? _transformLive;
 
+  // ─── 選択ツールの移動・回転・拡大縮小（仕様書03・16） ─────────────────
+  bool _selectionTransformActive = false;
+  _TransformMode _selectionTransformMode = _TransformMode.translate;
+  Offset? _selectionTransformStart;
+  Offset? _selectionTransformCenter;
+  Rect? _selectionTransformBounds;
+  Matrix4? _selectionTransformLive;
+  ui.Image? _floatingSelectionImage;
+
+  bool get _isSelectionTool =>
+      widget.currentTool == DrawingTool.selectRect ||
+      widget.currentTool == DrawingTool.selectLasso ||
+      widget.currentTool == DrawingTool.selectMagicWand;
+
   // ─── バケツ連続塗り ───────────────────────────────────────────────────
   Uint8List? _bucketRefBuffer;
   Uint8List? _bucketVisitedMask;
@@ -240,6 +254,17 @@ class _CanvasAreaState extends State<CanvasArea> {
       _scheduleComposite();
       // 選択範囲はフレームごとの一時状態のため、フレーム切替時にクリアする
       _clearSelectionMask();
+      // 選択範囲の変形操作中にフレームが切り替わった場合の後始末
+      // （通常のUIフローでは起こりにくいが、念のため状態を破棄する）。
+      if (_selectionTransformActive) {
+        _floatingSelectionImage?.dispose();
+        _floatingSelectionImage = null;
+        _selectionTransformActive = false;
+        _selectionTransformStart = null;
+        _selectionTransformCenter = null;
+        _selectionTransformBounds = null;
+        _selectionTransformLive = null;
+      }
     }
     _recomposeSurroundings(force: frameChanged);
   }
@@ -251,6 +276,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _belowImage?.dispose();
     _aboveImage?.dispose();
     _selectionOverlayImage?.dispose();
+    _floatingSelectionImage?.dispose();
     for (final img in _onionImages.values) {
       img.dispose();
     }
@@ -496,6 +522,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       _pickColor(canvasPos);
       return;
     }
+    if (_isSelectionTool && _selectionMask != null && _beginSelectionTransformIfHit(canvasPos)) {
+      // 既存の選択範囲の中・またはハンドルをタップ＝新規選択ではなく
+      // 移動・拡大縮小・回転操作として扱う（仕様書03・16）。
+      return;
+    }
     if (widget.currentTool == DrawingTool.selectRect) {
       _clearSelectionMask();
       setState(() {
@@ -606,6 +637,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       _panToolLastScreenPos = event.localPosition;
       return;
     }
+    if (_isSelectionTool && _selectionTransformActive) {
+      _updateSelectionTransform(canvasPos);
+      return;
+    }
     if (widget.currentTool == DrawingTool.selectRect && _selectionStart != null) {
       setState(() => _selectionEnd = canvasPos);
       return;
@@ -678,6 +713,10 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     if (widget.currentTool == DrawingTool.pan) {
       _panToolLastScreenPos = null;
+      return;
+    }
+    if (_isSelectionTool && _selectionTransformActive) {
+      _commitSelectionTransform();
       return;
     }
     if (widget.currentTool == DrawingTool.selectRect) {
@@ -1199,26 +1238,31 @@ class _CanvasAreaState extends State<CanvasArea> {
     final start = _transformStart;
     final center = _transformCenter;
     if (start == null || center == null) return;
-    Matrix4 m;
-    switch (_transformMode) {
+    setState(() => _transformLive = _computeTransformMatrix(_transformMode, start, canvasPos, center));
+  }
+
+  /// 移動・拡大縮小・回転の行列を計算する（変形ツール・選択ツールの
+  /// 変形操作で共通利用、仕様書03・16）。
+  static Matrix4 _computeTransformMatrix(
+      _TransformMode mode, Offset start, Offset current, Offset center) {
+    switch (mode) {
       case _TransformMode.translate:
-        final d = canvasPos - start;
-        m = Matrix4.translationValues(d.dx, d.dy, 0);
+        final d = current - start;
+        return Matrix4.translationValues(d.dx, d.dy, 0);
       case _TransformMode.scale:
         final startDist = (start - center).distance;
-        final curDist = (canvasPos - center).distance;
+        final curDist = (current - center).distance;
         final s = startDist > 1 ? (curDist / startDist).clamp(0.1, 10.0) : 1.0;
-        m = Matrix4.translationValues(center.dx, center.dy, 0) *
+        return Matrix4.translationValues(center.dx, center.dy, 0) *
             Matrix4.diagonal3Values(s, s, 1) *
             Matrix4.translationValues(-center.dx, -center.dy, 0);
       case _TransformMode.rotate:
         final a0 = math.atan2(start.dy - center.dy, start.dx - center.dx);
-        final a1 = math.atan2(canvasPos.dy - center.dy, canvasPos.dx - center.dx);
-        m = Matrix4.translationValues(center.dx, center.dy, 0) *
+        final a1 = math.atan2(current.dy - center.dy, current.dx - center.dx);
+        return Matrix4.translationValues(center.dx, center.dy, 0) *
             Matrix4.rotationZ(a1 - a0) *
             Matrix4.translationValues(-center.dx, -center.dy, 0);
     }
-    setState(() => _transformLive = m);
   }
 
   void _commitTransform() {
@@ -1235,6 +1279,220 @@ class _CanvasAreaState extends State<CanvasArea> {
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
       _finishTileUndo();
+    });
+  }
+
+  // ─── 選択ツールの移動・回転・拡大縮小（仕様書03・16） ─────────────────
+  // 選択範囲がある状態で選択ツールを使うと、選択範囲の中をタップ＝移動、
+  // 右下ハンドル＝拡大縮小、上部ハンドル＝回転として操作できる（変形ツール
+  // と同じ操作感）。ドラッグ中は選択範囲の中身を切り取った「浮動画像」を
+  // プレビュー表示し、指を離した時点で元レイヤーへ貼り戻す。選択範囲自体も
+  // 同じ変形をかけて移動後の位置へ追従させる。
+
+  /// 現在の選択マスクのバウンディングボックス（キャンバスピクセル座標）。
+  /// 選択が無い場合はnull。
+  Rect? _selectionMaskBounds() {
+    final mask = _selectionMask;
+    if (mask == null) return null;
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    int minX = w, minY = h, maxX = -1, maxY = -1;
+    for (int y = 0; y < h; y++) {
+      final rowBase = y * w;
+      for (int x = 0; x < w; x++) {
+        if (mask[rowBase + x] == 0) continue;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    if (maxX < minX || maxY < minY) return null;
+    return Rect.fromLTRB(
+        minX.toDouble(), minY.toDouble(), (maxX + 1).toDouble(), (maxY + 1).toDouble());
+  }
+
+  bool _selectionMaskContains(Offset canvasPos) {
+    final mask = _selectionMask;
+    if (mask == null) return false;
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final x = canvasPos.dx.floor();
+    final y = canvasPos.dy.floor();
+    if (x < 0 || x >= w || y < 0 || y >= h) return false;
+    return mask[y * w + x] != 0;
+  }
+
+  /// [canvasPos]が既存の選択範囲の変形ハンドル／内側に該当すれば変形操作を
+  /// 開始してtrueを返す。該当しなければfalse（＝新規選択の開始に進む）。
+  bool _beginSelectionTransformIfHit(Offset canvasPos) {
+    final bounds = _selectionMaskBounds();
+    if (bounds == null) return false;
+    final threshold = math.min(_tileManager.canvasWidth, _tileManager.canvasHeight) * 0.05;
+    final scaleHandle = bounds.bottomRight;
+    final rotateHandle = Offset(bounds.center.dx, bounds.top - 40);
+    _TransformMode mode;
+    if ((canvasPos - scaleHandle).distance < threshold) {
+      mode = _TransformMode.scale;
+    } else if ((canvasPos - rotateHandle).distance < threshold) {
+      mode = _TransformMode.rotate;
+    } else if (_selectionMaskContains(canvasPos)) {
+      mode = _TransformMode.translate;
+    } else {
+      return false;
+    }
+    _beginSelectionTransform(canvasPos, mode, bounds);
+    return true;
+  }
+
+  void _beginSelectionTransform(Offset canvasPos, _TransformMode mode, Rect bounds) {
+    final mask = _selectionMask;
+    if (mask == null) return;
+    setState(() {
+      _selectionTransformActive = true;
+      _selectionTransformMode = mode;
+      _selectionTransformStart = canvasPos;
+      _selectionTransformCenter = bounds.center;
+      _selectionTransformBounds = bounds;
+      _selectionTransformLive = Matrix4.identity();
+    });
+    _beginTileUndo();
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final key = _tileKeyFor(_layerId);
+    _tileManager.compositeLayerToImage(key).then((composite) async {
+      final byteData = await composite.toByteData(format: ui.ImageByteFormat.rawRgba);
+      composite.dispose();
+      if (!mounted || byteData == null || !identical(_selectionMask, mask)) return;
+      final src = byteData.buffer.asUint8List();
+      // 選択範囲内のピクセルを切り取った浮動画像を作る（範囲外は透明）。
+      final floating = Uint8List(w * h * 4);
+      for (int i = 0; i < w * h; i++) {
+        if (mask[i] == 0) continue;
+        final idx = i * 4;
+        floating[idx] = src[idx];
+        floating[idx + 1] = src[idx + 1];
+        floating[idx + 2] = src[idx + 2];
+        floating[idx + 3] = src[idx + 3];
+      }
+      // 元レイヤーの選択範囲内を透明化する（切り取り＝穴が空いた状態にする）。
+      // タップ直後にすぐ指を離す等でコミットが先に完了していた場合は、
+      // 浮動画像を貼り戻す先が無いまま切り取りだけが残ってしまう
+      // （データ消失）ため、ここで再度アクティブ状態を確認する。
+      if (!_selectionTransformActive) return;
+      for (int y = 0; y < h; y++) {
+        final rowBase = y * w;
+        for (int x = 0; x < w; x++) {
+          if (mask[rowBase + x] == 0) continue;
+          final tx = x ~/ TileManager.tileSize;
+          final ty = y ~/ TileManager.tileSize;
+          final tile = _tileManager.getOrCreateTile(key, tx, ty);
+          final lx = x % TileManager.tileSize;
+          final ly = y % TileManager.tileSize;
+          _tileManager.setPixel(tile, lx, ly, 0, 0, 0, 0);
+          _tileManager.markDirty(key, tx, ty);
+        }
+      }
+      if (!mounted) return;
+      _scheduleComposite();
+      ui.decodeImageFromPixels(floating, w, h, ui.PixelFormat.rgba8888, (img) {
+        if (!mounted || !_selectionTransformActive) {
+          img.dispose();
+          return;
+        }
+        setState(() => _floatingSelectionImage = img);
+      });
+    });
+  }
+
+  void _updateSelectionTransform(Offset canvasPos) {
+    final start = _selectionTransformStart;
+    final center = _selectionTransformCenter;
+    if (start == null || center == null) return;
+    setState(() => _selectionTransformLive =
+        _computeTransformMatrix(_selectionTransformMode, start, canvasPos, center));
+  }
+
+  void _commitSelectionTransform() {
+    final matrix = _selectionTransformLive ?? Matrix4.identity();
+    final floating = _floatingSelectionImage;
+    setState(() {
+      _selectionTransformActive = false;
+      _selectionTransformStart = null;
+      _selectionTransformCenter = null;
+      _selectionTransformBounds = null;
+      _selectionTransformLive = null;
+      _floatingSelectionImage = null;
+    });
+    if (floating == null) {
+      // 浮動画像の生成が間に合わないうちに指を離した場合：既に切り取り済みの
+      // 穴だけが残らないよう、Undoで元に戻せる状態のまま記録を終了する。
+      _finishTileUndo();
+      return;
+    }
+    final key = _tileKeyFor(_layerId);
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    _tileManager.compositeLayerToImage(key).then((base) async {
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+      canvas.drawImage(base, Offset.zero, ui.Paint());
+      base.dispose();
+      canvas.save();
+      canvas.transform(matrix.storage);
+      canvas.drawImage(floating, Offset.zero, ui.Paint());
+      canvas.restore();
+      floating.dispose();
+      final picture = recorder.endRecording();
+      final merged = await picture.toImage(w, h);
+      picture.dispose();
+      final byteData = await merged.toByteData(format: ui.ImageByteFormat.rawRgba);
+      merged.dispose();
+      if (!mounted) return;
+      if (byteData != null) {
+        _tileManager.replaceLayerPixels(key, byteData.buffer.asUint8List());
+      }
+      // 選択範囲も同じ変形をかけ、選択範囲が移動後の位置へ追従するようにする。
+      if (!matrix.isIdentity()) _transformSelectionMask(matrix);
+      _scheduleComposite();
+      _markLineartDirtyIfNeeded();
+      _finishTileUndo();
+    });
+  }
+
+  /// 選択マスクへ[matrix]と同じ変形をかけ、選択範囲を移動後の位置へ更新する。
+  void _transformSelectionMask(Matrix4 matrix) {
+    final mask = _selectionMask;
+    if (mask == null) return;
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final maskRgba = Uint8List(w * h * 4);
+    for (int i = 0; i < w * h; i++) {
+      if (mask[i] == 0) continue;
+      final idx = i * 4;
+      maskRgba[idx] = 255;
+      maskRgba[idx + 1] = 255;
+      maskRgba[idx + 2] = 255;
+      maskRgba[idx + 3] = 255;
+    }
+    ui.decodeImageFromPixels(maskRgba, w, h, ui.PixelFormat.rgba8888, (maskImage) async {
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+      canvas.transform(matrix.storage);
+      canvas.drawImage(maskImage, Offset.zero, ui.Paint());
+      maskImage.dispose();
+      final picture = recorder.endRecording();
+      final transformed = await picture.toImage(w, h);
+      picture.dispose();
+      final byteData = await transformed.toByteData(format: ui.ImageByteFormat.rawRgba);
+      transformed.dispose();
+      if (!mounted || byteData == null) return;
+      final bytes = byteData.buffer.asUint8List();
+      final newMask = Uint8List(w * h);
+      for (int i = 0; i < w * h; i++) {
+        newMask[i] = bytes[i * 4 + 3] > 32 ? 1 : 0;
+      }
+      _setSelectionMask(newMask, w, h);
     });
   }
 
@@ -1907,7 +2165,9 @@ class _CanvasAreaState extends State<CanvasArea> {
                   onionEngine: _onionSkinEngine,
                   selectionStart: _selectionStart,
                   selectionEnd: _selectionEnd,
-                  selectionOverlayImage: _selectionOverlayImage,
+                  // 変形操作中は移動前の位置のハイライトが紛らわしいため非表示にする
+                  // （ハンドル・浮動画像プレビューの方で現在の状態を示す）。
+                  selectionOverlayImage: _selectionTransformActive ? null : _selectionOverlayImage,
                   lassoPoints: _lassoPoints,
                   subToolStrokePoints: _subToolStrokePoints,
                   activeRuler: widget.activeRuler,
@@ -1917,6 +2177,9 @@ class _CanvasAreaState extends State<CanvasArea> {
                   moveDelta: widget.currentTool == DrawingTool.move ? _moveDelta : null,
                   transformLive: widget.currentTool == DrawingTool.transform ? _transformLive : null,
                   showTransformHandles: widget.currentTool == DrawingTool.transform,
+                  floatingSelectionImage: _floatingSelectionImage,
+                  selectionTransformLive: _selectionTransformLive,
+                  selectionTransformBounds: _selectionTransformBounds,
                 ),
                 size: Size.infinite,
               ),
@@ -1983,6 +2246,11 @@ class _CanvasPainter extends CustomPainter {
   final Offset? moveDelta;
   final Matrix4? transformLive;
   final bool showTransformHandles;
+  // 選択ツールの移動・回転・拡大縮小（仕様書03・16）：ドラッグ中は選択範囲の
+  // 中身を切り取った「浮動画像」をコミット前のプレビューとして表示する。
+  final ui.Image? floatingSelectionImage;
+  final Matrix4? selectionTransformLive;
+  final Rect? selectionTransformBounds;
 
   static const Color _outsideColor = Color(0xFF3A3A3A);
   static const double _checkerSize = 16.0;
@@ -2011,6 +2279,9 @@ class _CanvasPainter extends CustomPainter {
     this.moveDelta,
     this.transformLive,
     this.showTransformHandles = false,
+    this.floatingSelectionImage,
+    this.selectionTransformLive,
+    this.selectionTransformBounds,
   });
 
   @override
@@ -2060,6 +2331,22 @@ class _CanvasPainter extends CustomPainter {
             compositeImage!.width.toDouble(), compositeImage!.height.toDouble());
         canvas.drawImageRect(compositeImage!, src, drawingRect, currentPaint);
       }
+    }
+
+    // 選択ツールの移動・回転・拡大縮小：ドラッグ中の浮動選択画像プレビュー
+    // （元レイヤーは既に選択範囲が透明化された状態で上のcompositeImageに
+    // 反映済みのため、その上に変形後の位置で重ねて描く）。
+    if (floatingSelectionImage != null) {
+      final sx = drawingRect.width / floatingSelectionImage!.width;
+      final sy = drawingRect.height / floatingSelectionImage!.height;
+      canvas.save();
+      canvas.translate(drawingRect.left, drawingRect.top);
+      canvas.scale(sx, sy);
+      if (selectionTransformLive != null) {
+        canvas.transform(selectionTransformLive!.storage);
+      }
+      canvas.drawImage(floatingSelectionImage!, Offset.zero, Paint());
+      canvas.restore();
     }
 
     // オニオンスキン（後フレーム）
@@ -2170,6 +2457,26 @@ class _CanvasPainter extends CustomPainter {
       }
       handle(ts(Offset(w, h))); // 拡縮ハンドル
       handle(ts(Offset(w / 2, -40))); // 回転ハンドル
+    }
+
+    // 選択ツールの移動・回転・拡大縮小：選択範囲のバウンディングボックス・
+    // 拡縮ハンドル・回転ハンドル（変形ツールと同じ見た目、範囲は選択範囲基準）。
+    if (selectionTransformBounds != null) {
+      final bounds = selectionTransformBounds!;
+      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
+      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+      final boxPaint = Paint()
+        ..color = Colors.blue
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      canvas.drawRect(Rect.fromPoints(ts(bounds.topLeft), ts(bounds.bottomRight)), boxPaint);
+      void handle(Offset p) {
+        canvas.drawCircle(p, 8, Paint()..color = Colors.blue.withValues(alpha: 0.85));
+        canvas.drawCircle(p, 8, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+      }
+      handle(ts(bounds.bottomRight)); // 拡縮ハンドル
+      handle(ts(Offset(bounds.center.dx, bounds.top - 40))); // 回転ハンドル
     }
 
     if (hasExtended) {
@@ -2383,6 +2690,9 @@ class _CanvasPainter extends CustomPainter {
       old.moveDelta != moveDelta ||
       old.transformLive != transformLive ||
       old.showTransformHandles != showTransformHandles ||
+      old.floatingSelectionImage != floatingSelectionImage ||
+      old.selectionTransformLive != selectionTransformLive ||
+      old.selectionTransformBounds != selectionTransformBounds ||
       old.project?.drawingAreaScale != project?.drawingAreaScale ||
       old.project?.exportWidth != project?.exportWidth ||
       old.project?.exportHeight != project?.exportHeight;
