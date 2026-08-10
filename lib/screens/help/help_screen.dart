@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
-  // 場合のトピック名（_HelpEntry.titleと一致させる）。指定されると検索欄に
+  // 場合のトピック名（_HelpEntry.topicKeyと一致させる）。指定されると検索欄に
   // 自動入力され、該当項目が自動展開された状態で表示される。
+  // topicKeyは表示言語に関わらず固定の日本語文字列（HelpButton(topic:)の
+  // 呼び出し元と一致させるための内部識別子であり、翻訳対象外）。
   final String? initialTopic;
   const HelpScreen({super.key, this.initialTopic});
 
@@ -30,182 +33,65 @@ class _HelpScreenState extends State<HelpScreen> {
   // 伝えるためのものだが、ここでは初めてこのアプリに触れる人でも読むだけで
   // その機能の意味・使いどころ・注意点まで理解できることを目指し、
   // あえて長文になっても詳しく説明する。
-  final List<_HelpEntry> _entries = const [
-    // ── 描画ツール ──────────────────────────────────────────
-    _HelpEntry('ペンツール', 'キャンバスに線を描くための基本ツールです。長押しでブラシの種類・太さ・'
-        '色を変更できます（ダブルタップは簡易説明の表示）。板タブ・液晶タブレットの'
-        '筆圧・傾きに対応しており、設定画面の「ペン入力」から筆圧カーブを調整すると'
-        '筆圧の伝わり方（弱い力でどれだけ太さ・不透明度が変化するか）を細かく'
-        'カスタマイズできます。ペンサブツールを切り替えると、同じペンツールから'
-        'トーン貼り・スタンプ配置も行えます。', 'ツール'),
-    _HelpEntry('消しゴムツール', 'ペンツールと対になる、描いた内容を消すためのツールです。ブラシと同様に'
-        '太さ・不透明度を調整でき、フェードやストローク減衰などのブラシ設定も'
-        '共通で反映されます。レイヤーの透明部分を「描き足す」のではなく既存の'
-        '描画を「消す」処理を行うため、下のレイヤーが透けて見えるようになります。', 'ツール'),
-    _HelpEntry('バケツツール', '囲まれた領域を一括で塗りつぶすツールです。線画で囲まれた範囲内をタップすると、'
-        'その範囲全体が選択中の色（またはトーン）で塗られます。線画に隙間があると'
-        '意図しない範囲まで塗り広がってしまうことがあるため、線画がきちんと閉じて'
-        'いるか確認してから使うのがコツです。設定でベタ塗り／トーン塗りを切り替え'
-        'られます。', 'ツール'),
-    _HelpEntry('投げ縄塗り', '囲みたい範囲を指でなぞって多角形の範囲を作り、その内側をまとめて塗る'
-        'ツールです。バケツツールと違い、線画が閉じていない部分があっても'
-        '自分で囲む範囲を指定できるため、複雑な形や線が途切れている部分の'
-        '塗りに向いています。', 'ツール'),
-    _HelpEntry('スポイトツール', 'タップした位置の色を拾って、描画色として選択するツールです。画面に'
-        '実際に表示されている全レイヤーを合成した見た目の色を拾うため、'
-        '複数レイヤーが重なっている部分でも「見た目通りの色」を正確に取得'
-        'できます。', 'ツール'),
-    _HelpEntry('選択ツール', 'キャンバスの一部分を範囲選択し、選択した範囲だけを移動・回転・拡大縮小'
-        'できるツールです。長押しすると「矩形選択」「投げ縄選択（自由な形で囲む）」'
-        '「自動選択（マジックワンド、似た色の範囲を自動でまとめて選択）」の'
-        '3種類から選択方法を選べます。選択中は選択範囲を示す枠線がキャンバス上に'
-        '表示され、選択を解除するまで全フレーム・全レイヤーで同じ範囲が固定'
-        '表示されます。', 'ツール'),
-    _HelpEntry('指ツール（歪みツール）', '指でなぞった方向にピクセルを押し流すように歪ませる、液体絵の具を'
-        '指でこすったような効果を作るツールです。細かい修正よりも、既に描いた線を'
-        '有機的に歪ませて表情をつけたい時に使います。', 'ツール'),
-    _HelpEntry('図形ツール', '直線・四角形・円といった正確な図形をワンタップで描くためのツールです。'
-        'ドラッグで始点から終点まで動かすとその場でプレビューされ、指を離すと'
-        '確定します。フリーハンドでは描きにくい直線や正円が必要な時に便利です。', 'ツール'),
-    _HelpEntry('テキストツール', 'キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/'
-        '横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を'
-        '横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置した'
-        'テキストは書き出し時にもピクセルとして焼き込まれます。', 'ツール'),
-    _HelpEntry('早替えツール', 'よく使うブラシ・ツールの組み合わせをあらかじめ登録しておき、ボタン'
-        '一つで順番に切り替えられる機能です。キャンバス上の↺ボタンを長押しすると'
-        '登録・並べ替え・削除ができる設定パネルが開きます。ドラッグで並び順を'
-        '変更できます。', 'ツール'),
+  //
+  // topicKeyは各画面のHelpButton(topic: '...')呼び出しと一致させる必要が
+  // あるため、表示言語に関わらず固定の日本語文字列のまま維持する
+  // （翻訳対象は title/description/category のみ）。
+  List<_HelpEntry> _buildEntries(AppLocalizations l10n) => [
+        // ── 描画ツール ──────────────────────────────────────────
+        _HelpEntry(topicKey: 'ペンツール', title: l10n.helpPenToolTitle, description: l10n.helpPenToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '消しゴムツール', title: l10n.helpEraserToolTitle, description: l10n.helpEraserToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: 'バケツツール', title: l10n.helpBucketToolTitle, description: l10n.helpBucketToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '投げ縄塗り', title: l10n.helpLassoFillTitle, description: l10n.helpLassoFillDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: 'スポイトツール', title: l10n.helpEyedropperToolTitle, description: l10n.helpEyedropperToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '選択ツール', title: l10n.helpSelectToolTitle, description: l10n.helpSelectToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '指ツール（歪みツール）', title: l10n.helpFingerToolTitle, description: l10n.helpFingerToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '図形ツール', title: l10n.helpShapeToolTitle, description: l10n.helpShapeToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool),
 
-    // ── レイヤー ────────────────────────────────────────────
-    _HelpEntry('レイヤー', '1枚のキャンバスを複数の透明な「層」に分けて描画できる仕組みです。'
-        '線画・色塗り・背景などを別々のレイヤーに分けて描くことで、後から'
-        '色だけをやり直したり、線画を消さずに背景を差し替えたりできます。'
-        '画面上では上に重なっているレイヤーほど手前に表示されます。', 'レイヤー'),
-    _HelpEntry('ブレンドモード', 'レイヤーの合成方法を変更する機能です。通常（そのまま重ねる）以外に、'
-        '乗算（下のレイヤーと掛け合わせて影のような効果を作る）・スクリーン'
-        '（光が加わったように明るくする）・オーバーレイ（明暗を保ったまま色を'
-        '重ねる）などがあります。トーンやカラー効果をレイヤーとして重ねる時に'
-        'よく使われます。', 'レイヤー'),
-    _HelpEntry('クリッピング', '自分のすぐ下にあるレイヤーの、不透明なピクセルの範囲内にのみ描画される'
-        'ようにする機能です。線画からはみ出さずに色を塗りたい時、線画レイヤーの'
-        '上に色塗り用レイヤーを作ってクリッピングを有効にすると、線画の外側に'
-        'うっかりはみ出して描いてしまう心配がなくなります。', 'レイヤー'),
-    _HelpEntry('共通レイヤー', '通常のレイヤーは1フレームごとに独立していますが、共通レイヤーは'
-        '複数のフレーム・シーンで同じ内容を共有するレイヤーです。背景など'
-        'フレームが変わっても動かさない要素を、フレームごとに描き直す手間'
-        'なく一度描くだけで済ませられます。タイムライン上では専用のトラック'
-        'として表示されます。', 'レイヤー'),
-    _HelpEntry('自動塗り', '線画レイヤーの下に自動塗りレイヤーを作り、あらかじめ作成した'
-        '「自動塗りプリセット」（パーツごとの色・トーンの組み合わせ）に基づいて'
-        '色を自動で塗る機能です。線画を描き終えた後に一括で色を塗れるため、'
-        '同じキャラクターを何度も描く手描きアニメーションで色塗りの手間を'
-        '大幅に減らせます。線画を描き直した場合はタイムライン・レイヤー'
-        'パネルに更新マーク（❗）が表示され、自動塗りの再実行が必要なことを'
-        '知らせます。', 'レイヤー'),
+        // ── レイヤー ────────────────────────────────────────────
+        _HelpEntry(topicKey: 'レイヤー', title: l10n.helpLayerTitle, description: l10n.helpLayerDesc, category: l10n.helpCategoryLayer),
+        _HelpEntry(topicKey: 'ブレンドモード', title: l10n.helpBlendModeTitle, description: l10n.helpBlendModeDesc, category: l10n.helpCategoryLayer),
+        _HelpEntry(topicKey: 'クリッピング', title: l10n.helpClippingTitle, description: l10n.helpClippingDesc, category: l10n.helpCategoryLayer),
+        _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer),
+        _HelpEntry(topicKey: '自動塗り', title: l10n.helpAutoFillTitle, description: l10n.helpAutoFillDesc, category: l10n.helpCategoryLayer),
 
-    // ── 描画補助 ────────────────────────────────────────────
-    _HelpEntry('オニオンスキン', '現在編集中のフレームの前後のフレームを半透明で重ねて表示し、'
-        '動きの繋がりを確認しながら描けるようにする機能です。パフォーマンス'
-        '設定で表示する枚数（前後何枚まで）や色・透明度を調整できます。', 'アニメーション'),
-    _HelpEntry('定規', '直線・円・楕円・パース定規（消失点を使った透視図法用の定規）など、'
-        'フリーハンドでは描きにくい正確な線を補助するための機能です。'
-        '配置した定規に沿ってペン先が自動でスナップするため、定規なしでは'
-        '難しい奥行きのある構図も描きやすくなります。定規はハンドルを'
-        '操作して移動・回転・サイズ変更ができます。', '描画'),
-    _HelpEntry('フェード', 'ブラシ設定の一つで、ストロークを描き進めるにつれて不透明度や太さが'
-        '徐々に減少していく効果です。線の端をかすれさせたい時や、余韻を'
-        '残すような描き味を作りたい時に使います。', 'ブラシ'),
-    _HelpEntry('ストローク減衰', 'フェードと似ていますが、こちらは「インクが減っていく」ような'
-        '表現に近く、描き続けるほど色が薄くなったりかすれたりする効果です。'
-        '筆やマーカーで描き続けた時のインク切れのような質感を再現します。', 'ブラシ'),
-    _HelpEntry('混色', 'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている'
-        '選択色を混ぜ合わせながら描画する機能です。水彩や油彩のように、'
-        '既存の色に新しい色をなじませたい時に使います。', 'ブラシ'),
-    _HelpEntry('筆圧カーブ', 'ペン入力設定にある機能で、実際の筆圧の強さと、ブラシの太さ・不透明度への'
-        '反映のされ方の関係をグラフで自由に調整できます。弱い筆圧でも太く'
-        '出したい人、逆に強く押さないと太くならないようにしたい人など、'
-        '手癖に合わせて描き心地を細かくカスタマイズできます。設定変更後は'
-        'その場で試し書きしながら確認できます。', 'ペン入力'),
+        // ── 描画補助 ────────────────────────────────────────────
+        _HelpEntry(topicKey: 'オニオンスキン', title: l10n.helpOnionSkinTitle, description: l10n.helpOnionSkinDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '定規', title: l10n.helpRulerTitle, description: l10n.helpRulerDesc, category: l10n.helpCategoryDrawing),
+        _HelpEntry(topicKey: 'フェード', title: l10n.helpFadeTitle, description: l10n.helpFadeDesc, category: l10n.helpCategoryBrush),
+        _HelpEntry(topicKey: 'ストローク減衰', title: l10n.helpStrokeDecayTitle, description: l10n.helpStrokeDecayDesc, category: l10n.helpCategoryBrush),
+        _HelpEntry(topicKey: '混色', title: l10n.helpColorMixingTitle, description: l10n.helpColorMixingDesc, category: l10n.helpCategoryBrush),
+        _HelpEntry(topicKey: '筆圧カーブ', title: l10n.helpPressureCurveTitle, description: l10n.helpPressureCurveDesc, category: l10n.helpCategoryPenInput),
 
-    // ── タイムライン・アニメーション ──────────────────────────
-    _HelpEntry('タイムライン', 'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を'
-        '並べてパラパラ漫画のように再生することでアニメーションになります。'
-        '画像・動画・音声などの素材トラック、共通レイヤートラック、カメラ'
-        'キーフレームも同じタイムライン上で管理します。', 'アニメーション'),
-    _HelpEntry('シーン', '1つのプロジェクト（1本の動画）の中を、場面（カット）ごとに分割して'
-        '管理する機能です。フォルダがプロジェクト単位の整理なのに対し、'
-        'シーンは1本の動画の中の場面転換を表現するために使います。', 'アニメーション'),
-    _HelpEntry('カメラキーフレーム', 'タイムライン上の特定の位置にカメラの位置・拡大率・回転を記録して'
-        'おく機能です。キーフレーム間は自動で滑らかに補間されるため、'
-        'パン（横移動）やズームイン・ズームアウトのようなカメラワークを'
-        '簡単に付けられます。', 'アニメーション'),
-    _HelpEntry('演出フィルター', 'シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー等）'
-        'です。手描きの絵そのものを変えずに、演出として画面全体の見た目を'
-        '調整したい時に使います。', 'アニメーション'),
-    _HelpEntry('EndCard（エンドロゴ）', '動画書き出し時、本編の終わりに自動で追加されるNIARIMロゴの'
-        '短い動画（約5秒）です。無料版では非表示・削除ができませんが、'
-        'プレミアム会員になると表示のON/OFF・長さ変更・差し替えができる'
-        'ようになります。', '書き出し'),
+        // ── タイムライン・アニメーション ──────────────────────────
+        _HelpEntry(topicKey: 'タイムライン', title: l10n.helpTimelineTitle, description: l10n.helpTimelineDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: 'シーン', title: l10n.helpSceneTitle, description: l10n.helpSceneDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '演出フィルター', title: l10n.helpEffectFilterTitle, description: l10n.helpEffectFilterDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: 'EndCard（エンドロゴ）', title: l10n.helpEndCardTitle, description: l10n.helpEndCardDesc, category: l10n.helpCategoryExport),
 
-    // ── 保存・プロジェクト管理 ─────────────────────────────────
-    _HelpEntry('自動保存', 'クラッシュやファイル破損が起きた時のための復元専用の保存です。'
-        '描画などの変更があるたびに自動で保存され、最大3件まで古い順に'
-        '上書きされます。手動保存（セーブスロット・セーブツリー）とは'
-        '完全に別で管理されており、通常の保存の代わりにはなりません。'
-        'アプリを異常終了した後の再起動時のみ、復元するかどうかを尋ねられます。', '保存'),
-    _HelpEntry('セーブスロット', '決まった数の保存枠（スロット）に、自分で保存先を選びながら保存する'
-        '方式です。スロット数は設定（低品質5件・中品質10件）で決まります。'
-        '上書きしたい枠を毎回自分で選ぶため、「このタイミングの状態は残して'
-        'おきたい」という管理がしやすい方式です。', '保存'),
-    _HelpEntry('セーブツリー', '保存するたびに新しい保存地点が作られ、過去の保存地点から分岐して'
-        '別の履歴を作れる（枝分かれする）保存方式です。件数の上限がなく、'
-        '「あの時のバージョンに戻ってから別の展開を試したい」といった'
-        '使い方に向いています。画面には保存地点が下から上へ伸びる樹形図'
-        'として表示されます。', '保存'),
-    _HelpEntry('フォルダ', 'プロジェクト（作品）をグループ化して整理する機能です。複数階層に'
-        '対応しているので、同じ作品の複数話数やシリーズ物をまとめて管理する'
-        '使い方もできます（例：「作品名」フォルダの中に「第1話」「第2話」…と'
-        'プロジェクトを並べる）。1つの動画の中で場面を分けて作りたい場合は、'
-        'フォルダではなくキャンバス画面の「シーン」機能をご利用ください。', 'プロジェクト管理'),
-    _HelpEntry('ゴミ箱', '削除したプロジェクトが一時的に移動する場所です。完全に削除するまでは'
-        'ここから元に戻せます。設定で自動削除までの日数（OFF/30日/60日/'
-        '90日）を指定できます。', 'プロジェクト管理'),
-    _HelpEntry('共有（.niashare）', 'プロジェクトを他の人（または自分の他の端末）へ渡すための共有専用'
-        'ファイル形式です。受け取った側がこのファイルを開くと、複製されて'
-        '自分のプロジェクト一覧に追加されます。共有元の.niashare自体は'
-        '変更されません。', 'プロジェクト管理'),
-    _HelpEntry('引き継ぎ（.niatra）', '設定・素材・ブラシ・プリセット・UIテーマなど、アプリ全体の環境を'
-        '別の端末へまとめて引き継ぐための機能です。引き継ぐ項目はチェック'
-        'ボックスで個別に選べます。個別のプロジェクトを渡したい場合は'
-        '「共有（.niashare）」を使います。', 'プロジェクト管理'),
+        // ── 保存・プロジェクト管理 ─────────────────────────────────
+        _HelpEntry(topicKey: '自動保存', title: l10n.helpAutoSaveTitle, description: l10n.helpAutoSaveDesc, category: l10n.helpCategorySave),
+        _HelpEntry(topicKey: 'セーブスロット', title: l10n.helpSaveSlotTitle, description: l10n.helpSaveSlotDesc, category: l10n.helpCategorySave),
+        _HelpEntry(topicKey: 'セーブツリー', title: l10n.helpSaveTreeTitle, description: l10n.helpSaveTreeDesc, category: l10n.helpCategorySave),
+        _HelpEntry(topicKey: 'フォルダ', title: l10n.helpFolderTitle, description: l10n.helpFolderDesc, category: l10n.helpCategoryProjectManagement),
+        _HelpEntry(topicKey: 'ゴミ箱', title: l10n.helpTrashTitle, description: l10n.helpTrashDesc, category: l10n.helpCategoryProjectManagement),
+        _HelpEntry(topicKey: '共有（.niashare）', title: l10n.helpShareTitle, description: l10n.helpShareDesc, category: l10n.helpCategoryProjectManagement),
+        _HelpEntry(topicKey: '引き継ぎ（.niatra）', title: l10n.helpTransferTitle, description: l10n.helpTransferDesc, category: l10n.helpCategoryProjectManagement),
 
-    // ── 書き出し ───────────────────────────────────────────
-    _HelpEntry('動画書き出し（MP4）', '作品を汎用的なMP4動画として書き出します。端末内蔵のハードウェア'
-        'エンコーダーを直接利用しており、H.264関連のライセンス上の懸念を'
-        '避けています。無料版はエンドカードが自動追加され、書き出せる長さに'
-        '上限があります。', '書き出し'),
-    _HelpEntry('透過WebM', 'アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画'
-        '形式です。対応する再生環境でのみ透過再生されます。他のアプリの'
-        '素材として重ねて使いたい場合などに向いています。', '書き出し'),
-    _HelpEntry('GIF書き出し', 'アニメーションGIFとして書き出します。GIFは書き出し時のみの'
-        '形式で、編集中に専用の「GIFモード」があるわけではありません。', '書き出し'),
+        // ── 書き出し ───────────────────────────────────────────
+        _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport),
+        _HelpEntry(topicKey: '透過WebM', title: l10n.helpTransparentWebmTitle, description: l10n.helpTransparentWebmDesc, category: l10n.helpCategoryExport),
+        _HelpEntry(topicKey: 'GIF書き出し', title: l10n.helpGifExportTitle, description: l10n.helpGifExportDesc, category: l10n.helpCategoryExport),
 
-    // ── その他 ────────────────────────────────────────────
-    _HelpEntry('ウォーターマーク', '書き出した動画・画像に、自分の署名やロゴを透かしとして入れられる'
-        'プレミアム限定機能です。位置・大きさ・不透明度を調整できます。', 'プレミアム'),
-    _HelpEntry('プレミアム', '尺の制限緩和・エンドロゴ編集・ウォーターマーク・トーンカーブ・'
-        'レベル補正など、無料版では制限されている機能を利用できる会員種別'
-        'です。リリース記念キャンペーン期間中は無料版でもこれらの機能を'
-        '無料で利用できます（広告非表示や購入自体はできません）。', 'プレミアム'),
-    _HelpEntry('フォント管理', 'テキストツールで使えるフォントを追加・検索・削除できる画面です。'
-        '初期同梱フォント以外の追加フリーフォントは、初期インストール容量を'
-        '抑えるためここからオンデマンドでダウンロードする方式になって'
-        'います。', '設定'),
-    _HelpEntry('パフォーマンス設定', '端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、'
-        '各項目を個別に設定（カスタム）できます。保存方式・タイルキャッシュ・'
-        'オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除など'
-        'アプリの容量・動作の重さに影響する設定もここにまとまっています。', '設定'),
-  ];
+        // ── その他 ────────────────────────────────────────────
+        _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium),
+        _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium),
+        _HelpEntry(topicKey: 'フォント管理', title: l10n.helpFontManagementTitle, description: l10n.helpFontManagementDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: 'パフォーマンス設定', title: l10n.helpPerformanceSettingsTitle, description: l10n.helpPerformanceSettingsDesc, category: l10n.helpCategorySettings),
+      ];
 
   @override
   void dispose() {
@@ -213,38 +99,42 @@ class _HelpScreenState extends State<HelpScreen> {
     super.dispose();
   }
 
-  List<_HelpEntry> get _filtered => _searchQuery.isEmpty
-      ? _entries
-      : _entries.where((e) => e.title.contains(_searchQuery) || e.description.contains(_searchQuery) || e.category.contains(_searchQuery)).toList();
+  List<_HelpEntry> _filtered(List<_HelpEntry> entries) => _searchQuery.isEmpty
+      ? entries
+      : entries.where((e) => e.title.contains(_searchQuery) || e.description.contains(_searchQuery) || e.category.contains(_searchQuery)).toList();
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final entries = _buildEntries(l10n);
+    final filtered = _filtered(entries);
     return Scaffold(
-      appBar: AppBar(title: const Text('ヘルプ')),
+      appBar: AppBar(title: Text(l10n.helpScreenTitle)),
       body: SafeArea(child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(hintText: '検索...', prefixIcon: Icon(Icons.search), border: OutlineInputBorder(), isDense: true),
+              decoration: InputDecoration(hintText: l10n.helpSearchHint, prefixIcon: const Icon(Icons.search), border: const OutlineInputBorder(), isDense: true),
               onChanged: (v) => setState(() => _searchQuery = v),
             ),
           ),
           Expanded(
-            child: _filtered.isEmpty
+            child: filtered.isEmpty
                 ? Center(
-                    child: Text('該当する項目が見つかりません',
+                    child: Text(l10n.helpNoResults,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   )
                 : ListView.builder(
-              itemCount: _filtered.length,
+              itemCount: filtered.length,
               itemBuilder: (context, index) {
-                final entry = _filtered[index];
+                final entry = filtered[index];
                 return ExpansionTile(
                   // 各画面のヘルプボタンから遷移した場合、該当項目を
-                  // 自動展開して探す手間を省く。
-                  initiallyExpanded: widget.initialTopic != null && entry.title == widget.initialTopic,
+                  // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
+                  // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。
+                  initiallyExpanded: widget.initialTopic != null && entry.topicKey == widget.initialTopic,
                   leading: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.primary, size: 20),
                   // 項目名用フォント（仕様書24：くらむぼん。以前は説明文と
                   // 逆になっており、項目名が白光明朝・説明文がくらむぼんに
@@ -271,8 +161,11 @@ class _HelpScreenState extends State<HelpScreen> {
 }
 
 class _HelpEntry {
+  /// HelpButton(topic:)の呼び出し元と一致させるための固定識別子
+  /// （表示言語に関わらず日本語のまま、翻訳対象外）。
+  final String topicKey;
   final String title;
   final String description;
   final String category;
-  const _HelpEntry(this.title, this.description, this.category);
+  const _HelpEntry({required this.topicKey, required this.title, required this.description, required this.category});
 }

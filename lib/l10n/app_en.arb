@@ -261,5 +261,141 @@
   "workspaceSaveDialogTitle": "Save Workspace",
   "workspaceSaveDialogLabel": "Name (e.g. Animation, Line Art)",
   "workspaceLoadRightHanded": "Right-Handed",
-  "workspaceLoadLeftHanded": "Left-Handed"
+  "workspaceLoadLeftHanded": "Left-Handed",
+
+  "helpScreenTitle": "Help",
+  "helpSearchHint": "Search...",
+  "helpNoResults": "No matching items found",
+
+  "helpCategoryTool": "Tools",
+  "helpCategoryLayer": "Layers",
+  "helpCategoryAnimation": "Animation",
+  "helpCategoryDrawing": "Drawing",
+  "helpCategoryBrush": "Brush",
+  "helpCategoryPenInput": "Pen Input",
+  "helpCategorySave": "Save",
+  "helpCategoryProjectManagement": "Project Management",
+  "helpCategoryExport": "Export",
+  "helpCategoryPremium": "Premium",
+  "helpCategorySettings": "Settings",
+
+  "helpPenToolTitle": "Pen Tool",
+  "helpPenToolDesc": "The basic tool for drawing lines on the canvas. Long-press to change the brush type, size, and color (double-tap shows a quick summary). It supports pressure and tilt from stylus/tablet devices, and adjusting the pressure curve under Settings > Pen Input lets you finely customize how pressure translates into size and opacity changes. Switching pen sub-tools lets you apply tones or place stamps from the same pen tool.",
+
+  "helpEraserToolTitle": "Eraser Tool",
+  "helpEraserToolDesc": "The counterpart to the pen tool, used to erase what you've drawn. Like a brush, you can adjust its size and opacity, and brush settings such as fade and stroke decay apply to it as well. Rather than \"adding\" to the transparent parts of a layer, it \"removes\" existing drawing, so the layer below becomes visible through it.",
+
+  "helpBucketToolTitle": "Bucket Tool",
+  "helpBucketToolDesc": "Fills an enclosed area all at once. Tap inside an area enclosed by line art and the whole area is filled with the selected color (or tone). If there are gaps in the line art, the fill can spread into unintended areas, so it helps to make sure the line art is properly closed before using it. You can switch between flat fill and tone fill in the settings.",
+
+  "helpLassoFillTitle": "Lasso Fill",
+  "helpLassoFillDesc": "Trace with your finger to form a polygonal area, then fill the inside all at once. Unlike the bucket tool, you can define the area yourself even where the line art isn't closed, making it well suited for complex shapes or areas with gaps in the lines.",
+
+  "helpEyedropperToolTitle": "Eyedropper Tool",
+  "helpEyedropperToolDesc": "Picks up the color at the tapped position and sets it as the drawing color. It samples the composited look of all layers as actually displayed on screen, so it accurately picks up the \"color as seen\" even where multiple layers overlap.",
+
+  "helpSelectToolTitle": "Select Tool",
+  "helpSelectToolDesc": "Selects part of the canvas so you can move, rotate, or scale just that area. Long-press to choose from three selection methods: \"Rectangle Select,\" \"Lasso Select\" (freeform enclosure), or \"Auto Select\" (magic wand — automatically groups areas of similar color). While a selection is active, an outline marks the selected area on the canvas, and the same area stays fixed across all frames and layers until you deselect.",
+
+  "helpFingerToolTitle": "Finger Tool (Warp Tool)",
+  "helpFingerToolDesc": "Warps pixels by pushing them in the direction you drag your finger, like smearing wet paint with a finger. It's used less for fine corrections and more when you want to organically warp lines you've already drawn to give them more expression.",
+
+  "helpShapeToolTitle": "Shape Tool",
+  "helpShapeToolDesc": "Draws precise shapes such as lines, rectangles, and circles with a single gesture. Dragging from the start point to the end point previews the shape live, and it's finalized when you lift your finger. Handy when you need straight lines or perfect circles that are hard to draw freehand.",
+
+  "helpTextToolTitle": "Text Tool",
+  "helpTextToolDesc": "Places text on the canvas. You can choose the font, size, color, and vertical/horizontal writing direction. Vertical writing supports automatic rotation of half-width alphanumerics, tate-chu-yoko (keeping numbers horizontal within vertical text), and ruby (furigana). Placed text is baked in as pixels when exported as well.",
+
+  "helpQuickToolTitle": "Quick Tool",
+  "helpQuickToolDesc": "Lets you pre-register combinations of brushes and tools you use often, then cycle through them with a single button. Long-press the ↺ button on the canvas to open a settings panel where you can add, reorder, and delete entries. Drag to change the order.",
+
+  "helpLayerTitle": "Layers",
+  "helpLayerDesc": "A mechanism that lets you split a single canvas into multiple transparent \"layers.\" By drawing line art, coloring, and backgrounds on separate layers, you can redo just the coloring later or swap out the background without erasing the line art. On screen, layers stacked higher appear in front.",
+
+  "helpBlendModeTitle": "Blend Mode",
+  "helpBlendModeDesc": "Changes how a layer is composited with the ones below it. Besides Normal (simply stacked), there's Multiply (multiplies with the layer below to create shadow-like effects), Screen (brightens as if adding light), and Overlay (blends colors while preserving light and dark), among others. Often used when layering tones or color effects as their own layer.",
+
+  "helpClippingTitle": "Clipping",
+  "helpClippingDesc": "Restricts drawing to only the opaque pixels of the layer directly below. When you want to color without going outside the line art, enabling clipping on a coloring layer placed above a line art layer removes the risk of accidentally drawing outside the lines.",
+
+  "helpCommonLayerTitle": "Common Layer",
+  "helpCommonLayerDesc": "Ordinary layers are independent per frame, but a common layer shares the same content across multiple frames and scenes. Elements that don't move between frames, like backgrounds, can be drawn once instead of redrawn for every frame. It's shown as a dedicated track on the timeline.",
+
+  "helpAutoFillTitle": "Auto Fill",
+  "helpAutoFillDesc": "Creates an auto-fill layer beneath the line art layer and automatically colors it based on a pre-made \"autofill preset\" (a combination of colors and tones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark (❗) appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied.",
+
+  "helpOnionSkinTitle": "Onion Skin",
+  "helpOnionSkinDesc": "Overlays the frames before and after the one you're currently editing at partial transparency, so you can draw while checking how the motion connects. You can adjust how many frames are shown (before and after) and their color and opacity in the performance settings.",
+
+  "helpRulerTitle": "Ruler",
+  "helpRulerDesc": "A guide for drawing precise lines that are hard to achieve freehand, including straight, circle, ellipse, and perspective rulers (using vanishing points for perspective drawing). The pen tip automatically snaps to the placed ruler, making even compositions with challenging depth easier to draw than without a ruler. Rulers can be moved, rotated, and resized using their handles.",
+
+  "helpFadeTitle": "Fade",
+  "helpFadeDesc": "A brush setting where opacity and thickness gradually decrease as you draw a stroke further. Use it when you want the end of a line to trail off, or to create a drawing feel with a lingering effect.",
+
+  "helpStrokeDecayTitle": "Stroke Decay",
+  "helpStrokeDecayDesc": "Similar to fade, but closer to the effect of \"ink running out\" — the color fades or gets patchy the longer you keep drawing. It reproduces the texture of a brush or marker running dry as you keep using it.",
+
+  "helpColorMixingTitle": "Color Mixing",
+  "helpColorMixingDesc": "While painting with a brush, blends the color already under the brush with the color you're about to apply. Use it when you want new colors to blend into existing ones, like watercolor or oil paint.",
+
+  "helpPressureCurveTitle": "Pressure Curve",
+  "helpPressureCurveDesc": "A feature in the pen input settings that lets you freely adjust, via a graph, the relationship between actual pen pressure and how it affects brush size and opacity. Whether you want thick lines even with light pressure, or the opposite — needing firm pressure to get thick lines — you can finely customize the feel to match your habits. You can try drawing right there to check the effect after changing the settings.",
+
+  "helpTimelineTitle": "Timeline",
+  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Image, video, and audio material tracks, common layer tracks, and camera keyframes are all managed on the same timeline.",
+
+  "helpSceneTitle": "Scene",
+  "helpSceneDesc": "A feature for dividing and managing a single project (one video) by scene (cut). While folders organize at the project level, scenes are used to express scene changes within a single video.",
+
+  "helpCameraKeyframeTitle": "Camera Keyframe",
+  "helpCameraKeyframeDesc": "Records the camera's position, zoom level, and rotation at a specific point on the timeline. Since the values are automatically interpolated smoothly between keyframes, you can easily add camera work such as panning or zooming in/out.",
+
+  "helpEffectFilterTitle": "Effect Filter",
+  "helpEffectFilterDesc": "A visual effect (blur, color correction, glow, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself.",
+
+  "helpEndCardTitle": "End Card (End Logo)",
+  "helpEndCardDesc": "A short video (about 5 seconds) with the NIARIM logo, automatically added to the end of the main content when exporting a video. The free version cannot hide or remove it, but Premium members can turn it on/off, change its length, or replace it.",
+
+  "helpAutoSaveTitle": "Auto Save",
+  "helpAutoSaveDesc": "A save dedicated to recovery in case of a crash or file corruption. It saves automatically every time there's a change, such as drawing, and overwrites the oldest of up to 3 saves. It's managed completely separately from manual saves (save slots and the save tree) and is not a substitute for regular saving. You're only asked whether to restore it when relaunching the app after an abnormal exit.",
+
+  "helpSaveSlotTitle": "Save Slot",
+  "helpSaveSlotDesc": "A method of saving into a fixed number of save slots, where you choose which slot to save to each time. The number of slots is determined by the settings (5 for low quality, 10 for medium quality). Since you choose which slot to overwrite every time, it's an easy way to manage keeping a particular moment's state.",
+
+  "helpSaveTreeTitle": "Save Tree",
+  "helpSaveTreeDesc": "A save method where a new save point is created every time you save, and you can branch off from a past save point to create a different history. There's no limit on the number of saves, making it well suited for use cases like \"I want to go back to that version and try a different direction.\" On screen, save points are shown as a tree diagram growing from bottom to top.",
+
+  "helpFolderTitle": "Folder",
+  "helpFolderDesc": "A feature for grouping and organizing your projects (works). It supports multiple levels of nesting, so you can also use it to manage multiple episodes or a series of the same work together (for example, arranging projects for \"Episode 1,\" \"Episode 2,\" and so on inside a folder named after the work). If you want to divide a single video into separate scenes, use the \"Scene\" feature on the canvas screen instead of folders.",
+
+  "helpTrashTitle": "Trash",
+  "helpTrashDesc": "The place where deleted projects are temporarily moved. You can restore them from here until they're permanently deleted. You can set the number of days until automatic deletion (Off/30/60/90 days) in the settings.",
+
+  "helpShareTitle": "Share (.niashare)",
+  "helpShareDesc": "A dedicated file format for handing a project to someone else (or to another device of your own). When the recipient opens this file, it's duplicated and added to their own project list. The original .niashare file itself is not changed.",
+
+  "helpTransferTitle": "Transfer (.niatra)",
+  "helpTransferDesc": "A feature for transferring your entire app environment — settings, materials, brushes, presets, UI theme, and more — to another device all at once. You can choose individual items to transfer with checkboxes. If you want to hand over an individual project, use \"Share (.niashare)\" instead.",
+
+  "helpVideoExportTitle": "Video Export (MP4)",
+  "helpVideoExportDesc": "Exports your work as a general-purpose MP4 video. It uses the device's built-in hardware encoder directly, avoiding H.264 licensing concerns. The free version automatically adds an end card, and there's a limit on the exportable length.",
+
+  "helpTransparentWebmTitle": "Transparent WebM",
+  "helpTransparentWebmDesc": "A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps.",
+
+  "helpGifExportTitle": "GIF Export",
+  "helpGifExportDesc": "Exports as an animated GIF. GIF is an export-only format — there's no dedicated \"GIF mode\" while editing.",
+
+  "helpWatermarkEntryTitle": "Watermark",
+  "helpWatermarkEntryDesc": "A Premium-only feature that lets you add your own signature or logo as a watermark on exported videos and images. You can adjust its position, size, and opacity.",
+
+  "helpPremiumEntryTitle": "Premium",
+  "helpPremiumEntryDesc": "A membership tier that unlocks features restricted in the free version, such as relaxed duration limits, end-logo editing, watermark, tone curve, and level correction. During the launch campaign, these features are free even on the free plan (ad removal and the purchase itself are not included).",
+
+  "helpFontManagementTitle": "Font Management",
+  "helpFontManagementDesc": "A screen where you can add, search, and remove fonts available in the text tool. Additional free fonts beyond the bundled defaults are downloaded on demand from here, in order to keep the initial install size down.",
+
+  "helpPerformanceSettingsTitle": "Performance Settings",
+  "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, tile cache, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here."
 }

@@ -261,5 +261,141 @@
   "workspaceSaveDialogTitle": "保存工作区",
   "workspaceSaveDialogLabel": "名称（例：动画用・线稿用）",
   "workspaceLoadRightHanded": "右手",
-  "workspaceLoadLeftHanded": "左手"
+  "workspaceLoadLeftHanded": "左手",
+
+  "helpScreenTitle": "帮助",
+  "helpSearchHint": "搜索...",
+  "helpNoResults": "未找到相关项目",
+
+  "helpCategoryTool": "工具",
+  "helpCategoryLayer": "图层",
+  "helpCategoryAnimation": "动画",
+  "helpCategoryDrawing": "绘图",
+  "helpCategoryBrush": "画笔",
+  "helpCategoryPenInput": "笔输入",
+  "helpCategorySave": "保存",
+  "helpCategoryProjectManagement": "项目管理",
+  "helpCategoryExport": "导出",
+  "helpCategoryPremium": "Premium",
+  "helpCategorySettings": "设置",
+
+  "helpPenToolTitle": "笔工具",
+  "helpPenToolDesc": "在画布上绘制线条的基本工具。长按可更改画笔种类・粗细・颜色（双击显示简要说明）。支持数位板/液晶数位板的笔压与倾斜，在设置画面的“笔输入”中调整笔压曲线，可以细致自定义笔压的传达方式（轻压时粗细/不透明度会变化多少）。切换笔的子工具后，还能用同一支笔工具进行贴网点・放置图章。",
+
+  "helpEraserToolTitle": "橡皮擦工具",
+  "helpEraserToolDesc": "与笔工具相对，用于擦除已绘制的内容。与画笔一样可以调整粗细与不透明度，淡出、笔画衰减等画笔设置也同样适用。它进行的是“擦除”已有绘制内容的处理，而不是在图层的透明部分“添加”内容，因此下方图层会透出显示。",
+
+  "helpBucketToolTitle": "填充桶工具",
+  "helpBucketToolDesc": "一次性填充被包围的区域。在线稿所围成的区域内点击，整个区域就会被填充为当前选择的颜色（或网点）。如果线稿有缝隙，颜色可能会扩散到意料之外的范围，因此使用前请确认线稿是否已完全闭合。可以在设置中切换纯色填充/网点填充。",
+
+  "helpLassoFillTitle": "套索填充",
+  "helpLassoFillDesc": "用手指沿想要包围的范围描画出多边形区域，然后一次性填充其内部的工具。与填充桶不同，即使线稿有未闭合的部分，也可以自行指定要包围的范围，因此适合形状复杂或线条中断处的填色。",
+
+  "helpEyedropperToolTitle": "吸管工具",
+  "helpEyedropperToolDesc": "拾取点击位置的颜色并将其设为绘图色的工具。它拾取的是画面上实际显示的全部图层合成后的颜色，因此即使在多个图层重叠的部分，也能准确获取“肉眼所见的颜色”。",
+
+  "helpSelectToolTitle": "选择工具",
+  "helpSelectToolDesc": "选取画布的一部分区域，仅对所选区域进行移动・旋转・缩放的工具。长按可以从“矩形选择”“套索选择（自由形状包围）”“自动选择（魔术棒，自动合并相近颜色的区域）”三种选择方式中选择。选择中会在画布上显示表示所选范围的边框，在取消选择之前，所有帧・所有图层都会固定显示相同的范围。",
+
+  "helpFingerToolTitle": "手指工具（扭曲工具）",
+  "helpFingerToolDesc": "沿手指划动的方向推挤像素使其扭曲，营造出用手指涂抹湿颜料般的效果。相较于精细修正，更常用于将已画好的线条进行有机的扭曲以增添表现力。",
+
+  "helpShapeToolTitle": "图形工具",
+  "helpShapeToolDesc": "一键绘制直线・矩形・圆形等精确图形的工具。从起点拖动到终点时会即时预览，松开手指即可确定。在难以徒手绘制直线或正圆时非常方便。",
+
+  "helpTextToolTitle": "文字工具",
+  "helpTextToolDesc": "在画布上放置文字的工具。可选择字体・大小・颜色・竖排/横排。竖排时还支持半角字母数字的自动旋转・纵中横（数字保持横向排列的表记）・注音标注（类似日语振假名的读音标注）。放置的文字在导出时也会作为像素烧录进画面。",
+
+  "helpQuickToolTitle": "快捷工具",
+  "helpQuickToolDesc": "可预先注册常用的画笔・工具组合，用一个按钮依次切换的功能。长按画布上的↺按钮即可打开可添加・排序・删除的设置面板。可通过拖动改变顺序。",
+
+  "helpLayerTitle": "图层",
+  "helpLayerDesc": "将一张画布分成多个透明“层”进行绘制的机制。将线稿・上色・背景等分别绘制在不同图层上，之后可以只重做上色部分，或在不擦除线稿的情况下更换背景。画面上，位于上方的图层会显示在前面。",
+
+  "helpBlendModeTitle": "混合模式",
+  "helpBlendModeDesc": "更改图层合成方式的功能。除正常（直接叠加）之外，还有正片叠底（与下方图层相乘产生类似阴影的效果）・滤色（如同加了光线般变亮）・叠加（在保持明暗的同时叠加颜色）等。常用于将网点或色彩效果作为图层叠加时。",
+
+  "helpClippingTitle": "剪贴蒙版",
+  "helpClippingDesc": "使绘制内容仅限于紧邻下方图层的不透明像素范围内的功能。当想要在不超出线稿的范围内上色时，在线稿图层上方新建上色图层并启用剪贴蒙版，就不必担心不小心画到线稿外面。",
+
+  "helpCommonLayerTitle": "公共图层",
+  "helpCommonLayerDesc": "普通图层按每一帧独立存在，而公共图层则是在多个帧・场景中共享同一内容的图层。像背景这样不随帧变化而移动的元素，无需每帧重新绘制，只需画一次即可。在时间轴上会以专用轨道的形式显示。",
+
+  "helpAutoFillTitle": "自动上色",
+  "helpAutoFillDesc": "在线稿图层下方创建自动上色图层，并根据预先制作的“自动上色预设”（各部位的颜色・网点组合）自动进行上色的功能。由于可以在画完线稿后一次性上色，能大幅减少需要反复绘制同一角色的手绘动画中的上色工作量。重新绘制线稿后，时间轴・图层面板会显示更新标记（❗），提示需要重新执行自动上色。",
+
+  "helpOnionSkinTitle": "洋葱皮",
+  "helpOnionSkinDesc": "将当前编辑帧前后的帧以半透明方式叠加显示，使你可以一边确认动作的连贯性一边绘制的功能。可以在性能设置中调整显示的帧数（前后各显示几帧）以及颜色・透明度。",
+
+  "helpRulerTitle": "标尺",
+  "helpRulerDesc": "直线・圆・椭圆・透视标尺（使用消失点的透视图法专用标尺）等，用于辅助绘制徒手难以画出的精确线条的功能。放置的标尺会使笔尖自动吸附，即使是没有标尺就难以绘制的具有纵深感的构图也会更容易画出。标尺可以通过操作控制柄进行移动・旋转・调整大小。",
+
+  "helpFadeTitle": "淡出",
+  "helpFadeDesc": "画笔设置之一，随着笔画的持续绘制，不透明度或粗细会逐渐减少的效果。用于想让线条末端产生渐隐感，或想营造带有余韵的笔触时。",
+
+  "helpStrokeDecayTitle": "笔画衰减",
+  "helpStrokeDecayDesc": "与淡出类似，但更接近“墨水逐渐用尽”的表现，绘制得越久颜色越淡或越干涩的效果。可再现毛笔或马克笔持续书写时墨水耗尽般的质感。",
+
+  "helpColorMixingTitle": "混色",
+  "helpColorMixingDesc": "使用画笔上色时，将画笔正下方已有的颜色与即将涂上的选定颜色混合后再绘制的功能。适合想让新颜色与已有颜色自然融合时使用，如水彩或油画般的效果。",
+
+  "helpPressureCurveTitle": "笔压曲线",
+  "helpPressureCurveDesc": "笔输入设置中的功能，可通过图表自由调整实际笔压强度与画笔粗细・不透明度反映方式之间的关系。无论是希望轻压也能画出粗线的人，还是相反希望必须用力按压才会变粗的人，都能根据自己的用笔习惯细致自定义画感。更改设置后可当场试写确认效果。",
+
+  "helpTimelineTitle": "时间轴",
+  "helpTimelineDesc": "管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。图片・视频・音频等素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。",
+
+  "helpSceneTitle": "场景",
+  "helpSceneDesc": "将一个项目（一部动画）内部按场景（镜头）分割管理的功能。文件夹是以项目为单位进行整理，而场景则用于表现一部动画内部的场景转换。",
+
+  "helpCameraKeyframeTitle": "摄像机关键帧",
+  "helpCameraKeyframeDesc": "在时间轴上的特定位置记录摄像机的位置・缩放比例・旋转角度的功能。关键帧之间会自动平滑插值，因此可以轻松添加平移（横向移动）或拉近拉远等镜头运动。",
+
+  "helpEffectFilterTitle": "演出滤镜",
+  "helpEffectFilterDesc": "可应用于场景或帧的画面效果（模糊・色调校正・辉光等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。",
+
+  "helpEndCardTitle": "EndCard（片尾标志）",
+  "helpEndCardDesc": "导出视频时，会在正片结尾自动添加的NIARIM标志短片（约5秒）。免费版无法隐藏或删除，但成为Premium会员后可以开关显示・更改时长・进行替换。",
+
+  "helpAutoSaveTitle": "自动保存",
+  "helpAutoSaveDesc": "专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。仅在应用异常退出后重新启动时，才会询问是否要恢复。",
+
+  "helpSaveSlotTitle": "存档槽",
+  "helpSaveSlotDesc": "在固定数量的存档位（槽）中，由自己选择保存位置进行保存的方式。槽位数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的槽位，适合“想保留这个时间点的状态”这类管理方式。",
+
+  "helpSaveTreeTitle": "存档树",
+  "helpSaveTreeDesc": "每次保存都会创建一个新的存档点，并可以从过去的存档点分支出另一段历史（分叉）的保存方式。没有数量上限，适合“想回到那个版本后再尝试另一种展开”这类用法。画面上存档点会以从下往上生长的树状图形式显示。",
+
+  "helpFolderTitle": "文件夹",
+  "helpFolderDesc": "将项目（作品）分组整理的功能。支持多层级结构，因此也可以用来统一管理同一作品的多个话数或系列作品（例如：在“作品名”文件夹中依次排列“第1话”“第2话”……等项目）。如果想在一部动画内划分场景，请使用画布画面中的“场景”功能，而不是文件夹。",
+
+  "helpTrashTitle": "回收站",
+  "helpTrashDesc": "已删除项目暂时移动到的地方。在被彻底删除之前，都可以从这里恢复。可以在设置中指定自动删除的天数（关闭/30天/60天/90天）。",
+
+  "helpShareTitle": "共享（.niashare）",
+  "helpShareDesc": "用于将项目传递给他人（或自己的其他设备）的专用共享文件格式。接收方打开此文件后，会复制并添加到自己的项目列表中。共享源的.niashare文件本身不会被更改。",
+
+  "helpTransferTitle": "数据迁移（.niatra）",
+  "helpTransferDesc": "将设置・素材・画笔・预设・UI主题等整个应用环境一并迁移到其他设备的功能。要迁移的项目可通过复选框逐项选择。如果只想传递单个项目，请使用“共享（.niashare）”。",
+
+  "helpVideoExportTitle": "视频导出（MP4）",
+  "helpVideoExportDesc": "将作品导出为通用的MP4视频。直接使用设备内置的硬件编码器，避免了H.264相关的授权问题。免费版会自动添加片尾标志，且可导出的时长有上限。",
+
+  "helpTransparentWebmTitle": "透明WebM",
+  "helpTransparentWebmDesc": "可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。",
+
+  "helpGifExportTitle": "GIF导出",
+  "helpGifExportDesc": "以动态GIF格式导出。GIF仅是导出时的格式，编辑过程中并没有专门的“GIF模式”。",
+
+  "helpWatermarkEntryTitle": "水印",
+  "helpWatermarkEntryDesc": "可在导出的视频・图片上添加自己的签名或标志作为水印的Premium专属功能。可调整位置・大小・不透明度。",
+
+  "helpPremiumEntryTitle": "Premium",
+  "helpPremiumEntryDesc": "可使用时长限制放宽・片尾标志编辑・水印・色调曲线・色阶校正等免费版受限功能的会员类型。上线纪念活动期间，免费版也可免费使用这些功能（不含隐藏广告及购买本身）。",
+
+  "helpFontManagementTitle": "字体管理",
+  "helpFontManagementDesc": "可添加・搜索・删除文字工具可用字体的画面。除初始内置字体外的其他免费字体，为控制初始安装容量，需从此处按需下载。",
+
+  "helpPerformanceSettingsTitle": "性能设置",
+  "helpPerformanceSettingsDesc": "可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・图块缓存・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。"
 }
