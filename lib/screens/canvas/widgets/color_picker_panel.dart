@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
+import 'hsv_color_wheel.dart';
 
 /// カラーピッカーパネル（仕様書20：色管理仕様）。
 /// カラーピッカー（HSV/RGB/HEX）・最近使った色・パレットの3セクション構成。
@@ -123,24 +124,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ],
               ),
               const SizedBox(height: 8),
-              Container(
-                width: 264,
-                height: 150,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [Colors.white, HSVColor.fromAHSV(1, _hue, 1, 1).toColor()]),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                foregroundDecoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              const SizedBox(height: 8),
-              // HSV / RGB 切替（仕様書20：「HSV / RGB / HEXの3形式に対応・スライダー操作」）
+              // HSV / RGB 切替（仕様書20：「HSV / RGB / HEXの3形式に対応」）。
               SegmentedButton<_PickerFormat>(
                 style: const ButtonStyle(visualDensity: VisualDensity.compact),
                 segments: const [
@@ -152,9 +136,18 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               ),
               const SizedBox(height: 8),
               if (_format == _PickerFormat.hsv) ...[
-                _slider('H', _hue, 0, 360, (v) { _hue = v; _applyHsv(); }, (_) => _commitToRecent()),
-                _slider('S', _saturation, 0, 1, (v) { _saturation = v; _applyHsv(); }, (_) => _commitToRecent()),
-                _slider('V', _value, 0, 1, (v) { _value = v; _applyHsv(); }, (_) => _commitToRecent()),
+                // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
+                // 方式（仕様書20・タスク#91：従来のスライダー方式から刷新）。
+                Center(
+                  child: HsvColorWheel(
+                    hue: _hue,
+                    saturation: _saturation,
+                    value: _value,
+                    onHueChanged: (h) { _hue = h; _applyHsv(); },
+                    onSvChanged: (s, v) { _saturation = s; _value = v; _applyHsv(); },
+                    onChangeEnd: _commitToRecent,
+                  ),
+                ),
               ] else ...[
                 _slider('R', _r.toDouble(), 0, 255, (v) { _r = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
                 _slider('G', _g.toDouble(), 0, 255, (v) { _g = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
