@@ -120,6 +120,7 @@
   "commonRename": "名前変更",
   "commonCopy": "コピー",
   "commonPaste": "貼り付け",
+  "commonOk": "OK",
 
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
@@ -724,5 +725,18 @@
   "colorPickerAddCurrentColorButton": "現在の色をパレットに追加",
   "colorPickerPaletteNameLabel": "パレット名",
   "colorPickerFavoriteAdd": "お気に入り登録",
-  "colorPickerFavoriteRemove": "お気に入り解除"
+  "colorPickerFavoriteRemove": "お気に入り解除",
+  "penSubToolTabBrush": "ブラシ",
+  "penSubToolTabTone": "トーン",
+  "penSubToolTabStamp": "スタンプ",
+  "penSubToolTabLassoFill": "投げ縄塗り",
+  "penSubToolToneTooltipMessage": "トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。",
+  "penSubToolStampTooltipMessage": "決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。",
+  "penSubToolLassoTooltipMessage": "投げ縄で囲んだ範囲を一括で塗りつぶせます。",
+  "penSubToolManageTooltip": "管理",
+  "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
+  "@penSubToolBrushSizeOpacity": {
+    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+  },
+  "penSubToolStampRotationSubtitle": "ストローク方向に合わせてランダムに回転"
 }

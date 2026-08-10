@@ -95,6 +95,7 @@
   "commonRename": "重新命名",
   "commonCopy": "複製",
   "commonPaste": "貼上",
+  "commonOk": "確定",
 
   "gestureSettingsTitle": "手勢設定",
   "gestureTwoFingerTap": "雙指點按",
@@ -630,5 +631,18 @@
   "colorPickerAddCurrentColorButton": "將目前的顏色新增到調色盤",
   "colorPickerPaletteNameLabel": "調色盤名稱",
   "colorPickerFavoriteAdd": "加入最愛",
-  "colorPickerFavoriteRemove": "取消最愛"
+  "colorPickerFavoriteRemove": "取消最愛",
+  "penSubToolTabBrush": "筆刷",
+  "penSubToolTabTone": "網點",
+  "penSubToolTabStamp": "印章",
+  "penSubToolTabLassoFill": "套索填色",
+  "penSubToolToneTooltipMessage": "選擇網點後，可以用填色桶或筆刷塗上網點紋理。",
+  "penSubToolStampTooltipMessage": "可以放置固定形狀的印章。長按可設定旋轉、密度等。",
+  "penSubToolLassoTooltipMessage": "可以一次填滿套索圈起的範圍。",
+  "penSubToolManageTooltip": "管理",
+  "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
+  "@penSubToolBrushSizeOpacity": {
+    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+  },
+  "penSubToolStampRotationSubtitle": "依筆畫方向隨機旋轉"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
@@ -71,6 +72,7 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 8,
       child: SizedBox(
@@ -86,21 +88,21 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                     labelStyle: const TextStyle(fontSize: 11),
                     // 各サブツールタブの初回使用時に吹き出し説明を表示する（仕様書02・11）
                     tabs: [
-                      const Tab(text: 'ブラシ'),
+                      Tab(text: l10n.penSubToolTabBrush),
                       FirstUseTooltip(
                         tooltipKey: 'pen_subtool_tone',
-                        message: 'トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。',
-                        child: const Tab(text: 'トーン'),
+                        message: l10n.penSubToolToneTooltipMessage,
+                        child: Tab(text: l10n.penSubToolTabTone),
                       ),
                       FirstUseTooltip(
                         tooltipKey: 'pen_subtool_stamp',
-                        message: '決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。',
-                        child: const Tab(text: 'スタンプ'),
+                        message: l10n.penSubToolStampTooltipMessage,
+                        child: Tab(text: l10n.penSubToolTabStamp),
                       ),
                       FirstUseTooltip(
                         tooltipKey: 'pen_subtool_lasso',
-                        message: '投げ縄で囲んだ範囲を一括で塗りつぶせます。',
-                        child: const Tab(text: '投げ縄塗り'),
+                        message: l10n.penSubToolLassoTooltipMessage,
+                        child: Tab(text: l10n.penSubToolTabLassoFill),
                       ),
                     ],
                   ),
@@ -110,7 +112,7 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                 if (widget.onManage != null && _tabController.index != 3)
                   IconButton(
                     icon: const Icon(Icons.tune, size: 16),
-                    tooltip: '管理',
+                    tooltip: l10n.penSubToolManageTooltip,
                     onPressed: () {
                       final subTool = switch (_tabController.index) {
                         0 => PenSubTool.brush,
@@ -148,6 +150,7 @@ class _BrushTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final brushService = context.watch<BrushService>();
     final brushes = brushService.brushes;
     final current = brushService.currentBrush;
@@ -163,7 +166,7 @@ class _BrushTab extends StatelessWidget {
           leading: Icon(Icons.brush, size: 16,
               color: isSelected ? Theme.of(context).colorScheme.primary : null),
           title: Text(brush.name, style: const TextStyle(fontSize: 12)),
-          subtitle: Text('${brush.size.round()}px · ${brush.opacity}%',
+          subtitle: Text(l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
               style: const TextStyle(fontSize: 10)),
           trailing: GestureDetector(
             onTap: () => brushService.toggleFavoriteBrush(brush.id),
@@ -290,6 +293,7 @@ class _StampTab extends StatelessWidget {
 
   /// スタンプ設定ダイアログ（仕様書17：回転ON/OFF・密度・散布）
   void _showStampSettingsDialog(BuildContext context, StampService service, Stamp stamp) {
+    final l10n = AppLocalizations.of(context)!;
     bool rotation = stamp.rotation;
     double density = stamp.density;
     double scatter = stamp.scatter;
@@ -304,14 +308,14 @@ class _StampTab extends StatelessWidget {
             children: [
               SwitchListTile(
                 dense: true,
-                title: const Text('回転'),
-                subtitle: const Text('ストローク方向に合わせてランダムに回転', style: TextStyle(fontSize: 11)),
+                title: Text(l10n.stampRotationLabel),
+                subtitle: Text(l10n.penSubToolStampRotationSubtitle, style: const TextStyle(fontSize: 11)),
                 value: rotation,
                 onChanged: (v) => setS(() => rotation = v),
               ),
               Row(
                 children: [
-                  const Text('密度', style: TextStyle(fontSize: 12)),
+                  Text(l10n.stampDensityLabel, style: const TextStyle(fontSize: 12)),
                   Expanded(
                     child: Slider(
                       value: density, min: 0.1, max: 1.0,
@@ -324,7 +328,7 @@ class _StampTab extends StatelessWidget {
               ),
               Row(
                 children: [
-                  const Text('散布', style: TextStyle(fontSize: 12)),
+                  Text(l10n.stampScatterLabel, style: const TextStyle(fontSize: 12)),
                   Expanded(
                     child: Slider(
                       value: scatter, min: 0, max: 1.0,
@@ -338,14 +342,14 @@ class _StampTab extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 service.updateStamp(stamp.copyWith(
                     rotation: rotation, density: density, scatter: scatter));
                 Navigator.pop(ctx);
               },
-              child: const Text('OK'),
+              child: Text(l10n.commonOk),
             ),
           ],
         ),
@@ -362,6 +366,7 @@ class _LassoFillTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final toneService = context.watch<ToneService>();
     final tones = toneService.tones;
     final lastLassoTone = toneService.lastLassoTone;
@@ -374,7 +379,7 @@ class _LassoFillTab extends StatelessWidget {
         ListTile(
           dense: true,
           leading: const Icon(Icons.format_color_fill, size: 18),
-          title: const Text('ベタ塗り', style: TextStyle(fontSize: 13)),
+          title: Text(l10n.toolbarBucketFlatFill, style: const TextStyle(fontSize: 13)),
           selected: !useTone,
           onTap: () {
             toneService.setLassoUseTone(false);
@@ -385,7 +390,7 @@ class _LassoFillTab extends StatelessWidget {
         // トーン一覧
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: Text('トーン一覧', style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+          child: Text(l10n.toolbarBucketToneListLabel, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
         ),
         Expanded(
           child: GridView.builder(

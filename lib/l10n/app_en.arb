@@ -95,6 +95,7 @@
   "commonRename": "Rename",
   "commonCopy": "Copy",
   "commonPaste": "Paste",
+  "commonOk": "OK",
 
   "gestureSettingsTitle": "Gesture Settings",
   "gestureTwoFingerTap": "Two-Finger Tap",
@@ -630,5 +631,18 @@
   "colorPickerAddCurrentColorButton": "Add current color to palette",
   "colorPickerPaletteNameLabel": "Palette name",
   "colorPickerFavoriteAdd": "Add to favorites",
-  "colorPickerFavoriteRemove": "Remove from favorites"
+  "colorPickerFavoriteRemove": "Remove from favorites",
+  "penSubToolTabBrush": "Brush",
+  "penSubToolTabTone": "Tone",
+  "penSubToolTabStamp": "Stamp",
+  "penSubToolTabLassoFill": "Lasso fill",
+  "penSubToolToneTooltipMessage": "Choose a tone to paint screentone patterns with the bucket or pen.",
+  "penSubToolStampTooltipMessage": "Place stamps of a fixed shape. Long-press to set rotation, density, and more.",
+  "penSubToolLassoTooltipMessage": "Fill the area enclosed by the lasso all at once.",
+  "penSubToolManageTooltip": "Manage",
+  "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
+  "@penSubToolBrushSizeOpacity": {
+    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+  },
+  "penSubToolStampRotationSubtitle": "Randomly rotate to match the stroke direction"
 }

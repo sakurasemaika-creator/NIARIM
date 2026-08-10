@@ -95,6 +95,7 @@
   "commonRename": "重命名",
   "commonCopy": "复制",
   "commonPaste": "粘贴",
+  "commonOk": "确定",
 
   "gestureSettingsTitle": "手势设置",
   "gestureTwoFingerTap": "双指点按",
@@ -630,5 +631,18 @@
   "colorPickerAddCurrentColorButton": "将当前颜色添加到调色盘",
   "colorPickerPaletteNameLabel": "调色盘名称",
   "colorPickerFavoriteAdd": "加入收藏",
-  "colorPickerFavoriteRemove": "取消收藏"
+  "colorPickerFavoriteRemove": "取消收藏",
+  "penSubToolTabBrush": "画笔",
+  "penSubToolTabTone": "网点",
+  "penSubToolTabStamp": "图章",
+  "penSubToolTabLassoFill": "套索填色",
+  "penSubToolToneTooltipMessage": "选择网点后，可以用填色桶或画笔涂上网点纹理。",
+  "penSubToolStampTooltipMessage": "可以放置固定形状的图章。长按可设置旋转、密度等。",
+  "penSubToolLassoTooltipMessage": "可以一次性填充套索圈起的范围。",
+  "penSubToolManageTooltip": "管理",
+  "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
+  "@penSubToolBrushSizeOpacity": {
+    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+  },
+  "penSubToolStampRotationSubtitle": "根据笔画方向随机旋转"
 }

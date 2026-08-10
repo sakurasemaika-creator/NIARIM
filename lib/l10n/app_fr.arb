@@ -95,6 +95,7 @@
   "commonRename": "Renommer",
   "commonCopy": "Copier",
   "commonPaste": "Coller",
+  "commonOk": "OK",
 
   "gestureSettingsTitle": "Réglages des gestes",
   "gestureTwoFingerTap": "Appui à deux doigts",
@@ -630,5 +631,18 @@
   "colorPickerAddCurrentColorButton": "Ajouter la couleur actuelle à la palette",
   "colorPickerPaletteNameLabel": "Nom de la palette",
   "colorPickerFavoriteAdd": "Ajouter aux favoris",
-  "colorPickerFavoriteRemove": "Retirer des favoris"
+  "colorPickerFavoriteRemove": "Retirer des favoris",
+  "penSubToolTabBrush": "Pinceau",
+  "penSubToolTabTone": "Trame",
+  "penSubToolTabStamp": "Tampon",
+  "penSubToolTabLassoFill": "Remplissage au lasso",
+  "penSubToolToneTooltipMessage": "Choisissez une trame pour peindre des motifs de trame avec le pot de peinture ou le stylo.",
+  "penSubToolStampTooltipMessage": "Placez des tampons de forme fixe. Appuyez longuement pour régler la rotation, la densité, etc.",
+  "penSubToolLassoTooltipMessage": "Remplit d'un coup la zone entourée par le lasso.",
+  "penSubToolManageTooltip": "Gérer",
+  "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
+  "@penSubToolBrushSizeOpacity": {
+    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+  },
+  "penSubToolStampRotationSubtitle": "Rotation aléatoire selon la direction du trait"
 }

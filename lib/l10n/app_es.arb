@@ -95,6 +95,7 @@
   "commonRename": "Renombrar",
   "commonCopy": "Copiar",
   "commonPaste": "Pegar",
+  "commonOk": "Aceptar",
 
   "gestureSettingsTitle": "Ajustes de gestos",
   "gestureTwoFingerTap": "Toque con dos dedos",
@@ -630,5 +631,18 @@
   "colorPickerAddCurrentColorButton": "Añadir el color actual a la paleta",
   "colorPickerPaletteNameLabel": "Nombre de la paleta",
   "colorPickerFavoriteAdd": "Añadir a favoritos",
-  "colorPickerFavoriteRemove": "Quitar de favoritos"
+  "colorPickerFavoriteRemove": "Quitar de favoritos",
+  "penSubToolTabBrush": "Pincel",
+  "penSubToolTabTone": "Trama",
+  "penSubToolTabStamp": "Sello",
+  "penSubToolTabLassoFill": "Relleno con lazo",
+  "penSubToolToneTooltipMessage": "Elige una trama para pintar patrones de trama con el bote de pintura o el lápiz.",
+  "penSubToolStampTooltipMessage": "Coloca sellos de forma fija. Mantén pulsado para ajustar la rotación, la densidad y más.",
+  "penSubToolLassoTooltipMessage": "Rellena de una vez el área rodeada por el lazo.",
+  "penSubToolManageTooltip": "Gestionar",
+  "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
+  "@penSubToolBrushSizeOpacity": {
+    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+  },
+  "penSubToolStampRotationSubtitle": "Rotación aleatoria según la dirección del trazo"
 }
