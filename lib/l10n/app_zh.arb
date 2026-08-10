@@ -683,5 +683,34 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "简易混色",
   "brushSettingsMixingBleed": "晕染",
-  "brushSettingsMixingRateLabel": "混色率"
+  "brushSettingsMixingRateLabel": "混色率",
+  "projectDetailNotFoundTitle": "项目",
+  "projectDetailNotFoundBody": "找不到项目",
+  "projectDetailFirstFrameTooltip": "第一帧",
+  "projectDetailPrevFrameTooltip": "后退1帧",
+  "projectDetailPauseTooltip": "暂停",
+  "projectDetailPlayTooltip": "播放",
+  "projectDetailNextFrameTooltip": "前进1帧",
+  "projectDetailLastFrameTooltip": "最后一帧",
+  "projectDetailStartEditButton": "开始编辑",
+  "projectDetailTagsQuickAction": "标签",
+  "projectDetailShareQuickAction": "分享",
+  "projectDetailInfoSectionTitle": "项目信息",
+  "projectDetailInfoExportSize": "导出尺寸",
+  "projectDetailInfoDrawingArea": "绘图区域",
+  "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
+  "@projectDetailInfoDrawingAreaValue": {
+    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+  },
+  "projectDetailInfoTotalFrames": "总帧数",
+  "projectDetailInfoWorkTime": "制作时间",
+  "projectDetailInfoLastSaved": "最近保存",
+  "projectDetailInfoSize": "容量",
+  "projectDetailSaveTreeButton": "存档树",
+  "projectDetailAddTagHint": "添加标签",
+  "projectDetailNiashareFailedSnackbar": ".niashare创建失败：{error}",
+  "@projectDetailNiashareFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "projectDetailTrashMenuItem": "移到回收站"
 }

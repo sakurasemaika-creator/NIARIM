@@ -683,5 +683,34 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "Mezcla simple",
   "brushSettingsMixingBleed": "Sangrado",
-  "brushSettingsMixingRateLabel": "Tasa de mezcla"
+  "brushSettingsMixingRateLabel": "Tasa de mezcla",
+  "projectDetailNotFoundTitle": "Proyecto",
+  "projectDetailNotFoundBody": "No se encontró el proyecto",
+  "projectDetailFirstFrameTooltip": "Primer fotograma",
+  "projectDetailPrevFrameTooltip": "Retroceder 1 fotograma",
+  "projectDetailPauseTooltip": "Pausar",
+  "projectDetailPlayTooltip": "Reproducir",
+  "projectDetailNextFrameTooltip": "Avanzar 1 fotograma",
+  "projectDetailLastFrameTooltip": "Último fotograma",
+  "projectDetailStartEditButton": "Empezar a editar",
+  "projectDetailTagsQuickAction": "Etiquetas",
+  "projectDetailShareQuickAction": "Compartir",
+  "projectDetailInfoSectionTitle": "Información del proyecto",
+  "projectDetailInfoExportSize": "Tamaño de exportación",
+  "projectDetailInfoDrawingArea": "Área de dibujo",
+  "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
+  "@projectDetailInfoDrawingAreaValue": {
+    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+  },
+  "projectDetailInfoTotalFrames": "Total de fotogramas",
+  "projectDetailInfoWorkTime": "Tiempo de trabajo",
+  "projectDetailInfoLastSaved": "Último guardado",
+  "projectDetailInfoSize": "Tamaño",
+  "projectDetailSaveTreeButton": "Árbol de guardado",
+  "projectDetailAddTagHint": "Añadir etiqueta",
+  "projectDetailNiashareFailedSnackbar": "Error al crear el .niashare: {error}",
+  "@projectDetailNiashareFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "projectDetailTrashMenuItem": "Mover a la papelera"
 }

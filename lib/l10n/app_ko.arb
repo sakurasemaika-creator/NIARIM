@@ -683,5 +683,34 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "간이 혼색",
   "brushSettingsMixingBleed": "번짐",
-  "brushSettingsMixingRateLabel": "혼색 비율"
+  "brushSettingsMixingRateLabel": "혼색 비율",
+  "projectDetailNotFoundTitle": "프로젝트",
+  "projectDetailNotFoundBody": "프로젝트를 찾을 수 없습니다",
+  "projectDetailFirstFrameTooltip": "첫 프레임",
+  "projectDetailPrevFrameTooltip": "1프레임 뒤로",
+  "projectDetailPauseTooltip": "일시정지",
+  "projectDetailPlayTooltip": "재생",
+  "projectDetailNextFrameTooltip": "1프레임 앞으로",
+  "projectDetailLastFrameTooltip": "마지막 프레임",
+  "projectDetailStartEditButton": "편집 시작",
+  "projectDetailTagsQuickAction": "태그",
+  "projectDetailShareQuickAction": "공유",
+  "projectDetailInfoSectionTitle": "프로젝트 정보",
+  "projectDetailInfoExportSize": "내보내기 크기",
+  "projectDetailInfoDrawingArea": "그리기 영역",
+  "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
+  "@projectDetailInfoDrawingAreaValue": {
+    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+  },
+  "projectDetailInfoTotalFrames": "총 프레임 수",
+  "projectDetailInfoWorkTime": "제작 시간",
+  "projectDetailInfoLastSaved": "마지막 저장",
+  "projectDetailInfoSize": "용량",
+  "projectDetailSaveTreeButton": "세이브 트리",
+  "projectDetailAddTagHint": "태그 추가",
+  "projectDetailNiashareFailedSnackbar": ".niashare 생성에 실패했습니다: {error}",
+  "@projectDetailNiashareFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "projectDetailTrashMenuItem": "휴지통으로 이동"
 }

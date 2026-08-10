@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/niapro_serializer.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../services/font_service.dart';
 import '../../services/material_service.dart';
@@ -98,13 +99,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
     final project = projectService.projects.where((p) => p.id == widget.projectId).firstOrNull;
 
     if (project == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('プロジェクト')),
-        body: const Center(child: Text('プロジェクトが見つかりません')),
+        appBar: AppBar(title: Text(l10n.projectDetailNotFoundTitle)),
+        body: Center(child: Text(l10n.projectDetailNotFoundBody)),
       );
     }
 
@@ -130,11 +132,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'rename', child: Text('名前変更')),
-              const PopupMenuItem(value: 'duplicate', child: Text('複製')),
-              const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
-              const PopupMenuItem(value: 'materials', child: Text('素材管理')),
-              const PopupMenuItem(value: 'delete', child: Text('ゴミ箱へ移動', style: TextStyle(color: Colors.red))),
+              PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+              PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+              PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+              PopupMenuItem(value: 'materials', child: Text(l10n.materialListTitle)),
+              PopupMenuItem(value: 'delete', child: Text(l10n.projectDetailTrashMenuItem, style: const TextStyle(color: Colors.red))),
             ],
           ),
         ],
@@ -170,12 +172,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   IconButton(
                     onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, 0),
                     icon: const Icon(Icons.skip_previous),
-                    tooltip: '先頭フレーム',
+                    tooltip: l10n.projectDetailFirstFrameTooltip,
                   ),
                   IconButton(
                     onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex - 1),
                     icon: const Icon(Icons.fast_rewind),
-                    tooltip: '1フレーム戻る',
+                    tooltip: l10n.projectDetailPrevFrameTooltip,
                   ),
                   const SizedBox(width: 4),
                   Container(
@@ -189,19 +191,19 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           : () => _togglePlay(projectService, flat, project.fps),
                       icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow,
                           color: Theme.of(context).colorScheme.onPrimary),
-                      tooltip: _isPlaying ? '一時停止' : '再生',
+                      tooltip: _isPlaying ? l10n.projectDetailPauseTooltip : l10n.projectDetailPlayTooltip,
                     ),
                   ),
                   const SizedBox(width: 4),
                   IconButton(
                     onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex + 1),
                     icon: const Icon(Icons.fast_forward),
-                    tooltip: '1フレーム進む',
+                    tooltip: l10n.projectDetailNextFrameTooltip,
                   ),
                   IconButton(
                     onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, flat.length - 1),
                     icon: const Icon(Icons.skip_next),
-                    tooltip: '最終フレーム',
+                    tooltip: l10n.projectDetailLastFrameTooltip,
                   ),
                 ],
               ),
@@ -210,7 +212,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             FilledButton.icon(
               onPressed: () => context.push('/canvas/${widget.projectId}'),
               icon: const Icon(Icons.edit),
-              label: const Text('編集開始'),
+              label: Text(l10n.projectDetailStartEditButton),
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
             const SizedBox(height: 16),
@@ -220,21 +222,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 Expanded(
                   child: _quickAction(
                     icon: Icons.folder_outlined,
-                    label: 'フォルダ',
+                    label: l10n.creativePanelFolderButton,
                     onTap: () => _showMoveToFolderDialog(context, projectService),
                   ),
                 ),
                 Expanded(
                   child: _quickAction(
                     icon: Icons.sell_outlined,
-                    label: 'タグ',
+                    label: l10n.projectDetailTagsQuickAction,
                     onTap: () => _showTagsDialog(context, projectService, project),
                   ),
                 ),
                 Expanded(
                   child: _quickAction(
                     icon: project.isFavorite ? Icons.star : Icons.star_border,
-                    label: 'お気に入り',
+                    label: l10n.homeFavoritesOnly,
                     iconColor: project.isFavorite ? Colors.amber : null,
                     onTap: () => projectService.toggleFavorite(widget.projectId),
                   ),
@@ -242,7 +244,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 Expanded(
                   child: _quickAction(
                     icon: Icons.ios_share,
-                    label: '共有',
+                    label: l10n.projectDetailShareQuickAction,
                     onTap: () => _createNiashare(context, projectService, project),
                   ),
                 ),
@@ -251,7 +253,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 8),
-              child: Text('プロジェクト情報',
+              child: Text(l10n.projectDetailInfoSectionTitle,
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
                       color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
@@ -262,13 +264,16 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _infoRow('FPS', '${project.fps}'),
-                    _infoRow('書き出しサイズ', '${project.exportWidth}×${project.exportHeight}'),
+                    _infoRow(l10n.projectDetailInfoExportSize, '${project.exportWidth}×${project.exportHeight}'),
                     if (project.hasExtendedDrawingArea)
-                      _infoRow('描画領域', '${project.drawingWidth}×${project.drawingHeight}  (${project.drawingAreaScale.toStringAsFixed(1)}倍)'),
-                    _infoRow('総フレーム数', '${project.totalFrames}'),
-                    _infoRow('制作時間', _formatDuration(project.totalWorkSeconds)),
-                    _infoRow('最終保存', _formatDateTime(project.updatedAt)),
-                    _infoRow('容量', _formatSize(project.sizeBytes)),
+                      _infoRow(l10n.projectDetailInfoDrawingArea, l10n.projectDetailInfoDrawingAreaValue(
+                          '${project.drawingWidth}×${project.drawingHeight}',
+                          l10n.newProjectScaleValue(project.drawingAreaScale.toStringAsFixed(1)))),
+                    _infoRow(l10n.projectDetailInfoTotalFrames, '${project.totalFrames}'),
+                    _infoRow(l10n.projectDetailInfoWorkTime, l10n.newProjectDurationHm(
+                        project.totalWorkSeconds ~/ 3600, (project.totalWorkSeconds % 3600) ~/ 60)),
+                    _infoRow(l10n.projectDetailInfoLastSaved, _formatDateTime(project.updatedAt)),
+                    _infoRow(l10n.projectDetailInfoSize, _formatSize(project.sizeBytes)),
                   ],
                 ),
               ),
@@ -277,7 +282,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             OutlinedButton.icon(
               onPressed: () => context.push('/save-tree/${widget.projectId}'),
               icon: const Icon(Icons.account_tree),
-              label: const Text('セーブツリー'),
+              label: Text(l10n.projectDetailSaveTreeButton),
             ),
           ],
         ),
@@ -309,6 +314,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   void _showMoveToFolderDialog(BuildContext context, ProjectService service) {
+    final l10n = AppLocalizations.of(context)!;
     final folders = service.folders;
     showModalBottomSheet(
       context: context,
@@ -316,13 +322,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('フォルダへ移動', style: TextStyle(fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),
-              title: const Text('フォルダなし'),
+              title: Text(l10n.folderNone),
               onTap: () {
                 service.moveToFolder(widget.projectId, null);
                 Navigator.pop(ctx);
@@ -343,13 +349,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   void _showTagsDialog(BuildContext context, ProjectService service, Project project) {
+    final l10n = AppLocalizations.of(context)!;
     final tags = List<String>.from(project.tags);
     final controller = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('タグ'),
+          title: Text(l10n.projectDetailTagsQuickAction),
           content: SizedBox(
             width: 320,
             child: Column(
@@ -369,9 +376,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 TextField(
                   controller: controller,
                   autofocus: true,
-                  decoration: const InputDecoration(
-                    labelText: 'タグを追加',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.projectDetailAddTagHint,
+                    border: const OutlineInputBorder(),
                   ),
                   onSubmitted: (value) {
                     final t = value.trim();
@@ -385,13 +392,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 service.setProjectTags(widget.projectId, tags);
                 Navigator.pop(ctx);
               },
-              child: const Text('保存'),
+              child: Text(l10n.commonSave),
             ),
           ],
         ),
@@ -403,6 +410,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   Future<void> _createNiashare(BuildContext context, ProjectService service, Project project) async {
     final includeOptions = await showMaterialIncludeDialog(context);
     if (includeOptions == null || !context.mounted) return; // キャンセル
+    final l10n = AppLocalizations.of(context)!;
     final materialService = context.read<MaterialService>();
     final fontService = context.read<FontService>();
     final scenes = service.scenesOf(project.id);
@@ -427,7 +435,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('.niashareの作成に失敗しました: $e')),
+        SnackBar(content: Text(l10n.projectDetailNiashareFailedSnackbar('$e'))),
       );
     }
   }
@@ -451,30 +459,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
   }
 
-  String _formatDuration(int seconds) {
-    final h = seconds ~/ 3600;
-    final m = (seconds % 3600) ~/ 60;
-    return '$h時間$m分';
-  }
-
   String _formatDateTime(DateTime dt) =>
       '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
 
   void _showRenameDialog(BuildContext context, String currentName) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: currentName);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('名前変更'),
+        title: Text(l10n.commonRename),
         content: TextField(controller: controller, autofocus: true, decoration: const InputDecoration(border: OutlineInputBorder())),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               context.read<ProjectService>().renameProject(widget.projectId, controller.text);
               Navigator.pop(ctx);
             },
-            child: const Text('変更'),
+            child: Text(l10n.commonChange),
           ),
         ],
       ),

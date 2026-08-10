@@ -683,5 +683,34 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "Simple mixing",
   "brushSettingsMixingBleed": "Bleed",
-  "brushSettingsMixingRateLabel": "Mixing rate"
+  "brushSettingsMixingRateLabel": "Mixing rate",
+  "projectDetailNotFoundTitle": "Project",
+  "projectDetailNotFoundBody": "Project not found",
+  "projectDetailFirstFrameTooltip": "First frame",
+  "projectDetailPrevFrameTooltip": "Back 1 frame",
+  "projectDetailPauseTooltip": "Pause",
+  "projectDetailPlayTooltip": "Play",
+  "projectDetailNextFrameTooltip": "Forward 1 frame",
+  "projectDetailLastFrameTooltip": "Last frame",
+  "projectDetailStartEditButton": "Start editing",
+  "projectDetailTagsQuickAction": "Tags",
+  "projectDetailShareQuickAction": "Share",
+  "projectDetailInfoSectionTitle": "Project info",
+  "projectDetailInfoExportSize": "Export size",
+  "projectDetailInfoDrawingArea": "Drawing area",
+  "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
+  "@projectDetailInfoDrawingAreaValue": {
+    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+  },
+  "projectDetailInfoTotalFrames": "Total frames",
+  "projectDetailInfoWorkTime": "Work time",
+  "projectDetailInfoLastSaved": "Last saved",
+  "projectDetailInfoSize": "Size",
+  "projectDetailSaveTreeButton": "Save tree",
+  "projectDetailAddTagHint": "Add a tag",
+  "projectDetailNiashareFailedSnackbar": "Failed to create .niashare: {error}",
+  "@projectDetailNiashareFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "projectDetailTrashMenuItem": "Move to trash"
 }

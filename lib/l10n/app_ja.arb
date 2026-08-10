@@ -777,5 +777,34 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "簡易混色",
   "brushSettingsMixingBleed": "にじみ",
-  "brushSettingsMixingRateLabel": "混色率"
+  "brushSettingsMixingRateLabel": "混色率",
+  "projectDetailNotFoundTitle": "プロジェクト",
+  "projectDetailNotFoundBody": "プロジェクトが見つかりません",
+  "projectDetailFirstFrameTooltip": "先頭フレーム",
+  "projectDetailPrevFrameTooltip": "1フレーム戻る",
+  "projectDetailPauseTooltip": "一時停止",
+  "projectDetailPlayTooltip": "再生",
+  "projectDetailNextFrameTooltip": "1フレーム進む",
+  "projectDetailLastFrameTooltip": "最終フレーム",
+  "projectDetailStartEditButton": "編集開始",
+  "projectDetailTagsQuickAction": "タグ",
+  "projectDetailShareQuickAction": "共有",
+  "projectDetailInfoSectionTitle": "プロジェクト情報",
+  "projectDetailInfoExportSize": "書き出しサイズ",
+  "projectDetailInfoDrawingArea": "描画領域",
+  "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
+  "@projectDetailInfoDrawingAreaValue": {
+    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+  },
+  "projectDetailInfoTotalFrames": "総フレーム数",
+  "projectDetailInfoWorkTime": "制作時間",
+  "projectDetailInfoLastSaved": "最終保存",
+  "projectDetailInfoSize": "容量",
+  "projectDetailSaveTreeButton": "セーブツリー",
+  "projectDetailAddTagHint": "タグを追加",
+  "projectDetailNiashareFailedSnackbar": ".niashareの作成に失敗しました: {error}",
+  "@projectDetailNiashareFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "projectDetailTrashMenuItem": "ゴミ箱へ移動"
 }

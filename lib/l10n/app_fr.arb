@@ -683,5 +683,34 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "Mélange simple",
   "brushSettingsMixingBleed": "Effet de bavure",
-  "brushSettingsMixingRateLabel": "Taux de mélange"
+  "brushSettingsMixingRateLabel": "Taux de mélange",
+  "projectDetailNotFoundTitle": "Projet",
+  "projectDetailNotFoundBody": "Projet introuvable",
+  "projectDetailFirstFrameTooltip": "Première image",
+  "projectDetailPrevFrameTooltip": "Reculer d'une image",
+  "projectDetailPauseTooltip": "Pause",
+  "projectDetailPlayTooltip": "Lecture",
+  "projectDetailNextFrameTooltip": "Avancer d'une image",
+  "projectDetailLastFrameTooltip": "Dernière image",
+  "projectDetailStartEditButton": "Commencer l'édition",
+  "projectDetailTagsQuickAction": "Étiquettes",
+  "projectDetailShareQuickAction": "Partager",
+  "projectDetailInfoSectionTitle": "Infos du projet",
+  "projectDetailInfoExportSize": "Taille d'exportation",
+  "projectDetailInfoDrawingArea": "Zone de dessin",
+  "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
+  "@projectDetailInfoDrawingAreaValue": {
+    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+  },
+  "projectDetailInfoTotalFrames": "Nombre total d'images",
+  "projectDetailInfoWorkTime": "Temps de travail",
+  "projectDetailInfoLastSaved": "Dernier enregistrement",
+  "projectDetailInfoSize": "Taille",
+  "projectDetailSaveTreeButton": "Arbre de sauvegardes",
+  "projectDetailAddTagHint": "Ajouter une étiquette",
+  "projectDetailNiashareFailedSnackbar": "Échec de la création du .niashare : {error}",
+  "@projectDetailNiashareFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "projectDetailTrashMenuItem": "Déplacer vers la corbeille"
 }
