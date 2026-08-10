@@ -7,6 +7,8 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/tone_preview_thumb.dart';
+import '../canvas/widgets/color_picker_panel.dart';
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -433,25 +435,34 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   }
 
   /// パーツ一覧の1行（仕様書20：「[サムネイル] パーツ名 [色チップ] ✓設定完了マーク」）。
+  /// トーンを使用しているパーツは、単色/グラデーションの丸ではなく指定色で
+  /// 着色した実際のトーンパターンをサムネイルに表示する（タスク#91）。
   Widget _partTile(AutofillPart part) {
+    Widget thumb;
+    if (part.useTone && part.toneId != null) {
+      final tone = context.watch<ToneService>().tones.where((t) => t.id == part.toneId).firstOrNull;
+      thumb = TonePreviewThumb(tone: tone, color: Color(part.color), size: 32);
+    } else {
+      thumb = Container(
+        width: 32, height: 32,
+        decoration: BoxDecoration(
+          color: part.gradient == null ? Color(part.color) : null,
+          gradient: part.gradient == null
+              ? null
+              : LinearGradient(
+                  colors: part.gradient!.colors.map(Color.new).toList(),
+                  stops: part.gradient!.stops,
+                ),
+          shape: BoxShape.circle,
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+      );
+    }
     return ListTile(
                   key: ValueKey(part.id),
                   leading: GestureDetector(
                     onTap: () => _showPartDetailDialog(part),
-                    child: Container(
-                      width: 32, height: 32,
-                      decoration: BoxDecoration(
-                        color: part.gradient == null ? Color(part.color) : null,
-                        gradient: part.gradient == null
-                            ? null
-                            : LinearGradient(
-                                colors: part.gradient!.colors.map(Color.new).toList(),
-                                stops: part.gradient!.stops,
-                              ),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-                      ),
-                    ),
+                    child: thumb,
                   ),
                   title: Text(part.name),
                   // ✓設定完了マーク（仕様書20：保存チェック）
@@ -548,12 +559,6 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     ).then((_) => nameCtrl.dispose());
   }
 
-  static const _paletteColors = [
-    0xFFFF0000, 0xFFFF6600, 0xFFFFCC00, 0xFF00CC00,
-    0xFF0066FF, 0xFF9900CC, 0xFFFF99CC, 0xFF996633,
-    0xFFFFD5B0, 0xFF4A3728, 0xFF2C5F8A, 0xFFCCCCCC,
-  ];
-
   static const _lineColorModeLabels = {
     AutofillLineColorMode.specified: '指定色',
     AutofillLineColorMode.sameAsFill: '塗り色と同じ',
@@ -617,23 +622,21 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     const SizedBox(height: 12),
                     Text('塗り色', style: Theme.of(ctx).textTheme.titleSmall),
                     const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 8, runSpacing: 8,
-                      children: _paletteColors.map((c) => GestureDetector(
-                        onTap: () => setS(() => current = current.copyWith(color: c, gradient: null)),
-                        child: Container(
-                          width: 28, height: 28,
-                          decoration: BoxDecoration(
-                            color: Color(c),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: current.gradient == null && current.color == c
-                                    ? Theme.of(ctx).colorScheme.primary
-                                    : Colors.grey,
-                                width: current.gradient == null && current.color == c ? 2 : 1),
-                          ),
+                    OutlinedButton.icon(
+                      onPressed: () => _showColorPickerFor(
+                        context,
+                        Color(current.color),
+                        (c) => setS(() => current = current.copyWith(color: c.toARGB32(), gradient: null)),
+                      ),
+                      icon: Container(
+                        width: 18, height: 18,
+                        decoration: BoxDecoration(
+                          color: Color(current.color),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey),
                         ),
-                      )).toList(),
+                      ),
+                      label: const Text('色を選択', style: TextStyle(fontSize: 12)),
                     ),
                     TextButton.icon(
                       onPressed: () async {
@@ -662,21 +665,21 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         )),
                     if (current.lineColorMode == AutofillLineColorMode.specified) ...[
                       const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 8, runSpacing: 8,
-                        children: _paletteColors.map((c) => GestureDetector(
-                          onTap: () => setS(() => current = current.copyWith(lineColor: c)),
-                          child: Container(
-                            width: 24, height: 24,
-                            decoration: BoxDecoration(
-                              color: Color(c),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                  color: current.lineColor == c ? Theme.of(ctx).colorScheme.primary : Colors.grey,
-                                  width: current.lineColor == c ? 2 : 1),
-                            ),
+                      OutlinedButton.icon(
+                        onPressed: () => _showColorPickerFor(
+                          context,
+                          Color(current.lineColor),
+                          (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
+                        ),
+                        icon: Container(
+                          width: 18, height: 18,
+                          decoration: BoxDecoration(
+                            color: Color(current.lineColor),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey),
                           ),
-                        )).toList(),
+                        ),
+                        label: const Text('色を選択', style: TextStyle(fontSize: 12)),
                       ),
                     ],
                     if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
@@ -875,28 +878,27 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
 
   void _pickGradientStopColor(
     BuildContext context, AutofillGradient gradient, int index, ValueChanged<AutofillGradient> onPicked) {
+    _showColorPickerFor(context, Color(gradient.colors[index]), (c) {
+      final colors = List<int>.from(gradient.colors);
+      colors[index] = c.toARGB32();
+      onPicked(gradient.copyWith(colors: colors));
+    });
+  }
+
+  /// パーツの塗り色・線画色・グラデーション色の選択に共通利用するカラー
+  /// ピッカー（仕様書20・タスク#91：固定12色の「謎パレット」を廃止し、
+  /// アプリ全体と同じHSVホイール／RGB／HEX／最近使った色／ユーザーパレット
+  /// を備えたColorPickerPanelへ統一した）。
+  void _showColorPickerFor(BuildContext context, Color initial, ValueChanged<Color> onChanged) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('色を選択'),
-        content: Wrap(
-          spacing: 8, runSpacing: 8,
-          children: _paletteColors.map((c) => GestureDetector(
-            onTap: () {
-              final colors = List<int>.from(gradient.colors);
-              colors[index] = c;
-              onPicked(gradient.copyWith(colors: colors));
-              Navigator.pop(ctx);
-            },
-            child: Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(
-                color: Color(c),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey),
-              ),
-            ),
-          )).toList(),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: ColorPickerPanel(
+          currentColor: initial,
+          onColorChanged: onChanged,
+          onClose: () => Navigator.pop(ctx),
         ),
       ),
     );
