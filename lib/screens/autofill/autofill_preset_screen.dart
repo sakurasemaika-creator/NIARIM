@@ -18,12 +18,20 @@ class AutofillPresetScreen extends StatefulWidget {
 class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   String _searchQuery = '';
   bool _isSearching = false;
+  // お気に入りのみ絞り込み（仕様書20）。以前はパーツ単位にお気に入りが
+  // 付いていたが使いどころが薄かったため廃止し、代わりにプリセット単位の
+  // お気に入り＋絞り込みへ一本化した。
+  bool _showFavoritesOnly = false;
 
   List<AutofillPreset> get _presets => context.watch<AutofillPresetService>().presets;
 
-  List<AutofillPreset> get _filtered => _searchQuery.isEmpty
-      ? _presets
-      : _presets.where((p) => p.name.contains(_searchQuery)).toList();
+  List<AutofillPreset> get _filtered {
+    var list = _searchQuery.isEmpty
+        ? _presets
+        : _presets.where((p) => p.name.contains(_searchQuery)).toList();
+    if (_showFavoritesOnly) list = list.where((p) => p.isFavorite).toList();
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,38 +55,59 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-      body: SafeArea(child: _filtered.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 88, height: 88,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      shape: BoxShape.circle,
+      body: SafeArea(child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Row(
+              children: [
+                FilterChip(
+                  label: const Text('お気に入り'),
+                  selected: _showFavoritesOnly,
+                  onSelected: (v) => setState(() => _showFavoritesOnly = v),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _filtered.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 88, height: 88,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.palette_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(_showFavoritesOnly ? 'お気に入りのプリセットがありません' : 'プリセットがありません',
+                            style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+                        const SizedBox(height: 8),
+                        Text('右下の＋から作成できます',
+                            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      ],
                     ),
-                    child: Icon(Icons.palette_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: _filtered.length,
+                    itemBuilder: (context, index) => _PresetCard(
+                      preset: _filtered[index],
+                      onToggleFavorite: () => context
+                          .read<AutofillPresetService>()
+                          .updatePreset(_filtered[index].copyWith(isFavorite: !_filtered[index].isFavorite)),
+                      onEdit: () => _showEditDialog(_filtered[index]),
+                      onDelete: () => _confirmDelete(_filtered[index]),
+                      onTap: () => _showPresetDetail(_filtered[index]),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  Text('プリセットがありません',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
-                  const SizedBox(height: 8),
-                  Text('右下の＋から作成できます',
-                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: _filtered.length,
-              itemBuilder: (context, index) => _PresetCard(
-                preset: _filtered[index],
-                onEdit: () => _showEditDialog(_filtered[index]),
-                onDelete: () => _confirmDelete(_filtered[index]),
-                onTap: () => _showPresetDetail(_filtered[index]),
-              ),
-            )),
+          ),
+        ],
+      )),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),
@@ -192,12 +221,14 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
 class _PresetCard extends StatelessWidget {
   final AutofillPreset preset;
+  final VoidCallback onToggleFavorite;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onTap;
 
   const _PresetCard({
     required this.preset,
+    required this.onToggleFavorite,
     required this.onEdit,
     required this.onDelete,
     required this.onTap,
@@ -231,14 +262,25 @@ class _PresetCard extends StatelessWidget {
         ),
         title: Text(preset.name),
         subtitle: Text('${preset.parts.length}パーツ', style: const TextStyle(fontSize: 11)),
-        trailing: PopupMenuButton<String>(
-          onSelected: (v) {
-            if (v == 'edit') onEdit();
-            if (v == 'delete') onDelete();
-          },
-          itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('名前変更')),
-            const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(preset.isFavorite ? Icons.star : Icons.star_border,
+                  color: preset.isFavorite ? Colors.amber : null),
+              onPressed: onToggleFavorite,
+              tooltip: preset.isFavorite ? 'お気に入り解除' : 'お気に入り登録',
+            ),
+            PopupMenuButton<String>(
+              onSelected: (v) {
+                if (v == 'edit') onEdit();
+                if (v == 'delete') onDelete();
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'edit', child: Text('名前変更')),
+                const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
+              ],
+            ),
           ],
         ),
         onTap: onTap,
@@ -424,16 +466,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         size: 16,
                         color: part.isConfigured ? Colors.green : Colors.red,
                       ),
-                      IconButton(
-                        icon: Icon(part.isFavorite ? Icons.star : Icons.star_border,
-                            size: 18, color: part.isFavorite ? Colors.amber : null),
-                        onPressed: () {
-                          final parts = _preset.parts
-                              .map((p) => p.id == part.id ? p.copyWith(isFavorite: !p.isFavorite) : p)
-                              .toList();
-                          _save(_preset.copyWith(parts: parts));
-                        },
-                      ),
+                      // パーツ単位のお気に入りは不要（プリセット一覧側の
+                      // お気に入り機能に一本化したため削除）。
                       IconButton(
                         icon: const Icon(Icons.edit, size: 18),
                         onPressed: () => _showEditPartDialog(part),
