@@ -9,6 +9,7 @@ import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
 import '../../../engine/procedural_texture.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
+import '../../../engine/undo_manager.dart';
 import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
@@ -48,6 +49,16 @@ class _LayerPanelState extends State<LayerPanel> {
   bool _showSearch = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+
+  // レイヤーサムネイル更新用（仕様書16：「サムネイルはペンを離した瞬間に
+  // 現在レイヤーのみ更新する（全レイヤー一括更新はしない）」）。
+  // UndoManagerはストローク確定（push）・Undo・Redoのたびに必ず
+  // notifyListeners()するため、これを「ペンが離れた（＝描画内容が変わり
+  // 得た）」タイミングの検知に利用する。undoCountの値そのものは増減する
+  // （Undo時は減る）が、値が変化したこと自体が「内容が変わった」ことの
+  // 十分条件になる。
+  int _lastUndoCount = -1;
+  final Map<String, int> _thumbRevision = {};
 
   @override
   void dispose() {
@@ -109,6 +120,17 @@ class _LayerPanelState extends State<LayerPanel> {
     final allLayers = projectService.layersOf(
         widget.projectId, widget.sceneId, widget.frameIndex);
     final layers = _visibleLayers(allLayers);
+
+    // ストロークが確定した（＝ペンが離れた）タイミングを検知し、現在
+    // 選択中のレイヤーのサムネイルだけを再生成対象とする（仕様書16）。
+    final undoCount = context.watch<UndoManager>().undoCount;
+    if (_lastUndoCount != undoCount) {
+      _lastUndoCount = undoCount;
+      if (_selectedIndex >= 0 && _selectedIndex < layers.length) {
+        final id = layers[_selectedIndex].id;
+        _thumbRevision[id] = (_thumbRevision[id] ?? 0) + 1;
+      }
+    }
 
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -290,7 +312,13 @@ class _LayerPanelState extends State<LayerPanel> {
                       const SizedBox(width: 4),
                       _layerTypeIcon(layer.type),
                       const SizedBox(width: 4),
-                      Container(width: 24, height: 24, color: Theme.of(context).colorScheme.surfaceContainerHighest),
+                      _LayerThumbnail(
+                        key: ValueKey('${layer.id}-${_thumbRevision[layer.id] ?? 0}'),
+                        projectId: widget.projectId,
+                        sceneId: widget.sceneId,
+                        frameIndex: widget.frameIndex,
+                        layerId: layer.id,
+                      ),
                     ],
                   ),
                   title: Text(layer.name, style: const TextStyle(fontSize: 12)),
@@ -1644,6 +1672,91 @@ class _LayerPanelState extends State<LayerPanel> {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('画像を読み込みました: $name')),
+    );
+  }
+}
+
+/// レイヤー一覧の各行に表示するサムネイル（仕様書16：レイヤーパネル）。
+///
+/// `TileManager.compositeLayerToImage()`は合成結果を内部キャッシュして
+/// おり、対象レイヤーのタイルに変更が無ければ再合成せずキャッシュ済み
+/// 画像のclone()を返す。そのため呼び出し自体は軽量で、実際に重い
+/// フル合成が走るのは対象レイヤーへ描画があった直後のみ。
+///
+/// 初回表示時に一度だけ生成しキャッシュする。以降の更新は
+/// [_LayerPanelState]がストローク確定（UndoManagerのpush）を検知して
+/// 現在選択中のレイヤーのみキーを変えて再生成させる仕組みに任せる
+/// （「サムネイルはペンを離した瞬間に現在レイヤーのみ更新する」）。
+class _LayerThumbnail extends StatefulWidget {
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final String layerId;
+
+  const _LayerThumbnail({
+    super.key,
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.layerId,
+  });
+
+  @override
+  State<_LayerThumbnail> createState() => _LayerThumbnailState();
+}
+
+class _LayerThumbnailState extends State<_LayerThumbnail> {
+  ui.Image? _image;
+
+  @override
+  void initState() {
+    super.initState();
+    _generate();
+  }
+
+  Future<void> _generate() async {
+    final ps = context.read<ProjectService>();
+    final tileManager = ps.tileManagerOf(widget.projectId);
+    final key = ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, widget.layerId);
+    final full = await tileManager.compositeLayerToImage(key);
+
+    const size = 48; // 24論理px表示・高DPI考慮で2倍解像度
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      full,
+      ui.Rect.fromLTWH(0, 0, full.width.toDouble(), full.height.toDouble()),
+      ui.Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()),
+      ui.Paint(),
+    );
+    full.dispose();
+    final picture = recorder.endRecording();
+    final thumb = await picture.toImage(size, size);
+    picture.dispose();
+
+    if (!mounted) {
+      thumb.dispose();
+      return;
+    }
+    final old = _image;
+    setState(() => _image = thumb);
+    old?.dispose();
+  }
+
+  @override
+  void dispose() {
+    _image?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final image = _image;
+    return Container(
+      width: 24,
+      height: 24,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: image == null ? null : RawImage(image: image, fit: BoxFit.cover),
     );
   }
 }
