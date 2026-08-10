@@ -37,11 +37,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // 現在開いているフォルダ（仕様書19：フォルダは複数階層に対応・
   // パンくずリストで現在位置を表示）。nullはルート直下。
   String? _currentFolderId;
+  // 新規追加系のFAB（＋ボタン）はプロジェクトタブでのみ表示する
+  // （共有・ゴミ箱タブに新規プロジェクト作成の導線があるのは不自然なため）。
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.index != _currentTabIndex) {
+        setState(() => _currentTabIndex = _tabController.index);
+      }
+    });
     // 仕様書19：「低スペック端末では小表示を自動推奨」。ユーザーが表示切替
     // メニューからいつでも変更できる初期値としてのみ適用する。
     if (context.read<PerformanceService>().qualityLevel == QualityLevel.low) {
@@ -312,9 +320,51 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if (adService.shouldShowAds) const AdBannerWidget(),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/new-project'),
-        child: const Icon(Icons.add),
+      // プロジェクトタブでのみ表示。共有・ゴミ箱タブでは新規作成の
+      // 導線自体が不要なため非表示にする。
+      floatingActionButton: _currentTabIndex == 0
+          ? FloatingActionButton(
+              onPressed: () => _showAddChoiceSheet(context),
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+
+  /// FABタップ時：新規プロジェクトか新規フォルダかを選ばせる（仕様書19：
+  /// フォルダとプロジェクトを同一一覧内で扱う設計のため、どちらも一覧の
+  /// ＋ボタンから作成できる必要がある）。
+  void _showAddChoiceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.note_add_outlined),
+              title: const Text('新規プロジェクト'),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/new-project');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.create_new_folder_outlined),
+              title: const Text('新規フォルダ'),
+              onTap: () {
+                Navigator.pop(ctx);
+                // 現在開いているフォルダの直下に作成する（ルートに固定しない）。
+                showCreateFolderNameDialog(context, (name) async {
+                  await context.read<ProjectService>().createFolder(
+                        name,
+                        parentFolderId: _currentFolderId,
+                      );
+                });
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

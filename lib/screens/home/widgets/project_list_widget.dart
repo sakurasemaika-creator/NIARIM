@@ -13,6 +13,49 @@ import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 
+/// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
+/// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
+/// 双方から共通で使う（重複実装を避けるためpublicなトップレベル関数として
+/// 定義し、home_screen.dartからも呼び出せるようにしている）。
+void showCreateFolderNameDialog(BuildContext context, Future<void> Function(String name) onCreate) {
+  final controller = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('新規フォルダ'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 8),
+          // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
+          // ヒント（フォルダは複数階層に対応しているため実現可能）。
+          Text(
+            '同じ作品の複数話数やシリーズをまとめる場合にも使えます',
+            style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+        FilledButton(
+          onPressed: () async {
+            if (controller.text.trim().isEmpty) return;
+            await onCreate(controller.text.trim());
+            if (ctx.mounted) Navigator.pop(ctx);
+          },
+          child: const Text('作成'),
+        ),
+      ],
+    ),
+  );
+}
+
 /// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
 /// （仕様書19：「フォルダとプロジェクトを同一一覧内で並び替え」）。
 class _Entry {
@@ -549,50 +592,11 @@ class ProjectListWidget extends StatelessWidget {
               title: const Text('新規フォルダを作成'),
               onTap: () {
                 Navigator.pop(ctx);
-                _showCreateFolderNameDialog(context, onCreateAndSelect);
+                showCreateFolderNameDialog(context, onCreateAndSelect);
               },
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showCreateFolderNameDialog(BuildContext context, Future<void> Function(String name) onCreate) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('新規フォルダ'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 8),
-            // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
-            // ヒント（フォルダは複数階層に対応しているため実現可能）。
-            Text(
-              '同じ作品の複数話数やシリーズをまとめる場合にも使えます',
-              style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
-          FilledButton(
-            onPressed: () async {
-              if (controller.text.trim().isEmpty) return;
-              await onCreate(controller.text.trim());
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('作成'),
-          ),
-        ],
       ),
     );
   }
