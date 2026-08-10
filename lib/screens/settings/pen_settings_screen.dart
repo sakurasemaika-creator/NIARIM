@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import 'widgets/pressure_curve_graph.dart';
+import 'widgets/pressure_curve_try_draw.dart';
 
 /// ペン入力設定（仕様書08）。
 /// 筆圧の「無効／サイズ／不透明度／両方」反映モードは仕様書17により
@@ -48,25 +50,24 @@ class PenSettingsScreen extends StatelessWidget {
           ),
           if (settings.penPressureCurve == PenPressureCurve.custom) ...[
             const SizedBox(height: 8),
-            Row(
-              children: [
-                const Text('立ち上がり'),
-                Expanded(
-                  child: Slider(
-                    min: 0.3, max: 3.0,
-                    value: settings.customPressureExponent,
-                    divisions: 27,
-                    label: settings.customPressureExponent.toStringAsFixed(1),
-                    onChanged: (v) => settings.setCustomPressureExponent(v),
-                  ),
-                ),
-                SizedBox(width: 40, child: Text(settings.customPressureExponent.toStringAsFixed(1), textAlign: TextAlign.center)),
-              ],
+            Text('グラフの点を上下にドラッグして、筆圧に対する反映度合いの曲線を調整できます。',
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 8),
+            Center(
+              child: PressureCurveGraph(
+                exponent: settings.customPressureExponent,
+                onExponentChanged: (v) => settings.setCustomPressureExponent(v),
+              ),
             ),
+            const SizedBox(height: 4),
+            Center(child: Text('指数: ${settings.customPressureExponent.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 11))),
           ],
           const SizedBox(height: 4),
           Text('※ 筆圧の「サイズ／不透明度に反映」設定はブラシごとの個別設定です（ブラシ設定パネルで変更）。',
               style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          const SizedBox(height: 16),
+          const PressureCurveTryDraw(),
           const SizedBox(height: 20),
           _sectionLabel(context, 'ペンボタン設定'),
           Card(
