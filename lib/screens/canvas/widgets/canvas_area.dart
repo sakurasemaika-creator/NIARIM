@@ -100,6 +100,31 @@ class _CanvasAreaState extends State<CanvasArea> {
   // トーン・スタンプ・投げ縄塗りの本処理はisolate側で都度インスタンス化するため
   // （runToneStrokeInIsolate等を参照）、ここではエンジンインスタンスを保持しない。
 
+  // ─── キャンバスの平行移動・拡大縮小・回転（仕様書03・08） ────────────────
+  // Flutter標準のInteractiveViewerは回転ジェスチャーに非対応のため、独自の
+  // ポインタートラッキングでパン・ピンチズーム・2本指回転を実装する（既知の
+  // バグ「二本指回転未対応・ピンチアウトでのキャンバスサイズ超縮小」の修正）。
+  static const double _minCanvasScale = 0.1;
+  static const double _maxCanvasScale = 10.0;
+  // タッチ中のポインターID→現在位置（2本指以上での変形操作の計算に使う）。
+  final Map<int, Offset> _activeTouchPositions = {};
+  // 一度2本指以上になったら、その後1本に減っても全ての指が離れるまでは
+  // 描画ツールへイベントを渡さない（指を離した瞬間に残りの1本で不意に
+  // 描画が始まってしまう事故を防ぐ）。
+  bool _touchTransformActive = false;
+  // 実際に描画ツール側（_onPointerDown等）へ処理を委譲したポインターの集合。
+  // 対応するonPointerUpも同じポインターのみ委譲する（変形操作用に握り
+  // つぶしたポインターのUpをツール側の「描画終了」として誤処理しない）。
+  final Set<int> _toolHandledPointers = {};
+  // 手のひらツールでの1本指（スタイラス・マウスも含む）ドラッグ平行移動。
+  Offset? _panToolLastScreenPos;
+
+  /// スタイラス使用中は誤操作防止のため2本指キャンバス操作を無効化する
+  /// （手のひらツール選択中のみ例外的に許可）。既存のInteractiveViewerの
+  /// panEnabled/scaleEnabledと同じ条件（仕様書08：パームリジェクション）。
+  bool get _canTouchTransform =>
+      !_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan;
+
   late TileManager _tileManager;
   late DrawingEngine _drawingEngine;
 
@@ -378,8 +403,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// マウスホイールでのズーム（仕様書08：Galaxy DeXモード・マウス入力）。
-  /// カーソル位置を中心に拡大縮小する。InteractiveViewerのminScale/maxScaleと
-  /// 同じ範囲（0.1〜10.0）に収める。
+  /// カーソル位置を中心に拡大縮小する。
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
     final scaleFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
@@ -390,7 +414,39 @@ class _CanvasAreaState extends State<CanvasArea> {
       ..translateByDouble(-focal.dx, -focal.dy, 0, 1);
     final newMatrix = zoomMatrix * _transformController.value;
     final newScale = newMatrix.getMaxScaleOnAxis();
-    if (newScale < 0.1 || newScale > 10.0) return;
+    if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;
+    setState(() => _transformController.value = newMatrix);
+  }
+
+  /// 2本指以上でのキャンバス操作（パン・ピンチズーム・回転）。[movedPointer]が
+  /// [newPos]へ動いたとき、他の指のうち1本（アンカー）を画面上に固定した
+  /// ままの相似変換として計算する（アンカーは動かないため、その指の下の
+  /// コンテンツが画面上でずれない）。3本指以上の場合も先頭2本のみを使う。
+  void _applyMultiTouchTransform(int movedPointer, Offset newPos) {
+    final anchorId =
+        _activeTouchPositions.keys.firstWhere((id) => id != movedPointer, orElse: () => -1);
+    if (anchorId == -1) return;
+    final anchorPos = _activeTouchPositions[anchorId];
+    final oldPos = _activeTouchPositions[movedPointer];
+    if (anchorPos == null || oldPos == null || oldPos == newPos) return;
+
+    final beforeVec = oldPos - anchorPos;
+    final afterVec = newPos - anchorPos;
+    final beforeDist = beforeVec.distance;
+    final afterDist = afterVec.distance;
+    // 指同士が近すぎる間は角度・拡大率の計算が不安定になるため更新しない。
+    if (beforeDist < 4 || afterDist < 4) return;
+
+    final scaleFactor = afterDist / beforeDist;
+    final rotationDelta = afterVec.direction - beforeVec.direction;
+    final transform = Matrix4.translationValues(anchorPos.dx, anchorPos.dy, 0) *
+        Matrix4.rotationZ(rotationDelta) *
+        Matrix4.diagonal3Values(scaleFactor, scaleFactor, 1) *
+        Matrix4.translationValues(-anchorPos.dx, -anchorPos.dy, 0);
+    final newMatrix = transform * _transformController.value;
+    final newScale = newMatrix.getMaxScaleOnAxis();
+    // ピンチアウトでの過剰縮小・過剰拡大を防ぐ（既知バグの修正）。
+    if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;
     setState(() => _transformController.value = newMatrix);
   }
 
@@ -426,7 +482,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
 
     if (widget.currentTool == DrawingTool.pan) {
-      // 手のひらツール：描画を行わずInteractiveViewerによる平行移動へ委ねる
+      // 手のひらツール：描画は行わず、この指（スタイラス・マウスも含む）の
+      // ドラッグでキャンバスを平行移動する。
+      _panToolLastScreenPos = event.localPosition;
       return;
     }
 
@@ -537,7 +595,17 @@ class _CanvasAreaState extends State<CanvasArea> {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
 
-    if (widget.currentTool == DrawingTool.pan) return;
+    if (widget.currentTool == DrawingTool.pan) {
+      final last = _panToolLastScreenPos;
+      if (last != null) {
+        final delta = event.localPosition - last;
+        setState(() => _transformController.value =
+            (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+                _transformController.value);
+      }
+      _panToolLastScreenPos = event.localPosition;
+      return;
+    }
     if (widget.currentTool == DrawingTool.selectRect && _selectionStart != null) {
       setState(() => _selectionEnd = canvasPos);
       return;
@@ -608,7 +676,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     final type = _inputHandler.classifyInput(event);
 
-    if (widget.currentTool == DrawingTool.pan) return;
+    if (widget.currentTool == DrawingTool.pan) {
+      _panToolLastScreenPos = null;
+      return;
+    }
     if (widget.currentTool == DrawingTool.selectRect) {
       final start = _selectionStart;
       final end = _selectionEnd;
@@ -1761,57 +1832,94 @@ class _CanvasAreaState extends State<CanvasArea> {
         onPointerDown: (e) {
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount++;
+            _activeTouchPositions[e.pointer] = e.localPosition;
             if (_touchCount == 2) _handleGesture(context, settings.twoFingerTap);
             if (_touchCount == 3) _handleGesture(context, settings.threeFingerTap);
+            if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
+              _touchTransformActive = true;
+            }
+            // 2本指以上でのキャンバス操作モード中は、この指を描画ツールへ
+            // 渡さない（複数指での誤描画・二重ストローク防止）。
+            if (_touchTransformActive) return;
           }
+          _toolHandledPointers.add(e.pointer);
           _onPointerDown(e);
         },
-        onPointerMove: _onPointerMove,
+        onPointerMove: (e) {
+          if (e.kind == PointerDeviceKind.touch && _activeTouchPositions.containsKey(e.pointer)) {
+            if (_touchTransformActive) {
+              if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
+                _applyMultiTouchTransform(e.pointer, e.localPosition);
+              }
+              _activeTouchPositions[e.pointer] = e.localPosition;
+              return;
+            }
+            _activeTouchPositions[e.pointer] = e.localPosition;
+          }
+          if (!_toolHandledPointers.contains(e.pointer)) return;
+          _onPointerMove(e);
+        },
         onPointerUp: (e) {
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount = (_touchCount - 1).clamp(0, 10);
+            _activeTouchPositions.remove(e.pointer);
+            // 全ての指が離れて初めて、次のタッチを新規の描画として扱えるように戻す
+            // （2本指→1本指に減った直後に、残りの指で不意に描画が始まるのを防ぐ）。
+            if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
           }
+          if (!_toolHandledPointers.remove(e.pointer)) return;
           _onPointerUp(e);
         },
+        onPointerCancel: (e) {
+          if (e.kind == PointerDeviceKind.touch) {
+            _touchCount = (_touchCount - 1).clamp(0, 10);
+            _activeTouchPositions.remove(e.pointer);
+            if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
+          }
+          _toolHandledPointers.remove(e.pointer);
+        },
         onPointerSignal: _handlePointerSignal,
-        child: InteractiveViewer(
-          transformationController: _transformController,
-          minScale: 0.1,
-          maxScale: 10.0,
-          panEnabled: !_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan,
-          scaleEnabled: !_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan,
-          // 低スペック端末対策：キャンバスの再描画を他ウィジェットから分離し、
-          // ストローク中の再描画コストを最小限に抑える。
-          child: RepaintBoundary(
-            child: CustomPaint(
-              painter: _CanvasPainter(
-                project: widget.project,
-                background: widget.background,
-                transform: _transformController.value,
-                compositeImage: _compositeImage,
-                belowImage: _belowImage,
-                aboveImage: _aboveImage,
-                currentLayerOpacity:
-                    _layers.where((l) => l.id == _layerId).firstOrNull?.opacity ?? 100,
-                currentLayerBlendMode: _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
-                    LayerBlendMode.normal,
-                onionImages: Map.unmodifiable(_onionImages),
-                onionSettings: widget.onionSkinSettings,
-                onionEngine: _onionSkinEngine,
-                selectionStart: _selectionStart,
-                selectionEnd: _selectionEnd,
-                selectionOverlayImage: _selectionOverlayImage,
-                lassoPoints: _lassoPoints,
-                subToolStrokePoints: _subToolStrokePoints,
-                activeRuler: widget.activeRuler,
-                shapeKind: widget.shapeKind,
-                shapeStart: _shapeStart,
-                shapeEnd: _shapeEnd,
-                moveDelta: widget.currentTool == DrawingTool.move ? _moveDelta : null,
-                transformLive: widget.currentTool == DrawingTool.transform ? _transformLive : null,
-                showTransformHandles: widget.currentTool == DrawingTool.transform,
+        // Flutter標準のInteractiveViewerは回転ジェスチャーに対応していない
+        // ため、上のonPointerDown/Move/Upで独自にパン・ピンチズーム・回転を
+        // 計算し、_transformControllerの値を直接更新してTransformで反映する
+        // （挙動はInteractiveViewer(constrained:true・既定のClip.hardEdge)
+        // と同等）。
+        child: ClipRect(
+          child: Transform(
+            transform: _transformController.value,
+            // 低スペック端末対策：キャンバスの再描画を他ウィジェットから分離し、
+            // ストローク中の再描画コストを最小限に抑える。
+            child: RepaintBoundary(
+              child: CustomPaint(
+                painter: _CanvasPainter(
+                  project: widget.project,
+                  background: widget.background,
+                  transform: _transformController.value,
+                  compositeImage: _compositeImage,
+                  belowImage: _belowImage,
+                  aboveImage: _aboveImage,
+                  currentLayerOpacity:
+                      _layers.where((l) => l.id == _layerId).firstOrNull?.opacity ?? 100,
+                  currentLayerBlendMode: _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
+                      LayerBlendMode.normal,
+                  onionImages: Map.unmodifiable(_onionImages),
+                  onionSettings: widget.onionSkinSettings,
+                  onionEngine: _onionSkinEngine,
+                  selectionStart: _selectionStart,
+                  selectionEnd: _selectionEnd,
+                  selectionOverlayImage: _selectionOverlayImage,
+                  lassoPoints: _lassoPoints,
+                  subToolStrokePoints: _subToolStrokePoints,
+                  activeRuler: widget.activeRuler,
+                  shapeKind: widget.shapeKind,
+                  shapeStart: _shapeStart,
+                  shapeEnd: _shapeEnd,
+                  moveDelta: widget.currentTool == DrawingTool.move ? _moveDelta : null,
+                  transformLive: widget.currentTool == DrawingTool.transform ? _transformLive : null,
+                  showTransformHandles: widget.currentTool == DrawingTool.transform,
+                ),
+                size: Size.infinite,
               ),
-              size: Size.infinite,
             ),
           ),
         ),
