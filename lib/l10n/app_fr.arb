@@ -463,5 +463,17 @@
   "toneImportFailedSnackbar": "Échec du chargement de la trame : {error}",
   "toneExportFailedSnackbar": "Échec de l'exportation de la trame : {error}",
 
-  "privacyPolicyScreenTitle": "Politique de confidentialité"
+  "privacyPolicyScreenTitle": "Politique de confidentialité",
+
+  "stampTitle": "Tampons",
+  "stampSearchHint": "Rechercher par nom de tampon",
+  "stampEmpty": "Aucun tampon",
+  "stampCreateDialogTitle": "Tampon personnalisé",
+  "stampImportFailedSnackbar": "Échec du chargement du tampon : {error}",
+  "stampExportFailedSnackbar": "Échec de l'exportation du tampon : {error}",
+  "stampEditTitle": "Modifier le tampon",
+  "stampRotationLabel": "Rotation",
+  "stampDensityLabel": "Densité",
+  "stampScatterLabel": "Dispersion",
+  "stampChangeImageButton": "Changer l'image du tampon"
 }

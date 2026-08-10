@@ -463,5 +463,17 @@
   "toneImportFailedSnackbar": "網點讀取失敗：{error}",
   "toneExportFailedSnackbar": "網點匯出失敗：{error}",
 
-  "privacyPolicyScreenTitle": "隱私權政策"
+  "privacyPolicyScreenTitle": "隱私權政策",
+
+  "stampTitle": "印章",
+  "stampSearchHint": "以印章名稱搜尋",
+  "stampEmpty": "沒有印章",
+  "stampCreateDialogTitle": "自製印章",
+  "stampImportFailedSnackbar": "印章讀取失敗：{error}",
+  "stampExportFailedSnackbar": "印章匯出失敗：{error}",
+  "stampEditTitle": "編輯印章",
+  "stampRotationLabel": "旋轉",
+  "stampDensityLabel": "密度",
+  "stampScatterLabel": "散布",
+  "stampChangeImageButton": "變更印章圖片"
 }

@@ -527,5 +527,23 @@
     "placeholders": {"error": {"type": "String"}}
   },
 
-  "privacyPolicyScreenTitle": "プライバシーポリシー"
+  "privacyPolicyScreenTitle": "プライバシーポリシー",
+
+  "stampTitle": "スタンプ",
+  "stampSearchHint": "スタンプ名で検索",
+  "stampEmpty": "スタンプがありません",
+  "stampCreateDialogTitle": "自作スタンプ",
+  "stampImportFailedSnackbar": "スタンプの読み込みに失敗しました: {error}",
+  "@stampImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "stampExportFailedSnackbar": "スタンプの書き出しに失敗しました: {error}",
+  "@stampExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "stampEditTitle": "スタンプを編集",
+  "stampRotationLabel": "回転",
+  "stampDensityLabel": "密度",
+  "stampScatterLabel": "散布",
+  "stampChangeImageButton": "スタンプ画像を変更"
 }

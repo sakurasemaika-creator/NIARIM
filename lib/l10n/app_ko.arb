@@ -463,5 +463,17 @@
   "toneImportFailedSnackbar": "톤을 불러오지 못했습니다: {error}",
   "toneExportFailedSnackbar": "톤 내보내기에 실패했습니다: {error}",
 
-  "privacyPolicyScreenTitle": "개인정보처리방침"
+  "privacyPolicyScreenTitle": "개인정보처리방침",
+
+  "stampTitle": "스탬프",
+  "stampSearchHint": "스탬프 이름으로 검색",
+  "stampEmpty": "스탬프가 없습니다",
+  "stampCreateDialogTitle": "직접 제작한 스탬프",
+  "stampImportFailedSnackbar": "스탬프를 불러오지 못했습니다: {error}",
+  "stampExportFailedSnackbar": "스탬프 내보내기에 실패했습니다: {error}",
+  "stampEditTitle": "스탬프 편집",
+  "stampRotationLabel": "회전",
+  "stampDensityLabel": "밀도",
+  "stampScatterLabel": "분산",
+  "stampChangeImageButton": "스탬프 이미지 변경"
 }

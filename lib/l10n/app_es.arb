@@ -463,5 +463,17 @@
   "toneImportFailedSnackbar": "Error al cargar la trama: {error}",
   "toneExportFailedSnackbar": "Error al exportar la trama: {error}",
 
-  "privacyPolicyScreenTitle": "Política de privacidad"
+  "privacyPolicyScreenTitle": "Política de privacidad",
+
+  "stampTitle": "Sellos",
+  "stampSearchHint": "Buscar por nombre de sello",
+  "stampEmpty": "No hay sellos",
+  "stampCreateDialogTitle": "Sello personalizado",
+  "stampImportFailedSnackbar": "Error al cargar el sello: {error}",
+  "stampExportFailedSnackbar": "Error al exportar el sello: {error}",
+  "stampEditTitle": "Editar sello",
+  "stampRotationLabel": "Rotación",
+  "stampDensityLabel": "Densidad",
+  "stampScatterLabel": "Dispersión",
+  "stampChangeImageButton": "Cambiar imagen del sello"
 }

@@ -463,5 +463,17 @@
   "toneImportFailedSnackbar": "Failed to load the tone: {error}",
   "toneExportFailedSnackbar": "Failed to export the tone: {error}",
 
-  "privacyPolicyScreenTitle": "Privacy Policy"
+  "privacyPolicyScreenTitle": "Privacy Policy",
+
+  "stampTitle": "Stamps",
+  "stampSearchHint": "Search by stamp name",
+  "stampEmpty": "No stamps",
+  "stampCreateDialogTitle": "Custom Stamp",
+  "stampImportFailedSnackbar": "Failed to load the stamp: {error}",
+  "stampExportFailedSnackbar": "Failed to export the stamp: {error}",
+  "stampEditTitle": "Edit Stamp",
+  "stampRotationLabel": "Rotation",
+  "stampDensityLabel": "Density",
+  "stampScatterLabel": "Scatter",
+  "stampChangeImageButton": "Change Stamp Image"
 }

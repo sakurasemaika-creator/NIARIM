@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/stamp.dart';
 import '../../../services/stamp_service.dart';
 import 'creative_folder_sheets.dart';
@@ -32,6 +33,7 @@ class _StampPanelState extends State<StampPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final stampService = context.watch<StampService>();
     final allStamps = stampService.stamps;
     final folders = stampService.folders;
@@ -60,13 +62,13 @@ class _StampPanelState extends State<StampPanel> {
             children: [
               Row(
                 children: [
-                  const Text('スタンプ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.stampTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(
                     icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
                         color: _showFavoritesOnly ? Colors.amber : null),
                     onPressed: () => setState(() => _showFavoritesOnly = !_showFavoritesOnly),
-                    tooltip: 'お気に入りのみ表示',
+                    tooltip: l10n.creativePanelFavoritesOnlyTooltip,
                   ),
                   IconButton(
                     icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 16),
@@ -74,7 +76,7 @@ class _StampPanelState extends State<StampPanel> {
                       _showSearch = !_showSearch;
                       if (!_showSearch) { _searchQuery = ''; _searchController.clear(); }
                     }),
-                    tooltip: '名前で検索',
+                    tooltip: l10n.creativePanelSearchTooltip,
                   ),
                   IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
                 ],
@@ -83,17 +85,17 @@ class _StampPanelState extends State<StampPanel> {
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: const Text('フォルダ', style: TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11)),
                     onPressed: () => _openFolderManagement(context, stampService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                    label: const Text('自作', style: TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11)),
                     onPressed: () => _createFromImage(context, stampService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: const Text('読込', style: TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11)),
                     onPressed: () => _importStamp(context, stampService),
                   ),
                 ],
@@ -106,9 +108,9 @@ class _StampPanelState extends State<StampPanel> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _folderChip('全て', _folderFilter == null || _folderFilter == _allFolders,
+                        _folderChip(l10n.creativePanelFolderAllChip, _folderFilter == null || _folderFilter == _allFolders,
                             () => setState(() => _folderFilter = null)),
-                        _folderChip('フォルダなし', _folderFilter == '', () => setState(() => _folderFilter = '')),
+                        _folderChip(l10n.folderNone, _folderFilter == '', () => setState(() => _folderFilter = '')),
                         ...folders.map((f) => _folderChip(
                             f.name, _folderFilter == f.id, () => setState(() => _folderFilter = f.id))),
                       ],
@@ -122,15 +124,15 @@ class _StampPanelState extends State<StampPanel> {
                     controller: _searchController,
                     autofocus: true,
                     style: const TextStyle(fontSize: 13),
-                    decoration: const InputDecoration(
-                        isDense: true, hintText: 'スタンプ名で検索', prefixIcon: Icon(Icons.search, size: 16)),
+                    decoration: InputDecoration(
+                        isDense: true, hintText: l10n.stampSearchHint, prefixIcon: const Icon(Icons.search, size: 16)),
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
                 ),
               const Divider(),
               Expanded(
                 child: stampList.isEmpty
-                    ? const Center(child: Text('スタンプがありません', style: TextStyle(color: Colors.grey, fontSize: 12)))
+                    ? Center(child: Text(l10n.stampEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
                     : ListView.builder(
                         itemCount: stampList.length,
                         itemBuilder: (context, index) {
@@ -154,10 +156,10 @@ class _StampPanelState extends State<StampPanel> {
                                   icon: const Icon(Icons.more_vert, size: 14),
                                   onSelected: (action) => _handleAction(context, action, stamp),
                                   itemBuilder: (_) => [
-                                    const PopupMenuItem(value: 'edit', child: Text('編集')),
-                                    const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
-                                    const PopupMenuItem(value: 'export', child: Text('書き出し')),
-                                    const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
+                                    PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
+                                    PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+                                    PopupMenuItem(value: 'export', child: Text(l10n.transferExport)),
+                                    PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                                   ],
                                 ),
                               ],
@@ -227,7 +229,8 @@ class _StampPanelState extends State<StampPanel> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!context.mounted) return;
-    final name = await promptCreativeAssetName(context, title: '自作スタンプ');
+    final l10n = AppLocalizations.of(context)!;
+    final name = await promptCreativeAssetName(context, title: l10n.stampCreateDialogTitle);
     if (name == null) return;
     await service.createStampFromImage(result.files.first.path!, name: name);
   }
@@ -239,7 +242,8 @@ class _StampPanelState extends State<StampPanel> {
       await service.importStampFile(result.files.first.path!);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('スタンプの読み込みに失敗しました: $e')));
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.stampImportFailedSnackbar(e.toString()))));
     }
   }
 
@@ -250,7 +254,8 @@ class _StampPanelState extends State<StampPanel> {
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('スタンプの書き出しに失敗しました: $e')));
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.stampExportFailedSnackbar(e.toString()))));
     }
   }
 }
@@ -282,6 +287,7 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DraggableScrollableSheet(
       initialChildSize: 0.55,
       minChildSize: 0.35,
@@ -291,27 +297,27 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
         controller: controller,
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('スタンプを編集', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(l10n.stampEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(labelText: '名前', border: OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
           ),
           const SizedBox(height: 8),
           // 仕様書17：スタンプは回転・密度・散布に対応
           SwitchListTile(
-            title: const Text('回転'),
+            title: Text(l10n.stampRotationLabel),
             value: _stamp.rotation,
             onChanged: (v) => setState(() => _stamp = _stamp.copyWith(rotation: v)),
           ),
-          _sliderRow('密度', _stamp.density, 0.1, 5.0,
+          _sliderRow(l10n.stampDensityLabel, _stamp.density, 0.1, 5.0,
               (v) => setState(() => _stamp = _stamp.copyWith(density: v))),
-          _sliderRow('散布', _stamp.scatter, 0.0, 1.0,
+          _sliderRow(l10n.stampScatterLabel, _stamp.scatter, 0.0, 1.0,
               (v) => setState(() => _stamp = _stamp.copyWith(scatter: v))),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             icon: const Icon(Icons.image_outlined, size: 16),
-            label: const Text('スタンプ画像を変更'),
+            label: Text(l10n.stampChangeImageButton),
             onPressed: () async {
               final result = await FilePicker.platform.pickFiles(type: FileType.image);
               if (result == null || result.files.isEmpty || result.files.first.path == null) return;
@@ -328,7 +334,7 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
               context.read<StampService>().updateStamp(_stamp.copyWith(name: _nameController.text));
               Navigator.pop(context);
             },
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
