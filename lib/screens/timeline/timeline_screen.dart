@@ -32,6 +32,7 @@ import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/first_use_tooltip.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
@@ -92,6 +93,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   String? _selectedSceneId;
   bool _isPlaying = false;
   Timer? _playTimer;
+  // プレビュー全画面化（仕様書02・タスク#98）：確認・仕上がりチェックに
+  // 集中できるよう、プレビューのみ＋再生コントロールだけを全画面表示する。
+  bool _isPreviewFullscreen = false;
 
   // カーソル固定方式の移動モード
   bool _isMoveMode = false;
@@ -386,6 +390,36 @@ class _TimelineScreenState extends State<TimelineScreen> {
       });
     }
 
+    // プレビュー全画面化中：確認・仕上がりチェックに集中できるよう、
+    // プレビューと再生コントロールのみを全画面表示する（仕様書02・
+    // タスク#98）。_buildPreview()・_buildPlaybackControls()は通常表示と
+    // 完全に同じメソッドをそのまま再利用するため、再生中のフレーム送りや
+    // スクラブ操作の挙動に差異は生じない。
+    if (_isPreviewFullscreen) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Listener(
+          onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
+          child: SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: const Icon(Icons.fullscreen_exit, color: Colors.white),
+                    tooltip: '全画面プレビューを閉じる',
+                    onPressed: () => setState(() => _isPreviewFullscreen = false),
+                  ),
+                ),
+                _buildPreview(),
+                _buildPlaybackControls(),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Listener(
         // 制作時間カウント（仕様書19）：操作のたびに無操作タイマーをリセットする
@@ -484,17 +518,46 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final preview = Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
-      child: sceneId == null
-          ? const Center(child: Text('プレビュー', style: TextStyle(color: Colors.grey)))
-          : _TimelinePreview(
-              tileManager: ps.tileManagerOf(widget.projectId),
-              layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
-              sceneId: sceneId,
-              frameIndex: _currentFrame,
-              cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
-              effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
-              layerHomes: ps.layerHomesOf(widget.projectId),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: sceneId == null
+                ? const Center(child: Text('プレビュー', style: TextStyle(color: Colors.grey)))
+                : _TimelinePreview(
+                    tileManager: ps.tileManagerOf(widget.projectId),
+                    layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
+                    sceneId: sceneId,
+                    frameIndex: _currentFrame,
+                    cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
+                    effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
+                    layerHomes: ps.layerHomesOf(widget.projectId),
+                  ),
+          ),
+          // プレビュー全画面化ボタン（仕様書02・タスク#98：確認・仕上がり
+          // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
+          // 全画面表示中は_buildPreview()自体が呼ばれないため、ここには
+          // 「開く」方向のボタンのみを置けばよい。
+          Positioned(
+            right: 4,
+            top: 4,
+            child: FirstUseTooltip(
+              tooltipKey: 'timeline_preview_fullscreen',
+              message: 'タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。',
+              child: Material(
+                color: Colors.black.withValues(alpha: 0.4),
+                shape: const CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Icons.fullscreen, color: Colors.white, size: 20),
+                  tooltip: 'プレビューを全画面表示',
+                  onPressed: sceneId == null
+                      ? null
+                      : () => setState(() => _isPreviewFullscreen = true),
+                ),
+              ),
             ),
+          ),
+        ],
+      ),
     );
     return Expanded(
       flex: 3,
