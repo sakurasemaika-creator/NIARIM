@@ -114,6 +114,7 @@
   "commonSave": "保存",
   "commonRestore": "復元",
   "commonClose": "閉じる",
+  "commonRename": "名前変更",
 
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
@@ -162,5 +163,42 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "fontCatalogAll": "すべて",
-  "fontCatalogNoResults": "該当するフォントが見つかりません"
+  "fontCatalogNoResults": "該当するフォントが見つかりません",
+
+  "rulerPanelTitle": "定規",
+  "rulerTypeLine": "直線定規",
+  "rulerTypeEllipse": "楕円定規",
+  "rulerTypeRadial": "集中線定規",
+  "rulerTypeOnePoint": "1点透視",
+  "rulerTypeTwoPoint": "2点透視",
+  "rulerTypeThreePoint": "3点透視",
+  "rulerDivisions": "分割数",
+
+  "transferScreenTitle": "引き継ぎ（.niatra）",
+  "transferInstructionHint": "他の端末へ引き継ぐ項目を選択してください。",
+  "transferItemSettings": "設定",
+  "transferItemMaterials": "素材",
+  "transferItemBrush": "ブラシ",
+  "transferItemPresets": "プリセット",
+  "transferItemTheme": "UIテーマ",
+  "transferImport": "読み込み",
+  "transferExport": "書き出し",
+  "transferExportSuccessSnackbar": ".niatraファイルを書き出しました",
+  "transferExportFailedSnackbar": "書き出しに失敗しました: {error}",
+  "@transferExportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "transferImportSuccessSnackbar": ".niatraファイルを読み込みました",
+  "transferImportFailedSnackbar": "読み込みに失敗しました: {error}",
+  "@transferImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+
+  "folderManagementTitle": "フォルダ管理",
+  "folderManagementCreateNew": "新規作成",
+  "folderManagementEmpty": "フォルダはまだありません",
+  "folderNameLabel": "フォルダ名",
+  "folderMoveToTitle": "フォルダへ移動",
+  "folderNone": "フォルダなし",
+  "creativeAssetNameLabel": "名前"
 }

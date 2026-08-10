@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// ブラシ・トーン・スタンプで共通のフォルダ管理UI（仕様書17：フォルダ管理）。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
@@ -20,6 +21,7 @@ void showFolderManagementSheet(
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setSheetState) {
         final folders = getFolders();
+        final l10n = AppLocalizations.of(ctx)!;
         return DraggableScrollableSheet(
           initialChildSize: 0.6,
           minChildSize: 0.3,
@@ -31,13 +33,13 @@ void showFolderManagementSheet(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    const Text('フォルダ管理', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(l10n.folderManagementTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                     const Spacer(),
                     TextButton.icon(
                       icon: const Icon(Icons.create_new_folder, size: 18),
-                      label: const Text('新規作成'),
+                      label: Text(l10n.folderManagementCreateNew),
                       onPressed: () async {
-                        final name = await _promptFolderName(ctx, title: '新規フォルダ');
+                        final name = await _promptFolderName(ctx, title: l10n.homeAddSheetNewFolder);
                         if (name == null || name.trim().isEmpty) return;
                         await onCreate(name.trim());
                         setSheetState(() {});
@@ -48,9 +50,9 @@ void showFolderManagementSheet(
               ),
               const Divider(height: 1),
               if (folders.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text('フォルダはまだありません', style: TextStyle(color: Colors.grey)),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(l10n.folderManagementEmpty, style: const TextStyle(color: Colors.grey)),
                 ),
               Expanded(
                 child: ReorderableListView.builder(
@@ -80,7 +82,7 @@ void showFolderManagementSheet(
                           IconButton(
                             icon: const Icon(Icons.edit_outlined, size: 18),
                             onPressed: () async {
-                              final name = await _promptFolderName(ctx, title: '名前変更', initial: f.name);
+                              final name = await _promptFolderName(ctx, title: l10n.commonRename, initial: f.name);
                               if (name == null || name.trim().isEmpty) return;
                               onRename(f.id, name.trim());
                               setSheetState(() {});
@@ -109,6 +111,7 @@ void showFolderManagementSheet(
 
 Future<String?> _promptFolderName(BuildContext context, {required String title, String? initial}) {
   final controller = TextEditingController(text: initial);
+  final l10n = AppLocalizations.of(context)!;
   return showDialog<String>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -116,10 +119,10 @@ Future<String?> _promptFolderName(BuildContext context, {required String title, 
       content: TextField(
         controller: controller,
         autofocus: true,
-        decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+        decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
         FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('OK')),
       ],
     ),
@@ -134,17 +137,19 @@ void showMoveToCreativeFolderSheet(
 }) {
   showModalBottomSheet(
     context: context,
-    builder: (ctx) => SafeArea(
+    builder: (ctx) {
+      final l10n = AppLocalizations.of(ctx)!;
+      return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text('フォルダへ移動', style: TextStyle(fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
           ListTile(
             leading: const Icon(Icons.folder_open),
-            title: const Text('フォルダなし'),
+            title: Text(l10n.folderNone),
             onTap: () {
               onSelect(null);
               Navigator.pop(ctx);
@@ -160,13 +165,15 @@ void showMoveToCreativeFolderSheet(
               )),
         ],
       ),
-    ),
+      );
+    },
   );
 }
 
 /// 新規名を入力するダイアログ（自作ブラシ/トーン/スタンプ作成時の名前入力）。
 Future<String?> promptCreativeAssetName(BuildContext context, {required String title, String initial = ''}) {
   final controller = TextEditingController(text: initial);
+  final l10n = AppLocalizations.of(context)!;
   return showDialog<String>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -174,11 +181,11 @@ Future<String?> promptCreativeAssetName(BuildContext context, {required String t
       content: TextField(
         controller: controller,
         autofocus: true,
-        decoration: const InputDecoration(labelText: '名前', border: OutlineInputBorder()),
+        decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
-        FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('作成')),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+        FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: Text(l10n.commonCreate)),
       ],
     ),
   ).then((v) { controller.dispose(); return v; });

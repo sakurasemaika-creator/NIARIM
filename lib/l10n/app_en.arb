@@ -89,6 +89,7 @@
   "commonSave": "Save",
   "commonRestore": "Restore",
   "commonClose": "Close",
+  "commonRename": "Rename",
 
   "gestureSettingsTitle": "Gesture Settings",
   "gestureTwoFingerTap": "Two-Finger Tap",
@@ -131,5 +132,36 @@
 
   "fontCatalogSearchHint": "Search by font name... ({count} fonts)",
   "fontCatalogAll": "All",
-  "fontCatalogNoResults": "No matching fonts found"
+  "fontCatalogNoResults": "No matching fonts found",
+
+  "rulerPanelTitle": "Ruler",
+  "rulerTypeLine": "Straight Ruler",
+  "rulerTypeEllipse": "Ellipse Ruler",
+  "rulerTypeRadial": "Radial Ruler",
+  "rulerTypeOnePoint": "One-Point Perspective",
+  "rulerTypeTwoPoint": "Two-Point Perspective",
+  "rulerTypeThreePoint": "Three-Point Perspective",
+  "rulerDivisions": "Divisions",
+
+  "transferScreenTitle": "Transfer (.niatra)",
+  "transferInstructionHint": "Select the items to transfer to another device.",
+  "transferItemSettings": "Settings",
+  "transferItemMaterials": "Materials",
+  "transferItemBrush": "Brushes",
+  "transferItemPresets": "Presets",
+  "transferItemTheme": "UI Theme",
+  "transferImport": "Import",
+  "transferExport": "Export",
+  "transferExportSuccessSnackbar": "Exported the .niatra file",
+  "transferExportFailedSnackbar": "Export failed: {error}",
+  "transferImportSuccessSnackbar": "Imported the .niatra file",
+  "transferImportFailedSnackbar": "Import failed: {error}",
+
+  "folderManagementTitle": "Folder Management",
+  "folderManagementCreateNew": "New",
+  "folderManagementEmpty": "No folders yet",
+  "folderNameLabel": "Folder Name",
+  "folderMoveToTitle": "Move to Folder",
+  "folderNone": "No Folder",
+  "creativeAssetNameLabel": "Name"
 }

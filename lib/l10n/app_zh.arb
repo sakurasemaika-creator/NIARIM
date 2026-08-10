@@ -89,6 +89,7 @@
   "commonSave": "保存",
   "commonRestore": "恢复",
   "commonClose": "关闭",
+  "commonRename": "重命名",
 
   "gestureSettingsTitle": "手势设置",
   "gestureTwoFingerTap": "双指点按",
@@ -131,5 +132,36 @@
 
   "fontCatalogSearchHint": "按字体名称搜索...（共{count}种字体）",
   "fontCatalogAll": "全部",
-  "fontCatalogNoResults": "未找到匹配的字体"
+  "fontCatalogNoResults": "未找到匹配的字体",
+
+  "rulerPanelTitle": "标尺",
+  "rulerTypeLine": "直线标尺",
+  "rulerTypeEllipse": "椭圆标尺",
+  "rulerTypeRadial": "集中线标尺",
+  "rulerTypeOnePoint": "一点透视",
+  "rulerTypeTwoPoint": "两点透视",
+  "rulerTypeThreePoint": "三点透视",
+  "rulerDivisions": "分割数",
+
+  "transferScreenTitle": "数据迁移（.niatra）",
+  "transferInstructionHint": "请选择要迁移到其他设备的项目。",
+  "transferItemSettings": "设置",
+  "transferItemMaterials": "素材",
+  "transferItemBrush": "画笔",
+  "transferItemPresets": "预设",
+  "transferItemTheme": "UI主题",
+  "transferImport": "导入",
+  "transferExport": "导出",
+  "transferExportSuccessSnackbar": "已导出.niatra文件",
+  "transferExportFailedSnackbar": "导出失败：{error}",
+  "transferImportSuccessSnackbar": "已导入.niatra文件",
+  "transferImportFailedSnackbar": "导入失败：{error}",
+
+  "folderManagementTitle": "文件夹管理",
+  "folderManagementCreateNew": "新建",
+  "folderManagementEmpty": "还没有文件夹",
+  "folderNameLabel": "文件夹名称",
+  "folderMoveToTitle": "移至文件夹",
+  "folderNone": "无文件夹",
+  "creativeAssetNameLabel": "名称"
 }

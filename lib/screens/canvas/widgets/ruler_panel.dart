@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
 
 class RulerPanel extends StatelessWidget {
@@ -15,6 +16,7 @@ class RulerPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Material(
       elevation: 4,
       borderRadius: BorderRadius.circular(8),
@@ -28,7 +30,7 @@ class RulerPanel extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  const Text('定規', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(l10n.rulerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const Spacer(),
                   if (activeRuler != null)
                     TextButton(
@@ -39,7 +41,7 @@ class RulerPanel extends StatelessWidget {
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text('削除', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.commonDelete, style: const TextStyle(fontSize: 11)),
                     ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 16),
@@ -51,13 +53,13 @@ class RulerPanel extends StatelessWidget {
               ),
             ),
             const Divider(height: 1),
-            _rulerTile(context, RulerType.line,                  Icons.straighten,        '直線定規'),
-            _rulerTile(context, RulerType.ellipse,               Icons.circle_outlined,   '楕円定規'),
-            _rulerTile(context, RulerType.radial,                Icons.hub_outlined,      '集中線定規'),
+            _rulerTile(context, RulerType.line,                  Icons.straighten,        l10n.rulerTypeLine),
+            _rulerTile(context, RulerType.ellipse,               Icons.circle_outlined,   l10n.rulerTypeEllipse),
+            _rulerTile(context, RulerType.radial,                Icons.hub_outlined,      l10n.rulerTypeRadial),
             const Divider(height: 1),
-            _rulerTile(context, RulerType.onePointPerspective,   Icons.filter_center_focus, '1点透視'),
-            _rulerTile(context, RulerType.twoPointPerspective,   Icons.compare_arrows,    '2点透視'),
-            _rulerTile(context, RulerType.threePointPerspective, Icons.grid_3x3,          '3点透視'),
+            _rulerTile(context, RulerType.onePointPerspective,   Icons.filter_center_focus, l10n.rulerTypeOnePoint),
+            _rulerTile(context, RulerType.twoPointPerspective,   Icons.compare_arrows,    l10n.rulerTypeTwoPoint),
+            _rulerTile(context, RulerType.threePointPerspective, Icons.grid_3x3,          l10n.rulerTypeThreePoint),
             // 集中線定規の分割数設定（仕様書14：2〜360分割を自由指定）
             if (activeRuler?.type == RulerType.radial) ...[
               const Divider(height: 1),
@@ -71,6 +73,7 @@ class RulerPanel extends StatelessWidget {
   }
 
   Widget _divisionsRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final r = activeRuler!;
     final divisions = r.settings.divisions ?? 12;
     void update(int newDivisions) {
@@ -81,7 +84,7 @@ class RulerPanel extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Row(
         children: [
-          const Text('分割数', style: TextStyle(fontSize: 12)),
+          Text(l10n.rulerDivisions, style: const TextStyle(fontSize: 12)),
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.remove, size: 16),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../engine/niatra_serializer.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/brush_service.dart';
 import '../../services/settings_service.dart';
@@ -20,6 +21,10 @@ class TransferScreen extends StatefulWidget {
 }
 
 class _TransferScreenState extends State<TransferScreen> {
+  // キー自体はNiatraSerializer.export()/applyTo()が内部で
+  // selectedItems['設定']等と直接照合するための固定識別子であり、
+  // UI表示用の文字列ではないため翻訳しない（表示ラベルは_itemLabel()で
+  // 別途ローカライズする）。
   final Map<String, bool> _items = {
     '設定': true,
     '素材': true,
@@ -29,15 +34,27 @@ class _TransferScreenState extends State<TransferScreen> {
   };
   bool _isBusy = false;
 
+  String _itemLabel(AppLocalizations l10n, String key) => switch (key) {
+        '設定' => l10n.transferItemSettings,
+        '素材' => l10n.transferItemMaterials,
+        'ブラシ' => l10n.transferItemBrush,
+        'プリセット' => l10n.transferItemPresets,
+        'UIテーマ' => l10n.transferItemTheme,
+        _ => key,
+      };
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('引き継ぎ（.niatra）'), actions: const [HelpButton(topic: '引き継ぎ（.niatra）')]),
+      // topicはヘルプ画面側の項目タイトル（日本語固定の内部検索キー）と
+      // 一致させる必要があるため翻訳しない。
+      appBar: AppBar(title: Text(l10n.transferScreenTitle), actions: const [HelpButton(topic: '引き継ぎ（.niatra）')]),
       body: desktopCentered(context, Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text('他の端末へ引き継ぐ項目を選択してください。',
+            child: Text(l10n.transferInstructionHint,
                 style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           Expanded(
@@ -50,7 +67,7 @@ class _TransferScreenState extends State<TransferScreen> {
                       for (final key in _items.keys) ...[
                         if (key != _items.keys.first) const Divider(height: 1),
                         CheckboxListTile(
-                          title: Text(key),
+                          title: Text(_itemLabel(l10n, key)),
                           value: _items[key],
                           onChanged: (v) => setState(() => _items[key] = v!),
                         ),
@@ -67,16 +84,16 @@ class _TransferScreenState extends State<TransferScreen> {
               children: [
                 TextButton(
                   onPressed: _isBusy ? null : _import,
-                  child: const Text('読み込み'),
+                  child: Text(l10n.transferImport),
                 ),
                 const Spacer(),
                 TextButton(
                   onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => true)),
-                  child: const Text('全選択'),
+                  child: Text(l10n.homeSelectionAllSelect),
                 ),
                 TextButton(
                   onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => false)),
-                  child: const Text('全解除'),
+                  child: Text(l10n.homeSelectionAllDeselect),
                 ),
                 const SizedBox(width: 8),
                 FilledButton.icon(
@@ -86,7 +103,7 @@ class _TransferScreenState extends State<TransferScreen> {
                           width: 16, height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.file_upload),
-                  label: const Text('書き出し'),
+                  label: Text(l10n.transferExport),
                 ),
               ],
             ),
@@ -111,13 +128,15 @@ class _TransferScreenState extends State<TransferScreen> {
       if (!mounted) return;
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('.niatraファイルを書き出しました')),
+        SnackBar(content: Text(l10n.transferExportSuccessSnackbar)),
       );
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('書き出しに失敗しました: $e')),
+        SnackBar(content: Text(l10n.transferExportFailedSnackbar(e.toString()))),
       );
     } finally {
       if (mounted) setState(() => _isBusy = false);
@@ -145,13 +164,15 @@ class _TransferScreenState extends State<TransferScreen> {
         theme: context.read<ThemeService>(),
       );
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('.niatraファイルを読み込みました')),
+        SnackBar(content: Text(l10n.transferImportSuccessSnackbar)),
       );
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('読み込みに失敗しました: $e')),
+        SnackBar(content: Text(l10n.transferImportFailedSnackbar(e.toString()))),
       );
     } finally {
       if (mounted) setState(() => _isBusy = false);
