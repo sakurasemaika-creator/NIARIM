@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/downloadable_font.dart';
 import '../../services/font_service.dart';
 
@@ -30,6 +31,7 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
     final service = context.watch<FontService>();
     final scheme = Theme.of(context).colorScheme;
     final catalog = service.catalog;
+    final l10n = AppLocalizations.of(context)!;
 
     final filtered = catalog.where((e) {
       if (_category != null && e.category != _category) return false;
@@ -43,7 +45,7 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
           child: TextField(
             decoration: InputDecoration(
-              hintText: 'フォント名で検索...（全${catalog.length}書体）',
+              hintText: l10n.fontCatalogSearchHint(catalog.length),
               prefixIcon: const Icon(Icons.search),
               filled: true,
               isDense: true,
@@ -59,7 +61,7 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             children: [
-              _categoryChip(null, 'すべて'),
+              _categoryChip(null, l10n.fontCatalogAll),
               for (final entry in kFontCategoryLabels.entries)
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
@@ -72,7 +74,7 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
         Expanded(
           child: filtered.isEmpty
               ? Center(
-                  child: Text('該当するフォントが見つかりません',
+                  child: Text(l10n.fontCatalogNoResults,
                       style: TextStyle(color: scheme.onSurfaceVariant)),
                 )
               : ListView.builder(

@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../services/settings_service.dart';
 
 /// 筆圧カーブの「試し書きコーナー」（仕様書08・タスク#93）：適用前に
@@ -44,6 +45,7 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsService>();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -51,11 +53,11 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
           children: [
             Expanded(
               child: Text(
-                'この設定で試し書きできます（ペンの場合、実際の筆圧が反映されます）',
+                l10n.pressureTryDrawHint,
                 style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
               ),
             ),
-            TextButton(onPressed: _points.isEmpty ? null : _clear, child: const Text('クリア')),
+            TextButton(onPressed: _points.isEmpty ? null : _clear, child: Text(l10n.pressureTryDrawClear)),
           ],
         ),
         Listener(

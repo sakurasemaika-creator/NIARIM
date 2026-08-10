@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -10,25 +11,26 @@ class GestureSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsService>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ジェスチャー設定'), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.gestureSettingsTitle), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
             child: Column(
               children: [
-                _item(context, '2本指タップ', settings.twoFingerTap, (a) => settings.setGesture(GestureType.twoFingerTap, a)),
+                _item(context, l10n.gestureTwoFingerTap, settings.twoFingerTap, (a) => settings.setGesture(GestureType.twoFingerTap, a)),
                 const Divider(height: 1),
-                _item(context, '3本指タップ', settings.threeFingerTap, (a) => settings.setGesture(GestureType.threeFingerTap, a)),
+                _item(context, l10n.gestureThreeFingerTap, settings.threeFingerTap, (a) => settings.setGesture(GestureType.threeFingerTap, a)),
                 const Divider(height: 1),
                 // 2本指スワイプ左右のみ、連続動作前提の「フレーム移動」を選択肢に含める
                 // （仕様書08：フレーム移動は2本指スワイプ専用の初期割り当て）。
-                _item(context, '2本指スワイプ左右', settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a),
+                _item(context, l10n.gestureTwoFingerSwipe, settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a),
                     options: GestureAction.values),
                 const Divider(height: 1),
-                _item(context, '長押し', settings.longPress, (a) => settings.setGesture(GestureType.longPress, a)),
+                _item(context, l10n.gestureLongPress, settings.longPress, (a) => settings.setGesture(GestureType.longPress, a)),
               ],
             ),
           ),
@@ -49,14 +51,14 @@ class GestureSettingsScreen extends StatelessWidget {
     final choices = options ?? _defaultOptions;
     return ListTile(
       title: Text(title),
-      trailing: Text(_label(current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+      trailing: Text(_label(context, current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
       onTap: () => showModalBottomSheet(
         context: context,
         builder: (ctx) => SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: choices.map((action) => RadioListTile<GestureAction>(
-              title: Text(_label(action)),
+              title: Text(_label(ctx, action)),
               value: action,
               groupValue: current,
               onChanged: (v) { if (v != null) onChanged(v); Navigator.pop(ctx); },
@@ -67,16 +69,19 @@ class GestureSettingsScreen extends StatelessWidget {
     );
   }
 
-  String _label(GestureAction action) => switch (action) {
-    GestureAction.undo => 'Undo',
-    GestureAction.redo => 'Redo',
-    GestureAction.eyedropper => 'スポイト',
-    GestureAction.panTool => '手のひらツール',
-    GestureAction.eraserToggle => '消しゴム切替',
-    GestureAction.brushToggle => 'ブラシ切替',
-    GestureAction.frameMove => 'フレーム移動',
-    GestureAction.nextTool => 'ツール早替え',
-    GestureAction.onionSkinToggle => 'オニオンスキンON/OFF',
-    GestureAction.none => '何もしない',
-  };
+  String _label(BuildContext context, GestureAction action) {
+    final l10n = AppLocalizations.of(context)!;
+    return switch (action) {
+      GestureAction.undo => 'Undo',
+      GestureAction.redo => 'Redo',
+      GestureAction.eyedropper => l10n.gestureActionEyedropper,
+      GestureAction.panTool => l10n.gestureActionPanTool,
+      GestureAction.eraserToggle => l10n.gestureActionEraserToggle,
+      GestureAction.brushToggle => l10n.gestureActionBrushToggle,
+      GestureAction.frameMove => l10n.gestureActionFrameMove,
+      GestureAction.nextTool => l10n.gestureActionNextTool,
+      GestureAction.onionSkinToggle => l10n.gestureActionOnionSkinToggle,
+      GestureAction.none => l10n.gestureActionNone,
+    };
+  }
 }

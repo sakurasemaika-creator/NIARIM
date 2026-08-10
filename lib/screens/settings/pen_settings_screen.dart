@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -28,29 +29,32 @@ class PenSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsService>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ペン入力設定'), actions: const [HelpButton(topic: '筆圧カーブ')]),
+      // topicはヘルプ画面側の項目タイトル（日本語固定）と一致させるための
+      // 内部検索キーであり、UI表示文字列ではないため翻訳しない。
+      appBar: AppBar(title: Text(l10n.penSettingsTitle), actions: const [HelpButton(topic: '筆圧カーブ')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _sectionLabel(context, '筆圧カーブ（アプリ全体に適用）'),
-          Text('弱い設定ほど筆圧の立ち上がりが緩やかに、強い設定ほど鋭くなります。',
+          _sectionLabel(context, l10n.penSettingsCurveSection),
+          Text(l10n.penSettingsCurveHint,
               style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 8),
           SegmentedButton<PenPressureCurve>(
-            segments: const [
-              ButtonSegment(value: PenPressureCurve.weak, label: Text('弱')),
-              ButtonSegment(value: PenPressureCurve.normal, label: Text('普通')),
-              ButtonSegment(value: PenPressureCurve.strong, label: Text('強')),
-              ButtonSegment(value: PenPressureCurve.custom, label: Text('カスタム')),
+            segments: [
+              ButtonSegment(value: PenPressureCurve.weak, label: Text(l10n.penSettingsCurveWeak)),
+              ButtonSegment(value: PenPressureCurve.normal, label: Text(l10n.penSettingsCurveNormal)),
+              ButtonSegment(value: PenPressureCurve.strong, label: Text(l10n.penSettingsCurveStrong)),
+              ButtonSegment(value: PenPressureCurve.custom, label: Text(l10n.penSettingsCurveCustom)),
             ],
             selected: {settings.penPressureCurve},
             onSelectionChanged: (v) => settings.setPenPressureCurve(v.first),
           ),
           if (settings.penPressureCurve == PenPressureCurve.custom) ...[
             const SizedBox(height: 8),
-            Text('グラフの点を上下にドラッグして、筆圧に対する反映度合いの曲線を調整できます。',
+            Text(l10n.penSettingsCustomGraphHint,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             Center(
@@ -60,22 +64,22 @@ class PenSettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Center(child: Text('指数: ${settings.customPressureExponent.toStringAsFixed(2)}',
+            Center(child: Text(l10n.penSettingsExponentLabel(settings.customPressureExponent.toStringAsFixed(2)),
                 style: const TextStyle(fontSize: 11))),
           ],
           const SizedBox(height: 4),
-          Text('※ 筆圧の「サイズ／不透明度に反映」設定はブラシごとの個別設定です（ブラシ設定パネルで変更）。',
+          Text(l10n.penSettingsPerBrushNote,
               style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           const PressureCurveTryDraw(),
           const SizedBox(height: 20),
-          _sectionLabel(context, 'ペンボタン設定'),
+          _sectionLabel(context, l10n.penSettingsButtonSection),
           Card(
             child: Column(
               children: [
-                _buttonItem(context, 'ボタン1', settings.penButton1, (a) => settings.setPenButton(1, a)),
+                _buttonItem(context, l10n.penSettingsButton1, settings.penButton1, (a) => settings.setPenButton(1, a)),
                 const Divider(height: 1),
-                _buttonItem(context, 'ボタン2', settings.penButton2, (a) => settings.setPenButton(2, a)),
+                _buttonItem(context, l10n.penSettingsButton2, settings.penButton2, (a) => settings.setPenButton(2, a)),
               ],
             ),
           ),
@@ -96,14 +100,14 @@ class PenSettingsScreen extends StatelessWidget {
   Widget _buttonItem(BuildContext context, String title, GestureAction current, ValueChanged<GestureAction> onChanged) {
     return ListTile(
       title: Text(title),
-      trailing: Text(_actionLabel(current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+      trailing: Text(_actionLabel(context, current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
       onTap: () => showModalBottomSheet(
         context: context,
         builder: (ctx) => SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: _penButtonActions.map((action) => RadioListTile<GestureAction>(
-              title: Text(_actionLabel(action)),
+              title: Text(_actionLabel(ctx, action)),
               value: action,
               groupValue: current,
               onChanged: (v) { if (v != null) onChanged(v); Navigator.pop(ctx); },
@@ -114,16 +118,19 @@ class PenSettingsScreen extends StatelessWidget {
     );
   }
 
-  String _actionLabel(GestureAction action) => switch (action) {
-    GestureAction.undo => 'Undo',
-    GestureAction.redo => 'Redo',
-    GestureAction.eyedropper => 'スポイト',
-    GestureAction.eraserToggle => '消しゴム切替',
-    GestureAction.nextTool => 'ツール早替え',
-    GestureAction.none => 'なし',
-    GestureAction.panTool => '手のひらツール',
-    GestureAction.brushToggle => 'ブラシ切替',
-    GestureAction.frameMove => 'フレーム移動',
-    GestureAction.onionSkinToggle => 'オニオンスキンON/OFF',
-  };
+  String _actionLabel(BuildContext context, GestureAction action) {
+    final l10n = AppLocalizations.of(context)!;
+    return switch (action) {
+      GestureAction.undo => 'Undo',
+      GestureAction.redo => 'Redo',
+      GestureAction.eyedropper => l10n.gestureActionEyedropper,
+      GestureAction.eraserToggle => l10n.gestureActionEraserToggle,
+      GestureAction.nextTool => l10n.gestureActionNextTool,
+      GestureAction.none => l10n.gestureActionNoneShort,
+      GestureAction.panTool => l10n.gestureActionPanTool,
+      GestureAction.brushToggle => l10n.gestureActionBrushToggle,
+      GestureAction.frameMove => l10n.gestureActionFrameMove,
+      GestureAction.onionSkinToggle => l10n.gestureActionOnionSkinToggle,
+    };
+  }
 }

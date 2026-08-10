@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../l10n/app_localizations.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -7,6 +8,7 @@ class HomeDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -38,7 +40,7 @@ class HomeDrawer extends StatelessWidget {
                 const Text('NIARIM',
                     style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 2),
-                Text('手書きアニメ制作アプリ',
+                Text(l10n.homeDrawerAppTagline,
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
               ],
             ),
@@ -46,7 +48,7 @@ class HomeDrawer extends StatelessWidget {
           const SizedBox(height: 4),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
-            title: const Text('自動塗りプリセット'),
+            title: Text(l10n.homeDrawerAutofillPreset),
             onTap: () {
               Navigator.pop(context);
               context.push('/autofill-presets');
@@ -55,7 +57,7 @@ class HomeDrawer extends StatelessWidget {
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.settings_outlined),
-            title: const Text('設定'),
+            title: Text(l10n.homeDrawerSettings),
             onTap: () {
               Navigator.pop(context);
               context.push('/settings');
@@ -63,7 +65,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.help_outline),
-            title: const Text('ヘルプ'),
+            title: Text(l10n.homeDrawerHelp),
             onTap: () {
               Navigator.pop(context);
               context.push('/help');
@@ -71,7 +73,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.workspace_premium_outlined, color: scheme.primary),
-            title: const Text('プレミアム'),
+            title: Text(l10n.homeDrawerPremium),
             onTap: () {
               Navigator.pop(context);
               context.push('/premium');

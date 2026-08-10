@@ -88,5 +88,48 @@
   "commonDelete": "删除",
   "commonSave": "保存",
   "commonRestore": "恢复",
-  "commonClose": "关闭"
+  "commonClose": "关闭",
+
+  "gestureSettingsTitle": "手势设置",
+  "gestureTwoFingerTap": "双指点按",
+  "gestureThreeFingerTap": "三指点按",
+  "gestureTwoFingerSwipe": "双指左右滑动",
+  "gestureLongPress": "长按",
+  "gestureActionEyedropper": "吸管",
+  "gestureActionPanTool": "抓手工具",
+  "gestureActionEraserToggle": "切换橡皮擦",
+  "gestureActionBrushToggle": "切换画笔",
+  "gestureActionFrameMove": "切换帧",
+  "gestureActionNextTool": "快速切换工具",
+  "gestureActionOnionSkinToggle": "洋葱皮开/关",
+  "gestureActionNone": "不执行任何操作",
+
+  "homeDrawerAppTagline": "手绘动画制作应用",
+  "homeDrawerAutofillPreset": "自动上色预设",
+  "homeDrawerSettings": "设置",
+  "homeDrawerHelp": "帮助",
+  "homeDrawerPremium": "Premium",
+
+  "gestureActionNoneShort": "无",
+
+  "pressureTryDrawHint": "可以用此设置试写（使用触控笔时会反映实际笔压）",
+  "pressureTryDrawClear": "清除",
+
+  "penSettingsTitle": "笔输入设置",
+  "penSettingsCurveSection": "笔压曲线（应用于整个应用）",
+  "penSettingsCurveHint": "设置越弱，笔压的起始越平缓；设置越强，起始越陡峭。",
+  "penSettingsCurveWeak": "弱",
+  "penSettingsCurveNormal": "普通",
+  "penSettingsCurveStrong": "强",
+  "penSettingsCurveCustom": "自定义",
+  "penSettingsCustomGraphHint": "上下拖动图表上的点，可调整笔压反映程度的曲线。",
+  "penSettingsExponentLabel": "指数：{value}",
+  "penSettingsPerBrushNote": "※笔压的“反映到大小/不透明度”设置是各画笔单独设置的（在画笔设置面板中更改）。",
+  "penSettingsButtonSection": "笔按钮设置",
+  "penSettingsButton1": "按钮1",
+  "penSettingsButton2": "按钮2",
+
+  "fontCatalogSearchHint": "按字体名称搜索...（共{count}种字体）",
+  "fontCatalogAll": "全部",
+  "fontCatalogNoResults": "未找到匹配的字体"
 }

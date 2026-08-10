@@ -88,5 +88,48 @@
   "commonDelete": "Delete",
   "commonSave": "Save",
   "commonRestore": "Restore",
-  "commonClose": "Close"
+  "commonClose": "Close",
+
+  "gestureSettingsTitle": "Gesture Settings",
+  "gestureTwoFingerTap": "Two-Finger Tap",
+  "gestureThreeFingerTap": "Three-Finger Tap",
+  "gestureTwoFingerSwipe": "Two-Finger Swipe Left/Right",
+  "gestureLongPress": "Long Press",
+  "gestureActionEyedropper": "Eyedropper",
+  "gestureActionPanTool": "Pan Tool",
+  "gestureActionEraserToggle": "Toggle Eraser",
+  "gestureActionBrushToggle": "Toggle Brush",
+  "gestureActionFrameMove": "Move Frame",
+  "gestureActionNextTool": "Quick Tool Switch",
+  "gestureActionOnionSkinToggle": "Onion Skin On/Off",
+  "gestureActionNone": "Do Nothing",
+
+  "homeDrawerAppTagline": "Hand-drawn animation app",
+  "homeDrawerAutofillPreset": "Autofill Presets",
+  "homeDrawerSettings": "Settings",
+  "homeDrawerHelp": "Help",
+  "homeDrawerPremium": "Premium",
+
+  "gestureActionNoneShort": "None",
+
+  "pressureTryDrawHint": "Try drawing with this setting (with a stylus, actual pressure is reflected)",
+  "pressureTryDrawClear": "Clear",
+
+  "penSettingsTitle": "Pen Input Settings",
+  "penSettingsCurveSection": "Pressure Curve (applies app-wide)",
+  "penSettingsCurveHint": "A weaker setting ramps up gradually with pressure; a stronger setting ramps up sharply.",
+  "penSettingsCurveWeak": "Weak",
+  "penSettingsCurveNormal": "Normal",
+  "penSettingsCurveStrong": "Strong",
+  "penSettingsCurveCustom": "Custom",
+  "penSettingsCustomGraphHint": "Drag points on the graph up or down to adjust how pressure affects the curve.",
+  "penSettingsExponentLabel": "Exponent: {value}",
+  "penSettingsPerBrushNote": "* The \"Apply to size/opacity\" pressure setting is per-brush (change it in the brush settings panel).",
+  "penSettingsButtonSection": "Pen Button Settings",
+  "penSettingsButton1": "Button 1",
+  "penSettingsButton2": "Button 2",
+
+  "fontCatalogSearchHint": "Search by font name... ({count} fonts)",
+  "fontCatalogAll": "All",
+  "fontCatalogNoResults": "No matching fonts found"
 }

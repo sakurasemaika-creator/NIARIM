@@ -113,5 +113,54 @@
   "commonDelete": "削除",
   "commonSave": "保存",
   "commonRestore": "復元",
-  "commonClose": "閉じる"
+  "commonClose": "閉じる",
+
+  "gestureSettingsTitle": "ジェスチャー設定",
+  "gestureTwoFingerTap": "2本指タップ",
+  "gestureThreeFingerTap": "3本指タップ",
+  "gestureTwoFingerSwipe": "2本指スワイプ左右",
+  "gestureLongPress": "長押し",
+  "gestureActionEyedropper": "スポイト",
+  "gestureActionPanTool": "手のひらツール",
+  "gestureActionEraserToggle": "消しゴム切替",
+  "gestureActionBrushToggle": "ブラシ切替",
+  "gestureActionFrameMove": "フレーム移動",
+  "gestureActionNextTool": "ツール早替え",
+  "gestureActionOnionSkinToggle": "オニオンスキンON/OFF",
+  "gestureActionNone": "何もしない",
+
+  "homeDrawerAppTagline": "手書きアニメ制作アプリ",
+  "homeDrawerAutofillPreset": "自動塗りプリセット",
+  "homeDrawerSettings": "設定",
+  "homeDrawerHelp": "ヘルプ",
+  "homeDrawerPremium": "プレミアム",
+
+  "gestureActionNoneShort": "なし",
+
+  "pressureTryDrawHint": "この設定で試し書きできます（ペンの場合、実際の筆圧が反映されます）",
+  "pressureTryDrawClear": "クリア",
+
+  "penSettingsTitle": "ペン入力設定",
+  "penSettingsCurveSection": "筆圧カーブ（アプリ全体に適用）",
+  "penSettingsCurveHint": "弱い設定ほど筆圧の立ち上がりが緩やかに、強い設定ほど鋭くなります。",
+  "penSettingsCurveWeak": "弱",
+  "penSettingsCurveNormal": "普通",
+  "penSettingsCurveStrong": "強",
+  "penSettingsCurveCustom": "カスタム",
+  "penSettingsCustomGraphHint": "グラフの点を上下にドラッグして、筆圧に対する反映度合いの曲線を調整できます。",
+  "penSettingsExponentLabel": "指数: {value}",
+  "@penSettingsExponentLabel": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "penSettingsPerBrushNote": "※ 筆圧の「サイズ／不透明度に反映」設定はブラシごとの個別設定です（ブラシ設定パネルで変更）。",
+  "penSettingsButtonSection": "ペンボタン設定",
+  "penSettingsButton1": "ボタン1",
+  "penSettingsButton2": "ボタン2",
+
+  "fontCatalogSearchHint": "フォント名で検索...（全{count}書体）",
+  "@fontCatalogSearchHint": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "fontCatalogAll": "すべて",
+  "fontCatalogNoResults": "該当するフォントが見つかりません"
 }
