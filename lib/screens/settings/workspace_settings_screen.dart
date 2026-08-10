@@ -26,6 +26,13 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             child: Text('表示するツールをチェックボックスで選択し、ドラッグで並び替えできます（仕様書08）。',
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
+          // 実際のキャンバス画面での横並び配置を模したプレビュー
+          // （タスク#93：設定項目の一覧だけでは仕上がりが分かりにくいため）。
+          _ToolbarPreview(
+            order: settings.toolbarOrder,
+            hidden: settings.hiddenToolbarItems,
+          ),
+          const SizedBox(height: 8),
           Card(
             child: Column(
               children: [
@@ -216,6 +223,51 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// キャンバス画面の実際のツールバー（横並び）を模したプレビュー
+/// （タスク#93：設定のチェックボックス一覧だけでは仕上がりが分かり
+/// にくいため、非表示にしたツールが除かれた状態の並びをそのまま示す）。
+class _ToolbarPreview extends StatelessWidget {
+  final List<ToolbarItemId> order;
+  final Set<ToolbarItemId> hidden;
+
+  const _ToolbarPreview({required this.order, required this.hidden});
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = order.where((id) => !hidden.contains(id)).toList();
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: visible.isEmpty
+          ? Center(
+              child: Text('表示するツールがありません',
+                  style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+            )
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  for (final id in visible)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Tooltip(
+                        message: id.label,
+                        child: Icon(id.icon, size: 20, color: scheme.onSurface),
+                      ),
+                    ),
+                ],
+              ),
+            ),
     );
   }
 }
