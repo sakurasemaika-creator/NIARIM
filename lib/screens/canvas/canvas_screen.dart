@@ -88,6 +88,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showQuickToolPanel = false;
   }
 
+  /// ブラシサイズ／不透明度が描画結果に影響するツールかどうか
+  /// （仕様書02・タスク#96：描画エリア最大化のため、無関係なツール
+  /// 使用中はブラシサイズスライダーを非表示にして縦スペースを還元する）。
+  /// ペン・消しゴム・投げ縄塗り・指（ワープ）・定規（定規ガイド沿いの
+  /// 描画にペンと同じブラシ設定を使う）が対象。
+  bool _usesBrushSize(DrawingTool tool) => switch (tool) {
+        DrawingTool.pen ||
+        DrawingTool.eraser ||
+        DrawingTool.lasso ||
+        DrawingTool.finger ||
+        DrawingTool.ruler =>
+          true,
+        _ => false,
+      };
+
   /// 定規ボタン（仕様書08・タスク#95：下部ツールバーからキャンバス上部
   /// バーの常設ボタンへ昇格）。定規パネルの開閉と定規ツールへの切替を
   /// 同時に行う（従来の下部ツールバー版と同じ挙動）。
@@ -489,18 +504,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ],
               ),
             ),
-            BrushSizeSlider(
-              brushSize: _brushSize,
-              opacity: _brushOpacity,
-              onSizeChanged: (v) {
-                setState(() => _brushSize = v);
-                context.read<BrushService>().updateCurrentBrushSize(v);
-              },
-              onOpacityChanged: (v) {
-                setState(() => _brushOpacity = v);
-                context.read<BrushService>().updateCurrentBrushOpacity(v);
-              },
-            ),
+            // ブラシサイズ／不透明度スライダーは、サイズ・不透明度が実際に
+            // 意味を持つツール（仕様書02・タスク#96：描画エリア最大化）を
+            // 使用中のみ表示する。バケツ・スポイト・選択系・変形・テキスト・
+            // 図形ツールではブラシ設定が描画結果に影響しないため、常設表示
+            // していた分の縦スペースをキャンバスへ還元する。
+            if (_usesBrushSize(_currentTool))
+              BrushSizeSlider(
+                brushSize: _brushSize,
+                opacity: _brushOpacity,
+                onSizeChanged: (v) {
+                  setState(() => _brushSize = v);
+                  context.read<BrushService>().updateCurrentBrushSize(v);
+                },
+                onOpacityChanged: (v) {
+                  setState(() => _brushOpacity = v);
+                  context.read<BrushService>().updateCurrentBrushOpacity(v);
+                },
+              ),
             ToolbarWidget(
               currentTool: _currentTool,
               currentColor: _currentColor,
