@@ -43,35 +43,24 @@ class LicenseScreen extends StatelessWidget {
             name: '白光明朝（はっこうみんちょう）',
             author: 'lavsic',
             license: 'SIL Open Font License 1.1',
-            note: 'Noto Serifを改変したフリーフォント。個人・商用問わず'
-                '無償で利用可能（アプリ・ゲームへの組み込みも可）。',
           ),
           const _FontCredit(
             usage: 'チュートリアル・説明テキスト',
             name: 'くらむぼん',
             author: 'Yoshikawa Kinomi（フロップデザイン）／The Dela Gothic Project Authors',
             license: 'SIL Open Font License 1.1',
-            note: 'DelaGothicの派生フリーフォント。個人・商用問わず無償で'
-                '利用可能。配布元より下記クレジットの表示が推奨されている'
-                'ため掲載する。\n'
-                'フォント：くらむぼん／フリーダウンロード：'
-                'https://www.flopdesign.com/freefont/kuramubon.html',
           ),
           const _FontCredit(
             usage: '数値表示',
             name: 'Android標準フォント（Roboto / Noto Sans）',
             author: 'Google',
             license: 'Apache License 2.0 / SIL Open Font License',
-            note: 'Android OS標準搭載フォントをそのまま使用（追加の同梱・'
-                '個別クレジット表記は不要）。',
           ),
           const _FontCredit(
             usage: 'テキストツール同梱フォント',
             name: 'Noto Serif JP',
             author: 'Google Fonts',
             license: 'SIL Open Font License 1.1',
-            note: '個人・商用問わず無償で利用可能。白光明朝のフォント未対応'
-                '文字の補完（フォールバック）にも使用する。',
           ),
           const _FontCredit(
             usage: 'テキストツール追加フリーフォント（設定 → フォント管理 → '
@@ -85,10 +74,6 @@ class LicenseScreen extends StatelessWidget {
             license: 'SIL Open Font License 1.1 / Apache License 2.0 / '
                 'Ubuntu Font License 1.0（フォントごとに異なる。いずれも'
                 '個人・商用問わず無償で利用可能）',
-            note: '初期インストール容量を抑えるため同梱せず、Google Fontsの'
-                '配布元（GitHub: '
-                'google/fonts）から取得する。ダウンロード後は端末内に'
-                '保存され、以降オフラインでも利用できる。',
           ),
           const SizedBox(height: 24),
           _SectionTitle(l10n.licenseSectionOss),
@@ -272,14 +257,12 @@ class _FontCredit extends StatelessWidget {
   final String name;
   final String author;
   final String license;
-  final String note;
 
   const _FontCredit({
     required this.usage,
     required this.name,
     required this.author,
     required this.license,
-    required this.note,
   });
 
   @override
@@ -292,15 +275,15 @@ class _FontCredit extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // usage/name/authorとnote（ライセンス条件の説明文）は法務未確認の
-            // 草稿段階かつライセンス表記の正確性が求められるため、翻訳対象外
-            // （日本語固定。クラス冒頭のコメント参照）。
+            // usage/name/authorは法務未確認の草稿段階かつライセンス表記の
+            // 正確性が求められるため、翻訳対象外（日本語固定。クラス冒頭の
+            // コメント参照）。各フォントのライセンス条件に関する説明文（旧
+            // note）は、ユーザーの指示によりフォント名・使用箇所・作者・
+            // ライセンス・クレジット表示のみを残す形で削除した。
             Text(usage,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
             Text(l10n.licenseFontCreditMeta(author, license), style: const TextStyle(fontSize: 12)),
-            const SizedBox(height: 4),
-            Text(note, style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
