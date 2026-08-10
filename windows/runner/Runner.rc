@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.miranima" "\0"
-            VALUE "FileDescription", "miranima" "\0"
+            VALUE "FileDescription", "MIRANIMA" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "miranima" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.miranima. All rights reserved." "\0"
             VALUE "OriginalFilename", "miranima.exe" "\0"
-            VALUE "ProductName", "miranima" "\0"
+            VALUE "ProductName", "MIRANIMA" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

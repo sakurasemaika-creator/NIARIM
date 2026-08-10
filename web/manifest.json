@@ -1,11 +1,11 @@
 {
-    "name": "miranima",
-    "short_name": "miranima",
+    "name": "MIRANIMA",
+    "short_name": "MIRANIMA",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Hand-drawn animation creation app",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
