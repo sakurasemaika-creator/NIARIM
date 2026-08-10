@@ -712,5 +712,63 @@
   "@projectDetailNiashareFailedSnackbar": {
     "placeholders": {"error": {"type": "String"}}
   },
-  "projectDetailTrashMenuItem": "Déplacer vers la corbeille"
+  "projectDetailTrashMenuItem": "Déplacer vers la corbeille",
+  "commonOff": "OFF",
+  "perfSettingsScreenTitle": "Paramètres de performance",
+  "perfSettingsQualitySection": "Paramètres de qualité",
+  "perfSettingsQualityLow": "Faible",
+  "perfSettingsQualityMedium": "Moyenne",
+  "perfSettingsQualityHigh": "Élevée",
+  "perfSettingsQualityCustom": "Personnalisé",
+  "perfSettingsQualityDescLow": "Pour un appareil où vous voulez alléger les performances (1 image de papier calque de chaque côté, 5 emplacements de sauvegarde)",
+  "perfSettingsQualityDescMedium": "Pour un appareil courant (3 images de papier calque de chaque côté, 10 emplacements de sauvegarde)",
+  "perfSettingsQualityDescHigh": "Pour un appareil avec de la marge de performance (5 images de papier calque de chaque côté, sauvegardes en arborescence)",
+  "perfSettingsQualityDescCustom": "Réglez chaque paramètre individuellement",
+  "perfSettingsCapacitySection": "Paramètres liés au stockage et aux performances",
+  "perfSettingsUndoLimitTitle": "Nombre d'annulations",
+  "perfSettingsUndoLimitSubtitle": "Plus il est élevé, plus il consomme de mémoire",
+  "perfSettingsUndoLimitValue": "{n} étapes",
+  "@perfSettingsUndoLimitValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsTrashAutoDeleteTitle": "Suppression automatique de la corbeille",
+  "perfSettingsTrashAutoDeleteSubtitle": "Durée de conservation des projets supprimés",
+  "perfSettingsTrashAutoDeleteValue": "{n} jours",
+  "@perfSettingsTrashAutoDeleteValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsCurrentSettingsSection": "Paramètres actuels",
+  "perfSettingsTiltLabel": "Détection de l'inclinaison",
+  "perfSettingsOnionPrevLabel": "Papier calque (avant)",
+  "perfSettingsOnionNextLabel": "Papier calque (après)",
+  "perfSettingsOnionFrameCountValue": "{n} images",
+  "@perfSettingsOnionFrameCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsSaveModeLabel": "Mode de sauvegarde",
+  "perfSettingsSlotCountLabel": "Nombre d'emplacements",
+  "perfSettingsSlotCountValue": "{n} emplacements",
+  "@perfSettingsSlotCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsResetButton": "Réinitialiser aux valeurs par défaut",
+  "perfSettingsCopyPresetButton": "Copier le préréglage actuel",
+  "perfSettingsTiltSwitchTitle": "Appliquer l'inclinaison du stylet au pinceau",
+  "perfSettingsShowPrevOnionTitle": "Afficher l'image précédente",
+  "perfSettingsOnionCountPrevLabel": "Nombre d'images de calque (avant)",
+  "perfSettingsShowNextOnionTitle": "Afficher l'image suivante",
+  "perfSettingsOnionCountNextLabel": "Nombre d'images de calque (après)",
+  "perfSettingsSaveModeSlot": "Par emplacements",
+  "perfSettingsSaveModeTree": "Par arborescence",
+  "perfSettingsResetDialogTitle": "Réinitialiser les paramètres de qualité personnalisés aux valeurs par défaut ?",
+  "perfSettingsResetDialogBody": "Les valeurs par défaut correspondent au réglage « {preset} » déterminé automatiquement au premier lancement selon les performances de l'appareil.",
+  "@perfSettingsResetDialogBody": {
+    "placeholders": {"preset": {"type": "String"}}
+  },
+  "perfSettingsResetConfirmButton": "Réinitialiser",
+  "perfSettingsCopyPresetDialogTitle": "Choisir un préréglage à copier",
+  "perfSettingsCopyPresetDialogBody": "Choisissez un préréglage à copier dans vos paramètres personnalisés.",
+  "perfSettingsCopyDescLow": "Affiche 1 image de chaque côté · léger",
+  "perfSettingsCopyDescMedium": "Affiche 3 images de chaque côté · standard",
+  "perfSettingsCopyDescHigh": "Affiche 5 images de chaque côté · haute qualité"
 }

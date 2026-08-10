@@ -712,5 +712,63 @@
   "@projectDetailNiashareFailedSnackbar": {
     "placeholders": {"error": {"type": "String"}}
   },
-  "projectDetailTrashMenuItem": "Move to trash"
+  "projectDetailTrashMenuItem": "Move to trash",
+  "commonOff": "OFF",
+  "perfSettingsScreenTitle": "Performance Settings",
+  "perfSettingsQualitySection": "Quality settings",
+  "perfSettingsQualityLow": "Low",
+  "perfSettingsQualityMedium": "Medium",
+  "perfSettingsQualityHigh": "High",
+  "perfSettingsQualityCustom": "Custom",
+  "perfSettingsQualityDescLow": "For devices where you want lighter performance (1 onion skin frame each way, 5 save slots)",
+  "perfSettingsQualityDescMedium": "For a typical device (3 onion skin frames each way, 10 save slots)",
+  "perfSettingsQualityDescHigh": "For a device with performance to spare (5 onion skin frames each way, tree-based saves)",
+  "perfSettingsQualityDescCustom": "Set each item individually",
+  "perfSettingsCapacitySection": "Storage & performance settings",
+  "perfSettingsUndoLimitTitle": "Undo steps",
+  "perfSettingsUndoLimitSubtitle": "More steps use more memory",
+  "perfSettingsUndoLimitValue": "{n} steps",
+  "@perfSettingsUndoLimitValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsTrashAutoDeleteTitle": "Auto-delete trash",
+  "perfSettingsTrashAutoDeleteSubtitle": "Retention period for deleted projects",
+  "perfSettingsTrashAutoDeleteValue": "{n} days",
+  "@perfSettingsTrashAutoDeleteValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsCurrentSettingsSection": "Current settings",
+  "perfSettingsTiltLabel": "Tilt detection",
+  "perfSettingsOnionPrevLabel": "Onion skin (previous)",
+  "perfSettingsOnionNextLabel": "Onion skin (next)",
+  "perfSettingsOnionFrameCountValue": "{n} frames",
+  "@perfSettingsOnionFrameCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsSaveModeLabel": "Save mode",
+  "perfSettingsSlotCountLabel": "Slot count",
+  "perfSettingsSlotCountValue": "{n} slots",
+  "@perfSettingsSlotCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsResetButton": "Reset to default",
+  "perfSettingsCopyPresetButton": "Copy current preset",
+  "perfSettingsTiltSwitchTitle": "Apply pen tilt to brush",
+  "perfSettingsShowPrevOnionTitle": "Show previous frame",
+  "perfSettingsOnionCountPrevLabel": "Onion skin frame count (previous)",
+  "perfSettingsShowNextOnionTitle": "Show next frame",
+  "perfSettingsOnionCountNextLabel": "Onion skin frame count (next)",
+  "perfSettingsSaveModeSlot": "Slot-based",
+  "perfSettingsSaveModeTree": "Tree-based",
+  "perfSettingsResetDialogTitle": "Reset custom quality settings to default?",
+  "perfSettingsResetDialogBody": "The default restores the \"{preset}\" settings that were automatically chosen from your device's performance at first launch.",
+  "@perfSettingsResetDialogBody": {
+    "placeholders": {"preset": {"type": "String"}}
+  },
+  "perfSettingsResetConfirmButton": "Reset",
+  "perfSettingsCopyPresetDialogTitle": "Choose a preset to copy",
+  "perfSettingsCopyPresetDialogBody": "Choose a preset to copy into your custom settings.",
+  "perfSettingsCopyDescLow": "Shows 1 frame each way · lightweight",
+  "perfSettingsCopyDescMedium": "Shows 3 frames each way · standard",
+  "perfSettingsCopyDescHigh": "Shows 5 frames each way · high quality"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../engine/undo_manager.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
@@ -109,21 +110,24 @@ class _PerformanceSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final perf = context.watch<PerformanceService>();
     final settings = context.watch<SettingsService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('パフォーマンス設定'), actions: const [HelpButton(topic: 'パフォーマンス設定')]),
+      // HelpButtonのtopicはヘルプ画面側のトピックキーと一致させる必要があるため、
+      // 翻訳対象外の内部識別子として日本語のまま維持する。
+      appBar: AppBar(title: Text(l10n.perfSettingsScreenTitle), actions: const [HelpButton(topic: 'パフォーマンス設定')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('品質設定',
+          Text(l10n.perfSettingsQualitySection,
               style:
-                  TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           ...QualityLevel.values.map((level) => RadioListTile<QualityLevel>(
-                title: Text(_qualityLabel(level)),
-                subtitle: Text(_qualityDesc(level),
+                title: Text(_qualityLabel(l10n, level)),
+                subtitle: Text(_qualityDesc(l10n, level),
                     style: const TextStyle(fontSize: 12)),
                 value: level,
                 groupValue: perf.qualityLevel,
@@ -134,34 +138,36 @@ class _PerformanceSettingsScreenState
           const Divider(height: 32),
           // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
           // 移設。品質プリセットとは独立して常に変更可能）。
-          const Text('容量・動作に関わる設定',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(l10n.perfSettingsCapacitySection,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           ListTile(
-            title: const Text('Undo回数'),
-            subtitle: const Text('多いほどメモリを消費する'),
-            trailing: Text('${settings.undoLimit}回'),
+            title: Text(l10n.perfSettingsUndoLimitTitle),
+            subtitle: Text(l10n.perfSettingsUndoLimitSubtitle),
+            trailing: Text(l10n.perfSettingsUndoLimitValue(settings.undoLimit)),
             onTap: () => _showUndoLimitDialog(context, settings),
           ),
           ListTile(
-            title: const Text('ゴミ箱の自動削除'),
-            subtitle: const Text('削除済みプロジェクトの保持期間'),
-            trailing: Text(settings.trashAutoDeleteDays == 0 ? 'OFF' : '${settings.trashAutoDeleteDays}日'),
+            title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
+            subtitle: Text(l10n.perfSettingsTrashAutoDeleteSubtitle),
+            trailing: Text(settings.trashAutoDeleteDays == 0
+                ? l10n.commonOff
+                : l10n.perfSettingsTrashAutoDeleteValue(settings.trashAutoDeleteDays)),
             onTap: () => _showTrashAutoDeleteDialog(context, settings),
           ),
           const Divider(height: 32),
-          const Text('現在の設定',
+          Text(l10n.perfSettingsCurrentSettingsSection,
               style:
-                  TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          _infoTile('傾き検知', perf.tiltEnabled ? 'ON' : 'OFF'),
-          _infoTile('オニオンスキン（前）',
-              perf.showPrevOnion ? '${perf.prevOnionSkinFrames}枚' : 'OFF'),
-          _infoTile('オニオンスキン（後）',
-              perf.showNextOnion ? '${perf.nextOnionSkinFrames}枚' : 'OFF'),
-          _infoTile('保存方式', _saveModeLabel(perf.saveMode)),
+          _infoTile(l10n.perfSettingsTiltLabel, perf.tiltEnabled ? 'ON' : l10n.commonOff),
+          _infoTile(l10n.perfSettingsOnionPrevLabel,
+              perf.showPrevOnion ? l10n.perfSettingsOnionFrameCountValue(perf.prevOnionSkinFrames) : l10n.commonOff),
+          _infoTile(l10n.perfSettingsOnionNextLabel,
+              perf.showNextOnion ? l10n.perfSettingsOnionFrameCountValue(perf.nextOnionSkinFrames) : l10n.commonOff),
+          _infoTile(l10n.perfSettingsSaveModeLabel, _saveModeLabel(l10n, perf.saveMode)),
           if (perf.saveMode == SaveMode.slot)
-            _infoTile('スロット数', '${perf.slotCount}件'),
+            _infoTile(l10n.perfSettingsSlotCountLabel, l10n.perfSettingsSlotCountValue(perf.slotCount)),
           if (perf.qualityLevel == QualityLevel.custom) ...[
             const Divider(height: 32),
             // カスタム操作ボタン行
@@ -170,7 +176,7 @@ class _PerformanceSettingsScreenState
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.restart_alt, size: 16),
-                    label: const Text('初期値に戻す', style: TextStyle(fontSize: 12)),
+                    label: Text(l10n.perfSettingsResetButton, style: const TextStyle(fontSize: 12)),
                     onPressed: () => _showResetDialog(context, perf),
                   ),
                 ),
@@ -178,52 +184,54 @@ class _PerformanceSettingsScreenState
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('現在のプリセットをコピー', style: TextStyle(fontSize: 12)),
+                    label: Text(l10n.perfSettingsCopyPresetButton, style: const TextStyle(fontSize: 12)),
                     onPressed: () => _showCopyPresetDialog(context, perf),
                   ),
                 ),
               ],
             ),
             SwitchListTile(
-              title: const Text('ペンの傾きをブラシに反映'),
+              title: Text(l10n.perfSettingsTiltSwitchTitle),
               value: perf.tiltEnabled,
               onChanged: (v) => perf.setCustomTilt(v),
             ),
             const SizedBox(height: 8),
             SwitchListTile(
-              title: const Text('前フレームを表示'),
+              title: Text(l10n.perfSettingsShowPrevOnionTitle),
               value: perf.showPrevOnion,
               onChanged: (v) => perf.setCustomShowPrev(v),
               dense: true,
             ),
             if (perf.showPrevOnion) ...[
-              const Text('オニオンスキン枚数（前）',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.perfSettingsOnionCountPrevLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               _onionSlider(
+                l10n: l10n,
                 value: perf.prevOnionSkinFrames,
                 onChanged: (v) => perf.setCustomOnionSkinPrev(v),
               ),
             ],
             const SizedBox(height: 4),
             SwitchListTile(
-              title: const Text('後フレームを表示'),
+              title: Text(l10n.perfSettingsShowNextOnionTitle),
               value: perf.showNextOnion,
               onChanged: (v) => perf.setCustomShowNext(v),
               dense: true,
             ),
             if (perf.showNextOnion) ...[
-              const Text('オニオンスキン枚数（後）',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.perfSettingsOnionCountNextLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               _onionSlider(
+                l10n: l10n,
                 value: perf.nextOnionSkinFrames,
                 onChanged: (v) => perf.setCustomOnionSkinNext(v),
               ),
             ],
             const SizedBox(height: 8),
-            const Text('保存方式',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(l10n.perfSettingsSaveModeLabel,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             ...SaveMode.values.map((mode) => RadioListTile<SaveMode>(
-                  title: Text(_saveModeLabel(mode)),
+                  title: Text(_saveModeLabel(l10n, mode)),
                   value: mode,
                   groupValue: perf.saveMode,
                   onChanged: (v) {
@@ -234,8 +242,8 @@ class _PerformanceSettingsScreenState
                 )),
             if (perf.saveMode == SaveMode.slot) ...[
               const SizedBox(height: 8),
-              const Text('スロット数',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.perfSettingsSlotCountLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               _SlotCountSlider(
                 value: perf.slotCount,
                 onChangeEnd: (newCount) =>
@@ -249,15 +257,16 @@ class _PerformanceSettingsScreenState
   }
 
   void _showUndoLimitDialog(BuildContext context, SettingsService settings) {
+    final l10n = AppLocalizations.of(context)!;
     const options = [10, 20, 30, 50, 100, 200];
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Undo回数'),
+        title: Text(l10n.perfSettingsUndoLimitTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: options.map((n) => RadioListTile<int>(
-            title: Text('$n回'),
+            title: Text(l10n.perfSettingsUndoLimitValue(n)),
             value: n,
             groupValue: settings.undoLimit,
             onChanged: (v) {
@@ -268,17 +277,23 @@ class _PerformanceSettingsScreenState
             },
           )).toList(),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose))],
       ),
     );
   }
 
   void _showTrashAutoDeleteDialog(BuildContext context, SettingsService settings) {
-    const options = {0: 'OFF', 30: '30日', 60: '60日', 90: '90日'};
+    final l10n = AppLocalizations.of(context)!;
+    final options = {
+      0: l10n.commonOff,
+      30: l10n.perfSettingsTrashAutoDeleteValue(30),
+      60: l10n.perfSettingsTrashAutoDeleteValue(60),
+      90: l10n.perfSettingsTrashAutoDeleteValue(90),
+    };
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('ゴミ箱の自動削除'),
+        title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: options.entries.map((e) => RadioListTile<int>(
@@ -293,24 +308,23 @@ class _PerformanceSettingsScreenState
             },
           )).toList(),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose))],
       ),
     );
   }
 
   void _showResetDialog(BuildContext context, PerformanceService perf) {
-    final defaultLabel = _qualityLabel(perf.defaultPreset);
+    final l10n = AppLocalizations.of(context)!;
+    final defaultLabel = _qualityLabel(l10n, perf.defaultPreset);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('カスタム品質設定を初期値に戻しますか？'),
-        content: Text(
-          '初期値は、初回起動時に端末性能から自動判定された「$defaultLabel」の設定になります。',
-        ),
+        title: Text(l10n.perfSettingsResetDialogTitle),
+        content: Text(l10n.perfSettingsResetDialogBody(defaultLabel)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () async {
@@ -340,7 +354,7 @@ class _PerformanceSettingsScreenState
                 if (newMode == SaveMode.slot) saveService.setSlotMax(newSlot);
               }
             },
-            child: const Text('戻す'),
+            child: Text(l10n.perfSettingsResetConfirmButton),
           ),
         ],
       ),
@@ -348,14 +362,15 @@ class _PerformanceSettingsScreenState
   }
 
   void _showCopyPresetDialog(BuildContext context, PerformanceService perf) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('コピーするプリセットを選択'),
+        title: Text(l10n.perfSettingsCopyPresetDialogTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('カスタム設定へコピーするプリセットを選択してください。'),
+            Text(l10n.perfSettingsCopyPresetDialogBody),
             const SizedBox(height: 16),
             ...[
               QualityLevel.low,
@@ -363,8 +378,8 @@ class _PerformanceSettingsScreenState
               QualityLevel.high,
             ].map((level) => ListTile(
                   dense: true,
-                  title: Text(_qualityLabel(level)),
-                  subtitle: Text(_copyPresetDesc(level),
+                  title: Text(_qualityLabel(l10n, level)),
+                  subtitle: Text(_copyPresetDesc(l10n, level),
                       style: const TextStyle(fontSize: 11)),
                   onTap: () async {
                     Navigator.pop(ctx);
@@ -398,7 +413,7 @@ class _PerformanceSettingsScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
+            child: Text(l10n.commonCancel),
           ),
         ],
       ),
@@ -407,7 +422,7 @@ class _PerformanceSettingsScreenState
 
 
   Widget _onionSlider(
-      {required int value, required ValueChanged<int> onChanged}) {
+      {required AppLocalizations l10n, required int value, required ValueChanged<int> onChanged}) {
     return Row(
       children: [
         const SizedBox(width: 16),
@@ -417,13 +432,13 @@ class _PerformanceSettingsScreenState
             max: 10,
             divisions: 9,
             value: value.toDouble(),
-            label: '$value枚',
+            label: l10n.perfSettingsOnionFrameCountValue(value),
             onChanged: (v) => onChanged(v.round()),
           ),
         ),
         SizedBox(
             width: 40,
-            child: Text('$value枚', style: const TextStyle(fontSize: 12))),
+            child: Text(l10n.perfSettingsOnionFrameCountValue(value), style: const TextStyle(fontSize: 12))),
       ],
     );
   }
@@ -441,27 +456,27 @@ class _PerformanceSettingsScreenState
     );
   }
 
-  String _qualityLabel(QualityLevel l) => switch (l) {
-        QualityLevel.low => '低品質',
-        QualityLevel.medium => '中品質',
-        QualityLevel.high => '高品質',
-        QualityLevel.custom => 'カスタム',
+  String _qualityLabel(AppLocalizations l10n, QualityLevel l) => switch (l) {
+        QualityLevel.low => l10n.perfSettingsQualityLow,
+        QualityLevel.medium => l10n.perfSettingsQualityMedium,
+        QualityLevel.high => l10n.perfSettingsQualityHigh,
+        QualityLevel.custom => l10n.perfSettingsQualityCustom,
       };
-  String _qualityDesc(QualityLevel l) => switch (l) {
-        QualityLevel.low => '低スペック端末向け（オニオン前後1枚・スロット5件）',
-        QualityLevel.medium => '中スペック端末向け（オニオン前後3枚・スロット10件）',
-        QualityLevel.high => '高スペック端末向け（オニオン前後5枚・ツリー方式）',
-        QualityLevel.custom => '各項目を個別設定',
+  String _qualityDesc(AppLocalizations l10n, QualityLevel l) => switch (l) {
+        QualityLevel.low => l10n.perfSettingsQualityDescLow,
+        QualityLevel.medium => l10n.perfSettingsQualityDescMedium,
+        QualityLevel.high => l10n.perfSettingsQualityDescHigh,
+        QualityLevel.custom => l10n.perfSettingsQualityDescCustom,
       };
-  String _copyPresetDesc(QualityLevel l) => switch (l) {
-        QualityLevel.low => '前後1枚表示・軽量動作',
-        QualityLevel.medium => '前後3枚表示・標準',
-        QualityLevel.high => '前後5枚表示・高品質',
+  String _copyPresetDesc(AppLocalizations l10n, QualityLevel l) => switch (l) {
+        QualityLevel.low => l10n.perfSettingsCopyDescLow,
+        QualityLevel.medium => l10n.perfSettingsCopyDescMedium,
+        QualityLevel.high => l10n.perfSettingsCopyDescHigh,
         QualityLevel.custom => '',
       };
-  String _saveModeLabel(SaveMode m) => switch (m) {
-        SaveMode.slot => 'スロット方式',
-        SaveMode.tree => 'ツリー方式',
+  String _saveModeLabel(AppLocalizations l10n, SaveMode m) => switch (m) {
+        SaveMode.slot => l10n.perfSettingsSaveModeSlot,
+        SaveMode.tree => l10n.perfSettingsSaveModeTree,
       };
 }
 
@@ -493,6 +508,7 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         const SizedBox(width: 16),
@@ -502,14 +518,14 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
             max: 20,
             divisions: 19,
             value: _draft,
-            label: '${_draft.round()}件',
+            label: l10n.perfSettingsSlotCountValue(_draft.round()),
             onChanged: (v) => setState(() => _draft = v),
             onChangeEnd: (v) => widget.onChangeEnd(v.round()),
           ),
         ),
         SizedBox(
             width: 40,
-            child: Text('${_draft.round()}件',
+            child: Text(l10n.perfSettingsSlotCountValue(_draft.round()),
                 style: const TextStyle(fontSize: 12))),
       ],
     );

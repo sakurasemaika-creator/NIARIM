@@ -806,5 +806,63 @@
   "@projectDetailNiashareFailedSnackbar": {
     "placeholders": {"error": {"type": "String"}}
   },
-  "projectDetailTrashMenuItem": "ゴミ箱へ移動"
+  "projectDetailTrashMenuItem": "ゴミ箱へ移動",
+  "commonOff": "OFF",
+  "perfSettingsScreenTitle": "パフォーマンス設定",
+  "perfSettingsQualitySection": "品質設定",
+  "perfSettingsQualityLow": "低品質",
+  "perfSettingsQualityMedium": "中品質",
+  "perfSettingsQualityHigh": "高品質",
+  "perfSettingsQualityCustom": "カスタム",
+  "perfSettingsQualityDescLow": "動作を軽くしたい端末向け（オニオン前後1枚・スロット5件）",
+  "perfSettingsQualityDescMedium": "標準的な端末向け（オニオン前後3枚・スロット10件）",
+  "perfSettingsQualityDescHigh": "快適な動作に余裕のある端末向け（オニオン前後5枚・ツリー方式）",
+  "perfSettingsQualityDescCustom": "各項目を個別設定",
+  "perfSettingsCapacitySection": "容量・動作に関わる設定",
+  "perfSettingsUndoLimitTitle": "Undo回数",
+  "perfSettingsUndoLimitSubtitle": "多いほどメモリを消費する",
+  "perfSettingsUndoLimitValue": "{n}回",
+  "@perfSettingsUndoLimitValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsTrashAutoDeleteTitle": "ゴミ箱の自動削除",
+  "perfSettingsTrashAutoDeleteSubtitle": "削除済みプロジェクトの保持期間",
+  "perfSettingsTrashAutoDeleteValue": "{n}日",
+  "@perfSettingsTrashAutoDeleteValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsCurrentSettingsSection": "現在の設定",
+  "perfSettingsTiltLabel": "傾き検知",
+  "perfSettingsOnionPrevLabel": "オニオンスキン（前）",
+  "perfSettingsOnionNextLabel": "オニオンスキン（後）",
+  "perfSettingsOnionFrameCountValue": "{n}枚",
+  "@perfSettingsOnionFrameCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsSaveModeLabel": "保存方式",
+  "perfSettingsSlotCountLabel": "スロット数",
+  "perfSettingsSlotCountValue": "{n}件",
+  "@perfSettingsSlotCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsResetButton": "初期値に戻す",
+  "perfSettingsCopyPresetButton": "現在のプリセットをコピー",
+  "perfSettingsTiltSwitchTitle": "ペンの傾きをブラシに反映",
+  "perfSettingsShowPrevOnionTitle": "前フレームを表示",
+  "perfSettingsOnionCountPrevLabel": "オニオンスキン枚数（前）",
+  "perfSettingsShowNextOnionTitle": "後フレームを表示",
+  "perfSettingsOnionCountNextLabel": "オニオンスキン枚数（後）",
+  "perfSettingsSaveModeSlot": "スロット方式",
+  "perfSettingsSaveModeTree": "ツリー方式",
+  "perfSettingsResetDialogTitle": "カスタム品質設定を初期値に戻しますか？",
+  "perfSettingsResetDialogBody": "初期値は、初回起動時に端末性能から自動判定された「{preset}」の設定になります。",
+  "@perfSettingsResetDialogBody": {
+    "placeholders": {"preset": {"type": "String"}}
+  },
+  "perfSettingsResetConfirmButton": "戻す",
+  "perfSettingsCopyPresetDialogTitle": "コピーするプリセットを選択",
+  "perfSettingsCopyPresetDialogBody": "カスタム設定へコピーするプリセットを選択してください。",
+  "perfSettingsCopyDescLow": "前後1枚表示・軽量動作",
+  "perfSettingsCopyDescMedium": "前後3枚表示・標準",
+  "perfSettingsCopyDescHigh": "前後5枚表示・高品質"
 }

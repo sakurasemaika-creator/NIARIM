@@ -712,5 +712,63 @@
   "@projectDetailNiashareFailedSnackbar": {
     "placeholders": {"error": {"type": "String"}}
   },
-  "projectDetailTrashMenuItem": "移到回收站"
+  "projectDetailTrashMenuItem": "移到回收站",
+  "commonOff": "OFF",
+  "perfSettingsScreenTitle": "性能设置",
+  "perfSettingsQualitySection": "画质设置",
+  "perfSettingsQualityLow": "低画质",
+  "perfSettingsQualityMedium": "中画质",
+  "perfSettingsQualityHigh": "高画质",
+  "perfSettingsQualityCustom": "自定义",
+  "perfSettingsQualityDescLow": "适合想要更轻量运行的设备（前后各1张洋葱皮・5个存储槽）",
+  "perfSettingsQualityDescMedium": "适合一般设备（前后各3张洋葱皮・10个存储槽）",
+  "perfSettingsQualityDescHigh": "适合性能有余裕的设备（前后各5张洋葱皮・树状存档）",
+  "perfSettingsQualityDescCustom": "分别设置各项目",
+  "perfSettingsCapacitySection": "容量与运行相关设置",
+  "perfSettingsUndoLimitTitle": "撤销次数",
+  "perfSettingsUndoLimitSubtitle": "次数越多越消耗内存",
+  "perfSettingsUndoLimitValue": "{n}次",
+  "@perfSettingsUndoLimitValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsTrashAutoDeleteTitle": "回收站自动删除",
+  "perfSettingsTrashAutoDeleteSubtitle": "已删除项目的保留期限",
+  "perfSettingsTrashAutoDeleteValue": "{n}天",
+  "@perfSettingsTrashAutoDeleteValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsCurrentSettingsSection": "当前设置",
+  "perfSettingsTiltLabel": "倾斜检测",
+  "perfSettingsOnionPrevLabel": "洋葱皮（前）",
+  "perfSettingsOnionNextLabel": "洋葱皮（后）",
+  "perfSettingsOnionFrameCountValue": "{n}张",
+  "@perfSettingsOnionFrameCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsSaveModeLabel": "存档方式",
+  "perfSettingsSlotCountLabel": "存储槽数量",
+  "perfSettingsSlotCountValue": "{n}个",
+  "@perfSettingsSlotCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsResetButton": "恢复初始值",
+  "perfSettingsCopyPresetButton": "复制当前预设",
+  "perfSettingsTiltSwitchTitle": "将笔的倾斜反映到画笔",
+  "perfSettingsShowPrevOnionTitle": "显示前一帧",
+  "perfSettingsOnionCountPrevLabel": "洋葱皮张数（前）",
+  "perfSettingsShowNextOnionTitle": "显示后一帧",
+  "perfSettingsOnionCountNextLabel": "洋葱皮张数（后）",
+  "perfSettingsSaveModeSlot": "存储槽方式",
+  "perfSettingsSaveModeTree": "树状方式",
+  "perfSettingsResetDialogTitle": "要将自定义画质设置恢复为初始值吗？",
+  "perfSettingsResetDialogBody": "初始值将恢复为首次启动时根据设备性能自动判定的「{preset}」设置。",
+  "@perfSettingsResetDialogBody": {
+    "placeholders": {"preset": {"type": "String"}}
+  },
+  "perfSettingsResetConfirmButton": "恢复",
+  "perfSettingsCopyPresetDialogTitle": "选择要复制的预设",
+  "perfSettingsCopyPresetDialogBody": "请选择要复制到自定义设置的预设。",
+  "perfSettingsCopyDescLow": "前后各显示1张・轻量运行",
+  "perfSettingsCopyDescMedium": "前后各显示3张・标准",
+  "perfSettingsCopyDescHigh": "前后各显示5张・高画质"
 }

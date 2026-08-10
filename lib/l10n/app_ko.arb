@@ -712,5 +712,63 @@
   "@projectDetailNiashareFailedSnackbar": {
     "placeholders": {"error": {"type": "String"}}
   },
-  "projectDetailTrashMenuItem": "휴지통으로 이동"
+  "projectDetailTrashMenuItem": "휴지통으로 이동",
+  "commonOff": "OFF",
+  "perfSettingsScreenTitle": "성능 설정",
+  "perfSettingsQualitySection": "화질 설정",
+  "perfSettingsQualityLow": "낮음",
+  "perfSettingsQualityMedium": "중간",
+  "perfSettingsQualityHigh": "높음",
+  "perfSettingsQualityCustom": "사용자 지정",
+  "perfSettingsQualityDescLow": "동작을 가볍게 하고 싶은 기기용(어니언 스킨 앞뒤 각 1장・슬롯 5개)",
+  "perfSettingsQualityDescMedium": "일반적인 기기용(어니언 스킨 앞뒤 각 3장・슬롯 10개)",
+  "perfSettingsQualityDescHigh": "성능에 여유가 있는 기기용(어니언 스킨 앞뒤 각 5장・트리 방식)",
+  "perfSettingsQualityDescCustom": "항목별로 개별 설정",
+  "perfSettingsCapacitySection": "용량・동작 관련 설정",
+  "perfSettingsUndoLimitTitle": "실행 취소 횟수",
+  "perfSettingsUndoLimitSubtitle": "많을수록 메모리를 더 사용합니다",
+  "perfSettingsUndoLimitValue": "{n}회",
+  "@perfSettingsUndoLimitValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsTrashAutoDeleteTitle": "휴지통 자동 삭제",
+  "perfSettingsTrashAutoDeleteSubtitle": "삭제된 프로젝트의 보관 기간",
+  "perfSettingsTrashAutoDeleteValue": "{n}일",
+  "@perfSettingsTrashAutoDeleteValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsCurrentSettingsSection": "현재 설정",
+  "perfSettingsTiltLabel": "기울기 감지",
+  "perfSettingsOnionPrevLabel": "어니언 스킨(앞)",
+  "perfSettingsOnionNextLabel": "어니언 스킨(뒤)",
+  "perfSettingsOnionFrameCountValue": "{n}장",
+  "@perfSettingsOnionFrameCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsSaveModeLabel": "저장 방식",
+  "perfSettingsSlotCountLabel": "슬롯 수",
+  "perfSettingsSlotCountValue": "{n}개",
+  "@perfSettingsSlotCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsResetButton": "기본값으로 되돌리기",
+  "perfSettingsCopyPresetButton": "현재 프리셋 복사",
+  "perfSettingsTiltSwitchTitle": "펜 기울기를 브러시에 반영",
+  "perfSettingsShowPrevOnionTitle": "이전 프레임 표시",
+  "perfSettingsOnionCountPrevLabel": "어니언 스킨 매수(앞)",
+  "perfSettingsShowNextOnionTitle": "다음 프레임 표시",
+  "perfSettingsOnionCountNextLabel": "어니언 스킨 매수(뒤)",
+  "perfSettingsSaveModeSlot": "슬롯 방식",
+  "perfSettingsSaveModeTree": "트리 방식",
+  "perfSettingsResetDialogTitle": "사용자 지정 화질 설정을 기본값으로 되돌리시겠습니까?",
+  "perfSettingsResetDialogBody": "기본값은 처음 실행 시 기기 성능에 따라 자동으로 판정된 「{preset}」 설정입니다.",
+  "@perfSettingsResetDialogBody": {
+    "placeholders": {"preset": {"type": "String"}}
+  },
+  "perfSettingsResetConfirmButton": "되돌리기",
+  "perfSettingsCopyPresetDialogTitle": "복사할 프리셋 선택",
+  "perfSettingsCopyPresetDialogBody": "사용자 지정 설정으로 복사할 프리셋을 선택하세요.",
+  "perfSettingsCopyDescLow": "앞뒤 1장 표시・경량 동작",
+  "perfSettingsCopyDescMedium": "앞뒤 3장 표시・표준",
+  "perfSettingsCopyDescHigh": "앞뒤 5장 표시・고화질"
 }

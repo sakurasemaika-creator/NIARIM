@@ -712,5 +712,63 @@
   "@projectDetailNiashareFailedSnackbar": {
     "placeholders": {"error": {"type": "String"}}
   },
-  "projectDetailTrashMenuItem": "Mover a la papelera"
+  "projectDetailTrashMenuItem": "Mover a la papelera",
+  "commonOff": "OFF",
+  "perfSettingsScreenTitle": "Ajustes de rendimiento",
+  "perfSettingsQualitySection": "Ajustes de calidad",
+  "perfSettingsQualityLow": "Baja",
+  "perfSettingsQualityMedium": "Media",
+  "perfSettingsQualityHigh": "Alta",
+  "perfSettingsQualityCustom": "Personalizada",
+  "perfSettingsQualityDescLow": "Para un dispositivo en el que quieras aligerar el rendimiento (1 fotograma de papel cebolla en cada dirección, 5 ranuras de guardado)",
+  "perfSettingsQualityDescMedium": "Para un dispositivo habitual (3 fotogramas de papel cebolla en cada dirección, 10 ranuras de guardado)",
+  "perfSettingsQualityDescHigh": "Para un dispositivo con margen de rendimiento (5 fotogramas de papel cebolla en cada dirección, guardado en árbol)",
+  "perfSettingsQualityDescCustom": "Configura cada elemento por separado",
+  "perfSettingsCapacitySection": "Ajustes de almacenamiento y rendimiento",
+  "perfSettingsUndoLimitTitle": "Pasos de deshacer",
+  "perfSettingsUndoLimitSubtitle": "Cuantos más haya, más memoria se consume",
+  "perfSettingsUndoLimitValue": "{n} pasos",
+  "@perfSettingsUndoLimitValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsTrashAutoDeleteTitle": "Eliminación automática de la papelera",
+  "perfSettingsTrashAutoDeleteSubtitle": "Periodo de retención de proyectos eliminados",
+  "perfSettingsTrashAutoDeleteValue": "{n} días",
+  "@perfSettingsTrashAutoDeleteValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsCurrentSettingsSection": "Ajustes actuales",
+  "perfSettingsTiltLabel": "Detección de inclinación",
+  "perfSettingsOnionPrevLabel": "Papel cebolla (anterior)",
+  "perfSettingsOnionNextLabel": "Papel cebolla (siguiente)",
+  "perfSettingsOnionFrameCountValue": "{n} fotogramas",
+  "@perfSettingsOnionFrameCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsSaveModeLabel": "Modo de guardado",
+  "perfSettingsSlotCountLabel": "Número de ranuras",
+  "perfSettingsSlotCountValue": "{n} ranuras",
+  "@perfSettingsSlotCountValue": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "perfSettingsResetButton": "Restablecer valores predeterminados",
+  "perfSettingsCopyPresetButton": "Copiar preajuste actual",
+  "perfSettingsTiltSwitchTitle": "Aplicar la inclinación del lápiz al pincel",
+  "perfSettingsShowPrevOnionTitle": "Mostrar fotograma anterior",
+  "perfSettingsOnionCountPrevLabel": "Número de fotogramas de papel cebolla (anterior)",
+  "perfSettingsShowNextOnionTitle": "Mostrar fotograma siguiente",
+  "perfSettingsOnionCountNextLabel": "Número de fotogramas de papel cebolla (siguiente)",
+  "perfSettingsSaveModeSlot": "Por ranuras",
+  "perfSettingsSaveModeTree": "Por árbol",
+  "perfSettingsResetDialogTitle": "¿Restablecer los ajustes de calidad personalizados a los valores predeterminados?",
+  "perfSettingsResetDialogBody": "El valor predeterminado corresponde al ajuste \"{preset}\" que se determinó automáticamente según el rendimiento del dispositivo en el primer inicio.",
+  "@perfSettingsResetDialogBody": {
+    "placeholders": {"preset": {"type": "String"}}
+  },
+  "perfSettingsResetConfirmButton": "Restablecer",
+  "perfSettingsCopyPresetDialogTitle": "Elige un preajuste para copiar",
+  "perfSettingsCopyPresetDialogBody": "Elige un preajuste para copiar en tus ajustes personalizados.",
+  "perfSettingsCopyDescLow": "Muestra 1 fotograma en cada dirección · ligero",
+  "perfSettingsCopyDescMedium": "Muestra 3 fotogramas en cada dirección · estándar",
+  "perfSettingsCopyDescHigh": "Muestra 5 fotogramas en cada dirección · alta calidad"
 }
