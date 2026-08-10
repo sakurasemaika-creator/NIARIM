@@ -75,6 +75,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
       _exportWidth = width;
       _exportHeight = height;
     });
+    // カスタムのテキスト欄・スライダーもプリセットの値へ同期しておく。
+    // これをしないと、プリセット選択後に「カスタム」へ切り替えた際に
+    // 直前の古い値が一瞬表示されてしまう（数値変更時の連動不備）。
+    _customWidthController.text = '$width';
+    _customHeightController.text = '$height';
   }
 
   // 長さ（秒）の表示用フォーマット。プレミアム会員は最大2時間まで
@@ -92,6 +97,20 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   // 上限はFull HD相当（長辺1920px）とする。
   static const int _maxCustomEdge = 1920;
+
+  /// カスタムサイズをスライダー・テキスト欄両方から一元的に反映する。
+  /// テキスト欄の表示もここで同期し、スライダー操作とテキスト直接入力の
+  /// どちらでも比率プレビューへ即座に反映されるようにする。
+  void _setCustomSize({int? width, int? height}) {
+    final w = (width ?? _exportWidth).clamp(64, _maxCustomEdge);
+    final h = (height ?? _exportHeight).clamp(64, _maxCustomEdge);
+    setState(() {
+      _exportWidth = w;
+      _exportHeight = h;
+    });
+    _customWidthController.text = '$w';
+    _customHeightController.text = '$h';
+  }
 
   void _applyCustomSize() {
     final w = int.tryParse(_customWidthController.text);
@@ -178,7 +197,52 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(children: [
+                const SizedBox(width: 56, child: Text('幅', textAlign: TextAlign.center)),
+                Expanded(
+                  child: Slider(
+                    min: 64, max: _maxCustomEdge.toDouble(),
+                    value: _exportWidth.clamp(64, _maxCustomEdge).toDouble(),
+                    label: '${_exportWidth}px',
+                    onChanged: (v) => _setCustomSize(width: v.round()),
+                  ),
+                ),
+              ]),
+              Row(children: [
+                const SizedBox(width: 56, child: Text('高さ', textAlign: TextAlign.center)),
+                Expanded(
+                  child: Slider(
+                    min: 64, max: _maxCustomEdge.toDouble(),
+                    value: _exportHeight.clamp(64, _maxCustomEdge).toDouble(),
+                    label: '${_exportHeight}px',
+                    onChanged: (v) => _setCustomSize(height: v.round()),
+                  ),
+                ),
+              ]),
             ],
+            const SizedBox(height: 12),
+            // 比率プレビュー：プリセットタップ・カスタム数値変更のどちらでも
+            // 即座に連動する（仕様書07・26）。
+            Center(
+              child: SizedBox(
+                height: 90,
+                child: AspectRatio(
+                  aspectRatio: _exportWidth / _exportHeight,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      border: Border.all(color: Theme.of(context).colorScheme.outline),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Center(
+                      child: Text('$_exportWidth×$_exportHeight',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             Builder(builder: (context) {
               // 長さの上限（仕様書07）：無料会員は最大90秒、プレミアム会員は

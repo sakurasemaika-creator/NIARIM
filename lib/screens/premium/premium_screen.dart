@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../config/monetization_gate.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -110,6 +111,17 @@ class PremiumScreen extends StatelessWidget {
 
   /// リリース記念キャンペーンバナー（仕様書13：課金一時停止期間中は全員へ
   /// プレミアム機能を無料開放する）。
+  /// 「YYYY年M月D日H:MMまで」の形式でキャンペーン終了日時を表示する
+  /// （西暦表記。以前は「～12月31日23:59まで」と年が無く、年をまたぐと
+  /// 誤解を招く表記だった）。kMonetizationEnabledFromの1分前が実際の
+  /// 終了時刻。
+  String _campaignEndLabel() {
+    final end = kMonetizationEnabledFrom.subtract(const Duration(minutes: 1));
+    final hh = end.hour.toString().padLeft(2, '0');
+    final mm = end.minute.toString().padLeft(2, '0');
+    return '～${end.year}年${end.month}月${end.day}日$hh:$mmまで';
+  }
+
   Widget _campaignBanner(BuildContext context) {
     return Card(
       color: Theme.of(context).colorScheme.primaryContainer,
@@ -133,7 +145,10 @@ class PremiumScreen extends StatelessWidget {
               style: TextStyle(fontSize: 12),
             ),
             const SizedBox(height: 4),
-            const Text('～12月31日23:59まで', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            // 年をまたいでも誤解が生じないよう西暦から表示する（例：
+            // 「2026年12月31日23:59まで」）。kMonetizationEnabledFromの
+            // 前日23:59が実際のキャンペーン終了日時のため、そこから算出する。
+            Text(_campaignEndLabel(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
