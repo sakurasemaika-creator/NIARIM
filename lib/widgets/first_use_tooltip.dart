@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/first_use_tooltip_service.dart';
 
-/// 各機能の初回使用時に、対象UIの近くへ吹き出しで簡易説明を表示する共通ウィジェット
-/// （仕様書02「吹き出し説明」・11「初心者導線（3段階）」）。
+/// 各機能の「初回タップ」時に、対象UIの近くへ吹き出しで簡易説明を表示する
+/// 共通ウィジェット（仕様書02「吹き出し説明」・11「初心者導線（3段階）」）。
+/// - 表示のタイミングは、対象ツールを実際に初めてタップした瞬間
+///   （ボタンが画面に表示されただけでは表示しない。タスク#92：以前は
+///   ウィジェットが描画された時点で表示していたため、キャンバス画面を
+///   開いた瞬間に複数の吹き出しが一斉に表示されてしまっていた）。
 /// - 表示は一度のみ。タップで閉じ、二度と表示しない（再確認はヘルプページから）。
 /// - 子ウィジェット自体のタップ操作は妨げない（吹き出し自体をタップした時のみ閉じる）。
 class FirstUseTooltip extends StatefulWidget {
@@ -27,11 +31,10 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
   final GlobalKey _anchorKey = GlobalKey();
   OverlayEntry? _entry;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShow());
-  }
+  /// 対象ツールをタップした瞬間に呼ばれる。タップ自体（ツール選択・長押し
+  /// メニュー等）の処理は子ウィジェット側のジェスチャー検出でそのまま
+  /// 続行されるため、ここでは吹き出し表示の判定のみ行う。
+  void _handleTapDown(TapDownDetails _) => _maybeShow();
 
   void _maybeShow() {
     if (!mounted) return;
@@ -104,6 +107,13 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyedSubtree(key: _anchorKey, child: widget.child);
+    // translucentにすることで、この検出用GestureDetectorが子ウィジェット
+    // 自体のタップ・長押し等のジェスチャー認識を妨げない（onTapDownのみを
+    // 追加で受け取り、それ以外は子側の通常のジェスチャー処理へ委ねる）。
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapDown: _handleTapDown,
+      child: KeyedSubtree(key: _anchorKey, child: widget.child),
+    );
   }
 }

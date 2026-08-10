@@ -44,7 +44,7 @@ class _ExportScreenState extends State<ExportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('書き出し'), actions: const [HelpButton()]),
+      appBar: AppBar(title: const Text('書き出し'), actions: const [HelpButton(topic: '動画書き出し（MP4）')]),
       body: _buildSettings(),
     );
   }
