@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:miranima/engine/layer_compositor.dart';
-import 'package:miranima/models/layer.dart';
+import 'package:niarim/engine/layer_compositor.dart';
+import 'package:niarim/models/layer.dart';
 
 Layer _layer(String id, {bool hasClipping = false, String? parentFolderId}) => Layer(
       id: id,

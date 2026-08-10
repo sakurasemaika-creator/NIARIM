@@ -17,8 +17,8 @@ import '../config/monetization_gate.dart';
 /// [hasPurchasedPremium]で区別する。
 class PremiumService extends ChangeNotifier {
   // ストアに登録するサブスクリプション商品ID
-  static const String monthlyProductId = 'miranima_premium_monthly';
-  static const String yearlyProductId = 'miranima_premium_yearly';
+  static const String monthlyProductId = 'niarim_premium_monthly';
+  static const String yearlyProductId = 'niarim_premium_yearly';
   static const Set<String> _productIds = {monthlyProductId, yearlyProductId};
 
   final InAppPurchase _iap = InAppPurchase.instance;

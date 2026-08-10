@@ -6,8 +6,8 @@ import 'router.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
 
-class MiranimaApp extends StatelessWidget {
-  const MiranimaApp({super.key});
+class NiarimApp extends StatelessWidget {
+  const NiarimApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class MiranimaApp extends StatelessWidget {
     // 表示言語（設定画面「言語」、仕様書08）。日本語/Englishの2言語対応。
     final language = context.watch<SettingsService>().language;
     return MaterialApp.router(
-      title: 'MIRANIMA',
+      title: 'NIARIM',
       debugShowCheckedModeBanner: false,
       theme: themeService.themeData,
       routerConfig: appRouter,

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:miranima/services/palette_service.dart';
+import 'package:niarim/services/palette_service.dart';
 
 /// PaletteService（Task#67で新設。色管理仕様のパレット・最近使った色機能）の
 /// 単体テスト。

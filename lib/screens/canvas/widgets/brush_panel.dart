@@ -267,7 +267,7 @@ class _BrushPanelState extends State<BrushPanel> {
 
   Future<void> _importBrush(BuildContext context, BrushService service) async {
     final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: ['mirabrush']);
+        type: FileType.custom, allowedExtensions: ['niabrush']);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     try {
       await service.importBrushFile(result.files.first.path!);

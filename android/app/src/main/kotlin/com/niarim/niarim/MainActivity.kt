@@ -1,4 +1,4 @@
-package com.miranima.miranima
+package com.niarim.niarim
 
 import android.content.Intent
 import android.net.Uri
@@ -11,13 +11,13 @@ import io.flutter.plugin.common.MethodChannel
 import kotlin.concurrent.thread
 
 /**
- * .mirashare受信フロー（仕様書06）：
- * 他アプリ/ファイラーから.mirashareファイルをタップして開いた際、
+ * .niashare受信フロー（仕様書06）：
+ * 他アプリ/ファイラーから.niashareファイルをタップして開いた際、
  * IntentのデータURIをMethodChannel経由でFlutter側（ShareIntentService）へ渡す。
  */
 class MainActivity : FlutterActivity() {
-    private val channelName = "com.miranima.miranima/share_intent"
-    private val hwVideoEncoderChannelName = "com.miranima.miranima/hw_video_encoder"
+    private val channelName = "com.niarim.niarim/share_intent"
+    private val hwVideoEncoderChannelName = "com.niarim.niarim/hw_video_encoder"
     private var methodChannel: MethodChannel? = null
     private var pendingUri: String? = null
     private val mainHandler = Handler(Looper.getMainLooper())

@@ -8,7 +8,7 @@ import 'package:flutter/painting.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/layer_range_resolver.dart';
-import '../engine/mirapro_serializer.dart';
+import '../engine/niapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
@@ -150,18 +150,18 @@ class ProjectService extends ChangeNotifier {
     try {
       await _loadTrashState();
       await _loadFolders();
-      final basePath = await MiraproSerializer.projectsBasePath();
+      final basePath = await NiaproSerializer.projectsBasePath();
       final baseDir = Directory(basePath);
       if (!baseDir.existsSync()) return;
       for (final dir in baseDir.listSync().whereType<Directory>()) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
-        final miraproFile = File('${dir.path}/$projectId.mirapro');
-        if (!miraproFile.existsSync()) continue;
+        final niaproFile = File('${dir.path}/$projectId.niapro');
+        if (!niaproFile.existsSync()) continue;
         try {
-          final data = await MiraproSerializer.load(miraproFile.path);
+          final data = await NiaproSerializer.load(niaproFile.path);
           // 容量（仕様書07・19：Manifest「容量」）は実ファイルサイズから都度算出する
           // （保存済みの数値をそのまま信用すると、外部要因での差分等でズレうるため）。
-          final sizeBytes = miraproFile.lengthSync();
+          final sizeBytes = niaproFile.lengthSync();
           final project = data.project.copyWith(sizeBytes: sizeBytes);
           if (_trashDeletedAt.containsKey(projectId)) {
             // ゴミ箱内のプロジェクト：一覧には出さず、シーンデータもメモリに
@@ -235,7 +235,7 @@ class ProjectService extends ChangeNotifier {
   /// ディスクから読み込んだプロジェクトデータをメモリ上のマップへ反映する。
   /// init()（起動時の全件読み込み）とrestoreProject()（ゴミ箱からの復元時の
   /// 再読み込み）で共通利用する。
-  void _applyLoadedProjectData(MiraproData data) {
+  void _applyLoadedProjectData(NiaproData data) {
     final projectId = data.project.id;
     _scenes[projectId] = data.scenes;
     _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
@@ -249,16 +249,16 @@ class ProjectService extends ChangeNotifier {
     _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
   }
 
-  /// projectIdの.miraproファイルをディスクから再読み込みする。
+  /// projectIdの.niaproファイルをディスクから再読み込みする。
   /// ファイルが存在しない・読み込みに失敗した場合は何もしない（呼び出し元で
   /// _scenesが空のままになるが、これは元々ファイルが存在しない異常系であり
   /// これ以上復元しようがないため）。
   Future<void> _reloadProjectDataFromDisk(String projectId) async {
     try {
-      final basePath = await MiraproSerializer.projectsBasePath();
-      final miraproFile = File('$basePath/$projectId/$projectId.mirapro');
-      if (!miraproFile.existsSync()) return;
-      final data = await MiraproSerializer.load(miraproFile.path);
+      final basePath = await NiaproSerializer.projectsBasePath();
+      final niaproFile = File('$basePath/$projectId/$projectId.niapro');
+      if (!niaproFile.existsSync()) return;
+      final data = await NiaproSerializer.load(niaproFile.path);
       _applyLoadedProjectData(data);
     } catch (_) {
       // 読み込み失敗時は何もしない
@@ -711,9 +711,9 @@ class ProjectService extends ChangeNotifier {
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
   }
 
-  /// .mirashare を複製して通常プロジェクトとして追加する（仕様書06：共有フロー）。
+  /// .niashare を複製して通常プロジェクトとして追加する（仕様書06：共有フロー）。
   /// 新規プロジェクトIDを採番し、共有元ファイル自体は変更しない。
-  Future<Project> importSharedProject(MiraproData data) async {
+  Future<Project> importSharedProject(NiaproData data) async {
     final newId = _nextId('proj');
     final project = data.project.copyWith(
       id: newId,
@@ -732,7 +732,7 @@ class ProjectService extends ChangeNotifier {
     _tileManagers[newId] = tm;
     _layerIdCounters[newId] = _maxLayerCounter(data.scenes);
     // 同梱素材（仕様書06・21：共有時に選択した画像/動画/音声）をMaterials/へ復元する。
-    await MiraproSerializer.restoreBundledMaterials(newId, data);
+    await NiaproSerializer.restoreBundledMaterials(newId, data);
     _saveAsync(newId);
     notifyListeners();
     return project;
@@ -740,7 +740,7 @@ class ProjectService extends ChangeNotifier {
 
   /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用、仕様書06・09）。
   /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
-  void restoreFromAutosave(String projectId, MiraproData data) {
+  void restoreFromAutosave(String projectId, NiaproData data) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
     _projects[idx] = data.project.copyWith(id: projectId, updatedAt: DateTime.now());
@@ -1450,7 +1450,7 @@ class ProjectService extends ChangeNotifier {
     final scenes = _scenes[projectId];
     final tm = _tileManagers[projectId];
     if (project == null || scenes == null || tm == null) return;
-    MiraproSerializer.save(
+    NiaproSerializer.save(
       project: project,
       scenes: scenes,
       tileManager: tm,
@@ -1463,7 +1463,7 @@ class ProjectService extends ChangeNotifier {
     final scenes = _scenes[projectId];
     final tm = _tileManagers[projectId];
     if (project == null || scenes == null || tm == null) return;
-    await MiraproSerializer.save(
+    await NiaproSerializer.save(
       project: project,
       scenes: scenes,
       tileManager: tm,
@@ -1492,7 +1492,7 @@ class ProjectService extends ChangeNotifier {
       _trashDeletedAt.remove(id);
       await _persistTrashState();
       // deleteProject()でメモリ上のシーン・レイヤーホーム索引・タイルマネージャ・
-      // レイヤーIDカウンターを破棄しているため、ディスク上の.miraproファイルから
+      // レイヤーIDカウンターを破棄しているため、ディスク上の.niaproファイルから
       // 再読み込みして復元する（ファイル自体はdeleteProject()時に削除していない）。
       if (!_scenes.containsKey(id)) {
         await _reloadProjectDataFromDisk(id);
@@ -1507,10 +1507,10 @@ class ProjectService extends ChangeNotifier {
       _trash.removeAt(idx);
       _trashDeletedAt.remove(id);
       await _persistTrashState();
-      // ディスク上のプロジェクトフォルダ（.mirapro・自動保存・セーブツリー等）を
+      // ディスク上のプロジェクトフォルダ（.niapro・自動保存・セーブツリー等）を
       // 完全に削除する（仕様書06・19：完全削除は元に戻せない）。
       try {
-        final basePath = await MiraproSerializer.projectsBasePath();
+        final basePath = await NiaproSerializer.projectsBasePath();
         final dir = Directory('$basePath/$id');
         if (dir.existsSync()) {
           await dir.delete(recursive: true);
@@ -1653,7 +1653,7 @@ class ProjectService extends ChangeNotifier {
     final pngBytes = byteData?.buffer.asUint8List();
     if (pngBytes == null) return;
 
-    final path = await MiraproSerializer.saveProjectThumbnail(projectId, pngBytes);
+    final path = await NiaproSerializer.saveProjectThumbnail(projectId, pngBytes);
     final curIdx = _projects.indexWhere((p) => p.id == projectId);
     if (curIdx < 0) return;
     _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);

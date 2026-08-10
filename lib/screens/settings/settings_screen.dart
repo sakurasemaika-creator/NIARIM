@@ -77,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       (
         icon: Icons.import_export, title: '引き継ぎ', subtitle: '設定・素材・ブラシを他端末へ書き出し/読み込み',
-        keywords: '引き継ぎ エクスポート インポート 他端末 miratra', onTap: () => context.push('/settings/transfer'), accent: const Color(0xFF3DDC97),
+        keywords: '引き継ぎ エクスポート インポート 他端末 niatra', onTap: () => context.push('/settings/transfer'), accent: const Color(0xFF3DDC97),
       ),
       (
         icon: Icons.font_download_outlined, title: 'フォント管理', subtitle: 'TTF/OTFの追加・検索・削除',

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../engine/mirapro_serializer.dart';
+import '../engine/niapro_serializer.dart';
 import '../engine/undo_manager.dart';
 import 'project_service.dart';
 
@@ -101,7 +101,7 @@ class AutosaveService extends ChangeNotifier {
     final slotIndex = _nextSlotIndex % maxSlots;
     _nextSlotIndex++;
     try {
-      await MiraproSerializer.saveAutosave(
+      await NiaproSerializer.saveAutosave(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
@@ -131,9 +131,9 @@ class AutosaveService extends ChangeNotifier {
   }
 
   /// 自動保存データを読み込む（実際の反映はProjectService.restoreFromAutosave経由）。
-  Future<MiraproData?> restore(String projectId, int slotIndex) async {
+  Future<NiaproData?> restore(String projectId, int slotIndex) async {
     try {
-      return await MiraproSerializer.loadAutosave(projectId, slotIndex);
+      return await NiaproSerializer.loadAutosave(projectId, slotIndex);
     } catch (_) {
       return null;
     }

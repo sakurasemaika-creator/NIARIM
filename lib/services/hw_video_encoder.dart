@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 /// FFmpeg/libx264（GPL）を使わないことでGPLコピーレフト・H.264特許
 /// ロイヤリティの論点を回避する）。
 class HardwareVideoEncoder {
-  static const _channel = MethodChannel('com.miranima.miranima/hw_video_encoder');
+  static const _channel = MethodChannel('com.niarim.niarim/hw_video_encoder');
 
   /// [framePaths]（表示順のPNGファイルパス一覧。同一パスを複数回指定すると
   /// 静止フレームの複製として扱われる）を指定[fps]でエンコードし、

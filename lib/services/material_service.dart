@@ -27,7 +27,7 @@ class MaterialService extends ChangeNotifier {
 
   Future<Directory> _materialsDir(String projectId) async {
     final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/miranima/projects/$projectId/Materials');
+    final dir = Directory('${base.path}/niarim/projects/$projectId/Materials');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }
@@ -217,7 +217,7 @@ class MaterialService extends ChangeNotifier {
     return missing;
   }
 
-  /// 指定した種類の素材のみを対象に、.mirashare同梱用のファイルbyte列と
+  /// 指定した種類の素材のみを対象に、.niashare同梱用のファイルbyte列と
   /// マニフェストJSONを作成する（仕様書06・21：共有時の素材同梱チェックボックス）。
   /// [includeTypes]が空、または対象素材が実ファイルとして見つからない場合は
   /// filesが空・manifestがnullの結果を返す。

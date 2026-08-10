@@ -2,7 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../engine/miratra_serializer.dart';
+import '../../engine/niatra_serializer.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/brush_service.dart';
 import '../../services/settings_service.dart';
@@ -32,7 +32,7 @@ class _TransferScreenState extends State<TransferScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('引き継ぎ（.miratra）'), actions: const [HelpButton(topic: '引き継ぎ（.miratra）')]),
+      appBar: AppBar(title: const Text('引き継ぎ（.niatra）'), actions: const [HelpButton(topic: '引き継ぎ（.niatra）')]),
       body: desktopCentered(context, Column(
         children: [
           Padding(
@@ -99,7 +99,7 @@ class _TransferScreenState extends State<TransferScreen> {
   Future<void> _export() async {
     setState(() => _isBusy = true);
     try {
-      final file = await MiratraSerializer.export(
+      final file = await NiatraSerializer.export(
         selectedItems: _items,
         settings: context.read<SettingsService>(),
         brush: context.read<BrushService>(),
@@ -112,7 +112,7 @@ class _TransferScreenState extends State<TransferScreen> {
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('.miratraファイルを書き出しました')),
+        const SnackBar(content: Text('.niatraファイルを書き出しました')),
       );
     } catch (e) {
       if (!mounted) return;
@@ -127,15 +127,15 @@ class _TransferScreenState extends State<TransferScreen> {
   Future<void> _import() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['miratra'],
+      allowedExtensions: ['niatra'],
     );
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!mounted) return;
     setState(() => _isBusy = true);
     try {
-      final data = await MiratraSerializer.load(result.files.first.path!);
+      final data = await NiatraSerializer.load(result.files.first.path!);
       if (!mounted) return;
-      MiratraSerializer.applyTo(
+      NiatraSerializer.applyTo(
         data,
         settings: context.read<SettingsService>(),
         brush: context.read<BrushService>(),
@@ -146,7 +146,7 @@ class _TransferScreenState extends State<TransferScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('.miratraファイルを読み込みました')),
+        const SnackBar(content: Text('.niatraファイルを読み込みました')),
       );
     } catch (e) {
       if (!mounted) return;

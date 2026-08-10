@@ -18,7 +18,7 @@ class WatermarkService extends ChangeNotifier {
 
   Future<Directory> _watermarksDir() async {
     final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/miranima/watermarks');
+    final dir = Directory('${base.path}/niarim/watermarks');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }

@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:miranima/engine/brush_texture_cache.dart';
-import 'package:miranima/engine/procedural_texture.dart';
-import 'package:miranima/models/stamp.dart';
-import 'package:miranima/models/tone.dart';
+import 'package:niarim/engine/brush_texture_cache.dart';
+import 'package:niarim/engine/procedural_texture.dart';
+import 'package:niarim/models/stamp.dart';
+import 'package:niarim/models/tone.dart';
 
 /// [size]×[size]の単色PNGバイト列を生成する（テスト用の自作ブラシ/トーン/
 /// スタンプ画像の代替）。
@@ -35,7 +35,7 @@ void main() {
 
   group('brush_texture_cache（自作ブラシ画像）', () {
     test('黒画像は全ピクセルがalpha高値（インクあり）のマスクへ変換される', () async {
-      final dir = await Directory.systemTemp.createTemp('mirabrush_test');
+      final dir = await Directory.systemTemp.createTemp('niabrush_test');
       final file = File('${dir.path}/black.png');
       await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFF000000)));
 
@@ -50,7 +50,7 @@ void main() {
     });
 
     test('白画像は全ピクセルがalpha低値（インクなし）のマスクへ変換される', () async {
-      final dir = await Directory.systemTemp.createTemp('mirabrush_test');
+      final dir = await Directory.systemTemp.createTemp('niabrush_test');
       final file = File('${dir.path}/white.png');
       await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFFFFFFFF)));
 
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('ensureToneTextureLoaded後は画像由来のパターンが同期関数からも返る', () async {
-      final dir = await Directory.systemTemp.createTemp('miratone_test');
+      final dir = await Directory.systemTemp.createTemp('niatone_test');
       final file = File('${dir.path}/white.png');
       await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFFFFFFFF)));
       final tone = Tone(id: 't2', name: 'カスタム2', texturePath: file.path);
@@ -102,7 +102,7 @@ void main() {
     });
 
     test('imagePath設定時は画像のRGBAがそのまま返る（四隅も不透明）', () async {
-      final dir = await Directory.systemTemp.createTemp('mirastamp_test');
+      final dir = await Directory.systemTemp.createTemp('niastamp_test');
       final file = File('${dir.path}/red.png');
       await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFFFF0000)));
       final stamp = Stamp(id: 's2', name: '自作', imagePath: file.path);

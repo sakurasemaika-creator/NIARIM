@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../engine/mirapro_serializer.dart';
+import '../engine/niapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/project.dart';
 import '../models/save_node.dart';
@@ -9,7 +9,7 @@ import '../models/scene.dart';
 /// スロット方式：固定数のスロットで管理
 /// ツリー方式：保存数制限なし・ツリー状に履歴管理
 ///
-/// 各ノードはSaveTree/{nodeId}.miraproとして実データ（シーン・タイル）を
+/// 各ノードはSaveTree/{nodeId}.niaproとして実データ（シーン・タイル）を
 /// ディスクへ保存する（仕様書08）。自動保存（クラッシュ復元専用）とは
 /// 完全に別領域・別ライフサイクルで管理される。
 class SaveTreeService extends ChangeNotifier {
@@ -45,7 +45,7 @@ class SaveTreeService extends ChangeNotifier {
       List.unmodifiable(_archivedByProject[projectId] ?? []);
 
   /// スロット方式：指定スロットへ上書き保存。実データ（シーン・タイル）を
-  /// SaveTree/{nodeId}.miraproへ書き込む。
+  /// SaveTree/{nodeId}.niaproへ書き込む。
   Future<SaveNode> saveToSlot({
     required String projectId,
     required int slotIndex,
@@ -63,7 +63,7 @@ class SaveTreeService extends ChangeNotifier {
         .toList();
     _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
     final nodeId = _newId();
-    await MiraproSerializer.saveSaveTreeNode(
+    await NiaproSerializer.saveSaveTreeNode(
       project: project,
       scenes: scenes,
       tileManager: tileManager,
@@ -71,7 +71,7 @@ class SaveTreeService extends ChangeNotifier {
     );
     String? thumbnailPath;
     if (thumbnailPngBytes != null) {
-      thumbnailPath = await MiraproSerializer.saveSaveTreeThumbnail(
+      thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
           projectId, nodeId, thumbnailPngBytes);
     }
     final node = SaveNode(
@@ -83,7 +83,7 @@ class SaveTreeService extends ChangeNotifier {
       slotIndex: slotIndex,
     );
     for (final o in old) {
-      await MiraproSerializer.deleteSaveTreeNode(projectId, o.id);
+      await NiaproSerializer.deleteSaveTreeNode(projectId, o.id);
     }
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
@@ -91,7 +91,7 @@ class SaveTreeService extends ChangeNotifier {
   }
 
   /// ツリー方式：親ノードから枝分かれして保存。実データ（シーン・タイル）を
-  /// SaveTree/{nodeId}.miraproへ書き込む。
+  /// SaveTree/{nodeId}.niaproへ書き込む。
   Future<SaveNode> saveAsChild({
     required String projectId,
     required Project project,
@@ -103,7 +103,7 @@ class SaveTreeService extends ChangeNotifier {
   }) async {
     _nodesByProject.putIfAbsent(projectId, () => []);
     final nodeId = _newId();
-    await MiraproSerializer.saveSaveTreeNode(
+    await NiaproSerializer.saveSaveTreeNode(
       project: project,
       scenes: scenes,
       tileManager: tileManager,
@@ -111,7 +111,7 @@ class SaveTreeService extends ChangeNotifier {
     );
     String? thumbnailPath;
     if (thumbnailPngBytes != null) {
-      thumbnailPath = await MiraproSerializer.saveSaveTreeThumbnail(
+      thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
           projectId, nodeId, thumbnailPngBytes);
     }
     final node = SaveNode(
@@ -130,9 +130,9 @@ class SaveTreeService extends ChangeNotifier {
 
   /// 指定ノードの実データを読み込む（復元用）。ファイルが存在しない・
   /// 破損している場合はnullを返す。
-  Future<MiraproData?> loadNode(String projectId, String nodeId) async {
+  Future<NiaproData?> loadNode(String projectId, String nodeId) async {
     try {
-      return await MiraproSerializer.loadSaveTreeNode(projectId, nodeId);
+      return await NiaproSerializer.loadSaveTreeNode(projectId, nodeId);
     } catch (_) {
       return null;
     }
@@ -141,7 +141,7 @@ class SaveTreeService extends ChangeNotifier {
   Future<void> deleteNode(String projectId, String nodeId) async {
     _nodesByProject[projectId]?.removeWhere((n) => n.id == nodeId);
     notifyListeners();
-    await MiraproSerializer.deleteSaveTreeNode(projectId, nodeId);
+    await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
   }
 
   List<SaveNode> getChildren(String projectId, String? parentId) {
@@ -177,9 +177,9 @@ class SaveTreeService extends ChangeNotifier {
       _archivedByProject.putIfAbsent(projectId, () => []);
       _archivedByProject[projectId]!.addAll(discard);
     } else {
-      // 完全削除：実データ（SaveTree/{nodeId}.mirapro）も削除する
+      // 完全削除：実データ（SaveTree/{nodeId}.niapro）も削除する
       for (final n in discard) {
-        await MiraproSerializer.deleteSaveTreeNode(projectId, n.id);
+        await NiaproSerializer.deleteSaveTreeNode(projectId, n.id);
       }
     }
 

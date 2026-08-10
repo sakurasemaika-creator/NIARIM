@@ -207,7 +207,7 @@ class ToneService extends ChangeNotifier {
 
   Future<Directory> _tonesDir() async {
     final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/miranima/Tones');
+    final dir = Directory('${base.path}/niarim/Tones');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }
@@ -235,7 +235,7 @@ class ToneService extends ChangeNotifier {
     final tone = _tones.firstWhere((t) => t.id == id);
     final base = await getApplicationDocumentsDirectory();
     final safeName = tone.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    final filePath = '${base.path}/$safeName.miratone';
+    final filePath = '${base.path}/$safeName.niatone';
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(

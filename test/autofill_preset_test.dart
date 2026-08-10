@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:miranima/models/autofill_preset.dart';
-import 'package:miranima/models/layer.dart' show LayerBlendMode;
+import 'package:niarim/models/autofill_preset.dart';
+import 'package:niarim/models/layer.dart' show LayerBlendMode;
 
 /// AutofillPart.isConfigured（Task#71「未設定時は保存不可」の判定基準）の
 /// 単体テスト。

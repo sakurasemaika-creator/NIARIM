@@ -124,7 +124,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                         itemBuilder: (_) => [
                           const PopupMenuItem(value: 'rename', child: Text('名前変更')),
                           const PopupMenuItem(value: 'duplicate', child: Text('複製')),
-                          const PopupMenuItem(value: 'export', child: Text('書き出し (.miratheme)')),
+                          const PopupMenuItem(value: 'export', child: Text('書き出し (.niatheme)')),
                           const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
                         ],
                       ),
@@ -149,7 +149,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: OutlinedButton.icon(
               icon: const Icon(Icons.file_upload),
-              label: const Text('.mirathemeを読み込む'),
+              label: const Text('.niathemeを読み込む'),
               onPressed: () => _importTheme(context, themeService),
             ),
           ),
@@ -212,7 +212,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     try {
       final dir = await getTemporaryDirectory();
       final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-      final file = File('${dir.path}/$safeName.miratheme');
+      final file = File('${dir.path}/$safeName.niatheme');
       await file.writeAsString(jsonEncode(preset.toJson()));
       if (!context.mounted) return;
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
@@ -227,7 +227,7 @@ class ThemeSettingsScreen extends StatelessWidget {
   Future<void> _importTheme(BuildContext context, ThemeService service) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['miratheme'],
+      allowedExtensions: ['niatheme'],
     );
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!context.mounted) return;
@@ -240,7 +240,7 @@ class ThemeSettingsScreen extends StatelessWidget {
       service.applyPreset(preset.id);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('.mirathemeを読み込みました')),
+        const SnackBar(content: Text('.niathemeを読み込みました')),
       );
     } catch (e) {
       if (!context.mounted) return;

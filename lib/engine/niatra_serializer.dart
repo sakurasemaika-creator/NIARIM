@@ -15,10 +15,10 @@ import '../services/stamp_service.dart';
 import '../services/theme_service.dart';
 import '../services/tone_service.dart';
 
-/// .miratra（引き継ぎファイル、旧称.stutra）の書き出し・読み込み（仕様書06）。
+/// .niatra（引き継ぎファイル、旧称.stutra）の書き出し・読み込み（仕様書06）。
 /// 引き継ぐ項目（設定/素材/ブラシ/プリセット/UIテーマ）をチェックボックスで選択できる。
 /// 形式：ZIPアーカイブ内に data.json 一枚のみを持つシンプル構成。
-class MiratraSerializer {
+class NiatraSerializer {
   static const _dataFile = 'data.json';
 
   static Future<File> export({
@@ -65,7 +65,7 @@ class MiratraSerializer {
 
     final dir = await getApplicationDocumentsDirectory();
     final filePath =
-        '${dir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.miratra';
+        '${dir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.niatra';
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(ArchiveFile(_dataFile, 0, utf8.encode(jsonEncode(data))));
@@ -73,18 +73,18 @@ class MiratraSerializer {
     return File(filePath);
   }
 
-  static Future<MiratraData> load(String filePath) async {
+  static Future<NiatraData> load(String filePath) async {
     final bytes = await File(filePath).readAsBytes();
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
     final data = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
-    return MiratraData(data);
+    return NiatraData(data);
   }
 
   /// 読み込んだデータを各サービスへ適用する。存在しない項目はスキップする。
   static void applyTo(
-    MiratraData data, {
+    NiatraData data, {
     required SettingsService settings,
     required BrushService brush,
     required ToneService tone,
@@ -245,7 +245,7 @@ class MiratraSerializer {
       );
 }
 
-class MiratraData {
+class NiatraData {
   final Map<String, dynamic> raw;
-  const MiratraData(this.raw);
+  const NiatraData(this.raw);
 }

@@ -178,7 +178,7 @@ class StampService extends ChangeNotifier {
 
   Future<Directory> _stampsDir() async {
     final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/miranima/Stamps');
+    final dir = Directory('${base.path}/niarim/Stamps');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }
@@ -206,7 +206,7 @@ class StampService extends ChangeNotifier {
     final stamp = _stamps.firstWhere((s) => s.id == id);
     final base = await getApplicationDocumentsDirectory();
     final safeName = stamp.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    final filePath = '${base.path}/$safeName.mirastamp';
+    final filePath = '${base.path}/$safeName.niastamp';
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(

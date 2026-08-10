@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:miranima/services/project_service.dart';
+import 'package:niarim/services/project_service.dart';
 
 /// 仕様書19：プロジェクト管理仕様「フォルダ管理」を検証する。
 /// フォルダの永続化・複数階層対応・お気に入り・移動時の循環防止・

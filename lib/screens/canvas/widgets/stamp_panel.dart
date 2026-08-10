@@ -233,7 +233,7 @@ class _StampPanelState extends State<StampPanel> {
   }
 
   Future<void> _importStamp(BuildContext context, StampService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['mirastamp']);
+    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['niastamp']);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     try {
       await service.importStampFile(result.files.first.path!);

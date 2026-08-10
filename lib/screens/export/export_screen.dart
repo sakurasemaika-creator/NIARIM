@@ -179,7 +179,7 @@ class _ExportScreenState extends State<ExportScreen> {
         _progressDialogSetState?.call(() {});
       }
 
-      // 無料版：書き出し時にエンドカード（MIRANIMAロゴ・約5秒）を本編末尾へ
+      // 無料版：書き出し時にエンドカード（NIARIMロゴ・約5秒）を本編末尾へ
       // 自動追加する（仕様書06・13）。mp4/webmとも、動画の結合ではなく
       // フレーム生成の段階で末尾へ焼き込む（endcard_frame参照）。
       final shouldAppendEndCard = !premiumService.isPremium &&

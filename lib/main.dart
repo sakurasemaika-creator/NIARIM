@@ -140,7 +140,7 @@ void main() async {
         Provider<ShareIntentService>.value(value: shareIntentService),
         ChangeNotifierProvider<app_undo.UndoManager>.value(value: undoManager),
       ],
-      child: const MiranimaApp(),
+      child: const NiarimApp(),
     ),
   );
 }

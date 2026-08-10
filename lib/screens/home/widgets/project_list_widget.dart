@@ -5,7 +5,7 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../engine/mirapro_serializer.dart';
+import '../../../engine/niapro_serializer.dart';
 import '../../../models/material_asset.dart';
 import '../../../models/project.dart';
 import '../../../services/font_service.dart';
@@ -370,7 +370,7 @@ class ProjectListWidget extends StatelessWidget {
         const PopupMenuItem(value: 'open', child: Text('開く')),
         const PopupMenuItem(value: 'rename', child: Text('名前変更')),
         const PopupMenuItem(value: 'duplicate', child: Text('複製')),
-        const PopupMenuItem(value: 'share', child: Text('.mirashareを作成')),
+        const PopupMenuItem(value: 'share', child: Text('.niashareを作成')),
         PopupMenuItem(
           value: 'favorite',
           child: Text(project.isFavorite ? 'お気に入り解除' : 'お気に入り'),
@@ -414,7 +414,7 @@ class ProjectListWidget extends StatelessWidget {
       case 'duplicate':
         service.duplicateProject(project.id);
       case 'share':
-        _createMirashare(context, project);
+        _createNiashare(context, project);
       case 'favorite':
         service.toggleFavorite(project.id);
       case 'move':
@@ -463,8 +463,8 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・21）。
-  Future<void> _createMirashare(BuildContext context, Project project) async {
+  /// .niashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・21）。
+  Future<void> _createNiashare(BuildContext context, Project project) async {
     final includeOptions = await showMaterialIncludeDialog(context);
     if (includeOptions == null || !context.mounted) return; // キャンセル
     final service = context.read<ProjectService>();
@@ -478,7 +478,7 @@ class ProjectListWidget extends StatelessWidget {
       final fontBundle = includeOptions.includeFonts
           ? await buildFontShareBundle(service, fontService, project.id)
           : (files: <String, Uint8List>{}, manifest: null);
-      final file = await MiraproSerializer.saveShare(
+      final file = await NiaproSerializer.saveShare(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
@@ -492,7 +492,7 @@ class ProjectListWidget extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('.mirashareの作成に失敗しました: $e')),
+        SnackBar(content: Text('.niashareの作成に失敗しました: $e')),
       );
     }
   }
@@ -688,7 +688,7 @@ class ProjectListWidget extends StatelessWidget {
   }
 }
 
-/// .mirashare作成時の同梱選択ダイアログ（仕様書06・15・21：画像/動画/音声を
+/// .niashare作成時の同梱選択ダイアログ（仕様書06・15・21：画像/動画/音声を
 /// 種類ごとに選択できる。デフォルトは全種類ON。「フォントを含める」を
 /// 選択した場合のみユーザー追加フォントも同梱する）。キャンセル時はnullを返す。
 Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncludeDialog(
@@ -749,7 +749,7 @@ Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncl
   );
 }
 
-/// プロジェクトで使用中のユーザー追加フォントをまとめ、.mirashareへ同梱する
+/// プロジェクトで使用中のユーザー追加フォントをまとめ、.niashareへ同梱する
 /// ためのファイル群とマニフェストを作成する（仕様書15：プロジェクト共有時の
 /// 「フォントを含める」）。使用フォントがアプリ標準フォントのみの場合は空を返す。
 Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../engine/layer_compositor.dart';
-import '../../engine/mirapro_serializer.dart';
+import '../../engine/niapro_serializer.dart';
 import '../../models/project.dart';
 import '../../services/font_service.dart';
 import '../../services/material_service.dart';
@@ -243,7 +243,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   child: _quickAction(
                     icon: Icons.ios_share,
                     label: '共有',
-                    onTap: () => _createMirashare(context, projectService, project),
+                    onTap: () => _createNiashare(context, projectService, project),
                   ),
                 ),
               ],
@@ -399,8 +399,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     ).then((_) => controller.dispose());
   }
 
-  /// .mirashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・19・21）。
-  Future<void> _createMirashare(BuildContext context, ProjectService service, Project project) async {
+  /// .niashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・19・21）。
+  Future<void> _createNiashare(BuildContext context, ProjectService service, Project project) async {
     final includeOptions = await showMaterialIncludeDialog(context);
     if (includeOptions == null || !context.mounted) return; // キャンセル
     final materialService = context.read<MaterialService>();
@@ -413,7 +413,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       final fontBundle = includeOptions.includeFonts
           ? await buildFontShareBundle(service, fontService, project.id)
           : (files: <String, Uint8List>{}, manifest: null);
-      final file = await MiraproSerializer.saveShare(
+      final file = await NiaproSerializer.saveShare(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
@@ -427,7 +427,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('.mirashareの作成に失敗しました: $e')),
+        SnackBar(content: Text('.niashareの作成に失敗しました: $e')),
       );
     }
   }

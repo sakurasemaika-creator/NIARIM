@@ -11,7 +11,7 @@
 # 明示的なkeepが無いと難読化・除去で壊れる可能性があるため、念のため
 # 保守的にkeepしておく。
 
-# 自作コード（com.miranima.miranima配下）。usage.txtでの実機起動時
+# 自作コード（com.niarim.niarim配下）。usage.txtでの実機起動時
 # クラッシュ原因調査により、HardwareVideoEncoder（Kotlinのobject）の
 # シングルトンインスタンスフィールド（INSTANCE）がR8に除去されている
 # ことが判明した。MainActivity.ktはMethodChannelハンドラー（ラムダ式）
@@ -22,7 +22,7 @@
 # 起こしていた（usage.txtで確認）。自作コードは全体でも小規模なため、
 # 個別の除去パターンを追いかけるのではなく丸ごとkeepすることで、同種の
 # 問題が今後別のクラスで再発することも防ぐ。
--keep class com.miranima.miranima.** { *; }
+-keep class com.niarim.niarim.** { *; }
 
 # google_mobile_ads（広告SDK。公式ドキュメント推奨のkeepルール）
 -keep public class com.google.android.gms.ads.** {

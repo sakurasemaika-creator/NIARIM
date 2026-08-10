@@ -135,7 +135,7 @@ class ExportEngine {
     return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
   }
 
-  /// 無料版のエンドカード（MIRANIMAロゴ、約5秒）のフレーム画像をPNGとして
+  /// 無料版のエンドカード（NIARIMロゴ、約5秒）のフレーム画像をPNGとして
   /// 生成する（仕様書06・13）。FFmpegのdrawtextフィルターに依存せず、
   /// 他のテキスト描画と同じdart:uiのParagraphBuilderで焼き込む。
   Future<Uint8List> _renderEndCardPng({required int width, required int height}) async {
@@ -152,7 +152,7 @@ class ExportEngine {
         fontSize: width * 0.08,
         fontWeight: ui.FontWeight.bold,
       ))
-      ..addText('MIRANIMA');
+      ..addText('NIARIM');
     final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: width.toDouble()));
     canvas.drawParagraph(paragraph, ui.Offset(0, (height - paragraph.height) / 2));
 
@@ -239,7 +239,7 @@ class ExportEngine {
     }
 
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.mp4';
+    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.mp4';
     await HardwareVideoEncoder.encodeMp4(
       framePaths: framePaths,
       fps: fps,
@@ -302,7 +302,7 @@ class ExportEngine {
 
     final gifBytes = img.encodeGif(gifImage!);
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.gif';
+    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.gif';
     await File(outputPath).writeAsBytes(gifBytes);
     return outputPath;
   }
@@ -376,7 +376,7 @@ class ExportEngine {
     }
 
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = '${exportsDir.path}/miranima_${DateTime.now().millisecondsSinceEpoch}.webm';
+    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.webm';
     final session = await FFmpegKit.execute(
       '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
       '-c:v libvpx-vp9 -pix_fmt yuva420p "$outputPath"',

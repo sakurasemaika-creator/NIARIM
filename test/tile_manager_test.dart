@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:miranima/engine/tile_manager.dart';
+import 'package:niarim/engine/tile_manager.dart';
 
 /// TileManagerのタイルキャッシュ（Task#73）が安全かどうかを検証するテスト。
 /// 実機での目視確認ができない開発環境のため、キャッシュの正しさ（変更後に

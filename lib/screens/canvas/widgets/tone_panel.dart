@@ -232,7 +232,7 @@ class _TonePanelState extends State<TonePanel> {
   }
 
   Future<void> _importTone(BuildContext context, ToneService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['miratone']);
+    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['niatone']);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     try {
       await service.importToneFile(result.files.first.path!);

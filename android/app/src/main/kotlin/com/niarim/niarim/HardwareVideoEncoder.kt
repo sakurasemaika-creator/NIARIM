@@ -1,4 +1,4 @@
-package com.miranima.miranima
+package com.niarim.niarim
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

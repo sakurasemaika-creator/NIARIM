@@ -249,7 +249,7 @@ class BrushService extends ChangeNotifier {
 
   Future<Directory> _brushesDir() async {
     final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/miranima/Brushes');
+    final dir = Directory('${base.path}/niarim/Brushes');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }
@@ -280,13 +280,13 @@ class BrushService extends ChangeNotifier {
 
   static const _bundleDataFile = 'data.json';
 
-  /// ブラシ1件を`.mirabrush`ファイル（ZIP：data.json＋カスタム画像）として
+  /// ブラシ1件を`.niabrush`ファイル（ZIP：data.json＋カスタム画像）として
   /// 書き出す。共有シートで送るためのFileを返す。
   Future<File> exportBrush(String id) async {
     final brush = _brushes.firstWhere((b) => b.id == id);
     final base = await getApplicationDocumentsDirectory();
     final safeName = brush.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    final filePath = '${base.path}/$safeName.mirabrush';
+    final filePath = '${base.path}/$safeName.niabrush';
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(
@@ -301,7 +301,7 @@ class BrushService extends ChangeNotifier {
     return File(filePath);
   }
 
-  /// `.mirabrush`ファイルを読み込み、新規ブラシとして追加する。
+  /// `.niabrush`ファイルを読み込み、新規ブラシとして追加する。
   Future<Brush> importBrushFile(String filePath) async {
     final bytes = await File(filePath).readAsBytes();
     final archive = ZipDecoder().decodeBytes(bytes);

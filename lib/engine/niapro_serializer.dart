@@ -15,20 +15,20 @@ import '../models/text_object.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
 
-/// .mirapro ファイルの保存・読み込み（仕様書06・07）
+/// .niapro ファイルの保存・読み込み（仕様書06・07）
 /// 形式：ZIP アーカイブ
 ///   manifest.json
 ///   Scene/Scene0001/frames.json
 ///   Scene/Scene0001/tiles/Layer0001_0,0.bin
-class MiraproSerializer {
+class NiaproSerializer {
   static const String _manifestFile = 'manifest.json';
   static const String _framesFile = 'frames.json';
   static const String _tilesDir = 'tiles'; // 旧形式（Scene毎重複保存）の読み込み互換用
   static const String _rootTilesDir = 'Tiles'; // 新形式：プロジェクト全体で1箇所のみ保存
-  static const String _materialsArchiveDir = 'Materials'; // 同梱素材（仕様書06・21、.mirashareのみ）
-  static const String _fontsArchiveDir = 'Fonts'; // 同梱フォント（仕様書15、.mirashareのみ）
+  static const String _materialsArchiveDir = 'Materials'; // 同梱素材（仕様書06・21、.niashareのみ）
+  static const String _fontsArchiveDir = 'Fonts'; // 同梱フォント（仕様書15、.niashareのみ）
 
-  // アプリの.miraproフォーマットバージョン（仕様書06・12：内部データManifest）。
+  // アプリの.niaproフォーマットバージョン（仕様書06・12：内部データManifest）。
   // manifest.jsonへ書き込み、読み込み時は_migrateManifestJson()で過去バージョンとの
   // 差異を吸収する拡張点として使う。現在はv1.0.0のみが存在するため実際の変換処理は
   // まだ発生しないが、将来フォーマットが変わった際にここへ分岐を追加する。
@@ -69,14 +69,14 @@ class MiraproSerializer {
       // 変換ステップを追加していく。現状は変換対象がないためフィールド構成は
       // そのまま引き継ぐ（欠落フィールドは各_deserialize*側の`??`デフォルトで
       // 補完される）。
-      debugPrint('[MiraproSerializer] 旧バージョン($version)のプロジェクトを読み込みました'
+      debugPrint('[NiaproSerializer] 旧バージョン($version)のプロジェクトを読み込みました'
           '（現行:$currentAppVersion）。既知の変換ステップはありません。');
     } else if (cmp > 0) {
       // 保存時のバージョンが現行より新しい：このアプリより新しいバージョンで
       // 保存されたファイルを開こうとしている（アプリの更新忘れ等）。未知の
       // 追加フィールドはJSONデコード時に単に無視されるため致命的ではないが、
       // 診断用にログへ残す。
-      debugPrint('[MiraproSerializer] 現行より新しいバージョン($version)のプロジェクトです'
+      debugPrint('[NiaproSerializer] 現行より新しいバージョン($version)のプロジェクトです'
           '（現行:$currentAppVersion）。アプリの更新が必要な可能性があります。');
     }
     return json;
@@ -84,7 +84,7 @@ class MiraproSerializer {
 
   // ─── 保存 ─────────────────────────────────────────────────────────────
 
-  /// プロジェクトを保存する。既存の.miraproがある場合は差分保存（変更されたタイルのみ
+  /// プロジェクトを保存する。既存の.niaproがある場合は差分保存（変更されたタイルのみ
   /// 再書き込みし、未変更タイルは前回保存分をそのまま引き継ぐ）を行う（仕様書09：差分保存）。
   static Future<File> save({
     required Project project,
@@ -92,7 +92,7 @@ class MiraproSerializer {
     required TileManager tileManager,
   }) async {
     final dir = await _projectDir(project.id);
-    final filePath = '${dir.path}/${project.id}.mirapro';
+    final filePath = '${dir.path}/${project.id}.niapro';
     final exists = await File(filePath).exists();
     final result = exists
         ? await _writeArchiveDiff(filePath, project, scenes, tileManager)
@@ -102,7 +102,7 @@ class MiraproSerializer {
     return result;
   }
 
-  /// .mirashare として保存する（内容は.miraproと同一形式、拡張子のみ異なる）。
+  /// .niashare として保存する（内容は.niaproと同一形式、拡張子のみ異なる）。
   /// 仕様書06：共有用ファイル。受信側で複製して通常プロジェクトとして追加する。
   ///
   /// [materialFiles]・[materialsManifest] を渡すと、選択した種類の素材の実ファイルを
@@ -122,18 +122,18 @@ class MiraproSerializer {
   }) async {
     final dir = outputDir ?? (await _projectDir(project.id)).path;
     final safeName = project.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    final filePath = '$dir/$safeName.mirashare';
+    final filePath = '$dir/$safeName.niashare';
     return _writeArchive(filePath, project, scenes, tileManager,
         materialFiles: materialFiles, materialsManifest: materialsManifest,
         fontFiles: fontFiles, fontsManifest: fontsManifest);
   }
 
-  /// .mirashare を読み込む（.miraproと同一形式なので load() をそのまま利用できる）。
-  static Future<MiraproData> loadShare(String filePath) => load(filePath);
+  /// .niashare を読み込む（.niaproと同一形式なので load() をそのまま利用できる）。
+  static Future<NiaproData> loadShare(String filePath) => load(filePath);
 
-  /// .mirashareに同梱された素材ファイルを、新規プロジェクトのMaterials/フォルダへ
+  /// .niashareに同梱された素材ファイルを、新規プロジェクトのMaterials/フォルダへ
   /// 書き出す（仕様書06・21：共有時の素材同梱）。同梱がない場合は何もしない。
-  static Future<void> restoreBundledMaterials(String projectId, MiraproData data) async {
+  static Future<void> restoreBundledMaterials(String projectId, NiaproData data) async {
     if (data.materialFiles.isEmpty && data.materialsManifest == null) return;
     final dir = await _projectDir(projectId);
     final materialsDir = Directory('${dir.path}/Materials');
@@ -146,12 +146,12 @@ class MiraproSerializer {
     }
   }
 
-  /// .mirashareに同梱されたフォントのメタデータ・実データ一覧を取得する
+  /// .niashareに同梱されたフォントのメタデータ・実データ一覧を取得する
   /// （仕様書15：プロジェクト共有時の「フォントを含める」）。実際の登録
   /// （FontLoaderへの読み込み・一覧への追加）はFontServiceが行うため、
   /// engine層であるここではアーカイブのパースのみ行う。
   static List<({String id, String displayName, String fileName, Uint8List bytes})> bundledFonts(
-      MiraproData data) {
+      NiaproData data) {
     if (data.fontsManifest == null) return const [];
     final list = jsonDecode(data.fontsManifest!) as List<dynamic>;
     final result = <({String id, String displayName, String fileName, Uint8List bytes})>[];
@@ -186,12 +186,12 @@ class MiraproSerializer {
     required int slotIndex,
   }) async {
     final dir = await _autosaveDir(project.id);
-    return _writeArchive('$dir/slot_$slotIndex.mirapro', project, scenes, tileManager);
+    return _writeArchive('$dir/slot_$slotIndex.niapro', project, scenes, tileManager);
   }
 
-  static Future<MiraproData> loadAutosave(String projectId, int slotIndex) async {
+  static Future<NiaproData> loadAutosave(String projectId, int slotIndex) async {
     final dir = await _autosaveDir(projectId);
-    return load('$dir/slot_$slotIndex.mirapro');
+    return load('$dir/slot_$slotIndex.niapro');
   }
 
   // ─── セーブツリー／スロット（手動保存、仕様書08） ───────────────────────
@@ -211,12 +211,12 @@ class MiraproSerializer {
     required String nodeId,
   }) async {
     final dir = await _saveTreeDir(project.id);
-    return _writeArchive('$dir/$nodeId.mirapro', project, scenes, tileManager);
+    return _writeArchive('$dir/$nodeId.niapro', project, scenes, tileManager);
   }
 
-  static Future<MiraproData> loadSaveTreeNode(String projectId, String nodeId) async {
+  static Future<NiaproData> loadSaveTreeNode(String projectId, String nodeId) async {
     final dir = await _saveTreeDir(projectId);
-    return load('$dir/$nodeId.mirapro');
+    return load('$dir/$nodeId.niapro');
   }
 
   /// セーブノードのサムネイル画像（PNG）を保存し、保存先パスを返す。
@@ -237,10 +237,10 @@ class MiraproSerializer {
     return path;
   }
 
-  /// ノードの実データ（.mirapro）とサムネイル画像を両方削除する。
+  /// ノードの実データ（.niapro）とサムネイル画像を両方削除する。
   static Future<void> deleteSaveTreeNode(String projectId, String nodeId) async {
     final dir = await _saveTreeDir(projectId);
-    final file = File('$dir/$nodeId.mirapro');
+    final file = File('$dir/$nodeId.niapro');
     if (await file.exists()) await file.delete();
     final thumb = File('$dir/${nodeId}_thumb.png');
     if (await thumb.exists()) await thumb.delete();
@@ -307,7 +307,7 @@ class MiraproSerializer {
       }
     }
 
-    // 同梱素材（仕様書06・21：.mirashare作成時に選択した画像/動画/音声）
+    // 同梱素材（仕様書06・21：.niashare作成時に選択した画像/動画/音声）
     if (materialFiles != null) {
       for (final entry in materialFiles.entries) {
         encoder.addArchiveFile(
@@ -320,7 +320,7 @@ class MiraproSerializer {
           ArchiveFile('$_materialsArchiveDir/materials.json', bytes.length, bytes));
     }
 
-    // 同梱フォント（仕様書15：.mirashare作成時に選択した「フォントを含める」）
+    // 同梱フォント（仕様書15：.niashare作成時に選択した「フォントを含める」）
     if (fontFiles != null) {
       for (final entry in fontFiles.entries) {
         encoder.addArchiveFile(
@@ -408,7 +408,7 @@ class MiraproSerializer {
 
   // ─── 読み込み ─────────────────────────────────────────────────────────
 
-  static Future<MiraproData> load(String filePath) async {
+  static Future<NiaproData> load(String filePath) async {
     final bytes = await File(filePath).readAsBytes();
     final archive = ZipDecoder().decodeBytes(bytes);
 
@@ -513,7 +513,7 @@ class MiraproSerializer {
       }
     }
 
-    // 同梱素材（仕様書06・21：.mirashare作成時に選択した画像/動画/音声の実ファイル）。
+    // 同梱素材（仕様書06・21：.niashare作成時に選択した画像/動画/音声の実ファイル）。
     // 画像・動画レイヤーの表示自体はタイルへラスタライズ済みのため同梱がなくても
     // 崩れないが、音声はタイル化されずMaterialService経由でファイルを都度再生する
     // ため、同梱しないと受信側で音声が再生できなくなる。
@@ -529,7 +529,7 @@ class MiraproSerializer {
       }
     }
 
-    // 同梱フォント（仕様書15：.mirashare作成時に選択した「フォントを含める」）
+    // 同梱フォント（仕様書15：.niashare作成時に選択した「フォントを含める」）
     final fontFiles = <String, Uint8List>{};
     String? fontsManifest;
     for (final file in archive.files) {
@@ -542,7 +542,7 @@ class MiraproSerializer {
       }
     }
 
-    return MiraproData(
+    return NiaproData(
       project: project,
       scenes: scenes,
       tileData: tileData,
@@ -825,31 +825,31 @@ class MiraproSerializer {
 
   static Future<Directory> _projectDir(String projectId) async {
     final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/miranima/projects/$projectId');
+    final dir = Directory('${base.path}/niarim/projects/$projectId');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }
 
   static Future<String> projectsBasePath() async {
     final base = await getApplicationDocumentsDirectory();
-    return '${base.path}/miranima/projects';
+    return '${base.path}/niarim/projects';
   }
 }
 
-class MiraproData {
+class NiaproData {
   final Project project;
   final List<Scene> scenes;
   final Map<String, Map<String, Uint8List>> tileData;
-  // 同梱素材（仕様書06・21：.mirashareに同梱された画像/動画/音声の実ファイル）。
-  // 通常の.mirapro読み込みでは常に空。
+  // 同梱素材（仕様書06・21：.niashareに同梱された画像/動画/音声の実ファイル）。
+  // 通常の.niapro読み込みでは常に空。
   final Map<String, Uint8List> materialFiles;
   final String? materialsManifest;
-  // 同梱フォント（仕様書15：.mirashareに同梱されたユーザー追加フォントの実
-  // ファイル）。通常の.mirapro読み込みでは常に空。
+  // 同梱フォント（仕様書15：.niashareに同梱されたユーザー追加フォントの実
+  // ファイル）。通常の.niapro読み込みでは常に空。
   final Map<String, Uint8List> fontFiles;
   final String? fontsManifest;
 
-  const MiraproData({
+  const NiaproData({
     required this.project,
     required this.scenes,
     required this.tileData,

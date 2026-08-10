@@ -30,7 +30,7 @@ class FontService extends ChangeNotifier {
 
   Future<Directory> _fontsDir() async {
     final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/miranima/Fonts');
+    final dir = Directory('${base.path}/niarim/Fonts');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
   }
@@ -132,7 +132,7 @@ class FontService extends ChangeNotifier {
     return file.readAsBytes();
   }
 
-  /// 共有ファイル（.mirashare）に同梱されたフォントを取り込む（仕様書15：
+  /// 共有ファイル（.niashare）に同梱されたフォントを取り込む（仕様書15：
   /// 「「フォントを含める」を選択した場合のみフォントを同梱」）。
   /// [id]・[fileName]を送信元と同じものに保つことで、familyNameOf()が
   /// 生成するファミリー名（インポートしたテキストレイヤーのfontFamilyが

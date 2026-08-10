@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../engine/layer_compositor.dart';
-import '../../engine/mirapro_serializer.dart';
+import '../../engine/niapro_serializer.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
@@ -174,7 +174,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
 /// セーブツリーの合計容量が閾値を超えている場合に通知する
 /// （仕様書23：「容量が大きくなる場合はユーザーへ通知」）。
 Future<void> _warnIfSaveTreeSizeLarge(BuildContext context, String projectId) async {
-  final sizeBytes = await MiraproSerializer.saveTreeSizeBytes(projectId);
+  final sizeBytes = await NiaproSerializer.saveTreeSizeBytes(projectId);
   if (sizeBytes < _saveTreeSizeWarningThresholdBytes) return;
   if (!context.mounted) return;
   final mb = (sizeBytes / (1024 * 1024)).toStringAsFixed(0);

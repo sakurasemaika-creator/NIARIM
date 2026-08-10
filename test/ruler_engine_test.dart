@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:miranima/engine/ruler_engine.dart';
-import 'package:miranima/models/ruler.dart';
+import 'package:niarim/engine/ruler_engine.dart';
+import 'package:niarim/models/ruler.dart';
 
 /// 定規スナップ（Task#78で対応した透視定規の消失点スナップ・楕円/集中線の
 /// 回転反映）が実際に狙い通りの座標を返すことを機械的に検証する。実機での

@@ -35,7 +35,7 @@ class HomeDrawer extends StatelessWidget {
                   child: const Icon(Icons.movie_creation_outlined, color: Colors.white, size: 26),
                 ),
                 const SizedBox(height: 12),
-                const Text('MIRANIMA',
+                const Text('NIARIM',
                     style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 2),
                 Text('手書きアニメ制作アプリ',

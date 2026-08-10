@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:miranima/services/brush_service.dart';
-import 'package:miranima/services/tone_service.dart';
-import 'package:miranima/services/stamp_service.dart';
-import 'package:miranima/services/filter_service.dart';
-import 'package:miranima/models/brush.dart';
-import 'package:miranima/models/tone.dart';
-import 'package:miranima/models/stamp.dart';
+import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/services/tone_service.dart';
+import 'package:niarim/services/stamp_service.dart';
+import 'package:niarim/services/filter_service.dart';
+import 'package:niarim/models/brush.dart';
+import 'package:niarim/models/tone.dart';
+import 'package:niarim/models/stamp.dart';
 
 /// Task#83：ブラシ・トーン・スタンプ・フィルターの状態が再起動で消えるバグの
 /// 修正を検証する。従来はインメモリのみで、SharedPreferencesへの永続化が

@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 import '../../engine/export_engine.dart';
-import '../../engine/mirapro_serializer.dart';
+import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/advertising_service.dart';
 import '../../services/font_service.dart';
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  /// .mirashare受信フロー（仕様書06）：OSから共有ファイルを開いた場合の処理。
+  /// .niashare受信フロー（仕様書06）：OSから共有ファイルを開いた場合の処理。
   void _initShareIntentHandling() {
     final service = context.read<ShareIntentService>();
     final initialUri = service.pendingInitialUri;
@@ -93,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if (bytes == null) return;
       final tmpDir = await getTemporaryDirectory();
       final file = File(
-          '${tmpDir.path}/shared_${DateTime.now().millisecondsSinceEpoch}.mirashare');
+          '${tmpDir.path}/shared_${DateTime.now().millisecondsSinceEpoch}.niashare');
       await file.writeAsBytes(bytes);
       localPath = file.path;
     }
@@ -111,14 +111,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
     if (proceed != true) return;
     try {
-      final data = await MiraproSerializer.loadShare(localPath);
+      final data = await NiaproSerializer.loadShare(localPath);
       if (!mounted) return;
       final projectService = context.read<ProjectService>();
       final project = await projectService.importSharedProject(data);
       if (!mounted) return;
       // 同梱フォント（仕様書15：「フォントを含める」選択時）を取り込み登録する。
       final fontService = context.read<FontService>();
-      final bundledFonts = MiraproSerializer.bundledFonts(data);
+      final bundledFonts = NiaproSerializer.bundledFonts(data);
       for (final font in bundledFonts) {
         await fontService.importBundledFont(
           id: font.id,

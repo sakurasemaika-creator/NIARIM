@@ -55,7 +55,7 @@ jobs:
       - name: APKをArtifactsへアップロード
         uses: actions/upload-artifact@v4
         with:
-          name: miranima-${{ inputs.build-type }}-apk
+          name: niarim-${{ inputs.build-type }}-apk
           path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
           retention-days: 14
 
@@ -66,7 +66,7 @@ jobs:
         if: ${{ inputs.build-type == 'release' }}
         uses: actions/upload-artifact@v4
         with:
-          name: miranima-release-r8-reports
+          name: niarim-release-r8-reports
           path: |
             build/app/outputs/mapping/release/mapping.txt
             build/app/outputs/mapping/release/seeds.txt

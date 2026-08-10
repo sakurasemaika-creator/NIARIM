@@ -88,7 +88,7 @@ class LicenseScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => showLicensePage(
               context: context,
-              applicationName: 'MIRANIMA',
+              applicationName: 'NIARIM',
             ),
           ),
           const SizedBox(height: 8),
@@ -125,7 +125,7 @@ class _TermsBody extends StatelessWidget {
   static const _sections = [
     (
       '第1条（適用）',
-      'この利用規約（以下「本規約」）は、本アプリ「MIRANIMA」（以下「本アプリ」）の'
+      'この利用規約（以下「本規約」）は、本アプリ「NIARIM」（以下「本アプリ」）の'
           '利用条件を定めるものです。本アプリをダウンロード・利用した時点で、'
           'ユーザーは本規約に同意したものとみなします。',
     ),

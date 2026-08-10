@@ -1992,7 +1992,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               const Spacer(),
               Text(
                 _endCardVisible
-                    ? '${_endCardCustomPath != null ? '差替済' : 'MIRANIMAロゴ'}・$_endCardLengthSeconds秒'
+                    ? '${_endCardCustomPath != null ? '差替済' : 'NIARIMロゴ'}・$_endCardLengthSeconds秒'
                     : '非表示',
                 style: const TextStyle(fontSize: 9, color: Colors.grey),
               ),

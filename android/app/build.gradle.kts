@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.miranima.miranima"
+    namespace = "com.niarim.niarim"
     // google_mobile_ads 7.x系はcompileSdk 36を要求するため、Flutter側の既定値が
     // それより低い場合に備えて下限を明示する。
     compileSdk = maxOf(flutter.compileSdkVersion, 36)
@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.miranima.miranima"
+        applicationId = "com.niarim.niarim"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // google_mobile_ads 7.x系はminSdk 24を要求するため、Flutter側の既定値が
@@ -42,10 +42,10 @@ android {
             //
             // 【経緯】実機（Android 16）で起動直後にクラッシュする不具合の
             // 原因をusage.txt（R8が実際に除去したクラス一覧）で調査した結果、
-            // com.miranima.miranima.HardwareVideoEncoder（Kotlinのobject）の
+            // com.niarim.niarim.HardwareVideoEncoder（Kotlinのobject）の
             // シングルトンインスタンスフィールドがR8に除去されていたことが
             // 判明した。proguard-rules.proに`-keep class
-            // com.miranima.miranima.** { *; }`を追加して修正済み。ただし
+            // com.niarim.niarim.** { *; }`を追加して修正済み。ただし
             // この修正込みでのR8有効ビルドの実機起動確認はまだ済んでいない
             // ため、次のビルドで改めて実機確認が必要。
             isMinifyEnabled = true

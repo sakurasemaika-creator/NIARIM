@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:miranima/engine/text_render.dart';
-import 'package:miranima/models/text_object.dart';
+import 'package:niarim/engine/text_render.dart';
+import 'package:niarim/models/text_object.dart';
 
 /// テキストラスタライズ（Task#63・#72での縦書き・半角英数字回転・縦中横・
 /// ルビ対応、Task#75でのルビの横書き対応）が実際にクラッシュせず、期待する
