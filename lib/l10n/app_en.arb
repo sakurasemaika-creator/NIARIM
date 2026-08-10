@@ -397,5 +397,30 @@
   "helpFontManagementDesc": "A screen where you can add, search, and remove fonts available in the text tool. Additional free fonts beyond the bundled defaults are downloaded on demand from here, in order to keep the initial install size down.",
 
   "helpPerformanceSettingsTitle": "Performance Settings",
-  "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, tile cache, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here."
+  "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, tile cache, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.",
+
+  "fontSettingsTabDownloaded": "Downloaded",
+  "fontSettingsTabSearch": "Find & Download",
+  "fontSettingsTabImport": "Import",
+  "fontDownloadedSearchHint": "Search by font name...",
+  "fontFavoritesOnly": "★ Only",
+  "fontEmptyTitle": "No fonts",
+  "fontEmptyHint": "Add fonts from the \"Find & Download\" or \"Import\" tabs",
+  "fontRenameDialogTitle": "Rename Font",
+  "fontDeleteConfirmTitle": "Delete {name}?",
+  "fontImportTitle": "Import a font saved on this device",
+  "fontImportFormats": "Supported formats: TTF / OTF",
+  "fontSelectFileButton": "Select File",
+  "fontUnsupportedSnackbar": "This font could not be loaded.",
+  "fontAddedSnackbar": "Added \"{name}\" (shown in the Downloaded tab)",
+  "fontCorruptedSnackbar": "The font is corrupted.",
+
+  "licenseScreenTitle": "Terms & Licenses",
+  "licenseSectionTerms": "Terms of Service",
+  "licenseSectionFonts": "Fonts Used",
+  "licenseSectionOss": "Open Source Software Licenses",
+  "licenseOssListTitle": "List of Library Licenses",
+  "licenseOssListSubtitle": "Shows the licenses of the OSS packages used by this app",
+  "licenseFfmpegNote": "WebM export uses FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source for the modified version: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 export uses the device's built-in hardware encoder directly and does not use FFmpeg.",
+  "licenseFontCreditMeta": "Author: {author}   License: {license}"
 }

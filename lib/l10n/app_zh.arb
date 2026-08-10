@@ -397,5 +397,30 @@
   "helpFontManagementDesc": "可添加・搜索・删除文字工具可用字体的画面。除初始内置字体外的其他免费字体，为控制初始安装容量，需从此处按需下载。",
 
   "helpPerformanceSettingsTitle": "性能设置",
-  "helpPerformanceSettingsDesc": "可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・图块缓存・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。"
+  "helpPerformanceSettingsDesc": "可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・图块缓存・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。",
+
+  "fontSettingsTabDownloaded": "已下载",
+  "fontSettingsTabSearch": "搜索下载",
+  "fontSettingsTabImport": "导入",
+  "fontDownloadedSearchHint": "按字体名称搜索...",
+  "fontFavoritesOnly": "仅★",
+  "fontEmptyTitle": "没有字体",
+  "fontEmptyHint": "可从「搜索下载」或「导入」标签页添加",
+  "fontRenameDialogTitle": "更改字体名称",
+  "fontDeleteConfirmTitle": "要删除{name}吗？",
+  "fontImportTitle": "导入设备中已保存的字体",
+  "fontImportFormats": "支持格式：TTF / OTF",
+  "fontSelectFileButton": "选择文件",
+  "fontUnsupportedSnackbar": "无法读取该字体。",
+  "fontAddedSnackbar": "已添加“{name}”（显示在已下载标签页）",
+  "fontCorruptedSnackbar": "字体已损坏。",
+
+  "licenseScreenTitle": "使用条款・许可",
+  "licenseSectionTerms": "使用条款",
+  "licenseSectionFonts": "关于所用字体",
+  "licenseSectionOss": "开源软件许可",
+  "licenseOssListTitle": "所用库的许可列表",
+  "licenseOssListSubtitle": "显示本应用所使用的OSS软件包的许可信息",
+  "licenseFfmpegNote": "WebM导出使用了FFmpeg（LGPL 3.0，通过ffmpeg_kit_flutter_new_video调用）。修改版源代码获取地址：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4导出直接使用设备内置的硬件编码器，未使用FFmpeg。",
+  "licenseFontCreditMeta": "作者：{author}　许可：{license}"
 }

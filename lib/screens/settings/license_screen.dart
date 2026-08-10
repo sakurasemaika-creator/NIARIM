@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/help_button.dart';
 
 /// 利用規約・ライセンス画面。
@@ -9,23 +10,34 @@ import '../../widgets/help_button.dart';
 /// ライセンス文書（OFL.txt等）に基づく。オープンソースライセンスは
 /// Flutter標準のLicensePage（各パッケージのLICENSEファイルから自動収集）
 /// を利用する。
+///
+/// 多言語対応（タスク#102）について：画面のUI文言（タイトル・見出し・
+/// OSSライセンス一覧の案内文等）は4言語対応したが、利用規約12条の本文と
+/// 使用フォントのクレジット詳細（ライセンス条件の説明文）はあえて翻訳
+/// 対象外としている。前者はまだ法務担当による確認を経ていない草稿段階
+/// であり、後者はライセンス条件の正確な記述が求められるため、機械的に
+/// 翻訳して誤ったニュアンスが生じるリスクを避けた。正式リリース前に
+/// 法務担当の確認を経た上で、必要であれば専門の翻訳者による多言語化を
+/// 別途行うことを推奨する。
 class LicenseScreen extends StatelessWidget {
   const LicenseScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('利用規約・ライセンス'), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.licenseScreenTitle), actions: const [HelpButton()]),
       body: SafeArea(child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _SectionTitle('利用規約'),
+          _SectionTitle(l10n.licenseSectionTerms),
           // TODO: 正式なリリース前に、法務担当・権利者による確認・修正を
           // 経た内容へ差し替えること。以下はAIが一般的なアプリの利用規約に
           // 必要と考えられる項目を踏まえて生成した文面。
+          // 法務未確認の草稿段階のため、本文は翻訳対象外（日本語固定）。
           const _TermsBody(),
           const SizedBox(height: 24),
-          _SectionTitle('使用フォントについて'),
+          _SectionTitle(l10n.licenseSectionFonts),
           const _FontCredit(
             usage: 'アプリ全体の基本フォント',
             name: '白光明朝（はっこうみんちょう）',
@@ -79,12 +91,12 @@ class LicenseScreen extends StatelessWidget {
                 '保存され、以降オフラインでも利用できる。',
           ),
           const SizedBox(height: 24),
-          _SectionTitle('オープンソースソフトウェアライセンス'),
+          _SectionTitle(l10n.licenseSectionOss),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.code),
-            title: const Text('使用ライブラリのライセンス一覧'),
-            subtitle: const Text('本アプリが使用するOSSパッケージのライセンスを表示します'),
+            title: Text(l10n.licenseOssListTitle),
+            subtitle: Text(l10n.licenseOssListSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => showLicensePage(
               context: context,
@@ -93,11 +105,7 @@ class LicenseScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'WebM書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を'
-            '使用しています。改変版ソースコードの入手先：'
-            'https://github.com/sk3llo/ffmpeg_kit_flutter\n'
-            'MP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、'
-            'FFmpegは使用していません。',
+            l10n.licenseFfmpegNote,
             style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
@@ -276,6 +284,7 @@ class _FontCredit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: Padding(
@@ -283,10 +292,13 @@ class _FontCredit extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // usage/name/authorとnote（ライセンス条件の説明文）は法務未確認の
+            // 草稿段階かつライセンス表記の正確性が求められるため、翻訳対象外
+            // （日本語固定。クラス冒頭のコメント参照）。
             Text(usage,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-            Text('作者：$author　ライセンス：$license', style: const TextStyle(fontSize: 12)),
+            Text(l10n.licenseFontCreditMeta(author, license), style: const TextStyle(fontSize: 12)),
             const SizedBox(height: 4),
             Text(note, style: const TextStyle(fontSize: 12)),
           ],

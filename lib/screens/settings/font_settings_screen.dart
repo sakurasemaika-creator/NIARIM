@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
@@ -19,17 +20,18 @@ class FontSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('フォント管理'),
+          title: Text(l10n.settingsFontTitle),
           actions: const [HelpButton(topic: 'フォント管理')],
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'ダウンロード済み'),
-              Tab(text: '探してDL'),
-              Tab(text: '読み込み'),
+              Tab(text: l10n.fontSettingsTabDownloaded),
+              Tab(text: l10n.fontSettingsTabSearch),
+              Tab(text: l10n.fontSettingsTabImport),
             ],
           ),
         ),
@@ -65,6 +67,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context)!;
     final service = context.watch<FontService>();
     final scheme = Theme.of(context).colorScheme;
     var fonts = service.fonts;
@@ -85,7 +88,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
               Expanded(
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: 'フォント名で検索...',
+                    hintText: l10n.fontDownloadedSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
                     isDense: true,
@@ -96,7 +99,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
               ),
               const SizedBox(width: 8),
               FilterChip(
-                label: const Text('★のみ'),
+                label: Text(l10n.fontFavoritesOnly),
                 selected: _favoritesOnly,
                 onSelected: (v) => setState(() => _favoritesOnly = v),
               ),
@@ -117,9 +120,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                           child: Icon(Icons.font_download_outlined, size: 40, color: scheme.primary),
                         ),
                         const SizedBox(height: 16),
-                        const Text('フォントがありません', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(l10n.fontEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text('「探してDL」または「読み込み」タブから追加できます',
+                        Text(l10n.fontEmptyHint,
                             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
                       ],
                     ),
@@ -174,14 +177,15 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
   }
 
   void _showRenameDialog(BuildContext context, FontAsset font) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: font.displayName);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('フォント名を変更'),
+        title: Text(l10n.fontRenameDialogTitle),
         content: TextField(controller: controller, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
@@ -189,7 +193,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
               }
               Navigator.pop(ctx);
             },
-            child: const Text('変更'),
+            child: Text(l10n.commonChange),
           ),
         ],
       ),
@@ -197,19 +201,20 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
   }
 
   void _confirmDelete(BuildContext context, FontAsset font) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('${font.displayName}を削除しますか？'),
+        title: Text(l10n.fontDeleteConfirmTitle(font.displayName)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               context.read<FontService>().removeFont(font.id);
               Navigator.pop(ctx);
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -224,6 +229,7 @@ class _ImportFontTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return desktopCentered(
       context,
@@ -239,14 +245,14 @@ class _ImportFontTab extends StatelessWidget {
                 child: Icon(Icons.upload_file_outlined, size: 40, color: scheme.primary),
               ),
               const SizedBox(height: 16),
-              const Text('端末に保存済みのフォントを読み込む', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.fontImportTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text('対応形式：TTF / OTF',
+              Text(l10n.fontImportFormats,
                   style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
               const SizedBox(height: 24),
               FilledButton.icon(
                 icon: const Icon(Icons.add),
-                label: const Text('ファイルを選択'),
+                label: Text(l10n.fontSelectFileButton),
                 onPressed: () => _addFont(context),
               ),
             ],
@@ -257,6 +263,7 @@ class _ImportFontTab extends StatelessWidget {
   }
 
   Future<void> _addFont(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['ttf', 'otf'],
@@ -270,17 +277,17 @@ class _ImportFontTab extends StatelessWidget {
       if (!context.mounted) return;
       if (asset == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('このフォントは読み込めません。')),
+          SnackBar(content: Text(l10n.fontUnsupportedSnackbar)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('「$name」を追加しました（ダウンロード済みタブに表示されます）')),
+          SnackBar(content: Text(l10n.fontAddedSnackbar(name))),
         );
       }
     } on FontCorruptedException {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('フォントが破損しています。')),
+        SnackBar(content: Text(l10n.fontCorruptedSnackbar)),
       );
     }
   }

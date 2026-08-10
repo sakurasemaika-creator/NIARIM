@@ -446,5 +446,39 @@
   "helpFontManagementDesc": "テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。",
 
   "helpPerformanceSettingsTitle": "パフォーマンス設定",
-  "helpPerformanceSettingsDesc": "端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・タイルキャッシュ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。"
+  "helpPerformanceSettingsDesc": "端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・タイルキャッシュ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。",
+
+  "fontSettingsTabDownloaded": "ダウンロード済み",
+  "fontSettingsTabSearch": "探してDL",
+  "fontSettingsTabImport": "読み込み",
+  "fontDownloadedSearchHint": "フォント名で検索...",
+  "fontFavoritesOnly": "★のみ",
+  "fontEmptyTitle": "フォントがありません",
+  "fontEmptyHint": "「探してDL」または「読み込み」タブから追加できます",
+  "fontRenameDialogTitle": "フォント名を変更",
+  "fontDeleteConfirmTitle": "{name}を削除しますか？",
+  "@fontDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "fontImportTitle": "端末に保存済みのフォントを読み込む",
+  "fontImportFormats": "対応形式：TTF / OTF",
+  "fontSelectFileButton": "ファイルを選択",
+  "fontUnsupportedSnackbar": "このフォントは読み込めません。",
+  "fontAddedSnackbar": "「{name}」を追加しました（ダウンロード済みタブに表示されます）",
+  "@fontAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "fontCorruptedSnackbar": "フォントが破損しています。",
+
+  "licenseScreenTitle": "利用規約・ライセンス",
+  "licenseSectionTerms": "利用規約",
+  "licenseSectionFonts": "使用フォントについて",
+  "licenseSectionOss": "オープンソースソフトウェアライセンス",
+  "licenseOssListTitle": "使用ライブラリのライセンス一覧",
+  "licenseOssListSubtitle": "本アプリが使用するOSSパッケージのライセンスを表示します",
+  "licenseFfmpegNote": "WebM書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、FFmpegは使用していません。",
+  "licenseFontCreditMeta": "作者：{author}　ライセンス：{license}",
+  "@licenseFontCreditMeta": {
+    "placeholders": {"author": {"type": "String"}, "license": {"type": "String"}}
+  }
 }
