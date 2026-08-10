@@ -98,14 +98,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       localPath = file.path;
     }
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     final proceed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('共有ファイル'),
-        content: const Text('この共有ファイルを複製して通常プロジェクトとして保存しますか？'),
+        title: Text(l10n.homeShareFileDialogTitle),
+        content: Text(l10n.homeShareFileDialogContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('保存')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonSave)),
         ],
       ),
     );
@@ -138,17 +139,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if (missing.isNotEmpty) {
         final names = missing.map((f) => f.replaceFirst('UserFont_', '')).join('、');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('不足フォントがあります。$names')),
+          SnackBar(content: Text(l10n.homeMissingFontsSnackbar(names))),
         );
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('プロジェクトタブへ追加しました')),
+        SnackBar(content: Text(l10n.homeSharedImportedSnackbar)),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('共有ファイルの読み込みに失敗しました: $e')),
+        SnackBar(content: Text(l10n.homeSharedImportFailedSnackbar(e.toString()))),
       );
     }
   }
@@ -202,20 +203,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               icon: const Icon(Icons.view_module),
               onSelected: (mode) => setState(() => _viewMode = mode),
               itemBuilder: (_) => [
-                const PopupMenuItem(value: ProjectViewMode.large, child: Text('大')),
-                const PopupMenuItem(value: ProjectViewMode.medium, child: Text('中')),
-                const PopupMenuItem(value: ProjectViewMode.small, child: Text('小')),
-                const PopupMenuItem(value: ProjectViewMode.detail, child: Text('詳細')),
+                PopupMenuItem(value: ProjectViewMode.large, child: Text(l10n.homeViewModeLarge)),
+                PopupMenuItem(value: ProjectViewMode.medium, child: Text(l10n.homeViewModeMedium)),
+                PopupMenuItem(value: ProjectViewMode.small, child: Text(l10n.homeViewModeSmall)),
+                PopupMenuItem(value: ProjectViewMode.detail, child: Text(l10n.homeViewModeDetail)),
               ],
             ),
             PopupMenuButton<ProjectSortMode>(
               icon: const Icon(Icons.sort),
               onSelected: (mode) => setState(() => _sortMode = mode),
               itemBuilder: (_) => [
-                const PopupMenuItem(value: ProjectSortMode.nameAsc, child: Text('名前 ↑')),
-                const PopupMenuItem(value: ProjectSortMode.nameDesc, child: Text('名前 ↓')),
-                const PopupMenuItem(value: ProjectSortMode.updatedAsc, child: Text('更新日時 ↑')),
-                const PopupMenuItem(value: ProjectSortMode.updatedDesc, child: Text('更新日時 ↓')),
+                PopupMenuItem(value: ProjectSortMode.nameAsc, child: Text(l10n.homeSortNameAsc)),
+                PopupMenuItem(value: ProjectSortMode.nameDesc, child: Text(l10n.homeSortNameDesc)),
+                PopupMenuItem(value: ProjectSortMode.updatedAsc, child: Text(l10n.homeSortUpdatedAsc)),
+                PopupMenuItem(value: ProjectSortMode.updatedDesc, child: Text(l10n.homeSortUpdatedDesc)),
               ],
             ),
             IconButton(icon: const Icon(Icons.search), onPressed: () => setState(() => _isSearching = true)),
@@ -458,6 +459,7 @@ class _SharedTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final shared = context.watch<ProjectService>().shared;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final l10n = AppLocalizations.of(context)!;
     if (shared.isEmpty) {
       return Center(
         child: Column(
@@ -465,7 +467,7 @@ class _SharedTab extends StatelessWidget {
           children: [
             Icon(Icons.share_outlined, size: 64, color: muted.withValues(alpha: 0.6)),
             const SizedBox(height: 16),
-            Text('共有プロジェクトがありません', style: TextStyle(color: muted)),
+            Text(l10n.homeSharedEmpty, style: TextStyle(color: muted)),
           ],
         ),
       );
@@ -484,7 +486,7 @@ class _SharedTab extends StatelessWidget {
             ),
           ),
           title: Text(project.name),
-          subtitle: Text('${project.fps}fps · ${project.durationSeconds}秒'),
+          subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
           onTap: () => context.push('/project/${project.id}'),
         );
       },
@@ -497,6 +499,7 @@ class _TrashTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final trash = context.watch<ProjectService>().trash;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final l10n = AppLocalizations.of(context)!;
     if (trash.isEmpty) {
       return Center(
         child: Column(
@@ -504,7 +507,7 @@ class _TrashTab extends StatelessWidget {
           children: [
             Icon(Icons.delete_outline, size: 64, color: muted.withValues(alpha: 0.6)),
             const SizedBox(height: 16),
-            Text('ゴミ箱は空です', style: TextStyle(color: muted)),
+            Text(l10n.homeTrashEmpty, style: TextStyle(color: muted)),
           ],
         ),
       );
@@ -516,7 +519,9 @@ class _TrashTab extends StatelessWidget {
         final deletedAt = context.read<ProjectService>().deletedAtOf(project.id);
         final deletedLabel = deletedAt == null
             ? ''
-            : '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')} 削除';
+            : l10n.homeTrashDeletedOn(
+                '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')}');
+        final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
         return ListTile(
           leading: Container(
             width: 48,
@@ -527,20 +532,18 @@ class _TrashTab extends StatelessWidget {
             ),
           ),
           title: Text(project.name),
-          subtitle: Text(deletedLabel.isEmpty
-              ? '${project.fps}fps · ${project.durationSeconds}秒'
-              : '$deletedLabel · ${project.fps}fps · ${project.durationSeconds}秒'),
+          subtitle: Text(deletedLabel.isEmpty ? meta : '$deletedLabel · $meta'),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextButton(
                 onPressed: () => context.read<ProjectService>().restoreProject(project.id),
-                child: const Text('復元'),
+                child: Text(l10n.commonRestore),
               ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
                 onPressed: () => _confirmPermanentDelete(context, project.id),
-                child: const Text('完全削除'),
+                child: Text(l10n.homePermanentDelete),
               ),
             ],
           ),
@@ -550,20 +553,21 @@ class _TrashTab extends StatelessWidget {
   }
 
   void _confirmPermanentDelete(BuildContext context, String id) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('完全に削除しますか？'),
-        content: const Text('元に戻すことはできません。'),
+        title: Text(l10n.homePermanentDeleteConfirmTitle),
+        content: Text(l10n.homePermanentDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               context.read<ProjectService>().permanentDelete(id);
               Navigator.pop(ctx);
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -601,6 +605,7 @@ class _WorksTabState extends State<_WorksTab> {
   @override
   Widget build(BuildContext context) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<List<File>>(
       future: _future,
       builder: (context, snapshot) {
@@ -621,9 +626,9 @@ class _WorksTabState extends State<_WorksTab> {
                       children: [
                         Icon(Icons.video_library_outlined, size: 64, color: muted.withValues(alpha: 0.6)),
                         const SizedBox(height: 16),
-                        Text('書き出した作品がありません', style: TextStyle(color: muted)),
+                        Text(l10n.homeWorksEmpty, style: TextStyle(color: muted)),
                         const SizedBox(height: 4),
-                        Text('キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます',
+                        Text(l10n.homeWorksEmptyHint,
                             textAlign: TextAlign.center,
                             style: TextStyle(color: muted, fontSize: 12)),
                       ],
@@ -686,6 +691,7 @@ class _WorkListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final stat = file.statSync();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
@@ -709,12 +715,12 @@ class _WorkListItem extends StatelessWidget {
             // 「写真アプリで開く」＝OSの共有シート経由（新規ネイティブ実装不要）。
             IconButton(
               icon: const Icon(Icons.ios_share, size: 20),
-              tooltip: '共有・写真アプリ等で開く',
+              tooltip: l10n.homeShareOpenWith,
               onPressed: () => SharePlus.instance.share(ShareParams(files: [XFile(file.path)])),
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
-              tooltip: '削除',
+              tooltip: l10n.commonDelete,
               onPressed: () => _confirmDelete(context),
             ),
           ],
@@ -734,13 +740,14 @@ class _WorkListItem extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('${file.path.split('/').last}を削除しますか？'),
-        content: const Text('端末内の書き出しファイルが削除されます。元に戻すことはできません。'),
+        title: Text(l10n.homeWorkDeleteConfirmTitle(file.path.split('/').last)),
+        content: Text(l10n.homeWorkDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -748,7 +755,7 @@ class _WorkListItem extends StatelessWidget {
               Navigator.pop(ctx);
               onDeleted();
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -797,13 +804,14 @@ class _WorkPreviewState extends State<_WorkPreview> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Widget content;
     if (_isGif) {
       content = Image.file(widget.file, fit: BoxFit.contain);
     } else if (_failed) {
-      content = const Padding(
-        padding: EdgeInsets.all(24),
-        child: Text('プレビューを再生できません'),
+      content = Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(l10n.homePreviewFailed),
       );
     } else if (_controller != null && _controller!.value.isInitialized) {
       content = AspectRatio(
@@ -833,13 +841,13 @@ class _WorkPreviewState extends State<_WorkPreview> {
             children: [
               TextButton.icon(
                 icon: const Icon(Icons.ios_share, size: 18),
-                label: const Text('共有・写真アプリ等で開く'),
+                label: Text(l10n.homeShareOpenWith),
                 onPressed: () =>
                     SharePlus.instance.share(ShareParams(files: [XFile(widget.file.path)])),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('閉じる'),
+                child: Text(l10n.commonClose),
               ),
             ],
           ),
@@ -862,10 +870,11 @@ class _FirstLaunchDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      content: const Text('手書きアニメーションを制作できます'),
+      content: Text(l10n.homeFirstLaunchMessage),
       actions: [
-        FilledButton(onPressed: onDone, child: const Text('はじめる')),
+        FilledButton(onPressed: onDone, child: Text(l10n.homeFirstLaunchStart)),
       ],
     );
   }

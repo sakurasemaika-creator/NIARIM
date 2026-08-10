@@ -24,6 +24,50 @@
   },
   "commonMove": "移動",
 
+  "homeShareFileDialogTitle": "共有ファイル",
+  "homeShareFileDialogContent": "この共有ファイルを複製して通常プロジェクトとして保存しますか？",
+  "homeMissingFontsSnackbar": "不足フォントがあります。{names}",
+  "@homeMissingFontsSnackbar": {
+    "placeholders": {"names": {"type": "String"}}
+  },
+  "homeSharedImportedSnackbar": "プロジェクトタブへ追加しました",
+  "homeSharedImportFailedSnackbar": "共有ファイルの読み込みに失敗しました: {error}",
+  "@homeSharedImportFailedSnackbar": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "homeViewModeLarge": "大",
+  "homeViewModeMedium": "中",
+  "homeViewModeSmall": "小",
+  "homeViewModeDetail": "詳細",
+  "homeSortNameAsc": "名前 ↑",
+  "homeSortNameDesc": "名前 ↓",
+  "homeSortUpdatedAsc": "更新日時 ↑",
+  "homeSortUpdatedDesc": "更新日時 ↓",
+  "homeSharedEmpty": "共有プロジェクトがありません",
+  "homeProjectMeta": "{fps}fps · {duration}秒",
+  "@homeProjectMeta": {
+    "placeholders": {"fps": {"type": "int"}, "duration": {"type": "int"}}
+  },
+  "homeTrashEmpty": "ゴミ箱は空です",
+  "homeTrashDeletedOn": "{date} 削除",
+  "@homeTrashDeletedOn": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "homePermanentDelete": "完全削除",
+  "homePermanentDeleteConfirmTitle": "完全に削除しますか？",
+  "homePermanentDeleteConfirmBody": "元に戻すことはできません。",
+  "homeWorksEmpty": "書き出した作品がありません",
+  "homeWorksEmptyHint": "キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます",
+  "homeShareOpenWith": "共有・写真アプリ等で開く",
+  "homeWorkDeleteConfirmTitle": "{name}を削除しますか？",
+  "@homeWorkDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "homeWorkDeleteConfirmBody": "端末内の書き出しファイルが削除されます。元に戻すことはできません。",
+  "homePreviewFailed": "プレビューを再生できません",
+  "homeFirstLaunchMessage": "手書きアニメーションを制作できます",
+  "homeFirstLaunchStart": "はじめる",
+
   "settingsScreenTitle": "設定",
   "settingsBasicTitle": "基本",
   "settingsBasicSubtitle": "FPS・背景色・言語",
@@ -33,10 +77,39 @@
   "settingsLanguage": "言語",
   "settingsLanguageJapanese": "日本語",
   "settingsLanguageEnglish": "English",
+  "settingsSearchHint": "設定を検索...",
+  "settingsPerformanceTitle": "パフォーマンス",
+  "settingsPerformanceSubtitle": "品質設定・Undo回数・ゴミ箱・タイルキャッシュ",
+  "settingsGestureTitle": "ジェスチャー",
+  "settingsGestureSubtitle": "2本指タップ・長押し",
+  "settingsPenTitle": "ペン入力",
+  "settingsPenSubtitle": "筆圧・傾き・ペンボタン",
+  "settingsWorkspaceTitle": "ワークスペース",
+  "settingsWorkspaceSubtitle": "ツールバー編集・パネル配置",
+  "settingsThemeTitle": "UI・テーマ",
+  "settingsThemeSubtitle": "テーマ設定・ワークスペース",
+  "settingsWatermarkTitle": "ウォーターマーク",
+  "settingsWatermarkSubtitle": "ユーザーウォーターマーク（Premium）",
+  "settingsTransferTitle": "引き継ぎ",
+  "settingsTransferSubtitle": "設定・素材・ブラシを他端末へ書き出し/読み込み",
+  "settingsFontTitle": "フォント管理",
+  "settingsFontSubtitle": "TTF/OTFの追加・検索・削除",
+  "settingsNoResults": "該当する設定項目が見つかりません",
+  "settingsTermsLicense": "利用規約・ライセンス",
+  "settingsDrawingAreaTitle": "描画領域初期値",
+  "settingsDrawingAreaHint": "新規プロジェクト作成時の初期値となります。",
+  "settingsDrawingAreaWiden": "描画領域を広くする",
+  "settingsDrawingAreaScale": "倍率",
+  "settingsScaleValue": "{scale}倍",
+  "@settingsScaleValue": {
+    "placeholders": {"scale": {"type": "String"}}
+  },
 
   "commonCancel": "キャンセル",
   "commonCreate": "作成",
   "commonChange": "変更",
   "commonDelete": "削除",
-  "commonSave": "保存"
+  "commonSave": "保存",
+  "commonRestore": "復元",
+  "commonClose": "閉じる"
 }

@@ -49,39 +49,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
       (
         // 容量・重さに影響する設定（Undo回数・ゴミ箱自動削除等）は全て
         // パフォーマンス設定へ統合した（旧「詳細」カテゴリは廃止）。
-        icon: Icons.speed, title: 'パフォーマンス', subtitle: '品質設定・Undo回数・ゴミ箱・タイルキャッシュ',
-        keywords: '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除',
+        icon: Icons.speed, title: l10n.settingsPerformanceTitle, subtitle: l10n.settingsPerformanceSubtitle,
+        keywords: '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除 performance quality cache',
         onTap: () => context.push('/settings/performance'), accent: const Color(0xFF3DDC97),
       ),
       (
-        icon: Icons.touch_app, title: 'ジェスチャー', subtitle: '2本指タップ・長押し',
-        keywords: 'タップ スワイプ 長押し ペンボタン', onTap: () => context.push('/settings/gestures'), accent: const Color(0xFFFFB020),
+        icon: Icons.touch_app, title: l10n.settingsGestureTitle, subtitle: l10n.settingsGestureSubtitle,
+        keywords: 'タップ スワイプ 長押し ペンボタン gesture tap swipe', onTap: () => context.push('/settings/gestures'), accent: const Color(0xFFFFB020),
       ),
       (
-        icon: Icons.edit, title: 'ペン入力', subtitle: '筆圧・傾き・ペンボタン',
-        keywords: '筆圧 傾き ペンボタン 筆圧カーブ', onTap: () => context.push('/settings/pen'), accent: const Color(0xFFB15CFF),
+        icon: Icons.edit, title: l10n.settingsPenTitle, subtitle: l10n.settingsPenSubtitle,
+        keywords: '筆圧 傾き ペンボタン 筆圧カーブ pen pressure tilt', onTap: () => context.push('/settings/pen'), accent: const Color(0xFFB15CFF),
       ),
       (
-        icon: Icons.desktop_windows, title: 'ワークスペース', subtitle: 'ツールバー編集・パネル配置',
-        keywords: 'ツールバー パネル配置 右利き 左利き dex デックス', onTap: () => context.push('/settings/workspace'), accent: const Color(0xFF3AA6FF),
+        icon: Icons.desktop_windows, title: l10n.settingsWorkspaceTitle, subtitle: l10n.settingsWorkspaceSubtitle,
+        keywords: 'ツールバー パネル配置 右利き 左利き dex デックス workspace toolbar panel', onTap: () => context.push('/settings/workspace'), accent: const Color(0xFF3AA6FF),
       ),
       (
-        icon: Icons.palette, title: 'UI・テーマ', subtitle: 'テーマ設定・ワークスペース',
-        keywords: 'テーマ 配色 ベースカラー アクセントカラー', onTap: () => context.push('/settings/theme'), accent: const Color(0xFFFF5C7A),
+        icon: Icons.palette, title: l10n.settingsThemeTitle, subtitle: l10n.settingsThemeSubtitle,
+        keywords: 'テーマ 配色 ベースカラー アクセントカラー theme color', onTap: () => context.push('/settings/theme'), accent: const Color(0xFFFF5C7A),
       ),
       // 無料会員のみ🔒マーク付きで表示（仕様書08）
       (
-        icon: Icons.water, title: isPremium ? 'ウォーターマーク' : 'ウォーターマーク 🔒',
-        subtitle: 'ユーザーウォーターマーク（Premium）', keywords: 'ウォーターマーク premium プレミアム',
+        icon: Icons.water, title: isPremium ? l10n.settingsWatermarkTitle : '${l10n.settingsWatermarkTitle} 🔒',
+        subtitle: l10n.settingsWatermarkSubtitle, keywords: 'ウォーターマーク premium プレミアム watermark',
         onTap: _showWatermarkSetting, accent: const Color(0xFFB15CFF),
       ),
       (
-        icon: Icons.import_export, title: '引き継ぎ', subtitle: '設定・素材・ブラシを他端末へ書き出し/読み込み',
-        keywords: '引き継ぎ エクスポート インポート 他端末 niatra', onTap: () => context.push('/settings/transfer'), accent: const Color(0xFF3DDC97),
+        icon: Icons.import_export, title: l10n.settingsTransferTitle, subtitle: l10n.settingsTransferSubtitle,
+        keywords: '引き継ぎ エクスポート インポート 他端末 niatra transfer export import', onTap: () => context.push('/settings/transfer'), accent: const Color(0xFF3DDC97),
       ),
       (
-        icon: Icons.font_download_outlined, title: 'フォント管理', subtitle: 'TTF/OTFの追加・検索・削除',
-        keywords: 'フォント ttf otf', onTap: () => context.push('/settings/fonts'), accent: const Color(0xFFFFB020),
+        icon: Icons.font_download_outlined, title: l10n.settingsFontTitle, subtitle: l10n.settingsFontSubtitle,
+        keywords: 'フォント ttf otf font', onTap: () => context.push('/settings/fonts'), accent: const Color(0xFFFFB020),
       ),
     ];
     final filtered = _query.isEmpty
@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: _showSearch
-            ? TextField(controller: _searchController, autofocus: true, decoration: const InputDecoration(hintText: '設定を検索...', border: InputBorder.none))
+            ? TextField(controller: _searchController, autofocus: true, decoration: InputDecoration(hintText: l10n.settingsSearchHint, border: InputBorder.none))
             : Text(l10n.settingsScreenTitle),
         actions: [
           const HelpButton(),
@@ -106,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: desktopCentered(
         context,
         filtered.isEmpty
-            ? const Center(child: Text('該当する設定項目が見つかりません', style: TextStyle(color: Colors.grey)))
+            ? Center(child: Text(l10n.settingsNoResults, style: const TextStyle(color: Colors.grey)))
             : ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
@@ -117,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       child: TextButton(
                         onPressed: () => context.push('/settings/license'),
-                        child: Text('利用規約・ライセンス',
+                        child: Text(l10n.settingsTermsLicense,
                             style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
                       ),
@@ -197,7 +197,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ListTile(
                   title: Text(l10n.settingsLanguage),
-                  trailing: Text(settings.language == 'ja' ? '日本語' : 'English',
+                  trailing: Text(settings.language == 'ja' ? l10n.settingsLanguageJapanese : l10n.settingsLanguageEnglish,
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () async {
                     final selected = await showDialog<String>(
@@ -207,13 +207,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         children: [
                           SimpleDialogOption(
                             onPressed: () => Navigator.pop(dctx, 'ja'),
-                            child: Text('日本語',
+                            child: Text(l10n.settingsLanguageJapanese,
                                 style: TextStyle(
                                     fontWeight: settings.language == 'ja' ? FontWeight.bold : FontWeight.normal)),
                           ),
                           SimpleDialogOption(
                             onPressed: () => Navigator.pop(dctx, 'en'),
-                            child: Text('English',
+                            child: Text(l10n.settingsLanguageEnglish,
                                 style: TextStyle(
                                     fontWeight: settings.language == 'en' ? FontWeight.bold : FontWeight.normal)),
                           ),
@@ -228,13 +228,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(),
                 // 描画領域初期値（仕様書26）
-                const Text('描画領域初期値', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(l10n.settingsDrawingAreaTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('新規プロジェクト作成時の初期値となります。',
+                Text(l10n.settingsDrawingAreaHint,
                     style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('描画領域を広くする'),
+                  title: Text(l10n.settingsDrawingAreaWiden),
                   value: enabled,
                   onChanged: (v) {
                     setS(() => enabled = v);
@@ -244,14 +244,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (enabled) ...[
                   Row(
                     children: [
-                      const Text('倍率'),
+                      Text(l10n.settingsDrawingAreaScale),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Slider(
                           min: 1.0, max: 10.0,
                           value: scale,
                           divisions: 18,
-                          label: '${scale.toStringAsFixed(1)}倍',
+                          label: l10n.settingsScaleValue(scale.toStringAsFixed(1)),
                           onChanged: (v) {
                             setS(() => scale = v);
                             settings.setDefaultDrawingArea(enabled: enabled, scale: v);
@@ -260,7 +260,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       SizedBox(
                         width: 48,
-                        child: Text('${scale.toStringAsFixed(1)}倍', textAlign: TextAlign.center),
+                        child: Text(l10n.settingsScaleValue(scale.toStringAsFixed(1)), textAlign: TextAlign.center),
                       ),
                     ],
                   ),
