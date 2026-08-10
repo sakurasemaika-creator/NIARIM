@@ -52,8 +52,12 @@ class AppThemePreset {
     );
   }
 
-  // 既定テーマ：珊瑚ピンクを差し色にしたポップなフラットデザイン
-  // （Material標準色をそのまま使わず、暖色寄りの配色でオリジナリティを出す）。
+  // 既定テーマ：珊瑚ピンク（虹7色の「赤」に相当）を差し色にしたポップな
+  // フラットデザイン（Material標準色をそのまま使わず、暖色寄りの配色で
+  // オリジナリティを出す）。仕様書24：「初回起動時の初期値：システム設定に
+  // 合わせる」のため、アプリの既定プリセット（defaultLight）はbaseThemeを
+  // systemにしている。defaultDarkは「常にダーク」を選びたい場合の
+  // 独立した選択肢として残す。
   static const defaultDark = AppThemePreset(
     id: 'default_dark',
     name: 'ポップ（ダーク）',
@@ -69,7 +73,7 @@ class AppThemePreset {
   static const defaultLight = AppThemePreset(
     id: 'default_light',
     name: 'ポップ（ライト）',
-    baseTheme: BaseTheme.light,
+    baseTheme: BaseTheme.system,
     accentColor: Color(0xFFFF5C7A),
     textColor: Color(0xFF2B2730),
     panelBgColor: Color(0xFFFAF7F5),

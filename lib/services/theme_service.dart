@@ -8,15 +8,18 @@ class ThemeService extends ChangeNotifier {
   static const _prefsCurrentIdKey = 'theme_current_id';
 
   final List<AppThemePreset> _presets = [];
-  AppThemePreset _current = AppThemePreset.defaultDark;
+  AppThemePreset _current = AppThemePreset.defaultLight;
 
   List<AppThemePreset> get presets => List.unmodifiable(_presets);
   AppThemePreset get current => _current;
 
   ThemeData get themeData => _buildTheme(_current);
 
-  /// OSのbrightnessを外部から注入する（BaseTheme.system対応用）
-  Brightness systemBrightness = Brightness.dark;
+  /// OSのbrightnessを外部から注入する（BaseTheme.system対応用）。
+  /// 実際のOS設定を読み取る前の初期値はlight（仕様書24：「初回起動時の
+  /// 初期値：システム設定に合わせる」＋デフォルトプリセットは見た目としては
+  /// ライト基調のため、OS設定が読み取れるまでの間もライトで表示する）。
+  Brightness systemBrightness = Brightness.light;
 
   void updateSystemBrightness(Brightness brightness) {
     if (systemBrightness != brightness) {
@@ -25,23 +28,72 @@ class ThemeService extends ChangeNotifier {
     }
   }
 
+  // 虹7色（赤・橙・黄・緑・青・藍・紫）のテーマプリセットを、それぞれ
+  // ライト/ダーク両方用意する（仕様書24・タスク#93）。「赤」はアプリの
+  // 既定色である珊瑚ピンク（defaultLight/defaultDark）が該当する。
+  // デフォルトで選択されるのはdefaultLight（システム設定に合わせる、
+  // 見た目はライト基調）となるよう、リストの先頭に置く。
   static const List<AppThemePreset> _builtInPresets = [
-    AppThemePreset.defaultDark,
-    AppThemePreset.defaultLight,
+    AppThemePreset.defaultLight, // 赤（ライト・既定選択）
+    AppThemePreset.defaultDark, // 赤（ダーク）
     AppThemePreset(
-      id: 'sky',
-      name: 'スカイ',
-      baseTheme: BaseTheme.dark,
-      accentColor: Color(0xFF3AA6FF),
-      textColor: Color(0xFFF2F6FA),
-      panelBgColor: Color(0xFF11181F),
-      menuBgColor: Color(0xFF182430),
-      selectionColor: Color(0xFF3AA6FF),
+      id: 'orange_light',
+      name: 'オレンジ（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFFFF8A3D),
+      textColor: Color(0xFF2E2013),
+      panelBgColor: Color(0xFFFFF6EE),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFFFF8A3D),
       updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
-      id: 'mint',
-      name: 'ミント',
+      id: 'orange_dark',
+      name: 'オレンジ（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFFFF8A3D),
+      textColor: Color(0xFFFAF0E6),
+      panelBgColor: Color(0xFF1F160E),
+      menuBgColor: Color(0xFF2A1D12),
+      selectionColor: Color(0xFFFF8A3D),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'yellow_light',
+      name: 'イエロー（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFFF2B90F),
+      textColor: Color(0xFF2E2A12),
+      panelBgColor: Color(0xFFFFFBEA),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFFF2B90F),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'yellow_dark',
+      name: 'イエロー（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFFF2B90F),
+      textColor: Color(0xFFFAF6E6),
+      panelBgColor: Color(0xFF1E1B0C),
+      menuBgColor: Color(0xFF292410),
+      selectionColor: Color(0xFFF2B90F),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'green_light',
+      name: 'グリーン（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFF3DDC97),
+      textColor: Color(0xFF16291F),
+      panelBgColor: Color(0xFFF1FBF6),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFF3DDC97),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'green_dark',
+      name: 'グリーン（ダーク）',
       baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF3DDC97),
       textColor: Color(0xFFF1FAF5),
@@ -51,8 +103,63 @@ class ThemeService extends ChangeNotifier {
       updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
-      id: 'orchid',
-      name: 'オーキッド',
+      id: 'blue_light',
+      name: 'ブルー（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFF3AA6FF),
+      textColor: Color(0xFF16232E),
+      panelBgColor: Color(0xFFF1F7FC),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFF3AA6FF),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'blue_dark',
+      name: 'ブルー（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF3AA6FF),
+      textColor: Color(0xFFF2F6FA),
+      panelBgColor: Color(0xFF11181F),
+      menuBgColor: Color(0xFF182430),
+      selectionColor: Color(0xFF3AA6FF),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'indigo_light',
+      name: 'インディゴ（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFF5C6BFF),
+      textColor: Color(0xFF1E2033),
+      panelBgColor: Color(0xFFF3F3FC),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFF5C6BFF),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'indigo_dark',
+      name: 'インディゴ（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF5C6BFF),
+      textColor: Color(0xFFF0F1FA),
+      panelBgColor: Color(0xFF14151F),
+      menuBgColor: Color(0xFF1C1E2D),
+      selectionColor: Color(0xFF5C6BFF),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'purple_light',
+      name: 'パープル（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFFB15CFF),
+      textColor: Color(0xFF2B2033),
+      panelBgColor: Color(0xFFF8F1FC),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFFB15CFF),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'purple_dark',
+      name: 'パープル（ダーク）',
       baseTheme: BaseTheme.dark,
       accentColor: Color(0xFFB15CFF),
       textColor: Color(0xFFF6F1FA),
