@@ -1,4 +1,4 @@
-# niarim
+# NIARIM
 
 A new Flutter project.
 
