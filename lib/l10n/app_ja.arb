@@ -917,5 +917,108 @@
   "projectListMaterialVideo": "動画",
   "projectListMaterialAudio": "音声",
   "projectListIncludeFontsTitle": "フォントを含める",
-  "projectListIncludeFontsSubtitle": "使用中のユーザー追加フォントを同梱します"
+  "projectListIncludeFontsSubtitle": "使用中のユーザー追加フォントを同梱します",
+  "blendModeNormal": "通常",
+  "blendModeMultiply": "乗算",
+  "blendModeScreen": "スクリーン",
+  "blendModeOverlay": "オーバーレイ",
+  "blendModeAddition": "加算",
+  "blendModeSubtract": "減算",
+  "blendModeDarken": "比較（暗）",
+  "blendModeLighten": "比較（明）",
+  "blendModeColorBurn": "焼き込みカラー",
+  "blendModeColorDodge": "覆い焼きカラー",
+  "blendModeHardLight": "ハードライト",
+  "blendModeSoftLight": "ソフトライト",
+  "blendModeDifference": "差の絶対値",
+  "blendModeHue": "色相",
+  "blendModeSaturation": "彩度",
+  "blendModeColor": "カラー",
+  "blendModeLuminosity": "輝度",
+  "autofillLineColorModeSpecified": "指定色",
+  "autofillLineColorModeSameAsFill": "塗り色と同じ",
+  "autofillLineColorModeTraceAdjust": "色トレス・線画馴染ませ",
+  "autofillGradientTypeLinear": "直線",
+  "autofillGradientTypeRadialCenterOut": "放射：中央→外側",
+  "autofillGradientTypeRadialOutCenter": "放射：外側→中央",
+  "autofillPresetScreenTitle": "自動塗りプリセット",
+  "autofillPresetSearchHint": "プリセット検索",
+  "autofillPresetEmptyFavorites": "お気に入りのプリセットがありません",
+  "autofillPresetEmpty": "プリセットがありません",
+  "autofillPresetEmptyHint": "右下の＋から作成できます",
+  "autofillPresetPartsCount": "{count}パーツ",
+  "@autofillPresetPartsCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetNewDialogTitle": "新規プリセット",
+  "autofillPresetNameLabel": "プリセット名",
+  "autofillPresetRenameDialogTitle": "プリセット名変更",
+  "autofillPresetDeleteConfirmTitle": "「{name}」を削除しますか？",
+  "@autofillPresetDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartSearchHint": "パーツ名で検索",
+  "autofillPartUnconfiguredBanner": "未設定のパーツが{count}件あります：{names}（トーン未選択）\nすべて設定するまでこの画面を閉じられません。",
+  "@autofillPartUnconfiguredBanner": {
+    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredDialogTitle": "未設定のパーツがあります",
+  "autofillPartUnconfiguredDialogBody": "保存する前に、以下のパーツを設定してください。",
+  "autofillPartUnconfiguredItem": "・{name}：トーンが未選択です",
+  "@autofillPartUnconfiguredItem": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredBackButton": "設定へ戻る",
+  "autofillPartEmpty": "パーツがありません\n＋ボタンで追加してください",
+  "autofillPartToneUnselected": "トーンが未選択です",
+  "autofillPartAddDialogTitle": "パーツ追加",
+  "autofillPartNameLabel": "パーツ名",
+  "autofillPartAddButton": "追加",
+  "autofillPartRenameDialogTitle": "パーツ名変更",
+  "autofillPartDetailDialogTitle": "{name}の詳細設定",
+  "@autofillPartDetailDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartFillColorLabel": "塗り色",
+  "autofillPartSelectColorButton": "色を選択",
+  "autofillPartGradientSetButton": "グラデーション設定",
+  "autofillPartGradientEditButton": "グラデーション編集",
+  "autofillPartFillOpacityLabel": "不透明度（塗りレイヤー）: {value}%",
+  "@autofillPartFillOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineColorLabel": "線画色",
+  "autofillPartTraceHueLabel": "色相: {value}",
+  "@autofillPartTraceHueLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceSaturationLabel": "彩度: {value}",
+  "@autofillPartTraceSaturationLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceLightnessLabel": "明度: {value}",
+  "@autofillPartTraceLightnessLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineOpacityLabel": "不透明度（線画レイヤー）: {value}%",
+  "@autofillPartLineOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartToneLabel": "トーン",
+  "autofillPartUseToneCheckbox": "トーンを使用",
+  "autofillPartBlendModeLabel": "ブレンドモード",
+  "autofillPartApplyButton": "適用",
+  "autofillPartGradientDialogTitle": "{name}のグラデーション",
+  "@autofillPartGradientDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartGradientTypeLabel": "種類",
+  "autofillPartGradientAngleLabel": "角度: {value}°",
+  "@autofillPartGradientAngleLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientColorLabel": "色",
+  "autofillPartGradientAddColorButton": "色を追加",
+  "autofillPartGradientDeleteHint": "長押しで削除（2色未満にはできません）",
+  "autofillPartGradientRemoveButton": "グラデーション解除"
 }

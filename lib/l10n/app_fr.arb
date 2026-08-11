@@ -823,5 +823,108 @@
   "projectListMaterialVideo": "Vidéos",
   "projectListMaterialAudio": "Audio",
   "projectListIncludeFontsTitle": "Inclure les polices",
-  "projectListIncludeFontsSubtitle": "Inclut les polices ajoutées par l'utilisateur actuellement utilisées"
+  "projectListIncludeFontsSubtitle": "Inclut les polices ajoutées par l'utilisateur actuellement utilisées",
+  "blendModeNormal": "Normal",
+  "blendModeMultiply": "Produit",
+  "blendModeScreen": "Écran",
+  "blendModeOverlay": "Incrustation",
+  "blendModeAddition": "Addition",
+  "blendModeSubtract": "Soustraction",
+  "blendModeDarken": "Obscurcir",
+  "blendModeLighten": "Éclaircir",
+  "blendModeColorBurn": "Densité couleur +",
+  "blendModeColorDodge": "Densité couleur -",
+  "blendModeHardLight": "Lumière crue",
+  "blendModeSoftLight": "Lumière tamisée",
+  "blendModeDifference": "Différence",
+  "blendModeHue": "Teinte",
+  "blendModeSaturation": "Saturation",
+  "blendModeColor": "Couleur",
+  "blendModeLuminosity": "Luminosité",
+  "autofillLineColorModeSpecified": "Couleur spécifiée",
+  "autofillLineColorModeSameAsFill": "Identique au remplissage",
+  "autofillLineColorModeTraceAdjust": "Trace de couleur / fondu avec le trait",
+  "autofillGradientTypeLinear": "Linéaire",
+  "autofillGradientTypeRadialCenterOut": "Radial : centre → extérieur",
+  "autofillGradientTypeRadialOutCenter": "Radial : extérieur → centre",
+  "autofillPresetScreenTitle": "Préréglages de remplissage auto",
+  "autofillPresetSearchHint": "Rechercher des préréglages",
+  "autofillPresetEmptyFavorites": "Aucun préréglage favori",
+  "autofillPresetEmpty": "Aucun préréglage",
+  "autofillPresetEmptyHint": "Appuyez sur + en bas à droite pour en créer un",
+  "autofillPresetPartsCount": "{count} parties",
+  "@autofillPresetPartsCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetNewDialogTitle": "Nouveau préréglage",
+  "autofillPresetNameLabel": "Nom du préréglage",
+  "autofillPresetRenameDialogTitle": "Renommer le préréglage",
+  "autofillPresetDeleteConfirmTitle": "Supprimer « {name} » ?",
+  "@autofillPresetDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartSearchHint": "Rechercher par nom de partie",
+  "autofillPartUnconfiguredBanner": "{count} partie(s) ne sont pas encore configurées : {names} (aucune trame sélectionnée)\nVous ne pouvez pas fermer cet écran tant que tout n'est pas configuré.",
+  "@autofillPartUnconfiguredBanner": {
+    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredDialogTitle": "Il y a des parties non configurées",
+  "autofillPartUnconfiguredDialogBody": "Veuillez configurer les parties suivantes avant d'enregistrer.",
+  "autofillPartUnconfiguredItem": "• {name} : aucune trame sélectionnée",
+  "@autofillPartUnconfiguredItem": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredBackButton": "Retour à la configuration",
+  "autofillPartEmpty": "Aucune partie\nAppuyez sur + pour en ajouter une",
+  "autofillPartToneUnselected": "Aucune trame sélectionnée",
+  "autofillPartAddDialogTitle": "Ajouter une partie",
+  "autofillPartNameLabel": "Nom de la partie",
+  "autofillPartAddButton": "Ajouter",
+  "autofillPartRenameDialogTitle": "Renommer la partie",
+  "autofillPartDetailDialogTitle": "Détails de {name}",
+  "@autofillPartDetailDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartFillColorLabel": "Couleur de remplissage",
+  "autofillPartSelectColorButton": "Choisir une couleur",
+  "autofillPartGradientSetButton": "Définir le dégradé",
+  "autofillPartGradientEditButton": "Modifier le dégradé",
+  "autofillPartFillOpacityLabel": "Opacité (calque de remplissage) : {value}%",
+  "@autofillPartFillOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineColorLabel": "Couleur du trait",
+  "autofillPartTraceHueLabel": "Teinte : {value}",
+  "@autofillPartTraceHueLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceSaturationLabel": "Saturation : {value}",
+  "@autofillPartTraceSaturationLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceLightnessLabel": "Luminosité : {value}",
+  "@autofillPartTraceLightnessLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineOpacityLabel": "Opacité (calque de trait) : {value}%",
+  "@autofillPartLineOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartToneLabel": "Trame",
+  "autofillPartUseToneCheckbox": "Utiliser une trame",
+  "autofillPartBlendModeLabel": "Mode de fusion",
+  "autofillPartApplyButton": "Appliquer",
+  "autofillPartGradientDialogTitle": "Dégradé de {name}",
+  "@autofillPartGradientDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartGradientTypeLabel": "Type",
+  "autofillPartGradientAngleLabel": "Angle : {value}°",
+  "@autofillPartGradientAngleLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientColorLabel": "Couleurs",
+  "autofillPartGradientAddColorButton": "Ajouter une couleur",
+  "autofillPartGradientDeleteHint": "Appui long pour supprimer (2 couleurs minimum)",
+  "autofillPartGradientRemoveButton": "Supprimer le dégradé"
 }

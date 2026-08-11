@@ -823,5 +823,108 @@
   "projectListMaterialVideo": "视频",
   "projectListMaterialAudio": "音频",
   "projectListIncludeFontsTitle": "包含字体",
-  "projectListIncludeFontsSubtitle": "包含正在使用的用户添加字体"
+  "projectListIncludeFontsSubtitle": "包含正在使用的用户添加字体",
+  "blendModeNormal": "正常",
+  "blendModeMultiply": "正片叠底",
+  "blendModeScreen": "滤色",
+  "blendModeOverlay": "叠加",
+  "blendModeAddition": "添加",
+  "blendModeSubtract": "减去",
+  "blendModeDarken": "变暗",
+  "blendModeLighten": "变亮",
+  "blendModeColorBurn": "颜色加深",
+  "blendModeColorDodge": "颜色减淡",
+  "blendModeHardLight": "强光",
+  "blendModeSoftLight": "柔光",
+  "blendModeDifference": "差值",
+  "blendModeHue": "色相",
+  "blendModeSaturation": "饱和度",
+  "blendModeColor": "颜色",
+  "blendModeLuminosity": "明度",
+  "autofillLineColorModeSpecified": "指定颜色",
+  "autofillLineColorModeSameAsFill": "与填色相同",
+  "autofillLineColorModeTraceAdjust": "颜色描线・与线稿融合",
+  "autofillGradientTypeLinear": "直线",
+  "autofillGradientTypeRadialCenterOut": "放射：中央→外侧",
+  "autofillGradientTypeRadialOutCenter": "放射：外侧→中央",
+  "autofillPresetScreenTitle": "自动填色预设",
+  "autofillPresetSearchHint": "搜索预设",
+  "autofillPresetEmptyFavorites": "没有收藏的预设",
+  "autofillPresetEmpty": "没有预设",
+  "autofillPresetEmptyHint": "点击右下角的「＋」创建",
+  "autofillPresetPartsCount": "{count}个部件",
+  "@autofillPresetPartsCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetNewDialogTitle": "新建预设",
+  "autofillPresetNameLabel": "预设名称",
+  "autofillPresetRenameDialogTitle": "重命名预设",
+  "autofillPresetDeleteConfirmTitle": "要删除「{name}」吗？",
+  "@autofillPresetDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartSearchHint": "按部件名称搜索",
+  "autofillPartUnconfiguredBanner": "有{count}个部件尚未设置：{names}（未选择网点）\n全部设置完成前无法关闭此画面。",
+  "@autofillPartUnconfiguredBanner": {
+    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredDialogTitle": "有尚未设置的部件",
+  "autofillPartUnconfiguredDialogBody": "保存前请先设置以下部件。",
+  "autofillPartUnconfiguredItem": "・{name}：未选择网点",
+  "@autofillPartUnconfiguredItem": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredBackButton": "返回设置",
+  "autofillPartEmpty": "没有部件\n请点击＋按钮添加",
+  "autofillPartToneUnselected": "未选择网点",
+  "autofillPartAddDialogTitle": "添加部件",
+  "autofillPartNameLabel": "部件名称",
+  "autofillPartAddButton": "添加",
+  "autofillPartRenameDialogTitle": "重命名部件",
+  "autofillPartDetailDialogTitle": "{name}的详细设置",
+  "@autofillPartDetailDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartFillColorLabel": "填充颜色",
+  "autofillPartSelectColorButton": "选择颜色",
+  "autofillPartGradientSetButton": "设置渐变",
+  "autofillPartGradientEditButton": "编辑渐变",
+  "autofillPartFillOpacityLabel": "不透明度（填色图层）：{value}%",
+  "@autofillPartFillOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineColorLabel": "线稿颜色",
+  "autofillPartTraceHueLabel": "色相：{value}",
+  "@autofillPartTraceHueLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceSaturationLabel": "饱和度：{value}",
+  "@autofillPartTraceSaturationLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceLightnessLabel": "明度：{value}",
+  "@autofillPartTraceLightnessLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineOpacityLabel": "不透明度（线稿图层）：{value}%",
+  "@autofillPartLineOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartToneLabel": "网点",
+  "autofillPartUseToneCheckbox": "使用网点",
+  "autofillPartBlendModeLabel": "混合模式",
+  "autofillPartApplyButton": "应用",
+  "autofillPartGradientDialogTitle": "{name}的渐变",
+  "@autofillPartGradientDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartGradientTypeLabel": "种类",
+  "autofillPartGradientAngleLabel": "角度：{value}°",
+  "@autofillPartGradientAngleLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientColorLabel": "颜色",
+  "autofillPartGradientAddColorButton": "添加颜色",
+  "autofillPartGradientDeleteHint": "长按可删除（不能少于2种颜色）",
+  "autofillPartGradientRemoveButton": "解除渐变"
 }

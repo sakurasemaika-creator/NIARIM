@@ -823,5 +823,108 @@
   "projectListMaterialVideo": "Videos",
   "projectListMaterialAudio": "Audio",
   "projectListIncludeFontsTitle": "Include fonts",
-  "projectListIncludeFontsSubtitle": "Includes user-added fonts currently in use"
+  "projectListIncludeFontsSubtitle": "Includes user-added fonts currently in use",
+  "blendModeNormal": "Normal",
+  "blendModeMultiply": "Multiply",
+  "blendModeScreen": "Screen",
+  "blendModeOverlay": "Overlay",
+  "blendModeAddition": "Addition",
+  "blendModeSubtract": "Subtract",
+  "blendModeDarken": "Darken",
+  "blendModeLighten": "Lighten",
+  "blendModeColorBurn": "Color Burn",
+  "blendModeColorDodge": "Color Dodge",
+  "blendModeHardLight": "Hard Light",
+  "blendModeSoftLight": "Soft Light",
+  "blendModeDifference": "Difference",
+  "blendModeHue": "Hue",
+  "blendModeSaturation": "Saturation",
+  "blendModeColor": "Color",
+  "blendModeLuminosity": "Luminosity",
+  "autofillLineColorModeSpecified": "Specified color",
+  "autofillLineColorModeSameAsFill": "Same as fill",
+  "autofillLineColorModeTraceAdjust": "Color trace / blend with lines",
+  "autofillGradientTypeLinear": "Linear",
+  "autofillGradientTypeRadialCenterOut": "Radial: center → outward",
+  "autofillGradientTypeRadialOutCenter": "Radial: outward → center",
+  "autofillPresetScreenTitle": "Autofill Presets",
+  "autofillPresetSearchHint": "Search presets",
+  "autofillPresetEmptyFavorites": "No favorite presets",
+  "autofillPresetEmpty": "No presets",
+  "autofillPresetEmptyHint": "Tap + in the bottom right to create one",
+  "autofillPresetPartsCount": "{count} parts",
+  "@autofillPresetPartsCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetNewDialogTitle": "New preset",
+  "autofillPresetNameLabel": "Preset name",
+  "autofillPresetRenameDialogTitle": "Rename preset",
+  "autofillPresetDeleteConfirmTitle": "Delete \"{name}\"?",
+  "@autofillPresetDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartSearchHint": "Search by part name",
+  "autofillPartUnconfiguredBanner": "{count} part(s) are not yet set up: {names} (no tone selected)\nYou can't close this screen until all are set up.",
+  "@autofillPartUnconfiguredBanner": {
+    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredDialogTitle": "There are unconfigured parts",
+  "autofillPartUnconfiguredDialogBody": "Please set up the following parts before saving.",
+  "autofillPartUnconfiguredItem": "• {name}: No tone selected",
+  "@autofillPartUnconfiguredItem": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredBackButton": "Back to setup",
+  "autofillPartEmpty": "No parts\nTap + to add one",
+  "autofillPartToneUnselected": "No tone selected",
+  "autofillPartAddDialogTitle": "Add part",
+  "autofillPartNameLabel": "Part name",
+  "autofillPartAddButton": "Add",
+  "autofillPartRenameDialogTitle": "Rename part",
+  "autofillPartDetailDialogTitle": "{name} details",
+  "@autofillPartDetailDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartFillColorLabel": "Fill color",
+  "autofillPartSelectColorButton": "Choose color",
+  "autofillPartGradientSetButton": "Set gradient",
+  "autofillPartGradientEditButton": "Edit gradient",
+  "autofillPartFillOpacityLabel": "Opacity (fill layer): {value}%",
+  "@autofillPartFillOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineColorLabel": "Line color",
+  "autofillPartTraceHueLabel": "Hue: {value}",
+  "@autofillPartTraceHueLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceSaturationLabel": "Saturation: {value}",
+  "@autofillPartTraceSaturationLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceLightnessLabel": "Lightness: {value}",
+  "@autofillPartTraceLightnessLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineOpacityLabel": "Opacity (line layer): {value}%",
+  "@autofillPartLineOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartToneLabel": "Tone",
+  "autofillPartUseToneCheckbox": "Use tone",
+  "autofillPartBlendModeLabel": "Blend mode",
+  "autofillPartApplyButton": "Apply",
+  "autofillPartGradientDialogTitle": "{name} gradient",
+  "@autofillPartGradientDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartGradientTypeLabel": "Type",
+  "autofillPartGradientAngleLabel": "Angle: {value}°",
+  "@autofillPartGradientAngleLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientColorLabel": "Colors",
+  "autofillPartGradientAddColorButton": "Add color",
+  "autofillPartGradientDeleteHint": "Long-press to remove (at least 2 colors required)",
+  "autofillPartGradientRemoveButton": "Remove gradient"
 }

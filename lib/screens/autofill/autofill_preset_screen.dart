@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
 import '../../models/layer.dart' show LayerBlendMode;
@@ -37,15 +38,16 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
             ? TextField(
                 autofocus: true,
-                decoration: const InputDecoration(hintText: 'プリセット検索', border: InputBorder.none),
+                decoration: InputDecoration(hintText: l10n.autofillPresetSearchHint, border: InputBorder.none),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
-            : const Text('自動塗りプリセット'),
+            : Text(l10n.autofillPresetScreenTitle),
         actions: [
           const HelpButton(topic: '自動塗り'),
           IconButton(
@@ -64,7 +66,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             child: Row(
               children: [
                 FilterChip(
-                  label: const Text('お気に入り'),
+                  label: Text(l10n.homeFavoritesOnly),
                   selected: _showFavoritesOnly,
                   onSelected: (v) => setState(() => _showFavoritesOnly = v),
                 ),
@@ -86,10 +88,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                           child: Icon(Icons.palette_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
                         ),
                         const SizedBox(height: 20),
-                        Text(_showFavoritesOnly ? 'お気に入りのプリセットがありません' : 'プリセットがありません',
+                        Text(_showFavoritesOnly ? l10n.autofillPresetEmptyFavorites : l10n.autofillPresetEmpty,
                             style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
                         const SizedBox(height: 8),
-                        Text('右下の＋から作成できます',
+                        Text(l10n.autofillPresetEmptyHint,
                             style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       ],
                     ),
@@ -118,18 +120,19 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   }
 
   void _showAddDialog() {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('新規プリセット'),
+        title: Text(l10n.autofillPresetNewDialogTitle),
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
-          decoration: const InputDecoration(labelText: 'プリセット名', border: OutlineInputBorder()),
+          decoration: InputDecoration(labelText: l10n.autofillPresetNameLabel, border: const OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
@@ -141,7 +144,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('作成'),
+            child: Text(l10n.commonCreate),
           ),
         ],
       ),
@@ -149,18 +152,19 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   }
 
   void _showEditDialog(AutofillPreset preset) {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController(text: preset.name);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('プリセット名変更'),
+        title: Text(l10n.autofillPresetRenameDialogTitle),
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
@@ -168,7 +172,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('変更'),
+            child: Text(l10n.commonChange),
           ),
         ],
       ),
@@ -176,12 +180,13 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   }
 
   void _confirmDelete(AutofillPreset preset) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('「${preset.name}」を削除しますか？'),
+        title: Text(l10n.autofillPresetDeleteConfirmTitle(preset.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -193,7 +198,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
               context.read<AutofillPresetService>().removePreset(preset.id);
               Navigator.pop(ctx);
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -238,6 +243,7 @@ class _PresetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -263,7 +269,7 @@ class _PresetCard extends StatelessWidget {
                 ),
         ),
         title: Text(preset.name),
-        subtitle: Text('${preset.parts.length}パーツ', style: const TextStyle(fontSize: 11)),
+        subtitle: Text(l10n.autofillPresetPartsCount(preset.parts.length), style: const TextStyle(fontSize: 11)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -271,7 +277,7 @@ class _PresetCard extends StatelessWidget {
               icon: Icon(preset.isFavorite ? Icons.star : Icons.star_border,
                   color: preset.isFavorite ? Colors.amber : null),
               onPressed: onToggleFavorite,
-              tooltip: preset.isFavorite ? 'お気に入り解除' : 'お気に入り登録',
+              tooltip: preset.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd,
             ),
             PopupMenuButton<String>(
               onSelected: (v) {
@@ -279,8 +285,8 @@ class _PresetCard extends StatelessWidget {
                 if (v == 'delete') onDelete();
               },
               itemBuilder: (_) => [
-                const PopupMenuItem(value: 'edit', child: Text('名前変更')),
-                const PopupMenuItem(value: 'delete', child: Text('削除', style: TextStyle(color: Colors.red))),
+                PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
+                PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
               ],
             ),
           ],
@@ -330,6 +336,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final unconfigured = _unconfiguredParts;
     return PopScope(
       // 未設定パーツがある間はこの画面を離れられない（仕様書20：保存不可）。
@@ -343,7 +350,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         title: _isSearchingParts
             ? TextField(
                 autofocus: true,
-                decoration: const InputDecoration(hintText: 'パーツ名で検索', border: InputBorder.none),
+                decoration: InputDecoration(hintText: l10n.autofillPartSearchHint, border: InputBorder.none),
                 onChanged: (v) => setState(() => _partSearchQuery = v),
               )
             : Text(_preset.name),
@@ -368,9 +375,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               color: Colors.red.withValues(alpha: 0.12),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Text(
-                '未設定のパーツが${unconfigured.length}件あります：'
-                '${unconfigured.map((p) => p.name).join('・')}（トーン未選択）\n'
-                'すべて設定するまでこの画面を閉じられません。',
+                l10n.autofillPartUnconfiguredBanner(
+                    unconfigured.length, unconfigured.map((p) => p.name).join('・')),
                 style: const TextStyle(color: Colors.red, fontSize: 11),
               ),
             ),
@@ -386,32 +392,35 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   }
 
   void _showUnconfiguredBlockDialog(List<AutofillPart> unconfigured) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('未設定のパーツがあります'),
+        title: Text(l10n.autofillPartUnconfiguredDialogTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('保存する前に、以下のパーツを設定してください（仕様書20：保存チェック）。'),
+            // 保存チェックの仕様根拠は内部コメントに留め、UI文言からは仕様書番号を除いている
+            Text(l10n.autofillPartUnconfiguredDialogBody),
             const SizedBox(height: 8),
             for (final p in unconfigured)
-              Text('・${p.name}：トーンが未選択です',
+              Text(l10n.autofillPartUnconfiguredItem(p.name),
                   style: const TextStyle(color: Colors.red, fontSize: 13)),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('設定へ戻る')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.autofillPartUnconfiguredBackButton)),
         ],
       ),
     );
   }
 
   Widget _partListBody() {
+    final l10n = AppLocalizations.of(context)!;
     return _preset.parts.isEmpty
           ? Center(
-              child: Text('パーツがありません\n＋ボタンで追加してください',
+              child: Text(l10n.autofillPartEmpty,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             )
@@ -438,6 +447,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// トーンを使用しているパーツは、単色/グラデーションの丸ではなく指定色で
   /// 着色した実際のトーンパターンをサムネイルに表示する（タスク#91）。
   Widget _partTile(AutofillPart part) {
+    final l10n = AppLocalizations.of(context)!;
     Widget thumb;
     if (part.useTone && part.toneId != null) {
       final tone = context.watch<ToneService>().tones.where((t) => t.id == part.toneId).firstOrNull;
@@ -468,7 +478,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   // ✓設定完了マーク（仕様書20：保存チェック）
                   subtitle: part.isConfigured
                       ? null
-                      : const Text('トーンが未選択です', style: TextStyle(fontSize: 10, color: Colors.red)),
+                      : Text(l10n.autofillPartToneUnselected, style: const TextStyle(fontSize: 10, color: Colors.red)),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -497,18 +507,19 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   }
 
   void _showAddPartDialog() {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('パーツ追加'),
+        title: Text(l10n.autofillPartAddDialogTitle),
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
-          decoration: const InputDecoration(labelText: 'パーツ名', border: OutlineInputBorder()),
+          decoration: InputDecoration(labelText: l10n.autofillPartNameLabel, border: const OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
@@ -522,7 +533,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('追加'),
+            child: Text(l10n.autofillPartAddButton),
           ),
         ],
       ),
@@ -530,18 +541,19 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   }
 
   void _showEditPartDialog(AutofillPart part) {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController(text: part.name);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('パーツ名変更'),
+        title: Text(l10n.autofillPartRenameDialogTitle),
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
@@ -552,51 +564,54 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('変更'),
+            child: Text(l10n.commonChange),
           ),
         ],
       ),
     ).then((_) => nameCtrl.dispose());
   }
 
-  static const _lineColorModeLabels = {
-    AutofillLineColorMode.specified: '指定色',
-    AutofillLineColorMode.sameAsFill: '塗り色と同じ',
-    AutofillLineColorMode.traceAdjust: '色トレス・線画馴染ませ',
+  Map<AutofillLineColorMode, String> _lineColorModeLabels(AppLocalizations l10n) => {
+    AutofillLineColorMode.specified: l10n.autofillLineColorModeSpecified,
+    AutofillLineColorMode.sameAsFill: l10n.autofillLineColorModeSameAsFill,
+    AutofillLineColorMode.traceAdjust: l10n.autofillLineColorModeTraceAdjust,
   };
 
-  static const _blendModeLabels = {
-    LayerBlendMode.normal: '通常',
-    LayerBlendMode.multiply: '乗算',
-    LayerBlendMode.screen: 'スクリーン',
-    LayerBlendMode.overlay: 'オーバーレイ',
-    LayerBlendMode.addition: '加算',
-    LayerBlendMode.subtract: '減算',
-    LayerBlendMode.darken: '比較（暗）',
-    LayerBlendMode.lighten: '比較（明）',
-    LayerBlendMode.colorBurn: '焼き込みカラー',
-    LayerBlendMode.colorDodge: '覆い焼きカラー',
-    LayerBlendMode.hardLight: 'ハードライト',
-    LayerBlendMode.softLight: 'ソフトライト',
-    LayerBlendMode.difference: '差の絶対値',
-    LayerBlendMode.hue: '色相',
-    LayerBlendMode.saturation: '彩度',
-    LayerBlendMode.color: 'カラー',
-    LayerBlendMode.luminosity: '輝度',
+  Map<LayerBlendMode, String> _blendModeLabels(AppLocalizations l10n) => {
+    LayerBlendMode.normal: l10n.blendModeNormal,
+    LayerBlendMode.multiply: l10n.blendModeMultiply,
+    LayerBlendMode.screen: l10n.blendModeScreen,
+    LayerBlendMode.overlay: l10n.blendModeOverlay,
+    LayerBlendMode.addition: l10n.blendModeAddition,
+    LayerBlendMode.subtract: l10n.blendModeSubtract,
+    LayerBlendMode.darken: l10n.blendModeDarken,
+    LayerBlendMode.lighten: l10n.blendModeLighten,
+    LayerBlendMode.colorBurn: l10n.blendModeColorBurn,
+    LayerBlendMode.colorDodge: l10n.blendModeColorDodge,
+    LayerBlendMode.hardLight: l10n.blendModeHardLight,
+    LayerBlendMode.softLight: l10n.blendModeSoftLight,
+    LayerBlendMode.difference: l10n.blendModeDifference,
+    LayerBlendMode.hue: l10n.blendModeHue,
+    LayerBlendMode.saturation: l10n.blendModeSaturation,
+    LayerBlendMode.color: l10n.blendModeColor,
+    LayerBlendMode.luminosity: l10n.blendModeLuminosity,
   };
 
   /// 詳細設定ポップアップ（仕様書20：色チップタップ時。塗り色・線画色・
   /// グラデーション・トーン・ブレンドモード・不透明度をすべてリアルタイム
   /// プレビュー付きで設定する）。
   void _showPartDetailDialog(AutofillPart part) {
+    final l10n = AppLocalizations.of(context)!;
     var current = part;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) {
           final tones = context.watch<ToneService>().tones;
+          final lineColorModeLabels = _lineColorModeLabels(l10n);
+          final blendModeLabels = _blendModeLabels(l10n);
           return AlertDialog(
-            title: Text('${part.name}の詳細設定'),
+            title: Text(l10n.autofillPartDetailDialogTitle(part.name)),
             content: SizedBox(
               width: 340,
               child: SingleChildScrollView(
@@ -620,7 +635,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text('塗り色', style: Theme.of(ctx).textTheme.titleSmall),
+                    Text(l10n.autofillPartFillColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     const SizedBox(height: 4),
                     OutlinedButton.icon(
                       onPressed: () => _showColorPickerFor(
@@ -636,7 +651,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           border: Border.all(color: Colors.grey),
                         ),
                       ),
-                      label: const Text('色を選択', style: TextStyle(fontSize: 12)),
+                      label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                     ),
                     TextButton.icon(
                       onPressed: () async {
@@ -644,21 +659,21 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         if (updated != null) setS(() => current = updated);
                       },
                       icon: const Icon(Icons.gradient, size: 16),
-                      label: Text(current.gradient == null ? 'グラデーション設定' : 'グラデーション編集',
+                      label: Text(current.gradient == null ? l10n.autofillPartGradientSetButton : l10n.autofillPartGradientEditButton,
                           style: const TextStyle(fontSize: 12)),
                     ),
-                    Text('不透明度（塗りレイヤー）: ${current.opacity}%', style: const TextStyle(fontSize: 12)),
+                    Text(l10n.autofillPartFillOpacityLabel(current.opacity), style: const TextStyle(fontSize: 12)),
                     Slider(
                       value: current.opacity.toDouble(),
                       min: 0, max: 100, divisions: 100,
                       onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
                     ),
                     const Divider(),
-                    Text('線画色', style: Theme.of(ctx).textTheme.titleSmall),
+                    Text(l10n.autofillPartLineColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     ...AutofillLineColorMode.values.map((m) => RadioListTile<AutofillLineColorMode>(
                           dense: true,
                           contentPadding: EdgeInsets.zero,
-                          title: Text(_lineColorModeLabels[m]!, style: const TextStyle(fontSize: 13)),
+                          title: Text(lineColorModeLabels[m]!, style: const TextStyle(fontSize: 13)),
                           value: m,
                           groupValue: current.lineColorMode,
                           onChanged: (v) => setS(() => current = current.copyWith(lineColorMode: v)),
@@ -679,38 +694,38 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             border: Border.all(color: Colors.grey),
                           ),
                         ),
-                        label: const Text('色を選択', style: TextStyle(fontSize: 12)),
+                        label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                       ),
                     ],
                     if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
-                      Text('色相: ${current.traceHue.round()}', style: const TextStyle(fontSize: 11)),
+                      Text(l10n.autofillPartTraceHueLabel(current.traceHue.round()), style: const TextStyle(fontSize: 11)),
                       Slider(
                         value: current.traceHue, min: -180, max: 180,
                         onChanged: (v) => setS(() => current = current.copyWith(traceHue: v)),
                       ),
-                      Text('彩度: ${current.traceSaturation.round()}', style: const TextStyle(fontSize: 11)),
+                      Text(l10n.autofillPartTraceSaturationLabel(current.traceSaturation.round()), style: const TextStyle(fontSize: 11)),
                       Slider(
                         value: current.traceSaturation, min: 0, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v)),
                       ),
-                      Text('明度: ${current.traceLightness.round()}', style: const TextStyle(fontSize: 11)),
+                      Text(l10n.autofillPartTraceLightnessLabel(current.traceLightness.round()), style: const TextStyle(fontSize: 11)),
                       Slider(
                         value: current.traceLightness, min: -100, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v)),
                       ),
                     ],
-                    Text('不透明度（線画レイヤー）: ${current.lineOpacity}%', style: const TextStyle(fontSize: 12)),
+                    Text(l10n.autofillPartLineOpacityLabel(current.lineOpacity), style: const TextStyle(fontSize: 12)),
                     Slider(
                       value: current.lineOpacity.toDouble(),
                       min: 0, max: 100, divisions: 100,
                       onChanged: (v) => setS(() => current = current.copyWith(lineOpacity: v.round())),
                     ),
                     const Divider(),
-                    Text('トーン', style: Theme.of(ctx).textTheme.titleSmall),
+                    Text(l10n.autofillPartToneLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     CheckboxListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('トーンを使用', style: TextStyle(fontSize: 13)),
+                      title: Text(l10n.autofillPartUseToneCheckbox, style: const TextStyle(fontSize: 13)),
                       value: current.useTone,
                       onChanged: (v) => setS(() => current = current.copyWith(useTone: v)),
                     ),
@@ -727,14 +742,14 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         }).toList(),
                       ),
                     const Divider(),
-                    Text('ブレンドモード', style: Theme.of(ctx).textTheme.titleSmall),
+                    Text(l10n.autofillPartBlendModeLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     DropdownButtonFormField<LayerBlendMode>(
                       initialValue: current.blendMode,
                       isExpanded: true,
                       decoration: const InputDecoration(isDense: true),
                       items: LayerBlendMode.values
                           .map((m) => DropdownMenuItem(
-                              value: m, child: Text(_blendModeLabels[m]!, style: const TextStyle(fontSize: 13))))
+                              value: m, child: Text(blendModeLabels[m]!, style: const TextStyle(fontSize: 13))))
                           .toList(),
                       onChanged: (v) => setS(() => current = current.copyWith(blendMode: v)),
                     ),
@@ -743,7 +758,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
               FilledButton(
                 onPressed: () {
                   final parts =
@@ -751,7 +766,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   _save(_preset.copyWith(parts: parts), changedPartId: part.id);
                   Navigator.pop(ctx);
                 },
-                child: const Text('適用'),
+                child: Text(l10n.autofillPartApplyButton),
               ),
             ],
           );
@@ -764,12 +779,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// 自由な色比率編集の代わりに均等配置とし、種類・角度（直線時）・
   /// 中心位置（放射時、既定は中央）・色（2〜5色）を編集する簡略実装。
   Future<AutofillPart?> _showGradientEditor(AutofillPart part) {
+    final l10n = AppLocalizations.of(context)!;
     var gradient = part.gradient ?? AutofillGradient.defaultTwoColor(part.color, 0xFFFFFFFF);
     return showDialog<AutofillPart>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text('${part.name}のグラデーション'),
+          title: Text(l10n.autofillPartGradientDialogTitle(part.name)),
           content: SizedBox(
             width: 320,
             child: SingleChildScrollView(
@@ -788,11 +804,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text('種類', style: TextStyle(fontSize: 12)),
+                  Text(l10n.autofillPartGradientTypeLabel, style: const TextStyle(fontSize: 12)),
                   Wrap(
                     spacing: 6,
                     children: AutofillGradientType.values.map((t) => ChoiceChip(
-                      label: Text(_gradientTypeLabel(t), style: const TextStyle(fontSize: 11)),
+                      label: Text(_gradientTypeLabel(l10n, t), style: const TextStyle(fontSize: 11)),
                       selected: gradient.type == t,
                       onSelected: (selected) {
                         if (selected) setS(() => gradient = gradient.copyWith(type: t));
@@ -801,7 +817,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   ),
                   if (gradient.type == AutofillGradientType.linear) ...[
                     const SizedBox(height: 8),
-                    Text('角度: ${gradient.angle.round()}°', style: const TextStyle(fontSize: 12)),
+                    Text(l10n.autofillPartGradientAngleLabel(gradient.angle.round()), style: const TextStyle(fontSize: 12)),
                     Slider(
                       value: gradient.angle,
                       min: 0, max: 359,
@@ -811,7 +827,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Text('色', style: TextStyle(fontSize: 12)),
+                      Text(l10n.autofillPartGradientColorLabel, style: const TextStyle(fontSize: 12)),
                       const Spacer(),
                       TextButton.icon(
                         onPressed: gradient.colors.length >= 5 ? null : () {
@@ -822,7 +838,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               ));
                         },
                         icon: const Icon(Icons.add, size: 16),
-                        label: const Text('色を追加', style: TextStyle(fontSize: 11)),
+                        label: Text(l10n.autofillPartGradientAddColorButton, style: const TextStyle(fontSize: 11)),
                       ),
                     ],
                   ),
@@ -849,8 +865,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                     )),
                   ),
-                  const Text('長押しで削除（2色未満にはできません）',
-                      style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  Text(l10n.autofillPartGradientDeleteHint,
+                      style: const TextStyle(fontSize: 10, color: Colors.grey)),
                 ],
               ),
             ),
@@ -858,12 +874,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: null)),
-              child: const Text('グラデーション解除'),
+              child: Text(l10n.autofillPartGradientRemoveButton),
             ),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: gradient)),
-              child: const Text('適用'),
+              child: Text(l10n.autofillPartApplyButton),
             ),
           ],
         ),
@@ -904,9 +920,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
-  String _gradientTypeLabel(AutofillGradientType t) => switch (t) {
-        AutofillGradientType.linear => '直線',
-        AutofillGradientType.radialCenterOut => '放射：中央→外側',
-        AutofillGradientType.radialOutCenter => '放射：外側→中央',
+  String _gradientTypeLabel(AppLocalizations l10n, AutofillGradientType t) => switch (t) {
+        AutofillGradientType.linear => l10n.autofillGradientTypeLinear,
+        AutofillGradientType.radialCenterOut => l10n.autofillGradientTypeRadialCenterOut,
+        AutofillGradientType.radialOutCenter => l10n.autofillGradientTypeRadialOutCenter,
       };
 }

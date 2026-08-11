@@ -823,5 +823,108 @@
   "projectListMaterialVideo": "동영상",
   "projectListMaterialAudio": "오디오",
   "projectListIncludeFontsTitle": "폰트 포함",
-  "projectListIncludeFontsSubtitle": "사용 중인 사용자 추가 폰트를 포함합니다"
+  "projectListIncludeFontsSubtitle": "사용 중인 사용자 추가 폰트를 포함합니다",
+  "blendModeNormal": "표준",
+  "blendModeMultiply": "곱하기",
+  "blendModeScreen": "스크린",
+  "blendModeOverlay": "오버레이",
+  "blendModeAddition": "추가",
+  "blendModeSubtract": "빼기",
+  "blendModeDarken": "어둡게 하기",
+  "blendModeLighten": "밝게 하기",
+  "blendModeColorBurn": "색상 번",
+  "blendModeColorDodge": "색상 닷지",
+  "blendModeHardLight": "하드 라이트",
+  "blendModeSoftLight": "소프트 라이트",
+  "blendModeDifference": "차이",
+  "blendModeHue": "색조",
+  "blendModeSaturation": "채도",
+  "blendModeColor": "색상",
+  "blendModeLuminosity": "광도",
+  "autofillLineColorModeSpecified": "지정 색상",
+  "autofillLineColorModeSameAsFill": "채우기 색상과 동일",
+  "autofillLineColorModeTraceAdjust": "색 트레이스・선화와 조화",
+  "autofillGradientTypeLinear": "직선",
+  "autofillGradientTypeRadialCenterOut": "방사형: 중앙→바깥쪽",
+  "autofillGradientTypeRadialOutCenter": "방사형: 바깥쪽→중앙",
+  "autofillPresetScreenTitle": "자동 채색 프리셋",
+  "autofillPresetSearchHint": "프리셋 검색",
+  "autofillPresetEmptyFavorites": "즐겨찾기한 프리셋이 없습니다",
+  "autofillPresetEmpty": "프리셋이 없습니다",
+  "autofillPresetEmptyHint": "오른쪽 아래의 ＋로 만들 수 있습니다",
+  "autofillPresetPartsCount": "{count}개 부위",
+  "@autofillPresetPartsCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetNewDialogTitle": "새 프리셋",
+  "autofillPresetNameLabel": "프리셋 이름",
+  "autofillPresetRenameDialogTitle": "프리셋 이름 변경",
+  "autofillPresetDeleteConfirmTitle": "「{name}」을(를) 삭제하시겠습니까?",
+  "@autofillPresetDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartSearchHint": "부위 이름으로 검색",
+  "autofillPartUnconfiguredBanner": "설정되지 않은 부위가 {count}개 있습니다: {names}(톤 미선택)\n모두 설정할 때까지 이 화면을 닫을 수 없습니다.",
+  "@autofillPartUnconfiguredBanner": {
+    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredDialogTitle": "설정되지 않은 부위가 있습니다",
+  "autofillPartUnconfiguredDialogBody": "저장하기 전에 다음 부위를 설정해 주세요.",
+  "autofillPartUnconfiguredItem": "・{name}: 톤이 선택되지 않았습니다",
+  "@autofillPartUnconfiguredItem": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredBackButton": "설정으로 돌아가기",
+  "autofillPartEmpty": "부위가 없습니다\n＋ 버튼으로 추가해 주세요",
+  "autofillPartToneUnselected": "톤이 선택되지 않았습니다",
+  "autofillPartAddDialogTitle": "부위 추가",
+  "autofillPartNameLabel": "부위 이름",
+  "autofillPartAddButton": "추가",
+  "autofillPartRenameDialogTitle": "부위 이름 변경",
+  "autofillPartDetailDialogTitle": "{name} 상세 설정",
+  "@autofillPartDetailDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartFillColorLabel": "채우기 색상",
+  "autofillPartSelectColorButton": "색상 선택",
+  "autofillPartGradientSetButton": "그라데이션 설정",
+  "autofillPartGradientEditButton": "그라데이션 편집",
+  "autofillPartFillOpacityLabel": "불투명도(채우기 레이어): {value}%",
+  "@autofillPartFillOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineColorLabel": "선화 색상",
+  "autofillPartTraceHueLabel": "색조: {value}",
+  "@autofillPartTraceHueLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceSaturationLabel": "채도: {value}",
+  "@autofillPartTraceSaturationLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceLightnessLabel": "명도: {value}",
+  "@autofillPartTraceLightnessLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineOpacityLabel": "불투명도(선화 레이어): {value}%",
+  "@autofillPartLineOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartToneLabel": "톤",
+  "autofillPartUseToneCheckbox": "톤 사용",
+  "autofillPartBlendModeLabel": "블렌드 모드",
+  "autofillPartApplyButton": "적용",
+  "autofillPartGradientDialogTitle": "{name} 그라데이션",
+  "@autofillPartGradientDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartGradientTypeLabel": "종류",
+  "autofillPartGradientAngleLabel": "각도: {value}°",
+  "@autofillPartGradientAngleLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientColorLabel": "색상",
+  "autofillPartGradientAddColorButton": "색상 추가",
+  "autofillPartGradientDeleteHint": "길게 눌러 삭제(색상은 최소 2개 필요)",
+  "autofillPartGradientRemoveButton": "그라데이션 해제"
 }

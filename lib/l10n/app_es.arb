@@ -823,5 +823,108 @@
   "projectListMaterialVideo": "Vídeos",
   "projectListMaterialAudio": "Audio",
   "projectListIncludeFontsTitle": "Incluir fuentes",
-  "projectListIncludeFontsSubtitle": "Incluye las fuentes añadidas por el usuario que están en uso"
+  "projectListIncludeFontsSubtitle": "Incluye las fuentes añadidas por el usuario que están en uso",
+  "blendModeNormal": "Normal",
+  "blendModeMultiply": "Multiplicar",
+  "blendModeScreen": "Trama",
+  "blendModeOverlay": "Superponer",
+  "blendModeAddition": "Suma",
+  "blendModeSubtract": "Resta",
+  "blendModeDarken": "Oscurecer",
+  "blendModeLighten": "Aclarar",
+  "blendModeColorBurn": "Subexponer color",
+  "blendModeColorDodge": "Sobreexponer color",
+  "blendModeHardLight": "Luz fuerte",
+  "blendModeSoftLight": "Luz suave",
+  "blendModeDifference": "Diferencia",
+  "blendModeHue": "Tono",
+  "blendModeSaturation": "Saturación",
+  "blendModeColor": "Color",
+  "blendModeLuminosity": "Luminosidad",
+  "autofillLineColorModeSpecified": "Color especificado",
+  "autofillLineColorModeSameAsFill": "Igual que el relleno",
+  "autofillLineColorModeTraceAdjust": "Trazado de color / mezcla con el trazo",
+  "autofillGradientTypeLinear": "Lineal",
+  "autofillGradientTypeRadialCenterOut": "Radial: centro → exterior",
+  "autofillGradientTypeRadialOutCenter": "Radial: exterior → centro",
+  "autofillPresetScreenTitle": "Preajustes de relleno automático",
+  "autofillPresetSearchHint": "Buscar preajustes",
+  "autofillPresetEmptyFavorites": "No hay preajustes favoritos",
+  "autofillPresetEmpty": "No hay preajustes",
+  "autofillPresetEmptyHint": "Toca + en la parte inferior derecha para crear uno",
+  "autofillPresetPartsCount": "{count} partes",
+  "@autofillPresetPartsCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetNewDialogTitle": "Nuevo preajuste",
+  "autofillPresetNameLabel": "Nombre del preajuste",
+  "autofillPresetRenameDialogTitle": "Renombrar preajuste",
+  "autofillPresetDeleteConfirmTitle": "¿Eliminar \"{name}\"?",
+  "@autofillPresetDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartSearchHint": "Buscar por nombre de parte",
+  "autofillPartUnconfiguredBanner": "Hay {count} parte(s) sin configurar: {names} (sin trama seleccionada)\nNo puedes cerrar esta pantalla hasta que todo esté configurado.",
+  "@autofillPartUnconfiguredBanner": {
+    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredDialogTitle": "Hay partes sin configurar",
+  "autofillPartUnconfiguredDialogBody": "Configura las siguientes partes antes de guardar.",
+  "autofillPartUnconfiguredItem": "• {name}: sin trama seleccionada",
+  "@autofillPartUnconfiguredItem": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartUnconfiguredBackButton": "Volver a la configuración",
+  "autofillPartEmpty": "No hay partes\nToca + para añadir una",
+  "autofillPartToneUnselected": "Sin trama seleccionada",
+  "autofillPartAddDialogTitle": "Añadir parte",
+  "autofillPartNameLabel": "Nombre de la parte",
+  "autofillPartAddButton": "Añadir",
+  "autofillPartRenameDialogTitle": "Renombrar parte",
+  "autofillPartDetailDialogTitle": "Detalles de {name}",
+  "@autofillPartDetailDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartFillColorLabel": "Color de relleno",
+  "autofillPartSelectColorButton": "Elegir color",
+  "autofillPartGradientSetButton": "Configurar degradado",
+  "autofillPartGradientEditButton": "Editar degradado",
+  "autofillPartFillOpacityLabel": "Opacidad (capa de relleno): {value}%",
+  "@autofillPartFillOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineColorLabel": "Color del trazo",
+  "autofillPartTraceHueLabel": "Tono: {value}",
+  "@autofillPartTraceHueLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceSaturationLabel": "Saturación: {value}",
+  "@autofillPartTraceSaturationLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartTraceLightnessLabel": "Luminosidad: {value}",
+  "@autofillPartTraceLightnessLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartLineOpacityLabel": "Opacidad (capa de trazo): {value}%",
+  "@autofillPartLineOpacityLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartToneLabel": "Trama",
+  "autofillPartUseToneCheckbox": "Usar trama",
+  "autofillPartBlendModeLabel": "Modo de fusión",
+  "autofillPartApplyButton": "Aplicar",
+  "autofillPartGradientDialogTitle": "Degradado de {name}",
+  "@autofillPartGradientDialogTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "autofillPartGradientTypeLabel": "Tipo",
+  "autofillPartGradientAngleLabel": "Ángulo: {value}°",
+  "@autofillPartGradientAngleLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientColorLabel": "Colores",
+  "autofillPartGradientAddColorButton": "Añadir color",
+  "autofillPartGradientDeleteHint": "Mantén pulsado para eliminar (mínimo 2 colores)",
+  "autofillPartGradientRemoveButton": "Quitar degradado"
 }
