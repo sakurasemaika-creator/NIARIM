@@ -1163,5 +1163,108 @@
   "layerPanelCopySuffix": "{name}的副本",
   "@layerPanelCopySuffix": {
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "關閉全螢幕預覽",
+  "timelineDefaultProjectName": "專案名稱",
+  "timelineProjectSaveMenuItem": "專案儲存",
+  "timelinePreviewPlaceholder": "預覽",
+  "timelinePreviewFullscreenTip": "點一下即可全螢幕顯示預覽，方便確認成品效果。",
+  "timelinePreviewFullscreenTooltip": "全螢幕顯示預覽",
+  "timelineAddImageTooltip": "＋圖片",
+  "timelineAddVideoTooltip": "＋影片",
+  "timelineAddAudioTooltip": "＋音源",
+  "timelineEffectFilterLabel": "演出濾鏡",
+  "timelineAddCameraKfTooltip": "新增相機關鍵影格",
+  "timelineAddWatermarkTooltip": "＋浮水印",
+  "timelineWatermarkNotRegisteredTitle": "尚未註冊浮水印",
+  "timelineWatermarkNotRegisteredBody": "請先在設定畫面的「浮水印」中註冊圖片或文字。",
+  "timelineOpenSettingsButton": "開啟設定",
+  "timelineWatermarkSelectTitle": "選擇浮水印",
+  "timelineWatermarkAddedSnackbar": "已新增浮水印（將顯示於全部影格）：{name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineConfirmButton": "確定",
+  "timelineSceneRenameTitle": "場景改名",
+  "timelineSceneDeleteMenuItem": "刪除場景",
+  "timelineSceneDeleteConfirmTitle": "要刪除「{name}」嗎？",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineSceneDeleteConfirmBody": "場景內的全部影格、共用圖層、影片素材、圖片素材、浮水印等全部資料都將被刪除。",
+  "timelineSceneMultiDeleteConfirmTitle": "要刪除已選取的{count}個場景嗎？",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillUpdateHelpBody": "此場景／影格中包含並非最新狀態的自動上色圖層。在圖層面板中點一下目標圖層即可更新。",
+  "timelineFrameTrackLabel": "影格",
+  "timelineCameraTrackLabel": "相機",
+  "timelineRangeSceneFixed": "固定場景",
+  "timelineEndCardCustomLabel": "已替換",
+  "timelineEndCardDefaultLogoLabel": "NIARIM標誌",
+  "timelineEndCardStatusFormat": "{label}・{seconds}秒",
+  "@timelineEndCardStatusFormat": {
+    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+  },
+  "timelineEndCardHiddenLabel": "隱藏",
+  "timelineEndCardVisibilityToggleTooltip": "顯示開關",
+  "timelineEndCardLengthChangeTooltip": "變更長度",
+  "timelineEndCardReplaceTooltip": "替換",
+  "timelineEndCardLengthDialogTitle": "片尾卡長度",
+  "timelineSecondsLabel": "{n}秒",
+  "@timelineSecondsLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineAddClipDialogTitle": "新增{trackName}片段",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {"trackName": {"type": "String"}}
+  },
+  "timelineClipLabelFieldLabel": "標籤",
+  "timelineClipStartLabel": "開始：",
+  "timelineClipLengthLabel": "長度：",
+  "timelineSaveSuccessSnackbar": "已儲存專案",
+  "timelineAutofillNote2": "※ 若僅存在自動上色圖層（無線稿），無論選擇哪一項都會從頭判定區域進行自動上色。",
+  "timelineAutofillTargetLabel": "執行對象",
+  "timelineAutofillScopeCurrentFrame": "僅目前影格",
+  "timelineAutofillScopeCurrentScene": "以場景為單位（目前場景的全部影格）",
+  "timelineAutofillScopeAllScenes": "全部影格（整個專案）",
+  "timelineAutofillProgressTitle": "正在執行自動上色",
+  "timelineAutofillProgressSubtitle": "{count}影格",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillCompleteSnackbar": "自動上色已完成（處理了{count}項）",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineEffectTypeFade": "淡入淡出",
+  "timelineEffectTypeGaussianBlur": "高斯模糊",
+  "timelineEffectTypeLensBlur": "鏡頭模糊",
+  "timelineEffectTypeMosaic": "馬賽克",
+  "timelineEffectTypeChromaticAberration": "色差",
+  "timelineEffectTypeNoise": "雜訊",
+  "timelineEffectFilterEmptyState": "沒有濾鏡\n請點選＋新增按鈕來新增",
+  "timelineRangeStartLabel": "開始",
+  "timelineRangeEndLabel": "結束",
+  "timelineEffectSizeLabel": "大小",
+  "timelineEffectStrengthLabel": "強度",
+  "timelineColorLabel": "顏色",
+  "timelineColorBlack": "黑",
+  "timelineColorWhite": "白",
+  "timelineColorCustom": "自訂",
+  "timelineFadeColorDialogTitle": "淡入淡出顏色",
+  "timelineAddFilterDialogTitle": "新增濾鏡",
+  "timelineClipVolumeLabel": "音量",
+  "timelineClipFadeInLabel": "淡入",
+  "timelineClipFadeOutLabel": "淡出",
+  "timelineClipUseStartLabel": "使用起始影格",
+  "timelineClipUseEndLabel": "使用結束影格",
+  "timelineCameraKfTitle": "相機關鍵影格：F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineCameraMoveXLabel": "X 移動",
+  "timelineCameraMoveYLabel": "Y 移動",
+  "timelineCameraZoomLabel": "縮放",
+  "timelineCameraRotationLabel": "旋轉"
 }

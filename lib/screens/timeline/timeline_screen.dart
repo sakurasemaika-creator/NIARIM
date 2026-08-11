@@ -17,6 +17,7 @@ import '../../engine/layer_range_resolver.dart';
 import '../../engine/text_render.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/undo_manager.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/effect_filter_instance.dart';
@@ -423,6 +424,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // 完全に同じメソッドをそのまま再利用するため、再生中のフレーム送りや
     // スクラブ操作の挙動に差異は生じない。
     if (_isPreviewFullscreen) {
+      final l10n = AppLocalizations.of(context)!;
       return Scaffold(
         backgroundColor: Colors.black,
         body: Listener(
@@ -434,7 +436,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   alignment: Alignment.centerLeft,
                   child: IconButton(
                     icon: const Icon(Icons.fullscreen_exit, color: Colors.white),
-                    tooltip: '全画面プレビューを閉じる',
+                    tooltip: l10n.timelineFullscreenPreviewCloseTooltip,
                     onPressed: () => setState(() => _isPreviewFullscreen = false),
                   ),
                 ),
@@ -447,6 +449,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       );
     }
 
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Listener(
         // 制作時間カウント（仕様書19）：操作のたびに無操作タイマーをリセットする
@@ -465,27 +468,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _buildCommonLayerTrack(),
             _buildClipTrack(
               icon: Icons.image,
-              label: '画像',
+              label: l10n.projectListMaterialImage,
               clips: _imageClips,
               scrollCtrl: _imageScrollCtrl,
               addColor: Colors.green[700]!,
-              onAdd: () => _showAddClipDialog('画像', _imageClips, Colors.green[700]!, _ClipTrackType.image),
+              onAdd: () => _showAddClipDialog(l10n.projectListMaterialImage, _imageClips, Colors.green[700]!, _ClipTrackType.image),
             ),
             _buildClipTrack(
               icon: Icons.videocam,
-              label: '動画',
+              label: l10n.projectListMaterialVideo,
               clips: _videoClips,
               scrollCtrl: _videoScrollCtrl,
               addColor: Colors.blue[700]!,
-              onAdd: () => _showAddClipDialog('動画', _videoClips, Colors.blue[700]!, _ClipTrackType.video),
+              onAdd: () => _showAddClipDialog(l10n.projectListMaterialVideo, _videoClips, Colors.blue[700]!, _ClipTrackType.video),
             ),
             _buildClipTrack(
               icon: Icons.audiotrack,
-              label: '音声',
+              label: l10n.projectListMaterialAudio,
               clips: _audioClips,
               scrollCtrl: _audioScrollCtrl,
               addColor: Colors.orange[700]!,
-              onAdd: () => _showAddClipDialog('音声', _audioClips, Colors.orange[700]!, _ClipTrackType.audio),
+              onAdd: () => _showAddClipDialog(l10n.projectListMaterialAudio, _audioClips, Colors.orange[700]!, _ClipTrackType.audio),
             ),
             _buildCameraTrack(),
             _buildEndCardTrack(),
@@ -498,12 +501,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildTopBar() {
+    final l10n = AppLocalizations.of(context)!;
     final projectName = context.watch<ProjectService>()
         .projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull
         ?.name ??
-        'プロジェクト名';
+        l10n.timelineDefaultProjectName;
     final undoManager = context.watch<UndoManager>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -527,10 +531,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
               if (action == 'save_tree') context.push('/save-tree/${widget.projectId}');
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'save', child: Text('保存')),
-              const PopupMenuItem(value: 'project_save', child: Text('プロジェクト保存')),
-              const PopupMenuItem(value: 'autofill', child: Text('自動塗り実行')),
-              const PopupMenuItem(value: 'save_tree', child: Text('セーブツリー')),
+              PopupMenuItem(value: 'save', child: Text(l10n.commonSave)),
+              PopupMenuItem(value: 'project_save', child: Text(l10n.timelineProjectSaveMenuItem)),
+              PopupMenuItem(value: 'autofill', child: Text(l10n.layerPanelMenuRunAutofill)),
+              PopupMenuItem(value: 'save_tree', child: Text(l10n.projectDetailSaveTreeButton)),
             ],
           ),
           const HelpButton(topic: 'タイムライン'),
@@ -540,6 +544,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildPreview() {
+    final l10n = AppLocalizations.of(context)!;
     final ps = context.watch<ProjectService>();
     final sceneId = _selectedSceneId;
     final preview = Container(
@@ -549,7 +554,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         children: [
           Positioned.fill(
             child: sceneId == null
-                ? const Center(child: Text('プレビュー', style: TextStyle(color: Colors.grey)))
+                ? Center(child: Text(l10n.timelinePreviewPlaceholder, style: const TextStyle(color: Colors.grey)))
                 : _TimelinePreview(
                     tileManager: ps.tileManagerOf(widget.projectId),
                     layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
@@ -569,13 +574,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
             top: 4,
             child: FirstUseTooltip(
               tooltipKey: 'timeline_preview_fullscreen',
-              message: 'タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。',
+              message: l10n.timelinePreviewFullscreenTip,
               child: Material(
                 color: Colors.black.withValues(alpha: 0.4),
                 shape: const CircleBorder(),
                 child: IconButton(
                   icon: const Icon(Icons.fullscreen, color: Colors.white, size: 20),
-                  tooltip: 'プレビューを全画面表示',
+                  tooltip: l10n.timelinePreviewFullscreenTooltip,
                   onPressed: sceneId == null
                       ? null
                       : () => setState(() => _isPreviewFullscreen = true),
@@ -619,6 +624,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildToolbar() {
+    final l10n = AppLocalizations.of(context)!;
     final isPremium = context.watch<PremiumService>().isPremium;
     return Container(
       height: 40,
@@ -632,35 +638,36 @@ class _TimelineScreenState extends State<TimelineScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.image, size: 18),
-            onPressed: () => _showAddClipDialog('画像', _imageClips, Colors.green[700]!, _ClipTrackType.image),
-            tooltip: '＋画像',
+            onPressed: () => _showAddClipDialog(l10n.projectListMaterialImage, _imageClips, Colors.green[700]!, _ClipTrackType.image),
+            tooltip: l10n.timelineAddImageTooltip,
           ),
           IconButton(
             icon: const Icon(Icons.videocam, size: 18),
-            onPressed: () => _showAddClipDialog('動画', _videoClips, Colors.blue[700]!, _ClipTrackType.video),
-            tooltip: '＋動画',
+            onPressed: () => _showAddClipDialog(l10n.projectListMaterialVideo, _videoClips, Colors.blue[700]!, _ClipTrackType.video),
+            tooltip: l10n.timelineAddVideoTooltip,
           ),
           IconButton(
             icon: const Icon(Icons.audiotrack, size: 18),
-            onPressed: () => _showAddClipDialog('音声', _audioClips, Colors.orange[700]!, _ClipTrackType.audio),
-            tooltip: '＋音源',
+            onPressed: () => _showAddClipDialog(l10n.projectListMaterialAudio, _audioClips, Colors.orange[700]!, _ClipTrackType.audio),
+            tooltip: l10n.timelineAddAudioTooltip,
           ),
           // ウォーターマーク：無料会員は🔒付き表示、タップで共通Premiumバナー
           _buildWatermarkButton(isPremium),
-          IconButton(icon: const Icon(Icons.movie_filter, size: 18), onPressed: () => _showEffectFilterDialog(), tooltip: '演出フィルター'),
-          IconButton(icon: const Icon(Icons.camera, size: 18), onPressed: _addCameraKf, tooltip: 'カメラキーフレーム追加'),
-          IconButton(icon: const Icon(Icons.upload_file, size: 18), onPressed: () => context.push('/export/${widget.projectId}'), tooltip: '書き出し'),
+          IconButton(icon: const Icon(Icons.movie_filter, size: 18), onPressed: () => _showEffectFilterDialog(), tooltip: l10n.timelineEffectFilterLabel),
+          IconButton(icon: const Icon(Icons.camera, size: 18), onPressed: _addCameraKf, tooltip: l10n.timelineAddCameraKfTooltip),
+          IconButton(icon: const Icon(Icons.upload_file, size: 18), onPressed: () => context.push('/export/${widget.projectId}'), tooltip: l10n.transferExport),
         ],
       ),
     );
   }
 
   Widget _buildWatermarkButton(bool isPremium) {
+    final l10n = AppLocalizations.of(context)!;
     if (isPremium) {
       return IconButton(
         icon: const Icon(Icons.branding_watermark, size: 18),
         onPressed: _showWatermarkPicker,
-        tooltip: '＋ウォーターマーク',
+        tooltip: l10n.timelineAddWatermarkTooltip,
       );
     }
     // 無料会員：🔒アイコン付きで表示、タップで共通Premiumバナー
@@ -684,22 +691,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// ウォーターマークは専用トラックを持たず、画像素材と同じレイヤー機構
   /// 〔LayerType.watermark〕を使ってタイムライン素材として追加する）。
   void _showWatermarkPicker() {
+    final l10n = AppLocalizations.of(context)!;
     final watermarkService = context.read<WatermarkService>();
     final assets = watermarkService.assets;
     if (assets.isEmpty) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('ウォーターマーク未登録'),
-          content: const Text('設定画面の「ウォーターマーク」からあらかじめ画像または文字を登録してください。'),
+          title: Text(l10n.timelineWatermarkNotRegisteredTitle),
+          content: Text(l10n.timelineWatermarkNotRegisteredBody),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 context.push('/settings/watermark');
               },
-              child: const Text('設定を開く'),
+              child: Text(l10n.timelineOpenSettingsButton),
             ),
           ],
         ),
@@ -712,9 +720,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('ウォーターマークを選択', style: TextStyle(fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(l10n.timelineWatermarkSelectTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
             for (final asset in assets)
               ListTile(
@@ -736,6 +744,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// デフォルトで全フレーム＝常時表示。以後の表示範囲・不透明度・差し替えは
   /// レイヤーパネルから調整できる）。
   Future<void> _addWatermarkLayer(WatermarkAsset asset) async {
+    final l10n = AppLocalizations.of(context)!;
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
     final projectService = context.read<ProjectService>();
@@ -770,7 +779,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('ウォーターマークを追加しました（全フレームに表示されます）: ${asset.name}')),
+      SnackBar(content: Text(l10n.timelineWatermarkAddedSnackbar(asset.name))),
     );
   }
 
@@ -905,6 +914,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// シーンタブ（仕様書05：カーソル固定方式で並び替え）
   Widget _buildSceneTabs() {
+    final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
     final scenes = projectService.scenesOf(widget.projectId);
     return SizedBox(
@@ -922,23 +932,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 if (_isMoveMode)
                   TextButton(
                     onPressed: () => _confirmMove(scenes),
-                    child: const Text('決定', style: TextStyle(fontSize: 11)),
+                    child: Text(l10n.timelineConfirmButton, style: const TextStyle(fontSize: 11)),
                   )
                 else if (_isSceneMultiSelect) ...[
                   TextButton(
                     onPressed: _selectedSceneIds.isNotEmpty ? () => _startMoveMode(scenes) : null,
-                    child: const Text('移動', style: TextStyle(fontSize: 11)),
+                    child: Text(l10n.commonMove, style: const TextStyle(fontSize: 11)),
                   ),
                   TextButton(
                     onPressed: _selectedSceneIds.length < scenes.length
                         ? _showMultiDeleteConfirm
                         : null,
-                    child: const Text('削除', style: TextStyle(color: Colors.red, fontSize: 11)),
+                    child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red, fontSize: 11)),
                   ),
                 ] else
                   TextButton(
                     onPressed: () => setState(() => _isSceneMultiSelect = true),
-                    child: const Text('選択', style: TextStyle(fontSize: 11)),
+                    child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
                   ),
                 Expanded(
                   child: ListView.builder(
@@ -1080,18 +1090,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 if (_isSceneMultiSelect && !_isMoveMode) ...[
                   TextButton(
                     onPressed: () => setState(() => _selectedSceneIds.addAll(scenes.map((s) => s.id))),
-                    child: const Text('全選択', style: TextStyle(fontSize: 11)),
+                    child: Text(l10n.layerPanelSelectAll, style: const TextStyle(fontSize: 11)),
                   ),
                   TextButton(
                     onPressed: () => setState(() { _selectedSceneIds.clear(); _isSceneMultiSelect = false; }),
-                    child: const Text('全解除', style: TextStyle(fontSize: 11)),
+                    child: Text(l10n.layerPanelDeselectAll, style: const TextStyle(fontSize: 11)),
                   ),
                 ],
                 // 移動モード中：キャンセルボタン
                 if (_isMoveMode)
                   TextButton(
                     onPressed: () => setState(() => _isMoveMode = false),
-                    child: const Text('キャンセル', style: TextStyle(fontSize: 11)),
+                    child: Text(l10n.commonCancel, style: const TextStyle(fontSize: 11)),
                   ),
               ],
             ),
@@ -1138,6 +1148,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // 三点メニュー（仕様書05：シーン名変更・シーン削除の2項目のみ）
   void _showSceneMenu(Scene scene, List<Scene> scenes) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -1146,12 +1157,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('シーン名変更'),
+              title: Text(l10n.timelineSceneRenameTitle),
               onTap: () { Navigator.pop(ctx); _showRenameSceneDialog(scene); },
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('シーン削除', style: TextStyle(color: Colors.red)),
+              title: Text(l10n.timelineSceneDeleteMenuItem, style: const TextStyle(color: Colors.red)),
               // シーンが1件のみの場合は削除不可
               onTap: scenes.length > 1
                   ? () { Navigator.pop(ctx); _showSingleDeleteConfirm(scene); }
@@ -1165,20 +1176,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // 単体シーン削除の確認ダイアログ（仕様書05）
   void _showSingleDeleteConfirm(Scene scene) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('「${scene.displayName}」を削除しますか？'),
-        content: const Text('シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'),
+        title: Text(l10n.timelineSceneDeleteConfirmTitle(scene.displayName)),
+        content: Text(l10n.timelineSceneDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeScene(widget.projectId, scene.id);
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -1187,14 +1199,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // 複数選択シーン削除の確認ダイアログ（仕様書05）
   void _showMultiDeleteConfirm() {
+    final l10n = AppLocalizations.of(context)!;
     final count = _selectedSceneIds.length;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('選択中の$count件のシーンを削除しますか？'),
-        content: const Text('シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'),
+        title: Text(l10n.timelineSceneMultiDeleteConfirmTitle(count)),
+        content: Text(l10n.timelineSceneDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -1206,7 +1219,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 _isSceneMultiSelect = false;
               });
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -1214,14 +1227,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _showRenameSceneDialog(Scene scene) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: scene.displayName);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('シーン名変更'),
+        title: Text(l10n.timelineSceneRenameTitle),
         content: TextField(controller: controller, decoration: const InputDecoration(border: OutlineInputBorder())),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
@@ -1230,7 +1244,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('変更'),
+            child: Text(l10n.commonChange),
           ),
         ],
       ),
@@ -1239,14 +1253,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // タイムライン側❗マークのヘルプ（仕様書04：レイヤーパネル側と同一文言）
   void _showAutofillUpdateHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('自動塗り更新マーク'),
-        content: const Text('このシーン・フレームには最新ではない自動塗りレイヤーが含まれています。'
-            'レイヤーパネルで対象レイヤーをタップすると更新できます。'),
+        title: Text(l10n.layerPanelAutofillUpdateHelpTitle),
+        content: Text(l10n.timelineAutofillUpdateHelpBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
         ],
       ),
     );
@@ -1254,6 +1268,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// フレーム一覧（仕様書05：シーンと同じ複数選択・カーソル固定移動の操作体系）。
   Widget _buildFrameList() {
+    final l10n = AppLocalizations.of(context)!;
     final total = _totalFrames;
     final projectService = context.watch<ProjectService>();
     final frameListSceneId = _selectedSceneId;
@@ -1268,32 +1283,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
               decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Colors.grey[800]!))),
               child: Row(
                 children: [
-                  _buildTrackLabel(Icons.movie_filter, 'フレーム'),
+                  _buildTrackLabel(Icons.movie_filter, l10n.timelineFrameTrackLabel),
                   // 移動モード中：「決定」。複数選択モード中：「移動」「複製」「削除」。通常時：「選択」
                   if (_isFrameMoveMode)
                     TextButton(
                       onPressed: _confirmFrameMove,
-                      child: const Text('決定', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.timelineConfirmButton, style: const TextStyle(fontSize: 11)),
                     )
                   else if (_isFrameMultiSelect) ...[
                     TextButton(
                       onPressed: _selectedFrameIndices.isNotEmpty ? _startFrameMoveMode : null,
-                      child: const Text('移動', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.commonMove, style: const TextStyle(fontSize: 11)),
                     ),
                     TextButton(
                       onPressed: _selectedFrameIndices.isNotEmpty ? _duplicateSelectedFrames : null,
-                      child: const Text('複製', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.themeDuplicateAction, style: const TextStyle(fontSize: 11)),
                     ),
                     TextButton(
                       onPressed: (_selectedFrameIndices.isNotEmpty && _selectedFrameIndices.length < total)
                           ? _deleteSelectedFrames
                           : null,
-                      child: const Text('削除', style: TextStyle(color: Colors.red, fontSize: 11)),
+                      child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red, fontSize: 11)),
                     ),
                   ] else
                     TextButton(
                       onPressed: () => setState(() => _isFrameMultiSelect = true),
-                      child: const Text('選択', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
                     ),
                   Expanded(
                     child: ListView.builder(
@@ -1428,18 +1443,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   if (_isFrameMultiSelect && !_isFrameMoveMode) ...[
                     TextButton(
                       onPressed: () => setState(() => _selectedFrameIndices.addAll(List.generate(total, (i) => i))),
-                      child: const Text('全選択', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.layerPanelSelectAll, style: const TextStyle(fontSize: 11)),
                     ),
                     TextButton(
                       onPressed: () => setState(() { _selectedFrameIndices.clear(); _isFrameMultiSelect = false; }),
-                      child: const Text('全解除', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.layerPanelDeselectAll, style: const TextStyle(fontSize: 11)),
                     ),
                   ],
                   // 移動モード中：キャンセルボタン
                   if (_isFrameMoveMode)
                     TextButton(
                       onPressed: () => setState(() => _isFrameMoveMode = false),
-                      child: const Text('キャンセル', style: TextStyle(fontSize: 11)),
+                      child: Text(l10n.commonCancel, style: const TextStyle(fontSize: 11)),
                     ),
                 ],
               ),
@@ -1957,6 +1972,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 共通レイヤーの表示範囲設定ダイアログ（仕様書16「三点メニュー（共通レイヤー専用）」
   /// の「表示フレーム範囲変更」と同一内容。レイヤーパネル側の同名ダイアログとUIを揃える）。
   void _showCommonLayerRangeDialog(Layer layer, LayerHome home) {
+    final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
     final totalFrames = ps.frameCount(widget.projectId, home.sceneId);
     final scenes = ps.scenesOf(widget.projectId);
@@ -1969,7 +1985,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('表示範囲'),
+          title: Text(l10n.layerPanelRangeDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1981,15 +1997,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       child: TextField(
                         controller: startCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: '開始フレーム', border: OutlineInputBorder()),
+                        decoration: InputDecoration(labelText: l10n.layerPanelRangeStartFrameLabel, border: const OutlineInputBorder()),
                       ),
                     ),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('〜')),
+                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(l10n.layerPanelRangeTilde)),
                     Expanded(
                       child: TextField(
                         controller: endCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: '終了フレーム', border: OutlineInputBorder()),
+                        decoration: InputDecoration(labelText: l10n.layerPanelRangeEndFrameLabel, border: const OutlineInputBorder()),
                       ),
                     ),
                   ],
@@ -1997,21 +2013,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 const Divider(),
                 RadioListTile<LayerRangeMode>(
                   dense: true,
-                  title: const Text('全フレーム'),
+                  title: Text(l10n.layerPanelRangeAllFrames),
                   value: LayerRangeMode.allFrames,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
                 ),
                 RadioListTile<LayerRangeMode>(
                   dense: true,
-                  title: const Text('現在シーン'),
+                  title: Text(l10n.layerPanelRangeCurrentScene),
                   value: LayerRangeMode.currentScene,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
                 ),
                 RadioListTile<LayerRangeMode>(
                   dense: true,
-                  title: const Text('シーン固定'),
+                  title: Text(l10n.timelineRangeSceneFixed),
                   value: LayerRangeMode.sceneRange,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
@@ -2022,7 +2038,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     child: DropdownButtonFormField<String>(
                       initialValue: scenes.any((s) => s.id == rangeSceneId) ? rangeSceneId : scenes.firstOrNull?.id,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: '対象シーン', isDense: true),
+                      decoration: InputDecoration(labelText: l10n.layerPanelRangeTargetSceneLabel, isDense: true),
                       items: scenes
                           .map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName)))
                           .toList(),
@@ -2031,7 +2047,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 RadioListTile<LayerRangeMode>(
                   dense: true,
-                  title: const Text('フレーム範囲指定'),
+                  title: Text(l10n.layerPanelRangeFrameRangeLabel),
                   value: LayerRangeMode.frameRange,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
@@ -2040,7 +2056,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 final start = int.tryParse(startCtrl.text) ?? 1;
@@ -2059,7 +2075,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
                 Navigator.pop(ctx);
               },
-              child: const Text('OK'),
+              child: Text(l10n.commonOk),
             ),
           ],
         ),
@@ -2071,6 +2087,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildCameraTrack() {
+    final l10n = AppLocalizations.of(context)!;
     final total = _totalFrames;
     final sceneId = _selectedSceneId;
     final cameraKfs = sceneId == null
@@ -2081,7 +2098,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Row(
         children: [
-          _buildTrackLabel(Icons.camera_alt, 'カメラ'),
+          _buildTrackLabel(Icons.camera_alt, l10n.timelineCameraTrackLabel),
           Expanded(
             child: Stack(
               children: [
@@ -2200,7 +2217,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// EndCard Track（無料版：ロック状態、プレミアム：編集可能）
   Widget _buildEndCardTrack() {
     return Consumer<PremiumService>(
-      builder: (context, premium, _) => Container(
+      builder: (context, premium, _) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
         height: 32,
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -2219,29 +2238,31 @@ class _TimelineScreenState extends State<TimelineScreen> {
               const Spacer(),
               Text(
                 _endCardVisible
-                    ? '${_endCardCustomPath != null ? '差替済' : 'NIARIMロゴ'}・$_endCardLengthSeconds秒'
-                    : '非表示',
+                    ? l10n.timelineEndCardStatusFormat(
+                        _endCardCustomPath != null ? l10n.timelineEndCardCustomLabel : l10n.timelineEndCardDefaultLogoLabel,
+                        _endCardLengthSeconds)
+                    : l10n.timelineEndCardHiddenLabel,
                 style: const TextStyle(fontSize: 9, color: Colors.grey),
               ),
               const SizedBox(width: 4),
               IconButton(
                 icon: Icon(_endCardVisible ? Icons.visibility : Icons.visibility_off, size: 14),
                 onPressed: () => setState(() => _endCardVisible = !_endCardVisible),
-                tooltip: '表示ON/OFF',
+                tooltip: l10n.timelineEndCardVisibilityToggleTooltip,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
               IconButton(
                 icon: const Icon(Icons.timer, size: 14),
                 onPressed: _showEndCardLengthDialog,
-                tooltip: '長さ変更',
+                tooltip: l10n.timelineEndCardLengthChangeTooltip,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
               IconButton(
                 icon: const Icon(Icons.swap_horiz, size: 14),
                 onPressed: _pickEndCardReplacement,
-                tooltip: '差し替え',
+                tooltip: l10n.timelineEndCardReplaceTooltip,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
@@ -2251,45 +2272,47 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   _endCardCustomPath = null;
                   _endCardVisible = false;
                 }),
-                tooltip: '削除',
+                tooltip: l10n.commonDelete,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
             ],
           ],
         ),
-      ),
+        );
+      },
     );
   }
 
   void _showEndCardLengthDialog() {
+    final l10n = AppLocalizations.of(context)!;
     int length = _endCardLengthSeconds;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('エンドカードの長さ'),
+          title: Text(l10n.timelineEndCardLengthDialogTitle),
           content: Row(
             children: [
               Expanded(
                 child: Slider(
                   value: length.toDouble(),
                   min: 1, max: 15, divisions: 14,
-                  label: '$length秒',
+                  label: l10n.timelineSecondsLabel(length),
                   onChanged: (v) => setS(() => length = v.round()),
                 ),
               ),
-              Text('$length秒'),
+              Text(l10n.timelineSecondsLabel(length)),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 setState(() => _endCardLengthSeconds = length);
                 Navigator.pop(ctx);
               },
-              child: const Text('OK'),
+              child: Text(l10n.commonOk),
             ),
           ],
         ),
@@ -2335,6 +2358,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Future<void> _showAddClipDialog(String trackName, List<_TrackClip> clips, Color color, _ClipTrackType trackType) async {
+    final l10n = AppLocalizations.of(context)!;
     final fileType = switch (trackType) {
       _ClipTrackType.audio => FileType.audio,
       _ClipTrackType.video => FileType.video,
@@ -2368,18 +2392,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text('$trackNameクリップを追加'),
+          title: Text(l10n.timelineAddClipDialogTitle(trackName)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: labelCtrl,
-                decoration: const InputDecoration(labelText: 'ラベル', border: OutlineInputBorder()),
+                decoration: InputDecoration(labelText: l10n.timelineClipLabelFieldLabel, border: const OutlineInputBorder()),
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Text('開始:', style: TextStyle(fontSize: 12)),
+                  Text(l10n.timelineClipStartLabel, style: const TextStyle(fontSize: 12)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Slider(
@@ -2396,7 +2420,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
               Row(
                 children: [
-                  const Text('長さ:', style: TextStyle(fontSize: 12)),
+                  Text(l10n.timelineClipLengthLabel, style: const TextStyle(fontSize: 12)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Slider(
@@ -2414,7 +2438,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () async {
                 final sceneId = _selectedSceneId;
@@ -2434,7 +2458,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   setState(() => clips.add(newClip));
                 }
               },
-              child: const Text('追加'),
+              child: Text(l10n.commonAdd),
             ),
           ],
         ),
@@ -2766,14 +2790,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// 明示的保存（三点メニューの「保存」「プロジェクト保存」共通）。
   Future<void> _saveProject() async {
+    final l10n = AppLocalizations.of(context)!;
     await context.read<ProjectService>().saveProject(widget.projectId);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('プロジェクトを保存しました')),
+      SnackBar(content: Text(l10n.timelineSaveSuccessSnackbar)),
     );
   }
 
   void _showAutofillDialog() {
+    final l10n = AppLocalizations.of(context)!;
     int selected = 0;
     // 実行対象は選択フレーム・シーン単位・全フレームから選べる（仕様書04）。
     // フレーム一覧に複数選択機能がないため「選択フレーム」は「現在のフレームのみ」で代替する。
@@ -2782,16 +2808,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('自動塗り方法'),
+          title: Text(l10n.layerPanelAutofillMethodTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。',
+                Text(l10n.layerPanelAutofillNote1,
                     style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 4),
-                Text('※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。',
+                Text(l10n.timelineAutofillNote2,
                     style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 12),
                 RadioGroup<int>(
@@ -2800,24 +2826,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   child: Column(
                     children: [
                       RadioListTile<int>(
-                        title: const Text('塗りなおし'),
-                        subtitle: const Column(
+                        title: Text(l10n.layerPanelAutofillRepaintTitle),
+                        subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('誤って自動塗りの形状を変えてしまった場合におすすめ', style: TextStyle(fontSize: 11)),
-                            Text('※ 一から領域を判定して塗りなおします。現在の自動塗りレイヤーの形状は破棄されます。', style: TextStyle(fontSize: 11)),
+                            Text(l10n.layerPanelAutofillRepaintHint, style: const TextStyle(fontSize: 11)),
+                            Text(l10n.layerPanelAutofillRepaintNote, style: const TextStyle(fontSize: 11)),
                           ],
                         ),
                         value: 0,
                         dense: true,
                       ),
                       RadioListTile<int>(
-                        title: const Text('色更新'),
-                        subtitle: const Column(
+                        title: Text(l10n.layerPanelAutofillColorUpdateTitle),
+                        subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('自動塗りの形状を手動で調整した場合におすすめ', style: TextStyle(fontSize: 11)),
-                            Text('※ 不透明度ロックをして最新の色で塗りつぶします。現在の自動塗りレイヤーの形状は維持されます。', style: TextStyle(fontSize: 11)),
+                            Text(l10n.layerPanelAutofillColorUpdateHint, style: const TextStyle(fontSize: 11)),
+                            Text(l10n.layerPanelAutofillColorUpdateNote, style: const TextStyle(fontSize: 11)),
                           ],
                         ),
                         value: 1,
@@ -2827,9 +2853,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
                 const Divider(),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Text('実行対象', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Text(l10n.timelineAutofillTargetLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
                 RadioGroup<_AutofillScope>(
                   groupValue: scope,
@@ -2837,17 +2863,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   child: Column(
                     children: [
                       RadioListTile<_AutofillScope>(
-                        title: const Text('現在のフレームのみ'),
+                        title: Text(l10n.timelineAutofillScopeCurrentFrame),
                         value: _AutofillScope.currentFrame,
                         dense: true,
                       ),
                       RadioListTile<_AutofillScope>(
-                        title: const Text('シーン単位（現在のシーンの全フレーム）'),
+                        title: Text(l10n.timelineAutofillScopeCurrentScene),
                         value: _AutofillScope.currentScene,
                         dense: true,
                       ),
                       RadioListTile<_AutofillScope>(
-                        title: const Text('全フレーム（プロジェクト全体）'),
+                        title: Text(l10n.timelineAutofillScopeAllScenes),
                         value: _AutofillScope.allScenes,
                         dense: true,
                       ),
@@ -2858,7 +2884,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
@@ -2867,7 +2893,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   selected == 0 ? AutofillMode.repaint : AutofillMode.colorUpdate,
                 );
               },
-              child: const Text('実行'),
+              child: Text(l10n.layerPanelExecuteButton),
             ),
           ],
         ),
@@ -2879,6 +2905,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 現在フレーム／シーン単位／全フレームから選択）。対象範囲内の全フレームを
   /// 走査し、自動塗り用線画レイヤーごとにruleAutofillForLayerを実行する。
   Future<void> _runBatchAutofill(_AutofillScope scope, AutofillMode mode) async {
+    final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
     final presetService = context.read<AutofillPresetService>();
     final scenes = ps.scenesOf(widget.projectId);
@@ -2916,9 +2943,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         builder: (ctx, setS) {
           setDialogState = setS;
           return ProgressDialog(
-            title: '自動塗り実行中',
+            title: l10n.timelineAutofillProgressTitle,
             progress: progress,
-            subtitle: '${targets.length}フレーム',
+            subtitle: l10n.timelineAutofillProgressSubtitle(targets.length),
           );
         },
       ),
@@ -2964,7 +2991,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     Navigator.of(context, rootNavigator: true).pop();
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('自動塗りが完了しました（$applied件処理）')),
+      SnackBar(content: Text(l10n.timelineAutofillCompleteSnackbar(applied))),
     );
   }
 }
@@ -3109,13 +3136,13 @@ class _EffectFilterSheet extends StatelessWidget {
     required this.currentFrame,
   });
 
-  static const _typeLabels = {
-    EffectFilterType.fade: 'フェード',
-    EffectFilterType.gaussianBlur: 'ガウスぼかし',
-    EffectFilterType.lensBlur: 'レンズぼかし',
-    EffectFilterType.mosaic: 'モザイク',
-    EffectFilterType.chromaticAberration: '色収差',
-    EffectFilterType.noise: 'ノイズ',
+  static String _typeLabel(AppLocalizations l10n, EffectFilterType type) => switch (type) {
+    EffectFilterType.fade => l10n.timelineEffectTypeFade,
+    EffectFilterType.gaussianBlur => l10n.timelineEffectTypeGaussianBlur,
+    EffectFilterType.lensBlur => l10n.timelineEffectTypeLensBlur,
+    EffectFilterType.mosaic => l10n.timelineEffectTypeMosaic,
+    EffectFilterType.chromaticAberration => l10n.timelineEffectTypeChromaticAberration,
+    EffectFilterType.noise => l10n.timelineEffectTypeNoise,
   };
 
   static const _typeIcons = {
@@ -3129,6 +3156,7 @@ class _EffectFilterSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final effects = context.watch<ProjectService>().effectFiltersOf(projectId, sceneId);
     return DraggableScrollableSheet(
       expand: false,
@@ -3146,11 +3174,11 @@ class _EffectFilterSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                const Text('演出フィルター', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(l10n.timelineEffectFilterLabel, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const Spacer(),
                 FilledButton.icon(
                   icon: const Icon(Icons.add, size: 16),
-                  label: const Text('追加'),
+                  label: Text(l10n.commonAdd),
                   onPressed: () => _showAddEffectDialog(context),
                 ),
               ],
@@ -3159,10 +3187,10 @@ class _EffectFilterSheet extends StatelessWidget {
           const Divider(height: 1),
           Expanded(
             child: effects.isEmpty
-                ? const Center(
-                    child: Text('フィルターがありません\n＋追加ボタンで追加してください',
+                ? Center(
+                    child: Text(l10n.timelineEffectFilterEmptyState,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey)))
+                        style: const TextStyle(color: Colors.grey)))
                 // ドラッグで並び替え可能（仕様書18：「複数フィルターの適用順」は
                 // タイムライン上の並び順に従うため、並び替えが適用順を左右する）
                 : ReorderableListView.builder(
@@ -3204,13 +3232,14 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   Widget _buildEffectTile(BuildContext context, EffectFilterInstance e, {Key? key}) {
+    final l10n = AppLocalizations.of(context)!;
     final effects = context.read<ProjectService>().effectFiltersOf(projectId, sceneId);
     return Card(
       key: key,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ExpansionTile(
         leading: Icon(_typeIcons[e.type], size: 20),
-        title: Text(_typeLabels[e.type]!, style: const TextStyle(fontSize: 13)),
+        title: Text(_typeLabel(l10n, e.type), style: const TextStyle(fontSize: 13)),
         subtitle: Text('F${e.startFrame + 1} ～ F${e.endFrame + 1}', style: const TextStyle(fontSize: 11)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -3218,7 +3247,7 @@ class _EffectFilterSheet extends StatelessWidget {
             Switch(value: e.enabled, onChanged: (v) => _update(context, e.copyWith(enabled: v))),
             IconButton(
               icon: const Icon(Icons.copy, size: 18),
-              tooltip: '複製',
+              tooltip: l10n.themeDuplicateAction,
               onPressed: () => _duplicate(context, e, effects),
             ),
             IconButton(
@@ -3234,14 +3263,14 @@ class _EffectFilterSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _rangeRow('開始', e.startFrame, 0, totalFrames - 1,
+                _rangeRow(l10n.timelineRangeStartLabel, e.startFrame, 0, totalFrames - 1,
                     (v) => _update(context, e.copyWith(startFrame: v.clamp(0, e.endFrame)))),
-                _rangeRow('終了', e.endFrame, 0, totalFrames - 1,
+                _rangeRow(l10n.timelineRangeEndLabel, e.endFrame, 0, totalFrames - 1,
                     (v) => _update(context, e.copyWith(endFrame: v.clamp(e.startFrame, totalFrames - 1)))),
                 if (e.type == EffectFilterType.fade)
-                  ..._fadeParams(context, e)
+                  ..._fadeParams(context, l10n, e)
                 else
-                  ..._strengthParam(context, e),
+                  ..._strengthParam(context, l10n, e),
               ],
             ),
           ),
@@ -3268,8 +3297,8 @@ class _EffectFilterSheet extends StatelessWidget {
     );
   }
 
-  List<Widget> _strengthParam(BuildContext context, EffectFilterInstance e) {
-    final label = e.type == EffectFilterType.mosaic ? 'サイズ' : '強度';
+  List<Widget> _strengthParam(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+    final label = e.type == EffectFilterType.mosaic ? l10n.timelineEffectSizeLabel : l10n.timelineEffectStrengthLabel;
     final maxVal = e.type == EffectFilterType.mosaic ? 64.0 : 20.0;
     return [
       Row(
@@ -3290,11 +3319,11 @@ class _EffectFilterSheet extends StatelessWidget {
     ];
   }
 
-  List<Widget> _fadeParams(BuildContext context, EffectFilterInstance e) {
+  List<Widget> _fadeParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
     return [
       Row(
         children: [
-          const SizedBox(width: 36, child: Text('色', style: TextStyle(fontSize: 11))),
+          SizedBox(width: 36, child: Text(l10n.timelineColorLabel, style: const TextStyle(fontSize: 11))),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () => _pickFadeColor(context, e),
@@ -3309,7 +3338,7 @@ class _EffectFilterSheet extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            e.fadeColor == Colors.black ? '黒' : e.fadeColor == Colors.white ? '白' : 'カスタム',
+            e.fadeColor == Colors.black ? l10n.timelineColorBlack : e.fadeColor == Colors.white ? l10n.timelineColorWhite : l10n.timelineColorCustom,
             style: const TextStyle(fontSize: 11),
           ),
         ],
@@ -3318,10 +3347,11 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('フェードカラー'),
+        title: Text(l10n.timelineFadeColorDialogTitle),
         content: Wrap(
           spacing: 12, runSpacing: 12,
           children: [
@@ -3344,18 +3374,19 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   void _showAddEffectDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('フィルターを追加'),
+        title: Text(l10n.timelineAddFilterDialogTitle),
         content: SizedBox(
           width: 280,
           child: ListView(
             shrinkWrap: true,
             children: EffectFilterType.values.map((type) => ListTile(
               leading: Icon(_typeIcons[type]),
-              title: Text(_typeLabels[type]!),
+              title: Text(_typeLabel(l10n, type)),
               onTap: () {
                 ps.addEffectFilter(projectId, sceneId, EffectFilterInstance(
                   id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
@@ -3404,6 +3435,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.55,
@@ -3435,15 +3467,15 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 if (_c.trackType == _ClipTrackType.audio) ...[
-                  _row('音量', _c.volume, 0, 1, 100, (v) { _c.volume = v; _notify(); }, '${(_c.volume * 100).round()}%'),
-                  _row('フェードイン', _c.fadeIn, 0, 5, 50, (v) { _c.fadeIn = v; _notify(); }, '${_c.fadeIn.toStringAsFixed(1)}s'),
-                  _row('フェードアウト', _c.fadeOut, 0, 5, 50, (v) { _c.fadeOut = v; _notify(); }, '${_c.fadeOut.toStringAsFixed(1)}s'),
+                  _row(l10n.timelineClipVolumeLabel, _c.volume, 0, 1, 100, (v) { _c.volume = v; _notify(); }, '${(_c.volume * 100).round()}%'),
+                  _row(l10n.timelineClipFadeInLabel, _c.fadeIn, 0, 5, 50, (v) { _c.fadeIn = v; _notify(); }, '${_c.fadeIn.toStringAsFixed(1)}s'),
+                  _row(l10n.timelineClipFadeOutLabel, _c.fadeOut, 0, 5, 50, (v) { _c.fadeOut = v; _notify(); }, '${_c.fadeOut.toStringAsFixed(1)}s'),
                 ],
                 if (_c.trackType == _ClipTrackType.video) ...[
-                  _row('不透明度', _c.videoOpacity, 0, 1, 100, (v) { _c.videoOpacity = v; _notify(); }, '${(_c.videoOpacity * 100).round()}%'),
-                  _row('使用開始F', _c.useStart.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
+                  _row(l10n.layerPanelOpacityLabel, _c.videoOpacity, 0, 1, 100, (v) { _c.videoOpacity = v; _notify(); }, '${(_c.videoOpacity * 100).round()}%'),
+                  _row(l10n.timelineClipUseStartLabel, _c.useStart.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
                       (v) { _c.useStart = v.round().clamp(0, _c.useEnd); _notify(); }, 'F${_c.useStart + 1}'),
-                  _row('使用終了F', _c.useEnd.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
+                  _row(l10n.timelineClipUseEndLabel, _c.useEnd.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
                       (v) { _c.useEnd = v.round().clamp(_c.useStart, _c.lengthFrames - 1); _notify(); }, 'F${_c.useEnd + 1}'),
                 ],
               ],
@@ -3506,6 +3538,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.55,
@@ -3522,7 +3555,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Expanded(child: Text('カメラ KF: F${_kf.frameIndex + 1}',
+                Expanded(child: Text(l10n.timelineCameraKfTitle(_kf.frameIndex + 1),
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
@@ -3537,16 +3570,16 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
               controller: scrollCtrl,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _row('X 移動', _kf.x, -1920, 1920, (v) => _update(_kf.copyWith(x: v)), _kf.x.toStringAsFixed(0)),
-                _row('Y 移動', _kf.y, -1080, 1080, (v) => _update(_kf.copyWith(y: v)), _kf.y.toStringAsFixed(0)),
-                _row('ズーム', _kf.zoom, 0.1, 5.0, (v) => _update(_kf.copyWith(zoom: v)), '×${_kf.zoom.toStringAsFixed(2)}'),
-                _row('回転', _kf.rotation, -180, 180, (v) => _update(_kf.copyWith(rotation: v)), '${_kf.rotation.toStringAsFixed(1)}°'),
+                _row(l10n.timelineCameraMoveXLabel, _kf.x, -1920, 1920, (v) => _update(_kf.copyWith(x: v)), _kf.x.toStringAsFixed(0)),
+                _row(l10n.timelineCameraMoveYLabel, _kf.y, -1080, 1080, (v) => _update(_kf.copyWith(y: v)), _kf.y.toStringAsFixed(0)),
+                _row(l10n.timelineCameraZoomLabel, _kf.zoom, 0.1, 5.0, (v) => _update(_kf.copyWith(zoom: v)), '×${_kf.zoom.toStringAsFixed(2)}'),
+                _row(l10n.timelineCameraRotationLabel, _kf.rotation, -180, 180, (v) => _update(_kf.copyWith(rotation: v)), '${_kf.rotation.toStringAsFixed(1)}°'),
                 const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      const SizedBox(width: 72, child: Text('フレーム', style: TextStyle(fontSize: 12))),
+                      SizedBox(width: 72, child: Text(l10n.timelineFrameTrackLabel, style: const TextStyle(fontSize: 12))),
                       Expanded(
                         child: Slider(
                           value: _kf.frameIndex.toDouble(),

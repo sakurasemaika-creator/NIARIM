@@ -1163,5 +1163,108 @@
   "layerPanelCopySuffix": "{name}的副本",
   "@layerPanelCopySuffix": {
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "关闭全屏预览",
+  "timelineDefaultProjectName": "项目名称",
+  "timelineProjectSaveMenuItem": "项目保存",
+  "timelinePreviewPlaceholder": "预览",
+  "timelinePreviewFullscreenTip": "点击可全屏显示预览，便于确认成品效果。",
+  "timelinePreviewFullscreenTooltip": "全屏显示预览",
+  "timelineAddImageTooltip": "＋图片",
+  "timelineAddVideoTooltip": "＋视频",
+  "timelineAddAudioTooltip": "＋音源",
+  "timelineEffectFilterLabel": "演出滤镜",
+  "timelineAddCameraKfTooltip": "添加相机关键帧",
+  "timelineAddWatermarkTooltip": "＋水印",
+  "timelineWatermarkNotRegisteredTitle": "尚未注册水印",
+  "timelineWatermarkNotRegisteredBody": "请先在设置画面的「水印」中注册图片或文字。",
+  "timelineOpenSettingsButton": "打开设置",
+  "timelineWatermarkSelectTitle": "选择水印",
+  "timelineWatermarkAddedSnackbar": "已添加水印（将显示在全部帧中）：{name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineConfirmButton": "确定",
+  "timelineSceneRenameTitle": "场景改名",
+  "timelineSceneDeleteMenuItem": "删除场景",
+  "timelineSceneDeleteConfirmTitle": "要删除「{name}」吗？",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineSceneDeleteConfirmBody": "场景内的全部帧、公共图层、视频素材、图片素材、水印等全部数据都将被删除。",
+  "timelineSceneMultiDeleteConfirmTitle": "要删除已选中的{count}个场景吗？",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillUpdateHelpBody": "该场景/帧中包含并非最新状态的自动上色图层。在图层面板中点按目标图层即可更新。",
+  "timelineFrameTrackLabel": "帧",
+  "timelineCameraTrackLabel": "相机",
+  "timelineRangeSceneFixed": "固定场景",
+  "timelineEndCardCustomLabel": "已替换",
+  "timelineEndCardDefaultLogoLabel": "NIARIM标志",
+  "timelineEndCardStatusFormat": "{label}・{seconds}秒",
+  "@timelineEndCardStatusFormat": {
+    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+  },
+  "timelineEndCardHiddenLabel": "隐藏",
+  "timelineEndCardVisibilityToggleTooltip": "显示开关",
+  "timelineEndCardLengthChangeTooltip": "更改长度",
+  "timelineEndCardReplaceTooltip": "替换",
+  "timelineEndCardLengthDialogTitle": "片尾卡长度",
+  "timelineSecondsLabel": "{n}秒",
+  "@timelineSecondsLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineAddClipDialogTitle": "添加{trackName}片段",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {"trackName": {"type": "String"}}
+  },
+  "timelineClipLabelFieldLabel": "标签",
+  "timelineClipStartLabel": "开始：",
+  "timelineClipLengthLabel": "长度：",
+  "timelineSaveSuccessSnackbar": "已保存项目",
+  "timelineAutofillNote2": "※ 若仅存在自动上色图层（无线稿），无论选择哪一项都将从头判定区域进行自动上色。",
+  "timelineAutofillTargetLabel": "执行对象",
+  "timelineAutofillScopeCurrentFrame": "仅当前帧",
+  "timelineAutofillScopeCurrentScene": "以场景为单位（当前场景的全部帧）",
+  "timelineAutofillScopeAllScenes": "全部帧（整个项目）",
+  "timelineAutofillProgressTitle": "正在执行自动上色",
+  "timelineAutofillProgressSubtitle": "{count}帧",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillCompleteSnackbar": "自动上色已完成（处理了{count}项）",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineEffectTypeFade": "淡入淡出",
+  "timelineEffectTypeGaussianBlur": "高斯模糊",
+  "timelineEffectTypeLensBlur": "镜头模糊",
+  "timelineEffectTypeMosaic": "马赛克",
+  "timelineEffectTypeChromaticAberration": "色差",
+  "timelineEffectTypeNoise": "噪点",
+  "timelineEffectFilterEmptyState": "没有滤镜\n请点击＋添加按钮进行添加",
+  "timelineRangeStartLabel": "开始",
+  "timelineRangeEndLabel": "结束",
+  "timelineEffectSizeLabel": "大小",
+  "timelineEffectStrengthLabel": "强度",
+  "timelineColorLabel": "颜色",
+  "timelineColorBlack": "黑",
+  "timelineColorWhite": "白",
+  "timelineColorCustom": "自定义",
+  "timelineFadeColorDialogTitle": "淡入淡出颜色",
+  "timelineAddFilterDialogTitle": "添加滤镜",
+  "timelineClipVolumeLabel": "音量",
+  "timelineClipFadeInLabel": "淡入",
+  "timelineClipFadeOutLabel": "淡出",
+  "timelineClipUseStartLabel": "使用起始帧",
+  "timelineClipUseEndLabel": "使用结束帧",
+  "timelineCameraKfTitle": "相机关键帧：F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineCameraMoveXLabel": "X 移动",
+  "timelineCameraMoveYLabel": "Y 移动",
+  "timelineCameraZoomLabel": "缩放",
+  "timelineCameraRotationLabel": "旋转"
 }

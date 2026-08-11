@@ -1163,5 +1163,108 @@
   "layerPanelCopySuffix": "Copie de {name}",
   "@layerPanelCopySuffix": {
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "Fermer l'aperçu plein écran",
+  "timelineDefaultProjectName": "Nom du projet",
+  "timelineProjectSaveMenuItem": "Enregistrer le projet",
+  "timelinePreviewPlaceholder": "Aperçu",
+  "timelinePreviewFullscreenTip": "Touchez pour afficher l'aperçu en plein écran. Pratique pour vérifier le rendu final.",
+  "timelinePreviewFullscreenTooltip": "Afficher l'aperçu en plein écran",
+  "timelineAddImageTooltip": "+ Image",
+  "timelineAddVideoTooltip": "+ Vidéo",
+  "timelineAddAudioTooltip": "+ Audio",
+  "timelineEffectFilterLabel": "Filtres d'effet",
+  "timelineAddCameraKfTooltip": "Ajouter une image clé de caméra",
+  "timelineAddWatermarkTooltip": "+ Filigrane",
+  "timelineWatermarkNotRegisteredTitle": "Aucun filigrane enregistré",
+  "timelineWatermarkNotRegisteredBody": "Enregistrez d'abord une image ou un filigrane texte depuis « Filigrane » dans les réglages.",
+  "timelineOpenSettingsButton": "Ouvrir les réglages",
+  "timelineWatermarkSelectTitle": "Sélectionner un filigrane",
+  "timelineWatermarkAddedSnackbar": "Filigrane ajouté (affiché sur toutes les images) : {name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineConfirmButton": "Valider",
+  "timelineSceneRenameTitle": "Renommer la scène",
+  "timelineSceneDeleteMenuItem": "Supprimer la scène",
+  "timelineSceneDeleteConfirmTitle": "Supprimer « {name} » ?",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineSceneDeleteConfirmBody": "Toutes les données de la scène seront supprimées : images, calques communs, matériaux vidéo, matériaux image et filigranes inclus.",
+  "timelineSceneMultiDeleteConfirmTitle": "Supprimer les {count} scènes sélectionnées ?",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillUpdateHelpBody": "Cette scène/image contient un calque de remplissage automatique qui n'est pas à jour. Touchez le calque concerné dans le panneau des calques pour le mettre à jour.",
+  "timelineFrameTrackLabel": "Image",
+  "timelineCameraTrackLabel": "Caméra",
+  "timelineRangeSceneFixed": "Scène fixe",
+  "timelineEndCardCustomLabel": "Remplacé",
+  "timelineEndCardDefaultLogoLabel": "Logo NIARIM",
+  "timelineEndCardStatusFormat": "{label} · {seconds} s",
+  "@timelineEndCardStatusFormat": {
+    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+  },
+  "timelineEndCardHiddenLabel": "Masqué",
+  "timelineEndCardVisibilityToggleTooltip": "Afficher/masquer",
+  "timelineEndCardLengthChangeTooltip": "Modifier la durée",
+  "timelineEndCardReplaceTooltip": "Remplacer",
+  "timelineEndCardLengthDialogTitle": "Durée de la carte de fin",
+  "timelineSecondsLabel": "{n} s",
+  "@timelineSecondsLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineAddClipDialogTitle": "Ajouter un clip {trackName}",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {"trackName": {"type": "String"}}
+  },
+  "timelineClipLabelFieldLabel": "Libellé",
+  "timelineClipStartLabel": "Début :",
+  "timelineClipLengthLabel": "Durée :",
+  "timelineSaveSuccessSnackbar": "Projet enregistré",
+  "timelineAutofillNote2": "✳ S'il n'existe qu'un calque de remplissage automatique (sans dessin au trait), la zone sera de toute façon déterminée à partir de zéro.",
+  "timelineAutofillTargetLabel": "Cible",
+  "timelineAutofillScopeCurrentFrame": "Image actuelle uniquement",
+  "timelineAutofillScopeCurrentScene": "Par scène (toutes les images de la scène actuelle)",
+  "timelineAutofillScopeAllScenes": "Toutes les images (projet entier)",
+  "timelineAutofillProgressTitle": "Remplissage automatique en cours",
+  "timelineAutofillProgressSubtitle": "{count} images",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillCompleteSnackbar": "Remplissage automatique terminé ({count} traitées)",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineEffectTypeFade": "Fondu",
+  "timelineEffectTypeGaussianBlur": "Flou gaussien",
+  "timelineEffectTypeLensBlur": "Flou d'objectif",
+  "timelineEffectTypeMosaic": "Mosaïque",
+  "timelineEffectTypeChromaticAberration": "Aberration chromatique",
+  "timelineEffectTypeNoise": "Bruit",
+  "timelineEffectFilterEmptyState": "Aucun filtre\nAppuyez sur + Ajouter pour en créer un",
+  "timelineRangeStartLabel": "Début",
+  "timelineRangeEndLabel": "Fin",
+  "timelineEffectSizeLabel": "Taille",
+  "timelineEffectStrengthLabel": "Intensité",
+  "timelineColorLabel": "Couleur",
+  "timelineColorBlack": "Noir",
+  "timelineColorWhite": "Blanc",
+  "timelineColorCustom": "Personnalisé",
+  "timelineFadeColorDialogTitle": "Couleur de fondu",
+  "timelineAddFilterDialogTitle": "Ajouter un filtre",
+  "timelineClipVolumeLabel": "Volume",
+  "timelineClipFadeInLabel": "Fondu d'entrée",
+  "timelineClipFadeOutLabel": "Fondu de sortie",
+  "timelineClipUseStartLabel": "Début utilisé F",
+  "timelineClipUseEndLabel": "Fin utilisée F",
+  "timelineCameraKfTitle": "Image clé caméra : F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineCameraMoveXLabel": "Déplacement X",
+  "timelineCameraMoveYLabel": "Déplacement Y",
+  "timelineCameraZoomLabel": "Zoom",
+  "timelineCameraRotationLabel": "Rotation"
 }

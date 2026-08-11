@@ -1163,5 +1163,108 @@
   "layerPanelCopySuffix": "{name} copy",
   "@layerPanelCopySuffix": {
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "Close fullscreen preview",
+  "timelineDefaultProjectName": "Project name",
+  "timelineProjectSaveMenuItem": "Save project",
+  "timelinePreviewPlaceholder": "Preview",
+  "timelinePreviewFullscreenTip": "Tap to show the preview fullscreen. Handy for checking the finished result.",
+  "timelinePreviewFullscreenTooltip": "Show preview fullscreen",
+  "timelineAddImageTooltip": "+ Image",
+  "timelineAddVideoTooltip": "+ Video",
+  "timelineAddAudioTooltip": "+ Audio",
+  "timelineEffectFilterLabel": "Effect filters",
+  "timelineAddCameraKfTooltip": "Add camera keyframe",
+  "timelineAddWatermarkTooltip": "+ Watermark",
+  "timelineWatermarkNotRegisteredTitle": "No watermark registered",
+  "timelineWatermarkNotRegisteredBody": "Register an image or text watermark in advance from \"Watermark\" in Settings.",
+  "timelineOpenSettingsButton": "Open settings",
+  "timelineWatermarkSelectTitle": "Select a watermark",
+  "timelineWatermarkAddedSnackbar": "Watermark added (shown on every frame): {name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineConfirmButton": "Confirm",
+  "timelineSceneRenameTitle": "Rename scene",
+  "timelineSceneDeleteMenuItem": "Delete scene",
+  "timelineSceneDeleteConfirmTitle": "Delete \"{name}\"?",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineSceneDeleteConfirmBody": "All data in the scene will be deleted, including every frame, common layers, video materials, image materials, and watermarks.",
+  "timelineSceneMultiDeleteConfirmTitle": "Delete the {count} selected scenes?",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillUpdateHelpBody": "This scene/frame contains an auto-fill layer that isn't up to date. Tap the layer in the layer panel to update it.",
+  "timelineFrameTrackLabel": "Frame",
+  "timelineCameraTrackLabel": "Camera",
+  "timelineRangeSceneFixed": "Fixed scene",
+  "timelineEndCardCustomLabel": "Replaced",
+  "timelineEndCardDefaultLogoLabel": "NIARIM logo",
+  "timelineEndCardStatusFormat": "{label} · {seconds}s",
+  "@timelineEndCardStatusFormat": {
+    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+  },
+  "timelineEndCardHiddenLabel": "Hidden",
+  "timelineEndCardVisibilityToggleTooltip": "Show/hide",
+  "timelineEndCardLengthChangeTooltip": "Change length",
+  "timelineEndCardReplaceTooltip": "Replace",
+  "timelineEndCardLengthDialogTitle": "End card length",
+  "timelineSecondsLabel": "{n}s",
+  "@timelineSecondsLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineAddClipDialogTitle": "Add {trackName} clip",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {"trackName": {"type": "String"}}
+  },
+  "timelineClipLabelFieldLabel": "Label",
+  "timelineClipStartLabel": "Start:",
+  "timelineClipLengthLabel": "Length:",
+  "timelineSaveSuccessSnackbar": "Project saved",
+  "timelineAutofillNote2": "✳ If only an auto-fill layer exists (with no lineart), the area will be judged from scratch either way.",
+  "timelineAutofillTargetLabel": "Target",
+  "timelineAutofillScopeCurrentFrame": "Current frame only",
+  "timelineAutofillScopeCurrentScene": "Current scene (all frames in this scene)",
+  "timelineAutofillScopeAllScenes": "All frames (entire project)",
+  "timelineAutofillProgressTitle": "Running auto-fill",
+  "timelineAutofillProgressSubtitle": "{count} frames",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillCompleteSnackbar": "Auto-fill complete ({count} processed)",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineEffectTypeFade": "Fade",
+  "timelineEffectTypeGaussianBlur": "Gaussian blur",
+  "timelineEffectTypeLensBlur": "Lens blur",
+  "timelineEffectTypeMosaic": "Mosaic",
+  "timelineEffectTypeChromaticAberration": "Chromatic aberration",
+  "timelineEffectTypeNoise": "Noise",
+  "timelineEffectFilterEmptyState": "No filters yet\nTap + Add to add one",
+  "timelineRangeStartLabel": "Start",
+  "timelineRangeEndLabel": "End",
+  "timelineEffectSizeLabel": "Size",
+  "timelineEffectStrengthLabel": "Strength",
+  "timelineColorLabel": "Color",
+  "timelineColorBlack": "Black",
+  "timelineColorWhite": "White",
+  "timelineColorCustom": "Custom",
+  "timelineFadeColorDialogTitle": "Fade color",
+  "timelineAddFilterDialogTitle": "Add filter",
+  "timelineClipVolumeLabel": "Volume",
+  "timelineClipFadeInLabel": "Fade in",
+  "timelineClipFadeOutLabel": "Fade out",
+  "timelineClipUseStartLabel": "Trim start F",
+  "timelineClipUseEndLabel": "Trim end F",
+  "timelineCameraKfTitle": "Camera KF: F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineCameraMoveXLabel": "X move",
+  "timelineCameraMoveYLabel": "Y move",
+  "timelineCameraZoomLabel": "Zoom",
+  "timelineCameraRotationLabel": "Rotation"
 }

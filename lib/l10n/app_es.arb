@@ -1163,5 +1163,108 @@
   "layerPanelCopySuffix": "Copia de {name}",
   "@layerPanelCopySuffix": {
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "Cerrar la vista previa a pantalla completa",
+  "timelineDefaultProjectName": "Nombre del proyecto",
+  "timelineProjectSaveMenuItem": "Guardar proyecto",
+  "timelinePreviewPlaceholder": "Vista previa",
+  "timelinePreviewFullscreenTip": "Toca para ver la vista previa a pantalla completa. Útil para comprobar el resultado final.",
+  "timelinePreviewFullscreenTooltip": "Ver la vista previa a pantalla completa",
+  "timelineAddImageTooltip": "+ Imagen",
+  "timelineAddVideoTooltip": "+ Vídeo",
+  "timelineAddAudioTooltip": "+ Audio",
+  "timelineEffectFilterLabel": "Filtros de efecto",
+  "timelineAddCameraKfTooltip": "Añadir fotograma clave de cámara",
+  "timelineAddWatermarkTooltip": "+ Marca de agua",
+  "timelineWatermarkNotRegisteredTitle": "No hay ninguna marca de agua registrada",
+  "timelineWatermarkNotRegisteredBody": "Registra primero una imagen o una marca de agua de texto en «Marca de agua» dentro de Ajustes.",
+  "timelineOpenSettingsButton": "Abrir ajustes",
+  "timelineWatermarkSelectTitle": "Selecciona una marca de agua",
+  "timelineWatermarkAddedSnackbar": "Marca de agua añadida (se muestra en todos los fotogramas): {name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineConfirmButton": "Confirmar",
+  "timelineSceneRenameTitle": "Cambiar nombre de la escena",
+  "timelineSceneDeleteMenuItem": "Eliminar escena",
+  "timelineSceneDeleteConfirmTitle": "¿Eliminar «{name}»?",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineSceneDeleteConfirmBody": "Se eliminarán todos los datos de la escena, incluidos cada fotograma, las capas comunes, los materiales de vídeo, los materiales de imagen y las marcas de agua.",
+  "timelineSceneMultiDeleteConfirmTitle": "¿Eliminar las {count} escenas seleccionadas?",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillUpdateHelpBody": "Esta escena/fotograma contiene una capa de relleno automático que no está actualizada. Toca la capa en el panel de capas para actualizarla.",
+  "timelineFrameTrackLabel": "Fotograma",
+  "timelineCameraTrackLabel": "Cámara",
+  "timelineRangeSceneFixed": "Escena fija",
+  "timelineEndCardCustomLabel": "Reemplazado",
+  "timelineEndCardDefaultLogoLabel": "Logo de NIARIM",
+  "timelineEndCardStatusFormat": "{label} · {seconds} s",
+  "@timelineEndCardStatusFormat": {
+    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+  },
+  "timelineEndCardHiddenLabel": "Oculto",
+  "timelineEndCardVisibilityToggleTooltip": "Mostrar/ocultar",
+  "timelineEndCardLengthChangeTooltip": "Cambiar duración",
+  "timelineEndCardReplaceTooltip": "Reemplazar",
+  "timelineEndCardLengthDialogTitle": "Duración de la tarjeta final",
+  "timelineSecondsLabel": "{n} s",
+  "@timelineSecondsLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineAddClipDialogTitle": "Añadir clip de {trackName}",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {"trackName": {"type": "String"}}
+  },
+  "timelineClipLabelFieldLabel": "Etiqueta",
+  "timelineClipStartLabel": "Inicio:",
+  "timelineClipLengthLabel": "Duración:",
+  "timelineSaveSuccessSnackbar": "Proyecto guardado",
+  "timelineAutofillNote2": "✳ Si solo existe una capa de relleno automático (sin dibujo de líneas), el área se determinará desde cero de todos modos.",
+  "timelineAutofillTargetLabel": "Objetivo",
+  "timelineAutofillScopeCurrentFrame": "Solo el fotograma actual",
+  "timelineAutofillScopeCurrentScene": "Por escena (todos los fotogramas de la escena actual)",
+  "timelineAutofillScopeAllScenes": "Todos los fotogramas (todo el proyecto)",
+  "timelineAutofillProgressTitle": "Ejecutando relleno automático",
+  "timelineAutofillProgressSubtitle": "{count} fotogramas",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillCompleteSnackbar": "Relleno automático completado ({count} procesados)",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineEffectTypeFade": "Desvanecimiento",
+  "timelineEffectTypeGaussianBlur": "Desenfoque gaussiano",
+  "timelineEffectTypeLensBlur": "Desenfoque de lente",
+  "timelineEffectTypeMosaic": "Mosaico",
+  "timelineEffectTypeChromaticAberration": "Aberración cromática",
+  "timelineEffectTypeNoise": "Ruido",
+  "timelineEffectFilterEmptyState": "No hay filtros\nToca + Añadir para crear uno",
+  "timelineRangeStartLabel": "Inicio",
+  "timelineRangeEndLabel": "Fin",
+  "timelineEffectSizeLabel": "Tamaño",
+  "timelineEffectStrengthLabel": "Intensidad",
+  "timelineColorLabel": "Color",
+  "timelineColorBlack": "Negro",
+  "timelineColorWhite": "Blanco",
+  "timelineColorCustom": "Personalizado",
+  "timelineFadeColorDialogTitle": "Color del desvanecimiento",
+  "timelineAddFilterDialogTitle": "Añadir filtro",
+  "timelineClipVolumeLabel": "Volumen",
+  "timelineClipFadeInLabel": "Entrada gradual",
+  "timelineClipFadeOutLabel": "Salida gradual",
+  "timelineClipUseStartLabel": "Inicio de uso F",
+  "timelineClipUseEndLabel": "Fin de uso F",
+  "timelineCameraKfTitle": "Fotograma clave de cámara: F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineCameraMoveXLabel": "Movimiento X",
+  "timelineCameraMoveYLabel": "Movimiento Y",
+  "timelineCameraZoomLabel": "Zoom",
+  "timelineCameraRotationLabel": "Rotación"
 }

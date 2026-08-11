@@ -1163,5 +1163,108 @@
   "layerPanelCopySuffix": "{name} 사본",
   "@layerPanelCopySuffix": {
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "전체 화면 미리보기 닫기",
+  "timelineDefaultProjectName": "프로젝트 이름",
+  "timelineProjectSaveMenuItem": "프로젝트 저장",
+  "timelinePreviewPlaceholder": "미리보기",
+  "timelinePreviewFullscreenTip": "탭하면 미리보기를 전체 화면으로 볼 수 있습니다. 완성도 확인에 편리합니다.",
+  "timelinePreviewFullscreenTooltip": "미리보기 전체 화면으로 보기",
+  "timelineAddImageTooltip": "＋이미지",
+  "timelineAddVideoTooltip": "＋동영상",
+  "timelineAddAudioTooltip": "＋음원",
+  "timelineEffectFilterLabel": "연출 필터",
+  "timelineAddCameraKfTooltip": "카메라 키프레임 추가",
+  "timelineAddWatermarkTooltip": "＋워터마크",
+  "timelineWatermarkNotRegisteredTitle": "등록된 워터마크 없음",
+  "timelineWatermarkNotRegisteredBody": "설정 화면의 「워터마크」에서 미리 이미지 또는 텍스트를 등록해 주세요.",
+  "timelineOpenSettingsButton": "설정 열기",
+  "timelineWatermarkSelectTitle": "워터마크 선택",
+  "timelineWatermarkAddedSnackbar": "워터마크를 추가했습니다（모든 프레임에 표시됩니다）: {name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineConfirmButton": "확정",
+  "timelineSceneRenameTitle": "씬 이름 변경",
+  "timelineSceneDeleteMenuItem": "씬 삭제",
+  "timelineSceneDeleteConfirmTitle": "「{name}」을(를) 삭제하시겠습니까?",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineSceneDeleteConfirmBody": "씬 내의 모든 프레임・공통 레이어・동영상 소재・이미지 소재・워터마크를 포함한 모든 데이터가 삭제됩니다.",
+  "timelineSceneMultiDeleteConfirmTitle": "선택한 {count}개의 씬을 삭제하시겠습니까?",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillUpdateHelpBody": "이 씬・프레임에는 최신이 아닌 자동 채색 레이어가 포함되어 있습니다. 레이어 패널에서 대상 레이어를 탭하면 업데이트할 수 있습니다.",
+  "timelineFrameTrackLabel": "프레임",
+  "timelineCameraTrackLabel": "카메라",
+  "timelineRangeSceneFixed": "씬 고정",
+  "timelineEndCardCustomLabel": "교체됨",
+  "timelineEndCardDefaultLogoLabel": "NIARIM 로고",
+  "timelineEndCardStatusFormat": "{label}・{seconds}초",
+  "@timelineEndCardStatusFormat": {
+    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+  },
+  "timelineEndCardHiddenLabel": "숨김",
+  "timelineEndCardVisibilityToggleTooltip": "표시 켜기/끄기",
+  "timelineEndCardLengthChangeTooltip": "길이 변경",
+  "timelineEndCardReplaceTooltip": "교체",
+  "timelineEndCardLengthDialogTitle": "엔드카드 길이",
+  "timelineSecondsLabel": "{n}초",
+  "@timelineSecondsLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineAddClipDialogTitle": "{trackName} 클립 추가",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {"trackName": {"type": "String"}}
+  },
+  "timelineClipLabelFieldLabel": "라벨",
+  "timelineClipStartLabel": "시작:",
+  "timelineClipLengthLabel": "길이:",
+  "timelineSaveSuccessSnackbar": "프로젝트를 저장했습니다",
+  "timelineAutofillNote2": "※ 자동 채색 레이어만 존재하는 경우（선화 없음）어느 쪽을 선택해도 영역을 처음부터 판정해 자동 채색합니다.",
+  "timelineAutofillTargetLabel": "실행 대상",
+  "timelineAutofillScopeCurrentFrame": "현재 프레임만",
+  "timelineAutofillScopeCurrentScene": "씬 단위（현재 씬의 전체 프레임）",
+  "timelineAutofillScopeAllScenes": "전체 프레임（프로젝트 전체）",
+  "timelineAutofillProgressTitle": "자동 채색 실행 중",
+  "timelineAutofillProgressSubtitle": "{count}프레임",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillCompleteSnackbar": "자동 채색이 완료되었습니다（{count}건 처리）",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineEffectTypeFade": "페이드",
+  "timelineEffectTypeGaussianBlur": "가우시안 블러",
+  "timelineEffectTypeLensBlur": "렌즈 블러",
+  "timelineEffectTypeMosaic": "모자이크",
+  "timelineEffectTypeChromaticAberration": "색수차",
+  "timelineEffectTypeNoise": "노이즈",
+  "timelineEffectFilterEmptyState": "필터가 없습니다\n＋추가 버튼으로 추가해 주세요",
+  "timelineRangeStartLabel": "시작",
+  "timelineRangeEndLabel": "종료",
+  "timelineEffectSizeLabel": "크기",
+  "timelineEffectStrengthLabel": "강도",
+  "timelineColorLabel": "색상",
+  "timelineColorBlack": "검정",
+  "timelineColorWhite": "흰색",
+  "timelineColorCustom": "커스텀",
+  "timelineFadeColorDialogTitle": "페이드 색상",
+  "timelineAddFilterDialogTitle": "필터 추가",
+  "timelineClipVolumeLabel": "음량",
+  "timelineClipFadeInLabel": "페이드 인",
+  "timelineClipFadeOutLabel": "페이드 아웃",
+  "timelineClipUseStartLabel": "사용 시작F",
+  "timelineClipUseEndLabel": "사용 종료F",
+  "timelineCameraKfTitle": "카메라 KF: F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineCameraMoveXLabel": "X 이동",
+  "timelineCameraMoveYLabel": "Y 이동",
+  "timelineCameraZoomLabel": "줌",
+  "timelineCameraRotationLabel": "회전"
 }

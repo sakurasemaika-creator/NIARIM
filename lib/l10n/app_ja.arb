@@ -1257,5 +1257,108 @@
   "layerPanelCopySuffix": "{name}のコピー",
   "@layerPanelCopySuffix": {
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "全画面プレビューを閉じる",
+  "timelineDefaultProjectName": "プロジェクト名",
+  "timelineProjectSaveMenuItem": "プロジェクト保存",
+  "timelinePreviewPlaceholder": "プレビュー",
+  "timelinePreviewFullscreenTip": "タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。",
+  "timelinePreviewFullscreenTooltip": "プレビューを全画面表示",
+  "timelineAddImageTooltip": "＋画像",
+  "timelineAddVideoTooltip": "＋動画",
+  "timelineAddAudioTooltip": "＋音源",
+  "timelineEffectFilterLabel": "演出フィルター",
+  "timelineAddCameraKfTooltip": "カメラキーフレーム追加",
+  "timelineAddWatermarkTooltip": "＋ウォーターマーク",
+  "timelineWatermarkNotRegisteredTitle": "ウォーターマーク未登録",
+  "timelineWatermarkNotRegisteredBody": "設定画面の「ウォーターマーク」からあらかじめ画像または文字を登録してください。",
+  "timelineOpenSettingsButton": "設定を開く",
+  "timelineWatermarkSelectTitle": "ウォーターマークを選択",
+  "timelineWatermarkAddedSnackbar": "ウォーターマークを追加しました（全フレームに表示されます）: {name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineConfirmButton": "決定",
+  "timelineSceneRenameTitle": "シーン名変更",
+  "timelineSceneDeleteMenuItem": "シーン削除",
+  "timelineSceneDeleteConfirmTitle": "「{name}」を削除しますか？",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "timelineSceneDeleteConfirmBody": "シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。",
+  "timelineSceneMultiDeleteConfirmTitle": "選択中の{count}件のシーンを削除しますか？",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillUpdateHelpBody": "このシーン・フレームには最新ではない自動塗りレイヤーが含まれています。レイヤーパネルで対象レイヤーをタップすると更新できます。",
+  "timelineFrameTrackLabel": "フレーム",
+  "timelineCameraTrackLabel": "カメラ",
+  "timelineRangeSceneFixed": "シーン固定",
+  "timelineEndCardCustomLabel": "差替済",
+  "timelineEndCardDefaultLogoLabel": "NIARIMロゴ",
+  "timelineEndCardStatusFormat": "{label}・{seconds}秒",
+  "@timelineEndCardStatusFormat": {
+    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+  },
+  "timelineEndCardHiddenLabel": "非表示",
+  "timelineEndCardVisibilityToggleTooltip": "表示ON/OFF",
+  "timelineEndCardLengthChangeTooltip": "長さ変更",
+  "timelineEndCardReplaceTooltip": "差し替え",
+  "timelineEndCardLengthDialogTitle": "エンドカードの長さ",
+  "timelineSecondsLabel": "{n}秒",
+  "@timelineSecondsLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineAddClipDialogTitle": "{trackName}クリップを追加",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {"trackName": {"type": "String"}}
+  },
+  "timelineClipLabelFieldLabel": "ラベル",
+  "timelineClipStartLabel": "開始:",
+  "timelineClipLengthLabel": "長さ:",
+  "timelineSaveSuccessSnackbar": "プロジェクトを保存しました",
+  "timelineAutofillNote2": "※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。",
+  "timelineAutofillTargetLabel": "実行対象",
+  "timelineAutofillScopeCurrentFrame": "現在のフレームのみ",
+  "timelineAutofillScopeCurrentScene": "シーン単位（現在のシーンの全フレーム）",
+  "timelineAutofillScopeAllScenes": "全フレーム（プロジェクト全体）",
+  "timelineAutofillProgressTitle": "自動塗り実行中",
+  "timelineAutofillProgressSubtitle": "{count}フレーム",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineAutofillCompleteSnackbar": "自動塗りが完了しました（{count}件処理）",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "timelineEffectTypeFade": "フェード",
+  "timelineEffectTypeGaussianBlur": "ガウスぼかし",
+  "timelineEffectTypeLensBlur": "レンズぼかし",
+  "timelineEffectTypeMosaic": "モザイク",
+  "timelineEffectTypeChromaticAberration": "色収差",
+  "timelineEffectTypeNoise": "ノイズ",
+  "timelineEffectFilterEmptyState": "フィルターがありません\n＋追加ボタンで追加してください",
+  "timelineRangeStartLabel": "開始",
+  "timelineRangeEndLabel": "終了",
+  "timelineEffectSizeLabel": "サイズ",
+  "timelineEffectStrengthLabel": "強度",
+  "timelineColorLabel": "色",
+  "timelineColorBlack": "黒",
+  "timelineColorWhite": "白",
+  "timelineColorCustom": "カスタム",
+  "timelineFadeColorDialogTitle": "フェードカラー",
+  "timelineAddFilterDialogTitle": "フィルターを追加",
+  "timelineClipVolumeLabel": "音量",
+  "timelineClipFadeInLabel": "フェードイン",
+  "timelineClipFadeOutLabel": "フェードアウト",
+  "timelineClipUseStartLabel": "使用開始F",
+  "timelineClipUseEndLabel": "使用終了F",
+  "timelineCameraKfTitle": "カメラ KF: F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineCameraMoveXLabel": "X 移動",
+  "timelineCameraMoveYLabel": "Y 移動",
+  "timelineCameraZoomLabel": "ズーム",
+  "timelineCameraRotationLabel": "回転"
 }
