@@ -16,6 +16,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/first_use_tooltip.dart';
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/layer.dart' as model;
 import '../../models/onion_skin_settings.dart';
@@ -150,6 +151,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// キャンバス上部バーの「設定/編集」メニュー（仕様書08・タスク#95：
   /// 背景色・オニオンスキン・フィルター・フレーム範囲選択を集約）。
   void _showEditMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -160,10 +162,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
               leading: Icon(_canvasBackground == CanvasBackground.white
                   ? Icons.check_box_outline_blank
                   : Icons.grid_4x4),
-              title: const Text('背景切替'),
+              title: Text(l10n.canvasEditMenuBackgroundToggle),
               subtitle: Text(_canvasBackground == CanvasBackground.white
-                  ? '現在：プロジェクト背景色（タップで透過へ）'
-                  : '現在：透過（タップでプロジェクト背景色へ）'),
+                  ? l10n.canvasEditMenuBackgroundCurrentColor
+                  : l10n.canvasEditMenuBackgroundCurrentTransparent),
               onTap: () {
                 _toggleBackground();
                 Navigator.pop(ctx);
@@ -171,8 +173,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.layers_outlined),
-              title: const Text('オニオンスキン'),
-              subtitle: const Text('前後のフレームを薄く重ねて表示'),
+              title: Text(l10n.onionSkinTitle),
+              subtitle: Text(l10n.canvasEditMenuOnionSkinSubtitle),
               onTap: () {
                 Navigator.pop(ctx);
                 _toggleOnionSkinPanel();
@@ -180,8 +182,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.blur_on),
-              title: const Text('フィルター'),
-              subtitle: const Text('ぼかし・トーンカーブなどを適用'),
+              title: Text(l10n.filterPanelTitle),
+              subtitle: Text(l10n.canvasEditMenuFilterSubtitle),
               onTap: () {
                 Navigator.pop(ctx);
                 _toggleFilterPanel();
@@ -189,8 +191,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
             ListTile(
               leading: Icon(_frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist),
-              title: const Text('フレーム複数選択'),
-              subtitle: const Text('大量処理（フィルター一括適用など）に使用'),
+              title: Text(l10n.canvasEditMenuFrameMultiSelect),
+              subtitle: Text(l10n.canvasEditMenuFrameMultiSelectSubtitle),
               onTap: () {
                 _toggleFrameMultiSelect();
                 Navigator.pop(ctx);
@@ -310,14 +312,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .firstOrNull;
     if (project == null || !slot.savedAt.isAfter(project.updatedAt)) return;
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     final restore = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('自動保存データがあります'),
-        content: const Text('前回の保存より新しい自動保存データが見つかりました。復元しますか？'),
+        title: Text(l10n.canvasCrashRecoveryTitle),
+        content: Text(l10n.canvasCrashRecoveryBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('無視')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('復元')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.canvasIgnoreButton)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.saveTreeRestoreAction)),
         ],
       ),
     );
@@ -332,11 +335,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Future<void> _checkMissingMaterials(MaterialService materialService) async {
     final missing = await materialService.detectMissing(widget.projectId);
     if (!mounted || missing.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('不足素材があります'),
+        content: Text(l10n.canvasMissingMaterialsSnackbar),
         action: SnackBarAction(
-          label: '再検索',
+          label: l10n.canvasResearchButton,
           onPressed: () => _checkMissingMaterials(materialService),
         ),
         duration: const Duration(seconds: 6),
@@ -758,15 +762,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   Widget _buildTopBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home'), tooltip: '戻る'),
+          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home'), tooltip: l10n.saveTreeBackButton),
           // 投げ縄塗り選択中：囲って塗るモードスイッチ
           if (_currentTool == DrawingTool.lasso && _currentSubTool == PenSubTool.lassoFill) ...[
             const SizedBox(width: 8),
-            const Text('囲って塗る', style: TextStyle(fontSize: 12)),
+            Text(l10n.canvasLassoEnclosedLabel, style: const TextStyle(fontSize: 12)),
             Switch(
               value: _lassoFillEnclosedMode,
               onChanged: (v) => setState(() => _lassoFillEnclosedMode = v),
@@ -776,36 +781,36 @@ class _CanvasScreenState extends State<CanvasScreen> {
           if (_currentTool == DrawingTool.text)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text('キャンバスをタップしてテキストを入力',
+              child: Text(l10n.canvasTapToEnterTextLabel,
                   style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary)),
             ),
           const Spacer(),
           // 定規ボタン（仕様書08・タスク#95：下部ツールバーから昇格した常設ボタン）
           FirstUseTooltip(
             tooltipKey: 'ruler_tool',
-            message: '定規を使うとまっすぐな線や綺麗な図形が描けます。',
+            message: l10n.canvasRulerFirstUseTip,
             child: IconButton(
               icon: Icon(Icons.straighten, size: 20,
                   color: _currentTool == DrawingTool.ruler ? Theme.of(context).colorScheme.primary : null),
-              tooltip: '定規',
+              tooltip: l10n.canvasRulerTooltip,
               onPressed: _toggleRuler,
             ),
           ),
           IconButton(
             icon: const Icon(Icons.undo),
             onPressed: () => context.read<UndoManager>().undo(),
-            tooltip: 'Undo',
+            tooltip: l10n.commonUndo,
           ),
           IconButton(
             icon: const Icon(Icons.redo),
             onPressed: () => context.read<UndoManager>().redo(),
-            tooltip: 'Redo',
+            tooltip: l10n.commonRedo,
           ),
           // 設定/編集メニュー（仕様書08・タスク#95：背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約。旧・個別ボタンを整理統合した）。
           IconButton(
             icon: const Icon(Icons.settings, size: 20),
-            tooltip: '設定/編集',
+            tooltip: l10n.canvasSettingsMenuTooltip,
             onPressed: () => _showEditMenu(context),
           ),
           const HelpButton(),
@@ -817,23 +822,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// フレーム複数選択モード時のアクションバー（仕様書18：大量処理実行時の
   /// フィルター一括適用）。全選択・全解除・フィルター一括適用・キャンセルを提供する。
   Widget _buildFrameMultiSelectBar() {
+    final l10n = AppLocalizations.of(context)!;
     final total = context.watch<ProjectService>().frameCount(widget.projectId, _currentSceneId);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Row(
         children: [
-          Text('${_selectedFrameIndices.length} / $total フレーム選択中',
+          Text(l10n.canvasFrameSelectedCount(_selectedFrameIndices.length, total),
               style: const TextStyle(fontSize: 12)),
           const Spacer(),
           TextButton(
             onPressed: () => setState(
                 () => _selectedFrameIndices = {for (int i = 0; i < total; i++) i}),
-            child: const Text('全選択', style: TextStyle(fontSize: 12)),
+            child: Text(l10n.canvasSelectAllButton, style: const TextStyle(fontSize: 12)),
           ),
           TextButton(
             onPressed: () => setState(() => _selectedFrameIndices = {}),
-            child: const Text('全解除', style: TextStyle(fontSize: 12)),
+            child: Text(l10n.canvasDeselectAllButton, style: const TextStyle(fontSize: 12)),
           ),
           FilledButton.icon(
             onPressed: _selectedFrameIndices.isEmpty
@@ -843,13 +849,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       _showFilterPanel = true;
                     }),
             icon: const Icon(Icons.blur_on, size: 14),
-            label: const Text('フィルター適用', style: TextStyle(fontSize: 12)),
+            label: Text(l10n.canvasApplyFilterButton, style: const TextStyle(fontSize: 12)),
             style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8), minimumSize: Size.zero),
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 18),
-            tooltip: 'キャンセル',
+            tooltip: l10n.commonCancel,
             onPressed: () => setState(() {
               _frameMultiSelectMode = false;
               _selectedFrameIndices = {};
@@ -862,6 +868,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// 図形ツールタップ時のポップアップ（仕様書03：OFF/線/四角形/円）
   void _showShapeMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -870,7 +877,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.not_interested),
-              title: const Text('OFF（通常ブラシへ戻る）'),
+              title: Text(l10n.canvasShapeOff),
               selected: _shapeKind == ShapeKind.off,
               onTap: () {
                 setState(() {
@@ -882,7 +889,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.show_chart),
-              title: const Text('線'),
+              title: Text(l10n.canvasShapeLine),
               selected: _shapeKind == ShapeKind.line,
               onTap: () {
                 setState(() {
@@ -894,7 +901,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.crop_square),
-              title: const Text('四角形'),
+              title: Text(l10n.canvasShapeRect),
               selected: _shapeKind == ShapeKind.rect,
               onTap: () {
                 setState(() {
@@ -906,7 +913,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.circle_outlined),
-              title: const Text('円'),
+              title: Text(l10n.canvasShapeCircle),
               selected: _shapeKind == ShapeKind.circle,
               onTap: () {
                 setState(() {
@@ -968,11 +975,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     double outlineWidth = existing?.outline?.width ?? 3;
     model.TextWritingDirection direction = existing?.direction ?? model.TextWritingDirection.horizontal;
     final fontService = context.read<FontService>();
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(existingLayerId == null ? 'テキスト入力' : 'テキスト編集'),
+          title: Text(existingLayerId == null ? l10n.canvasTextInputTitle : l10n.canvasTextEditTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -982,15 +990,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   controller: controller,
                   autofocus: true,
                   maxLines: null,
-                  decoration: const InputDecoration(hintText: 'テキストを入力してください'),
+                  decoration: InputDecoration(hintText: l10n.canvasTextInputHint),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                     initialValue: fontFamily,
                     isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'フォント', isDense: true),
+                    decoration: InputDecoration(labelText: l10n.canvasTextFontLabel, isDense: true),
                     items: [
-                      const DropdownMenuItem(value: 'Roboto', child: Text('標準フォント')),
+                      DropdownMenuItem(value: 'Roboto', child: Text(l10n.canvasTextStandardFont)),
                       // あらかじめ同梱しているフリーフォント（全てSIL Open Font
                       // License、Google Fonts配布分。ライセンス表記は設定画面
                       // 「利用規約・ライセンス」参照）
@@ -1009,7 +1017,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Text('サイズ', style: TextStyle(fontSize: 12)),
+                    Text(l10n.brushSettingsSizeLabel, style: const TextStyle(fontSize: 12)),
                     Expanded(
                       child: Slider(
                         value: fontSize,
@@ -1024,13 +1032,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 Row(
                   children: [
                     FilterChip(
-                      label: const Text('太字'),
+                      label: Text(l10n.canvasTextBold),
                       selected: isBold,
                       onSelected: (v) => setS(() => isBold = v),
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
-                      label: const Text('斜体'),
+                      label: Text(l10n.canvasTextItalic),
                       selected: isItalic,
                       onSelected: (v) => setS(() => isItalic = v),
                     ),
@@ -1043,7 +1051,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             : Icons.text_rotation_none,
                         size: 16,
                       ),
-                      label: Text(direction == model.TextWritingDirection.vertical ? '縦書き' : '横書き'),
+                      label: Text(direction == model.TextWritingDirection.vertical ? l10n.canvasTextVertical : l10n.canvasTextHorizontal),
                       onPressed: () => setS(() {
                         direction = direction == model.TextWritingDirection.vertical
                             ? model.TextWritingDirection.horizontal
@@ -1054,7 +1062,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 横書きどちらでも使えるため、書字方向によらず常に表示する）
                     IconButton(
                       icon: const Icon(Icons.help_outline, size: 18),
-                      tooltip: '組版・ルビについて',
+                      tooltip: l10n.canvasTypesettingHelpTooltip,
                       onPressed: () => _showVerticalTextHelp(context),
                     ),
                   ],
@@ -1080,7 +1088,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Text('行間', style: TextStyle(fontSize: 12)),
+                    Text(l10n.canvasTextLineHeight, style: const TextStyle(fontSize: 12)),
                     Expanded(
                       child: Slider(
                         value: lineHeight, min: 0.8, max: 3.0,
@@ -1093,7 +1101,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ),
                 Row(
                   children: [
-                    const Text('文字間隔', style: TextStyle(fontSize: 12)),
+                    Text(l10n.canvasTextLetterSpacing, style: const TextStyle(fontSize: 12)),
                     Expanded(
                       child: Slider(
                         value: letterSpacing, min: -2, max: 20,
@@ -1107,7 +1115,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Text('揃え', style: TextStyle(fontSize: 12)),
+                    Text(l10n.canvasTextAlign, style: const TextStyle(fontSize: 12)),
                     const SizedBox(width: 8),
                     SegmentedButton<TextAlign>(
                       segments: const [
@@ -1122,7 +1130,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ),
                 const SizedBox(height: 8),
                 FilterChip(
-                  label: const Text('アウトライン'),
+                  label: Text(l10n.canvasTextOutline),
                   selected: outlineEnabled,
                   onSelected: (v) => setS(() => outlineEnabled = v),
                 ),
@@ -1147,7 +1155,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                   Row(
                     children: [
-                      const Text('太さ', style: TextStyle(fontSize: 12)),
+                      Text(l10n.canvasOutlineWidthLabel, style: const TextStyle(fontSize: 12)),
                       Expanded(
                         child: Slider(
                           value: outlineWidth, min: 0, max: 20,
@@ -1165,7 +1173,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('キャンセル'),
+              child: Text(l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () async {
@@ -1235,7 +1243,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 );
                 if (ctx.mounted) Navigator.pop(ctx);
               },
-              child: const Text('OK'),
+              child: Text(l10n.commonOk),
             ),
           ],
         ),
@@ -1245,30 +1253,29 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// 組版・ルビに関する説明（仕様書15：半角英数字の回転・縦中横・ルビ）。
   void _showVerticalTextHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('組版・ルビについて'),
-        content: const SingleChildScrollView(
+        title: Text(l10n.canvasTypesettingHelpTooltip),
+        content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('半角英数字の回転（縦書きのみ）', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('英字・記号は自動的に90°回転して表示されます。'),
-              SizedBox(height: 8),
-              Text('縦中横（縦書きのみ）', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('半角数字が2桁連続すると、1文字分の高さに横並びで自動的に収まります（例：12）。'),
-              SizedBox(height: 8),
-              Text('ルビ（ふりがな）', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('「{漢字|かんじ}」のように入力すると、基底文字の上（横書き）または右側'
-                  '（縦書き）に小さくふりがなが表示されます。縦書き・横書きどちらでも使えますが、'
-                  'ルビを含むテキストは横書きでの自動折り返しが効かなくなります（手動改行のみ対応）。'),
+              Text(l10n.canvasHelpRotationTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.canvasHelpRotationBody),
+              const SizedBox(height: 8),
+              Text(l10n.canvasHelpTatechuyokoTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.canvasHelpTatechuyokoBody),
+              const SizedBox(height: 8),
+              Text(l10n.canvasHelpRubyTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.canvasHelpRubyBody('{漢字|かんじ}')),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
         ],
       ),
     );
