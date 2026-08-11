@@ -926,5 +926,72 @@
   "autofillPartGradientColorLabel": "Couleurs",
   "autofillPartGradientAddColorButton": "Ajouter une couleur",
   "autofillPartGradientDeleteHint": "Appui long pour supprimer (2 couleurs minimum)",
-  "autofillPartGradientRemoveButton": "Supprimer le dégradé"
+  "autofillPartGradientRemoveButton": "Supprimer le dégradé",
+  "saveTreeScreenTitleTree": "Sauvegarde (arborescence)",
+  "saveTreeScreenTitleSlot": "Sauvegarde (emplacements)",
+  "saveTreeSaveAsChildHint": "Sera enregistré comme enfant du nœud sélectionné.",
+  "saveTreeSaveAsRootHint": "Sera enregistré comme nœud racine.",
+  "saveTreeCommentLabel": "Commentaire (facultatif)",
+  "saveTreeCommentHint": "ex. : Arrière-plan terminé",
+  "saveTreeSizeWarningSnackbar": "Votre arbre de sauvegardes devient volumineux (environ {mb} Mo). Nous vous recommandons de supprimer les sauvegardes inutiles.",
+  "@saveTreeSizeWarningSnackbar": {
+    "placeholders": {"mb": {"type": "String"}}
+  },
+  "saveTreeSlotSaveDialogTitle": "Enregistrer dans l'emplacement {n}",
+  "@saveTreeSlotSaveDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotOverwriteWarning": "Cela écrasera les données existantes ({date}).",
+  "@saveTreeSlotOverwriteWarning": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "saveTreeRestoreAction": "Restaurer",
+  "saveTreeLoadFailedSnackbar": "Échec du chargement des données de sauvegarde",
+  "saveTreeRestoredSnackbar": "{name} restauré",
+  "@saveTreeRestoredSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeSlotLabel": "Emplacement {n}",
+  "@saveTreeSlotLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotFallbackName": "Emplacement {n}",
+  "@saveTreeSlotFallbackName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeNoDataLabel": "Aucune donnée de sauvegarde",
+  "saveTreeEmptyTitle": "Aucune donnée de sauvegarde",
+  "saveTreeEmptyHint": "Appuyez sur le bouton « Enregistrer » en haut pour créer le premier nœud",
+  "saveTreeNodeDefaultTitle": "Sauvegarde",
+  "saveTreeNodeDefaultName": "Données de sauvegarde",
+  "saveTreeChangeDataTitle": "Modifier les données de sauvegarde",
+  "saveTreeChangeDataTitleWithProject": "Modifier les données de sauvegarde ({name})",
+  "@saveTreeChangeDataTitleWithProject": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeChangeExceedMessage": "Votre nombre actuel de sauvegardes dépasse\nla nouvelle limite.\n\nVeuillez choisir les sauvegardes à conserver.",
+  "saveTreeKeepableCountLabel": "Sauvegardes conservables : {n}",
+  "@saveTreeKeepableCountLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeKeepLatestButton": "Conserver les {n} plus récentes",
+  "@saveTreeKeepLatestButton": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSelectDataButton": "Choisir les données de sauvegarde",
+  "saveTreeSelectedCountLabel": "Sélectionné : {selected} / {limit}",
+  "@saveTreeSelectedCountLabel": {
+    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+  },
+  "saveTreeBackButton": "Retour",
+  "saveTreeNextButton": "Suivant",
+  "saveTreeDiscardDialogTitle": "Données de sauvegarde non sélectionnées",
+  "saveTreeArchiveOptionTitle": "Conserver en tant qu'archive (recommandé)",
+  "saveTreeArchiveOptionSubtitle": "Restauré automatiquement si vous revenez à la sauvegarde en arborescence.\nUtilise de l'espace de stockage.",
+  "saveTreeDeleteOptionTitle": "Supprimer définitivement",
+  "saveTreeDeleteOptionSubtitle": "Supprime définitivement les {count} éléments non sélectionnés.\nLibère de l'espace de stockage.\n※ Les données supprimées ne peuvent pas être récupérées.",
+  "@saveTreeDeleteOptionSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "saveTreeApplyChangeButton": "Appliquer le changement"
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/niapro_serializer.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
@@ -73,18 +74,19 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final saveService = context.watch<SaveTreeService>();
     final isTreeMode = saveService.isTreeMode;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isTreeMode ? 'セーブ（ツリー方式）' : 'セーブ（スロット方式）'),
+        title: Text(isTreeMode ? l10n.saveTreeScreenTitleTree : l10n.saveTreeScreenTitleSlot),
         actions: [
           const HelpButton(topic: 'セーブツリー'),
           if (isTreeMode)
             FilledButton.icon(
               icon: const Icon(Icons.save, size: 16),
-              label: const Text('保存'),
+              label: Text(l10n.commonSave),
               onPressed: () =>
                   _showTreeSaveDialog(context, saveService, _selectedNodeId),
             ),
@@ -111,26 +113,27 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
 
   void _showTreeSaveDialog(
       BuildContext context, SaveTreeService service, String? parentId) {
+    final l10n = AppLocalizations.of(context)!;
     final commentController = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('保存'),
+        title: Text(l10n.commonSave),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                parentId != null ? '選択中のノードの子として保存します。' : 'ルートノードとして保存します。',
+                parentId != null ? l10n.saveTreeSaveAsChildHint : l10n.saveTreeSaveAsRootHint,
                 style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
               ),
             ),
             TextField(
               controller: commentController,
-              decoration: const InputDecoration(
-                labelText: 'コメント（任意）',
-                hintText: '例：背景完成',
+              decoration: InputDecoration(
+                labelText: l10n.saveTreeCommentLabel,
+                hintText: l10n.saveTreeCommentHint,
               ),
             ),
           ],
@@ -138,7 +141,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('キャンセル')),
+              child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () async {
               final ps = context.read<ProjectService>();
@@ -163,7 +166,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
               if (ctx.mounted) Navigator.pop(ctx);
               await _warnIfSaveTreeSizeLarge(context, widget.projectId);
             },
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -177,10 +180,11 @@ Future<void> _warnIfSaveTreeSizeLarge(BuildContext context, String projectId) as
   final sizeBytes = await NiaproSerializer.saveTreeSizeBytes(projectId);
   if (sizeBytes < _saveTreeSizeWarningThresholdBytes) return;
   if (!context.mounted) return;
+  final l10n = AppLocalizations.of(context)!;
   final mb = (sizeBytes / (1024 * 1024)).toStringAsFixed(0);
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('セーブツリーの容量が大きくなっています（約${mb}MB）。不要な保存データの削除をおすすめします。'),
+      content: Text(l10n.saveTreeSizeWarningSnackbar(mb)),
       duration: const Duration(seconds: 5),
     ),
   );
@@ -220,12 +224,13 @@ class _SlotView extends StatelessWidget {
 
   void _showSlotSaveDialog(
       BuildContext context, int slotIndex, SaveNode? existing) {
+    final l10n = AppLocalizations.of(context)!;
     final commentController =
         TextEditingController(text: existing?.comment ?? '');
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('スロット ${slotIndex + 1} に保存'),
+        title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -233,15 +238,15 @@ class _SlotView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
-                  '既存データ（${_formatDate(existing.savedAt)}）を上書きします。',
+                  l10n.saveTreeSlotOverwriteWarning(_formatDate(existing.savedAt)),
                   style: const TextStyle(fontSize: 12, color: Colors.orange),
                 ),
               ),
             TextField(
               controller: commentController,
-              decoration: const InputDecoration(
-                labelText: 'コメント（任意）',
-                hintText: '例：背景完成',
+              decoration: InputDecoration(
+                labelText: l10n.saveTreeCommentLabel,
+                hintText: l10n.saveTreeCommentHint,
               ),
             ),
           ],
@@ -249,7 +254,7 @@ class _SlotView extends StatelessWidget {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('キャンセル')),
+              child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () async {
               final ps = context.read<ProjectService>();
@@ -273,7 +278,7 @@ class _SlotView extends StatelessWidget {
               );
               if (ctx.mounted) Navigator.pop(ctx);
             },
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -281,19 +286,20 @@ class _SlotView extends StatelessWidget {
   }
 
   Future<void> _restore(BuildContext context, SaveNode node) async {
+    final l10n = AppLocalizations.of(context)!;
     final data = await saveService.loadNode(projectId, node.id);
     if (!context.mounted) return;
     if (data == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('保存データの読み込みに失敗しました')),
+        SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
       );
       return;
     }
     context.read<ProjectService>().restoreFromAutosave(projectId, data);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(
-              '${node.comment ?? 'スロット ${node.slotIndex + 1}'}を復元しました')),
+          content: Text(l10n.saveTreeRestoredSnackbar(
+              node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1)))),
     );
   }
 
@@ -357,31 +363,32 @@ class _SlotTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: _SaveNodeThumbnail(node: node),
-      title: Text('スロット${slotIndex + 1}${node?.comment != null ? '　${node!.comment}' : ''}'),
+      title: Text('${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}'),
       subtitle: node != null
           ? Text(_formatDate(node!.savedAt))
-          : const Text('保存データなし'),
+          : Text(l10n.saveTreeNoDataLabel),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
             icon: const Icon(Icons.save, size: 20),
             onPressed: onSave,
-            tooltip: '保存',
+            tooltip: l10n.commonSave,
           ),
           if (onRestore != null)
             IconButton(
               icon: const Icon(Icons.restore, size: 20),
               onPressed: onRestore,
-              tooltip: '復元',
+              tooltip: l10n.saveTreeRestoreAction,
             ),
           if (onDelete != null)
             IconButton(
               icon: const Icon(Icons.delete, size: 20, color: Colors.red),
               onPressed: onDelete,
-              tooltip: '削除',
+              tooltip: l10n.commonDelete,
             ),
         ],
       ),
@@ -413,6 +420,7 @@ class _TreeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final roots = nodes.where((n) => n.parentId == null).toList();
     if (roots.isEmpty) {
       final scheme = Theme.of(context).colorScheme;
@@ -426,10 +434,10 @@ class _TreeView extends StatelessWidget {
               child: Icon(Icons.account_tree_outlined, size: 40, color: scheme.primary),
             ),
             const SizedBox(height: 20),
-            Text('保存データがありません',
+            Text(l10n.saveTreeEmptyTitle,
                 style: TextStyle(fontWeight: FontWeight.w600, color: scheme.onSurface)),
             const SizedBox(height: 8),
-            Text('上部の「保存」ボタンで最初のノードを作成できます',
+            Text(l10n.saveTreeEmptyHint,
                 style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
                 textAlign: TextAlign.center),
           ],
@@ -437,11 +445,11 @@ class _TreeView extends StatelessWidget {
       );
     }
     return ListView(
-      children: roots.map((root) => _buildTreeNode(context, root, 0)).toList(),
+      children: roots.map((root) => _buildTreeNode(context, l10n, root, 0)).toList(),
     );
   }
 
-  Widget _buildTreeNode(BuildContext context, SaveNode node, int depth) {
+  Widget _buildTreeNode(BuildContext context, AppLocalizations l10n, SaveNode node, int depth) {
     final children = saveService.getChildren(projectId, node.id);
     final isSelected = selectedNodeId == node.id;
     return Column(
@@ -462,40 +470,41 @@ class _TreeView extends StatelessWidget {
                     size: 20,
                     color: isSelected ? Theme.of(context).colorScheme.primary : null,
                   ),
-            title: Text(node.comment ?? '保存'),
+            title: Text(node.comment ?? l10n.saveTreeNodeDefaultTitle),
             subtitle: Text(_formatDate(node.savedAt)),
             onTap: () => onNodeSelected(isSelected ? null : node.id),
             trailing: PopupMenuButton<String>(
               onSelected: (action) => _handleAction(context, action, node),
               itemBuilder: (_) => [
-                const PopupMenuItem(value: 'restore', child: Text('復元')),
-                const PopupMenuItem(
+                PopupMenuItem(value: 'restore', child: Text(l10n.saveTreeRestoreAction)),
+                PopupMenuItem(
                     value: 'delete',
-                    child: Text('削除', style: TextStyle(color: Colors.red))),
+                    child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
               ],
             ),
           ),
         ),
-        ...children.map((child) => _buildTreeNode(context, child, depth + 1)),
+        ...children.map((child) => _buildTreeNode(context, l10n, child, depth + 1)),
       ],
     );
   }
 
   Future<void> _handleAction(
       BuildContext context, String action, SaveNode node) async {
+    final l10n = AppLocalizations.of(context)!;
     switch (action) {
       case 'restore':
         final data = await saveService.loadNode(projectId, node.id);
         if (!context.mounted) return;
         if (data == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('保存データの読み込みに失敗しました')),
+            SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
           );
           return;
         }
         context.read<ProjectService>().restoreFromAutosave(projectId, data);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${node.comment ?? '保存データ'}を復元しました')),
+          SnackBar(content: Text(l10n.saveTreeRestoredSnackbar(node.comment ?? l10n.saveTreeNodeDefaultName))),
         );
         break;
       case 'delete':
@@ -607,10 +616,13 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final nodes = widget.saveService.getNodes(widget.projectId);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.projectName == null ? '保存データ変更' : '保存データ変更（${widget.projectName}）'),
+        title: Text(widget.projectName == null
+            ? l10n.saveTreeChangeDataTitle
+            : l10n.saveTreeChangeDataTitleWithProject(widget.projectName!)),
         leading: _showSelectionList
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -619,12 +631,12 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
             : null,
       ),
       body: _showSelectionList
-          ? _buildSelectionBody(context, nodes)
-          : _buildButtonBody(context, nodes),
+          ? _buildSelectionBody(context, l10n, nodes)
+          : _buildButtonBody(context, l10n, nodes),
     );
   }
 
-  Widget _buildButtonBody(BuildContext context, List<SaveNode> nodes) {
+  Widget _buildButtonBody(BuildContext context, AppLocalizations l10n, List<SaveNode> nodes) {
     return desktopCentered(
       context,
       Padding(
@@ -632,12 +644,12 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            '現在の保存データ数が\n新しい保存可能数を超えています。\n\n保持する保存データを選択してください。',
-            style: TextStyle(fontSize: 14),
+          Text(
+            l10n.saveTreeChangeExceedMessage,
+            style: const TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 8),
-          Text('保持できる保存数：$_limit件',
+          Text(l10n.saveTreeKeepableCountLabel(_limit),
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
           FilledButton(
@@ -645,17 +657,17 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
               _autoSelectLatest(nodes);
               _showDiscardDialog(context, nodes);
             },
-            child: Text('最新$_limit件を保存'),
+            child: Text(l10n.saveTreeKeepLatestButton(_limit)),
           ),
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: () => setState(() => _showSelectionList = true),
-            child: const Text('保存データを選択'),
+            child: Text(l10n.saveTreeSelectDataButton),
           ),
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.commonCancel),
           ),
         ],
       ),
@@ -663,14 +675,14 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
     );
   }
 
-  Widget _buildSelectionBody(BuildContext context, List<SaveNode> nodes) {
+  Widget _buildSelectionBody(BuildContext context, AppLocalizations l10n, List<SaveNode> nodes) {
     final limitReached = _selectedIds.length >= _limit;
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
-            '選択中：${_selectedIds.length} / $_limit件',
+            l10n.saveTreeSelectedCountLabel(_selectedIds.length, _limit),
             style: TextStyle(
               fontSize: 12,
               color: limitReached ? Colors.orange : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -704,7 +716,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => setState(() => _showSelectionList = false),
-                  child: const Text('戻る'),
+                  child: Text(l10n.saveTreeBackButton),
                 ),
               ),
               const SizedBox(width: 12),
@@ -713,7 +725,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
                   onPressed: _selectedIds.length >= _effectiveLimit(nodes.length)
                       ? () => _showDiscardDialog(context, nodes)
                       : null,
-                  child: const Text('次へ'),
+                  child: Text(l10n.saveTreeNextButton),
                 ),
               ),
             ],
@@ -782,6 +794,7 @@ class _SelectableSlotView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView.builder(
       itemCount: slotMax,
       itemBuilder: (context, slotIndex) {
@@ -799,7 +812,7 @@ class _SelectableSlotView extends StatelessWidget {
             onChanged: isDisabled ? null : (_) => onToggle(node.id),
           ),
           title: Text(
-            node.comment ?? 'スロット ${slotIndex + 1}',
+            node.comment ?? l10n.saveTreeSlotFallbackName(slotIndex + 1),
             style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
           ),
           subtitle: Text(_formatDate(node.savedAt)),
@@ -834,17 +847,18 @@ class _SelectableTreeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final roots = nodes.where((n) => n.parentId == null).toList();
     if (roots.isEmpty) {
-      return const Center(child: Text('保存データがありません'));
+      return Center(child: Text(l10n.saveTreeEmptyTitle));
     }
     return ListView(
       children:
-          roots.map((root) => _buildNode(context, root, 0)).toList(),
+          roots.map((root) => _buildNode(context, l10n, root, 0)).toList(),
     );
   }
 
-  Widget _buildNode(BuildContext context, SaveNode node, int depth) {
+  Widget _buildNode(BuildContext context, AppLocalizations l10n, SaveNode node, int depth) {
     final children = saveService.getChildren(projectId, node.id);
     final isSelected = selectedIds.contains(node.id);
     final isDisabled = limitReached && !isSelected;
@@ -860,14 +874,14 @@ class _SelectableTreeView extends StatelessWidget {
               onChanged: isDisabled ? null : (_) => onToggle(node.id),
             ),
             title: Text(
-              node.comment ?? '保存',
+              node.comment ?? l10n.saveTreeNodeDefaultTitle,
               style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
             ),
             subtitle: Text(_formatDate(node.savedAt)),
             onTap: isDisabled ? null : () => onToggle(node.id),
           ),
         ),
-        ...children.map((child) => _buildNode(context, child, depth + 1)),
+        ...children.map((child) => _buildNode(context, l10n, child, depth + 1)),
       ],
     );
   }
@@ -898,8 +912,9 @@ class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('選択されなかった保存データ'),
+      title: Text(l10n.saveTreeDiscardDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -907,29 +922,29 @@ class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
             value: true,
             groupValue: _archive,
             onChanged: (v) => setState(() => _archive = v!),
-            title: const Text('アーカイブとして保持する（推奨）'),
-            subtitle: const Text(
-              'セーブツリー方式へ戻したときに自動で復元されます。\nストレージ容量を使用します。',
-              style: TextStyle(fontSize: 11),
+            title: Text(l10n.saveTreeArchiveOptionTitle),
+            subtitle: Text(
+              l10n.saveTreeArchiveOptionSubtitle,
+              style: const TextStyle(fontSize: 11),
             ),
           ),
           RadioListTile<bool>(
             value: false,
             groupValue: _archive,
             onChanged: (v) => setState(() => _archive = v!),
-            title: const Text('完全に削除する'),
+            title: Text(l10n.saveTreeDeleteOptionTitle),
             subtitle: Text(
-              '選択されなかった${widget.discardCount}件を完全に削除します。\nストレージ容量を節約できます。\n※削除したデータは元に戻せません。',
+              l10n.saveTreeDeleteOptionSubtitle(widget.discardCount),
               style: const TextStyle(fontSize: 11),
             ),
           ),
         ],
       ),
       actions: [
-        TextButton(onPressed: widget.onBack, child: const Text('戻る')),
+        TextButton(onPressed: widget.onBack, child: Text(l10n.saveTreeBackButton)),
         FilledButton(
           onPressed: () => widget.onConfirm(_archive),
-          child: const Text('変更する'),
+          child: Text(l10n.saveTreeApplyChangeButton),
         ),
       ],
     );

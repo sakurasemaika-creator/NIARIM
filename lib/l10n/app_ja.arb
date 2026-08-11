@@ -1020,5 +1020,72 @@
   "autofillPartGradientColorLabel": "色",
   "autofillPartGradientAddColorButton": "色を追加",
   "autofillPartGradientDeleteHint": "長押しで削除（2色未満にはできません）",
-  "autofillPartGradientRemoveButton": "グラデーション解除"
+  "autofillPartGradientRemoveButton": "グラデーション解除",
+  "saveTreeScreenTitleTree": "セーブ（ツリー方式）",
+  "saveTreeScreenTitleSlot": "セーブ（スロット方式）",
+  "saveTreeSaveAsChildHint": "選択中のノードの子として保存します。",
+  "saveTreeSaveAsRootHint": "ルートノードとして保存します。",
+  "saveTreeCommentLabel": "コメント（任意）",
+  "saveTreeCommentHint": "例：背景完成",
+  "saveTreeSizeWarningSnackbar": "セーブツリーの容量が大きくなっています（約{mb}MB）。不要な保存データの削除をおすすめします。",
+  "@saveTreeSizeWarningSnackbar": {
+    "placeholders": {"mb": {"type": "String"}}
+  },
+  "saveTreeSlotSaveDialogTitle": "スロット {n} に保存",
+  "@saveTreeSlotSaveDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotOverwriteWarning": "既存データ（{date}）を上書きします。",
+  "@saveTreeSlotOverwriteWarning": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "saveTreeRestoreAction": "復元",
+  "saveTreeLoadFailedSnackbar": "保存データの読み込みに失敗しました",
+  "saveTreeRestoredSnackbar": "{name}を復元しました",
+  "@saveTreeRestoredSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeSlotLabel": "スロット{n}",
+  "@saveTreeSlotLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotFallbackName": "スロット {n}",
+  "@saveTreeSlotFallbackName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeNoDataLabel": "保存データなし",
+  "saveTreeEmptyTitle": "保存データがありません",
+  "saveTreeEmptyHint": "上部の「保存」ボタンで最初のノードを作成できます",
+  "saveTreeNodeDefaultTitle": "保存",
+  "saveTreeNodeDefaultName": "保存データ",
+  "saveTreeChangeDataTitle": "保存データ変更",
+  "saveTreeChangeDataTitleWithProject": "保存データ変更（{name}）",
+  "@saveTreeChangeDataTitleWithProject": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeChangeExceedMessage": "現在の保存データ数が\n新しい保存可能数を超えています。\n\n保持する保存データを選択してください。",
+  "saveTreeKeepableCountLabel": "保持できる保存数：{n}件",
+  "@saveTreeKeepableCountLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeKeepLatestButton": "最新{n}件を保存",
+  "@saveTreeKeepLatestButton": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSelectDataButton": "保存データを選択",
+  "saveTreeSelectedCountLabel": "選択中：{selected} / {limit}件",
+  "@saveTreeSelectedCountLabel": {
+    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+  },
+  "saveTreeBackButton": "戻る",
+  "saveTreeNextButton": "次へ",
+  "saveTreeDiscardDialogTitle": "選択されなかった保存データ",
+  "saveTreeArchiveOptionTitle": "アーカイブとして保持する（推奨）",
+  "saveTreeArchiveOptionSubtitle": "セーブツリー方式へ戻したときに自動で復元されます。\nストレージ容量を使用します。",
+  "saveTreeDeleteOptionTitle": "完全に削除する",
+  "saveTreeDeleteOptionSubtitle": "選択されなかった{count}件を完全に削除します。\nストレージ容量を節約できます。\n※削除したデータは元に戻せません。",
+  "@saveTreeDeleteOptionSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "saveTreeApplyChangeButton": "変更する"
 }

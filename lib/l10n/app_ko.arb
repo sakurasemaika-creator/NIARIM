@@ -926,5 +926,72 @@
   "autofillPartGradientColorLabel": "색상",
   "autofillPartGradientAddColorButton": "색상 추가",
   "autofillPartGradientDeleteHint": "길게 눌러 삭제(색상은 최소 2개 필요)",
-  "autofillPartGradientRemoveButton": "그라데이션 해제"
+  "autofillPartGradientRemoveButton": "그라데이션 해제",
+  "saveTreeScreenTitleTree": "저장(트리 방식)",
+  "saveTreeScreenTitleSlot": "저장(슬롯 방식)",
+  "saveTreeSaveAsChildHint": "선택 중인 노드의 하위 항목으로 저장합니다.",
+  "saveTreeSaveAsRootHint": "루트 노드로 저장합니다.",
+  "saveTreeCommentLabel": "코멘트(선택 사항)",
+  "saveTreeCommentHint": "예: 배경 완성",
+  "saveTreeSizeWarningSnackbar": "세이브 트리의 용량이 커지고 있습니다(약 {mb}MB). 불필요한 저장 데이터를 삭제하는 것을 권장합니다.",
+  "@saveTreeSizeWarningSnackbar": {
+    "placeholders": {"mb": {"type": "String"}}
+  },
+  "saveTreeSlotSaveDialogTitle": "슬롯 {n}에 저장",
+  "@saveTreeSlotSaveDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotOverwriteWarning": "기존 데이터({date})를 덮어씁니다.",
+  "@saveTreeSlotOverwriteWarning": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "saveTreeRestoreAction": "복원",
+  "saveTreeLoadFailedSnackbar": "저장 데이터를 불러오지 못했습니다",
+  "saveTreeRestoredSnackbar": "{name}을(를) 복원했습니다",
+  "@saveTreeRestoredSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeSlotLabel": "슬롯{n}",
+  "@saveTreeSlotLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotFallbackName": "슬롯 {n}",
+  "@saveTreeSlotFallbackName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeNoDataLabel": "저장 데이터 없음",
+  "saveTreeEmptyTitle": "저장 데이터가 없습니다",
+  "saveTreeEmptyHint": "상단의 「저장」 버튼으로 첫 번째 노드를 만들 수 있습니다",
+  "saveTreeNodeDefaultTitle": "저장",
+  "saveTreeNodeDefaultName": "저장 데이터",
+  "saveTreeChangeDataTitle": "저장 데이터 변경",
+  "saveTreeChangeDataTitleWithProject": "저장 데이터 변경({name})",
+  "@saveTreeChangeDataTitleWithProject": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeChangeExceedMessage": "현재 저장 데이터 수가\n새 저장 가능 수를 초과했습니다.\n\n유지할 저장 데이터를 선택해 주세요.",
+  "saveTreeKeepableCountLabel": "유지 가능한 저장 수: {n}개",
+  "@saveTreeKeepableCountLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeKeepLatestButton": "최신 {n}개 저장",
+  "@saveTreeKeepLatestButton": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSelectDataButton": "저장 데이터 선택",
+  "saveTreeSelectedCountLabel": "선택됨: {selected} / {limit}개",
+  "@saveTreeSelectedCountLabel": {
+    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+  },
+  "saveTreeBackButton": "뒤로",
+  "saveTreeNextButton": "다음",
+  "saveTreeDiscardDialogTitle": "선택되지 않은 저장 데이터",
+  "saveTreeArchiveOptionTitle": "보관용으로 유지(권장)",
+  "saveTreeArchiveOptionSubtitle": "세이브 트리 방식으로 되돌리면 자동으로 복원됩니다.\n저장 공간을 사용합니다.",
+  "saveTreeDeleteOptionTitle": "완전히 삭제",
+  "saveTreeDeleteOptionSubtitle": "선택되지 않은 {count}개를 완전히 삭제합니다.\n저장 공간을 절약할 수 있습니다.\n※삭제한 데이터는 되돌릴 수 없습니다.",
+  "@saveTreeDeleteOptionSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "saveTreeApplyChangeButton": "변경 적용"
 }

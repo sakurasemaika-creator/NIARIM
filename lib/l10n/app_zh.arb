@@ -926,5 +926,72 @@
   "autofillPartGradientColorLabel": "颜色",
   "autofillPartGradientAddColorButton": "添加颜色",
   "autofillPartGradientDeleteHint": "长按可删除（不能少于2种颜色）",
-  "autofillPartGradientRemoveButton": "解除渐变"
+  "autofillPartGradientRemoveButton": "解除渐变",
+  "saveTreeScreenTitleTree": "存档（树状方式）",
+  "saveTreeScreenTitleSlot": "存档（存储槽方式）",
+  "saveTreeSaveAsChildHint": "将保存为所选节点的子节点。",
+  "saveTreeSaveAsRootHint": "将保存为根节点。",
+  "saveTreeCommentLabel": "备注（可选）",
+  "saveTreeCommentHint": "例：背景完成",
+  "saveTreeSizeWarningSnackbar": "存档树的容量正在变大（约{mb}MB）。建议删除不需要的存档数据。",
+  "@saveTreeSizeWarningSnackbar": {
+    "placeholders": {"mb": {"type": "String"}}
+  },
+  "saveTreeSlotSaveDialogTitle": "保存到存储槽 {n}",
+  "@saveTreeSlotSaveDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotOverwriteWarning": "将覆盖现有数据（{date}）。",
+  "@saveTreeSlotOverwriteWarning": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "saveTreeRestoreAction": "还原",
+  "saveTreeLoadFailedSnackbar": "存档数据读取失败",
+  "saveTreeRestoredSnackbar": "已还原{name}",
+  "@saveTreeRestoredSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeSlotLabel": "存储槽{n}",
+  "@saveTreeSlotLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotFallbackName": "存储槽 {n}",
+  "@saveTreeSlotFallbackName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeNoDataLabel": "没有存档数据",
+  "saveTreeEmptyTitle": "没有存档数据",
+  "saveTreeEmptyHint": "点击上方的「保存」按钮即可创建第一个节点",
+  "saveTreeNodeDefaultTitle": "存档",
+  "saveTreeNodeDefaultName": "存档数据",
+  "saveTreeChangeDataTitle": "更改存档数据",
+  "saveTreeChangeDataTitleWithProject": "更改存档数据（{name}）",
+  "@saveTreeChangeDataTitleWithProject": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeChangeExceedMessage": "当前的存档数量已\n超过新的可存档数量上限。\n\n请选择要保留的存档数据。",
+  "saveTreeKeepableCountLabel": "可保留的存档数：{n}个",
+  "@saveTreeKeepableCountLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeKeepLatestButton": "保留最新{n}个",
+  "@saveTreeKeepLatestButton": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSelectDataButton": "选择存档数据",
+  "saveTreeSelectedCountLabel": "已选择：{selected} / {limit}个",
+  "@saveTreeSelectedCountLabel": {
+    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+  },
+  "saveTreeBackButton": "返回",
+  "saveTreeNextButton": "下一步",
+  "saveTreeDiscardDialogTitle": "未选择的存档数据",
+  "saveTreeArchiveOptionTitle": "作为存档保留（推荐）",
+  "saveTreeArchiveOptionSubtitle": "切换回存档树方式时会自动还原。\n会占用存储空间。",
+  "saveTreeDeleteOptionTitle": "彻底删除",
+  "saveTreeDeleteOptionSubtitle": "将彻底删除未选择的{count}个数据。\n可节省存储空间。\n※删除后的数据无法恢复。",
+  "@saveTreeDeleteOptionSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "saveTreeApplyChangeButton": "应用更改"
 }

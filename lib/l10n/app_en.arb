@@ -926,5 +926,72 @@
   "autofillPartGradientColorLabel": "Colors",
   "autofillPartGradientAddColorButton": "Add color",
   "autofillPartGradientDeleteHint": "Long-press to remove (at least 2 colors required)",
-  "autofillPartGradientRemoveButton": "Remove gradient"
+  "autofillPartGradientRemoveButton": "Remove gradient",
+  "saveTreeScreenTitleTree": "Save (Tree)",
+  "saveTreeScreenTitleSlot": "Save (Slots)",
+  "saveTreeSaveAsChildHint": "This will save as a child of the selected node.",
+  "saveTreeSaveAsRootHint": "This will save as a root node.",
+  "saveTreeCommentLabel": "Comment (optional)",
+  "saveTreeCommentHint": "e.g. Background done",
+  "saveTreeSizeWarningSnackbar": "Your save tree is getting large (about {mb}MB). We recommend deleting saves you no longer need.",
+  "@saveTreeSizeWarningSnackbar": {
+    "placeholders": {"mb": {"type": "String"}}
+  },
+  "saveTreeSlotSaveDialogTitle": "Save to slot {n}",
+  "@saveTreeSlotSaveDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotOverwriteWarning": "This will overwrite the existing data ({date}).",
+  "@saveTreeSlotOverwriteWarning": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "saveTreeRestoreAction": "Restore",
+  "saveTreeLoadFailedSnackbar": "Failed to load the save data",
+  "saveTreeRestoredSnackbar": "Restored {name}",
+  "@saveTreeRestoredSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeSlotLabel": "Slot {n}",
+  "@saveTreeSlotLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSlotFallbackName": "Slot {n}",
+  "@saveTreeSlotFallbackName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeNoDataLabel": "No save data",
+  "saveTreeEmptyTitle": "No save data",
+  "saveTreeEmptyHint": "Tap the \"Save\" button at the top to create the first node",
+  "saveTreeNodeDefaultTitle": "Save",
+  "saveTreeNodeDefaultName": "Save data",
+  "saveTreeChangeDataTitle": "Change Save Data",
+  "saveTreeChangeDataTitleWithProject": "Change Save Data ({name})",
+  "@saveTreeChangeDataTitleWithProject": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "saveTreeChangeExceedMessage": "Your current save count exceeds\nthe new save limit.\n\nPlease choose which saves to keep.",
+  "saveTreeKeepableCountLabel": "Saves you can keep: {n}",
+  "@saveTreeKeepableCountLabel": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeKeepLatestButton": "Keep the latest {n}",
+  "@saveTreeKeepLatestButton": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "saveTreeSelectDataButton": "Choose save data",
+  "saveTreeSelectedCountLabel": "Selected: {selected} / {limit}",
+  "@saveTreeSelectedCountLabel": {
+    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+  },
+  "saveTreeBackButton": "Back",
+  "saveTreeNextButton": "Next",
+  "saveTreeDiscardDialogTitle": "Unselected save data",
+  "saveTreeArchiveOptionTitle": "Keep as archive (recommended)",
+  "saveTreeArchiveOptionSubtitle": "Automatically restored if you switch back to tree-based saving.\nUses storage space.",
+  "saveTreeDeleteOptionTitle": "Delete permanently",
+  "saveTreeDeleteOptionSubtitle": "Permanently deletes the {count} unselected item(s).\nFrees up storage space.\n※ Deleted data cannot be recovered.",
+  "@saveTreeDeleteOptionSubtitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "saveTreeApplyChangeButton": "Apply change"
 }
