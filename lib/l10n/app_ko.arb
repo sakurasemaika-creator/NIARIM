@@ -1271,5 +1271,7 @@
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}
   },
-  "frameStripTimelineModeTooltip": "타임라인 모드"
+  "frameStripTimelineModeTooltip": "타임라인 모드",
+  "progressDialogAdLoading": "광고 불러오는 중…",
+  "premiumBannerRegisterButton": "Premium에 가입"
 }

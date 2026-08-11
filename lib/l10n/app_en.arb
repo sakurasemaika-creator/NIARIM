@@ -1271,5 +1271,7 @@
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}
   },
-  "frameStripTimelineModeTooltip": "Timeline mode"
+  "frameStripTimelineModeTooltip": "Timeline mode",
+  "progressDialogAdLoading": "Loading ad…",
+  "premiumBannerRegisterButton": "Upgrade to Premium"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../services/advertising_service.dart';
 
 /// 処理中ダイアログ（仕様書13：フィルター適用／動画書き出し／GIF生成／
@@ -41,6 +42,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final adService = context.watch<AdvertisingService>();
     final ad = adService.squareAd;
 
@@ -64,8 +66,8 @@ class _ProgressDialogState extends State<ProgressDialog> {
                 width: 250,
                 height: 250,
                 color: Colors.grey[800],
-                child: const Center(
-                  child: Text('広告読み込み中…', style: TextStyle(color: Colors.grey)),
+                child: Center(
+                  child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey)),
                 ),
               )
             else
@@ -87,7 +89,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
           : [
               TextButton(
                 onPressed: widget.onCancel,
-                child: const Text('キャンセル'),
+                child: Text(l10n.commonCancel),
               ),
             ],
     );

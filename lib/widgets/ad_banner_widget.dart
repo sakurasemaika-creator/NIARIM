@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../services/advertising_service.dart';
 
 /// 無料版の固定バナー広告（仕様書13）。
@@ -26,14 +27,15 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final ad = context.watch<AdvertisingService>().bannerAd;
     if (ad == null) {
       return Container(
         height: 50,
         width: double.infinity,
         color: Colors.grey[900],
-        child: const Center(
-          child: Text('広告読み込み中…', style: TextStyle(color: Colors.grey, fontSize: 12)),
+        child: Center(
+          child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey, fontSize: 12)),
         ),
       );
     }

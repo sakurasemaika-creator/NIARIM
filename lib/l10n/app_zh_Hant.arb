@@ -1271,5 +1271,7 @@
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}
   },
-  "frameStripTimelineModeTooltip": "時間軸模式"
+  "frameStripTimelineModeTooltip": "時間軸模式",
+  "progressDialogAdLoading": "廣告載入中…",
+  "premiumBannerRegisterButton": "升級Premium"
 }

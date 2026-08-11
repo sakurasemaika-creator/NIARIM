@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../services/premium_service.dart';
 
 /// Premium限定機能の共通ロックウィジェット。
@@ -60,6 +61,7 @@ class _PremiumBannerDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       child: Column(
@@ -101,14 +103,14 @@ class _PremiumBannerDialog extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: onClose,
-                    child: const Text('閉じる'),
+                    child: Text(l10n.commonClose),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: onRegister,
-                    child: const Text('Premiumに登録'),
+                    child: Text(l10n.premiumBannerRegisterButton),
                   ),
                 ),
               ],
