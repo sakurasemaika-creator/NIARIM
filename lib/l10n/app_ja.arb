@@ -894,5 +894,28 @@
   "filterApplyingSubtitle": "{name}　{count}フレーム",
   "@filterApplyingSubtitle": {
     "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
-  }
+  },
+  "projectListNewFolderTitle": "新規フォルダ",
+  "projectListFolderHint": "同じ作品の複数話数やシリーズをまとめる場合にも使えます",
+  "projectListEmptyTitle": "プロジェクトがありません",
+  "projectListEmptyHint": "＋ ボタンから新規作成",
+  "projectListOpenAction": "開く",
+  "projectListCreateShareAction": ".niashareを作成",
+  "projectListEditFolderAction": "名前・色を編集",
+  "projectListDeleteFolderConfirmTitle": "フォルダを削除しますか？",
+  "projectListDeleteFolderConfirmBody": "「{name}」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "projectListFolderRootOption": "フォルダなし（ルート）",
+  "projectListEditFolderTooltip": "フォルダを編集",
+  "projectListCreateFolderAction": "新規フォルダを作成",
+  "projectListFolderColorLabel": "フォルダ色",
+  "projectListMaterialIncludeTitle": "素材の同梱",
+  "projectListMaterialIncludeHint": "同梱しない場合、受信側で不足素材の警告が表示されます。",
+  "projectListMaterialImage": "画像",
+  "projectListMaterialVideo": "動画",
+  "projectListMaterialAudio": "音声",
+  "projectListIncludeFontsTitle": "フォントを含める",
+  "projectListIncludeFontsSubtitle": "使用中のユーザー追加フォントを同梱します"
 }

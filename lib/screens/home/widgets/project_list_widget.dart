@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../engine/niapro_serializer.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/material_asset.dart';
 import '../../../models/project.dart';
 import '../../../services/font_service.dart';
@@ -18,11 +19,12 @@ import '../home_screen.dart';
 /// 双方から共通で使う（重複実装を避けるためpublicなトップレベル関数として
 /// 定義し、home_screen.dartからも呼び出せるようにしている）。
 void showCreateFolderNameDialog(BuildContext context, Future<void> Function(String name) onCreate) {
+  final l10n = AppLocalizations.of(context)!;
   final controller = TextEditingController();
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('新規フォルダ'),
+      title: Text(l10n.projectListNewFolderTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,26 +32,26 @@ void showCreateFolderNameDialog(BuildContext context, Future<void> Function(Stri
           TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
           ),
           const SizedBox(height: 8),
           // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
           // ヒント（フォルダは複数階層に対応しているため実現可能）。
           Text(
-            '同じ作品の複数話数やシリーズをまとめる場合にも使えます',
+            l10n.projectListFolderHint,
             style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
         FilledButton(
           onPressed: () async {
             if (controller.text.trim().isEmpty) return;
             await onCreate(controller.text.trim());
             if (ctx.mounted) Navigator.pop(ctx);
           },
-          child: const Text('作成'),
+          child: Text(l10n.commonCreate),
         ),
       ],
     ),
@@ -117,6 +119,7 @@ class ProjectListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
     final source = projects ?? projectService.projects;
     final allFolders = projectService.folders;
@@ -153,10 +156,10 @@ class ProjectListWidget extends StatelessWidget {
               child: Icon(Icons.movie_creation_outlined, size: 44, color: scheme.primary),
             ),
             const SizedBox(height: 20),
-            Text('プロジェクトがありません',
+            Text(l10n.projectListEmptyTitle,
                 style: TextStyle(color: scheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            Text('＋ ボタンから新規作成',
+            Text(l10n.projectListEmptyHint,
                 style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
           ],
         ),
@@ -166,7 +169,7 @@ class ProjectListWidget extends StatelessWidget {
     if (viewMode == ProjectViewMode.detail) {
       return ListView.builder(
         itemCount: sorted.length,
-        itemBuilder: (context, index) => _detailTile(context, sorted[index]),
+        itemBuilder: (context, index) => _detailTile(context, l10n, sorted[index]),
       );
     }
 
@@ -208,7 +211,7 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _detailTile(BuildContext context, _Entry entry) {
+  Widget _detailTile(BuildContext context, AppLocalizations l10n, _Entry entry) {
     if (entry.isFolder) return _folderDetailTile(context, entry.folder!);
     final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
@@ -224,7 +227,7 @@ class ProjectListWidget extends StatelessWidget {
               ),
             ),
       title: Text(project.name),
-      subtitle: Text('${project.fps}fps · ${project.durationSeconds}秒'),
+      subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
       trailing: isSelectionMode
           ? null
           : _projectMenu(context, project),
@@ -363,42 +366,44 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   Widget _projectMenu(BuildContext context, Project project) {
+    final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: 18),
       onSelected: (action) => _handleAction(context, action, project),
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'open', child: Text('開く')),
-        const PopupMenuItem(value: 'rename', child: Text('名前変更')),
-        const PopupMenuItem(value: 'duplicate', child: Text('複製')),
-        const PopupMenuItem(value: 'share', child: Text('.niashareを作成')),
+        PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
+        PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+        PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+        PopupMenuItem(value: 'share', child: Text(l10n.projectListCreateShareAction)),
         PopupMenuItem(
           value: 'favorite',
-          child: Text(project.isFavorite ? 'お気に入り解除' : 'お気に入り'),
+          child: Text(project.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.homeFavoritesOnly),
         ),
-        const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
-        const PopupMenuItem(
+        PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+        PopupMenuItem(
           value: 'delete',
-          child: Text('ゴミ箱へ移動', style: TextStyle(color: Colors.red)),
+          child: Text(l10n.projectDetailTrashMenuItem, style: const TextStyle(color: Colors.red)),
         ),
       ],
     );
   }
 
   Widget _folderMenu(BuildContext context, ProjectFolder folder) {
+    final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: 18),
       onSelected: (action) => _handleFolderAction(context, action, folder),
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'open', child: Text('開く')),
-        const PopupMenuItem(value: 'edit', child: Text('名前・色を編集')),
+        PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
+        PopupMenuItem(value: 'edit', child: Text(l10n.projectListEditFolderAction)),
         PopupMenuItem(
           value: 'favorite',
-          child: Text(folder.isFavorite ? 'お気に入り解除' : 'お気に入り'),
+          child: Text(folder.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.homeFavoritesOnly),
         ),
-        const PopupMenuItem(value: 'move', child: Text('フォルダへ移動')),
-        const PopupMenuItem(
+        PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+        PopupMenuItem(
           value: 'delete',
-          child: Text('削除', style: TextStyle(color: Colors.red)),
+          child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
         ),
       ],
     );
@@ -443,20 +448,21 @@ class ProjectListWidget extends StatelessWidget {
   /// フォルダ削除時、中のプロジェクト・子フォルダをルートへ戻す旨を確認する
   /// （仕様書19：「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する」）。
   void _confirmDeleteFolder(BuildContext context, ProjectFolder folder) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('フォルダを削除しますか？'),
-        content: Text('「${folder.name}」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。'),
+        title: Text(l10n.projectListDeleteFolderConfirmTitle),
+        content: Text(l10n.projectListDeleteFolderConfirmBody(folder.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               context.read<ProjectService>().deleteFolder(folder.id);
               Navigator.pop(ctx);
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -467,6 +473,7 @@ class ProjectListWidget extends StatelessWidget {
   Future<void> _createNiashare(BuildContext context, Project project) async {
     final includeOptions = await showMaterialIncludeDialog(context);
     if (includeOptions == null || !context.mounted) return; // キャンセル
+    final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
     final materialService = context.read<MaterialService>();
     final fontService = context.read<FontService>();
@@ -492,30 +499,31 @@ class ProjectListWidget extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('.niashareの作成に失敗しました: $e')),
+        SnackBar(content: Text(l10n.projectDetailNiashareFailedSnackbar('$e'))),
       );
     }
   }
 
   void _showRenameDialog(BuildContext context, Project project) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: project.name);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('名前変更'),
+        title: Text(l10n.commonRename),
         content: TextField(
           controller: controller,
           autofocus: true,
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               context.read<ProjectService>().renameProject(project.id, controller.text);
               Navigator.pop(ctx);
             },
-            child: const Text('変更'),
+            child: Text(l10n.commonChange),
           ),
         ],
       ),
@@ -555,6 +563,7 @@ class ProjectListWidget extends StatelessWidget {
     required ValueChanged<String?> onSelect,
     required Future<void> Function(String name) onCreateAndSelect,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     final folders = context.read<ProjectService>().folders.where((f) => f.id != excludeFolderId).toList();
     showModalBottomSheet(
       context: context,
@@ -562,13 +571,13 @@ class ProjectListWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('フォルダへ移動', style: TextStyle(fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),
-              title: const Text('フォルダなし（ルート）'),
+              title: Text(l10n.projectListFolderRootOption),
               onTap: () {
                 onSelect(null);
                 Navigator.pop(ctx);
@@ -579,7 +588,7 @@ class ProjectListWidget extends StatelessWidget {
               title: Text(folder.name),
               trailing: IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 20),
-                tooltip: 'フォルダを編集',
+                tooltip: l10n.projectListEditFolderTooltip,
                 onPressed: () => _showEditFolderDialog(context, folder),
               ),
               onTap: () {
@@ -589,7 +598,7 @@ class ProjectListWidget extends StatelessWidget {
             )),
             ListTile(
               leading: const Icon(Icons.create_new_folder),
-              title: const Text('新規フォルダを作成'),
+              title: Text(l10n.projectListCreateFolderAction),
               onTap: () {
                 Navigator.pop(ctx);
                 showCreateFolderNameDialog(context, onCreateAndSelect);
@@ -608,13 +617,14 @@ class ProjectListWidget extends StatelessWidget {
   ];
 
   void _showEditFolderDialog(BuildContext context, ProjectFolder folder) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: folder.name);
     int? selectedColor = folder.color;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('フォルダを編集'),
+          title: Text(l10n.projectListEditFolderTooltip),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -622,10 +632,10 @@ class ProjectListWidget extends StatelessWidget {
               TextField(
                 controller: controller,
                 autofocus: true,
-                decoration: const InputDecoration(labelText: 'フォルダ名', border: OutlineInputBorder()),
+                decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
               ),
               const SizedBox(height: 16),
-              const Text('フォルダ色', style: TextStyle(fontSize: 12)),
+              Text(l10n.projectListFolderColorLabel, style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -644,10 +654,10 @@ class ProjectListWidget extends StatelessWidget {
                 Navigator.pop(ctx);
                 _confirmDeleteFolder(context, folder);
               },
-              child: const Text('削除'),
+              child: Text(l10n.commonDelete),
             ),
             const Spacer(),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 final service = context.read<ProjectService>();
@@ -659,7 +669,7 @@ class ProjectListWidget extends StatelessWidget {
                 }
                 Navigator.pop(ctx);
               },
-              child: const Text('保存'),
+              child: Text(l10n.commonSave),
             ),
           ],
         ),
@@ -693,36 +703,37 @@ class ProjectListWidget extends StatelessWidget {
 /// 選択した場合のみユーザー追加フォントも同梱する）。キャンセル時はnullを返す。
 Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncludeDialog(
     BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
   final selected = <MaterialType>{MaterialType.image, MaterialType.video, MaterialType.audio};
   bool includeFonts = true;
   return showDialog<({Set<MaterialType> materialTypes, bool includeFonts})>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(
-        title: const Text('素材の同梱'),
+        title: Text(l10n.projectListMaterialIncludeTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('同梱しない場合、受信側で不足素材の警告が表示されます。',
-                style: TextStyle(fontSize: 12)),
+            Text(l10n.projectListMaterialIncludeHint,
+                style: const TextStyle(fontSize: 12)),
             CheckboxListTile(
               value: selected.contains(MaterialType.image),
-              title: const Text('画像'),
+              title: Text(l10n.projectListMaterialImage),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(
                   () => v == true ? selected.add(MaterialType.image) : selected.remove(MaterialType.image)),
             ),
             CheckboxListTile(
               value: selected.contains(MaterialType.video),
-              title: const Text('動画'),
+              title: Text(l10n.projectListMaterialVideo),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(
                   () => v == true ? selected.add(MaterialType.video) : selected.remove(MaterialType.video)),
             ),
             CheckboxListTile(
               value: selected.contains(MaterialType.audio),
-              title: const Text('音声'),
+              title: Text(l10n.projectListMaterialAudio),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(
                   () => v == true ? selected.add(MaterialType.audio) : selected.remove(MaterialType.audio)),
@@ -730,18 +741,18 @@ Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncl
             const Divider(),
             CheckboxListTile(
               value: includeFonts,
-              title: const Text('フォントを含める'),
-              subtitle: const Text('使用中のユーザー追加フォントを同梱します', style: TextStyle(fontSize: 11)),
+              title: Text(l10n.projectListIncludeFontsTitle),
+              subtitle: Text(l10n.projectListIncludeFontsSubtitle, style: const TextStyle(fontSize: 11)),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(() => includeFonts = v ?? true),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, (materialTypes: selected, includeFonts: includeFonts)),
-            child: const Text('作成'),
+            child: Text(l10n.commonCreate),
           ),
         ],
       ),

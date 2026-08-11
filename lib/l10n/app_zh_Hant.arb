@@ -800,5 +800,28 @@
   "filterApplyingSubtitle": "{name}　{count}格",
   "@filterApplyingSubtitle": {
     "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
-  }
+  },
+  "projectListNewFolderTitle": "新增資料夾",
+  "projectListFolderHint": "也可用來整理同一作品的多話內容或系列作品",
+  "projectListEmptyTitle": "沒有專案",
+  "projectListEmptyHint": "點擊「＋」新增",
+  "projectListOpenAction": "開啟",
+  "projectListCreateShareAction": "建立.niashare",
+  "projectListEditFolderAction": "編輯名稱與顏色",
+  "projectListDeleteFolderConfirmTitle": "要刪除這個資料夾嗎？",
+  "projectListDeleteFolderConfirmBody": "將刪除「{name}」。其中的專案・子資料夾將移至根目錄。",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "projectListFolderRootOption": "無資料夾（根目錄）",
+  "projectListEditFolderTooltip": "編輯資料夾",
+  "projectListCreateFolderAction": "新增資料夾",
+  "projectListFolderColorLabel": "資料夾顏色",
+  "projectListMaterialIncludeTitle": "包含素材",
+  "projectListMaterialIncludeHint": "若不包含，接收方將看到缺少素材的警告。",
+  "projectListMaterialImage": "圖片",
+  "projectListMaterialVideo": "影片",
+  "projectListMaterialAudio": "音訊",
+  "projectListIncludeFontsTitle": "包含字型",
+  "projectListIncludeFontsSubtitle": "包含目前使用中的使用者新增字型"
 }

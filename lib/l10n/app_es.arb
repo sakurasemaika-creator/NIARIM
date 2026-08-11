@@ -800,5 +800,28 @@
   "filterApplyingSubtitle": "{name}　{count} fotogramas",
   "@filterApplyingSubtitle": {
     "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
-  }
+  },
+  "projectListNewFolderTitle": "Nueva carpeta",
+  "projectListFolderHint": "También puedes usarlo para agrupar varios episodios o una serie de la misma obra",
+  "projectListEmptyTitle": "No hay proyectos",
+  "projectListEmptyHint": "Toca + para crear uno nuevo",
+  "projectListOpenAction": "Abrir",
+  "projectListCreateShareAction": "Crear .niashare",
+  "projectListEditFolderAction": "Editar nombre y color",
+  "projectListDeleteFolderConfirmTitle": "¿Eliminar esta carpeta?",
+  "projectListDeleteFolderConfirmBody": "Se eliminará \"{name}\". Los proyectos y subcarpetas que contiene se moverán a la raíz.",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "projectListFolderRootOption": "Sin carpeta (raíz)",
+  "projectListEditFolderTooltip": "Editar carpeta",
+  "projectListCreateFolderAction": "Crear nueva carpeta",
+  "projectListFolderColorLabel": "Color de la carpeta",
+  "projectListMaterialIncludeTitle": "Incluir materiales",
+  "projectListMaterialIncludeHint": "Si no se incluyen, el destinatario verá una advertencia de materiales faltantes.",
+  "projectListMaterialImage": "Imágenes",
+  "projectListMaterialVideo": "Vídeos",
+  "projectListMaterialAudio": "Audio",
+  "projectListIncludeFontsTitle": "Incluir fuentes",
+  "projectListIncludeFontsSubtitle": "Incluye las fuentes añadidas por el usuario que están en uso"
 }

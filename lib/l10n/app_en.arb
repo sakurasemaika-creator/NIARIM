@@ -800,5 +800,28 @@
   "filterApplyingSubtitle": "{name}　{count} frames",
   "@filterApplyingSubtitle": {
     "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
-  }
+  },
+  "projectListNewFolderTitle": "New folder",
+  "projectListFolderHint": "You can also use this to group multiple episodes or a series of the same work",
+  "projectListEmptyTitle": "No projects",
+  "projectListEmptyHint": "Tap + to create a new one",
+  "projectListOpenAction": "Open",
+  "projectListCreateShareAction": "Create .niashare",
+  "projectListEditFolderAction": "Edit name & color",
+  "projectListDeleteFolderConfirmTitle": "Delete this folder?",
+  "projectListDeleteFolderConfirmBody": "\"{name}\" will be deleted. Projects and subfolders inside it will move to the root.",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "projectListFolderRootOption": "No folder (root)",
+  "projectListEditFolderTooltip": "Edit folder",
+  "projectListCreateFolderAction": "Create new folder",
+  "projectListFolderColorLabel": "Folder color",
+  "projectListMaterialIncludeTitle": "Include materials",
+  "projectListMaterialIncludeHint": "If not included, the recipient will see a warning about missing materials.",
+  "projectListMaterialImage": "Images",
+  "projectListMaterialVideo": "Videos",
+  "projectListMaterialAudio": "Audio",
+  "projectListIncludeFontsTitle": "Include fonts",
+  "projectListIncludeFontsSubtitle": "Includes user-added fonts currently in use"
 }

@@ -800,5 +800,28 @@
   "filterApplyingSubtitle": "{name}　{count}프레임",
   "@filterApplyingSubtitle": {
     "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
-  }
+  },
+  "projectListNewFolderTitle": "새 폴더",
+  "projectListFolderHint": "같은 작품의 여러 화나 시리즈를 정리하는 용도로도 사용할 수 있습니다",
+  "projectListEmptyTitle": "프로젝트가 없습니다",
+  "projectListEmptyHint": "＋ 버튼으로 새로 만들기",
+  "projectListOpenAction": "열기",
+  "projectListCreateShareAction": ".niashare 만들기",
+  "projectListEditFolderAction": "이름・색상 편집",
+  "projectListDeleteFolderConfirmTitle": "이 폴더를 삭제하시겠습니까?",
+  "projectListDeleteFolderConfirmBody": "「{name}」을(를) 삭제합니다. 안에 있던 프로젝트・하위 폴더는 루트로 이동합니다.",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "projectListFolderRootOption": "폴더 없음(루트)",
+  "projectListEditFolderTooltip": "폴더 편집",
+  "projectListCreateFolderAction": "새 폴더 만들기",
+  "projectListFolderColorLabel": "폴더 색상",
+  "projectListMaterialIncludeTitle": "소재 포함",
+  "projectListMaterialIncludeHint": "포함하지 않으면 받는 쪽에서 소재 부족 경고가 표시됩니다.",
+  "projectListMaterialImage": "이미지",
+  "projectListMaterialVideo": "동영상",
+  "projectListMaterialAudio": "오디오",
+  "projectListIncludeFontsTitle": "폰트 포함",
+  "projectListIncludeFontsSubtitle": "사용 중인 사용자 추가 폰트를 포함합니다"
 }

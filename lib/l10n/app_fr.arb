@@ -800,5 +800,28 @@
   "filterApplyingSubtitle": "{name}　{count} images",
   "@filterApplyingSubtitle": {
     "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
-  }
+  },
+  "projectListNewFolderTitle": "Nouveau dossier",
+  "projectListFolderHint": "Vous pouvez aussi l'utiliser pour regrouper plusieurs épisodes ou une série d'une même œuvre",
+  "projectListEmptyTitle": "Aucun projet",
+  "projectListEmptyHint": "Appuyez sur + pour en créer un",
+  "projectListOpenAction": "Ouvrir",
+  "projectListCreateShareAction": "Créer un .niashare",
+  "projectListEditFolderAction": "Modifier le nom et la couleur",
+  "projectListDeleteFolderConfirmTitle": "Supprimer ce dossier ?",
+  "projectListDeleteFolderConfirmBody": "« {name} » sera supprimé. Les projets et sous-dossiers qu'il contient seront déplacés à la racine.",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "projectListFolderRootOption": "Aucun dossier (racine)",
+  "projectListEditFolderTooltip": "Modifier le dossier",
+  "projectListCreateFolderAction": "Créer un nouveau dossier",
+  "projectListFolderColorLabel": "Couleur du dossier",
+  "projectListMaterialIncludeTitle": "Inclure les fichiers",
+  "projectListMaterialIncludeHint": "Si non inclus, le destinataire verra un avertissement de fichiers manquants.",
+  "projectListMaterialImage": "Images",
+  "projectListMaterialVideo": "Vidéos",
+  "projectListMaterialAudio": "Audio",
+  "projectListIncludeFontsTitle": "Inclure les polices",
+  "projectListIncludeFontsSubtitle": "Inclut les polices ajoutées par l'utilisateur actuellement utilisées"
 }

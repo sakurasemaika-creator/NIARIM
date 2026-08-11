@@ -800,5 +800,28 @@
   "filterApplyingSubtitle": "{name}　{count}帧",
   "@filterApplyingSubtitle": {
     "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
-  }
+  },
+  "projectListNewFolderTitle": "新建文件夹",
+  "projectListFolderHint": "也可用于整理同一作品的多话内容或系列作品",
+  "projectListEmptyTitle": "没有项目",
+  "projectListEmptyHint": "点击「＋」新建",
+  "projectListOpenAction": "打开",
+  "projectListCreateShareAction": "创建.niashare",
+  "projectListEditFolderAction": "编辑名称与颜色",
+  "projectListDeleteFolderConfirmTitle": "要删除此文件夹吗？",
+  "projectListDeleteFolderConfirmBody": "将删除「{name}」。其中的项目・子文件夹将移至根目录。",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "projectListFolderRootOption": "无文件夹（根目录）",
+  "projectListEditFolderTooltip": "编辑文件夹",
+  "projectListCreateFolderAction": "新建文件夹",
+  "projectListFolderColorLabel": "文件夹颜色",
+  "projectListMaterialIncludeTitle": "包含素材",
+  "projectListMaterialIncludeHint": "若不包含，接收方将看到缺少素材的警告。",
+  "projectListMaterialImage": "图片",
+  "projectListMaterialVideo": "视频",
+  "projectListMaterialAudio": "音频",
+  "projectListIncludeFontsTitle": "包含字体",
+  "projectListIncludeFontsSubtitle": "包含正在使用的用户添加字体"
 }
