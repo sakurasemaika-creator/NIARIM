@@ -1047,5 +1047,121 @@
   "canvasHelpRubyBody": "输入类似「{example}」的格式，会在基底文字上方（横排时）或右侧（竖排时）显示小号的读音标注。竖排、横排均可使用，但含有注音标注的文字在横排时将无法自动换行（仅支持手动换行）。",
   "@canvasHelpRubyBody": {
     "placeholders": {"example": {"type": "String"}}
+  },
+  "layerPanelTitle": "图层",
+  "layerPanelHelpTooltip": "帮助",
+  "layerPanelSearchHint": "按图层名称搜索",
+  "layerPanelSelectAll": "全选",
+  "layerPanelDeselectAll": "取消全选",
+  "layerPanelNewLayerButton": "新建图层",
+  "layerPanelNewFolderButton": "新建文件夹",
+  "layerPanelImportImageButton": "导入图片",
+  "layerPanelDefaultLayerName": "图层{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultFolderName": "文件夹{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultLineartName": "线稿{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultAutofillName": "自动上色{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultCommonName": "公共{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelClippingBadge": "裁剪",
+  "layerPanelAddTooltip": "添加",
+  "layerPanelMergeTooltip": "合并",
+  "layerPanelSettingsTooltip": "图层设置",
+  "layerPanelAutofillMarkTooltip": "线稿已更新。点按可将自动上色更新为最新状态。",
+  "layerPanelRangeAllFrames": "全部帧",
+  "layerPanelRangeCurrentScene": "当前场景",
+  "layerPanelRangeSceneSpecified": "指定场景",
+  "layerPanelRangeFrameSpan": "{start}〜{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+  },
+  "layerPanelMenuFrameRangeChange": "更改显示帧范围",
+  "layerPanelMenuRangeChange": "更改显示范围",
+  "layerPanelMenuPartAssign": "部件设置",
+  "layerPanelMenuRunAutofill": "执行自动上色",
+  "layerPanelMenuOrphanFill": "用最新颜色填充",
+  "layerPanelMenuOrphanFillSubtitle": "未找到对应的线稿图层，因此仅执行颜色更新",
+  "layerPanelMenuReplaceMaterial": "替换素材",
+  "layerPanelDeleteConfirmTitle": "要删除{name}吗？",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelDeleteConfirmBody": "将从该素材显示范围内的所有帧中删除。",
+  "layerPanelMultiDeleteConfirmTitle": "要删除已选中的{count}项吗？",
+  "@layerPanelMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "layerPanelMultiDeleteConfirmBody": "将从时间轴素材显示范围内的所有帧中删除。",
+  "layerPanelRangeDialogTitle": "显示范围",
+  "layerPanelRangeStartFrameLabel": "起始帧",
+  "layerPanelRangeEndFrameLabel": "结束帧",
+  "layerPanelRangeTilde": "〜",
+  "layerPanelRangeUseCurrentButton": "使用当前范围",
+  "layerPanelRangeTargetSceneLabel": "目标场景",
+  "layerPanelRangeFrameRangeLabel": "指定帧范围",
+  "layerPanelMenuNormalLayer": "普通图层",
+  "layerPanelMenuCommonLayer": "公共图层",
+  "layerPanelMenuLineartLayer": "自动上色用线稿图层",
+  "layerPanelMenuAutofillLayer": "自动上色图层",
+  "layerPanelOpacityLabel": "不透明度",
+  "layerPanelLockLabel": "锁定",
+  "layerPanelOpacityLockLabel": "锁定不透明度",
+  "layerPanelClippingDescription": "仅在下方图层的不透明范围内绘制",
+  "layerPanelConvertToCommonLabel": "更改为公共图层",
+  "layerPanelConvertOption1Title": "将当前图层设为公共图层",
+  "layerPanelConvertOption1Subtitle": "仅将此图层设置为公共图层",
+  "layerPanelConvertOption2Title": "合并显示中的图层后设为公共图层",
+  "layerPanelConvertOption2Subtitle": "将当前显示中的所有图层合并后的结果创建为公共图层",
+  "layerPanelCommonRangeTitle": "公共图层范围",
+  "layerPanelHelpDialogTitle": "关于图层",
+  "layerPanelHelpBlendModeBody": "更改图层的合成方式，包括正片叠底、滤色、叠加等。",
+  "layerPanelHelpClippingBody": "仅在下方图层的不透明像素范围内绘制。需要控制绘制范围时请使用此功能。",
+  "layerPanelCommonLayerLabel": "公共图层",
+  "layerPanelHelpCommonLayerBody": "在多个帧之间共享相同内容的图层。可以设置显示的帧范围。",
+  "layerPanelAutofillMethodTitle": "自动上色方式",
+  "layerPanelAutofillNoLineartSnackbar": "未找到对应的自动上色用线稿图层。",
+  "layerPanelAutofillNote1": "※ 若为项目内首次执行自动上色，选择哪一项都没有问题。",
+  "layerPanelAutofillNote2": "※ 若不存在自动上色图层，无论选择哪一项都将从头判定区域进行自动上色。",
+  "layerPanelAutofillRepaintTitle": "重新上色",
+  "layerPanelAutofillRepaintHint": "误改了自动上色的形状时推荐使用",
+  "layerPanelAutofillRepaintNote": "※ 将从头判定区域重新上色。当前自动上色图层的形状将被丢弃。",
+  "layerPanelAutofillColorUpdateTitle": "颜色更新",
+  "layerPanelAutofillColorUpdateHint": "手动调整过自动上色形状时推荐使用",
+  "layerPanelAutofillColorUpdateNote": "※ 将锁定不透明度并用最新颜色填充。当前自动上色图层的形状将保持不变。",
+  "layerPanelExecuteButton": "执行",
+  "layerPanelAutofillPartMissingSnackbar": "尚未设置部件。请通过「部件设置」进行设置。",
+  "layerPanelAutofillPresetMissingSnackbar": "未找到对应的预设部件。",
+  "layerPanelAutofillLayerNameSuffix": "{name}（自动上色）",
+  "@layerPanelAutofillLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelOrphanFillSuccessSnackbar": "未找到对应的线稿图层，已改为用最新颜色填充。",
+  "layerPanelOrphanFillFailSnackbar": "未设置部件，或没有填充形状，因此无法处理。",
+  "layerPanelAutofillUpdateHelpTitle": "自动上色更新标记",
+  "layerPanelAutofillUpdateHelpBody": "当前的自动上色不是最新状态。点按即可更新。",
+  "layerPanelReplaceMaterialSuccessSnackbar": "已替换素材：{name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelImportImageSuccessSnackbar": "已导入图片：{name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelCopySuffix": "{name}的副本",
+  "@layerPanelCopySuffix": {
+    "placeholders": {"name": {"type": "String"}}
   }
 }

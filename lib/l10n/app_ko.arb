@@ -1047,5 +1047,121 @@
   "canvasHelpRubyBody": "「{example}」와 같이 입력하면 바탕 문자 위(가로쓰기)나 오른쪽(세로쓰기)에 작은 읽는 법이 표시됩니다. 세로쓰기・가로쓰기 모두 사용할 수 있지만, 루비가 포함된 텍스트는 가로쓰기에서 자동 줄바꿈이 되지 않습니다(수동 줄바꿈만 지원).",
   "@canvasHelpRubyBody": {
     "placeholders": {"example": {"type": "String"}}
+  },
+  "layerPanelTitle": "레이어",
+  "layerPanelHelpTooltip": "도움말",
+  "layerPanelSearchHint": "레이어 이름으로 검색",
+  "layerPanelSelectAll": "전체 선택",
+  "layerPanelDeselectAll": "전체 해제",
+  "layerPanelNewLayerButton": "새 레이어",
+  "layerPanelNewFolderButton": "새 폴더",
+  "layerPanelImportImageButton": "이미지 불러오기",
+  "layerPanelDefaultLayerName": "레이어{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultFolderName": "폴더{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultLineartName": "선화{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultAutofillName": "자동 채색{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultCommonName": "공통{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelClippingBadge": "클리핑",
+  "layerPanelAddTooltip": "추가",
+  "layerPanelMergeTooltip": "결합",
+  "layerPanelSettingsTooltip": "레이어 설정",
+  "layerPanelAutofillMarkTooltip": "선화가 업데이트되었습니다. 탭하면 자동 채색을 최신 상태로 업데이트할 수 있습니다.",
+  "layerPanelRangeAllFrames": "전체 프레임",
+  "layerPanelRangeCurrentScene": "현재 씬",
+  "layerPanelRangeSceneSpecified": "씬 지정",
+  "layerPanelRangeFrameSpan": "{start}〜{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+  },
+  "layerPanelMenuFrameRangeChange": "표시 프레임 범위 변경",
+  "layerPanelMenuRangeChange": "표시 범위 변경",
+  "layerPanelMenuPartAssign": "파츠 설정",
+  "layerPanelMenuRunAutofill": "자동 채색 실행",
+  "layerPanelMenuOrphanFill": "최신 색으로 채우기",
+  "layerPanelMenuOrphanFillSubtitle": "대응하는 선화 레이어를 찾을 수 없어 색 업데이트만 실행합니다",
+  "layerPanelMenuReplaceMaterial": "소재 교체",
+  "layerPanelDeleteConfirmTitle": "{name}을(를) 삭제하시겠습니까?",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelDeleteConfirmBody": "이 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.",
+  "layerPanelMultiDeleteConfirmTitle": "선택한 {count}개 항목을 삭제하시겠습니까?",
+  "@layerPanelMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "layerPanelMultiDeleteConfirmBody": "타임라인 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.",
+  "layerPanelRangeDialogTitle": "표시 범위",
+  "layerPanelRangeStartFrameLabel": "시작 프레임",
+  "layerPanelRangeEndFrameLabel": "종료 프레임",
+  "layerPanelRangeTilde": "〜",
+  "layerPanelRangeUseCurrentButton": "현재 범위 사용",
+  "layerPanelRangeTargetSceneLabel": "대상 씬",
+  "layerPanelRangeFrameRangeLabel": "프레임 범위 지정",
+  "layerPanelMenuNormalLayer": "일반 레이어",
+  "layerPanelMenuCommonLayer": "공통 레이어",
+  "layerPanelMenuLineartLayer": "자동 채색용 선화 레이어",
+  "layerPanelMenuAutofillLayer": "자동 채색 레이어",
+  "layerPanelOpacityLabel": "불투명도",
+  "layerPanelLockLabel": "잠금",
+  "layerPanelOpacityLockLabel": "불투명도 잠금",
+  "layerPanelClippingDescription": "아래 레이어의 불투명 범위 내에만 그리기",
+  "layerPanelConvertToCommonLabel": "공통 레이어로 변경",
+  "layerPanelConvertOption1Title": "현재 레이어를 공통화",
+  "layerPanelConvertOption1Subtitle": "이 레이어만 공통 레이어로 설정합니다",
+  "layerPanelConvertOption2Title": "표시 중인 레이어를 병합해 공통화",
+  "layerPanelConvertOption2Subtitle": "현재 표시 중인 모든 레이어를 통합한 결과를 공통 레이어로 만듭니다",
+  "layerPanelCommonRangeTitle": "공통 레이어 범위",
+  "layerPanelHelpDialogTitle": "레이어에 대하여",
+  "layerPanelHelpBlendModeBody": "레이어의 합성 방식을 변경합니다. 곱하기・스크린・오버레이 등이 있습니다.",
+  "layerPanelHelpClippingBody": "아래 레이어의 불투명 픽셀 범위 내에만 그립니다. 그리기 범위를 제어하고 싶을 때 사용하세요.",
+  "layerPanelCommonLayerLabel": "공통 레이어",
+  "layerPanelHelpCommonLayerBody": "여러 프레임에서 같은 내용을 공유하는 레이어입니다. 표시할 프레임 범위를 설정할 수 있습니다.",
+  "layerPanelAutofillMethodTitle": "자동 채색 방법",
+  "layerPanelAutofillNoLineartSnackbar": "대응하는 자동 채색용 선화 레이어를 찾을 수 없습니다.",
+  "layerPanelAutofillNote1": "※ 프로젝트에서 처음으로 자동 채색을 실행하는 경우 어느 쪽을 선택해도 문제없습니다.",
+  "layerPanelAutofillNote2": "※ 자동 채색 레이어가 없는 경우 어느 쪽을 선택해도 영역을 처음부터 판정해 자동 채색합니다.",
+  "layerPanelAutofillRepaintTitle": "다시 채색",
+  "layerPanelAutofillRepaintHint": "실수로 자동 채색 모양을 바꿔버린 경우 추천",
+  "layerPanelAutofillRepaintNote": "※ 영역을 처음부터 판정해 다시 채색합니다. 현재 자동 채색 레이어의 모양은 폐기됩니다.",
+  "layerPanelAutofillColorUpdateTitle": "색 업데이트",
+  "layerPanelAutofillColorUpdateHint": "자동 채색 모양을 수동으로 조정한 경우 추천",
+  "layerPanelAutofillColorUpdateNote": "※ 불투명도를 잠그고 최신 색으로 채웁니다. 현재 자동 채색 레이어의 모양은 유지됩니다.",
+  "layerPanelExecuteButton": "실행",
+  "layerPanelAutofillPartMissingSnackbar": "파츠가 설정되지 않았습니다.「파츠 설정」에서 설정해 주세요.",
+  "layerPanelAutofillPresetMissingSnackbar": "대응하는 프리셋 파츠를 찾을 수 없습니다.",
+  "layerPanelAutofillLayerNameSuffix": "{name}（자동 채색）",
+  "@layerPanelAutofillLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelOrphanFillSuccessSnackbar": "대응하는 선화 레이어를 찾을 수 없어 최신 색으로 채웠습니다.",
+  "layerPanelOrphanFillFailSnackbar": "파츠가 설정되지 않았거나 채울 모양이 없어 처리할 수 없었습니다.",
+  "layerPanelAutofillUpdateHelpTitle": "자동 채색 업데이트 표시",
+  "layerPanelAutofillUpdateHelpBody": "현재 자동 채색이 최신 상태가 아닙니다. 탭하면 업데이트할 수 있습니다.",
+  "layerPanelReplaceMaterialSuccessSnackbar": "소재를 교체했습니다: {name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelImportImageSuccessSnackbar": "이미지를 불러왔습니다: {name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelCopySuffix": "{name} 사본",
+  "@layerPanelCopySuffix": {
+    "placeholders": {"name": {"type": "String"}}
   }
 }

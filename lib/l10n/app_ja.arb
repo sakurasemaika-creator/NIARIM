@@ -1141,5 +1141,121 @@
   "canvasHelpRubyBody": "「{example}」のように入力すると、基底文字の上（横書き）または右側（縦書き）に小さくふりがなが表示されます。縦書き・横書きどちらでも使えますが、ルビを含むテキストは横書きでの自動折り返しが効かなくなります（手動改行のみ対応）。",
   "@canvasHelpRubyBody": {
     "placeholders": {"example": {"type": "String"}}
+  },
+  "layerPanelTitle": "レイヤー",
+  "layerPanelHelpTooltip": "ヘルプ",
+  "layerPanelSearchHint": "レイヤー名で検索",
+  "layerPanelSelectAll": "全選択",
+  "layerPanelDeselectAll": "全解除",
+  "layerPanelNewLayerButton": "新規レイヤー",
+  "layerPanelNewFolderButton": "新規フォルダ",
+  "layerPanelImportImageButton": "画像読み込み",
+  "layerPanelDefaultLayerName": "レイヤー{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultFolderName": "フォルダ{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultLineartName": "線画{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultAutofillName": "自動塗り{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultCommonName": "共通{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelClippingBadge": "クリッピング",
+  "layerPanelAddTooltip": "追加",
+  "layerPanelMergeTooltip": "結合",
+  "layerPanelSettingsTooltip": "レイヤー設定",
+  "layerPanelAutofillMarkTooltip": "線画が更新されました。タップすると自動塗りを最新の状態に更新できます。",
+  "layerPanelRangeAllFrames": "全フレーム",
+  "layerPanelRangeCurrentScene": "現在シーン",
+  "layerPanelRangeSceneSpecified": "シーン指定",
+  "layerPanelRangeFrameSpan": "{start}〜{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+  },
+  "layerPanelMenuFrameRangeChange": "表示フレーム範囲変更",
+  "layerPanelMenuRangeChange": "表示範囲変更",
+  "layerPanelMenuPartAssign": "パーツ設定",
+  "layerPanelMenuRunAutofill": "自動塗り実行",
+  "layerPanelMenuOrphanFill": "最新の色で塗りつぶす",
+  "layerPanelMenuOrphanFillSubtitle": "対応する線画レイヤーが見つからないため色更新のみ実行します",
+  "layerPanelMenuReplaceMaterial": "素材差し替え",
+  "layerPanelDeleteConfirmTitle": "{name}を削除しますか？",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelDeleteConfirmBody": "この素材の表示範囲内のすべてのフレームから削除されます。",
+  "layerPanelMultiDeleteConfirmTitle": "選択中の{count}件を削除しますか？",
+  "@layerPanelMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "layerPanelMultiDeleteConfirmBody": "タイムライン素材の表示範囲内のすべてのフレームから削除されます。",
+  "layerPanelRangeDialogTitle": "表示範囲",
+  "layerPanelRangeStartFrameLabel": "開始フレーム",
+  "layerPanelRangeEndFrameLabel": "終了フレーム",
+  "layerPanelRangeTilde": "〜",
+  "layerPanelRangeUseCurrentButton": "現在範囲を使用",
+  "layerPanelRangeTargetSceneLabel": "対象シーン",
+  "layerPanelRangeFrameRangeLabel": "フレーム範囲指定",
+  "layerPanelMenuNormalLayer": "通常レイヤー",
+  "layerPanelMenuCommonLayer": "共通レイヤー",
+  "layerPanelMenuLineartLayer": "自動塗り用線画レイヤー",
+  "layerPanelMenuAutofillLayer": "自動塗りレイヤー",
+  "layerPanelOpacityLabel": "不透明度",
+  "layerPanelLockLabel": "ロック",
+  "layerPanelOpacityLockLabel": "不透明度ロック",
+  "layerPanelClippingDescription": "下のレイヤーの不透明範囲内のみ描画",
+  "layerPanelConvertToCommonLabel": "共通レイヤーへ変更",
+  "layerPanelConvertOption1Title": "現在レイヤーを共通化",
+  "layerPanelConvertOption1Subtitle": "このレイヤーのみを共通レイヤーとして設定します",
+  "layerPanelConvertOption2Title": "表示中レイヤーを複製して全統合して共通化",
+  "layerPanelConvertOption2Subtitle": "表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します",
+  "layerPanelCommonRangeTitle": "共通レイヤー範囲",
+  "layerPanelHelpDialogTitle": "レイヤーについて",
+  "layerPanelHelpBlendModeBody": "レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。",
+  "layerPanelHelpClippingBody": "下のレイヤーの不透明ピクセル範囲内のみ描画します。描画範囲を制御したい場合はこちらを使用してください。",
+  "layerPanelCommonLayerLabel": "共通レイヤー",
+  "layerPanelHelpCommonLayerBody": "複数のフレームで同じ内容を共有するレイヤーです。表示するフレーム範囲を設定できます。",
+  "layerPanelAutofillMethodTitle": "自動塗り方法",
+  "layerPanelAutofillNoLineartSnackbar": "対応する自動塗り用線画レイヤーが見つかりません。",
+  "layerPanelAutofillNote1": "※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。",
+  "layerPanelAutofillNote2": "※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。",
+  "layerPanelAutofillRepaintTitle": "塗りなおし",
+  "layerPanelAutofillRepaintHint": "誤って自動塗りの形状を変えてしまった場合におすすめ",
+  "layerPanelAutofillRepaintNote": "※ 一から領域を判定して塗りなおします。現在の自動塗りレイヤーの形状は破棄されます。",
+  "layerPanelAutofillColorUpdateTitle": "色更新",
+  "layerPanelAutofillColorUpdateHint": "自動塗りの形状を手動で調整した場合におすすめ",
+  "layerPanelAutofillColorUpdateNote": "※ 不透明度ロックをして最新の色で塗りつぶします。現在の自動塗りレイヤーの形状は維持されます。",
+  "layerPanelExecuteButton": "実行",
+  "layerPanelAutofillPartMissingSnackbar": "パーツが未設定です。「パーツ設定」から設定してください。",
+  "layerPanelAutofillPresetMissingSnackbar": "対応するプリセットパーツが見つかりません。",
+  "layerPanelAutofillLayerNameSuffix": "{name}（自動塗り）",
+  "@layerPanelAutofillLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelOrphanFillSuccessSnackbar": "対応する線画レイヤーが見つからないため、最新の色で塗りつぶしました。",
+  "layerPanelOrphanFillFailSnackbar": "パーツが未設定、または塗り形状がないため処理できませんでした。",
+  "layerPanelAutofillUpdateHelpTitle": "自動塗り更新マーク",
+  "layerPanelAutofillUpdateHelpBody": "現在の自動塗りは最新ではありません。タップすると更新できます。",
+  "layerPanelReplaceMaterialSuccessSnackbar": "素材を差し替えました: {name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelImportImageSuccessSnackbar": "画像を読み込みました: {name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelCopySuffix": "{name}のコピー",
+  "@layerPanelCopySuffix": {
+    "placeholders": {"name": {"type": "String"}}
   }
 }

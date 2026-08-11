@@ -1047,5 +1047,121 @@
   "canvasHelpRubyBody": "Saisir « {example} » affiche une petite annotation de lecture au-dessus des caractères de base (en horizontal) ou à leur droite (en vertical). Cela fonctionne dans les deux sens, mais le texte contenant du furigana ne se retourne pas automatiquement à la ligne en mode horizontal (retours à la ligne manuels uniquement).",
   "@canvasHelpRubyBody": {
     "placeholders": {"example": {"type": "String"}}
+  },
+  "layerPanelTitle": "Calques",
+  "layerPanelHelpTooltip": "Aide",
+  "layerPanelSearchHint": "Rechercher par nom de calque",
+  "layerPanelSelectAll": "Tout sélectionner",
+  "layerPanelDeselectAll": "Tout désélectionner",
+  "layerPanelNewLayerButton": "Nouveau calque",
+  "layerPanelNewFolderButton": "Nouveau dossier",
+  "layerPanelImportImageButton": "Importer une image",
+  "layerPanelDefaultLayerName": "Calque{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultFolderName": "Dossier{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultLineartName": "Traits{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultAutofillName": "RemplissageAuto{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultCommonName": "Commun{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelClippingBadge": "Écrêtage",
+  "layerPanelAddTooltip": "Ajouter",
+  "layerPanelMergeTooltip": "Fusionner",
+  "layerPanelSettingsTooltip": "Paramètres du calque",
+  "layerPanelAutofillMarkTooltip": "Le dessin au trait a été mis à jour. Touchez pour actualiser le remplissage automatique.",
+  "layerPanelRangeAllFrames": "Toutes les images",
+  "layerPanelRangeCurrentScene": "Scène actuelle",
+  "layerPanelRangeSceneSpecified": "Scène spécifiée",
+  "layerPanelRangeFrameSpan": "{start}–{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+  },
+  "layerPanelMenuFrameRangeChange": "Modifier la plage d'images",
+  "layerPanelMenuRangeChange": "Modifier la plage d'affichage",
+  "layerPanelMenuPartAssign": "Attribuer une partie",
+  "layerPanelMenuRunAutofill": "Exécuter le remplissage automatique",
+  "layerPanelMenuOrphanFill": "Remplir avec la couleur la plus récente",
+  "layerPanelMenuOrphanFillSubtitle": "Aucun calque de trait correspondant trouvé, seule la couleur sera mise à jour",
+  "layerPanelMenuReplaceMaterial": "Remplacer le matériau",
+  "layerPanelDeleteConfirmTitle": "Supprimer {name} ?",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelDeleteConfirmBody": "Ce matériau sera supprimé de toutes les images de sa plage d'affichage.",
+  "layerPanelMultiDeleteConfirmTitle": "Supprimer les {count} éléments sélectionnés ?",
+  "@layerPanelMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "layerPanelMultiDeleteConfirmBody": "Les matériaux de la timeline seront supprimés de toutes les images de leur plage d'affichage.",
+  "layerPanelRangeDialogTitle": "Plage d'affichage",
+  "layerPanelRangeStartFrameLabel": "Image de début",
+  "layerPanelRangeEndFrameLabel": "Image de fin",
+  "layerPanelRangeTilde": "–",
+  "layerPanelRangeUseCurrentButton": "Utiliser la plage actuelle",
+  "layerPanelRangeTargetSceneLabel": "Scène cible",
+  "layerPanelRangeFrameRangeLabel": "Plage d'images spécifiée",
+  "layerPanelMenuNormalLayer": "Calque normal",
+  "layerPanelMenuCommonLayer": "Calque commun",
+  "layerPanelMenuLineartLayer": "Calque de trait pour remplissage auto",
+  "layerPanelMenuAutofillLayer": "Calque de remplissage auto",
+  "layerPanelOpacityLabel": "Opacité",
+  "layerPanelLockLabel": "Verrouiller",
+  "layerPanelOpacityLockLabel": "Verrouiller l'opacité",
+  "layerPanelClippingDescription": "Dessiner uniquement dans la zone opaque du calque du dessous",
+  "layerPanelConvertToCommonLabel": "Changer en calque commun",
+  "layerPanelConvertOption1Title": "Rendre le calque actuel commun",
+  "layerPanelConvertOption1Subtitle": "Définit uniquement ce calque comme calque commun",
+  "layerPanelConvertOption2Title": "Fusionner les calques visibles en un calque commun",
+  "layerPanelConvertOption2Subtitle": "Crée un calque commun à partir du résultat fusionné de tous les calques actuellement visibles",
+  "layerPanelCommonRangeTitle": "Plage du calque commun",
+  "layerPanelHelpDialogTitle": "À propos des calques",
+  "layerPanelHelpBlendModeBody": "Modifie la façon dont le calque est composité : produit, filtre, incrustation, etc.",
+  "layerPanelHelpClippingBody": "Dessine uniquement dans la zone de pixels opaques du calque du dessous. Utilisez cette option pour contrôler la zone de dessin.",
+  "layerPanelCommonLayerLabel": "Calque commun",
+  "layerPanelHelpCommonLayerBody": "Un calque dont le contenu est partagé entre plusieurs images. Vous pouvez définir la plage d'images dans laquelle il apparaît.",
+  "layerPanelAutofillMethodTitle": "Méthode de remplissage automatique",
+  "layerPanelAutofillNoLineartSnackbar": "Aucun calque de trait pour remplissage automatique correspondant n'a été trouvé.",
+  "layerPanelAutofillNote1": "✳ N'importe quelle option convient la première fois que vous exécutez le remplissage automatique dans ce projet.",
+  "layerPanelAutofillNote2": "✳ Si aucun calque de remplissage automatique n'existe encore, la zone sera de toute façon déterminée à partir de zéro.",
+  "layerPanelAutofillRepaintTitle": "Repeindre",
+  "layerPanelAutofillRepaintHint": "Recommandé si la forme du remplissage automatique a été modifiée par erreur",
+  "layerPanelAutofillRepaintNote": "✳ Détermine la zone à partir de zéro et la repeint. La forme actuelle du calque de remplissage automatique sera abandonnée.",
+  "layerPanelAutofillColorUpdateTitle": "Mettre à jour la couleur",
+  "layerPanelAutofillColorUpdateHint": "Recommandé si la forme du remplissage automatique a été ajustée manuellement",
+  "layerPanelAutofillColorUpdateNote": "✳ Verrouille l'opacité et remplit avec la couleur la plus récente. La forme actuelle du calque de remplissage automatique est conservée.",
+  "layerPanelExecuteButton": "Exécuter",
+  "layerPanelAutofillPartMissingSnackbar": "Aucune partie n'est attribuée. Attribuez-en une depuis « Attribuer une partie ».",
+  "layerPanelAutofillPresetMissingSnackbar": "Aucune partie de préréglage correspondante n'a été trouvée.",
+  "layerPanelAutofillLayerNameSuffix": "{name} (remplissage auto)",
+  "@layerPanelAutofillLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelOrphanFillSuccessSnackbar": "Aucun calque de trait correspondant trouvé, rempli avec la couleur la plus récente à la place.",
+  "layerPanelOrphanFillFailSnackbar": "Impossible de traiter : aucune partie n'est attribuée, ou il n'y a pas de forme à remplir.",
+  "layerPanelAutofillUpdateHelpTitle": "Marque de mise à jour du remplissage auto",
+  "layerPanelAutofillUpdateHelpBody": "Le remplissage automatique actuel n'est pas à jour. Touchez pour le mettre à jour.",
+  "layerPanelReplaceMaterialSuccessSnackbar": "Matériau remplacé : {name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelImportImageSuccessSnackbar": "Image importée : {name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelCopySuffix": "Copie de {name}",
+  "@layerPanelCopySuffix": {
+    "placeholders": {"name": {"type": "String"}}
   }
 }

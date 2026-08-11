@@ -1047,5 +1047,121 @@
   "canvasHelpRubyBody": "輸入類似「{example}」的格式，會在基底文字上方（橫排時）或右側（直排時）顯示小號的讀音標示。直排、橫排皆可使用，但含有注音標示的文字在橫排時將無法自動換行（僅支援手動換行）。",
   "@canvasHelpRubyBody": {
     "placeholders": {"example": {"type": "String"}}
+  },
+  "layerPanelTitle": "圖層",
+  "layerPanelHelpTooltip": "說明",
+  "layerPanelSearchHint": "依圖層名稱搜尋",
+  "layerPanelSelectAll": "全選",
+  "layerPanelDeselectAll": "取消全選",
+  "layerPanelNewLayerButton": "新增圖層",
+  "layerPanelNewFolderButton": "新增資料夾",
+  "layerPanelImportImageButton": "匯入圖片",
+  "layerPanelDefaultLayerName": "圖層{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultFolderName": "資料夾{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultLineartName": "線稿{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultAutofillName": "自動上色{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultCommonName": "共用{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelClippingBadge": "剪裁",
+  "layerPanelAddTooltip": "新增",
+  "layerPanelMergeTooltip": "合併",
+  "layerPanelSettingsTooltip": "圖層設定",
+  "layerPanelAutofillMarkTooltip": "線稿已更新。點一下即可將自動上色更新為最新狀態。",
+  "layerPanelRangeAllFrames": "全部影格",
+  "layerPanelRangeCurrentScene": "目前場景",
+  "layerPanelRangeSceneSpecified": "指定場景",
+  "layerPanelRangeFrameSpan": "{start}〜{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+  },
+  "layerPanelMenuFrameRangeChange": "變更顯示影格範圍",
+  "layerPanelMenuRangeChange": "變更顯示範圍",
+  "layerPanelMenuPartAssign": "部件設定",
+  "layerPanelMenuRunAutofill": "執行自動上色",
+  "layerPanelMenuOrphanFill": "以最新顏色填色",
+  "layerPanelMenuOrphanFillSubtitle": "找不到對應的線稿圖層，因此僅執行顏色更新",
+  "layerPanelMenuReplaceMaterial": "替換素材",
+  "layerPanelDeleteConfirmTitle": "要刪除{name}嗎？",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelDeleteConfirmBody": "將從此素材顯示範圍內的所有影格中刪除。",
+  "layerPanelMultiDeleteConfirmTitle": "要刪除已選取的{count}項嗎？",
+  "@layerPanelMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "layerPanelMultiDeleteConfirmBody": "將從時間軸素材顯示範圍內的所有影格中刪除。",
+  "layerPanelRangeDialogTitle": "顯示範圍",
+  "layerPanelRangeStartFrameLabel": "起始影格",
+  "layerPanelRangeEndFrameLabel": "結束影格",
+  "layerPanelRangeTilde": "〜",
+  "layerPanelRangeUseCurrentButton": "使用目前範圍",
+  "layerPanelRangeTargetSceneLabel": "目標場景",
+  "layerPanelRangeFrameRangeLabel": "指定影格範圍",
+  "layerPanelMenuNormalLayer": "一般圖層",
+  "layerPanelMenuCommonLayer": "共用圖層",
+  "layerPanelMenuLineartLayer": "自動上色用線稿圖層",
+  "layerPanelMenuAutofillLayer": "自動上色圖層",
+  "layerPanelOpacityLabel": "不透明度",
+  "layerPanelLockLabel": "鎖定",
+  "layerPanelOpacityLockLabel": "鎖定不透明度",
+  "layerPanelClippingDescription": "僅在下方圖層的不透明範圍內繪製",
+  "layerPanelConvertToCommonLabel": "變更為共用圖層",
+  "layerPanelConvertOption1Title": "將目前圖層設為共用圖層",
+  "layerPanelConvertOption1Subtitle": "僅將此圖層設定為共用圖層",
+  "layerPanelConvertOption2Title": "合併顯示中的圖層後設為共用圖層",
+  "layerPanelConvertOption2Subtitle": "將目前顯示中所有圖層合併的結果建立為共用圖層",
+  "layerPanelCommonRangeTitle": "共用圖層範圍",
+  "layerPanelHelpDialogTitle": "關於圖層",
+  "layerPanelHelpBlendModeBody": "變更圖層的合成方式，包括色彩增值、濾色、覆蓋等。",
+  "layerPanelHelpClippingBody": "僅在下方圖層的不透明像素範圍內繪製。需要控制繪製範圍時請使用此功能。",
+  "layerPanelCommonLayerLabel": "共用圖層",
+  "layerPanelHelpCommonLayerBody": "在多個影格之間共用相同內容的圖層。可設定顯示的影格範圍。",
+  "layerPanelAutofillMethodTitle": "自動上色方式",
+  "layerPanelAutofillNoLineartSnackbar": "找不到對應的自動上色用線稿圖層。",
+  "layerPanelAutofillNote1": "※ 若為專案內首次執行自動上色，選擇哪一項都沒有問題。",
+  "layerPanelAutofillNote2": "※ 若不存在自動上色圖層，無論選擇哪一項都會從頭判定區域進行自動上色。",
+  "layerPanelAutofillRepaintTitle": "重新上色",
+  "layerPanelAutofillRepaintHint": "不慎改變了自動上色形狀時推薦使用",
+  "layerPanelAutofillRepaintNote": "※ 將從頭判定區域重新上色。目前自動上色圖層的形狀將被捨棄。",
+  "layerPanelAutofillColorUpdateTitle": "顏色更新",
+  "layerPanelAutofillColorUpdateHint": "手動調整過自動上色形狀時推薦使用",
+  "layerPanelAutofillColorUpdateNote": "※ 將鎖定不透明度並以最新顏色填色。目前自動上色圖層的形狀將維持不變。",
+  "layerPanelExecuteButton": "執行",
+  "layerPanelAutofillPartMissingSnackbar": "尚未設定部件。請透過「部件設定」進行設定。",
+  "layerPanelAutofillPresetMissingSnackbar": "找不到對應的預設部件。",
+  "layerPanelAutofillLayerNameSuffix": "{name}（自動上色）",
+  "@layerPanelAutofillLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelOrphanFillSuccessSnackbar": "找不到對應的線稿圖層，已改為以最新顏色填色。",
+  "layerPanelOrphanFillFailSnackbar": "未設定部件，或沒有填色形狀，因此無法處理。",
+  "layerPanelAutofillUpdateHelpTitle": "自動上色更新標記",
+  "layerPanelAutofillUpdateHelpBody": "目前的自動上色並非最新狀態。點一下即可更新。",
+  "layerPanelReplaceMaterialSuccessSnackbar": "已替換素材：{name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelImportImageSuccessSnackbar": "已匯入圖片：{name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelCopySuffix": "{name}的副本",
+  "@layerPanelCopySuffix": {
+    "placeholders": {"name": {"type": "String"}}
   }
 }

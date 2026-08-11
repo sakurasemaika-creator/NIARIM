@@ -1047,5 +1047,121 @@
   "canvasHelpRubyBody": "Typing something like \"{example}\" shows small reading annotations above the base characters (in horizontal text) or to their right (in vertical text). It works in both directions, but text containing ruby text won't auto-wrap in horizontal mode (manual line breaks only).",
   "@canvasHelpRubyBody": {
     "placeholders": {"example": {"type": "String"}}
+  },
+  "layerPanelTitle": "Layers",
+  "layerPanelHelpTooltip": "Help",
+  "layerPanelSearchHint": "Search by layer name",
+  "layerPanelSelectAll": "Select all",
+  "layerPanelDeselectAll": "Deselect all",
+  "layerPanelNewLayerButton": "New layer",
+  "layerPanelNewFolderButton": "New folder",
+  "layerPanelImportImageButton": "Import image",
+  "layerPanelDefaultLayerName": "Layer{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultFolderName": "Folder{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultLineartName": "Lineart{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultAutofillName": "AutoFill{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultCommonName": "Common{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelClippingBadge": "Clipping",
+  "layerPanelAddTooltip": "Add",
+  "layerPanelMergeTooltip": "Merge",
+  "layerPanelSettingsTooltip": "Layer settings",
+  "layerPanelAutofillMarkTooltip": "The lineart was updated. Tap to bring the auto-fill up to date.",
+  "layerPanelRangeAllFrames": "All frames",
+  "layerPanelRangeCurrentScene": "Current scene",
+  "layerPanelRangeSceneSpecified": "Specific scene",
+  "layerPanelRangeFrameSpan": "{start}–{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+  },
+  "layerPanelMenuFrameRangeChange": "Change frame range",
+  "layerPanelMenuRangeChange": "Change display range",
+  "layerPanelMenuPartAssign": "Assign part",
+  "layerPanelMenuRunAutofill": "Run auto-fill",
+  "layerPanelMenuOrphanFill": "Fill with the latest color",
+  "layerPanelMenuOrphanFillSubtitle": "No matching lineart layer was found, so only the color will be updated",
+  "layerPanelMenuReplaceMaterial": "Replace material",
+  "layerPanelDeleteConfirmTitle": "Delete {name}?",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelDeleteConfirmBody": "This material will be removed from every frame within its display range.",
+  "layerPanelMultiDeleteConfirmTitle": "Delete the {count} selected items?",
+  "@layerPanelMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "layerPanelMultiDeleteConfirmBody": "The timeline materials will be removed from every frame within their display range.",
+  "layerPanelRangeDialogTitle": "Display range",
+  "layerPanelRangeStartFrameLabel": "Start frame",
+  "layerPanelRangeEndFrameLabel": "End frame",
+  "layerPanelRangeTilde": "–",
+  "layerPanelRangeUseCurrentButton": "Use current range",
+  "layerPanelRangeTargetSceneLabel": "Target scene",
+  "layerPanelRangeFrameRangeLabel": "Specific frame range",
+  "layerPanelMenuNormalLayer": "Normal layer",
+  "layerPanelMenuCommonLayer": "Common layer",
+  "layerPanelMenuLineartLayer": "Auto-fill lineart layer",
+  "layerPanelMenuAutofillLayer": "Auto-fill layer",
+  "layerPanelOpacityLabel": "Opacity",
+  "layerPanelLockLabel": "Lock",
+  "layerPanelOpacityLockLabel": "Lock opacity",
+  "layerPanelClippingDescription": "Draw only within the opaque area of the layer below",
+  "layerPanelConvertToCommonLabel": "Change to common layer",
+  "layerPanelConvertOption1Title": "Make the current layer common",
+  "layerPanelConvertOption1Subtitle": "Sets only this layer as a common layer",
+  "layerPanelConvertOption2Title": "Merge the visible layers into a common layer",
+  "layerPanelConvertOption2Subtitle": "Creates a common layer from the merged result of all currently visible layers",
+  "layerPanelCommonRangeTitle": "Common layer range",
+  "layerPanelHelpDialogTitle": "About layers",
+  "layerPanelHelpBlendModeBody": "Changes how the layer is composited, such as Multiply, Screen, or Overlay.",
+  "layerPanelHelpClippingBody": "Draws only within the opaque pixel area of the layer below. Use this to control the drawing area.",
+  "layerPanelCommonLayerLabel": "Common layer",
+  "layerPanelHelpCommonLayerBody": "A layer whose content is shared across multiple frames. You can set which frame range it appears in.",
+  "layerPanelAutofillMethodTitle": "Auto-fill method",
+  "layerPanelAutofillNoLineartSnackbar": "No matching auto-fill lineart layer was found.",
+  "layerPanelAutofillNote1": "✳ Either option is fine the first time you run auto-fill in this project.",
+  "layerPanelAutofillNote2": "✳ If no auto-fill layer exists yet, the area will be judged from scratch either way.",
+  "layerPanelAutofillRepaintTitle": "Repaint",
+  "layerPanelAutofillRepaintHint": "Recommended if the auto-fill shape was accidentally changed",
+  "layerPanelAutofillRepaintNote": "✳ Judges the area from scratch and repaints it. The current auto-fill layer's shape will be discarded.",
+  "layerPanelAutofillColorUpdateTitle": "Update color",
+  "layerPanelAutofillColorUpdateHint": "Recommended if the auto-fill shape was adjusted manually",
+  "layerPanelAutofillColorUpdateNote": "✳ Locks opacity and fills with the latest color. The current auto-fill layer's shape is kept.",
+  "layerPanelExecuteButton": "Run",
+  "layerPanelAutofillPartMissingSnackbar": "No part is assigned. Assign one from “Assign part”.",
+  "layerPanelAutofillPresetMissingSnackbar": "No matching preset part was found.",
+  "layerPanelAutofillLayerNameSuffix": "{name} (Auto-fill)",
+  "@layerPanelAutofillLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelOrphanFillSuccessSnackbar": "No matching lineart layer was found, so it was filled with the latest color instead.",
+  "layerPanelOrphanFillFailSnackbar": "Couldn't process this: no part is assigned, or there's no fill shape.",
+  "layerPanelAutofillUpdateHelpTitle": "Auto-fill update mark",
+  "layerPanelAutofillUpdateHelpBody": "The current auto-fill is out of date. Tap it to update.",
+  "layerPanelReplaceMaterialSuccessSnackbar": "Material replaced: {name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelImportImageSuccessSnackbar": "Image imported: {name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelCopySuffix": "{name} copy",
+  "@layerPanelCopySuffix": {
+    "placeholders": {"name": {"type": "String"}}
   }
 }

@@ -10,6 +10,7 @@ import '../../../engine/autofill_engine.dart' as autofill;
 import '../../../engine/procedural_texture.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../engine/undo_manager.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
@@ -116,6 +117,7 @@ class _LayerPanelState extends State<LayerPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
     final allLayers = projectService.layersOf(
         widget.projectId, widget.sceneId, widget.frameIndex);
@@ -141,12 +143,12 @@ class _LayerPanelState extends State<LayerPanel> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                const Text('レイヤー', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(l10n.layerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.help_outline, size: 18),
                   onPressed: () => _showHelp(context),
-                  tooltip: 'ヘルプ',
+                  tooltip: l10n.layerPanelHelpTooltip,
                 ),
                 IconButton(
                   icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 18),
@@ -157,7 +159,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       _searchController.clear();
                     }
                   }),
-                  tooltip: '名前で検索',
+                  tooltip: l10n.creativePanelSearchTooltip,
                 ),
                 if (!widget.dockedMode)
                   IconButton(icon: const Icon(Icons.close, size: 18), onPressed: widget.onClose),
@@ -171,10 +173,10 @@ class _LayerPanelState extends State<LayerPanel> {
                 controller: _searchController,
                 autofocus: true,
                 style: const TextStyle(fontSize: 13),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   isDense: true,
-                  hintText: 'レイヤー名で検索',
-                  prefixIcon: Icon(Icons.search, size: 16),
+                  hintText: l10n.layerPanelSearchHint,
+                  prefixIcon: const Icon(Icons.search, size: 16),
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               ),
@@ -194,7 +196,7 @@ class _LayerPanelState extends State<LayerPanel> {
                         layers.where((l) => l.type == base).map((l) => l.id),
                       );
                     }),
-                    child: const Text('全選択', style: TextStyle(fontSize: 12)),
+                    child: Text(l10n.layerPanelSelectAll, style: const TextStyle(fontSize: 12)),
                   ),
                   TextButton(
                     onPressed: () => setState(() {
@@ -202,7 +204,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       _isSelectionMode = false;
                       _selectionBaseType = null;
                     }),
-                    child: const Text('全解除', style: TextStyle(fontSize: 12)),
+                    child: Text(l10n.layerPanelDeselectAll, style: const TextStyle(fontSize: 12)),
                   ),
                 ],
               ),
@@ -216,21 +218,23 @@ class _LayerPanelState extends State<LayerPanel> {
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.add, size: 14),
-                    label: const Text('新規レイヤー', style: TextStyle(fontSize: 11)),
-                    onPressed: () => _addLayer(context, model.LayerType.normal, 'レイヤー'),
+                    label: Text(l10n.layerPanelNewLayerButton, style: const TextStyle(fontSize: 11)),
+                    onPressed: () => _addLayer(context, model.LayerType.normal,
+                        (n) => l10n.layerPanelDefaultLayerName(n)),
                   ),
                 ),
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.folder, size: 14),
-                    label: const Text('新規フォルダ', style: TextStyle(fontSize: 11)),
-                    onPressed: () => _addLayer(context, model.LayerType.folder, 'フォルダ'),
+                    label: Text(l10n.layerPanelNewFolderButton, style: const TextStyle(fontSize: 11)),
+                    onPressed: () => _addLayer(context, model.LayerType.folder,
+                        (n) => l10n.layerPanelDefaultFolderName(n)),
                   ),
                 ),
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.photo, size: 14),
-                    label: const Text('画像読み込み', style: TextStyle(fontSize: 11)),
+                    label: Text(l10n.layerPanelImportImageButton, style: const TextStyle(fontSize: 11)),
                     onPressed: () => _importImage(context),
                   ),
                 ),
@@ -323,9 +327,9 @@ class _LayerPanelState extends State<LayerPanel> {
                   ),
                   title: Text(layer.name, style: const TextStyle(fontSize: 12)),
                   subtitle: layer.type == model.LayerType.common
-                      ? Text(_rangeSummary(layer), style: const TextStyle(fontSize: 9, color: Colors.blue))
+                      ? Text(_rangeSummary(l10n, layer), style: const TextStyle(fontSize: 9, color: Colors.blue))
                       : layer.hasClipping
-                          ? Text('クリッピング',
+                          ? Text(l10n.layerPanelClippingBadge,
                               style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.primary))
                           : null,
                   trailing: Row(
@@ -336,7 +340,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       if (layer.needsAutofillUpdate)
                         FirstUseTooltip(
                           tooltipKey: 'autofill_mark',
-                          message: '線画が更新されました。タップすると自動塗りを最新の状態に更新できます。',
+                          message: l10n.layerPanelAutofillMarkTooltip,
                           child: GestureDetector(
                             onTap: () => _showAutofillDialog(context, layer),
                             onLongPress: () => _showAutofillUpdateHelp(context),
@@ -399,18 +403,18 @@ class _LayerPanelState extends State<LayerPanel> {
                 IconButton(
                   icon: const Icon(Icons.add, size: 18),
                   onPressed: () => _showAddLayerMenu(context),
-                  tooltip: '追加',
+                  tooltip: l10n.layerPanelAddTooltip,
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, size: 18),
                   onPressed: _canDeleteSelected(layers) ? () => _deleteSelectedLayer(context, layers) : null,
-                  tooltip: '削除',
+                  tooltip: l10n.commonDelete,
                 ),
                 if (_isSelectionMode)
                   IconButton(
                     icon: const Icon(Icons.merge_type, size: 18),
                     onPressed: _canMergeSelected() ? () => _mergeSelectedLayers(context) : null,
-                    tooltip: '結合',
+                    tooltip: l10n.layerPanelMergeTooltip,
                   ),
                 if (_selectedIndex >= 0 &&
                     _selectedIndex < layers.length &&
@@ -418,7 +422,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   IconButton(
                     icon: const Icon(Icons.more_horiz, size: 18),
                     onPressed: () => _showLayerOptions(context, layers),
-                    tooltip: 'レイヤー設定',
+                    tooltip: l10n.layerPanelSettingsTooltip,
                   ),
                 ],
               ],
@@ -544,14 +548,15 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   void _showMultiTimelineDeleteConfirm(BuildContext context, List<model.Layer> layers) {
+    final l10n = AppLocalizations.of(context)!;
     final count = _selectedIds.length;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('選択中の$count件を削除しますか？'),
-        content: const Text('タイムライン素材の表示範囲内のすべてのフレームから削除されます。'),
+        title: Text(l10n.layerPanelMultiDeleteConfirmTitle(count)),
+        content: Text(l10n.layerPanelMultiDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -572,7 +577,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 _selectedIndex = 0;
               });
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -580,13 +585,14 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   void _showTimelineDeleteConfirm(BuildContext context, model.Layer layer) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('${layer.name}を削除しますか？'),
-        content: const Text('この素材の表示範囲内のすべてのフレームから削除されます。'),
+        title: Text(l10n.layerPanelDeleteConfirmTitle(layer.name)),
+        content: Text(l10n.layerPanelDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -599,7 +605,7 @@ class _LayerPanelState extends State<LayerPanel> {
               );
               setState(() => _selectedIndex = 0);
             },
-            child: const Text('削除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -607,25 +613,26 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   /// 共通レイヤーの表示範囲を「🔗 名前（開始〜終了）」の形式で要約する（仕様書16）
-  String _rangeSummary(model.Layer layer) {
+  String _rangeSummary(AppLocalizations l10n, model.Layer layer) {
     switch (layer.rangeMode) {
       case model.LayerRangeMode.allFrames:
-        return '全フレーム';
+        return l10n.layerPanelRangeAllFrames;
       case model.LayerRangeMode.currentScene:
-        return '現在シーン';
+        return l10n.layerPanelRangeCurrentScene;
       case model.LayerRangeMode.sceneRange:
-        if (layer.rangeSceneId == null) return 'シーン指定';
+        if (layer.rangeSceneId == null) return l10n.layerPanelRangeSceneSpecified;
         final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
         final scene = scenes.where((s) => s.id == layer.rangeSceneId).firstOrNull;
-        return scene != null ? scene.displayName : 'シーン指定';
+        return scene != null ? scene.displayName : l10n.layerPanelRangeSceneSpecified;
       case model.LayerRangeMode.frameRange:
         final s = layer.rangeStart ?? 1;
         final e = layer.rangeEnd ?? s;
-        return '$s〜$e';
+        return l10n.layerPanelRangeFrameSpan(s, e);
     }
   }
 
   void _showTimelineLayerMenu(BuildContext context, model.Layer layer) {
+    final l10n = AppLocalizations.of(context)!;
     final isCommon = layer.type == model.LayerType.common;
     final isLineart = layer.type == model.LayerType.autoFillLineart;
     // 対応する線画レイヤーを持たない自動塗りレイヤー（仕様書04：線画レイヤーを
@@ -646,7 +653,7 @@ class _LayerPanelState extends State<LayerPanel> {
             if (!isLineart)
               ListTile(
                 leading: const Icon(Icons.tune),
-                title: Text(isCommon ? '表示フレーム範囲変更' : '表示範囲変更'),
+                title: Text(isCommon ? l10n.layerPanelMenuFrameRangeChange : l10n.layerPanelMenuRangeChange),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showRangeChangeDialog(context, layer);
@@ -655,7 +662,7 @@ class _LayerPanelState extends State<LayerPanel> {
             if (isLineart)
               ListTile(
                 leading: const Icon(Icons.category),
-                title: const Text('パーツ設定'),
+                title: Text(l10n.layerPanelMenuPartAssign),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showPartAssignDialog(context, layer);
@@ -664,7 +671,7 @@ class _LayerPanelState extends State<LayerPanel> {
             if (isLineart)
               ListTile(
                 leading: const Icon(Icons.auto_fix_high),
-                title: const Text('自動塗り実行'),
+                title: Text(l10n.layerPanelMenuRunAutofill),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showAutofillDialog(context, layer, isLineartLayer: true);
@@ -675,8 +682,8 @@ class _LayerPanelState extends State<LayerPanel> {
             if (isOrphanedAutofill)
               ListTile(
                 leading: const Icon(Icons.format_color_fill),
-                title: const Text('最新の色で塗りつぶす'),
-                subtitle: const Text('対応する線画レイヤーが見つからないため色更新のみ実行します', style: TextStyle(fontSize: 11)),
+                title: Text(l10n.layerPanelMenuOrphanFill),
+                subtitle: Text(l10n.layerPanelMenuOrphanFillSubtitle, style: const TextStyle(fontSize: 11)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _runOrphanedAutofill(context, layer);
@@ -685,7 +692,7 @@ class _LayerPanelState extends State<LayerPanel> {
             if (!isCommon && !isLineart)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),
-                title: const Text('素材差し替え'),
+                title: Text(l10n.layerPanelMenuReplaceMaterial),
                 onTap: () {
                   Navigator.pop(ctx);
                   _replaceMaterial(context, layer);
@@ -694,7 +701,7 @@ class _LayerPanelState extends State<LayerPanel> {
             if (isCommon)
               ListTile(
                 leading: const Icon(Icons.copy),
-                title: const Text('複製'),
+                title: Text(l10n.themeDuplicateAction),
                 onTap: () {
                   Navigator.pop(ctx);
                   context.read<ProjectService>().addLayer(
@@ -702,14 +709,14 @@ class _LayerPanelState extends State<LayerPanel> {
                     sceneId: widget.sceneId,
                     frameIndex: widget.frameIndex,
                     type: model.LayerType.common,
-                    name: '${layer.name}のコピー',
+                    name: l10n.layerPanelCopySuffix(layer.name),
                   );
                 },
               ),
             if (isCommon)
               ListTile(
                 leading: const Icon(Icons.edit),
-                title: const Text('名前変更'),
+                title: Text(l10n.commonRename),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showRenameDialog(context, layer);
@@ -717,7 +724,7 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('削除', style: TextStyle(color: Colors.red)),
+              title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(ctx);
                 _showTimelineDeleteConfirm(context, layer);
@@ -730,14 +737,15 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   void _showRenameDialog(BuildContext context, model.Layer layer) {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController(text: layer.name);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('名前変更'),
+        title: Text(l10n.commonRename),
         content: TextField(controller: nameCtrl, autofocus: true, decoration: const InputDecoration(border: OutlineInputBorder())),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
@@ -750,7 +758,7 @@ class _LayerPanelState extends State<LayerPanel> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('変更'),
+            child: Text(l10n.commonChange),
           ),
         ],
       ),
@@ -764,9 +772,11 @@ class _LayerPanelState extends State<LayerPanel> {
     BuildContext context,
     model.Layer layer, {
     String? title,
-    String confirmLabel = 'OK',
+    String? confirmLabel,
     void Function(model.LayerRangeMode mode, int start, int end, String? rangeSceneId)? onConfirm,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+    final resolvedConfirmLabel = confirmLabel ?? l10n.commonOk;
     final ps = context.read<ProjectService>();
     final totalFrames = ps.frameCount(widget.projectId, widget.sceneId);
     final scenes = ps.scenesOf(widget.projectId);
@@ -780,7 +790,7 @@ class _LayerPanelState extends State<LayerPanel> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(title ?? '表示範囲'),
+          title: Text(title ?? l10n.layerPanelRangeDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -792,15 +802,15 @@ class _LayerPanelState extends State<LayerPanel> {
                       child: TextField(
                         controller: startCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: '開始フレーム', border: OutlineInputBorder()),
+                        decoration: InputDecoration(labelText: l10n.layerPanelRangeStartFrameLabel, border: const OutlineInputBorder()),
                       ),
                     ),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('〜')),
+                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(l10n.layerPanelRangeTilde)),
                     Expanded(
                       child: TextField(
                         controller: endCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: '終了フレーム', border: OutlineInputBorder()),
+                        decoration: InputDecoration(labelText: l10n.layerPanelRangeEndFrameLabel, border: const OutlineInputBorder()),
                       ),
                     ),
                   ],
@@ -810,26 +820,26 @@ class _LayerPanelState extends State<LayerPanel> {
                     startCtrl.text = '1';
                     endCtrl.text = totalFrames > 0 ? totalFrames.toString() : '1';
                   }),
-                  child: const Text('現在範囲を使用'),
+                  child: Text(l10n.layerPanelRangeUseCurrentButton),
                 ),
                 const Divider(),
                 RadioListTile<model.LayerRangeMode>(
                   dense: true,
-                  title: const Text('全フレーム'),
+                  title: Text(l10n.layerPanelRangeAllFrames),
                   value: model.LayerRangeMode.allFrames,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
                 ),
                 RadioListTile<model.LayerRangeMode>(
                   dense: true,
-                  title: const Text('現在シーン'),
+                  title: Text(l10n.layerPanelRangeCurrentScene),
                   value: model.LayerRangeMode.currentScene,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
                 ),
                 RadioListTile<model.LayerRangeMode>(
                   dense: true,
-                  title: const Text('シーン指定'),
+                  title: Text(l10n.layerPanelRangeSceneSpecified),
                   value: model.LayerRangeMode.sceneRange,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
@@ -840,7 +850,7 @@ class _LayerPanelState extends State<LayerPanel> {
                     child: DropdownButtonFormField<String>(
                       initialValue: scenes.any((s) => s.id == sceneId) ? sceneId : scenes.firstOrNull?.id,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: '対象シーン', isDense: true),
+                      decoration: InputDecoration(labelText: l10n.layerPanelRangeTargetSceneLabel, isDense: true),
                       items: scenes
                           .map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName)))
                           .toList(),
@@ -849,7 +859,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   ),
                 RadioListTile<model.LayerRangeMode>(
                   dense: true,
-                  title: const Text('フレーム範囲指定'),
+                  title: Text(l10n.layerPanelRangeFrameRangeLabel),
                   value: model.LayerRangeMode.frameRange,
                   groupValue: mode,
                   onChanged: (v) => setS(() => mode = v!),
@@ -858,7 +868,7 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 final start = int.tryParse(startCtrl.text) ?? 1;
@@ -881,7 +891,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 }
                 Navigator.pop(ctx);
               },
-              child: Text(confirmLabel),
+              child: Text(resolvedConfirmLabel),
             ),
           ],
         ),
@@ -893,6 +903,7 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   void _showAddLayerMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -901,29 +912,33 @@ class _LayerPanelState extends State<LayerPanel> {
           children: [
             ListTile(
               leading: const Icon(Icons.layers),
-              title: const Text('通常レイヤー'),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.normal, 'レイヤー'); },
+              title: Text(l10n.layerPanelMenuNormalLayer),
+              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.normal,
+                  (n) => l10n.layerPanelDefaultLayerName(n)); },
             ),
             ListTile(
               leading: const Icon(Icons.link, color: Colors.blue),
-              title: const Text('共通レイヤー'),
+              title: Text(l10n.layerPanelMenuCommonLayer),
               onTap: () { Navigator.pop(ctx); _addCommonLayer(context); },
             ),
             ListTile(
               leading: const Icon(Icons.folder),
-              title: const Text('フォルダ'),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.folder, 'フォルダ'); },
+              title: Text(l10n.creativePanelFolderButton),
+              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.folder,
+                  (n) => l10n.layerPanelDefaultFolderName(n)); },
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.edit, color: Colors.orange),
-              title: const Text('自動塗り用線画レイヤー'),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.autoFillLineart, '線画'); },
+              title: Text(l10n.layerPanelMenuLineartLayer),
+              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.autoFillLineart,
+                  (n) => l10n.layerPanelDefaultLineartName(n)); },
             ),
             ListTile(
               leading: const Icon(Icons.palette, color: Colors.green),
-              title: const Text('自動塗りレイヤー'),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.autoFill, '自動塗り'); },
+              title: Text(l10n.layerPanelMenuAutofillLayer),
+              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.autoFill,
+                  (n) => l10n.layerPanelDefaultAutofillName(n)); },
             ),
             // テキストレイヤーはテキストツールからキャンバスタップで自動生成するため追加しない（仕様書16）
           ],
@@ -935,6 +950,7 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 共通レイヤーの新規追加（仕様書16「追加時の設定」）。追加前に表示範囲
   /// （共通レイヤー範囲）を設定するダイアログを表示してから作成する。
   void _addCommonLayer(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final layers = context.read<ProjectService>().layersOf(
         widget.projectId, widget.sceneId, widget.frameIndex);
     final visible = _visibleLayers(layers);
@@ -944,8 +960,8 @@ class _LayerPanelState extends State<LayerPanel> {
     _showRangeChangeDialog(
       context,
       placeholder,
-      title: '共通レイヤー範囲',
-      confirmLabel: '作成',
+      title: l10n.layerPanelCommonRangeTitle,
+      confirmLabel: l10n.commonCreate,
       onConfirm: (mode, start, end, rangeSceneId) {
         final ps = context.read<ProjectService>();
         final created = ps.addLayer(
@@ -953,7 +969,7 @@ class _LayerPanelState extends State<LayerPanel> {
           sceneId: widget.sceneId,
           frameIndex: widget.frameIndex,
           type: model.LayerType.common,
-          name: '共通${visible.length + 1}',
+          name: l10n.layerPanelDefaultCommonName(visible.length + 1),
         );
         ps.updateLayer(
           projectId: widget.projectId,
@@ -967,7 +983,7 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  void _addLayer(BuildContext context, model.LayerType type, String prefix) {
+  void _addLayer(BuildContext context, model.LayerType type, String Function(int n) nameBuilder) {
     final layers = context.read<ProjectService>().layersOf(
         widget.projectId, widget.sceneId, widget.frameIndex);
     final visible = _visibleLayers(layers);
@@ -976,12 +992,13 @@ class _LayerPanelState extends State<LayerPanel> {
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
       type: type,
-      name: '$prefix${visible.length + 1}',
+      name: nameBuilder(visible.length + 1),
     );
     setState(() => _selectedIndex = 0);
   }
 
   void _showLayerOptions(BuildContext context, List<model.Layer> layers) {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedIndex < 0 || _selectedIndex >= layers.length) return;
     final layer = layers[_selectedIndex];
     void update(model.Layer Function(model.Layer) updater) {
@@ -1009,7 +1026,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: Row(
                   children: [
-                    const Text('不透明度', style: TextStyle(fontSize: 13)),
+                    Text(l10n.layerPanelOpacityLabel, style: const TextStyle(fontSize: 13)),
                     Expanded(
                       child: StatefulBuilder(
                         builder: (ctx, setS) => Slider(
@@ -1029,9 +1046,9 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
               // ブレンドモード
               ListTile(
-                title: const Text('ブレンドモード'),
+                title: Text(l10n.autofillPartBlendModeLabel),
                 trailing: Text(
-                  _blendModeName(layer.blendMode),
+                  _blendModeName(l10n, layer.blendMode),
                   style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary),
                 ),
                 onTap: () {
@@ -1040,25 +1057,25 @@ class _LayerPanelState extends State<LayerPanel> {
                 },
               ),
               SwitchListTile(
-                title: const Text('ロック'),
+                title: Text(l10n.layerPanelLockLabel),
                 value: layer.isLocked,
                 onChanged: (v) { update((l) => l.copyWith(isLocked: v)); Navigator.pop(ctx); },
               ),
               SwitchListTile(
-                title: const Text('不透明度ロック'),
+                title: Text(l10n.layerPanelOpacityLockLabel),
                 value: layer.opacityLocked,
                 onChanged: (v) { update((l) => l.copyWith(opacityLocked: v)); Navigator.pop(ctx); },
               ),
               SwitchListTile(
-                title: const Text('クリッピング'),
-                subtitle: const Text('下のレイヤーの不透明範囲内のみ描画', style: TextStyle(fontSize: 11)),
+                title: Text(l10n.layerPanelClippingBadge),
+                subtitle: Text(l10n.layerPanelClippingDescription, style: const TextStyle(fontSize: 11)),
                 value: layer.hasClipping,
                 onChanged: (v) { update((l) => l.copyWith(hasClipping: v)); Navigator.pop(ctx); },
               ),
               if (layer.type == model.LayerType.normal)
                 ListTile(
                   leading: const Icon(Icons.link, color: Colors.blue),
-                  title: const Text('共通レイヤーへ変更'),
+                  title: Text(l10n.layerPanelConvertToCommonLabel),
                   onTap: () {
                     Navigator.pop(ctx);
                     _showConvertToCommonDialog(context, layer);
@@ -1074,25 +1091,26 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 共通レイヤー化ダイアログ（仕様書16）。「現在レイヤーを共通化」／
   /// 「表示中レイヤーを複製して全統合して共通化」の2択→表示範囲設定→変換実行。
   void _showConvertToCommonDialog(BuildContext context, model.Layer layer) {
+    final l10n = AppLocalizations.of(context)!;
     int selected = 0;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('共通レイヤーへ変更'),
+          title: Text(l10n.layerPanelConvertToCommonLabel),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               RadioListTile<int>(
-                title: const Text('現在レイヤーを共通化'),
-                subtitle: const Text('このレイヤーのみを共通レイヤーとして設定します', style: TextStyle(fontSize: 11)),
+                title: Text(l10n.layerPanelConvertOption1Title),
+                subtitle: Text(l10n.layerPanelConvertOption1Subtitle, style: const TextStyle(fontSize: 11)),
                 value: 0,
                 groupValue: selected,
                 onChanged: (v) => setS(() => selected = v!),
               ),
               RadioListTile<int>(
-                title: const Text('表示中レイヤーを複製して全統合して共通化'),
-                subtitle: const Text('表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します', style: TextStyle(fontSize: 11)),
+                title: Text(l10n.layerPanelConvertOption2Title),
+                subtitle: Text(l10n.layerPanelConvertOption2Subtitle, style: const TextStyle(fontSize: 11)),
                 value: 1,
                 groupValue: selected,
                 onChanged: (v) => setS(() => selected = v!),
@@ -1100,7 +1118,7 @@ class _LayerPanelState extends State<LayerPanel> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
@@ -1108,8 +1126,8 @@ class _LayerPanelState extends State<LayerPanel> {
                 _showRangeChangeDialog(
                   context,
                   placeholder,
-                  title: '共通レイヤー範囲',
-                  confirmLabel: '作成',
+                  title: l10n.layerPanelCommonRangeTitle,
+                  confirmLabel: l10n.commonCreate,
                   onConfirm: (mode, start, end, rangeSceneId) {
                     final ps = context.read<ProjectService>();
                     if (selected == 0) {
@@ -1138,7 +1156,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   },
                 );
               },
-              child: const Text('OK'),
+              child: Text(l10n.commonOk),
             ),
           ],
         ),
@@ -1148,11 +1166,12 @@ class _LayerPanelState extends State<LayerPanel> {
 
   void _showBlendModeDialog(BuildContext context, model.Layer layer,
       void Function(model.Layer Function(model.Layer)) update) {
+    final l10n = AppLocalizations.of(context)!;
     const modes = model.LayerBlendMode.values;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('ブレンドモード'),
+        title: Text(l10n.autofillPartBlendModeLabel),
         content: SizedBox(
           width: 280,
           child: ListView.builder(
@@ -1160,7 +1179,7 @@ class _LayerPanelState extends State<LayerPanel> {
             itemCount: modes.length,
             itemBuilder: (ctx, i) => ListTile(
               dense: true,
-              title: Text(_blendModeName(modes[i]), style: const TextStyle(fontSize: 13)),
+              title: Text(_blendModeName(l10n, modes[i]), style: const TextStyle(fontSize: 13)),
               selected: layer.blendMode == modes[i],
               onTap: () {
                 update((l) => l.copyWith(blendMode: modes[i]));
@@ -1170,55 +1189,56 @@ class _LayerPanelState extends State<LayerPanel> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
         ],
       ),
     );
   }
 
-  String _blendModeName(model.LayerBlendMode mode) => switch (mode) {
-    model.LayerBlendMode.normal      => '通常',
-    model.LayerBlendMode.multiply    => '乗算',
-    model.LayerBlendMode.screen      => 'スクリーン',
-    model.LayerBlendMode.overlay     => 'オーバーレイ',
-    model.LayerBlendMode.addition    => '加算',
-    model.LayerBlendMode.subtract    => '減算',
-    model.LayerBlendMode.darken      => '比較（暗）',
-    model.LayerBlendMode.lighten     => '比較（明）',
-    model.LayerBlendMode.colorBurn   => '焼き込みカラー',
-    model.LayerBlendMode.colorDodge  => '覆い焼きカラー',
-    model.LayerBlendMode.hardLight   => 'ハードライト',
-    model.LayerBlendMode.softLight   => 'ソフトライト',
-    model.LayerBlendMode.difference  => '差の絶対値',
-    model.LayerBlendMode.hue         => '色相',
-    model.LayerBlendMode.saturation  => '彩度',
-    model.LayerBlendMode.color       => 'カラー',
-    model.LayerBlendMode.luminosity  => '輝度',
+  String _blendModeName(AppLocalizations l10n, model.LayerBlendMode mode) => switch (mode) {
+    model.LayerBlendMode.normal      => l10n.blendModeNormal,
+    model.LayerBlendMode.multiply    => l10n.blendModeMultiply,
+    model.LayerBlendMode.screen      => l10n.blendModeScreen,
+    model.LayerBlendMode.overlay     => l10n.blendModeOverlay,
+    model.LayerBlendMode.addition    => l10n.blendModeAddition,
+    model.LayerBlendMode.subtract    => l10n.blendModeSubtract,
+    model.LayerBlendMode.darken      => l10n.blendModeDarken,
+    model.LayerBlendMode.lighten     => l10n.blendModeLighten,
+    model.LayerBlendMode.colorBurn   => l10n.blendModeColorBurn,
+    model.LayerBlendMode.colorDodge  => l10n.blendModeColorDodge,
+    model.LayerBlendMode.hardLight   => l10n.blendModeHardLight,
+    model.LayerBlendMode.softLight   => l10n.blendModeSoftLight,
+    model.LayerBlendMode.difference  => l10n.blendModeDifference,
+    model.LayerBlendMode.hue         => l10n.blendModeHue,
+    model.LayerBlendMode.saturation  => l10n.blendModeSaturation,
+    model.LayerBlendMode.color       => l10n.blendModeColor,
+    model.LayerBlendMode.luminosity  => l10n.blendModeLuminosity,
   };
 
   void _showHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('レイヤーについて'),
-        content: const SingleChildScrollView(
+        title: Text(l10n.layerPanelHelpDialogTitle),
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('ブレンドモード', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。'),
-              SizedBox(height: 8),
-              Text('クリッピング', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('下のレイヤーの不透明ピクセル範囲内のみ描画します。描画範囲を制御したい場合はこちらを使用してください。'),
-              SizedBox(height: 8),
-              Text('共通レイヤー', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('複数のフレームで同じ内容を共有するレイヤーです。表示するフレーム範囲を設定できます。'),
+              Text(l10n.autofillPartBlendModeLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.layerPanelHelpBlendModeBody),
+              const SizedBox(height: 8),
+              Text(l10n.layerPanelClippingBadge, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.layerPanelHelpClippingBody),
+              const SizedBox(height: 8),
+              Text(l10n.layerPanelCommonLayerLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.layerPanelHelpCommonLayerBody),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
         ],
       ),
     );
@@ -1228,6 +1248,7 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 自動塗り用線画レイヤー（[isLineartLayer]=true）。実行対象の線画レイヤーを特定してから
   /// ダイアログを表示する。
   void _showAutofillDialog(BuildContext context, model.Layer layer, {bool isLineartLayer = false}) {
+    final l10n = AppLocalizations.of(context)!;
     final projectService = context.read<ProjectService>();
     final allLayers = projectService.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
     model.Layer? lineartLayer;
@@ -1248,7 +1269,7 @@ class _LayerPanelState extends State<LayerPanel> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('対応する自動塗り用線画レイヤーが見つかりません。')),
+        SnackBar(content: Text(l10n.layerPanelAutofillNoLineartSnackbar)),
       );
       return;
     }
@@ -1258,24 +1279,24 @@ class _LayerPanelState extends State<LayerPanel> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('自動塗り方法'),
+          title: Text(l10n.layerPanelAutofillMethodTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。',
+              Text(l10n.layerPanelAutofillNote1,
                   style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 4),
-              Text('※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。',
+              Text(l10n.layerPanelAutofillNote2,
                   style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 12),
               RadioListTile<int>(
-                title: const Text('塗りなおし'),
-                subtitle: const Column(
+                title: Text(l10n.layerPanelAutofillRepaintTitle),
+                subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('誤って自動塗りの形状を変えてしまった場合におすすめ', style: TextStyle(fontSize: 11)),
-                    Text('※ 一から領域を判定して塗りなおします。現在の自動塗りレイヤーの形状は破棄されます。', style: TextStyle(fontSize: 11)),
+                    Text(l10n.layerPanelAutofillRepaintHint, style: const TextStyle(fontSize: 11)),
+                    Text(l10n.layerPanelAutofillRepaintNote, style: const TextStyle(fontSize: 11)),
                   ],
                 ),
                 value: 0, groupValue: selected,
@@ -1283,12 +1304,12 @@ class _LayerPanelState extends State<LayerPanel> {
                 dense: true,
               ),
               RadioListTile<int>(
-                title: const Text('色更新'),
-                subtitle: const Column(
+                title: Text(l10n.layerPanelAutofillColorUpdateTitle),
+                subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('自動塗りの形状を手動で調整した場合におすすめ', style: TextStyle(fontSize: 11)),
-                    Text('※ 不透明度ロックをして最新の色で塗りつぶします。現在の自動塗りレイヤーの形状は維持されます。', style: TextStyle(fontSize: 11)),
+                    Text(l10n.layerPanelAutofillColorUpdateHint, style: const TextStyle(fontSize: 11)),
+                    Text(l10n.layerPanelAutofillColorUpdateNote, style: const TextStyle(fontSize: 11)),
                   ],
                 ),
                 value: 1, groupValue: selected,
@@ -1298,7 +1319,7 @@ class _LayerPanelState extends State<LayerPanel> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
@@ -1308,7 +1329,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   selected == 0 ? autofill.AutofillMode.repaint : autofill.AutofillMode.colorUpdate,
                 );
               },
-              child: const Text('実行'),
+              child: Text(l10n.layerPanelExecuteButton),
             ),
           ],
         ),
@@ -1319,17 +1340,18 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 自動塗りエンジンを実行し、結果を対象自動塗りレイヤーのタイルへ書き戻す（仕様書04）。
   Future<void> _executeAutofill(
       BuildContext context, model.Layer lineartLayer, autofill.AutofillMode mode) async {
+    final l10n = AppLocalizations.of(context)!;
     final partId = lineartLayer.partId;
     if (partId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('パーツが未設定です。「パーツ設定」から設定してください。')),
+        SnackBar(content: Text(l10n.layerPanelAutofillPartMissingSnackbar)),
       );
       return;
     }
     final part = context.read<AutofillPresetService>().findPart(partId);
     if (part == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('対応するプリセットパーツが見つかりません。')),
+        SnackBar(content: Text(l10n.layerPanelAutofillPresetMissingSnackbar)),
       );
       return;
     }
@@ -1395,7 +1417,7 @@ class _LayerPanelState extends State<LayerPanel> {
         sceneId: widget.sceneId,
         frameIndex: widget.frameIndex,
         type: model.LayerType.autoFill,
-        name: '${part.name}（自動塗り）',
+        name: l10n.layerPanelAutofillLayerNameSuffix(part.name),
       );
       // 線画レイヤーの直下へ移動する
       layers = projectService.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
@@ -1456,6 +1478,7 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 領域の再判定はできず、不透明度ロック＋最新色での塗りつぶしのみを行う
   /// （モード選択の余地がないため確認ダイアログは出さず直接実行する）。
   Future<void> _runOrphanedAutofill(BuildContext context, model.Layer autofillLayer) async {
+    final l10n = AppLocalizations.of(context)!;
     final projectService = context.read<ProjectService>();
     final presetService = context.read<AutofillPresetService>();
     final result = await runAutofillForOrphanedLayer(
@@ -1470,12 +1493,13 @@ class _LayerPanelState extends State<LayerPanel> {
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
         result == AutofillBatchResult.applied
-            ? '対応する線画レイヤーが見つからないため、最新の色で塗りつぶしました。'
-            : 'パーツが未設定、または塗り形状がないため処理できませんでした。')));
+            ? l10n.layerPanelOrphanFillSuccessSnackbar
+            : l10n.layerPanelOrphanFillFailSnackbar)));
   }
 
   /// 自動塗り用線画レイヤーへプリセットパーツを割り当てるダイアログ（仕様書04：パーツID管理）。
   void _showPartAssignDialog(BuildContext context, model.Layer lineartLayer) {
+    final l10n = AppLocalizations.of(context)!;
     final presets = context.read<AutofillPresetService>().presets;
     showModalBottomSheet(
       context: context,
@@ -1484,7 +1508,7 @@ class _LayerPanelState extends State<LayerPanel> {
         child: SizedBox(
           height: 400,
           child: presets.isEmpty
-              ? const Center(child: Text('プリセットがありません'))
+              ? Center(child: Text(l10n.autofillPresetEmpty))
               : ListView(
                   children: [
                     for (final preset in presets) ...[
@@ -1526,13 +1550,14 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   void _showAutofillUpdateHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('自動塗り更新マーク'),
-        content: const Text('現在の自動塗りは最新ではありません。タップすると更新できます。'),
+        title: Text(l10n.layerPanelAutofillUpdateHelpTitle),
+        content: Text(l10n.layerPanelAutofillUpdateHelpBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
         ],
       ),
     );
@@ -1544,6 +1569,7 @@ class _LayerPanelState extends State<LayerPanel> {
   /// レイヤーのピクセル内容を新しい画像で丸ごと差し替える（位置・トランスフォームは
   /// 維持したまま、キャンバス全体に収まるよう中央寄せ・アスペクト比維持で描き直す）。
   Future<void> _replaceMaterial(BuildContext context, model.Layer layer) async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: false,
@@ -1599,11 +1625,12 @@ class _LayerPanelState extends State<LayerPanel> {
     );
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('素材を差し替えました: ${layer.name}')),
+      SnackBar(content: Text(l10n.layerPanelReplaceMaterialSuccessSnackbar(layer.name))),
     );
   }
 
   Future<void> _importImage(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: false,
@@ -1671,7 +1698,7 @@ class _LayerPanelState extends State<LayerPanel> {
     setState(() => _selectedIndex = 0);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('画像を読み込みました: $name')),
+      SnackBar(content: Text(l10n.layerPanelImportImageSuccessSnackbar(name))),
     );
   }
 }

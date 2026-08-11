@@ -1047,5 +1047,121 @@
   "canvasHelpRubyBody": "Al escribir algo como «{example}» se muestra una pequeña anotación de lectura encima de los caracteres base (en horizontal) o a su derecha (en vertical). Funciona en ambos sentidos, pero el texto que contiene furigana no se ajustará automáticamente de línea en modo horizontal (solo saltos de línea manuales).",
   "@canvasHelpRubyBody": {
     "placeholders": {"example": {"type": "String"}}
+  },
+  "layerPanelTitle": "Capas",
+  "layerPanelHelpTooltip": "Ayuda",
+  "layerPanelSearchHint": "Buscar por nombre de capa",
+  "layerPanelSelectAll": "Seleccionar todo",
+  "layerPanelDeselectAll": "Deseleccionar todo",
+  "layerPanelNewLayerButton": "Nueva capa",
+  "layerPanelNewFolderButton": "Nueva carpeta",
+  "layerPanelImportImageButton": "Importar imagen",
+  "layerPanelDefaultLayerName": "Capa{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultFolderName": "Carpeta{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultLineartName": "Línea{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultAutofillName": "RelleAuto{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelDefaultCommonName": "Común{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerPanelClippingBadge": "Recorte",
+  "layerPanelAddTooltip": "Añadir",
+  "layerPanelMergeTooltip": "Combinar",
+  "layerPanelSettingsTooltip": "Ajustes de capa",
+  "layerPanelAutofillMarkTooltip": "El dibujo de líneas se actualizó. Toca para poner al día el relleno automático.",
+  "layerPanelRangeAllFrames": "Todos los fotogramas",
+  "layerPanelRangeCurrentScene": "Escena actual",
+  "layerPanelRangeSceneSpecified": "Escena específica",
+  "layerPanelRangeFrameSpan": "{start}–{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+  },
+  "layerPanelMenuFrameRangeChange": "Cambiar rango de fotogramas",
+  "layerPanelMenuRangeChange": "Cambiar rango de visualización",
+  "layerPanelMenuPartAssign": "Asignar parte",
+  "layerPanelMenuRunAutofill": "Ejecutar relleno automático",
+  "layerPanelMenuOrphanFill": "Rellenar con el color más reciente",
+  "layerPanelMenuOrphanFillSubtitle": "No se encontró una capa de líneas correspondiente, así que solo se actualizará el color",
+  "layerPanelMenuReplaceMaterial": "Reemplazar material",
+  "layerPanelDeleteConfirmTitle": "¿Eliminar {name}?",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelDeleteConfirmBody": "Este material se eliminará de todos los fotogramas dentro de su rango de visualización.",
+  "layerPanelMultiDeleteConfirmTitle": "¿Eliminar los {count} elementos seleccionados?",
+  "@layerPanelMultiDeleteConfirmTitle": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "layerPanelMultiDeleteConfirmBody": "Los materiales de la línea de tiempo se eliminarán de todos los fotogramas dentro de su rango de visualización.",
+  "layerPanelRangeDialogTitle": "Rango de visualización",
+  "layerPanelRangeStartFrameLabel": "Fotograma inicial",
+  "layerPanelRangeEndFrameLabel": "Fotograma final",
+  "layerPanelRangeTilde": "–",
+  "layerPanelRangeUseCurrentButton": "Usar rango actual",
+  "layerPanelRangeTargetSceneLabel": "Escena objetivo",
+  "layerPanelRangeFrameRangeLabel": "Rango de fotogramas específico",
+  "layerPanelMenuNormalLayer": "Capa normal",
+  "layerPanelMenuCommonLayer": "Capa común",
+  "layerPanelMenuLineartLayer": "Capa de líneas para relleno automático",
+  "layerPanelMenuAutofillLayer": "Capa de relleno automático",
+  "layerPanelOpacityLabel": "Opacidad",
+  "layerPanelLockLabel": "Bloquear",
+  "layerPanelOpacityLockLabel": "Bloquear opacidad",
+  "layerPanelClippingDescription": "Dibujar solo dentro del área opaca de la capa inferior",
+  "layerPanelConvertToCommonLabel": "Cambiar a capa común",
+  "layerPanelConvertOption1Title": "Hacer común la capa actual",
+  "layerPanelConvertOption1Subtitle": "Establece solo esta capa como capa común",
+  "layerPanelConvertOption2Title": "Combinar las capas visibles en una capa común",
+  "layerPanelConvertOption2Subtitle": "Crea una capa común a partir del resultado combinado de todas las capas actualmente visibles",
+  "layerPanelCommonRangeTitle": "Rango de la capa común",
+  "layerPanelHelpDialogTitle": "Acerca de las capas",
+  "layerPanelHelpBlendModeBody": "Cambia cómo se compone la capa: multiplicar, trama, superposición, etc.",
+  "layerPanelHelpClippingBody": "Dibuja solo dentro del área de píxeles opacos de la capa inferior. Úsalo para controlar el área de dibujo.",
+  "layerPanelCommonLayerLabel": "Capa común",
+  "layerPanelHelpCommonLayerBody": "Una capa cuyo contenido se comparte entre varios fotogramas. Puedes definir el rango de fotogramas en el que aparece.",
+  "layerPanelAutofillMethodTitle": "Método de relleno automático",
+  "layerPanelAutofillNoLineartSnackbar": "No se encontró una capa de líneas para relleno automático correspondiente.",
+  "layerPanelAutofillNote1": "✳ Cualquiera de las opciones está bien la primera vez que ejecutas el relleno automático en este proyecto.",
+  "layerPanelAutofillNote2": "✳ Si aún no existe una capa de relleno automático, el área se determinará desde cero de todos modos.",
+  "layerPanelAutofillRepaintTitle": "Repintar",
+  "layerPanelAutofillRepaintHint": "Recomendado si la forma del relleno automático se modificó por accidente",
+  "layerPanelAutofillRepaintNote": "✳ Determina el área desde cero y la repinta. Se descartará la forma actual de la capa de relleno automático.",
+  "layerPanelAutofillColorUpdateTitle": "Actualizar color",
+  "layerPanelAutofillColorUpdateHint": "Recomendado si la forma del relleno automático se ajustó manualmente",
+  "layerPanelAutofillColorUpdateNote": "✳ Bloquea la opacidad y rellena con el color más reciente. Se conserva la forma actual de la capa de relleno automático.",
+  "layerPanelExecuteButton": "Ejecutar",
+  "layerPanelAutofillPartMissingSnackbar": "No hay ninguna parte asignada. Asigna una desde «Asignar parte».",
+  "layerPanelAutofillPresetMissingSnackbar": "No se encontró una parte de preajuste correspondiente.",
+  "layerPanelAutofillLayerNameSuffix": "{name} (relleno automático)",
+  "@layerPanelAutofillLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelOrphanFillSuccessSnackbar": "No se encontró una capa de líneas correspondiente, así que se rellenó con el color más reciente.",
+  "layerPanelOrphanFillFailSnackbar": "No se pudo procesar: no hay ninguna parte asignada, o no hay una forma que rellenar.",
+  "layerPanelAutofillUpdateHelpTitle": "Marca de actualización del relleno automático",
+  "layerPanelAutofillUpdateHelpBody": "El relleno automático actual no está actualizado. Toca para actualizarlo.",
+  "layerPanelReplaceMaterialSuccessSnackbar": "Material reemplazado: {name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelImportImageSuccessSnackbar": "Imagen importada: {name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelCopySuffix": "Copia de {name}",
+  "@layerPanelCopySuffix": {
+    "placeholders": {"name": {"type": "String"}}
   }
 }
