@@ -1266,5 +1266,10 @@
   "timelineCameraMoveXLabel": "X 이동",
   "timelineCameraMoveYLabel": "Y 이동",
   "timelineCameraZoomLabel": "줌",
-  "timelineCameraRotationLabel": "회전"
+  "timelineCameraRotationLabel": "회전",
+  "frameStripHoldDialogTitle": "F{n} 유지 셀 수",
+  "@frameStripHoldDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "frameStripTimelineModeTooltip": "타임라인 모드"
 }

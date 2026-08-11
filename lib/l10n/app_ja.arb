@@ -1360,5 +1360,10 @@
   "timelineCameraMoveXLabel": "X 移動",
   "timelineCameraMoveYLabel": "Y 移動",
   "timelineCameraZoomLabel": "ズーム",
-  "timelineCameraRotationLabel": "回転"
+  "timelineCameraRotationLabel": "回転",
+  "frameStripHoldDialogTitle": "F{n} 保持セル数",
+  "@frameStripHoldDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "frameStripTimelineModeTooltip": "タイムラインモード"
 }

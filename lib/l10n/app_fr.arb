@@ -1266,5 +1266,10 @@
   "timelineCameraMoveXLabel": "Déplacement X",
   "timelineCameraMoveYLabel": "Déplacement Y",
   "timelineCameraZoomLabel": "Zoom",
-  "timelineCameraRotationLabel": "Rotation"
+  "timelineCameraRotationLabel": "Rotation",
+  "frameStripHoldDialogTitle": "F{n} images de maintien",
+  "@frameStripHoldDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "frameStripTimelineModeTooltip": "Mode timeline"
 }

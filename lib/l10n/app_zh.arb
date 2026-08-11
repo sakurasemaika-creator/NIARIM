@@ -1266,5 +1266,10 @@
   "timelineCameraMoveXLabel": "X 移动",
   "timelineCameraMoveYLabel": "Y 移动",
   "timelineCameraZoomLabel": "缩放",
-  "timelineCameraRotationLabel": "旋转"
+  "timelineCameraRotationLabel": "旋转",
+  "frameStripHoldDialogTitle": "F{n} 保持格数",
+  "@frameStripHoldDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "frameStripTimelineModeTooltip": "时间轴模式"
 }

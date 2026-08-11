@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/layer_compositor.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../services/project_service.dart';
 
 class FrameStripWidget extends StatefulWidget {
@@ -49,12 +50,13 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   }
 
   void _showHoldDialog(BuildContext context, ProjectService service, int frameIndex, int currentHold) {
+    final l10n = AppLocalizations.of(context)!;
     int hold = currentHold;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text('F${frameIndex + 1} 保持セル数'),
+          title: Text(l10n.frameStripHoldDialogTitle(frameIndex + 1)),
           content: Row(
             children: [
               IconButton(
@@ -69,13 +71,13 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 service.setFrameHold(widget.projectId, widget.sceneId, frameIndex, hold);
                 Navigator.pop(ctx);
               },
-              child: const Text('OK'),
+              child: Text(l10n.commonOk),
             ),
           ],
         ),
@@ -85,6 +87,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final service = context.watch<ProjectService>();
     final total = service.frameCount(widget.projectId, widget.sceneId);
 
@@ -186,7 +189,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
           IconButton(
             icon: const Icon(Icons.chevron_right),
             onPressed: widget.onTimelineTap,
-            tooltip: 'タイムラインモード',
+            tooltip: l10n.frameStripTimelineModeTooltip,
           ),
         ],
       ),

@@ -1266,5 +1266,10 @@
   "timelineCameraMoveXLabel": "Movimiento X",
   "timelineCameraMoveYLabel": "Movimiento Y",
   "timelineCameraZoomLabel": "Zoom",
-  "timelineCameraRotationLabel": "Rotación"
+  "timelineCameraRotationLabel": "Rotación",
+  "frameStripHoldDialogTitle": "F{n} fotogramas de espera",
+  "@frameStripHoldDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "frameStripTimelineModeTooltip": "Modo línea de tiempo"
 }

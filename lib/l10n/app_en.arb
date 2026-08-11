@@ -1266,5 +1266,10 @@
   "timelineCameraMoveXLabel": "X move",
   "timelineCameraMoveYLabel": "Y move",
   "timelineCameraZoomLabel": "Zoom",
-  "timelineCameraRotationLabel": "Rotation"
+  "timelineCameraRotationLabel": "Rotation",
+  "frameStripHoldDialogTitle": "F{n} hold cells",
+  "@frameStripHoldDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "frameStripTimelineModeTooltip": "Timeline mode"
 }
