@@ -459,6 +459,7 @@
   "fontSettingsTabImport": "読み込み",
   "fontDownloadedSearchHint": "フォント名で検索...",
   "fontFavoritesOnly": "★のみ",
+  "fontPixelModeTooltip": "ピクセルモード（ドットフォント用。アンチエイリアスなしでくっきり表示）",
   "fontEmptyTitle": "フォントがありません",
   "fontEmptyHint": "「探してDL」または「読み込み」タブから追加できます",
   "fontRenameDialogTitle": "フォント名を変更",

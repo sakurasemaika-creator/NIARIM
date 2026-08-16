@@ -145,6 +145,15 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // ピクセルモード（ユーザー指示により新規追加）：ON時は
+                              // このフォントで追加するテキストのアンチエイリアスを
+                              // 除去する（ドットフォントをにじませずくっきり表示）。
+                              IconButton(
+                                icon: Icon(f.pixelMode ? Icons.grid_on : Icons.grid_off,
+                                    size: 18, color: f.pixelMode ? scheme.primary : null),
+                                tooltip: l10n.fontPixelModeTooltip,
+                                onPressed: () => service.togglePixelMode(f.id),
+                              ),
                               IconButton(
                                 icon: Icon(f.isFavorite ? Icons.star : Icons.star_border,
                                     size: 18, color: f.isFavorite ? Colors.amber : null),

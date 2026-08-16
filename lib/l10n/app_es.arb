@@ -410,6 +410,7 @@
   "fontSettingsTabImport": "Importar",
   "fontDownloadedSearchHint": "Buscar por nombre de fuente...",
   "fontFavoritesOnly": "Solo ★",
+  "fontPixelModeTooltip": "Modo píxel (para fuentes de puntos. Se muestra nítido sin suavizado)",
   "fontEmptyTitle": "No hay fuentes",
   "fontEmptyHint": "Añade fuentes desde las pestañas \"Buscar y descargar\" o \"Importar\"",
   "fontRenameDialogTitle": "Renombrar fuente",

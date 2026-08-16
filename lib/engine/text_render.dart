@@ -14,11 +14,38 @@ final RegExp _rubyPattern = RegExp(r'\{([^{}|]+)\|([^{}|]+)\}');
 /// 保持し、表示・書き出し時はこの結果（キャッシュ画像）を使うというラスター専用
 /// アプリの方針に沿う。横書き・縦書きの両方に対応する（仕様書15：横書き・縦書き
 /// 切替）。
-Future<Uint8List?> rasterizeTextObject(TextObject text, int canvasWidth, int canvasHeight) async {
-  if (text.direction == TextWritingDirection.vertical) {
-    return _rasterizeVertical(text, canvasWidth, canvasHeight);
+/// [pixelMode]がtrueの場合、ラスタライズ後にアンチエイリアスを除去する
+/// （ユーザー指示により新規追加。呼び出し元でFontService.
+/// pixelModeForFamily(text.fontFamily)の結果を渡す想定。ドットフォントを
+/// にじませずくっきり表示するための設定で、ブラシのdotPenModeと同じ考え方）。
+Future<Uint8List?> rasterizeTextObject(
+  TextObject text,
+  int canvasWidth,
+  int canvasHeight, {
+  bool pixelMode = false,
+}) async {
+  final data = text.direction == TextWritingDirection.vertical
+      ? await _rasterizeVertical(text, canvasWidth, canvasHeight)
+      : await _rasterizeHorizontal(text, canvasWidth, canvasHeight);
+  if (data == null || !pixelMode) return data;
+  return _applyPixelModeThreshold(data, text);
+}
+
+/// ピクセルモード：各画素のアルファをテキストの意図した最大アルファ
+/// （文字色のアルファ×レイヤー不透明度）か0かの二値へスナップし、
+/// フォントの輪郭のアンチエイリアスを除去する（RGB値は元々straight
+/// alphaで文字色そのものが入っているため変更不要。ブラシの
+/// `dotPenMode`（`dist <= radius ? 1.0 : 0.0`）と同じ「境界で完全に
+/// 切り替える」考え方の文字版）。
+Uint8List _applyPixelModeThreshold(Uint8List data, TextObject text) {
+  final maxAlpha = (text.color.a * text.opacity * 255).round().clamp(0, 255);
+  if (maxAlpha <= 0) return data;
+  final result = Uint8List.fromList(data);
+  final threshold = maxAlpha / 2;
+  for (int i = 3; i < result.length; i += 4) {
+    result[i] = result[i] >= threshold ? maxAlpha : 0;
   }
-  return _rasterizeHorizontal(text, canvasWidth, canvasHeight);
+  return result;
 }
 
 Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int canvasHeight) {

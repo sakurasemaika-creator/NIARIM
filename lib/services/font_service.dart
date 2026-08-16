@@ -231,6 +231,27 @@ class FontService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// ピクセルモードのON/OFFを切り替える（フォント選択画面「ダウンロード済み」
+  /// タブのトグルボタンから呼ぶ。ユーザー指示により新規追加）。
+  Future<void> togglePixelMode(String id) async {
+    final idx = _fonts.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _fonts[idx] = _fonts[idx].copyWith(pixelMode: !_fonts[idx].pixelMode);
+    await _persist();
+    notifyListeners();
+  }
+
+  /// [family]（TextObject.fontFamilyの値。familyNameOf()の戻り値と同じ表現）
+  /// に該当するFontAssetのピクセルモードがONかどうかを返す。テキスト
+  /// ラスタライズ時（text_render.dart呼び出し元）にこの結果を渡すことで、
+  /// フォント側の設定だけでピクセルモードを反映できるようにする
+  /// （テキストレイヤーごとに個別設定を持たせない設計。ユーザー指示：
+  /// 「DL済のフォント一覧画面で各フォントにそれぞれピクセルモードを
+  /// on/offする」）。built-in同梱フォント（familyNameOf()を経由しない
+  /// ものはFontAssetが無いためfalseを返す。
+  bool pixelModeForFamily(String family) =>
+      _fonts.any((f) => familyNameOf(f) == family && f.pixelMode);
+
   Future<void> removeFont(String id) async {
     final idx = _fonts.indexWhere((f) => f.id == id);
     if (idx < 0) return;

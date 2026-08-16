@@ -1228,7 +1228,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 }
                 final tileManager = ps.tileManagerOf(widget.projectId);
                 final bytes = await rasterizeTextObject(
-                    textObject, tileManager.canvasWidth, tileManager.canvasHeight);
+                  textObject,
+                  tileManager.canvasWidth,
+                  tileManager.canvasHeight,
+                  pixelMode: fontService.pixelModeForFamily(fontFamily),
+                );
                 if (bytes != null) {
                   tileManager.replaceLayerPixels(
                     ps.tileKeyFor(widget.projectId, sceneId, _currentFrame, layer.id),

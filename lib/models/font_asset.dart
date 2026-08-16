@@ -7,6 +7,14 @@ class FontAsset {
   final int sizeBytes;
   final DateTime addedAt;
   final bool isFavorite;
+  // ピクセルモード（ユーザー指示により新規追加）：ONの場合、このフォントで
+  // ラスタライズするテキストはアンチエイリアスを行わず、輪郭をくっきり
+  // 二値化する（ドットフォント・ビットマップ由来フォントをにじませずに
+  // 表示するための設定）。ブラシのdotPenModeと同じ考え方だが、こちらは
+  // ストロークごとではなくフォント単位の固定プロパティとして持つ
+  // （フォント一覧画面でON/OFFし、以後そのフォントを使う全テキストへ
+  // 自動的に適用される）。
+  final bool pixelMode;
 
   const FontAsset({
     required this.id,
@@ -15,17 +23,19 @@ class FontAsset {
     required this.sizeBytes,
     required this.addedAt,
     this.isFavorite = false,
+    this.pixelMode = false,
   });
 
   String get extension => fileName.split('.').last.toUpperCase();
 
-  FontAsset copyWith({String? displayName, bool? isFavorite}) => FontAsset(
+  FontAsset copyWith({String? displayName, bool? isFavorite, bool? pixelMode}) => FontAsset(
         id: id,
         displayName: displayName ?? this.displayName,
         fileName: fileName,
         sizeBytes: sizeBytes,
         addedAt: addedAt,
         isFavorite: isFavorite ?? this.isFavorite,
+        pixelMode: pixelMode ?? this.pixelMode,
       );
 
   Map<String, dynamic> toJson() => {
@@ -35,6 +45,7 @@ class FontAsset {
         'sizeBytes': sizeBytes,
         'addedAt': addedAt.toIso8601String(),
         'isFavorite': isFavorite,
+        'pixelMode': pixelMode,
       };
 
   factory FontAsset.fromJson(Map<String, dynamic> j) => FontAsset(
@@ -44,5 +55,6 @@ class FontAsset {
         sizeBytes: j['sizeBytes'] as int,
         addedAt: DateTime.parse(j['addedAt'] as String),
         isFavorite: j['isFavorite'] as bool? ?? false,
+        pixelMode: j['pixelMode'] as bool? ?? false,
       );
 }

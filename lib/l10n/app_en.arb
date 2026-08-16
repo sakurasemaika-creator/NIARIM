@@ -410,6 +410,7 @@
   "fontSettingsTabImport": "Import",
   "fontDownloadedSearchHint": "Search by font name...",
   "fontFavoritesOnly": "★ Only",
+  "fontPixelModeTooltip": "Pixel mode (for dot fonts. Renders crisply without anti-aliasing)",
   "fontEmptyTitle": "No fonts",
   "fontEmptyHint": "Add fonts from the \"Find & Download\" or \"Import\" tabs",
   "fontRenameDialogTitle": "Rename Font",
