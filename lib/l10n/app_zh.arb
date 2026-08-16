@@ -780,6 +780,8 @@
   "filterStrengthBlurRadius": "强度（模糊半径）",
   "filterColorLevels": "颜色数",
   "filterEdgeStrength": "边缘强调",
+  "filterOutlineColor": "描边颜色",
+  "filterOutlineWidth": "描边宽度",
   "filterToneCurveLinear": "标准",
   "filterToneCurveBrighten": "变亮",
   "filterToneCurveDarken": "变暗",

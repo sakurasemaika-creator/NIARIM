@@ -780,6 +780,8 @@
   "filterStrengthBlurRadius": "Intensité (rayon de flou)",
   "filterColorLevels": "Nombre de couleurs",
   "filterEdgeStrength": "Accentuation des contours",
+  "filterOutlineColor": "Couleur du contour",
+  "filterOutlineWidth": "Épaisseur du contour",
   "filterToneCurveLinear": "Standard",
   "filterToneCurveBrighten": "Éclaircir",
   "filterToneCurveDarken": "Assombrir",

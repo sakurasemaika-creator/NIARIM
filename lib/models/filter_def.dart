@@ -1,7 +1,9 @@
 /// 描画フィルターの種別（仕様書18：初期実装フィルター）。
 /// 実際のピクセル処理はlib/engine/filter_engine.dartのFilterEngineが行う。
 /// toneCurve・levelsはプレミアム限定（仕様書01・13・20）。
-enum FilterKind { gaussianBlur, lensBlur, animeStyle, toneCurve, levels }
+/// outline：選択レイヤーの描画内容（不透明部分）の周囲を指定色・指定px幅で
+/// 縁取る（ユーザー指示により新規追加）。
+enum FilterKind { gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
 /// 本格的な自由曲線編集の代わりに、よく使う形状をプリセットとして提供する。
@@ -17,6 +19,10 @@ enum ToneCurvePreset { linear, brighten, darken, highContrast, lowContrast, inve
 /// [colorLevels]・[edgeStrength]はanimeStyleのみで使用する
 /// （edgeStrengthはSobelエッジ強度（0〜255程度）へ掛ける係数のため、
 /// 0.0〜1.0程度の小さい値を想定）。
+/// [outlineColor]・[outlineWidth]はoutlineのみで使用する。outlineColorは
+/// ARGB32形式のint値（他のパラメータと同様プリミティブ型のみで構成し、
+/// compute()でのisolate越え受け渡しでも安全なようにしている。dart:ui.Colorへの
+/// 変換はUI層（filter_panel.dart）・FilterEngine側でその都度行う）。
 class FilterDef {
   final String id;
   final String name;
@@ -32,6 +38,9 @@ class FilterDef {
   final int outputWhite;
   // トーンカーブ（toneCurveのみ使用）
   final ToneCurvePreset toneCurvePreset;
+  // 縁取り（outlineのみ使用）
+  final int outlineColor;
+  final double outlineWidth;
 
   const FilterDef({
     required this.id,
@@ -46,6 +55,8 @@ class FilterDef {
     this.outputBlack = 0,
     this.outputWhite = 255,
     this.toneCurvePreset = ToneCurvePreset.linear,
+    this.outlineColor = 0xFF000000,
+    this.outlineWidth = 6,
   });
 
   FilterDef copyWith({
@@ -61,6 +72,8 @@ class FilterDef {
     int? outputBlack,
     int? outputWhite,
     ToneCurvePreset? toneCurvePreset,
+    int? outlineColor,
+    double? outlineWidth,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -75,6 +88,8 @@ class FilterDef {
       outputBlack: outputBlack ?? this.outputBlack,
       outputWhite: outputWhite ?? this.outputWhite,
       toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
+      outlineColor: outlineColor ?? this.outlineColor,
+      outlineWidth: outlineWidth ?? this.outlineWidth,
     );
   }
 
@@ -91,6 +106,8 @@ class FilterDef {
         'outputBlack': outputBlack,
         'outputWhite': outputWhite,
         'toneCurvePreset': toneCurvePreset.name,
+        'outlineColor': outlineColor,
+        'outlineWidth': outlineWidth,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -109,5 +126,7 @@ class FilterDef {
         toneCurvePreset: ToneCurvePreset.values.firstWhere(
             (e) => e.name == j['toneCurvePreset'],
             orElse: () => ToneCurvePreset.linear),
+        outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
+        outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
       );
 }

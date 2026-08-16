@@ -38,6 +38,7 @@ class FilterService extends ChangeNotifier {
         FilterDef(id: 'Filter0003', name: 'アニメ風加工', kind: FilterKind.animeStyle, colorLevels: 6, edgeStrength: 0.4),
         FilterDef(id: 'Filter0004', name: 'トーンカーブ', kind: FilterKind.toneCurve),
         FilterDef(id: 'Filter0005', name: 'レベル補正', kind: FilterKind.levels),
+        FilterDef(id: 'Filter0006', name: '縁取り', kind: FilterKind.outline, outlineColor: 0xFF000000, outlineWidth: 6),
       ];
 
   Future<void> init() async {
@@ -73,6 +74,8 @@ class FilterService extends ChangeNotifier {
     int? outputBlack,
     int? outputWhite,
     ToneCurvePreset? toneCurvePreset,
+    int? outlineColor,
+    double? outlineWidth,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -85,6 +88,8 @@ class FilterService extends ChangeNotifier {
       outputBlack: outputBlack,
       outputWhite: outputWhite,
       toneCurvePreset: toneCurvePreset,
+      outlineColor: outlineColor,
+      outlineWidth: outlineWidth,
     );
     notifyListeners();
     _persist();

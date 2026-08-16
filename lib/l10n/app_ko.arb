@@ -780,6 +780,8 @@
   "filterStrengthBlurRadius": "강도(흐림 반경)",
   "filterColorLevels": "색상 수",
   "filterEdgeStrength": "엣지 강조",
+  "filterOutlineColor": "테두리 색상",
+  "filterOutlineWidth": "테두리 두께",
   "filterToneCurveLinear": "표준",
   "filterToneCurveBrighten": "밝게",
   "filterToneCurveDarken": "어둡게",

@@ -780,6 +780,8 @@
   "filterStrengthBlurRadius": "Intensidad (radio de desenfoque)",
   "filterColorLevels": "Número de colores",
   "filterEdgeStrength": "Realce de bordes",
+  "filterOutlineColor": "Color del contorno",
+  "filterOutlineWidth": "Grosor del contorno",
   "filterToneCurveLinear": "Estándar",
   "filterToneCurveBrighten": "Aclarar",
   "filterToneCurveDarken": "Oscurecer",

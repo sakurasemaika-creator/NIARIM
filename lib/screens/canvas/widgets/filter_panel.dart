@@ -14,6 +14,7 @@ import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
+import 'color_picker_panel.dart';
 
 /// 描画フィルターパネル（仕様書18）。
 /// フィルターの選択・パラメータ調整・プレビュー・適用を行う。
@@ -305,6 +306,37 @@ class _FilterPanelState extends State<FilterPanel> {
                             decimals: 2,
                           ),
                         ],
+                        if (current.kind == FilterKind.outline) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              children: [
+                                Text(l10n.filterOutlineColor, style: const TextStyle(fontSize: 11)),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () => _pickOutlineColor(filterService, current),
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: Color(current.outlineColor),
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterOutlineWidth,
+                            current.outlineWidth,
+                            1,
+                            60,
+                            (v) => filterService.updateFilterParams(current.id, outlineWidth: v),
+                          ),
+                        ],
                         if (current.kind == FilterKind.toneCurve)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -367,6 +399,25 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
+  /// 縁取り色の選択：アプリ標準のColorPickerPanel（HSV/RGB/HEX）を
+  /// ダイアログ上に載せて表示する（仕様書20のカラーピッカーをそのまま流用）。
+  void _pickOutlineColor(FilterService filterService, FilterDef current) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ColorPickerPanel(
+          currentColor: Color(current.outlineColor),
+          onColorChanged: (c) {
+            filterService.updateFilterParams(current.id, outlineColor: c.toARGB32());
+            _updatePreview();
+          },
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
   String _toneCurveLabel(AppLocalizations l10n, ToneCurvePreset preset) => switch (preset) {
         ToneCurvePreset.linear => l10n.filterToneCurveLinear,
         ToneCurvePreset.brighten => l10n.filterToneCurveBrighten,
@@ -422,6 +473,14 @@ class _FilterPanelState extends State<FilterPanel> {
           colorCount: filter.colorLevels,
           edgeStrength: filter.edgeStrength,
         );
+      case FilterKind.outline:
+        return _engine.applyOutline(
+          data,
+          width,
+          height,
+          color: filter.outlineColor,
+          widthPx: filter.outlineWidth,
+        );
       case FilterKind.toneCurve:
         return _engine.applyToneCurve(data, width, height, toneCurvePoints(filter.toneCurvePreset));
       case FilterKind.levels:
@@ -443,6 +502,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.blur_circular;
       case FilterKind.animeStyle:
         return Icons.auto_awesome;
+      case FilterKind.outline:
+        return Icons.border_outer;
       case FilterKind.toneCurve:
         return Icons.show_chart;
       case FilterKind.levels:

@@ -780,6 +780,8 @@
   "filterStrengthBlurRadius": "Strength (blur radius)",
   "filterColorLevels": "Color levels",
   "filterEdgeStrength": "Edge strength",
+  "filterOutlineColor": "Outline color",
+  "filterOutlineWidth": "Outline width",
   "filterToneCurveLinear": "Standard",
   "filterToneCurveBrighten": "Brighten",
   "filterToneCurveDarken": "Darken",

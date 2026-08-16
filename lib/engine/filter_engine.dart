@@ -21,6 +21,13 @@ Uint8List applyDrawFilterInIsolate(
         colorCount: filter.colorLevels,
         edgeStrength: filter.edgeStrength,
       ),
+    FilterKind.outline => engine.applyOutline(
+        data,
+        width,
+        height,
+        color: filter.outlineColor,
+        widthPx: filter.outlineWidth,
+      ),
     FilterKind.toneCurve => engine.applyToneCurve(
         data, width, height, toneCurvePoints(filter.toneCurvePreset)),
     FilterKind.levels => engine.applyLevels(
@@ -211,6 +218,77 @@ class FilterEngine {
       }
     }
     return posterized;
+  }
+
+  /// 縁取りフィルター：選択レイヤーの描画内容（不透明部分）の周囲を、
+  /// 指定色・指定px幅で縁取る（ユーザー指示により新規実装）。
+  /// 元々不透明だった画素はそのまま残し、透明だった画素のうち縁取り半径内に
+  /// 不透明画素があるものだけを縁取り色で塗る。内側の塗りは変更しないため、
+  /// 縁と塗りを重ねても既存の描画内容を壊さない。
+  /// [color]はARGB32形式のint値（FilterDef.outlineColorと同じ表現）。
+  Uint8List applyOutline(Uint8List data, int width, int height, {
+    required int color,
+    required double widthPx,
+  }) {
+    final radius = widthPx.round().clamp(1, 100);
+    final result = Uint8List.fromList(data);
+    final ca = (color >> 24) & 0xFF;
+    final cr = (color >> 16) & 0xFF;
+    final cg = (color >> 8) & 0xFF;
+    final cb = color & 0xFF;
+    const alphaThreshold = 10;
+
+    // 元画像の不透明部分のバウンディングボックスを求め、縁取り半径分広げた
+    // 範囲だけを探索する（全画面を毎回スキャンする無駄を避けるための最適化）。
+    int minX = width, minY = height, maxX = -1, maxY = -1;
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        if (data[(y * width + x) * 4 + 3] > alphaThreshold) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return result; // 描画内容が無い場合は何もしない
+
+    final startX = (minX - radius).clamp(0, width - 1);
+    final endX = (maxX + radius).clamp(0, width - 1);
+    final startY = (minY - radius).clamp(0, height - 1);
+    final endY = (maxY + radius).clamp(0, height - 1);
+    final r2 = radius * radius;
+
+    for (int y = startY; y <= endY; y++) {
+      for (int x = startX; x <= endX; x++) {
+        final idx = (y * width + x) * 4;
+        if (data[idx + 3] > alphaThreshold) continue; // 元々の描画部分は保持
+        bool hit = false;
+        for (int dy = -radius; dy <= radius && !hit; dy++) {
+          final ny = y + dy;
+          if (ny < 0 || ny >= height) continue;
+          final dxMax2 = r2 - dy * dy;
+          if (dxMax2 < 0) continue;
+          final dxMax = math.sqrt(dxMax2).floor();
+          final rowBase = ny * width;
+          for (int dx = -dxMax; dx <= dxMax; dx++) {
+            final nx = x + dx;
+            if (nx < 0 || nx >= width) continue;
+            if (data[(rowBase + nx) * 4 + 3] > alphaThreshold) {
+              hit = true;
+              break;
+            }
+          }
+        }
+        if (hit) {
+          result[idx] = cr;
+          result[idx + 1] = cg;
+          result[idx + 2] = cb;
+          result[idx + 3] = ca;
+        }
+      }
+    }
+    return result;
   }
 
   Uint8List applyFade(Uint8List data, int width, int height, ui.Color fadeColor, double progress) {

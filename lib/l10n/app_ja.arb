@@ -874,6 +874,8 @@
   "filterStrengthBlurRadius": "強さ（ぼかし半径）",
   "filterColorLevels": "色数",
   "filterEdgeStrength": "エッジ強調",
+  "filterOutlineColor": "縁取り色",
+  "filterOutlineWidth": "縁取り線幅",
   "filterToneCurveLinear": "標準",
   "filterToneCurveBrighten": "明るく",
   "filterToneCurveDarken": "暗く",
