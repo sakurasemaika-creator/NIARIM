@@ -777,6 +777,16 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "filterSearchHint": "Search filters",
+  "filterNameGaussianBlur": "Gaussian Blur",
+  "filterNameLensBlur": "Lens Blur",
+  "filterNameAnimeStyle": "Anime Style",
+  "filterNameOutline": "Outline",
+  "filterNameToneCurve": "Tone Curve",
+  "filterNameLevels": "Levels",
+  "filterOutlineLayerNameSuffix": "{name} (Outline)",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "filterStrengthBlurRadius": "Strength (blur radius)",
   "filterColorLevels": "Color levels",
   "filterEdgeStrength": "Edge strength",

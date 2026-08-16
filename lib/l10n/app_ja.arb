@@ -871,6 +871,16 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "filterSearchHint": "フィルター検索",
+  "filterNameGaussianBlur": "ガウスぼかし",
+  "filterNameLensBlur": "レンズぼかし",
+  "filterNameAnimeStyle": "アニメ風加工",
+  "filterNameOutline": "縁取り",
+  "filterNameToneCurve": "トーンカーブ",
+  "filterNameLevels": "レベル補正",
+  "filterOutlineLayerNameSuffix": "{name}（縁取り）",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "filterStrengthBlurRadius": "強さ（ぼかし半径）",
   "filterColorLevels": "色数",
   "filterEdgeStrength": "エッジ強調",

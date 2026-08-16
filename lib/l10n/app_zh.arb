@@ -777,6 +777,16 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "filterSearchHint": "搜索滤镜",
+  "filterNameGaussianBlur": "高斯模糊",
+  "filterNameLensBlur": "镜头模糊",
+  "filterNameAnimeStyle": "动漫风格",
+  "filterNameOutline": "描边",
+  "filterNameToneCurve": "色调曲线",
+  "filterNameLevels": "色阶",
+  "filterOutlineLayerNameSuffix": "{name}（描边）",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "filterStrengthBlurRadius": "强度（模糊半径）",
   "filterColorLevels": "颜色数",
   "filterEdgeStrength": "边缘强调",

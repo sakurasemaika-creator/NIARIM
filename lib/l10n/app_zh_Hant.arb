@@ -777,6 +777,16 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "filterSearchHint": "搜尋濾鏡",
+  "filterNameGaussianBlur": "高斯模糊",
+  "filterNameLensBlur": "鏡頭模糊",
+  "filterNameAnimeStyle": "動漫風格",
+  "filterNameOutline": "描邊",
+  "filterNameToneCurve": "色調曲線",
+  "filterNameLevels": "色階",
+  "filterOutlineLayerNameSuffix": "{name}（描邊）",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "filterStrengthBlurRadius": "強度（模糊半徑）",
   "filterColorLevels": "顏色數",
   "filterEdgeStrength": "邊緣強調",

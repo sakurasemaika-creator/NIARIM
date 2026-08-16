@@ -777,6 +777,16 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "filterSearchHint": "필터 검색",
+  "filterNameGaussianBlur": "가우시안 흐림",
+  "filterNameLensBlur": "렌즈 흐림",
+  "filterNameAnimeStyle": "애니메 스타일",
+  "filterNameOutline": "테두리",
+  "filterNameToneCurve": "톤 커브",
+  "filterNameLevels": "레벨 보정",
+  "filterOutlineLayerNameSuffix": "{name}(테두리)",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "filterStrengthBlurRadius": "강도(흐림 반경)",
   "filterColorLevels": "색상 수",
   "filterEdgeStrength": "엣지 강조",

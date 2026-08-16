@@ -777,6 +777,16 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "filterSearchHint": "Buscar filtros",
+  "filterNameGaussianBlur": "Desenfoque gaussiano",
+  "filterNameLensBlur": "Desenfoque de lente",
+  "filterNameAnimeStyle": "Estilo anime",
+  "filterNameOutline": "Contorno",
+  "filterNameToneCurve": "Curva de tonos",
+  "filterNameLevels": "Niveles",
+  "filterOutlineLayerNameSuffix": "{name} (Contorno)",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "filterStrengthBlurRadius": "Intensidad (radio de desenfoque)",
   "filterColorLevels": "Número de colores",
   "filterEdgeStrength": "Realce de bordes",

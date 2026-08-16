@@ -9,6 +9,7 @@ import '../../../engine/filter_engine.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/filter_def.dart';
+import '../../../models/layer.dart' as model;
 import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
@@ -127,9 +128,16 @@ class _FilterPanelState extends State<FilterPanel> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final filterService = context.watch<FilterService>();
-    final filters = _showFavoritesOnly
-        ? filterService.visibleFilters.where((f) => f.isFavorite).toList()
-        : filterService.visibleFilters;
+    // フィルター名は多言語対応のためl10n側で保持し（_filterDisplayName）、
+    // 検索・お気に入り絞込もその表示名に対して行う（FilterServiceは
+    // ChangeNotifierでBuildContext/l10nを持たないため、ローカライズが
+    // 絡む絞込はUI層で行う）。
+    final query = filterService.searchQuery;
+    final filters = filterService.filters.where((f) {
+      if (_showFavoritesOnly && !f.isFavorite) return false;
+      if (query.isEmpty) return true;
+      return _filterDisplayName(l10n, f).contains(query);
+    }).toList();
     final current = filterService.currentFilter;
     final bulk = widget.bulkFrameIndices;
 
@@ -217,7 +225,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                 children: [
                                   Icon(_iconFor(f.kind), size: 22),
                                   const SizedBox(height: 2),
-                                  Text(f.name,
+                                  Text(_filterDisplayName(l10n, f),
                                       style: const TextStyle(fontSize: 9),
                                       textAlign: TextAlign.center,
                                       maxLines: 2),
@@ -456,6 +464,19 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
+  /// フィルターの表示名を多言語対応で返す（仕様書18の初期実装フィルターは
+  /// 種別ごとに1つずつの固定セットで、ユーザーが新規フィルターを追加できる
+  /// UIは無いため、kindから一意に決まる）。永続化される[FilterDef.name]
+  /// 自体は内部識別用の日本語文字列のまま残し、表示のみここで差し替える。
+  String _filterDisplayName(AppLocalizations l10n, FilterDef f) => switch (f.kind) {
+        FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,
+        FilterKind.lensBlur => l10n.filterNameLensBlur,
+        FilterKind.animeStyle => l10n.filterNameAnimeStyle,
+        FilterKind.outline => l10n.filterNameOutline,
+        FilterKind.toneCurve => l10n.filterNameToneCurve,
+        FilterKind.levels => l10n.filterNameLevels,
+      };
+
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
   /// （プレビュー・実適用の共通エントリーポイント）。
   Uint8List _runFilter(FilterDef filter, Uint8List data, int width, int height) {
@@ -544,24 +565,39 @@ class _FilterPanelState extends State<FilterPanel> {
     widget.onClose();
   }
 
-  Future<void> _applyToFrame(
+  /// フィルターを1フレームへ適用する。縁取りフィルターの場合は新規レイヤーを
+  /// 作成するため、そのレイヤーIDを返す（複数フレーム一括適用時、
+  /// [outlineLayerId]としてこの戻り値を後続フレームへ渡すと、全フレームで
+  /// 同一IDの新規レイヤーとなり1つの連続したレイヤートラックとして扱える。
+  /// それ以外のフィルター種別ではnullを返す）。
+  Future<String?> _applyToFrame(
     ProjectService ps,
     TileManager tm,
     String layerId,
     FilterDef filter,
-    int frameIndex,
-  ) async {
+    int frameIndex, {
+    String? outlineLayerId,
+  }) async {
+    // BuildContextをasyncギャップ（await）をまたいで参照しないよう、
+    // 縁取りフィルターの新規レイヤー命名に使うl10nはawaitの前に取得しておく。
+    final l10n = filter.kind == FilterKind.outline ? AppLocalizations.of(context)! : null;
     final key = ps.tileKeyFor(widget.projectId, widget.sceneId, frameIndex, layerId);
     final img = await tm.compositeLayerToImage(key);
     final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
     img.dispose();
-    if (byteData == null) return;
+    if (byteData == null) return null;
     final data = byteData.buffer.asUint8List();
     // 低スペック端末でのUIスレッドブロックを避けるため、本適用（フル解像度）は
     // バックグラウンドisolateで実行する。プレビュー（縮小画像）は_runFilterのまま
     // メインisolateで即時処理する（isolate起動コストの方が高くつくため）。
     final result =
         await compute(applyDrawFilterInIsolate, (data, tm.canvasWidth, tm.canvasHeight, filter));
+
+    if (filter.kind == FilterKind.outline) {
+      return _applyOutlineToNewLayer(
+          ps, tm, layerId, filter, frameIndex, result, outlineLayerId, l10n!);
+    }
+
     tm.replaceLayerPixels(key, result);
 
     // TileManager書き込み後にupdateLayer()を呼び直し、キャンバス側の合成表示を
@@ -578,6 +614,67 @@ class _FilterPanelState extends State<FilterPanel> {
         layer: layer,
       );
     }
+    return null;
+  }
+
+  /// 縁取りフィルターの本適用（ユーザー指示：「選択中のレイヤーとは別に
+  /// 縁どった内容は新規レイヤーに描画してください」）。選択レイヤー自体は
+  /// 書き換えず、[ringData]（縁取りリング部分のみ・それ以外は透明。
+  /// applyDrawFilterInIsolate経由のapplyOutlineLayerの結果）を新規の
+  /// 通常レイヤーへ描画し、選択レイヤーの直下（背面側）へ挿入する。
+  /// 新規レイヤー作成は仕様書04の自動塗りレイヤー作成（layer_panel.dart）
+  /// と同じ手順：addLayer()で追加した後、目的の位置へreorderLayer()で
+  /// 移動する（addLayer()は常に最前面へ挿入するため）。
+  /// [outlineLayerId]を渡した場合はそのIDでレイヤーを作成する（複数フレーム
+  /// 一括適用時、1フレーム目で採番されたIDを後続フレームへも使い回すことで
+  /// 全フレームで同一IDの1つのレイヤートラックにするための引数）。
+  Future<String> _applyOutlineToNewLayer(
+    ProjectService ps,
+    TileManager tm,
+    String sourceLayerId,
+    FilterDef filter,
+    int frameIndex,
+    Uint8List ringData,
+    String? outlineLayerId,
+    AppLocalizations l10n,
+  ) async {
+    final sourceLayer = ps
+        .layersOf(widget.projectId, widget.sceneId, frameIndex)
+        .where((l) => l.id == sourceLayerId)
+        .firstOrNull;
+    final sourceName = sourceLayer?.name ?? _filterDisplayName(l10n, filter);
+
+    final created = ps.addLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: frameIndex,
+      type: model.LayerType.normal,
+      name: l10n.filterOutlineLayerNameSuffix(sourceName),
+      id: outlineLayerId,
+    );
+
+    final layers = ps.layersOf(widget.projectId, widget.sceneId, frameIndex);
+    final createdIdx = layers.indexWhere((l) => l.id == created.id);
+    final targetIdx = layers.indexWhere((l) => l.id == sourceLayerId) + 1;
+    if (createdIdx >= 0 && targetIdx >= 0 && createdIdx != targetIdx) {
+      ps.reorderLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: frameIndex,
+        oldIndex: createdIdx,
+        newIndex: targetIdx,
+      );
+    }
+
+    final newKey = ps.tileKeyFor(widget.projectId, widget.sceneId, frameIndex, created.id);
+    tm.replaceLayerPixels(newKey, ringData);
+    ps.updateLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: frameIndex,
+      layer: created,
+    );
+    return created.id;
   }
 
   /// 大量処理実行時（仕様書18）：選択した全フレームへ順に適用し、
@@ -604,7 +701,7 @@ class _FilterPanelState extends State<FilterPanel> {
           return ProgressDialog(
             title: l10n.filterApplyingTitle,
             progress: progress,
-            subtitle: l10n.filterApplyingSubtitle(filter.name, sorted.length),
+            subtitle: l10n.filterApplyingSubtitle(_filterDisplayName(l10n, filter), sorted.length),
           );
         },
       ),
@@ -612,8 +709,14 @@ class _FilterPanelState extends State<FilterPanel> {
     // ダイアログのbuilderが最初に走るまで1フレーム待つ
     await Future.delayed(const Duration(milliseconds: 16));
 
+    // 縁取りフィルターは新規レイヤーを作成するため、1フレーム目で採番された
+    // レイヤーIDを以降のフレームへも使い回し、全フレームで同一IDの1つの
+    // レイヤートラックになるようにする。
+    String? outlineLayerId;
     for (int i = 0; i < sorted.length; i++) {
-      await _applyToFrame(ps, tm, layerId, filter, sorted[i]);
+      final createdId =
+          await _applyToFrame(ps, tm, layerId, filter, sorted[i], outlineLayerId: outlineLayerId);
+      outlineLayerId ??= createdId;
       progress = (i + 1) / sorted.length;
       setDialogState?.call(() {});
     }

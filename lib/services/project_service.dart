@@ -608,15 +608,19 @@ class ProjectService extends ChangeNotifier {
     return layer;
   }
 
-  /// 通常レイヤーを追加し、Undoスタックに積む
+  /// 通常レイヤーを追加し、Undoスタックに積む。[id]を指定した場合はそのIDを
+  /// そのまま使う（例：フィルターの複数フレーム一括適用で、各フレームに
+  /// 同一IDの新規レイヤーを挿入し、1つの連続したレイヤートラックとして
+  /// 扱えるようにする用途。省略時は従来通り自動採番する）。
   Layer addLayer({
     required String projectId,
     required String sceneId,
     required int frameIndex,
     required LayerType type,
     required String name,
+    String? id,
   }) {
-    final layerId = _nextLayerId(projectId);
+    final layerId = id ?? _nextLayerId(projectId);
     final layer = Layer(id: layerId, name: name, type: type);
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);

@@ -777,6 +777,16 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "filterSearchHint": "Rechercher un filtre",
+  "filterNameGaussianBlur": "Flou gaussien",
+  "filterNameLensBlur": "Flou d'objectif",
+  "filterNameAnimeStyle": "Style anime",
+  "filterNameOutline": "Contour",
+  "filterNameToneCurve": "Courbe de tons",
+  "filterNameLevels": "Niveaux",
+  "filterOutlineLayerNameSuffix": "{name} (Contour)",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "filterStrengthBlurRadius": "Intensité (rayon de flou)",
   "filterColorLevels": "Nombre de couleurs",
   "filterEdgeStrength": "Accentuation des contours",

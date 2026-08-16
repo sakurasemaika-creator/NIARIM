@@ -21,7 +21,10 @@ Uint8List applyDrawFilterInIsolate(
         colorCount: filter.colorLevels,
         edgeStrength: filter.edgeStrength,
       ),
-    FilterKind.outline => engine.applyOutline(
+    // 本適用は選択レイヤーを書き換えず新規レイヤーへ縁取りリングのみを
+    // 描画するため、applyOutline（元の描画内容を保持した合成結果。
+    // プレビュー専用）ではなくapplyOutlineLayer（リング部分のみ）を使う。
+    FilterKind.outline => engine.applyOutlineLayer(
         data,
         width,
         height,
@@ -220,18 +223,39 @@ class FilterEngine {
     return posterized;
   }
 
-  /// 縁取りフィルター：選択レイヤーの描画内容（不透明部分）の周囲を、
-  /// 指定色・指定px幅で縁取る（ユーザー指示により新規実装）。
-  /// 元々不透明だった画素はそのまま残し、透明だった画素のうち縁取り半径内に
-  /// 不透明画素があるものだけを縁取り色で塗る。内側の塗りは変更しないため、
-  /// 縁と塗りを重ねても既存の描画内容を壊さない。
-  /// [color]はARGB32形式のint値（FilterDef.outlineColorと同じ表現）。
+  /// 縁取りフィルター（プレビュー・単一レイヤー合成用）：選択レイヤーの
+  /// 描画内容（不透明部分）はそのまま残し、その周囲へ指定色・指定px幅の
+  /// 縁取りを重ねた画像を返す。プレビューサムネイルの生成にのみ使用する
+  /// （実際の本適用は、選択レイヤーを書き換えずリング部分だけを新規
+  /// レイヤーへ描画するため[applyOutlineLayer]を使う）。
   Uint8List applyOutline(Uint8List data, int width, int height, {
     required int color,
     required double widthPx,
+  }) => _outlineFill(data, width, height, color: color, widthPx: widthPx, keepSource: true);
+
+  /// 縁取りフィルター（本適用用）：選択レイヤーの描画内容はコピーせず、
+  /// 縁取りリング部分だけを描画した画像（それ以外は透明）を返す。
+  /// ユーザー指示「選択中のレイヤーとは別に縁どった内容は新規レイヤーに
+  /// 描画してください」を受け、選択レイヤーの直下へ挿入する新規レイヤーの
+  /// ピクセルデータとして使う（filter_panel.dartの`_applyToFrame`参照）。
+  Uint8List applyOutlineLayer(Uint8List data, int width, int height, {
+    required int color,
+    required double widthPx,
+  }) => _outlineFill(data, width, height, color: color, widthPx: widthPx, keepSource: false);
+
+  /// 縁取り計算の共通処理。[keepSource]がtrueなら元の不透明画素をそのまま
+  /// 結果へコピーする（[applyOutline]）。falseなら縁取りリング部分だけを
+  /// 書き込み、それ以外は透明のまま返す（[applyOutlineLayer]）。
+  /// いずれも元画像側で不透明だった画素はリングの対象から除外するため、
+  /// 元の描画内容の上にリングが重なって隠すことはない。
+  /// [color]はARGB32形式のint値（FilterDef.outlineColorと同じ表現）。
+  Uint8List _outlineFill(Uint8List data, int width, int height, {
+    required int color,
+    required double widthPx,
+    required bool keepSource,
   }) {
     final radius = widthPx.round().clamp(1, 100);
-    final result = Uint8List.fromList(data);
+    final result = keepSource ? Uint8List.fromList(data) : Uint8List(data.length);
     final ca = (color >> 24) & 0xFF;
     final cr = (color >> 16) & 0xFF;
     final cg = (color >> 8) & 0xFF;
