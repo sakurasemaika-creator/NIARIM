@@ -7,7 +7,7 @@ class Brush {
   final int blurRadius;
   final bool stabilization;
   final int stabilizationStrength;
-  final bool dotPenMode;
+  final bool pixelMode;
   final PressureMode pressureMode;
   final int pressureStrength;
   final FadeMode fadeMode;
@@ -28,7 +28,7 @@ class Brush {
     required this.blurRadius,
     required this.stabilization,
     required this.stabilizationStrength,
-    required this.dotPenMode,
+    required this.pixelMode,
     required this.pressureMode,
     required this.pressureStrength,
     required this.fadeMode,
@@ -50,7 +50,7 @@ class Brush {
     int? blurRadius,
     bool? stabilization,
     int? stabilizationStrength,
-    bool? dotPenMode,
+    bool? pixelMode,
     PressureMode? pressureMode,
     int? pressureStrength,
     FadeMode? fadeMode,
@@ -71,7 +71,7 @@ class Brush {
       blurRadius: blurRadius ?? this.blurRadius,
       stabilization: stabilization ?? this.stabilization,
       stabilizationStrength: stabilizationStrength ?? this.stabilizationStrength,
-      dotPenMode: dotPenMode ?? this.dotPenMode,
+      pixelMode: pixelMode ?? this.pixelMode,
       pressureMode: pressureMode ?? this.pressureMode,
       pressureStrength: pressureStrength ?? this.pressureStrength,
       fadeMode: fadeMode ?? this.fadeMode,
@@ -94,7 +94,7 @@ class Brush {
         'blurRadius': blurRadius,
         'stabilization': stabilization,
         'stabilizationStrength': stabilizationStrength,
-        'dotPenMode': dotPenMode,
+        'pixelMode': pixelMode,
         'pressureMode': pressureMode.name,
         'pressureStrength': pressureStrength,
         'fadeMode': fadeMode.name,
@@ -122,7 +122,11 @@ class Brush {
         blurRadius: j['blurRadius'] as int,
         stabilization: j['stabilization'] as bool,
         stabilizationStrength: j['stabilizationStrength'] as int,
-        dotPenMode: j['dotPenMode'] as bool,
+        // pixelModeは旧称dotPenModeからの改称（ユーザー指示：「ドット」だと
+        // 水玉模様と誤認される恐れがあるため）。旧バージョンで保存・共有
+        // 済みのブラシ（.niabrush・SharedPreferences永続化データ）を
+        // 引き続き読み込めるよう、旧キーからのフォールバックを残す。
+        pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
         pressureMode: PressureMode.values
             .firstWhere((e) => e.name == j['pressureMode'], orElse: () => PressureMode.off),
         pressureStrength: j['pressureStrength'] as int,

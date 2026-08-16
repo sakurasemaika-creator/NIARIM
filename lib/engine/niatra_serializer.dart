@@ -144,7 +144,7 @@ class NiatraSerializer {
         'id': b.id, 'name': b.name, 'size': b.size, 'opacity': b.opacity,
         'spacing': b.spacing, 'blurRadius': b.blurRadius,
         'stabilization': b.stabilization, 'stabilizationStrength': b.stabilizationStrength,
-        'dotPenMode': b.dotPenMode, 'pressureMode': b.pressureMode.name,
+        'pixelMode': b.pixelMode, 'pressureMode': b.pressureMode.name,
         'pressureStrength': b.pressureStrength, 'fadeMode': b.fadeMode.name,
         'strokeDecay': b.strokeDecay, 'mixingMode': b.mixingMode.name,
         'mixingRate': b.mixingRate, 'isFavorite': b.isFavorite,
@@ -159,7 +159,9 @@ class NiatraSerializer {
         blurRadius: j['blurRadius'] as int,
         stabilization: j['stabilization'] as bool,
         stabilizationStrength: j['stabilizationStrength'] as int,
-        dotPenMode: j['dotPenMode'] as bool,
+        // pixelModeは旧称dotPenModeからの改称。旧バージョンで書き出された
+        // .niatraファイルも引き続き読み込めるよう旧キーへフォールバックする。
+        pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
         pressureMode: PressureMode.values.firstWhere((e) => e.name == j['pressureMode'],
             orElse: () => PressureMode.off),
         pressureStrength: j['pressureStrength'] as int,
@@ -187,6 +189,7 @@ class NiatraSerializer {
   static Map<String, dynamic> _serializeStamp(Stamp s) => {
         'id': s.id, 'name': s.name, 'imagePath': s.imagePath, 'isFavorite': s.isFavorite,
         'rotation': s.rotation, 'density': s.density, 'scatter': s.scatter,
+        'pixelMode': s.pixelMode,
       };
 
   static Stamp _deserializeStamp(Map<String, dynamic> j) => Stamp(
@@ -197,6 +200,7 @@ class NiatraSerializer {
         rotation: j['rotation'] as bool? ?? false,
         density: (j['density'] as num?)?.toDouble() ?? 1.0,
         scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+        pixelMode: j['pixelMode'] as bool? ?? false,
       );
 
   // ─── AutofillPreset ───────────────────────────────────────────────────

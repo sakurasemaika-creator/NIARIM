@@ -155,13 +155,13 @@ class DrawingEngine {
     final tilt = calcTiltTransform(tiltX, tiltY);
 
     // 自作ブラシ（仕様書17：ブラシ画像からのブラシ作成）が選択され、
-    // 事前読み込み済みの場合はその形状を、それ以外は円形（またはドットペン）
-    // でスタンプする。
+    // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
+    // モード）でスタンプする。
     final texturePath = brush.customImagePath;
     final customTexture = texturePath != null ? getCachedBrushTexture(texturePath) : null;
     _renderCircleStamp(
       x, y, radius, alphaInt, tilt,
-      layerId, brush.dotPenMode, brush.blurRadius, customTexture,
+      layerId, brush.pixelMode, brush.blurRadius, customTexture,
     );
   }
 
@@ -172,7 +172,7 @@ class DrawingEngine {
     int alpha,
     ({double scaleX, double scaleY, double angle}) tilt,
     String layerId,
-    bool dotPenMode,
+    bool pixelMode,
     int blurRadius,
     Uint8List? customTexture,
   ) {
@@ -225,7 +225,7 @@ class DrawingEngine {
             double pixelAlpha;
             if (customTexture != null) {
               // 自作ブラシ画像：楕円内をテクスチャのアルファでサンプリング
-              // （ドットペン・ぼかし半径は画像自体の形状に委ねるため未適用）。
+              // （ピクセルモード・ぼかし半径は画像自体の形状に委ねるため未適用）。
               if (dist > radius) {
                 pixelAlpha = 0.0;
               } else {
@@ -238,8 +238,8 @@ class DrawingEngine {
                 final texIdx = (texY * brushTextureSize + texX) * 4;
                 pixelAlpha = customTexture[texIdx + 3] / 255.0;
               }
-            } else if (dotPenMode) {
-              // ドットペン：エッジをシャープに
+            } else if (pixelMode) {
+              // ピクセルモード：エッジをシャープに（アンチエイリアス無し）
               pixelAlpha = dist <= radius ? 1.0 : 0.0;
             } else if (blur > 0) {
               // ソフトブラシ：ガウス的なフォールオフ

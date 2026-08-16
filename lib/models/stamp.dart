@@ -8,6 +8,10 @@ class Stamp {
   final bool rotation;
   final double density;
   final double scatter;
+  // ピクセルモード（ユーザー指示により新規追加）：ONの場合、このスタンプの
+  // テクスチャをドット絵風（モザイク低解像度化＋色数削減）に加工してから
+  // 描画する（procedural_texture.dartのgenerateBuiltInStampTexture参照）。
+  final bool pixelMode;
 
   const Stamp({
     required this.id,
@@ -18,6 +22,7 @@ class Stamp {
     this.rotation = false,
     this.density = 1.0,
     this.scatter = 0.0,
+    this.pixelMode = false,
   });
 
   Stamp copyWith({
@@ -29,6 +34,7 @@ class Stamp {
     bool? rotation,
     double? density,
     double? scatter,
+    bool? pixelMode,
   }) {
     return Stamp(
       id: id ?? this.id,
@@ -39,6 +45,7 @@ class Stamp {
       rotation: rotation ?? this.rotation,
       density: density ?? this.density,
       scatter: scatter ?? this.scatter,
+      pixelMode: pixelMode ?? this.pixelMode,
     );
   }
 
@@ -51,6 +58,7 @@ class Stamp {
         'rotation': rotation,
         'density': density,
         'scatter': scatter,
+        'pixelMode': pixelMode,
       };
 
   factory Stamp.fromJson(Map<String, dynamic> j) => Stamp(
@@ -62,5 +70,6 @@ class Stamp {
         rotation: j['rotation'] as bool? ?? false,
         density: (j['density'] as num?)?.toDouble() ?? 1.0,
         scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+        pixelMode: j['pixelMode'] as bool? ?? false,
       );
 }

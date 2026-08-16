@@ -315,6 +315,28 @@ class FilterEngine {
     return result;
   }
 
+  /// ピクセル化（ドット絵化）：ブロック平均化（モザイク）で低解像度化した
+  /// うえで色数削減（ポスタリゼーション）を行い、ドット絵らしい見た目に
+  /// する。スタンプ画像のピクセルモード（ユーザー指示により新規追加）で
+  /// 使用する。ペン・テキストのピクセルモード（アルファの二値化のみで
+  /// 済む単色描画）と異なり、スタンプ画像は任意の多色RGBA画像のため、
+  /// 単純な二値化だけでは真のドット絵にはならず、実際に低解像度化＋
+  /// 色数削減の両方が必要になる。
+  Uint8List applyPixelate(Uint8List data, int width, int height, {
+    int mosaicSize = 8,
+    int colorLevels = 6,
+  }) {
+    final mosaic = applyMosaic(data, width, height, mosaicSize);
+    final step = (256 / colorLevels.clamp(2, 32)).round();
+    final result = Uint8List.fromList(mosaic);
+    for (int i = 0; i < result.length; i += 4) {
+      result[i] = ((result[i] / step).round() * step).clamp(0, 255);
+      result[i + 1] = ((result[i + 1] / step).round() * step).clamp(0, 255);
+      result[i + 2] = ((result[i + 2] / step).round() * step).clamp(0, 255);
+    }
+    return result;
+  }
+
   Uint8List applyFade(Uint8List data, int width, int height, ui.Color fadeColor, double progress) {
     final result = Uint8List.fromList(data);
     final fr = (fadeColor.r * 255).round();

@@ -64,7 +64,7 @@ void main() {
       const custom = Brush(
         id: 'BrushCustom001', name: '自作ブラシ', size: 12, opacity: 90, spacing: 15,
         blurRadius: 5, stabilization: true, stabilizationStrength: 40,
-        dotPenMode: true, pressureMode: PressureMode.sizeAndOpacity, pressureStrength: 55,
+        pixelMode: true, pressureMode: PressureMode.sizeAndOpacity, pressureStrength: 55,
         fadeMode: FadeMode.custom,
         fadeCustom: FadeCustomSettings(startValue: 100, endValue: 20, distancePx: 80),
         strokeDecay: true, mixingMode: BrushMixingMode.bleed, mixingRate: 40,
@@ -76,7 +76,7 @@ void main() {
       await s2.init();
       final restored = s2.brushes.firstWhere((b) => b.id == 'BrushCustom001');
       expect(restored.size, 20);
-      expect(restored.dotPenMode, isTrue);
+      expect(restored.pixelMode, isTrue);
       expect(restored.fadeCustom?.startValue, 100);
       expect(restored.mixingMode, BrushMixingMode.bleed);
     });

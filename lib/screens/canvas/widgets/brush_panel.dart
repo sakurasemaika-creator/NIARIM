@@ -347,11 +347,12 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           if (_brush.stabilization)
             _sliderRow(l10n.brushSettingsStabilizationStrengthLabel, _brush.stabilizationStrength.toDouble(), 0, 100,
                 (v) => setState(() => _brush = _brush.copyWith(stabilizationStrength: v.round()))),
-          // ドットペンモード
+          // ピクセルモード（旧称：ドットペンモード。ユーザー指示により改称。
+          // 「ドット」だと水玉模様と誤認される恐れがあるため）
           SwitchListTile(
-            title: Text(l10n.brushSettingsDotPenModeTitle),
-            value: _brush.dotPenMode,
-            onChanged: (v) => setState(() => _brush = _brush.copyWith(dotPenMode: v)),
+            title: Text(l10n.brushSettingsPixelModeTitle),
+            value: _brush.pixelMode,
+            onChanged: (v) => setState(() => _brush = _brush.copyWith(pixelMode: v)),
           ),
           const Divider(),
           // 筆圧設定

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/stamp.dart';
 import '../models/tone.dart';
+import 'filter_engine.dart';
 
 /// [Tone.texturePath] / [Stamp.imagePath] が未設定（アプリ組み込みの初期
 /// トーン・スタンプにはテクスチャ画像が同梱されていない）の場合に、名前から
@@ -117,21 +118,34 @@ void _fillLinePattern(Uint8List data, int size, int thickness) {
 /// 使用し、それ以外は組み込みスタンプ向けの簡易図形（三角形・五角形・
 /// 六角形・星・ハート・吹き出し・矢印）を固定色（黒）でラスタライズする
 /// （仕様書17：スタンプは現在色を使わず自身の色情報を保持する仕様）。
+/// [Stamp.pixelMode]がONの場合は、最後にFilterEngine.applyPixelate()で
+/// モザイク低解像度化＋色数削減を行い、ドット絵風に加工する（ユーザー
+/// 指示により新規追加。多色のスタンプ画像はペン/テキストのようなアルファ
+/// 二値化だけでは真のドット絵にならないため、低解像度化と色数削減の
+/// 両方が必要）。ストローク確定のたびに毎回呼ばれる関数のため、事前に
+/// 加工済み画像をキャッシュするような仕組みは持たず、その都度計算する
+/// （テクスチャサイズが小さく負荷は軽微なため）。
 Future<Uint8List> generateBuiltInStampTexture(Stamp stamp, {int size = 128}) async {
   final path = stamp.imagePath;
+  Uint8List? texture;
   if (path != null) {
-    final loaded = await _loadImageRgba(path, size);
-    if (loaded != null) return loaded;
+    texture = await _loadImageRgba(path, size);
   }
-  final recorder = ui.PictureRecorder();
-  final canvas = ui.Canvas(recorder);
-  final paint = ui.Paint()..color = const ui.Color(0xFF222222);
-  canvas.drawPath(_shapePathForName(stamp.name, size.toDouble()), paint);
-  final picture = recorder.endRecording();
-  final img = await picture.toImage(size, size);
-  final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
-  img.dispose();
-  return byteData!.buffer.asUint8List();
+  if (texture == null) {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final paint = ui.Paint()..color = const ui.Color(0xFF222222);
+    canvas.drawPath(_shapePathForName(stamp.name, size.toDouble()), paint);
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(size, size);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+    img.dispose();
+    texture = byteData!.buffer.asUint8List();
+  }
+  if (stamp.pixelMode) {
+    texture = FilterEngine().applyPixelate(texture, size, size);
+  }
+  return texture;
 }
 
 ui.Path _shapePathForName(String name, double s) {

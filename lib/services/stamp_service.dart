@@ -248,6 +248,7 @@ class StampService extends ChangeNotifier {
       rotation: imported.rotation,
       density: imported.density,
       scatter: imported.scatter,
+      pixelMode: imported.pixelMode,
     );
     addStamp(stamp);
     return stamp;

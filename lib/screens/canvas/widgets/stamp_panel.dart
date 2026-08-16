@@ -310,6 +310,14 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
             value: _stamp.rotation,
             onChanged: (v) => setState(() => _stamp = _stamp.copyWith(rotation: v)),
           ),
+          // ピクセルモード（ユーザー指示により新規追加）：ONにするとスタンプ
+          // テクスチャをモザイク低解像度化＋色数削減でドット絵風に加工する。
+          SwitchListTile(
+            title: Text(l10n.stampPixelModeLabel),
+            subtitle: Text(l10n.stampPixelModeHint, style: const TextStyle(fontSize: 11)),
+            value: _stamp.pixelMode,
+            onChanged: (v) => setState(() => _stamp = _stamp.copyWith(pixelMode: v)),
+          ),
           _sliderRow(l10n.stampDensityLabel, _stamp.density, 0.1, 5.0,
               (v) => setState(() => _stamp = _stamp.copyWith(density: v))),
           _sliderRow(l10n.stampScatterLabel, _stamp.scatter, 0.0, 1.0,
