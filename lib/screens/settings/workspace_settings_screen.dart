@@ -54,6 +54,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                       CheckboxListTile(
                         key: ValueKey(id),
                         title: Text(id.label(l10n)),
+                        // 手のひらツールはPCモード限定（ユーザー指示）：スマホモードでは
+                        // ONにしていても表示されないことをここで明示する。
+                        subtitle: isPcOnlyToolbarItem(id) ? Text(l10n.workspaceToolbarPcOnlyHint) : null,
                         value: !settings.hiddenToolbarItems.contains(id),
                         onChanged: (v) => settings.setToolbarItemVisible(id, v ?? true),
                         secondary: const Icon(Icons.drag_handle),
@@ -244,7 +247,12 @@ class _ToolbarPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final visible = order.where((id) => !hidden.contains(id)).toList();
+    // 手のひらツールはPCモード限定のため、プレビューも実際のツールバーと
+    // 同じ条件でフィルタリングして表示のズレを防ぐ。
+    final visible = order
+        .where((id) => !hidden.contains(id))
+        .where((id) => !isPcOnlyToolbarItem(id) || isWideScreen(context))
+        .toList();
     final scheme = Theme.of(context).colorScheme;
     return Container(
       height: 48,

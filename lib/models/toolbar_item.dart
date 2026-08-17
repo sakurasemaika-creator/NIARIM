@@ -19,11 +19,19 @@ enum ToolbarItemId {
   bucket,
   eyedropper,
   finger,
+  // 手のひらツール（画面移動専用）。ユーザー指示によりPCモードでのみ
+  // ツールバーに表示する（スマホモードは2本指ドラッグで画面移動できる
+  // ため、指先ツール〔歪み〕と役割が被らないようここだけPC限定とする）。
+  pan,
   select,
   transform,
   text,
   shape,
 }
+
+/// PCモードでのみツールバーに表示すべき項目かどうか（仕様書08：手のひら
+/// ツールはPCモード限定。それ以外の項目はスマホ・PC共通で表示する）。
+bool isPcOnlyToolbarItem(ToolbarItemId id) => id == ToolbarItemId.pan;
 
 extension ToolbarItemLabel on ToolbarItemId {
   String label(AppLocalizations l10n) => switch (this) {
@@ -32,6 +40,7 @@ extension ToolbarItemLabel on ToolbarItemId {
         ToolbarItemId.bucket => l10n.toolbarItemBucket,
         ToolbarItemId.eyedropper => l10n.toolbarItemEyedropper,
         ToolbarItemId.finger => l10n.toolbarItemFinger,
+        ToolbarItemId.pan => l10n.toolbarItemPan,
         ToolbarItemId.select => l10n.toolbarItemSelect,
         ToolbarItemId.transform => l10n.toolbarItemTransform,
         ToolbarItemId.text => l10n.toolbarItemText,
@@ -51,7 +60,11 @@ extension ToolbarItemIcon on ToolbarItemId {
         ToolbarItemId.eraser => Icons.crop_square,
         ToolbarItemId.bucket => Icons.format_color_fill,
         ToolbarItemId.eyedropper => Icons.colorize,
-        ToolbarItemId.finger => Icons.back_hand,
+        // 指先ツール（歪み）：ユーザー指示により人差し指を立てたアイコンへ
+        // 変更（以前のback_handは掌全体を広げた「手のひら」の形で紛らわしく、
+        // 手のひらツール〔画面移動〕の方へ移した）。
+        ToolbarItemId.finger => Icons.pan_tool_alt,
+        ToolbarItemId.pan => Icons.back_hand,
         ToolbarItemId.select => Icons.auto_fix_high,
         ToolbarItemId.transform => Icons.transform,
         ToolbarItemId.text => Icons.text_fields,
