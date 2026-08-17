@@ -18,7 +18,6 @@ import '../../services/share_intent_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
-import '../../widgets/help_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -188,7 +187,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               )
             : Text(l10n.appTitle),
         actions: [
-          const HelpButton(),
+          // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
+          // トップ画面右上からは重複表示を削除した（ユーザー指示）。
           if (_isSearching)
             IconButton(
               icon: const Icon(Icons.close),
@@ -220,7 +220,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
             IconButton(icon: const Icon(Icons.search), onPressed: () => setState(() => _isSearching = true)),
-            IconButton(icon: const Icon(Icons.settings), onPressed: () => context.push('/settings')),
           ],
         ],
         bottom: TabBar(

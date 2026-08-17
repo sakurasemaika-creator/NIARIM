@@ -286,14 +286,18 @@ class ThemeService extends ChangeNotifier {
     // 無い場合のみ端末標準フォントへフォールバックする。数値表示は個別の
     // ウィジェット側でAndroid標準フォント（未指定＝Roboto/Noto Sans）を
     // 明示的に指定して上書きする。
-    final textTheme = _withFontFallback(
+    // 明朝体（白光明朝）は線が細く、通常の太さ（Regular）のままだと画面全体で
+    // 文字が読みにくいというユーザー指摘への対応。デフォルトの太さがRegular
+    // 以下（未指定含む）のスタイルはMedium以上へ底上げする（既に太字指定済み
+    // の箇所、例：AppBarタイトルのBold等はそのまま維持される）。
+    final textTheme = _boldenForReadability(_withFontFallback(
       baseTextTheme.apply(
         fontFamily: 'HakkouMincho',
         bodyColor: preset.textColor,
         displayColor: preset.textColor,
       ),
       const ['NotoSerifJP'],
-    );
+    ));
 
     return ThemeData(
       useMaterial3: true,
@@ -443,6 +447,36 @@ class ThemeService extends ChangeNotifier {
       labelLarge: apply(textTheme.labelLarge),
       labelMedium: apply(textTheme.labelMedium),
       labelSmall: apply(textTheme.labelSmall),
+    );
+  }
+
+  /// 明朝体は線が細く視認性が低いため、太さがRegular（w400）以下、または
+  /// 未指定のスタイルをMedium（w500）以上へ底上げする（仕様書24：
+  /// 「全体的に明朝体の文字が読みにくいので太くする」）。既に太字指定済み
+  /// のスタイルはそのまま維持する。
+  TextTheme _boldenForReadability(TextTheme textTheme) {
+    TextStyle? bolden(TextStyle? style) {
+      if (style == null) return style;
+      final weight = style.fontWeight ?? FontWeight.w400;
+      if (weight.value >= FontWeight.w500.value) return style;
+      return style.copyWith(fontWeight: FontWeight.w500);
+    }
+    return textTheme.copyWith(
+      displayLarge: bolden(textTheme.displayLarge),
+      displayMedium: bolden(textTheme.displayMedium),
+      displaySmall: bolden(textTheme.displaySmall),
+      headlineLarge: bolden(textTheme.headlineLarge),
+      headlineMedium: bolden(textTheme.headlineMedium),
+      headlineSmall: bolden(textTheme.headlineSmall),
+      titleLarge: bolden(textTheme.titleLarge),
+      titleMedium: bolden(textTheme.titleMedium),
+      titleSmall: bolden(textTheme.titleSmall),
+      bodyLarge: bolden(textTheme.bodyLarge),
+      bodyMedium: bolden(textTheme.bodyMedium),
+      bodySmall: bolden(textTheme.bodySmall),
+      labelLarge: bolden(textTheme.labelLarge),
+      labelMedium: bolden(textTheme.labelMedium),
+      labelSmall: bolden(textTheme.labelSmall),
     );
   }
 }
