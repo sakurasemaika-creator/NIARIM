@@ -442,6 +442,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
                 _buildPreview(),
+                _buildSeekBar(),
                 _buildPlaybackControls(),
               ],
             ),
@@ -460,6 +461,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           children: [
             _buildTopBar(),
             _buildPreview(),
+            _buildSeekBar(),
             _buildPlaybackControls(),
             _buildToolbar(),
             _buildSceneTabs(),
@@ -612,6 +614,31 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: SizedBox(width: w, height: constraints.maxHeight, child: preview),
           );
         },
+      ),
+    );
+  }
+
+  /// プレビューと再生バーの間のシークバー（ユーザー指示により新規追加）。
+  /// ドラッグで任意のフレームへ直接移動できる。
+  Widget _buildSeekBar() {
+    final maxFrame = (_totalFrames - 1).clamp(0, 1 << 30);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          trackHeight: 2,
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+        ),
+        child: Slider(
+          value: _currentFrame.clamp(0, maxFrame).toDouble(),
+          min: 0,
+          max: maxFrame.toDouble(),
+          divisions: maxFrame > 0 ? maxFrame : null,
+          onChanged: (v) => setState(() {
+            _currentFrame = v.round();
+            _isPlaying = false;
+          }),
+        ),
       ),
     );
   }
