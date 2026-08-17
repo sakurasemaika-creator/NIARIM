@@ -804,6 +804,34 @@ class _CanvasScreenState extends State<CanvasScreen> {
     });
   }
 
+  /// 上部バー常設ボタン共通のスタイル（ユーザー指示。toolbar_widget.dartの
+  /// _borderedIconButtonと同じ考え方）：背景なし・アイコンは白（選択中は
+  /// アクセントカラー）・半透明の黒で中太さの縁取りのみ。
+  static Widget _topBarIconButton(
+    BuildContext context,
+    IconData icon, {
+    required VoidCallback? onPressed,
+    required String tooltip,
+    bool selected = false,
+  }) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 1),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: selected ? primary : Colors.black.withValues(alpha: 0.45),
+          width: selected ? 2 : 1.5,
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 20, color: selected ? primary : Colors.white),
+        onPressed: onPressed,
+        tooltip: tooltip,
+      ),
+    );
+  }
+
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
@@ -832,30 +860,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
           FirstUseTooltip(
             tooltipKey: 'ruler_tool',
             message: l10n.canvasRulerFirstUseTip,
-            child: IconButton(
-              icon: Icon(Icons.straighten, size: 20,
-                  color: _currentTool == DrawingTool.ruler ? Theme.of(context).colorScheme.primary : null),
-              tooltip: l10n.canvasRulerTooltip,
-              onPressed: _toggleRuler,
-            ),
+            child: _topBarIconButton(context, Icons.straighten,
+                onPressed: _toggleRuler,
+                tooltip: l10n.canvasRulerTooltip,
+                selected: _currentTool == DrawingTool.ruler),
           ),
-          IconButton(
-            icon: const Icon(Icons.undo),
-            onPressed: () => context.read<UndoManager>().undo(),
-            tooltip: l10n.commonUndo,
-          ),
-          IconButton(
-            icon: const Icon(Icons.redo),
-            onPressed: () => context.read<UndoManager>().redo(),
-            tooltip: l10n.commonRedo,
-          ),
+          _topBarIconButton(context, Icons.undo,
+              onPressed: () => context.read<UndoManager>().undo(), tooltip: l10n.commonUndo),
+          _topBarIconButton(context, Icons.redo,
+              onPressed: () => context.read<UndoManager>().redo(), tooltip: l10n.commonRedo),
           // 設定/編集メニュー（仕様書08・タスク#95：背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約。旧・個別ボタンを整理統合した）。
-          IconButton(
-            icon: const Icon(Icons.settings, size: 20),
-            tooltip: l10n.canvasSettingsMenuTooltip,
-            onPressed: () => _showEditMenu(context),
-          ),
+          _topBarIconButton(context, Icons.settings,
+              onPressed: () => _showEditMenu(context), tooltip: l10n.canvasSettingsMenuTooltip),
           const HelpButton(),
         ],
       ),

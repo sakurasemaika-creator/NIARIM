@@ -86,13 +86,13 @@ class ToolbarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
+    // ユーザー指示：描画領域を可能な限り広げるため、常設ボタン類は背景を
+    // 持たせず、半透明の黒で中くらいの太さの縁取りのみにする（キャンバスの
+    // 内容がどんな色でも視認できるよう、アイコン自体は白で統一する）。
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(top: BorderSide(color: Colors.grey[800]!)),
-      ),
+      color: Colors.transparent,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -134,8 +134,8 @@ class ToolbarWidget extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(icon: const Icon(Icons.tune, size: 20), onPressed: onBrushTap, tooltip: l10n.toolbarBrushSettingsTooltip),
-            IconButton(icon: const Icon(Icons.layers, size: 20), onPressed: onLayerTap, tooltip: l10n.toolbarLayerTooltip),
+            _borderedIconButton(context, Icons.tune, onPressed: onBrushTap, tooltip: l10n.toolbarBrushSettingsTooltip),
+            _borderedIconButton(context, Icons.layers, onPressed: onLayerTap, tooltip: l10n.toolbarLayerTooltip),
             // オニオンスキンは仕様書08・タスク#95によりここから削除し、
             // キャンバス上部バーの「設定/編集」メニューへ集約した。
             // ツール早替えボタン（↺）
@@ -153,18 +153,16 @@ class ToolbarWidget extends StatelessWidget {
                     onQuickToolLongPress();
                   }
                 },
-                child: IconButton(
-                  icon: const Icon(Icons.loop, size: 20),
-                  onPressed: onQuickToolTap,
-                  tooltip: l10n.toolbarQuickToolTooltip,
-                ),
+                child: _borderedIconButton(context, Icons.loop,
+                    onPressed: onQuickToolTap, tooltip: l10n.toolbarQuickToolTooltip),
               ),
             ),
             // タイムラインへの切替ボタンは仕様書08・タスク#95によりここから
             // 削除し、フレーム一覧右下のボタン（frame_strip_widget.dart）
             // へ統一した（同じ役割のボタンが2箇所にあり冗長だったため）。
             // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
-            IconButton(icon: const Icon(Icons.save_outlined, size: 20), onPressed: onSaveTap, tooltip: l10n.toolbarSaveTooltip),
+            _borderedIconButton(context, Icons.save_outlined,
+                onPressed: onSaveTap, tooltip: l10n.toolbarSaveTooltip),
           ],
         ),
       ),
@@ -174,13 +172,36 @@ class ToolbarWidget extends StatelessWidget {
   Widget _toolButton(BuildContext context, IconData icon, DrawingTool tool, String tooltip,
       {VoidCallback? onTap}) {
     final isSelected = currentTool == tool;
+    return _borderedIconButton(context, icon,
+        onPressed: onTap ?? () => onToolSelected(tool), tooltip: tooltip, selected: isSelected);
+  }
+
+  /// 常設ボタン共通のスタイル（ユーザー指示）：背景なし・アイコンは白
+  /// （選択中はアクセントカラー）・半透明の黒で中太さの縁取りのみ。
+  /// 描画領域をできるだけ広げつつ、どんな背景色のキャンバス上でも
+  /// ボタンの視認性を保つための共通デザイン。
+  static Widget _borderedIconButton(
+    BuildContext context,
+    IconData icon, {
+    required VoidCallback? onPressed,
+    required String tooltip,
+    bool selected = false,
+  }) {
     final primary = Theme.of(context).colorScheme.primary;
-    return IconButton(
-      icon: Icon(icon, size: 20),
-      onPressed: onTap ?? () => onToolSelected(tool),
-      tooltip: tooltip,
-      color: isSelected ? primary : null,
-      style: isSelected ? IconButton.styleFrom(backgroundColor: primary.withValues(alpha: 0.15)) : null,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 1),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: selected ? primary : Colors.black.withValues(alpha: 0.45),
+          width: selected ? 2 : 1.5,
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 20, color: selected ? primary : Colors.white),
+        onPressed: onPressed,
+        tooltip: tooltip,
+      ),
     );
   }
 
@@ -196,16 +217,12 @@ class ToolbarWidget extends StatelessWidget {
       DrawingTool.selectMagicWand => Icons.auto_awesome,
       _ => Icons.crop_square,
     };
-    final primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
       onLongPress: () => _showSelectMenu(context, l10n),
-      child: IconButton(
-        icon: Icon(icon, size: 20),
-        onPressed: () => onToolSelected(DrawingTool.selectRect),
-        tooltip: l10n.toolbarSelectTooltip,
-        color: isSelected ? primary : null,
-        style: isSelected ? IconButton.styleFrom(backgroundColor: primary.withValues(alpha: 0.15)) : null,
-      ),
+      child: _borderedIconButton(context, icon,
+          onPressed: () => onToolSelected(DrawingTool.selectRect),
+          tooltip: l10n.toolbarSelectTooltip,
+          selected: isSelected),
     );
   }
 
