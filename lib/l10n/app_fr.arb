@@ -1203,6 +1203,9 @@
   "timelineConfirmButton": "Valider",
   "timelineSceneRenameTitle": "Renommer la scène",
   "timelineSceneDeleteMenuItem": "Supprimer la scène",
+  "timelineDurationLimitTitle": "Limite de durée atteinte",
+  "timelineDurationLimitBodyFree": "Les membres gratuits sont limités à 90 secondes de vidéo. Ajouter ou dupliquer davantage d'images dépasserait cette limite, l'action est donc impossible. Passez à Premium pour aller jusqu'à 2 heures.",
+  "timelineDurationLimitBodyPremium": "Cela dépasserait la limite Premium (jusqu'à 2 heures), il n'est donc plus possible d'ajouter ou de dupliquer des images.",
   "timelineSceneDeleteConfirmTitle": "Supprimer « {name} » ?",
   "@timelineSceneDeleteConfirmTitle": {
     "placeholders": {"name": {"type": "String"}}

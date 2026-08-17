@@ -1203,6 +1203,9 @@
   "timelineConfirmButton": "확정",
   "timelineSceneRenameTitle": "씬 이름 변경",
   "timelineSceneDeleteMenuItem": "씬 삭제",
+  "timelineDurationLimitTitle": "길이 상한에 도달합니다",
+  "timelineDurationLimitBodyFree": "무료 회원은 동영상 길이가 최대 90초까지입니다. 프레임을 더 추가하거나 복제하면 90초를 초과하게 되어 실행할 수 없습니다. 프리미엄 회원이 되면 최대 2시간까지 제작할 수 있습니다.",
+  "timelineDurationLimitBodyPremium": "프리미엄 회원 상한(최대 2시간)을 초과하게 되어 더 이상 프레임을 추가하거나 복제할 수 없습니다.",
   "timelineSceneDeleteConfirmTitle": "「{name}」을(를) 삭제하시겠습니까?",
   "@timelineSceneDeleteConfirmTitle": {
     "placeholders": {"name": {"type": "String"}}

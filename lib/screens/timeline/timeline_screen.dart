@@ -1356,6 +1356,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             onTap: () {
                               final sceneId = _selectedSceneId;
                               if (sceneId == null) return;
+                              if (!_canAddFrames(1)) return;
                               context.read<ProjectService>().addFrame(widget.projectId, sceneId);
                             },
                             child: Container(
@@ -1520,11 +1521,41 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// フレーム追加・複製の前に、無料会員の長さ上限（90秒）を超えないか
+  /// チェックする（ユーザー指示：「無課金会員がフレーム追加や複製などに
+  /// よって90秒を超えるようになりそうならフレーム追加や複製ボタンタップ時に
+  /// 注意文がポップアップ表示されて90秒以上にはならないようにする」）。
+  /// 超える場合は警告ダイアログを表示してfalseを返す（呼び出し元は操作を
+  /// 中止する）。プレミアム会員は上限が2時間（7200秒）と大きいため事実上
+  /// ブロックされない。
+  bool _canAddFrames(int count) {
+    final isPremium = context.read<PremiumService>().isPremium;
+    final ps = context.read<ProjectService>();
+    final maxSeconds = isPremium ? 7200 : 90;
+    final projected = ps.projectedDurationSeconds(widget.projectId, frameDelta: count);
+    if (projected <= maxSeconds) return true;
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineDurationLimitTitle),
+        content: Text(isPremium
+            ? l10n.timelineDurationLimitBodyPremium
+            : l10n.timelineDurationLimitBodyFree),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+        ],
+      ),
+    );
+    return false;
+  }
+
   /// 選択中フレームを複製する（後ろのindexから処理し、複製に伴うindexずれを回避）。
   void _duplicateSelectedFrames() {
     if (_selectedFrameIndices.isEmpty) return;
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    if (!_canAddFrames(_selectedFrameIndices.length)) return;
     final ps = context.read<ProjectService>();
     final sorted = _selectedFrameIndices.toList()..sort();
     for (final idx in sorted.reversed) {

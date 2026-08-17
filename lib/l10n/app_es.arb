@@ -1203,6 +1203,9 @@
   "timelineConfirmButton": "Confirmar",
   "timelineSceneRenameTitle": "Cambiar nombre de la escena",
   "timelineSceneDeleteMenuItem": "Eliminar escena",
+  "timelineDurationLimitTitle": "Se alcanzó el límite de duración",
+  "timelineDurationLimitBodyFree": "Los miembros gratuitos están limitados a 90 segundos de vídeo. Añadir o duplicar más fotogramas superaría ese límite, por lo que no se puede realizar la acción. Actualiza a Premium para llegar hasta 2 horas.",
+  "timelineDurationLimitBodyPremium": "Esto superaría el límite Premium (hasta 2 horas), por lo que no se pueden añadir ni duplicar más fotogramas.",
   "timelineSceneDeleteConfirmTitle": "¿Eliminar «{name}»?",
   "@timelineSceneDeleteConfirmTitle": {
     "placeholders": {"name": {"type": "String"}}

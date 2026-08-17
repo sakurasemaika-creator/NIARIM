@@ -1297,6 +1297,9 @@
   "timelineConfirmButton": "決定",
   "timelineSceneRenameTitle": "シーン名変更",
   "timelineSceneDeleteMenuItem": "シーン削除",
+  "timelineDurationLimitTitle": "長さの上限に達します",
+  "timelineDurationLimitBodyFree": "無料会員は動画の長さが最大90秒までです。これ以上フレームを追加・複製すると90秒を超えてしまうため、実行できません。プレミアム会員になると最大2時間まで作成できます。",
+  "timelineDurationLimitBodyPremium": "プレミアム会員の上限（最大2時間）を超えてしまうため、これ以上フレームを追加・複製できません。",
   "timelineSceneDeleteConfirmTitle": "「{name}」を削除しますか？",
   "@timelineSceneDeleteConfirmTitle": {
     "placeholders": {"name": {"type": "String"}}

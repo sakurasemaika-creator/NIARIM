@@ -904,6 +904,39 @@ class ProjectService extends ChangeNotifier {
     return scene.frames[frameIndex].hold;
   }
 
+  /// プロジェクト全シーンの実フレーム数を返す（ユーザー指示：
+  /// 「長さ指定は大体の目安であって、実際にタイムラインモードでフレームを
+  /// 追加・削除したらその分長さが変わるようにする」ための集計）。
+  /// フレーム追加・複製・削除ボタンを押す前に、UI側で上限チェック
+  /// （無料会員は90秒まで）に使う想定。
+  int totalFrameCount(String projectId) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return 0;
+    return scenes.fold<int>(0, (sum, s) => sum + s.frames.length);
+  }
+
+  /// [totalFrameCount]をfpsで割った、追加・削除後に実際になる長さ（秒）を返す。
+  int projectedDurationSeconds(String projectId, {int frameDelta = 0}) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return 0;
+    final fps = _projects[idx].fps.clamp(1, 999999);
+    final frames = totalFrameCount(projectId) + frameDelta;
+    return (frames / fps).ceil().clamp(0, 1 << 30);
+  }
+
+  /// フレームの追加・複製・削除のたびに呼び出し、プロジェクトの長さ
+  /// （durationSeconds）を全シーンの実フレーム数から再計算して同期する
+  /// （ユーザー指示：新規プロジェクト作成画面の長さ指定はあくまで目安で、
+  /// 実際の長さはタイムラインモードでのフレーム増減に連動させる）。
+  void _syncDurationToFrameCount(String projectId) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    final newDuration = projectedDurationSeconds(projectId).clamp(1, 1 << 30);
+    if (newDuration != _projects[idx].durationSeconds) {
+      _projects[idx] = _projects[idx].copyWith(durationSeconds: newDuration);
+    }
+  }
+
   /// フレームを末尾に追加する
   void addFrame(String projectId, String sceneId) {
     final scenes = _scenes[projectId];
@@ -921,6 +954,7 @@ class ProjectService extends ChangeNotifier {
     final newFrame = Frame(index: scene.frames.length, layers: prevLayers);
     final newFrames = List<Frame>.from(scene.frames)..add(newFrame);
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+    _syncDurationToFrameCount(projectId);
     notifyListeners();
   }
 
@@ -1000,6 +1034,7 @@ class ProjectService extends ChangeNotifier {
         homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex + 1);
       }
     }
+    _syncDurationToFrameCount(projectId);
     notifyListeners();
   }
 
@@ -1061,6 +1096,7 @@ class ProjectService extends ChangeNotifier {
         homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex - 1);
       }
     }
+    _syncDurationToFrameCount(projectId);
     notifyListeners();
   }
 

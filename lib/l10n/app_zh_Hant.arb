@@ -1203,6 +1203,9 @@
   "timelineConfirmButton": "確定",
   "timelineSceneRenameTitle": "場景改名",
   "timelineSceneDeleteMenuItem": "刪除場景",
+  "timelineDurationLimitTitle": "已達到長度上限",
+  "timelineDurationLimitBodyFree": "免費會員的影片長度最長為90秒。繼續新增或複製畫格會超過90秒，因此無法執行。升級為進階會員後最長可製作2小時。",
+  "timelineDurationLimitBodyPremium": "這會超過進階會員的上限（最長2小時），因此無法繼續新增或複製畫格。",
   "timelineSceneDeleteConfirmTitle": "要刪除「{name}」嗎？",
   "@timelineSceneDeleteConfirmTitle": {
     "placeholders": {"name": {"type": "String"}}

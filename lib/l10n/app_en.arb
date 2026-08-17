@@ -1203,6 +1203,9 @@
   "timelineConfirmButton": "Confirm",
   "timelineSceneRenameTitle": "Rename scene",
   "timelineSceneDeleteMenuItem": "Delete scene",
+  "timelineDurationLimitTitle": "Length limit reached",
+  "timelineDurationLimitBodyFree": "Free members are limited to 90 seconds of video. Adding or duplicating more frames would exceed this limit, so the action can't be completed. Upgrade to Premium for up to 2 hours.",
+  "timelineDurationLimitBodyPremium": "This would exceed the Premium limit (up to 2 hours), so no more frames can be added or duplicated.",
   "timelineSceneDeleteConfirmTitle": "Delete \"{name}\"?",
   "@timelineSceneDeleteConfirmTitle": {
     "placeholders": {"name": {"type": "String"}}

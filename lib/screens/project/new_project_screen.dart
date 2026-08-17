@@ -33,6 +33,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
   bool _drawingAreaEnabled = false;
   double _drawingAreaScale = 2.0;
+  // 長さ（秒）の数字入力欄（ユーザー指示により新規追加：スライダーだけでなく
+  // 数字入力でも指定できるようにする）。
+  late final TextEditingController _durationController;
 
   // 30fpsは手描きアニメーションでは中割りの負担が大きく現実的でないため
   // 選択肢から除外している（基本設定画面のデフォルトFPS選択肢とも統一）。
@@ -64,6 +67,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _drawingAreaScale = settings.defaultDrawingAreaScale;
     _customWidthController = TextEditingController(text: '$_exportWidth');
     _customHeightController = TextEditingController(text: '$_exportHeight');
+    _durationController = TextEditingController(text: '$_durationSeconds');
   }
 
   @override
@@ -80,6 +84,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _nameController.dispose();
     _customWidthController.dispose();
     _customHeightController.dispose();
+    _durationController.dispose();
     super.dispose();
   }
 
@@ -292,7 +297,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               final maxDuration = isPremium ? 7200 : 90;
               if (_durationSeconds > maxDuration) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) setState(() => _durationSeconds = maxDuration);
+                  if (mounted) {
+                    setState(() => _durationSeconds = maxDuration);
+                    _durationController.text = '$maxDuration';
+                  }
                 });
               }
               final maxDurationText = _formatDuration(l10n, maxDuration);
@@ -314,12 +322,35 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           value: _durationSeconds.clamp(1, maxDuration).toDouble(),
                           divisions: maxDuration - 1,
                           label: _formatDuration(l10n, _durationSeconds),
-                          onChanged: (v) => setState(() => _durationSeconds = v.round()),
+                          onChanged: (v) => setState(() {
+                            _durationSeconds = v.round();
+                            _durationController.text = '$_durationSeconds';
+                          }),
                         ),
                       ),
-                      SizedBox(width: 72, child: Text(_formatDuration(l10n, _durationSeconds), textAlign: TextAlign.center)),
+                      // 数字入力欄（秒単位。ユーザー指示：スライダーだけでなく
+                      // 数字入力でも長さを指定できるようにする）。
+                      SizedBox(
+                        width: 64,
+                        child: TextField(
+                          controller: _durationController,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          decoration: const InputDecoration(isDense: true, suffixText: '秒'),
+                          onChanged: (v) {
+                            final parsed = int.tryParse(v);
+                            if (parsed == null) return;
+                            setState(() => _durationSeconds = parsed.clamp(1, maxDuration));
+                          },
+                          onSubmitted: (_) => setState(
+                              () => _durationController.text = '$_durationSeconds'),
+                        ),
+                      ),
                     ],
                   ),
+                  const SizedBox(height: 2),
+                  Text(_formatDuration(l10n, _durationSeconds),
+                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 ],
               );
             }),

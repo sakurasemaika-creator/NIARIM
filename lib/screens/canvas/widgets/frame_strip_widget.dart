@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 
 class FrameStripWidget extends StatefulWidget {
@@ -47,6 +48,30 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       final left = old.currentFrame;
       _refreshTick[left] = (_refreshTick[left] ?? 0) + 1;
     }
+  }
+
+  /// フレーム追加の前に、無料会員の長さ上限（90秒）を超えないかチェックする
+  /// （ユーザー指示：タイムラインモードのフレーム追加・複製と同じ制限を
+  /// キャンバスモードのフレーム一覧の追加ボタンにも適用する）。
+  bool _canAddFrames(BuildContext context, ProjectService service, int count) {
+    final isPremium = context.read<PremiumService>().isPremium;
+    final maxSeconds = isPremium ? 7200 : 90;
+    final projected = service.projectedDurationSeconds(widget.projectId, frameDelta: count);
+    if (projected <= maxSeconds) return true;
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineDurationLimitTitle),
+        content: Text(isPremium
+            ? l10n.timelineDurationLimitBodyPremium
+            : l10n.timelineDurationLimitBodyFree),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+        ],
+      ),
+    );
+    return false;
   }
 
   void _showHoldDialog(BuildContext context, ProjectService service, int frameIndex, int currentHold) {
@@ -106,7 +131,10 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
               itemBuilder: (context, index) {
                 if (index == total) {
                   return GestureDetector(
-                    onTap: () => service.addFrame(widget.projectId, widget.sceneId),
+                    onTap: () {
+                      if (!_canAddFrames(context, service, 1)) return;
+                      service.addFrame(widget.projectId, widget.sceneId);
+                    },
                     child: Container(
                       width: 48,
                       margin: const EdgeInsets.all(4),
