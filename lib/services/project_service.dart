@@ -478,8 +478,11 @@ class ProjectService extends ChangeNotifier {
       Map.unmodifiable(_layerHomes[projectId] ?? const {});
 
   /// タイムライン共通レイヤートラックUI用：プロジェクト内の全共通レイヤーと
-  /// そのホーム位置（実データが物理的に存在するシーン・フレーム）を返す
-  /// （仕様書05・16：共通レイヤーの表示範囲をタイムライン上で確認・変更する）。
+  /// ウォーターマークレイヤーのホーム位置（実データが物理的に存在する
+  /// シーン・フレーム）を返す（仕様書05・16：共通レイヤーの表示範囲を
+  /// タイムライン上で確認・変更する。ウォーターマークも同じ表示範囲の
+  /// 仕組みを使うため同じトラックに乗せ、タップで角度・大きさ・不透明度・
+  /// 表示範囲をまとめて編集できるようにする）。
   List<({Layer layer, LayerHome home})> commonLayersOf(String projectId) {
     final homes = _layerHomes[projectId];
     if (homes == null) return const [];
@@ -489,7 +492,7 @@ class ProjectService extends ChangeNotifier {
       final scene = sceneOf(projectId, home.sceneId);
       if (scene == null || home.frameIndex >= scene.frames.length) continue;
       final layer = scene.frames[home.frameIndex].layers.where((l) => l.id == entry.key).firstOrNull;
-      if (layer != null && layer.type == LayerType.common) {
+      if (layer != null && (layer.type == LayerType.common || layer.type == LayerType.watermark)) {
         result.add((layer: layer, home: home));
       }
     }

@@ -3,10 +3,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/bundled_fonts.dart';
 import '../../models/watermark_asset.dart';
+import '../../services/font_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../canvas/widgets/color_picker_panel.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定、仕様書01・08・13）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -116,49 +119,78 @@ class WatermarkSettingsScreen extends StatelessWidget {
   void _showTextWatermarkDialog(BuildContext context, WatermarkService service) {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController();
-    const presetColors = [
-      Colors.white, Colors.black, Colors.red, Colors.orange,
-      Colors.yellow, Colors.green, Colors.blue, Colors.purple,
-    ];
+    final fontService = context.read<FontService>();
     Color selected = Colors.white;
+    String fontFamily = 'Roboto';
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.watermarkTextDialogTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: InputDecoration(labelText: l10n.watermarkTextFieldLabel, border: const OutlineInputBorder()),
-              ),
-              const SizedBox(height: 12),
-              Text(l10n.watermarkTextColorLabel, style: const TextStyle(fontSize: 12)),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 8,
-                children: [
-                  for (final c in presetColors)
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: InputDecoration(labelText: l10n.watermarkTextFieldLabel, border: const OutlineInputBorder()),
+                ),
+                const SizedBox(height: 12),
+                // フォント選択（仕様書08・13：文字ウォーターマークもキャンバスの
+                // テキストツールと同じくフォントを自由に選べるようにした）
+                DropdownButtonFormField<String>(
+                  initialValue: fontFamily,
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: l10n.canvasTextFontLabel, isDense: true),
+                  items: [
+                    DropdownMenuItem(value: 'Roboto', child: Text(l10n.canvasTextStandardFont)),
+                    for (final f in kBundledFonts)
+                      DropdownMenuItem(
+                        value: f.family,
+                        child: Text(f.displayName, style: TextStyle(fontFamily: f.family)),
+                      ),
+                    ...fontService.fonts.map((f) => DropdownMenuItem(
+                          value: fontService.familyNameOf(f),
+                          child: Text(f.displayName, style: TextStyle(fontFamily: fontService.familyNameOf(f))),
+                        )),
+                  ],
+                  onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.watermarkTextColorLabel, style: const TextStyle(fontSize: 12)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
                     GestureDetector(
-                      onTap: () => setS(() => selected = c),
-                      child: Container(
-                        width: 28, height: 28,
-                        decoration: BoxDecoration(
-                          color: c,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: selected == c ? Theme.of(ctx).colorScheme.primary : Colors.grey,
-                            width: selected == c ? 3 : 1,
+                      onTap: () => showDialog(
+                        context: ctx,
+                        builder: (pctx) => Dialog(
+                          backgroundColor: Colors.transparent,
+                          insetPadding: const EdgeInsets.all(16),
+                          child: ColorPickerPanel(
+                            currentColor: selected,
+                            onColorChanged: (c) => setS(() => selected = c),
+                            onClose: () => Navigator.pop(pctx),
                           ),
                         ),
                       ),
+                      child: Container(
+                        width: 36, height: 36,
+                        decoration: BoxDecoration(
+                          color: selected,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey, width: 1),
+                        ),
+                      ),
                     ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Text(l10n.watermarkTextColorTapHint, style: const TextStyle(fontSize: 11)),
+                  ],
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
@@ -166,7 +198,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
               onPressed: () async {
                 final text = controller.text.trim();
                 if (text.isEmpty) return;
-                await service.addTextWatermark(text, color: selected.toARGB32());
+                await service.addTextWatermark(text, color: selected.toARGB32(), fontFamily: fontFamily);
                 if (ctx.mounted) Navigator.pop(ctx);
               },
               child: Text(l10n.commonAdd),
@@ -202,6 +234,7 @@ class _WatermarkTile extends StatelessWidget {
                       asset.text ?? '',
                       style: TextStyle(
                         color: Color(asset.textColor ?? 0xFFFFFFFF),
+                        fontFamily: asset.fontFamily,
                         fontWeight: FontWeight.bold,
                         shadows: const [Shadow(color: Colors.black45, blurRadius: 3)],
                       ),

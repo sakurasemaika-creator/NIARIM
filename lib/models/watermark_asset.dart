@@ -12,6 +12,10 @@ class WatermarkAsset {
   final String? fileName;
   final String? text;
   final int? textColor; // ARGB int（type==textの場合のみ使用）
+  // フォント（type==textの場合のみ使用。ユーザー指示によりフォントも
+  // 自由に選べるようにした。組み込みフォントは'Roboto'等の固定値、
+  // 追加フォントはFontService.familyNameOf()の値）。
+  final String? fontFamily;
 
   const WatermarkAsset({
     required this.id,
@@ -20,6 +24,7 @@ class WatermarkAsset {
     this.fileName,
     this.text,
     this.textColor,
+    this.fontFamily,
   });
 
   Map<String, dynamic> toJson() => {
@@ -29,6 +34,7 @@ class WatermarkAsset {
         'fileName': fileName,
         'text': text,
         'textColor': textColor,
+        'fontFamily': fontFamily,
       };
 
   factory WatermarkAsset.fromJson(Map<String, dynamic> json) => WatermarkAsset(
@@ -38,5 +44,6 @@ class WatermarkAsset {
         fileName: json['fileName'] as String?,
         text: json['text'] as String?,
         textColor: json['textColor'] as int?,
+        fontFamily: json['fontFamily'] as String?,
       );
 }

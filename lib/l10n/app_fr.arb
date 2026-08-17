@@ -72,7 +72,7 @@
   "settingsThemeTitle": "Interface et thème",
   "settingsThemeSubtitle": "Réglages de thème, espace de travail",
   "settingsWatermarkTitle": "Filigrane",
-  "settingsWatermarkSubtitle": "Filigrane personnalisé (Premium)",
+  "settingsWatermarkSubtitle": "Filigrane personnalisé",
   "settingsTransferTitle": "Transfert",
   "settingsTransferSubtitle": "Exporter/importer réglages, matériaux et pinceaux vers un autre appareil",
   "settingsFontTitle": "Gestion des polices",
@@ -203,6 +203,7 @@
   "watermarkTextDialogTitle": "Ajouter un filigrane textuel",
   "watermarkTextFieldLabel": "Texte à afficher",
   "watermarkTextColorLabel": "Couleur du texte",
+  "watermarkTextColorTapHint": "Touchez pour choisir une couleur",
 
   "premiumActiveLabel": "Premium actif",
   "premiumVsTitle": "Gratuit vs Premium",
@@ -1201,6 +1202,12 @@
   "@timelineWatermarkAddedSnackbar": {
     "placeholders": {"name": {"type": "String"}}
   },
+  "timelineWatermarkEditTitle": "Modifier le filigrane",
+  "timelineWatermarkAngleLabel": "Angle",
+  "timelineWatermarkSizeLabel": "Taille",
+  "timelineWatermarkOpacityLabel": "Opacité",
+  "timelineWatermarkLoopLabel": "Toujours afficher (boucle)",
+  "timelineWatermarkLoopSubtitle": "Si désactivé, affiché uniquement sur la scène actuelle",
   "timelineConfirmButton": "Valider",
   "timelineSceneRenameTitle": "Renommer la scène",
   "timelineSceneDeleteMenuItem": "Supprimer la scène",

@@ -51,7 +51,7 @@ class WatermarkService extends ChangeNotifier {
 
   /// 入力した文字列をウォーターマークとして登録する（仕様書01・13：
   /// 「設定項目：画像選択 / 文字入力」の文字入力側）。
-  Future<WatermarkAsset> addTextWatermark(String text, {required int color}) async {
+  Future<WatermarkAsset> addTextWatermark(String text, {required int color, String? fontFamily}) async {
     final id = 'wm_${DateTime.now().millisecondsSinceEpoch}_${_counter++}';
     final asset = WatermarkAsset(
       id: id,
@@ -59,6 +59,7 @@ class WatermarkService extends ChangeNotifier {
       type: WatermarkAssetType.text,
       text: text,
       textColor: color,
+      fontFamily: fontFamily,
     );
     _assets.add(asset);
     await _persist();

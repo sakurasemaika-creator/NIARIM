@@ -72,7 +72,7 @@
   "settingsThemeTitle": "UI・主題",
   "settingsThemeSubtitle": "主題設定・工作區",
   "settingsWatermarkTitle": "浮水印",
-  "settingsWatermarkSubtitle": "使用者浮水印（Premium）",
+  "settingsWatermarkSubtitle": "自訂浮水印",
   "settingsTransferTitle": "資料轉移",
   "settingsTransferSubtitle": "將設定・素材・筆刷匯出/匯入到其他裝置",
   "settingsFontTitle": "字型管理",
@@ -203,6 +203,7 @@
   "watermarkTextDialogTitle": "新增文字浮水印",
   "watermarkTextFieldLabel": "要顯示的文字",
   "watermarkTextColorLabel": "文字顏色",
+  "watermarkTextColorTapHint": "點擊選擇顏色",
 
   "premiumActiveLabel": "Premium已啟用",
   "premiumVsTitle": "免費版 vs 付費版",
@@ -1201,6 +1202,12 @@
   "@timelineWatermarkAddedSnackbar": {
     "placeholders": {"name": {"type": "String"}}
   },
+  "timelineWatermarkEditTitle": "編輯浮水印",
+  "timelineWatermarkAngleLabel": "角度",
+  "timelineWatermarkSizeLabel": "大小",
+  "timelineWatermarkOpacityLabel": "不透明度",
+  "timelineWatermarkLoopLabel": "永遠顯示（循環顯示）",
+  "timelineWatermarkLoopSubtitle": "關閉後僅顯示於目前場景",
   "timelineConfirmButton": "確定",
   "timelineSceneRenameTitle": "場景改名",
   "timelineSceneDeleteMenuItem": "刪除場景",

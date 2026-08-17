@@ -72,7 +72,7 @@
   "settingsThemeTitle": "UI・테마",
   "settingsThemeSubtitle": "테마 설정・작업 공간",
   "settingsWatermarkTitle": "워터마크",
-  "settingsWatermarkSubtitle": "사용자 워터마크（Premium）",
+  "settingsWatermarkSubtitle": "커스텀 워터마크",
   "settingsTransferTitle": "데이터 이전",
   "settingsTransferSubtitle": "설정・소재・브러시를 다른 기기로 내보내기/가져오기",
   "settingsFontTitle": "폰트 관리",
@@ -203,6 +203,7 @@
   "watermarkTextDialogTitle": "문자 워터마크 추가",
   "watermarkTextFieldLabel": "표시할 문자",
   "watermarkTextColorLabel": "글자 색",
+  "watermarkTextColorTapHint": "탭하여 색상 선택",
 
   "premiumActiveLabel": "Premium 활성화됨",
   "premiumVsTitle": "무료판 vs 프리미엄",
@@ -1201,6 +1202,12 @@
   "@timelineWatermarkAddedSnackbar": {
     "placeholders": {"name": {"type": "String"}}
   },
+  "timelineWatermarkEditTitle": "워터마크 편집",
+  "timelineWatermarkAngleLabel": "각도",
+  "timelineWatermarkSizeLabel": "크기",
+  "timelineWatermarkOpacityLabel": "불투명도",
+  "timelineWatermarkLoopLabel": "항상 표시（반복 표시）",
+  "timelineWatermarkLoopSubtitle": "끄면 현재 장면에서만 표시됩니다",
   "timelineConfirmButton": "확정",
   "timelineSceneRenameTitle": "씬 이름 변경",
   "timelineSceneDeleteMenuItem": "씬 삭제",

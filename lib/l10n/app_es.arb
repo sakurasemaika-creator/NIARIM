@@ -72,7 +72,7 @@
   "settingsThemeTitle": "Interfaz y tema",
   "settingsThemeSubtitle": "Ajustes de tema, espacio de trabajo",
   "settingsWatermarkTitle": "Marca de agua",
-  "settingsWatermarkSubtitle": "Marca de agua personalizada (Premium)",
+  "settingsWatermarkSubtitle": "Marca de agua personalizada",
   "settingsTransferTitle": "Transferencia",
   "settingsTransferSubtitle": "Exportar/importar ajustes, materiales y pinceles a otro dispositivo",
   "settingsFontTitle": "Gestión de fuentes",
@@ -203,6 +203,7 @@
   "watermarkTextDialogTitle": "Añadir marca de agua de texto",
   "watermarkTextFieldLabel": "Texto a mostrar",
   "watermarkTextColorLabel": "Color del texto",
+  "watermarkTextColorTapHint": "Toca para elegir un color",
 
   "premiumActiveLabel": "Premium activo",
   "premiumVsTitle": "Gratis vs Premium",
@@ -1201,6 +1202,12 @@
   "@timelineWatermarkAddedSnackbar": {
     "placeholders": {"name": {"type": "String"}}
   },
+  "timelineWatermarkEditTitle": "Editar marca de agua",
+  "timelineWatermarkAngleLabel": "Ángulo",
+  "timelineWatermarkSizeLabel": "Tamaño",
+  "timelineWatermarkOpacityLabel": "Opacidad",
+  "timelineWatermarkLoopLabel": "Mostrar siempre (bucle)",
+  "timelineWatermarkLoopSubtitle": "Si está desactivado, solo se muestra en la escena actual",
   "timelineConfirmButton": "Confirmar",
   "timelineSceneRenameTitle": "Cambiar nombre de la escena",
   "timelineSceneDeleteMenuItem": "Eliminar escena",

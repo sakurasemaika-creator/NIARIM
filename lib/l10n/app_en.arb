@@ -72,7 +72,7 @@
   "settingsThemeTitle": "UI & Theme",
   "settingsThemeSubtitle": "Theme settings, workspace",
   "settingsWatermarkTitle": "Watermark",
-  "settingsWatermarkSubtitle": "User watermark (Premium)",
+  "settingsWatermarkSubtitle": "Custom watermark",
   "settingsTransferTitle": "Transfer",
   "settingsTransferSubtitle": "Export/import settings, materials, and brushes to another device",
   "settingsFontTitle": "Font Management",
@@ -203,6 +203,7 @@
   "watermarkTextDialogTitle": "Add Text Watermark",
   "watermarkTextFieldLabel": "Text to display",
   "watermarkTextColorLabel": "Text Color",
+  "watermarkTextColorTapHint": "Tap to choose a color",
 
   "premiumActiveLabel": "Premium Active",
   "premiumVsTitle": "Free vs Premium",
@@ -1201,6 +1202,12 @@
   "@timelineWatermarkAddedSnackbar": {
     "placeholders": {"name": {"type": "String"}}
   },
+  "timelineWatermarkEditTitle": "Edit watermark",
+  "timelineWatermarkAngleLabel": "Angle",
+  "timelineWatermarkSizeLabel": "Size",
+  "timelineWatermarkOpacityLabel": "Opacity",
+  "timelineWatermarkLoopLabel": "Always show (loop)",
+  "timelineWatermarkLoopSubtitle": "When off, shown only on the current scene",
   "timelineConfirmButton": "Confirm",
   "timelineSceneRenameTitle": "Rename scene",
   "timelineSceneDeleteMenuItem": "Delete scene",

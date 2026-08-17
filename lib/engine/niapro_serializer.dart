@@ -641,6 +641,9 @@ class NiaproSerializer {
         'materialId': l.materialId,
         'sourceTrimStart': l.sourceTrimStart,
         'sourceTrimEnd': l.sourceTrimEnd,
+        'watermarkAssetId': l.watermarkAssetId,
+        'watermarkAngle': l.watermarkAngle,
+        'watermarkScale': l.watermarkScale,
         if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
       };
 
@@ -781,6 +784,9 @@ class NiaproSerializer {
         materialId: j['materialId'] as String?,
         sourceTrimStart: j['sourceTrimStart'] as int?,
         sourceTrimEnd: j['sourceTrimEnd'] as int?,
+        watermarkAssetId: j['watermarkAssetId'] as String?,
+        watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
+        watermarkScale: (j['watermarkScale'] as num?)?.toDouble() ?? 0.25,
         textObject: j['textObject'] != null
             ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
             : null,

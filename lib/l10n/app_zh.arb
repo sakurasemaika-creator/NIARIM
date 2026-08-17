@@ -72,7 +72,7 @@
   "settingsThemeTitle": "UI・主题",
   "settingsThemeSubtitle": "主题设置・工作区",
   "settingsWatermarkTitle": "水印",
-  "settingsWatermarkSubtitle": "用户水印（Premium）",
+  "settingsWatermarkSubtitle": "自定义水印",
   "settingsTransferTitle": "数据迁移",
   "settingsTransferSubtitle": "将设置・素材・画笔导出/导入到其他设备",
   "settingsFontTitle": "字体管理",
@@ -203,6 +203,7 @@
   "watermarkTextDialogTitle": "添加文字水印",
   "watermarkTextFieldLabel": "要显示的文字",
   "watermarkTextColorLabel": "文字颜色",
+  "watermarkTextColorTapHint": "点击选择颜色",
 
   "premiumActiveLabel": "Premium已开通",
   "premiumVsTitle": "免费版 vs 高级版",
@@ -1201,6 +1202,12 @@
   "@timelineWatermarkAddedSnackbar": {
     "placeholders": {"name": {"type": "String"}}
   },
+  "timelineWatermarkEditTitle": "编辑水印",
+  "timelineWatermarkAngleLabel": "角度",
+  "timelineWatermarkSizeLabel": "大小",
+  "timelineWatermarkOpacityLabel": "不透明度",
+  "timelineWatermarkLoopLabel": "始终显示（循环显示）",
+  "timelineWatermarkLoopSubtitle": "关闭后仅在当前场景中显示",
   "timelineConfirmButton": "确定",
   "timelineSceneRenameTitle": "场景改名",
   "timelineSceneDeleteMenuItem": "删除场景",

@@ -94,7 +94,7 @@
   "settingsThemeTitle": "UI・テーマ",
   "settingsThemeSubtitle": "テーマ設定・ワークスペース",
   "settingsWatermarkTitle": "ウォーターマーク",
-  "settingsWatermarkSubtitle": "ユーザーウォーターマーク（Premium）",
+  "settingsWatermarkSubtitle": "カスタムウォーターマーク",
   "settingsTransferTitle": "引き継ぎ",
   "settingsTransferSubtitle": "設定・素材・ブラシを他端末へ書き出し/読み込み",
   "settingsFontTitle": "フォント管理",
@@ -246,6 +246,7 @@
   "watermarkTextDialogTitle": "文字ウォーターマークを追加",
   "watermarkTextFieldLabel": "表示する文字",
   "watermarkTextColorLabel": "文字色",
+  "watermarkTextColorTapHint": "タップして色を選択",
 
   "premiumActiveLabel": "Premium有効",
   "premiumVsTitle": "無料版 vs プレミアム",
@@ -1292,6 +1293,12 @@
   "@timelineWatermarkAddedSnackbar": {
     "placeholders": {"name": {"type": "String"}}
   },
+  "timelineWatermarkEditTitle": "ウォーターマークを編集",
+  "timelineWatermarkAngleLabel": "角度",
+  "timelineWatermarkSizeLabel": "大きさ",
+  "timelineWatermarkOpacityLabel": "不透明度",
+  "timelineWatermarkLoopLabel": "常時表示（ループ表示）",
+  "timelineWatermarkLoopSubtitle": "オフにすると現在のシーンのみに表示されます",
   "timelineConfirmButton": "決定",
   "timelineSceneRenameTitle": "シーン名変更",
   "timelineSceneDeleteMenuItem": "シーン削除",

@@ -788,9 +788,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final w = tileManager.canvasWidth;
     final h = tileManager.canvasHeight;
 
+    const defaultAngle = 0.0;
+    const defaultScale = 0.25;
     final pixels = asset.type == WatermarkAssetType.text
-        ? await _rasterizeTextWatermark(asset, w, h)
-        : await _rasterizeImageWatermark(asset, w, h);
+        ? await _rasterizeTextWatermark(asset, w, h, angle: defaultAngle, scale: defaultScale)
+        : await _rasterizeImageWatermark(asset, w, h, angle: defaultAngle, scale: defaultScale);
     if (pixels == null || !mounted) return;
 
     final layer = projectService.addLayer(
@@ -804,14 +806,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
       frameLayerKey(sceneId, _currentFrame, layer.id),
       pixels,
     );
-    // 既定は「常時表示」（全フレーム）。表示範囲はレイヤーパネルの
-    // 「表示範囲変更」からいつでも変更できる（仕様書05：常時表示／
-    // エンドカード／任意フレームのみ表示はすべて表示範囲設定で実現する）。
+    // 既定は「常時表示」（全フレーム）。表示範囲・角度・大きさ・不透明度は
+    // タイムラインの共通レイヤートラックでウォーターマークをタップすれば
+    // いつでも変更できる（仕様書05：常時表示／エンドカード／任意フレーム
+    // のみ表示はすべて表示範囲設定で実現する）。
     projectService.updateLayer(
       projectId: widget.projectId,
       sceneId: sceneId,
       frameIndex: _currentFrame,
-      layer: layer.copyWith(rangeMode: LayerRangeMode.allFrames),
+      layer: layer.copyWith(
+        rangeMode: LayerRangeMode.allFrames,
+        watermarkAssetId: asset.id,
+        watermarkAngle: defaultAngle,
+        watermarkScale: defaultScale,
+      ),
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -819,11 +827,35 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// [layer]の角度・大きさ・不透明度の変更をピクセルへ反映し直す
+  /// （タイムラインでウォーターマークをタップして編集した際に呼ばれる）。
+  Future<void> _reRasterizeWatermark(Layer layer, LayerHome home, {
+    required double angle,
+    required double scale,
+  }) async {
+    final watermarkService = context.read<WatermarkService>();
+    final asset = watermarkService.assets.where((a) => a.id == layer.watermarkAssetId).firstOrNull;
+    if (asset == null || !mounted) return;
+    final projectService = context.read<ProjectService>();
+    final tileManager = projectService.tileManagerOf(widget.projectId);
+    final w = tileManager.canvasWidth;
+    final h = tileManager.canvasHeight;
+    final pixels = asset.type == WatermarkAssetType.text
+        ? await _rasterizeTextWatermark(asset, w, h, angle: angle, scale: scale)
+        : await _rasterizeImageWatermark(asset, w, h, angle: angle, scale: scale);
+    if (pixels == null || !mounted) return;
+    tileManager.replaceLayerPixels(
+      projectService.tileKeyFor(widget.projectId, home.sceneId, home.frameIndex, layer.id),
+      pixels,
+    );
+  }
+
   /// 画像ウォーターマークをキャンバス全体サイズのRGBAピクセルへラスタライズする。
-  /// 右下に控えめなサイズ（キャンバス幅の25%程度）で配置する一般的な
-  /// ウォーターマーク位置をデフォルトとする。位置・大きさは追加後に
-  /// 変形ツールで自由に調整できる。
-  Future<Uint8List?> _rasterizeImageWatermark(WatermarkAsset asset, int w, int h) async {
+  /// 右下に配置する一般的なウォーターマーク位置をデフォルトとする。
+  /// [angle]は度数法での回転角、[scale]はキャンバス幅に対する大きさの倍率
+  /// （タイムラインでウォーターマークをタップすればいつでも変更できる）。
+  Future<Uint8List?> _rasterizeImageWatermark(WatermarkAsset asset, int w, int h,
+      {double angle = 0, double scale = 0.25}) async {
     final watermarkService = context.read<WatermarkService>();
     final path = await watermarkService.pathOf(asset.id);
     if (path == null || !mounted) return null;
@@ -837,22 +869,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
       return null;
     }
 
-    final targetW = w * 0.25;
-    final scale = targetW / image.width;
-    final drawW = image.width * scale;
-    final drawH = image.height * scale;
+    final targetW = w * scale;
+    final imgScale = targetW / image.width;
+    final drawW = image.width * imgScale;
+    final drawH = image.height * imgScale;
     const margin = 16.0;
     final dx = w - drawW - margin;
     final dy = h - drawH - margin;
 
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
+    canvas.save();
+    canvas.translate(dx + drawW / 2, dy + drawH / 2);
+    canvas.rotate(angle * 3.1415926535 / 180);
+    canvas.translate(-(dx + drawW / 2), -(dy + drawH / 2));
     canvas.drawImageRect(
       image,
       ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
       ui.Rect.fromLTWH(dx, dy, drawW, drawH),
       ui.Paint(),
     );
+    canvas.restore();
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
     image.dispose();
@@ -864,19 +901,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 文字入力ウォーターマークをキャンバス全体サイズのRGBAピクセルへ
   /// ラスタライズする（仕様書01・13：「設定項目：画像選択 / 文字入力」）。
   /// 既存のテキストレイヤー描画エンジン（text_render.dart）を再利用し、
-  /// 画像ウォーターマークと同様に右下へ控えめなサイズで配置する。
-  /// 以後の位置・大きさは追加後に変形ツールで自由に調整できる。
-  Future<Uint8List?> _rasterizeTextWatermark(WatermarkAsset asset, int w, int h) async {
+  /// 画像ウォーターマークと同様に右下へ配置する。フォント・[angle]（回転角）・
+  /// [scale]（大きさ倍率）はいずれもタイムラインでウォーターマークをタップ
+  /// すればいつでも変更できる。
+  Future<Uint8List?> _rasterizeTextWatermark(WatermarkAsset asset, int w, int h,
+      {double angle = 0, double scale = 0.25}) async {
     final text = asset.text ?? '';
     if (text.isEmpty) return null;
-    final fontSize = h * 0.045;
+    final fontSize = h * 0.18 * scale;
     final color = ui.Color(asset.textColor ?? 0xFFFFFFFF);
     final textObject = TextObject(
       id: asset.id,
       text: text,
       fontSize: fontSize,
       color: color,
+      fontFamily: asset.fontFamily ?? 'Roboto',
       align: TextAlign.right,
+      rotation: angle,
       position: Offset(w * 0.1, h - fontSize * 1.6 - h * 0.02),
     );
     return rasterizeTextObject(textObject, w, h);
@@ -1901,7 +1942,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
           Column(
             children: [
               for (final r in rows)
-                SizedBox(height: 32, child: _buildTrackLabel(Icons.link, r.layer.name)),
+                SizedBox(
+                  height: 32,
+                  child: _buildTrackLabel(
+                    r.layer.type == LayerType.watermark ? Icons.branding_watermark : Icons.link,
+                    r.layer.name,
+                  ),
+                ),
             ],
           ),
           Expanded(
@@ -1972,12 +2019,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
       width: width.clamp(8.0, double.infinity),
       height: 26,
       child: GestureDetector(
-        onTap: () => _showCommonLayerRangeDialog(layer, home),
+        onTap: () => layer.type == LayerType.watermark
+            ? _showWatermarkEditDialog(layer, home)
+            : _showCommonLayerRangeDialog(layer, home),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.blue.withValues(alpha: 0.75),
+            color: (layer.type == LayerType.watermark ? Colors.pink : Colors.blue).withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(3),
-            border: Border.all(color: Colors.blue[200]!, width: 1),
+            border: Border.all(
+              color: layer.type == LayerType.watermark ? Colors.pink[200]! : Colors.blue[200]!,
+              width: 1,
+            ),
           ),
           child: Stack(
             children: [
@@ -2151,6 +2203,107 @@ class _TimelineScreenState extends State<TimelineScreen> {
       startCtrl.dispose();
       endCtrl.dispose();
     });
+  }
+
+  /// ウォーターマークの角度・大きさ・不透明度・表示範囲（ループ表示）を
+  /// まとめて編集するダイアログ。タイムラインの共通レイヤートラックで
+  /// ウォーターマークをタップすると開く（ユーザー指示：登録時だけでなく
+  /// 実際にプロジェクト内で使うときにいつでも変更できるように）。
+  void _showWatermarkEditDialog(Layer layer, LayerHome home) {
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    double angle = layer.watermarkAngle;
+    double scale = layer.watermarkScale;
+    double opacity = layer.opacity / 100;
+    bool loop = layer.rangeMode == LayerRangeMode.allFrames;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text(l10n.timelineWatermarkEditTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.timelineWatermarkAngleLabel, style: const TextStyle(fontSize: 12)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Slider(
+                        value: angle,
+                        min: -180, max: 180,
+                        label: '${angle.round()}°',
+                        onChanged: (v) => setS(() => angle = v),
+                      ),
+                    ),
+                    Text('${angle.round()}°', style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Text(l10n.timelineWatermarkSizeLabel, style: const TextStyle(fontSize: 12)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Slider(
+                        value: scale,
+                        min: 0.05, max: 1.0,
+                        label: '${(scale * 100).round()}%',
+                        onChanged: (v) => setS(() => scale = v),
+                      ),
+                    ),
+                    Text('${(scale * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Text(l10n.timelineWatermarkOpacityLabel, style: const TextStyle(fontSize: 12)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Slider(
+                        value: opacity,
+                        min: 0, max: 1.0,
+                        label: '${(opacity * 100).round()}%',
+                        onChanged: (v) => setS(() => opacity = v),
+                      ),
+                    ),
+                    Text('${(opacity * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                SwitchListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.timelineWatermarkLoopLabel),
+                  subtitle: Text(l10n.timelineWatermarkLoopSubtitle, style: const TextStyle(fontSize: 11)),
+                  value: loop,
+                  onChanged: (v) => setS(() => loop = v),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            FilledButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await _reRasterizeWatermark(layer, home, angle: angle, scale: scale);
+                if (!mounted) return;
+                ps.updateLayer(
+                  projectId: widget.projectId,
+                  sceneId: home.sceneId,
+                  frameIndex: home.frameIndex,
+                  layer: layer.copyWith(
+                    watermarkAngle: angle,
+                    watermarkScale: scale,
+                    opacity: (opacity * 100).round(),
+                    rangeMode: loop ? LayerRangeMode.allFrames : LayerRangeMode.currentScene,
+                  ),
+                );
+              },
+              child: Text(l10n.commonOk),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCameraTrack() {

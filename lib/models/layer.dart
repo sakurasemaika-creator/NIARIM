@@ -32,6 +32,15 @@ class Layer {
   final int? sourceTrimStart;
   final int? sourceTrimEnd;
 
+  // ウォーターマークレイヤー（LayerType.watermark）が参照する登録済み
+  // ウォーターマークID・角度・大きさ（仕様書08・13：配置後にタイムライン上で
+  // ウォーターマークをタップして角度・大きさ・不透明度・表示範囲＝ループ表示を
+  // 再編集できるようにするための、配置ごとの個別設定）。
+  // 不透明度はopacity、表示範囲（ループ表示）はrangeModeを流用する。
+  final String? watermarkAssetId;
+  final double watermarkAngle; // 度数法、0が基準
+  final double watermarkScale; // キャンバス幅に対する倍率（既定0.25）
+
   const Layer({
     required this.id,
     required this.name,
@@ -54,6 +63,9 @@ class Layer {
     this.materialId,
     this.sourceTrimStart,
     this.sourceTrimEnd,
+    this.watermarkAssetId,
+    this.watermarkAngle = 0,
+    this.watermarkScale = 0.25,
   });
 
   Layer copyWith({
@@ -78,6 +90,9 @@ class Layer {
     Object? materialId = _sentinel,
     Object? sourceTrimStart = _sentinel,
     Object? sourceTrimEnd = _sentinel,
+    Object? watermarkAssetId = _sentinel,
+    double? watermarkAngle,
+    double? watermarkScale,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -101,6 +116,9 @@ class Layer {
       materialId: materialId == _sentinel ? this.materialId : materialId as String?,
       sourceTrimStart: sourceTrimStart == _sentinel ? this.sourceTrimStart : sourceTrimStart as int?,
       sourceTrimEnd: sourceTrimEnd == _sentinel ? this.sourceTrimEnd : sourceTrimEnd as int?,
+      watermarkAssetId: watermarkAssetId == _sentinel ? this.watermarkAssetId : watermarkAssetId as String?,
+      watermarkAngle: watermarkAngle ?? this.watermarkAngle,
+      watermarkScale: watermarkScale ?? this.watermarkScale,
     );
   }
 }
