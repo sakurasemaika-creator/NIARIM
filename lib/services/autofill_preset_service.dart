@@ -129,18 +129,16 @@ class AutofillPresetService extends ChangeNotifier {
     return dir;
   }
 
-  /// [sourcePath]の画像をプリセットのサムネイル（参照画像）として登録する
-  /// （仕様書20：謎のパレットではなく、サムネイル画像を設定してそこから
-  /// スポイトで色を拾えるようにする）。アプリ専用領域へコピーして永続化
-  /// することで、ピッカー側の一時パスが失効しても参照できるようにする。
-  Future<void> setPresetThumbnail(String presetId, String sourcePath) async {
+  /// [pngBytes]（1:1トリミング済みのPNG）をプリセットのサムネイル画像として
+  /// 登録する（仕様書20：三点メニュー「サムネイル画像設定」）。アプリ専用
+  /// 領域へ保存して永続化する。
+  Future<void> setPresetThumbnailBytes(String presetId, Uint8List pngBytes) async {
     final idx = _presets.indexWhere((p) => p.id == presetId);
     if (idx < 0) return;
     final dir = await _thumbnailsDir();
-    final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'png';
-    final fileName = '${presetId}_${DateTime.now().microsecondsSinceEpoch}.$ext';
+    final fileName = '${presetId}_${DateTime.now().microsecondsSinceEpoch}.png';
     final destPath = '${dir.path}/$fileName';
-    await File(sourcePath).copy(destPath);
+    await File(destPath).writeAsBytes(pngBytes);
     // 旧サムネイルが存在すれば削除する
     final oldPath = _presets[idx].thumbnailPath;
     if (oldPath != null && oldPath != destPath) {

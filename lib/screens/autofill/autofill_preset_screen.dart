@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/autofill_gradient.dart';
@@ -11,6 +13,7 @@ import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
+import '../../widgets/square_image_crop_dialog.dart';
 import '../../widgets/tone_preview_thumb.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 
@@ -128,6 +131,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             .updatePreset(preset.copyWith(isFavorite: !preset.isFavorite)),
                         onEdit: () => _showEditDialog(preset),
                         onDelete: () => _confirmDelete(preset),
+                        onSetThumbnail: () => _showThumbnailDialog(preset),
                         onTap: () => _showPresetDetail(preset),
                       );
                     },
@@ -234,6 +238,81 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     );
   }
 
+  /// サムネイル画像設定ポップアップ（仕様書20：三点メニューの「名前変更」
+  /// と「削除」の間に追加。「画像読み込み」でトリミングして設定、
+  /// 「サムネイル画像削除」で確認の上、既定の色表示へ戻す）。
+  void _showThumbnailDialog(AutofillPreset preset) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.autofillThumbnailMenuItem),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: Text(l10n.autofillThumbnailLoadButton),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickAndCropThumbnail(preset);
+              },
+            ),
+            if (preset.thumbnailPath != null)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: Text(l10n.autofillThumbnailDeleteButton, style: const TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _confirmRemoveThumbnail(preset);
+                },
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickAndCropThumbnail(AutofillPreset preset) async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (!mounted) return;
+    // 画像選択後、1:1の正方形へトリミング（位置・大きさ・角度はユーザーが
+    // ドラッグ・ピンチ・回転ジェスチャーで調整できる、仕様書20）。
+    final cropped = await showDialog<Uint8List>(
+      context: context,
+      builder: (_) => SquareImageCropDialog(imagePath: result.files.first.path!),
+    );
+    if (cropped == null || !mounted) return;
+    final service = context.read<AutofillPresetService>();
+    await service.setPresetThumbnailBytes(preset.id, cropped);
+  }
+
+  void _confirmRemoveThumbnail(AutofillPreset preset) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.autofillThumbnailDeleteConfirmTitle),
+        content: Text(l10n.autofillThumbnailDeleteConfirmBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              context.read<AutofillPresetService>().clearPresetThumbnail(preset.id);
+              Navigator.pop(ctx);
+            },
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showPresetDetail(AutofillPreset preset) {
     final presetService = context.read<AutofillPresetService>();
     final projectService = context.read<ProjectService>();
@@ -260,6 +339,7 @@ class _PresetCard extends StatelessWidget {
   final VoidCallback onToggleFavorite;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onSetThumbnail;
   final VoidCallback onTap;
 
   const _PresetCard({
@@ -267,6 +347,7 @@ class _PresetCard extends StatelessWidget {
     required this.onToggleFavorite,
     required this.onEdit,
     required this.onDelete,
+    required this.onSetThumbnail,
     required this.onTap,
   });
 
@@ -278,24 +359,30 @@ class _PresetCard extends StatelessWidget {
       child: ListTile(
         leading: Container(
           width: 48, height: 48,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: preset.parts.isEmpty
-              ? const Icon(Icons.palette, size: 24)
-              : GridView.count(
-                  crossAxisCount: 2,
-                  padding: const EdgeInsets.all(4),
-                  mainAxisSpacing: 2,
-                  crossAxisSpacing: 2,
-                  children: preset.parts.take(4).map((p) => Container(
-                    decoration: BoxDecoration(
-                      color: Color(p.color),
-                      borderRadius: BorderRadius.circular(2),
+          // サムネイル画像が設定されている場合はそれを優先表示し、未設定の
+          // 場合のみ従来通りパーツの色（最大4色）をグリッド表示する
+          // （仕様書20：サムネイル画像削除時は既定の色表示へ戻る）。
+          child: preset.thumbnailPath != null
+              ? Image.file(File(preset.thumbnailPath!), fit: BoxFit.cover)
+              : preset.parts.isEmpty
+                  ? const Icon(Icons.palette, size: 24)
+                  : GridView.count(
+                      crossAxisCount: 2,
+                      padding: const EdgeInsets.all(4),
+                      mainAxisSpacing: 2,
+                      crossAxisSpacing: 2,
+                      children: preset.parts.take(4).map((p) => Container(
+                        decoration: BoxDecoration(
+                          color: Color(p.color),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      )).toList(),
                     ),
-                  )).toList(),
-                ),
         ),
         title: Text(preset.name),
         subtitle: Text(l10n.autofillPresetPartsCount(preset.parts.length), style: const TextStyle(fontSize: 11)),
@@ -311,10 +398,12 @@ class _PresetCard extends StatelessWidget {
             PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'edit') onEdit();
+                if (v == 'thumbnail') onSetThumbnail();
                 if (v == 'delete') onDelete();
               },
               itemBuilder: (_) => [
                 PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
+                PopupMenuItem(value: 'thumbnail', child: Text(l10n.autofillThumbnailMenuItem)),
                 PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
               ],
             ),
@@ -343,15 +432,55 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   String _partSearchQuery = '';
   bool _isSearchingParts = false;
 
+  // パーツの色選択時に「画像からスポイト」で都度読み込んだ参考画像の
+  // スクラッチコピー（仕様書20）。この画面を離れる（＝プリセット編集を
+  // 終える）タイミングでまとめて削除し容量を節約する。取得した色自体は
+  // 各パーツのcolor/lineColorへ既に反映済みのため消えない。
+  final Set<String> _scratchImagePaths = {};
+
   @override
   void initState() {
     super.initState();
     _preset = widget.preset;
   }
 
+  @override
+  void dispose() {
+    for (final path in _scratchImagePaths) {
+      final file = File(path);
+      if (file.existsSync()) {
+        try { file.deleteSync(); } catch (_) {}
+      }
+    }
+    super.dispose();
+  }
+
   void _save(AutofillPreset updated, {String? changedPartId}) {
     setState(() => _preset = updated);
     widget.onUpdate(updated, changedPartId: changedPartId);
+  }
+
+  /// 画像を都度読み込んでスポイトする（仕様書20：「各パーツ設定の色選択時に
+  /// 画像を都度読み込めるようにして」）。読み込んだ画像はスクラッチ領域へ
+  /// コピーし、この画面を離れる際に削除する。
+  Future<void> _pickColorFromNewImage(ValueChanged<Color> onPicked) async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (!mounted) return;
+    final base = await getApplicationDocumentsDirectory();
+    final dir = Directory('${base.path}/niarim/autofill_scratch');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    final sourcePath = result.files.first.path!;
+    final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'png';
+    final scratchPath = '${dir.path}/scratch_${DateTime.now().microsecondsSinceEpoch}.$ext';
+    await File(sourcePath).copy(scratchPath);
+    _scratchImagePaths.add(scratchPath);
+    if (!mounted) return;
+    final picked = await showDialog<Color>(
+      context: context,
+      builder: (_) => ImageEyedropperDialog(imagePath: scratchPath),
+    );
+    if (picked != null) onPicked(picked);
   }
 
   List<AutofillPart> get _filteredParts => _partSearchQuery.isEmpty
@@ -409,7 +538,6 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 style: const TextStyle(color: Colors.red, fontSize: 11),
               ),
             ),
-          _thumbnailSection(),
           Expanded(child: _partListBody()),
         ],
       )),
@@ -419,82 +547,6 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       ),
       ),
     );
-  }
-
-  /// サムネイル画像（参照画像）欄（仕様書20：謎のパレットではなく、
-  /// サムネイル画像を設定してそこからスポイトで色を拾えるようにする）。
-  /// 画像未設定時は追加ボタンのみ、設定済みなら小さくプレビューし、
-  /// 変更・削除ができる。
-  Widget _thumbnailSection() {
-    final l10n = AppLocalizations.of(context)!;
-    final path = _preset.thumbnailPath;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Row(
-        children: [
-          if (path != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.file(File(path), width: 56, height: 56, fit: BoxFit.cover),
-            )
-          else
-            Container(
-              width: 56, height: 56,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Icon(Icons.image_outlined),
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(l10n.autofillThumbnailHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          TextButton(
-            onPressed: _pickThumbnail,
-            child: Text(path == null ? l10n.autofillThumbnailSetButton : l10n.autofillThumbnailChangeButton,
-                style: const TextStyle(fontSize: 12)),
-          ),
-          if (path != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline, size: 18),
-              tooltip: l10n.commonDelete,
-              onPressed: _removeThumbnail,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _pickThumbnail() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
-    if (!mounted) return;
-    final service = context.read<AutofillPresetService>();
-    await service.setPresetThumbnail(_preset.id, result.files.first.path!);
-    final updated = service.presets.where((p) => p.id == _preset.id).firstOrNull;
-    if (updated != null && mounted) setState(() => _preset = updated);
-  }
-
-  Future<void> _removeThumbnail() async {
-    final service = context.read<AutofillPresetService>();
-    await service.clearPresetThumbnail(_preset.id);
-    final updated = service.presets.where((p) => p.id == _preset.id).firstOrNull;
-    if (updated != null && mounted) setState(() => _preset = updated);
-  }
-
-  /// サムネイル画像からスポイトで色を取得する（仕様書20）。取得した色は
-  /// [onPicked]へ渡す（呼び出し元＝パーツ詳細ダイアログ側で塗り色・線画色
-  /// いずれへ適用するかを決める）。
-  Future<void> _pickColorFromThumbnail(ValueChanged<Color> onPicked) async {
-    final path = _preset.thumbnailPath;
-    if (path == null) return;
-    final picked = await showDialog<Color>(
-      context: context,
-      builder: (_) => ImageEyedropperDialog(imagePath: path),
-    );
-    if (picked != null) onPicked(picked);
   }
 
   void _showUnconfiguredBlockDialog(List<AutofillPart> unconfigured) {
@@ -759,16 +811,15 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                       label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                     ),
-                    // サムネイル画像（参照画像）からスポイトで色を拾う（仕様書20）。
-                    // 画像未設定の場合はボタン自体を無効化する。
-                    if (_preset.thumbnailPath != null)
-                      OutlinedButton.icon(
-                        onPressed: () => _pickColorFromThumbnail(
-                          (c) => setS(() => current = current.copyWith(color: c.toARGB32(), gradient: null)),
-                        ),
-                        icon: const Icon(Icons.colorize, size: 16),
-                        label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                    // 画像を都度読み込んでスポイトで色を拾う（仕様書20：カラー
+                    // ピッカーだけでなく、任意の画像から直接色を取得できる）。
+                    OutlinedButton.icon(
+                      onPressed: () => _pickColorFromNewImage(
+                        (c) => setS(() => current = current.copyWith(color: c.toARGB32(), gradient: null)),
                       ),
+                      icon: const Icon(Icons.colorize, size: 16),
+                      label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                    ),
                     TextButton.icon(
                       onPressed: () async {
                         final updated = await _showGradientEditor(current);
@@ -812,14 +863,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         ),
                         label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                       ),
-                      if (_preset.thumbnailPath != null)
-                        OutlinedButton.icon(
-                          onPressed: () => _pickColorFromThumbnail(
-                            (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
-                          ),
-                          icon: const Icon(Icons.colorize, size: 16),
-                          label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                      OutlinedButton.icon(
+                        onPressed: () => _pickColorFromNewImage(
+                          (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
                         ),
+                        icon: const Icon(Icons.colorize, size: 16),
+                        label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                      ),
                     ],
                     if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
                       Text(l10n.autofillPartTraceHueLabel(current.traceHue.round()), style: const TextStyle(fontSize: 11)),
