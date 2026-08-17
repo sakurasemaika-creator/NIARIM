@@ -59,13 +59,20 @@ class PenSettingsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Center(
               child: PressureCurveGraph(
-                exponent: settings.customPressureExponent,
-                onExponentChanged: (v) => settings.setCustomPressureExponent(v),
+                points: settings.customPressurePoints,
+                onAddPoint: (x, y) => settings.addCustomPressurePoint(x, y),
+                onMovePoint: (i, x, y) => settings.moveCustomPressurePoint(i, x, y),
+                onRemovePoint: (i) => settings.removeCustomPressurePoint(i),
               ),
             ),
-            const SizedBox(height: 4),
-            Center(child: Text(l10n.penSettingsExponentLabel(settings.customPressureExponent.toStringAsFixed(2)),
-                style: const TextStyle(fontSize: 11))),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                icon: const Icon(Icons.restart_alt, size: 16),
+                label: Text(l10n.penSettingsResetCurveButton),
+                onPressed: () => settings.resetCustomPressureCurve(),
+              ),
+            ),
           ],
           const SizedBox(height: 4),
           Text(l10n.penSettingsPerBrushNote,

@@ -57,21 +57,46 @@ class SettingsService extends ChangeNotifier {
 
   /// 筆圧カーブに応じて生の筆圧値（0.0〜1.0）を補正する（仕様書08：
   /// 筆圧カーブはアプリ全体に適用）。弱＝立ち上がりを緩やかに、
-  /// 強＝立ち上がりを鋭くする指数カーブ。
+  /// 強＝立ち上がりを鋭くする指数カーブ。カスタムのみ、_customPressurePoints
+  /// （最大10点の制御点）を結ぶ折れ線で補間する（ユーザー指示：以前は
+  /// 制御点を1つしか打てなかったのを、ユーザー好みの筆圧設定を自由に
+  /// 作れるよう最大10点まで打てるようにした）。
   double applyPressureCurve(double rawPressure) {
     final p = rawPressure.clamp(0.0, 1.0);
+    if (_penPressureCurve == PenPressureCurve.custom) {
+      return _evalCustomCurve(p);
+    }
     final exponent = switch (_penPressureCurve) {
       PenPressureCurve.weak => 1.6,
       PenPressureCurve.normal => 1.0,
       PenPressureCurve.strong => 0.6,
-      PenPressureCurve.custom => _customPressureExponent,
+      PenPressureCurve.custom => 1.0, // 到達しない（上でハンドリング済み）
     };
     if (exponent == 1.0) return p;
     return math.pow(p, exponent).toDouble();
   }
 
-  double _customPressureExponent = 1.0;
-  double get customPressureExponent => _customPressureExponent;
+  double _evalCustomCurve(double x) {
+    final pts = _customPressurePoints;
+    for (int i = 0; i < pts.length - 1; i++) {
+      final a = pts[i];
+      final b = pts[i + 1];
+      if (x >= a.$1 && x <= b.$1) {
+        if (b.$1 == a.$1) return a.$2;
+        final t = (x - a.$1) / (b.$1 - a.$1);
+        return a.$2 + (b.$2 - a.$2) * t;
+      }
+    }
+    return pts.last.$2;
+  }
+
+  /// カスタム筆圧カーブの制御点（x=筆圧、y=反映される太さ・不透明度の
+  /// 倍率、いずれも0.0〜1.0）。x昇順に並べ、最大10点まで持てる。
+  /// 先頭（x=0）・末尾（x=1）は常に存在し、xは動かせない
+  /// （0〜1全域をカバーするため）。デフォルトは対角線（傾き1）の2点のみ。
+  static const int maxPressurePoints = 10;
+  List<(double, double)> _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
+  List<(double, double)> get customPressurePoints => List.unmodifiable(_customPressurePoints);
 
   Future<void> setPenPressureCurve(PenPressureCurve curve) async {
     _penPressureCurve = curve;
@@ -80,10 +105,58 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setCustomPressureExponent(double exponent) async {
-    _customPressureExponent = exponent.clamp(0.3, 3.0);
+  Future<void> _persistCustomPressurePoints() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('pen_pressure_custom_exponent', _customPressureExponent);
+    final flat = _customPressurePoints.expand((p) => [p.$1, p.$2]).toList();
+    await prefs.setStringList(
+        'pen_pressure_custom_points', flat.map((v) => v.toString()).toList());
+  }
+
+  /// 新しい制御点を追加する（最大10点まで。x昇順を保つ）。
+  Future<void> addCustomPressurePoint(double x, double y) async {
+    if (_customPressurePoints.length >= maxPressurePoints) return;
+    final points = List<(double, double)>.from(_customPressurePoints)
+      ..add((x.clamp(0.0, 1.0), y.clamp(0.0, 1.0)));
+    points.sort((a, b) => a.$1.compareTo(b.$1));
+    _customPressurePoints = points;
+    await _persistCustomPressurePoints();
+    notifyListeners();
+  }
+
+  /// 制御点を移動する。先頭・末尾（index 0・最後）はxを固定しyのみ動かす。
+  /// 中間点は前後の制御点の間からxが出ないようクランプする。
+  Future<void> moveCustomPressurePoint(int index, double x, double y) async {
+    final points = List<(double, double)>.from(_customPressurePoints);
+    if (index < 0 || index >= points.length) return;
+    final isEndpoint = index == 0 || index == points.length - 1;
+    final clampedY = y.clamp(0.0, 1.0);
+    if (isEndpoint) {
+      points[index] = (points[index].$1, clampedY);
+    } else {
+      final minX = points[index - 1].$1 + 0.01;
+      final maxX = points[index + 1].$1 - 0.01;
+      final clampedX = x.clamp(minX, maxX);
+      points[index] = (clampedX, clampedY);
+    }
+    _customPressurePoints = points;
+    await _persistCustomPressurePoints();
+    notifyListeners();
+  }
+
+  /// 中間の制御点を削除する（先頭・末尾は削除不可）。
+  Future<void> removeCustomPressurePoint(int index) async {
+    if (index <= 0 || index >= _customPressurePoints.length - 1) return;
+    final points = List<(double, double)>.from(_customPressurePoints)..removeAt(index);
+    _customPressurePoints = points;
+    await _persistCustomPressurePoints();
+    notifyListeners();
+  }
+
+  /// 筆圧カーブをデフォルト（対角線の2点のみ）へリセットする（ユーザー
+  /// 指示：誤って点を増やしすぎた時に簡単に戻せるようにするため）。
+  Future<void> resetCustomPressureCurve() async {
+    _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
+    await _persistCustomPressurePoints();
     notifyListeners();
   }
 
@@ -129,7 +202,25 @@ class SettingsService extends ChangeNotifier {
     _twoFingerSwipe = _gestureActionFromName(prefs.getString('gesture_two_finger_swipe'), GestureAction.frameMove);
     _longPress = _gestureActionFromName(prefs.getString('gesture_long_press'), GestureAction.eyedropper);
     _penPressureCurve = PenPressureCurve.values.asNameMap()[prefs.getString('pen_pressure_curve')] ?? PenPressureCurve.normal;
-    _customPressureExponent = prefs.getDouble('pen_pressure_custom_exponent') ?? 1.0;
+    final rawPoints = prefs.getStringList('pen_pressure_custom_points');
+    if (rawPoints != null && rawPoints.length >= 4 && rawPoints.length.isEven) {
+      final values = rawPoints.map((s) => double.tryParse(s)).toList();
+      if (values.every((v) => v != null)) {
+        final points = <(double, double)>[];
+        for (int i = 0; i < values.length; i += 2) {
+          points.add((values[i]!, values[i + 1]!));
+        }
+        _customPressurePoints = points;
+      }
+    } else {
+      // 旧バージョン（単一exponent値）からの引き継ぎ：以前の指数カーブの
+      // 形状を、新しい制御点方式の3点（始点・中間点・終点）で近似する。
+      final legacyExponent = prefs.getDouble('pen_pressure_custom_exponent');
+      if (legacyExponent != null && legacyExponent != 1.0) {
+        final midY = math.pow(0.5, legacyExponent).toDouble().clamp(0.0, 1.0);
+        _customPressurePoints = [(0.0, 0.0), (0.5, midY), (1.0, 1.0)];
+      }
+    }
     _penButton1 = _gestureActionFromName(prefs.getString('pen_button_1'), GestureAction.eraserToggle);
     _penButton2 = _gestureActionFromName(prefs.getString('pen_button_2'), GestureAction.eyedropper);
   }
