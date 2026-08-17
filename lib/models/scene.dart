@@ -16,6 +16,13 @@ class Scene {
   final List<EffectFilterInstance> effectFilters;
   // 音声トラックのクリップ（仕様書05）。シーンごとに管理する（音声はレイヤーを持たない）。
   final List<AudioClip> audioClips;
+  // 画像・動画・音源タイムライン行のカスタム名（仕様書05：「素材種別ごとに
+  // 複数行のタイムライン行を追加/削除できるようにする。行名はタップで
+  // ユーザーがテキスト変更できる」）。リストの長さ＝行数（最低1）。
+  // 要素がnullの行は既定表示（種別名＋行番号）を使う。
+  final List<String?> imageRowNames;
+  final List<String?> videoRowNames;
+  final List<String?> audioRowNames;
 
   const Scene({
     required this.id,
@@ -25,6 +32,9 @@ class Scene {
     this.cameraKeyframes = const [],
     this.effectFilters = const [],
     this.audioClips = const [],
+    this.imageRowNames = const [],
+    this.videoRowNames = const [],
+    this.audioRowNames = const [],
   });
 
   String get displayName => name ?? 'Scene${index + 1}';
@@ -37,6 +47,9 @@ class Scene {
     List<CameraKeyframe>? cameraKeyframes,
     List<EffectFilterInstance>? effectFilters,
     List<AudioClip>? audioClips,
+    List<String?>? imageRowNames,
+    List<String?>? videoRowNames,
+    List<String?>? audioRowNames,
   }) {
     return Scene(
       id: id ?? this.id,
@@ -46,6 +59,9 @@ class Scene {
       cameraKeyframes: cameraKeyframes ?? this.cameraKeyframes,
       effectFilters: effectFilters ?? this.effectFilters,
       audioClips: audioClips ?? this.audioClips,
+      imageRowNames: imageRowNames ?? this.imageRowNames,
+      videoRowNames: videoRowNames ?? this.videoRowNames,
+      audioRowNames: audioRowNames ?? this.audioRowNames,
     );
   }
 }

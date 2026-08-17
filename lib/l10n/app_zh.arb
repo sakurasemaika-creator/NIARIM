@@ -1242,6 +1242,8 @@
   },
   "timelineAutofillUpdateHelpBody": "该场景/帧中包含并非最新状态的自动上色图层。在图层面板中点按目标图层即可更新。",
   "timelineFrameTrackLabel": "帧",
+  "timelineTrackRowDeleteBlockedSnackbar": "该行中还有素材，无法删除。请先移动或删除这些素材。",
+  "timelineTrackRowRenameTitle": "重命名行",
   "timelineCameraTrackLabel": "相机",
   "timelineRangeSceneFixed": "固定场景",
   "timelineEndCardCustomLabel": "已替换",

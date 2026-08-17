@@ -1242,6 +1242,8 @@
   },
   "timelineAutofillUpdateHelpBody": "Esta escena/fotograma contiene una capa de relleno automático que no está actualizada. Toca la capa en el panel de capas para actualizarla.",
   "timelineFrameTrackLabel": "Fotograma",
+  "timelineTrackRowDeleteBlockedSnackbar": "Esta fila todavía tiene clips y no se puede eliminar. Muévelos o elimínalos primero.",
+  "timelineTrackRowRenameTitle": "Renombrar fila",
   "timelineCameraTrackLabel": "Cámara",
   "timelineRangeSceneFixed": "Escena fija",
   "timelineEndCardCustomLabel": "Reemplazado",

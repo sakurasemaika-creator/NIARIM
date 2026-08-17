@@ -1242,6 +1242,8 @@
   },
   "timelineAutofillUpdateHelpBody": "Cette scène/image contient un calque de remplissage automatique qui n'est pas à jour. Touchez le calque concerné dans le panneau des calques pour le mettre à jour.",
   "timelineFrameTrackLabel": "Image",
+  "timelineTrackRowDeleteBlockedSnackbar": "Cette ligne contient encore des clips et ne peut pas être supprimée. Déplacez-les ou supprimez-les d'abord.",
+  "timelineTrackRowRenameTitle": "Renommer la ligne",
   "timelineCameraTrackLabel": "Caméra",
   "timelineRangeSceneFixed": "Scène fixe",
   "timelineEndCardCustomLabel": "Remplacé",

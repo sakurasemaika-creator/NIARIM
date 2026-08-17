@@ -1242,6 +1242,8 @@
   },
   "timelineAutofillUpdateHelpBody": "此場景／影格中包含並非最新狀態的自動上色圖層。在圖層面板中點一下目標圖層即可更新。",
   "timelineFrameTrackLabel": "影格",
+  "timelineTrackRowDeleteBlockedSnackbar": "此行中還有素材，無法刪除。請先移動或刪除這些素材。",
+  "timelineTrackRowRenameTitle": "重新命名行",
   "timelineCameraTrackLabel": "相機",
   "timelineRangeSceneFixed": "固定場景",
   "timelineEndCardCustomLabel": "已替換",

@@ -1333,6 +1333,8 @@
   },
   "timelineAutofillUpdateHelpBody": "このシーン・フレームには最新ではない自動塗りレイヤーが含まれています。レイヤーパネルで対象レイヤーをタップすると更新できます。",
   "timelineFrameTrackLabel": "フレーム",
+  "timelineTrackRowDeleteBlockedSnackbar": "この行には素材があるため削除できません。先に素材を移動または削除してください。",
+  "timelineTrackRowRenameTitle": "行名を変更",
   "timelineCameraTrackLabel": "カメラ",
   "timelineRangeSceneFixed": "シーン固定",
   "timelineEndCardCustomLabel": "差替済",

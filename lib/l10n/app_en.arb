@@ -1242,6 +1242,8 @@
   },
   "timelineAutofillUpdateHelpBody": "This scene/frame contains an auto-fill layer that isn't up to date. Tap the layer in the layer panel to update it.",
   "timelineFrameTrackLabel": "Frame",
+  "timelineTrackRowDeleteBlockedSnackbar": "This row still has clips and can't be removed. Move or delete them first.",
+  "timelineTrackRowRenameTitle": "Rename row",
   "timelineCameraTrackLabel": "Camera",
   "timelineRangeSceneFixed": "Fixed scene",
   "timelineEndCardCustomLabel": "Replaced",

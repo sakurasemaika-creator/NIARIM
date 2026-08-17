@@ -66,6 +66,9 @@ class _TrackClip {
   int useStart;        // 使用開始フレーム（素材内）
   int useEnd;          // 使用終了フレーム（素材内）
   double videoOpacity; // 0.0〜1.0
+  // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
+  // このクリップが属する行番号（0始まり、仕様書05）。
+  final int trackRow;
 
   _TrackClip({
     required this.id,
@@ -82,8 +85,10 @@ class _TrackClip {
     this.useStart = 0,
     this.useEnd = 0,
     this.videoOpacity = 1.0,
+    this.trackRow = 0,
   });
 }
+
 
 class TimelineScreen extends StatefulWidget {
   final String projectId;
@@ -161,6 +166,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
   late final ScrollController _commonLayerScrollCtrl;
   bool _syncingScroll = false;
 
+  // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
+  // 2行目以降の行専用スクロールコントローラー（仕様書05）。1行目は既存の
+  // _audioScrollCtrl等をそのまま使う。キー形式は'種別名_行番号'。
+  final Map<String, ScrollController> _rowScrollCtrls = {};
+
+  ScrollController _rowScrollCtrl(MaterialType type, int rowIndex) {
+    if (rowIndex == 0) {
+      return switch (type) {
+        MaterialType.image => _imageScrollCtrl,
+        MaterialType.video => _videoScrollCtrl,
+        MaterialType.audio => _audioScrollCtrl,
+      };
+    }
+    final key = '${type.name}_$rowIndex';
+    return _rowScrollCtrls.putIfAbsent(key, () {
+      final ctrl = ScrollController();
+      ctrl.addListener(() => _syncFrom(ctrl));
+      return ctrl;
+    });
+  }
+
   // 共通レイヤートラックのドラッグハンドル操作用の累積ピクセル（仕様書16：
   // タイムライン上では左右のドラッグハンドルでも表示範囲を変更できる）
   double _commonDragAccumPx = 0;
@@ -230,6 +256,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _imageScrollCtrl,
     _cameraScrollCtrl,
     _commonLayerScrollCtrl,
+    ..._rowScrollCtrls.values,
   ];
 
   void _syncFrom(ScrollController source) {
@@ -498,29 +525,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // シーン・フレームの複数選択モード中の一括操作バー（ユーザー指示：
             // 小さいボタンではなく素材タイムラインの上に大きな3分割ボタンで表示）
             _buildMultiSelectActionBar(),
-            _buildClipTrack(
+            _buildMaterialTrackGroup(
+              type: MaterialType.image,
               icon: Icons.image,
-              label: l10n.projectListMaterialImage,
-              clips: _imageClips,
-              scrollCtrl: _imageScrollCtrl,
+              defaultLabel: l10n.projectListMaterialImage,
+              allClips: _imageClips,
               addColor: Colors.green[700]!,
-              onAdd: () => _showAddClipDialog(l10n.projectListMaterialImage, _imageClips, Colors.green[700]!, _ClipTrackType.image),
             ),
-            _buildClipTrack(
+            _buildMaterialTrackGroup(
+              type: MaterialType.video,
               icon: Icons.videocam,
-              label: l10n.projectListMaterialVideo,
-              clips: _videoClips,
-              scrollCtrl: _videoScrollCtrl,
+              defaultLabel: l10n.projectListMaterialVideo,
+              allClips: _videoClips,
               addColor: Colors.blue[700]!,
-              onAdd: () => _showAddClipDialog(l10n.projectListMaterialVideo, _videoClips, Colors.blue[700]!, _ClipTrackType.video),
             ),
-            _buildClipTrack(
+            _buildMaterialTrackGroup(
+              type: MaterialType.audio,
               icon: Icons.audiotrack,
-              label: l10n.projectListMaterialAudio,
-              clips: _audioClips,
-              scrollCtrl: _audioScrollCtrl,
+              defaultLabel: l10n.projectListMaterialAudio,
+              allClips: _audioClips,
               addColor: Colors.orange[700]!,
-              onAdd: () => _showAddClipDialog(l10n.projectListMaterialAudio, _audioClips, Colors.orange[700]!, _ClipTrackType.audio),
             ),
             _buildCameraTrack(),
             _buildEndCardTrack(),
@@ -1757,21 +1781,61 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildClipTrack({
+  /// 素材種別（画像・動画・音源）ごとのタイムライン行グループ（仕様書05）。
+  /// 行数・行名はシーンごとにProjectServiceで管理する。1行目の右端＋は
+  /// 「行の追加」用（素材自体の追加は既に上部ツールバーのボタンで行える
+  /// ため、この＋は行追加に転用した）。2行目以降は－で行削除ができる。
+  Widget _buildMaterialTrackGroup({
+    required MaterialType type,
     required IconData icon,
-    required String label,
+    required String defaultLabel,
+    required List<_TrackClip> allClips,
+    required Color addColor,
+  }) {
+    final sceneId = _selectedSceneId;
+    final rowNames = sceneId == null
+        ? const <String?>[null]
+        : context.watch<ProjectService>().rowNamesOf(widget.projectId, sceneId, type);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int row = 0; row < rowNames.length; row++)
+          _buildClipTrackRow(
+            type: type,
+            rowIndex: row,
+            rowLabel: rowNames[row] ?? '$defaultLabel${row + 1}',
+            icon: icon,
+            clips: allClips.where((c) => c.trackRow == row).toList(),
+            scrollCtrl: _rowScrollCtrl(type, row),
+            addColor: addColor,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildClipTrackRow({
+    required MaterialType type,
+    required int rowIndex,
+    required String rowLabel,
+    required IconData icon,
     required List<_TrackClip> clips,
     required ScrollController scrollCtrl,
     required Color addColor,
-    required VoidCallback onAdd,
   }) {
     final total = _totalFrames;
+    final isFirstRow = rowIndex == 0;
     return Container(
       height: 32,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Row(
         children: [
-          _buildTrackLabel(icon, label),
+          // 行名タップで名称変更（仕様書05：「タイムライン左側の素材種別名は
+          // タップでユーザーがテキスト変更できる」）。種別を示すアイコン自体は
+          // 変更不可のまま常時表示する。
+          GestureDetector(
+            onTap: () => _showRenameTrackRowDialog(type, rowIndex, rowLabel),
+            child: _buildTrackLabel(icon, rowLabel),
+          ),
           Expanded(
             child: Stack(
               children: [
@@ -1790,20 +1854,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 // クリップ描画
                 ...clips.map((clip) => _buildClipWidget(clip, scrollCtrl)),
-                // ＋ボタン（右端）
+                // 1行目：＋で行を追加。2行目以降：－でこの行を削除する
+                // （ユーザー指示）。
                 Positioned(
                   right: 4,
                   top: 4,
                   child: GestureDetector(
-                    onTap: onAdd,
+                    onTap: () => isFirstRow
+                        ? _addTrackRow(type)
+                        : _confirmRemoveTrackRow(type, rowIndex, clips.isNotEmpty),
                     child: Container(
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: addColor.withValues(alpha: 0.8),
+                        color: (isFirstRow ? addColor : Colors.grey[700]!).withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.add, size: 14, color: Colors.white),
+                      child: Icon(isFirstRow ? Icons.add : Icons.remove, size: 14, color: Colors.white),
                     ),
                   ),
                 ),
@@ -1813,6 +1880,53 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     );
+  }
+
+  void _addTrackRow(MaterialType type) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    context.read<ProjectService>().addTrackRow(widget.projectId, sceneId, type);
+  }
+
+  void _confirmRemoveTrackRow(MaterialType type, int rowIndex, bool hasClips) {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    if (hasClips) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.timelineTrackRowDeleteBlockedSnackbar)));
+      return;
+    }
+    context.read<ProjectService>().removeTrackRow(widget.projectId, sceneId, type, rowIndex);
+  }
+
+  void _showRenameTrackRowDialog(MaterialType type, int rowIndex, String currentLabel) {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final ctrl = TextEditingController(text: currentLabel);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineTrackRowRenameTitle),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          FilledButton(
+            onPressed: () {
+              context.read<ProjectService>()
+                  .renameTrackRow(widget.projectId, sceneId, type, rowIndex, ctrl.text.trim());
+              Navigator.pop(ctx);
+            },
+            child: Text(l10n.commonChange),
+          ),
+        ],
+      ),
+    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose()));
   }
 
   Widget _buildClipWidget(_TrackClip clip, ScrollController scrollCtrl) {
@@ -3064,6 +3178,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         fadeIn: a.fadeIn,
         fadeOut: a.fadeOut,
         useEnd: a.lengthFrames - 1,
+        trackRow: a.trackRow,
       ));
     }
 
@@ -3090,6 +3205,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           useStart: layer.sourceTrimStart ?? 0,
           useEnd: layer.sourceTrimEnd ?? (length - 1),
           videoOpacity: layer.opacity / 100.0,
+          trackRow: layer.trackRow,
         );
         if (layer.type == LayerType.timelineVideo) {
           video.add(clip);

@@ -41,6 +41,11 @@ class Layer {
   final double watermarkAngle; // 度数法、0が基準
   final double watermarkScale; // キャンバス幅に対する倍率（既定0.25）
 
+  // タイムライン画像・動画素材レイヤーが表示される行番号（0始まり、仕様書05：
+  // 「素材種別ごとに複数行のタイムライン行を追加/削除できるようにする」）。
+  // LayerType.timelineImage/timelineVideoでのみ使用する。
+  final int trackRow;
+
   const Layer({
     required this.id,
     required this.name,
@@ -66,6 +71,7 @@ class Layer {
     this.watermarkAssetId,
     this.watermarkAngle = 0,
     this.watermarkScale = 0.25,
+    this.trackRow = 0,
   });
 
   Layer copyWith({
@@ -93,6 +99,7 @@ class Layer {
     Object? watermarkAssetId = _sentinel,
     double? watermarkAngle,
     double? watermarkScale,
+    int? trackRow,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -119,6 +126,7 @@ class Layer {
       watermarkAssetId: watermarkAssetId == _sentinel ? this.watermarkAssetId : watermarkAssetId as String?,
       watermarkAngle: watermarkAngle ?? this.watermarkAngle,
       watermarkScale: watermarkScale ?? this.watermarkScale,
+      trackRow: trackRow ?? this.trackRow,
     );
   }
 }

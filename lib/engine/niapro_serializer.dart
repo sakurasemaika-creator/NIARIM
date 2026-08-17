@@ -429,7 +429,8 @@ class NiaproSerializer {
       final framesFile = archive.findFile('Scene/$sceneId/$_framesFile');
       if (framesFile == null) continue;
       final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
-      final (name, frames, cameraKeyframes, effectFilters, audioClips) = _deserializeScene(decoded);
+      final (name, frames, cameraKeyframes, effectFilters, audioClips,
+          imageRowNames, videoRowNames, audioRowNames) = _deserializeScene(decoded);
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
       scenes.add(Scene(
           id: sceneId,
@@ -438,7 +439,10 @@ class NiaproSerializer {
           name: name,
           cameraKeyframes: cameraKeyframes,
           effectFilters: effectFilters,
-          audioClips: audioClips));
+          audioClips: audioClips,
+          imageRowNames: imageRowNames,
+          videoRowNames: videoRowNames,
+          audioRowNames: audioRowNames));
     }
     scenes.sort((a, b) => a.index.compareTo(b.index));
 
@@ -610,8 +614,12 @@ class NiaproSerializer {
                   'volume': a.volume,
                   'fadeIn': a.fadeIn,
                   'fadeOut': a.fadeOut,
+                  'trackRow': a.trackRow,
                 })
             .toList(),
+        'imageRowNames': scene.imageRowNames,
+        'videoRowNames': scene.videoRowNames,
+        'audioRowNames': scene.audioRowNames,
       };
 
   static List<dynamic> _serializeFrames(List<Frame> frames) =>
@@ -644,6 +652,7 @@ class NiaproSerializer {
         'watermarkAssetId': l.watermarkAssetId,
         'watermarkAngle': l.watermarkAngle,
         'watermarkScale': l.watermarkScale,
+        'trackRow': l.trackRow,
         if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
       };
 
@@ -694,7 +703,8 @@ class NiaproSerializer {
   /// シーンファイル（frames.json）を読み込む。新形式は
   /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
   /// フレーム配列そのもの。どちらも読み込めるようにする。
-  static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>, List<AudioClip>)
+  static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>, List<AudioClip>,
+      List<String?>, List<String?>, List<String?>)
       _deserializeScene(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final name = decoded['name'] as String?;
@@ -734,9 +744,20 @@ class NiaproSerializer {
           volume: (m['volume'] as num?)?.toDouble() ?? 1.0,
           fadeIn: (m['fadeIn'] as num?)?.toDouble() ?? 0.0,
           fadeOut: (m['fadeOut'] as num?)?.toDouble() ?? 0.0,
+          trackRow: m['trackRow'] as int? ?? 0,
         );
       }).toList();
-      return (name, frames, cameraKeyframes, effectFilters, audioClips);
+      final imageRowNames = (decoded['imageRowNames'] as List<dynamic>? ?? const [])
+          .map((e) => e as String?)
+          .toList();
+      final videoRowNames = (decoded['videoRowNames'] as List<dynamic>? ?? const [])
+          .map((e) => e as String?)
+          .toList();
+      final audioRowNames = (decoded['audioRowNames'] as List<dynamic>? ?? const [])
+          .map((e) => e as String?)
+          .toList();
+      return (name, frames, cameraKeyframes, effectFilters, audioClips,
+          imageRowNames, videoRowNames, audioRowNames);
     }
     return (
       null,
@@ -744,6 +765,9 @@ class NiaproSerializer {
       const <CameraKeyframe>[],
       const <EffectFilterInstance>[],
       const <AudioClip>[],
+      const <String?>[],
+      const <String?>[],
+      const <String?>[],
     );
   }
 
@@ -787,6 +811,7 @@ class NiaproSerializer {
         watermarkAssetId: j['watermarkAssetId'] as String?,
         watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
         watermarkScale: (j['watermarkScale'] as num?)?.toDouble() ?? 0.25,
+        trackRow: j['trackRow'] as int? ?? 0,
         textObject: j['textObject'] != null
             ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
             : null,

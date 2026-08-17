@@ -14,6 +14,7 @@ import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
+import '../models/material_asset.dart' show MaterialType;
 import '../models/project.dart';
 import '../models/scene.dart';
 import '../models/text_object.dart';
@@ -1316,6 +1317,115 @@ class ProjectService extends ChangeNotifier {
   void removeAudioClip(String projectId, String sceneId, String clipId) {
     _updateSceneAudioClips(
         projectId, sceneId, audioClipsOf(projectId, sceneId).where((c) => c.id != clipId).toList());
+  }
+
+  // ─── 素材タイムライン行（画像・動画・音源、仕様書05） ────────────────────
+  // 「タイムライン右側の＋マークは素材の追加ではなく行の追加、二列目以降は
+  // －マークで行削除、行名はタップで変更可能」というユーザー指示への対応。
+  // 行数・行名はScene.imageRowNames/videoRowNames/audioRowNames（リスト長＝
+  // 行数、要素は行名。nullなら既定表示）で管理する。
+
+  List<String?> rowNamesOf(String projectId, String sceneId, MaterialType type) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null) return const [null];
+    final names = switch (type) {
+      MaterialType.image => scene.imageRowNames,
+      MaterialType.video => scene.videoRowNames,
+      MaterialType.audio => scene.audioRowNames,
+    };
+    return names.isEmpty ? const [null] : names;
+  }
+
+  Scene _applyRowNames(Scene scene, MaterialType type, List<String?> names) => switch (type) {
+        MaterialType.image => scene.copyWith(imageRowNames: names),
+        MaterialType.video => scene.copyWith(videoRowNames: names),
+        MaterialType.audio => scene.copyWith(audioRowNames: names),
+      };
+
+  /// scene直下のtimelineImage/timelineVideoレイヤー（ホームがこのシーンに
+  /// あるもの）を列挙する。素材タイムライン行のクリップ有無判定に使う。
+  List<Layer> _materialLayersInScene(String projectId, String sceneId, LayerType type) {
+    final homes = _layerHomes[projectId];
+    final scene = sceneOf(projectId, sceneId);
+    if (homes == null || scene == null) return const [];
+    final result = <Layer>[];
+    for (final entry in homes.entries) {
+      final home = entry.value;
+      if (home.sceneId != sceneId || home.frameIndex >= scene.frames.length) continue;
+      final layer = scene.frames[home.frameIndex].layers.where((l) => l.id == entry.key).firstOrNull;
+      if (layer != null && layer.type == type) result.add(layer);
+    }
+    return result;
+  }
+
+  void addTrackRow(String projectId, String sceneId, MaterialType type) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final updated = [...rowNamesOf(projectId, sceneId, type), null];
+    scenes[idx] = _applyRowNames(scenes[idx], type, updated);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  /// [rowIndex]の行を削除する。先頭行（0）は削除不可。その行にクリップが
+  /// 存在する場合も削除できず、falseを返す（呼び出し元で案内を表示する）。
+  bool removeTrackRow(String projectId, String sceneId, MaterialType type, int rowIndex) {
+    final names = rowNamesOf(projectId, sceneId, type);
+    if (rowIndex <= 0 || rowIndex >= names.length) return false;
+    final hasClips = type == MaterialType.audio
+        ? audioClipsOf(projectId, sceneId).any((c) => c.trackRow == rowIndex)
+        : _materialLayersInScene(projectId, sceneId,
+                type == MaterialType.image ? LayerType.timelineImage : LayerType.timelineVideo)
+            .any((l) => l.trackRow == rowIndex);
+    if (hasClips) return false;
+
+    final scenes = _scenes[projectId];
+    if (scenes == null) return false;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return false;
+
+    final updatedNames = List<String?>.of(names)..removeAt(rowIndex);
+    var scene = _applyRowNames(scenes[idx], type, updatedNames);
+
+    // rowIndexより後ろの行の割り当てを1つずつ詰める
+    if (type == MaterialType.audio) {
+      final updatedClips = scene.audioClips
+          .map((c) => c.trackRow > rowIndex ? c.copyWith(trackRow: c.trackRow - 1) : c)
+          .toList();
+      scene = scene.copyWith(audioClips: updatedClips);
+    } else {
+      final targetType = type == MaterialType.image ? LayerType.timelineImage : LayerType.timelineVideo;
+      final newFrames = scene.frames.map((f) {
+        final newLayers = f.layers.map((l) {
+          if (l.type == targetType && l.trackRow > rowIndex) {
+            return l.copyWith(trackRow: l.trackRow - 1);
+          }
+          return l;
+        }).toList();
+        return f.copyWith(layers: newLayers);
+      }).toList();
+      scene = scene.copyWith(frames: newFrames);
+    }
+
+    scenes[idx] = scene;
+    _saveAsync(projectId);
+    notifyListeners();
+    return true;
+  }
+
+  void renameTrackRow(String projectId, String sceneId, MaterialType type, int rowIndex, String? name) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final names = List<String?>.of(rowNamesOf(projectId, sceneId, type));
+    if (rowIndex < 0 || rowIndex >= names.length) return;
+    names[rowIndex] = (name == null || name.isEmpty) ? null : name;
+    scenes[idx] = _applyRowNames(scenes[idx], type, names);
+    _saveAsync(projectId);
+    notifyListeners();
   }
 
   // ─── レイヤー結合 ─────────────────────────────────────────────────────

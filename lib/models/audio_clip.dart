@@ -9,6 +9,9 @@ class AudioClip {
   final double volume; // 0.0〜1.0
   final double fadeIn; // フェードイン秒数
   final double fadeOut; // フェードアウト秒数
+  // 音声タイムラインの表示行番号（0始まり、仕様書05：素材種別ごとに複数行の
+  // タイムライン行を追加/削除できるようにする）。
+  final int trackRow;
 
   const AudioClip({
     required this.id,
@@ -19,6 +22,7 @@ class AudioClip {
     this.volume = 1.0,
     this.fadeIn = 0.0,
     this.fadeOut = 0.0,
+    this.trackRow = 0,
   });
 
   AudioClip copyWith({
@@ -29,6 +33,7 @@ class AudioClip {
     double? volume,
     double? fadeIn,
     double? fadeOut,
+    int? trackRow,
   }) {
     return AudioClip(
       id: id,
@@ -39,6 +44,7 @@ class AudioClip {
       volume: volume ?? this.volume,
       fadeIn: fadeIn ?? this.fadeIn,
       fadeOut: fadeOut ?? this.fadeOut,
+      trackRow: trackRow ?? this.trackRow,
     );
   }
 }
