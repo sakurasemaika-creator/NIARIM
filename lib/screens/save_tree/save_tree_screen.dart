@@ -444,19 +444,59 @@ class _TreeView extends StatelessWidget {
         ),
       );
     }
-    return ListView(
-      children: roots.map((root) => _buildTreeNode(context, l10n, root, 0)).toList(),
-    );
+    // 画面下から上へ伸びる木のような見た目にする（ユーザー指示）。
+    // フラット化した行リストをDFS順（root→子→孫…）で構築し、reverse:trueで
+    // 表示することで、rootが画面最下部・深い子孫ほど上に積み上がる形になる。
+    // 各行には祖先の分岐が下（reverse後は下方向）へ続くかを示す接続線を
+    // 添える（一般的なツリーコマンドの罫線と同じアルゴリズム）。
+    final rows = <Widget>[];
+    for (int i = 0; i < roots.length; i++) {
+      _flattenTreeRows(context, l10n, roots, i, 0, const [], rows);
+    }
+    return ListView(reverse: true, children: rows);
   }
 
-  Widget _buildTreeNode(BuildContext context, AppLocalizations l10n, SaveNode node, int depth) {
+  void _flattenTreeRows(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<SaveNode> siblings,
+    int index,
+    int depth,
+    List<bool> ancestorContinues,
+    List<Widget> out,
+  ) {
+    final node = siblings[index];
+    final hasNext = index < siblings.length - 1;
+    final continues = [...ancestorContinues, hasNext];
+    out.add(_buildTreeRow(context, l10n, node, depth, continues));
     final children = saveService.getChildren(projectId, node.id);
+    for (int i = 0; i < children.length; i++) {
+      _flattenTreeRows(context, l10n, children, i, depth + 1, continues, out);
+    }
+  }
+
+  Widget _buildTreeRow(
+    BuildContext context,
+    AppLocalizations l10n,
+    SaveNode node,
+    int depth,
+    List<bool> continues,
+  ) {
     final isSelected = selectedNodeId == node.id;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: EdgeInsets.only(left: depth * 24.0),
+        if (depth > 0)
+          SizedBox(
+            width: depth * 20.0,
+            child: CustomPaint(
+              painter: _TreeConnectorPainter(
+                continues: continues,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ),
+        Expanded(
           child: ListTile(
             selected: isSelected,
             selectedTileColor: Theme.of(context)
@@ -484,7 +524,6 @@ class _TreeView extends StatelessWidget {
             ),
           ),
         ),
-        ...children.map((child) => _buildTreeNode(context, l10n, child, depth + 1)),
       ],
     );
   }
@@ -516,6 +555,45 @@ class _TreeView extends StatelessWidget {
   String _formatDate(DateTime dt) =>
       '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+}
+
+/// セーブツリーの分岐線を描画する（一般的なツリー表示コマンドと同じ
+/// アルゴリズム）。[continues]は自身を含む各祖先深さでの「まだ次の兄弟が
+/// 続くか」を表すリスト（末尾＝自分自身）。ListViewをreverse:trueで
+/// 表示しているため、「続く」方向は画面上では上向きになる（木が下から
+/// 上へ伸びる見た目、ユーザー指示）。
+class _TreeConnectorPainter extends CustomPainter {
+  final List<bool> continues;
+  final Color color;
+
+  _TreeConnectorPainter({required this.continues, required this.color});
+
+  static const double _colW = 20.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5;
+    // 祖先列（自分より浅い深さ）：まだ枝分かれが続く列のみ全高の縦線を引く
+    for (int i = 0; i < continues.length - 1; i++) {
+      if (!continues[i]) continue;
+      final x = _colW * i + _colW / 2;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    // 自分の列：上半分は常に線（親側との接続）、下半分は自分に続く兄弟が
+    // いる場合のみ延長する。あわせて右側のタイルへ向かう横線を引く。
+    final selfX = _colW * (continues.length - 1) + _colW / 2;
+    canvas.drawLine(Offset(selfX, 0), Offset(selfX, size.height / 2), paint);
+    if (continues.last) {
+      canvas.drawLine(Offset(selfX, size.height / 2), Offset(selfX, size.height), paint);
+    }
+    canvas.drawLine(Offset(selfX, size.height / 2), Offset(size.width, size.height / 2), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TreeConnectorPainter oldDelegate) =>
+      oldDelegate.continues != continues || oldDelegate.color != color;
 }
 
 // ─────────────────────────────────────────────
