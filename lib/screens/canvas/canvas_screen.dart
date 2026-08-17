@@ -227,6 +227,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   String? _currentLayerId;
   bool _autosaveAttached = false;
   bool _layerPanelDefaultInitialized = false;
+  // フレーム一覧の折りたたみ状態（ユーザー指示：描画領域を広げるため
+  // 任意のタイミングで開閉できるようにする）。
+  bool _showFrameStrip = true;
   bool _workTrackingStarted = false;
   bool _missingMaterialChecked = false;
 
@@ -574,22 +577,39 @@ class _CanvasScreenState extends State<CanvasScreen> {
               onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
             ),
             if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
-            FrameStripWidget(
-              currentFrame: _currentFrame,
-              projectId: widget.projectId,
-              sceneId: _currentSceneId,
-              onFrameSelected: (idx) => setState(() => _currentFrame = idx),
-              onTimelineTap: () => context.go('/timeline/${widget.projectId}'),
-              multiSelectMode: _frameMultiSelectMode,
-              selectedFrames: _selectedFrameIndices,
-              onFrameToggle: (idx) => setState(() {
-                if (_selectedFrameIndices.contains(idx)) {
-                  _selectedFrameIndices.remove(idx);
-                } else {
-                  _selectedFrameIndices.add(idx);
-                }
-              }),
+            // フレーム一覧の折りたたみ用ハンドル（ユーザー指示：描画領域を
+            // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setState(() => _showFrameStrip = !_showFrameStrip),
+              child: Container(
+                height: 16,
+                alignment: Alignment.center,
+                color: Colors.transparent,
+                child: Icon(
+                  _showFrameStrip ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                  size: 16,
+                  color: Colors.white70,
+                ),
+              ),
             ),
+            if (_showFrameStrip)
+              FrameStripWidget(
+                currentFrame: _currentFrame,
+                projectId: widget.projectId,
+                sceneId: _currentSceneId,
+                onFrameSelected: (idx) => setState(() => _currentFrame = idx),
+                onTimelineTap: () => context.go('/timeline/${widget.projectId}'),
+                multiSelectMode: _frameMultiSelectMode,
+                selectedFrames: _selectedFrameIndices,
+                onFrameToggle: (idx) => setState(() {
+                  if (_selectedFrameIndices.contains(idx)) {
+                    _selectedFrameIndices.remove(idx);
+                  } else {
+                    _selectedFrameIndices.add(idx);
+                  }
+                }),
+              ),
           ],
         ),
       ),

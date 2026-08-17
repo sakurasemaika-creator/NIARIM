@@ -54,10 +54,10 @@ class ToolbarWidget extends StatelessWidget {
             child: _toolButton(context, Icons.brush, DrawingTool.pen, l10n.toolbarPenTooltip),
           ),
         ),
-      // 消しゴムと選択ツールのアイコンを入れ替え（仕様書08・タスク#95：
-      // 消しゴムに「魔法の杖」風のauto_fix_highが割り当てられており、
-      // 選択ツールの自動選択（マジックワンド）用アイコンと紛らわしかった）。
-      ToolbarItemId.eraser => _toolButton(context, Icons.crop_square, DrawingTool.eraser, l10n.toolbarItemEraser),
+      // 消しゴム用のアイコン（ユーザー指示により新規変更：以前使っていた
+      // crop_square（四角形の枠）は選択ツール側へ移し、消しゴムには
+      // 見た目でそれと分かる専用アイコンを割り当てる）。
+      ToolbarItemId.eraser => _toolButton(context, Icons.backspace_outlined, DrawingTool.eraser, l10n.toolbarItemEraser),
       // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
       ToolbarItemId.bucket => FirstUseTooltip(
           tooltipKey: 'bucket_tool',
@@ -188,11 +188,13 @@ class ToolbarWidget extends StatelessWidget {
     final isSelected = currentTool == DrawingTool.selectRect ||
         currentTool == DrawingTool.selectLasso ||
         currentTool == DrawingTool.selectMagicWand;
-    // 消しゴムと選択ツールのアイコンを入れ替え（仕様書08・タスク#95）。
+    // 矩形選択（デフォルト）には、以前消しゴムに使っていたcrop_square
+    // （四角形の枠）を移す（ユーザー指示：矩形選択の見た目に合っている
+    // ため。消しゴムには専用のink_eraserアイコンを新たに割り当てた）。
     final icon = switch (currentTool) {
       DrawingTool.selectLasso => Icons.gesture,
       DrawingTool.selectMagicWand => Icons.auto_awesome,
-      _ => Icons.auto_fix_high,
+      _ => Icons.crop_square,
     };
     final primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
