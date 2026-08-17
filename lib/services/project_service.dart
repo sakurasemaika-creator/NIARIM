@@ -397,6 +397,56 @@ class ProjectService extends ChangeNotifier {
     return scene;
   }
 
+  /// シーンを複製し、複製元の直後へ挿入する（仕様書05：シーンのコピー）。
+  /// 全フレームのレイヤー構成・描画データ（タイル）を複製する。表示範囲
+  /// レイヤー（common・timelineImage・timelineVideo・watermark）はホームが
+  /// 別フレーム/シーンに存在する参照であり、シーン単位の複製対象では
+  /// ないため除外する（duplicateFrame()と同じ方針）。カメラキーフレーム・
+  /// 演出フィルター・音声クリップは実体を持たない設定値のためそのまま複製する。
+  Scene? duplicateScene(String projectId, String sceneId, {String? name}) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return null;
+    final sourceIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sourceIdx < 0) return null;
+    final source = scenes[sourceIdx];
+    final n = _nextSceneIndex(projectId);
+    final newSceneId = 'Scene${n.toString().padLeft(4, '0')}';
+    final tm = _tileManagers[projectId];
+
+    final newFrames = <Frame>[];
+    for (final frame in source.frames) {
+      final sourceLayers = frame.layers
+          .where((l) => !isRangeLayerType(l.type) && l.type != LayerType.selection)
+          .toList();
+      final newLayers = sourceLayers.map((l) {
+        final newId = _nextLayerId(projectId);
+        if (tm != null) {
+          tm.copyLayer(
+            frameLayerKey(sceneId, frame.index, l.id),
+            frameLayerKey(newSceneId, frame.index, newId),
+          );
+        }
+        return l.copyWith(id: newId);
+      }).toList();
+      newFrames.add(Frame(index: frame.index, layers: newLayers, hold: frame.hold));
+    }
+
+    final newScene = Scene(
+      id: newSceneId,
+      index: sourceIdx + 1,
+      frames: newFrames,
+      name: name ?? source.name,
+      cameraKeyframes: source.cameraKeyframes,
+      effectFilters: source.effectFilters,
+      audioClips: source.audioClips,
+    );
+    scenes.insert(sourceIdx + 1, newScene);
+    final reindexed = scenes.asMap().entries.map((e) => e.value.copyWith(index: e.key)).toList();
+    _scenes[projectId] = reindexed;
+    notifyListeners();
+    return newScene;
+  }
+
   /// シーンを削除する（最低1シーンは残す。仕様書05）。描画タイルも破棄する。
   void removeScene(String projectId, String sceneId) => removeScenes(projectId, [sceneId]);
 

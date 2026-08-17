@@ -495,6 +495,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // 共通レイヤートラック（仕様書05：タイムライン表示順はフレーム・
             // シーン・共通レイヤー・画像・動画・音源・エンドカードの順）
             _buildCommonLayerTrack(),
+            // シーン・フレームの複数選択モード中の一括操作バー（ユーザー指示：
+            // 小さいボタンではなく素材タイムラインの上に大きな3分割ボタンで表示）
+            _buildMultiSelectActionBar(),
             _buildClipTrack(
               icon: Icons.image,
               label: l10n.projectListMaterialImage,
@@ -1031,24 +1034,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
             height: 36,
             child: Row(
               children: [
-                // 移動モード中：「決定」ボタン。複数選択モード中：「移動」「削除」ボタン。通常時：「選択」ボタン
+                // 移動モード中：「決定」ボタン。通常時：「選択」ボタン。複数選択モード中の
+                // 移動・複製・削除・全選択・全解除は、素材タイムラインの上に大きな専用
+                // ボタンとして表示する（ユーザー指示：_buildMultiSelectActionBar参照）。
                 if (_isMoveMode)
                   TextButton(
                     onPressed: () => _confirmMove(scenes),
                     child: Text(l10n.timelineConfirmButton, style: const TextStyle(fontSize: 11)),
                   )
-                else if (_isSceneMultiSelect) ...[
-                  TextButton(
-                    onPressed: _selectedSceneIds.isNotEmpty ? () => _startMoveMode(scenes) : null,
-                    child: Text(l10n.commonMove, style: const TextStyle(fontSize: 11)),
-                  ),
-                  TextButton(
-                    onPressed: _selectedSceneIds.length < scenes.length
-                        ? _showMultiDeleteConfirm
-                        : null,
-                    child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red, fontSize: 11)),
-                  ),
-                ] else
+                else if (!_isSceneMultiSelect)
                   TextButton(
                     onPressed: () => setState(() => _isSceneMultiSelect = true),
                     child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
@@ -1189,17 +1183,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     },
                   ),
                 ),
-                // 複数選択モード中：全選択・全解除ボタン
-                if (_isSceneMultiSelect && !_isMoveMode) ...[
-                  TextButton(
-                    onPressed: () => setState(() => _selectedSceneIds.addAll(scenes.map((s) => s.id))),
-                    child: Text(l10n.layerPanelSelectAll, style: const TextStyle(fontSize: 11)),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() { _selectedSceneIds.clear(); _isSceneMultiSelect = false; }),
-                    child: Text(l10n.layerPanelDeselectAll, style: const TextStyle(fontSize: 11)),
-                  ),
-                ],
                 // 移動モード中：キャンセルボタン
                 if (_isMoveMode)
                   TextButton(
@@ -1214,6 +1197,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     );
+  }
+
+  /// 選択中シーンを複製する（仕様書05：シーンのコピー。ユーザー指示により
+  /// 素材タイムラインの上の大きなボタンから起動する）。並び順（シーン一覧の
+  /// 実際の順序）に沿って1件ずつ複製元の直後へ挿入していく。
+  void _duplicateSelectedScenes(List<Scene> scenes) {
+    if (_selectedSceneIds.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final targets = scenes.where((s) => _selectedSceneIds.contains(s.id)).toList();
+    for (final scene in targets) {
+      ps.duplicateScene(widget.projectId, scene.id, name: l10n.layerPanelCopySuffix(scene.displayName));
+    }
+    setState(() {
+      _selectedSceneIds.clear();
+      _isSceneMultiSelect = false;
+    });
   }
 
   // 移動モード開始（仕様書05：複数選択モードからのみ起動）
@@ -1249,7 +1249,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
-  // 三点メニュー（仕様書05：シーン名変更・シーン削除の2項目のみ）
+  // 三点メニュー（仕様書05：シーン名変更・複製・削除）
   void _showSceneMenu(Scene scene, List<Scene> scenes) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
@@ -1262,6 +1262,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
               leading: const Icon(Icons.edit),
               title: Text(l10n.timelineSceneRenameTitle),
               onTap: () { Navigator.pop(ctx); _showRenameSceneDialog(scene); },
+            ),
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: Text(l10n.themeDuplicateAction),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.read<ProjectService>().duplicateScene(
+                    widget.projectId, scene.id,
+                    name: l10n.layerPanelCopySuffix(scene.displayName));
+              },
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
@@ -1388,28 +1398,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
               child: Row(
                 children: [
                   _buildTrackLabel(Icons.movie_filter, l10n.timelineFrameTrackLabel),
-                  // 移動モード中：「決定」。複数選択モード中：「移動」「複製」「削除」。通常時：「選択」
+                  // 移動モード中：「決定」。通常時：「選択」。複数選択モード中の移動・複製・
+                  // 削除・全選択・全解除は素材タイムラインの上の大きなボタンへ移動した
+                  // （ユーザー指示：_buildMultiSelectActionBar参照）。
                   if (_isFrameMoveMode)
                     TextButton(
                       onPressed: _confirmFrameMove,
                       child: Text(l10n.timelineConfirmButton, style: const TextStyle(fontSize: 11)),
                     )
-                  else if (_isFrameMultiSelect) ...[
-                    TextButton(
-                      onPressed: _selectedFrameIndices.isNotEmpty ? _startFrameMoveMode : null,
-                      child: Text(l10n.commonMove, style: const TextStyle(fontSize: 11)),
-                    ),
-                    TextButton(
-                      onPressed: _selectedFrameIndices.isNotEmpty ? _duplicateSelectedFrames : null,
-                      child: Text(l10n.themeDuplicateAction, style: const TextStyle(fontSize: 11)),
-                    ),
-                    TextButton(
-                      onPressed: (_selectedFrameIndices.isNotEmpty && _selectedFrameIndices.length < total)
-                          ? _deleteSelectedFrames
-                          : null,
-                      child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red, fontSize: 11)),
-                    ),
-                  ] else
+                  else if (!_isFrameMultiSelect)
                     TextButton(
                       onPressed: () => setState(() => _isFrameMultiSelect = true),
                       child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
@@ -1580,17 +1577,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       ],
                     ),
                   ),
-                  // 複数選択モード中：全選択・全解除ボタン
-                  if (_isFrameMultiSelect && !_isFrameMoveMode) ...[
-                    TextButton(
-                      onPressed: () => setState(() => _selectedFrameIndices.addAll(List.generate(total, (i) => i))),
-                      child: Text(l10n.layerPanelSelectAll, style: const TextStyle(fontSize: 11)),
-                    ),
-                    TextButton(
-                      onPressed: () => setState(() { _selectedFrameIndices.clear(); _isFrameMultiSelect = false; }),
-                      child: Text(l10n.layerPanelDeselectAll, style: const TextStyle(fontSize: 11)),
-                    ),
-                  ],
                   // 移動モード中：キャンセルボタン
                   if (_isFrameMoveMode)
                     TextButton(
@@ -1955,6 +1941,91 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
     final sceneId = _selectedSceneId;
     if (sceneId != null) _persistClipUpdate(clip, sceneId);
+  }
+
+  /// シーン・フレームの複数選択モード中の一括操作バー（仕様書05）。以前は
+  /// シーンタブ・フレーム一覧の中に小さいテキストボタンとして表示していたが、
+  /// ユーザー指示により素材タイムラインの上に大きな3分割ボタン（移動・複製・
+  /// 削除）＋次の段に全選択・全解除を表示する形へ変更した。移動モード中は
+  /// 専用のカーソルUIが別途表示されるためここでは非表示にする。
+  Widget _buildMultiSelectActionBar() {
+    if (!_isSceneMultiSelect && !_isFrameMultiSelect) return const SizedBox.shrink();
+    if (_isMoveMode || _isFrameMoveMode) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final isScene = _isSceneMultiSelect;
+    final projectService = context.watch<ProjectService>();
+    final scenes = projectService.scenesOf(widget.projectId);
+    final total = _totalFrames;
+
+    final selectedCount = isScene ? _selectedSceneIds.length : _selectedFrameIndices.length;
+    final canMove = selectedCount > 0;
+    final canDuplicate = selectedCount > 0;
+    final canDelete = isScene
+        ? (selectedCount > 0 && selectedCount < scenes.length)
+        : (selectedCount > 0 && selectedCount < total);
+
+    void onMove() => isScene ? _startMoveMode(scenes) : _startFrameMoveMode();
+    void onDuplicate() => isScene ? _duplicateSelectedScenes(scenes) : _duplicateSelectedFrames();
+    void onDelete() => isScene ? _showMultiDeleteConfirm() : _deleteSelectedFrames();
+    void onSelectAll() => setState(() {
+          if (isScene) {
+            _selectedSceneIds.addAll(scenes.map((s) => s.id));
+          } else {
+            _selectedFrameIndices.addAll(List.generate(total, (i) => i));
+          }
+        });
+    void onDeselectAll() => setState(() {
+          if (isScene) {
+            _selectedSceneIds.clear();
+            _isSceneMultiSelect = false;
+          } else {
+            _selectedFrameIndices.clear();
+            _isFrameMultiSelect = false;
+          }
+        });
+
+    Widget bigButton(String label, VoidCallback? onTap, {Color? color}) {
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: FilledButton.tonal(
+            onPressed: onTap,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(40),
+              foregroundColor: color,
+            ),
+            child: Text(label, style: const TextStyle(fontSize: 12)),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        border: Border.symmetric(horizontal: BorderSide(color: Colors.grey[800]!)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              bigButton(l10n.commonMove, canMove ? onMove : null),
+              bigButton(l10n.themeDuplicateAction, canDuplicate ? onDuplicate : null),
+              bigButton(l10n.commonDelete, canDelete ? onDelete : null, color: Colors.red),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              bigButton(l10n.layerPanelSelectAll, onSelectAll),
+              bigButton(l10n.layerPanelDeselectAll, onDeselectAll),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   /// 共通レイヤー専用トラック（仕様書05・16）。共通レイヤーは通常レイヤーとは
