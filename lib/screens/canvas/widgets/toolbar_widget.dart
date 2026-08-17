@@ -71,9 +71,9 @@ class ToolbarWidget extends StatelessWidget {
       ToolbarItemId.eyedropper => _toolButton(context, Icons.colorize, DrawingTool.eyedropper, l10n.toolbarItemEyedropper),
       // 指先ツール（歪み）：仕様書03。スマホ・PC両モードで使用可能。
       ToolbarItemId.finger => _toolButton(context, Icons.pan_tool_alt, DrawingTool.finger, l10n.toolbarItemFinger),
-      // 手のひらツール（画面移動専用）：ユーザー指示によりPCモードのみ
-      // ツールバーに表示する（呼び出し側のfor文でisPcOnlyToolbarItemにより
-      // スマホモードでは既にスキップされているため、ここでは単に描画するだけでよい）。
+      // 手のひらツール（画面移動専用）：呼び出し側のfor文でcanShowPanTool()
+      // により表示条件（強制スマホモードでは非表示、それ以外は横画面のみ）が
+      // 既に判定済みのため、ここでは単に描画するだけでよい。
       ToolbarItemId.pan => _toolButton(context, Icons.back_hand, DrawingTool.pan, l10n.toolbarItemPan),
       ToolbarItemId.select => _selectToolButton(context, l10n),
       ToolbarItemId.transform => _toolButton(context, Icons.transform, DrawingTool.transform, l10n.toolbarItemTransform),
@@ -104,11 +104,12 @@ class ToolbarWidget extends StatelessWidget {
         child: Row(
           children: [
             // ツールバー編集（仕様書08）でカスタマイズ可能な項目を並び順・表示設定通りに表示。
-            // 手のひらツールはPCモード限定（ユーザー指示）のため、スマホモードでは
-            // 表示ON設定であってもスキップする。
+            // 手のひらツールは強制スマホモードでは常に非表示、それ以外
+            // （PCモード固定・自動判定）では横画面のときのみ表示する
+            // （ユーザー指示：液タブ接続時のDeXモード等を考慮）。
             for (final id in settings.toolbarOrder)
               if (!settings.hiddenToolbarItems.contains(id) &&
-                  (!isPcOnlyToolbarItem(id) || isWideScreen(context)))
+                  (id != ToolbarItemId.pan || canShowPanTool(context)))
                 _buildToolItem(context, l10n, id),
             const SizedBox(width: 4),
             // 色インジケーター（仕様書17：スタンプ選択中は色情報を保持しているため

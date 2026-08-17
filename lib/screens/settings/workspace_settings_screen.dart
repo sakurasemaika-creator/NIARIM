@@ -51,16 +51,30 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                   },
                   children: [
                     for (final id in settings.toolbarOrder)
-                      CheckboxListTile(
+                      Builder(
                         key: ValueKey(id),
-                        title: Text(id.label(l10n)),
-                        // 手のひらツールはPCモード限定（ユーザー指示）：スマホモードでは
-                        // ONにしていても表示されないことをここで明示する。
-                        subtitle: isPcOnlyToolbarItem(id) ? Text(l10n.workspaceToolbarPcOnlyHint) : null,
-                        value: !settings.hiddenToolbarItems.contains(id),
-                        onChanged: (v) => settings.setToolbarItemVisible(id, v ?? true),
-                        secondary: const Icon(Icons.drag_handle),
-                        controlAffinity: ListTileControlAffinity.leading,
+                        builder: (context) {
+                          // 手のひらツール（ユーザー指示）：強制スマホモード中は
+                          // そもそもONにできないよう設定項目自体をグレーアウトする。
+                          // PCモード固定・自動判定の場合は設定可能で、ONにした
+                          // 場合でも実際の表示は横画面時のみ（canShowPanTool）。
+                          final isPanForcedOff =
+                              id == ToolbarItemId.pan && settings.forcePcMode == false;
+                          return CheckboxListTile(
+                            title: Text(id.label(l10n)),
+                            subtitle: id == ToolbarItemId.pan
+                                ? Text(isPanForcedOff
+                                    ? l10n.workspaceToolbarPanDisabledHint
+                                    : l10n.workspaceToolbarPcOnlyHint)
+                                : null,
+                            value: !settings.hiddenToolbarItems.contains(id),
+                            onChanged: isPanForcedOff
+                                ? null
+                                : (v) => settings.setToolbarItemVisible(id, v ?? true),
+                            secondary: const Icon(Icons.drag_handle),
+                            controlAffinity: ListTileControlAffinity.leading,
+                          );
+                        },
                       ),
                   ],
                 ),
@@ -251,7 +265,7 @@ class _ToolbarPreview extends StatelessWidget {
     // 同じ条件でフィルタリングして表示のズレを防ぐ。
     final visible = order
         .where((id) => !hidden.contains(id))
-        .where((id) => !isPcOnlyToolbarItem(id) || isWideScreen(context))
+        .where((id) => id != ToolbarItemId.pan || canShowPanTool(context))
         .toList();
     final scheme = Theme.of(context).colorScheme;
     return Container(

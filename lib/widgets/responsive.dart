@@ -14,6 +14,19 @@ bool isWideScreen(BuildContext context) {
   return MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
 }
 
+/// 手のひらツール（画面移動専用）を実際にツールバーへ表示してよいかを
+/// 判定する（ユーザー指示）。強制スマホモード（forcePcMode==false）では
+/// 常に非表示。PCモード固定（true）または自動判定（null）の場合は、
+/// その時点の画面が横向き（幅>高さ）のときのみ表示する。これにより、
+/// 普段スマホ（縦画面）で使っているユーザーが、液タブへ接続してDeX
+/// モード等で横画面になった際に自動でツールが現れるようにする。
+bool canShowPanTool(BuildContext context) {
+  final forced = context.watch<SettingsService>().forcePcMode;
+  if (forced == false) return false;
+  final size = MediaQuery.sizeOf(context);
+  return size.width > size.height;
+}
+
 /// 設定画面等のリスト系コンテンツをPC/DeXモードで中央寄せ・横幅制限する。
 /// スマホの狭い画面ではそのまま全幅表示する。
 ///

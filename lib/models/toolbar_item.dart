@@ -19,19 +19,18 @@ enum ToolbarItemId {
   bucket,
   eyedropper,
   finger,
-  // 手のひらツール（画面移動専用）。ユーザー指示によりPCモードでのみ
-  // ツールバーに表示する（スマホモードは2本指ドラッグで画面移動できる
-  // ため、指先ツール〔歪み〕と役割が被らないようここだけPC限定とする）。
+  // 手のひらツール（画面移動専用）。ユーザー指示：強制スマホモードでは
+  // 設定自体を変更不可（グレーアウト）にし、それ以外（PCモード固定・
+  // 自動判定）では設定可能。実際にツールバーへ表示するかは横画面か
+  // どうかで動的に決まる（widgets/responsive.dartのcanShowPanTool参照）。
+  // 2本指ドラッグでの画面移動はスマホモードでも可能だが、DeXモード等
+  // 液タブ接続時に手のひらツールが自動で使えるようにするための項目。
   pan,
   select,
   transform,
   text,
   shape,
 }
-
-/// PCモードでのみツールバーに表示すべき項目かどうか（仕様書08：手のひら
-/// ツールはPCモード限定。それ以外の項目はスマホ・PC共通で表示する）。
-bool isPcOnlyToolbarItem(ToolbarItemId id) => id == ToolbarItemId.pan;
 
 extension ToolbarItemLabel on ToolbarItemId {
   String label(AppLocalizations l10n) => switch (this) {
