@@ -26,12 +26,18 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   // お気に入り＋絞り込みへ一本化した。
   bool _showFavoritesOnly = false;
 
-  List<AutofillPreset> get _presets => context.watch<AutofillPresetService>().presets;
-
-  List<AutofillPreset> get _filtered {
+  // 以前はcontext.watch()をgetter（_presets/_filtered）に入れており、
+  // それをListView.builderの各行のタップ用コールバック（onEdit/onDelete/
+  // onTap）内からも呼んでいたため、タップした瞬間（build外）に
+  // context.watch()が評価されてProviderのアサーション例外が発生し、
+  // プリセット詳細画面へ一切遷移できなくなっていた（ユーザー報告により
+  // 発覚・修正）。build()内でのみ一度取得し、以降はフィルタ処理を純粋な
+  // 関数にしてコールバックへは確定済みの値（preset自体）だけを渡すよう
+  // 修正した。
+  List<AutofillPreset> _filter(List<AutofillPreset> presets) {
     var list = _searchQuery.isEmpty
-        ? _presets
-        : _presets.where((p) => p.name.contains(_searchQuery)).toList();
+        ? presets
+        : presets.where((p) => p.name.contains(_searchQuery)).toList();
     if (_showFavoritesOnly) list = list.where((p) => p.isFavorite).toList();
     return list;
   }
@@ -39,6 +45,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final filtered = _filter(context.watch<AutofillPresetService>().presets);
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
@@ -74,7 +81,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             ),
           ),
           Expanded(
-            child: _filtered.isEmpty
+            child: filtered.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -98,16 +105,19 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(12),
-                    itemCount: _filtered.length,
-                    itemBuilder: (context, index) => _PresetCard(
-                      preset: _filtered[index],
-                      onToggleFavorite: () => context
-                          .read<AutofillPresetService>()
-                          .updatePreset(_filtered[index].copyWith(isFavorite: !_filtered[index].isFavorite)),
-                      onEdit: () => _showEditDialog(_filtered[index]),
-                      onDelete: () => _confirmDelete(_filtered[index]),
-                      onTap: () => _showPresetDetail(_filtered[index]),
-                    ),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final preset = filtered[index];
+                      return _PresetCard(
+                        preset: preset,
+                        onToggleFavorite: () => context
+                            .read<AutofillPresetService>()
+                            .updatePreset(preset.copyWith(isFavorite: !preset.isFavorite)),
+                        onEdit: () => _showEditDialog(preset),
+                        onDelete: () => _confirmDelete(preset),
+                        onTap: () => _showPresetDetail(preset),
+                      );
+                    },
                   ),
           ),
         ],
