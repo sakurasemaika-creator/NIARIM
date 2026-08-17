@@ -180,11 +180,35 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
+  // ダブルタップで簡易説明・長押しでブラシ/トーン/色変更（ユーザー指示：
+  // 「現在全てのツールは長押しで簡易説明が出るようになっていますが、
+  // ダブルタップで簡易説明、長押しでブラシやトーン、色変更を各ツールで
+  // できるようにしてください」）。長押しは各ツール個別のサブメニュー
+  // （ペンのサブツールパネル・バケツのトーン切替等）に使うため、従来
+  // 長押しで表示していた簡易説明はダブルタップへ移す。ここで
+  // GestureDetectorを重ねてもペン/バケツ/選択ツールの既存の
+  // onLongPress用GestureDetectorとは別のジェスチャー種別（ダブルタップ
+  // vs 長押し）を検出するため、ジェスチャーアリーナで正しく共存する。
   Widget _toolButton(BuildContext context, IconData icon, DrawingTool tool, String tooltip,
       {VoidCallback? onTap}) {
     final isSelected = currentTool == tool;
-    return _borderedIconButton(context, icon,
-        onPressed: onTap ?? () => onToolSelected(tool), tooltip: tooltip, selected: isSelected);
+    return GestureDetector(
+      onDoubleTap: () => _showBriefDescription(context, tooltip),
+      child: _borderedIconButton(context, icon,
+          onPressed: onTap ?? () => onToolSelected(tool), tooltip: tooltip, selected: isSelected),
+    );
+  }
+
+  /// ダブルタップ時のツール簡易説明をスナックバーで一瞬表示する。
+  static void _showBriefDescription(BuildContext context, String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text, textAlign: TextAlign.center),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        width: 220,
+      ),
+    );
   }
 
   /// 常設ボタン共通のスタイル（ユーザー指示）：背景なし・アイコンは白
@@ -230,6 +254,7 @@ class ToolbarWidget extends StatelessWidget {
     };
     return GestureDetector(
       onLongPress: () => _showSelectMenu(context, l10n),
+      onDoubleTap: () => _showBriefDescription(context, l10n.toolbarSelectTooltip),
       child: _borderedIconButton(context, icon,
           onPressed: () => onToolSelected(DrawingTool.selectRect),
           tooltip: l10n.toolbarSelectTooltip,
