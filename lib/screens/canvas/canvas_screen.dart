@@ -226,6 +226,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   String? _currentLayerId;
   bool _autosaveAttached = false;
+  bool _layerPanelDefaultInitialized = false;
   bool _workTrackingStarted = false;
   bool _missingMaterialChecked = false;
 
@@ -245,6 +246,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
         final layers = scenes.first.frames.first.layers;
         if (layers.isNotEmpty) _currentLayerId = layers.first.id;
       }
+    }
+    // デスクトップレイアウトのみ、レイヤーパレットを初期表示ONにする
+    // （プロ向け制作ツールの慣習に合わせ、広い画面では最初から出しておく）。
+    // 以前はisDesktop分岐でLayerPanelを無条件表示・onCloseも空実装にして
+    // いたため、閉じるボタンを押しても何も起きず「一度表示されると閉じられ
+    // ない」状態になっていた（ユーザー報告により発覚・修正）。モバイル
+    // レイアウトの初期値（非表示）はそのまま維持する。
+    if (!_layerPanelDefaultInitialized) {
+      _layerPanelDefaultInitialized = true;
+      if (isWideScreen(context)) _showLayerPanel = true;
     }
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
     final newPerf = context.read<PerformanceService>();
@@ -493,11 +504,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                   if (dockedToolPanel != null && leftHanded)
                     SizedBox(width: 280, child: dockedToolPanel),
-                  if (isDesktop)
+                  if (isDesktop && _showLayerPanel)
                     SizedBox(
                       width: 280,
                       child: LayerPanel(
-                        onClose: () {},
+                        onClose: () => setState(() => _showLayerPanel = false),
                         projectId: widget.projectId,
                         sceneId: _currentSceneId,
                         frameIndex: _currentFrame,
