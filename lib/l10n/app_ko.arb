@@ -89,6 +89,7 @@
   "commonCreate": "만들기",
   "commonChange": "변경",
   "commonDelete": "삭제",
+  "commonFavoriteDeleteBlocked": "즐겨찾기로 등록된 항목은 삭제할 수 없습니다. 먼저 즐겨찾기를 해제해 주세요.",
   "commonSave": "저장",
   "commonRestore": "복원",
   "commonClose": "닫기",

@@ -114,6 +114,7 @@
   "commonCreate": "作成",
   "commonChange": "変更",
   "commonDelete": "削除",
+  "commonFavoriteDeleteBlocked": "お気に入り登録中は削除できません。先にお気に入りを解除してください。",
   "commonSave": "保存",
   "commonRestore": "復元",
   "commonClose": "閉じる",

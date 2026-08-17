@@ -89,6 +89,7 @@
   "commonCreate": "创建",
   "commonChange": "更改",
   "commonDelete": "删除",
+  "commonFavoriteDeleteBlocked": "已收藏的项目无法删除，请先取消收藏。",
   "commonSave": "保存",
   "commonRestore": "恢复",
   "commonClose": "关闭",

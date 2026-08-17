@@ -425,8 +425,19 @@ class ProjectListWidget extends StatelessWidget {
       case 'move':
         _showMoveProjectToFolderDialog(context, project);
       case 'delete':
-        service.deleteProject(project.id);
+        _deleteProject(context, service, project);
     }
+  }
+
+  /// お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+  void _deleteProject(BuildContext context, ProjectService service, Project project) {
+    if (project.isFavorite) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      return;
+    }
+    service.deleteProject(project.id);
   }
 
   void _handleFolderAction(BuildContext context, String action, ProjectFolder folder) {
@@ -449,6 +460,12 @@ class ProjectListWidget extends StatelessWidget {
   /// （仕様書19：「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する」）。
   void _confirmDeleteFolder(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
+    // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+    if (folder.isFavorite) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      return;
+    }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

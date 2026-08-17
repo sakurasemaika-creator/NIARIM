@@ -89,6 +89,7 @@
   "commonCreate": "建立",
   "commonChange": "變更",
   "commonDelete": "刪除",
+  "commonFavoriteDeleteBlocked": "已收藏的項目無法刪除，請先取消收藏。",
   "commonSave": "儲存",
   "commonRestore": "復原",
   "commonClose": "關閉",

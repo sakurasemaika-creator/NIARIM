@@ -234,8 +234,20 @@ class _BrushPanelState extends State<BrushPanel> {
       case 'export':
         _exportBrush(context, service, brush);
       case 'delete':
-        service.deleteBrush(brush.id);
+        _deleteBrush(context, service, brush);
     }
+  }
+
+  /// お気に入り登録中は削除できない（ユーザー指示により新規追加。誤って
+  /// お気に入りのブラシを消してしまう事故を防ぐため）。
+  void _deleteBrush(BuildContext context, BrushService service, Brush brush) {
+    if (brush.isFavorite) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      return;
+    }
+    service.deleteBrush(brush.id);
   }
 
   void _showBrushSettings(BuildContext context, Brush brush) {

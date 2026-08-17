@@ -191,6 +191,12 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
   void _confirmDelete(AutofillPreset preset) {
     final l10n = AppLocalizations.of(context)!;
+    // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+    if (preset.isFavorite) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      return;
+    }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

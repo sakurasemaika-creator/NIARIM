@@ -201,8 +201,19 @@ class _StampPanelState extends State<StampPanel> {
       case 'export':
         _exportStamp(context, service, stamp);
       case 'delete':
-        service.deleteStamp(stamp.id);
+        _deleteStamp(context, service, stamp);
     }
+  }
+
+  /// お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+  void _deleteStamp(BuildContext context, StampService service, Stamp stamp) {
+    if (stamp.isFavorite) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      return;
+    }
+    service.deleteStamp(stamp.id);
   }
 
   void _showStampSettings(BuildContext context, Stamp stamp) {

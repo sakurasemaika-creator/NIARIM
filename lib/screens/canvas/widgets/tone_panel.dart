@@ -201,8 +201,19 @@ class _TonePanelState extends State<TonePanel> {
       case 'export':
         _exportTone(context, service, tone);
       case 'delete':
-        service.deleteTone(tone.id);
+        _deleteTone(context, service, tone);
     }
+  }
+
+  /// お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+  void _deleteTone(BuildContext context, ToneService service, Tone tone) {
+    if (tone.isFavorite) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      return;
+    }
+    service.deleteTone(tone.id);
   }
 
   void _showToneSettings(BuildContext context, Tone tone) {

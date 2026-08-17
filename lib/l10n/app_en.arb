@@ -89,6 +89,7 @@
   "commonCreate": "Create",
   "commonChange": "Change",
   "commonDelete": "Delete",
+  "commonFavoriteDeleteBlocked": "Can't delete a favorited item. Remove it from favorites first.",
   "commonSave": "Save",
   "commonRestore": "Restore",
   "commonClose": "Close",

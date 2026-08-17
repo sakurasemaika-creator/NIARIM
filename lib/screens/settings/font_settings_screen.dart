@@ -211,6 +211,12 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
 
   void _confirmDelete(BuildContext context, FontAsset font) {
     final l10n = AppLocalizations.of(context)!;
+    // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+    if (font.isFavorite) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      return;
+    }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

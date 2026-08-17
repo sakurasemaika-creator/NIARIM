@@ -89,6 +89,7 @@
   "commonCreate": "Crear",
   "commonChange": "Cambiar",
   "commonDelete": "Eliminar",
+  "commonFavoriteDeleteBlocked": "No se puede eliminar un elemento favorito. Quítalo primero de favoritos.",
   "commonSave": "Guardar",
   "commonRestore": "Restaurar",
   "commonClose": "Cerrar",

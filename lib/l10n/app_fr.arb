@@ -89,6 +89,7 @@
   "commonCreate": "Créer",
   "commonChange": "Modifier",
   "commonDelete": "Supprimer",
+  "commonFavoriteDeleteBlocked": "Impossible de supprimer un élément favori. Retirez-le d'abord des favoris.",
   "commonSave": "Enregistrer",
   "commonRestore": "Restaurer",
   "commonClose": "Fermer",

@@ -128,7 +128,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 case 'duplicate': projectService.duplicateProject(widget.projectId);
                 case 'move': _showMoveToFolderDialog(context, projectService);
                 case 'materials': context.push('/materials/${widget.projectId}');
-                case 'delete': projectService.deleteProject(widget.projectId); context.pop();
+                case 'delete':
+                  // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+                  if (project.isFavorite) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+                  } else {
+                    projectService.deleteProject(widget.projectId);
+                    context.pop();
+                  }
               }
             },
             itemBuilder: (_) => [

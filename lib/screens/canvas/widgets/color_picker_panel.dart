@@ -394,8 +394,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
               title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
+              // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
               onTap: paletteService.palettes.length > 1
-                  ? () { Navigator.pop(ctx); paletteService.deletePalette(palette.id); }
+                  ? () {
+                      Navigator.pop(ctx);
+                      if (palette.isFavorite) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+                        return;
+                      }
+                      paletteService.deletePalette(palette.id);
+                    }
                   : null,
             ),
           ],

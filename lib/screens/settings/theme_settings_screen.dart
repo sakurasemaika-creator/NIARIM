@@ -205,7 +205,13 @@ class ThemeSettingsScreen extends StatelessWidget {
         );
         service.savePreset(copy);
       case 'delete':
-        service.deletePreset(preset.id);
+        // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+        if (preset.isFavorite) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+        } else {
+          service.deletePreset(preset.id);
+        }
       case 'export':
         _exportTheme(context, preset);
     }
