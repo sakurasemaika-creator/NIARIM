@@ -921,6 +921,7 @@
   "autofillThumbnailDeleteConfirmBody": "Cela revient à l'affichage des couleurs par défaut (jusqu'à 4 couleurs).",
   "autofillThumbnailCropDialogTitle": "Ajuster l'image miniature",
   "autofillThumbnailCropDialogHint": "Glissez pour déplacer, pincez pour zoomer, tournez à deux doigts pour pivoter",
+  "autofillThumbnailSetSnackbar": "Image miniature définie",
   "autofillPartGradientSetButton": "Définir le dégradé",
   "autofillPartGradientEditButton": "Modifier le dégradé",
   "autofillPartFillOpacityLabel": "Opacité (calque de remplissage) : {value}%",

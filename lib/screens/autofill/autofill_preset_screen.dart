@@ -243,6 +243,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   /// 「サムネイル画像削除」で確認の上、既定の色表示へ戻す）。
   void _showThumbnailDialog(AutofillPreset preset) {
     final l10n = AppLocalizations.of(context)!;
+    final path = preset.thumbnailPath;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -250,6 +251,24 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 現在設定されているサムネイルをそのまま表示し、変更・削除の判断を
+            // つけやすくする（未設定の場合はパレットアイコンを表示）。
+            Container(
+              width: 88, height: 88,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: path != null
+                  ? Image.file(
+                      File(path),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 32),
+                    )
+                  : const Icon(Icons.palette, size: 32),
+            ),
+            const SizedBox(height: 12),
             ListTile(
               leading: const Icon(Icons.image_outlined),
               title: Text(l10n.autofillThumbnailLoadButton),
@@ -258,7 +277,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                 _pickAndCropThumbnail(preset);
               },
             ),
-            if (preset.thumbnailPath != null)
+            if (path != null)
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
                 title: Text(l10n.autofillThumbnailDeleteButton, style: const TextStyle(color: Colors.red)),
@@ -277,6 +296,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   }
 
   Future<void> _pickAndCropThumbnail(AutofillPreset preset) async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null || result.files.isEmpty || result.files.first.path == null) return;
     if (!mounted) return;
@@ -289,6 +309,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     if (cropped == null || !mounted) return;
     final service = context.read<AutofillPresetService>();
     await service.setPresetThumbnailBytes(preset.id, cropped);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.autofillThumbnailSetSnackbar)));
   }
 
   void _confirmRemoveThumbnail(AutofillPreset preset) {
@@ -368,7 +391,11 @@ class _PresetCard extends StatelessWidget {
           // 場合のみ従来通りパーツの色（最大4色）をグリッド表示する
           // （仕様書20：サムネイル画像削除時は既定の色表示へ戻る）。
           child: preset.thumbnailPath != null
-              ? Image.file(File(preset.thumbnailPath!), fit: BoxFit.cover)
+              ? Image.file(
+                  File(preset.thumbnailPath!),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 24),
+                )
               : preset.parts.isEmpty
                   ? const Icon(Icons.palette, size: 24)
                   : GridView.count(

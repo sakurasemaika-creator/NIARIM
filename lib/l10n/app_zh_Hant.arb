@@ -921,6 +921,7 @@
   "autofillThumbnailDeleteConfirmBody": "刪除後將恢復為預設的部件顏色顯示（最多4色）。",
   "autofillThumbnailCropDialogTitle": "調整縮圖",
   "autofillThumbnailCropDialogHint": "拖曳調整位置，雙指縮放，雙指旋轉",
+  "autofillThumbnailSetSnackbar": "已設定縮圖",
   "autofillPartGradientSetButton": "設定漸層",
   "autofillPartGradientEditButton": "編輯漸層",
   "autofillPartFillOpacityLabel": "不透明度（填色圖層）：{value}%",

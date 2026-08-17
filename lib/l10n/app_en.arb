@@ -921,6 +921,7 @@
   "autofillThumbnailDeleteConfirmBody": "This reverts to the default part-color display (up to 4 colors).",
   "autofillThumbnailCropDialogTitle": "Adjust the thumbnail image",
   "autofillThumbnailCropDialogHint": "Drag to move, pinch to zoom, twist with two fingers to rotate",
+  "autofillThumbnailSetSnackbar": "Thumbnail image set",
   "autofillPartGradientSetButton": "Set gradient",
   "autofillPartGradientEditButton": "Edit gradient",
   "autofillPartFillOpacityLabel": "Opacity (fill layer): {value}%",

@@ -921,6 +921,7 @@
   "autofillThumbnailDeleteConfirmBody": "删除后将恢复为默认的部件颜色显示（最多4色）。",
   "autofillThumbnailCropDialogTitle": "调整缩略图",
   "autofillThumbnailCropDialogHint": "拖动调整位置，双指缩放，双指旋转",
+  "autofillThumbnailSetSnackbar": "已设置缩略图",
   "autofillPartGradientSetButton": "设置渐变",
   "autofillPartGradientEditButton": "编辑渐变",
   "autofillPartFillOpacityLabel": "不透明度（填色图层）：{value}%",

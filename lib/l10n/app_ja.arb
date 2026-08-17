@@ -1012,6 +1012,7 @@
   "autofillThumbnailDeleteConfirmBody": "削除すると既定のパーツ色表示（最大4色）に戻ります。",
   "autofillThumbnailCropDialogTitle": "サムネイル画像を調整",
   "autofillThumbnailCropDialogHint": "ドラッグで位置調整、ピンチで拡大縮小、2本指で回転できます",
+  "autofillThumbnailSetSnackbar": "サムネイル画像を設定しました",
   "autofillPartGradientSetButton": "グラデーション設定",
   "autofillPartGradientEditButton": "グラデーション編集",
   "autofillPartFillOpacityLabel": "不透明度（塗りレイヤー）: {value}%",

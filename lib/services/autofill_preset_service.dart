@@ -162,12 +162,7 @@ class AutofillPresetService extends ChangeNotifier {
         try { await oldFile.delete(); } catch (_) {}
       }
     }
-    _presets[idx] = AutofillPreset(
-      id: _presets[idx].id,
-      name: _presets[idx].name,
-      parts: _presets[idx].parts,
-      isFavorite: _presets[idx].isFavorite,
-    );
+    _presets[idx] = _presets[idx].copyWith(thumbnailPath: null);
     await _persist();
     notifyListeners();
   }

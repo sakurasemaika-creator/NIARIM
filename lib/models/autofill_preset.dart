@@ -16,17 +16,20 @@ class AutofillPreset {
     this.isFavorite = false,
   });
 
+  // thumbnailPathはsentinelパターンで明示的にnullへクリアできるようにする
+  // （単純な`?? this.thumbnailPath`だとnullを渡してもクリアできないため。
+  // サムネイル画像削除機能で必要）。
   AutofillPreset copyWith({
     String? id,
     String? name,
-    String? thumbnailPath,
+    Object? thumbnailPath = _sentinel,
     List<AutofillPart>? parts,
     bool? isFavorite,
   }) {
     return AutofillPreset(
       id: id ?? this.id,
       name: name ?? this.name,
-      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+      thumbnailPath: thumbnailPath == _sentinel ? this.thumbnailPath : thumbnailPath as String?,
       parts: parts ?? this.parts,
       isFavorite: isFavorite ?? this.isFavorite,
     );
