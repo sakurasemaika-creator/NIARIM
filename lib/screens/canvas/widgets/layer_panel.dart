@@ -231,6 +231,16 @@ class _LayerPanelState extends State<LayerPanel> {
                         (n) => l10n.layerPanelDefaultFolderName(n)),
                   ),
                 ),
+                // 「追加」ボタン（共通レイヤー・自動塗り線画・自動塗りレイヤー等の
+                // その他種別）。ユーザー指示により新規フォルダと画像読み込みの間に
+                // 配置。新規レイヤーボタンとアイコンが被らないようlibrary_addを使用。
+                Expanded(
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.library_add, size: 14),
+                    label: Text(l10n.layerPanelAddTooltip, style: const TextStyle(fontSize: 11)),
+                    onPressed: () => _showAddLayerMenu(context),
+                  ),
+                ),
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.photo, size: 14),
@@ -351,13 +361,30 @@ class _LayerPanelState extends State<LayerPanel> {
                         Icon(Icons.opacity, size: 14, color: Theme.of(context).colorScheme.primary),
                       if (layer.isLocked)
                         const Icon(Icons.lock, size: 14),
-                      if (_isTimelineMaterial(layer.type) ||
-                          layer.type == model.LayerType.common ||
-                          layer.type == model.LayerType.autoFillLineart)
-                        GestureDetector(
-                          onTap: () => _showTimelineLayerMenu(context, layer),
-                          child: const Icon(Icons.more_vert, size: 16),
+                      // 三点メニュー・ゴミ箱：以前はパネル下部にまとめて配置していたが
+                      // ユーザー指示により各レイヤーの右側へ移動した（対象レイヤーが
+                      // 常に明確になり、選択状態に依存しなくなる）。
+                      GestureDetector(
+                        onTap: () => _isTimelineMaterial(layer.type) ||
+                                layer.type == model.LayerType.common ||
+                                layer.type == model.LayerType.autoFillLineart
+                            ? _showTimelineLayerMenu(context, layer)
+                            : _showLayerOptions(context, layer),
+                        child: const Icon(Icons.more_vert, size: 16),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _canDeleteLayerRow(layer, layers)
+                            ? () => _deleteLayerRow(context, layer, layers)
+                            : null,
+                        child: Icon(
+                          Icons.delete_outline,
+                          size: 16,
+                          color: _canDeleteLayerRow(layer, layers)
+                              ? Colors.red[300]
+                              : Theme.of(context).disabledColor,
                         ),
+                      ),
                     ],
                   ),
                   onTap: () {
@@ -394,40 +421,30 @@ class _LayerPanelState extends State<LayerPanel> {
               },
             ),
           ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.add, size: 18),
-                  onPressed: () => _showAddLayerMenu(context),
-                  tooltip: l10n.layerPanelAddTooltip,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, size: 18),
-                  onPressed: _canDeleteSelected(layers) ? () => _deleteSelectedLayer(context, layers) : null,
-                  tooltip: l10n.commonDelete,
-                ),
-                if (_isSelectionMode)
+          // パネル下部の三点メニュー・ゴミ箱は各レイヤー右側へ移動したため削除した
+          // （ユーザー指示）。「追加」ボタンも上部ショートカット行へ移動済み。
+          // 下部バーは複数選択モード時の一括操作（結合・一括削除）専用として残す。
+          if (_isSelectionMode) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete, size: 18),
+                    onPressed: _canDeleteSelected(layers) ? () => _deleteSelectedLayer(context, layers) : null,
+                    tooltip: l10n.commonDelete,
+                  ),
                   IconButton(
                     icon: const Icon(Icons.merge_type, size: 18),
                     onPressed: _canMergeSelected() ? () => _mergeSelectedLayers(context) : null,
                     tooltip: l10n.layerPanelMergeTooltip,
                   ),
-                if (_selectedIndex >= 0 &&
-                    _selectedIndex < layers.length &&
-                    !_isTimelineMaterial(layers[_selectedIndex].type)) ...[
-                  IconButton(
-                    icon: const Icon(Icons.more_horiz, size: 18),
-                    onPressed: () => _showLayerOptions(context, layers),
-                    tooltip: l10n.layerPanelSettingsTooltip,
-                  ),
                 ],
-              ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -503,6 +520,35 @@ class _LayerPanelState extends State<LayerPanel> {
       return layers.where((l) => l.type == model.LayerType.normal).length > 1;
     }
     return true;
+  }
+
+  /// [layer]を各レイヤー行のゴミ箱アイコンから単体削除できるかどうか
+  /// （最後の1枚の通常レイヤーは削除不可、という既存の制約を踏襲）。
+  bool _canDeleteLayerRow(model.Layer layer, List<model.Layer> layers) {
+    if (layer.type == model.LayerType.normal) {
+      return layers.where((l) => l.type == model.LayerType.normal).length > 1;
+    }
+    return true;
+  }
+
+  /// 各レイヤー行のゴミ箱アイコンからの単体削除（ユーザー指示：三点メニュー・
+  /// ゴミ箱を各レイヤーの右側へ）。タイムライン素材は既存通り確認ダイアログ
+  /// を経由し、それ以外は即時削除する。
+  void _deleteLayerRow(BuildContext context, model.Layer layer, List<model.Layer> layers) {
+    if (_isTimelineMaterial(layer.type)) {
+      _showTimelineDeleteConfirm(context, layer);
+      return;
+    }
+    context.read<ProjectService>().removeLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layerId: layer.id,
+    );
+    setState(() {
+      if (_selectedIndex >= layers.length - 1) _selectedIndex = layers.length - 2;
+      if (_selectedIndex < 0) _selectedIndex = 0;
+    });
   }
 
   void _deleteSelectedLayer(BuildContext context, List<model.Layer> layers) {
@@ -997,10 +1043,12 @@ class _LayerPanelState extends State<LayerPanel> {
     setState(() => _selectedIndex = 0);
   }
 
-  void _showLayerOptions(BuildContext context, List<model.Layer> layers) {
+  /// レイヤー詳細設定（不透明度・ブレンドモード・ロック・クリッピング等）。
+  /// 以前は`_selectedIndex`（パネル下部の共通ボタンからの呼び出し）にのみ
+  /// 対応していたが、各レイヤー行の三点メニューから直接[layer]を渡せる
+  /// ようにした（ユーザー指示：三点メニューを各レイヤーの右側へ）。
+  void _showLayerOptions(BuildContext context, model.Layer layer) {
     final l10n = AppLocalizations.of(context)!;
-    if (_selectedIndex < 0 || _selectedIndex >= layers.length) return;
-    final layer = layers[_selectedIndex];
     void update(model.Layer Function(model.Layer) updater) {
       context.read<ProjectService>().updateLayer(
         projectId: widget.projectId,
