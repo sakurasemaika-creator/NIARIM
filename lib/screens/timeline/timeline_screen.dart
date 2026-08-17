@@ -31,6 +31,7 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
+import '../../services/save_tree_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/first_use_tooltip.dart';
@@ -513,7 +514,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/canvas/${widget.projectId}')),
+          IconButton(icon: const Icon(Icons.arrow_back), onPressed: _saveAndGoToCanvas),
           Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
           IconButton(
             icon: const Icon(Icons.undo),
@@ -523,18 +524,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
             icon: const Icon(Icons.redo),
             onPressed: undoManager.canRedo ? undoManager.redo : null,
           ),
+          // 三点メニュー（ユーザー指示：保存ボタン・プロジェクト保存ボタンは
+          // セーブツリー（設定によってはセーブスロット）と役割が被っていた
+          // ため削除し、セーブツリー/スロット・自動塗り実行・書き出しの
+          // 3項目のみに整理した）。
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {
-              if (action == 'save' || action == 'project_save') _saveProject();
               if (action == 'autofill') _showAutofillDialog();
               if (action == 'save_tree') context.push('/save-tree/${widget.projectId}');
+              if (action == 'export') context.push('/export/${widget.projectId}');
             },
             itemBuilder: (_) => [
-              PopupMenuItem(value: 'save', child: Text(l10n.commonSave)),
-              PopupMenuItem(value: 'project_save', child: Text(l10n.timelineProjectSaveMenuItem)),
+              PopupMenuItem(
+                value: 'save_tree',
+                child: Text(context.read<SaveTreeService>().isTreeMode
+                    ? l10n.saveTreeScreenTitleTree
+                    : l10n.saveTreeScreenTitleSlot),
+              ),
               PopupMenuItem(value: 'autofill', child: Text(l10n.layerPanelMenuRunAutofill)),
-              PopupMenuItem(value: 'save_tree', child: Text(l10n.projectDetailSaveTreeButton)),
+              PopupMenuItem(value: 'export', child: Text(l10n.timelineExportMenuItem)),
             ],
           ),
           const HelpButton(topic: 'タイムライン'),
@@ -2819,14 +2828,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 明示的保存（三点メニューの「保存」「プロジェクト保存」共通）。
-  Future<void> _saveProject() async {
-    final l10n = AppLocalizations.of(context)!;
+  /// キャンバスモードへ戻る前に、プロジェクト本体（.niaproファイル）を
+  /// 明示的に保存する（ユーザー報告：「編集後、プロジェクト一覧に戻ると
+  /// 手動セーブのデータが消えている」の原因調査により発覚。従来は三点
+  /// メニューの「保存」「プロジェクト保存」からしかこの保存処理を呼べず、
+  /// それらは他の項目（セーブツリー・自動塗り実行）と役割が被っていた
+  /// ため削除し、代わりに画面を離れるタイミングで自動的に保存されるよう
+  /// にした）。
+  Future<void> _saveAndGoToCanvas() async {
     await context.read<ProjectService>().saveProject(widget.projectId);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.timelineSaveSuccessSnackbar)),
-    );
+    if (mounted) context.go('/canvas/${widget.projectId}');
   }
 
   void _showAutofillDialog() {

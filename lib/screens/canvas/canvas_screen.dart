@@ -76,6 +76,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 閉じるボタンを押せなくなる不具合があった（「レイヤーパネルが一度表示
   /// すると非表示に戻せない」の原因）。いずれかを開く前に必ずこれを呼び、
   /// 常に高々1枚のみが表示された状態を保つ。
+  /// プロジェクト一覧へ戻る前に、プロジェクト本体（.niaproファイル）を
+  /// 明示的に保存する（ユーザー報告：「編集後、プロジェクト一覧に戻ると
+  /// 手動セーブのデータが消えている」の原因調査により発覚。従来は
+  /// タイムライン画面の三点メニュー「保存」からしかこの保存処理を呼べず、
+  /// それを押さない限りプロジェクト本体はディスクへ書き込まれていな
+  /// かった。自動保存（クラッシュ復元専用・別データ）とは別に、
+  /// プロジェクト一覧へ戻るタイミングで必ず保存されるようにした）。
+  Future<void> _goHome() async {
+    await context.read<ProjectService>().saveProject(widget.projectId);
+    if (mounted) context.go('/home');
+  }
+
   void _closeAllOverlayPanels() {
     _showLayerPanel = false;
     _showColorPicker = false;
@@ -798,7 +810,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home'), tooltip: l10n.saveTreeBackButton),
+          IconButton(icon: const Icon(Icons.arrow_back), onPressed: _goHome, tooltip: l10n.saveTreeBackButton),
           // 投げ縄塗り選択中：囲って塗るモードスイッチ
           if (_currentTool == DrawingTool.lasso && _currentSubTool == PenSubTool.lassoFill) ...[
             const SizedBox(width: 8),
