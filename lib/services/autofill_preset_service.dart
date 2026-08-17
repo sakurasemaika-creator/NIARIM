@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/autofill_preset.dart';
 
@@ -116,6 +118,58 @@ class AutofillPresetService extends ChangeNotifier {
 
   Future<void> removePreset(String id) async {
     _presets.removeWhere((p) => p.id == id);
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<Directory> _thumbnailsDir() async {
+    final base = await getApplicationDocumentsDirectory();
+    final dir = Directory('${base.path}/niarim/autofill_thumbnails');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    return dir;
+  }
+
+  /// [sourcePath]の画像をプリセットのサムネイル（参照画像）として登録する
+  /// （仕様書20：謎のパレットではなく、サムネイル画像を設定してそこから
+  /// スポイトで色を拾えるようにする）。アプリ専用領域へコピーして永続化
+  /// することで、ピッカー側の一時パスが失効しても参照できるようにする。
+  Future<void> setPresetThumbnail(String presetId, String sourcePath) async {
+    final idx = _presets.indexWhere((p) => p.id == presetId);
+    if (idx < 0) return;
+    final dir = await _thumbnailsDir();
+    final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'png';
+    final fileName = '${presetId}_${DateTime.now().microsecondsSinceEpoch}.$ext';
+    final destPath = '${dir.path}/$fileName';
+    await File(sourcePath).copy(destPath);
+    // 旧サムネイルが存在すれば削除する
+    final oldPath = _presets[idx].thumbnailPath;
+    if (oldPath != null && oldPath != destPath) {
+      final oldFile = File(oldPath);
+      if (oldFile.existsSync()) {
+        try { await oldFile.delete(); } catch (_) {}
+      }
+    }
+    _presets[idx] = _presets[idx].copyWith(thumbnailPath: destPath);
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> clearPresetThumbnail(String presetId) async {
+    final idx = _presets.indexWhere((p) => p.id == presetId);
+    if (idx < 0) return;
+    final oldPath = _presets[idx].thumbnailPath;
+    if (oldPath != null) {
+      final oldFile = File(oldPath);
+      if (oldFile.existsSync()) {
+        try { await oldFile.delete(); } catch (_) {}
+      }
+    }
+    _presets[idx] = AutofillPreset(
+      id: _presets[idx].id,
+      name: _presets[idx].name,
+      parts: _presets[idx].parts,
+      isFavorite: _presets[idx].isFavorite,
+    );
     await _persist();
     notifyListeners();
   }

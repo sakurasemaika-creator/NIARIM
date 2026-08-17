@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -8,6 +10,7 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/image_eyedropper_dialog.dart';
 import '../../widgets/tone_preview_thumb.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 
@@ -406,6 +409,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 style: const TextStyle(color: Colors.red, fontSize: 11),
               ),
             ),
+          _thumbnailSection(),
           Expanded(child: _partListBody()),
         ],
       )),
@@ -415,6 +419,82 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       ),
       ),
     );
+  }
+
+  /// サムネイル画像（参照画像）欄（仕様書20：謎のパレットではなく、
+  /// サムネイル画像を設定してそこからスポイトで色を拾えるようにする）。
+  /// 画像未設定時は追加ボタンのみ、設定済みなら小さくプレビューし、
+  /// 変更・削除ができる。
+  Widget _thumbnailSection() {
+    final l10n = AppLocalizations.of(context)!;
+    final path = _preset.thumbnailPath;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Row(
+        children: [
+          if (path != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.file(File(path), width: 56, height: 56, fit: BoxFit.cover),
+            )
+          else
+            Container(
+              width: 56, height: 56,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.image_outlined),
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(l10n.autofillThumbnailHint,
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
+          TextButton(
+            onPressed: _pickThumbnail,
+            child: Text(path == null ? l10n.autofillThumbnailSetButton : l10n.autofillThumbnailChangeButton,
+                style: const TextStyle(fontSize: 12)),
+          ),
+          if (path != null)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, size: 18),
+              tooltip: l10n.commonDelete,
+              onPressed: _removeThumbnail,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickThumbnail() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (!mounted) return;
+    final service = context.read<AutofillPresetService>();
+    await service.setPresetThumbnail(_preset.id, result.files.first.path!);
+    final updated = service.presets.where((p) => p.id == _preset.id).firstOrNull;
+    if (updated != null && mounted) setState(() => _preset = updated);
+  }
+
+  Future<void> _removeThumbnail() async {
+    final service = context.read<AutofillPresetService>();
+    await service.clearPresetThumbnail(_preset.id);
+    final updated = service.presets.where((p) => p.id == _preset.id).firstOrNull;
+    if (updated != null && mounted) setState(() => _preset = updated);
+  }
+
+  /// サムネイル画像からスポイトで色を取得する（仕様書20）。取得した色は
+  /// [onPicked]へ渡す（呼び出し元＝パーツ詳細ダイアログ側で塗り色・線画色
+  /// いずれへ適用するかを決める）。
+  Future<void> _pickColorFromThumbnail(ValueChanged<Color> onPicked) async {
+    final path = _preset.thumbnailPath;
+    if (path == null) return;
+    final picked = await showDialog<Color>(
+      context: context,
+      builder: (_) => ImageEyedropperDialog(imagePath: path),
+    );
+    if (picked != null) onPicked(picked);
   }
 
   void _showUnconfiguredBlockDialog(List<AutofillPart> unconfigured) {
@@ -679,6 +759,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                       label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                     ),
+                    // サムネイル画像（参照画像）からスポイトで色を拾う（仕様書20）。
+                    // 画像未設定の場合はボタン自体を無効化する。
+                    if (_preset.thumbnailPath != null)
+                      OutlinedButton.icon(
+                        onPressed: () => _pickColorFromThumbnail(
+                          (c) => setS(() => current = current.copyWith(color: c.toARGB32(), gradient: null)),
+                        ),
+                        icon: const Icon(Icons.colorize, size: 16),
+                        label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                      ),
                     TextButton.icon(
                       onPressed: () async {
                         final updated = await _showGradientEditor(current);
@@ -722,6 +812,14 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         ),
                         label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                       ),
+                      if (_preset.thumbnailPath != null)
+                        OutlinedButton.icon(
+                          onPressed: () => _pickColorFromThumbnail(
+                            (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
+                          ),
+                          icon: const Icon(Icons.colorize, size: 16),
+                          label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                        ),
                     ],
                     if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
                       Text(l10n.autofillPartTraceHueLabel(current.traceHue.round()), style: const TextStyle(fontSize: 11)),
