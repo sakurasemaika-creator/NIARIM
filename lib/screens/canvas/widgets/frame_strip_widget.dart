@@ -36,9 +36,20 @@ class FrameStripWidget extends StatefulWidget {
 class _FrameStripWidgetState extends State<FrameStripWidget> {
   // フレームごとのサムネイル再生成カウンター。表示中フレームを切り替えた
   // 直後、直前まで表示していたフレームは描画内容が更新された可能性が
-  // 高いため、そのフレームのサムネイルだけを再生成させる（仕様書26：
-  // フレーム一覧は赤枠＝書き出し範囲のみを固定表示する）。
+  // 高いため、そのフレームのサムネイルだけを再生成させる。
   final Map<int, int> _refreshTick = {};
+
+  // フレーム一覧は常に画面中央に固定で赤枠を表示し、現在位置のフレームが
+  // そこに来るよう一覧側をスクロールさせる（ユーザー指示）。タップ・
+  // スワイプでフレームが変わっても赤枠自体は動かない。
+  final ScrollController _scrollController = ScrollController();
+  static const double _itemExtent = 56; // 幅48＋左右マージン4ずつ
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent(animate: false));
+  }
 
   @override
   void didUpdateWidget(covariant FrameStripWidget old) {
@@ -48,6 +59,27 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       final left = old.currentFrame;
       _refreshTick[left] = (_refreshTick[left] ?? 0) + 1;
     }
+    if (old.currentFrame != widget.currentFrame || old.sceneId != widget.sceneId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent(animate: true));
+    }
+  }
+
+  void _scrollToCurrent({required bool animate}) {
+    if (!_scrollController.hasClients) return;
+    final viewport = _scrollController.position.viewportDimension;
+    final target = (widget.currentFrame * _itemExtent + _itemExtent / 2) - viewport / 2;
+    final clamped = target.clamp(0.0, _scrollController.position.maxScrollExtent);
+    if (animate) {
+      _scrollController.animateTo(clamped, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+    } else {
+      _scrollController.jumpTo(clamped);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   /// フレーム追加の前に、無料会員の長さ上限（90秒）を超えないかチェックする
@@ -125,7 +157,10 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       child: Row(
         children: [
           Expanded(
-            child: ListView.builder(
+            child: Stack(
+              children: [
+                ListView.builder(
+              controller: _scrollController,
               scrollDirection: Axis.horizontal,
               itemCount: total + 1, // +1 は追加ボタン
               itemBuilder: (context, index) {
@@ -147,7 +182,10 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                   );
                 }
                 final isChecked = widget.selectedFrames.contains(index);
-                final isSelected = widget.multiSelectMode ? isChecked : index == widget.currentFrame;
+                // 現在フレームの強調表示は画面中央固定の赤枠が担うため、通常
+                // モードでは枠色を変えない（多重に強調表示すると煩雑になるため）。
+                // 複数選択モードのチェック状態のみここで色分けする。
+                final isSelected = widget.multiSelectMode && isChecked;
                 final hold = service.frameHold(widget.projectId, widget.sceneId, index);
                 return GestureDetector(
                   onTap: widget.multiSelectMode
@@ -212,6 +250,22 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                   ),
                 );
               },
+                ),
+                // 画面中央に固定表示する赤枠（ユーザー指示）。フレーム一覧側が
+                // スクロールして現在位置のフレームをここへ合わせる。
+                IgnorePointer(
+                  child: Center(
+                    child: Container(
+                      width: 48,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.red, width: 3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           IconButton(

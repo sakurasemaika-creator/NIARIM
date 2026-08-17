@@ -176,6 +176,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _isFrameMoveMode = false;
   int _frameMoveCursorPos = 0;
 
+  // フレーム一覧も画面中央に固定で赤枠を表示し、現在位置のフレームがそこへ
+  // 来るよう一覧側をスクロールさせる（ユーザー指示。キャンバスモードの
+  // フレーム一覧と同じ挙動）。_frameScrollCtrlは他トラックと同期済みのため、
+  // ここでのスクロールは共通レイヤー・素材トラック等にも連動する。
+  int? _lastCenteredFrame;
+
+  void _maybeCenterCurrentFrame() {
+    if (_isFrameMoveMode) return; // 移動モード中はレイアウトが異なるため対象外
+    if (_lastCenteredFrame == _currentFrame) return;
+    final hadPrevious = _lastCenteredFrame != null;
+    _lastCenteredFrame = _currentFrame;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _centerFrameInList(animate: hadPrevious));
+  }
+
+  void _centerFrameInList({required bool animate}) {
+    if (!_frameScrollCtrl.hasClients) return;
+    final viewport = _frameScrollCtrl.position.viewportDimension;
+    final target = (_currentFrame * _cellW + _cellW / 2) - viewport / 2;
+    final clamped = target.clamp(0.0, _frameScrollCtrl.position.maxScrollExtent);
+    if (animate) {
+      _frameScrollCtrl.animateTo(clamped, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+    } else {
+      _frameScrollCtrl.jumpTo(clamped);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1349,6 +1375,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final total = _totalFrames;
     final projectService = context.watch<ProjectService>();
     final frameListSceneId = _selectedSceneId;
+    _maybeCenterCurrentFrame();
     return SizedBox(
       height: _isFrameMoveMode ? 92 : 50,
       child: Stack(
@@ -1388,7 +1415,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
                     ),
                   Expanded(
-                    child: ListView.builder(
+                    child: Stack(
+                      children: [
+                        ListView.builder(
                       controller: _frameScrollCtrl,
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1447,7 +1476,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             ),
                           );
                         }
-                        final isSelected = index == _currentFrame;
+                        // 現在フレームの強調表示は画面中央固定の赤枠が担うため、
+                        // 通常モードでは枠色を変えない（複数選択のチェック状態のみ
+                        // ここで色分けする。ユーザー指示）。
                         final isChecked = _selectedFrameIndices.contains(index);
                         // このフレームに自動塗り未更新のレイヤーがある場合の❗マーク
                         // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
@@ -1480,20 +1511,35 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             width: _frameW,
                             margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
                             decoration: BoxDecoration(
-                              color: isChecked
-                                  ? Theme.of(context).colorScheme.primaryContainer
-                                  : isSelected
-                                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                                      : Colors.grey[850],
+                              color: isChecked ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[850],
                               border: Border.all(
-                                  color: (isSelected || isChecked)
+                                  color: isChecked
                                       ? Theme.of(context).colorScheme.primary
                                       : Colors.grey[700]!),
                               borderRadius: BorderRadius.circular(3),
                             ),
-                            child: Stack(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: Stack(
                               children: [
-                                Center(child: Text('${index + 1}', style: const TextStyle(fontSize: 9))),
+                                // フレームの実プレビュー（ユーザー指示：ただの四角形では
+                                // なくちゃんとしたプレビューにする）。
+                                if (frameListSceneId != null)
+                                  Positioned.fill(
+                                    child: _TimelineFrameThumbnail(
+                                      projectId: widget.projectId,
+                                      sceneId: frameListSceneId,
+                                      frameIndex: index,
+                                    ),
+                                  ),
+                                Positioned(
+                                  left: 1, bottom: 1,
+                                  child: Text('${index + 1}',
+                                      style: const TextStyle(
+                                          fontSize: 8,
+                                          color: Colors.white,
+                                          shadows: [Shadow(color: Colors.black, blurRadius: 2)])),
+                                ),
                                 if (hasOutdatedAutofill)
                                   Positioned(
                                     left: 1, top: 1,
@@ -1511,10 +1557,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     ),
                                   ),
                               ],
+                              ),
                             ),
                           ),
                         );
                       },
+                    ),
+                    // 画面中央に固定表示する赤枠（ユーザー指示）。フレーム一覧側が
+                    // スクロールして現在位置のフレームをここへ合わせる。
+                    IgnorePointer(
+                      child: Center(
+                        child: Container(
+                          width: _frameW,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.red, width: 3),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
+                    ),
+                      ],
                     ),
                   ),
                   // 複数選択モード中：全選択・全解除ボタン
@@ -3844,5 +3907,104 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
         ],
       ),
     );
+  }
+}
+
+/// タイムラインのフレーム一覧1コマ分の実プレビュー（ユーザー指示：ただの
+/// 番号付き四角形ではなくちゃんとしたプレビューにする）。キャンバスモードの
+/// フレーム一覧（frame_strip_widget.dartの_FrameThumbnail）と同じく、
+/// 描画領域全体を合成した上で書き出し範囲（中央）だけを切り出して縮小表示する。
+class _TimelineFrameThumbnail extends StatefulWidget {
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+
+  const _TimelineFrameThumbnail({
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+  });
+
+  @override
+  State<_TimelineFrameThumbnail> createState() => _TimelineFrameThumbnailState();
+}
+
+class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
+  ui.Image? _image;
+
+  @override
+  void initState() {
+    super.initState();
+    _generate();
+  }
+
+  @override
+  void didUpdateWidget(covariant _TimelineFrameThumbnail old) {
+    super.didUpdateWidget(old);
+    if (old.projectId != widget.projectId ||
+        old.sceneId != widget.sceneId ||
+        old.frameIndex != widget.frameIndex) {
+      _generate();
+    }
+  }
+
+  Future<void> _generate() async {
+    final ps = context.read<ProjectService>();
+    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final tileManager = ps.tileManagerOf(widget.projectId);
+    final drawW = tileManager.canvasWidth;
+    final drawH = tileManager.canvasHeight;
+    if (drawW <= 0 || drawH <= 0) return;
+    final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
+    final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
+
+    final layers = ps.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
+
+    final fullImage = await LayerCompositor.composite(
+      tileManager,
+      layers,
+      (l) => ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, l.id),
+      drawW,
+      drawH,
+    );
+
+    final offsetX = (drawW - exportW) / 2;
+    final offsetY = (drawH - exportH) / 2;
+    const thumbW = 64;
+    final thumbH = (thumbW * exportH / exportW).round().clamp(1, 200).toInt();
+
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      fullImage,
+      ui.Rect.fromLTWH(offsetX, offsetY, exportW.toDouble(), exportH.toDouble()),
+      ui.Rect.fromLTWH(0, 0, thumbW.toDouble(), thumbH.toDouble()),
+      ui.Paint(),
+    );
+    fullImage.dispose();
+    final picture = recorder.endRecording();
+    final thumb = await picture.toImage(thumbW, thumbH);
+    picture.dispose();
+
+    if (!mounted) {
+      thumb.dispose();
+      return;
+    }
+    final old = _image;
+    setState(() => _image = thumb);
+    old?.dispose();
+  }
+
+  @override
+  void dispose() {
+    _image?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final image = _image;
+    if (image == null) return const SizedBox.shrink();
+    return RawImage(image: image, fit: BoxFit.cover);
   }
 }
