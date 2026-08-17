@@ -42,7 +42,46 @@ class AutofillPresetService extends ChangeNotifier {
     } else {
       _presets.addAll(
           raw.map((s) => AutofillPreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      if (_dedupeIds()) await _persist();
     }
+  }
+
+  /// プリセットID・パーツID（プリセット内）の重複を検出し、2件目以降を
+  /// 新しいIDへ差し替えて自己修復する（ユーザー報告により発覚：過去に
+  /// 同一ミリ秒での連続タップ等でID採番（'p_${DateTime.now().
+  /// millisecondsSinceEpoch}'）が衝突すると、パーツ一覧の
+  /// ReorderableListViewが`part.id`をキーに使っているため
+  /// 「Duplicate GlobalKeys detected」の例外でパーツ一覧が完全に壊れる。
+  /// 一度保存されてしまった重複IDは再起動しても直らないため、起動時に
+  /// 検出して修復する）。戻り値は修復が発生したかどうか（trueなら
+  /// 呼び出し元で再永続化が必要）。
+  bool _dedupeIds() {
+    var changed = false;
+    final seenPresetIds = <String>{};
+    for (int i = 0; i < _presets.length; i++) {
+      var preset = _presets[i];
+      if (!seenPresetIds.add(preset.id)) {
+        preset = preset.copyWith(id: 'p_${DateTime.now().microsecondsSinceEpoch}_$i');
+        changed = true;
+      }
+      final seenPartIds = <String>{};
+      final parts = <AutofillPart>[];
+      var partsChanged = false;
+      for (int j = 0; j < preset.parts.length; j++) {
+        var part = preset.parts[j];
+        if (!seenPartIds.add(part.id)) {
+          part = part.copyWith(id: 'part_${DateTime.now().microsecondsSinceEpoch}_${i}_$j');
+          partsChanged = true;
+        }
+        parts.add(part);
+      }
+      if (partsChanged) {
+        preset = preset.copyWith(parts: parts);
+        changed = true;
+      }
+      _presets[i] = preset;
+    }
+    return changed;
   }
 
   Future<void> _persist() async {

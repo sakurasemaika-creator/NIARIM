@@ -157,7 +157,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
                 context.read<AutofillPresetService>().addPreset(AutofillPreset(
-                  id: 'p_${DateTime.now().millisecondsSinceEpoch}',
+                  id: 'p_${DateTime.now().microsecondsSinceEpoch}',
                   name: nameCtrl.text,
                   parts: [],
                 ));
@@ -551,7 +551,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               if (nameCtrl.text.isNotEmpty) {
                 final parts = List<AutofillPart>.from(_preset.parts)
                   ..add(AutofillPart(
-                    id: 'part_${DateTime.now().millisecondsSinceEpoch}',
+                    id: 'part_${DateTime.now().microsecondsSinceEpoch}',
                     name: nameCtrl.text,
                     color: 0xFFCCCCCC,
                   ));
