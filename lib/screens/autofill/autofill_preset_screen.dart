@@ -26,6 +26,16 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   // お気に入り＋絞り込みへ一本化した。
   bool _showFavoritesOnly = false;
 
+  // このファイルの各ダイアログが使うTextEditingControllerは、
+  // showDialog(...).then((_) => WidgetsBinding.instance.
+  // addPostFrameCallback((_) => ctrl.dispose())) という形で破棄する。
+  // 単純にshowDialogの直後（.then内）で即座にdispose()すると、ダイアログを
+  // 閉じる操作自体が裏で走らせているフォーカス解除処理より先に破棄されて
+  // しまうことがあり、直後に別の操作（例：パーツの色をタップして次の
+  // ダイアログを開く）をした際に「TextEditingController was used after
+  // being disposed」のアサーション例外が発生していた（ユーザー報告により
+  // 発覚・修正）。1フレーム遅らせることでフォーカス解除処理を先に完了させる。
+
   // 以前はcontext.watch()をgetter（_presets/_filtered）に入れており、
   // それをListView.builderの各行のタップ用コールバック（onEdit/onDelete/
   // onTap）内からも呼んでいたため、タップした瞬間（build外）に
@@ -158,7 +168,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-    ).then((_) => nameCtrl.dispose());
+    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
   }
 
   void _showEditDialog(AutofillPreset preset) {
@@ -186,7 +196,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-    ).then((_) => nameCtrl.dispose());
+    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
   }
 
   void _confirmDelete(AutofillPreset preset) {
@@ -553,7 +563,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
         ],
       ),
-    ).then((_) => nameCtrl.dispose());
+    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
   }
 
   void _showEditPartDialog(AutofillPart part) {
@@ -584,7 +594,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
         ],
       ),
-    ).then((_) => nameCtrl.dispose());
+    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
   }
 
   Map<AutofillLineColorMode, String> _lineColorModeLabels(AppLocalizations l10n) => {
