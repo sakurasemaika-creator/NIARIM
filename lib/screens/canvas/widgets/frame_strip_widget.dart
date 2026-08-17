@@ -215,8 +215,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             ),
           ),
           IconButton(
-            // タイムラインモードへの切替ボタン（ユーザー指示により🎞マークへ変更）。
-            icon: const Text('🎞', style: TextStyle(fontSize: 20)),
+            // タイムラインモードへの切替ボタン（ユーザー指示により絵文字ではなく
+            // タイムライン画面内で既に使われているIcons.movieへ変更）。
+            icon: const Icon(Icons.movie, size: 20),
             onPressed: widget.onTimelineTap,
             tooltip: l10n.frameStripTimelineModeTooltip,
           ),
