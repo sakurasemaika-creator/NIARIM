@@ -2699,6 +2699,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _CameraKfSheet(
+        projectId: widget.projectId,
+        sceneId: sceneId,
         kf: kf,
         totalFrames: _totalFrames,
         onDelete: (currentFrameIndex) => context
@@ -3867,11 +3869,15 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
 // ─── カメラKFシート ────────────────────────────────────────────────────────
 
 class _CameraKfSheet extends StatefulWidget {
+  final String projectId;
+  final String sceneId;
   final CameraKeyframe kf;
   final int totalFrames;
   final ValueChanged<int> onDelete;
   final void Function(int oldFrameIndex, CameraKeyframe newKf) onSave;
   const _CameraKfSheet({
+    required this.projectId,
+    required this.sceneId,
     required this.kf,
     required this.totalFrames,
     required this.onDelete,
@@ -3892,14 +3898,43 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     setState(() => _kf = newKf);
   }
 
+  /// カメラ操作がスライダーだけで分かりにくいという指摘への対応（仕様書05）。
+  /// 現在編集中のキーフレーム位置における実際の見え方（カメラ変換適用後の
+  /// フレーム）をその場でプレビュー表示し、スライダー操作と同時に確認できる
+  /// ようにする。カメラキーフレーム一覧はwatchで購読し、スライダー変更の
+  /// たびに即時反映されるようにする。
+  Widget _buildLivePreview(BuildContext context) {
+    final ps = context.watch<ProjectService>();
+    final tileManager = ps.tileManagerOf(widget.projectId);
+    final layers = ps.layersOf(widget.projectId, widget.sceneId, _kf.frameIndex);
+    final cameraKeyframes = ps.cameraKeyframesOf(widget.projectId, widget.sceneId);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      height: 140,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: _TimelinePreview(
+        tileManager: tileManager,
+        layers: layers,
+        sceneId: widget.sceneId,
+        frameIndex: _kf.frameIndex,
+        cameraKeyframes: cameraKeyframes,
+        layerHomes: ps.layerHomesOf(widget.projectId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.55,
+      initialChildSize: 0.6,
       minChildSize: 0.4,
-      maxChildSize: 0.85,
+      maxChildSize: 0.9,
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
@@ -3921,6 +3956,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
             ),
           ),
           const Divider(height: 1),
+          _buildLivePreview(context),
           Expanded(
             child: ListView(
               controller: scrollCtrl,
