@@ -173,6 +173,19 @@
   "creativeAssetNameLabel": "이름",
 
   "commonAdd": "추가",
+  "commonSearch": "검색",
+  "commonEdit": "편집",
+  "commonFavoriteToggle": "즐겨찾기 전환",
+  "commonIncrease": "늘리기",
+  "commonDecrease": "줄이기",
+  "commonPlay": "재생",
+  "commonPause": "일시정지",
+  "fontCatalogDownloadTooltip": "폰트 다운로드",
+  "timelineBackToCanvasTooltip": "저장하고 캔버스로 돌아가기",
+  "timelineSkipToStart": "첫 프레임으로 이동",
+  "timelineStepBack": "한 프레임 뒤로",
+  "timelineStepForward": "한 프레임 앞으로",
+  "timelineSkipToEnd": "마지막 프레임으로 이동",
 
   "quickToolPanelTitle": "빠른 도구 설정",
   "quickToolEmpty": "등록된 도구가 없습니다",
@@ -865,6 +878,7 @@
   "autofillLineColorModeSpecified": "지정 색상",
   "autofillLineColorModeSameAsFill": "채우기 색상과 동일",
   "autofillLineColorModeTraceAdjust": "색 트레이스・선화와 조화",
+  "autofillLineColorModeTraceAdjustInfo": "원래 선 색상을 유지한 채 색상・채도・명도만 살짝 조정합니다. 선을 단색으로 채우지 않고 선화의 농담을 살리고 싶을 때 사용합니다.",
   "autofillGradientTypeLinear": "직선",
   "autofillGradientTypeRadialCenterOut": "방사형: 중앙→바깥쪽",
   "autofillGradientTypeRadialOutCenter": "방사형: 바깥쪽→중앙",
@@ -955,6 +969,8 @@
     "placeholders": {"name": {"type": "String"}}
   },
   "autofillPartGradientTypeLabel": "종류",
+  "autofillPartGradientTypeInfo": "직선: 지정한 각도를 따라 색이 변합니다. 방사형(중앙→외곽): 중심에서 바깥쪽으로, 방사형(외곽→중앙): 바깥쪽에서 중심으로 색이 변합니다.",
+  "autofillPartGradientFeatherInfo": "0%로 설정하면 인접한 색의 경계가 뚜렷해집니다. 100%로 설정하면 옆 색상의 끝까지 완전히 부드럽게 섞입니다.",
   "autofillPartGradientAngleLabel": "각도: {value}°",
   "@autofillPartGradientAngleLabel": {
     "placeholders": {"value": {"type": "int"}}

@@ -15,6 +15,7 @@ import '../../services/tone_service.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
+import '../../widgets/info_icon_tooltip.dart';
 import '../../widgets/square_image_crop_dialog.dart';
 import '../../widgets/tone_preview_thumb.dart';
 import '../canvas/widgets/color_picker_panel.dart';
@@ -77,6 +78,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           const HelpButton(topic: '自動塗り'),
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
+            tooltip: _isSearching ? l10n.commonClose : l10n.commonSearch,
             onPressed: () => setState(() {
               _isSearching = !_isSearching;
               if (!_isSearching) _searchQuery = '';
@@ -545,6 +547,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           // 検索（仕様書20：「検索・並び替え・お気に入り登録に対応」）
           IconButton(
             icon: Icon(_isSearchingParts ? Icons.close : Icons.search),
+            tooltip: _isSearchingParts ? l10n.commonClose : l10n.commonSearch,
             onPressed: () => setState(() {
               _isSearchingParts = !_isSearchingParts;
               if (!_isSearchingParts) _partSearchQuery = '';
@@ -678,10 +681,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       // お気に入り機能に一本化したため削除）。
                       IconButton(
                         icon: const Icon(Icons.edit, size: 18),
+                        tooltip: l10n.commonEdit,
                         onPressed: () => _showEditPartDialog(part),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                        tooltip: l10n.commonDelete,
                         onPressed: () {
                           final parts = List<AutofillPart>.from(_preset.parts)
                             ..removeWhere((p) => p.id == part.id);
@@ -866,6 +871,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           dense: true,
                           contentPadding: EdgeInsets.zero,
                           title: Text(lineColorModeLabels[m]!, style: const TextStyle(fontSize: 13)),
+                          secondary: m == AutofillLineColorMode.traceAdjust
+                              ? InfoIconTooltip(message: l10n.autofillLineColorModeTraceAdjustInfo)
+                              : null,
                           value: m,
                           groupValue: current.lineColorMode,
                           onChanged: (v) => setS(() => current = current.copyWith(lineColorMode: v)),
@@ -1173,7 +1181,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     Text(l10n.autofillPartGradientStopDragHint,
                         style: const TextStyle(fontSize: 10, color: Colors.grey)),
                     const SizedBox(height: 8),
-                    Text(l10n.autofillPartGradientTypeLabel, style: const TextStyle(fontSize: 12)),
+                    Row(
+                      children: [
+                        Text(l10n.autofillPartGradientTypeLabel, style: const TextStyle(fontSize: 12)),
+                        const SizedBox(width: 4),
+                        InfoIconTooltip(message: l10n.autofillPartGradientTypeInfo),
+                      ],
+                    ),
                     Wrap(
                       spacing: 6,
                       children: AutofillGradientType.values.map((t) => ChoiceChip(
@@ -1201,11 +1215,18 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     const SizedBox(height: 8),
                     // ぼかしの強さ（仕様書20）：0%＝境界がはっきりした帯状、
                     // 100%＝従来通りの滑らかなブレンド。
-                    EditableSliderValue(
-                      text: l10n.autofillPartGradientFeatherLabel((gradient.feather * 100).round()),
-                      style: const TextStyle(fontSize: 12),
-                      value: (gradient.feather * 100).round(), min: 0, max: 100,
-                      onChanged: (v) => setS(() => gradient = gradient.copyWith(feather: v / 100)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: EditableSliderValue(
+                            text: l10n.autofillPartGradientFeatherLabel((gradient.feather * 100).round()),
+                            style: const TextStyle(fontSize: 12),
+                            value: (gradient.feather * 100).round(), min: 0, max: 100,
+                            onChanged: (v) => setS(() => gradient = gradient.copyWith(feather: v / 100)),
+                          ),
+                        ),
+                        InfoIconTooltip(message: l10n.autofillPartGradientFeatherInfo),
+                      ],
                     ),
                     Slider(
                       value: gradient.feather,
@@ -1289,6 +1310,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                tooltip: l10n.commonDelete,
                                 onPressed: gradient.colors.length <= 2 ? null : () {
                                   final colors = List<int>.from(gradient.colors)..removeAt(i);
                                   setS(() => gradient = gradient.copyWith(

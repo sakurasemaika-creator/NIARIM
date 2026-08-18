@@ -192,6 +192,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if (_isSearching)
             IconButton(
               icon: const Icon(Icons.close),
+              tooltip: l10n.commonClose,
               onPressed: () => setState(() {
                 _isSearching = false;
                 _searchQuery = '';
@@ -219,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 PopupMenuItem(value: ProjectSortMode.updatedDesc, child: Text(l10n.homeSortUpdatedDesc)),
               ],
             ),
-            IconButton(icon: const Icon(Icons.search), onPressed: () => setState(() => _isSearching = true)),
+            IconButton(icon: const Icon(Icons.search), tooltip: l10n.commonSearch, onPressed: () => setState(() => _isSearching = true)),
           ],
         ],
         bottom: TabBar(

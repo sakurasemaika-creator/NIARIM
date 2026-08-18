@@ -239,6 +239,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 },
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
+                  tooltip: l10n.commonDelete,
                   onPressed: () => presetService.delete(preset.id),
                 ),
               ),

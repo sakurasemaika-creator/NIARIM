@@ -78,7 +78,7 @@ class _TonePanelState extends State<TonePanel> {
                     }),
                     tooltip: l10n.creativePanelSearchTooltip,
                   ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
+                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               Row(

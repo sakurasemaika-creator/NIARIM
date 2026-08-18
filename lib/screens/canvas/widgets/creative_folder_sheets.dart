@@ -74,6 +74,7 @@ void showFolderManagementSheet(
                           IconButton(
                             icon: Icon(f.isFavorite ? Icons.star : Icons.star_outline,
                                 color: f.isFavorite ? Colors.amber : null, size: 18),
+                            tooltip: l10n.commonFavoriteToggle,
                             onPressed: () {
                               onToggleFavorite(f.id);
                               setSheetState(() {});
@@ -81,6 +82,7 @@ void showFolderManagementSheet(
                           ),
                           IconButton(
                             icon: const Icon(Icons.edit_outlined, size: 18),
+                            tooltip: l10n.commonRename,
                             onPressed: () async {
                               final name = await _promptFolderName(ctx, title: l10n.commonRename, initial: f.name);
                               if (name == null || name.trim().isEmpty) return;
@@ -90,6 +92,7 @@ void showFolderManagementSheet(
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                            tooltip: l10n.commonDelete,
                             // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
                             onPressed: () {
                               if (f.isFavorite) {

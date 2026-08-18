@@ -570,14 +570,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: _saveAndGoToCanvas),
+          IconButton(icon: const Icon(Icons.arrow_back), tooltip: l10n.timelineBackToCanvasTooltip, onPressed: _saveAndGoToCanvas),
           Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
           IconButton(
             icon: const Icon(Icons.undo),
+            tooltip: l10n.commonUndo,
             onPressed: undoManager.canUndo ? undoManager.undo : null,
           ),
           IconButton(
             icon: const Icon(Icons.redo),
+            tooltip: l10n.commonRedo,
             onPressed: undoManager.canRedo ? undoManager.redo : null,
           ),
           // 三点メニュー（ユーザー指示：保存ボタン・プロジェクト保存ボタンは
@@ -698,16 +700,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildPlaybackControls() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(icon: const Icon(Icons.skip_previous), onPressed: () => setState(() => _currentFrame = 0)),
-          IconButton(icon: const Icon(Icons.fast_rewind), onPressed: () { if (_currentFrame > 0) setState(() => _currentFrame--); }),
-          IconButton(icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow), onPressed: _togglePlay),
-          IconButton(icon: const Icon(Icons.fast_forward), onPressed: () { if (_currentFrame < _totalFrames - 1) setState(() => _currentFrame++); }),
-          IconButton(icon: const Icon(Icons.skip_next), onPressed: () => setState(() => _currentFrame = _totalFrames - 1)),
+          IconButton(icon: const Icon(Icons.skip_previous), tooltip: l10n.timelineSkipToStart, onPressed: () => setState(() => _currentFrame = 0)),
+          IconButton(icon: const Icon(Icons.fast_rewind), tooltip: l10n.timelineStepBack, onPressed: () { if (_currentFrame > 0) setState(() => _currentFrame--); }),
+          IconButton(icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow), tooltip: _isPlaying ? l10n.commonPause : l10n.commonPlay, onPressed: _togglePlay),
+          IconButton(icon: const Icon(Icons.fast_forward), tooltip: l10n.timelineStepForward, onPressed: () { if (_currentFrame < _totalFrames - 1) setState(() => _currentFrame++); }),
+          IconButton(icon: const Icon(Icons.skip_next), tooltip: l10n.timelineSkipToEnd, onPressed: () => setState(() => _currentFrame = _totalFrames - 1)),
         ],
       ),
     );
@@ -3756,6 +3759,7 @@ class _EffectFilterSheet extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+              tooltip: l10n.commonDelete,
               onPressed: () =>
                   context.read<ProjectService>().removeEffectFilter(projectId, sceneId, e.id),
             ),
@@ -3975,6 +3979,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                 Expanded(child: Text(_c.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
+                  tooltip: l10n.commonDelete,
                   onPressed: () { Navigator.pop(context); widget.onDelete(); },
                 ),
               ],
@@ -4121,6 +4126,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
+                  tooltip: l10n.commonDelete,
                   onPressed: () { Navigator.pop(context); widget.onDelete(_kf.frameIndex); },
                 ),
               ],

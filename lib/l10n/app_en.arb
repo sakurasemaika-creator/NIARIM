@@ -173,6 +173,19 @@
   "creativeAssetNameLabel": "Name",
 
   "commonAdd": "Add",
+  "commonSearch": "Search",
+  "commonEdit": "Edit",
+  "commonFavoriteToggle": "Toggle favorite",
+  "commonIncrease": "Increase",
+  "commonDecrease": "Decrease",
+  "commonPlay": "Play",
+  "commonPause": "Pause",
+  "fontCatalogDownloadTooltip": "Download font",
+  "timelineBackToCanvasTooltip": "Save and return to canvas",
+  "timelineSkipToStart": "Skip to first frame",
+  "timelineStepBack": "Step back one frame",
+  "timelineStepForward": "Step forward one frame",
+  "timelineSkipToEnd": "Skip to last frame",
 
   "quickToolPanelTitle": "Quick Tool Settings",
   "quickToolEmpty": "No tools added yet",
@@ -865,6 +878,7 @@
   "autofillLineColorModeSpecified": "Specified color",
   "autofillLineColorModeSameAsFill": "Same as fill",
   "autofillLineColorModeTraceAdjust": "Color trace / blend with lines",
+  "autofillLineColorModeTraceAdjustInfo": "Keeps the original line color but shifts its hue, saturation, and lightness slightly. Use this when you want to keep the line art's shading instead of filling lines with a flat color.",
   "autofillGradientTypeLinear": "Linear",
   "autofillGradientTypeRadialCenterOut": "Radial: center → outward",
   "autofillGradientTypeRadialOutCenter": "Radial: outward → center",
@@ -955,6 +969,8 @@
     "placeholders": {"name": {"type": "String"}}
   },
   "autofillPartGradientTypeLabel": "Type",
+  "autofillPartGradientTypeInfo": "Linear: the color changes along the angle you set. Radial center→out: colors change from the center outward. Radial out→center: colors change from the outside inward.",
+  "autofillPartGradientFeatherInfo": "At 0%, the boundary between adjacent colors is sharp. At 100%, colors blend completely and smoothly all the way to the edge of the next color.",
   "autofillPartGradientAngleLabel": "Angle: {value}°",
   "@autofillPartGradientAngleLabel": {
     "placeholders": {"value": {"type": "int"}}

@@ -100,6 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const HelpButton(),
           IconButton(
             icon: Icon(_showSearch ? Icons.close : Icons.search),
+            tooltip: _showSearch ? l10n.commonClose : l10n.commonSearch,
             onPressed: () => setState(() { _showSearch = !_showSearch; if (!_showSearch) _searchController.clear(); }),
           ),
         ],

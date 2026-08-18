@@ -704,6 +704,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
         leading: _showSelectionList
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
+                tooltip: l10n.saveTreeBackButton,
                 onPressed: () => setState(() => _showSelectionList = false),
               )
             : null,

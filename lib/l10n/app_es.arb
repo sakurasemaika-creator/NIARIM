@@ -173,6 +173,19 @@
   "creativeAssetNameLabel": "Nombre",
 
   "commonAdd": "Añadir",
+  "commonSearch": "Buscar",
+  "commonEdit": "Editar",
+  "commonFavoriteToggle": "Alternar favorito",
+  "commonIncrease": "Aumentar",
+  "commonDecrease": "Disminuir",
+  "commonPlay": "Reproducir",
+  "commonPause": "Pausar",
+  "fontCatalogDownloadTooltip": "Descargar fuente",
+  "timelineBackToCanvasTooltip": "Guardar y volver al lienzo",
+  "timelineSkipToStart": "Ir al primer fotograma",
+  "timelineStepBack": "Retroceder un fotograma",
+  "timelineStepForward": "Avanzar un fotograma",
+  "timelineSkipToEnd": "Ir al último fotograma",
 
   "quickToolPanelTitle": "Ajustes de herramientas rápidas",
   "quickToolEmpty": "No hay herramientas registradas",
@@ -865,6 +878,7 @@
   "autofillLineColorModeSpecified": "Color especificado",
   "autofillLineColorModeSameAsFill": "Igual que el relleno",
   "autofillLineColorModeTraceAdjust": "Trazado de color / mezcla con el trazo",
+  "autofillLineColorModeTraceAdjustInfo": "Mantiene el color original de la línea pero ajusta ligeramente su tono, saturación y luminosidad. Úsalo cuando quieras conservar los matices del dibujo lineal en vez de rellenar las líneas con un color plano.",
   "autofillGradientTypeLinear": "Lineal",
   "autofillGradientTypeRadialCenterOut": "Radial: centro → exterior",
   "autofillGradientTypeRadialOutCenter": "Radial: exterior → centro",
@@ -955,6 +969,8 @@
     "placeholders": {"name": {"type": "String"}}
   },
   "autofillPartGradientTypeLabel": "Tipo",
+  "autofillPartGradientTypeInfo": "Lineal: el color cambia siguiendo el ángulo indicado. Radial centro→exterior: los colores cambian desde el centro hacia afuera. Radial exterior→centro: al revés.",
+  "autofillPartGradientFeatherInfo": "Con 0%, el límite entre colores vecinos es nítido. Con 100%, los colores se mezclan por completo y suavemente hasta el borde del color vecino.",
   "autofillPartGradientAngleLabel": "Ángulo: {value}°",
   "@autofillPartGradientAngleLabel": {
     "placeholders": {"value": {"type": "int"}}

@@ -89,7 +89,7 @@ class _BrushPanelState extends State<BrushPanel> {
                     }),
                     tooltip: l10n.creativePanelSearchTooltip,
                   ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
+                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               // フォルダ管理・自作ブラシ・読み込み（仕様書17・21）

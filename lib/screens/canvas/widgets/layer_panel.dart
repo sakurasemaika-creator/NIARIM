@@ -163,7 +163,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   tooltip: l10n.creativePanelSearchTooltip,
                 ),
                 if (!widget.dockedMode)
-                  IconButton(icon: const Icon(Icons.close, size: 18), onPressed: widget.onClose),
+                  IconButton(icon: const Icon(Icons.close, size: 18), tooltip: l10n.commonClose, onPressed: widget.onClose),
               ],
             ),
           ),

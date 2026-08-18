@@ -120,6 +120,7 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
     }
     return IconButton(
       icon: const Icon(Icons.download_outlined),
+      tooltip: AppLocalizations.of(context)!.fontCatalogDownloadTooltip,
       onPressed: () => _downloadCatalogFont(entry),
     );
   }

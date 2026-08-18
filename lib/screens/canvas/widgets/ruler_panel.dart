@@ -45,6 +45,7 @@ class RulerPanel extends StatelessWidget {
                     ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 16),
+                    tooltip: l10n.commonClose,
                     onPressed: onClose,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -88,6 +89,7 @@ class RulerPanel extends StatelessWidget {
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.remove, size: 16),
+            tooltip: l10n.commonDecrease,
             onPressed: () => update(divisions - 1),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -95,6 +97,7 @@ class RulerPanel extends StatelessWidget {
           SizedBox(width: 28, child: Text('$divisions', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
           IconButton(
             icon: const Icon(Icons.add, size: 16),
+            tooltip: l10n.commonIncrease,
             onPressed: () => update(divisions + 1),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),

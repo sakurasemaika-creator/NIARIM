@@ -46,7 +46,7 @@ class QuickToolPanel extends StatelessWidget {
                 children: [
                   Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
-                  IconButton(icon: const Icon(Icons.close, size: 16), onPressed: onClose),
+                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: onClose),
                 ],
               ),
               const Divider(),
@@ -67,6 +67,7 @@ class QuickToolPanel extends StatelessWidget {
                             title: Text(e.label, style: const TextStyle(fontSize: 13)),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete, size: 16, color: Colors.red),
+                              tooltip: l10n.commonDelete,
                               onPressed: () => service.removeEntry(e.id),
                             ),
                           );

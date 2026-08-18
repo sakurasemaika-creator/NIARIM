@@ -157,14 +157,17 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                               IconButton(
                                 icon: Icon(f.isFavorite ? Icons.star : Icons.star_border,
                                     size: 18, color: f.isFavorite ? Colors.amber : null),
+                                tooltip: l10n.commonFavoriteToggle,
                                 onPressed: () => service.toggleFavorite(f.id),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.edit_outlined, size: 18),
+                                tooltip: l10n.commonRename,
                                 onPressed: () => _showRenameDialog(context, f),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                tooltip: l10n.commonDelete,
                                 onPressed: () => _confirmDelete(context, f),
                               ),
                             ],

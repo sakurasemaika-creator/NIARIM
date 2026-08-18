@@ -207,6 +207,19 @@
   "creativeAssetNameLabel": "名前",
 
   "commonAdd": "追加",
+  "commonSearch": "検索",
+  "commonEdit": "編集",
+  "commonFavoriteToggle": "お気に入り登録/解除",
+  "commonIncrease": "増やす",
+  "commonDecrease": "減らす",
+  "commonPlay": "再生",
+  "commonPause": "一時停止",
+  "fontCatalogDownloadTooltip": "フォントをダウンロード",
+  "timelineBackToCanvasTooltip": "保存してキャンバスに戻る",
+  "timelineSkipToStart": "先頭フレームへ",
+  "timelineStepBack": "1フレーム戻る",
+  "timelineStepForward": "1フレーム進む",
+  "timelineSkipToEnd": "最終フレームへ",
 
   "quickToolPanelTitle": "早替えツール設定",
   "quickToolEmpty": "登録されたツールがありません",
@@ -1046,6 +1059,9 @@
     "placeholders": {"name": {"type": "String"}}
   },
   "autofillPartGradientTypeLabel": "種類",
+  "autofillPartGradientTypeInfo": "直線：指定した角度に沿って色が変化します。放射：中央→外側は中心から外側へ、外側→中央は逆に外側から中心へ色が変化します。",
+  "autofillPartGradientFeatherInfo": "0%にすると隣り合う色の境界がくっきり分かれます。100%にすると隣の色の端まで完全になめらかに混ざります。",
+  "autofillLineColorModeTraceAdjustInfo": "元の線の色を保ったまま、色相・彩度・明度をずらして少しだけ色味を変える機能です。線を単色で塗りつぶすのではなく、線画の濃淡を活かしたい場合に使います。",
   "autofillPartGradientAngleLabel": "角度: {value}°",
   "@autofillPartGradientAngleLabel": {
     "placeholders": {"value": {"type": "int"}}

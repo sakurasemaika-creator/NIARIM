@@ -96,6 +96,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 16),
+                    tooltip: l10n.commonClose,
                     onPressed: widget.onClose,
                   ),
                 ],

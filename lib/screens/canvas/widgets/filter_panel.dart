@@ -175,9 +175,10 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.search, size: 16),
+                    tooltip: l10n.commonSearch,
                     onPressed: () => setState(() => _showSearch = !_showSearch),
                   ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
+                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               if (_showSearch)

@@ -118,11 +118,13 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             children: [
               IconButton(
                 icon: const Icon(Icons.remove),
+                tooltip: l10n.commonDecrease,
                 onPressed: hold > 1 ? () => setS(() => hold--) : null,
               ),
               Expanded(child: Center(child: Text('$hold', style: const TextStyle(fontSize: 24)))),
               IconButton(
                 icon: const Icon(Icons.add),
+                tooltip: l10n.commonIncrease,
                 onPressed: hold < 99 ? () => setS(() => hold++) : null,
               ),
             ],

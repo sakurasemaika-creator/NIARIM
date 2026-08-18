@@ -131,7 +131,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       tooltip: l10n.toolbarItemEyedropper,
                       onPressed: widget.onEyedropperTap,
                     ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), onPressed: widget.onClose),
+                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               const SizedBox(height: 8),

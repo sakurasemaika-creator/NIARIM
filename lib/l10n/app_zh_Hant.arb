@@ -173,6 +173,19 @@
   "creativeAssetNameLabel": "名稱",
 
   "commonAdd": "新增",
+  "commonSearch": "搜尋",
+  "commonEdit": "編輯",
+  "commonFavoriteToggle": "切換我的最愛",
+  "commonIncrease": "增加",
+  "commonDecrease": "減少",
+  "commonPlay": "播放",
+  "commonPause": "暫停",
+  "fontCatalogDownloadTooltip": "下載字型",
+  "timelineBackToCanvasTooltip": "儲存並返回畫布",
+  "timelineSkipToStart": "跳到第一幀",
+  "timelineStepBack": "後退一幀",
+  "timelineStepForward": "前進一幀",
+  "timelineSkipToEnd": "跳到最後一幀",
 
   "quickToolPanelTitle": "快速切換工具設定",
   "quickToolEmpty": "尚未登錄任何工具",
@@ -865,6 +878,7 @@
   "autofillLineColorModeSpecified": "指定顏色",
   "autofillLineColorModeSameAsFill": "與填色相同",
   "autofillLineColorModeTraceAdjust": "顏色描線・與線稿融合",
+  "autofillLineColorModeTraceAdjustInfo": "保留原本的線條顏色，只微調色相、飽和度、明度。想保留線稿的濃淡而不是用單色填滿線條時使用此功能。",
   "autofillGradientTypeLinear": "直線",
   "autofillGradientTypeRadialCenterOut": "放射：中央→外側",
   "autofillGradientTypeRadialOutCenter": "放射：外側→中央",
@@ -955,6 +969,8 @@
     "placeholders": {"name": {"type": "String"}}
   },
   "autofillPartGradientTypeLabel": "種類",
+  "autofillPartGradientTypeInfo": "線性：顏色沿指定角度漸變。放射：中心→外側從中心向外變化，外側→中心則相反。",
+  "autofillPartGradientFeatherInfo": "設為0%時相鄰顏色的邊界會清晰分明。設為100%時會與相鄰顏色的邊緣完全平滑混合。",
   "autofillPartGradientAngleLabel": "角度：{value}°",
   "@autofillPartGradientAngleLabel": {
     "placeholders": {"value": {"type": "int"}}

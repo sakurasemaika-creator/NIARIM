@@ -173,6 +173,19 @@
   "creativeAssetNameLabel": "Nom",
 
   "commonAdd": "Ajouter",
+  "commonSearch": "Rechercher",
+  "commonEdit": "Modifier",
+  "commonFavoriteToggle": "Basculer favori",
+  "commonIncrease": "Augmenter",
+  "commonDecrease": "Diminuer",
+  "commonPlay": "Lecture",
+  "commonPause": "Pause",
+  "fontCatalogDownloadTooltip": "Télécharger la police",
+  "timelineBackToCanvasTooltip": "Enregistrer et revenir au canevas",
+  "timelineSkipToStart": "Aller à la première image",
+  "timelineStepBack": "Reculer d'une image",
+  "timelineStepForward": "Avancer d'une image",
+  "timelineSkipToEnd": "Aller à la dernière image",
 
   "quickToolPanelTitle": "Réglages des outils rapides",
   "quickToolEmpty": "Aucun outil enregistré",
@@ -865,6 +878,7 @@
   "autofillLineColorModeSpecified": "Couleur spécifiée",
   "autofillLineColorModeSameAsFill": "Identique au remplissage",
   "autofillLineColorModeTraceAdjust": "Trace de couleur / fondu avec le trait",
+  "autofillLineColorModeTraceAdjustInfo": "Conserve la couleur d'origine du trait mais en décale légèrement la teinte, la saturation et la luminosité. À utiliser pour garder les nuances du dessin au trait plutôt que de le remplir d'une couleur unie.",
   "autofillGradientTypeLinear": "Linéaire",
   "autofillGradientTypeRadialCenterOut": "Radial : centre → extérieur",
   "autofillGradientTypeRadialOutCenter": "Radial : extérieur → centre",
@@ -955,6 +969,8 @@
     "placeholders": {"name": {"type": "String"}}
   },
   "autofillPartGradientTypeLabel": "Type",
+  "autofillPartGradientTypeInfo": "Linéaire : la couleur change selon l'angle défini. Radial centre→extérieur : les couleurs changent du centre vers l'extérieur. Radial extérieur→centre : l'inverse.",
+  "autofillPartGradientFeatherInfo": "À 0%, la limite entre les couleurs adjacentes est nette. À 100%, les couleurs se fondent complètement et en douceur jusqu'au bord de la couleur voisine.",
   "autofillPartGradientAngleLabel": "Angle : {value}°",
   "@autofillPartGradientAngleLabel": {
     "placeholders": {"value": {"type": "int"}}

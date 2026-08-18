@@ -118,6 +118,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                           size: 16,
                           color: preset.isFavorite ? Colors.amber : null,
                         ),
+                        tooltip: l10n.commonFavoriteToggle,
                         onPressed: () => themeService.toggleFavorite(preset.id),
                       ),
                       PopupMenuButton<String>(
