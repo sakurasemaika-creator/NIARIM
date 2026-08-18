@@ -374,6 +374,34 @@ class _FilterPanelState extends State<FilterPanel> {
                           _levelSlider(filterService, current, l10n.filterLevelsOutputWhite, current.outputWhite,
                               (v) => filterService.updateFilterParams(current.id, outputWhite: v)),
                         ],
+                        if (current.kind == FilterKind.sharpen)
+                          _paramSlider(
+                            filterService,
+                            l10n.filterSharpenStrength,
+                            current.strength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
+                        if (current.kind == FilterKind.unsharpMask) ...[
+                          _paramSlider(
+                            filterService,
+                            l10n.filterStrengthBlurRadius,
+                            current.strength,
+                            1,
+                            20,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterUnsharpAmount,
+                            current.edgeStrength,
+                            0,
+                            3,
+                            (v) => filterService.updateFilterParams(current.id, edgeStrength: v),
+                            decimals: 2,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -485,6 +513,8 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.outline => l10n.filterNameOutline,
         FilterKind.toneCurve => l10n.filterNameToneCurve,
         FilterKind.levels => l10n.filterNameLevels,
+        FilterKind.sharpen => l10n.filterNameSharpen,
+        FilterKind.unsharpMask => l10n.filterNameUnsharpMask,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -522,6 +552,10 @@ class _FilterPanelState extends State<FilterPanel> {
           outputBlack: filter.outputBlack,
           outputWhite: filter.outputWhite,
         );
+      case FilterKind.sharpen:
+        return _engine.applySharpen(data, width, height, filter.strength);
+      case FilterKind.unsharpMask:
+        return _engine.applyUnsharpMask(data, width, height, filter.strength, filter.edgeStrength);
     }
   }
 
@@ -539,6 +573,10 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.show_chart;
       case FilterKind.levels:
         return Icons.bar_chart;
+      case FilterKind.sharpen:
+        return Icons.filter_center_focus;
+      case FilterKind.unsharpMask:
+        return Icons.blur_off;
     }
   }
 

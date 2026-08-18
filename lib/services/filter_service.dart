@@ -39,6 +39,8 @@ class FilterService extends ChangeNotifier {
         FilterDef(id: 'Filter0004', name: 'トーンカーブ', kind: FilterKind.toneCurve),
         FilterDef(id: 'Filter0005', name: 'レベル補正', kind: FilterKind.levels),
         FilterDef(id: 'Filter0006', name: '縁取り', kind: FilterKind.outline, outlineColor: 0xFF000000, outlineWidth: 6),
+        FilterDef(id: 'Filter0007', name: 'シャープ', kind: FilterKind.sharpen, strength: 50),
+        FilterDef(id: 'Filter0008', name: 'アンシャープマスク', kind: FilterKind.unsharpMask, strength: 4, edgeStrength: 1.0),
       ];
 
   Future<void> init() async {
@@ -50,6 +52,14 @@ class FilterService extends ChangeNotifier {
       await _persist();
     } else {
       _filters.addAll(raw.map((s) => FilterDef.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      // 既存ユーザーにも新規追加した組み込みフィルター（シャープ・
+      // アンシャープマスク）を反映する（ユーザー指示により新規追加）。
+      final existingIds = _filters.map((f) => f.id).toSet();
+      final missing = _defaultFilters().where((f) => !existingIds.contains(f.id));
+      if (missing.isNotEmpty) {
+        _filters.addAll(missing);
+        await _persist();
+      }
     }
     _currentFilterId = _filters.firstOrNull?.id;
   }

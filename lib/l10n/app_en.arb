@@ -836,6 +836,10 @@
   "filterNameOutline": "Outline",
   "filterNameToneCurve": "Tone Curve",
   "filterNameLevels": "Levels",
+  "filterNameSharpen": "Sharpen",
+  "filterNameUnsharpMask": "Unsharp Mask",
+  "filterSharpenStrength": "Sharpen strength",
+  "filterUnsharpAmount": "Amount",
   "filterOutlineLayerNameSuffix": "{name} (Outline)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

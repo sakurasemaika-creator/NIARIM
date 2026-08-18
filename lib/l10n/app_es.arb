@@ -836,6 +836,10 @@
   "filterNameOutline": "Contorno",
   "filterNameToneCurve": "Curva de tonos",
   "filterNameLevels": "Niveles",
+  "filterNameSharpen": "Enfoque",
+  "filterNameUnsharpMask": "Máscara de enfoque",
+  "filterSharpenStrength": "Intensidad de enfoque",
+  "filterUnsharpAmount": "Intensidad",
   "filterOutlineLayerNameSuffix": "{name} (Contorno)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

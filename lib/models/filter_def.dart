@@ -3,7 +3,11 @@
 /// toneCurve・levelsはプレミアム限定（仕様書01・13・20）。
 /// outline：選択レイヤーの描画内容（不透明部分）の周囲を指定色・指定px幅で
 /// 縁取る（ユーザー指示により新規追加）。
-enum FilterKind { gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels }
+/// sharpen：3x3カーネルによるシャープ化。unsharpMask：ぼかしとの差分を
+/// 使った強めのシャープ化（アンシャープマスク）。いずれも小さな畳み込み
+/// カーネル・既存のガウスぼかし1回分程度の負荷しかなく、低スペック端末
+/// でも軽く動作する（ユーザー確認済みの上で新規追加）。
+enum FilterKind { gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
 /// 本格的な自由曲線編集の代わりに、よく使う形状をプリセットとして提供する。
@@ -15,10 +19,13 @@ enum ToneCurvePreset { linear, brighten, darken, highContrast, lowContrast, inve
 /// そのまま渡される）：
 /// - gaussianBlur / lensBlur：ぼかし半径（px、1〜20）
 /// - animeStyle：現状FilterEngine内では未使用（将来の強さ調整用に保持）
+/// - sharpen：シャープ化の強さ（0〜100%）
+/// - unsharpMask：ぼかし半径（px、1〜20。gaussianBlurと同じ意味）
 ///
-/// [colorLevels]・[edgeStrength]はanimeStyleのみで使用する
-/// （edgeStrengthはSobelエッジ強度（0〜255程度）へ掛ける係数のため、
-/// 0.0〜1.0程度の小さい値を想定）。
+/// [colorLevels]はanimeStyleのみで使用する。
+/// [edgeStrength]はanimeStyle（Sobelエッジ強度（0〜255程度）へ掛ける係数、
+/// 0.0〜1.0程度の小さい値を想定）とunsharpMask（アンシャープマスクの
+/// かかり具合。0.0〜3.0程度、既定1.0）の両方で使用する。
 /// [outlineColor]・[outlineWidth]はoutlineのみで使用する。outlineColorは
 /// ARGB32形式のint値（他のパラメータと同様プリミティブ型のみで構成し、
 /// compute()でのisolate越え受け渡しでも安全なようにしている。dart:ui.Colorへの

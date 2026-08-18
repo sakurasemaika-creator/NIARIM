@@ -40,6 +40,9 @@ Uint8List applyDrawFilterInIsolate(
         outputBlack: filter.outputBlack,
         outputWhite: filter.outputWhite,
       ),
+    FilterKind.sharpen => engine.applySharpen(data, width, height, filter.strength),
+    FilterKind.unsharpMask =>
+      engine.applyUnsharpMask(data, width, height, filter.strength, filter.edgeStrength),
   };
 }
 
@@ -97,6 +100,57 @@ class FilterEngine {
     final kernel = _gaussianKernel(radius);
     final tmp = _convolveH(data, width, height, kernel);
     return _convolveV(tmp, width, height, kernel);
+  }
+
+  /// シャープ化：3x3の固定小カーネルによる畳み込み（負荷はガウスぼかし
+  /// 半径1回分よりさらに軽い）。[strength]は0〜100（%）で、カーネルの
+  /// かかり具合を調整する。中心画素の重みを上げ、上下左右の重みを下げる
+  /// 古典的なシャープカーネルの応用。アルファは変化させない（線画の輪郭を
+  /// 崩さないため）。
+  Uint8List applySharpen(Uint8List data, int width, int height, double strength) {
+    final amount = (strength / 100.0).clamp(0.0, 2.0);
+    if (amount <= 0) return Uint8List.fromList(data);
+    final result = Uint8List.fromList(data);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        final idx = (y * width + x) * 4;
+        if (data[idx + 3] == 0) continue;
+        for (int c = 0; c < 3; c++) {
+          final center = data[idx + c];
+          double sum = 0;
+          int n = 0;
+          if (y > 0) { sum += data[((y - 1) * width + x) * 4 + c]; n++; }
+          if (y < height - 1) { sum += data[((y + 1) * width + x) * 4 + c]; n++; }
+          if (x > 0) { sum += data[(y * width + x - 1) * 4 + c]; n++; }
+          if (x < width - 1) { sum += data[(y * width + x + 1) * 4 + c]; n++; }
+          final neighborAvg = n > 0 ? sum / n : center.toDouble();
+          final sharpened = center + amount * (center - neighborAvg);
+          result[idx + c] = sharpened.round().clamp(0, 255);
+        }
+      }
+    }
+    return result;
+  }
+
+  /// アンシャープマスク：元画像からガウスぼかし版を引いた差分（＝輪郭付近の
+  /// 高周波成分）を[amount]倍して元画像へ加算する、写真編集ソフトでも定番の
+  /// シャープ化手法。内部で使うガウスぼかしは既存のapplyGaussianBlurと同じ
+  /// 実装のため、負荷はガウスぼかしフィルター1回分＋差分計算のみで軽い。
+  /// [radiusStrength]はぼかし半径（px、1〜20。gaussianBlurと同じ意味）、
+  /// [amount]はかかり具合（0.0〜3.0程度、既定1.0）。
+  Uint8List applyUnsharpMask(Uint8List data, int width, int height, double radiusStrength, double amount) {
+    final blurred = applyGaussianBlur(data, width, height, radiusStrength);
+    final result = Uint8List.fromList(data);
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      for (int c = 0; c < 3; c++) {
+        final orig = data[i + c];
+        final blur = blurred[i + c];
+        final sharpened = orig + amount * (orig - blur);
+        result[i + c] = sharpened.round().clamp(0, 255);
+      }
+    }
+    return result;
   }
 
   Uint8List applyLensBlur(Uint8List data, int width, int height, double strength) {

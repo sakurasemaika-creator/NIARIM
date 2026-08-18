@@ -927,6 +927,10 @@
   "filterNameOutline": "縁取り",
   "filterNameToneCurve": "トーンカーブ",
   "filterNameLevels": "レベル補正",
+  "filterNameSharpen": "シャープ",
+  "filterNameUnsharpMask": "アンシャープマスク",
+  "filterSharpenStrength": "シャープの強さ",
+  "filterUnsharpAmount": "かかり具合",
   "filterOutlineLayerNameSuffix": "{name}（縁取り）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

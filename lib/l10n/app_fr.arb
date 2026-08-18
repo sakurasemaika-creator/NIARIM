@@ -836,6 +836,10 @@
   "filterNameOutline": "Contour",
   "filterNameToneCurve": "Courbe de tons",
   "filterNameLevels": "Niveaux",
+  "filterNameSharpen": "Netteté",
+  "filterNameUnsharpMask": "Masque flou",
+  "filterSharpenStrength": "Force de netteté",
+  "filterUnsharpAmount": "Intensité",
   "filterOutlineLayerNameSuffix": "{name} (Contour)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

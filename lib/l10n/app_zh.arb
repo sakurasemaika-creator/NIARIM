@@ -836,6 +836,10 @@
   "filterNameOutline": "描边",
   "filterNameToneCurve": "色调曲线",
   "filterNameLevels": "色阶",
+  "filterNameSharpen": "锐化",
+  "filterNameUnsharpMask": "USM锐化",
+  "filterSharpenStrength": "锐化强度",
+  "filterUnsharpAmount": "强度",
   "filterOutlineLayerNameSuffix": "{name}（描边）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

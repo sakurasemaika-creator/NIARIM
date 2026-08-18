@@ -836,6 +836,10 @@
   "filterNameOutline": "테두리",
   "filterNameToneCurve": "톤 커브",
   "filterNameLevels": "레벨 보정",
+  "filterNameSharpen": "선명하게",
+  "filterNameUnsharpMask": "언샤프 마스크",
+  "filterSharpenStrength": "선명도 강도",
+  "filterUnsharpAmount": "적용 강도",
   "filterOutlineLayerNameSuffix": "{name}(테두리)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
