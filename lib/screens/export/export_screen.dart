@@ -7,6 +7,7 @@ import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
@@ -103,7 +104,14 @@ class _ExportScreenState extends State<ExportScreen> {
                                     onChanged: (v) => setState(() => _customFps = v.round()),
                                   ),
                                 ),
-                                SizedBox(width: 36, child: Text('$_customFps', textAlign: TextAlign.center)),
+                                SizedBox(
+                                  width: 36,
+                                  child: EditableSliderValue(
+                                    text: '$_customFps', textAlign: TextAlign.center,
+                                    value: _customFps, min: 12, max: 60,
+                                    onChanged: (v) => setState(() => _customFps = v.round()),
+                                  ),
+                                ),
                               ],
                             ),
                           ],

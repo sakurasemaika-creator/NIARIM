@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../services/premium_service.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -283,7 +284,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       SizedBox(
                         width: 48,
-                        child: Text(l10n.settingsScaleValue(scale.toStringAsFixed(1)), textAlign: TextAlign.center),
+                        child: EditableSliderValue(
+                          text: l10n.settingsScaleValue(scale.toStringAsFixed(1)),
+                          textAlign: TextAlign.center,
+                          value: scale, min: 1.0, max: 10.0, isInt: false,
+                          onChanged: (v) {
+                            setS(() => scale = v.toDouble());
+                            settings.setDefaultDrawingArea(enabled: enabled, scale: v.toDouble());
+                          },
+                        ),
                       ),
                     ],
                   ),

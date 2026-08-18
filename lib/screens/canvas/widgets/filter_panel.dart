@@ -13,6 +13,7 @@ import '../../../models/layer.dart' as model;
 import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
 import 'color_picker_panel.dart';
@@ -443,7 +444,15 @@ class _FilterPanelState extends State<FilterPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$label: $valueLabel', style: const TextStyle(fontSize: 11)),
+          EditableSliderValue(
+            text: '$label: $valueLabel',
+            style: const TextStyle(fontSize: 11),
+            value: value, min: min, max: max, isInt: decimals == 0,
+            onChanged: (v) {
+              onChanged(v.toDouble());
+              _updatePreview();
+            },
+          ),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               trackHeight: 2,

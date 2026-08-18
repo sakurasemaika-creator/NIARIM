@@ -12,6 +12,7 @@ import '../../models/layer.dart' show LayerBlendMode;
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
 import '../../widgets/square_image_crop_dialog.dart';
@@ -847,7 +848,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       label: Text(current.gradient == null ? l10n.autofillPartGradientSetButton : l10n.autofillPartGradientEditButton,
                           style: const TextStyle(fontSize: 12)),
                     ),
-                    Text(l10n.autofillPartFillOpacityLabel(current.opacity), style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: l10n.autofillPartFillOpacityLabel(current.opacity),
+                      style: const TextStyle(fontSize: 12),
+                      value: current.opacity, min: 0, max: 100,
+                      title: l10n.autofillPartFillOpacityLabel(current.opacity),
+                      onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
+                    ),
                     Slider(
                       value: current.opacity.toDouble(),
                       min: 0, max: 100, divisions: 100,
@@ -891,23 +898,43 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                     ],
                     if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
-                      Text(l10n.autofillPartTraceHueLabel(current.traceHue.round()), style: const TextStyle(fontSize: 11)),
+                      EditableSliderValue(
+                        text: l10n.autofillPartTraceHueLabel(current.traceHue.round()),
+                        style: const TextStyle(fontSize: 11),
+                        value: current.traceHue, min: -180, max: 180, isInt: false,
+                        onChanged: (v) => setS(() => current = current.copyWith(traceHue: v.toDouble())),
+                      ),
                       Slider(
                         value: current.traceHue, min: -180, max: 180,
                         onChanged: (v) => setS(() => current = current.copyWith(traceHue: v)),
                       ),
-                      Text(l10n.autofillPartTraceSaturationLabel(current.traceSaturation.round()), style: const TextStyle(fontSize: 11)),
+                      EditableSliderValue(
+                        text: l10n.autofillPartTraceSaturationLabel(current.traceSaturation.round()),
+                        style: const TextStyle(fontSize: 11),
+                        value: current.traceSaturation, min: 0, max: 100, isInt: false,
+                        onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v.toDouble())),
+                      ),
                       Slider(
                         value: current.traceSaturation, min: 0, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v)),
                       ),
-                      Text(l10n.autofillPartTraceLightnessLabel(current.traceLightness.round()), style: const TextStyle(fontSize: 11)),
+                      EditableSliderValue(
+                        text: l10n.autofillPartTraceLightnessLabel(current.traceLightness.round()),
+                        style: const TextStyle(fontSize: 11),
+                        value: current.traceLightness, min: -100, max: 100, isInt: false,
+                        onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v.toDouble())),
+                      ),
                       Slider(
                         value: current.traceLightness, min: -100, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v)),
                       ),
                     ],
-                    Text(l10n.autofillPartLineOpacityLabel(current.lineOpacity), style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: l10n.autofillPartLineOpacityLabel(current.lineOpacity),
+                      style: const TextStyle(fontSize: 12),
+                      value: current.lineOpacity, min: 0, max: 100,
+                      onChanged: (v) => setS(() => current = current.copyWith(lineOpacity: v.round())),
+                    ),
                     Slider(
                       value: current.lineOpacity.toDouble(),
                       min: 0, max: 100, divisions: 100,
@@ -1116,7 +1143,36 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    // プレビュー直下に各色の切り替え位置（stops）に対応する三角形の
+                    // ハンドルを表示し、直接ドラッグして位置を調整できるようにする
+                    // （ユーザー指摘：個別スライダーより直感的）。
+                    SizedBox(
+                      height: 14,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            for (int i = 0; i < gradient.stops.length; i++)
+                              Positioned(
+                                left: gradient.stops[i] * constraints.maxWidth - 7,
+                                top: 0,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onHorizontalDragUpdate: (d) => setStopAt(
+                                      i, gradient.stops[i] + d.delta.dx / constraints.maxWidth),
+                                  child: CustomPaint(
+                                    size: const Size(14, 12),
+                                    painter: _StopHandlePainter(color: Color(gradient.colors[i])),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Text(l10n.autofillPartGradientStopDragHint,
+                        style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    const SizedBox(height: 8),
                     Text(l10n.autofillPartGradientTypeLabel, style: const TextStyle(fontSize: 12)),
                     Wrap(
                       spacing: 6,
@@ -1130,7 +1186,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ),
                     if (gradient.type == AutofillGradientType.linear) ...[
                       const SizedBox(height: 8),
-                      Text(l10n.autofillPartGradientAngleLabel(gradient.angle.round()), style: const TextStyle(fontSize: 12)),
+                      EditableSliderValue(
+                        text: l10n.autofillPartGradientAngleLabel(gradient.angle.round()),
+                        style: const TextStyle(fontSize: 12),
+                        value: gradient.angle, min: 0, max: 359,
+                        onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v.toDouble())),
+                      ),
                       Slider(
                         value: gradient.angle,
                         min: 0, max: 359,
@@ -1140,8 +1201,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     const SizedBox(height: 8),
                     // ぼかしの強さ（仕様書20）：0%＝境界がはっきりした帯状、
                     // 100%＝従来通りの滑らかなブレンド。
-                    Text(l10n.autofillPartGradientFeatherLabel((gradient.feather * 100).round()),
-                        style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: l10n.autofillPartGradientFeatherLabel((gradient.feather * 100).round()),
+                      style: const TextStyle(fontSize: 12),
+                      value: (gradient.feather * 100).round(), min: 0, max: 100,
+                      onChanged: (v) => setS(() => gradient = gradient.copyWith(feather: v / 100)),
+                    ),
                     Slider(
                       value: gradient.feather,
                       min: 0, max: 1,
@@ -1213,26 +1278,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                 tooltip: l10n.autofillEyedropperFromThumbnailButton,
                                 onPressed: () => _pickColorFromNewImage((c) => setColorAt(i, c.toARGB32())),
                               ),
+                              // 切り替え位置はプレビュー直下の三角形ハンドルを直接
+                              // ドラッグして調整する方が直感的なため、ここでは現在値の
+                              // 参考表示のみ行う（ユーザー指摘）。
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      l10n.autofillPartGradientStopLabel((gradient.stops[i] * 100).round()),
-                                      style: const TextStyle(fontSize: 10),
-                                    ),
-                                    SliderTheme(
-                                      data: SliderTheme.of(context).copyWith(
-                                        trackHeight: 2,
-                                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                      ),
-                                      child: Slider(
-                                        value: gradient.stops[i],
-                                        min: 0, max: 1,
-                                        onChanged: (v) => setStopAt(i, v),
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  l10n.autofillPartGradientStopLabel((gradient.stops[i] * 100).round()),
+                                  style: const TextStyle(fontSize: 10),
                                 ),
                               ),
                               IconButton(
@@ -1353,6 +1405,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     if (colorsInt.length < 2) {
       return (colors: colorsInt.map(Color.new).toList(), stops: stopsIn);
     }
+    // 100%（最大）は隣の色の端まで完全に混ざり切る、元のstopsそのままの
+    // 単純な線形補間にする（ユーザー指示）。帯計算を経由しないため誤差なく
+    // 確実に端まで混ざる。
+    if (feather.clamp(0.0, 1.0) >= 0.999) {
+      return (colors: colorsInt.map(Color.new).toList(), stops: stopsIn);
+    }
     final outColors = <Color>[];
     final outStops = <double>[];
     void addPoint(double stop, Color color) {
@@ -1422,4 +1480,28 @@ class _CheckerboardPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _CheckerboardPainter oldDelegate) => false;
+}
+
+/// グラデーションの切り替え位置（stops）を表す三角形ハンドル（仕様書20：
+/// プレビュー直下でドラッグして直接位置調整できるようにする）。
+class _StopHandlePainter extends CustomPainter {
+  final Color color;
+  const _StopHandlePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+    canvas.drawPath(path, Paint()
+      ..color = Colors.black54
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1);
+  }
+
+  @override
+  bool shouldRepaint(covariant _StopHandlePainter oldDelegate) => oldDelegate.color != color;
 }

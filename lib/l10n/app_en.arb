@@ -636,6 +636,7 @@
   "colorPickerNewPaletteTooltip": "New palette",
   "colorPickerManagePaletteTooltip": "Manage palette",
   "colorPickerPaletteEmptyHint": "No colors yet. Tap \"+\" to add the current color.",
+  "colorPickerPaletteLongPressHint": "Long-press to remove",
   "colorPickerAddCurrentColorButton": "Add current color to palette",
   "colorPickerPaletteNameLabel": "Palette name",
   "colorPickerFavoriteAdd": "Add to favorites",
@@ -971,6 +972,7 @@
   "@autofillPartGradientStopLabel": {
     "placeholders": {"value": {"type": "int"}}
   },
+  "autofillPartGradientStopDragHint": "Drag the ▲ markers left or right to adjust each color's position",
   "timelineExportMenuItem": "Export",
   "saveTreeScreenTitleTree": "Save Tree",
   "saveTreeScreenTitleSlot": "Save Slots",

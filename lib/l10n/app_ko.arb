@@ -636,6 +636,7 @@
   "colorPickerNewPaletteTooltip": "새 팔레트",
   "colorPickerManagePaletteTooltip": "팔레트 관리",
   "colorPickerPaletteEmptyHint": "아직 색상이 없습니다. 「＋」를 눌러 현재 색상을 추가할 수 있습니다.",
+  "colorPickerPaletteLongPressHint": "길게 눌러 삭제할 수 있습니다",
   "colorPickerAddCurrentColorButton": "현재 색상을 팔레트에 추가",
   "colorPickerPaletteNameLabel": "팔레트 이름",
   "colorPickerFavoriteAdd": "즐겨찾기 등록",
@@ -971,6 +972,7 @@
   "@autofillPartGradientStopLabel": {
     "placeholders": {"value": {"type": "int"}}
   },
+  "autofillPartGradientStopDragHint": "▲ 표시를 좌우로 드래그하여 각 색상의 위치를 조정할 수 있습니다",
   "saveTreeScreenTitleTree": "세이브 트리",
   "saveTreeScreenTitleSlot": "세이브 슬롯",
   "timelineExportMenuItem": "내보내기",

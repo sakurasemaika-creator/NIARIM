@@ -15,6 +15,7 @@ import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/tone_service.dart';
+import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 
 class LayerPanel extends StatefulWidget {
@@ -1088,7 +1089,12 @@ class _LayerPanelState extends State<LayerPanel> {
                         ),
                       ),
                     ),
-                    Text('${layer.opacity}%', style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: '${layer.opacity}%',
+                      style: const TextStyle(fontSize: 12),
+                      value: layer.opacity, min: 0, max: 100,
+                      onChanged: (v) => update((l) => l.copyWith(opacity: v.round())),
+                    ),
                   ],
                 ),
               ),

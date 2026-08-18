@@ -262,8 +262,10 @@ class AutofillEngine {
   }
 
   /// [feather]（0.0〜1.0）：1.0なら隣接する2色の境界（stops[i]〜stops[i+1]）
-  /// 全体を使って滑らかにブレンドする（従来通り）。値を下げるほど境界の
-  /// 中央付近だけで急に切り替わる帯状表示に近づく（仕様書20：ぼかしの強さ）。
+  /// の全区間を使い、隣の色の端（stops[i+1]）まで完全に混ざり切る滑らかな
+  /// ブレンドにする（ユーザー指示：「ぼかし100%は隣の色の端まで完全に混ざる
+  /// 状態」）。値を下げるほど境界の中央付近だけで急に切り替わる帯状表示に
+  /// 近づき、0では中間色を持たない完全な帯（ハードエッジ）になる（仕様書20）。
   int _sampleGradient(List<int> colors, List<double> stops, double t, [double feather = 1.0]) {
     if (colors.isEmpty) return 0xFF000000;
     if (colors.length == 1) return colors.first;
@@ -272,8 +274,17 @@ class AutofillEngine {
     for (int i = 0; i < stops.length - 1; i++) {
       if (t >= stops[i] && t <= stops[i + 1]) {
         final s0 = stops[i], s1 = stops[i + 1];
+        final clampedFeather = feather.clamp(0.0, 1.0);
+        // 100%（最大）は素直に区間全体を使った線形補間そのものにする
+        // （帯計算の丸め等による誤差の余地をなくし、確実に端まで混ざり切る
+        // ようにするため）。
+        if (clampedFeather >= 0.999) {
+          final range = s1 - s0;
+          final localT = range > 0 ? (t - s0) / range : 0.0;
+          return _lerpColor(colors[i], colors[i + 1], localT);
+        }
         final mid = (s0 + s1) / 2;
-        final halfBand = (s1 - s0) / 2 * feather.clamp(0.0, 1.0);
+        final halfBand = (s1 - s0) / 2 * clampedFeather;
         if (halfBand <= 1e-6) {
           return t < mid ? colors[i] : colors[i + 1];
         }

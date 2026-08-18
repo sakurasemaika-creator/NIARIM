@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/stamp.dart';
 import '../../../services/stamp_service.dart';
+import '../../../widgets/editable_slider_value.dart';
 import 'creative_folder_sheets.dart';
 
 /// スタンプの全機能管理パネル（仕様書17：一覧・お気に入り・検索・
@@ -365,7 +366,15 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
       children: [
         SizedBox(width: 60, child: Text(label, style: const TextStyle(fontSize: 12))),
         Expanded(child: Slider(min: min, max: max, value: value.clamp(min, max), onChanged: onChanged)),
-        SizedBox(width: 40, child: Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 12))),
+        SizedBox(
+          width: 40,
+          child: EditableSliderValue(
+            text: value.toStringAsFixed(1),
+            style: const TextStyle(fontSize: 12),
+            value: value, min: min, max: max, isInt: false,
+            onChanged: (v) => onChanged(v.toDouble()),
+          ),
+        ),
       ],
     );
   }

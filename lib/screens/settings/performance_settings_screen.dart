@@ -6,6 +6,7 @@ import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../save_tree/save_tree_screen.dart';
 import '../../widgets/help_button.dart';
@@ -438,7 +439,12 @@ class _PerformanceSettingsScreenState
         ),
         SizedBox(
             width: 40,
-            child: Text(l10n.perfSettingsOnionFrameCountValue(value), style: const TextStyle(fontSize: 12))),
+            child: EditableSliderValue(
+              text: l10n.perfSettingsOnionFrameCountValue(value),
+              style: const TextStyle(fontSize: 12),
+              value: value, min: 1, max: 10,
+              onChanged: (v) => onChanged(v.round()),
+            )),
       ],
     );
   }
@@ -525,8 +531,15 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
         ),
         SizedBox(
             width: 40,
-            child: Text(l10n.perfSettingsSlotCountValue(_draft.round()),
-                style: const TextStyle(fontSize: 12))),
+            child: EditableSliderValue(
+              text: l10n.perfSettingsSlotCountValue(_draft.round()),
+              style: const TextStyle(fontSize: 12),
+              value: _draft.round(), min: 1, max: 20,
+              onChanged: (v) {
+                setState(() => _draft = v.toDouble());
+                widget.onChangeEnd(v.round());
+              },
+            )),
       ],
     );
   }

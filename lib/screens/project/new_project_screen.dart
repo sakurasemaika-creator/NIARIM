@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 
@@ -253,6 +254,14 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     onChanged: (v) => _setCustomSize(width: v.round()),
                   ),
                 ),
+                SizedBox(
+                  width: 56,
+                  child: EditableSliderValue(
+                    text: '${_exportWidth}px', textAlign: TextAlign.center,
+                    value: _exportWidth, min: 64, max: _maxCustomEdge,
+                    onChanged: (v) => _setCustomSize(width: v.round()),
+                  ),
+                ),
               ]),
               Row(children: [
                 SizedBox(width: 56, child: Text(l10n.newProjectHeightShort, textAlign: TextAlign.center)),
@@ -261,6 +270,14 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     min: 64, max: _maxCustomEdge.toDouble(),
                     value: _exportHeight.clamp(64, _maxCustomEdge).toDouble(),
                     label: '${_exportHeight}px',
+                    onChanged: (v) => _setCustomSize(height: v.round()),
+                  ),
+                ),
+                SizedBox(
+                  width: 56,
+                  child: EditableSliderValue(
+                    text: '${_exportHeight}px', textAlign: TextAlign.center,
+                    value: _exportHeight, min: 64, max: _maxCustomEdge,
                     onChanged: (v) => _setCustomSize(height: v.round()),
                   ),
                 ),
@@ -420,7 +437,12 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   ),
                   SizedBox(
                     width: 48,
-                    child: Text(l10n.newProjectScaleValue(_drawingAreaScale.toStringAsFixed(1)), textAlign: TextAlign.center),
+                    child: EditableSliderValue(
+                      text: l10n.newProjectScaleValue(_drawingAreaScale.toStringAsFixed(1)),
+                      textAlign: TextAlign.center,
+                      value: _drawingAreaScale, min: 1.0, max: 10.0, isInt: false,
+                      onChanged: (v) => setState(() => _drawingAreaScale = v.toDouble()),
+                    ),
                   ),
                 ],
               ),

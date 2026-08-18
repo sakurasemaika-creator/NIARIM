@@ -12,6 +12,7 @@ import '../../services/performance_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/first_use_tooltip.dart';
 import '../../engine/text_render.dart';
@@ -1086,7 +1087,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         onChanged: (v) => setS(() => fontSize = v),
                       ),
                     ),
-                    Text('${fontSize.round()}', style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: '${fontSize.round()}',
+                      style: const TextStyle(fontSize: 12),
+                      value: fontSize, min: 8, max: 200,
+                      onChanged: (v) => setS(() => fontSize = v.toDouble()),
+                    ),
                   ],
                 ),
                 Row(
@@ -1156,7 +1162,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         onChanged: (v) => setS(() => lineHeight = v),
                       ),
                     ),
-                    Text(lineHeight.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: lineHeight.toStringAsFixed(1),
+                      style: const TextStyle(fontSize: 12),
+                      value: lineHeight, min: 0.8, max: 3.0, isInt: false,
+                      onChanged: (v) => setS(() => lineHeight = v.toDouble()),
+                    ),
                   ],
                 ),
                 Row(
@@ -1169,7 +1180,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         onChanged: (v) => setS(() => letterSpacing = v),
                       ),
                     ),
-                    Text(letterSpacing.toStringAsFixed(0), style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: letterSpacing.toStringAsFixed(0),
+                      style: const TextStyle(fontSize: 12),
+                      value: letterSpacing, min: -2, max: 20,
+                      onChanged: (v) => setS(() => letterSpacing = v.toDouble()),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1223,7 +1239,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           onChanged: (v) => setS(() => outlineWidth = v),
                         ),
                       ),
-                      Text('${outlineWidth.round()}', style: const TextStyle(fontSize: 12)),
+                      EditableSliderValue(
+                        text: '${outlineWidth.round()}',
+                        style: const TextStyle(fontSize: 12),
+                        value: outlineWidth, min: 0, max: 20,
+                        onChanged: (v) => setS(() => outlineWidth = v.toDouble()),
+                      ),
                     ],
                   ),
                 ],

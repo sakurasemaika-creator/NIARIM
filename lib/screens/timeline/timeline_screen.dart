@@ -34,6 +34,7 @@ import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/first_use_tooltip.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
@@ -2485,7 +2486,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         onChanged: (v) => setS(() => angle = v),
                       ),
                     ),
-                    Text('${angle.round()}°', style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: '${angle.round()}°',
+                      style: const TextStyle(fontSize: 12),
+                      value: angle, min: -180, max: 180,
+                      onChanged: (v) => setS(() => angle = v.toDouble()),
+                    ),
                   ],
                 ),
                 Text(l10n.timelineWatermarkSizeLabel, style: const TextStyle(fontSize: 12)),
@@ -2499,7 +2505,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         onChanged: (v) => setS(() => scale = v),
                       ),
                     ),
-                    Text('${(scale * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: '${(scale * 100).round()}%',
+                      style: const TextStyle(fontSize: 12),
+                      value: (scale * 100).round(), min: 5, max: 100,
+                      onChanged: (v) => setS(() => scale = v / 100),
+                    ),
                   ],
                 ),
                 Text(l10n.timelineWatermarkOpacityLabel, style: const TextStyle(fontSize: 12)),
@@ -2513,7 +2524,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         onChanged: (v) => setS(() => opacity = v),
                       ),
                     ),
-                    Text('${(opacity * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                    EditableSliderValue(
+                      text: '${(opacity * 100).round()}%',
+                      style: const TextStyle(fontSize: 12),
+                      value: (opacity * 100).round(), min: 0, max: 100,
+                      onChanged: (v) => setS(() => opacity = v / 100),
+                    ),
                   ],
                 ),
                 SwitchListTile(
@@ -2770,7 +2786,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   onChanged: (v) => setS(() => length = v.round()),
                 ),
               ),
-              Text(l10n.timelineSecondsLabel(length)),
+              EditableSliderValue(
+                text: l10n.timelineSecondsLabel(length),
+                value: length, min: 1, max: 15,
+                onChanged: (v) => setS(() => length = v.round()),
+              ),
             ],
           ),
           actions: [
@@ -2885,7 +2905,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       onChanged: (v) => setS(() => start = v.round()),
                     ),
                   ),
-                  Text('F${start + 1}', style: const TextStyle(fontSize: 11)),
+                  EditableSliderValue(
+                    text: 'F${start + 1}',
+                    style: const TextStyle(fontSize: 11),
+                    value: start + 1, min: 1, max: _totalFrames,
+                    onChanged: (v) => setS(() => start = v.round() - 1),
+                  ),
                 ],
               ),
               Row(
@@ -2902,7 +2927,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       onChanged: (v) => setS(() => length = v.round()),
                     ),
                   ),
-                  Text('${length}F', style: const TextStyle(fontSize: 11)),
+                  EditableSliderValue(
+                    text: '${length}F',
+                    style: const TextStyle(fontSize: 11),
+                    value: length, min: 1, max: _totalFrames,
+                    onChanged: (v) => setS(() => length = v.round()),
+                  ),
                 ],
               ),
             ],
@@ -3766,7 +3796,15 @@ class _EffectFilterSheet extends StatelessWidget {
             onChanged: (v) => onChanged(v.round()),
           ),
         ),
-        SizedBox(width: 36, child: Text('F${value + 1}', style: const TextStyle(fontSize: 11))),
+        SizedBox(
+          width: 36,
+          child: EditableSliderValue(
+            text: 'F${value + 1}',
+            style: const TextStyle(fontSize: 11),
+            value: value + 1, min: min + 1, max: max + 1,
+            onChanged: (v) => onChanged(v.round() - 1),
+          ),
+        ),
       ],
     );
   }
@@ -3787,7 +3825,15 @@ class _EffectFilterSheet extends StatelessWidget {
               onChanged: (v) => _update(context, e.copyWith(param1: v)),
             ),
           ),
-          SizedBox(width: 36, child: Text(e.param1.round().toString(), style: const TextStyle(fontSize: 11))),
+          SizedBox(
+            width: 36,
+            child: EditableSliderValue(
+              text: e.param1.round().toString(),
+              style: const TextStyle(fontSize: 11),
+              value: e.param1, min: 1, max: maxVal,
+              onChanged: (v) => _update(context, e.copyWith(param1: v.toDouble())),
+            ),
+          ),
         ],
       ),
     ];
@@ -3975,7 +4021,16 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               onChanged: onChanged,
             ),
           ),
-          SizedBox(width: 48, child: Text(valueText, style: const TextStyle(fontSize: 11), textAlign: TextAlign.right)),
+          SizedBox(
+            width: 48,
+            child: EditableSliderValue(
+              text: valueText,
+              style: const TextStyle(fontSize: 11),
+              textAlign: TextAlign.right,
+              value: value, min: min, max: max, isInt: false,
+              onChanged: (v) => onChanged(v.toDouble()),
+            ),
+          ),
         ],
       ),
     );
@@ -4097,8 +4152,16 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                           onChanged: (v) => _update(_kf.copyWith(frameIndex: v.round())),
                         ),
                       ),
-                      SizedBox(width: 48, child: Text('F${_kf.frameIndex + 1}',
-                          style: const TextStyle(fontSize: 11), textAlign: TextAlign.right)),
+                      SizedBox(
+                        width: 48,
+                        child: EditableSliderValue(
+                          text: 'F${_kf.frameIndex + 1}',
+                          style: const TextStyle(fontSize: 11),
+                          textAlign: TextAlign.right,
+                          value: _kf.frameIndex + 1, min: 1, max: widget.totalFrames,
+                          onChanged: (v) => _update(_kf.copyWith(frameIndex: v.round() - 1)),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -4126,7 +4189,16 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
               onChanged: onChanged,
             ),
           ),
-          SizedBox(width: 56, child: Text(valueText, style: const TextStyle(fontSize: 11), textAlign: TextAlign.right)),
+          SizedBox(
+            width: 56,
+            child: EditableSliderValue(
+              text: valueText,
+              style: const TextStyle(fontSize: 11),
+              textAlign: TextAlign.right,
+              value: value, min: min, max: max, isInt: false,
+              onChanged: (v) => onChanged(v.toDouble()),
+            ),
+          ),
         ],
       ),
     );

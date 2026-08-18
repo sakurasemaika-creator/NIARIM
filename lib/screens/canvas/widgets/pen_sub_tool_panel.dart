@@ -5,6 +5,7 @@ import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../models/stamp.dart';
+import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 
@@ -323,7 +324,12 @@ class _StampTab extends StatelessWidget {
                       onChanged: (v) => setS(() => density = v),
                     ),
                   ),
-                  Text('${(density * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                  EditableSliderValue(
+                    text: '${(density * 100).round()}%',
+                    style: const TextStyle(fontSize: 12),
+                    value: (density * 100).round(), min: 10, max: 100,
+                    onChanged: (v) => setS(() => density = v / 100.0),
+                  ),
                 ],
               ),
               Row(
@@ -336,7 +342,12 @@ class _StampTab extends StatelessWidget {
                       onChanged: (v) => setS(() => scatter = v),
                     ),
                   ),
-                  Text('${(scatter * 100).round()}%', style: const TextStyle(fontSize: 12)),
+                  EditableSliderValue(
+                    text: '${(scatter * 100).round()}%',
+                    style: const TextStyle(fontSize: 12),
+                    value: (scatter * 100).round(), min: 0, max: 100,
+                    onChanged: (v) => setS(() => scatter = v / 100.0),
+                  ),
                 ],
               ),
             ],

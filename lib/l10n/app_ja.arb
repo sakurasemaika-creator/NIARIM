@@ -727,6 +727,7 @@
   "colorPickerNewPaletteTooltip": "新しいパレット",
   "colorPickerManagePaletteTooltip": "パレット管理",
   "colorPickerPaletteEmptyHint": "色がまだありません。「＋」で現在の色を追加できます。",
+  "colorPickerPaletteLongPressHint": "長押しで削除できます",
   "colorPickerAddCurrentColorButton": "現在の色をパレットに追加",
   "colorPickerPaletteNameLabel": "パレット名",
   "colorPickerFavoriteAdd": "お気に入り登録",
@@ -1062,6 +1063,7 @@
   "@autofillPartGradientStopLabel": {
     "placeholders": {"value": {"type": "int"}}
   },
+  "autofillPartGradientStopDragHint": "▲を左右にドラッグして色の切り替え位置を調整できます",
   "saveTreeScreenTitleTree": "セーブツリー",
   "saveTreeScreenTitleSlot": "セーブスロット",
   "timelineExportMenuItem": "書き出し",

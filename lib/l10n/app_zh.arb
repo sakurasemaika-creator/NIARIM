@@ -636,6 +636,7 @@
   "colorPickerNewPaletteTooltip": "新建调色盘",
   "colorPickerManagePaletteTooltip": "调色盘管理",
   "colorPickerPaletteEmptyHint": "还没有颜色。点击「＋」可添加当前颜色。",
+  "colorPickerPaletteLongPressHint": "长按可删除",
   "colorPickerAddCurrentColorButton": "将当前颜色添加到调色盘",
   "colorPickerPaletteNameLabel": "调色盘名称",
   "colorPickerFavoriteAdd": "加入收藏",
@@ -971,6 +972,7 @@
   "@autofillPartGradientStopLabel": {
     "placeholders": {"value": {"type": "int"}}
   },
+  "autofillPartGradientStopDragHint": "左右拖动▲标记可调整各颜色的位置",
   "saveTreeScreenTitleTree": "存档树",
   "saveTreeScreenTitleSlot": "存档槽",
   "timelineExportMenuItem": "导出",

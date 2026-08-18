@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../services/performance_service.dart';
+import '../../../widgets/editable_slider_value.dart';
 
 class OnionSkinPanel extends StatefulWidget {
   final OnionSkinSettings settings;
@@ -298,8 +299,12 @@ class _OnionSideSection extends StatelessWidget {
                 ),
                 SizedBox(
                   width: 28,
-                  child: Text('$frames',
-                      style: const TextStyle(fontSize: 11)),
+                  child: EditableSliderValue(
+                    text: '$frames',
+                    style: const TextStyle(fontSize: 11),
+                    value: frames, min: 1, max: 10,
+                    onChanged: (v) => onFramesChanged?.call(v.round()),
+                  ),
                 ),
               ] else ...[
                 const SizedBox(width: 8),
@@ -346,8 +351,12 @@ class _OnionSideSection extends StatelessWidget {
               ),
               SizedBox(
                 width: 32,
-                child: Text('${(opacity * 100).round()}%',
-                    style: const TextStyle(fontSize: 11)),
+                child: EditableSliderValue(
+                  text: '${(opacity * 100).round()}%',
+                  style: const TextStyle(fontSize: 11),
+                  value: (opacity * 100).round(), min: 0, max: 100,
+                  onChanged: (v) => onOpacityChanged(v / 100.0),
+                ),
               ),
             ],
           ),

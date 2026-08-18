@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
+import '../../../widgets/editable_slider_value.dart';
 import 'hsv_color_wheel.dart';
 
 /// カラーピッカーパネル（仕様書20：色管理仕様）。
@@ -183,7 +184,15 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       onChangeEnd: (_) => _commitToRecent(),
                     ),
                   ),
-                  SizedBox(width: 32, child: Text('${(_alpha * 100).round()}%', style: const TextStyle(fontSize: 11))),
+                  SizedBox(
+                    width: 32,
+                    child: EditableSliderValue(
+                      text: '${(_alpha * 100).round()}%',
+                      style: const TextStyle(fontSize: 11),
+                      value: (_alpha * 100).round(), min: 0, max: 100,
+                      onChanged: (v) { _alpha = v / 100; _applyAlpha(); _commitToRecent(); },
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -346,6 +355,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ),
             ],
           ),
+        if (active != null && active.colors.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(l10n.colorPickerPaletteLongPressHint,
+                style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.outline)),
+          ),
         const SizedBox(height: 4),
         if (active != null)
           TextButton.icon(
@@ -450,6 +465,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       children: [
         SizedBox(width: 14, child: Text(label, style: const TextStyle(fontSize: 12))),
         Expanded(child: Slider(min: min, max: max, value: value, onChanged: onChanged, onChangeEnd: onChangeEnd)),
+        // 数値部分をタップすると直接入力できる（ユーザー指示：アプリ内の
+        // スライダーはすべて数値部分のタップで直接入力できるようにする）。
+        SizedBox(
+          width: 32,
+          child: EditableSliderValue(
+            text: value.round().toString(),
+            style: const TextStyle(fontSize: 11),
+            value: value, min: min, max: max,
+            onChanged: (v) { onChanged(v.toDouble()); onChangeEnd?.call(v.toDouble()); },
+          ),
+        ),
       ],
     );
   }

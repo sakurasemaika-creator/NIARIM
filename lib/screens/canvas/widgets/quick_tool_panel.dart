@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/quick_tool_service.dart';
+import '../../../widgets/editable_slider_value.dart';
 import '../canvas_screen.dart' show DrawingTool;
 
 /// 早替えツール設定ポップアップ（仕様書02・08）。
@@ -178,7 +179,14 @@ class QuickToolPanel extends StatelessWidget {
                   onChanged: (v) => setS(() => size = v),
                 ),
               ),
-              SizedBox(width: 48, child: Text('${size.round()}px', textAlign: TextAlign.center)),
+              SizedBox(
+                width: 48,
+                child: EditableSliderValue(
+                  text: '${size.round()}px', textAlign: TextAlign.center,
+                  value: size, min: 1, max: 200,
+                  onChanged: (v) => setS(() => size = v.toDouble()),
+                ),
+              ),
             ],
           ),
           actions: [
