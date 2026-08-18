@@ -69,6 +69,8 @@
   "settingsPenSubtitle": "필압・기울기・펜 버튼",
   "settingsWorkspaceTitle": "작업 공간",
   "settingsWorkspaceSubtitle": "도구 모음 편집・패널 배치",
+  "settingsBucketTitle": "페인트 통 채우기",
+  "settingsBucketSubtitle": "허용 오차・확장・선 아래로 파고들기",
   "settingsThemeTitle": "UI・테마",
   "settingsThemeSubtitle": "테마 설정・작업 공간",
   "settingsWatermarkTitle": "워터마크",
@@ -141,6 +143,14 @@
   "penSettingsButtonSection": "펜 버튼 설정",
   "penSettingsButton1": "버튼 1",
   "penSettingsButton2": "버튼 2",
+  "bucketSettingsTitle": "페인트 통 채우기 설정",
+  "bucketSettingsToleranceSection": "허용 오차",
+  "bucketSettingsToleranceHint": "탭한 위치의 색상과 얼마나 차이가 나도 같은 영역으로 볼지 조정합니다. 값이 클수록 색 경계가 흐릿해도 채우기가 더 넓게 퍼집니다.",
+  "bucketSettingsExpandSection": "확장",
+  "bucketSettingsExpandHint": "채운 영역을 경계 바깥으로 지정한 px만큼 넓혀, 선화와의 미세한 틈(칠 누락)을 덮습니다.",
+  "bucketSettingsUnderLineTitle": "선 아래로 파고들기",
+  "bucketSettingsUnderLineHint": "확장된 부분을 선화 위에 그대로 덮지 않고, 선의 모습은 유지한 채 기존 픽셀 뒤쪽으로 채우기 색을 밀어 넣습니다. 선의 안티에일리어싱 부분에 틈이 잘 생기지 않습니다.",
+  "bucketSettingsUnderLineDisabledHint": "\"확장\"이 0px이면 효과가 없습니다.",
 
   "fontCatalogSearchHint": "폰트 이름으로 검색...（총 {count}종）",
   "fontCatalogAll": "전체",
@@ -340,7 +350,7 @@
   "helpEraserToolDesc": "펜 도구와 짝을 이루는, 그린 내용을 지우기 위한 도구입니다. 브러시와 마찬가지로 굵기・불투명도를 조정할 수 있고, 페이드나 스트로크 감쇠 등의 브러시 설정도 공통으로 반영됩니다. 레이어의 투명한 부분에 「덧그리는」 것이 아니라 기존 그림을 「지우는」 처리를 하므로, 아래 레이어가 비쳐 보이게 됩니다.",
 
   "helpBucketToolTitle": "페인트통 도구",
-  "helpBucketToolDesc": "둘러싸인 영역을 한 번에 채우는 도구입니다. 선화로 둘러싸인 범위 안을 탭하면 그 범위 전체가 선택 중인 색（또는 톤）으로 채워집니다. 선화에 틈이 있으면 의도치 않은 범위까지 채워질 수 있으므로, 선화가 제대로 닫혀 있는지 확인한 후 사용하는 것이 요령입니다. 설정에서 단색 채우기/톤 채우기를 전환할 수 있습니다.",
+  "helpBucketToolDesc": "둘러싸인 영역을 한 번에 채우는 도구입니다. 선화로 둘러싸인 범위 안을 탭하면 그 범위 전체가 선택 중인 색（또는 톤）으로 채워집니다. 선화에 틈이 있으면 의도치 않은 범위까지 채워질 수 있으므로, 선화가 제대로 닫혀 있는지 확인한 후 사용하는 것이 요령입니다. 설정에서 단색 채우기/톤 채우기를 전환할 수 있습니다. 상세 설정(허용 오차・확장 px・선 아래로 파고들기)은 설정 화면의 \"페인트 통 채우기\"에서 조정할 수 있습니다.",
 
   "helpLassoFillTitle": "올가미 채우기",
   "helpLassoFillDesc": "둘러싸고 싶은 범위를 손가락으로 따라 그려 다각형 영역을 만들고, 그 안쪽을 한꺼번에 채우는 도구입니다. 페인트통 도구와 달리 선화가 닫혀 있지 않은 부분이 있어도 직접 둘러쌀 범위를 지정할 수 있어, 복잡한 형태나 선이 끊긴 부분을 채우는 데 적합합니다.",

@@ -69,6 +69,8 @@
   "settingsPenSubtitle": "Presión, inclinación, botones del lápiz",
   "settingsWorkspaceTitle": "Espacio de trabajo",
   "settingsWorkspaceSubtitle": "Edición de la barra de herramientas, disposición de paneles",
+  "settingsBucketTitle": "Cubo de pintura",
+  "settingsBucketSubtitle": "Tolerancia, expansión, bajo las líneas",
   "settingsThemeTitle": "Interfaz y tema",
   "settingsThemeSubtitle": "Ajustes de tema, espacio de trabajo",
   "settingsWatermarkTitle": "Marca de agua",
@@ -141,6 +143,14 @@
   "penSettingsButtonSection": "Ajustes de botones del lápiz",
   "penSettingsButton1": "Botón 1",
   "penSettingsButton2": "Botón 2",
+  "bucketSettingsTitle": "Ajustes del cubo de pintura",
+  "bucketSettingsToleranceSection": "Tolerancia",
+  "bucketSettingsToleranceHint": "Ajusta cuánta diferencia de color respecto al píxel tocado se sigue considerando la misma área. Cuanto mayor sea el valor, más se extiende el relleno incluso con bordes de color difusos.",
+  "bucketSettingsExpandSection": "Expansión",
+  "bucketSettingsExpandHint": "Expande el área rellenada hacia fuera el número de píxeles indicado, para cubrir pequeños huecos cerca del dibujo de líneas.",
+  "bucketSettingsUnderLineTitle": "Pasar por debajo de las líneas",
+  "bucketSettingsUnderLineHint": "En vez de pintar sobre el dibujo de líneas, la expansión se combina detrás de los píxeles existentes: la línea conserva su aspecto mientras se cierran los huecos en sus bordes suavizados.",
+  "bucketSettingsUnderLineDisabledHint": "No tiene efecto cuando «Expansión» es 0 px.",
 
   "fontCatalogSearchHint": "Buscar por nombre de fuente... ({count} fuentes)",
   "fontCatalogAll": "Todas",
@@ -340,7 +350,7 @@
   "helpEraserToolDesc": "La contraparte de la herramienta de pluma, usada para borrar lo que has dibujado. Al igual que un pincel, puedes ajustar su tamaño y opacidad, y los ajustes de pincel como el desvanecido y la atenuación de trazo también se aplican. En lugar de \"añadir\" a las partes transparentes de una capa, \"elimina\" el dibujo existente, por lo que la capa de abajo se vuelve visible a través de ella.",
 
   "helpBucketToolTitle": "Herramienta cubo de pintura",
-  "helpBucketToolDesc": "Rellena un área cerrada de una sola vez. Toca dentro de un área rodeada por líneas y toda el área se rellena con el color (o trama) seleccionado. Si hay huecos en las líneas, el relleno puede extenderse a áreas no deseadas, así que asegúrate de que las líneas estén bien cerradas antes de usarlo. Puedes alternar entre relleno plano y relleno de trama en los ajustes.",
+  "helpBucketToolDesc": "Rellena un área cerrada de una sola vez. Toca dentro de un área rodeada por líneas y toda el área se rellena con el color (o trama) seleccionado. Si hay huecos en las líneas, el relleno puede extenderse a áreas no deseadas, así que asegúrate de que las líneas estén bien cerradas antes de usarlo. Puedes alternar entre relleno plano y relleno de trama en los ajustes. Los ajustes detallados (tolerancia, expansión en px, pasar por debajo de las líneas) se pueden configurar desde «Cubo de pintura» en los ajustes.",
 
   "helpLassoFillTitle": "Relleno de lazo",
   "helpLassoFillDesc": "Traza con el dedo para formar un área poligonal y luego rellena el interior de una sola vez. A diferencia del cubo de pintura, puedes definir el área tú mismo incluso donde las líneas no estén cerradas, lo que lo hace ideal para formas complejas o áreas con líneas interrumpidas.",

@@ -91,6 +91,8 @@
   "settingsPenSubtitle": "筆圧・傾き・ペンボタン",
   "settingsWorkspaceTitle": "ワークスペース",
   "settingsWorkspaceSubtitle": "ツールバー編集・パネル配置",
+  "settingsBucketTitle": "バケツ塗り",
+  "settingsBucketSubtitle": "許容誤差・拡張・線の下まで潜る",
   "settingsThemeTitle": "UI・テーマ",
   "settingsThemeSubtitle": "テーマ設定・ワークスペース",
   "settingsWatermarkTitle": "ウォーターマーク",
@@ -166,6 +168,14 @@
   "penSettingsButtonSection": "ペンボタン設定",
   "penSettingsButton1": "ボタン1",
   "penSettingsButton2": "ボタン2",
+  "bucketSettingsTitle": "バケツ塗り設定",
+  "bucketSettingsToleranceSection": "許容誤差",
+  "bucketSettingsToleranceHint": "タップした位置の色からどこまでの色差を同じ領域とみなすかを調整します。値が大きいほど、色の境目がぼんやりしていても塗りが広がりやすくなります。",
+  "bucketSettingsExpandSection": "拡張",
+  "bucketSettingsExpandHint": "塗った領域を境界の外側へ指定px分だけ広げ、線画とのわずかな隙間（塗り残し）をカバーします。",
+  "bucketSettingsUnderLineTitle": "線の下まで潜る",
+  "bucketSettingsUnderLineHint": "拡張分を線画の上から塗りつぶさず、線の見た目を保ったまま背後へ塗り色を回り込ませます。線のアンチエイリアス部分に隙間が出にくくなります。",
+  "bucketSettingsUnderLineDisabledHint": "「拡張」が0pxの場合は効果がありません。",
 
   "fontCatalogSearchHint": "フォント名で検索...（全{count}書体）",
   "@fontCatalogSearchHint": {
@@ -386,7 +396,7 @@
   "helpEraserToolDesc": "ペンツールと対になる、描いた内容を消すためのツールです。ブラシと同様に太さ・不透明度を調整でき、フェードやストローク減衰などのブラシ設定も共通で反映されます。レイヤーの透明部分を「描き足す」のではなく既存の描画を「消す」処理を行うため、下のレイヤーが透けて見えるようになります。",
 
   "helpBucketToolTitle": "バケツツール",
-  "helpBucketToolDesc": "囲まれた領域を一括で塗りつぶすツールです。線画で囲まれた範囲内をタップすると、その範囲全体が選択中の色（またはトーン）で塗られます。線画に隙間があると意図しない範囲まで塗り広がってしまうことがあるため、線画がきちんと閉じているか確認してから使うのがコツです。設定でベタ塗り／トーン塗りを切り替えられます。",
+  "helpBucketToolDesc": "囲まれた領域を一括で塗りつぶすツールです。線画で囲まれた範囲内をタップすると、その範囲全体が選択中の色（またはトーン）で塗られます。線画に隙間があると意図しない範囲まで塗り広がってしまうことがあるため、線画がきちんと閉じているか確認してから使うのがコツです。設定でベタ塗り／トーン塗りを切り替えられます。 詳細設定（許容誤差・拡張px・線の下まで潜る）は設定画面の「バケツ塗り」から調整できます。",
 
   "helpLassoFillTitle": "投げ縄塗り",
   "helpLassoFillDesc": "囲みたい範囲を指でなぞって多角形の範囲を作り、その内側をまとめて塗るツールです。バケツツールと違い、線画が閉じていない部分があっても自分で囲む範囲を指定できるため、複雑な形や線が途切れている部分の塗りに向いています。",

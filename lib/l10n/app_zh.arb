@@ -69,6 +69,8 @@
   "settingsPenSubtitle": "笔压・倾斜・笔按钮",
   "settingsWorkspaceTitle": "工作区",
   "settingsWorkspaceSubtitle": "工具栏编辑・面板布局",
+  "settingsBucketTitle": "油漆桶填充",
+  "settingsBucketSubtitle": "容差・扩展・潜入线稿下方",
   "settingsThemeTitle": "UI・主题",
   "settingsThemeSubtitle": "主题设置・工作区",
   "settingsWatermarkTitle": "水印",
@@ -141,6 +143,14 @@
   "penSettingsButtonSection": "笔按钮设置",
   "penSettingsButton1": "按钮1",
   "penSettingsButton2": "按钮2",
+  "bucketSettingsTitle": "油漆桶填充设置",
+  "bucketSettingsToleranceSection": "容差",
+  "bucketSettingsToleranceHint": "调整与点击位置颜色的差异在多大范围内仍被视为同一区域。数值越大，即使颜色边界模糊也更容易扩散填充。",
+  "bucketSettingsExpandSection": "扩展",
+  "bucketSettingsExpandHint": "将填充区域向外扩展指定像素数，用于覆盖与线稿之间的细小缝隙（漏填部分）。",
+  "bucketSettingsUnderLineTitle": "潜入线稿下方",
+  "bucketSettingsUnderLineHint": "扩展部分不会直接覆盖线稿，而是在保持线条外观的同时，将填充色绘制到现有像素的背后，减少线条抗锯齿边缘处出现的缝隙。",
+  "bucketSettingsUnderLineDisabledHint": "当「扩展」为0px时无效果。",
 
   "fontCatalogSearchHint": "按字体名称搜索...（共{count}种字体）",
   "fontCatalogAll": "全部",
@@ -340,7 +350,7 @@
   "helpEraserToolDesc": "与笔工具相对，用于擦除已绘制的内容。与画笔一样可以调整粗细与不透明度，淡出、笔画衰减等画笔设置也同样适用。它进行的是“擦除”已有绘制内容的处理，而不是在图层的透明部分“添加”内容，因此下方图层会透出显示。",
 
   "helpBucketToolTitle": "填充桶工具",
-  "helpBucketToolDesc": "一次性填充被包围的区域。在线稿所围成的区域内点击，整个区域就会被填充为当前选择的颜色（或网点）。如果线稿有缝隙，颜色可能会扩散到意料之外的范围，因此使用前请确认线稿是否已完全闭合。可以在设置中切换纯色填充/网点填充。",
+  "helpBucketToolDesc": "一次性填充被包围的区域。在线稿所围成的区域内点击，整个区域就会被填充为当前选择的颜色（或网点）。如果线稿有缝隙，颜色可能会扩散到意料之外的范围，因此使用前请确认线稿是否已完全闭合。可以在设置中切换纯色填充/网点填充。 详细设置（容差・扩展px・潜入线稿下方）可以在设置画面的「油漆桶填充」中调整。",
 
   "helpLassoFillTitle": "套索填充",
   "helpLassoFillDesc": "用手指沿想要包围的范围描画出多边形区域，然后一次性填充其内部的工具。与填充桶不同，即使线稿有未闭合的部分，也可以自行指定要包围的范围，因此适合形状复杂或线条中断处的填色。",

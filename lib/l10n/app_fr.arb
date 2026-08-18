@@ -69,6 +69,8 @@
   "settingsPenSubtitle": "Pression, inclinaison, boutons du stylet",
   "settingsWorkspaceTitle": "Espace de travail",
   "settingsWorkspaceSubtitle": "Édition de la barre d'outils, disposition des panneaux",
+  "settingsBucketTitle": "Pot de peinture",
+  "settingsBucketSubtitle": "Tolérance, extension, sous les traits",
   "settingsThemeTitle": "Interface et thème",
   "settingsThemeSubtitle": "Réglages de thème, espace de travail",
   "settingsWatermarkTitle": "Filigrane",
@@ -141,6 +143,14 @@
   "penSettingsButtonSection": "Réglages des boutons du stylet",
   "penSettingsButton1": "Bouton 1",
   "penSettingsButton2": "Bouton 2",
+  "bucketSettingsTitle": "Réglages du pot de peinture",
+  "bucketSettingsToleranceSection": "Tolérance",
+  "bucketSettingsToleranceHint": "Ajuste l'écart de couleur toléré par rapport au pixel touché pour être considéré comme la même zone. Plus la valeur est élevée, plus le remplissage se propage facilement même sur des contours flous.",
+  "bucketSettingsExpandSection": "Extension",
+  "bucketSettingsExpandHint": "Étend la zone remplie vers l'extérieur du nombre de pixels indiqué, pour couvrir les petits interstices près du trait.",
+  "bucketSettingsUnderLineTitle": "Passer sous les traits",
+  "bucketSettingsUnderLineHint": "Au lieu de peindre par-dessus le trait, l'extension se fond derrière les pixels existants : l'apparence du trait est conservée tout en comblant les interstices de ses bords anticrénelés.",
+  "bucketSettingsUnderLineDisabledHint": "Sans effet lorsque « Extension » est à 0 px.",
 
   "fontCatalogSearchHint": "Rechercher par nom de police... ({count} polices)",
   "fontCatalogAll": "Toutes",
@@ -340,7 +350,7 @@
   "helpEraserToolDesc": "L'équivalent de l'outil plume, utilisé pour effacer ce que vous avez dessiné. Comme un pinceau, vous pouvez ajuster sa taille et son opacité, et les réglages de pinceau comme le fondu et l'atténuation de trait s'y appliquent aussi. Plutôt que d'« ajouter » aux parties transparentes d'un calque, il « retire » le dessin existant, si bien que le calque en dessous devient visible à travers.",
 
   "helpBucketToolTitle": "Outil pot de peinture",
-  "helpBucketToolDesc": "Remplit une zone fermée en une seule fois. Appuyez à l'intérieur d'une zone entourée par un trait et toute la zone est remplie avec la couleur (ou la trame) sélectionnée. S'il y a des espaces dans le trait, le remplissage peut déborder sur des zones non voulues ; assurez-vous donc que le trait est bien fermé avant de l'utiliser. Vous pouvez basculer entre remplissage uni et remplissage en trame dans les réglages.",
+  "helpBucketToolDesc": "Remplit une zone fermée en une seule fois. Appuyez à l'intérieur d'une zone entourée par un trait et toute la zone est remplie avec la couleur (ou la trame) sélectionnée. S'il y a des espaces dans le trait, le remplissage peut déborder sur des zones non voulues ; assurez-vous donc que le trait est bien fermé avant de l'utiliser. Vous pouvez basculer entre remplissage uni et remplissage en trame dans les réglages. Les réglages détaillés (tolérance, extension en px, passer sous les traits) sont accessibles depuis « Pot de peinture » dans les réglages.",
 
   "helpLassoFillTitle": "Remplissage lasso",
   "helpLassoFillDesc": "Tracez avec votre doigt pour former une zone polygonale, puis remplissez l'intérieur en une seule fois. Contrairement au pot de peinture, vous pouvez définir la zone vous-même même là où le trait n'est pas fermé, ce qui le rend idéal pour les formes complexes ou les zones avec des lignes interrompues.",

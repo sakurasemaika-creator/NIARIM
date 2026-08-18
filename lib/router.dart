@@ -9,6 +9,7 @@ import 'screens/settings/settings_screen.dart';
 import 'screens/settings/gesture_settings_screen.dart';
 import 'screens/settings/performance_settings_screen.dart';
 import 'screens/settings/pen_settings_screen.dart';
+import 'screens/settings/bucket_fill_settings_screen.dart';
 import 'screens/settings/workspace_settings_screen.dart';
 import 'screens/settings/transfer_screen.dart';
 import 'screens/settings/theme_settings_screen.dart';
@@ -49,6 +50,7 @@ final appRouter = GoRouter(
     GoRoute(path: '/settings/gestures', builder: (context, state) => const GestureSettingsScreen()),
     GoRoute(path: '/settings/performance', builder: (context, state) => const PerformanceSettingsScreen()),
     GoRoute(path: '/settings/pen', builder: (context, state) => const PenSettingsScreen()),
+    GoRoute(path: '/settings/bucket', builder: (context, state) => const BucketFillSettingsScreen()),
     GoRoute(path: '/settings/workspace', builder: (context, state) => const WorkspaceSettingsScreen()),
     GoRoute(path: '/settings/transfer', builder: (context, state) => const TransferScreen()),
     GoRoute(path: '/settings/theme', builder: (context, state) => const ThemeSettingsScreen()),

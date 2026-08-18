@@ -1571,6 +1571,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     final tone = toneService.bucketUseTone
         ? (toneService.lastBucketTone ?? toneService.currentTone)
         : null;
+    // バケツ塗り詳細設定（設定画面「バケツ塗り」）：許容誤差・拡張px・
+    // 線の下まで潜るかを反映する。
+    final bucketSettings = context.read<SettingsService>();
     final Uint8List result;
     if (tone != null) {
       const toneSize = 64;
@@ -1586,6 +1589,9 @@ class _CanvasAreaState extends State<CanvasArea> {
         toneWidth: toneSize,
         toneHeight: toneSize,
         selectionMask: _selectionMask,
+        tolerance: bucketSettings.bucketTolerance,
+        expandPx: bucketSettings.bucketExpandPx,
+        fillUnderLine: bucketSettings.bucketFillUnderLine,
       );
     } else {
       result = _bucketEngine.fill(
@@ -1596,6 +1602,9 @@ class _CanvasAreaState extends State<CanvasArea> {
         startY: y,
         fillColor: _drawingEngine.currentColor,
         selectionMask: _selectionMask,
+        tolerance: bucketSettings.bucketTolerance,
+        expandPx: bucketSettings.bucketExpandPx,
+        fillUnderLine: bucketSettings.bucketFillUnderLine,
       );
     }
 

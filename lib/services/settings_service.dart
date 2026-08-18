@@ -32,6 +32,41 @@ class SettingsService extends ChangeNotifier {
   List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
   Set<ToolbarItemId> get hiddenToolbarItems => Set.unmodifiable(_hiddenToolbarItems);
 
+  // ─── バケツ塗り詳細設定（設定画面「バケツ塗り」） ───────────────────────
+  // 許容誤差：クリックした位置の色からどこまで色差を許容して同一領域とみなすか
+  double _bucketTolerance = 30.0;
+  // 拡張px：フラッドフィルで検出した領域を境界の外側へ何px広げるか
+  // （線画とのわずかな隙間・塗り残しをカバーする）
+  int _bucketExpandPx = 0;
+  // 線の下まで潜る：拡張分を線画の上から上書きせず、既存ピクセルの背後へ
+  // 塗り色を合成する（線の見た目を保ったまま隙間だけを塗り色で埋める）
+  bool _bucketFillUnderLine = false;
+
+  double get bucketTolerance => _bucketTolerance;
+  int get bucketExpandPx => _bucketExpandPx;
+  bool get bucketFillUnderLine => _bucketFillUnderLine;
+
+  Future<void> setBucketTolerance(double value) async {
+    _bucketTolerance = value.clamp(0.0, 100.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('bucket_tolerance', _bucketTolerance);
+    notifyListeners();
+  }
+
+  Future<void> setBucketExpandPx(int value) async {
+    _bucketExpandPx = value.clamp(0, 10);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('bucket_expand_px', _bucketExpandPx);
+    notifyListeners();
+  }
+
+  Future<void> setBucketFillUnderLine(bool value) async {
+    _bucketFillUnderLine = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('bucket_fill_under_line', value);
+    notifyListeners();
+  }
+
   GestureAction _twoFingerTap = GestureAction.undo;
   GestureAction _threeFingerTap = GestureAction.redo;
   GestureAction _twoFingerSwipe = GestureAction.frameMove;
@@ -185,6 +220,9 @@ class SettingsService extends ChangeNotifier {
     final pcModeValue = prefs.getInt('force_pc_mode') ?? -1;
     _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
     _isLeftHanded = prefs.getBool('is_left_handed') ?? false;
+    _bucketTolerance = prefs.getDouble('bucket_tolerance') ?? 30.0;
+    _bucketExpandPx = prefs.getInt('bucket_expand_px') ?? 0;
+    _bucketFillUnderLine = prefs.getBool('bucket_fill_under_line') ?? false;
     final toolbarOrderNames = prefs.getStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
       final map = ToolbarItemId.values.asNameMap();

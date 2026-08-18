@@ -67,6 +67,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         keywords: 'ツールバー パネル配置 右利き 左利き dex デックス workspace toolbar panel', onTap: () => context.push('/settings/workspace'), accent: const Color(0xFF3AA6FF),
       ),
       (
+        icon: Icons.format_color_fill, title: l10n.settingsBucketTitle, subtitle: l10n.settingsBucketSubtitle,
+        keywords: 'バケツ 塗り つぶし 許容誤差 拡張 隙間 線の下 bucket fill tolerance expand', onTap: () => context.push('/settings/bucket'), accent: const Color(0xFFFFB020),
+      ),
+      (
         icon: Icons.palette, title: l10n.settingsThemeTitle, subtitle: l10n.settingsThemeSubtitle,
         keywords: 'テーマ 配色 ベースカラー アクセントカラー theme color', onTap: () => context.push('/settings/theme'), accent: const Color(0xFFFF5C7A),
       ),

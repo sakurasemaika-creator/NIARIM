@@ -69,6 +69,8 @@
   "settingsPenSubtitle": "Pressure, tilt, pen buttons",
   "settingsWorkspaceTitle": "Workspace",
   "settingsWorkspaceSubtitle": "Toolbar editing, panel layout",
+  "settingsBucketTitle": "Bucket Fill",
+  "settingsBucketSubtitle": "Tolerance, expand, fill under lines",
   "settingsThemeTitle": "UI & Theme",
   "settingsThemeSubtitle": "Theme settings, workspace",
   "settingsWatermarkTitle": "Watermark",
@@ -141,6 +143,14 @@
   "penSettingsButtonSection": "Pen Button Settings",
   "penSettingsButton1": "Button 1",
   "penSettingsButton2": "Button 2",
+  "bucketSettingsTitle": "Bucket Fill Settings",
+  "bucketSettingsToleranceSection": "Tolerance",
+  "bucketSettingsToleranceHint": "Adjusts how much color difference from the tapped pixel is still treated as the same area. Higher values let fills spread further across blurry color boundaries.",
+  "bucketSettingsExpandSection": "Expand",
+  "bucketSettingsExpandHint": "Expands the filled area outward by the given number of pixels, covering small gaps left near the line art.",
+  "bucketSettingsUnderLineTitle": "Fill under lines",
+  "bucketSettingsUnderLineHint": "Instead of painting over the line art directly, the expanded fill blends in behind existing pixels, keeping the line's appearance while closing gaps in its anti-aliased edges.",
+  "bucketSettingsUnderLineDisabledHint": "Has no effect while \"Expand\" is 0px.",
 
   "fontCatalogSearchHint": "Search by font name... ({count} fonts)",
   "fontCatalogAll": "All",
@@ -340,7 +350,7 @@
   "helpEraserToolDesc": "The counterpart to the pen tool, used to erase what you've drawn. Like a brush, you can adjust its size and opacity, and brush settings such as fade and stroke decay apply to it as well. Rather than \"adding\" to the transparent parts of a layer, it \"removes\" existing drawing, so the layer below becomes visible through it.",
 
   "helpBucketToolTitle": "Bucket Tool",
-  "helpBucketToolDesc": "Fills an enclosed area all at once. Tap inside an area enclosed by line art and the whole area is filled with the selected color (or tone). If there are gaps in the line art, the fill can spread into unintended areas, so it helps to make sure the line art is properly closed before using it. You can switch between flat fill and tone fill in the settings.",
+  "helpBucketToolDesc": "Fills an enclosed area all at once. Tap inside an area enclosed by line art and the whole area is filled with the selected color (or tone). If there are gaps in the line art, the fill can spread into unintended areas, so it helps to make sure the line art is properly closed before using it. You can switch between flat fill and tone fill in the settings. Detailed settings (tolerance, expand px, fill under lines) can be adjusted from the \"Bucket Fill\" section in Settings.",
 
   "helpLassoFillTitle": "Lasso Fill",
   "helpLassoFillDesc": "Trace with your finger to form a polygonal area, then fill the inside all at once. Unlike the bucket tool, you can define the area yourself even where the line art isn't closed, making it well suited for complex shapes or areas with gaps in the lines.",
