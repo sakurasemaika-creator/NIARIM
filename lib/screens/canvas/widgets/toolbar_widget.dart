@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/toolbar_item.dart';
 import '../../../services/settings_service.dart';
 import '../../../services/tone_service.dart';
+import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/responsive.dart';
 import '../canvas_screen.dart';
@@ -246,44 +247,52 @@ class ToolbarWidget extends StatelessWidget {
   }
 
   /// バケツツールのベタ塗り／トーン切り替えメニュー（仕様書04・17）。
+  /// 詳細設定（許容誤差・拡張px・線の下まで潜るか）も同じシートから
+  /// 調整できる。ここでの変更はSettingsServiceを直接更新するため、
+  /// 設定画面「バケツ塗り」で行った変更と常に連動する（単一の設定値を
+  /// 共有しているだけで、同期処理は不要）。
   void _showBucketToneMenu(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Consumer<ToneService>(
-        builder: (ctx, toneService, _) {
+      builder: (ctx) => Consumer2<ToneService, SettingsService>(
+        builder: (ctx, toneService, settings, _) {
           final tones = toneService.tones;
           final useTone = toneService.bucketUseTone;
           final lastBucketTone = toneService.lastBucketTone;
           return SafeArea(
-            child: SizedBox(
-              height: 320,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    dense: true,
-                    leading: const Icon(Icons.format_color_fill, size: 18),
-                    title: Text(l10n.toolbarBucketFlatFill, style: const TextStyle(fontSize: 13)),
-                    selected: !useTone,
-                    onTap: () {
-                      toneService.setBucketUseTone(false);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  const Divider(height: 1),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    child: Text(l10n.toolbarBucketToneListLabel, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
-                  ),
-                  Expanded(
-                    child: GridView.builder(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(ctx).height * 0.85),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.format_color_fill, size: 18),
+                      title: Text(l10n.toolbarBucketFlatFill, style: const TextStyle(fontSize: 13)),
+                      selected: !useTone,
+                      onTap: () {
+                        toneService.setBucketUseTone(false);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      child: Text(l10n.toolbarBucketToneListLabel, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                    ),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4,
                         crossAxisSpacing: 4,
                         mainAxisSpacing: 4,
+                        childAspectRatio: 1,
                       ),
                       itemCount: tones.length,
                       itemBuilder: (context, index) {
@@ -317,13 +326,82 @@ class ToolbarWidget extends StatelessWidget {
                         );
                       },
                     ),
-                  ),
-                ],
+                    const Divider(height: 1),
+                    Theme(
+                      // ExpansionTileの区切り線を消す（前後のDividerと二重に
+                      // ならないようにするため）。
+                      data: Theme.of(ctx).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        dense: true,
+                        leading: const Icon(Icons.tune, size: 18),
+                        title: Text(l10n.bucketSettingsTitle, style: const TextStyle(fontSize: 13)),
+                        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        children: [
+                          _bucketDetailSlider(
+                            ctx: ctx,
+                            label: l10n.bucketSettingsToleranceSection,
+                            value: settings.bucketTolerance,
+                            min: 0,
+                            max: 100,
+                            divisions: 100,
+                            onChanged: (v) => settings.setBucketTolerance(v),
+                          ),
+                          _bucketDetailSlider(
+                            ctx: ctx,
+                            label: l10n.bucketSettingsExpandSection,
+                            value: settings.bucketExpandPx.toDouble(),
+                            min: 0,
+                            max: 10,
+                            divisions: 10,
+                            onChanged: (v) => settings.setBucketExpandPx(v.round()),
+                          ),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            title: Text(l10n.bucketSettingsUnderLineTitle, style: const TextStyle(fontSize: 13)),
+                            value: settings.bucketFillUnderLine,
+                            onChanged: (v) => settings.setBucketFillUnderLine(v),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _bucketDetailSlider({
+    required BuildContext ctx,
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required int divisions,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Row(
+      children: [
+        SizedBox(width: 72, child: Text(label, style: const TextStyle(fontSize: 12))),
+        Expanded(
+          child: Slider(value: value, min: min, max: max, divisions: divisions, onChanged: onChanged),
+        ),
+        SizedBox(
+          width: 28,
+          child: EditableSliderValue(
+            text: value.round().toString(),
+            value: value,
+            min: min,
+            max: max,
+            title: label,
+            onChanged: (v) => onChanged(v.toDouble()),
+          ),
+        ),
+      ],
     );
   }
 
