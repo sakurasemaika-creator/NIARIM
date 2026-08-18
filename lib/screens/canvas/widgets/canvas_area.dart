@@ -2676,6 +2676,10 @@ class _CanvasPainter extends CustomPainter {
       old.currentLayerOpacity != currentLayerOpacity ||
       old.currentLayerBlendMode != currentLayerBlendMode ||
       old.background != background ||
+      // project.backgroundColorの変更がキャンバスへ反映されない不具合の
+      // 原因（projectがshouldRepaintの比較対象から漏れていたため、背景色
+      // だけが変わっても再描画がスキップされていた）。
+      old.project?.backgroundColor != project?.backgroundColor ||
       old.transform != transform ||
       old.onionImages != onionImages ||
       old.selectionStart != selectionStart ||

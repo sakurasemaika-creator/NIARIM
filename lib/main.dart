@@ -24,6 +24,7 @@ import 'services/share_intent_service.dart';
 import 'services/font_service.dart';
 import 'services/first_use_tooltip_service.dart';
 import 'services/palette_service.dart';
+import 'services/work_folder_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,6 +103,9 @@ void main() async {
   final paletteService = PaletteService();
   await paletteService.init();
 
+  final workFolderService = WorkFolderService();
+  await workFolderService.init();
+
   final shareIntentService = ShareIntentService();
   await shareIntentService.init();
   final undoManager = app_undo.UndoManager();
@@ -137,6 +141,7 @@ void main() async {
         ChangeNotifierProvider.value(value: fontService),
         ChangeNotifierProvider.value(value: firstUseTooltipService),
         ChangeNotifierProvider.value(value: paletteService),
+        ChangeNotifierProvider.value(value: workFolderService),
         Provider<ShareIntentService>.value(value: shareIntentService),
         ChangeNotifierProvider<app_undo.UndoManager>.value(value: undoManager),
       ],

@@ -9,12 +9,14 @@ import 'package:video_player/video_player.dart';
 import '../../engine/export_engine.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/project.dart';
 import '../../services/advertising_service.dart';
 import '../../services/font_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
+import '../../services/work_folder_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
@@ -328,14 +330,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           if (adService.shouldShowAds) const AdBannerWidget(),
         ],
       ),
-      // プロジェクトタブでのみ表示。共有・ゴミ箱タブでは新規作成の
-      // 導線自体が不要なため非表示にする。
-      floatingActionButton: _currentTabIndex == 0
-          ? FloatingActionButton(
-              onPressed: () => _showAddChoiceSheet(context),
-              child: const Icon(Icons.add),
-            )
-          : null,
+      // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
+      // 共有・作品一覧タブ：新規プロジェクト作成の導線は不要なため、
+      // フォルダの新規作成のみをワンタップ・選択肢なしで直接行えるFABに
+      // する（ユーザー指示）。ゴミ箱タブでは新規作成自体が不要なため
+      // 非表示のまま。
+      floatingActionButton: switch (_currentTabIndex) {
+        0 => FloatingActionButton(
+            onPressed: () => _showAddChoiceSheet(context),
+            child: const Icon(Icons.add),
+          ),
+        1 => FloatingActionButton(
+            tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
+            onPressed: () => showCreateFolderNameDialog(
+                context, (name) => context.read<ProjectService>().createSharedFolder(name)),
+            child: const Icon(Icons.create_new_folder_outlined),
+          ),
+        3 => FloatingActionButton(
+            tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
+            onPressed: () => showCreateFolderNameDialog(
+                context, (name) => context.read<WorkFolderService>().createFolder(name)),
+            child: const Icon(Icons.create_new_folder_outlined),
+          ),
+        _ => null,
+      },
     );
   }
 
@@ -472,24 +490,235 @@ class _SharedTab extends StatelessWidget {
         ),
       );
     }
-    return ListView.builder(
-      itemCount: shared.length,
-      itemBuilder: (context, index) {
-        final project = shared[index];
-        return ListTile(
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Color(project.backgroundColor),
-              borderRadius: BorderRadius.circular(10),
+    return _FolderableList<Project>(
+      allItems: shared,
+      folders: context.watch<ProjectService>().sharedFolders,
+      folderIdOf: (p) => p.sharedFolderId,
+      onEnterFolder: (folderId, folderName, itemsInFolder) => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => _SharedFolderScreen(folderId: folderId, folderName: folderName),
+        ),
+      ),
+      onRenameFolder: (id, name) => context.read<ProjectService>().renameSharedFolder(id, name),
+      onDeleteFolder: (id) => context.read<ProjectService>().deleteSharedFolder(id),
+      itemBuilder: (context, project) => ListTile(
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Color(project.backgroundColor),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        title: Text(project.name),
+        subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
+        onTap: () => context.push('/project/${project.id}'),
+        onLongPress: () => _showMoveToSharedFolderSheet(context, project),
+      ),
+    );
+  }
+
+  void _showMoveToSharedFolderSheet(BuildContext context, Project project) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<ProjectService>();
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.folder_off_outlined),
+              title: Text(l10n.folderNone),
+              onTap: () {
+                service.moveToSharedFolder(project.id, null);
+                Navigator.pop(ctx);
+              },
+            ),
+            for (final f in service.sharedFolders)
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(f.name),
+                onTap: () {
+                  service.moveToSharedFolder(project.id, f.id);
+                  Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 共有タブのフォルダ内表示（ユーザー指示：共有タブへのフォルダ新規追加機能）。
+class _SharedFolderScreen extends StatelessWidget {
+  final String folderId;
+  final String folderName;
+  const _SharedFolderScreen({required this.folderId, required this.folderName});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final items = context.watch<ProjectService>().shared.where((p) => p.sharedFolderId == folderId).toList();
+    return Scaffold(
+      appBar: AppBar(title: Text(folderName)),
+      body: items.isEmpty
+          ? Center(
+              child: Text(l10n.folderManagementEmpty,
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)))
+          : ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final project = items[index];
+                return ListTile(
+                  leading: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Color(project.backgroundColor),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  title: Text(project.name),
+                  subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
+                  onTap: () => context.push('/project/${project.id}'),
+                );
+              },
+            ),
+    );
+  }
+}
+
+/// フォルダ一覧＋直下アイテム一覧を表示する共通ウィジェット（共有タブ・
+/// 作品一覧タブで共用）。フォルダは常にルート直下の1階層のみ（ネスト非対応）。
+class _FolderableList<T> extends StatelessWidget {
+  final List<T> allItems;
+  final List<ProjectFolder> folders;
+  final String? Function(T) folderIdOf;
+  final void Function(String folderId, String folderName, List<T> itemsInFolder) onEnterFolder;
+  final void Function(String id, String name) onRenameFolder;
+  final void Function(String id) onDeleteFolder;
+  final Widget Function(BuildContext, T) itemBuilder;
+
+  const _FolderableList({
+    required this.allItems,
+    required this.folders,
+    required this.folderIdOf,
+    required this.onEnterFolder,
+    required this.onRenameFolder,
+    required this.onDeleteFolder,
+    required this.itemBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final rootItems = allItems.where((e) => folderIdOf(e) == null).toList();
+    return ListView(
+      children: [
+        if (folders.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: folders.map((f) {
+                final count = allItems.where((e) => folderIdOf(e) == f.id).length;
+                return InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => onEnterFolder(
+                      f.id, f.name, allItems.where((e) => folderIdOf(e) == f.id).toList()),
+                  onLongPress: () => _showFolderMenu(context, f),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.folder, size: 18),
+                        const SizedBox(width: 6),
+                        Text(f.name),
+                        const SizedBox(width: 4),
+                        Text('($count)',
+                            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
-          title: Text(project.name),
-          subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
-          onTap: () => context.push('/project/${project.id}'),
-        );
-      },
+        if (folders.isNotEmpty) const Divider(height: 1),
+        ...rootItems.map((e) => itemBuilder(context, e)),
+      ],
+    );
+  }
+
+  void _showFolderMenu(BuildContext context, ProjectFolder folder) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: Text(l10n.commonRename),
+              onTap: () {
+                Navigator.pop(ctx);
+                final controller = TextEditingController(text: folder.name);
+                showDialog(
+                  context: context,
+                  builder: (dctx) => AlertDialog(
+                    title: Text(l10n.commonRename),
+                    content: TextField(controller: controller, autofocus: true,
+                        decoration: const InputDecoration(border: OutlineInputBorder())),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
+                      FilledButton(
+                        onPressed: () {
+                          if (controller.text.trim().isNotEmpty) onRenameFolder(folder.id, controller.text.trim());
+                          Navigator.pop(dctx);
+                        },
+                        child: Text(l10n.commonChange),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(ctx);
+                showDialog(
+                  context: context,
+                  builder: (dctx) => AlertDialog(
+                    title: Text(l10n.projectListDeleteFolderConfirmTitle),
+                    content: Text(l10n.projectListDeleteFolderConfirmBody(folder.name)),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
+                      FilledButton(
+                        style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                        onPressed: () {
+                          onDeleteFolder(folder.id);
+                          Navigator.pop(dctx);
+                        },
+                        child: Text(l10n.commonDelete),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -639,21 +868,81 @@ class _WorksTabState extends State<_WorksTab> {
             ),
           );
         }
+        final workFolders = context.watch<WorkFolderService>();
         return RefreshIndicator(
           onRefresh: _reload,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            itemCount: files.length,
-            itemBuilder: (context, index) {
-              final file = files[index];
-              return _WorkListItem(
-                file: file,
-                onDeleted: _reload,
-              );
-            },
+          child: _FolderableList<File>(
+            allItems: files,
+            folders: workFolders.folders,
+            folderIdOf: (f) => workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
+            onEnterFolder: (folderId, folderName, itemsInFolder) => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => _WorksFolderScreen(folderId: folderId, folderName: folderName, onDeleted: _reload),
+              ),
+            ),
+            onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
+            onDeleteFolder: (id) => workFolders.deleteFolder(id),
+            itemBuilder: (context, file) => _WorkListItem(
+              file: file,
+              onDeleted: _reload,
+            ),
           ),
         );
       },
+    );
+  }
+}
+
+/// 作品一覧タブのフォルダ内表示。
+class _WorksFolderScreen extends StatefulWidget {
+  final String folderId;
+  final String folderName;
+  final VoidCallback onDeleted;
+  const _WorksFolderScreen({required this.folderId, required this.folderName, required this.onDeleted});
+
+  @override
+  State<_WorksFolderScreen> createState() => _WorksFolderScreenState();
+}
+
+class _WorksFolderScreenState extends State<_WorksFolderScreen> {
+  late Future<List<File>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = ExportEngine.listExportedFiles();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final workFolders = context.watch<WorkFolderService>();
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.folderName)),
+      body: FutureBuilder<List<File>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          final items = snapshot.data!
+              .where((f) => workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last) == widget.folderId)
+              .toList();
+          if (items.isEmpty) {
+            return Center(
+                child: Text(l10n.folderManagementEmpty,
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)));
+          }
+          return ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) => _WorkListItem(
+              file: items[index],
+              onDeleted: () {
+                setState(() => _future = ExportEngine.listExportedFiles());
+                widget.onDeleted();
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -709,6 +998,7 @@ class _WorkListItem extends StatelessWidget {
           style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
         ),
         onTap: () => _openPreview(context),
+        onLongPress: () => _showMoveToFolderSheet(context),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -723,6 +1013,39 @@ class _WorkListItem extends StatelessWidget {
               tooltip: l10n.commonDelete,
               onPressed: () => _confirmDelete(context),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMoveToFolderSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<WorkFolderService>();
+    final fileName = file.path.split(RegExp(r'[\\/]')).last;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.folder_off_outlined),
+              title: Text(l10n.folderNone),
+              onTap: () {
+                service.moveFileToFolder(fileName, null);
+                Navigator.pop(ctx);
+              },
+            ),
+            for (final f in service.folders)
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(f.name),
+                onTap: () {
+                  service.moveFileToFolder(fileName, f.id);
+                  Navigator.pop(ctx);
+                },
+              ),
           ],
         ),
       ),

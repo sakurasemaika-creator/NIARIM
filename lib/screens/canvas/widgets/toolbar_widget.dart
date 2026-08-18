@@ -7,6 +7,7 @@ import '../../../services/tone_service.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/responsive.dart';
 import '../canvas_screen.dart';
+import 'canvas_icon_button.dart';
 
 class ToolbarWidget extends StatelessWidget {
   final DrawingTool currentTool;
@@ -211,10 +212,10 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  /// 常設ボタン共通のスタイル（ユーザー指示）：背景なし・アイコンは白
-  /// （選択中はアクセントカラー）・半透明の黒で中太さの縁取りのみ。
-  /// 描画領域をできるだけ広げつつ、どんな背景色のキャンバス上でも
-  /// ボタンの視認性を保つための共通デザイン。
+  /// 常設ボタン共通のスタイル（ユーザー指示）：背景なし・アイコンだけが
+  /// キャンバス上に浮かび、アイコンの形にぴったり沿う半透明の黒い縁取りを
+  /// 持つ（実装はCanvasIconButtonへ集約。canvas_screen.dartの上部バーとも
+  /// 共通のデザインにするため）。
   static Widget _borderedIconButton(
     BuildContext context,
     IconData icon, {
@@ -222,22 +223,7 @@ class ToolbarWidget extends StatelessWidget {
     required String tooltip,
     bool selected = false,
   }) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 1),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: selected ? primary : Colors.black.withValues(alpha: 0.45),
-          width: selected ? 2 : 1.5,
-        ),
-      ),
-      child: IconButton(
-        icon: Icon(icon, size: 20, color: selected ? primary : Colors.white),
-        onPressed: onPressed,
-        tooltip: tooltip,
-      ),
-    );
+    return CanvasIconButton(icon: icon, onPressed: onPressed, tooltip: tooltip, selected: selected);
   }
 
   Widget _selectToolButton(BuildContext context, AppLocalizations l10n) {

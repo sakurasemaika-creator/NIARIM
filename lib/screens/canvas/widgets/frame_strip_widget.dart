@@ -64,16 +64,38 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     }
   }
 
+  // リストの左右にビューポート半分弱の余白（_sidePaddingで算出）を付けて
+  // あるため、先頭・末尾のフレームであっても赤枠（画面中央）まで
+  // スクロールしきれる（ユーザー指摘：以前はscrollOffsetを[0,maxScrollExtent]
+  // へclampしていたため、先頭・末尾フレームだけ中央からずれて表示されて
+  // いた。余白を追加したことで「index*_itemExtent」がそのまま中央揃えの
+  // スクロール位置になり、境界のclampが実質的に無害になる）。
   void _scrollToCurrent({required bool animate}) {
     if (!_scrollController.hasClients) return;
-    final viewport = _scrollController.position.viewportDimension;
-    final target = (widget.currentFrame * _itemExtent + _itemExtent / 2) - viewport / 2;
-    final clamped = target.clamp(0.0, _scrollController.position.maxScrollExtent);
+    final target = (widget.currentFrame * _itemExtent)
+        .clamp(0.0, _scrollController.position.maxScrollExtent);
     if (animate) {
-      _scrollController.animateTo(clamped, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      _scrollController.animateTo(target, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
     } else {
-      _scrollController.jumpTo(clamped);
+      _scrollController.jumpTo(target);
     }
+  }
+
+  /// スワイプ・ドラッグを手放した位置が中途半端でも、赤枠に一番近い
+  /// フレームへ自動的にスナップさせる（ユーザー指示）。dragDetailsが
+  /// nullの場合はこちらの_scrollToCurrent等によるプログラム操作由来の
+  /// スクロールなので無視する（無限ループ防止）。
+  bool _handleScrollEnd(ScrollEndNotification notification, int total) {
+    if (notification.dragDetails == null) return false;
+    if (widget.multiSelectMode || total <= 0) return false;
+    if (!_scrollController.hasClients) return false;
+    final nearest = (_scrollController.offset / _itemExtent).round().clamp(0, total - 1);
+    if (nearest != widget.currentFrame) {
+      widget.onFrameSelected(nearest);
+    } else {
+      _scrollToCurrent(animate: true);
+    }
+    return false;
   }
 
   @override
@@ -159,11 +181,19 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       child: Row(
         children: [
           Expanded(
-            child: Stack(
+            child: LayoutBuilder(builder: (context, constraints) {
+              // 左右に((ビューポート幅-アイテム幅)/2)の余白を入れることで、
+              // 先頭・末尾のフレームも赤枠（画面中央）まできっちり
+              // スクロールできるようにする。
+              final sidePadding = ((constraints.maxWidth - _itemExtent) / 2).clamp(0.0, double.infinity);
+              return NotificationListener<ScrollEndNotification>(
+                onNotification: (n) => _handleScrollEnd(n, total),
+                child: Stack(
               children: [
                 ListView.builder(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: sidePadding),
               itemCount: total + 1, // +1 は追加ボタン
               itemBuilder: (context, index) {
                 if (index == total) {
@@ -269,6 +299,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                 ),
               ],
             ),
+              );
+            }),
           ),
           IconButton(
             // タイムラインモードへの切替ボタン（ユーザー指示により絵文字ではなく

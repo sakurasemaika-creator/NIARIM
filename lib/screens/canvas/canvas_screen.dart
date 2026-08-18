@@ -24,6 +24,7 @@ import '../../models/onion_skin_settings.dart';
 import '../../models/project.dart';
 import '../../models/text_object.dart' as model;
 import 'widgets/canvas_area.dart';
+import 'widgets/canvas_icon_button.dart';
 import 'widgets/toolbar_widget.dart';
 import 'widgets/frame_strip_widget.dart';
 import 'widgets/brush_size_slider.dart';
@@ -77,18 +78,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 閉じるボタンを押せなくなる不具合があった（「レイヤーパネルが一度表示
   /// すると非表示に戻せない」の原因）。いずれかを開く前に必ずこれを呼び、
   /// 常に高々1枚のみが表示された状態を保つ。
-  /// プロジェクト一覧へ戻る前に、プロジェクト本体（.niaproファイル）を
-  /// 明示的に保存する（ユーザー報告：「編集後、プロジェクト一覧に戻ると
-  /// 手動セーブのデータが消えている」の原因調査により発覚。従来は
-  /// タイムライン画面の三点メニュー「保存」からしかこの保存処理を呼べず、
-  /// それを押さない限りプロジェクト本体はディスクへ書き込まれていな
-  /// かった。自動保存（クラッシュ復元専用・別データ）とは別に、
-  /// プロジェクト一覧へ戻るタイミングで必ず保存されるようにした）。
-  Future<void> _goHome() async {
-    await context.read<ProjectService>().saveProject(widget.projectId);
-    if (mounted) context.go('/home');
-  }
-
   void _closeAllOverlayPanels() {
     _showLayerPanel = false;
     _showColorPicker = false;
@@ -243,6 +232,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // フレーム一覧の折りたたみ状態（ユーザー指示：描画領域を広げるため
   // 任意のタイミングで開閉できるようにする）。
   bool _showFrameStrip = true;
+  // ツールバーの折りたたみ状態（同上。スマホの小さな画面でも描画領域を
+  // 最大限確保できるようにする）。
+  bool _showToolbar = true;
   bool _workTrackingStarted = false;
   bool _missingMaterialChecked = false;
 
@@ -553,42 +545,59 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   context.read<BrushService>().updateCurrentBrushOpacity(v);
                 },
               ),
-            ToolbarWidget(
-              currentTool: _currentTool,
-              currentColor: _currentColor,
-              isStampSelected: _currentSubTool == PenSubTool.stamp,
-              onToolSelected: (tool) => setState(() => _currentTool = tool),
-              onColorTap: () => setState(() {
-                final next = !_showColorPicker;
-                _closeAllOverlayPanels();
-                _showColorPicker = next;
-              }),
-              onBrushTap: () => setState(() {
-                final next = !_showBrushPanel;
-                _closeAllOverlayPanels();
-                _showBrushPanel = next;
-              }),
-              onLayerTap: () => setState(() {
-                final next = !_showLayerPanel;
-                _closeAllOverlayPanels();
-                _showLayerPanel = next;
-              }),
-              onPenLongPress: () => setState(() {
-                final next = !_showPenSubToolPanel;
-                _closeAllOverlayPanels();
-                _showPenSubToolPanel = next;
-              }),
-              onTextTap: () => setState(() => _currentTool = DrawingTool.text),
-              onShapeTap: () => _showShapeMenu(context),
-              onQuickToolTap: _applyNextQuickTool,
-              onQuickToolLongPress: () => setState(() {
-                final next = !_showQuickToolPanel;
-                _closeAllOverlayPanels();
-                _showQuickToolPanel = next;
-              }),
-              // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
-              onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
+            // ツールバーの折りたたみ用ハンドル（ユーザー指示：フレーム一覧と
+            // 同様に、任意のタイミングで開閉できるようにし描画領域を広げる）。
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setState(() => _showToolbar = !_showToolbar),
+              child: Container(
+                height: 16,
+                alignment: Alignment.center,
+                color: Colors.transparent,
+                child: Icon(
+                  _showToolbar ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                  size: 16,
+                  color: Colors.white70,
+                ),
+              ),
             ),
+            if (_showToolbar)
+              ToolbarWidget(
+                currentTool: _currentTool,
+                currentColor: _currentColor,
+                isStampSelected: _currentSubTool == PenSubTool.stamp,
+                onToolSelected: (tool) => setState(() => _currentTool = tool),
+                onColorTap: () => setState(() {
+                  final next = !_showColorPicker;
+                  _closeAllOverlayPanels();
+                  _showColorPicker = next;
+                }),
+                onBrushTap: () => setState(() {
+                  final next = !_showBrushPanel;
+                  _closeAllOverlayPanels();
+                  _showBrushPanel = next;
+                }),
+                onLayerTap: () => setState(() {
+                  final next = !_showLayerPanel;
+                  _closeAllOverlayPanels();
+                  _showLayerPanel = next;
+                }),
+                onPenLongPress: () => setState(() {
+                  final next = !_showPenSubToolPanel;
+                  _closeAllOverlayPanels();
+                  _showPenSubToolPanel = next;
+                }),
+                onTextTap: () => setState(() => _currentTool = DrawingTool.text),
+                onShapeTap: () => _showShapeMenu(context),
+                onQuickToolTap: _applyNextQuickTool,
+                onQuickToolLongPress: () => setState(() {
+                  final next = !_showQuickToolPanel;
+                  _closeAllOverlayPanels();
+                  _showQuickToolPanel = next;
+                }),
+                // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+                onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
+              ),
             if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
             // フレーム一覧の折りたたみ用ハンドル（ユーザー指示：描画領域を
             // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
@@ -806,8 +815,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   /// 上部バー常設ボタン共通のスタイル（ユーザー指示。toolbar_widget.dartの
-  /// _borderedIconButtonと同じ考え方）：背景なし・アイコンは白（選択中は
-  /// アクセントカラー）・半透明の黒で中太さの縁取りのみ。
+  /// _borderedIconButtonと同じ考え方）：背景なし・アイコンだけが浮かび、
+  /// アイコンの形にぴったり沿う半透明の黒い縁取りを持つ（実装は
+  /// CanvasIconButtonへ集約）。
   static Widget _topBarIconButton(
     BuildContext context,
     IconData icon, {
@@ -815,22 +825,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     required String tooltip,
     bool selected = false,
   }) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 1),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: selected ? primary : Colors.black.withValues(alpha: 0.45),
-          width: selected ? 2 : 1.5,
-        ),
-      ),
-      child: IconButton(
-        icon: Icon(icon, size: 20, color: selected ? primary : Colors.white),
-        onPressed: onPressed,
-        tooltip: tooltip,
-      ),
-    );
+    return CanvasIconButton(icon: icon, onPressed: onPressed, tooltip: tooltip, selected: selected);
   }
 
   Widget _buildTopBar() {
@@ -839,7 +834,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: _goHome, tooltip: l10n.saveTreeBackButton),
+          // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した
+          // （ユーザー指示）。キャンバスモードの画面左上（元は戻るボタンの
+          // 位置）にはUndo/Redoを配置する。
+          _topBarIconButton(context, Icons.undo,
+              onPressed: () => context.read<UndoManager>().undo(), tooltip: l10n.commonUndo),
+          _topBarIconButton(context, Icons.redo,
+              onPressed: () => context.read<UndoManager>().redo(), tooltip: l10n.commonRedo),
           // 投げ縄塗り選択中：囲って塗るモードスイッチ
           if (_currentTool == DrawingTool.lasso && _currentSubTool == PenSubTool.lassoFill) ...[
             const SizedBox(width: 8),
@@ -866,10 +867,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 tooltip: l10n.canvasRulerTooltip,
                 selected: _currentTool == DrawingTool.ruler),
           ),
-          _topBarIconButton(context, Icons.undo,
-              onPressed: () => context.read<UndoManager>().undo(), tooltip: l10n.commonUndo),
-          _topBarIconButton(context, Icons.redo,
-              onPressed: () => context.read<UndoManager>().redo(), tooltip: l10n.commonRedo),
           // 設定/編集メニュー（仕様書08・タスク#95：背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約。旧・個別ボタンを整理統合した）。
           _topBarIconButton(context, Icons.settings,

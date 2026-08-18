@@ -217,16 +217,36 @@ class _TimelineScreenState extends State<TimelineScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _centerFrameInList(animate: hadPrevious));
   }
 
+  // フレーム一覧の左右には((ビューポート幅-セル幅)/2)の余白（_buildFrameList
+  // 参照）を入れてあるため、先頭・末尾のフレームも赤枠（画面中央）まで
+  // きっちりスクロールできる（ユーザー指摘：以前は[0,maxScrollExtent]への
+  // clampにより、先頭フレーム・最終フレームへスキップした際に赤枠から
+  // ずれて表示される不具合があった）。
   void _centerFrameInList({required bool animate}) {
     if (!_frameScrollCtrl.hasClients) return;
-    final viewport = _frameScrollCtrl.position.viewportDimension;
-    final target = (_currentFrame * _cellW + _cellW / 2) - viewport / 2;
-    final clamped = target.clamp(0.0, _frameScrollCtrl.position.maxScrollExtent);
+    final target = (_currentFrame * _cellW).clamp(0.0, _frameScrollCtrl.position.maxScrollExtent);
     if (animate) {
-      _frameScrollCtrl.animateTo(clamped, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      _frameScrollCtrl.animateTo(target, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
     } else {
-      _frameScrollCtrl.jumpTo(clamped);
+      _frameScrollCtrl.jumpTo(target);
     }
+  }
+
+  /// スワイプ・ドラッグを手放した位置が中途半端でも、赤枠に一番近い
+  /// フレームへ自動的にスナップさせる（ユーザー指示。キャンバスモードの
+  /// フレーム一覧と同じ挙動）。
+  bool _handleFrameListScrollEnd(ScrollEndNotification notification) {
+    if (notification.dragDetails == null) return false;
+    if (_isFrameMoveMode || _isFrameMultiSelect) return false;
+    final total = _totalFrames;
+    if (total <= 0 || !_frameScrollCtrl.hasClients) return false;
+    final nearest = (_frameScrollCtrl.offset / _cellW).round().clamp(0, total - 1);
+    if (nearest != _currentFrame) {
+      setState(() => _currentFrame = nearest);
+    } else {
+      _centerFrameInList(animate: true);
+    }
+    return false;
   }
 
   @override
@@ -570,8 +590,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back), tooltip: l10n.timelineBackToCanvasTooltip, onPressed: _saveAndGoToCanvas),
+          // プロジェクト一覧へ戻るボタン（ユーザー指示：キャンバスモードでは
+          // なくタイムラインモードに実装する）。左矢印はここでは「プロジェクト
+          // 一覧へ戻る」の意味に変更し、従来この矢印が担っていた
+          // 「キャンバスへ戻る」はパレットアイコンの新規ボタンへ移した。
+          IconButton(icon: const Icon(Icons.arrow_back), tooltip: l10n.timelineBackToProjectListTooltip, onPressed: _confirmBackToProjectList),
           Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
+          IconButton(icon: const Icon(Icons.palette_outlined), tooltip: l10n.timelineBackToCanvasTooltip, onPressed: _saveAndGoToCanvas),
           IconButton(
             icon: const Icon(Icons.undo),
             tooltip: l10n.commonUndo,
@@ -1440,12 +1465,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
                     ),
                   Expanded(
-                    child: Stack(
+                    child: LayoutBuilder(builder: (context, constraints) {
+                      // 左右に((ビューポート幅-セル幅)/2)の余白を入れることで、
+                      // 先頭・末尾のフレームも赤枠（画面中央）まできっちり
+                      // スクロールできるようにする。
+                      final sidePadding = ((constraints.maxWidth - _cellW) / 2).clamp(0.0, double.infinity);
+                      return NotificationListener<ScrollEndNotification>(
+                        onNotification: _handleFrameListScrollEnd,
+                        child: Stack(
                       children: [
                         ListView.builder(
                       controller: _frameScrollCtrl,
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      padding: EdgeInsets.symmetric(vertical: 4, horizontal: sidePadding),
                       // 移動モード：カーソル位置(n+1) + フレームチップ(n) = 2n+1
                       // 通常モード：フレームチップ(n) + ＋ボタン(1) = n+1
                       itemCount: _isFrameMoveMode ? total * 2 + 1 : total + 1,
@@ -1604,6 +1636,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
                       ],
                     ),
+                      );
+                    }),
                   ),
                   // 移動モード中：キャンセルボタン
                   if (_isFrameMoveMode)
@@ -3303,6 +3337,35 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Future<void> _saveAndGoToCanvas() async {
     await context.read<ProjectService>().saveProject(widget.projectId);
     if (mounted) context.go('/canvas/${widget.projectId}');
+  }
+
+  /// プロジェクト一覧へ戻るボタン（ユーザー指示）：タップ時に「保存して
+  /// 戻る」か「保存せず戻る」かをポップアップで選べるようにする。
+  Future<void> _confirmBackToProjectList() async {
+    final l10n = AppLocalizations.of(context)!;
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineBackToProjectListDialogTitle),
+        content: Text(l10n.timelineBackToProjectListDialogBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'discard'),
+            child: Text(l10n.timelineBackToProjectListDiscardButton),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'save'),
+            child: Text(l10n.timelineBackToProjectListSaveButton),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !mounted) return;
+    if (choice == 'save') {
+      await context.read<ProjectService>().saveProject(widget.projectId);
+    }
+    if (mounted) context.go('/home');
   }
 
   void _showAutofillDialog() {

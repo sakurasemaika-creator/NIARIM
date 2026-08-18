@@ -151,6 +151,7 @@ class ProjectService extends ChangeNotifier {
     try {
       await _loadTrashState();
       await _loadFolders();
+      await _loadSharedFolders();
       final basePath = await NiaproSerializer.projectsBasePath();
       final baseDir = Directory(basePath);
       if (!baseDir.existsSync()) return;
@@ -1944,6 +1945,85 @@ class ProjectService extends ChangeNotifier {
     }
     await _persistFolders();
     notifyListeners();
+  }
+
+  // ─── 共有タブ用フォルダ（ホーム画面「共有」タブへのフォルダ新規追加機能） ──
+  // プロジェクト一覧タブのフォルダ（_folders/folderId）とは独立した、共有
+  // タブ専用の階層（sharedFolderId）。ネストはサポートしない（常にルート
+  // 直下の1階層のみ）——共有タブは一覧の分類が主目的であり、複数階層まで
+  // 必要になる想定が薄いため、UIを簡潔に保つ設計判断。
+
+  final List<ProjectFolder> _sharedFolders = [];
+  List<ProjectFolder> get sharedFolders => List.unmodifiable(_sharedFolders);
+
+  Future<ProjectFolder> createSharedFolder(String name) async {
+    final folder = ProjectFolder(id: _nextId('shared_folder'), name: name);
+    _sharedFolders.add(folder);
+    await _persistSharedFolders();
+    notifyListeners();
+    return folder;
+  }
+
+  Future<void> renameSharedFolder(String folderId, String name) async {
+    final idx = _sharedFolders.indexWhere((f) => f.id == folderId);
+    if (idx < 0) return;
+    _sharedFolders[idx] = _sharedFolders[idx].copyWith(name: name);
+    await _persistSharedFolders();
+    notifyListeners();
+  }
+
+  /// フォルダ削除時、直下の共有プロジェクトはルートへ戻す
+  /// （プロジェクト一覧タブのdeleteFolder()と同じ考え方）。
+  Future<void> deleteSharedFolder(String folderId) async {
+    _sharedFolders.removeWhere((f) => f.id == folderId);
+    for (int i = 0; i < _shared.length; i++) {
+      if (_shared[i].sharedFolderId == folderId) {
+        _shared[i] = _shared[i].copyWith(sharedFolderId: null);
+      }
+    }
+    await _persistSharedFolders();
+    notifyListeners();
+  }
+
+  Future<void> moveToSharedFolder(String projectId, String? folderId) async {
+    final idx = _shared.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    _shared[idx] = _shared[idx].copyWith(sharedFolderId: folderId);
+    // _projectsにも同じプロジェクトが存在する場合（プロジェクト一覧・共有
+    // 両方に同じProjectオブジェクトが載るケース）はそちらも同期し、
+    // .niaproへの保存（_saveAsync）もそちら経由で行う。
+    final mainIdx = _projects.indexWhere((p) => p.id == projectId);
+    if (mainIdx >= 0) {
+      _projects[mainIdx] = _projects[mainIdx].copyWith(sharedFolderId: folderId);
+      _saveAsync(projectId);
+    }
+    notifyListeners();
+  }
+
+  static const _sharedFoldersPrefsKey = 'shared_folders';
+
+  Future<void> _loadSharedFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_sharedFoldersPrefsKey);
+      if (raw == null) return;
+      final list = jsonDecode(raw) as List<dynamic>;
+      _sharedFolders
+        ..clear()
+        ..addAll(list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)));
+    } catch (_) {
+      // 読み込み失敗時はフォルダなしとして続行
+    }
+  }
+
+  Future<void> _persistSharedFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          _sharedFoldersPrefsKey, jsonEncode(_sharedFolders.map((f) => f.toJson()).toList()));
+    } catch (_) {
+      // 保存失敗時も続行（次回操作時に再試行される）
+    }
   }
 
   // ─── フォルダの永続化 ─────────────────────────────────────────────────

@@ -577,6 +577,7 @@ class NiaproSerializer {
         // （実際にそのバグが発生していたため追加した）。
         'isFavorite': p.isFavorite,
         'folderId': p.folderId,
+        'sharedFolderId': p.sharedFolderId,
         'tags': p.tags,
         'thumbnailPath': p.thumbnailPath,
       };
@@ -696,6 +697,7 @@ class NiaproSerializer {
         totalWorkSeconds: j['totalWorkSeconds'] as int? ?? 0,
         isFavorite: j['isFavorite'] as bool? ?? false,
         folderId: j['folderId'] as String?,
+        sharedFolderId: j['sharedFolderId'] as String?,
         tags: (j['tags'] as List<dynamic>? ?? const []).map((e) => e as String).toList(),
         thumbnailPath: j['thumbnailPath'] as String?,
       );
