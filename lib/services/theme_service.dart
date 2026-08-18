@@ -126,7 +126,9 @@ class ThemeService extends ChangeNotifier {
     ),
     AppThemePreset(
       id: 'indigo_light',
-      name: 'インディゴ（ライト）',
+      // 「インディゴ」は日本人になじみが薄いというユーザー指摘のため、同じ
+      // 藍色系統を指す馴染み深い和名（藍色）へ変更した。
+      name: '藍色（ライト）',
       baseTheme: BaseTheme.light,
       accentColor: Color(0xFF5C6BFF),
       textColor: Color(0xFF1E2033),
@@ -137,7 +139,7 @@ class ThemeService extends ChangeNotifier {
     ),
     AppThemePreset(
       id: 'indigo_dark',
-      name: 'インディゴ（ダーク）',
+      name: '藍色（ダーク）',
       baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF5C6BFF),
       textColor: Color(0xFFF0F1FA),
@@ -168,6 +170,165 @@ class ThemeService extends ChangeNotifier {
       selectionColor: Color(0xFFB15CFF),
       updateMarkColor: Color(0xFFFFB020),
     ),
+    // ここから追加のパステル・ニュアンスカラー（ユーザー指示：「ピンクや
+    // パープル、ライトパープルやライトブルー、エメラルドグリーンなどの
+    // パステルカラーやニュアンスカラー、くすみカラーなど今っぽい色も
+    // 追加してください」）。
+    AppThemePreset(
+      id: 'pink_light',
+      name: 'ピンク（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFFFF7EB3),
+      textColor: Color(0xFF33202A),
+      panelBgColor: Color(0xFFFFF1F6),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFFFF7EB3),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'pink_dark',
+      name: 'ピンク（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFFFF7EB3),
+      textColor: Color(0xFFFAEEF3),
+      panelBgColor: Color(0xFF1F1418),
+      menuBgColor: Color(0xFF2B1B22),
+      selectionColor: Color(0xFFFF7EB3),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'light_purple_light',
+      name: 'ライトパープル（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFFB39DDB),
+      textColor: Color(0xFF272233),
+      panelBgColor: Color(0xFFF6F2FC),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFFB39DDB),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'light_purple_dark',
+      name: 'ライトパープル（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFFB39DDB),
+      textColor: Color(0xFFF2EFF9),
+      panelBgColor: Color(0xFF19171F),
+      menuBgColor: Color(0xFF211E2C),
+      selectionColor: Color(0xFFB39DDB),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'light_blue_light',
+      name: 'ライトブルー（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFF90CAF9),
+      textColor: Color(0xFF1D2733),
+      panelBgColor: Color(0xFFF0F8FE),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFF90CAF9),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'light_blue_dark',
+      name: 'ライトブルー（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF90CAF9),
+      textColor: Color(0xFFEDF5FB),
+      panelBgColor: Color(0xFF141A1F),
+      menuBgColor: Color(0xFF1C2530),
+      selectionColor: Color(0xFF90CAF9),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'emerald_light',
+      name: 'エメラルドグリーン（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFF10B981),
+      textColor: Color(0xFF13291F),
+      panelBgColor: Color(0xFFECFAF4),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFF10B981),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'emerald_dark',
+      name: 'エメラルドグリーン（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF10B981),
+      textColor: Color(0xFFE9FAF3),
+      panelBgColor: Color(0xFF0D1815),
+      menuBgColor: Color(0xFF13221D),
+      selectionColor: Color(0xFF10B981),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    // くすみカラー（ユーザー指示：色名は「くすみ（カラー名）」表記）。
+    AppThemePreset(
+      id: 'dusty_pink_light',
+      name: 'くすみピンク（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFFD8A0A6),
+      textColor: Color(0xFF2E2325),
+      panelBgColor: Color(0xFFFAF2F2),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFFD8A0A6),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'dusty_pink_dark',
+      name: 'くすみピンク（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFFD8A0A6),
+      textColor: Color(0xFFF5ECED),
+      panelBgColor: Color(0xFF1C1516),
+      menuBgColor: Color(0xFF261C1E),
+      selectionColor: Color(0xFFD8A0A6),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'dusty_blue_light',
+      name: 'くすみブルー（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFF8DA9C4),
+      textColor: Color(0xFF212B33),
+      panelBgColor: Color(0xFFF1F5F9),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFF8DA9C4),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'dusty_blue_dark',
+      name: 'くすみブルー（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF8DA9C4),
+      textColor: Color(0xFFEDF1F5),
+      panelBgColor: Color(0xFF151A1E),
+      menuBgColor: Color(0xFF1C232B),
+      selectionColor: Color(0xFF8DA9C4),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'dusty_green_light',
+      name: 'くすみグリーン（ライト）',
+      baseTheme: BaseTheme.light,
+      accentColor: Color(0xFF8FB89D),
+      textColor: Color(0xFF20281F),
+      panelBgColor: Color(0xFFF2F8F3),
+      menuBgColor: Color(0xFFFFFFFF),
+      selectionColor: Color(0xFF8FB89D),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
+    AppThemePreset(
+      id: 'dusty_green_dark',
+      name: 'くすみグリーン（ダーク）',
+      baseTheme: BaseTheme.dark,
+      accentColor: Color(0xFF8FB89D),
+      textColor: Color(0xFFEEF4EF),
+      panelBgColor: Color(0xFF151A16),
+      menuBgColor: Color(0xFF1D251F),
+      selectionColor: Color(0xFF8FB89D),
+      updateMarkColor: Color(0xFFFFB020),
+    ),
   ];
 
   Future<void> init() async {
@@ -177,6 +338,14 @@ class ThemeService extends ChangeNotifier {
       _presets.addAll(_builtInPresets);
     } else {
       _presets.addAll(raw.map((s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      // 既存ユーザーにも、後から追加した組み込みプリセット（パステル・
+      // ニュアンス・くすみカラー等）を反映する（同IDが既に存在する場合は
+      // 追加しない。名前変更した「ポップ」「インディゴ」は既存ユーザーの
+      // 手元では旧名のまま残るが、同一IDのため実害はなく、名称変更したい
+      // 場合はプリセットの削除→再度組み込み一覧から選び直しで反映できる）。
+      final existingIds = _presets.map((p) => p.id).toSet();
+      final missing = _builtInPresets.where((p) => !existingIds.contains(p.id));
+      if (missing.isNotEmpty) _presets.addAll(missing);
     }
     final currentId = prefs.getString(_prefsCurrentIdKey);
     if (currentId != null) {
