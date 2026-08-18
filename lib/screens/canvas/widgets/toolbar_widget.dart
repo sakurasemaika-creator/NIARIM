@@ -56,9 +56,9 @@ class ToolbarWidget extends StatelessWidget {
             child: _toolButton(context, Icons.brush, DrawingTool.pen, l10n.toolbarPenTooltip),
           ),
         ),
-      // 消しゴム用のアイコン（ユーザー指示により新規変更：以前使っていた
-      // crop_square（四角形の枠）は選択ツール側へ移し、消しゴムには
-      // 見た目でそれと分かる専用アイコンを割り当てる）。
+      // 消しゴム用のアイコン。以前使っていたcrop_square（四角形の枠）は
+      // 選択ツール側へ移し、消しゴムには見た目でそれと分かる専用アイコンを
+      // 割り当てる。
       ToolbarItemId.eraser => _toolButton(context, Icons.backspace_outlined, DrawingTool.eraser, l10n.toolbarItemEraser),
       // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
       ToolbarItemId.bucket => FirstUseTooltip(
@@ -93,7 +93,7 @@ class ToolbarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
-    // ユーザー指示：描画領域を可能な限り広げるため、常設ボタン類は背景を
+    // 描画領域を可能な限り広げるため、常設ボタン類は背景を
     // 持たせず、半透明の黒で中くらいの太さの縁取りのみにする（キャンバスの
     // 内容がどんな色でも視認できるよう、アイコン自体は白で統一する）。
     return Container(
@@ -107,7 +107,7 @@ class ToolbarWidget extends StatelessWidget {
             // ツールバー編集（仕様書08）でカスタマイズ可能な項目を並び順・表示設定通りに表示。
             // 手のひらツールは強制スマホモードでは常に非表示、それ以外
             // （PCモード固定・自動判定）では横画面のときのみ表示する
-            // （ユーザー指示：液タブ接続時のDeXモード等を考慮）。
+            // （液タブ接続時のDeXモード等を考慮）。
             for (final id in settings.toolbarOrder)
               if (!settings.hiddenToolbarItems.contains(id) &&
                   (id != ToolbarItemId.pan || canShowPanTool(context)))
@@ -181,10 +181,7 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  // ダブルタップで簡易説明・長押しでブラシ/トーン/色変更（ユーザー指示：
-  // 「現在全てのツールは長押しで簡易説明が出るようになっていますが、
-  // ダブルタップで簡易説明、長押しでブラシやトーン、色変更を各ツールで
-  // できるようにしてください」）。長押しは各ツール個別のサブメニュー
+  // ダブルタップで簡易説明・長押しでブラシ/トーン/色変更。長押しは各ツール個別のサブメニュー
   // （ペンのサブツールパネル・バケツのトーン切替等）に使うため、従来
   // 長押しで表示していた簡易説明はダブルタップへ移す。ここで
   // GestureDetectorを重ねてもペン/バケツ/選択ツールの既存の
@@ -212,7 +209,7 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  /// 常設ボタン共通のスタイル（ユーザー指示）：背景なし・アイコンだけが
+  /// 常設ボタン共通のスタイル：背景なし・アイコンだけが
   /// キャンバス上に浮かび、アイコンの形にぴったり沿う半透明の黒い縁取りを
   /// 持つ（実装はCanvasIconButtonへ集約。canvas_screen.dartの上部バーとも
   /// 共通のデザインにするため）。
@@ -231,8 +228,8 @@ class ToolbarWidget extends StatelessWidget {
         currentTool == DrawingTool.selectLasso ||
         currentTool == DrawingTool.selectMagicWand;
     // 矩形選択（デフォルト）には、以前消しゴムに使っていたcrop_square
-    // （四角形の枠）を移す（ユーザー指示：矩形選択の見た目に合っている
-    // ため。消しゴムには専用のink_eraserアイコンを新たに割り当てた）。
+    // （四角形の枠）を移す（矩形選択の見た目に合っているため。
+    // 消しゴムには専用のink_eraserアイコンを新たに割り当てた）。
     final icon = switch (currentTool) {
       DrawingTool.selectLasso => Icons.gesture,
       DrawingTool.selectMagicWand => Icons.auto_awesome,

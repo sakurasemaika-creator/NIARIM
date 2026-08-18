@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 
 /// ゴミ箱アイコンタップ時に一発で削除せず、確認ダイアログを挟む共通ヘルパー
-/// （ユーザー指示：アプリ全体で誤操作による削除を防止する）。[itemName]を
+/// （アプリ全体で誤操作による削除を防止する）。[itemName]を
 /// 指定すると確認文に対象名を含める。trueが返れば削除確定・falseまたは
 /// nullなら取り消し。
 Future<bool> confirmDelete(BuildContext context, {String? itemName}) async {

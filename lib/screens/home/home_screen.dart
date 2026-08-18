@@ -190,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             : Text(l10n.appTitle),
         actions: [
           // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
-          // トップ画面右上からは重複表示を削除した（ユーザー指示）。
+          // トップ画面右上からは重複表示を削除した。
           if (_isSearching)
             IconButton(
               icon: const Icon(Icons.close),
@@ -333,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
       // 共有・作品一覧タブ：新規プロジェクト作成の導線は不要なため、
       // フォルダの新規作成のみをワンタップ・選択肢なしで直接行えるFABに
-      // する（ユーザー指示）。ゴミ箱タブでは新規作成自体が不要なため
+      // する。ゴミ箱タブでは新規作成自体が不要なため
       // 非表示のまま。
       floatingActionButton: switch (_currentTabIndex) {
         0 => FloatingActionButton(
@@ -551,7 +551,7 @@ class _SharedTab extends StatelessWidget {
   }
 }
 
-/// 共有タブのフォルダ内表示（ユーザー指示：共有タブへのフォルダ新規追加機能）。
+/// 共有タブのフォルダ内表示（共有タブへのフォルダ新規追加機能）。
 class _SharedFolderScreen extends StatelessWidget {
   final String folderId;
   final String folderName;

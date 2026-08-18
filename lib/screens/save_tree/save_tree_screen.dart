@@ -448,7 +448,7 @@ class _TreeView extends StatelessWidget {
         ),
       );
     }
-    // 画面下から上へ伸びる木のような見た目にする（ユーザー指示）。
+    // 画面下から上へ伸びる木のような見た目にする。
     // フラット化した行リストをDFS順（root→子→孫…）で構築し、reverse:trueで
     // 表示することで、rootが画面最下部・深い子孫ほど上に積み上がる形になる。
     // 各行には祖先の分岐が下（reverse後は下方向）へ続くかを示す接続線を
@@ -565,7 +565,7 @@ class _TreeView extends StatelessWidget {
 /// アルゴリズム）。[continues]は自身を含む各祖先深さでの「まだ次の兄弟が
 /// 続くか」を表すリスト（末尾＝自分自身）。ListViewをreverse:trueで
 /// 表示しているため、「続く」方向は画面上では上向きになる（木が下から
-/// 上へ伸びる見た目、ユーザー指示）。
+/// 上へ伸びる見た目）。
 class _TreeConnectorPainter extends CustomPainter {
   final List<bool> continues;
   final Color color;

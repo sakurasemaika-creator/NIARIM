@@ -57,7 +57,7 @@ class FilterService extends ChangeNotifier {
     } else {
       _filters.addAll(raw.map((s) => FilterDef.fromJson(jsonDecode(s) as Map<String, dynamic>)));
       // 既存ユーザーにも新規追加した組み込みフィルター（シャープ・
-      // アンシャープマスク）を反映する（ユーザー指示により新規追加）。
+      // アンシャープマスク）を反映する。
       final existingIds = _filters.map((f) => f.id).toSet();
       final missing = _defaultFilters().where((f) => !existingIds.contains(f.id));
       if (missing.isNotEmpty) {

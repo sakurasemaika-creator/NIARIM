@@ -15,9 +15,9 @@ final RegExp _rubyPattern = RegExp(r'\{([^{}|]+)\|([^{}|]+)\}');
 /// アプリの方針に沿う。横書き・縦書きの両方に対応する（仕様書15：横書き・縦書き
 /// 切替）。
 /// [pixelMode]がtrueの場合、ラスタライズ後にアンチエイリアスを除去する
-/// （ユーザー指示により新規追加。呼び出し元でFontService.
-/// pixelModeForFamily(text.fontFamily)の結果を渡す想定。ドットフォントを
-/// にじませずくっきり表示するための設定で、ブラシのdotPenModeと同じ考え方）。
+/// （呼び出し元でFontService.pixelModeForFamily(text.fontFamily)の結果を
+/// 渡す想定。ドットフォントをにじませずくっきり表示するための設定で、
+/// ブラシのdotPenModeと同じ考え方）。
 Future<Uint8List?> rasterizeTextObject(
   TextObject text,
   int canvasWidth,

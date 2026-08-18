@@ -73,7 +73,7 @@ class ToneService extends ChangeNotifier {
         const Tone(id: 'Tone0004', name: '網点 70%'),
         const Tone(id: 'Tone0005', name: 'ライン 細'),
         const Tone(id: 'Tone0006', name: 'ライン 太'),
-        // ピクセルモード用トーン（ユーザー指示：1ピクセルごとに市松模様／
+        // ピクセルモード用トーン（1ピクセルごとに市松模様／
         // 格子柄になっているトーン）。procedural_texture.dartの
         // generateBuiltInToneTextureが名前に「市松」「格子」を含むかで判定する。
         const Tone(id: 'Tone0007', name: 'ドット市松（1px）'),

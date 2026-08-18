@@ -229,7 +229,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   String? _currentLayerId;
   bool _autosaveAttached = false;
   bool _layerPanelDefaultInitialized = false;
-  // フレーム一覧の折りたたみ状態（ユーザー指示：描画領域を広げるため
+  // フレーム一覧の折りたたみ状態（描画領域を広げるため
   // 任意のタイミングで開閉できるようにする）。
   bool _showFrameStrip = true;
   // ツールバーの折りたたみ状態（同上。スマホの小さな画面でも描画領域を
@@ -259,7 +259,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // （プロ向け制作ツールの慣習に合わせ、広い画面では最初から出しておく）。
     // 以前はisDesktop分岐でLayerPanelを無条件表示・onCloseも空実装にして
     // いたため、閉じるボタンを押しても何も起きず「一度表示されると閉じられ
-    // ない」状態になっていた（ユーザー報告により発覚・修正）。モバイル
+    // ない」状態になっていた不具合を修正した。モバイル
     // レイアウトの初期値（非表示）はそのまま維持する。
     if (!_layerPanelDefaultInitialized) {
       _layerPanelDefaultInitialized = true;
@@ -545,7 +545,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   context.read<BrushService>().updateCurrentBrushOpacity(v);
                 },
               ),
-            // ツールバーの折りたたみ用ハンドル（ユーザー指示：フレーム一覧と
+            // ツールバーの折りたたみ用ハンドル（フレーム一覧と
             // 同様に、任意のタイミングで開閉できるようにし描画領域を広げる）。
             GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -599,7 +599,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
               ),
             if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
-            // フレーム一覧の折りたたみ用ハンドル（ユーザー指示：描画領域を
+            // フレーム一覧の折りたたみ用ハンドル（描画領域を
             // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
             GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -814,7 +814,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     });
   }
 
-  /// 上部バー常設ボタン共通のスタイル（ユーザー指示。toolbar_widget.dartの
+  /// 上部バー常設ボタン共通のスタイル（toolbar_widget.dartの
   /// _borderedIconButtonと同じ考え方）：背景なし・アイコンだけが浮かび、
   /// アイコンの形にぴったり沿う半透明の黒い縁取りを持つ（実装は
   /// CanvasIconButtonへ集約）。
@@ -834,8 +834,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した
-          // （ユーザー指示）。キャンバスモードの画面左上（元は戻るボタンの
+          // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した。
+          // キャンバスモードの画面左上（元は戻るボタンの
           // 位置）にはUndo/Redoを配置する。
           _topBarIconButton(context, Icons.undo,
               onPressed: () => context.read<UndoManager>().undo(), tooltip: l10n.commonUndo),

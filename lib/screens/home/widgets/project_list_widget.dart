@@ -429,7 +429,7 @@ class ProjectListWidget extends StatelessWidget {
     }
   }
 
-  /// お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+  /// お気に入り登録中は削除できない。
   void _deleteProject(BuildContext context, ProjectService service, Project project) {
     if (project.isFavorite) {
       final l10n = AppLocalizations.of(context)!;
@@ -460,7 +460,7 @@ class ProjectListWidget extends StatelessWidget {
   /// （仕様書19：「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する」）。
   void _confirmDeleteFolder(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
-    // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+    // お気に入り登録中は削除できない。
     if (folder.isFavorite) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));

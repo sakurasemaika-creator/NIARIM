@@ -126,8 +126,7 @@ class ThemeService extends ChangeNotifier {
     ),
     AppThemePreset(
       id: 'indigo_light',
-      // 「インディゴ」は日本人になじみが薄いというユーザー指摘のため、同じ
-      // 藍色系統を指す馴染み深い和名（藍色）へ変更した。
+      // 同じ藍色系統を指す馴染み深い和名（藍色）を名前に使う。
       name: '藍色（ライト）',
       baseTheme: BaseTheme.light,
       accentColor: Color(0xFF5C6BFF),
@@ -170,10 +169,7 @@ class ThemeService extends ChangeNotifier {
       selectionColor: Color(0xFFB15CFF),
       updateMarkColor: Color(0xFFFFB020),
     ),
-    // ここから追加のパステル・ニュアンスカラー（ユーザー指示：「ピンクや
-    // パープル、ライトパープルやライトブルー、エメラルドグリーンなどの
-    // パステルカラーやニュアンスカラー、くすみカラーなど今っぽい色も
-    // 追加してください」）。
+    // ここから追加のパステル・ニュアンスカラー。
     AppThemePreset(
       id: 'pink_light',
       name: 'ピンク（ライト）',
@@ -262,7 +258,7 @@ class ThemeService extends ChangeNotifier {
       selectionColor: Color(0xFF10B981),
       updateMarkColor: Color(0xFFFFB020),
     ),
-    // くすみカラー（ユーザー指示：色名は「くすみ（カラー名）」表記）。
+    // くすみカラー（色名は「くすみ（カラー名）」表記）。
     AppThemePreset(
       id: 'dusty_pink_light',
       name: 'くすみピンク（ライト）',
@@ -456,9 +452,9 @@ class ThemeService extends ChangeNotifier {
     // ウィジェット側でAndroid標準フォント（未指定＝Roboto/Noto Sans）を
     // 明示的に指定して上書きする。
     // 明朝体（白光明朝）は線が細く、通常の太さ（Regular）のままだと画面全体で
-    // 文字が読みにくいというユーザー指摘への対応。デフォルトの太さがRegular
-    // 以下（未指定含む）のスタイルはMedium以上へ底上げする（既に太字指定済み
-    // の箇所、例：AppBarタイトルのBold等はそのまま維持される）。
+    // 文字が読みにくい。デフォルトの太さがRegular以下（未指定含む）の
+    // スタイルはMedium以上へ底上げする（既に太字指定済みの箇所、例：
+    // AppBarタイトルのBold等はそのまま維持される）。
     final bodyTextTheme = _boldenForReadability(_withFontFallback(
       baseTextTheme.apply(
         fontFamily: 'HakkouMincho',
@@ -467,7 +463,7 @@ class ThemeService extends ChangeNotifier {
       ),
       const ['NotoSerifJP'],
     ));
-    // フォントの使い分け（ユーザー指示）：項目名・見出しなど文字サイズが
+    // フォントの使い分け：項目名・見出しなど文字サイズが
     // 大きく目立たせたい箇所（display/headline/title）はくらむぼん、
     // それ以外の説明文・通常サイズの文字（body/label）はすべて白光明朝、
     // という切り分けに変更した（従来はくらむぼんをチュートリアル説明の
@@ -626,7 +622,7 @@ class ThemeService extends ChangeNotifier {
 
   /// display/headline/title（見出し・項目名として使われるサイズ）のみ
   /// [fontFamily]（くらむぼん）へ差し替え、body/label（説明文・通常サイズの
-  /// 文字）はそのまま（白光明朝）にする（ユーザー指示：フォントの使い分け）。
+  /// 文字）はそのまま（白光明朝）にする（フォントの使い分けルール）。
   TextTheme _applyHeadingFont(TextTheme textTheme, String fontFamily) {
     TextStyle? heading(TextStyle? style) =>
         style?.copyWith(fontFamily: fontFamily, fontFamilyFallback: null);

@@ -94,7 +94,7 @@ void showFolderManagementSheet(
                           IconButton(
                             icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
                             tooltip: l10n.commonDelete,
-                            // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+                            // お気に入り登録中は削除できない。
                             onPressed: () async {
                               if (f.isFavorite) {
                                 ScaffoldMessenger.of(ctx).showSnackBar(

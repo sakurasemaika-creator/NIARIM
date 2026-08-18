@@ -60,8 +60,8 @@ class AppThemePreset {
   // 独立した選択肢として残す。
   static const defaultDark = AppThemePreset(
     id: 'default_dark',
-    // 「ポップ」は何色を指すか伝わりにくいというユーザー指摘のため、実際の
-    // 差し色（珊瑚ピンク・虹7色でいう「赤」）が分かる名前へ変更した。
+    // 何色を指すか伝わる名前にするため、実際の差し色（珊瑚ピンク・虹7色で
+    // いう「赤」）が分かる名前にしている。
     name: 'レッド（ダーク）',
     baseTheme: BaseTheme.dark,
     accentColor: Color(0xFFFF5C7A),

@@ -206,7 +206,7 @@ class ThemeSettingsScreen extends StatelessWidget {
         );
         service.savePreset(copy);
       case 'delete':
-        // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+        // お気に入り登録中は削除できない。
         if (preset.isFavorite) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));

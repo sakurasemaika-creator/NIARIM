@@ -55,7 +55,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                       Builder(
                         key: ValueKey(id),
                         builder: (context) {
-                          // 手のひらツール（ユーザー指示）：強制スマホモード中は
+                          // 手のひらツール：強制スマホモード中は
                           // そもそもONにできないよう設定項目自体をグレーアウトする。
                           // PCモード固定・自動判定の場合は設定可能で、ONにした
                           // 場合でも実際の表示は横画面時のみ（canShowPanTool）。

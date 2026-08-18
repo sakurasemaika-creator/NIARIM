@@ -122,8 +122,8 @@ class Brush {
         blurRadius: j['blurRadius'] as int,
         stabilization: j['stabilization'] as bool,
         stabilizationStrength: j['stabilizationStrength'] as int,
-        // pixelModeは旧称dotPenModeからの改称（ユーザー指示：「ドット」だと
-        // 水玉模様と誤認される恐れがあるため）。旧バージョンで保存・共有
+        // pixelModeは旧称dotPenModeからの改称（「ドット」だと水玉模様と
+        // 誤認される恐れがあるため）。旧バージョンで保存・共有
         // 済みのブラシ（.niabrush・SharedPreferences永続化データ）を
         // 引き続き読み込めるよう、旧キーからのフォールバックを残す。
         pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,

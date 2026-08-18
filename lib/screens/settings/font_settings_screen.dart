@@ -145,7 +145,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // ピクセルモード（ユーザー指示により新規追加）：ON時は
+                              // ピクセルモード：ON時は
                               // このフォントで追加するテキストのアンチエイリアスを
                               // 除去する（ドットフォントをにじませずくっきり表示）。
                               IconButton(
@@ -214,7 +214,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
 
   void _confirmDelete(BuildContext context, FontAsset font) {
     final l10n = AppLocalizations.of(context)!;
-    // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+    // お気に入り登録中は削除できない。
     if (font.isFavorite) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));

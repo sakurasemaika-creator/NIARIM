@@ -6,11 +6,10 @@ import '../models/autofill_preset.dart';
 enum AutofillMode { repaint, colorUpdate }
 
 /// 自動塗りの本処理（AutofillEngine.execute）をcompute()経由のバックグラウンド
-/// isolateで実行するためのトップレベル関数（ユーザー指示：スマホでの動作を
-/// 可能な限り軽くする。キャンバス全体を走査するフラッドフィルは自動塗りの
-/// 中で最も重い処理でありながら、従来はメインスレッド（UIスレッド）で
-/// 同期実行していたため、実行中は画面が固まって見える不具合があった。
-/// lasso_fill_engine.dart等、他の重い処理と同じ設計に合わせた）。
+/// isolateで実行するためのトップレベル関数。キャンバス全体を走査する
+/// フラッドフィルは自動塗りの中で最も重い処理でありながら、従来はメイン
+/// スレッド（UIスレッド）で同期実行していたため、実行中は画面が固まって
+/// 見える不具合があった。lasso_fill_engine.dart等、他の重い処理と同じ設計。
 Uint8List? runAutofillExecuteInIsolate(
     ({
       AutofillMode mode,
@@ -333,9 +332,9 @@ class AutofillEngine {
 
   /// [feather]（0.0〜1.0）：1.0なら隣接する2色の境界（stops[i]〜stops[i+1]）
   /// の全区間を使い、隣の色の端（stops[i+1]）まで完全に混ざり切る滑らかな
-  /// ブレンドにする（ユーザー指示：「ぼかし100%は隣の色の端まで完全に混ざる
-  /// 状態」）。値を下げるほど境界の中央付近だけで急に切り替わる帯状表示に
-  /// 近づき、0では中間色を持たない完全な帯（ハードエッジ）になる（仕様書20）。
+  /// ブレンドにする。値を下げるほど境界の中央付近だけで急に切り替わる帯状
+  /// 表示に近づき、0では中間色を持たない完全な帯（ハードエッジ）になる
+  /// （仕様書20）。
   int _sampleGradient(List<int> colors, List<double> stops, double t, [double feather = 1.0]) {
     if (colors.isEmpty) return 0xFF000000;
     if (colors.length == 1) return colors.first;

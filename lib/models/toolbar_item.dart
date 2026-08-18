@@ -19,7 +19,7 @@ enum ToolbarItemId {
   bucket,
   eyedropper,
   finger,
-  // 手のひらツール（画面移動専用）。ユーザー指示：強制スマホモードでは
+  // 手のひらツール（画面移動専用）。強制スマホモードでは
   // 設定自体を変更不可（グレーアウト）にし、それ以外（PCモード固定・
   // 自動判定）では設定可能。実際にツールバーへ表示するかは横画面か
   // どうかで動的に決まる（widgets/responsive.dartのcanShowPanTool参照）。
@@ -59,8 +59,8 @@ extension ToolbarItemIcon on ToolbarItemId {
         ToolbarItemId.eraser => Icons.crop_square,
         ToolbarItemId.bucket => Icons.format_color_fill,
         ToolbarItemId.eyedropper => Icons.colorize,
-        // 指先ツール（歪み）：ユーザー指示により人差し指を立てたアイコンへ
-        // 変更（以前のback_handは掌全体を広げた「手のひら」の形で紛らわしく、
+        // 指先ツール（歪み）：人差し指を立てたアイコンを使う
+        // （以前のback_handは掌全体を広げた「手のひら」の形で紛らわしく、
         // 手のひらツール〔画面移動〕の方へ移した）。
         ToolbarItemId.finger => Icons.pan_tool_alt,
         ToolbarItemId.pan => Icons.back_hand,

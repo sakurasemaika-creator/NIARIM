@@ -131,7 +131,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 case 'move': _showMoveToFolderDialog(context, projectService);
                 case 'materials': context.push('/materials/${widget.projectId}');
                 case 'delete':
-                  // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+                  // お気に入り登録中は削除できない。
                   if (project.isFavorite) {
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
@@ -295,9 +295,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               label: Text(l10n.projectDetailSaveTreeButton),
             ),
             const SizedBox(height: 8),
-            // このプロジェクトで使う自動塗りプリセットの選択（ユーザー指示：
+            // このプロジェクトで使う自動塗りプリセットの選択。
             // プリセットは増えていくため、プロジェクト設定内でも選び直せる
-            // ようにする）。
+            // ようにする。
             OutlinedButton.icon(
               onPressed: () => _showPresetSelection(context, projectService, project),
               icon: const Icon(Icons.auto_fix_high_outlined),

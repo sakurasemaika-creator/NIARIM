@@ -959,9 +959,9 @@ class ProjectService extends ChangeNotifier {
     return scene.frames[frameIndex].hold;
   }
 
-  /// プロジェクト全シーンの実フレーム数を返す（ユーザー指示：
-  /// 「長さ指定は大体の目安であって、実際にタイムラインモードでフレームを
-  /// 追加・削除したらその分長さが変わるようにする」ための集計）。
+  /// プロジェクト全シーンの実フレーム数を返す。長さ指定は大体の目安で
+  /// あり、実際にタイムラインモードでフレームを追加・削除したらその分
+  /// 長さが変わるようにするための集計。
   /// フレーム追加・複製・削除ボタンを押す前に、UI側で上限チェック
   /// （無料会員は90秒まで）に使う想定。
   int totalFrameCount(String projectId) {
@@ -980,9 +980,9 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// フレームの追加・複製・削除のたびに呼び出し、プロジェクトの長さ
-  /// （durationSeconds）を全シーンの実フレーム数から再計算して同期する
-  /// （ユーザー指示：新規プロジェクト作成画面の長さ指定はあくまで目安で、
-  /// 実際の長さはタイムラインモードでのフレーム増減に連動させる）。
+  /// （durationSeconds）を全シーンの実フレーム数から再計算して同期する。
+  /// 新規プロジェクト作成画面の長さ指定はあくまで目安で、
+  /// 実際の長さはタイムラインモードでのフレーム増減に連動させる。
   void _syncDurationToFrameCount(String projectId) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
@@ -1321,8 +1321,8 @@ class ProjectService extends ChangeNotifier {
   }
 
   // ─── 素材タイムライン行（画像・動画・音源、仕様書05） ────────────────────
-  // 「タイムライン右側の＋マークは素材の追加ではなく行の追加、二列目以降は
-  // －マークで行削除、行名はタップで変更可能」というユーザー指示への対応。
+  // タイムライン右側の＋マークは素材の追加ではなく行の追加、二列目以降は
+  // －マークで行削除、行名はタップで変更可能。
   // 行数・行名はScene.imageRowNames/videoRowNames/audioRowNames（リスト長＝
   // 行数、要素は行名。nullなら既定表示）で管理する。
 
@@ -1794,8 +1794,8 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
-  /// このプロジェクトで使用する自動塗りプリセットを設定する（ユーザー指示：
-  /// プロジェクトごとに使うプリセットだけを選べるようにする）。
+  /// このプロジェクトで使用する自動塗りプリセットを設定する。
+  /// プロジェクトごとに使うプリセットだけを選べるようにする。
   /// [ids]がnullの場合は「すべて使用する」に戻す。
   Future<void> setEnabledAutofillPresetIds(String projectId, List<String>? ids) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);

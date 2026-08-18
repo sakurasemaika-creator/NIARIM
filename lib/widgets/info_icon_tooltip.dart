@@ -44,7 +44,7 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
       builder: (ctx) => Stack(
         children: [
           // 吹き出し自体だけでなく、画面内のどこをタップしても閉じられる
-          // ようにする全画面の透明バリア（ユーザー指示）。
+          // ようにする全画面の透明バリア。
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -72,9 +72,9 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                       Expanded(
                         child: Text(
                           widget.message,
-                          // 通常サイズの説明文はすべて白光明朝を使う（ユーザー指示：
+                          // 通常サイズの説明文はすべて白光明朝を使う。
                           // くらむぼんは見出し・項目名など大きく目立たせたい文字の
-                          // みに限定する）。
+                          // みに限定する。
                           style: TextStyle(
                             color: Theme.of(ctx).colorScheme.onPrimary,
                             fontSize: 12,

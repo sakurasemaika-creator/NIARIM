@@ -239,7 +239,7 @@ class _BrushPanelState extends State<BrushPanel> {
     }
   }
 
-  /// お気に入り登録中は削除できない（ユーザー指示により新規追加。誤って
+  /// お気に入り登録中は削除できない（誤って
   /// お気に入りのブラシを消してしまう事故を防ぐため）。
   void _deleteBrush(BuildContext context, BrushService service, Brush brush) {
     if (brush.isFavorite) {
@@ -360,8 +360,8 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           if (_brush.stabilization)
             _sliderRow(l10n.brushSettingsStabilizationStrengthLabel, _brush.stabilizationStrength.toDouble(), 0, 100,
                 (v) => setState(() => _brush = _brush.copyWith(stabilizationStrength: v.round()))),
-          // ピクセルモード（旧称：ドットペンモード。ユーザー指示により改称。
-          // 「ドット」だと水玉模様と誤認される恐れがあるため）
+          // ピクセルモード（旧称：ドットペンモード。
+          // 「ドット」だと水玉模様と誤認される恐れがあるため改称）
           SwitchListTile(
             title: Text(l10n.brushSettingsPixelModeTitle),
             value: _brush.pixelMode,

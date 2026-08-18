@@ -80,10 +80,10 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
   } else if (name.contains('ライン')) {
     _fillLinePattern(data, size, name.contains('太') ? 3 : 1);
   } else if (name.contains('市松')) {
-    // ピクセルモード用：1ピクセルごとに市松模様（ユーザー指示）。
+    // ピクセルモード用：1ピクセルごとに市松模様。
     _fillPixelCheckerPattern(data, size);
   } else if (name.contains('格子')) {
-    // ピクセルモード用：1ピクセルごとに格子柄（ユーザー指示）。
+    // ピクセルモード用：1ピクセルごとに格子柄。
     _fillPixelGridPattern(data, size);
   } else {
     _fillDotPattern(data, size, 0.3);

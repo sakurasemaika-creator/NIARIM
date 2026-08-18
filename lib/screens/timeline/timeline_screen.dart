@@ -206,8 +206,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _frameMoveCursorPos = 0;
 
   // フレーム一覧も画面中央に固定で赤枠を表示し、現在位置のフレームがそこへ
-  // 来るよう一覧側をスクロールさせる（ユーザー指示。キャンバスモードの
-  // フレーム一覧と同じ挙動）。_frameScrollCtrlは他トラックと同期済みのため、
+  // 来るよう一覧側をスクロールさせる（キャンバスモードのフレーム一覧と
+  // 同じ挙動）。_frameScrollCtrlは他トラックと同期済みのため、
   // ここでのスクロールは共通レイヤー・素材トラック等にも連動する。
   int? _lastCenteredFrame;
 
@@ -221,9 +221,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // フレーム一覧の左右には((ビューポート幅-セル幅)/2)の余白（_buildFrameList
   // 参照）を入れてあるため、先頭・末尾のフレームも赤枠（画面中央）まで
-  // きっちりスクロールできる（ユーザー指摘：以前は[0,maxScrollExtent]への
-  // clampにより、先頭フレーム・最終フレームへスキップした際に赤枠から
-  // ずれて表示される不具合があった）。
+  // きっちりスクロールできる。以前は[0,maxScrollExtent]へのclampにより、
+  // 先頭フレーム・最終フレームへスキップした際に赤枠からずれて表示される
+  // 不具合があった。
   void _centerFrameInList({required bool animate}) {
     if (!_frameScrollCtrl.hasClients) return;
     final target = (_currentFrame * _cellW).clamp(0.0, _frameScrollCtrl.position.maxScrollExtent);
@@ -235,8 +235,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// スワイプ・ドラッグを手放した位置が中途半端でも、赤枠に一番近い
-  /// フレームへ自動的にスナップさせる（ユーザー指示。キャンバスモードの
-  /// フレーム一覧と同じ挙動）。
+  /// フレームへ自動的にスナップさせる（キャンバスモードのフレーム一覧と
+  /// 同じ挙動）。
   bool _handleFrameListScrollEnd(ScrollEndNotification notification) {
     if (notification.dragDetails == null) return false;
     if (_isFrameMoveMode || _isFrameMultiSelect) return false;
@@ -545,8 +545,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // 共通レイヤートラック（仕様書05：タイムライン表示順はフレーム・
             // シーン・共通レイヤー・画像・動画・音源・エンドカードの順）
             _buildCommonLayerTrack(),
-            // シーン・フレームの複数選択モード中の一括操作バー（ユーザー指示：
-            // 小さいボタンではなく素材タイムラインの上に大きな3分割ボタンで表示）
+            // シーン・フレームの複数選択モード中の一括操作バー（小さいボタン
+            // ではなく素材タイムラインの上に大きな3分割ボタンで表示）
             _buildMultiSelectActionBar(),
             _buildMaterialTrackGroup(
               type: MaterialType.image,
@@ -592,8 +592,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // プロジェクト一覧へ戻るボタン（ユーザー指示：キャンバスモードでは
-          // なくタイムラインモードに実装する）。左矢印はここでは「プロジェクト
+          // プロジェクト一覧へ戻るボタン（キャンバスモードではなくタイムライン
+          // モードに実装する）。左矢印はここでは「プロジェクト
           // 一覧へ戻る」の意味に変更し、従来この矢印が担っていた
           // 「キャンバスへ戻る」はパレットアイコンの新規ボタンへ移した。
           IconButton(icon: const Icon(Icons.arrow_back), tooltip: l10n.timelineBackToProjectListTooltip, onPressed: _confirmBackToProjectList),
@@ -609,8 +609,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
             tooltip: l10n.commonRedo,
             onPressed: undoManager.canRedo ? undoManager.redo : null,
           ),
-          // 三点メニュー（ユーザー指示：保存ボタン・プロジェクト保存ボタンは
-          // セーブツリー（設定によってはセーブスロット）と役割が被っていた
+          // 三点メニュー（保存ボタン・プロジェクト保存ボタンはセーブツリー
+          // （設定によってはセーブスロット）と役割が被っていた
           // ため削除し、セーブツリー/スロット・自動塗り実行・書き出しの
           // 3項目のみに整理した）。
           PopupMenuButton<String>(
@@ -701,8 +701,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// プレビューと再生バーの間のシークバー（ユーザー指示により新規追加）。
-  /// ドラッグで任意のフレームへ直接移動できる。
+  /// プレビューと再生バーの間のシークバー。ドラッグで任意のフレームへ
+  /// 直接移動できる。
   Widget _buildSeekBar() {
     final maxFrame = (_totalFrames - 1).clamp(0, 1 << 30);
     return Padding(
@@ -935,9 +935,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// ウォーターマークのドロップシャドウ・縁取りを適用する（ユーザー指示：
-  /// ウォーターマーク設定画面で予め設定できるようにしたドロップシャドウ・
-  /// 縁取りを、実際にタイムラインへ配置する際のラスタライズ結果へ反映する）。
+  /// ウォーターマークのドロップシャドウ・縁取りを適用する。ウォーターマーク
+  /// 設定画面で予め設定できるようにしたドロップシャドウ・縁取りを、実際に
+  /// タイムラインへ配置する際のラスタライズ結果へ反映する。
   /// 縁取りはFilterEngine.applyOutline（元の描画内容を保持したまま外周へ
   /// リング状に描く）をそのまま使い、ドロップシャドウは元画像のシルエット
   /// （アルファそのまま・RGBを影色に置換）をオフセット＋ガウスぼかしした
@@ -1155,7 +1155,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               children: [
                 // 移動モード中：「決定」ボタン。通常時：「選択」ボタン。複数選択モード中の
                 // 移動・複製・削除・全選択・全解除は、素材タイムラインの上に大きな専用
-                // ボタンとして表示する（ユーザー指示：_buildMultiSelectActionBar参照）。
+                // ボタンとして表示する（_buildMultiSelectActionBar参照）。
                 if (_isMoveMode)
                   TextButton(
                     onPressed: () => _confirmMove(scenes),
@@ -1318,8 +1318,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 選択中シーンを複製する（仕様書05：シーンのコピー。ユーザー指示により
-  /// 素材タイムラインの上の大きなボタンから起動する）。並び順（シーン一覧の
+  /// 選択中シーンを複製する（仕様書05：シーンのコピー。素材タイムラインの
+  /// 上の大きなボタンから起動する）。並び順（シーン一覧の
   /// 実際の順序）に沿って1件ずつ複製元の直後へ挿入していく。
   void _duplicateSelectedScenes(List<Scene> scenes) {
     if (_selectedSceneIds.isEmpty) return;
@@ -1519,7 +1519,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   _buildTrackLabel(Icons.movie_filter, l10n.timelineFrameTrackLabel),
                   // 移動モード中：「決定」。通常時：「選択」。複数選択モード中の移動・複製・
                   // 削除・全選択・全解除は素材タイムラインの上の大きなボタンへ移動した
-                  // （ユーザー指示：_buildMultiSelectActionBar参照）。
+                  // （_buildMultiSelectActionBar参照）。
                   if (_isFrameMoveMode)
                     TextButton(
                       onPressed: _confirmFrameMove,
@@ -1601,7 +1601,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         }
                         // 現在フレームの強調表示は画面中央固定の赤枠が担うため、
                         // 通常モードでは枠色を変えない（複数選択のチェック状態のみ
-                        // ここで色分けする。ユーザー指示）。
+                        // ここで色分けする）。
                         final isChecked = _selectedFrameIndices.contains(index);
                         // このフレームに自動塗り未更新のレイヤーがある場合の❗マーク
                         // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
@@ -1645,7 +1645,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               borderRadius: BorderRadius.circular(2),
                               child: Stack(
                               children: [
-                                // フレームの実プレビュー（ユーザー指示：ただの四角形では
+                                // フレームの実プレビュー（ただの四角形では
                                 // なくちゃんとしたプレビューにする）。
                                 if (frameListSceneId != null)
                                   Positioned.fill(
@@ -1686,7 +1686,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         );
                       },
                     ),
-                    // 画面中央に固定表示する赤枠（ユーザー指示）。フレーム一覧側が
+                    // 画面中央に固定表示する赤枠。フレーム一覧側が
                     // スクロールして現在位置のフレームをここへ合わせる。
                     IgnorePointer(
                       child: Center(
@@ -1776,9 +1776,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// フレーム追加・複製の前に、無料会員の長さ上限（90秒）を超えないか
-  /// チェックする（ユーザー指示：「無課金会員がフレーム追加や複製などに
-  /// よって90秒を超えるようになりそうならフレーム追加や複製ボタンタップ時に
-  /// 注意文がポップアップ表示されて90秒以上にはならないようにする」）。
+  /// チェックする。90秒を超えるようになりそうな場合はフレーム追加や複製
+  /// ボタンタップ時に注意文がポップアップ表示され、90秒以上にはならない。
   /// 超える場合は警告ダイアログを表示してfalseを返す（呼び出し元は操作を
   /// 中止する）。プレミアム会員は上限が2時間（7200秒）と大きいため事実上
   /// ブロックされない。
@@ -1958,8 +1957,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 // クリップ描画
                 ...clips.map((clip) => _buildClipWidget(clip, scrollCtrl)),
-                // 1行目：＋で行を追加。2行目以降：－でこの行を削除する
-                // （ユーザー指示）。
+                // 1行目：＋で行を追加。2行目以降：－でこの行を削除する。
                 Positioned(
                   right: 4,
                   top: 4,
@@ -2163,7 +2161,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// シーン・フレームの複数選択モード中の一括操作バー（仕様書05）。以前は
   /// シーンタブ・フレーム一覧の中に小さいテキストボタンとして表示していたが、
-  /// ユーザー指示により素材タイムラインの上に大きな3分割ボタン（移動・複製・
+  /// 素材タイムラインの上に大きな3分割ボタン（移動・複製・
   /// 削除）＋次の段に全選択・全解除を表示する形へ変更した。移動モード中は
   /// 専用のカーソルUIが別途表示されるためここでは非表示にする。
   Widget _buildMultiSelectActionBar() {
@@ -2559,8 +2557,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// ウォーターマークの角度・大きさ・不透明度・表示範囲（ループ表示）を
   /// まとめて編集するダイアログ。タイムラインの共通レイヤートラックで
-  /// ウォーターマークをタップすると開く（ユーザー指示：登録時だけでなく
-  /// 実際にプロジェクト内で使うときにいつでも変更できるように）。
+  /// ウォーターマークをタップすると開く。登録時だけでなく実際に
+  /// プロジェクト内で使うときにいつでも変更できるようにしている。
   void _showWatermarkEditDialog(Layer layer, LayerHome home) {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
@@ -3397,18 +3395,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// キャンバスモードへ戻る前に、プロジェクト本体（.niaproファイル）を
-  /// 明示的に保存する（ユーザー報告：「編集後、プロジェクト一覧に戻ると
-  /// 手動セーブのデータが消えている」の原因調査により発覚。従来は三点
+  /// 明示的に保存する。編集後にプロジェクト一覧へ戻ると手動セーブの
+  /// データが消えていた不具合の原因調査により発覚。従来は三点
   /// メニューの「保存」「プロジェクト保存」からしかこの保存処理を呼べず、
   /// それらは他の項目（セーブツリー・自動塗り実行）と役割が被っていた
   /// ため削除し、代わりに画面を離れるタイミングで自動的に保存されるよう
-  /// にした）。
+  /// にした。
   Future<void> _saveAndGoToCanvas() async {
     await context.read<ProjectService>().saveProject(widget.projectId);
     if (mounted) context.go('/canvas/${widget.projectId}');
   }
 
-  /// プロジェクト一覧へ戻るボタン（ユーザー指示）：タップ時に「保存して
+  /// プロジェクト一覧へ戻るボタン：タップ時に「保存して
   /// 戻る」か「保存せず戻る」かをポップアップで選べるようにする。
   Future<void> _confirmBackToProjectList() async {
     final l10n = AppLocalizations.of(context)!;
@@ -4366,7 +4364,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
   }
 }
 
-/// タイムラインのフレーム一覧1コマ分の実プレビュー（ユーザー指示：ただの
+/// タイムラインのフレーム一覧1コマ分の実プレビュー（ただの
 /// 番号付き四角形ではなくちゃんとしたプレビューにする）。キャンバスモードの
 /// フレーム一覧（frame_strip_widget.dartの_FrameThumbnail）と同じく、
 /// 描画領域全体を合成した上で書き出し範囲（中央）だけを切り出して縮小表示する。

@@ -8,7 +8,7 @@ class Stamp {
   final bool rotation;
   final double density;
   final double scatter;
-  // ピクセルモード（ユーザー指示により新規追加）：ONの場合、このスタンプの
+  // ピクセルモード：ONの場合、このスタンプの
   // テクスチャをドット絵風（モザイク低解像度化＋色数削減）に加工してから
   // 描画する（procedural_texture.dartのgenerateBuiltInStampTexture参照）。
   final bool pixelMode;

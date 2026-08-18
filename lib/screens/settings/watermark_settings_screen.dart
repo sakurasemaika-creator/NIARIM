@@ -74,8 +74,8 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     if (!await confirmDelete(context, itemName: assets[index].name)) return;
                     service.removeWatermark(assets[index].id);
                   },
-                  // タップで編集（ユーザー指示：過去に作成したウォーターマークの
-                  // 編集もタップで後からできるようにする）。
+                  // タップで編集。過去に作成したウォーターマークの
+                  // 編集もタップで後からできるようにする。
                   onTap: () => assets[index].type == WatermarkAssetType.text
                       ? _showTextWatermarkDialog(context, service, existing: assets[index])
                       : _showImageWatermarkEditDialog(context, service, assets[index]),
@@ -126,8 +126,8 @@ class WatermarkSettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 文字ウォーターマークの新規作成・編集を兼ねるダイアログ（ユーザー指示：
-  /// 「過去に作成したウォーターマークの編集もタップで後からできるように」）。
+  /// 文字ウォーターマークの新規作成・編集を兼ねるダイアログ。過去に作成
+  /// したウォーターマークの編集もタップで後からできるようにする。
   /// [existing]を渡すと編集モードになり、既存の内容で初期化する。
   void _showTextWatermarkDialog(BuildContext context, WatermarkService service, {WatermarkAsset? existing}) {
     final l10n = AppLocalizations.of(context)!;
@@ -243,7 +243,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
     ).then((_) => controller.dispose());
   }
 
-  /// 画像ウォーターマークの編集ダイアログ（ユーザー指示）。画像そのものの
+  /// 画像ウォーターマークの編集ダイアログ。画像そのものの
   /// 差し替えは対象外とし、名前・ドロップシャドウ・縁取りの既定設定のみ
   /// 編集できる。
   void _showImageWatermarkEditDialog(BuildContext context, WatermarkService service, WatermarkAsset existing) {

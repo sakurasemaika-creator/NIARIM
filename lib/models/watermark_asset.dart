@@ -12,14 +12,12 @@ class WatermarkAsset {
   final String? fileName;
   final String? text;
   final int? textColor; // ARGB int（type==textの場合のみ使用）
-  // フォント（type==textの場合のみ使用。ユーザー指示によりフォントも
-  // 自由に選べるようにした。組み込みフォントは'Roboto'等の固定値、
-  // 追加フォントはFontService.familyNameOf()の値）。
+  // フォント（type==textの場合のみ使用。組み込みフォントは'Roboto'等の
+  // 固定値、追加フォントはFontService.familyNameOf()の値）。
   final String? fontFamily;
-  // ドロップシャドウ・縁取りの既定設定（ユーザー指示：「ウォーターマークの
-  // 設定画面ではドロップシャドウや縁取りのON/OFFや調整も予めできるように
-  // しましょう」）。実際にタイムラインへ配置する際のラスタライズ時に
-  // 適用される（_reRasterizeWatermark参照）。
+  // ドロップシャドウ・縁取りの既定設定。設定画面で事前に調整でき、実際に
+  // タイムラインへ配置する際のラスタライズ時に適用される
+  // （_reRasterizeWatermark参照）。
   final bool shadowEnabled;
   final int shadowColor;
   final double shadowOffsetX;

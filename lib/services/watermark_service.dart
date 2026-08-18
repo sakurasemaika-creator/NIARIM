@@ -51,7 +51,7 @@ class WatermarkService extends ChangeNotifier {
 
   /// 入力した文字列をウォーターマークとして登録する（仕様書01・13：
   /// 「設定項目：画像選択 / 文字入力」の文字入力側）。ドロップシャドウ・
-  /// 縁取りも登録時点で既定値として設定できる（ユーザー指示）。
+  /// 縁取りも登録時点で既定値として設定できる。
   Future<WatermarkAsset> addTextWatermark(
     String text, {
     required int color,
@@ -88,8 +88,8 @@ class WatermarkService extends ChangeNotifier {
     return asset;
   }
 
-  /// 登録済みウォーターマークの内容を更新する（ユーザー指示：「過去に作成
-  /// したウォーターマークの編集もタップで後からできるようにしましょう」）。
+  /// 登録済みウォーターマークの内容を更新する。過去に作成した
+  /// ウォーターマークの編集もタップで後からできるようにする。
   /// 画像そのものの差し替えは行わず、名前・文字/色/フォント・ドロップ
   /// シャドウ/縁取りの既定設定のみを更新する。
   Future<void> updateAsset(WatermarkAsset updated) async {

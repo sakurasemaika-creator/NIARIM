@@ -232,8 +232,8 @@ class _LayerPanelState extends State<LayerPanel> {
                   ),
                 ),
                 // 「追加」ボタン（共通レイヤー・自動塗り線画・自動塗りレイヤー等の
-                // その他種別）。ユーザー指示により新規フォルダと画像読み込みの間に
-                // 配置。新規レイヤーボタンとアイコンが被らないようlibrary_addを使用。
+                // その他種別）。新規フォルダと画像読み込みの間に配置。
+                // 新規レイヤーボタンとアイコンが被らないようlibrary_addを使用。
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.library_add, size: 14),
@@ -362,7 +362,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       if (layer.isLocked)
                         const Icon(Icons.lock, size: 14),
                       // 三点メニュー・ゴミ箱：以前はパネル下部にまとめて配置していたが
-                      // ユーザー指示により各レイヤーの右側へ移動した（対象レイヤーが
+                      // 各レイヤーの右側へ移動した（対象レイヤーが
                       // 常に明確になり、選択状態に依存しなくなる）。
                       GestureDetector(
                         onTap: () => _isTimelineMaterial(layer.type) ||
@@ -421,8 +421,8 @@ class _LayerPanelState extends State<LayerPanel> {
               },
             ),
           ),
-          // パネル下部の三点メニュー・ゴミ箱は各レイヤー右側へ移動したため削除した
-          // （ユーザー指示）。「追加」ボタンも上部ショートカット行へ移動済み。
+          // パネル下部の三点メニュー・ゴミ箱は各レイヤー右側へ移動したため削除した。
+          // 「追加」ボタンも上部ショートカット行へ移動済み。
           // 下部バーは複数選択モード時の一括操作（結合・一括削除）専用として残す。
           if (_isSelectionMode) ...[
             const Divider(height: 1),
@@ -531,8 +531,8 @@ class _LayerPanelState extends State<LayerPanel> {
     return true;
   }
 
-  /// 各レイヤー行のゴミ箱アイコンからの単体削除（ユーザー指示：三点メニュー・
-  /// ゴミ箱を各レイヤーの右側へ）。タイムライン素材は既存通り確認ダイアログ
+  /// 各レイヤー行のゴミ箱アイコンからの単体削除（三点メニュー・
+  /// ゴミ箱は各レイヤーの右側に配置）。タイムライン素材は既存通り確認ダイアログ
   /// を経由し、それ以外は即時削除する。
   Future<void> _deleteLayerRow(BuildContext context, model.Layer layer, List<model.Layer> layers) async {
     if (_isTimelineMaterial(layer.type)) {
@@ -1052,7 +1052,7 @@ class _LayerPanelState extends State<LayerPanel> {
   /// レイヤー詳細設定（不透明度・ブレンドモード・ロック・クリッピング等）。
   /// 以前は`_selectedIndex`（パネル下部の共通ボタンからの呼び出し）にのみ
   /// 対応していたが、各レイヤー行の三点メニューから直接[layer]を渡せる
-  /// ようにした（ユーザー指示：三点メニューを各レイヤーの右側へ）。
+  /// ようにした（三点メニューは各レイヤーの右側に配置）。
   void _showLayerOptions(BuildContext context, model.Layer layer) {
     final l10n = AppLocalizations.of(context)!;
     void update(model.Layer Function(model.Layer) updater) {
@@ -1460,7 +1460,7 @@ class _LayerPanelState extends State<LayerPanel> {
     final l10n = AppLocalizations.of(context)!;
     final allPresets = context.read<AutofillPresetService>().presets;
     // プロジェクトごとに使用するプリセットが絞り込まれている場合は、その
-    // プリセットのみを表示する（ユーザー指示：プリセットが増えるほど
+    // プリセットのみを表示する（プリセットが増えるほど
     // パーツ割り当て時の一覧が長くなるため）。未設定（null）の場合は従来
     // 通りすべて表示する。
     final project = context.read<ProjectService>().projects

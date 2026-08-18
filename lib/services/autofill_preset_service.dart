@@ -19,9 +19,8 @@ class AutofillPresetService extends ChangeNotifier {
   /// [base]のHSLを操作して陰影・ハイライト色を作る（アニメ塗りの定番手法：
   /// 影は明度を下げつつ彩度をやや上げる、ハイライトは明度を上げつつ彩度を
   /// 下げる）。サンプルプリセットの「1影・2影・ハイライト」を色相の近い
-  /// 一貫した配色で機械的に生成するために使う（ユーザー指示：サンプルは
-  /// 使い方を学んでもらうためのものなので、すべてのパーツにきちんと
-  /// 陰影を用意する）。
+  /// 一貫した配色で機械的に生成するために使う。サンプルは使い方を学んで
+  /// もらうためのものなので、すべてのパーツにきちんと陰影を用意する。
   static int _shade(int argb, {required double lightnessDelta, double saturationDelta = 0}) {
     final a = (argb >> 24) & 0xFF;
     final r = ((argb >> 16) & 0xFF) / 255.0;
@@ -74,8 +73,7 @@ class AutofillPresetService extends ChangeNotifier {
   static int _highlight(int base) => _shade(base, lightnessDelta: 0.20, saturationDelta: -0.15);
 
   /// 髪・肌・服の各パーツ用に、基本色＋1影＋2影＋ハイライトの4パーツを
-  /// まとめて生成する（ユーザー指示：サンプルのすべてのパーツにこれらを
-  /// 用意する）。
+  /// まとめて生成する（サンプルのすべてのパーツにこれらを用意する）。
   static List<AutofillPart> _shadedSet(String idPrefix, String name, int base) => [
         AutofillPart(id: '${idPrefix}_base', name: name, color: base),
         AutofillPart(id: '${idPrefix}_s1', name: '${name}1影', color: _shadow1(base)),
@@ -85,8 +83,8 @@ class AutofillPresetService extends ChangeNotifier {
 
   /// 瞳（白目・瞳孔・虹彩本体・虹彩の影・キャッチライト）をまとめて生成する。
   /// 白目・瞳孔・キャッチライトは実際の作画でも陰影を付けずフラットに
-  /// 塗ることが多いため単色のみ、虹彩本体のみ1影を用意する（ユーザー指示：
-  /// 「瞳だけだとざっくりしすぎなので白目や瞳孔などのカラーも必要」への対応）。
+  /// 塗ることが多いため単色のみ、虹彩本体のみ1影を用意する。瞳だけだと
+  /// ざっくりしすぎるため、白目や瞳孔の色も別パーツとして持たせている。
   static List<AutofillPart> _eyeSet(String idPrefix, int irisBase) => [
         AutofillPart(id: '${idPrefix}_white', name: '白目', color: 0xFFFAFAF8),
         AutofillPart(id: '${idPrefix}_pupil', name: '瞳孔', color: 0xFF1A1410),
@@ -96,9 +94,9 @@ class AutofillPresetService extends ChangeNotifier {
       ];
 
   /// 初回起動時（保存データが存在しない場合）のみ使用するサンプルプリセット。
-  /// ユーザー指示により、各パーツへ1影・2影・ハイライトを用意し、瞳は
-  /// 白目・瞳孔・キャッチライトまで、服はトップス／ボトムス／シューズへ
-  /// 細分化した、実際の塗り方が学べる内容にしている。
+  /// 各パーツへ1影・2影・ハイライトを用意し、瞳は白目・瞳孔・キャッチライト
+  /// まで、服はトップス／ボトムス／シューズへ細分化した、実際の塗り方が
+  /// 学べる内容にしている。
   static List<AutofillPreset> _defaultPresets() => [
         AutofillPreset(id: 'p1', name: '主人公', parts: [
           ..._shadedSet('p1_hair', '髪', 0xFF4A3728),
@@ -138,8 +136,7 @@ class AutofillPresetService extends ChangeNotifier {
 
   /// 既存ユーザーが持っているサンプルプリセット（id: 'p1'/'p2'）が、まだ
   /// 旧仕様（ベースカラーのみ・4〜5パーツ）のままの場合、新しい内容
-  /// （1影・2影・ハイライト・瞳の細分化・服の細分化を含む）へ差し替える
-  /// （ユーザー指示：既存のサンプルもきちんとした内容にしてほしい）。
+  /// （1影・2影・ハイライト・瞳の細分化・服の細分化を含む）へ差し替える。
   /// パーツ数がそれより多い場合は既にユーザーが手を加えたとみなし触らない。
   bool _upgradeSampleContent() {
     var changed = false;
@@ -157,13 +154,12 @@ class AutofillPresetService extends ChangeNotifier {
   }
 
   /// プリセットID・パーツID（プリセット内）の重複を検出し、2件目以降を
-  /// 新しいIDへ差し替えて自己修復する（ユーザー報告により発覚：過去に
-  /// 同一ミリ秒での連続タップ等でID採番（'p_${DateTime.now().
-  /// millisecondsSinceEpoch}'）が衝突すると、パーツ一覧の
-  /// ReorderableListViewが`part.id`をキーに使っているため
+  /// 新しいIDへ差し替えて自己修復する。過去に同一ミリ秒での連続タップ等で
+  /// ID採番（'p_${DateTime.now().millisecondsSinceEpoch}'）が衝突すると、
+  /// パーツ一覧のReorderableListViewが`part.id`をキーに使っているため
   /// 「Duplicate GlobalKeys detected」の例外でパーツ一覧が完全に壊れる。
   /// 一度保存されてしまった重複IDは再起動しても直らないため、起動時に
-  /// 検出して修復する）。戻り値は修復が発生したかどうか（trueなら
+  /// 検出して修復する。戻り値は修復が発生したかどうか（trueなら
   /// 呼び出し元で再永続化が必要）。
   bool _dedupeIds() {
     var changed = false;

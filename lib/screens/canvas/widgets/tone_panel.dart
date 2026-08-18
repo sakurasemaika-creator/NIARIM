@@ -205,7 +205,7 @@ class _TonePanelState extends State<TonePanel> {
     }
   }
 
-  /// お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+  /// お気に入り登録中は削除できない。
   void _deleteTone(BuildContext context, ToneService service, Tone tone) {
     if (tone.isFavorite) {
       final l10n = AppLocalizations.of(context)!;

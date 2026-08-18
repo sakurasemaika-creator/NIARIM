@@ -713,8 +713,8 @@ class _FilterPanelState extends State<FilterPanel> {
     return null;
   }
 
-  /// 縁取りフィルターの本適用（ユーザー指示：「選択中のレイヤーとは別に
-  /// 縁どった内容は新規レイヤーに描画してください」）。選択レイヤー自体は
+  /// 縁取りフィルターの本適用（選択中のレイヤーとは別に、縁どった内容は
+  /// 新規レイヤーに描画する）。選択レイヤー自体は
   /// 書き換えず、[ringData]（縁取りリング部分のみ・それ以外は透明。
   /// applyDrawFilterInIsolate経由のapplyOutlineLayerの結果）を新規の
   /// 通常レイヤーへ描画し、選択レイヤーの直下（背面側）へ挿入する。

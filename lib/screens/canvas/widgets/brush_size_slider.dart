@@ -27,7 +27,7 @@ class BrushSizeSlider extends StatelessWidget {
               const Icon(Icons.circle, size: 8),
               const SizedBox(width: 8),
               Expanded(child: Slider(min: 1, max: 500, value: brushSize, onChanged: onSizeChanged)),
-              // 数値部分をタップすると直接入力できる（ユーザー指示）。
+              // 数値部分をタップすると直接入力できる。
               SizedBox(
                 width: 40,
                 child: EditableSliderValue(

@@ -64,9 +64,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   Color get _currentColor => HSVColor.fromAHSV(_alpha, _hue, _saturation, _value).toColor();
 
   void _applyHsv() {
-    // 透明色を選択中にHSVを操作した場合は、不透明色へ自動的に戻す
-    // （ユーザー指示：「HSVやRGBなど通常のカラーピッカーをタップすると
-    // 透明じゃない色に戻ります」）。
+    // 透明色を選択中にHSVを操作した場合は、不透明色へ自動的に戻す。
     setState(() { if (_alpha == 0) _alpha = 1.0; });
     final color = _currentColor;
     _r = (color.r * 255).round();
@@ -149,7 +147,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               const SizedBox(height: 8),
               // HSVサークルとRGBスライダーは別タブへ分けず常に両方表示し、
               // どちらを操作してももう片方へ即座に反映することで、RGB側が
-              // 実質的にHSV操作のプレビューにもなるようにする（ユーザー指示）。
+              // 実質的にHSV操作のプレビューにもなるようにする。
               // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
               // 方式（仕様書20・タスク#91：従来のスライダー方式から刷新）。円の
               // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
@@ -171,7 +169,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               _slider('B', _b.toDouble(), 0, 255, (v) { _b = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
               const SizedBox(height: 4),
               // 不透明度スライダー（仕様書20：カラーピッカーは常に透明色も選択
-              // できるようにする。ユーザー指示）。チェッカー柄の上にプレビューを
+              // できるようにする）。チェッカー柄の上にプレビューを
               // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
               // 現在色プレビューは一目で分かるよう大きめに表示する。
               Text(l10n.colorPickerOpacityLabel,
@@ -448,7 +446,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
               title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
-              // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+              // お気に入り登録中は削除できない。
               onTap: paletteService.palettes.length > 1
                   ? () async {
                       Navigator.pop(ctx);
@@ -474,8 +472,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       children: [
         SizedBox(width: 14, child: Text(label, style: const TextStyle(fontSize: 12))),
         Expanded(child: Slider(min: min, max: max, value: value, onChanged: onChanged, onChangeEnd: onChangeEnd)),
-        // 数値部分をタップすると直接入力できる（ユーザー指示：アプリ内の
-        // スライダーはすべて数値部分のタップで直接入力できるようにする）。
+        // 数値部分をタップすると直接入力できる。
         SizedBox(
           width: 32,
           child: EditableSliderValue(

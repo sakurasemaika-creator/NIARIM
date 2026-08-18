@@ -40,7 +40,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   final Map<int, int> _refreshTick = {};
 
   // フレーム一覧は常に画面中央に固定で赤枠を表示し、現在位置のフレームが
-  // そこに来るよう一覧側をスクロールさせる（ユーザー指示）。タップ・
+  // そこに来るよう一覧側をスクロールさせる。タップ・
   // スワイプでフレームが変わっても赤枠自体は動かない。
   final ScrollController _scrollController = ScrollController();
   static const double _itemExtent = 56; // 幅48＋左右マージン4ずつ
@@ -66,7 +66,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
 
   // リストの左右にビューポート半分弱の余白（_sidePaddingで算出）を付けて
   // あるため、先頭・末尾のフレームであっても赤枠（画面中央）まで
-  // スクロールしきれる（ユーザー指摘：以前はscrollOffsetを[0,maxScrollExtent]
+  // スクロールしきれる（以前はscrollOffsetを[0,maxScrollExtent]
   // へclampしていたため、先頭・末尾フレームだけ中央からずれて表示されて
   // いた。余白を追加したことで「index*_itemExtent」がそのまま中央揃えの
   // スクロール位置になり、境界のclampが実質的に無害になる）。
@@ -82,7 +82,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   }
 
   /// スワイプ・ドラッグを手放した位置が中途半端でも、赤枠に一番近い
-  /// フレームへ自動的にスナップさせる（ユーザー指示）。dragDetailsが
+  /// フレームへ自動的にスナップさせる。dragDetailsが
   /// nullの場合はこちらの_scrollToCurrent等によるプログラム操作由来の
   /// スクロールなので無視する（無限ループ防止）。
   bool _handleScrollEnd(ScrollEndNotification notification, int total) {
@@ -105,7 +105,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   }
 
   /// フレーム追加の前に、無料会員の長さ上限（90秒）を超えないかチェックする
-  /// （ユーザー指示：タイムラインモードのフレーム追加・複製と同じ制限を
+  /// （タイムラインモードのフレーム追加・複製と同じ制限を
   /// キャンバスモードのフレーム一覧の追加ボタンにも適用する）。
   bool _canAddFrames(BuildContext context, ProjectService service, int count) {
     final isPremium = context.read<PremiumService>().isPremium;
@@ -283,7 +283,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                 );
               },
                 ),
-                // 画面中央に固定表示する赤枠（ユーザー指示）。フレーム一覧側が
+                // 画面中央に固定表示する赤枠。フレーム一覧側が
                 // スクロールして現在位置のフレームをここへ合わせる。
                 IgnorePointer(
                   child: Center(
@@ -303,8 +303,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             }),
           ),
           IconButton(
-            // タイムラインモードへの切替ボタン（ユーザー指示により絵文字ではなく
-            // タイムライン画面内で既に使われているIcons.movieへ変更）。
+            // タイムラインモードへの切替ボタン（絵文字ではなく
+            // タイムライン画面内で既に使われているIcons.movieを使用）。
             icon: const Icon(Icons.movie, size: 20),
             onPressed: widget.onTimelineTap,
             tooltip: l10n.frameStripTimelineModeTooltip,

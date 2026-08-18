@@ -56,7 +56,7 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
       builder: (ctx) => Stack(
         children: [
           // 吹き出し自体だけでなく、画面内のどこをタップしても閉じられる
-          // ようにする全画面の透明バリア（ユーザー指示）。閉じるボタン
+          // ようにする全画面の透明バリア。閉じるボタン
           // （吹き出し自体のタップ）は従来通り機能させつつ、これを背面に
           // 敷くことで「どこでも閉じられる」を実現する。
           Positioned.fill(
@@ -86,9 +86,9 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                       Expanded(
                         child: Text(
                           widget.message,
-                          // 通常サイズの説明文はすべて白光明朝を使う（ユーザー指示：
+                          // 通常サイズの説明文はすべて白光明朝を使う。
                           // くらむぼんは見出し・項目名など大きく目立たせたい文字の
-                          // みに限定する）。
+                          // みに限定する。
                           style: TextStyle(
                             color: Theme.of(ctx).colorScheme.onPrimary,
                             fontSize: 12,

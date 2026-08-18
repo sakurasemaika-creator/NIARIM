@@ -43,17 +43,15 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   // 閉じる操作自体が裏で走らせているフォーカス解除処理より先に破棄されて
   // しまうことがあり、直後に別の操作（例：パーツの色をタップして次の
   // ダイアログを開く）をした際に「TextEditingController was used after
-  // being disposed」のアサーション例外が発生していた（ユーザー報告により
-  // 発覚・修正）。1フレーム遅らせることでフォーカス解除処理を先に完了させる。
+  // being disposed」のアサーション例外が発生する。1フレーム遅らせることで
+  // フォーカス解除処理を先に完了させる。
 
-  // 以前はcontext.watch()をgetter（_presets/_filtered）に入れており、
-  // それをListView.builderの各行のタップ用コールバック（onEdit/onDelete/
-  // onTap）内からも呼んでいたため、タップした瞬間（build外）に
-  // context.watch()が評価されてProviderのアサーション例外が発生し、
-  // プリセット詳細画面へ一切遷移できなくなっていた（ユーザー報告により
-  // 発覚・修正）。build()内でのみ一度取得し、以降はフィルタ処理を純粋な
-  // 関数にしてコールバックへは確定済みの値（preset自体）だけを渡すよう
-  // 修正した。
+  // context.watch()をgetter（_presets/_filtered）に入れ、それを
+  // ListView.builderの各行のタップ用コールバック（onEdit/onDelete/onTap）
+  // 内からも呼ぶと、タップした瞬間（build外）にcontext.watch()が評価されて
+  // Providerのアサーション例外が発生し、プリセット詳細画面へ遷移できなく
+  // なる。build()内でのみ一度取得し、以降はフィルタ処理を純粋な関数にして
+  // コールバックへは確定済みの値（preset自体）だけを渡す。
   List<AutofillPreset> _filter(List<AutofillPreset> presets) {
     var list = _searchQuery.isEmpty
         ? presets
@@ -213,7 +211,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
   void _confirmDelete(AutofillPreset preset) {
     final l10n = AppLocalizations.of(context)!;
-    // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+    // お気に入り登録中は削除できない。
     if (preset.isFavorite) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
@@ -682,8 +680,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   key: ValueKey(part.id),
                   leading: GestureDetector(
                     onTap: () => _showPartDetailDialog(part),
-                    // 右下の小さな輪＝線画色プレビュー（ユーザー指示：塗り色だけで
-                    // なく線画色もプレビューをつける）。
+                    // 右下の小さな輪＝線画色プレビュー（塗り色だけでなく線画色も
+                    // プレビューする）。
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -858,8 +856,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       children: [
                         Expanded(child: _fillPreview(current, height: 40)),
                         const SizedBox(width: 8),
-                        // 線画色プレビュー（ユーザー指示：塗り色だけでなく線画色も
-                        // プレビューをつける）。
+                        // 線画色プレビュー（塗り色だけでなく線画色もプレビューする）。
                         Column(
                           children: [
                             Container(
@@ -1019,7 +1016,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ),
                     // トーンはブラシと同様にユーザーが自作・追加したり配布物を
                     // 読み込んだりできるため、種類が増えるとチップ一覧では
-                    // 見づらくなる（ユーザー指摘）。チェックON時のみ現在指定中の
+                    // 見づらくなる。チェックON時のみ現在指定中の
                     // トーン名を1行で表示し、タップで各トーンのプレビュー付き
                     // 一覧から選び直せるようにする。
                     if (current.useTone) ...[
@@ -1187,8 +1184,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           // 放射グラデーションでは、stops[i]は「中心からの見た目の距離」と
           // 必ずしも一致しない（放射：外側→中央は色順・位置が反転して
           // 描画されるため。_previewGradient/エンジン側のt=1-t反転と対応）。
-          // ハンドルは実際に見えている位置（中心からの距離）で操作したい
-          // というユーザー指示のため、見た目の距離⇔stopsの相互変換を行う。
+          // ハンドルは実際に見えている位置（中心からの距離）で操作できるよう、
+          // 見た目の距離⇔stopsの相互変換を行う。
           bool isRadial = gradient.type != AutofillGradientType.linear;
           bool isOutCenter = gradient.type == AutofillGradientType.radialOutCenter;
           double geomT(int i) => isOutCenter ? 1 - gradient.stops[i] : gradient.stops[i];
@@ -1223,7 +1220,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ),
                     // プレビュー直下に各色の切り替え位置（stops）に対応する三角形の
                     // ハンドルを表示し、直接ドラッグして位置を調整できるようにする
-                    // （ユーザー指摘：個別スライダーより直感的）。
+                    // （個別スライダーより直感的）。
                     SizedBox(
                       height: 14,
                       child: LayoutBuilder(
@@ -1262,7 +1259,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             );
                           }
                           // 放射グラデーション：中心（画面中央）を軸に左右対称のハンドルを
-                          // 2つずつ配置し、片方を動かすと反対側も連動する（ユーザー指示）。
+                          // 2つずつ配置し、片方を動かすと反対側も連動する。
                           // t=0（中心そのもの）は1つだけ・中央に表示する。
                           final center = maxWidth / 2;
                           return Stack(
@@ -1400,7 +1397,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               ),
                               // 切り替え位置はプレビュー直下の三角形ハンドルを直接
                               // ドラッグして調整する方が直感的なため、ここでは現在値の
-                              // 参考表示のみ行う（ユーザー指摘）。
+                              // 参考表示のみ行う。
                               Expanded(
                                 child: Text(
                                   l10n.autofillPartGradientStopLabel((gradient.stops[i] * 100).round()),
@@ -1458,10 +1455,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
 
   /// 塗り色（単色・グラデーションいずれも）のリアルタイムプレビュー。
   /// チェッカー柄の背景に、不透明度を反映した状態で重ねて表示することで、
-  /// 不透明度スライダーを動かした時にプレビューでも分かるようにする
-  /// （ユーザー指摘）。
+  /// 不透明度スライダーを動かした時にプレビューでも分かるようにする。
   /// 線画色プレビュー用に、線画の実際の色（塗り色プレビューだけでなく
-  /// 線画色もプレビューしてほしいというユーザー指示）を計算する。
+  /// 線画色も）を計算する。
   /// autofill_engine.dartのrecolorLineart/_traceAdjustColorと同じロジック
   /// （色トレス・線画馴染ませの基準は塗り色）をHSLColorで再現している。
   /// グラデーション塗りの場合、線画色プレビューは代表色として先頭の色を
@@ -1551,8 +1547,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       return (colors: colorsInt.map(Color.new).toList(), stops: stopsIn);
     }
     // 100%（最大）は隣の色の端まで完全に混ざり切る、元のstopsそのままの
-    // 単純な線形補間にする（ユーザー指示）。帯計算を経由しないため誤差なく
-    // 確実に端まで混ざる。
+    // 単純な線形補間にする。帯計算を経由しないため誤差なく確実に端まで
+    // 混ざる。
     if (feather.clamp(0.0, 1.0) >= 0.999) {
       return (colors: colorsInt.map(Color.new).toList(), stops: stopsIn);
     }

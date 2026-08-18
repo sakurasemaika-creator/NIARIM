@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 
 /// スライダーの数値表示部分をタップすると、直接テキスト入力で値を変更
-/// できるようにする共通ウィジェット（ユーザー指示：アプリ内のスライダーは
-/// すべて数値部分のタップで直接入力できるようにする）。既存のSlider横に
-/// 置いているTextをこれに差し替えるだけで使える。
+/// できるようにする共通ウィジェット。既存のSlider横に置いているTextを
+/// これに差し替えるだけで使える。
 class EditableSliderValue extends StatelessWidget {
   final String text;
   final TextStyle? style;
@@ -32,12 +31,11 @@ class EditableSliderValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 数値部分をタップすると直接入力できることに初見で気付きにくいという
-    // ユーザー指摘のため、右側に小さな鉛筆マークを添える。周囲の多くの
-    // 呼び出し元は固定幅のSizedBoxで数値表示を包んでいるため、レイアウト
-    // 幅は変えずにStack+Positioned（clipBehavior: none）でマークを右側へ
-    // わずかにはみ出させる形にしている（呼び出し元すべての幅を広げる
-    // 変更は影響範囲が大きすぎるため）。
+    // 数値部分がタップ可能なことは初見で気付きにくいため、右側に小さな
+    // 鉛筆マークを添える。周囲の多くの呼び出し元は固定幅のSizedBoxで
+    // 数値表示を包んでいるため、レイアウト幅は変えずにStack+Positioned
+    // （clipBehavior: none）でマークを右側へわずかにはみ出させる形にして
+    // いる（呼び出し元すべての幅を広げる変更は影響範囲が大きすぎるため）。
     return GestureDetector(
       onTap: () => _showInputDialog(context),
       child: Stack(

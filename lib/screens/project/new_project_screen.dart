@@ -36,10 +36,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
   bool _drawingAreaEnabled = false;
   double _drawingAreaScale = 2.0;
-  // このプロジェクトで使う自動塗りプリセット（ユーザー指示）。nullは
+  // このプロジェクトで使う自動塗りプリセット。nullは
   // 「すべて使用する」を意味する。
   List<String>? _enabledPresetIds;
-  // 長さ（秒）の数字入力欄（ユーザー指示により新規追加：スライダーだけでなく
+  // 長さ（秒）の数字入力欄（スライダーだけでなく
   // 数字入力でも指定できるようにする）。
   late final TextEditingController _durationController;
 
@@ -350,7 +350,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           }),
                         ),
                       ),
-                      // 数字入力欄（秒単位。ユーザー指示：スライダーだけでなく
+                      // 数字入力欄（秒単位。スライダーだけでなく
                       // 数字入力でも長さを指定できるようにする）。
                       SizedBox(
                         width: 64,
@@ -461,8 +461,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ),
             ],
             const SizedBox(height: 16),
-            // このプロジェクトで使う自動塗りプリセットの選択（ユーザー指示：
-            // 新規作成時にも選べるようにする）。
+            // このプロジェクトで使う自動塗りプリセットの選択。
+            // 新規作成時にも選べるようにする。
             OutlinedButton.icon(
               onPressed: () async {
                 final allPresets = context.read<AutofillPresetService>().presets;

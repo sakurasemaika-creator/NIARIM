@@ -7,7 +7,7 @@ class FontAsset {
   final int sizeBytes;
   final DateTime addedAt;
   final bool isFavorite;
-  // ピクセルモード（ユーザー指示により新規追加）：ONの場合、このフォントで
+  // ピクセルモード：ONの場合、このフォントで
   // ラスタライズするテキストはアンチエイリアスを行わず、輪郭をくっきり
   // 二値化する（ドットフォント・ビットマップ由来フォントをにじませずに
   // 表示するための設定）。ブラシのdotPenModeと同じ考え方だが、こちらは

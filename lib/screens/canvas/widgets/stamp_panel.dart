@@ -206,7 +206,7 @@ class _StampPanelState extends State<StampPanel> {
     }
   }
 
-  /// お気に入り登録中は削除できない（ユーザー指示により新規追加）。
+  /// お気に入り登録中は削除できない。
   void _deleteStamp(BuildContext context, StampService service, Stamp stamp) {
     if (stamp.isFavorite) {
       final l10n = AppLocalizations.of(context)!;
@@ -322,7 +322,7 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
             value: _stamp.rotation,
             onChanged: (v) => setState(() => _stamp = _stamp.copyWith(rotation: v)),
           ),
-          // ピクセルモード（ユーザー指示により新規追加）：ONにするとスタンプ
+          // ピクセルモード：ONにするとスタンプ
           // テクスチャをモザイク低解像度化＋色数削減でドット絵風に加工する。
           SwitchListTile(
             title: Text(l10n.stampPixelModeLabel),
