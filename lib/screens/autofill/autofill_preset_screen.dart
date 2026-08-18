@@ -930,18 +930,35 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       value: current.useTone,
                       onChanged: (v) => setS(() => current = current.copyWith(useTone: v)),
                     ),
-                    if (current.useTone)
-                      Wrap(
-                        spacing: 6, runSpacing: 6,
-                        children: tones.map((t) {
-                          final selected = current.toneId == t.id;
-                          return ChoiceChip(
-                            label: Text(t.name, style: const TextStyle(fontSize: 10)),
-                            selected: selected,
-                            onSelected: (_) => setS(() => current = current.copyWith(toneId: t.id)),
-                          );
-                        }).toList(),
+                    // トーンはブラシと同様にユーザーが自作・追加したり配布物を
+                    // 読み込んだりできるため、種類が増えるとチップ一覧では
+                    // 見づらくなる（ユーザー指摘）。チェックON時のみ現在指定中の
+                    // トーン名を1行で表示し、タップで各トーンのプレビュー付き
+                    // 一覧から選び直せるようにする。
+                    if (current.useTone) ...[
+                      const SizedBox(height: 4),
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: TonePreviewThumb(
+                          tone: tones.where((t) => t.id == current.toneId).firstOrNull,
+                          color: Color(current.color),
+                          size: 32,
+                          shape: BoxShape.rectangle,
+                        ),
+                        title: Text(
+                          tones.where((t) => t.id == current.toneId).firstOrNull?.name ??
+                              l10n.autofillPartToneUnselected,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        trailing: const Icon(Icons.chevron_right, size: 18),
+                        onTap: () async {
+                          final selected =
+                              await _showTonePickerSheet(current.toneId, Color(current.color));
+                          if (selected != null) setS(() => current = current.copyWith(toneId: selected));
+                        },
                       ),
+                    ],
                     const Divider(),
                     Text(l10n.autofillPartBlendModeLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     DropdownButtonFormField<LayerBlendMode>(
@@ -970,6 +987,86 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 child: Text(l10n.autofillPartApplyButton),
               ),
             ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// トーン選択シート（仕様書04・20）。ブラシと同様にユーザーが自作・追加・
+  /// 配布物のDLができるトーンは種類が増えやすいため、名前だけのチップ一覧
+  /// ではなく各トーンの実際のパターンプレビュー（指定色で着色）付きの
+  /// グリッドから選べるようにする。戻り値は選択されたトーンID（キャンセル時
+  /// はnull）。
+  Future<String?> _showTonePickerSheet(String? currentToneId, Color color) {
+    final l10n = AppLocalizations.of(context)!;
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Consumer<ToneService>(
+        builder: (ctx, toneService, _) {
+          final tones = toneService.tones;
+          return SafeArea(
+            child: SizedBox(
+              height: 420,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(l10n.autofillPartToneLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: tones.isEmpty
+                        ? Center(child: Text(l10n.toneEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
+                        : GridView.builder(
+                            padding: const EdgeInsets.all(8),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                              childAspectRatio: 0.8,
+                            ),
+                            itemCount: tones.length,
+                            itemBuilder: (context, index) {
+                              final tone = tones[index];
+                              final isSelected = currentToneId == tone.id;
+                              return GestureDetector(
+                                onTap: () => Navigator.pop(ctx, tone.id),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Theme.of(context).colorScheme.primary
+                                              : Colors.transparent,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: TonePreviewThumb(
+                                        tone: tone, color: color, size: 56, shape: BoxShape.rectangle,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(tone.name,
+                                        style: const TextStyle(fontSize: 10),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
