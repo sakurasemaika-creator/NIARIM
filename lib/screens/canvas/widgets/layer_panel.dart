@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../engine/autofill_batch_runner.dart';
@@ -11,6 +12,7 @@ import '../../../engine/procedural_texture.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../models/autofill_preset.dart' show AutofillLineColorMode;
 import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
@@ -1458,10 +1460,12 @@ class _LayerPanelState extends State<LayerPanel> {
       if (tone != null) toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
     }
 
-    final engine = autofill.AutofillEngine();
     // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る
     final effectiveMode = hasExisting ? mode : autofill.AutofillMode.repaint;
-    final result = engine.execute(
+    // フラッドフィルはキャンバス全体を走査する重い処理のため、compute()で
+    // バックグラウンドisolate実行しUIスレッドが固まらないようにする
+    // （ユーザー指示：スマホでの動作を可能な限り軽くする）。
+    final result = await compute(autofill.runAutofillExecuteInIsolate, (
       mode: effectiveMode,
       lineartData: lineartBytes,
       existingData: hasExisting ? existingBytes : null,
@@ -1471,7 +1475,7 @@ class _LayerPanelState extends State<LayerPanel> {
       toneTexture: toneTexture,
       toneWidth: toneSize,
       toneHeight: toneSize,
-    );
+    ));
     if (result == null) return;
     if (!context.mounted) return;
 
@@ -1521,9 +1525,20 @@ class _LayerPanelState extends State<LayerPanel> {
     // 線画色設定（仕様書20：指定色／塗り色と同じ／色トレス・線画馴染ませ）を
     // 線画レイヤーへ適用する。不透明度はレイヤー不透明度として反映し、
     // ブレンドモードは塗りレイヤーと同じ値を自動反映する。
-    final recoloredLineart =
-        engine.recolorLineart(lineartData: lineartBytes, width: w, height: h, part: part);
-    if (!identical(recoloredLineart, lineartBytes)) {
+    final recoloredLineart = await compute(autofill.runRecolorLineartInIsolate, (
+      lineartData: lineartBytes,
+      width: w,
+      height: h,
+      part: part,
+    ));
+    if (!context.mounted) return;
+    // recolorLineartは「指定色・既定の黒のまま」の場合のみ元データを変更せず
+    // 返す（AutofillEngine.recolorLineart参照）。compute()経由だと戻り値が
+    // 別isolateからの転送になりidentical()での判定が使えなくなるため、
+    // 同じ条件を直接判定する。
+    final lineartUnchanged =
+        part.lineColorMode == AutofillLineColorMode.specified && part.lineColor == 0xFF000000;
+    if (!lineartUnchanged) {
       tileManager.replaceLayerPixels(
           frameLayerKey(widget.sceneId, widget.frameIndex, lineartLayer.id), recoloredLineart);
     }

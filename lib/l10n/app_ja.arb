@@ -931,6 +931,8 @@
   "filterNameUnsharpMask": "アンシャープマスク",
   "filterSharpenStrength": "シャープの強さ",
   "filterUnsharpAmount": "かかり具合",
+  "filterNameVignette": "周辺減光",
+  "filterVignetteStrength": "減光の強さ",
   "filterOutlineLayerNameSuffix": "{name}（縁取り）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

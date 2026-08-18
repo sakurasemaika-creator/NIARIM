@@ -43,6 +43,7 @@ Uint8List applyDrawFilterInIsolate(
     FilterKind.sharpen => engine.applySharpen(data, width, height, filter.strength),
     FilterKind.unsharpMask =>
       engine.applyUnsharpMask(data, width, height, filter.strength, filter.edgeStrength),
+    FilterKind.vignette => engine.applyVignette(data, width, height, filter.strength),
   };
 }
 
@@ -376,6 +377,38 @@ class FilterEngine {
   /// 済む単色描画）と異なり、スタンプ画像は任意の多色RGBA画像のため、
   /// 単純な二値化だけでは真のドット絵にはならず、実際に低解像度化＋
   /// 色数削減の両方が必要になる。
+  /// 周辺減光（ビネット）：画面中心からの距離に応じて周辺を暗くする、
+  /// イラスト・漫画の演出で定番の効果。中心からの距離計算のみの単純な
+  /// 1パス処理で負荷は軽い。[strength]は0〜100（%）で減光の強さを調整する。
+  Uint8List applyVignette(Uint8List data, int width, int height, double strength) {
+    final amount = (strength / 100.0).clamp(0.0, 1.0);
+    if (amount <= 0) return Uint8List.fromList(data);
+    final result = Uint8List.fromList(data);
+    final cx = width / 2.0;
+    final cy = height / 2.0;
+    // 対角線の半分を最大距離とし、中心付近は影響なし・外周に近づくほど
+    // 暗くなるようにする（中心60%程度までは変化なし、そこから外周へ
+    // 滑らかに減光する古典的なビネット形状）。
+    final maxDist = math.sqrt(cx * cx + cy * cy);
+    const innerRadius = 0.6;
+    for (int y = 0; y < height; y++) {
+      final dy = (y - cy) / maxDist;
+      for (int x = 0; x < width; x++) {
+        final idx = (y * width + x) * 4;
+        if (data[idx + 3] == 0) continue;
+        final dx = (x - cx) / maxDist;
+        final dist = math.sqrt(dx * dx + dy * dy);
+        if (dist <= innerRadius) continue;
+        final t = ((dist - innerRadius) / (1.0 - innerRadius)).clamp(0.0, 1.0);
+        final darken = 1.0 - (t * amount);
+        result[idx] = (data[idx] * darken).round().clamp(0, 255);
+        result[idx + 1] = (data[idx + 1] * darken).round().clamp(0, 255);
+        result[idx + 2] = (data[idx + 2] * darken).round().clamp(0, 255);
+      }
+    }
+    return result;
+  }
+
   Uint8List applyPixelate(Uint8List data, int width, int height, {
     int mosaicSize = 8,
     int colorLevels = 6,

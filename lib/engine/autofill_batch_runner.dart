@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show compute;
 import '../models/layer.dart';
 import '../services/autofill_preset_service.dart';
 import '../services/project_service.dart';
@@ -57,17 +58,22 @@ Future<AutofillBatchResult> runAutofillForLayer({
     img.dispose();
   }
 
-  final engine = AutofillEngine();
   // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る
   final effectiveMode = hasExisting ? mode : AutofillMode.repaint;
-  final result = engine.execute(
+  // フラッドフィルはキャンバス全体を走査する重い処理のため、compute()で
+  // バックグラウンドisolate実行しUIスレッドが固まらないようにする
+  // （ユーザー指示：スマホでの動作を可能な限り軽くする）。
+  final result = await compute(runAutofillExecuteInIsolate, (
     mode: effectiveMode,
     lineartData: lineartBytes,
     existingData: hasExisting ? existingBytes : null,
     width: w,
     height: h,
     part: part,
-  );
+    toneTexture: null,
+    toneWidth: 64,
+    toneHeight: 64,
+  ));
   if (result == null) return AutofillBatchResult.skipped;
 
   if (autofillLayer == null) {
@@ -136,12 +142,15 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
       (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
   img.dispose();
 
-  final result = AutofillEngine().colorUpdate(
+  final result = await compute(runAutofillColorUpdateInIsolate, (
     existingData: existingBytes,
     width: w,
     height: h,
     part: part,
-  );
+    toneTexture: null,
+    toneWidth: 64,
+    toneHeight: 64,
+  ));
 
   tileManager.replaceLayerPixels(key, result);
   projectService.updateLayer(

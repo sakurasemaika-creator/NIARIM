@@ -840,6 +840,8 @@
   "filterNameUnsharpMask": "Unsharp Mask",
   "filterSharpenStrength": "Sharpen strength",
   "filterUnsharpAmount": "Amount",
+  "filterNameVignette": "Vignette",
+  "filterVignetteStrength": "Vignette strength",
   "filterOutlineLayerNameSuffix": "{name} (Outline)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

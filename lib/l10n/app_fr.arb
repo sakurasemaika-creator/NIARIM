@@ -840,6 +840,8 @@
   "filterNameUnsharpMask": "Masque flou",
   "filterSharpenStrength": "Force de netteté",
   "filterUnsharpAmount": "Intensité",
+  "filterNameVignette": "Vignettage",
+  "filterVignetteStrength": "Intensité du vignettage",
   "filterOutlineLayerNameSuffix": "{name} (Contour)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

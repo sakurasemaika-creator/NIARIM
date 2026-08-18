@@ -383,6 +383,15 @@ class _FilterPanelState extends State<FilterPanel> {
                             100,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
+                        if (current.kind == FilterKind.vignette)
+                          _paramSlider(
+                            filterService,
+                            l10n.filterVignetteStrength,
+                            current.strength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
                         if (current.kind == FilterKind.unsharpMask) ...[
                           _paramSlider(
                             filterService,
@@ -515,6 +524,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.levels => l10n.filterNameLevels,
         FilterKind.sharpen => l10n.filterNameSharpen,
         FilterKind.unsharpMask => l10n.filterNameUnsharpMask,
+        FilterKind.vignette => l10n.filterNameVignette,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -556,6 +566,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return _engine.applySharpen(data, width, height, filter.strength);
       case FilterKind.unsharpMask:
         return _engine.applyUnsharpMask(data, width, height, filter.strength, filter.edgeStrength);
+      case FilterKind.vignette:
+        return _engine.applyVignette(data, width, height, filter.strength);
     }
   }
 
@@ -577,6 +589,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.filter_center_focus;
       case FilterKind.unsharpMask:
         return Icons.blur_off;
+      case FilterKind.vignette:
+        return Icons.vignette;
     }
   }
 

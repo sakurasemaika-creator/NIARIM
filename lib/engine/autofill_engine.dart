@@ -5,6 +5,76 @@ import '../models/autofill_preset.dart';
 
 enum AutofillMode { repaint, colorUpdate }
 
+/// 自動塗りの本処理（AutofillEngine.execute）をcompute()経由のバックグラウンド
+/// isolateで実行するためのトップレベル関数（ユーザー指示：スマホでの動作を
+/// 可能な限り軽くする。キャンバス全体を走査するフラッドフィルは自動塗りの
+/// 中で最も重い処理でありながら、従来はメインスレッド（UIスレッド）で
+/// 同期実行していたため、実行中は画面が固まって見える不具合があった。
+/// lasso_fill_engine.dart等、他の重い処理と同じ設計に合わせた）。
+Uint8List? runAutofillExecuteInIsolate(
+    ({
+      AutofillMode mode,
+      Uint8List? lineartData,
+      Uint8List? existingData,
+      int width,
+      int height,
+      AutofillPart part,
+      Uint8List? toneTexture,
+      int toneWidth,
+      int toneHeight,
+    }) args) {
+  return AutofillEngine().execute(
+    mode: args.mode,
+    lineartData: args.lineartData,
+    existingData: args.existingData,
+    width: args.width,
+    height: args.height,
+    part: args.part,
+    toneTexture: args.toneTexture,
+    toneWidth: args.toneWidth,
+    toneHeight: args.toneHeight,
+  );
+}
+
+/// AutofillEngine.recolorLineartをcompute()経由で実行するためのトップレベル
+/// 関数（線画色設定の反映もキャンバス全体を走査するため、同様にisolate化する）。
+Uint8List runRecolorLineartInIsolate(
+    ({
+      Uint8List lineartData,
+      int width,
+      int height,
+      AutofillPart part,
+    }) args) {
+  return AutofillEngine().recolorLineart(
+    lineartData: args.lineartData,
+    width: args.width,
+    height: args.height,
+    part: args.part,
+  );
+}
+
+/// AutofillEngine.colorUpdateをcompute()経由で実行するためのトップレベル関数。
+Uint8List runAutofillColorUpdateInIsolate(
+    ({
+      Uint8List existingData,
+      int width,
+      int height,
+      AutofillPart part,
+      Uint8List? toneTexture,
+      int toneWidth,
+      int toneHeight,
+    }) args) {
+  return AutofillEngine().colorUpdate(
+    existingData: args.existingData,
+    width: args.width,
+    height: args.height,
+    part: args.part,
+    toneTexture: args.toneTexture,
+    toneWidth: args.toneWidth,
+    toneHeight: args.toneHeight,
+  );
+}
+
 class AutofillEngine {
   /// 塗りなおし：形状を破棄して領域再判定→塗りなおす
   /// [toneTexture]が指定され[part].useTone==trueの場合は、単色/グラデーションの

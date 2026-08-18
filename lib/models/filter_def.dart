@@ -7,7 +7,12 @@
 /// 使った強めのシャープ化（アンシャープマスク）。いずれも小さな畳み込み
 /// カーネル・既存のガウスぼかし1回分程度の負荷しかなく、低スペック端末
 /// でも軽く動作する（ユーザー確認済みの上で新規追加）。
-enum FilterKind { gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask }
+/// vignette：周辺減光（画面の四隅を暗くして中央を強調する、イラスト・
+/// 漫画の演出で定番の効果）。1画素あたり中心からの距離計算のみの単純な
+/// 1パス処理で、既存のフィルターと同等以下の軽い負荷。
+enum FilterKind {
+  gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette
+}
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
 /// 本格的な自由曲線編集の代わりに、よく使う形状をプリセットとして提供する。

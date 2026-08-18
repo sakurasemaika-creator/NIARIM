@@ -840,6 +840,8 @@
   "filterNameUnsharpMask": "USM銳化",
   "filterSharpenStrength": "銳化強度",
   "filterUnsharpAmount": "強度",
+  "filterNameVignette": "暗角",
+  "filterVignetteStrength": "暗角強度",
   "filterOutlineLayerNameSuffix": "{name}（描邊）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}

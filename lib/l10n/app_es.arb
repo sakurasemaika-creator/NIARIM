@@ -840,6 +840,8 @@
   "filterNameUnsharpMask": "Máscara de enfoque",
   "filterSharpenStrength": "Intensidad de enfoque",
   "filterUnsharpAmount": "Intensidad",
+  "filterNameVignette": "Viñeta",
+  "filterVignetteStrength": "Intensidad de viñeta",
   "filterOutlineLayerNameSuffix": "{name} (Contorno)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
