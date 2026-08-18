@@ -33,6 +33,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   late double _hue;
   late double _saturation;
   late double _value;
+  late double _alpha; // 0.0〜1.0（仕様書20：カラーピッカーは常に透明色も選択できる）
   late int _r, _g, _b;
   final _hexController = TextEditingController();
   _PickerFormat _format = _PickerFormat.hsv;
@@ -55,12 +56,13 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     _hue = hsv.hue;
     _saturation = hsv.saturation;
     _value = hsv.value;
+    _alpha = color.a;
     _r = (color.r * 255).round();
     _g = (color.g * 255).round();
     _b = (color.b * 255).round();
   }
 
-  Color get _currentColor => HSVColor.fromAHSV(1, _hue, _saturation, _value).toColor();
+  Color get _currentColor => HSVColor.fromAHSV(_alpha, _hue, _saturation, _value).toColor();
 
   void _applyHsv() {
     setState(() {});
@@ -73,7 +75,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   }
 
   void _applyRgb() {
-    final color = Color.fromARGB(255, _r, _g, _b);
+    final color = Color.fromARGB((_alpha * 255).round(), _r, _g, _b);
     setState(() {
       final hsv = HSVColor.fromColor(color);
       _hue = hsv.hue;
@@ -82,6 +84,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     });
     _hexController.text = _colorToHex(color);
     widget.onColorChanged(color);
+  }
+
+  void _applyAlpha() {
+    setState(() {});
+    widget.onColorChanged(_currentColor);
+    _hexController.text = _colorToHex(_currentColor);
   }
 
   void _applyColor(Color color) {
@@ -155,6 +163,29 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 _slider('G', _g.toDouble(), 0, 255, (v) { _g = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
                 _slider('B', _b.toDouble(), 0, 255, (v) { _b = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
               ],
+              const SizedBox(height: 4),
+              // 不透明度スライダー（仕様書20：カラーピッカーは常に透明色も選択
+              // できるようにする。ユーザー指示）。チェッカー柄の上にプレビューを
+              // 重ねて透明度が視覚的に分かるようにする。
+              Row(
+                children: [
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CustomPaint(painter: _CheckerboardPainter(), child: ColoredBox(color: _currentColor)),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Slider(
+                      min: 0, max: 1, value: _alpha,
+                      label: '${(_alpha * 100).round()}%',
+                      onChanged: (v) { _alpha = v; _applyAlpha(); },
+                      onChangeEnd: (_) => _commitToRecent(),
+                    ),
+                  ),
+                  SizedBox(width: 32, child: Text('${(_alpha * 100).round()}%', style: const TextStyle(fontSize: 11))),
+                ],
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -423,15 +454,52 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     );
   }
 
-  String _colorToHex(Color color) =>
-      color.toARGB32().toRadixString(16).substring(2).toUpperCase();
+  /// RRGGBB（不透明時）またはRRGGBBAA（透明色を含む場合）で出力する
+  /// （仕様書20：カラーピッカーは常に透明色も選択できる）。
+  String _colorToHex(Color color) {
+    final rgb = color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase();
+    final a = (color.a * 255).round();
+    if (a >= 255) return rgb;
+    return '$rgb${a.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+  }
 
   Color? _hexToColor(String hex) {
     hex = hex.replaceAll('#', '');
     if (hex.length == 6) {
       final value = int.tryParse('FF$hex', radix: 16);
       if (value != null) return Color(value);
+    } else if (hex.length == 8) {
+      // RRGGBBAA
+      final rgb = hex.substring(0, 6);
+      final a = hex.substring(6, 8);
+      final value = int.tryParse('$a$rgb', radix: 16);
+      if (value != null) return Color(value);
     }
     return null;
   }
+}
+
+/// 透明度プレビュー用のチェッカー柄背景（仕様書20：カラーピッカーは常に
+/// 透明色も選択できるようにし、透明度を視覚的に分かりやすくする）。
+class _CheckerboardPainter extends CustomPainter {
+  const _CheckerboardPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cell = 4.0;
+    final light = Paint()..color = const Color(0xFFCCCCCC);
+    final dark = Paint()..color = const Color(0xFF999999);
+    canvas.drawRect(Offset.zero & size, light);
+    for (double y = 0; y < size.height; y += cell) {
+      for (double x = 0; x < size.width; x += cell) {
+        final isDark = ((x / cell).floor() + (y / cell).floor()) % 2 == 0;
+        if (isDark) {
+          canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), dark);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CheckerboardPainter oldDelegate) => false;
 }

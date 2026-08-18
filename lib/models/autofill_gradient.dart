@@ -11,8 +11,11 @@ class AutofillGradient {
   final double angle; // 度数（0〜360）。typeがlinearのみ使用
   final double centerX; // 0.0〜1.0（キャンバス比率）。typeがradial系のみ使用
   final double centerY;
-  final List<int> colors; // ARGB、2〜10色
+  final List<int> colors; // ARGB、2〜10色。アルファ値＝その色の不透明度
   final List<double> stops; // 0.0〜1.0、colorsと同じ数。境界（色比率）
+  // ぼかしの強さ（0.0〜1.0、既定1.0＝従来通りの滑らかなブレンド）。値を
+  // 下げるほど各色の境界がはっきりした帯状（バンド）表示に近づく（仕様書20）。
+  final double feather;
 
   const AutofillGradient({
     this.type = AutofillGradientType.linear,
@@ -21,6 +24,7 @@ class AutofillGradient {
     this.centerY = 0.5,
     required this.colors,
     required this.stops,
+    this.feather = 1.0,
   });
 
   /// 2色のデフォルトグラデーションを生成する。
@@ -36,6 +40,7 @@ class AutofillGradient {
     double? centerY,
     List<int>? colors,
     List<double>? stops,
+    double? feather,
   }) {
     return AutofillGradient(
       type: type ?? this.type,
@@ -44,6 +49,7 @@ class AutofillGradient {
       centerY: centerY ?? this.centerY,
       colors: colors ?? this.colors,
       stops: stops ?? this.stops,
+      feather: feather ?? this.feather,
     );
   }
 
@@ -54,6 +60,7 @@ class AutofillGradient {
         'centerY': centerY,
         'colors': colors,
         'stops': stops,
+        'feather': feather,
       };
 
   factory AutofillGradient.fromJson(Map<String, dynamic> j) => AutofillGradient(
@@ -64,5 +71,6 @@ class AutofillGradient {
         centerY: (j['centerY'] as num?)?.toDouble() ?? 0.5,
         colors: (j['colors'] as List<dynamic>).map((e) => e as int).toList(),
         stops: (j['stops'] as List<dynamic>).map((e) => (e as num).toDouble()).toList(),
+        feather: (j['feather'] as num?)?.toDouble() ?? 1.0,
       );
 }

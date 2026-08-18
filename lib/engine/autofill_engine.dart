@@ -170,16 +170,20 @@ class AutofillEngine {
         }
         if (paint) {
           if (gradient != null) {
+            // グラデーションは色ごとに不透明度を持てるため、そのままアルファも
+            // 書き込む（仕様書20：塗り色の不透明度は100%固定だが、グラデーション
+            // の各色は個別に不透明度を設定できる）。
             final argb = _gradientColorAt(gradient, cx, cy, width, height);
             outputData[idx]     = (argb >> 16) & 0xFF;
             outputData[idx + 1] = (argb >> 8) & 0xFF;
             outputData[idx + 2] = argb & 0xFF;
+            outputData[idx + 3] = (argb >> 24) & 0xFF;
           } else {
             outputData[idx]     = fr;
             outputData[idx + 1] = fg;
             outputData[idx + 2] = fb;
+            outputData[idx + 3] = 255;
           }
-          outputData[idx + 3] = 255;
         }
         for (final (nx, ny) in [(cx-1,cy),(cx+1,cy),(cx,cy-1),(cx,cy+1)]) {
           if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
@@ -254,31 +258,41 @@ class AutofillEngine {
         t = maxRadius > 0 ? dist / maxRadius : 0;
         if (g.type == AutofillGradientType.radialOutCenter) t = 1 - t;
     }
-    return _sampleGradient(g.colors, g.stops, t.clamp(0.0, 1.0));
+    return _sampleGradient(g.colors, g.stops, t.clamp(0.0, 1.0), g.feather);
   }
 
-  int _sampleGradient(List<int> colors, List<double> stops, double t) {
+  /// [feather]（0.0〜1.0）：1.0なら隣接する2色の境界（stops[i]〜stops[i+1]）
+  /// 全体を使って滑らかにブレンドする（従来通り）。値を下げるほど境界の
+  /// 中央付近だけで急に切り替わる帯状表示に近づく（仕様書20：ぼかしの強さ）。
+  int _sampleGradient(List<int> colors, List<double> stops, double t, [double feather = 1.0]) {
     if (colors.isEmpty) return 0xFF000000;
     if (colors.length == 1) return colors.first;
     if (t <= stops.first) return colors.first;
     if (t >= stops.last) return colors.last;
     for (int i = 0; i < stops.length - 1; i++) {
       if (t >= stops[i] && t <= stops[i + 1]) {
-        final range = stops[i + 1] - stops[i];
-        final localT = range > 0 ? (t - stops[i]) / range : 0.0;
+        final s0 = stops[i], s1 = stops[i + 1];
+        final mid = (s0 + s1) / 2;
+        final halfBand = (s1 - s0) / 2 * feather.clamp(0.0, 1.0);
+        if (halfBand <= 1e-6) {
+          return t < mid ? colors[i] : colors[i + 1];
+        }
+        final localT = ((t - mid) / (2 * halfBand) + 0.5).clamp(0.0, 1.0);
         return _lerpColor(colors[i], colors[i + 1], localT);
       }
     }
     return colors.last;
   }
 
+  /// RGBだけでなくアルファ（色ごとの不透明度、仕様書20）も補間する。
   int _lerpColor(int a, int b, double t) {
-    final ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
-    final br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
+    final aa = (a >> 24) & 0xFF, ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
+    final ba = (b >> 24) & 0xFF, br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
+    final alpha = (aa + (ba - aa) * t).round().clamp(0, 255);
     final r = (ar + (br - ar) * t).round().clamp(0, 255);
     final g = (ag + (bg - ag) * t).round().clamp(0, 255);
     final bl = (ab + (bb - ab) * t).round().clamp(0, 255);
-    return 0xFF000000 | (r << 16) | (g << 8) | bl;
+    return (alpha << 24) | (r << 16) | (g << 8) | bl;
   }
 
   // ─── 色トレス・線画馴染ませ（仕様書20：線画色設定） ─────────────────────

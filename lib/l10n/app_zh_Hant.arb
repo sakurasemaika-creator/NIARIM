@@ -962,6 +962,15 @@
   "autofillPartGradientAddColorButton": "新增顏色",
   "autofillPartGradientDeleteHint": "長按可刪除（不能少於2種顏色）",
   "autofillPartGradientRemoveButton": "解除漸層",
+  "autofillPartGradientFeatherLabel": "模糊強度: {value}%",
+  "@autofillPartGradientFeatherLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientDragHint": "拖曳右側的把手可調整顏色順序",
+  "autofillPartGradientStopLabel": "切換位置: {value}%",
+  "@autofillPartGradientStopLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
   "saveTreeScreenTitleTree": "存檔樹",
   "saveTreeScreenTitleSlot": "存檔槽",
   "timelineExportMenuItem": "匯出",

@@ -1053,6 +1053,15 @@
   "autofillPartGradientAddColorButton": "色を追加",
   "autofillPartGradientDeleteHint": "長押しで削除（2色未満にはできません）",
   "autofillPartGradientRemoveButton": "グラデーション解除",
+  "autofillPartGradientFeatherLabel": "ぼかしの強さ: {value}%",
+  "@autofillPartGradientFeatherLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientDragHint": "ドラッグ（右端のハンドル）で色の順番を入れ替えられます",
+  "autofillPartGradientStopLabel": "切り替え位置: {value}%",
+  "@autofillPartGradientStopLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
   "saveTreeScreenTitleTree": "セーブツリー",
   "saveTreeScreenTitleSlot": "セーブスロット",
   "timelineExportMenuItem": "書き出し",

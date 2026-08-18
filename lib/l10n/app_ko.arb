@@ -962,6 +962,15 @@
   "autofillPartGradientAddColorButton": "색상 추가",
   "autofillPartGradientDeleteHint": "길게 눌러 삭제(색상은 최소 2개 필요)",
   "autofillPartGradientRemoveButton": "그라데이션 해제",
+  "autofillPartGradientFeatherLabel": "흐림 강도: {value}%",
+  "@autofillPartGradientFeatherLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientDragHint": "오른쪽 핸들을 드래그하여 색상 순서를 바꿀 수 있습니다",
+  "autofillPartGradientStopLabel": "전환 위치: {value}%",
+  "@autofillPartGradientStopLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
   "saveTreeScreenTitleTree": "세이브 트리",
   "saveTreeScreenTitleSlot": "세이브 슬롯",
   "timelineExportMenuItem": "내보내기",

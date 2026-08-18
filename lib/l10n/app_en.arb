@@ -962,6 +962,15 @@
   "autofillPartGradientAddColorButton": "Add color",
   "autofillPartGradientDeleteHint": "Long-press to remove (at least 2 colors required)",
   "autofillPartGradientRemoveButton": "Remove gradient",
+  "autofillPartGradientFeatherLabel": "Blur strength: {value}%",
+  "@autofillPartGradientFeatherLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientDragHint": "Drag the handle on the right to reorder colors",
+  "autofillPartGradientStopLabel": "Position: {value}%",
+  "@autofillPartGradientStopLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
   "timelineExportMenuItem": "Export",
   "saveTreeScreenTitleTree": "Save Tree",
   "saveTreeScreenTitleSlot": "Save Slots",

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -804,21 +805,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // リアルタイムプレビュー
-                    Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        color: current.gradient == null ? Color(current.color) : null,
-                        gradient: current.gradient == null
-                            ? null
-                            : LinearGradient(
-                                colors: current.gradient!.colors.map(Color.new).toList(),
-                                stops: current.gradient!.stops,
-                              ),
-                        border: Border.all(color: Colors.grey),
-                      ),
-                    ),
+                    // リアルタイムプレビュー（仕様書20：不透明度を変更した際に
+                    // プレビューでも分かりやすく変化するよう、チェッカー柄の上に
+                    // 塗り色・グラデーションを不透明度を反映して重ねる）。
+                    _fillPreview(current, height: 40),
                     const SizedBox(height: 12),
                     Text(l10n.autofillPartFillColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     const SizedBox(height: 4),
@@ -838,6 +828,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                       label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                     ),
+                    const SizedBox(height: 6),
                     // 画像を都度読み込んでスポイトで色を拾う（仕様書20：カラー
                     // ピッカーだけでなく、任意の画像から直接色を取得できる）。
                     OutlinedButton.icon(
@@ -890,6 +881,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         ),
                         label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                       ),
+                      const SizedBox(height: 6),
                       OutlinedButton.icon(
                         onPressed: () => _pickColorFromNewImage(
                           (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
@@ -1082,105 +1074,206 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     return showDialog<AutofillPart>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: Text(l10n.autofillPartGradientDialogTitle(part.name)),
-          content: SizedBox(
-            width: 320,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 32,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      gradient: LinearGradient(
-                        colors: gradient.colors.map(Color.new).toList(),
-                        stops: gradient.stops,
+        builder: (ctx, setS) {
+          void setColorAt(int i, int argb) {
+            final colors = List<int>.from(gradient.colors);
+            colors[i] = argb;
+            setS(() => gradient = gradient.copyWith(colors: colors));
+          }
+
+          void setStopAt(int i, double stop) {
+            final stops = List<double>.from(gradient.stops);
+            final lo = i == 0 ? 0.0 : stops[i - 1] + 0.01;
+            final hi = i == stops.length - 1 ? 1.0 : stops[i + 1] - 0.01;
+            stops[i] = stop.clamp(lo, hi > lo ? hi : lo);
+            setS(() => gradient = gradient.copyWith(stops: stops));
+          }
+
+          return AlertDialog(
+            title: Text(l10n.autofillPartGradientDialogTitle(part.name)),
+            content: SizedBox(
+              width: 320,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 実際の種類・角度・放射方向・ぼかしを反映した正確なプレビュー
+                    // （仕様書20：「角度の違うグラデーションや放射状のグラデーション
+                    // など対応したプレビューを表示する」）。
+                    Container(
+                      height: 48,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CustomPaint(painter: const _CheckerboardPainter()),
+                          DecoratedBox(decoration: BoxDecoration(gradient: _previewGradient(gradient))),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(l10n.autofillPartGradientTypeLabel, style: const TextStyle(fontSize: 12)),
-                  Wrap(
-                    spacing: 6,
-                    children: AutofillGradientType.values.map((t) => ChoiceChip(
-                      label: Text(_gradientTypeLabel(l10n, t), style: const TextStyle(fontSize: 11)),
-                      selected: gradient.type == t,
-                      onSelected: (selected) {
-                        if (selected) setS(() => gradient = gradient.copyWith(type: t));
-                      },
-                    )).toList(),
-                  ),
-                  if (gradient.type == AutofillGradientType.linear) ...[
-                    const SizedBox(height: 8),
-                    Text(l10n.autofillPartGradientAngleLabel(gradient.angle.round()), style: const TextStyle(fontSize: 12)),
-                    Slider(
-                      value: gradient.angle,
-                      min: 0, max: 359,
-                      onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v)),
-                    ),
-                  ],
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(l10n.autofillPartGradientColorLabel, style: const TextStyle(fontSize: 12)),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: gradient.colors.length >= 5 ? null : () {
-                          final colors = [...gradient.colors, 0xFFFFFFFF];
-                          setS(() => gradient = gradient.copyWith(
-                                colors: colors,
-                                stops: _evenStops(colors.length),
-                              ));
+                    const SizedBox(height: 12),
+                    Text(l10n.autofillPartGradientTypeLabel, style: const TextStyle(fontSize: 12)),
+                    Wrap(
+                      spacing: 6,
+                      children: AutofillGradientType.values.map((t) => ChoiceChip(
+                        label: Text(_gradientTypeLabel(l10n, t), style: const TextStyle(fontSize: 11)),
+                        selected: gradient.type == t,
+                        onSelected: (selected) {
+                          if (selected) setS(() => gradient = gradient.copyWith(type: t));
                         },
-                        icon: const Icon(Icons.add, size: 16),
-                        label: Text(l10n.autofillPartGradientAddColorButton, style: const TextStyle(fontSize: 11)),
+                      )).toList(),
+                    ),
+                    if (gradient.type == AutofillGradientType.linear) ...[
+                      const SizedBox(height: 8),
+                      Text(l10n.autofillPartGradientAngleLabel(gradient.angle.round()), style: const TextStyle(fontSize: 12)),
+                      Slider(
+                        value: gradient.angle,
+                        min: 0, max: 359,
+                        onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v)),
                       ),
                     ],
-                  ),
-                  Wrap(
-                    spacing: 8, runSpacing: 8,
-                    children: List.generate(gradient.colors.length, (i) => GestureDetector(
-                      onTap: () => _pickGradientStopColor(ctx, gradient, i, (updated) {
-                        setS(() => gradient = updated);
-                      }),
-                      onLongPress: gradient.colors.length <= 2 ? null : () {
-                        final colors = List<int>.from(gradient.colors)..removeAt(i);
+                    const SizedBox(height: 8),
+                    // ぼかしの強さ（仕様書20）：0%＝境界がはっきりした帯状、
+                    // 100%＝従来通りの滑らかなブレンド。
+                    Text(l10n.autofillPartGradientFeatherLabel((gradient.feather * 100).round()),
+                        style: const TextStyle(fontSize: 12)),
+                    Slider(
+                      value: gradient.feather,
+                      min: 0, max: 1,
+                      onChanged: (v) => setS(() => gradient = gradient.copyWith(feather: v)),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(l10n.autofillPartGradientColorLabel, style: const TextStyle(fontSize: 12)),
+                        const Spacer(),
+                        TextButton.icon(
+                          onPressed: gradient.colors.length >= 10 ? null : () {
+                            final colors = [...gradient.colors, 0xFFFFFFFF];
+                            setS(() => gradient = gradient.copyWith(
+                                  colors: colors,
+                                  stops: _evenStops(colors.length),
+                                ));
+                          },
+                          icon: const Icon(Icons.add, size: 16),
+                          label: Text(l10n.autofillPartGradientAddColorButton, style: const TextStyle(fontSize: 11)),
+                        ),
+                      ],
+                    ),
+                    Text(l10n.autofillPartGradientDragHint,
+                        style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    const SizedBox(height: 4),
+                    // 色一覧：ドラッグで順番入れ替え、各色ごとにタップで色（不透明度
+                    // 含む）変更・画像からスポイト・切り替え位置の調整・削除ができる
+                    // （仕様書20）。
+                    ReorderableListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: gradient.colors.length,
+                      onReorder: (oldIndex, newIndex) {
+                        if (newIndex > oldIndex) newIndex -= 1;
+                        final colors = List<int>.from(gradient.colors);
+                        final item = colors.removeAt(oldIndex);
+                        colors.insert(newIndex, item);
+                        // 位置（stops）は見た目の並び基準を保つため、色の並び替えに
+                        // 合わせて均等配置へ振り直す。
                         setS(() => gradient = gradient.copyWith(
                               colors: colors,
                               stops: _evenStops(colors.length),
                             ));
                       },
-                      child: Container(
-                        width: 36, height: 36,
-                        decoration: BoxDecoration(
-                          color: Color(gradient.colors[i]),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey),
-                        ),
-                      ),
-                    )),
-                  ),
-                  Text(l10n.autofillPartGradientDeleteHint,
-                      style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                ],
+                      itemBuilder: (context, i) {
+                        final color = Color(gradient.colors[i]);
+                        return Padding(
+                          key: ValueKey('grad_color_$i-${gradient.colors[i]}'),
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => _showColorPickerFor(context, color, (c) => setColorAt(i, c.toARGB32())),
+                                child: Container(
+                                  width: 32, height: 32,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.grey),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              // 画像から色をスポイト（仕様書20：グラデーション設定内
+                              // でもカラーピッカーだけでなく画像からスポイトできる）。
+                              IconButton(
+                                icon: const Icon(Icons.colorize, size: 16),
+                                tooltip: l10n.autofillEyedropperFromThumbnailButton,
+                                onPressed: () => _pickColorFromNewImage((c) => setColorAt(i, c.toARGB32())),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.autofillPartGradientStopLabel((gradient.stops[i] * 100).round()),
+                                      style: const TextStyle(fontSize: 10),
+                                    ),
+                                    SliderTheme(
+                                      data: SliderTheme.of(context).copyWith(
+                                        trackHeight: 2,
+                                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                      ),
+                                      child: Slider(
+                                        value: gradient.stops[i],
+                                        min: 0, max: 1,
+                                        onChanged: (v) => setStopAt(i, v),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                onPressed: gradient.colors.length <= 2 ? null : () {
+                                  final colors = List<int>.from(gradient.colors)..removeAt(i);
+                                  setS(() => gradient = gradient.copyWith(
+                                        colors: colors,
+                                        stops: _evenStops(colors.length),
+                                      ));
+                                },
+                              ),
+                              ReorderableDragStartListener(
+                                index: i,
+                                child: const Padding(
+                                  padding: EdgeInsets.only(left: 4),
+                                  child: Icon(Icons.drag_handle, size: 18),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: null)),
-              child: Text(l10n.autofillPartGradientRemoveButton),
-            ),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: gradient)),
-              child: Text(l10n.autofillPartApplyButton),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: null)),
+                child: Text(l10n.autofillPartGradientRemoveButton),
+              ),
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: gradient)),
+                child: Text(l10n.autofillPartApplyButton),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1190,13 +1283,94 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     return List.generate(count, (i) => i / (count - 1));
   }
 
-  void _pickGradientStopColor(
-    BuildContext context, AutofillGradient gradient, int index, ValueChanged<AutofillGradient> onPicked) {
-    _showColorPickerFor(context, Color(gradient.colors[index]), (c) {
-      final colors = List<int>.from(gradient.colors);
-      colors[index] = c.toARGB32();
-      onPicked(gradient.copyWith(colors: colors));
-    });
+  /// 塗り色（単色・グラデーションいずれも）のリアルタイムプレビュー。
+  /// チェッカー柄の背景に、不透明度を反映した状態で重ねて表示することで、
+  /// 不透明度スライダーを動かした時にプレビューでも分かるようにする
+  /// （ユーザー指摘）。
+  Widget _fillPreview(AutofillPart p, {double height = 40}) {
+    return Container(
+      height: height,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomPaint(painter: const _CheckerboardPainter()),
+          Opacity(
+            opacity: p.opacity / 100,
+            child: p.gradient == null
+                ? ColoredBox(color: Color(p.color))
+                : DecoratedBox(decoration: BoxDecoration(gradient: _previewGradient(p.gradient!))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// [g]の種類（直線／放射2種）・角度・中心位置・ぼかしの強さを反映した
+  /// Flutter用Gradientへ変換する（仕様書20：「角度の違うグラデーションや
+  /// 放射状のグラデーションなど対応したプレビューを表示する」）。
+  /// autofill_engine.dartの実際の塗り計算式（_gradientColorAt/_sampleGradient）
+  /// と挙動を合わせている。
+  Gradient _previewGradient(AutofillGradient g) {
+    final expanded = _expandForFeather(g.colors, g.stops, g.feather);
+    final center = Alignment(g.centerX * 2 - 1, g.centerY * 2 - 1);
+    switch (g.type) {
+      case AutofillGradientType.linear:
+        final rad = g.angle * math.pi / 180;
+        final dx = math.cos(rad);
+        final dy = math.sin(rad);
+        return LinearGradient(
+          begin: Alignment(-dx, -dy),
+          end: Alignment(dx, dy),
+          colors: expanded.colors,
+          stops: expanded.stops,
+        );
+      case AutofillGradientType.radialCenterOut:
+        return RadialGradient(center: center, radius: 0.85, colors: expanded.colors, stops: expanded.stops);
+      case AutofillGradientType.radialOutCenter:
+        // engineは中心からの距離tを反転（t=1-t）させて同じ配列をサンプルする。
+        // Flutterのradiusベース補間で同じ見た目にするには、色・stopsの
+        // 双方を反転させる（詳細はコミット時のコメント参照）。
+        return RadialGradient(
+          center: center,
+          radius: 0.85,
+          colors: expanded.colors.reversed.toList(),
+          stops: expanded.stops.map((s) => 1 - s).toList().reversed.toList(),
+        );
+    }
+  }
+
+  /// ぼかしの強さ（0.0〜1.0）を反映した表示用の色・stops列を生成する
+  /// （仕様書20：ぼかしの強さのプレビューへの反映。autofill_engine.dartの
+  /// _sampleGradientと同じアルゴリズムを、Flutter Gradientが扱える
+  /// 離散stops列へ展開したもの）。
+  ({List<Color> colors, List<double> stops}) _expandForFeather(
+      List<int> colorsInt, List<double> stopsIn, double feather) {
+    if (colorsInt.length < 2) {
+      return (colors: colorsInt.map(Color.new).toList(), stops: stopsIn);
+    }
+    final outColors = <Color>[];
+    final outStops = <double>[];
+    void addPoint(double stop, Color color) {
+      if (outStops.isNotEmpty && stop <= outStops.last) stop = outStops.last + 0.0001;
+      outStops.add(stop.clamp(0.0, 1.0));
+      outColors.add(color);
+    }
+
+    addPoint(stopsIn.first, Color(colorsInt.first));
+    for (int i = 0; i < colorsInt.length - 1; i++) {
+      final s0 = stopsIn[i], s1 = stopsIn[i + 1];
+      final mid = (s0 + s1) / 2;
+      final halfBand = (s1 - s0) / 2 * feather.clamp(0.0, 1.0);
+      addPoint(mid - halfBand, Color(colorsInt[i]));
+      addPoint(mid + halfBand, Color(colorsInt[i + 1]));
+    }
+    addPoint(stopsIn.last, Color(colorsInt.last));
+    return (colors: outColors, stops: outStops);
   }
 
   /// パーツの塗り色・線画色・グラデーション色の選択に共通利用するカラー
@@ -1223,4 +1397,29 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         AutofillGradientType.radialCenterOut => l10n.autofillGradientTypeRadialCenterOut,
         AutofillGradientType.radialOutCenter => l10n.autofillGradientTypeRadialOutCenter,
       };
+}
+
+/// 不透明度プレビュー用のチェッカー柄背景（仕様書20：不透明度を変更した際
+/// にプレビューでも分かりやすく変化するようにする）。
+class _CheckerboardPainter extends CustomPainter {
+  const _CheckerboardPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cell = 6.0;
+    final light = Paint()..color = const Color(0xFFCCCCCC);
+    final dark = Paint()..color = const Color(0xFF999999);
+    canvas.drawRect(Offset.zero & size, light);
+    for (double y = 0; y < size.height; y += cell) {
+      for (double x = 0; x < size.width; x += cell) {
+        final isDark = ((x / cell).floor() + (y / cell).floor()) % 2 == 0;
+        if (isDark) {
+          canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), dark);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CheckerboardPainter oldDelegate) => false;
 }

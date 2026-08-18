@@ -962,6 +962,15 @@
   "autofillPartGradientAddColorButton": "Ajouter une couleur",
   "autofillPartGradientDeleteHint": "Appui long pour supprimer (2 couleurs minimum)",
   "autofillPartGradientRemoveButton": "Supprimer le dégradé",
+  "autofillPartGradientFeatherLabel": "Intensité du flou : {value}%",
+  "@autofillPartGradientFeatherLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
+  "autofillPartGradientDragHint": "Faites glisser la poignée à droite pour réorganiser les couleurs",
+  "autofillPartGradientStopLabel": "Position : {value}%",
+  "@autofillPartGradientStopLabel": {
+    "placeholders": {"value": {"type": "int"}}
+  },
   "saveTreeScreenTitleTree": "Arbre de sauvegarde",
   "saveTreeScreenTitleSlot": "Emplacements de sauvegarde",
   "timelineExportMenuItem": "Exporter",
