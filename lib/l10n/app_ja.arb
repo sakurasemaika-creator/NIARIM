@@ -935,6 +935,9 @@
   "filterVignetteStrength": "減光の強さ",
   "filterNameNoise": "フィルムグレイン",
   "filterNoiseStrength": "粒子の強さ",
+  "filterNameRetroAnime": "レトロアニメ",
+  "filterNameCrt": "ブラウン管",
+  "filterRetroStrength": "強さ",
   "filterOutlineLayerNameSuffix": "{name}（縁取り）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1448,6 +1451,9 @@
   "timelineEffectTypeChromaticAberration": "色収差",
   "timelineEffectTypeNoise": "ノイズ",
   "timelineEffectTypeSepia": "セピア",
+  "timelineEffectTypeAnimeStyle": "アニメ調",
+  "timelineEffectTypeRetroAnime": "レトロアニメ",
+  "timelineEffectTypeCrt": "ブラウン管",
   "timelineEffectFilterEmptyState": "フィルターがありません\n＋追加ボタンで追加してください",
   "timelineRangeStartLabel": "開始",
   "timelineRangeEndLabel": "終了",

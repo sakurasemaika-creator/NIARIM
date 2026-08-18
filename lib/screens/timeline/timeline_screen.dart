@@ -3785,6 +3785,9 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.chromaticAberration => l10n.timelineEffectTypeChromaticAberration,
     EffectFilterType.noise => l10n.timelineEffectTypeNoise,
     EffectFilterType.sepia => l10n.timelineEffectTypeSepia,
+    EffectFilterType.animeStyle => l10n.timelineEffectTypeAnimeStyle,
+    EffectFilterType.retroAnime => l10n.timelineEffectTypeRetroAnime,
+    EffectFilterType.crt => l10n.timelineEffectTypeCrt,
   };
 
   static const _typeIcons = {
@@ -3795,6 +3798,9 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.chromaticAberration: Icons.color_lens,
     EffectFilterType.noise: Icons.grain,
     EffectFilterType.sepia: Icons.filter_vintage,
+    EffectFilterType.animeStyle: Icons.auto_awesome,
+    EffectFilterType.retroAnime: Icons.movie_filter,
+    EffectFilterType.crt: Icons.tv,
   };
 
   @override

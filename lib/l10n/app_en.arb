@@ -844,6 +844,9 @@
   "filterVignetteStrength": "Vignette strength",
   "filterNameNoise": "Film Grain",
   "filterNoiseStrength": "Grain strength",
+  "filterNameRetroAnime": "Retro Anime",
+  "filterNameCrt": "CRT",
+  "filterRetroStrength": "Strength",
   "filterOutlineLayerNameSuffix": "{name} (Outline)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1357,6 +1360,9 @@
   "timelineEffectTypeChromaticAberration": "Chromatic aberration",
   "timelineEffectTypeNoise": "Noise",
   "timelineEffectTypeSepia": "Sepia",
+  "timelineEffectTypeAnimeStyle": "Anime Style",
+  "timelineEffectTypeRetroAnime": "Retro Anime",
+  "timelineEffectTypeCrt": "CRT",
   "timelineEffectFilterEmptyState": "No filters yet\nTap + Add to add one",
   "timelineRangeStartLabel": "Start",
   "timelineRangeEndLabel": "End",

@@ -46,6 +46,8 @@ Uint8List applyDrawFilterInIsolate(
     FilterKind.vignette => engine.applyVignette(data, width, height, filter.strength),
     FilterKind.noise =>
       engine.applyNoise(data, width, height, (filter.strength / 100).clamp(0.0, 1.0), NoiseType.gaussian),
+    FilterKind.retroAnime => engine.applyRetroAnime(data, width, height, filter.strength),
+    FilterKind.crt => engine.applyCrt(data, width, height, filter.strength),
   };
 }
 
@@ -95,6 +97,12 @@ class FilterEngine {
         EffectFilterType.noise =>
           applyNoise(result, width, height, (e.param1 / 20).clamp(0.0, 1.0), NoiseType.gaussian),
         EffectFilterType.sepia => applySepia(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
+        EffectFilterType.animeStyle => applyAnimeStyle(
+            result, width, height,
+            strength: e.param1, colorCount: 6, edgeStrength: (e.param1 / 20).clamp(0.0, 1.0)),
+        EffectFilterType.retroAnime =>
+          applyRetroAnime(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
+        EffectFilterType.crt => applyCrt(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
       };
     }
     return result;
@@ -431,6 +439,51 @@ class FilterEngine {
     return result;
   }
 
+  /// レトロアニメ風：暖色寄りのカラーグレーディング・彩度低下・粒状ノイズを
+  /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。1画素あたりの
+  /// 色変換とノイズ処理1回分のみで、既存のanimeStyle（ポスタリゼーション＋
+  /// Sobelエッジ検出）より軽い。
+  Uint8List applyRetroAnime(Uint8List data, int width, int height, double strength) {
+    final amount = (strength / 100.0).clamp(0.0, 1.0);
+    if (amount <= 0) return Uint8List.fromList(data);
+    final result = Uint8List.fromList(data);
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      final r = data[i], g = data[i + 1], b = data[i + 2];
+      final warmR = (r * 1.08).clamp(0, 255);
+      final warmB = (b * 0.92).clamp(0, 255);
+      final gray = r * 0.3 + g * 0.59 + b * 0.11;
+      final targetR = warmR + (gray - warmR) * 0.15;
+      final targetG = g + (gray - g) * 0.15;
+      final targetB = warmB + (gray - warmB) * 0.15;
+      result[i] = (r + (targetR - r) * amount).round().clamp(0, 255);
+      result[i + 1] = (g + (targetG - g) * amount).round().clamp(0, 255);
+      result[i + 2] = (b + (targetB - b) * amount).round().clamp(0, 255);
+    }
+    return applyNoise(result, width, height, amount * 0.15, NoiseType.gaussian);
+  }
+
+  /// ブラウン管（CRT）風：色収差・周辺減光・走査線を組み合わせた昔のテレビ・
+  /// モニター表示のような質感。いずれも既存メソッドの組み合わせ＋1画素
+  /// ごとの単純な走査線処理のみで、負荷は軽い。
+  Uint8List applyCrt(Uint8List data, int width, int height, double strength) {
+    final amount = (strength / 100.0).clamp(0.0, 1.0);
+    if (amount <= 0) return Uint8List.fromList(data);
+    var result = applyChromaticAberration(data, width, height, 1 + amount * 2, 0);
+    result = applyVignette(result, width, height, 20 + amount * 30);
+    final darken = 1.0 - amount * 0.35;
+    for (int y = 0; y < height; y += 2) {
+      for (int x = 0; x < width; x++) {
+        final idx = (y * width + x) * 4;
+        if (result[idx + 3] == 0) continue;
+        result[idx] = (result[idx] * darken).round().clamp(0, 255);
+        result[idx + 1] = (result[idx + 1] * darken).round().clamp(0, 255);
+        result[idx + 2] = (result[idx + 2] * darken).round().clamp(0, 255);
+      }
+    }
+    return result;
+  }
+
   Uint8List applyPixelate(Uint8List data, int width, int height, {
     int mosaicSize = 8,
     int colorLevels = 6,
@@ -616,6 +669,7 @@ class EffectFilter {
 
 enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
+  animeStyle, retroAnime, crt,
 }
 
 enum DrawFilterType {

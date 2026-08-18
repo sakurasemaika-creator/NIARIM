@@ -844,6 +844,9 @@
   "filterVignetteStrength": "Intensidad de viñeta",
   "filterNameNoise": "Grano de película",
   "filterNoiseStrength": "Intensidad del grano",
+  "filterNameRetroAnime": "Anime retro",
+  "filterNameCrt": "Tubo de rayos catódicos",
+  "filterRetroStrength": "Intensidad",
   "filterOutlineLayerNameSuffix": "{name} (Contorno)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1357,6 +1360,9 @@
   "timelineEffectTypeChromaticAberration": "Aberración cromática",
   "timelineEffectTypeNoise": "Ruido",
   "timelineEffectTypeSepia": "Sepia",
+  "timelineEffectTypeAnimeStyle": "Estilo anime",
+  "timelineEffectTypeRetroAnime": "Anime retro",
+  "timelineEffectTypeCrt": "Tubo de rayos catódicos",
   "timelineEffectFilterEmptyState": "No hay filtros\nToca + Añadir para crear uno",
   "timelineRangeStartLabel": "Inicio",
   "timelineRangeEndLabel": "Fin",

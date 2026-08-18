@@ -13,8 +13,12 @@
 /// noise：粒状ノイズ（フィルム・紙のような質感を付加する）。演出フィルター
 /// （EffectFilterType.noise）と同じFilterEngine.applyNoiseを描画フィルター
 /// としても使えるようにしたもの。
+/// retroAnime：暖色寄りのカラーグレーディング・彩度低下・粒状ノイズを
+/// 組み合わせた、昔のセルアニメ・VHS録画のような質感。
+/// crt：色収差・周辺減光・走査線を組み合わせたブラウン管ディスプレイ風の質感。
 enum FilterKind {
-  gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise
+  gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
+  retroAnime, crt,
 }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。

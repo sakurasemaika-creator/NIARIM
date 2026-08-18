@@ -43,6 +43,8 @@ class FilterService extends ChangeNotifier {
         FilterDef(id: 'Filter0008', name: 'アンシャープマスク', kind: FilterKind.unsharpMask, strength: 4, edgeStrength: 1.0),
         FilterDef(id: 'Filter0009', name: '周辺減光', kind: FilterKind.vignette, strength: 40),
         FilterDef(id: 'Filter0010', name: 'フィルムグレイン', kind: FilterKind.noise, strength: 15),
+        FilterDef(id: 'Filter0011', name: 'レトロアニメ', kind: FilterKind.retroAnime, strength: 60),
+        FilterDef(id: 'Filter0012', name: 'ブラウン管', kind: FilterKind.crt, strength: 50),
       ];
 
   Future<void> init() async {

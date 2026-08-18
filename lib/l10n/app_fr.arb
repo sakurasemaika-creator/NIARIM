@@ -844,6 +844,9 @@
   "filterVignetteStrength": "Intensité du vignettage",
   "filterNameNoise": "Grain de film",
   "filterNoiseStrength": "Intensité du grain",
+  "filterNameRetroAnime": "Anime rétro",
+  "filterNameCrt": "Tube cathodique",
+  "filterRetroStrength": "Intensité",
   "filterOutlineLayerNameSuffix": "{name} (Contour)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1357,6 +1360,9 @@
   "timelineEffectTypeChromaticAberration": "Aberration chromatique",
   "timelineEffectTypeNoise": "Bruit",
   "timelineEffectTypeSepia": "Sépia",
+  "timelineEffectTypeAnimeStyle": "Style anime",
+  "timelineEffectTypeRetroAnime": "Anime rétro",
+  "timelineEffectTypeCrt": "Tube cathodique",
   "timelineEffectFilterEmptyState": "Aucun filtre\nAppuyez sur + Ajouter pour en créer un",
   "timelineRangeStartLabel": "Début",
   "timelineRangeEndLabel": "Fin",

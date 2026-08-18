@@ -844,6 +844,9 @@
   "filterVignetteStrength": "暗角强度",
   "filterNameNoise": "胶片颗粒",
   "filterNoiseStrength": "颗粒强度",
+  "filterNameRetroAnime": "复古动漫",
+  "filterNameCrt": "老电视",
+  "filterRetroStrength": "强度",
   "filterOutlineLayerNameSuffix": "{name}（描边）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1357,6 +1360,9 @@
   "timelineEffectTypeChromaticAberration": "色差",
   "timelineEffectTypeNoise": "噪点",
   "timelineEffectTypeSepia": "怀旧棕褐",
+  "timelineEffectTypeAnimeStyle": "动漫风",
+  "timelineEffectTypeRetroAnime": "复古动漫",
+  "timelineEffectTypeCrt": "老电视",
   "timelineEffectFilterEmptyState": "没有滤镜\n请点击＋添加按钮进行添加",
   "timelineRangeStartLabel": "开始",
   "timelineRangeEndLabel": "结束",
