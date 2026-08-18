@@ -933,6 +933,8 @@
   "filterUnsharpAmount": "かかり具合",
   "filterNameVignette": "周辺減光",
   "filterVignetteStrength": "減光の強さ",
+  "filterNameNoise": "フィルムグレイン",
+  "filterNoiseStrength": "粒子の強さ",
   "filterOutlineLayerNameSuffix": "{name}（縁取り）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1445,6 +1447,7 @@
   "timelineEffectTypeMosaic": "モザイク",
   "timelineEffectTypeChromaticAberration": "色収差",
   "timelineEffectTypeNoise": "ノイズ",
+  "timelineEffectTypeSepia": "セピア",
   "timelineEffectFilterEmptyState": "フィルターがありません\n＋追加ボタンで追加してください",
   "timelineRangeStartLabel": "開始",
   "timelineRangeEndLabel": "終了",

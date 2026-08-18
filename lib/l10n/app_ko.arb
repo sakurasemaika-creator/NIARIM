@@ -842,6 +842,8 @@
   "filterUnsharpAmount": "적용 강도",
   "filterNameVignette": "비네트",
   "filterVignetteStrength": "비네트 강도",
+  "filterNameNoise": "필름 그레인",
+  "filterNoiseStrength": "입자 강도",
   "filterOutlineLayerNameSuffix": "{name}(테두리)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1354,6 +1356,7 @@
   "timelineEffectTypeMosaic": "모자이크",
   "timelineEffectTypeChromaticAberration": "색수차",
   "timelineEffectTypeNoise": "노이즈",
+  "timelineEffectTypeSepia": "세피아",
   "timelineEffectFilterEmptyState": "필터가 없습니다\n＋추가 버튼으로 추가해 주세요",
   "timelineRangeStartLabel": "시작",
   "timelineRangeEndLabel": "종료",

@@ -10,8 +10,11 @@
 /// vignette：周辺減光（画面の四隅を暗くして中央を強調する、イラスト・
 /// 漫画の演出で定番の効果）。1画素あたり中心からの距離計算のみの単純な
 /// 1パス処理で、既存のフィルターと同等以下の軽い負荷。
+/// noise：粒状ノイズ（フィルム・紙のような質感を付加する）。演出フィルター
+/// （EffectFilterType.noise）と同じFilterEngine.applyNoiseを描画フィルター
+/// としても使えるようにしたもの。
 enum FilterKind {
-  gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette
+  gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise
 }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。

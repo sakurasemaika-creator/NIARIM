@@ -842,6 +842,8 @@
   "filterUnsharpAmount": "强度",
   "filterNameVignette": "暗角",
   "filterVignetteStrength": "暗角强度",
+  "filterNameNoise": "胶片颗粒",
+  "filterNoiseStrength": "颗粒强度",
   "filterOutlineLayerNameSuffix": "{name}（描边）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1354,6 +1356,7 @@
   "timelineEffectTypeMosaic": "马赛克",
   "timelineEffectTypeChromaticAberration": "色差",
   "timelineEffectTypeNoise": "噪点",
+  "timelineEffectTypeSepia": "怀旧棕褐",
   "timelineEffectFilterEmptyState": "没有滤镜\n请点击＋添加按钮进行添加",
   "timelineRangeStartLabel": "开始",
   "timelineRangeEndLabel": "结束",

@@ -44,6 +44,8 @@ Uint8List applyDrawFilterInIsolate(
     FilterKind.unsharpMask =>
       engine.applyUnsharpMask(data, width, height, filter.strength, filter.edgeStrength),
     FilterKind.vignette => engine.applyVignette(data, width, height, filter.strength),
+    FilterKind.noise =>
+      engine.applyNoise(data, width, height, (filter.strength / 100).clamp(0.0, 1.0), NoiseType.gaussian),
   };
 }
 
@@ -92,6 +94,7 @@ class FilterEngine {
           applyChromaticAberration(result, width, height, e.param1, 0),
         EffectFilterType.noise =>
           applyNoise(result, width, height, (e.param1 / 20).clamp(0.0, 1.0), NoiseType.gaussian),
+        EffectFilterType.sepia => applySepia(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
       };
     }
     return result;
@@ -409,6 +412,25 @@ class FilterEngine {
     return result;
   }
 
+  /// セピア調（回想・過去シーンの演出で定番の褐色トーン）。輝度を求めて
+  /// 古典的なセピア変換式でRGBを求め、[amount]（0.0〜1.0）で元の色との
+  /// ブレンド量を調整する。1画素あたりの計算のみで負荷は軽い。
+  Uint8List applySepia(Uint8List data, int width, int height, double amount) {
+    if (amount <= 0) return Uint8List.fromList(data);
+    final result = Uint8List.fromList(data);
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      final r = data[i], g = data[i + 1], b = data[i + 2];
+      final sr = (r * 0.393 + g * 0.769 + b * 0.189).clamp(0, 255);
+      final sg = (r * 0.349 + g * 0.686 + b * 0.168).clamp(0, 255);
+      final sb = (r * 0.272 + g * 0.534 + b * 0.131).clamp(0, 255);
+      result[i] = (r + (sr - r) * amount).round().clamp(0, 255);
+      result[i + 1] = (g + (sg - g) * amount).round().clamp(0, 255);
+      result[i + 2] = (b + (sb - b) * amount).round().clamp(0, 255);
+    }
+    return result;
+  }
+
   Uint8List applyPixelate(Uint8List data, int width, int height, {
     int mosaicSize = 8,
     int colorLevels = 6,
@@ -593,7 +615,7 @@ class EffectFilter {
 }
 
 enum EffectFilterType {
-  fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise,
+  fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
 }
 
 enum DrawFilterType {

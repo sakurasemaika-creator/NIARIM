@@ -1,18 +1,14 @@
 ﻿import 'dart:io';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show compute;
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
-import '../../../engine/procedural_texture.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../models/autofill_preset.dart' show AutofillLineColorMode;
 import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
@@ -1403,150 +1399,33 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  /// 自動塗りエンジンを実行し、結果を対象自動塗りレイヤーのタイルへ書き戻す（仕様書04）。
+  /// 自動塗りエンジンを実行し、結果を対象自動塗りレイヤーのタイルへ書き戻す
+  /// （仕様書04）。本処理自体はautofill_batch_runner.dart（タイムラインの
+  /// 一括実行とも共通）に集約し、ここではUI固有のエラー案内のみ行う。
   Future<void> _executeAutofill(
       BuildContext context, model.Layer lineartLayer, autofill.AutofillMode mode) async {
     final l10n = AppLocalizations.of(context)!;
-    final partId = lineartLayer.partId;
-    if (partId == null) {
+    if (lineartLayer.partId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.layerPanelAutofillPartMissingSnackbar)),
       );
       return;
     }
-    final part = context.read<AutofillPresetService>().findPart(partId);
-    if (part == null) {
+    if (context.read<AutofillPresetService>().findPart(lineartLayer.partId!) == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.layerPanelAutofillPresetMissingSnackbar)),
       );
       return;
     }
-    final projectService = context.read<ProjectService>();
-    final tileManager = projectService.tileManagerOf(widget.projectId);
-    final w = tileManager.canvasWidth;
-    final h = tileManager.canvasHeight;
-
-    final lineartImg = await tileManager.compositeLayerToImage(
-        frameLayerKey(widget.sceneId, widget.frameIndex, lineartLayer.id));
-    final lineartBytes =
-        (await lineartImg.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
-    lineartImg.dispose();
-
-    var layers = projectService.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
-    final lineartIdx = layers.indexWhere((l) => l.id == lineartLayer.id);
-    model.Layer? autofillLayer = (lineartIdx >= 0 &&
-            lineartIdx + 1 < layers.length &&
-            layers[lineartIdx + 1].type == model.LayerType.autoFill)
-        ? layers[lineartIdx + 1]
-        : null;
-
-    final autofillKey = autofillLayer == null
-        ? null
-        : frameLayerKey(widget.sceneId, widget.frameIndex, autofillLayer.id);
-    final hasExisting = autofillKey != null && tileManager.hasLayer(autofillKey);
-    Uint8List? existingBytes;
-    if (hasExisting) {
-      final img = await tileManager.compositeLayerToImage(autofillKey);
-      existingBytes = (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
-      img.dispose();
-    }
-
-    // トーン設定（仕様書20：ONにするとトーン一覧から選択したトーンを現在色で
-    // 描画する。バケツトーンエンジンと同じテクスチャ生成・ループ配置方式）。
-    Uint8List? toneTexture;
-    const toneSize = 64;
-    if (part.useTone && part.toneId != null) {
-      final tone = context.read<ToneService>().tones.where((t) => t.id == part.toneId).firstOrNull;
-      if (tone != null) toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
-    }
-
-    // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る
-    final effectiveMode = hasExisting ? mode : autofill.AutofillMode.repaint;
-    // フラッドフィルはキャンバス全体を走査する重い処理のため、compute()で
-    // バックグラウンドisolate実行しUIスレッドが固まらないようにする
-    // （ユーザー指示：スマホでの動作を可能な限り軽くする）。
-    final result = await compute(autofill.runAutofillExecuteInIsolate, (
-      mode: effectiveMode,
-      lineartData: lineartBytes,
-      existingData: hasExisting ? existingBytes : null,
-      width: w,
-      height: h,
-      part: part,
-      toneTexture: toneTexture,
-      toneWidth: toneSize,
-      toneHeight: toneSize,
-    ));
-    if (result == null) return;
-    if (!context.mounted) return;
-
-    if (autofillLayer == null) {
-      final created = projectService.addLayer(
-        projectId: widget.projectId,
-        sceneId: widget.sceneId,
-        frameIndex: widget.frameIndex,
-        type: model.LayerType.autoFill,
-        name: l10n.layerPanelAutofillLayerNameSuffix(part.name),
-      );
-      // 線画レイヤーの直下へ移動する
-      layers = projectService.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
-      final createdIdx = layers.indexWhere((l) => l.id == created.id);
-      final targetIdx = layers.indexWhere((l) => l.id == lineartLayer.id) + 1;
-      if (createdIdx >= 0 && targetIdx >= 0 && createdIdx != targetIdx) {
-        projectService.reorderLayer(
-          projectId: widget.projectId,
-          sceneId: widget.sceneId,
-          frameIndex: widget.frameIndex,
-          oldIndex: createdIdx,
-          newIndex: targetIdx,
-        );
-      }
-      autofillLayer = created.copyWith(partId: part.id);
-    }
-
-    tileManager.replaceLayerPixels(
-        frameLayerKey(widget.sceneId, widget.frameIndex, autofillLayer.id), result);
-    // 塗り色の不透明度は100%固定とし、プリセットの不透明度はレイヤー不透明度として
-    // 反映する（仕様書20：レイヤー不透明度、理由：手動加筆時の重ね描きで濃さが
-    // 変化するのを防ぐため）。ブレンドモードは塗りレイヤー・線画レイヤーの両方へ
-    // 反映する。
-    projectService.updateLayer(
+    await runAutofillForLayer(
+      projectService: context.read<ProjectService>(),
+      presetService: context.read<AutofillPresetService>(),
+      toneService: context.read<ToneService>(),
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
-      layer: autofillLayer.copyWith(
-        partId: part.id,
-        needsAutofillUpdate: false,
-        opacity: part.opacity,
-        blendMode: part.blendMode,
-        opacityLocked: effectiveMode == autofill.AutofillMode.colorUpdate ? true : autofillLayer.opacityLocked,
-      ),
-    );
-
-    // 線画色設定（仕様書20：指定色／塗り色と同じ／色トレス・線画馴染ませ）を
-    // 線画レイヤーへ適用する。不透明度はレイヤー不透明度として反映し、
-    // ブレンドモードは塗りレイヤーと同じ値を自動反映する。
-    final recoloredLineart = await compute(autofill.runRecolorLineartInIsolate, (
-      lineartData: lineartBytes,
-      width: w,
-      height: h,
-      part: part,
-    ));
-    if (!context.mounted) return;
-    // recolorLineartは「指定色・既定の黒のまま」の場合のみ元データを変更せず
-    // 返す（AutofillEngine.recolorLineart参照）。compute()経由だと戻り値が
-    // 別isolateからの転送になりidentical()での判定が使えなくなるため、
-    // 同じ条件を直接判定する。
-    final lineartUnchanged =
-        part.lineColorMode == AutofillLineColorMode.specified && part.lineColor == 0xFF000000;
-    if (!lineartUnchanged) {
-      tileManager.replaceLayerPixels(
-          frameLayerKey(widget.sceneId, widget.frameIndex, lineartLayer.id), recoloredLineart);
-    }
-    projectService.updateLayer(
-      projectId: widget.projectId,
-      sceneId: widget.sceneId,
-      frameIndex: widget.frameIndex,
-      layer: lineartLayer.copyWith(opacity: part.lineOpacity, blendMode: part.blendMode),
+      lineartLayer: lineartLayer,
+      mode: mode,
     );
     setState(() {});
   }

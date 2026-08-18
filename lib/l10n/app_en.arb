@@ -842,6 +842,8 @@
   "filterUnsharpAmount": "Amount",
   "filterNameVignette": "Vignette",
   "filterVignetteStrength": "Vignette strength",
+  "filterNameNoise": "Film Grain",
+  "filterNoiseStrength": "Grain strength",
   "filterOutlineLayerNameSuffix": "{name} (Outline)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1354,6 +1356,7 @@
   "timelineEffectTypeMosaic": "Mosaic",
   "timelineEffectTypeChromaticAberration": "Chromatic aberration",
   "timelineEffectTypeNoise": "Noise",
+  "timelineEffectTypeSepia": "Sepia",
   "timelineEffectFilterEmptyState": "No filters yet\nTap + Add to add one",
   "timelineRangeStartLabel": "Start",
   "timelineRangeEndLabel": "End",

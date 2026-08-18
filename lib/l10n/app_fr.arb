@@ -842,6 +842,8 @@
   "filterUnsharpAmount": "Intensité",
   "filterNameVignette": "Vignettage",
   "filterVignetteStrength": "Intensité du vignettage",
+  "filterNameNoise": "Grain de film",
+  "filterNoiseStrength": "Intensité du grain",
   "filterOutlineLayerNameSuffix": "{name} (Contour)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1354,6 +1356,7 @@
   "timelineEffectTypeMosaic": "Mosaïque",
   "timelineEffectTypeChromaticAberration": "Aberration chromatique",
   "timelineEffectTypeNoise": "Bruit",
+  "timelineEffectTypeSepia": "Sépia",
   "timelineEffectFilterEmptyState": "Aucun filtre\nAppuyez sur + Ajouter pour en créer un",
   "timelineRangeStartLabel": "Début",
   "timelineRangeEndLabel": "Fin",

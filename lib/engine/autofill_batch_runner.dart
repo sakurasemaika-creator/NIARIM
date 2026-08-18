@@ -1,24 +1,29 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show compute;
+import '../models/autofill_preset.dart' show AutofillLineColorMode;
 import '../models/layer.dart';
 import '../services/autofill_preset_service.dart';
 import '../services/project_service.dart';
+import '../services/tone_service.dart';
 import 'autofill_engine.dart';
+import 'procedural_texture.dart';
 import 'tile_manager.dart';
 
-/// 自動塗り用線画レイヤー1枚分の自動塗りを実行し、対応する自動塗りレイヤーへ
-/// 結果を書き戻す（仕様書04）。layer_panel.dart（描画モード：現在フレームのみ）と
-/// timeline_screen.dart（タイムラインモード：複数フレーム一括）の両方から
-/// 共通処理として利用する。
+/// 自動塗り用線画レイヤー1枚分の自動塗り・線画色再着色を実行し、結果を
+/// 対応レイヤーへ書き戻す（仕様書04）。layer_panel.dart（描画モード：手動
+/// 単体実行）とtimeline_screen.dart（一括実行）の両方が使う共通処理。
 ///
 /// パーツ未設定・対応プリセットが見つからない場合は何もせず[AutofillBatchResult.skipped]
 /// を返す（一括実行時に個別ダイアログを出さずスキップして続行するため）。
 enum AutofillBatchResult { applied, skipped }
 
+const _toneSize = 64;
+
 Future<AutofillBatchResult> runAutofillForLayer({
   required ProjectService projectService,
   required AutofillPresetService presetService,
+  required ToneService toneService,
   required String projectId,
   required String sceneId,
   required int frameIndex,
@@ -33,9 +38,9 @@ Future<AutofillBatchResult> runAutofillForLayer({
   final tileManager = projectService.tileManagerOf(projectId);
   final w = tileManager.canvasWidth;
   final h = tileManager.canvasHeight;
+  final lineartKey = frameLayerKey(sceneId, frameIndex, lineartLayer.id);
 
-  final lineartImg = await tileManager.compositeLayerToImage(
-      frameLayerKey(sceneId, frameIndex, lineartLayer.id));
+  final lineartImg = await tileManager.compositeLayerToImage(lineartKey);
   final lineartBytes =
       (await lineartImg.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
   lineartImg.dispose();
@@ -58,11 +63,16 @@ Future<AutofillBatchResult> runAutofillForLayer({
     img.dispose();
   }
 
-  // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る
-  final effectiveMode = hasExisting ? mode : AutofillMode.repaint;
+  Uint8List? toneTexture;
+  if (part.useTone && part.toneId != null) {
+    final tone = toneService.tones.where((t) => t.id == part.toneId).firstOrNull;
+    if (tone != null) toneTexture = generateBuiltInToneTexture(tone, size: _toneSize);
+  }
+
+  // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る。
   // フラッドフィルはキャンバス全体を走査する重い処理のため、compute()で
-  // バックグラウンドisolate実行しUIスレッドが固まらないようにする
-  // （ユーザー指示：スマホでの動作を可能な限り軽くする）。
+  // バックグラウンドisolate実行しUIスレッドが固まらないようにする。
+  final effectiveMode = hasExisting ? mode : AutofillMode.repaint;
   final result = await compute(runAutofillExecuteInIsolate, (
     mode: effectiveMode,
     lineartData: lineartBytes,
@@ -70,9 +80,9 @@ Future<AutofillBatchResult> runAutofillForLayer({
     width: w,
     height: h,
     part: part,
-    toneTexture: null,
-    toneWidth: 64,
-    toneHeight: 64,
+    toneTexture: toneTexture,
+    toneWidth: _toneSize,
+    toneHeight: _toneSize,
   ));
   if (result == null) return AutofillBatchResult.skipped;
 
@@ -107,9 +117,32 @@ Future<AutofillBatchResult> runAutofillForLayer({
     layer: autofillLayer.copyWith(
       partId: part.id,
       needsAutofillUpdate: false,
+      opacity: part.opacity,
+      blendMode: part.blendMode,
       opacityLocked: effectiveMode == AutofillMode.colorUpdate ? true : autofillLayer.opacityLocked,
     ),
   );
+
+  // 線画色設定（指定色／塗り色と同じ／色トレス・線画馴染ませ）を線画レイヤーへ
+  // 反映する。指定色が既定の黒のままなら変更不要なので処理自体をスキップする。
+  final lineartUnchanged =
+      part.lineColorMode == AutofillLineColorMode.specified && part.lineColor == 0xFF000000;
+  if (!lineartUnchanged) {
+    final recoloredLineart = await compute(runRecolorLineartInIsolate, (
+      lineartData: lineartBytes,
+      width: w,
+      height: h,
+      part: part,
+    ));
+    tileManager.replaceLayerPixels(lineartKey, recoloredLineart);
+  }
+  projectService.updateLayer(
+    projectId: projectId,
+    sceneId: sceneId,
+    frameIndex: frameIndex,
+    layer: lineartLayer.copyWith(opacity: part.lineOpacity, blendMode: part.blendMode),
+  );
+
   return AutofillBatchResult.applied;
 }
 
@@ -148,8 +181,8 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
     height: h,
     part: part,
     toneTexture: null,
-    toneWidth: 64,
-    toneHeight: 64,
+    toneWidth: _toneSize,
+    toneHeight: _toneSize,
   ));
 
   tileManager.replaceLayerPixels(key, result);

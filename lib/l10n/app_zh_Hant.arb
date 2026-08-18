@@ -842,6 +842,8 @@
   "filterUnsharpAmount": "強度",
   "filterNameVignette": "暗角",
   "filterVignetteStrength": "暗角強度",
+  "filterNameNoise": "膠片顆粒",
+  "filterNoiseStrength": "顆粒強度",
   "filterOutlineLayerNameSuffix": "{name}（描邊）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {"name": {"type": "String"}}
@@ -1354,6 +1356,7 @@
   "timelineEffectTypeMosaic": "馬賽克",
   "timelineEffectTypeChromaticAberration": "色差",
   "timelineEffectTypeNoise": "雜訊",
+  "timelineEffectTypeSepia": "懷舊棕褐",
   "timelineEffectFilterEmptyState": "沒有濾鏡\n請點選＋新增按鈕來新增",
   "timelineRangeStartLabel": "開始",
   "timelineRangeEndLabel": "結束",

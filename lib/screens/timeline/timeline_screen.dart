@@ -32,6 +32,7 @@ import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
+import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/confirm_delete.dart';
@@ -3546,6 +3547,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
     final presetService = context.read<AutofillPresetService>();
+    final toneService = context.read<ToneService>();
     final scenes = ps.scenesOf(widget.projectId);
     if (scenes.isEmpty) return;
 
@@ -3598,6 +3600,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final result = await runAutofillForLayer(
           projectService: ps,
           presetService: presetService,
+          toneService: toneService,
           projectId: widget.projectId,
           sceneId: sceneId,
           frameIndex: frameIndex,
@@ -3781,6 +3784,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.mosaic => l10n.timelineEffectTypeMosaic,
     EffectFilterType.chromaticAberration => l10n.timelineEffectTypeChromaticAberration,
     EffectFilterType.noise => l10n.timelineEffectTypeNoise,
+    EffectFilterType.sepia => l10n.timelineEffectTypeSepia,
   };
 
   static const _typeIcons = {
@@ -3790,6 +3794,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.mosaic: Icons.grid_4x4,
     EffectFilterType.chromaticAberration: Icons.color_lens,
     EffectFilterType.noise: Icons.grain,
+    EffectFilterType.sepia: Icons.filter_vintage,
   };
 
   @override
