@@ -10,6 +10,7 @@ import '../../services/watermark_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定、仕様書01・08・13）。
@@ -73,6 +74,11 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     if (!await confirmDelete(context, itemName: assets[index].name)) return;
                     service.removeWatermark(assets[index].id);
                   },
+                  // タップで編集（ユーザー指示：過去に作成したウォーターマークの
+                  // 編集もタップで後からできるようにする）。
+                  onTap: () => assets[index].type == WatermarkAssetType.text
+                      ? _showTextWatermarkDialog(context, service, existing: assets[index])
+                      : _showImageWatermarkEditDialog(context, service, assets[index]),
                 ),
               ),
       ),
@@ -120,17 +126,21 @@ class WatermarkSettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showTextWatermarkDialog(BuildContext context, WatermarkService service) {
+  /// 文字ウォーターマークの新規作成・編集を兼ねるダイアログ（ユーザー指示：
+  /// 「過去に作成したウォーターマークの編集もタップで後からできるように」）。
+  /// [existing]を渡すと編集モードになり、既存の内容で初期化する。
+  void _showTextWatermarkDialog(BuildContext context, WatermarkService service, {WatermarkAsset? existing}) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
+    final controller = TextEditingController(text: existing?.text ?? '');
     final fontService = context.read<FontService>();
-    Color selected = Colors.white;
-    String fontFamily = 'Roboto';
+    Color selected = existing != null ? Color(existing.textColor ?? 0xFFFFFFFF) : Colors.white;
+    String fontFamily = existing?.fontFamily ?? 'Roboto';
+    final shadow = _ShadowOutlineState.from(existing);
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(l10n.watermarkTextDialogTitle),
+          title: Text(existing == null ? l10n.watermarkTextDialogTitle : l10n.commonEdit),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -193,6 +203,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     Text(l10n.watermarkTextColorTapHint, style: const TextStyle(fontSize: 11)),
                   ],
                 ),
+                _buildShadowOutlineSection(context, l10n, shadow, setS),
               ],
             ),
           ),
@@ -202,22 +213,217 @@ class WatermarkSettingsScreen extends StatelessWidget {
               onPressed: () async {
                 final text = controller.text.trim();
                 if (text.isEmpty) return;
-                await service.addTextWatermark(text, color: selected.toARGB32(), fontFamily: fontFamily);
+                if (existing == null) {
+                  await service.addTextWatermark(
+                    text, color: selected.toARGB32(), fontFamily: fontFamily,
+                    shadowEnabled: shadow.shadowEnabled, shadowColor: shadow.shadowColor.toARGB32(),
+                    shadowOffsetX: shadow.shadowOffsetX, shadowOffsetY: shadow.shadowOffsetY,
+                    shadowBlur: shadow.shadowBlur,
+                    outlineEnabled: shadow.outlineEnabled, outlineColor: shadow.outlineColor.toARGB32(),
+                    outlineWidth: shadow.outlineWidth,
+                  );
+                } else {
+                  await service.updateAsset(existing.copyWith(
+                    text: text, textColor: selected.toARGB32(), fontFamily: fontFamily,
+                    name: text.length > 12 ? '${text.substring(0, 12)}…' : text,
+                    shadowEnabled: shadow.shadowEnabled, shadowColor: shadow.shadowColor.toARGB32(),
+                    shadowOffsetX: shadow.shadowOffsetX, shadowOffsetY: shadow.shadowOffsetY,
+                    shadowBlur: shadow.shadowBlur,
+                    outlineEnabled: shadow.outlineEnabled, outlineColor: shadow.outlineColor.toARGB32(),
+                    outlineWidth: shadow.outlineWidth,
+                  ));
+                }
                 if (ctx.mounted) Navigator.pop(ctx);
               },
-              child: Text(l10n.commonAdd),
+              child: Text(existing == null ? l10n.commonAdd : l10n.commonOk),
             ),
           ],
         ),
       ),
     ).then((_) => controller.dispose());
   }
+
+  /// 画像ウォーターマークの編集ダイアログ（ユーザー指示）。画像そのものの
+  /// 差し替えは対象外とし、名前・ドロップシャドウ・縁取りの既定設定のみ
+  /// 編集できる。
+  void _showImageWatermarkEditDialog(BuildContext context, WatermarkService service, WatermarkAsset existing) {
+    final l10n = AppLocalizations.of(context)!;
+    final nameController = TextEditingController(text: existing.name);
+    final shadow = _ShadowOutlineState.from(existing);
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text(l10n.commonEdit),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
+                ),
+                _buildShadowOutlineSection(context, l10n, shadow, setS),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            FilledButton(
+              onPressed: () async {
+                await service.updateAsset(existing.copyWith(
+                  name: nameController.text.trim().isEmpty ? existing.name : nameController.text.trim(),
+                  shadowEnabled: shadow.shadowEnabled, shadowColor: shadow.shadowColor.toARGB32(),
+                  shadowOffsetX: shadow.shadowOffsetX, shadowOffsetY: shadow.shadowOffsetY,
+                  shadowBlur: shadow.shadowBlur,
+                  outlineEnabled: shadow.outlineEnabled, outlineColor: shadow.outlineColor.toARGB32(),
+                  outlineWidth: shadow.outlineWidth,
+                ));
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonOk),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) => nameController.dispose());
+  }
+
+  /// ドロップシャドウ・縁取りの設定UI（新規作成・編集の両ダイアログで共用）。
+  Widget _buildShadowOutlineSection(
+      BuildContext context, AppLocalizations l10n, _ShadowOutlineState s, StateSetter setS) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(height: 24),
+        SwitchListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.watermarkDropShadowLabel),
+          value: s.shadowEnabled,
+          onChanged: (v) => setS(() => s.shadowEnabled = v),
+        ),
+        if (s.shadowEnabled) ...[
+          _colorRow(context, l10n.watermarkShadowColorLabel, s.shadowColor,
+              (c) => setS(() => s.shadowColor = c)),
+          _sliderRow(l10n.watermarkShadowOffsetXLabel, s.shadowOffsetX, -30, 30,
+              (v) => setS(() => s.shadowOffsetX = v)),
+          _sliderRow(l10n.watermarkShadowOffsetYLabel, s.shadowOffsetY, -30, 30,
+              (v) => setS(() => s.shadowOffsetY = v)),
+          _sliderRow(l10n.watermarkShadowBlurLabel, s.shadowBlur, 0, 30,
+              (v) => setS(() => s.shadowBlur = v)),
+        ],
+        SwitchListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.watermarkOutlineLabel),
+          value: s.outlineEnabled,
+          onChanged: (v) => setS(() => s.outlineEnabled = v),
+        ),
+        if (s.outlineEnabled) ...[
+          _colorRow(context, l10n.watermarkOutlineColorLabel, s.outlineColor,
+              (c) => setS(() => s.outlineColor = c)),
+          _sliderRow(l10n.watermarkOutlineWidthLabel, s.outlineWidth, 1, 20,
+              (v) => setS(() => s.outlineWidth = v)),
+        ],
+      ],
+    );
+  }
+
+  Widget _colorRow(BuildContext context, String label, Color color, ValueChanged<Color> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 12))),
+          GestureDetector(
+            onTap: () => showDialog(
+              context: context,
+              builder: (pctx) => Dialog(
+                backgroundColor: Colors.transparent,
+                insetPadding: const EdgeInsets.all(16),
+                child: ColorPickerPanel(
+                  currentColor: color,
+                  onColorChanged: onChanged,
+                  onClose: () => Navigator.pop(pctx),
+                ),
+              ),
+            ),
+            child: Container(
+              width: 28, height: 28,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey, width: 1),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sliderRow(String label, double value, double min, double max, ValueChanged<double> onChanged) {
+    return Row(
+      children: [
+        SizedBox(width: 90, child: Text(label, style: const TextStyle(fontSize: 12))),
+        Expanded(child: Slider(value: value, min: min, max: max, onChanged: onChanged)),
+        SizedBox(
+          width: 32,
+          child: EditableSliderValue(
+            text: value.round().toString(),
+            style: const TextStyle(fontSize: 11),
+            value: value, min: min, max: max,
+            onChanged: (v) => onChanged(v.toDouble()),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// ドロップシャドウ・縁取り編集ダイアログ用の一時的な可変状態
+/// （WatermarkAssetは不変のため、ダイアログ内での編集用に使う）。
+class _ShadowOutlineState {
+  bool shadowEnabled;
+  Color shadowColor;
+  double shadowOffsetX;
+  double shadowOffsetY;
+  double shadowBlur;
+  bool outlineEnabled;
+  Color outlineColor;
+  double outlineWidth;
+
+  _ShadowOutlineState({
+    required this.shadowEnabled,
+    required this.shadowColor,
+    required this.shadowOffsetX,
+    required this.shadowOffsetY,
+    required this.shadowBlur,
+    required this.outlineEnabled,
+    required this.outlineColor,
+    required this.outlineWidth,
+  });
+
+  factory _ShadowOutlineState.from(WatermarkAsset? asset) => _ShadowOutlineState(
+        shadowEnabled: asset?.shadowEnabled ?? false,
+        shadowColor: Color(asset?.shadowColor ?? 0x99000000),
+        shadowOffsetX: asset?.shadowOffsetX ?? 4,
+        shadowOffsetY: asset?.shadowOffsetY ?? 4,
+        shadowBlur: asset?.shadowBlur ?? 6,
+        outlineEnabled: asset?.outlineEnabled ?? false,
+        outlineColor: Color(asset?.outlineColor ?? 0xFFFFFFFF),
+        outlineWidth: asset?.outlineWidth ?? 3,
+      );
 }
 
 class _WatermarkTile extends StatelessWidget {
   final WatermarkAsset asset;
   final VoidCallback onDelete;
-  const _WatermarkTile({required this.asset, required this.onDelete});
+  final VoidCallback onTap;
+  const _WatermarkTile({required this.asset, required this.onDelete, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +434,9 @@ class _WatermarkTile extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: asset.type == WatermarkAssetType.text
+            child: InkWell(
+              onTap: onTap,
+              child: asset.type == WatermarkAssetType.text
                 ? Container(
                     width: double.infinity,
                     color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -260,6 +468,7 @@ class _WatermarkTile extends StatelessWidget {
                       );
                     },
                   ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

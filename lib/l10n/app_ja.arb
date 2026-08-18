@@ -213,6 +213,18 @@
 
   "commonAdd": "追加",
   "commonSearch": "検索",
+  "autofillPresetSelectionTitle": "使用するプリセット",
+  "autofillPresetSelectionHint": "このプロジェクトで使う自動塗りプリセットだけを選ぶと、パーツ割り当て時に一覧が見やすくなります。",
+  "autofillPresetSelectionPartCount": "{count}パーツ",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetSelectionButton": "使用するプリセットを選択",
+  "autofillPresetSelectionAllLabel": "すべて使用",
+  "autofillPresetSelectionCountLabel": "{count}件を使用",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {"count": {"type": "int"}}
+  },
   "commonEdit": "編集",
   "commonFavoriteToggle": "お気に入り登録/解除",
   "commonIncrease": "増やす",
@@ -270,6 +282,14 @@
   "watermarkTextFieldLabel": "表示する文字",
   "watermarkTextColorLabel": "文字色",
   "watermarkTextColorTapHint": "タップして色を選択",
+  "watermarkDropShadowLabel": "ドロップシャドウ",
+  "watermarkShadowColorLabel": "影の色",
+  "watermarkShadowOffsetXLabel": "影の位置X",
+  "watermarkShadowOffsetYLabel": "影の位置Y",
+  "watermarkShadowBlurLabel": "影のぼかし",
+  "watermarkOutlineLabel": "縁取り",
+  "watermarkOutlineColorLabel": "縁の色",
+  "watermarkOutlineWidthLabel": "縁の太さ",
 
   "premiumActiveLabel": "Premium有効",
   "premiumVsTitle": "無料版 vs プレミアム",

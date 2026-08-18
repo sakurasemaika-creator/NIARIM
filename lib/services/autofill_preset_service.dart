@@ -16,20 +16,106 @@ class AutofillPresetService extends ChangeNotifier {
 
   List<AutofillPreset> get presets => List.unmodifiable(_presets);
 
+  /// [base]のHSLを操作して陰影・ハイライト色を作る（アニメ塗りの定番手法：
+  /// 影は明度を下げつつ彩度をやや上げる、ハイライトは明度を上げつつ彩度を
+  /// 下げる）。サンプルプリセットの「1影・2影・ハイライト」を色相の近い
+  /// 一貫した配色で機械的に生成するために使う（ユーザー指示：サンプルは
+  /// 使い方を学んでもらうためのものなので、すべてのパーツにきちんと
+  /// 陰影を用意する）。
+  static int _shade(int argb, {required double lightnessDelta, double saturationDelta = 0}) {
+    final a = (argb >> 24) & 0xFF;
+    final r = ((argb >> 16) & 0xFF) / 255.0;
+    final g = ((argb >> 8) & 0xFF) / 255.0;
+    final b = (argb & 0xFF) / 255.0;
+    final maxV = [r, g, b].reduce((x, y) => x > y ? x : y);
+    final minV = [r, g, b].reduce((x, y) => x < y ? x : y);
+    var l = (maxV + minV) / 2;
+    double h = 0, s = 0;
+    if (maxV != minV) {
+      final d = maxV - minV;
+      s = l > 0.5 ? d / (2 - maxV - minV) : d / (maxV + minV);
+      if (maxV == r) {
+        h = ((g - b) / d) % 6;
+      } else if (maxV == g) {
+        h = (b - r) / d + 2;
+      } else {
+        h = (r - g) / d + 4;
+      }
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    l = (l + lightnessDelta).clamp(0.0, 1.0);
+    s = (s + saturationDelta).clamp(0.0, 1.0);
+    final c = (1 - (2 * l - 1).abs()) * s;
+    final x = c * (1 - ((h / 60) % 2 - 1).abs());
+    final m = l - c / 2;
+    double rr, gg, bb;
+    if (h < 60) {
+      rr = c; gg = x; bb = 0;
+    } else if (h < 120) {
+      rr = x; gg = c; bb = 0;
+    } else if (h < 180) {
+      rr = 0; gg = c; bb = x;
+    } else if (h < 240) {
+      rr = 0; gg = x; bb = c;
+    } else if (h < 300) {
+      rr = x; gg = 0; bb = c;
+    } else {
+      rr = c; gg = 0; bb = x;
+    }
+    final nr = ((rr + m) * 255).round().clamp(0, 255);
+    final ng = ((gg + m) * 255).round().clamp(0, 255);
+    final nb = ((bb + m) * 255).round().clamp(0, 255);
+    return (a << 24) | (nr << 16) | (ng << 8) | nb;
+  }
+
+  static int _shadow1(int base) => _shade(base, lightnessDelta: -0.12, saturationDelta: 0.05);
+  static int _shadow2(int base) => _shade(base, lightnessDelta: -0.26, saturationDelta: 0.08);
+  static int _highlight(int base) => _shade(base, lightnessDelta: 0.20, saturationDelta: -0.15);
+
+  /// 髪・肌・服の各パーツ用に、基本色＋1影＋2影＋ハイライトの4パーツを
+  /// まとめて生成する（ユーザー指示：サンプルのすべてのパーツにこれらを
+  /// 用意する）。
+  static List<AutofillPart> _shadedSet(String idPrefix, String name, int base) => [
+        AutofillPart(id: '${idPrefix}_base', name: name, color: base),
+        AutofillPart(id: '${idPrefix}_s1', name: '${name}1影', color: _shadow1(base)),
+        AutofillPart(id: '${idPrefix}_s2', name: '${name}2影', color: _shadow2(base)),
+        AutofillPart(id: '${idPrefix}_hl', name: '$nameハイライト', color: _highlight(base)),
+      ];
+
+  /// 瞳（白目・瞳孔・虹彩本体・虹彩の影・キャッチライト）をまとめて生成する。
+  /// 白目・瞳孔・キャッチライトは実際の作画でも陰影を付けずフラットに
+  /// 塗ることが多いため単色のみ、虹彩本体のみ1影を用意する（ユーザー指示：
+  /// 「瞳だけだとざっくりしすぎなので白目や瞳孔などのカラーも必要」への対応）。
+  static List<AutofillPart> _eyeSet(String idPrefix, int irisBase) => [
+        AutofillPart(id: '${idPrefix}_white', name: '白目', color: 0xFFFAFAF8),
+        AutofillPart(id: '${idPrefix}_pupil', name: '瞳孔', color: 0xFF1A1410),
+        AutofillPart(id: '${idPrefix}_iris', name: '瞳', color: irisBase),
+        AutofillPart(id: '${idPrefix}_iris_s1', name: '瞳1影', color: _shadow1(irisBase)),
+        AutofillPart(id: '${idPrefix}_iris_hl', name: '瞳キャッチライト', color: 0xFFFFFFFF),
+      ];
+
   /// 初回起動時（保存データが存在しない場合）のみ使用するサンプルプリセット。
+  /// ユーザー指示により、各パーツへ1影・2影・ハイライトを用意し、瞳は
+  /// 白目・瞳孔・キャッチライトまで、服はトップス／ボトムス／シューズへ
+  /// 細分化した、実際の塗り方が学べる内容にしている。
   static List<AutofillPreset> _defaultPresets() => [
         AutofillPreset(id: 'p1', name: '主人公', parts: [
-          AutofillPart(id: 'p1_1', name: '髪', color: 0xFF4A3728),
-          AutofillPart(id: 'p1_2', name: '肌', color: 0xFFFFD5B0),
-          AutofillPart(id: 'p1_3', name: '瞳', color: 0xFF3A6EA5),
-          AutofillPart(id: 'p1_4', name: '服', color: 0xFF2C5F8A),
+          ..._shadedSet('p1_hair', '髪', 0xFF4A3728),
+          ..._shadedSet('p1_skin', '肌', 0xFFFFD5B0),
+          ..._eyeSet('p1_eye', 0xFF3A6EA5),
+          ..._shadedSet('p1_top', 'トップス', 0xFF2C5F8A),
+          ..._shadedSet('p1_bottom', 'ボトムス', 0xFF33302E),
+          ..._shadedSet('p1_shoes', 'シューズ', 0xFF4A3020),
         ]),
         AutofillPreset(id: 'p2', name: 'ヒロイン', parts: [
-          AutofillPart(id: 'p2_1', name: '髪', color: 0xFFE8C4A0),
-          AutofillPart(id: 'p2_2', name: '肌', color: 0xFFFFE0C8),
-          AutofillPart(id: 'p2_3', name: '瞳', color: 0xFF8B4513),
-          AutofillPart(id: 'p2_4', name: '服', color: 0xFFFF6B9D),
-          AutofillPart(id: 'p2_5', name: 'リボン', color: 0xFFFF1493),
+          ..._shadedSet('p2_hair', '髪', 0xFFE8C4A0),
+          ..._shadedSet('p2_skin', '肌', 0xFFFFE0C8),
+          ..._eyeSet('p2_eye', 0xFF8B4513),
+          ..._shadedSet('p2_top', 'トップス', 0xFFFF6B9D),
+          ..._shadedSet('p2_bottom', 'ボトムス', 0xFFFF8CB0),
+          ..._shadedSet('p2_shoes', 'シューズ', 0xFFD94F7A),
+          ..._shadedSet('p2_ribbon', 'リボン', 0xFFFF1493),
         ]),
       ];
 
@@ -44,8 +130,30 @@ class AutofillPresetService extends ChangeNotifier {
     } else {
       _presets.addAll(
           raw.map((s) => AutofillPreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
-      if (_dedupeIds()) await _persist();
+      var changed = _dedupeIds();
+      if (_upgradeSampleContent()) changed = true;
+      if (changed) await _persist();
     }
+  }
+
+  /// 既存ユーザーが持っているサンプルプリセット（id: 'p1'/'p2'）が、まだ
+  /// 旧仕様（ベースカラーのみ・4〜5パーツ）のままの場合、新しい内容
+  /// （1影・2影・ハイライト・瞳の細分化・服の細分化を含む）へ差し替える
+  /// （ユーザー指示：既存のサンプルもきちんとした内容にしてほしい）。
+  /// パーツ数がそれより多い場合は既にユーザーが手を加えたとみなし触らない。
+  bool _upgradeSampleContent() {
+    var changed = false;
+    final defaults = {for (final p in _defaultPresets()) p.id: p};
+    for (int i = 0; i < _presets.length; i++) {
+      final preset = _presets[i];
+      final fresh = defaults[preset.id];
+      if (fresh == null) continue;
+      if (preset.parts.length <= 7 && preset.parts.length < fresh.parts.length) {
+        _presets[i] = preset.copyWith(parts: fresh.parts);
+        changed = true;
+      }
+    }
+    return changed;
   }
 
   /// プリセットID・パーツID（プリセット内）の重複を検出し、2件目以降を

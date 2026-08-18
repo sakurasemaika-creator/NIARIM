@@ -179,6 +179,18 @@
 
   "commonAdd": "추가",
   "commonSearch": "검색",
+  "autofillPresetSelectionTitle": "사용할 프리셋",
+  "autofillPresetSelectionHint": "이 프로젝트에서 사용할 자동 채색 프리셋만 선택하면 부위 할당 시 목록이 더 보기 쉬워집니다.",
+  "autofillPresetSelectionPartCount": "{count}개 부위",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetSelectionButton": "사용할 프리셋 선택",
+  "autofillPresetSelectionAllLabel": "전체 사용",
+  "autofillPresetSelectionCountLabel": "{count}개 선택됨",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {"count": {"type": "int"}}
+  },
   "commonEdit": "편집",
   "commonFavoriteToggle": "즐겨찾기 전환",
   "commonIncrease": "늘리기",
@@ -227,6 +239,14 @@
   "watermarkTextFieldLabel": "표시할 문자",
   "watermarkTextColorLabel": "글자 색",
   "watermarkTextColorTapHint": "탭하여 색상 선택",
+  "watermarkDropShadowLabel": "그림자",
+  "watermarkShadowColorLabel": "그림자 색상",
+  "watermarkShadowOffsetXLabel": "그림자 위치 X",
+  "watermarkShadowOffsetYLabel": "그림자 위치 Y",
+  "watermarkShadowBlurLabel": "그림자 흐림",
+  "watermarkOutlineLabel": "테두리",
+  "watermarkOutlineColorLabel": "테두리 색상",
+  "watermarkOutlineWidthLabel": "테두리 두께",
 
   "premiumActiveLabel": "Premium 활성화됨",
   "premiumVsTitle": "무료판 vs 프리미엄",

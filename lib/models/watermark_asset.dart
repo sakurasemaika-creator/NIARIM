@@ -16,6 +16,18 @@ class WatermarkAsset {
   // 自由に選べるようにした。組み込みフォントは'Roboto'等の固定値、
   // 追加フォントはFontService.familyNameOf()の値）。
   final String? fontFamily;
+  // ドロップシャドウ・縁取りの既定設定（ユーザー指示：「ウォーターマークの
+  // 設定画面ではドロップシャドウや縁取りのON/OFFや調整も予めできるように
+  // しましょう」）。実際にタイムラインへ配置する際のラスタライズ時に
+  // 適用される（_reRasterizeWatermark参照）。
+  final bool shadowEnabled;
+  final int shadowColor;
+  final double shadowOffsetX;
+  final double shadowOffsetY;
+  final double shadowBlur;
+  final bool outlineEnabled;
+  final int outlineColor;
+  final double outlineWidth;
 
   const WatermarkAsset({
     required this.id,
@@ -25,7 +37,48 @@ class WatermarkAsset {
     this.text,
     this.textColor,
     this.fontFamily,
+    this.shadowEnabled = false,
+    this.shadowColor = 0x99000000,
+    this.shadowOffsetX = 4,
+    this.shadowOffsetY = 4,
+    this.shadowBlur = 6,
+    this.outlineEnabled = false,
+    this.outlineColor = 0xFFFFFFFF,
+    this.outlineWidth = 3,
   });
+
+  WatermarkAsset copyWith({
+    String? name,
+    String? text,
+    int? textColor,
+    String? fontFamily,
+    bool? shadowEnabled,
+    int? shadowColor,
+    double? shadowOffsetX,
+    double? shadowOffsetY,
+    double? shadowBlur,
+    bool? outlineEnabled,
+    int? outlineColor,
+    double? outlineWidth,
+  }) {
+    return WatermarkAsset(
+      id: id,
+      name: name ?? this.name,
+      type: type,
+      fileName: fileName,
+      text: text ?? this.text,
+      textColor: textColor ?? this.textColor,
+      fontFamily: fontFamily ?? this.fontFamily,
+      shadowEnabled: shadowEnabled ?? this.shadowEnabled,
+      shadowColor: shadowColor ?? this.shadowColor,
+      shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
+      shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
+      shadowBlur: shadowBlur ?? this.shadowBlur,
+      outlineEnabled: outlineEnabled ?? this.outlineEnabled,
+      outlineColor: outlineColor ?? this.outlineColor,
+      outlineWidth: outlineWidth ?? this.outlineWidth,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -35,6 +88,14 @@ class WatermarkAsset {
         'text': text,
         'textColor': textColor,
         'fontFamily': fontFamily,
+        'shadowEnabled': shadowEnabled,
+        'shadowColor': shadowColor,
+        'shadowOffsetX': shadowOffsetX,
+        'shadowOffsetY': shadowOffsetY,
+        'shadowBlur': shadowBlur,
+        'outlineEnabled': outlineEnabled,
+        'outlineColor': outlineColor,
+        'outlineWidth': outlineWidth,
       };
 
   factory WatermarkAsset.fromJson(Map<String, dynamic> json) => WatermarkAsset(
@@ -45,5 +106,13 @@ class WatermarkAsset {
         text: json['text'] as String?,
         textColor: json['textColor'] as int?,
         fontFamily: json['fontFamily'] as String?,
+        shadowEnabled: json['shadowEnabled'] as bool? ?? false,
+        shadowColor: json['shadowColor'] as int? ?? 0x99000000,
+        shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble() ?? 4,
+        shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble() ?? 4,
+        shadowBlur: (json['shadowBlur'] as num?)?.toDouble() ?? 6,
+        outlineEnabled: json['outlineEnabled'] as bool? ?? false,
+        outlineColor: json['outlineColor'] as int? ?? 0xFFFFFFFF,
+        outlineWidth: (json['outlineWidth'] as num?)?.toDouble() ?? 3,
       );
 }

@@ -578,6 +578,7 @@ class NiaproSerializer {
         'isFavorite': p.isFavorite,
         'folderId': p.folderId,
         'sharedFolderId': p.sharedFolderId,
+        'enabledAutofillPresetIds': p.enabledAutofillPresetIds,
         'tags': p.tags,
         'thumbnailPath': p.thumbnailPath,
       };
@@ -698,6 +699,8 @@ class NiaproSerializer {
         isFavorite: j['isFavorite'] as bool? ?? false,
         folderId: j['folderId'] as String?,
         sharedFolderId: j['sharedFolderId'] as String?,
+        enabledAutofillPresetIds:
+            (j['enabledAutofillPresetIds'] as List<dynamic>?)?.map((e) => e as String).toList(),
         tags: (j['tags'] as List<dynamic>? ?? const []).map((e) => e as String).toList(),
         thumbnailPath: j['thumbnailPath'] as String?,
       );

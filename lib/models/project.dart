@@ -32,6 +32,12 @@ class Project {
   // 描画領域設定（仕様書26）
   // drawingAreaScale == 1.0 の場合は描画領域 = 書き出し領域（OFF相当）
   final double drawingAreaScale;
+  // このプロジェクトで使用する自動塗りプリセットのID一覧（ユーザー指示：
+  // 自動塗りプリセットは増えていくため、プロジェクトごとに使うものだけを
+  // 選んで、パーツ割り当てダイアログで大量スクロールしなくて済むように
+  // する）。nullの場合は「すべてのプリセットを使用する」という従来通りの
+  // 挙動（既存プロジェクトとの後方互換のためのデフォルト）。
+  final List<String>? enabledAutofillPresetIds;
 
   const Project({
     required this.id,
@@ -51,6 +57,7 @@ class Project {
     this.exportWidth = 1920,
     this.exportHeight = 1080,
     this.drawingAreaScale = 1.0,
+    this.enabledAutofillPresetIds,
   });
 
   // 描画領域サイズ（書き出しサイズ × 倍率）
@@ -78,6 +85,7 @@ class Project {
     int? exportWidth,
     int? exportHeight,
     double? drawingAreaScale,
+    Object? enabledAutofillPresetIds = _projectSentinel,
   }) {
     return Project(
       id: id ?? this.id,
@@ -97,6 +105,9 @@ class Project {
       exportWidth: exportWidth ?? this.exportWidth,
       exportHeight: exportHeight ?? this.exportHeight,
       drawingAreaScale: drawingAreaScale ?? this.drawingAreaScale,
+      enabledAutofillPresetIds: enabledAutofillPresetIds == _projectSentinel
+          ? this.enabledAutofillPresetIds
+          : enabledAutofillPresetIds as List<String>?,
     );
   }
 

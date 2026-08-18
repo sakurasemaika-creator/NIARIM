@@ -1599,6 +1599,7 @@ class ProjectService extends ChangeNotifier {
     int exportWidth = 1920,
     int exportHeight = 1080,
     double drawingAreaScale = 1.0,
+    List<String>? enabledAutofillPresetIds,
   }) async {
     final projectId = _nextId('proj');
     final project = Project(
@@ -1613,6 +1614,7 @@ class ProjectService extends ChangeNotifier {
       exportWidth: exportWidth,
       exportHeight: exportHeight,
       drawingAreaScale: drawingAreaScale.clamp(1.0, 10.0),
+      enabledAutofillPresetIds: enabledAutofillPresetIds,
     );
     _projects.add(project);
 
@@ -1788,6 +1790,18 @@ class ProjectService extends ChangeNotifier {
     if (idx >= 0) {
       _projects[idx] = _projects[idx].copyWith(isFavorite: !_projects[idx].isFavorite);
       _saveAsync(id);
+      notifyListeners();
+    }
+  }
+
+  /// このプロジェクトで使用する自動塗りプリセットを設定する（ユーザー指示：
+  /// プロジェクトごとに使うプリセットだけを選べるようにする）。
+  /// [ids]がnullの場合は「すべて使用する」に戻す。
+  Future<void> setEnabledAutofillPresetIds(String projectId, List<String>? ids) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx >= 0) {
+      _projects[idx] = _projects[idx].copyWith(enabledAutofillPresetIds: ids);
+      _saveAsync(projectId);
       notifyListeners();
     }
   }

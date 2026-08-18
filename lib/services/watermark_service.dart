@@ -50,8 +50,21 @@ class WatermarkService extends ChangeNotifier {
   }
 
   /// 入力した文字列をウォーターマークとして登録する（仕様書01・13：
-  /// 「設定項目：画像選択 / 文字入力」の文字入力側）。
-  Future<WatermarkAsset> addTextWatermark(String text, {required int color, String? fontFamily}) async {
+  /// 「設定項目：画像選択 / 文字入力」の文字入力側）。ドロップシャドウ・
+  /// 縁取りも登録時点で既定値として設定できる（ユーザー指示）。
+  Future<WatermarkAsset> addTextWatermark(
+    String text, {
+    required int color,
+    String? fontFamily,
+    bool shadowEnabled = false,
+    int shadowColor = 0x99000000,
+    double shadowOffsetX = 4,
+    double shadowOffsetY = 4,
+    double shadowBlur = 6,
+    bool outlineEnabled = false,
+    int outlineColor = 0xFFFFFFFF,
+    double outlineWidth = 3,
+  }) async {
     final id = 'wm_${DateTime.now().millisecondsSinceEpoch}_${_counter++}';
     final asset = WatermarkAsset(
       id: id,
@@ -60,11 +73,31 @@ class WatermarkService extends ChangeNotifier {
       text: text,
       textColor: color,
       fontFamily: fontFamily,
+      shadowEnabled: shadowEnabled,
+      shadowColor: shadowColor,
+      shadowOffsetX: shadowOffsetX,
+      shadowOffsetY: shadowOffsetY,
+      shadowBlur: shadowBlur,
+      outlineEnabled: outlineEnabled,
+      outlineColor: outlineColor,
+      outlineWidth: outlineWidth,
     );
     _assets.add(asset);
     await _persist();
     notifyListeners();
     return asset;
+  }
+
+  /// 登録済みウォーターマークの内容を更新する（ユーザー指示：「過去に作成
+  /// したウォーターマークの編集もタップで後からできるようにしましょう」）。
+  /// 画像そのものの差し替えは行わず、名前・文字/色/フォント・ドロップ
+  /// シャドウ/縁取りの既定設定のみを更新する。
+  Future<void> updateAsset(WatermarkAsset updated) async {
+    final idx = _assets.indexWhere((a) => a.id == updated.id);
+    if (idx < 0) return;
+    _assets[idx] = updated;
+    await _persist();
+    notifyListeners();
   }
 
   Future<void> removeWatermark(String id) async {

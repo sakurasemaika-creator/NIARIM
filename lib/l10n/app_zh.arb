@@ -179,6 +179,18 @@
 
   "commonAdd": "添加",
   "commonSearch": "搜索",
+  "autofillPresetSelectionTitle": "使用的预设",
+  "autofillPresetSelectionHint": "只选择本项目会用到的自动上色预设，分配部件时列表会更简洁易找。",
+  "autofillPresetSelectionPartCount": "{count}个部件",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetSelectionButton": "选择要使用的预设",
+  "autofillPresetSelectionAllLabel": "全部使用",
+  "autofillPresetSelectionCountLabel": "已选{count}个",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {"count": {"type": "int"}}
+  },
   "commonEdit": "编辑",
   "commonFavoriteToggle": "切换收藏",
   "commonIncrease": "增加",
@@ -227,6 +239,14 @@
   "watermarkTextFieldLabel": "要显示的文字",
   "watermarkTextColorLabel": "文字颜色",
   "watermarkTextColorTapHint": "点击选择颜色",
+  "watermarkDropShadowLabel": "投影",
+  "watermarkShadowColorLabel": "阴影颜色",
+  "watermarkShadowOffsetXLabel": "阴影位置X",
+  "watermarkShadowOffsetYLabel": "阴影位置Y",
+  "watermarkShadowBlurLabel": "阴影模糊",
+  "watermarkOutlineLabel": "描边",
+  "watermarkOutlineColorLabel": "描边颜色",
+  "watermarkOutlineWidthLabel": "描边粗细",
 
   "premiumActiveLabel": "Premium已开通",
   "premiumVsTitle": "免费版 vs 高级版",

@@ -1564,7 +1564,17 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 自動塗り用線画レイヤーへプリセットパーツを割り当てるダイアログ（仕様書04：パーツID管理）。
   void _showPartAssignDialog(BuildContext context, model.Layer lineartLayer) {
     final l10n = AppLocalizations.of(context)!;
-    final presets = context.read<AutofillPresetService>().presets;
+    final allPresets = context.read<AutofillPresetService>().presets;
+    // プロジェクトごとに使用するプリセットが絞り込まれている場合は、その
+    // プリセットのみを表示する（ユーザー指示：プリセットが増えるほど
+    // パーツ割り当て時の一覧が長くなるため）。未設定（null）の場合は従来
+    // 通りすべて表示する。
+    final project = context.read<ProjectService>().projects
+        .where((p) => p.id == widget.projectId).firstOrNull;
+    final enabledIds = project?.enabledAutofillPresetIds;
+    final presets = enabledIds == null
+        ? allPresets
+        : allPresets.where((p) => enabledIds.contains(p.id)).toList();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

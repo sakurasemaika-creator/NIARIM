@@ -179,6 +179,18 @@
 
   "commonAdd": "Ajouter",
   "commonSearch": "Rechercher",
+  "autofillPresetSelectionTitle": "Préréglages à utiliser",
+  "autofillPresetSelectionHint": "Ne sélectionner que les préréglages de remplissage automatique utilisés dans ce projet garde la liste d'attribution des parties plus courte et plus lisible.",
+  "autofillPresetSelectionPartCount": "{count} parties",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetSelectionButton": "Sélectionner les préréglages à utiliser",
+  "autofillPresetSelectionAllLabel": "Tout utiliser",
+  "autofillPresetSelectionCountLabel": "{count} sélectionné(s)",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {"count": {"type": "int"}}
+  },
   "commonEdit": "Modifier",
   "commonFavoriteToggle": "Basculer favori",
   "commonIncrease": "Augmenter",
@@ -227,6 +239,14 @@
   "watermarkTextFieldLabel": "Texte à afficher",
   "watermarkTextColorLabel": "Couleur du texte",
   "watermarkTextColorTapHint": "Touchez pour choisir une couleur",
+  "watermarkDropShadowLabel": "Ombre portée",
+  "watermarkShadowColorLabel": "Couleur de l'ombre",
+  "watermarkShadowOffsetXLabel": "Décalage X de l'ombre",
+  "watermarkShadowOffsetYLabel": "Décalage Y de l'ombre",
+  "watermarkShadowBlurLabel": "Flou de l'ombre",
+  "watermarkOutlineLabel": "Contour",
+  "watermarkOutlineColorLabel": "Couleur du contour",
+  "watermarkOutlineWidthLabel": "Épaisseur du contour",
 
   "premiumActiveLabel": "Premium actif",
   "premiumVsTitle": "Gratuit vs Premium",

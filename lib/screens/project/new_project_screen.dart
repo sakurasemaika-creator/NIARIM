@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/autofill_preset_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -34,6 +36,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
   bool _drawingAreaEnabled = false;
   double _drawingAreaScale = 2.0;
+  // このプロジェクトで使う自動塗りプリセット（ユーザー指示）。nullは
+  // 「すべて使用する」を意味する。
+  List<String>? _enabledPresetIds;
   // 長さ（秒）の数字入力欄（ユーザー指示により新規追加：スライダーだけでなく
   // 数字入力でも指定できるようにする）。
   late final TextEditingController _durationController;
@@ -455,6 +460,24 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ],
+            const SizedBox(height: 16),
+            // このプロジェクトで使う自動塗りプリセットの選択（ユーザー指示：
+            // 新規作成時にも選べるようにする）。
+            OutlinedButton.icon(
+              onPressed: () async {
+                final allPresets = context.read<AutofillPresetService>().presets;
+                final result = await showAutofillPresetSelectionSheet(
+                  context,
+                  allPresets: allPresets,
+                  initiallyEnabledIds: _enabledPresetIds?.toSet(),
+                );
+                if (!result.cancelled) setState(() => _enabledPresetIds = result.ids);
+              },
+              icon: const Icon(Icons.auto_fix_high_outlined),
+              label: Text(_enabledPresetIds == null
+                  ? l10n.autofillPresetSelectionButton
+                  : l10n.autofillPresetSelectionCountLabel(_enabledPresetIds!.length)),
+            ),
             const SizedBox(height: 24),
             Card(
               child: Padding(
@@ -496,6 +519,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
       exportWidth: _exportWidth,
       exportHeight: _exportHeight,
       drawingAreaScale: _drawingAreaEnabled ? _drawingAreaScale : 1.0,
+      enabledAutofillPresetIds: _enabledPresetIds,
     );
     if (mounted) context.go('/canvas/${project.id}');
   }

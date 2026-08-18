@@ -923,14 +923,78 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final tileManager = projectService.tileManagerOf(widget.projectId);
     final w = tileManager.canvasWidth;
     final h = tileManager.canvasHeight;
-    final pixels = asset.type == WatermarkAssetType.text
+    var pixels = asset.type == WatermarkAssetType.text
         ? await _rasterizeTextWatermark(asset, w, h, angle: angle, scale: scale)
         : await _rasterizeImageWatermark(asset, w, h, angle: angle, scale: scale);
     if (pixels == null || !mounted) return;
+    pixels = _applyWatermarkEffects(pixels, w, h, asset);
     tileManager.replaceLayerPixels(
       projectService.tileKeyFor(widget.projectId, home.sceneId, home.frameIndex, layer.id),
       pixels,
     );
+  }
+
+  /// ウォーターマークのドロップシャドウ・縁取りを適用する（ユーザー指示：
+  /// ウォーターマーク設定画面で予め設定できるようにしたドロップシャドウ・
+  /// 縁取りを、実際にタイムラインへ配置する際のラスタライズ結果へ反映する）。
+  /// 縁取りはFilterEngine.applyOutline（元の描画内容を保持したまま外周へ
+  /// リング状に描く）をそのまま使い、ドロップシャドウは元画像のシルエット
+  /// （アルファそのまま・RGBを影色に置換）をオフセット＋ガウスぼかしした
+  /// ものを下に敷いてから元画像を重ねて作る。
+  Uint8List _applyWatermarkEffects(Uint8List pixels, int w, int h, WatermarkAsset asset) {
+    var result = pixels;
+    if (asset.outlineEnabled) {
+      result = FilterEngine().applyOutline(result, w, h,
+          color: asset.outlineColor, widthPx: asset.outlineWidth);
+    }
+    if (asset.shadowEnabled) {
+      final silhouette = Uint8List(result.length);
+      final sa = (asset.shadowColor >> 24) & 0xFF;
+      final sr = (asset.shadowColor >> 16) & 0xFF;
+      final sg = (asset.shadowColor >> 8) & 0xFF;
+      final sb = asset.shadowColor & 0xFF;
+      final offX = asset.shadowOffsetX.round();
+      final offY = asset.shadowOffsetY.round();
+      for (int y = 0; y < h; y++) {
+        final sy = y - offY;
+        if (sy < 0 || sy >= h) continue;
+        for (int x = 0; x < w; x++) {
+          final sx = x - offX;
+          if (sx < 0 || sx >= w) continue;
+          final srcA = result[(sy * w + sx) * 4 + 3];
+          if (srcA == 0) continue;
+          final idx = (y * w + x) * 4;
+          silhouette[idx] = sr;
+          silhouette[idx + 1] = sg;
+          silhouette[idx + 2] = sb;
+          silhouette[idx + 3] = ((srcA * sa) / 255).round();
+        }
+      }
+      final blurred = asset.shadowBlur > 0
+          ? FilterEngine().applyGaussianBlur(silhouette, w, h, asset.shadowBlur)
+          : silhouette;
+      // 影の上に元画像（縁取り適用済みの場合はそれも含む）を重ねて合成する。
+      final composited = Uint8List.fromList(blurred);
+      for (int i = 0; i < composited.length; i += 4) {
+        final srcA = result[i + 3];
+        if (srcA == 0) continue;
+        if (srcA >= 255) {
+          composited[i] = result[i];
+          composited[i + 1] = result[i + 1];
+          composited[i + 2] = result[i + 2];
+          composited[i + 3] = 255;
+        } else {
+          // アルファブレンド（src over dst）
+          final invA = 255 - srcA;
+          composited[i] = ((result[i] * srcA + composited[i] * invA) / 255).round();
+          composited[i + 1] = ((result[i + 1] * srcA + composited[i + 1] * invA) / 255).round();
+          composited[i + 2] = ((result[i + 2] * srcA + composited[i + 2] * invA) / 255).round();
+          composited[i + 3] = (srcA + (composited[i + 3] * invA / 255)).round().clamp(0, 255);
+        }
+      }
+      result = composited;
+    }
+    return result;
   }
 
   /// 画像ウォーターマークをキャンバス全体サイズのRGBAピクセルへラスタライズする。

@@ -11,7 +11,9 @@ import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../services/font_service.dart';
 import '../../services/material_service.dart';
+import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
+import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../home/widgets/project_list_widget.dart'
@@ -292,11 +294,34 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               icon: const Icon(Icons.account_tree),
               label: Text(l10n.projectDetailSaveTreeButton),
             ),
+            const SizedBox(height: 8),
+            // このプロジェクトで使う自動塗りプリセットの選択（ユーザー指示：
+            // プリセットは増えていくため、プロジェクト設定内でも選び直せる
+            // ようにする）。
+            OutlinedButton.icon(
+              onPressed: () => _showPresetSelection(context, projectService, project),
+              icon: const Icon(Icons.auto_fix_high_outlined),
+              label: Text(project.enabledAutofillPresetIds == null
+                  ? l10n.autofillPresetSelectionButton
+                  : l10n.autofillPresetSelectionCountLabel(project.enabledAutofillPresetIds!.length)),
+            ),
           ],
         ),
       ),
       ),
     );
+  }
+
+  Future<void> _showPresetSelection(
+      BuildContext context, ProjectService projectService, Project project) async {
+    final allPresets = context.read<AutofillPresetService>().presets;
+    final result = await showAutofillPresetSelectionSheet(
+      context,
+      allPresets: allPresets,
+      initiallyEnabledIds: project.enabledAutofillPresetIds?.toSet(),
+    );
+    if (result.cancelled) return;
+    await projectService.setEnabledAutofillPresetIds(widget.projectId, result.ids);
   }
 
   Widget _quickAction({

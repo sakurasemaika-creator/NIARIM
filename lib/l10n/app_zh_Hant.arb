@@ -179,6 +179,18 @@
 
   "commonAdd": "新增",
   "commonSearch": "搜尋",
+  "autofillPresetSelectionTitle": "使用的預設",
+  "autofillPresetSelectionHint": "只選擇本專案會用到的自動上色預設，分配部件時清單會更簡潔易找。",
+  "autofillPresetSelectionPartCount": "{count}個部件",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetSelectionButton": "選擇要使用的預設",
+  "autofillPresetSelectionAllLabel": "全部使用",
+  "autofillPresetSelectionCountLabel": "已選{count}個",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {"count": {"type": "int"}}
+  },
   "commonEdit": "編輯",
   "commonFavoriteToggle": "切換我的最愛",
   "commonIncrease": "增加",
@@ -227,6 +239,14 @@
   "watermarkTextFieldLabel": "要顯示的文字",
   "watermarkTextColorLabel": "文字顏色",
   "watermarkTextColorTapHint": "點擊選擇顏色",
+  "watermarkDropShadowLabel": "投影",
+  "watermarkShadowColorLabel": "陰影顏色",
+  "watermarkShadowOffsetXLabel": "陰影位置X",
+  "watermarkShadowOffsetYLabel": "陰影位置Y",
+  "watermarkShadowBlurLabel": "陰影模糊",
+  "watermarkOutlineLabel": "描邊",
+  "watermarkOutlineColorLabel": "描邊顏色",
+  "watermarkOutlineWidthLabel": "描邊粗細",
 
   "premiumActiveLabel": "Premium已啟用",
   "premiumVsTitle": "免費版 vs 付費版",

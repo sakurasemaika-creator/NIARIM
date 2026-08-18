@@ -179,6 +179,18 @@
 
   "commonAdd": "Añadir",
   "commonSearch": "Buscar",
+  "autofillPresetSelectionTitle": "Ajustes preestablecidos a usar",
+  "autofillPresetSelectionHint": "Elegir solo los ajustes preestablecidos de autorrelleno usados en este proyecto mantiene la lista de asignación de partes más corta y fácil de revisar.",
+  "autofillPresetSelectionPartCount": "{count} partes",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetSelectionButton": "Seleccionar ajustes preestablecidos a usar",
+  "autofillPresetSelectionAllLabel": "Usar todos",
+  "autofillPresetSelectionCountLabel": "{count} seleccionados",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {"count": {"type": "int"}}
+  },
   "commonEdit": "Editar",
   "commonFavoriteToggle": "Alternar favorito",
   "commonIncrease": "Aumentar",
@@ -227,6 +239,14 @@
   "watermarkTextFieldLabel": "Texto a mostrar",
   "watermarkTextColorLabel": "Color del texto",
   "watermarkTextColorTapHint": "Toca para elegir un color",
+  "watermarkDropShadowLabel": "Sombra paralela",
+  "watermarkShadowColorLabel": "Color de sombra",
+  "watermarkShadowOffsetXLabel": "Desplazamiento X de sombra",
+  "watermarkShadowOffsetYLabel": "Desplazamiento Y de sombra",
+  "watermarkShadowBlurLabel": "Desenfoque de sombra",
+  "watermarkOutlineLabel": "Contorno",
+  "watermarkOutlineColorLabel": "Color de contorno",
+  "watermarkOutlineWidthLabel": "Grosor de contorno",
 
   "premiumActiveLabel": "Premium activo",
   "premiumVsTitle": "Gratis vs Premium",

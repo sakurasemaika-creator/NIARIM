@@ -179,6 +179,18 @@
 
   "commonAdd": "Add",
   "commonSearch": "Search",
+  "autofillPresetSelectionTitle": "Presets to use",
+  "autofillPresetSelectionHint": "Choosing only the autofill presets used in this project keeps the part-assignment list shorter and easier to browse.",
+  "autofillPresetSelectionPartCount": "{count} parts",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "autofillPresetSelectionButton": "Select presets to use",
+  "autofillPresetSelectionAllLabel": "Use all",
+  "autofillPresetSelectionCountLabel": "{count} selected",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {"count": {"type": "int"}}
+  },
   "commonEdit": "Edit",
   "commonFavoriteToggle": "Toggle favorite",
   "commonIncrease": "Increase",
@@ -227,6 +239,14 @@
   "watermarkTextFieldLabel": "Text to display",
   "watermarkTextColorLabel": "Text Color",
   "watermarkTextColorTapHint": "Tap to choose a color",
+  "watermarkDropShadowLabel": "Drop shadow",
+  "watermarkShadowColorLabel": "Shadow color",
+  "watermarkShadowOffsetXLabel": "Shadow offset X",
+  "watermarkShadowOffsetYLabel": "Shadow offset Y",
+  "watermarkShadowBlurLabel": "Shadow blur",
+  "watermarkOutlineLabel": "Outline",
+  "watermarkOutlineColorLabel": "Outline color",
+  "watermarkOutlineWidthLabel": "Outline width",
 
   "premiumActiveLabel": "Premium Active",
   "premiumVsTitle": "Free vs Premium",
