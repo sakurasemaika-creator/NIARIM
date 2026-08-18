@@ -8,6 +8,7 @@ import '../../services/settings_service.dart';
 import '../../services/workspace_preset_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/confirm_delete.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -240,7 +241,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   tooltip: l10n.commonDelete,
-                  onPressed: () => presetService.delete(preset.id),
+                  onPressed: () async {
+                    if (!await confirmDelete(context, itemName: preset.name)) return;
+                    presetService.delete(preset.id);
+                  },
                 ),
               ),
           ],

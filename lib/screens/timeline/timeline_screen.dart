@@ -34,6 +34,7 @@ import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/confirm_delete.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/first_use_tooltip.dart';
 import '../../widgets/premium_lock_widget.dart';
@@ -2789,10 +2790,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.delete, size: 14, color: Colors.red),
-                onPressed: () => setState(() {
-                  _endCardCustomPath = null;
-                  _endCardVisible = false;
-                }),
+                onPressed: () async {
+                  if (!await confirmDelete(context)) return;
+                  setState(() {
+                    _endCardCustomPath = null;
+                    _endCardVisible = false;
+                  });
+                },
                 tooltip: l10n.commonDelete,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -3823,8 +3827,11 @@ class _EffectFilterSheet extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.delete, size: 18, color: Colors.red),
               tooltip: l10n.commonDelete,
-              onPressed: () =>
-                  context.read<ProjectService>().removeEffectFilter(projectId, sceneId, e.id),
+              onPressed: () async {
+                if (!await confirmDelete(context, itemName: _typeLabel(l10n, e.type))) return;
+                if (!context.mounted) return;
+                context.read<ProjectService>().removeEffectFilter(projectId, sceneId, e.id);
+              },
             ),
           ],
         ),
@@ -4043,7 +4050,12 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   tooltip: l10n.commonDelete,
-                  onPressed: () { Navigator.pop(context); widget.onDelete(); },
+                  onPressed: () async {
+                    if (!await confirmDelete(context, itemName: _c.label)) return;
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    widget.onDelete();
+                  },
                 ),
               ],
             ),
@@ -4190,7 +4202,12 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   tooltip: l10n.commonDelete,
-                  onPressed: () { Navigator.pop(context); widget.onDelete(_kf.frameIndex); },
+                  onPressed: () async {
+                    if (!await confirmDelete(context)) return;
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    widget.onDelete(_kf.frameIndex);
+                  },
                 ),
               ],
             ),

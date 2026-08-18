@@ -79,10 +79,34 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
     _fillDotPattern(data, size, percent / 100.0);
   } else if (name.contains('ライン')) {
     _fillLinePattern(data, size, name.contains('太') ? 3 : 1);
+  } else if (name.contains('市松')) {
+    // ピクセルモード用：1ピクセルごとに市松模様（ユーザー指示）。
+    _fillPixelCheckerPattern(data, size);
+  } else if (name.contains('格子')) {
+    // ピクセルモード用：1ピクセルごとに格子柄（ユーザー指示）。
+    _fillPixelGridPattern(data, size);
   } else {
     _fillDotPattern(data, size, 0.3);
   }
   return data;
+}
+
+/// 1ピクセルごとの市松模様（チェッカー柄）：(x+y)が偶数の画素のみインクあり。
+void _fillPixelCheckerPattern(Uint8List data, int size) {
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      if ((x + y).isEven) data[(y * size + x) * 4 + 3] = 255;
+    }
+  }
+}
+
+/// 1ピクセルごとの格子柄：1ピクセルおきの縦線・横線が交差して網目状になる。
+void _fillPixelGridPattern(Uint8List data, int size) {
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      if (x.isEven || y.isEven) data[(y * size + x) * 4 + 3] = 255;
+    }
+  }
 }
 
 void _fillDotPattern(Uint8List data, int size, double density) {

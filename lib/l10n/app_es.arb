@@ -89,6 +89,11 @@
   "commonCreate": "Crear",
   "commonChange": "Cambiar",
   "commonDelete": "Eliminar",
+  "confirmDeleteGenericBody": "¿Seguro que quieres eliminar esto? Esta acción no se puede deshacer.",
+  "confirmDeleteNamedBody": "¿Eliminar «{name}»? Esta acción no se puede deshacer.",
+  "@confirmDeleteNamedBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "commonFavoriteDeleteBlocked": "No se puede eliminar un elemento favorito. Quítalo primero de favoritos.",
   "commonSave": "Guardar",
   "commonRestore": "Restaurar",

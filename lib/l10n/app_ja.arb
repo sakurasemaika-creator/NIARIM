@@ -114,6 +114,11 @@
   "commonCreate": "作成",
   "commonChange": "変更",
   "commonDelete": "削除",
+  "confirmDeleteGenericBody": "本当に削除しますか？この操作は取り消せません。",
+  "confirmDeleteNamedBody": "「{name}」を削除しますか？この操作は取り消せません。",
+  "@confirmDeleteNamedBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "commonFavoriteDeleteBlocked": "お気に入り登録中は削除できません。先にお気に入りを解除してください。",
   "commonSave": "保存",
   "commonRestore": "復元",

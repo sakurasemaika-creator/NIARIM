@@ -15,6 +15,7 @@ import '../../../models/layer.dart' as model;
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/tone_service.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 
@@ -535,11 +536,13 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 各レイヤー行のゴミ箱アイコンからの単体削除（ユーザー指示：三点メニュー・
   /// ゴミ箱を各レイヤーの右側へ）。タイムライン素材は既存通り確認ダイアログ
   /// を経由し、それ以外は即時削除する。
-  void _deleteLayerRow(BuildContext context, model.Layer layer, List<model.Layer> layers) {
+  Future<void> _deleteLayerRow(BuildContext context, model.Layer layer, List<model.Layer> layers) async {
     if (_isTimelineMaterial(layer.type)) {
       _showTimelineDeleteConfirm(context, layer);
       return;
     }
+    if (!await confirmDelete(context, itemName: layer.name)) return;
+    if (!context.mounted) return;
     context.read<ProjectService>().removeLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
@@ -552,13 +555,15 @@ class _LayerPanelState extends State<LayerPanel> {
     });
   }
 
-  void _deleteSelectedLayer(BuildContext context, List<model.Layer> layers) {
+  Future<void> _deleteSelectedLayer(BuildContext context, List<model.Layer> layers) async {
     if (layers.isEmpty) return;
     final service = context.read<ProjectService>();
     if (_isSelectionMode) {
       if (_selectionBaseType != null && _isTimelineMaterial(_selectionBaseType!)) {
         _showMultiTimelineDeleteConfirm(context, layers);
       } else {
+        if (!await confirmDelete(context)) return;
+        if (!context.mounted) return;
         for (final id in _selectedIds) {
           service.removeLayer(
             projectId: widget.projectId,
@@ -581,6 +586,8 @@ class _LayerPanelState extends State<LayerPanel> {
     if (_isTimelineMaterial(layer.type)) {
       _showTimelineDeleteConfirm(context, layer);
     } else {
+      if (!await confirmDelete(context, itemName: layer.name)) return;
+      if (!context.mounted) return;
       service.removeLayer(
         projectId: widget.projectId,
         sceneId: widget.sceneId,

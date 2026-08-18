@@ -9,6 +9,7 @@ import '../../services/font_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/confirm_delete.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定、仕様書01・08・13）。
@@ -68,7 +69,10 @@ class WatermarkSettingsScreen extends StatelessWidget {
                 itemCount: assets.length,
                 itemBuilder: (context, index) => _WatermarkTile(
                   asset: assets[index],
-                  onDelete: () => service.removeWatermark(assets[index].id),
+                  onDelete: () async {
+                    if (!await confirmDelete(context, itemName: assets[index].name)) return;
+                    service.removeWatermark(assets[index].id);
+                  },
                 ),
               ),
       ),

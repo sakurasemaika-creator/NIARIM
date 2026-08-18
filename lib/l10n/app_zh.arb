@@ -89,6 +89,11 @@
   "commonCreate": "创建",
   "commonChange": "更改",
   "commonDelete": "删除",
+  "confirmDeleteGenericBody": "确定要删除吗？此操作无法撤销。",
+  "confirmDeleteNamedBody": "要删除「{name}」吗？此操作无法撤销。",
+  "@confirmDeleteNamedBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "commonFavoriteDeleteBlocked": "已收藏的项目无法删除，请先取消收藏。",
   "commonSave": "保存",
   "commonRestore": "恢复",

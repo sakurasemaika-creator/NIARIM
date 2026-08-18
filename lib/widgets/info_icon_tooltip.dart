@@ -72,11 +72,14 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                       Expanded(
                         child: Text(
                           widget.message,
-                          // チュートリアル・説明テキスト用フォント（仕様書24：くらむぼん）
+                          // 通常サイズの説明文はすべて白光明朝を使う（ユーザー指示：
+                          // くらむぼんは見出し・項目名など大きく目立たせたい文字の
+                          // みに限定する）。
                           style: TextStyle(
                             color: Theme.of(ctx).colorScheme.onPrimary,
                             fontSize: 12,
-                            fontFamily: 'Kuramubon',
+                            fontFamily: 'HakkouMincho',
+                            fontFamilyFallback: const ['NotoSerifJP'],
                           ),
                         ),
                       ),

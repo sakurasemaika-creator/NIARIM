@@ -12,6 +12,7 @@ import '../../models/layer.dart' show LayerBlendMode;
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
+import '../../widgets/confirm_delete.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
@@ -681,7 +682,25 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   key: ValueKey(part.id),
                   leading: GestureDetector(
                     onTap: () => _showPartDetailDialog(part),
-                    child: thumb,
+                    // 右下の小さな輪＝線画色プレビュー（ユーザー指示：塗り色だけで
+                    // なく線画色もプレビューをつける）。
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        thumb,
+                        Positioned(
+                          right: -2, bottom: -2,
+                          child: Container(
+                            width: 14, height: 14,
+                            decoration: BoxDecoration(
+                              color: _lineColorFor(part),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   title: Text(part.name),
                   // ✓設定完了マーク（仕様書20：保存チェック）
@@ -706,7 +725,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       IconButton(
                         icon: const Icon(Icons.delete, size: 18, color: Colors.red),
                         tooltip: l10n.commonDelete,
-                        onPressed: () {
+                        onPressed: () async {
+                          if (!await confirmDelete(context, itemName: part.name)) return;
                           final parts = List<AutofillPart>.from(_preset.parts)
                             ..removeWhere((p) => p.id == part.id);
                           _save(_preset.copyWith(parts: parts), changedPartId: part.id);
@@ -833,7 +853,28 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     // リアルタイムプレビュー（仕様書20：不透明度を変更した際に
                     // プレビューでも分かりやすく変化するよう、チェッカー柄の上に
                     // 塗り色・グラデーションを不透明度を反映して重ねる）。
-                    _fillPreview(current, height: 40),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: _fillPreview(current, height: 40)),
+                        const SizedBox(width: 8),
+                        // 線画色プレビュー（ユーザー指示：塗り色だけでなく線画色も
+                        // プレビューをつける）。
+                        Column(
+                          children: [
+                            Container(
+                              width: 40, height: 40,
+                              decoration: BoxDecoration(
+                                color: _lineColorFor(current),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.grey),
+                              ),
+                            ),
+                            Text(l10n.autofillPartLineColorLabel, style: const TextStyle(fontSize: 9)),
+                          ],
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     Text(l10n.autofillPartFillColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     const SizedBox(height: 4),
@@ -1143,6 +1184,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             setS(() => gradient = gradient.copyWith(stops: stops));
           }
 
+          // 放射グラデーションでは、stops[i]は「中心からの見た目の距離」と
+          // 必ずしも一致しない（放射：外側→中央は色順・位置が反転して
+          // 描画されるため。_previewGradient/エンジン側のt=1-t反転と対応）。
+          // ハンドルは実際に見えている位置（中心からの距離）で操作したい
+          // というユーザー指示のため、見た目の距離⇔stopsの相互変換を行う。
+          bool isRadial = gradient.type != AutofillGradientType.linear;
+          bool isOutCenter = gradient.type == AutofillGradientType.radialOutCenter;
+          double geomT(int i) => isOutCenter ? 1 - gradient.stops[i] : gradient.stops[i];
+          void setGeomT(int i, double t) => setStopAt(i, isOutCenter ? 1 - t : t);
+
           return AlertDialog(
             title: Text(l10n.autofillPartGradientDialogTitle(part.name)),
             content: SizedBox(
@@ -1176,25 +1227,54 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     SizedBox(
                       height: 14,
                       child: LayoutBuilder(
-                        builder: (context, constraints) => Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            for (int i = 0; i < gradient.stops.length; i++)
-                              Positioned(
-                                left: gradient.stops[i] * constraints.maxWidth - 7,
-                                top: 0,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onHorizontalDragUpdate: (d) => setStopAt(
-                                      i, gradient.stops[i] + d.delta.dx / constraints.maxWidth),
-                                  child: CustomPaint(
-                                    size: const Size(14, 12),
-                                    painter: _StopHandlePainter(color: Color(gradient.colors[i])),
-                                  ),
+                        builder: (context, constraints) {
+                          final maxWidth = constraints.maxWidth;
+                          Widget handle(int i, double left, {required bool mirrorDrag}) {
+                            return Positioned(
+                              left: left - 7,
+                              top: 0,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onHorizontalDragUpdate: (d) {
+                                  final halfWidth = isRadial ? maxWidth / 2 : maxWidth;
+                                  final dt = d.delta.dx / halfWidth * (mirrorDrag ? -1 : 1);
+                                  if (isRadial) {
+                                    setGeomT(i, geomT(i) + dt);
+                                  } else {
+                                    setStopAt(i, gradient.stops[i] + dt);
+                                  }
+                                },
+                                child: CustomPaint(
+                                  size: const Size(14, 12),
+                                  painter: _StopHandlePainter(color: Color(gradient.colors[i])),
                                 ),
                               ),
-                          ],
-                        ),
+                            );
+                          }
+
+                          if (!isRadial) {
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                for (int i = 0; i < gradient.stops.length; i++)
+                                  handle(i, gradient.stops[i] * maxWidth, mirrorDrag: false),
+                              ],
+                            );
+                          }
+                          // 放射グラデーション：中心（画面中央）を軸に左右対称のハンドルを
+                          // 2つずつ配置し、片方を動かすと反対側も連動する（ユーザー指示）。
+                          // t=0（中心そのもの）は1つだけ・中央に表示する。
+                          final center = maxWidth / 2;
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              for (int i = 0; i < gradient.stops.length; i++) ...[
+                                handle(i, center + geomT(i) * center, mirrorDrag: false),
+                                if (geomT(i) > 0.001) handle(i, center - geomT(i) * center, mirrorDrag: true),
+                              ],
+                            ],
+                          );
+                        },
                       ),
                     ),
                     Text(l10n.autofillPartGradientStopDragHint,
@@ -1380,6 +1460,30 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// チェッカー柄の背景に、不透明度を反映した状態で重ねて表示することで、
   /// 不透明度スライダーを動かした時にプレビューでも分かるようにする
   /// （ユーザー指摘）。
+  /// 線画色プレビュー用に、線画の実際の色（塗り色プレビューだけでなく
+  /// 線画色もプレビューしてほしいというユーザー指示）を計算する。
+  /// autofill_engine.dartのrecolorLineart/_traceAdjustColorと同じロジック
+  /// （色トレス・線画馴染ませの基準は塗り色）をHSLColorで再現している。
+  /// グラデーション塗りの場合、線画色プレビューは代表色として先頭の色を
+  /// 使う（実際の塗りは位置によって連続的に変化するが、小さなスウォッチ
+  /// では代表色1色で十分なため）。
+  Color _lineColorFor(AutofillPart p) {
+    switch (p.lineColorMode) {
+      case AutofillLineColorMode.specified:
+        return Color(p.lineColor);
+      case AutofillLineColorMode.sameAsFill:
+        return p.gradient != null ? Color(p.gradient!.colors.first) : Color(p.color);
+      case AutofillLineColorMode.traceAdjust:
+        final base = p.gradient != null ? Color(p.gradient!.colors.first) : Color(p.color);
+        final hsl = HSLColor.fromColor(base);
+        var newHue = (hsl.hue + p.traceHue) % 360;
+        if (newHue < 0) newHue += 360;
+        final newSat = (p.traceSaturation / 100).clamp(0.0, 1.0);
+        final newLight = (hsl.lightness + p.traceLightness / 100).clamp(0.0, 1.0);
+        return HSLColor.fromAHSL(1.0, newHue, newSat, newLight).toColor();
+    }
+  }
+
   Widget _fillPreview(AutofillPart p, {double height = 40}) {
     return Container(
       height: height,

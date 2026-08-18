@@ -290,7 +290,7 @@ class ThemeService extends ChangeNotifier {
     // 文字が読みにくいというユーザー指摘への対応。デフォルトの太さがRegular
     // 以下（未指定含む）のスタイルはMedium以上へ底上げする（既に太字指定済み
     // の箇所、例：AppBarタイトルのBold等はそのまま維持される）。
-    final textTheme = _boldenForReadability(_withFontFallback(
+    final bodyTextTheme = _boldenForReadability(_withFontFallback(
       baseTextTheme.apply(
         fontFamily: 'HakkouMincho',
         bodyColor: preset.textColor,
@@ -298,6 +298,12 @@ class ThemeService extends ChangeNotifier {
       ),
       const ['NotoSerifJP'],
     ));
+    // フォントの使い分け（ユーザー指示）：項目名・見出しなど文字サイズが
+    // 大きく目立たせたい箇所（display/headline/title）はくらむぼん、
+    // それ以外の説明文・通常サイズの文字（body/label）はすべて白光明朝、
+    // という切り分けに変更した（従来はくらむぼんをチュートリアル説明の
+    // 吹き出し専用にしていたが、それは廃止しこの規則へ統一する）。
+    final textTheme = _applyHeadingFont(bodyTextTheme, 'Kuramubon');
 
     return ThemeData(
       useMaterial3: true,
@@ -321,16 +327,15 @@ class ThemeService extends ChangeNotifier {
         // で表示されてしまう不具合を修正。ThemeData.fontFamily='HakkouMincho'
         // をルートで設定していても、appBarTheme.titleTextStyleへ独自の
         // TextStyle()をベタ書きするとfontFamilyが未指定のまま上書きされ、
-        // 継承されない。textTheme.titleLarge（_withFontFallbackでNotoSerifJP
-        // フォールバック済み）を土台にして色・サイズ・太さだけ上書きすることで、
-        // 白光明朝＋フォールバックが正しく適用されるようにした。
+        // 継承されない。textTheme.titleLarge（見出し用にくらむぼんへ差し替え
+        // 済み）を土台にして色・サイズ・太さだけ上書きすることで、正しく
+        // 適用されるようにした。
         titleTextStyle: textTheme.titleLarge?.copyWith(
           color: preset.textColor,
           fontSize: 18,
           fontWeight: FontWeight.w700,
         ) ?? TextStyle(
-          fontFamily: 'HakkouMincho',
-          fontFamilyFallback: const ['NotoSerifJP'],
+          fontFamily: 'Kuramubon',
           color: preset.textColor,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -447,6 +452,25 @@ class ThemeService extends ChangeNotifier {
       labelLarge: apply(textTheme.labelLarge),
       labelMedium: apply(textTheme.labelMedium),
       labelSmall: apply(textTheme.labelSmall),
+    );
+  }
+
+  /// display/headline/title（見出し・項目名として使われるサイズ）のみ
+  /// [fontFamily]（くらむぼん）へ差し替え、body/label（説明文・通常サイズの
+  /// 文字）はそのまま（白光明朝）にする（ユーザー指示：フォントの使い分け）。
+  TextTheme _applyHeadingFont(TextTheme textTheme, String fontFamily) {
+    TextStyle? heading(TextStyle? style) =>
+        style?.copyWith(fontFamily: fontFamily, fontFamilyFallback: null);
+    return textTheme.copyWith(
+      displayLarge: heading(textTheme.displayLarge),
+      displayMedium: heading(textTheme.displayMedium),
+      displaySmall: heading(textTheme.displaySmall),
+      headlineLarge: heading(textTheme.headlineLarge),
+      headlineMedium: heading(textTheme.headlineMedium),
+      headlineSmall: heading(textTheme.headlineSmall),
+      titleLarge: heading(textTheme.titleLarge),
+      titleMedium: heading(textTheme.titleMedium),
+      titleSmall: heading(textTheme.titleSmall),
     );
   }
 

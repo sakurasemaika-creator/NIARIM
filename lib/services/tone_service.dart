@@ -73,6 +73,11 @@ class ToneService extends ChangeNotifier {
         const Tone(id: 'Tone0004', name: '網点 70%'),
         const Tone(id: 'Tone0005', name: 'ライン 細'),
         const Tone(id: 'Tone0006', name: 'ライン 太'),
+        // ピクセルモード用トーン（ユーザー指示：1ピクセルごとに市松模様／
+        // 格子柄になっているトーン）。procedural_texture.dartの
+        // generateBuiltInToneTextureが名前に「市松」「格子」を含むかで判定する。
+        const Tone(id: 'Tone0007', name: 'ドット市松（1px）'),
+        const Tone(id: 'Tone0008', name: 'ドット格子（1px）'),
       ];
 
   Future<void> init() async {
@@ -84,6 +89,14 @@ class ToneService extends ChangeNotifier {
       await _persist();
     } else {
       _tones.addAll(raw.map((s) => Tone.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      // 既存ユーザーにも新規追加した初期トーン（ピクセルモード2種）を
+      // 反映する（既に同名IDのトーンが存在する場合は追加しない）。
+      final existingIds = _tones.map((t) => t.id).toSet();
+      final missing = _defaultTones().where((t) => !existingIds.contains(t.id));
+      if (missing.isNotEmpty) {
+        _tones.addAll(missing);
+        await _persist();
+      }
     }
     final foldersRaw = prefs.getStringList(_foldersKey);
     _folders.clear();

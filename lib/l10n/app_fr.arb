@@ -89,6 +89,11 @@
   "commonCreate": "Créer",
   "commonChange": "Modifier",
   "commonDelete": "Supprimer",
+  "confirmDeleteGenericBody": "Voulez-vous vraiment supprimer ceci ? Cette action est irréversible.",
+  "confirmDeleteNamedBody": "Supprimer « {name} » ? Cette action est irréversible.",
+  "@confirmDeleteNamedBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
   "commonFavoriteDeleteBlocked": "Impossible de supprimer un élément favori. Retirez-le d'abord des favoris.",
   "commonSave": "Enregistrer",
   "commonRestore": "Restaurer",

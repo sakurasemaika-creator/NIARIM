@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/editable_slider_value.dart';
 import 'hsv_color_wheel.dart';
 
@@ -449,13 +450,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
               // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
               onTap: paletteService.palettes.length > 1
-                  ? () {
+                  ? () async {
                       Navigator.pop(ctx);
                       if (palette.isFavorite) {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
                         return;
                       }
+                      if (!await confirmDelete(context, itemName: palette.name)) return;
                       paletteService.deletePalette(palette.id);
                     }
                   : null,

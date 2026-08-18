@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/confirm_delete.dart';
 
 /// ブラシ・トーン・スタンプで共通のフォルダ管理UI（仕様書17：フォルダ管理）。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
@@ -94,12 +95,13 @@ void showFolderManagementSheet(
                             icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
                             tooltip: l10n.commonDelete,
                             // お気に入り登録中は削除できない（ユーザー指示により新規追加）。
-                            onPressed: () {
+                            onPressed: () async {
                               if (f.isFavorite) {
                                 ScaffoldMessenger.of(ctx).showSnackBar(
                                     SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
                                 return;
                               }
+                              if (!await confirmDelete(ctx, itemName: f.name)) return;
                               onDelete(f.id);
                               setSheetState(() {});
                             },
