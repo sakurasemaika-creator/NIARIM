@@ -642,6 +642,7 @@
     "placeholders": {"size": {"type": "String"}}
   },
   "colorPickerTitle": "Selección de color",
+  "colorPickerOpacityLabel": "Opacidad",
   "colorPickerHexCopiedSnackbar": "Código HEX copiado",
   "colorPickerRecentColorsLabel": "Colores recientes",
   "colorPickerRecentColorsEmpty": "Todavía no hay ninguno",

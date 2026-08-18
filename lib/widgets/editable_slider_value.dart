@@ -32,9 +32,28 @@ class EditableSliderValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 数値部分をタップすると直接入力できることに初見で気付きにくいという
+    // ユーザー指摘のため、右側に小さな鉛筆マークを添える。周囲の多くの
+    // 呼び出し元は固定幅のSizedBoxで数値表示を包んでいるため、レイアウト
+    // 幅は変えずにStack+Positioned（clipBehavior: none）でマークを右側へ
+    // わずかにはみ出させる形にしている（呼び出し元すべての幅を広げる
+    // 変更は影響範囲が大きすぎるため）。
     return GestureDetector(
       onTap: () => _showInputDialog(context),
-      child: Text(text, style: style, textAlign: textAlign),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Text(text, style: style, textAlign: textAlign),
+          Positioned(
+            right: -11,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: Icon(Icons.edit, size: 9, color: (style?.color ?? Theme.of(context).colorScheme.onSurfaceVariant).withValues(alpha: 0.7)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

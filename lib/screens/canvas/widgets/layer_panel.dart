@@ -1101,10 +1101,13 @@ class _LayerPanelState extends State<LayerPanel> {
               // ブレンドモード
               ListTile(
                 title: Text(l10n.autofillPartBlendModeLabel),
-                trailing: Text(
-                  _blendModeName(l10n, layer.blendMode),
-                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary),
-                ),
+                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(
+                    _blendModeName(l10n, layer.blendMode),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary),
+                  ),
+                  Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.primary),
+                ]),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showBlendModeDialog(context, layer, update);

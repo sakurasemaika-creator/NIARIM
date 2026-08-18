@@ -116,7 +116,10 @@ class _TransferScreenState extends State<TransferScreen> {
   Future<void> _export() async {
     setState(() => _isBusy = true);
     try {
-      final file = await NiatraSerializer.export(
+      // メモリ上でZIPバイト列を生成してから共有する（Web版ではpath_provider
+      // が使えずローカルファイルを作れないため、ファイルI/Oを介さない方式に
+      // 統一している）。
+      final bytes = await NiatraSerializer.export(
         selectedItems: _items,
         settings: context.read<SettingsService>(),
         brush: context.read<BrushService>(),
@@ -126,7 +129,10 @@ class _TransferScreenState extends State<TransferScreen> {
         theme: context.read<ThemeService>(),
       );
       if (!mounted) return;
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+      final fileName = 'niarim_${DateTime.now().millisecondsSinceEpoch}.niatra';
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile.fromData(bytes, name: fileName, mimeType: 'application/octet-stream')],
+      ));
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -144,15 +150,22 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   Future<void> _import() async {
+    // withData: trueでバイト列も取得しておく（Web版はpathがnullになり
+    // ファイルパスから読み込めないため、その場合はバイト列側を使う）。
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['niatra'],
+      withData: true,
     );
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.first;
+    if (picked.path == null && picked.bytes == null) return;
     if (!mounted) return;
     setState(() => _isBusy = true);
     try {
-      final data = await NiatraSerializer.load(result.files.first.path!);
+      final data = picked.bytes != null
+          ? NiatraSerializer.loadFromBytes(picked.bytes!)
+          : await NiatraSerializer.load(picked.path!);
       if (!mounted) return;
       NiatraSerializer.applyTo(
         data,

@@ -107,7 +107,10 @@ class PenSettingsScreen extends StatelessWidget {
   Widget _buttonItem(BuildContext context, String title, GestureAction current, ValueChanged<GestureAction> onChanged) {
     return ListTile(
       title: Text(title),
-      trailing: Text(_actionLabel(context, current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(_actionLabel(context, current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+        Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.primary),
+      ]),
       onTap: () => showModalBottomSheet(
         context: context,
         builder: (ctx) => SafeArea(

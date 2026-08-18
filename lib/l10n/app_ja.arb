@@ -733,6 +733,7 @@
     "placeholders": {"size": {"type": "String"}}
   },
   "colorPickerTitle": "色選択",
+  "colorPickerOpacityLabel": "不透明度",
   "colorPickerHexCopiedSnackbar": "HEXをコピーしました",
   "colorPickerRecentColorsLabel": "最近使った色",
   "colorPickerRecentColorsEmpty": "まだありません",

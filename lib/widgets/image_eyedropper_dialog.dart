@@ -8,9 +8,14 @@ import '../l10n/app_localizations.dart';
 /// （仕様書20：自動塗りプリセットのサムネイル画像から、謎のパレットではなく
 /// スポイトで色を拾えるようにする機能）。戻り値は選択されたColor（未選択で
 /// 閉じた場合はnull）。
+/// [imagePath]（デスクトップ/モバイル）と[imageBytes]（Web版：dart:ioの
+/// Fileが使えないため、選択した画像のバイト列を直接渡す）のどちらか一方を
+/// 指定する。
 class ImageEyedropperDialog extends StatefulWidget {
-  final String imagePath;
-  const ImageEyedropperDialog({super.key, required this.imagePath});
+  final String? imagePath;
+  final Uint8List? imageBytes;
+  const ImageEyedropperDialog({super.key, this.imagePath, this.imageBytes})
+      : assert(imagePath != null || imageBytes != null);
 
   @override
   State<ImageEyedropperDialog> createState() => _ImageEyedropperDialogState();
@@ -19,6 +24,7 @@ class ImageEyedropperDialog extends StatefulWidget {
 class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
   ui.Image? _image;
   Uint8List? _pixels;
+  Uint8List? _sourceBytes;
   Color? _previewColor;
 
   @override
@@ -28,7 +34,8 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
   }
 
   Future<void> _load() async {
-    final bytes = await File(widget.imagePath).readAsBytes();
+    final bytes = widget.imageBytes ?? await File(widget.imagePath!).readAsBytes();
+    _sourceBytes = bytes;
     final codec = await ui.instantiateImageCodec(bytes);
     final frame = await codec.getNextFrame();
     final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -98,7 +105,9 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
                         },
                         child: Container(
                           decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
-                          child: Image.file(File(widget.imagePath), fit: BoxFit.contain),
+                          // dart:ioのFileはWeb版で使えないため、常にバイト列
+                          // （_load()で読み込み済み）から表示する。
+                          child: Image.memory(_sourceBytes!, fit: BoxFit.contain),
                         ),
                       );
                     }),

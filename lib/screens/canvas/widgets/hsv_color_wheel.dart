@@ -13,6 +13,10 @@ class HsvColorWheel extends StatelessWidget {
   final void Function(double saturation, double value) onSvChanged;
   final VoidCallback? onChangeEnd;
   final double size;
+  // 透明色への切り替えボタン（仕様書20：カラーピッカーは常に透明色も選択
+  // できるようにする）。円の外側・左下の空きスペースに配置する。
+  final bool isTransparent;
+  final VoidCallback? onToggleTransparent;
 
   const HsvColorWheel({
     super.key,
@@ -23,6 +27,8 @@ class HsvColorWheel extends StatelessWidget {
     required this.onSvChanged,
     this.onChangeEnd,
     this.size = 220,
+    this.isTransparent = false,
+    this.onToggleTransparent,
   });
 
   double get _ringThickness => size * 0.14;
@@ -87,6 +93,15 @@ class HsvColorWheel extends StatelessWidget {
               ),
             ),
           ),
+          if (onToggleTransparent != null)
+            Positioned(
+              left: size * 0.03,
+              bottom: size * 0.03,
+              child: _TransparentToggleButton(
+                isActive: isTransparent,
+                onTap: onToggleTransparent!,
+              ),
+            ),
         ],
       ),
     );
@@ -151,4 +166,58 @@ class _HueRingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_HueRingPainter old) => old.hue != hue || old.thickness != thickness;
+}
+
+/// 透明色への切り替えボタン（仕様書20）。チェッカー柄の円で「透明」を表現し、
+/// 現在すでに透明色を選択中の場合は縁を強調表示する。
+class _TransparentToggleButton extends StatelessWidget {
+  final bool isActive;
+  final VoidCallback onTap;
+  const _TransparentToggleButton({required this.isActive, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey,
+            width: isActive ? 2.5 : 1.5,
+          ),
+        ),
+        child: ClipOval(
+          child: Stack(
+            children: [
+              CustomPaint(size: const Size(26, 26), painter: _MiniCheckerPainter()),
+              if (isActive)
+                const Center(child: Icon(Icons.check, size: 14, color: Colors.black87)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniCheckerPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cell = 6.5;
+    final light = Paint()..color = const Color(0xFFEEEEEE);
+    final dark = Paint()..color = const Color(0xFFAAAAAA);
+    canvas.drawRect(Offset.zero & size, light);
+    for (double y = 0; y < size.height; y += cell) {
+      for (double x = 0; x < size.width; x += cell) {
+        final isDark = ((x / cell).floor() + (y / cell).floor()) % 2 == 0;
+        if (isDark) canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), dark);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniCheckerPainter oldDelegate) => false;
 }

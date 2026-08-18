@@ -200,7 +200,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   title: Text(l10n.settingsDefaultFps),
                   subtitle: Text(l10n.settingsDefaultFpsSubtitle),
-                  trailing: Text('${settings.defaultFps} fps', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text('${settings.defaultFps} fps', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const Icon(Icons.chevron_right),
+                  ]),
                   onTap: () async {
                     // 新規プロジェクト作成画面のFPS選択肢と統一（8/12/24のみ）。
                     final selected = await showDialog<int>(
@@ -223,8 +226,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ListTile(
                   title: Text(l10n.settingsLanguage),
-                  trailing: Text(_languageLabel(l10n, settings.language),
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text(_languageLabel(l10n, settings.language),
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const Icon(Icons.chevron_right),
+                  ]),
                   onTap: () async {
                     // 対応言語：日本語・English・简体中文・한국어・繁體中文・
                     // Français・Español（仕様書08＋タスク#102）。

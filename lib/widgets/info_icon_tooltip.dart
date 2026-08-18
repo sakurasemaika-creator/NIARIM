@@ -41,41 +41,53 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
         .clamp(8.0, screenWidth - bubbleWidth - 8.0);
 
     _entry = OverlayEntry(
-      builder: (ctx) => Positioned(
-        left: left,
-        top: position.dy + size.height + 6,
-        width: bubbleWidth,
-        child: Material(
-          color: Colors.transparent,
-          child: GestureDetector(
-            onTap: _dismiss,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(ctx).colorScheme.primary,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 2))],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.message,
-                      // チュートリアル・説明テキスト用フォント（仕様書24：くらむぼん）
-                      style: TextStyle(
-                        color: Theme.of(ctx).colorScheme.onPrimary,
-                        fontSize: 12,
-                        fontFamily: 'Kuramubon',
-                      ),
-                    ),
+      builder: (ctx) => Stack(
+        children: [
+          // 吹き出し自体だけでなく、画面内のどこをタップしても閉じられる
+          // ようにする全画面の透明バリア（ユーザー指示）。
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _dismiss,
+            ),
+          ),
+          Positioned(
+            left: left,
+            top: position.dy + size.height + 6,
+            width: bubbleWidth,
+            child: Material(
+              color: Colors.transparent,
+              child: GestureDetector(
+                onTap: _dismiss,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 2))],
                   ),
-                  Icon(Icons.close, size: 14, color: Theme.of(ctx).colorScheme.onPrimary),
-                ],
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.message,
+                          // チュートリアル・説明テキスト用フォント（仕様書24：くらむぼん）
+                          style: TextStyle(
+                            color: Theme.of(ctx).colorScheme.onPrimary,
+                            fontSize: 12,
+                            fontFamily: 'Kuramubon',
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.close, size: 14, color: Theme.of(ctx).colorScheme.onPrimary),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
     overlayState.insert(_entry!);

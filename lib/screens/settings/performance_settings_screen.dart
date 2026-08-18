@@ -145,15 +145,21 @@ class _PerformanceSettingsScreenState
           ListTile(
             title: Text(l10n.perfSettingsUndoLimitTitle),
             subtitle: Text(l10n.perfSettingsUndoLimitSubtitle),
-            trailing: Text(l10n.perfSettingsUndoLimitValue(settings.undoLimit)),
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text(l10n.perfSettingsUndoLimitValue(settings.undoLimit)),
+              const Icon(Icons.chevron_right),
+            ]),
             onTap: () => _showUndoLimitDialog(context, settings),
           ),
           ListTile(
             title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
             subtitle: Text(l10n.perfSettingsTrashAutoDeleteSubtitle),
-            trailing: Text(settings.trashAutoDeleteDays == 0
-                ? l10n.commonOff
-                : l10n.perfSettingsTrashAutoDeleteValue(settings.trashAutoDeleteDays)),
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text(settings.trashAutoDeleteDays == 0
+                  ? l10n.commonOff
+                  : l10n.perfSettingsTrashAutoDeleteValue(settings.trashAutoDeleteDays)),
+              const Icon(Icons.chevron_right),
+            ]),
             onTap: () => _showTrashAutoDeleteDialog(context, settings),
           ),
           const Divider(height: 32),

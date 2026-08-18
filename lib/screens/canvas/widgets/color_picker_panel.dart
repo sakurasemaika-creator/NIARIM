@@ -28,8 +28,6 @@ class ColorPickerPanel extends StatefulWidget {
   State<ColorPickerPanel> createState() => _ColorPickerPanelState();
 }
 
-enum _PickerFormat { hsv, rgb }
-
 class _ColorPickerPanelState extends State<ColorPickerPanel> {
   late double _hue;
   late double _saturation;
@@ -37,7 +35,6 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   late double _alpha; // 0.0〜1.0（仕様書20：カラーピッカーは常に透明色も選択できる）
   late int _r, _g, _b;
   final _hexController = TextEditingController();
-  _PickerFormat _format = _PickerFormat.hsv;
 
   @override
   void initState() {
@@ -66,7 +63,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   Color get _currentColor => HSVColor.fromAHSV(_alpha, _hue, _saturation, _value).toColor();
 
   void _applyHsv() {
-    setState(() {});
+    // 透明色を選択中にHSVを操作した場合は、不透明色へ自動的に戻す
+    // （ユーザー指示：「HSVやRGBなど通常のカラーピッカーをタップすると
+    // 透明じゃない色に戻ります」）。
+    setState(() { if (_alpha == 0) _alpha = 1.0; });
     final color = _currentColor;
     _r = (color.r * 255).round();
     _g = (color.g * 255).round();
@@ -76,6 +76,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   }
 
   void _applyRgb() {
+    // HSVと同様、RGB操作でも透明色からは自動的に不透明へ戻す。
+    if (_alpha == 0) _alpha = 1.0;
     final color = Color.fromARGB((_alpha * 255).round(), _r, _g, _b);
     setState(() {
       final hsv = HSVColor.fromColor(color);
@@ -91,6 +93,15 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     setState(() {});
     widget.onColorChanged(_currentColor);
     _hexController.text = _colorToHex(_currentColor);
+  }
+
+  /// カラーサークル左下の透明トグルボタン（仕様書20）：タップで現在色を
+  /// 透明（alpha=0）にする。既に透明の場合はタップ前の不透明色へ戻す。
+  void _toggleTransparent() {
+    setState(() => _alpha = _alpha == 0 ? 1.0 : 0.0);
+    widget.onColorChanged(_currentColor);
+    _hexController.text = _colorToHex(_currentColor);
+    _commitToRecent();
   }
 
   void _applyColor(Color color) {
@@ -114,7 +125,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       child: Container(
         width: 288,
         padding: const EdgeInsets.all(12),
-        constraints: const BoxConstraints(maxHeight: 560),
+        constraints: const BoxConstraints(maxHeight: 680),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -135,47 +146,43 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ],
               ),
               const SizedBox(height: 8),
-              // HSV / RGB 切替（仕様書20：「HSV / RGB / HEXの3形式に対応」）。
-              SegmentedButton<_PickerFormat>(
-                style: const ButtonStyle(visualDensity: VisualDensity.compact),
-                segments: const [
-                  ButtonSegment(value: _PickerFormat.hsv, label: Text('HSV', style: TextStyle(fontSize: 11))),
-                  ButtonSegment(value: _PickerFormat.rgb, label: Text('RGB', style: TextStyle(fontSize: 11))),
-                ],
-                selected: {_format},
-                onSelectionChanged: (v) => setState(() => _format = v.first),
+              // HSVサークルとRGBスライダーは別タブへ分けず常に両方表示し、
+              // どちらを操作してももう片方へ即座に反映することで、RGB側が
+              // 実質的にHSV操作のプレビューにもなるようにする（ユーザー指示）。
+              // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
+              // 方式（仕様書20・タスク#91：従来のスライダー方式から刷新）。円の
+              // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
+              Center(
+                child: HsvColorWheel(
+                  hue: _hue,
+                  saturation: _saturation,
+                  value: _value,
+                  onHueChanged: (h) { _hue = h; _applyHsv(); },
+                  onSvChanged: (s, v) { _saturation = s; _value = v; _applyHsv(); },
+                  onChangeEnd: _commitToRecent,
+                  isTransparent: _alpha == 0,
+                  onToggleTransparent: _toggleTransparent,
+                ),
               ),
               const SizedBox(height: 8),
-              if (_format == _PickerFormat.hsv) ...[
-                // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
-                // 方式（仕様書20・タスク#91：従来のスライダー方式から刷新）。
-                Center(
-                  child: HsvColorWheel(
-                    hue: _hue,
-                    saturation: _saturation,
-                    value: _value,
-                    onHueChanged: (h) { _hue = h; _applyHsv(); },
-                    onSvChanged: (s, v) { _saturation = s; _value = v; _applyHsv(); },
-                    onChangeEnd: _commitToRecent,
-                  ),
-                ),
-              ] else ...[
-                _slider('R', _r.toDouble(), 0, 255, (v) { _r = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
-                _slider('G', _g.toDouble(), 0, 255, (v) { _g = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
-                _slider('B', _b.toDouble(), 0, 255, (v) { _b = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
-              ],
+              _slider('R', _r.toDouble(), 0, 255, (v) { _r = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
+              _slider('G', _g.toDouble(), 0, 255, (v) { _g = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
+              _slider('B', _b.toDouble(), 0, 255, (v) { _b = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
               const SizedBox(height: 4),
               // 不透明度スライダー（仕様書20：カラーピッカーは常に透明色も選択
               // できるようにする。ユーザー指示）。チェッカー柄の上にプレビューを
-              // 重ねて透明度が視覚的に分かるようにする。
+              // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
+              // 現在色プレビューは一目で分かるよう大きめに表示する。
+              Text(l10n.colorPickerOpacityLabel,
+                  style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               Row(
                 children: [
                   SizedBox(
-                    width: 14,
-                    height: 14,
+                    width: 28,
+                    height: 28,
                     child: CustomPaint(painter: _CheckerboardPainter(), child: ColoredBox(color: _currentColor)),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Slider(
                       min: 0, max: 1, value: _alpha,

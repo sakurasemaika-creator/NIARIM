@@ -495,23 +495,42 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// 画像を都度読み込めるようにして」）。読み込んだ画像はスクラッチ領域へ
   /// コピーし、この画面を離れる際に削除する。
   Future<void> _pickColorFromNewImage(ValueChanged<Color> onPicked) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    // withData: trueでバイト列も取得しておく。Web版はdart:ioのFileが
+    // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ
+    // 渡す（以前はpathがnullだと即returnしてしまい、Web版でスポイトが
+    // 全く起動しない不具合があった）。
+    final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.first;
+    if (picked.path == null && picked.bytes == null) return;
     if (!mounted) return;
-    final base = await getApplicationDocumentsDirectory();
-    final dir = Directory('${base.path}/niarim/autofill_scratch');
-    if (!dir.existsSync()) dir.createSync(recursive: true);
-    final sourcePath = result.files.first.path!;
-    final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'png';
-    final scratchPath = '${dir.path}/scratch_${DateTime.now().microsecondsSinceEpoch}.$ext';
-    await File(sourcePath).copy(scratchPath);
-    _scratchImagePaths.add(scratchPath);
-    if (!mounted) return;
-    final picked = await showDialog<Color>(
-      context: context,
-      builder: (_) => ImageEyedropperDialog(imagePath: scratchPath),
-    );
-    if (picked != null) onPicked(picked);
+
+    Color? pickedColor;
+    if (picked.path != null) {
+      // デスクトップ/モバイル：画面を離れる際に削除するスクラッチ領域へ
+      // コピーしてから開く。
+      final base = await getApplicationDocumentsDirectory();
+      final dir = Directory('${base.path}/niarim/autofill_scratch');
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      final sourcePath = picked.path!;
+      final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'png';
+      final scratchPath = '${dir.path}/scratch_${DateTime.now().microsecondsSinceEpoch}.$ext';
+      await File(sourcePath).copy(scratchPath);
+      _scratchImagePaths.add(scratchPath);
+      if (!mounted) return;
+      pickedColor = await showDialog<Color>(
+        context: context,
+        builder: (_) => ImageEyedropperDialog(imagePath: scratchPath),
+      );
+    } else {
+      // Web版：バイト列を直接渡す（ローカルファイルシステムが存在しないため
+      // コピー先を用意できない）。
+      pickedColor = await showDialog<Color>(
+        context: context,
+        builder: (_) => ImageEyedropperDialog(imageBytes: picked.bytes!),
+      );
+    }
+    if (pickedColor != null) onPicked(pickedColor);
   }
 
   List<AutofillPart> get _filteredParts => _partSearchQuery.isEmpty

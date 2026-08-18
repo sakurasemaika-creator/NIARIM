@@ -642,6 +642,7 @@
     "placeholders": {"size": {"type": "String"}}
   },
   "colorPickerTitle": "選擇顏色",
+  "colorPickerOpacityLabel": "不透明度",
   "colorPickerHexCopiedSnackbar": "已複製HEX值",
   "colorPickerRecentColorsLabel": "最近使用的顏色",
   "colorPickerRecentColorsEmpty": "尚無記錄",

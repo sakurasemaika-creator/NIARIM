@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' show Color;
-import 'package:archive/archive_io.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:archive/archive.dart';
 import '../models/app_theme_preset.dart';
 import '../models/autofill_preset.dart';
 import '../models/brush.dart';
@@ -21,7 +21,12 @@ import '../services/tone_service.dart';
 class NiatraSerializer {
   static const _dataFile = 'data.json';
 
-  static Future<File> export({
+  /// 引き継ぎデータをZIPバイト列として書き出す（メモリ上でエンコードするため
+  /// Web版でも動作する。旧実装はpath_providerでローカルファイルとして書き出
+  /// していたが、Web版ではpath_providerのプラットフォーム実装が存在せず
+  /// MissingPluginExceptionで失敗していたため、ファイルI/Oを介さない方式へ
+  /// 変更した）。呼び出し側はこのバイト列をXFile.fromData等で共有する。
+  static Future<Uint8List> export({
     required Map<String, bool> selectedItems,
     required SettingsService settings,
     required BrushService brush,
@@ -63,23 +68,27 @@ class NiatraSerializer {
       data['currentThemeId'] = theme.current.id;
     }
 
-    final dir = await getApplicationDocumentsDirectory();
-    final filePath =
-        '${dir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.niatra';
-    final encoder = ZipFileEncoder();
-    encoder.create(filePath);
-    encoder.addArchiveFile(ArchiveFile(_dataFile, 0, utf8.encode(jsonEncode(data))));
-    encoder.close();
-    return File(filePath);
+    final jsonBytes = utf8.encode(jsonEncode(data));
+    final archive = Archive()..addFile(ArchiveFile(_dataFile, jsonBytes.length, jsonBytes));
+    final zipBytes = ZipEncoder().encode(archive);
+    if (zipBytes == null) throw const FormatException('ZIP encoding failed');
+    return Uint8List.fromList(zipBytes);
   }
 
-  static Future<NiatraData> load(String filePath) async {
-    final bytes = await File(filePath).readAsBytes();
+  /// バイト列から読み込む（Web版でファイル選択ダイアログがパスではなく
+  /// バイト列のみを返す場合もこちらを使う）。
+  static NiatraData loadFromBytes(List<int> bytes) {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
     final data = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
     return NiatraData(data);
+  }
+
+  /// ローカルファイルパスから読み込む（デスクトップ/モバイル用）。
+  static Future<NiatraData> load(String filePath) async {
+    final bytes = await File(filePath).readAsBytes();
+    return loadFromBytes(bytes);
   }
 
   /// 読み込んだデータを各サービスへ適用する。存在しない項目はスキップする。
@@ -205,24 +214,23 @@ class NiatraSerializer {
 
   // ─── AutofillPreset ───────────────────────────────────────────────────
 
-  static Map<String, dynamic> _serializeAutofillPreset(AutofillPreset p) => {
-        'id': p.id, 'name': p.name, 'thumbnailPath': p.thumbnailPath, 'isFavorite': p.isFavorite,
-        'parts': p.parts.map((part) => {'id': part.id, 'name': part.name, 'color': part.color}).toList(),
-      };
+  // グラデーション・トーン・線画色・トレス調整など、パーツが持つ設定を
+  // 一切欠かさず引き継げるよう、モデル自身のtoJson/fromJsonをそのまま使う
+  // （以前はid/name/colorの3項目しか書き出しておらず、グラデーションや
+  // トーン設定等が引き継ぎ時に消えてしまっていた）。
+  static Map<String, dynamic> _serializeAutofillPreset(AutofillPreset p) => p.toJson();
 
-  static AutofillPreset _deserializeAutofillPreset(Map<String, dynamic> j) => AutofillPreset(
-        id: 'p_${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
-        name: j['name'] as String,
-        thumbnailPath: j['thumbnailPath'] as String?,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        parts: (j['parts'] as List<dynamic>)
-            .map((pj) => AutofillPart(
-                  id: 'part_${DateTime.now().microsecondsSinceEpoch}_${pj['id']}',
-                  name: pj['name'] as String,
-                  color: pj['color'] as int,
-                ))
-            .toList(),
-      );
+  static AutofillPreset _deserializeAutofillPreset(Map<String, dynamic> j) {
+    final base = AutofillPreset.fromJson(j);
+    // IDは取り込み先で既存プリセットと衝突しないよう振り直す。
+    final suffix = DateTime.now().microsecondsSinceEpoch;
+    return base.copyWith(
+      id: 'p_${suffix}_${base.id}',
+      parts: base.parts
+          .map((part) => part.copyWith(id: 'part_${suffix}_${part.id}'))
+          .toList(),
+    );
+  }
 
   // ─── ThemePreset ──────────────────────────────────────────────────────
 
