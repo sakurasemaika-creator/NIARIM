@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/toolbar_item.dart';
@@ -9,7 +10,6 @@ import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/responsive.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
-import 'eraser_icon.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
 class ToolbarWidget extends StatelessWidget {
@@ -64,12 +64,13 @@ class ToolbarWidget extends StatelessWidget {
             child: _toolButton(context, Icons.brush, DrawingTool.pen, l10n.toolbarPenTooltip),
           ),
         ),
-      // 消しゴム用のアイコン。Material Iconsに適切なグリフがないため、
-      // 消しゴムらしい斜めの角丸長方形を自作アイコン（EraserIcon）で描画する。
+      // 消しゴム用のアイコン。Material Iconsには適切な消しゴムのグリフが
+      // ないため、Font Awesome Free（font_awesome_flutter、CC BY 4.0。
+      // クレジットは設定＞利用規約・ライセンス画面に表示）のeraserアイコンを使う。
       ToolbarItemId.eraser => GestureDetector(
           onDoubleTap: () => _showBriefDescription(context, l10n.toolbarItemEraser),
           child: CanvasIconButton(
-            iconBuilder: (color) => EraserIcon(size: 20, color: color),
+            iconBuilder: (color) => FaIcon(FontAwesomeIcons.eraser, size: 18, color: color),
             onPressed: () => onToolSelected(DrawingTool.eraser),
             tooltip: l10n.toolbarItemEraser,
             selected: currentTool == DrawingTool.eraser,

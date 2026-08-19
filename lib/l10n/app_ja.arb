@@ -2231,5 +2231,6 @@
   "tipsBlendModeUsageTitle": "ブレンドモードは目的別に使い分けると効果的",
   "tipsBlendModeUsageDesc": "影をつけたい時は「乗算」、光や輝きを足したい時は「スクリーン」や「加算」、陰影に質感を出したい時は「オーバーレイ」や「ソフトライト」が向いています。同じ色でもブレンドモードを変えるだけで印象が大きく変わるので、まずは候補をいくつか切り替えて見比べてみるのがおすすめです。",
   "timelineSaveFailedDialogTitle": "保存に失敗しました",
-  "timelineSaveFailedDialogBody": "保存に失敗しました。もう一度お試しください。"
+  "timelineSaveFailedDialogBody": "保存に失敗しました。もう一度お試しください。",
+  "licenseSectionIcons": "使用アイコンについて"
 }

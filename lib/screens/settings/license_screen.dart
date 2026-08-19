@@ -76,6 +76,16 @@ class LicenseScreen extends StatelessWidget {
                 '個人・商用問わず無償で利用可能）',
           ),
           const SizedBox(height: 24),
+          _SectionTitle(l10n.licenseSectionIcons),
+          const _FontCredit(
+            usage: '消しゴム・バケツ塗り・図形ツールのアイコン',
+            name: 'Font Awesome Free',
+            author: 'Fonticons, Inc.',
+            license: 'アイコン：CC BY 4.0 / フォント：SIL Open Font License 1.1 '
+                '（font_awesome_flutterパッケージ自体はMIT License。'
+                'https://fontawesome.com/license/free）',
+          ),
+          const SizedBox(height: 24),
           _SectionTitle(l10n.licenseSectionOss),
           ListTile(
             contentPadding: EdgeInsets.zero,

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart' show IconData, Icons;
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../l10n/app_localizations.dart';
 
 /// ツールバーに表示するツール項目（仕様書08：ワークスペース設定＞ツールバー編集）。
@@ -52,15 +53,21 @@ extension ToolbarItemLabel on ToolbarItemId {
 /// アイコンを使う。選択ツールは既定状態＝矩形選択のアイコンとする）。
 /// 選択ツールはhighlight_alt（角に選択ハンドルが付いた矩形）を使う
 /// （以前のauto_fix_highは「魔法の杖」風で、選択ツールの自動選択
-/// 〔マジックワンド〕用アイコンと紛らわしかったため変更）。消しゴムは
-/// このプレビュー用途では標準アイコン（backspace_outlined）を使うが、
-/// 実際のツールバー本体（toolbar_widget.dart）では専用の自作アイコン
-/// （EraserIcon）を使っている。
+/// 〔マジックワンド〕用アイコンと紛らわしかったため変更）。消しゴム・
+/// 図形・定規はMaterial Iconsに適切なグリフがない／曖昧なため、
+/// Font Awesome Free（font_awesome_flutter、CC BY 4.0。クレジットは
+/// 設定＞利用規約・ライセンス画面に表示）のアイコンを使う。
 extension ToolbarItemIcon on ToolbarItemId {
-  IconData get icon => switch (this) {
+  // Material Iconsの標準アイコンを使う項目はIconDataを、Font Awesome
+  // （font_awesome_flutter）を使う項目はFaIconDataを返す。FaIconDataは
+  // 通常のIcon()では正しく描画されない（クリッピング崩れ）ため、[buildIcon]
+  // 経由で常に適切なウィジェットへ変換して使うこと。
+  Object get _iconData => switch (this) {
         ToolbarItemId.pen => Icons.brush,
-        ToolbarItemId.eraser => Icons.backspace_outlined,
-        ToolbarItemId.bucket => Icons.format_color_fill,
+        ToolbarItemId.eraser => FontAwesomeIcons.eraser,
+        // バケツ塗り：Material Iconsの汎用的な「塗り」アイコンより、
+        // Font Awesomeのペンキ缶（滴付き）の方がバケツ塗りらしいため変更。
+        ToolbarItemId.bucket => FontAwesomeIcons.fillDrip,
         ToolbarItemId.eyedropper => Icons.colorize,
         // 指先ツール（歪み）：人差し指を立てたアイコンを使う
         // （以前のback_handは掌全体を広げた「手のひら」の形で紛らわしく、
@@ -70,6 +77,17 @@ extension ToolbarItemIcon on ToolbarItemId {
         ToolbarItemId.select => Icons.highlight_alt,
         ToolbarItemId.transform => Icons.transform,
         ToolbarItemId.text => Icons.text_fields,
-        ToolbarItemId.shape => Icons.category,
+        // 図形ツール：Font Awesomeの「shapes」（複数の図形を重ねた見た目）が
+        // Material Iconsのcategory（三角形1つ）よりも図形選択ツールらしいため変更。
+        ToolbarItemId.shape => FontAwesomeIcons.shapes,
       };
+
+  /// [_iconData]の種類（Material／Font Awesome）を意識せず、常に正しく
+  /// 描画できるアイコンウィジェットを組み立てる。
+  Widget buildIcon({required double size, Color? color}) {
+    final data = _iconData;
+    return data is FaIconData
+        ? FaIcon(data, size: size, color: color)
+        : Icon(data as IconData, size: size, color: color);
+  }
 }

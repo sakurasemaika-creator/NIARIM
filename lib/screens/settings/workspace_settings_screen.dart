@@ -315,7 +315,7 @@ class _ToolbarPreview extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Tooltip(
                         message: id.label(l10n),
-                        child: Icon(id.icon, size: 20, color: scheme.onSurface),
+                        child: id.buildIcon(size: 20, color: scheme.onSurface),
                       ),
                     ),
                 ],

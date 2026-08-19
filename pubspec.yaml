@@ -74,6 +74,7 @@ dependencies:
   # そのためR8を無効化した状態を保ったまま本切替を再適用している。
   # 詳細はdocs/AI設計書/12_実装チェックリスト.mdの追記を参照。
   ffmpeg_kit_flutter_new_video: ^2.5.2
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

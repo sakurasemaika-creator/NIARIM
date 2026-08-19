@@ -2009,5 +2009,6 @@
   "tipsBlendModeUsageTitle": "根据目的区分使用混合模式会更有效果",
   "tipsBlendModeUsageDesc": "想加阴影时用正片叠底，想增添光效或光泽时用滤色或线性减淡（添加），想让阴影更有质感时用叠加或柔光较为合适。即使是同一种颜色，仅改变混合模式印象也会大不相同，建议先切换几个候选项对比看看效果。",
   "timelineSaveFailedDialogTitle": "保存失败",
-  "timelineSaveFailedDialogBody": "保存失败，请重试。"
+  "timelineSaveFailedDialogBody": "保存失败，请重试。",
+  "licenseSectionIcons": "关于所使用的图标"
 }

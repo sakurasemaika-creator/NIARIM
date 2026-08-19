@@ -2009,5 +2009,6 @@
   "tipsBlendModeUsageTitle": "依目的區分使用混合模式會更有效果",
   "tipsBlendModeUsageDesc": "想加陰影時用色彩增值，想增添光效或光澤時用濾色或線性加亮（增加），想讓陰影更有質感時用覆蓋或柔光較為合適。即使是同一種顏色，僅改變混合模式印象也會大不相同，建議先切換幾個候選項對比看看效果。",
   "timelineSaveFailedDialogTitle": "儲存失敗",
-  "timelineSaveFailedDialogBody": "儲存失敗，請重試。"
+  "timelineSaveFailedDialogBody": "儲存失敗，請重試。",
+  "licenseSectionIcons": "關於所使用的圖示"
 }
