@@ -38,6 +38,11 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
 
   void _maybeShow() {
     if (!mounted) return;
+    // 既に表示中の吹き出しがある間は再表示しない。ここをガードしないと、
+    // 吹き出し表示中に同じボタンをもう一度タップした際、古いOverlayEntryを
+    // 参照ごと上書きしてしまい、古い方が二度と閉じられずに残り続ける
+    // （タップしても消えないように見える）不具合になっていた。
+    if (_entry != null) return;
     final service = context.read<FirstUseTooltipService>();
     if (service.hasSeen(widget.tooltipKey)) return;
     final renderObject = _anchorKey.currentContext?.findRenderObject();

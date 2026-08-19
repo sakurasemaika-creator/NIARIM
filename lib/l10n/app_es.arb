@@ -2007,5 +2007,7 @@
   "tipsTransferCustomizationTitle": "La transferencia conserva tu configuracion personalizada en cualquier dispositivo",
   "tipsTransferCustomizationDesc": "La funcion de transferencia (.niatra) traslada no solo el proyecto en el que estas trabajando, sino tambien tus ajustes personalizados: pinceles, tema, disposicion de la barra de herramientas y mas. Cambia de dispositivo o trabaja en varios sin tener que configurarlo todo desde cero cada vez.",
   "tipsBlendModeUsageTitle": "Elige el modo de fusion segun lo que busques",
-  "tipsBlendModeUsageDesc": "Usa Multiplicar para sombras, Trama o Sumar para luz y brillo, y Superponer o Luz suave cuando quieras un sombreado con algo de textura. El mismo color puede verse completamente distinto segun el modo de fusion, asi que merece la pena probar varias opciones y compararlas."
+  "tipsBlendModeUsageDesc": "Usa Multiplicar para sombras, Trama o Sumar para luz y brillo, y Superponer o Luz suave cuando quieras un sombreado con algo de textura. El mismo color puede verse completamente distinto segun el modo de fusion, asi que merece la pena probar varias opciones y compararlas.",
+  "timelineSaveFailedDialogTitle": "Error al guardar",
+  "timelineSaveFailedDialogBody": "No se pudo guardar. Por favor, inténtalo de nuevo."
 }

@@ -2007,5 +2007,7 @@
   "tipsTransferCustomizationTitle": "迁移功能让你换设备也能保持一贯的使用体验",
   "tipsTransferCustomizationDesc": "迁移（.niatra）功能不仅能转移正在制作的项目，还能连同笔刷、主题、工具栏排列等个性化设置一起转移到其他设备。无论是换机还是多设备协同使用，都无需每次从头重新设置。",
   "tipsBlendModeUsageTitle": "根据目的区分使用混合模式会更有效果",
-  "tipsBlendModeUsageDesc": "想加阴影时用正片叠底，想增添光效或光泽时用滤色或线性减淡（添加），想让阴影更有质感时用叠加或柔光较为合适。即使是同一种颜色，仅改变混合模式印象也会大不相同，建议先切换几个候选项对比看看效果。"
+  "tipsBlendModeUsageDesc": "想加阴影时用正片叠底，想增添光效或光泽时用滤色或线性减淡（添加），想让阴影更有质感时用叠加或柔光较为合适。即使是同一种颜色，仅改变混合模式印象也会大不相同，建议先切换几个候选项对比看看效果。",
+  "timelineSaveFailedDialogTitle": "保存失败",
+  "timelineSaveFailedDialogBody": "保存失败，请重试。"
 }

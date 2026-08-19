@@ -2007,5 +2007,7 @@
   "tipsTransferCustomizationTitle": "Transfer keeps your personalized setup on any device",
   "tipsTransferCustomizationDesc": "The transfer (.niatra) feature carries over not just the project you are working on, but your customized settings too: brushes, theme, toolbar layout, and more. Switch devices or work across several, and you never have to set everything up from scratch again.",
   "tipsBlendModeUsageTitle": "Pick a blend mode based on what you are going for",
-  "tipsBlendModeUsageDesc": "Use Multiply for shadows, Screen or Addition for light and glow, and Overlay or Soft Light when you want shading with a bit of texture. The same color can look completely different depending on the blend mode, so it is worth flipping through a few candidates and comparing."
+  "tipsBlendModeUsageDesc": "Use Multiply for shadows, Screen or Addition for light and glow, and Overlay or Soft Light when you want shading with a bit of texture. The same color can look completely different depending on the blend mode, so it is worth flipping through a few candidates and comparing.",
+  "timelineSaveFailedDialogTitle": "Save Failed",
+  "timelineSaveFailedDialogBody": "Failed to save. Please try again."
 }

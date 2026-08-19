@@ -228,7 +228,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   String? _currentLayerId;
   bool _autosaveAttached = false;
-  bool _layerPanelDefaultInitialized = false;
   // フレーム一覧の折りたたみ状態（描画領域を広げるため
   // 任意のタイミングで開閉できるようにする）。
   bool _showFrameStrip = true;
@@ -255,16 +254,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
         if (layers.isNotEmpty) _currentLayerId = layers.first.id;
       }
     }
-    // デスクトップレイアウトのみ、レイヤーパレットを初期表示ONにする
-    // （プロ向け制作ツールの慣習に合わせ、広い画面では最初から出しておく）。
-    // 以前はisDesktop分岐でLayerPanelを無条件表示・onCloseも空実装にして
-    // いたため、閉じるボタンを押しても何も起きず「一度表示されると閉じられ
-    // ない」状態になっていた不具合を修正した。モバイル
-    // レイアウトの初期値（非表示）はそのまま維持する。
-    if (!_layerPanelDefaultInitialized) {
-      _layerPanelDefaultInitialized = true;
-      if (isWideScreen(context)) _showLayerPanel = true;
-    }
+    // 画面がごちゃごちゃしないよう、画面サイズによらずレイヤーパネルは
+    // デフォルトで閉じた状態にする（以前はPC/DeXモードなど広い画面では
+    // 自動的に開いていたが、ユーザーが開くボタンを押したときだけ表示する
+    // 方針へ統一した）。
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
     final newPerf = context.read<PerformanceService>();
     if (newPerf != _perf) {

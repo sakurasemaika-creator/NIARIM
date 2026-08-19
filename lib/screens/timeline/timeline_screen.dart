@@ -3778,14 +3778,31 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// ため削除し、代わりに画面を離れるタイミングで自動的に保存されるよう
   /// にした。
   Future<void> _saveAndGoToCanvas() async {
-    // 保存に失敗しても画面遷移自体は必ず行う（保存エラーで「戻る」ボタンが
-    // 反応しなくなったように見える不具合の対策）。
+    // 保存に失敗した場合は無理に画面遷移せず、保存データを失わないよう
+    // その場に留まりエラーを知らせる（失敗時に黙って進むと、セーブされて
+    // いないデータが消えたことにユーザーが気づけなくなるため）。
     try {
       await context.read<ProjectService>().saveProject(widget.projectId);
     } catch (e) {
       debugPrint('timeline: saveProject failed before returning to canvas: $e');
+      if (mounted) await _showSaveFailedDialog();
+      return;
     }
     if (mounted) context.go('/canvas/${widget.projectId}');
+  }
+
+  Future<void> _showSaveFailedDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineSaveFailedDialogTitle),
+        content: Text(l10n.timelineSaveFailedDialogBody),
+        actions: [
+          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
+        ],
+      ),
+    );
   }
 
   /// プロジェクト一覧へ戻るボタン：タップ時に「保存して
@@ -3812,12 +3829,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     if (choice == null || !mounted) return;
     if (choice == 'save') {
-      // 保存に失敗しても「プロジェクト一覧へ戻る」操作自体は必ず完了させる
-      // （保存エラーでタイムライン画面に留まったままになる不具合の対策）。
+      // 保存に失敗した場合は一覧へ戻らず、その場でエラーを知らせる
+      // （セーブされていないデータが気づかれないまま消えるのを防ぐ）。
       try {
         await context.read<ProjectService>().saveProject(widget.projectId);
       } catch (e) {
         debugPrint('timeline: saveProject failed before returning to project list: $e');
+        if (mounted) await _showSaveFailedDialog();
+        return;
       }
     }
     if (mounted) context.go('/home');
