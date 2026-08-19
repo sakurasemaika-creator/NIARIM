@@ -473,6 +473,54 @@
   "helpBucketDetailSettingsTitle": "填色工具詳細設定",
   "helpBucketDetailSettingsDesc": "在設定畫面的「填色工具」中可以調整容許誤差（點擊位置的顏色相差多少仍視為同一區域）、擴充px（填色區域向邊界外擴展多少以填補線稿的縫隙）以及潛入線條下方（不覆蓋線稿本身，而是把擴充部分合成到既有像素的背後，藉此保持線條外觀不變）。當線稿有細小縫隙或填色感覺不完整時，調整這些設定能讓效果更穩定。",
 
+  "helpStampToolTitle": "印章工具",
+  "helpStampToolDesc": "把預先登記的圖片像筆刷一樣放置到畫布上。特效線、背景圖案、小物件等不用每次重畫就能反覆使用。開啟像素模式後，貼上的印章會透過馬賽克降解析度＋減少色數處理成像素畫風格。",
+
+  "helpToneFillTitle": "網點上色",
+  "helpToneFillDesc": "在填色工具的設定中把純色填滿切換為網點填滿，就能用選中的網點、線條等網點圖案進行填滿。還提供像素模式專用的方格紋、格子紋網點，可以做出符合像素畫質感的上色效果。",
+
+  "helpPixelModeTitle": "像素模式",
+  "helpPixelModeDesc": "筆刷、字型、印章各自都提供的設定，開啟後會去除反鋸齒，呈現清晰的像素畫風輪廓。想刻意做出老遊戲般的質感，或想營造低解析度效果時使用。",
+
+  "helpHomeScreenTitle": "首頁",
+  "helpHomeScreenDesc": "啟動App後最先顯示的畫面，可在專案、共用、作品清單、垃圾桶各標籤間切換檢視。右上角的搜尋圖示可依專案名稱篩選。在專案標籤頁中，可透過懸浮按鈕選擇新增專案或新增資料夾。",
+
+  "helpNewProjectTitle": "新增專案",
+  "helpNewProjectDesc": "在建立專案前，可以統一設定畫布尺寸、影格率、長度（以秒為單位，之後會與在時間軸中增減影格數連動）、作畫區域（可比匯出範圍畫得更大的設定）、要使用的自動上色預設等。",
+
+  "helpThemeSettingsTitle": "主題設定",
+  "helpThemeSettingsDesc": "可以從預設中選擇App整體的配色，也可以自由自訂強調色。標題・項目名稱用字型與說明文字用字型是分開的，能在保持可讀性的同時享受換裝樂趣。",
+
+  "helpWorkspaceSettingsTitle": "工作區設定",
+  "helpWorkspaceSettingsDesc": "彙集了左手模式（左右翻轉停靠面板）、手動切換電腦/DeX模式、手掌工具顯示條件等設定的畫面。可以依所用裝置和慣用手調整成更方便操作的版面。",
+
+  "helpPenSettingsTitle": "畫筆設定",
+  "helpPenSettingsDesc": "除了數位板・數位螢幕的筆壓曲線外，這個設定畫面還能把切換橡皮擦、取色器等操作指派給支援的觸控筆側邊按鍵。",
+
+  "helpMaterialListTitle": "素材清單",
+  "helpMaterialListDesc": "可以統一檢視專案中使用的圖片、影片、音訊素材的畫面。放置在時間軸上的素材的原始檔案都彙集在這裡。",
+
+  "helpFrameOperationsTitle": "影格操作",
+  "helpFrameOperationsDesc": "在影格清單中，除了新增、複製、刪除之外，還可以在多選模式下一次移動、複製、刪除多個影格。增加保留格數可以讓同一影格持續顯示多個格子（即所謂的「停格」），從而在動作較少的鏡頭中節省作畫張數。",
+
+  "helpSceneOperationsTitle": "場景操作",
+  "helpSceneOperationsDesc": "在時間軸的場景標籤頁中，可以新增、複製、刪除、重新命名、重新排序場景。切換到多選模式後，還可以一次移動、複製、刪除多個場景。",
+
+  "helpQuickToolManagementTitle": "快捷工具管理",
+  "helpQuickToolManagementDesc": "登記一組常用工具組合，只需點一下即可依序切換。長按或向上滑動可開啟管理彈出視窗，編輯已登記的內容和順序。",
+
+  "helpTransformSelectionTitle": "變形選取範圍",
+  "helpTransformSelectionDesc": "用選取工具圈出的範圍，可以用變形工具進行移動、旋轉、縮放。適合用來調整誤畫部分的位置，或只放大強調某一部分。",
+
+  "helpGradientAutofillTitle": "漸層上色（自動上色預設）",
+  "helpGradientAutofillDesc": "自動上色預設的每個部位不僅可以設定純色，也可以設定漸層色。透過可拖曳的對稱控制點，能直覺地調整漸層的範圍與角度。",
+
+  "helpColorPickerTitle": "取色器",
+  "helpColorPickerDesc": "可以在同一畫面中切換HSV和RGB來選色的取色器。長按還會顯示簡單的使用說明。調色盤功能可以儲存和呼叫目前使用的顏色組合。",
+
+  "helpUndoSettingsTitle": "復原次數設定",
+  "helpUndoSettingsDesc": "在效能設定中可以調整復原能回溯的操作次數。次數越多越能放心地反覆嘗試，但也會佔用更多記憶體；在低效能裝置上減少次數可以讓運作更輕快。",
+
   "helpDrawingFilterTitle": "繪圖濾鏡",
   "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（與套用於整條時間軸或整個場景的演出濾鏡不同，繪圖濾鏡按圖層生效）。包含模糊、銳化、USM銳化、色調曲線、色階、暗角、雜訊、復古動畫、映像管、動畫風、外框、像素化等。外框不會改寫原圖層，只會把外框後的結果繪製到一個新圖層上。",
 

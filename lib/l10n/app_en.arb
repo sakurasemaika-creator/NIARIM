@@ -473,6 +473,54 @@
   "helpBucketDetailSettingsTitle": "Bucket fill detail settings",
   "helpBucketDetailSettingsDesc": "From the \"Bucket Fill\" section in settings, you can adjust tolerance (how much color difference from the clicked pixel still counts as the same region), expand px (how far the filled area extends past the boundary to cover gaps in the lineart), and fill under line (composites the expanded fill behind existing pixels instead of painting over the lineart, keeping the line's look intact). Adjusting these helps when the lineart has small gaps or fills feel incomplete.",
 
+  "helpStampToolTitle": "Stamp tool",
+  "helpStampToolDesc": "Places a pre-registered image onto the canvas like a brush. Reuse speed lines, background patterns, and small props without redrawing them each time. With pixel mode on, stamped images are processed with mosaic downsampling plus color reduction for a pixel-art look.",
+
+  "helpToneFillTitle": "Tone fill",
+  "helpToneFillDesc": "Switching the bucket tool's setting from solid fill to tone fill lets you fill with a chosen halftone or line-pattern tone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture.",
+
+  "helpPixelModeTitle": "Pixel mode",
+  "helpPixelModeDesc": "A setting available on brushes, fonts, and stamps individually. Turning it on strips anti-aliasing for crisp, pixel-art-style edges. Use it when you want a deliberately old-game feel or a low-resolution look.",
+
+  "helpHomeScreenTitle": "Home screen",
+  "helpHomeScreenDesc": "The first screen shown when you launch the app, with Projects, Shared, Works, and Trash tabs. The search icon at the top right lets you filter projects by name. On the Projects tab, the FAB lets you choose between creating a new project or a new folder.",
+
+  "helpNewProjectTitle": "New project",
+  "helpNewProjectDesc": "Set canvas size, fps, duration (in seconds — later kept in sync with frame changes made in the timeline), drawing area (lets you draw beyond the export bounds), and which autofill presets to use, all before creating the project.",
+
+  "helpThemeSettingsTitle": "Theme settings",
+  "helpThemeSettingsDesc": "Choose the app's overall color scheme from presets, or freely customize the accent color. Headings/labels and body text use separate fonts, so you can enjoy re-skinning the app while keeping it readable.",
+
+  "helpWorkspaceSettingsTitle": "Workspace settings",
+  "helpWorkspaceSettingsDesc": "Gathers settings such as left-handed mode (mirrors the docked panels), manually switching PC/DeX mode, and when the pan tool is shown. Adjust the layout to suit your device and dominant hand.",
+
+  "helpPenSettingsTitle": "Pen settings",
+  "helpPenSettingsDesc": "Along with the pressure curve for tablets and pen displays, this screen lets you assign actions — such as toggling the eraser or the eyedropper — to the side buttons of a supported stylus.",
+
+  "helpMaterialListTitle": "Materials list",
+  "helpMaterialListDesc": "A screen that gathers the image, video, and audio materials used in a project. It collects the source files for anything placed on the timeline.",
+
+  "helpFrameOperationsTitle": "Frame operations",
+  "helpFrameOperationsDesc": "In the frame list, you can add, duplicate, and delete frames, and in multi-select mode move, duplicate, or delete several frames at once. Increasing the hold count keeps a single frame displayed across several cells (a \"hold\"), saving you drawing time on cuts with little motion.",
+
+  "helpSceneOperationsTitle": "Scene operations",
+  "helpSceneOperationsDesc": "The timeline's scene tab lets you add, duplicate, delete, rename, and reorder scenes. Multi-select mode lets you move, duplicate, or delete several scenes at once.",
+
+  "helpQuickToolManagementTitle": "Quick tool management",
+  "helpQuickToolManagementDesc": "Register a set of frequently used tools to cycle through with a single tap. Open the management popup with a long press or an upward swipe to edit the registered tools and their order.",
+
+  "helpTransformSelectionTitle": "Transforming a selection",
+  "helpTransformSelectionDesc": "A region enclosed with the select tool can be moved, rotated, and scaled with the transform tool. Handy for repositioning a mistakenly drawn part, or enlarging just one area to emphasize it.",
+
+  "helpGradientAutofillTitle": "Gradient fill (autofill presets)",
+  "helpGradientAutofillDesc": "Each part in an autofill preset can use a gradient instead of a solid color. Symmetric handles you can drag let you intuitively adjust the gradient's extent and angle.",
+
+  "helpColorPickerTitle": "Color picker",
+  "helpColorPickerDesc": "A color picker that lets you switch between HSV and RGB on one screen. Long-press for a brief usage tip. The palette feature lets you save and recall a set of colors you're using.",
+
+  "helpUndoSettingsTitle": "Undo history length",
+  "helpUndoSettingsDesc": "In performance settings, you can adjust how many actions undo can step back through. A larger number gives you more freedom to experiment, but also uses more memory — lower it on low-spec devices to keep things running smoothly.",
+
   "helpDrawingFilterTitle": "Draw filters",
   "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer.",
 

@@ -473,6 +473,54 @@
   "helpBucketDetailSettingsTitle": "填充工具详细设置",
   "helpBucketDetailSettingsDesc": "在设置画面的“填充工具”中可以调整容差（点击位置的颜色相差多少仍视为同一区域）、扩展px（填充区域向边界外扩展多少以填补线稿的缝隙）以及潜入线条下方（不覆盖线稿本身，而是把扩展部分合成到已有像素的背后，从而保持线条外观不变）。当线稿有细小缝隙或填色感觉不完整时，调整这些设置能让效果更稳定。",
 
+  "helpStampToolTitle": "印章工具",
+  "helpStampToolDesc": "把预先登记的图片像笔刷一样放置到画布上。特效线、背景图案、小物件等无需每次重画即可反复使用。开启像素模式后，贴上的印章会通过马赛克降分辨率＋减少色数处理成像素画风格。",
+
+  "helpToneFillTitle": "网点上色",
+  "helpToneFillDesc": "在填充工具的设置中把纯色填充切换为网点填充，就能用选中的网点、线条等网点图案进行填充。还提供像素模式专用的方格纹、格子纹网点，可以做出符合像素画质感的上色效果。",
+
+  "helpPixelModeTitle": "像素模式",
+  "helpPixelModeDesc": "笔刷、字体、印章各自都提供的设置，开启后会去除抗锯齿，呈现清晰的像素画风轮廓。想特意做出老游戏般的质感，或想营造低分辨率效果时使用。",
+
+  "helpHomeScreenTitle": "主页",
+  "helpHomeScreenDesc": "启动应用后最先显示的画面，可在项目、共享、作品列表、回收站各标签间切换查看。右上角的搜索图标可按项目名称筛选。在项目标签页中，可通过悬浮按钮选择新建项目或新建文件夹。",
+
+  "helpNewProjectTitle": "新建项目",
+  "helpNewProjectDesc": "在创建项目前，可以统一设置画布尺寸、帧率、时长（以秒为单位，之后会与在时间轴中增减帧数联动）、作画区域（可比导出范围画得更大的设置）、要使用的自动上色预设等。",
+
+  "helpThemeSettingsTitle": "主题设置",
+  "helpThemeSettingsDesc": "可以从预设中选择应用整体的配色，也可以自由自定义强调色。标题・项目名称用字体与说明文字用字体是分开的，能在保持可读性的同时享受换装乐趣。",
+
+  "helpWorkspaceSettingsTitle": "工作区设置",
+  "helpWorkspaceSettingsDesc": "汇集了左手模式（左右翻转停靠面板）、手动切换电脑/DeX模式、手掌工具显示条件等设置的画面。可以根据所用设备和惯用手调整成更方便操作的布局。",
+
+  "helpPenSettingsTitle": "画笔设置",
+  "helpPenSettingsDesc": "除了数位板・数位屏的压感曲线外，这个设置画面还能把切换橡皮擦、取色器等操作分配给支持的触控笔侧面按键。",
+
+  "helpMaterialListTitle": "素材列表",
+  "helpMaterialListDesc": "可以统一查看项目中使用的图片、视频、音频素材的画面。放置在时间轴上的素材的原始文件都汇集在这里。",
+
+  "helpFrameOperationsTitle": "帧操作",
+  "helpFrameOperationsDesc": "在帧列表中，除了新增、复制、删除之外，还可以在多选模式下一次性移动、复制、删除多个帧。增加保留格数可以让同一帧持续显示多个格子（即所谓的“停格”），从而在动作较少的镜头中节省作画张数。",
+
+  "helpSceneOperationsTitle": "场景操作",
+  "helpSceneOperationsDesc": "在时间轴的场景标签页中，可以新增、复制、删除、重命名、重新排序场景。切换到多选模式后，还可以一次性移动、复制、删除多个场景。",
+
+  "helpQuickToolManagementTitle": "快捷工具管理",
+  "helpQuickToolManagementDesc": "登记一组常用工具组合，只需一次点击即可依次切换。长按或向上滑动可打开管理弹窗，编辑已登记的内容和顺序。",
+
+  "helpTransformSelectionTitle": "变换选区",
+  "helpTransformSelectionDesc": "用选择工具圈出的区域，可以用变换工具进行移动、旋转、缩放。适合用来调整误画部分的位置，或只放大强调某一部分。",
+
+  "helpGradientAutofillTitle": "渐变上色（自动上色预设）",
+  "helpGradientAutofillDesc": "自动上色预设的每个部位不仅可以设置纯色，也可以设置渐变色。通过可拖动的对称控制点，能直观地调整渐变的范围和角度。",
+
+  "helpColorPickerTitle": "取色器",
+  "helpColorPickerDesc": "可以在一个界面中切换HSV和RGB来选色的取色器。长按还会显示简单的使用说明。调色板功能可以保存和调用当前使用的颜色组合。",
+
+  "helpUndoSettingsTitle": "撤销次数设置",
+  "helpUndoSettingsDesc": "在性能设置中可以调整撤销能回溯的操作次数。次数越多越能放心地反复尝试，但也会占用更多内存；在低性能设备上减少次数可以让运行更轻快。",
+
   "helpDrawingFilterTitle": "绘图滤镜",
   "helpDrawingFilterDesc": "直接应用于所选图层的滤镜（与应用于整条时间轴或整个场景的演出滤镜不同，绘图滤镜按图层生效）。包含模糊、锐化、USM锐化、色调曲线、色阶、暗角、噪点、复古动画、显像管、动画风、描边、像素化等。描边不会改写原图层，只会把描边后的结果绘制到一个新图层上。",
 

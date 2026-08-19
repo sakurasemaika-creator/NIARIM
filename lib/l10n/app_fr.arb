@@ -473,6 +473,54 @@
   "helpBucketDetailSettingsTitle": "Réglages détaillés du seau de peinture",
   "helpBucketDetailSettingsDesc": "Depuis la section « Seau de peinture » des réglages, vous pouvez ajuster la tolérance (quelle différence de couleur par rapport au pixel cliqué compte encore comme la même zone), l'extension en px (de combien la zone remplie dépasse la bordure pour combler les écarts du trait) et le remplissage sous le trait (compose le remplissage étendu derrière les pixels existants au lieu de peindre par-dessus le trait, préservant son apparence). Les ajuster aide quand le trait a de petits écarts ou que le remplissage semble incomplet.",
 
+  "helpStampToolTitle": "Outil tampon",
+  "helpStampToolDesc": "Place une image préenregistrée sur le canevas comme un pinceau. Réutilisez traits de vitesse, motifs de fond et petits objets sans les redessiner à chaque fois. Avec le mode pixel activé, les images tamponnées sont traitées avec un sous-échantillonnage en mosaïque et une réduction des couleurs, pour un rendu pixel art.",
+
+  "helpToneFillTitle": "Remplissage en trame",
+  "helpToneFillDesc": "Passer le réglage de l'outil seau du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art.",
+
+  "helpPixelModeTitle": "Mode pixel",
+  "helpPixelModeDesc": "Un réglage disponible séparément sur les pinceaux, les polices et les tampons. L'activer supprime l'anticrénelage pour des contours nets façon pixel art. À utiliser pour un rendu volontairement rétro ou basse résolution.",
+
+  "helpHomeScreenTitle": "Écran d'accueil",
+  "helpHomeScreenDesc": "Le premier écran affiché au lancement de l'app, avec les onglets Projets, Partagés, Œuvres et Corbeille. L'icône de recherche en haut à droite permet de filtrer les projets par nom. Sur l'onglet Projets, le bouton flottant permet de choisir entre créer un nouveau projet ou un nouveau dossier.",
+
+  "helpNewProjectTitle": "Nouveau projet",
+  "helpNewProjectDesc": "Définissez la taille du canevas, les fps, la durée (en secondes — ensuite maintenue synchronisée avec les changements de fotogrammes faits dans la timeline), la zone de dessin (permet de dessiner au-delà des limites d'export) et les préréglages de remplissage automatique à utiliser, le tout avant de créer le projet.",
+
+  "helpThemeSettingsTitle": "Réglages de thème",
+  "helpThemeSettingsDesc": "Choisissez la palette de couleurs globale de l'app parmi des préréglages, ou personnalisez librement la couleur d'accent. Les titres/libellés et le texte courant utilisent des polices distinctes, ce qui permet de changer l'apparence de l'app tout en gardant une bonne lisibilité.",
+
+  "helpWorkspaceSettingsTitle": "Réglages de l'espace de travail",
+  "helpWorkspaceSettingsDesc": "Regroupe des réglages comme le mode gaucher (inverse les panneaux ancrés), le basculement manuel du mode PC/DeX, et les conditions d'affichage de l'outil main. Ajustez la disposition selon votre appareil et votre main dominante.",
+
+  "helpPenSettingsTitle": "Réglages du stylet",
+  "helpPenSettingsDesc": "En plus de la courbe de pression pour tablettes et écrans à stylet, cet écran permet d'associer des actions — comme basculer la gomme ou la pipette — aux boutons latéraux d'un stylet compatible.",
+
+  "helpMaterialListTitle": "Liste des matériels",
+  "helpMaterialListDesc": "Un écran qui rassemble les images, vidéos et audios utilisés dans un projet. Il regroupe les fichiers source de tout ce qui est placé sur la timeline.",
+
+  "helpFrameOperationsTitle": "Opérations sur les fotogrammes",
+  "helpFrameOperationsDesc": "Dans la liste des fotogrammes, vous pouvez ajouter, dupliquer et supprimer des fotogrammes, et en mode sélection multiple en déplacer, dupliquer ou supprimer plusieurs à la fois. Augmenter le nombre de maintien garde un même fotogramme affiché sur plusieurs cellules (un « maintien »), économisant du travail de dessin sur les plans avec peu de mouvement.",
+
+  "helpSceneOperationsTitle": "Opérations sur les scènes",
+  "helpSceneOperationsDesc": "L'onglet scènes de la timeline permet d'ajouter, dupliquer, supprimer, renommer et réorganiser les scènes. Le mode sélection multiple permet de déplacer, dupliquer ou supprimer plusieurs scènes à la fois.",
+
+  "helpQuickToolManagementTitle": "Gestion des outils rapides",
+  "helpQuickToolManagementDesc": "Enregistrez un ensemble d'outils fréquemment utilisés pour les faire défiler d'un seul appui. Ouvrez le popup de gestion par un appui long ou un glissement vers le haut pour modifier les outils enregistrés et leur ordre.",
+
+  "helpTransformSelectionTitle": "Transformer une sélection",
+  "helpTransformSelectionDesc": "Une zone délimitée avec l'outil de sélection peut être déplacée, pivotée et redimensionnée avec l'outil de transformation. Pratique pour repositionner une partie dessinée par erreur, ou pour agrandir une seule zone afin de la mettre en valeur.",
+
+  "helpGradientAutofillTitle": "Remplissage en dégradé (préréglages de remplissage automatique)",
+  "helpGradientAutofillDesc": "Chaque partie d'un préréglage de remplissage automatique peut utiliser un dégradé au lieu d'une couleur unie. Des poignées symétriques déplaçables par glisser permettent d'ajuster intuitivement l'étendue et l'angle du dégradé.",
+
+  "helpColorPickerTitle": "Sélecteur de couleur",
+  "helpColorPickerDesc": "Un sélecteur de couleur permettant de basculer entre HSV et RVB sur un seul écran. Appui long pour afficher une brève astuce d'utilisation. La fonction palette permet d'enregistrer et de rappeler un ensemble de couleurs en cours d'utilisation.",
+
+  "helpUndoSettingsTitle": "Longueur de l'historique d'annulation",
+  "helpUndoSettingsDesc": "Dans les réglages de performance, vous pouvez ajuster le nombre d'actions que l'annulation peut remonter. Un nombre plus élevé donne plus de liberté pour expérimenter, mais utilise aussi plus de mémoire — réduisez-le sur les appareils bas de gamme pour rester fluide.",
+
   "helpDrawingFilterTitle": "Filtres de dessin",
   "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d'effet, qui s'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d'origine : il dessine seulement le résultat contourné sur un nouveau calque.",
 

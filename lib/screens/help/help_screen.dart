@@ -49,6 +49,10 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '図形ツール', title: l10n.helpShapeToolTitle, description: l10n.helpShapeToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '早替えツール管理', title: l10n.helpQuickToolManagementTitle, description: l10n.helpQuickToolManagementDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: 'カラーピッカー', title: l10n.helpColorPickerTitle, description: l10n.helpColorPickerDesc, category: l10n.helpCategoryTool),
 
         // ── レイヤー ────────────────────────────────────────────
         _HelpEntry(topicKey: 'レイヤー', title: l10n.helpLayerTitle, description: l10n.helpLayerDesc, category: l10n.helpCategoryLayer),
@@ -56,6 +60,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'クリッピング', title: l10n.helpClippingTitle, description: l10n.helpClippingDesc, category: l10n.helpCategoryLayer),
         _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer),
         _HelpEntry(topicKey: '自動塗り', title: l10n.helpAutoFillTitle, description: l10n.helpAutoFillDesc, category: l10n.helpCategoryLayer),
+        _HelpEntry(topicKey: 'グラデーション塗り', title: l10n.helpGradientAutofillTitle, description: l10n.helpGradientAutofillDesc, category: l10n.helpCategoryLayer),
 
         // ── 描画補助 ────────────────────────────────────────────
         _HelpEntry(topicKey: 'オニオンスキン', title: l10n.helpOnionSkinTitle, description: l10n.helpOnionSkinDesc, category: l10n.helpCategoryAnimation),
@@ -64,11 +69,16 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'ストローク減衰', title: l10n.helpStrokeDecayTitle, description: l10n.helpStrokeDecayDesc, category: l10n.helpCategoryBrush),
         _HelpEntry(topicKey: '混色', title: l10n.helpColorMixingTitle, description: l10n.helpColorMixingDesc, category: l10n.helpCategoryBrush),
         _HelpEntry(topicKey: '筆圧カーブ', title: l10n.helpPressureCurveTitle, description: l10n.helpPressureCurveDesc, category: l10n.helpCategoryPenInput),
+        _HelpEntry(topicKey: 'トーン塗り', title: l10n.helpToneFillTitle, description: l10n.helpToneFillDesc, category: l10n.helpCategoryDrawing),
+        _HelpEntry(topicKey: 'ピクセルモード', title: l10n.helpPixelModeTitle, description: l10n.helpPixelModeDesc, category: l10n.helpCategoryDrawing),
 
         // ── タイムライン・アニメーション ──────────────────────────
         _HelpEntry(topicKey: 'タイムライン', title: l10n.helpTimelineTitle, description: l10n.helpTimelineDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'シーン', title: l10n.helpSceneTitle, description: l10n.helpSceneDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: 'シーン操作', title: l10n.helpSceneOperationsTitle, description: l10n.helpSceneOperationsDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: 'フレーム操作', title: l10n.helpFrameOperationsTitle, description: l10n.helpFrameOperationsDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '素材クリップ', title: l10n.helpMaterialClipTitle, description: l10n.helpMaterialClipDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '素材一覧', title: l10n.helpMaterialListTitle, description: l10n.helpMaterialListDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '演出フィルター', title: l10n.helpEffectFilterTitle, description: l10n.helpEffectFilterDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '描画フィルター', title: l10n.helpDrawingFilterTitle, description: l10n.helpDrawingFilterDesc, category: l10n.helpCategoryDrawing),
@@ -97,6 +107,12 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'パフォーマンス設定', title: l10n.helpPerformanceSettingsTitle, description: l10n.helpPerformanceSettingsDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'バケツ塗り詳細設定', title: l10n.helpBucketDetailSettingsTitle, description: l10n.helpBucketDetailSettingsDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: 'ホーム画面', title: l10n.helpHomeScreenTitle, description: l10n.helpHomeScreenDesc, category: l10n.helpCategoryProjectManagement),
+        _HelpEntry(topicKey: '新規プロジェクト作成', title: l10n.helpNewProjectTitle, description: l10n.helpNewProjectDesc, category: l10n.helpCategoryProjectManagement),
+        _HelpEntry(topicKey: 'テーマ設定', title: l10n.helpThemeSettingsTitle, description: l10n.helpThemeSettingsDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: 'ワークスペース設定', title: l10n.helpWorkspaceSettingsTitle, description: l10n.helpWorkspaceSettingsDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: 'ペン設定', title: l10n.helpPenSettingsTitle, description: l10n.helpPenSettingsDesc, category: l10n.helpCategoryPenInput),
+        _HelpEntry(topicKey: 'Undo回数設定', title: l10n.helpUndoSettingsTitle, description: l10n.helpUndoSettingsDesc, category: l10n.helpCategorySettings),
       ];
 
   @override

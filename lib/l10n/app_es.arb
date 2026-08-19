@@ -473,6 +473,54 @@
   "helpBucketDetailSettingsTitle": "Ajustes detallados de relleno con cubo",
   "helpBucketDetailSettingsDesc": "Desde la sección \"Relleno con cubo\" de los ajustes puedes ajustar la tolerancia (cuánta diferencia de color respecto al píxel pulsado sigue contando como la misma zona), la expansión en px (cuánto se extiende el área rellenada más allá del borde para cubrir huecos en la línea) y rellenar bajo la línea (compone el relleno expandido detrás de los píxeles existentes en lugar de pintar sobre la línea, manteniendo su aspecto intacto). Ajustarlos ayuda cuando la línea tiene pequeños huecos o el relleno queda incompleto.",
 
+  "helpStampToolTitle": "Herramienta de sello",
+  "helpStampToolDesc": "Coloca una imagen previamente registrada en el lienzo como un pincel. Reutiliza líneas de efecto, patrones de fondo y objetos pequeños sin volver a dibujarlos cada vez. Con el modo píxel activado, las imágenes selladas se procesan con reducción de resolución tipo mosaico y menos colores, para un aspecto pixel art.",
+
+  "helpToneFillTitle": "Relleno con tramas",
+  "helpToneFillDesc": "Cambiar el ajuste de la herramienta de cubo de relleno sólido a relleno con tramas permite rellenar con una trama de semitonos o líneas elegida. También hay tramas de damero y cuadrícula exclusivas del modo píxel, para rellenos que combinan con una textura pixel art.",
+
+  "helpPixelModeTitle": "Modo píxel",
+  "helpPixelModeDesc": "Un ajuste disponible por separado en pinceles, fuentes y sellos. Al activarlo se elimina el suavizado, dando bordes nítidos al estilo pixel art. Úsalo cuando quieras un aire deliberadamente retro o de baja resolución.",
+
+  "helpHomeScreenTitle": "Pantalla de inicio",
+  "helpHomeScreenDesc": "La primera pantalla que se muestra al abrir la app, con las pestañas Proyectos, Compartidos, Obras y Papelera. El icono de búsqueda arriba a la derecha permite filtrar proyectos por nombre. En la pestaña Proyectos, el botón flotante permite elegir entre crear un nuevo proyecto o una nueva carpeta.",
+
+  "helpNewProjectTitle": "Nuevo proyecto",
+  "helpNewProjectDesc": "Configura el tamaño del lienzo, los fps, la duración (en segundos; luego se mantiene sincronizada con los cambios de fotogramas hechos en la línea de tiempo), el área de dibujo (permite dibujar más allá de los límites de exportación) y qué presets de relleno automático usar, todo antes de crear el proyecto.",
+
+  "helpThemeSettingsTitle": "Ajustes de tema",
+  "helpThemeSettingsDesc": "Elige la paleta de colores general de la app entre preajustes, o personaliza libremente el color de acento. Los títulos/etiquetas y el texto de cuerpo usan fuentes distintas, así que puedes cambiar el aspecto de la app manteniendo la legibilidad.",
+
+  "helpWorkspaceSettingsTitle": "Ajustes del espacio de trabajo",
+  "helpWorkspaceSettingsDesc": "Reúne ajustes como el modo zurdo (invierte los paneles acoplados), el cambio manual entre modo PC/DeX y cuándo se muestra la herramienta de mano. Ajusta el diseño según tu dispositivo y tu mano dominante.",
+
+  "helpPenSettingsTitle": "Ajustes del lápiz",
+  "helpPenSettingsDesc": "Junto con la curva de presión para tabletas y pantallas con lápiz, esta pantalla permite asignar acciones —como alternar el borrador o el cuentagotas— a los botones laterales de un lápiz compatible.",
+
+  "helpMaterialListTitle": "Lista de materiales",
+  "helpMaterialListDesc": "Una pantalla que reúne las imágenes, vídeos y audios usados en un proyecto. Recopila los archivos de origen de todo lo colocado en la línea de tiempo.",
+
+  "helpFrameOperationsTitle": "Operaciones con fotogramas",
+  "helpFrameOperationsDesc": "En la lista de fotogramas puedes añadir, duplicar y eliminar fotogramas, y en modo de selección múltiple mover, duplicar o eliminar varios a la vez. Aumentar el número de retención mantiene un mismo fotograma mostrado durante varias celdas (una \"retención\"), ahorrando trabajo de dibujo en planos con poco movimiento.",
+
+  "helpSceneOperationsTitle": "Operaciones con escenas",
+  "helpSceneOperationsDesc": "La pestaña de escenas de la línea de tiempo permite añadir, duplicar, eliminar, renombrar y reordenar escenas. El modo de selección múltiple permite mover, duplicar o eliminar varias escenas a la vez.",
+
+  "helpQuickToolManagementTitle": "Gestión de herramientas rápidas",
+  "helpQuickToolManagementDesc": "Registra un conjunto de herramientas usadas con frecuencia para alternar entre ellas con un solo toque. Abre el popup de gestión con una pulsación larga o un deslizamiento hacia arriba para editar las herramientas registradas y su orden.",
+
+  "helpTransformSelectionTitle": "Transformar una selección",
+  "helpTransformSelectionDesc": "Una zona delimitada con la herramienta de selección se puede mover, rotar y escalar con la herramienta de transformación. Útil para reposicionar una parte dibujada por error, o para ampliar solo una zona para destacarla.",
+
+  "helpGradientAutofillTitle": "Relleno degradado (presets de relleno automático)",
+  "helpGradientAutofillDesc": "Cada parte de un preset de relleno automático puede usar un degradado en lugar de un color sólido. Los tiradores simétricos que puedes arrastrar permiten ajustar de forma intuitiva el alcance y el ángulo del degradado.",
+
+  "helpColorPickerTitle": "Selector de color",
+  "helpColorPickerDesc": "Un selector de color que permite alternar entre HSV y RGB en una sola pantalla. Mantén pulsado para ver un breve consejo de uso. La función de paleta permite guardar y recuperar un conjunto de colores en uso.",
+
+  "helpUndoSettingsTitle": "Longitud del historial de deshacer",
+  "helpUndoSettingsDesc": "En los ajustes de rendimiento puedes ajustar cuántas acciones puede retroceder deshacer. Un número mayor da más libertad para experimentar, pero también usa más memoria; redúcelo en dispositivos de gama baja para que todo vaya más fluido.",
+
   "helpDrawingFilterTitle": "Filtros de dibujo",
   "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva.",
 
