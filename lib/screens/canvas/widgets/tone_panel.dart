@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/tone.dart';
 import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
+import 'panel_close_bar.dart';
 
 /// トーンの全機能管理パネル（仕様書04・17・25：一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -60,6 +61,7 @@ class _TonePanelState extends State<TonePanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(l10n.toneTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -78,7 +80,6 @@ class _TonePanelState extends State<TonePanel> {
                     }),
                     tooltip: l10n.creativePanelSearchTooltip,
                   ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               Row(

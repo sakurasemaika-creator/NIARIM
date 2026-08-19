@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../services/performance_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import 'panel_close_bar.dart';
 
 class OnionSkinPanel extends StatefulWidget {
   final OnionSkinSettings settings;
@@ -84,6 +85,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              PanelCenterCloseBar(onClose: widget.onClose),
               // ヘッダー：オニオンスキン全体ON/OFF
               Row(
                 children: [
@@ -93,11 +95,6 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                   Switch(
                     value: _settings.enabled,
                     onChanged: (v) => _update(_settings.copyWith(enabled: v)),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 16),
-                    tooltip: l10n.commonClose,
-                    onPressed: widget.onClose,
                   ),
                 ],
               ),

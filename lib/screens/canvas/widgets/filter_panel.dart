@@ -17,6 +17,7 @@ import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
 import 'color_picker_panel.dart';
+import 'panel_close_bar.dart';
 
 /// 描画フィルターパネル（仕様書18）。
 /// フィルターの選択・パラメータ調整・プレビュー・適用を行う。
@@ -157,6 +158,7 @@ class _FilterPanelState extends State<FilterPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(
@@ -178,7 +180,6 @@ class _FilterPanelState extends State<FilterPanel> {
                     tooltip: l10n.commonSearch,
                     onPressed: () => setState(() => _showSearch = !_showSearch),
                   ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               if (_showSearch)

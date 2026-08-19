@@ -7,6 +7,7 @@ import '../../../models/stamp.dart';
 import '../../../services/stamp_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import 'creative_folder_sheets.dart';
+import 'panel_close_bar.dart';
 
 /// スタンプの全機能管理パネル（仕様書17：一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -61,6 +62,7 @@ class _StampPanelState extends State<StampPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(l10n.stampTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -79,7 +81,6 @@ class _StampPanelState extends State<StampPanel> {
                     }),
                     tooltip: l10n.creativePanelSearchTooltip,
                   ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               Row(

@@ -7,6 +7,7 @@ import '../../../services/palette_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/editable_slider_value.dart';
 import 'hsv_color_wheel.dart';
+import 'panel_close_bar.dart';
 
 /// カラーピッカーパネル（仕様書20：色管理仕様）。
 /// カラーピッカー（HSV/RGB/HEX）・最近使った色・パレットの3セクション構成。
@@ -130,6 +131,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -141,7 +143,6 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       tooltip: l10n.toolbarItemEyedropper,
                       onPressed: widget.onEyedropperTap,
                     ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               const SizedBox(height: 8),

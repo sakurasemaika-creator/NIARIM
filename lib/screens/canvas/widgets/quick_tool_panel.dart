@@ -6,6 +6,7 @@ import '../../../services/brush_service.dart';
 import '../../../services/quick_tool_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../canvas_screen.dart' show DrawingTool;
+import 'panel_close_bar.dart';
 
 /// 早替えツール設定ポップアップ（仕様書02・08）。
 /// ↺ボタンの長押しで表示する。ドラッグで順番変更・削除・追加ができる。
@@ -42,11 +43,11 @@ class QuickToolPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              PanelCenterCloseBar(onClose: onClose),
               Row(
                 children: [
                   Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
-                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: onClose),
                 ],
               ),
               const Divider(),

@@ -81,12 +81,17 @@ class ToolbarWidget extends StatelessWidget {
             selected: currentTool == DrawingTool.eraser,
           ),
         ),
-      // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
+      // バケツボタン：長押しまたは上スワイプでベタ塗り／トーン切り替え
+      // メニュー表示（仕様書04・17。他の詳細設定ポップアップと操作方法を
+      // 統一するため、長押しに加えて上スワイプにも対応させている）。
       ToolbarItemId.bucket => FirstUseTooltip(
           tooltipKey: 'bucket_tool',
           message: l10n.toolbarBucketFirstUseTip,
           child: GestureDetector(
             onLongPress: () => _showBucketToneMenu(context),
+            onVerticalDragEnd: (details) {
+              if ((details.primaryVelocity ?? 0) < -200) _showBucketToneMenu(context);
+            },
             child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, l10n.toolbarBucketTooltip),
           ),
         ),
@@ -261,6 +266,11 @@ class ToolbarWidget extends StatelessWidget {
     return GestureDetector(
       onLongPress: () => _showSelectMenu(context, l10n),
       onDoubleTap: () => _showBriefDescription(context, l10n.toolbarSelectTooltip),
+      // 長押しに加えて上スワイプでも選択メニューを開けるようにする
+      // （他の詳細設定ポップアップと操作方法を統一するため）。
+      onVerticalDragEnd: (details) {
+        if ((details.primaryVelocity ?? 0) < -200) _showSelectMenu(context, l10n);
+      },
       child: _borderedIconButton(context, icon,
           onPressed: () => onToolSelected(DrawingTool.selectRect),
           tooltip: l10n.toolbarSelectTooltip,

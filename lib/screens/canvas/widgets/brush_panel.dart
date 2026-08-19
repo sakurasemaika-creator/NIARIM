@@ -7,6 +7,7 @@ import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import 'creative_folder_sheets.dart';
+import 'panel_close_bar.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -64,6 +65,7 @@ class _BrushPanelState extends State<BrushPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(l10n.penSubToolTabBrush, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -89,7 +91,6 @@ class _BrushPanelState extends State<BrushPanel> {
                     }),
                     tooltip: l10n.creativePanelSearchTooltip,
                   ),
-                  IconButton(icon: const Icon(Icons.close, size: 16), tooltip: l10n.commonClose, onPressed: widget.onClose),
                 ],
               ),
               // フォルダ管理・自作ブラシ・読み込み（仕様書17・21）

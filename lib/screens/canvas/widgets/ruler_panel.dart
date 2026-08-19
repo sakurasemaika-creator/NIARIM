@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
+import 'panel_close_bar.dart';
 
 class RulerPanel extends StatelessWidget {
   final Ruler? activeRuler;
@@ -26,6 +27,7 @@ class RulerPanel extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            PanelCenterCloseBar(onClose: onClose),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
@@ -43,13 +45,6 @@ class RulerPanel extends StatelessWidget {
                       ),
                       child: Text(l10n.commonDelete, style: const TextStyle(fontSize: 11)),
                     ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 16),
-                    tooltip: l10n.commonClose,
-                    onPressed: onClose,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
                 ],
               ),
             ),

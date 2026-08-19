@@ -17,6 +17,7 @@ import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import 'layer_keyframe_sheet.dart';
+import 'panel_close_bar.dart';
 
 class LayerPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -139,6 +140,7 @@ class _LayerPanelState extends State<LayerPanel> {
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Column(
         children: [
+          if (!widget.dockedMode) PanelCenterCloseBar(onClose: widget.onClose),
           // ヘッダー
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -169,8 +171,6 @@ class _LayerPanelState extends State<LayerPanel> {
                   }),
                   tooltip: l10n.creativePanelSearchTooltip,
                 ),
-                if (!widget.dockedMode)
-                  IconButton(icon: const Icon(Icons.close, size: 18), tooltip: l10n.commonClose, onPressed: widget.onClose),
               ],
             ),
           ),
