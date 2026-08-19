@@ -2010,5 +2010,7 @@
   "tipsBlendModeUsageDesc": "Utilisez Produit pour les ombres, Ecran ou Addition pour la lumiere et les reflets, et Incrustation ou Lumiere douce pour un ombrage avec un peu de texture. La meme couleur peut paraitre completement differente selon le mode de fusion : n'hesitez pas a essayer plusieurs options et a comparer.",
   "timelineSaveFailedDialogTitle": "Échec de l'enregistrement",
   "timelineSaveFailedDialogBody": "L'enregistrement a échoué. Veuillez réessayer.",
-  "licenseSectionIcons": "À propos des icônes utilisées"
+  "licenseSectionIcons": "À propos des icônes utilisées",
+  "layerPanelMergeAllVisibleTooltip": "Fusionner tous les calques visibles",
+  "canvasBrushSliderToggleLabel": "Détails"
 }

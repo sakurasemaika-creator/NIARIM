@@ -2010,5 +2010,7 @@
   "tipsBlendModeUsageDesc": "Use Multiply for shadows, Screen or Addition for light and glow, and Overlay or Soft Light when you want shading with a bit of texture. The same color can look completely different depending on the blend mode, so it is worth flipping through a few candidates and comparing.",
   "timelineSaveFailedDialogTitle": "Save Failed",
   "timelineSaveFailedDialogBody": "Failed to save. Please try again.",
-  "licenseSectionIcons": "About the Icons Used"
+  "licenseSectionIcons": "About the Icons Used",
+  "layerPanelMergeAllVisibleTooltip": "Merge all visible layers",
+  "canvasBrushSliderToggleLabel": "Details"
 }

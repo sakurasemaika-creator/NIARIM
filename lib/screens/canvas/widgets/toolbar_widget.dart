@@ -118,7 +118,9 @@ class ToolbarWidget extends StatelessWidget {
     // 持たせず、半透明の黒で中くらいの太さの縁取りのみにする（キャンバスの
     // 内容がどんな色でも視認できるよう、アイコン自体は白で統一する）。
     return Container(
-      height: 48,
+      // 描画領域を少しでも広げるため、アイコン自体（20px）が収まる
+      // 範囲まで高さを詰めている（以前は48px）。
+      height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       color: Colors.transparent,
       child: SingleChildScrollView(

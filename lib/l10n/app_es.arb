@@ -2010,5 +2010,7 @@
   "tipsBlendModeUsageDesc": "Usa Multiplicar para sombras, Trama o Sumar para luz y brillo, y Superponer o Luz suave cuando quieras un sombreado con algo de textura. El mismo color puede verse completamente distinto segun el modo de fusion, asi que merece la pena probar varias opciones y compararlas.",
   "timelineSaveFailedDialogTitle": "Error al guardar",
   "timelineSaveFailedDialogBody": "No se pudo guardar. Por favor, inténtalo de nuevo.",
-  "licenseSectionIcons": "Acerca de los iconos utilizados"
+  "licenseSectionIcons": "Acerca de los iconos utilizados",
+  "layerPanelMergeAllVisibleTooltip": "Combinar todas las capas visibles",
+  "canvasBrushSliderToggleLabel": "Detalles"
 }

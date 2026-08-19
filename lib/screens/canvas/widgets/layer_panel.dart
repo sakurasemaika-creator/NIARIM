@@ -146,6 +146,13 @@ class _LayerPanelState extends State<LayerPanel> {
               children: [
                 Text(l10n.layerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const Spacer(),
+                // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
+                // 使わずに済む一括操作の一つ）。
+                IconButton(
+                  icon: const Icon(Icons.merge_type, size: 18),
+                  onPressed: () => _mergeAllVisibleLayers(context, layers),
+                  tooltip: l10n.layerPanelMergeAllVisibleTooltip,
+                ),
                 IconButton(
                   icon: const Icon(Icons.help_outline, size: 18),
                   onPressed: () => _showHelp(context),
@@ -255,6 +262,11 @@ class _LayerPanelState extends State<LayerPanel> {
           const Divider(height: 1),
           Expanded(
             child: ReorderableListView.builder(
+              // 標準の自動ドラッグハンドル（PC/DeXモードなどマウス操作環境で
+              // 自動的に行の末尾へ付与される）は、ゴミ箱アイコンなど自前の
+              // 末尾アイコン群と重なって表示されてしまっていたため無効化し、
+              // 代わりに専用のハンドルアイコンを一番右に明示的に配置する。
+              buildDefaultDragHandles: false,
               itemCount: layers.length,
               onReorder: (oldIdx, newIdx) {
                 if (_searchQuery.trim().isNotEmpty) return; // 検索中はフィルタ表示のため並び替え不可
@@ -374,6 +386,22 @@ class _LayerPanelState extends State<LayerPanel> {
                         child: const Icon(Icons.more_vert, size: 16),
                       ),
                       const SizedBox(width: 8),
+                      // 下のレイヤーとワンタップで結合（複数選択モードを使わずに
+                      // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
+                      // 「レイヤーへの操作」としてまとまって見えるようにしている。
+                      GestureDetector(
+                        onTap: _layerBelow(layer, layers) != null
+                            ? () => _mergeWithLayerBelow(context, layer, layers)
+                            : null,
+                        child: Icon(
+                          Icons.merge_type,
+                          size: 16,
+                          color: _layerBelow(layer, layers) != null
+                              ? null
+                              : Theme.of(context).disabledColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: _canDeleteLayerRow(layer, layers)
                             ? () => _deleteLayerRow(context, layer, layers)
@@ -385,6 +413,13 @@ class _LayerPanelState extends State<LayerPanel> {
                               ? Colors.red[300]
                               : Theme.of(context).disabledColor,
                         ),
+                      ),
+                      const SizedBox(width: 8),
+                      // ドラッグハンドル（並び替え用）。ゴミ箱等の操作アイコンと
+                      // 重ならないよう、常にこの位置に明示的に配置する。
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: const Icon(Icons.drag_handle, size: 16),
                       ),
                     ],
                   ),
@@ -423,8 +458,10 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
           ),
           // パネル下部の三点メニュー・ゴミ箱は各レイヤー右側へ移動したため削除した。
-          // 「追加」ボタンも上部ショートカット行へ移動済み。
-          // 下部バーは複数選択モード時の一括操作（結合・一括削除）専用として残す。
+          // 「追加」ボタンも上部ショートカット行へ移動済み。削除・結合は
+          // 各レイヤー行のボタンとヘッダーの「全レイヤー結合」ボタンへ
+          // ワンタップ化したため、複数選択モードはグループ化専用として残す
+          // （グループ化は性質上、複数レイヤーの選択が必要なため）。
           if (_isSelectionMode) ...[
             const Divider(height: 1),
             Padding(
@@ -432,16 +469,6 @@ class _LayerPanelState extends State<LayerPanel> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.delete, size: 18),
-                    onPressed: _canDeleteSelected(layers) ? () => _deleteSelectedLayer(context, layers) : null,
-                    tooltip: l10n.commonDelete,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.merge_type, size: 18),
-                    onPressed: _canMergeSelected() ? () => _mergeSelectedLayers(context) : null,
-                    tooltip: l10n.layerPanelMergeTooltip,
-                  ),
                   IconButton(
                     icon: const Icon(Icons.workspaces_outline, size: 18),
                     onPressed: _selectedIds.length >= 2 ? () => _showCreateGroupDialog(context) : null,
@@ -470,37 +497,54 @@ class _LayerPanelState extends State<LayerPanel> {
     };
   }
 
-  /// 結合可能な選択状態か（仕様書16：共通レイヤー・フォルダ・タイムライン
-  /// 素材は結合不可、2枚以上選択している必要がある）。
-  bool _canMergeSelected() {
-    if (!_isSelectionMode || _selectedIds.length < 2) return false;
-    final type = _selectionBaseType;
-    if (type == null) return false;
-    const mergeable = {
-      model.LayerType.normal,
-      model.LayerType.autoFillLineart,
-      model.LayerType.autoFill,
-    };
-    return mergeable.contains(type);
+  // 結合可能なレイヤー種別（仕様書16：共通レイヤー・フォルダ・タイムライン
+  // 素材は結合不可）。
+  static const _mergeableLayerTypesForPanel = {
+    model.LayerType.normal,
+    model.LayerType.autoFillLineart,
+    model.LayerType.autoFill,
+  };
+
+  /// このレイヤーのすぐ下にある結合可能なレイヤーを探す（フラット表示上の
+  /// 直後の要素。フォルダ・共通レイヤー等は対象外）。見つからなければnull。
+  model.Layer? _layerBelow(model.Layer layer, List<model.Layer> layers) {
+    if (!_mergeableLayerTypesForPanel.contains(layer.type)) return null;
+    final idx = layers.indexWhere((l) => l.id == layer.id);
+    if (idx < 0 || idx + 1 >= layers.length) return null;
+    final below = layers[idx + 1];
+    return _mergeableLayerTypesForPanel.contains(below.type) ? below : null;
   }
 
-  Future<void> _mergeSelectedLayers(BuildContext context) async {
-    if (!_canMergeSelected()) return;
-    final service = context.read<ProjectService>();
-    final ids = _selectedIds.toList();
-    await service.mergeLayers(
-      projectId: widget.projectId,
-      sceneId: widget.sceneId,
-      frameIndex: widget.frameIndex,
-      layerIds: ids,
-    );
+  /// このレイヤーとすぐ下のレイヤーをワンタップで結合する。
+  Future<void> _mergeWithLayerBelow(
+      BuildContext context, model.Layer layer, List<model.Layer> layers) async {
+    final below = _layerBelow(layer, layers);
+    if (below == null) return;
+    await context.read<ProjectService>().mergeLayers(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layerIds: [layer.id, below.id],
+        );
     if (!mounted) return;
-    setState(() {
-      _selectedIds.clear();
-      _isSelectionMode = false;
-      _selectionBaseType = null;
-      _selectedIndex = 0;
-    });
+    setState(() => _selectedIndex = 0);
+  }
+
+  /// 表示中（isVisible）の結合可能なレイヤーを全てワンタップで結合する。
+  Future<void> _mergeAllVisibleLayers(BuildContext context, List<model.Layer> layers) async {
+    final ids = layers
+        .where((l) => l.isVisible && _mergeableLayerTypesForPanel.contains(l.type))
+        .map((l) => l.id)
+        .toList();
+    if (ids.length < 2) return;
+    await context.read<ProjectService>().mergeLayers(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layerIds: ids,
+        );
+    if (!mounted) return;
+    setState(() => _selectedIndex = 0);
   }
 
   /// 選択中の複数レイヤーをグループ化する（複数レイヤーを1つのキーフレームで
@@ -553,26 +597,6 @@ class _LayerPanelState extends State<LayerPanel> {
       type == model.LayerType.timelineVideo ||
       type == model.LayerType.watermark;
 
-  bool _canDeleteSelected(List<model.Layer> layers) {
-    if (layers.isEmpty) return false;
-    if (_isSelectionMode) {
-      if (_selectedIds.isEmpty) return false;
-      if (_selectionBaseType != null && _isTimelineMaterial(_selectionBaseType!)) return true;
-      if (_selectionBaseType == model.LayerType.normal) {
-        final normalCount = layers.where((l) => l.type == model.LayerType.normal).length;
-        return normalCount - _selectedIds.length >= 1;
-      }
-      return true;
-    }
-    if (_selectedIndex < 0 || _selectedIndex >= layers.length) return false;
-    final layer = layers[_selectedIndex];
-    if (_isTimelineMaterial(layer.type)) return true;
-    if (layer.type == model.LayerType.normal) {
-      return layers.where((l) => l.type == model.LayerType.normal).length > 1;
-    }
-    return true;
-  }
-
   /// [layer]を各レイヤー行のゴミ箱アイコンから単体削除できるかどうか
   /// （最後の1枚の通常レイヤーは削除不可、という既存の制約を踏襲）。
   bool _canDeleteLayerRow(model.Layer layer, List<model.Layer> layers) {
@@ -602,89 +626,6 @@ class _LayerPanelState extends State<LayerPanel> {
       if (_selectedIndex >= layers.length - 1) _selectedIndex = layers.length - 2;
       if (_selectedIndex < 0) _selectedIndex = 0;
     });
-  }
-
-  Future<void> _deleteSelectedLayer(BuildContext context, List<model.Layer> layers) async {
-    if (layers.isEmpty) return;
-    final service = context.read<ProjectService>();
-    if (_isSelectionMode) {
-      if (_selectionBaseType != null && _isTimelineMaterial(_selectionBaseType!)) {
-        _showMultiTimelineDeleteConfirm(context, layers);
-      } else {
-        if (!await confirmDelete(context)) return;
-        if (!context.mounted) return;
-        for (final id in _selectedIds) {
-          service.removeLayer(
-            projectId: widget.projectId,
-            sceneId: widget.sceneId,
-            frameIndex: widget.frameIndex,
-            layerId: id,
-          );
-        }
-        setState(() {
-          _selectedIds.clear();
-          _isSelectionMode = false;
-          _selectionBaseType = null;
-          _selectedIndex = 0;
-        });
-      }
-      return;
-    }
-    if (_selectedIndex < 0 || _selectedIndex >= layers.length) return;
-    final layer = layers[_selectedIndex];
-    if (_isTimelineMaterial(layer.type)) {
-      _showTimelineDeleteConfirm(context, layer);
-    } else {
-      if (!await confirmDelete(context, itemName: layer.name)) return;
-      if (!context.mounted) return;
-      service.removeLayer(
-        projectId: widget.projectId,
-        sceneId: widget.sceneId,
-        frameIndex: widget.frameIndex,
-        layerId: layer.id,
-      );
-      setState(() {
-        if (_selectedIndex >= layers.length - 1) _selectedIndex = layers.length - 2;
-        if (_selectedIndex < 0) _selectedIndex = 0;
-      });
-    }
-  }
-
-  void _showMultiTimelineDeleteConfirm(BuildContext context, List<model.Layer> layers) {
-    final l10n = AppLocalizations.of(context)!;
-    final count = _selectedIds.length;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.layerPanelMultiDeleteConfirmTitle(count)),
-        content: Text(l10n.layerPanelMultiDeleteConfirmBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(ctx);
-              final service = context.read<ProjectService>();
-              for (final id in _selectedIds) {
-                service.removeLayer(
-                  projectId: widget.projectId,
-                  sceneId: widget.sceneId,
-                  frameIndex: widget.frameIndex,
-                  layerId: id,
-                );
-              }
-              setState(() {
-                _selectedIds.clear();
-                _isSelectionMode = false;
-                _selectionBaseType = null;
-                _selectedIndex = 0;
-              });
-            },
-            child: Text(l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showTimelineDeleteConfirm(BuildContext context, model.Layer layer) {
