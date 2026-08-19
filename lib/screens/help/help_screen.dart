@@ -50,6 +50,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: 'スタンプの回転・拡大縮小', title: l10n.helpStampTransformTitle, description: l10n.helpStampTransformDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'ペンサブツール', title: l10n.helpPenSubToolTitle, description: l10n.helpPenSubToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '早替えツール管理', title: l10n.helpQuickToolManagementTitle, description: l10n.helpQuickToolManagementDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool),
@@ -112,11 +113,14 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport),
         _HelpEntry(topicKey: '透過WebM', title: l10n.helpTransparentWebmTitle, description: l10n.helpTransparentWebmDesc, category: l10n.helpCategoryExport),
         _HelpEntry(topicKey: 'GIF書き出し', title: l10n.helpGifExportTitle, description: l10n.helpGifExportDesc, category: l10n.helpCategoryExport),
+        _HelpEntry(topicKey: '書き出し画面', title: l10n.helpExportScreenTitle, description: l10n.helpExportScreenDesc, category: l10n.helpCategoryExport),
+        _HelpEntry(topicKey: '無料会員の尺制限', title: l10n.helpFreeDurationLimitTitle, description: l10n.helpFreeDurationLimitDesc, category: l10n.helpCategoryExport),
 
         // ── その他 ────────────────────────────────────────────
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium),
         _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium),
         _HelpEntry(topicKey: 'フォント管理', title: l10n.helpFontManagementTitle, description: l10n.helpFontManagementDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: 'フォントの読み込み', title: l10n.helpFontImportTitle, description: l10n.helpFontImportDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'パフォーマンス設定', title: l10n.helpPerformanceSettingsTitle, description: l10n.helpPerformanceSettingsDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'バケツ塗り詳細設定', title: l10n.helpBucketDetailSettingsTitle, description: l10n.helpBucketDetailSettingsDesc, category: l10n.helpCategorySettings),

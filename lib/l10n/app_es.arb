@@ -572,6 +572,18 @@
   "helpEffectFilterOrderTitle": "Orden de los filtros de efecto",
   "helpEffectFilterOrderDesc": "Se pueden apilar varios filtros de efecto, y se aplican en el orden en que aparecen en la línea de tiempo. Arrastrar para reordenar la lista de filtros también cambia el orden en que se aplican realmente en pantalla.",
 
+  "helpFontImportTitle": "Importar fuentes",
+  "helpFontImportDesc": "Permite cargar un archivo de fuente directamente desde el almacenamiento del dispositivo. Añádela desde la pestaña \"Importar\" en la gestión de fuentes, en ajustes. Útil cuando quieres usar una fuente personalizada que no se distribuye en ningún sitio, o una fuente comercial que has comprado.",
+
+  "helpStampTransformTitle": "Rotar y escalar sellos",
+  "helpStampTransformDesc": "El panel de sellos permite ajustar el ángulo de rotación y el tamaño del sello que colocas. Variar la dirección y el tamaño del mismo sello evita que las líneas de efecto y los objetos pequeños se vean monótonos.",
+
+  "helpExportScreenTitle": "Pantalla de exportación",
+  "helpExportScreenDesc": "Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. La exportación usa el codificador por hardware del dispositivo, así que el tiempo que tarda depende de su rendimiento.",
+
+  "helpFreeDurationLimitTitle": "Límite de duración de la cuenta gratuita",
+  "helpFreeDurationLimitDesc": "Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.",
+
   "helpDrawingFilterTitle": "Filtros de dibujo",
   "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva.",
 

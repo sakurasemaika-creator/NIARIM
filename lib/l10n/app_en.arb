@@ -572,6 +572,18 @@
   "helpEffectFilterOrderTitle": "Effect filter order",
   "helpEffectFilterOrderDesc": "Multiple effect filters can be stacked, and they're applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they're actually applied on screen.",
 
+  "helpFontImportTitle": "Font import",
+  "helpFontImportDesc": "Lets you load a font file straight from your device's storage. Add it from the \"Import\" tab in font management, in settings. Handy when you want to use a custom-made font that isn't distributed anywhere, or a commercial font you've purchased.",
+
+  "helpStampTransformTitle": "Rotating and scaling stamps",
+  "helpStampTransformDesc": "The stamp panel lets you adjust the rotation angle and size of the stamp you're placing. Varying the direction and size of the same stamp keeps speed lines and small props from looking monotonous.",
+
+  "helpExportScreenTitle": "Export screen",
+  "helpExportScreenDesc": "Shows progress while exporting a video or image, and lets you cancel partway through. Export uses the device's hardware encoder, so the time it takes depends on your device's performance.",
+
+  "helpFreeDurationLimitTitle": "Free-tier duration limit",
+  "helpFreeDurationLimitDesc": "Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.",
+
   "helpDrawingFilterTitle": "Draw filters",
   "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer.",
 

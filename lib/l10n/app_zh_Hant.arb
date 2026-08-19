@@ -572,6 +572,18 @@
   "helpEffectFilterOrderTitle": "演出濾鏡的套用順序",
   "helpEffectFilterOrderDesc": "演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。",
 
+  "helpFontImportTitle": "字型讀取",
+  "helpFontImportDesc": "可以直接讀取裝置內的字型檔案來使用的功能。可在設定畫面字型管理的「讀取」標籤頁中新增。想使用未公開發布的自製字型或已購買的商用字型時可以使用此功能。",
+
+  "helpStampTransformTitle": "印章的旋轉與縮放",
+  "helpStampTransformDesc": "在印章面板中可以調整所放置印章的旋轉角度和大小。即使是同一個印章，改變方向和大小放置，也能讓特效線、小物件的排列不顯得單調而更自然。",
+
+  "helpExportScreenTitle": "匯出畫面",
+  "helpExportScreenDesc": "匯出影片、圖片期間會顯示進度，也可以中途取消。匯出使用裝置的硬體編碼器，因此所需時間會依裝置效能而異。",
+
+  "helpFreeDurationLimitTitle": "免費會員的長度限制",
+  "helpFreeDurationLimitDesc": "免費會員的專案長度上限為90秒（付費會員為2小時）。如果新增或複製影格會超過上限，在點擊按鈕的瞬間就會顯示提示對話框，因此實際上不會超過90秒。",
+
   "helpDrawingFilterTitle": "繪圖濾鏡",
   "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（與套用於整條時間軸或整個場景的演出濾鏡不同，繪圖濾鏡按圖層生效）。包含模糊、銳化、USM銳化、色調曲線、色階、暗角、雜訊、復古動畫、映像管、動畫風、外框、像素化等。外框不會改寫原圖層，只會把外框後的結果繪製到一個新圖層上。",
 
