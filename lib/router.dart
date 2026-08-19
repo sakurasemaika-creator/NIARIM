@@ -66,7 +66,10 @@ final appRouter = GoRouter(
     GoRoute(path: '/autofill-presets', builder: (context, state) => const AutofillPresetScreen()),
     GoRoute(
       path: '/save-tree/:id',
-      builder: (context, state) => SaveTreeScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) => SaveTreeScreen(
+        projectId: state.pathParameters['id']!,
+        entryMode: parseSaveTreeEntryMode(state.uri.queryParameters['entry']),
+      ),
     ),
     GoRoute(
       path: '/materials/:id',

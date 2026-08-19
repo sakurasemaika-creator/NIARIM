@@ -389,15 +389,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
     super.dispose();
   }
 
-  /// クラッシュ・ファイル破損時の復元用：プロジェクトの最終保存より新しい自動保存があれば復元を提案する。
+  /// クラッシュ・ファイル破損時の復元用：プロジェクトの最終保存より新しい
+  /// 自動保存があれば、確認ダイアログを出さずそのまま自動的に復元して
+  /// 再開する（仕様書「セーブ／自動保存の再設計」：プロジェクトを開いた際、
+  /// 自動保存データがあれば最後の自動保存から自動的に復元する）。
+  /// 自動保存は常に「その時点までの最新の編集内容」を表すため、これへ
+  /// 揃えることでユーザーの作業を失うことはない（むしろ、以前のように
+  /// ここで確認ダイアログを出して「無視」を選ばれてしまうと、その分の
+  /// 編集内容が失われる方が問題だった）。
   ///
   /// CanvasScreenはタイムラインモードとの往復（context.go）のたびにWidget
   /// ごと再生成されるため、Widget側の状態フラグだけでは「編集を再開した
-  /// だけ」「タイムラインからキャンバスへ戻っただけ」でも毎回この確認が
-  /// 出てしまっていた（アプリセッション中に一度も明示保存していない限り
+  /// だけ」「タイムラインからキャンバスへ戻っただけ」でも毎回この処理が
+  /// 走ってしまっていた（アプリセッション中に一度も明示保存していない限り
   /// 自動保存の方が新しいままになるため）。AutosaveService側にアプリ
-  /// セッション単位で「確認済みか」を記録することで、本来の目的（アプリ
-  /// クラッシュ・強制終了からの復元）以外では表示しないようにする。
+  /// セッション単位で「確認済みか」を記録することで、1セッション中に
+  /// 一度だけ行うようにしている。
   Future<void> _checkCrashRecovery(AutosaveService autosave) async {
     if (!mounted) return;
     if (autosave.hasPromptedThisSession(widget.projectId)) return;
@@ -409,20 +416,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
     if (project == null || !slot.savedAt.isAfter(project.updatedAt)) return;
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    final restore = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.canvasCrashRecoveryTitle),
-        content: Text(l10n.canvasCrashRecoveryBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.canvasIgnoreButton)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.saveTreeRestoreAction)),
-        ],
-      ),
-    );
-    if (restore != true || !mounted) return;
     final data = await autosave.restore(widget.projectId, slot.slotIndex);
     if (data == null || !mounted) return;
     context.read<ProjectService>().restoreFromAutosave(widget.projectId, data);

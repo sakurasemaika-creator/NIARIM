@@ -1392,6 +1392,12 @@
     }
   },
   "saveTreeRestoreAction": "还原",
+  "saveTreeTimelineActionChoiceBody": "请选择是用当前内容「覆盖保存」这个存档，还是「从此处继续作业」。",
+  "saveTreeOverwriteAction": "覆盖保存",
+  "saveTreeOverwriteConfirmBody": "该时间点的存档数据将会消失，确定吗？",
+  "saveTreeResumeFromHereAction": "从此处继续",
+  "saveTreeResumeConfirmBody": "尚未保存的当前数据将会消失，确定吗？",
+  "saveTreeProjectDetailResumeBody": "要从这个存档继续作业吗？",
   "saveTreeLoadFailedSnackbar": "存档数据读取失败",
   "saveTreeRestoredSnackbar": "已还原{name}",
   "@saveTreeRestoredSnackbar": {
@@ -1517,9 +1523,6 @@
   "canvasShapeLine": "线条",
   "canvasShapeRect": "矩形",
   "canvasShapeCircle": "圆形",
-  "canvasCrashRecoveryTitle": "存在自动保存的数据",
-  "canvasCrashRecoveryBody": "发现比上次保存更新的自动保存数据。要还原吗？",
-  "canvasIgnoreButton": "忽略",
   "canvasMissingMaterialsSnackbar": "有缺失的素材",
   "canvasResearchButton": "重新搜索",
   "canvasTextInputTitle": "输入文字",

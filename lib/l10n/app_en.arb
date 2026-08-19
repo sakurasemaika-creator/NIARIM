@@ -1392,6 +1392,12 @@
     }
   },
   "saveTreeRestoreAction": "Restore",
+  "saveTreeTimelineActionChoiceBody": "Choose whether to overwrite this save with the current content, or resume work from here.",
+  "saveTreeOverwriteAction": "Overwrite",
+  "saveTreeOverwriteConfirmBody": "The data saved at that point will be lost. Are you sure?",
+  "saveTreeResumeFromHereAction": "Resume from here",
+  "saveTreeResumeConfirmBody": "Any changes you haven't saved will be lost. Are you sure?",
+  "saveTreeProjectDetailResumeBody": "Resume work from this save?",
   "saveTreeLoadFailedSnackbar": "Failed to load the save data",
   "saveTreeRestoredSnackbar": "Restored {name}",
   "@saveTreeRestoredSnackbar": {
@@ -1517,9 +1523,6 @@
   "canvasShapeLine": "Line",
   "canvasShapeRect": "Rectangle",
   "canvasShapeCircle": "Circle",
-  "canvasCrashRecoveryTitle": "Autosave data found",
-  "canvasCrashRecoveryBody": "An autosave newer than your last save was found. Restore it?",
-  "canvasIgnoreButton": "Ignore",
   "canvasMissingMaterialsSnackbar": "Some materials are missing",
   "canvasResearchButton": "Search again",
   "canvasTextInputTitle": "Enter Text",

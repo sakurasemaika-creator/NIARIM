@@ -1392,6 +1392,12 @@
     }
   },
   "saveTreeRestoreAction": "Restaurer",
+  "saveTreeTimelineActionChoiceBody": "Choisissez si vous voulez écraser cette sauvegarde avec le contenu actuel, ou reprendre le travail à partir d'ici.",
+  "saveTreeOverwriteAction": "Écraser",
+  "saveTreeOverwriteConfirmBody": "Les données enregistrées à ce moment-là seront perdues. Voulez-vous continuer ?",
+  "saveTreeResumeFromHereAction": "Reprendre à partir d'ici",
+  "saveTreeResumeConfirmBody": "Toute modification non enregistrée sera perdue. Voulez-vous continuer ?",
+  "saveTreeProjectDetailResumeBody": "Reprendre le travail à partir de cette sauvegarde ?",
   "saveTreeLoadFailedSnackbar": "Échec du chargement des données de sauvegarde",
   "saveTreeRestoredSnackbar": "{name} restauré",
   "@saveTreeRestoredSnackbar": {
@@ -1517,9 +1523,6 @@
   "canvasShapeLine": "Ligne",
   "canvasShapeRect": "Rectangle",
   "canvasShapeCircle": "Cercle",
-  "canvasCrashRecoveryTitle": "Données de sauvegarde automatique trouvées",
-  "canvasCrashRecoveryBody": "Une sauvegarde automatique plus récente que votre dernier enregistrement a été trouvée. La restaurer ?",
-  "canvasIgnoreButton": "Ignorer",
   "canvasMissingMaterialsSnackbar": "Certains fichiers sont manquants",
   "canvasResearchButton": "Rechercher à nouveau",
   "canvasTextInputTitle": "Saisir du texte",

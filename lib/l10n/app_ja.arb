@@ -1614,6 +1614,12 @@
     }
   },
   "saveTreeRestoreAction": "復元",
+  "saveTreeTimelineActionChoiceBody": "このセーブへ「上書き保存」するか、「ここから作業を再開」するか選んでください。",
+  "saveTreeOverwriteAction": "上書きする",
+  "saveTreeOverwriteConfirmBody": "このときのセーブデータは消えますがよろしいですか？",
+  "saveTreeResumeFromHereAction": "ここから再開する",
+  "saveTreeResumeConfirmBody": "セーブしていない場合は現在のデータが消えますがよろしいですか？",
+  "saveTreeProjectDetailResumeBody": "このセーブデータから作業を再開しますか？",
   "saveTreeLoadFailedSnackbar": "保存データの読み込みに失敗しました",
   "saveTreeRestoredSnackbar": "{name}を復元しました",
   "@saveTreeRestoredSnackbar": {
@@ -1739,9 +1745,6 @@
   "canvasShapeLine": "線",
   "canvasShapeRect": "四角形",
   "canvasShapeCircle": "円",
-  "canvasCrashRecoveryTitle": "自動保存データがあります",
-  "canvasCrashRecoveryBody": "前回の保存より新しい自動保存データが見つかりました。復元しますか？",
-  "canvasIgnoreButton": "無視",
   "canvasMissingMaterialsSnackbar": "不足素材があります",
   "canvasResearchButton": "再検索",
   "canvasTextInputTitle": "テキスト入力",

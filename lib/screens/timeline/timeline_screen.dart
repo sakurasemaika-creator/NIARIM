@@ -649,7 +649,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {
               if (action == 'autofill') _showAutofillDialog();
-              if (action == 'save_tree') context.push('/save-tree/${widget.projectId}');
+              if (action == 'save_tree') context.push('/save-tree/${widget.projectId}?entry=timeline');
               if (action == 'export') context.push('/export/${widget.projectId}');
             },
             itemBuilder: (_) => [

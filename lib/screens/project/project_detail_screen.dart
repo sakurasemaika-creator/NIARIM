@@ -286,7 +286,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             Builder(builder: (context) {
               final isTreeMode = context.watch<SaveTreeService>().isTreeMode;
               return OutlinedButton.icon(
-                onPressed: () => context.push('/save-tree/${widget.projectId}'),
+                onPressed: () => context.push('/save-tree/${widget.projectId}?entry=projectDetail'),
                 icon: Icon(isTreeMode ? Icons.account_tree : Icons.save_outlined),
                 label: Text(isTreeMode ? l10n.saveTreeScreenTitleTree : l10n.saveTreeScreenTitleSlot),
               );

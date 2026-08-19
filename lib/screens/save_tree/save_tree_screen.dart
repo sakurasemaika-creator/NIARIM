@@ -62,9 +62,42 @@ Future<Uint8List?> _generateSaveNodeThumbnail(
   return byteData?.buffer.asUint8List();
 }
 
+/// セーブツリー／セーブスロット画面をどこから開いたか（仕様書「セーブ／
+/// 自動保存の再設計」）。過去のセーブへの「復元」（現在の内容を破棄する
+/// 操作）を許可するか、許可する場合にどの確認フローを見せるかをこれで
+/// 分岐する。
+enum SaveTreeEntryMode {
+  /// タイムラインモードから：編集セッションが生きている状態で開くため、
+  /// ノードごとに「上書きする（現在の内容でこのノードを保存し直す）」
+  /// 「ここから再開する（このノードの内容で現在のセッションを置き換える）」
+  /// の2択＋各操作の確認ダイアログを出す。
+  timeline,
+  /// プロジェクト詳細画面から：まだ編集セッションを始めていない場面の
+  /// ため、「ここから作業を再開する」か「キャンセルして閉じる」だけの
+  /// シンプルな確認にする（上書きの概念はここにはない）。
+  projectDetail,
+  /// それ以外（キャンバス画面の保存ボタン等）：新規保存の作成・一覧の
+  /// 閲覧はできるが、過去のセーブへの復元（＝現在の内容の破棄）は
+  /// この2つの入口からのみ行えるようにするため、ここでは無効化する。
+  quickSave,
+}
+
+/// クエリパラメータ（例：`/save-tree/xxx?entry=timeline`）からエントリ
+/// モードを解決する。未指定・不明な値は最も制限の強いquickSaveへ倒す。
+SaveTreeEntryMode parseSaveTreeEntryMode(String? raw) => switch (raw) {
+      'timeline' => SaveTreeEntryMode.timeline,
+      'projectDetail' => SaveTreeEntryMode.projectDetail,
+      _ => SaveTreeEntryMode.quickSave,
+    };
+
 class SaveTreeScreen extends StatefulWidget {
   final String projectId;
-  const SaveTreeScreen({super.key, required this.projectId});
+  final SaveTreeEntryMode entryMode;
+  const SaveTreeScreen({
+    super.key,
+    required this.projectId,
+    this.entryMode = SaveTreeEntryMode.quickSave,
+  });
 
   @override
   State<SaveTreeScreen> createState() => _SaveTreeScreenState();
@@ -89,7 +122,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
               icon: const Icon(Icons.save, size: 16),
               label: Text(l10n.commonSave),
               onPressed: () =>
-                  _showTreeSaveDialog(context, saveService, _selectedNodeId),
+                  _showTreeSaveDialog(context, widget.projectId, saveService, _selectedNodeId),
             ),
           const SizedBox(width: 8),
         ],
@@ -101,78 +134,84 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
               saveService: saveService,
               selectedNodeId: _selectedNodeId,
               onNodeSelected: (id) => setState(() => _selectedNodeId = id),
+              entryMode: widget.entryMode,
             )
           : desktopCentered(
               context,
               _SlotView(
                 projectId: widget.projectId,
                 saveService: saveService,
+                entryMode: widget.entryMode,
               ),
             ),
     );
   }
 
-  void _showTreeSaveDialog(
-      BuildContext context, SaveTreeService service, String? parentId) {
-    final l10n = AppLocalizations.of(context)!;
-    final commentController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.commonSave),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                parentId != null ? l10n.saveTreeSaveAsChildHint : l10n.saveTreeSaveAsRootHint,
-                style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
-              ),
+}
+
+/// ツリー方式での新規保存ダイアログ（トップの「保存」ボタン・ノードの
+/// 「上書きする」選択の両方から呼ぶため、Widgetをまたいで使えるよう
+/// トップレベル関数にしている）。
+void _showTreeSaveDialog(BuildContext context, String projectId,
+    SaveTreeService service, String? parentId) {
+  final l10n = AppLocalizations.of(context)!;
+  final commentController = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l10n.commonSave),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              parentId != null ? l10n.saveTreeSaveAsChildHint : l10n.saveTreeSaveAsRootHint,
+              style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
             ),
-            TextField(
-              controller: commentController,
-              decoration: InputDecoration(
-                labelText: l10n.saveTreeCommentLabel,
-                hintText: l10n.saveTreeCommentHint,
-              ),
+          ),
+          TextField(
+            controller: commentController,
+            decoration: InputDecoration(
+              labelText: l10n.saveTreeCommentLabel,
+              hintText: l10n.saveTreeCommentHint,
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel)),
-          FilledButton(
-            onPressed: () async {
-              final ps = context.read<ProjectService>();
-              final project =
-                  ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
-              if (project == null) {
-                Navigator.pop(ctx);
-                return;
-              }
-              final thumb = await _generateSaveNodeThumbnail(ps, widget.projectId);
-              await service.saveAsChild(
-                projectId: widget.projectId,
-                project: project,
-                scenes: ps.scenesOf(widget.projectId),
-                tileManager: ps.tileManagerOf(widget.projectId),
-                parentId: parentId,
-                comment: commentController.text.isEmpty
-                    ? null
-                    : commentController.text,
-                thumbnailPngBytes: thumb,
-              );
-              if (ctx.mounted) Navigator.pop(ctx);
-              await _warnIfSaveTreeSizeLarge(context, widget.projectId);
-            },
-            child: Text(l10n.commonSave),
           ),
         ],
       ),
-    ).then((_) => commentController.dispose());
-  }
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel)),
+        FilledButton(
+          onPressed: () async {
+            final ps = context.read<ProjectService>();
+            final project =
+                ps.projects.where((p) => p.id == projectId).firstOrNull;
+            if (project == null) {
+              Navigator.pop(ctx);
+              return;
+            }
+            final thumb = await _generateSaveNodeThumbnail(ps, projectId);
+            await service.saveAsChild(
+              projectId: projectId,
+              project: project,
+              scenes: ps.scenesOf(projectId),
+              tileManager: ps.tileManagerOf(projectId),
+              parentId: parentId,
+              comment: commentController.text.isEmpty
+                  ? null
+                  : commentController.text,
+              thumbnailPngBytes: thumb,
+            );
+            if (ctx.mounted) Navigator.pop(ctx);
+            await _warnIfSaveTreeSizeLarge(context, projectId);
+          },
+          child: Text(l10n.commonSave),
+        ),
+      ],
+    ),
+  ).then((_) => commentController.dispose());
 }
 
 /// セーブツリーの合計容量が閾値を超えている場合に通知する
@@ -191,14 +230,110 @@ Future<void> _warnIfSaveTreeSizeLarge(BuildContext context, String projectId) as
   );
 }
 
+enum _SaveNodeChoice { overwrite, resume }
+
+/// セーブノードに対する「復元」操作を、開いた入口（[entryMode]）に応じた
+/// 確認フローで実行する（仕様書「セーブ／自動保存の再設計」）。
+/// タイムラインモードからは編集セッションが生きているため「上書きする」
+/// （[onOverwrite]：スロット方式ならそのスロットへの保存ダイアログ、
+/// ツリー方式ならこのノードを親とした新規保存ダイアログを開く）か
+/// 「ここから再開する」（[onResume]：実際にrestoreFromAutosaveを呼ぶ）かを
+/// 選ばせ、それぞれ破壊的な結果を確認するダイアログを挟む。プロジェクト
+/// 詳細画面からは、まだ編集セッションが無いため上書きの概念を出さず
+/// 「ここから作業を再開する」か「キャンセルして閉じる」のシンプルな確認
+/// のみにする。quickSaveモードからは呼び出し禁止（呼び出し元でボタン
+/// 自体を非表示にすること）。
+Future<void> _handleSaveNodeRestore(
+  BuildContext context,
+  SaveTreeEntryMode entryMode,
+  SaveNode node, {
+  required VoidCallback onOverwrite,
+  required Future<void> Function() onResume,
+}) async {
+  assert(entryMode != SaveTreeEntryMode.quickSave);
+  final l10n = AppLocalizations.of(context)!;
+  final nodeTitle = node.comment ?? l10n.saveTreeNodeDefaultTitle;
+  if (entryMode == SaveTreeEntryMode.timeline) {
+    final choice = await showDialog<_SaveNodeChoice>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(nodeTitle),
+        content: Text(l10n.saveTreeTimelineActionChoiceBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, _SaveNodeChoice.overwrite),
+            child: Text(l10n.saveTreeOverwriteAction),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, _SaveNodeChoice.resume),
+            child: Text(l10n.saveTreeResumeFromHereAction),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !context.mounted) return;
+    if (choice == _SaveNodeChoice.overwrite) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.saveTreeOverwriteAction),
+          content: Text(l10n.saveTreeOverwriteConfirmBody),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonOk)),
+          ],
+        ),
+      );
+      if (ok == true) onOverwrite();
+      return;
+    }
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.saveTreeResumeFromHereAction),
+        content: Text(l10n.saveTreeResumeConfirmBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonOk)),
+        ],
+      ),
+    );
+    if (ok == true) await onResume();
+    return;
+  }
+  // プロジェクト詳細画面から：シンプルな「ここから作業を再開する」か
+  // 「キャンセルして閉じる」のみ（上書きの概念はここにはない）。
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(nodeTitle),
+      content: Text(l10n.saveTreeProjectDetailResumeBody),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(l10n.saveTreeResumeFromHereAction),
+        ),
+      ],
+    ),
+  );
+  if (ok == true) await onResume();
+}
+
 // ─────────────────────────────────────────────
 // スロット方式ビュー
 // ─────────────────────────────────────────────
 class _SlotView extends StatelessWidget {
   final String projectId;
   final SaveTreeService saveService;
+  final SaveTreeEntryMode entryMode;
 
-  const _SlotView({required this.projectId, required this.saveService});
+  const _SlotView({
+    required this.projectId,
+    required this.saveService,
+    required this.entryMode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +349,9 @@ class _SlotView extends StatelessWidget {
           slotIndex: slotIndex,
           node: node,
           onSave: () => _showSlotSaveDialog(context, slotIndex, node),
-          onRestore: node != null ? () => _restore(context, node) : null,
+          onRestore: (node != null && entryMode != SaveTreeEntryMode.quickSave)
+              ? () => _restore(context, node)
+              : null,
           onDelete: node != null
               ? () async {
                   if (!await confirmDelete(context, itemName: node.comment)) return;
@@ -290,6 +427,16 @@ class _SlotView extends StatelessWidget {
   }
 
   Future<void> _restore(BuildContext context, SaveNode node) async {
+    await _handleSaveNodeRestore(
+      context,
+      entryMode,
+      node,
+      onOverwrite: () => _showSlotSaveDialog(context, node.slotIndex, node),
+      onResume: () => _doRestore(context, node),
+    );
+  }
+
+  Future<void> _doRestore(BuildContext context, SaveNode node) async {
     final l10n = AppLocalizations.of(context)!;
     final data = await saveService.loadNode(projectId, node.id);
     if (!context.mounted) return;
@@ -300,6 +447,7 @@ class _SlotView extends StatelessWidget {
       return;
     }
     context.read<ProjectService>().restoreFromAutosave(projectId, data);
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(l10n.saveTreeRestoredSnackbar(
@@ -413,6 +561,7 @@ class _TreeView extends StatelessWidget {
   final SaveTreeService saveService;
   final String? selectedNodeId;
   final ValueChanged<String?> onNodeSelected;
+  final SaveTreeEntryMode entryMode;
 
   const _TreeView({
     required this.projectId,
@@ -420,6 +569,7 @@ class _TreeView extends StatelessWidget {
     required this.saveService,
     required this.selectedNodeId,
     required this.onNodeSelected,
+    required this.entryMode,
   });
 
   @override
@@ -520,7 +670,11 @@ class _TreeView extends StatelessWidget {
             trailing: PopupMenuButton<String>(
               onSelected: (action) => _handleAction(context, action, node),
               itemBuilder: (_) => [
-                PopupMenuItem(value: 'restore', child: Text(l10n.saveTreeRestoreAction)),
+                // 過去のセーブへの復元は、タイムラインモード・プロジェクト
+                // 詳細画面からの2つの入口からのみ行える（仕様書「セーブ／
+                // 自動保存の再設計」）。
+                if (entryMode != SaveTreeEntryMode.quickSave)
+                  PopupMenuItem(value: 'restore', child: Text(l10n.saveTreeRestoreAction)),
                 PopupMenuItem(
                     value: 'delete',
                     child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
@@ -534,26 +688,37 @@ class _TreeView extends StatelessWidget {
 
   Future<void> _handleAction(
       BuildContext context, String action, SaveNode node) async {
-    final l10n = AppLocalizations.of(context)!;
     switch (action) {
       case 'restore':
-        final data = await saveService.loadNode(projectId, node.id);
-        if (!context.mounted) return;
-        if (data == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
-          );
-          return;
-        }
-        context.read<ProjectService>().restoreFromAutosave(projectId, data);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.saveTreeRestoredSnackbar(node.comment ?? l10n.saveTreeNodeDefaultName))),
+        await _handleSaveNodeRestore(
+          context,
+          entryMode,
+          node,
+          onOverwrite: () => _showTreeSaveDialog(context, projectId, saveService, node.id),
+          onResume: () => _doRestore(context, node),
         );
         break;
       case 'delete':
         await saveService.deleteNode(projectId, node.id);
         break;
     }
+  }
+
+  Future<void> _doRestore(BuildContext context, SaveNode node) async {
+    final l10n = AppLocalizations.of(context)!;
+    final data = await saveService.loadNode(projectId, node.id);
+    if (!context.mounted) return;
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+      );
+      return;
+    }
+    context.read<ProjectService>().restoreFromAutosave(projectId, data);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.saveTreeRestoredSnackbar(node.comment ?? l10n.saveTreeNodeDefaultName))),
+    );
   }
 
   String _formatDate(DateTime dt) =>
