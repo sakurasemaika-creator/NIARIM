@@ -521,6 +521,42 @@
   "helpUndoSettingsTitle": "Undo history length",
   "helpUndoSettingsDesc": "In performance settings, you can adjust how many actions undo can step back through. A larger number gives you more freedom to experiment, but also uses more memory — lower it on low-spec devices to keep things running smoothly.",
 
+  "helpBrushFavoriteTitle": "Favorite brushes",
+  "helpBrushFavoriteDesc": "Long-press a brush in the brush panel to favorite it. Favorited brushes are pinned to the top of the list, cutting down on switching time. They can't be deleted by accident while favorited.",
+
+  "helpLayerFolderTitle": "Layer folders",
+  "helpLayerFolderDesc": "Lets you organize several layers into a folder. Keeps the layer panel manageable even in illustrations with many parts. Clipping can't cross folder boundaries, so if you use clipping, keep the relevant layers in the same folder.",
+
+  "helpLayerMultiSelectTitle": "Multi-selecting and bulk layer actions",
+  "helpLayerMultiSelectDesc": "Selection mode in the layer panel lets you check off several layers at once to merge or bulk-delete them. Merging only works between normal, autofill-lineart, and autofill layers (common layers, folders, and timeline materials can't be merged).",
+
+  "helpAutofillBatchRunTitle": "Run autofill",
+  "helpAutofillBatchRunDesc": "Choosing \"Run autofill\" from the timeline screen's three-dot menu recalculates every autofill layer flagged with the update mark (❗) at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart.",
+
+  "helpAutofillLineColorTitle": "Autofill lineart color settings",
+  "helpAutofillLineColorDesc": "Each part in an autofill preset has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color's HSL to match the fill color, so the line doesn't stand out and blends in naturally.",
+
+  "helpAutofillPresetFilterTitle": "Filtering autofill presets per project",
+  "helpAutofillPresetFilterDesc": "As presets pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the presets used in this project, keeping the list tidy and easy to pick from.",
+
+  "helpDrawingAreaTitle": "Drawing area",
+  "helpDrawingAreaDesc": "Lets you draw beyond the export bounds. A red frame on the canvas marks the export area — anything drawn outside it isn't exported, but it leaves room to adjust what's shown later with camera moves like panning and zooming. Set the scale when creating a new project.",
+
+  "helpCanvasBackgroundTitle": "Canvas background color",
+  "helpCanvasBackgroundDesc": "Lets you set the project's canvas background color. It has no effect on transparent exports (transparent WebM), but you can change it to whatever's easiest to work against.",
+
+  "helpProjectDetailTitle": "Project details screen",
+  "helpProjectDetailDesc": "A screen for checking and editing per-project settings all in one place — name, thumbnail, favorite status, and which autofill presets are enabled. The entry point to the save tree is also here.",
+
+  "helpWatermarkEditTitle": "Re-editing a watermark",
+  "helpWatermarkEditDesc": "Tapping a watermark placed on the timeline's common-layer track lets you re-edit its angle, size, opacity, and display range (loop) at any time. You can fine-tune it not just when registering it, but whenever you're actually using it in a project.",
+
+  "helpAudioClipTitle": "Audio clip volume and fades",
+  "helpAudioClipDesc": "An audio clip placed on the timeline can have its volume, fade-in, and fade-out durations adjusted from its detail sheet. Use it to balance sound effect and BGM volume, or smooth out a track's start and end.",
+
+  "helpConvertToCommonTitle": "Converting a layer to common",
+  "helpConvertToCommonDesc": "Converts a normal layer into a common layer (one that keeps showing the same content across multiple frames). You can also merge the currently visible layers into one before converting. Saves you redrawing something like a background that stays the same every frame.",
+
   "helpDrawingFilterTitle": "Draw filters",
   "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer.",
 

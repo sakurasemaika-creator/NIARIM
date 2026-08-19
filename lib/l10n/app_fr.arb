@@ -521,6 +521,42 @@
   "helpUndoSettingsTitle": "Longueur de l'historique d'annulation",
   "helpUndoSettingsDesc": "Dans les réglages de performance, vous pouvez ajuster le nombre d'actions que l'annulation peut remonter. Un nombre plus élevé donne plus de liberté pour expérimenter, mais utilise aussi plus de mémoire — réduisez-le sur les appareils bas de gamme pour rester fluide.",
 
+  "helpBrushFavoriteTitle": "Pinceaux favoris",
+  "helpBrushFavoriteDesc": "Un appui long sur un pinceau dans le panneau des pinceaux permet de le mettre en favori. Les pinceaux favoris sont épinglés en haut de la liste, réduisant le temps de changement. Ils ne peuvent pas être supprimés par erreur tant qu'ils sont en favori.",
+
+  "helpLayerFolderTitle": "Dossiers de calques",
+  "helpLayerFolderDesc": "Permet d'organiser plusieurs calques dans un dossier. Garde le panneau des calques lisible même pour des illustrations avec beaucoup de parties. Le détourage ne peut pas traverser les limites d'un dossier, donc si vous l'utilisez, gardez les calques concernés dans le même dossier.",
+
+  "helpLayerMultiSelectTitle": "Sélection multiple et actions groupées sur les calques",
+  "helpLayerMultiSelectDesc": "Le mode de sélection du panneau des calques permet de cocher plusieurs calques à la fois pour les fusionner ou les supprimer en masse. La fusion ne fonctionne qu'entre calques normaux, de trait de remplissage automatique et de remplissage automatique (les calques communs, dossiers et matériels de timeline ne peuvent pas être fusionnés).",
+
+  "helpAutofillBatchRunTitle": "Exécuter le remplissage automatique",
+  "helpAutofillBatchRunDesc": "Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l'écran timeline recalcule d'un coup tous les calques de remplissage automatique marqués de l'indicateur de mise à jour (❗). Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait.",
+
+  "helpAutofillLineColorTitle": "Réglages de couleur du trait pour le remplissage automatique",
+  "helpAutofillLineColorDesc": "Chaque partie d'un préréglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou calque de couleur. Choisir le calque de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement.",
+
+  "helpAutofillPresetFilterTitle": "Filtrer les préréglages de remplissage automatique par projet",
+  "helpAutofillPresetFilterDesc": "À mesure que les préréglages s'accumulent, la liste affichée lors de l'attribution des parties s'allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d'attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls préréglages utilisés dans ce projet, gardant la liste claire et facile à choisir.",
+
+  "helpDrawingAreaTitle": "Zone de dessin",
+  "helpDrawingAreaDesc": "Permet de dessiner au-delà des limites d'export. Un cadre rouge sur le canevas marque la zone d'export — ce qui est dessiné en dehors n'est pas exporté, mais cela laisse de la marge pour ajuster plus tard ce qui est montré via des mouvements de caméra comme le panoramique et le zoom. Définissez l'échelle à la création d'un nouveau projet.",
+
+  "helpCanvasBackgroundTitle": "Couleur de fond du canevas",
+  "helpCanvasBackgroundDesc": "Permet de définir la couleur de fond du canevas du projet. Elle n'affecte pas les exports transparents (WebM transparent), mais vous pouvez la changer pour celle qui vous convient le mieux pour travailler.",
+
+  "helpProjectDetailTitle": "Écran des détails du projet",
+  "helpProjectDetailDesc": "Un écran pour consulter et modifier au même endroit les réglages propres au projet — nom, miniature, statut favori, et quels préréglages de remplissage automatique sont activés. L'accès à l'arbre de sauvegarde se trouve aussi ici.",
+
+  "helpWatermarkEditTitle": "Rééditer un filigrane",
+  "helpWatermarkEditDesc": "Toucher un filigrane placé sur la piste de calque commun de la timeline permet de rééditer à tout moment son angle, sa taille, son opacité et sa plage d'affichage (boucle). Vous pouvez l'ajuster finement non seulement à l'enregistrement, mais chaque fois que vous l'utilisez réellement dans un projet.",
+
+  "helpAudioClipTitle": "Volume et fondus des clips audio",
+  "helpAudioClipDesc": "Un clip audio placé sur la timeline peut avoir son volume et ses durées de fondu d'entrée et de sortie ajustés depuis sa fiche détaillée. Utile pour équilibrer le volume des effets sonores et de la musique, ou adoucir le début et la fin d'un morceau.",
+
+  "helpConvertToCommonTitle": "Convertir un calque en calque commun",
+  "helpConvertToCommonDesc": "Convertit un calque normal en calque commun (qui continue d'afficher le même contenu sur plusieurs images). Vous pouvez aussi fusionner les calques actuellement visibles en un seul avant la conversion. Vous évite de redessiner un élément comme un arrière-plan qui reste identique à chaque image.",
+
   "helpDrawingFilterTitle": "Filtres de dessin",
   "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d'effet, qui s'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d'origine : il dessine seulement le résultat contourné sur un nouveau calque.",
 

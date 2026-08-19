@@ -521,6 +521,42 @@
   "helpUndoSettingsTitle": "Longitud del historial de deshacer",
   "helpUndoSettingsDesc": "En los ajustes de rendimiento puedes ajustar cuántas acciones puede retroceder deshacer. Un número mayor da más libertad para experimentar, pero también usa más memoria; redúcelo en dispositivos de gama baja para que todo vaya más fluido.",
 
+  "helpBrushFavoriteTitle": "Pinceles favoritos",
+  "helpBrushFavoriteDesc": "Mantén pulsado un pincel en el panel de pinceles para marcarlo como favorito. Los pinceles favoritos se fijan en la parte superior de la lista, reduciendo el tiempo de cambio. No se pueden eliminar por error mientras estén marcados como favoritos.",
+
+  "helpLayerFolderTitle": "Carpetas de capas",
+  "helpLayerFolderDesc": "Permite organizar varias capas en una carpeta. Mantiene el panel de capas manejable incluso en ilustraciones con muchas partes. El recorte no puede cruzar los límites de las carpetas, así que si lo usas, mantén las capas relevantes en la misma carpeta.",
+
+  "helpLayerMultiSelectTitle": "Selección múltiple y acciones masivas de capas",
+  "helpLayerMultiSelectDesc": "El modo de selección del panel de capas permite marcar varias capas a la vez para fusionarlas o eliminarlas en bloque. La fusión solo funciona entre capas normales, de línea de relleno automático y de relleno automático (las capas comunes, carpetas y materiales de línea de tiempo no se pueden fusionar).",
+
+  "helpAutofillBatchRunTitle": "Ejecutar relleno automático",
+  "helpAutofillBatchRunDesc": "Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización (❗). Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea.",
+
+  "helpAutofillLineColorTitle": "Ajustes de color de línea del relleno automático",
+  "helpAutofillLineColorDesc": "Cada parte de un preset de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural.",
+
+  "helpAutofillPresetFilterTitle": "Filtrar presets de relleno automático por proyecto",
+  "helpAutofillPresetFilterDesc": "A medida que se acumulan presets, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los presets usados en este proyecto, manteniendo la lista ordenada y fácil de elegir.",
+
+  "helpDrawingAreaTitle": "Área de dibujo",
+  "helpDrawingAreaDesc": "Permite dibujar más allá de los límites de exportación. Un marco rojo en el lienzo señala el área de exportación: lo dibujado fuera de él no se exporta, pero deja margen para ajustar después qué se muestra con movimientos de cámara como paneo y zoom. Define la escala al crear un nuevo proyecto.",
+
+  "helpCanvasBackgroundTitle": "Color de fondo del lienzo",
+  "helpCanvasBackgroundDesc": "Permite definir el color de fondo del lienzo del proyecto. No afecta a las exportaciones transparentes (WebM transparente), pero puedes cambiarlo al color que te resulte más cómodo para trabajar.",
+
+  "helpProjectDetailTitle": "Pantalla de detalles del proyecto",
+  "helpProjectDetailDesc": "Una pantalla para consultar y editar en un solo lugar los ajustes de cada proyecto: nombre, miniatura, estado de favorito y qué presets de relleno automático están activados. El acceso al árbol de guardado también está aquí.",
+
+  "helpWatermarkEditTitle": "Reeditar una marca de agua",
+  "helpWatermarkEditDesc": "Tocar una marca de agua colocada en la pista de capa común de la línea de tiempo permite reeditar en cualquier momento su ángulo, tamaño, opacidad y rango de visualización (bucle). Puedes ajustarla con precisión no solo al registrarla, sino siempre que la estés usando en un proyecto.",
+
+  "helpAudioClipTitle": "Volumen y fundidos de clips de audio",
+  "helpAudioClipDesc": "Un clip de audio colocado en la línea de tiempo puede tener su volumen y las duraciones de fundido de entrada y salida ajustados desde su hoja de detalles. Úsalo para equilibrar el volumen de efectos de sonido y música, o suavizar el inicio y el final de una pista.",
+
+  "helpConvertToCommonTitle": "Convertir una capa en común",
+  "helpConvertToCommonDesc": "Convierte una capa normal en una capa común (que sigue mostrando el mismo contenido en varios fotogramas). También puedes fusionar las capas visibles en una sola antes de convertirla. Te ahorra volver a dibujar algo como un fondo que se mantiene igual en cada fotograma.",
+
   "helpDrawingFilterTitle": "Filtros de dibujo",
   "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva.",
 
