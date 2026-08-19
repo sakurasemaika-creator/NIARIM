@@ -199,6 +199,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
         _selectedFrameIndices = {};
       });
 
+  /// 画面端ダブルタップでのフレーム送り（仕様書28：フレーム一覧の開閉
+  /// 状態と無関係に常時使える操作）。範囲外へは移動しない。
+  void _goToNextFrame() {
+    final total = context.read<ProjectService>().frameCount(widget.projectId, _currentSceneId);
+    if (_currentFrame + 1 >= total) return;
+    setState(() => _currentFrame += 1);
+  }
+
+  void _goToPreviousFrame() {
+    if (_currentFrame <= 0) return;
+    setState(() => _currentFrame -= 1);
+  }
+
   /// キャンバス上部バーの「設定/編集」メニュー（仕様書08・タスク#95：
   /// 背景色・オニオンスキン・フィルター・フレーム範囲選択を集約）。
   void _showEditMenu(BuildContext context) {
@@ -550,6 +563,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     meshScaleValue: _meshScaleValue,
                     meshCommitToken: _meshCommitToken,
                     meshCancelToken: _meshCancelToken,
+                    onNextFrame: _goToNextFrame,
+                    onPreviousFrame: _goToPreviousFrame,
                   ),
                   // ツールオプション系フローティングパネル（ブラシ・トーン・
                   // スタンプ・ペンサブツール・オニオンスキン・定規・

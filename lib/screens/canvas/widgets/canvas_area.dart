@@ -78,6 +78,11 @@ class CanvasArea extends StatefulWidget {
   final int meshCommitToken;
   final int meshCancelToken;
 
+  // ─── 画面端ダブルタップでのフレーム送り（仕様書28：フレーム一覧の開閉
+  // 状態と無関係に常時使える操作として新規実装） ────────────────────────
+  final VoidCallback? onNextFrame;
+  final VoidCallback? onPreviousFrame;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -104,6 +109,8 @@ class CanvasArea extends StatefulWidget {
     this.meshScaleValue = 1.0,
     this.meshCommitToken = 0,
     this.meshCancelToken = 0,
+    this.onNextFrame,
+    this.onPreviousFrame,
   });
 
   @override
@@ -156,6 +163,19 @@ class _CanvasAreaState extends State<CanvasArea> {
   Offset? _holdEyedropperLastCanvasPos;
   // 手のひらツールでの1本指（スタイラス・マウスも含む）ドラッグ平行移動。
   Offset? _panToolLastScreenPos;
+
+  // ─── 画面端ダブルタップでのフレーム送り（仕様書28：フレーム一覧の開閉
+  // 状態と無関係に常時使える操作として新規実装） ────────────────────────
+  // 画面の左右端の狭い帯（_edgeDoubleTapZoneWidth）は「キャンバス外」の
+  // ジェスチャー専用ゾーンとして扱い、通常の描画ツールへは一切渡さない
+  // （渡してしまうと、素早い2回タップの1回目で微小な点が描画されてしまう
+  // 事故を防げないため）。一定時間内に同じ側へ2回タップされたら前後の
+  // フレームへ移動する。ゾーン自体を狭くしてあるため、キャンバスが画面
+  // 全体を占める場合でも実際の作画への影響は最小限に留めている。
+  static const double _edgeDoubleTapZoneWidth = 32.0;
+  static const Duration _edgeDoubleTapWindow = Duration(milliseconds: 350);
+  DateTime? _lastEdgeTapTime;
+  bool? _lastEdgeTapWasRight;
 
   /// スタイラス使用中は誤操作防止のため2本指キャンバス操作を無効化する
   /// （手のひらツール選択中のみ例外的に許可）。既存のInteractiveViewerの
@@ -522,6 +542,41 @@ class _CanvasAreaState extends State<CanvasArea> {
       x: raw.x, y: raw.y, pressure: raw.pressure,
       tiltX: 0, tiltY: 0, inputType: raw.inputType,
     );
+  }
+
+  /// [x]（Listener自身のローカル座標系でのタップ位置）が画面端の
+  /// ダブルタップ専用ゾーン内かどうかを判定する。左端なら false（前の
+  /// フレーム）、右端なら true（次のフレーム）、それ以外はnull。
+  /// 画面幅がゾーン幅の3倍未満（極端に狭い端末・大きくズームされた
+  /// ドッキングパネル幅など）の場合は誤操作防止のため無効化する。
+  bool? _edgeDoubleTapSide(double x) {
+    final size = context.size;
+    if (size == null || size.width < _edgeDoubleTapZoneWidth * 3) return null;
+    if (x <= _edgeDoubleTapZoneWidth) return false;
+    if (x >= size.width - _edgeDoubleTapZoneWidth) return true;
+    return null;
+  }
+
+  /// 画面端ゾーンでのタップを記録し、一定時間内に同じ側へ2回タップされて
+  /// いれば前後のフレームへ移動する（仕様書28）。
+  void _handleEdgeZoneTap(bool isRight) {
+    final now = DateTime.now();
+    final last = _lastEdgeTapTime;
+    final matched = last != null &&
+        _lastEdgeTapWasRight == isRight &&
+        now.difference(last) <= _edgeDoubleTapWindow;
+    if (matched) {
+      _lastEdgeTapTime = null;
+      _lastEdgeTapWasRight = null;
+      if (isRight) {
+        widget.onNextFrame?.call();
+      } else {
+        widget.onPreviousFrame?.call();
+      }
+    } else {
+      _lastEdgeTapTime = now;
+      _lastEdgeTapWasRight = isRight;
+    }
   }
 
   /// マウスホイールでのズーム（仕様書08：Galaxy DeXモード・マウス入力）。
@@ -2455,6 +2510,13 @@ class _CanvasAreaState extends State<CanvasArea> {
       onSecondaryTap: () => _handleGesture(context, settings.twoFingerTap),
       child: Listener(
         onPointerDown: (e) {
+          if (e.kind == PointerDeviceKind.touch || e.kind == PointerDeviceKind.stylus) {
+            final edgeSide = _edgeDoubleTapSide(e.localPosition.dx);
+            if (edgeSide != null) {
+              _handleEdgeZoneTap(edgeSide);
+              return;
+            }
+          }
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount++;
             _activeTouchPositions[e.pointer] = e.localPosition;
