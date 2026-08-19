@@ -661,6 +661,36 @@
   "tipsSeriesPresetFolderTitle": "시리즈물은 프리셋 좁히기×폴더 정리로 관리하기",
   "tipsSeriesPresetFolderDesc": "같은 작품의 여러 화를 만들 때는 폴더로 화별로 프로젝트를 모으고, 각 프로젝트에서 사용할 자동 채색 프리셋을 좁혀두면 캐릭터별 배색을 혼동하지 않고 효율적으로 작업할 수 있습니다.",
 
+  "tipsFadeEndCardTitle": "연출 필터 페이드×EndCard로 마무리하기",
+  "tipsFadeEndCardDesc": "장면의 마지막에 연출 필터의 페이드로 천천히 암전시킨 뒤 EndCard（엔드 로고）로 이어가면 영상의 마무리가 한결 프로페셔널한 인상이 됩니다.",
+
+  "tipsPixelToneRetroTitle": "스탬프 픽셀 모드×톤 채색으로 레트로 통일감",
+  "tipsPixelToneRetroDesc": "픽셀 모드 스탬프와 픽셀 모드 전용 체크무늬・격자무늬 톤을 조합하면 화면 전체를 도트 그림풍 질감으로 통일할 수 있습니다. Y2K풍・레트로 게임풍 연출에 어울립니다.",
+
+  "tipsMagicWandLassoTitle": "매직완드 선택×올가미 채색으로 채색 분리 효율화",
+  "tipsMagicWandLassoDesc": "선택 도구의 자동 선택（매직완드）으로 대략적인 범위를 한꺼번에 선택하고, 삐져나온 부분만 올가미 선택으로 조정하면 복잡한 색 분리도 빠르게 할 수 있습니다.",
+
+  "tipsCommonLayerFolderTitle": "공통 레이어×폴더로 회차를 넘나들며 재사용하기",
+  "tipsCommonLayerFolderDesc": "시리즈물에서 매회 사용하는 로고나 크레딧 표기는 공통 레이어로 만들어 폴더에 정리해두면, 새 회차 프로젝트로 복사할 때도 헤매지 않고 다룰 수 있습니다.",
+
+  "tipsStrokeDecayFadeTitle": "스트로크 감쇠×페이드로 붓 표현",
+  "tipsStrokeDecayFadeDesc": "브러시 설정의 스트로크 감쇠와 페이드를 함께 걸면 선의 시작・끝이 자연스럽게 가늘어져, 붓이나 잉크 브러시 같은 강약이 있는 선을 그릴 수 있습니다.",
+
+  "tipsColorMixingFadeTitle": "혼색×페이드로 물감 같은 섞임",
+  "tipsColorMixingFadeDesc": "혼색을 켠 브러시에 페이드도 함께 조합하면, 아래 색과 섞이면서 서서히 옅어지는 실제 물감에 가까운 채색감을 얻을 수 있습니다.",
+
+  "tipsOutlineAnimeStyleTitle": "윤곽선×애니메이션풍으로 셀 애니메이션풍 마무리",
+  "tipsOutlineAnimeStyleDesc": "그리기 필터의 윤곽선으로 외곽선을 새 레이어에 그려내고, 애니메이션풍 필터로 색상 수를 줄이면 셀 애니메이션 같은 또렷한 마무리가 됩니다.",
+
+  "tipsLevelsToneCurveTitle": "레벨 보정×톤 커브로 그래픽풍으로",
+  "tipsLevelsToneCurveDesc": "레벨 보정으로 명암 차를 강하게 조정한 뒤 톤 커브로 계조를 다듬으면, 사진적인 계조에서 벗어난 포스터 같은 그래픽풍 연출을 할 수 있습니다.",
+
+  "tipsMosaicChromaticTitle": "모자이크×색수차로 브라운관풍의 거친 질감",
+  "tipsMosaicChromaticDesc": "모자이크로 해상도를 낮춘 뒤 색수차를 겹치면, 오래된 브라운관 TV로 보는 듯한 거친 질감을 연출할 수 있습니다. 브라운관 필터 단독과는 또 다른 질감을 만들 수 있습니다.",
+
+  "tipsEndCardWatermarkTitle": "EndCard×워터마크로 전재 방지와 브랜딩을 동시에",
+  "tipsEndCardWatermarkDesc": "엔드 로고（EndCard）로 영상의 마무리를 정돈하면서, 본편에는 워터마크로 서명을 넣어두면 무단 전재되었을 때 출처를 알기 쉬워지고 브랜딩도 됩니다.",
+
   "fontSettingsTabDownloaded": "다운로드됨",
   "fontSettingsTabSearch": "찾아서 다운로드",
   "fontSettingsTabImport": "불러오기",

@@ -661,6 +661,36 @@
   "tipsSeriesPresetFolderTitle": "系列作品用預設篩選×資料夾整理來管理",
   "tipsSeriesPresetFolderDesc": "製作同一作品的多集內容時，用資料夾依集數整理專案，並為每個專案篩選要使用的自動上色預設，這樣就不會混淆各角色的配色，也能有效率地工作。",
 
+  "tipsFadeEndCardTitle": "用演出濾鏡淡出×EndCard收尾",
+  "tipsFadeEndCardDesc": "在場景結尾用演出濾鏡的淡出效果緩緩變黑，再銜接到EndCard（片尾標誌），能讓影片的收尾顯得更專業。",
+
+  "tipsPixelToneRetroTitle": "印章像素模式×網點上色，統一復古感",
+  "tipsPixelToneRetroDesc": "把像素模式的印章和像素模式專用的方格紋、格子紋網點組合使用，可以讓整個畫面統一呈現像素畫質感。適合Y2K風、復古遊戲風的演出。",
+
+  "tipsMagicWandLassoTitle": "魔術棒選取×套索上色，提高分色效率",
+  "tipsMagicWandLassoDesc": "先用選取工具的自動選取（魔術棒）一次選中大致範圍，再用套索選取只調整超出的部分，即使是複雜的分色也能快速完成。",
+
+  "tipsCommonLayerFolderTitle": "共用圖層×資料夾，跨集數重複使用",
+  "tipsCommonLayerFolderDesc": "系列作品中每集都會用到的Logo或字幕，做成共用圖層後整理進資料夾，複製到新一集的專案時也能輕鬆處理。",
+
+  "tipsStrokeDecayFadeTitle": "筆觸衰減×淡出，做出毛筆般的表現",
+  "tipsStrokeDecayFadeDesc": "同時啟用筆刷設定中的筆觸衰減和淡出，線條的起筆、收筆會自然變細，畫出如毛筆或墨水筆般富有輕重變化的線條。",
+
+  "tipsColorMixingFadeTitle": "混色×淡出，做出類似顏料的融合感",
+  "tipsColorMixingFadeDesc": "在開啟混色的筆刷上再加上淡出，會與底色融合的同時逐漸變淡，更接近真實顏料的上色手感。",
+
+  "tipsOutlineAnimeStyleTitle": "外框×動畫風，做出賽璐璐動畫質感",
+  "tipsOutlineAnimeStyleDesc": "用繪圖濾鏡的外框把輪廓線畫到新圖層上，再用動畫風濾鏡減少色數，就能做出賽璐璐動畫般清晰俐落的效果。",
+
+  "tipsLevelsToneCurveTitle": "色階×色調曲線，打造平面設計風格",
+  "tipsLevelsToneCurveDesc": "先用色階把明暗對比調得較強，再用色調曲線細緻調整層次，可以做出脫離照片式層次感、類似海報的平面設計風格。",
+
+  "tipsMosaicChromaticTitle": "馬賽克×色差，營造老式映像管的粗糙質感",
+  "tipsMosaicChromaticDesc": "先用馬賽克降低解析度，再疊加色差效果，能營造出像在看老式映像管電視般的粗糙質感，與單獨使用映像管濾鏡的效果又有所不同。",
+
+  "tipsEndCardWatermarkTitle": "EndCard×浮水印，兼顧防盜用與品牌宣傳",
+  "tipsEndCardWatermarkDesc": "用片尾標誌（EndCard）為影片收尾的同時，在正片中加入浮水印簽名，一旦被擅自轉載也容易辨明出處，同時也能起到品牌宣傳的作用。",
+
   "fontSettingsTabDownloaded": "已下載",
   "fontSettingsTabSearch": "搜尋下載",
   "fontSettingsTabImport": "匯入",

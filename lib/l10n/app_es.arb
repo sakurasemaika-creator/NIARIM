@@ -661,6 +661,36 @@
   "tipsSeriesPresetFolderTitle": "Gestiona una serie con filtrado de presets + organización en carpetas",
   "tipsSeriesPresetFolderDesc": "Al hacer varios episodios de la misma obra, agrupa los proyectos por episodio en una carpeta, y limita qué presets de relleno automático usa cada proyecto. Así evitas mezclar la paleta de cada personaje y mantienes el trabajo eficiente.",
 
+  "tipsFadeEndCardTitle": "Cierra con un fundido de filtro de efecto + EndCard",
+  "tipsFadeEndCardDesc": "Fundir lentamente una escena a negro con un filtro de efecto antes de pasar al EndCard le da al final de tu vídeo un aire notablemente más pulido y profesional.",
+
+  "tipsPixelToneRetroTitle": "Sellos en modo píxel + relleno con tramas para un look retro unificado",
+  "tipsPixelToneRetroDesc": "Combinar sellos en modo píxel con las tramas de damero y cuadrícula exclusivas del modo píxel permite unificar toda la pantalla con una textura pixel art. Genial para un aire Y2K o de videojuego retro.",
+
+  "tipsMagicWandLassoTitle": "Varita mágica + relleno por lazo para separar colores más rápido",
+  "tipsMagicWandLassoDesc": "Selecciona una zona amplia de golpe con la varita mágica de la herramienta de selección, y luego ajusta solo lo que sobra con la selección por lazo; así hasta la separación de colores más compleja va rápido.",
+
+  "tipsCommonLayerFolderTitle": "Capas comunes + carpetas para reutilizar entre episodios",
+  "tipsCommonLayerFolderDesc": "Para un logo o los créditos usados en todos los episodios de una serie, conviértelo en capa común y mantenlo organizado en una carpeta; así es fácil de manejar al copiarlo al proyecto de un episodio nuevo.",
+
+  "tipsStrokeDecayFadeTitle": "Decaimiento de trazo + desvanecimiento para un aire de pincel caligráfico",
+  "tipsStrokeDecayFadeDesc": "Combinar decaimiento de trazo y desvanecimiento en los ajustes del pincel afina de forma natural el inicio y el final de un trazo, dando a las líneas esa variación expresiva de grosor propia de un pincel de caligrafía o tinta.",
+
+  "tipsColorMixingFadeTitle": "Mezcla de color + desvanecimiento para un mezclado tipo pintura",
+  "tipsColorMixingFadeDesc": "Añadir desvanecimiento a un pincel con mezcla de color activada hace que se mezcle con el color de debajo mientras se va aclarando gradualmente, mucho más parecido a cómo se comporta la pintura real.",
+
+  "tipsOutlineAnimeStyleTitle": "Contorno + estilo anime para un acabado de animación cel",
+  "tipsOutlineAnimeStyleDesc": "Dibuja el contorno en una capa nueva con el contorno del filtro de dibujo, y luego reduce el número de colores con el filtro de estilo anime, para un acabado nítido tipo animación cel.",
+
+  "tipsLevelsToneCurveTitle": "Niveles + curva de tonos para un look de diseño gráfico",
+  "tipsLevelsToneCurveDesc": "Sube mucho el contraste con niveles primero, y luego esculpe la gradación con la curva de tonos, para un look gráfico tipo cartel que se aleja de la tonalidad fotográfica.",
+
+  "tipsMosaicChromaticTitle": "Mosaico + aberración cromática para una textura tosca de tubo de rayos catódicos",
+  "tipsMosaicChromaticDesc": "Baja la resolución con el mosaico y luego superpón aberración cromática, para una textura tosca como ver una vieja tele de tubo de rayos catódicos; un matiz distinto al filtro CRT por sí solo.",
+
+  "tipsEndCardWatermarkTitle": "EndCard + marca de agua para protegerte de repostings y reforzar tu marca a la vez",
+  "tipsEndCardWatermarkDesc": "Un logo final (EndCard) redondea tu vídeo, mientras que una marca de agua en el metraje principal deja claro el origen si se reposta sin permiso, y también funciona como branding.",
+
   "fontSettingsTabDownloaded": "Descargadas",
   "fontSettingsTabSearch": "Buscar y descargar",
   "fontSettingsTabImport": "Importar",

@@ -707,6 +707,36 @@
   "tipsSeriesPresetFolderTitle": "シリーズ物はプリセット絞り込み×フォルダ整理で管理する",
   "tipsSeriesPresetFolderDesc": "同じ作品の複数話数を作るときは、フォルダで話数ごとにプロジェクトをまとめ、各プロジェクトで使う自動塗りプリセットを絞り込んでおくと、キャラごとの配色を混同せず効率よく作業できます。",
 
+  "tipsFadeEndCardTitle": "演出フィルターのフェード×EndCardで締める",
+  "tipsFadeEndCardDesc": "シーンの最後に演出フィルターのフェードでゆっくり暗転させてからEndCard（エンドロゴ）へ繋ぐと、動画の締めくくりがぐっとプロっぽい印象になります。",
+
+  "tipsPixelToneRetroTitle": "スタンプのピクセルモード×トーン塗りでレトロ統一",
+  "tipsPixelToneRetroDesc": "ピクセルモードのスタンプと、ピクセルモード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。Y2K風・レトロゲーム風の演出に向いています。",
+
+  "tipsMagicWandLassoTitle": "マジックワンド選択×投げ縄塗りで塗り分け効率化",
+  "tipsMagicWandLassoDesc": "選択ツールの自動選択（マジックワンド）でおおまかな範囲を一括選択し、はみ出た部分だけ投げ縄選択で調整すると、複雑な塗り分けも素早く行えます。",
+
+  "tipsCommonLayerFolderTitle": "共通レイヤー×フォルダで話数をまたいで使い回す",
+  "tipsCommonLayerFolderDesc": "シリーズ物で毎話使うロゴやクレジット表記は、共通レイヤー化してフォルダにまとめておくと、新しい話数のプロジェクトへコピーする際も迷わず扱えます。",
+
+  "tipsStrokeDecayFadeTitle": "ストローク減衰×フェードで毛筆表現",
+  "tipsStrokeDecayFadeDesc": "ブラシ設定のストローク減衰とフェードを両方かけると、線の描き始め・終わりが自然に細くなり、毛筆やインクブラシのような抑揚のある線が描けます。",
+
+  "tipsColorMixingFadeTitle": "混色×フェードで絵の具のような混ざり",
+  "tipsColorMixingFadeDesc": "混色を有効にしたブラシへフェードも組み合わせると、下の色と混ざりながら徐々に薄くなる、実際の絵の具に近い塗り心地になります。",
+
+  "tipsOutlineAnimeStyleTitle": "縁取り×アニメ調でセルアニメ風の仕上げ",
+  "tipsOutlineAnimeStyleDesc": "描画フィルターの縁取りで輪郭線を新規レイヤーへ描き出し、アニメ調フィルターで色数を落とすと、セルアニメのようなくっきりした仕上げになります。",
+
+  "tipsLevelsToneCurveTitle": "レベル補正×トーンカーブでグラフィック調に",
+  "tipsLevelsToneCurveDesc": "レベル補正で明暗差を強めに調整してからトーンカーブで階調を作り込むと、写真的な階調から離れた、ポスターのようなグラフィック調の演出ができます。",
+
+  "tipsMosaicChromaticTitle": "モザイク×色収差でブラウン管風の荒れた質感",
+  "tipsMosaicChromaticDesc": "モザイクで解像度を落としてから色収差を重ねると、古いブラウン管テレビで見ているような荒れた質感を演出できます。ブラウン管フィルター単体とはひと味違う質感が作れます。",
+
+  "tipsEndCardWatermarkTitle": "EndCard×ウォーターマークで転載対策とブランディングを両立",
+  "tipsEndCardWatermarkDesc": "エンドロゴ（EndCard）で動画の締めを整えつつ、本編にはウォーターマークで署名を入れておくと、無断転載された際の出どころが分かりやすくなり、ブランディングにもなります。",
+
   "fontSettingsTabDownloaded": "ダウンロード済み",
   "fontSettingsTabSearch": "探してDL",
   "fontSettingsTabImport": "読み込み",

@@ -661,6 +661,36 @@
   "tipsSeriesPresetFolderTitle": "Gérez une série avec le filtrage de préréglages + l'organisation en dossiers",
   "tipsSeriesPresetFolderDesc": "Pour réaliser plusieurs épisodes d'une même œuvre, regroupez les projets par épisode dans un dossier, et limitez les préréglages de remplissage automatique utilisés par chaque projet. Cela évite de mélanger la palette de chaque personnage et garde le travail efficace.",
 
+  "tipsFadeEndCardTitle": "Terminez avec un fondu de filtre d'effet + EndCard",
+  "tipsFadeEndCardDesc": "Fondre lentement une scène au noir avec un filtre d'effet avant de passer à l'EndCard donne à la fin de votre vidéo un aspect nettement plus soigné et professionnel.",
+
+  "tipsPixelToneRetroTitle": "Tampons en mode pixel + remplissage en trame pour un look rétro unifié",
+  "tipsPixelToneRetroDesc": "Combiner des tampons en mode pixel avec les trames en damier et en grille réservées au mode pixel permet d'unifier tout l'écran avec une texture pixel art. Idéal pour un rendu Y2K ou jeu vidéo rétro.",
+
+  "tipsMagicWandLassoTitle": "Baguette magique + remplissage au lasso pour séparer les couleurs plus vite",
+  "tipsMagicWandLassoDesc": "Sélectionnez une large zone d'un coup avec la baguette magique de l'outil de sélection, puis ajustez seulement le débordement avec la sélection au lasso — même une séparation de couleurs complexe va vite ainsi.",
+
+  "tipsCommonLayerFolderTitle": "Calques communs + dossiers pour réutiliser d'un épisode à l'autre",
+  "tipsCommonLayerFolderDesc": "Pour un logo ou un générique utilisé à chaque épisode d'une série, transformez-le en calque commun et rangez-le dans un dossier — facile à gérer en le copiant vers le projet d'un nouvel épisode.",
+
+  "tipsStrokeDecayFadeTitle": "Dégradé de trait + fondu pour un rendu pinceau calligraphique",
+  "tipsStrokeDecayFadeDesc": "Combiner dégradé de trait et fondu dans les réglages du pinceau affine naturellement le début et la fin d'un trait, donnant aux lignes cette variation expressive d'épaisseur propre à un pinceau calligraphique ou à l'encre.",
+
+  "tipsColorMixingFadeTitle": "Mélange de couleurs + fondu pour un mélange façon peinture",
+  "tipsColorMixingFadeDesc": "Ajouter un fondu à un pinceau avec le mélange de couleurs activé le fait se mélanger avec la couleur dessous tout en s'éclaircissant progressivement, bien plus proche du comportement de la vraie peinture.",
+
+  "tipsOutlineAnimeStyleTitle": "Contour + style anime pour une finition animation cel",
+  "tipsOutlineAnimeStyleDesc": "Dessinez le contour sur un nouveau calque avec le contour du filtre de dessin, puis réduisez le nombre de couleurs avec le filtre style anime, pour une finition nette façon animation cel.",
+
+  "tipsLevelsToneCurveTitle": "Niveaux + courbe de tons pour un look de design graphique",
+  "tipsLevelsToneCurveDesc": "Poussez fort le contraste avec les niveaux d'abord, puis sculptez la gradation avec la courbe de tons, pour un look graphique façon affiche qui s'éloigne de la tonalité photographique.",
+
+  "tipsMosaicChromaticTitle": "Mosaïque + aberration chromatique pour une texture rêche façon tube cathodique",
+  "tipsMosaicChromaticDesc": "Baissez la résolution avec la mosaïque puis superposez l'aberration chromatique, pour une texture rêche façon vieille télé à tube cathodique — une nuance différente du filtre tube cathodique seul.",
+
+  "tipsEndCardWatermarkTitle": "EndCard + filigrane pour se protéger des republications et renforcer sa marque",
+  "tipsEndCardWatermarkDesc": "Un logo de fin (EndCard) arrondit votre vidéo, tandis qu'un filigrane sur les images principales rend la source claire en cas de republication non autorisée, tout en servant de branding.",
+
   "fontSettingsTabDownloaded": "Téléchargées",
   "fontSettingsTabSearch": "Rechercher et télécharger",
   "fontSettingsTabImport": "Importer",

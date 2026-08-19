@@ -661,6 +661,36 @@
   "tipsSeriesPresetFolderTitle": "Manage a series with preset filtering + folder organization",
   "tipsSeriesPresetFolderDesc": "When making multiple episodes of the same work, group the projects by episode in a folder, and narrow down which autofill presets each project uses. That keeps each character's palette from getting mixed up and keeps work efficient.",
 
+  "tipsFadeEndCardTitle": "Close out with an effect-filter fade + EndCard",
+  "tipsFadeEndCardDesc": "Fading a scene slowly to black with an effect filter before cutting to the EndCard gives your video's ending a noticeably more polished, professional feel.",
+
+  "tipsPixelToneRetroTitle": "Pixel-mode stamps + tone fill for a unified retro look",
+  "tipsPixelToneRetroDesc": "Combining pixel-mode stamps with the checker and grid tones exclusive to pixel mode lets you unify the whole screen with a pixel-art texture. Great for a Y2K or retro-game feel.",
+
+  "tipsMagicWandLassoTitle": "Magic wand + lasso fill for faster color separation",
+  "tipsMagicWandLassoDesc": "Select a broad area at once with the select tool's magic wand, then fine-tune just the overflow with lasso selection — even complex color separation goes fast this way.",
+
+  "tipsCommonLayerFolderTitle": "Common layers + folders to reuse across episodes",
+  "tipsCommonLayerFolderDesc": "For a logo or credit text used in every episode of a series, turn it into a common layer and keep it organized in a folder — makes it easy to handle when copying it into a new episode's project.",
+
+  "tipsStrokeDecayFadeTitle": "Stroke decay + fade for a brush-pen feel",
+  "tipsStrokeDecayFadeDesc": "Combining stroke decay and fade in brush settings tapers the start and end of a stroke naturally, giving lines the kind of expressive thick-thin variation you get from a calligraphy or ink brush.",
+
+  "tipsColorMixingFadeTitle": "Color mixing + fade for a paint-like blend",
+  "tipsColorMixingFadeDesc": "Adding fade to a brush that has color mixing enabled makes it blend with the color underneath while gradually thinning out — much closer to how real paint behaves.",
+
+  "tipsOutlineAnimeStyleTitle": "Outline + anime style for a cel-animation finish",
+  "tipsOutlineAnimeStyleDesc": "Draw the outline onto a new layer with the draw filter's outline, then reduce the color count with the anime-style filter, for a crisp, cel-animation-like finish.",
+
+  "tipsLevelsToneCurveTitle": "Levels + tone curve for a graphic-design look",
+  "tipsLevelsToneCurveDesc": "Push the contrast hard with levels first, then sculpt the gradation with the tone curve, for a poster-like graphic look that departs from photographic tonality.",
+
+  "tipsMosaicChromaticTitle": "Mosaic + chromatic aberration for a rough CRT texture",
+  "tipsMosaicChromaticDesc": "Lower the resolution with mosaic, then layer chromatic aberration on top, for a rough texture like watching an old CRT TV — a different flavor from the CRT filter on its own.",
+
+  "tipsEndCardWatermarkTitle": "EndCard + watermark for both anti-repost protection and branding",
+  "tipsEndCardWatermarkDesc": "An end logo (EndCard) rounds off your video, while a watermark on the main footage makes the source clear if it's reposted without permission — and doubles as branding.",
+
   "fontSettingsTabDownloaded": "Downloaded",
   "fontSettingsTabSearch": "Find & Download",
   "fontSettingsTabImport": "Import",
