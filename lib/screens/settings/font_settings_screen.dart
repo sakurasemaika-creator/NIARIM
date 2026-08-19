@@ -26,7 +26,8 @@ class FontSettingsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.settingsFontTitle),
-          actions: const [HelpButton(topic: 'フォント管理')],
+          // ヘルプ項目「フォント管理」はテキストツールの説明へ統合済み（仕様書28）。
+          actions: const [HelpButton(topic: 'テキストツール')],
           bottom: TabBar(
             tabs: [
               Tab(text: l10n.fontSettingsTabDownloaded),

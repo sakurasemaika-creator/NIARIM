@@ -47,13 +47,18 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '選択ツール', title: l10n.helpSelectToolTitle, description: l10n.helpSelectToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '指ツール（歪みツール）', title: l10n.helpFingerToolTitle, description: l10n.helpFingerToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '図形ツール', title: l10n.helpShapeToolTitle, description: l10n.helpShapeToolDesc, category: l10n.helpCategoryTool),
+        // フォント管理の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
+        // font_settings_screen.dartのHelpButtonが'テキストツール'を参照する
+        // よう合わせて変更済み。
         _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool),
+        // スタンプの回転・拡大縮小の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool),
-        _HelpEntry(topicKey: 'スタンプの回転・拡大縮小', title: l10n.helpStampTransformTitle, description: l10n.helpStampTransformDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'ペンサブツール', title: l10n.helpPenSubToolTitle, description: l10n.helpPenSubToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '早替えツール管理', title: l10n.helpQuickToolManagementTitle, description: l10n.helpQuickToolManagementDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool),
+        // 選択範囲の変形と対になる新機能（仕様書28）。
+        _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'カラーピッカー', title: l10n.helpColorPickerTitle, description: l10n.helpColorPickerDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'ブラシのお気に入り', title: l10n.helpBrushFavoriteTitle, description: l10n.helpBrushFavoriteDesc, category: l10n.helpCategoryBrush),
 
@@ -61,15 +66,14 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'レイヤー', title: l10n.helpLayerTitle, description: l10n.helpLayerDesc, category: l10n.helpCategoryLayer),
         _HelpEntry(topicKey: 'ブレンドモード', title: l10n.helpBlendModeTitle, description: l10n.helpBlendModeDesc, category: l10n.helpCategoryLayer),
         _HelpEntry(topicKey: 'クリッピング', title: l10n.helpClippingTitle, description: l10n.helpClippingDesc, category: l10n.helpCategoryLayer),
+        // 「レイヤーの共通化」の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer),
-        _HelpEntry(topicKey: 'レイヤーの共通化', title: l10n.helpConvertToCommonTitle, description: l10n.helpConvertToCommonDesc, category: l10n.helpCategoryLayer),
         _HelpEntry(topicKey: 'レイヤーフォルダ', title: l10n.helpLayerFolderTitle, description: l10n.helpLayerFolderDesc, category: l10n.helpCategoryLayer),
         _HelpEntry(topicKey: 'レイヤーの複数選択', title: l10n.helpLayerMultiSelectTitle, description: l10n.helpLayerMultiSelectDesc, category: l10n.helpCategoryLayer),
+        // 自動塗り実行・自動塗りの線画色設定・自動塗りプリセット絞り込みの説明は、
+        // 独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: '自動塗り', title: l10n.helpAutoFillTitle, description: l10n.helpAutoFillDesc, category: l10n.helpCategoryLayer),
         _HelpEntry(topicKey: 'グラデーション塗り', title: l10n.helpGradientAutofillTitle, description: l10n.helpGradientAutofillDesc, category: l10n.helpCategoryLayer),
-        _HelpEntry(topicKey: '自動塗り実行', title: l10n.helpAutofillBatchRunTitle, description: l10n.helpAutofillBatchRunDesc, category: l10n.helpCategoryLayer),
-        _HelpEntry(topicKey: '自動塗りの線画色設定', title: l10n.helpAutofillLineColorTitle, description: l10n.helpAutofillLineColorDesc, category: l10n.helpCategoryLayer),
-        _HelpEntry(topicKey: '自動塗りプリセット絞り込み', title: l10n.helpAutofillPresetFilterTitle, description: l10n.helpAutofillPresetFilterDesc, category: l10n.helpCategoryLayer),
 
         // ── 描画補助 ────────────────────────────────────────────
         _HelpEntry(topicKey: 'オニオンスキン', title: l10n.helpOnionSkinTitle, description: l10n.helpOnionSkinDesc, category: l10n.helpCategoryAnimation),
@@ -91,10 +95,10 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '音声クリップ', title: l10n.helpAudioClipTitle, description: l10n.helpAudioClipDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'ウォーターマークの再編集', title: l10n.helpWatermarkEditTitle, description: l10n.helpWatermarkEditDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation),
+        // 演出フィルターの適用順・動くノイズフィルター・雨フィルターの説明は、
+        // 独立項目にせずこちらへ統合済み（仕様書28：個々のフィルターを独立項目に
+        // せず「演出フィルター」の親項目内へまとめる）。
         _HelpEntry(topicKey: '演出フィルター', title: l10n.helpEffectFilterTitle, description: l10n.helpEffectFilterDesc, category: l10n.helpCategoryAnimation),
-        _HelpEntry(topicKey: '演出フィルターの適用順', title: l10n.helpEffectFilterOrderTitle, description: l10n.helpEffectFilterOrderDesc, category: l10n.helpCategoryAnimation),
-        _HelpEntry(topicKey: '動くノイズフィルター', title: l10n.helpAnimatedNoiseFilterTitle, description: l10n.helpAnimatedNoiseFilterDesc, category: l10n.helpCategoryAnimation),
-        _HelpEntry(topicKey: '雨フィルター', title: l10n.helpRainFilterTitle, description: l10n.helpRainFilterDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '描画フィルター', title: l10n.helpDrawingFilterTitle, description: l10n.helpDrawingFilterDesc, category: l10n.helpCategoryDrawing),
         _HelpEntry(topicKey: 'レイヤーキーフレーム', title: l10n.helpLayerKeyframeTitle, description: l10n.helpLayerKeyframeDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'レイヤーグループ', title: l10n.helpLayerGroupTitle, description: l10n.helpLayerGroupDesc, category: l10n.helpCategoryAnimation),
@@ -110,16 +114,16 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '引き継ぎ（.niatra）', title: l10n.helpTransferTitle, description: l10n.helpTransferDesc, category: l10n.helpCategoryProjectManagement),
 
         // ── 書き出し ───────────────────────────────────────────
+        // 透過WebM・GIF書き出し・無料会員の尺制限の説明は、独立項目にせず
+        // こちらへ統合済み（仕様書28：書き出し関連のヘルプ項目をある程度
+        // 1つにまとめる）。topicKeyはexport_screen.dartのHelpButtonが参照して
+        // いるため変更していない（表示タイトルのみ範囲を広げた）。
         _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport),
-        _HelpEntry(topicKey: '透過WebM', title: l10n.helpTransparentWebmTitle, description: l10n.helpTransparentWebmDesc, category: l10n.helpCategoryExport),
-        _HelpEntry(topicKey: 'GIF書き出し', title: l10n.helpGifExportTitle, description: l10n.helpGifExportDesc, category: l10n.helpCategoryExport),
         _HelpEntry(topicKey: '書き出し画面', title: l10n.helpExportScreenTitle, description: l10n.helpExportScreenDesc, category: l10n.helpCategoryExport),
-        _HelpEntry(topicKey: '無料会員の尺制限', title: l10n.helpFreeDurationLimitTitle, description: l10n.helpFreeDurationLimitDesc, category: l10n.helpCategoryExport),
 
         // ── その他 ────────────────────────────────────────────
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium),
         _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium),
-        _HelpEntry(topicKey: 'フォント管理', title: l10n.helpFontManagementTitle, description: l10n.helpFontManagementDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'フォントの読み込み', title: l10n.helpFontImportTitle, description: l10n.helpFontImportDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'パフォーマンス設定', title: l10n.helpPerformanceSettingsTitle, description: l10n.helpPerformanceSettingsDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings),
