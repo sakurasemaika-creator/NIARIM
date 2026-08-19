@@ -61,6 +61,11 @@ class ToolbarWidget extends StatelessWidget {
           message: l10n.toolbarPenFirstUseTip,
           child: GestureDetector(
             onLongPress: onPenLongPress,
+            // 長押しに加えて上スワイプでもサブツールパネルを開けるように
+            // する（早替えツールボタンと同じ操作方法に揃える）。
+            onVerticalDragEnd: (details) {
+              if ((details.primaryVelocity ?? 0) < -200) onPenLongPress();
+            },
             child: _toolButton(context, Icons.brush, DrawingTool.pen, l10n.toolbarPenTooltip),
           ),
         ),

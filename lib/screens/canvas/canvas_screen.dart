@@ -420,7 +420,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
         autofocus: true,
         child: Scaffold(
       body: SafeArea(
-        child: Column(
+        // ツールオプション系のフローティングパネル（ブラシ・トーン・
+        // スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・
+        // 早替え設定）は、画面全体を覆うこの一番外側のStackへ配置する
+        // ことで、太さ／不透明度スライダーやツールバーなど他のUI要素の
+        // 手前に必ず表示されるようにしている（以前はキャンバス領域内の
+        // Stackに置いていたため、縦スペースが足りない場面で他の要素と
+        // 重なって見えることがあった）。パネルの外側をタップすると
+        // 閉じられる。
+        child: Stack(
+          children: [
+            Column(
           children: [
             if (adService.shouldShowAds)
               const AdBannerWidget(position: AdPosition.top),
@@ -463,43 +473,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     onToggleOnionSkin: () => setState(() =>
                         _onionSkinSettings = _onionSkinSettings.copyWith(enabled: !_onionSkinSettings.enabled)),
                   ),
-                  if (_showLayerPanel && !isDesktop)
-                    Positioned(
-                      left: leftHanded ? 0 : null,
-                      right: leftHanded ? null : 0,
-                      top: 0, bottom: 0, width: 250,
-                      child: LayerPanel(
-                        onClose: () => setState(() => _showLayerPanel = false),
-                        projectId: widget.projectId,
-                        sceneId: _currentSceneId,
-                        frameIndex: _currentFrame,
-                        onEditTextLayer: _onEditTextLayerTapped,
-                      ),
-                    ),
-                  if (_showColorPicker && !isDesktop)
-                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: null, bottom: 16, child: _colorPickerPanel()),
-                  if (_showBrushPanel && !isDesktop)
-                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _brushPanel()),
-                  // トーン・スタンプの全機能管理パネル（仕様書17）
-                  if (_showTonePanel && !isDesktop)
-                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _tonePanel()),
-                  if (_showStampPanel && !isDesktop)
-                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _stampPanel()),
-                  // ペンサブツールパネル（ブラシ/トーン/スタンプ/投げ縄塗り）
-                  if (_showPenSubToolPanel && !isDesktop)
-                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _penSubToolPanel()),
-                  // オニオンスキンパネル
-                  if (_showOnionSkinPanel && !isDesktop)
-                    _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 16, bottom: null, child: _onionSkinPanel()),
-                  // 定規パネル
-                  if (_showRulerPanel && !isDesktop)
-                    _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 16, bottom: null, child: _rulerPanel()),
-                  // フィルターパネル（仕様書18：描画フィルター）
-                  if (_showFilterPanel && !isDesktop)
-                    _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 16, bottom: null, child: _filterPanel()),
-                  // 早替えツール設定パネル（仕様書02・08）
-                  if (_showQuickToolPanel && !isDesktop)
-                    _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: null, bottom: 16, child: _quickToolPanel()),
+                  // ツールオプション系フローティングパネル（ブラシ・トーン・
+                  // スタンプ・ペンサブツール・オニオンスキン・定規・
+                  // フィルター・早替え設定・レイヤー）は画面全体を覆う
+                  // 一番外側のStackへ移した（build()末尾を参照）。
                       ],
                     ),
                   ),
@@ -634,11 +611,73 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
           ],
         ),
+            // パネル表示中は、パネル外をタップすると閉じられるようにする
+            // 透明バリア（パネル本体より下、Columnより上に敷く）。
+            if (_anyToolPanelOpen && !isDesktop)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(_closeAllOverlayPanels),
+                ),
+              ),
+            if (_showLayerPanel && !isDesktop)
+              Positioned(
+                left: leftHanded ? 0 : null,
+                right: leftHanded ? null : 0,
+                top: 0, bottom: 0, width: 250,
+                child: LayerPanel(
+                  onClose: () => setState(() => _showLayerPanel = false),
+                  projectId: widget.projectId,
+                  sceneId: _currentSceneId,
+                  frameIndex: _currentFrame,
+                  onEditTextLayer: _onEditTextLayerTapped,
+                ),
+              ),
+            if (_showColorPicker && !isDesktop)
+              _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: null, bottom: 16, child: _colorPickerPanel()),
+            if (_showBrushPanel && !isDesktop)
+              _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 56, bottom: null, child: _brushPanel()),
+            // トーン・スタンプの全機能管理パネル（仕様書17）
+            if (_showTonePanel && !isDesktop)
+              _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 56, bottom: null, child: _tonePanel()),
+            if (_showStampPanel && !isDesktop)
+              _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 56, bottom: null, child: _stampPanel()),
+            // ペンサブツールパネル（ブラシ/トーン/スタンプ）
+            if (_showPenSubToolPanel && !isDesktop)
+              _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 56, bottom: null, child: _penSubToolPanel()),
+            // オニオンスキンパネル
+            if (_showOnionSkinPanel && !isDesktop)
+              _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 56, bottom: null, child: _onionSkinPanel()),
+            // 定規パネル
+            if (_showRulerPanel && !isDesktop)
+              _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 56, bottom: null, child: _rulerPanel()),
+            // フィルターパネル（仕様書18：描画フィルター）
+            if (_showFilterPanel && !isDesktop)
+              _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 56, bottom: null, child: _filterPanel()),
+            // 早替えツール設定パネル（仕様書02・08）
+            if (_showQuickToolPanel && !isDesktop)
+              _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: null, bottom: 16, child: _quickToolPanel()),
+          ],
+        ),
       ),
         ),
       ),
     );
   }
+
+  /// いずれかのツールオプション系フローティングパネルが開いているか
+  /// （パネル外タップでの一括クローズに使う）。
+  bool get _anyToolPanelOpen =>
+      _showLayerPanel ||
+      _showColorPicker ||
+      _showBrushPanel ||
+      _showTonePanel ||
+      _showStampPanel ||
+      _showPenSubToolPanel ||
+      _showOnionSkinPanel ||
+      _showRulerPanel ||
+      _showFilterPanel ||
+      _showQuickToolPanel;
 
   // PC/DeXモード（広い画面）：現在開いているツールオプション系パネルを1つ
   // 返す（複数同時に開いていた場合は優先度の高いものを返す）。左側の
