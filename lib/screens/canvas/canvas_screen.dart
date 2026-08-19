@@ -200,6 +200,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 Navigator.pop(ctx);
               },
             ),
+            // 筆圧カーブ設定画面（/settings/pen）を、設定画面だけでなくここ
+            // からも開けるようにする（設定値自体はアプリ内共通の1箇所の
+            // ため、どちらから開いても同じ値を編集することになる）。
+            ListTile(
+              leading: const Icon(Icons.gesture),
+              title: Text(l10n.canvasEditMenuPressureCurve),
+              subtitle: Text(l10n.canvasEditMenuPressureCurveSubtitle),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/settings/pen');
+              },
+            ),
           ],
         ),
       ),

@@ -5,6 +5,10 @@ import '../models/brush.dart';
 import 'brush_texture_cache.dart';
 import 'tile_manager.dart';
 
+// カリグラフィーブラシのペン先の扁平度（幅:高さ）。値が大きいほど、
+// ペン先の向きに直交する方向へ動かした時の線が太く、平行な方向は細くなる。
+const double kCalligraphyNibAspect = 2.6;
+
 class DrawingEngine {
   final TileManager tileManager;
 
@@ -151,8 +155,17 @@ class DrawingEngine {
     final alphaInt = (opacity * 255).round().clamp(0, 255);
     if (alphaInt == 0) return;
 
-    // 傾き変形
-    final tilt = calcTiltTransform(tiltX, tiltY);
+    // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
+    // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う
+    // （傾き検知非対応の端末でも一定の見た目でカリグラフィー特有の
+    // 「進行方向によって線の太さが変わる」表現を再現するため）。
+    final tilt = brush.calligraphyAngle != null
+        ? (
+            scaleX: kCalligraphyNibAspect,
+            scaleY: 1.0,
+            angle: brush.calligraphyAngle! * math.pi / 180,
+          )
+        : calcTiltTransform(tiltX, tiltY);
 
     // 自作ブラシ（仕様書17：ブラシ画像からのブラシ作成）が選択され、
     // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル

@@ -1,11 +1,17 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../screens/tips/tips_screen.dart' show allTipEntries;
 import '../services/advertising_service.dart';
+import '../services/premium_service.dart';
 
 /// 処理中ダイアログ（仕様書13：フィルター適用／動画書き出し／GIF生成／
 /// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に正方形広告）。
+/// プレミアム会員は広告が表示されない分のスペースへ、10秒おきにランダムで
+/// Tipsを表示する（無料会員は正方形広告でスペースが取られるため対象外）。
 class ProgressDialog extends StatefulWidget {
   final String title;
   final double progress;
@@ -31,13 +37,44 @@ class ProgressDialog extends StatefulWidget {
 }
 
 class _ProgressDialogState extends State<ProgressDialog> {
+  Timer? _tipTimer;
+  // Tips一覧はl10nに依存するがダイアログ表示中に言語が変わることはないため、
+  // 毎buildで再構築せず一度だけ計算してキャッシュする（進捗更新のたびに
+  // 高頻度で呼ばれるbuild()の負荷を抑える）。
+  List<(String, String)>? _tips;
+  int? _tipIndex;
+  final _random = Random();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AdvertisingService>().showSquareAd();
+      _startTipRotationIfNeeded();
     });
+  }
+
+  void _startTipRotationIfNeeded() {
+    if (!mounted) return;
+    if (!context.read<PremiumService>().isPremium) return;
+    final l10n = AppLocalizations.of(context)!;
+    final tips = allTipEntries(l10n);
+    if (tips.isEmpty) return;
+    setState(() {
+      _tips = tips;
+      _tipIndex = _random.nextInt(tips.length);
+    });
+    _tipTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (!mounted) return;
+      setState(() => _tipIndex = _random.nextInt(tips.length));
+    });
+  }
+
+  @override
+  void dispose() {
+    _tipTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -45,6 +82,9 @@ class _ProgressDialogState extends State<ProgressDialog> {
     final l10n = AppLocalizations.of(context)!;
     final adService = context.watch<AdvertisingService>();
     final ad = adService.squareAd;
+    final tips = _tips;
+    final tipIndex = _tipIndex;
+    final tip = (tips != null && tipIndex != null && tipIndex < tips.length) ? tips[tipIndex] : null;
 
     return AlertDialog(
       content: Column(
@@ -59,7 +99,40 @@ class _ProgressDialogState extends State<ProgressDialog> {
             const SizedBox(height: 4),
             Text(widget.subtitle!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ],
-          if (adService.shouldShowAds) ...[
+          // プレミアム会員限定：広告の代わりにTipsを表示するスペースを使う。
+          if (tip != null) ...[
+            const SizedBox(height: 16),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                key: ValueKey(tip.$1),
+                width: 250,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, size: 14, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 4),
+                        Text(l10n.progressDialogTipLabel,
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(tip.$2, style: const TextStyle(fontSize: 11, color: Colors.grey), maxLines: 3, overflow: TextOverflow.ellipsis),
+                  ],
+                ),
+              ),
+            ),
+          ] else if (adService.shouldShowAds) ...[
             const SizedBox(height: 16),
             if (ad == null)
               Container(

@@ -157,6 +157,7 @@ class NiatraSerializer {
         'pressureStrength': b.pressureStrength, 'fadeMode': b.fadeMode.name,
         'strokeDecay': b.strokeDecay, 'mixingMode': b.mixingMode.name,
         'mixingRate': b.mixingRate, 'isFavorite': b.isFavorite,
+        'calligraphyAngle': b.calligraphyAngle,
       };
 
   static Brush _deserializeBrush(Map<String, dynamic> j) => Brush(
@@ -181,6 +182,7 @@ class NiatraSerializer {
             orElse: () => BrushMixingMode.off),
         mixingRate: j['mixingRate'] as int,
         isFavorite: j['isFavorite'] as bool? ?? false,
+        calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
       );
 
   // ─── Tone / Stamp ─────────────────────────────────────────────────────

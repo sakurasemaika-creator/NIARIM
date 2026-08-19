@@ -18,6 +18,12 @@ class Brush {
   final bool isFavorite;
   final String? folderId;
   final String? customImagePath;
+  // カリグラフィーペン用：ペン先の固定角度（度、0〜360）。nullなら通常の
+  // 円形ブラシ（スタイラスの傾き検知があればそちらで扁平化する）。指定時は
+  // 実際のスタイラス傾きに関わらず、常にこの角度へ扁平化したペン先で
+  // スタンプする（進行方向によって線の太さが変わるカリグラフィー特有の
+  // 見た目を、傾き検知非対応の端末でも一定の見た目で再現するため）。
+  final double? calligraphyAngle;
 
   const Brush({
     required this.id,
@@ -39,6 +45,7 @@ class Brush {
     this.isFavorite = false,
     this.folderId,
     this.customImagePath,
+    this.calligraphyAngle,
   });
 
   Brush copyWith({
@@ -61,6 +68,7 @@ class Brush {
     bool? isFavorite,
     String? folderId,
     String? customImagePath,
+    double? calligraphyAngle,
   }) {
     return Brush(
       id: id ?? this.id,
@@ -82,6 +90,7 @@ class Brush {
       isFavorite: isFavorite ?? this.isFavorite,
       folderId: folderId ?? this.folderId,
       customImagePath: customImagePath ?? this.customImagePath,
+      calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
     );
   }
 
@@ -111,6 +120,7 @@ class Brush {
         'isFavorite': isFavorite,
         'folderId': folderId,
         'customImagePath': customImagePath,
+        'calligraphyAngle': calligraphyAngle,
       };
 
   factory Brush.fromJson(Map<String, dynamic> j) => Brush(
@@ -149,6 +159,7 @@ class Brush {
         isFavorite: j['isFavorite'] as bool? ?? false,
         folderId: j['folderId'] as String?,
         customImagePath: j['customImagePath'] as String?,
+        calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
       );
 }
 

@@ -64,6 +64,28 @@ class BrushService extends ChangeNotifier {
           fadeMode: FadeMode.off, strokeDecay: false,
           mixingMode: BrushMixingMode.simple, mixingRate: 50,
         ),
+        // マーカーペン：太めの半透明ペン先（重ね塗りで色が濃くなる）で、
+        // 実物のマーカーのようにインクが薄くなっていく様子を、ストローク
+        // 減衰機能（strokeDecay）で表現する。フェルトペンは筆圧の影響を
+        // ほぼ受けないため、筆圧反映はOFFにする。
+        const Brush(
+          id: 'Brush0005', name: 'マーカーペン', size: 20, opacity: 65, spacing: 5,
+          blurRadius: 0, stabilization: false, stabilizationStrength: 0,
+          pixelMode: false, pressureMode: PressureMode.off, pressureStrength: 0,
+          fadeMode: FadeMode.off, strokeDecay: true,
+          mixingMode: BrushMixingMode.off, mixingRate: 0,
+        ),
+        // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
+        // （calligraphyAngle）。進行方向によって線の太さが変わる
+        // カリグラフィーペン特有の見た目になる。
+        const Brush(
+          id: 'Brush0006', name: 'カリグラフィー', size: 14, opacity: 100, spacing: 4,
+          blurRadius: 0, stabilization: true, stabilizationStrength: 40,
+          pixelMode: false, pressureMode: PressureMode.size, pressureStrength: 50,
+          fadeMode: FadeMode.off, strokeDecay: false,
+          mixingMode: BrushMixingMode.off, mixingRate: 0,
+          calligraphyAngle: 45.0,
+        ),
       ];
 
   Future<void> init() async {
@@ -76,6 +98,14 @@ class BrushService extends ChangeNotifier {
       await _persist();
     } else {
       _brushes.addAll(raw.map((s) => Brush.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      // 既存ユーザーにも新規追加した初期ブラシ（マーカーペン・カリグラフィー）を
+      // 反映する（既に同じIDのブラシが存在する場合は追加しない）。
+      final existingIds = _brushes.map((b) => b.id).toSet();
+      final missing = _defaultBrushes().where((b) => !existingIds.contains(b.id));
+      if (missing.isNotEmpty) {
+        _brushes.addAll(missing);
+        await _persist();
+      }
     }
     final foldersRaw = prefs.getStringList(_foldersKey);
     _folders.clear();

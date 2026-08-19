@@ -16,6 +16,17 @@ class TipsScreen extends StatefulWidget {
   State<TipsScreen> createState() => _TipsScreenState();
 }
 
+/// 進捗ダイアログ（ProgressDialog、仕様書13：書き出し・複数フレーム加工時）が
+/// 10秒おきにランダム表示するTips用に、全カテゴリのTipsをタイトル・説明の
+/// ペアへ平坦化して返す。Tips画面本体（[_TipsScreenState._buildCategories]）
+/// と同じ一覧を参照するため、内容を追加・変更してもここでの二重管理は不要。
+List<(String title, String description)> allTipEntries(AppLocalizations l10n) {
+  return _buildTipCategories(l10n)
+      .expand((c) => c.tips)
+      .map((t) => (t.title, t.description))
+      .toList();
+}
+
 class _TipsScreenState extends State<TipsScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
@@ -26,7 +37,80 @@ class _TipsScreenState extends State<TipsScreen> {
     super.dispose();
   }
 
-  List<_TipCategory> _buildCategories(AppLocalizations l10n) => [
+  List<_TipCategory> _buildCategories(AppLocalizations l10n) => _buildTipCategories(l10n);
+
+  bool _matches(_Tip tip, String category) =>
+      _searchQuery.isEmpty ||
+      tip.title.contains(_searchQuery) ||
+      tip.description.contains(_searchQuery) ||
+      category.contains(_searchQuery);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final categories = _buildCategories(l10n)
+        .map((c) => _TipCategory(title: c.title, icon: c.icon, tips: c.tips.where((t) => _matches(t, c.title)).toList()))
+        .where((c) => c.tips.isNotEmpty)
+        .toList();
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.tipsScreenTitle)),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: l10n.tipsSearchHint,
+                  prefixIcon: const Icon(Icons.search),
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
+              ),
+            ),
+            Expanded(
+              child: categories.isEmpty
+                  ? Center(
+                      child: Text(l10n.helpNoResults,
+                          style: TextStyle(color: scheme.onSurfaceVariant)),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(category.icon, size: 18, color: scheme.primary),
+                                  const SizedBox(width: 6),
+                                  Text(category.title,
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: scheme.primary)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              for (final tip in category.tips) _TipListTile(tip: tip),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
         _TipCategory(
           title: l10n.tipsCategoryVideo,
           icon: Icons.movie_creation_outlined,
@@ -111,77 +195,6 @@ class _TipsScreenState extends State<TipsScreen> {
           ],
         ),
       ];
-
-  bool _matches(_Tip tip, String category) =>
-      _searchQuery.isEmpty ||
-      tip.title.contains(_searchQuery) ||
-      tip.description.contains(_searchQuery) ||
-      category.contains(_searchQuery);
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final categories = _buildCategories(l10n)
-        .map((c) => _TipCategory(title: c.title, icon: c.icon, tips: c.tips.where((t) => _matches(t, c.title)).toList()))
-        .where((c) => c.tips.isNotEmpty)
-        .toList();
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.tipsScreenTitle)),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: l10n.tipsSearchHint,
-                  prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                onChanged: (v) => setState(() => _searchQuery = v),
-              ),
-            ),
-            Expanded(
-              child: categories.isEmpty
-                  ? Center(
-                      child: Text(l10n.helpNoResults,
-                          style: TextStyle(color: scheme.onSurfaceVariant)),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: categories.length,
-                      itemBuilder: (context, index) {
-                        final category = categories[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(category.icon, size: 18, color: scheme.primary),
-                                  const SizedBox(width: 6),
-                                  Text(category.title,
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: scheme.primary)),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              for (final tip in category.tips) _TipListTile(tip: tip),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// 一覧に並ぶ1件のTipsの行。図解のミニアイコンとタイトルだけを表示する
 /// コンパクトな行で、タップすると詳細ポップアップ（_TipDetailDialog）を開く。
