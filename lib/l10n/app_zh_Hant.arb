@@ -691,6 +691,36 @@
   "tipsEndCardWatermarkTitle": "EndCard×浮水印，兼顧防盜用與品牌宣傳",
   "tipsEndCardWatermarkDesc": "用片尾標誌（EndCard）為影片收尾的同時，在正片中加入浮水印簽名，一旦被擅自轉載也容易辨明出處，同時也能起到品牌宣傳的作用。",
 
+  "tipsVerticalPixelFontTitle": "直書×像素字型，打造和風像素畫標題",
+  "tipsVerticalPixelFontDesc": "在文字工具的直書中搭配像素模式字型，可以做出讓人聯想到復古遊戲的和風像素畫標題。",
+
+  "tipsStampBlendModeTitle": "印章×混合模式，做出發光特效",
+  "tipsStampBlendModeDesc": "把放置的印章圖層的混合模式設為「濾色」或「相加」，光效線條或閃亮特效就能自然融入背景，顯得更加突出。",
+
+  "tipsQuickToolPenSubTitle": "快捷工具×畫筆子工具，打造不間斷的作業流程",
+  "tipsQuickToolPenSubDesc": "把常用工具登記到快捷工具，同時善用長按畫筆即可切換到網點填色、印章放置的子工具，就能減少畫面間的來回切換，保持作業節奏。",
+
+  "tipsAutofillToneReuseTitle": "利用自動上色的網點設定，只需重畫線稿就能重現上色",
+  "tipsAutofillToneReuseDesc": "把自動上色預設的各部位設為「使用網點」後，每次重畫線稿都能自動重現帶網點的上色效果，省去逐格重新貼網點的麻煩。",
+
+  "tipsRadialVignetteTitle": "放射尺×暗角，營造集中線效果",
+  "tipsRadialVignetteDesc": "用放射尺一口氣畫出集中線，再疊加繪圖濾鏡的暗角效果，就能做出如漫畫高潮般有魄力的演出。",
+
+  "tipsClippingGradientTitle": "剪裁×漸層，讓陰影可以隨時重畫",
+  "tipsClippingGradientDesc": "把漸層圖層剪裁到角色圖層上，之後只需改變漸層的範圍和角度就能重新調整陰影，不必用筆刷重新描繪陰影形狀。",
+
+  "tipsToneCurveSepiaTitle": "色調曲線×懷舊棕，營造復古照片感",
+  "tipsToneCurveSepiaDesc": "先用演出濾鏡的色調曲線調整明暗對比，再疊加懷舊棕濾鏡，就能營造出彷彿褪色老照片般的質感。",
+
+  "tipsCameraLensBlurTitle": "攝影機關鍵影格×鏡頭模糊，做出變焦拉伸效果",
+  "tipsCameraLensBlurDesc": "在攝影機關鍵影格推近的瞬間，臨時把鏡頭模糊演出濾鏡調強，就能演繹出如實拍變焦拉伸般的魄力。",
+
+  "tipsBlurVignetteBgTitle": "高斯模糊×暗角，做出柔和的背景虛化",
+  "tipsBlurVignetteBgDesc": "只對背景圖層疊加高斯模糊和暗角繪圖濾鏡，主角就會自然地更加突出，呈現出具有景深感的鏡頭效果。",
+
+  "tipsSepiaVignetteTitle": "懷舊棕×暗角，打造復古老照片風影片",
+  "tipsSepiaVignetteDesc": "把演出濾鏡的懷舊棕與繪圖濾鏡的暗角組合使用，能讓影片呈現出四角發暗、色彩褪去的復古老照片氛圍。",
+
   "fontSettingsTabDownloaded": "已下載",
   "fontSettingsTabSearch": "搜尋下載",
   "fontSettingsTabImport": "匯入",

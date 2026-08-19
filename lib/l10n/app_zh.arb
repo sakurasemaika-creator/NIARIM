@@ -548,8 +548,8 @@
   "helpProjectDetailTitle": "项目详情画面",
   "helpProjectDetailDesc": "可以统一查看和编辑项目相关设置的画面，包括项目名称、缩略图、收藏状态、要使用的自动上色预设筛选等。前往保存树的入口也在这里。",
 
-  "helpWatermarkEditTitle": "重新编辑浮水印",
-  "helpWatermarkEditDesc": "点击放置在时间轴共同图层轨道上的浮水印，随时可以重新编辑其角度、大小、不透明度、显示范围（循环显示）。不仅在登记时，在项目中实际使用时也能随时细致调整。",
+  "helpWatermarkEditTitle": "重新编辑水印",
+  "helpWatermarkEditDesc": "点击放置在时间轴共同图层轨道上的水印，随时可以重新编辑其角度、大小、不透明度、显示范围（循环显示）。不仅在登记时，在项目中实际使用时也能随时细致调整。",
 
   "helpAudioClipTitle": "音频片段的音量・淡入淡出",
   "helpAudioClipDesc": "放置在时间轴上的音频片段，可以在详情面板中调整音量、淡入、淡出的秒数。可用来调整音效和背景音乐的音量平衡，或让曲子的开头、结尾更加顺滑。",
@@ -688,8 +688,38 @@
   "tipsMosaicChromaticTitle": "马赛克×色差，营造老式显像管的粗糙质感",
   "tipsMosaicChromaticDesc": "先用马赛克降低分辨率，再叠加色差效果，能营造出像在看老式显像管电视般的粗糙质感，与单独使用显像管滤镜的效果又有所不同。",
 
-  "tipsEndCardWatermarkTitle": "EndCard×浮水印，兼顾防盗用与品牌宣传",
-  "tipsEndCardWatermarkDesc": "用片尾标志（EndCard）为视频收尾的同时，在正片中加入浮水印署名，一旦被擅自转载也容易辨明出处，同时也能起到品牌宣传的作用。",
+  "tipsEndCardWatermarkTitle": "EndCard×水印，兼顾防盗用与品牌宣传",
+  "tipsEndCardWatermarkDesc": "用片尾标志（EndCard）为视频收尾的同时，在正片中加入水印署名，一旦被擅自转载也容易辨明出处，同时也能起到品牌宣传的作用。",
+
+  "tipsVerticalPixelFontTitle": "直书×像素字体，打造和风像素画标题",
+  "tipsVerticalPixelFontDesc": "在文字工具的直书中搭配像素模式字体，可以做出让人联想到复古游戏的和风像素画标题。",
+
+  "tipsStampBlendModeTitle": "印章×混合模式，做出发光特效",
+  "tipsStampBlendModeDesc": "把放置的印章图层的混合模式设为「滤色」或「相加」，光效线条或闪亮特效就能自然融入背景，显得更加突出。",
+
+  "tipsQuickToolPenSubTitle": "快捷工具×画笔子工具，打造不间断的作业流程",
+  "tipsQuickToolPenSubDesc": "把常用工具登记到快捷工具，同时善用长按画笔即可切换到网点填充、印章放置的子工具，就能减少画面间的来回切换，保持作业节奏。",
+
+  "tipsAutofillToneReuseTitle": "利用自动上色的网点设置，只需重画线稿就能重现上色",
+  "tipsAutofillToneReuseDesc": "把自动上色预设的各部位设为「使用网点」后，每次重画线稿都能自动重现带网点的上色效果，省去逐帧重新贴网点的麻烦。",
+
+  "tipsRadialVignetteTitle": "放射尺×暗角，营造集中线效果",
+  "tipsRadialVignetteDesc": "用放射尺一口气画出集中线，再叠加绘图滤镜的暗角效果，就能做出如漫画高潮般有魄力的演出。",
+
+  "tipsClippingGradientTitle": "剪裁×渐变，让阴影可以随时重画",
+  "tipsClippingGradientDesc": "把渐变图层剪裁到角色图层上，之后只需改变渐变的范围和角度就能重新调整阴影，不必用笔刷重新描绘阴影形状。",
+
+  "tipsToneCurveSepiaTitle": "色调曲线×怀旧棕，营造复古照片感",
+  "tipsToneCurveSepiaDesc": "先用演出滤镜的色调曲线调整明暗对比，再叠加怀旧棕滤镜，就能营造出仿佛褪色老照片般的质感。",
+
+  "tipsCameraLensBlurTitle": "摄像机关键帧×镜头模糊，做出变焦拉伸效果",
+  "tipsCameraLensBlurDesc": "在摄像机关键帧推近的瞬间，临时把镜头模糊演出滤镜调强，就能演绎出如实拍变焦拉伸般的魄力。",
+
+  "tipsBlurVignetteBgTitle": "高斯模糊×暗角，做出柔和的背景虚化",
+  "tipsBlurVignetteBgDesc": "只对背景图层叠加高斯模糊和暗角绘图滤镜，主角就会自然地更加突出，呈现出具有景深感的镜头效果。",
+
+  "tipsSepiaVignetteTitle": "怀旧棕×暗角，打造复古老照片风视频",
+  "tipsSepiaVignetteDesc": "把演出滤镜的怀旧棕与绘图滤镜的暗角组合使用，能让视频呈现出四角发暗、色彩褪去的复古老照片氛围。",
 
   "fontSettingsTabDownloaded": "已下载",
   "fontSettingsTabSearch": "搜索下载",

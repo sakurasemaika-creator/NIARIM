@@ -691,6 +691,36 @@
   "tipsEndCardWatermarkTitle": "EndCard + filigrane pour se protéger des republications et renforcer sa marque",
   "tipsEndCardWatermarkDesc": "Un logo de fin (EndCard) arrondit votre vidéo, tandis qu'un filigrane sur les images principales rend la source claire en cas de republication non autorisée, tout en servant de branding.",
 
+  "tipsVerticalPixelFontTitle": "Texte vertical + police pixel pour un titre pixel art façon japonaise",
+  "tipsVerticalPixelFontDesc": "Combiner l'écriture verticale de l'outil texte avec une police en mode pixel crée un titre pixel art façon japonaise évoquant un jeu vidéo rétro.",
+
+  "tipsStampBlendModeTitle": "Tampons + mode de fusion pour un effet de lumière",
+  "tipsStampBlendModeDesc": "Régler le mode de fusion d'un calque de tampon placé sur « écran » ou « addition » fait que les traits de lumière ou effets scintillants se fondent naturellement dans le fond et ressortent vraiment.",
+
+  "tipsQuickToolPenSubTitle": "Outil rapide + sous-outils du stylet pour un flux de travail sans interruption",
+  "tipsQuickToolPenSubDesc": "Enregistrez vos outils les plus utilisés dans l'outil rapide, et profitez aussi des sous-outils du stylet (appui long sur le stylet pour passer au remplissage en trame ou au placement de tampon) — vous réduirez les allers-retours entre panneaux et garderez votre rythme.",
+
+  "tipsAutofillToneReuseTitle": "Réutilisez un remplissage en trame juste en retraçant le trait, grâce au réglage de trame du remplissage automatique",
+  "tipsAutofillToneReuseDesc": "Régler chaque partie d'un préréglage de remplissage automatique sur « utiliser une trame » reproduit automatiquement le remplissage en trame à chaque fois que vous retracez le trait — plus besoin de la réappliquer image par image.",
+
+  "tipsRadialVignetteTitle": "Règle radiale + vignettage pour un impact de lignes de vitesse",
+  "tipsRadialVignetteDesc": "Dessinez une rafale de lignes de vitesse d'un coup avec la règle radiale, puis superposez le filtre de dessin vignettage pour un effet façon climax de manga.",
+
+  "tipsClippingGradientTitle": "Détourage + dégradé pour garder l'ombrage modifiable",
+  "tipsClippingGradientDesc": "Détourez un calque de dégradé sur un calque de personnage, et vous pourrez réajuster l'ombrage juste en changeant l'étendue et l'angle du dégradé — plus besoin de redessiner sa forme au pinceau.",
+
+  "tipsToneCurveSepiaTitle": "Courbe de tons + sépia pour un rendu photo rétro",
+  "tipsToneCurveSepiaDesc": "Ajustez le contraste clair/sombre avec le filtre d'effet courbe de tons, puis superposez le sépia, pour une texture façon vieille photo délavée.",
+
+  "tipsCameraLensBlurTitle": "Images clés de caméra + flou d'objectif pour un effet de flou de zoom",
+  "tipsCameraLensBlurDesc": "Synchroniser un filtre d'effet de flou d'objectif plus fort avec le moment où une image clé de caméra zoome donne le punch d'un flou de zoom en prise de vue réelle.",
+
+  "tipsBlurVignetteBgTitle": "Flou gaussien + vignettage pour un bokeh d'arrière-plan doux",
+  "tipsBlurVignetteBgDesc": "Appliquez les filtres de dessin flou gaussien et vignettage uniquement au calque d'arrière-plan, et votre personnage principal ressort naturellement, pour un rendu façon profondeur de champ de caméra.",
+
+  "tipsSepiaVignetteTitle": "Sépia + vignettage pour une vidéo façon photo ancienne",
+  "tipsSepiaVignetteDesc": "Combiner le filtre d'effet sépia avec le filtre de dessin vignettage donne à votre vidéo les coins assombris et l'aspect délavé d'une photo ancienne.",
+
   "fontSettingsTabDownloaded": "Téléchargées",
   "fontSettingsTabSearch": "Rechercher et télécharger",
   "fontSettingsTabImport": "Importer",

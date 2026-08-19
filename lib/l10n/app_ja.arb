@@ -737,6 +737,36 @@
   "tipsEndCardWatermarkTitle": "EndCard×ウォーターマークで転載対策とブランディングを両立",
   "tipsEndCardWatermarkDesc": "エンドロゴ（EndCard）で動画の締めを整えつつ、本編にはウォーターマークで署名を入れておくと、無断転載された際の出どころが分かりやすくなり、ブランディングにもなります。",
 
+  "tipsVerticalPixelFontTitle": "縦書き×ピクセルフォントで和風ドット絵タイトル",
+  "tipsVerticalPixelFontDesc": "テキストツールの縦書きにピクセルモードのフォントを組み合わせると、レトロゲームのような和風ドット絵タイトルが作れます。",
+
+  "tipsStampBlendModeTitle": "スタンプ×ブレンドモードで光のエフェクト",
+  "tipsStampBlendModeDesc": "配置したスタンプのレイヤーをブレンドモード「スクリーン」や「加算」にすると、光の効果線やキラキラしたエフェクトが背景に自然に馴染んで映えます。",
+
+  "tipsQuickToolPenSubTitle": "早替えツール×ペンサブツールで手を止めない作業導線",
+  "tipsQuickToolPenSubDesc": "よく使うツールを早替えツールに登録しつつ、ペンの長押しでトーン貼り・スタンプへ切り替えられるペンサブツールも活用すると、画面を行き来する回数を減らして作業のテンポを保てます。",
+
+  "tipsAutofillToneReuseTitle": "自動塗りのトーン設定で線画差し替えだけで塗りを再現",
+  "tipsAutofillToneReuseDesc": "自動塗りプリセットの各パーツを「トーンを使う」設定にしておくと、線画を描き直すたびにトーン込みの塗りを自動で再現できます。フレームごとにトーンを貼り直す手間を省けます。",
+
+  "tipsRadialVignetteTitle": "放射定規×周辺減光で集中線演出",
+  "tipsRadialVignetteDesc": "放射定規で集中線を一気に描き、描画フィルターの周辺減光を重ねると、漫画のクライマックスのような迫力ある演出になります。",
+
+  "tipsClippingGradientTitle": "クリッピング×グラデーションで陰影を描き直し可能に",
+  "tipsClippingGradientDesc": "グラデーションレイヤーをキャラクターレイヤーへクリッピングしておくと、陰影の形をブラシで描き込まなくても、グラデーションの範囲・角度の変更だけで陰影を調整し直せます。",
+
+  "tipsToneCurveSepiaTitle": "トーンカーブ×セピアでレトロ写真風",
+  "tipsToneCurveSepiaDesc": "演出フィルターのトーンカーブで明暗のコントラストを整えてからセピアを重ねると、色あせた古い写真のような質感を演出できます。",
+
+  "tipsCameraLensBlurTitle": "カメラキーフレーム×レンズぼかしでズームブラー演出",
+  "tipsCameraLensBlurDesc": "カメラキーフレームでズームする瞬間に合わせてレンズぼかしの演出フィルターを一時的に強めに設定すると、実写のズームブラーのような迫力を演出できます。",
+
+  "tipsBlurVignetteBgTitle": "ガウスぼかし×周辺減光で柔らかい背景ボケ",
+  "tipsBlurVignetteBgDesc": "背景レイヤーだけにガウスぼかしと周辺減光の描画フィルターを重ねてかけると、主役のキャラクターが自然と目立つ、被写界深度のあるカメラ風の仕上がりになります。",
+
+  "tipsSepiaVignetteTitle": "セピア×周辺減光でアンティーク写真風の動画に",
+  "tipsSepiaVignetteDesc": "演出フィルターのセピアと描画フィルターの周辺減光を組み合わせると、四隅が暗く色あせたアンティーク写真のような雰囲気の動画に仕上げられます。",
+
   "fontSettingsTabDownloaded": "ダウンロード済み",
   "fontSettingsTabSearch": "探してDL",
   "fontSettingsTabImport": "読み込み",

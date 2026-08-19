@@ -691,6 +691,36 @@
   "tipsEndCardWatermarkTitle": "EndCard×워터마크로 전재 방지와 브랜딩을 동시에",
   "tipsEndCardWatermarkDesc": "엔드 로고（EndCard）로 영상의 마무리를 정돈하면서, 본편에는 워터마크로 서명을 넣어두면 무단 전재되었을 때 출처를 알기 쉬워지고 브랜딩도 됩니다.",
 
+  "tipsVerticalPixelFontTitle": "세로쓰기×픽셀 폰트로 일본풍 도트 그림 타이틀",
+  "tipsVerticalPixelFontDesc": "텍스트 도구의 세로쓰기에 픽셀 모드 폰트를 조합하면 레트로 게임 같은 일본풍 도트 그림 타이틀을 만들 수 있습니다.",
+
+  "tipsStampBlendModeTitle": "스탬프×블렌드 모드로 빛나는 이펙트",
+  "tipsStampBlendModeDesc": "배치한 스탬프 레이어의 블렌드 모드를 「스크린」이나 「가산」으로 하면, 빛 효과선이나 반짝이는 이펙트가 배경에 자연스럽게 어우러져 돋보입니다.",
+
+  "tipsQuickToolPenSubTitle": "빠른 도구×펜 서브 도구로 멈추지 않는 작업 흐름",
+  "tipsQuickToolPenSubDesc": "자주 쓰는 도구를 빠른 도구에 등록해두고, 펜을 길게 눌러 톤 붙이기・스탬프로 전환할 수 있는 펜 서브 도구도 활용하면, 화면을 오가는 횟수를 줄여 작업 리듬을 유지할 수 있습니다.",
+
+  "tipsAutofillToneReuseTitle": "자동 채색의 톤 설정으로 선화만 다시 그려도 채색을 재현",
+  "tipsAutofillToneReuseDesc": "자동 채색 프리셋의 각 파츠를 「톤 사용」으로 설정해두면, 선화를 다시 그릴 때마다 톤이 포함된 채색을 자동으로 재현할 수 있습니다. 프레임마다 톤을 다시 붙이는 수고를 줄일 수 있습니다.",
+
+  "tipsRadialVignetteTitle": "방사형 자×비네트로 집중선 연출",
+  "tipsRadialVignetteDesc": "방사형 자로 집중선을 한 번에 그리고, 그리기 필터의 비네트를 겹치면 만화의 클라이맥스 같은 박력 있는 연출이 됩니다.",
+
+  "tipsClippingGradientTitle": "클리핑×그라데이션으로 음영을 다시 그릴 수 있게",
+  "tipsClippingGradientDesc": "그라데이션 레이어를 캐릭터 레이어에 클리핑해두면, 브러시로 음영 형태를 그려 넣지 않아도 그라데이션의 범위・각도 변경만으로 음영을 다시 조정할 수 있습니다.",
+
+  "tipsToneCurveSepiaTitle": "톤 커브×세피아로 레트로 사진풍",
+  "tipsToneCurveSepiaDesc": "연출 필터의 톤 커브로 명암 대비를 정돈한 뒤 세피아를 겹치면, 색이 바랜 오래된 사진 같은 질감을 연출할 수 있습니다.",
+
+  "tipsCameraLensBlurTitle": "카메라 키프레임×렌즈 블러로 줌 블러 연출",
+  "tipsCameraLensBlurDesc": "카메라 키프레임이 줌인하는 순간에 맞춰 렌즈 블러 연출 필터를 일시적으로 강하게 설정하면, 실사 줌 블러 같은 박력을 연출할 수 있습니다.",
+
+  "tipsBlurVignetteBgTitle": "가우시안 블러×비네트로 부드러운 배경 보케",
+  "tipsBlurVignetteBgDesc": "배경 레이어에만 가우시안 블러와 비네트 그리기 필터를 겹쳐 걸면, 주인공 캐릭터가 자연스럽게 돋보이는 심도감 있는 카메라풍 마무리가 됩니다.",
+
+  "tipsSepiaVignetteTitle": "세피아×비네트로 앤티크 사진풍 영상으로",
+  "tipsSepiaVignetteDesc": "연출 필터의 세피아와 그리기 필터의 비네트를 조합하면, 네 귀퉁이가 어둡고 색이 바랜 앤티크 사진 같은 분위기의 영상으로 완성할 수 있습니다.",
+
   "fontSettingsTabDownloaded": "다운로드됨",
   "fontSettingsTabSearch": "찾아서 다운로드",
   "fontSettingsTabImport": "불러오기",

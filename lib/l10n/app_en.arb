@@ -691,6 +691,36 @@
   "tipsEndCardWatermarkTitle": "EndCard + watermark for both anti-repost protection and branding",
   "tipsEndCardWatermarkDesc": "An end logo (EndCard) rounds off your video, while a watermark on the main footage makes the source clear if it's reposted without permission — and doubles as branding.",
 
+  "tipsVerticalPixelFontTitle": "Vertical text + pixel font for a Japanese-style pixel-art title",
+  "tipsVerticalPixelFontDesc": "Combining vertical writing in the text tool with a pixel-mode font makes a Japanese-style pixel-art title reminiscent of a retro game.",
+
+  "tipsStampBlendModeTitle": "Stamps + blend mode for a light effect",
+  "tipsStampBlendModeDesc": "Setting a placed stamp layer's blend mode to \"screen\" or \"addition\" makes glow lines or sparkle effects blend naturally into the background and really stand out.",
+
+  "tipsQuickToolPenSubTitle": "Quick tool + pen sub-tools for a workflow that never stops",
+  "tipsQuickToolPenSubDesc": "Register your most-used tools to the quick tool, and also make use of the pen sub-tools (long-press the pen to switch to tone fill or stamp placement) — you'll cut down how often you jump between panels and keep your rhythm going.",
+
+  "tipsAutofillToneReuseTitle": "Reuse a tone fill just by redrawing the lineart, via autofill's tone setting",
+  "tipsAutofillToneReuseDesc": "Setting each part in an autofill preset to \"use tone\" reproduces the tone fill automatically every time you redraw the lineart — no need to reapply the tone frame by frame.",
+
+  "tipsRadialVignetteTitle": "Radial ruler + vignette for speed-line impact",
+  "tipsRadialVignetteDesc": "Draw a burst of speed lines all at once with the radial ruler, then layer the vignette draw filter on top for a manga-climax kind of punch.",
+
+  "tipsClippingGradientTitle": "Clipping + gradient to keep shading re-editable",
+  "tipsClippingGradientDesc": "Clip a gradient layer onto a character layer, and you can re-adjust the shading just by changing the gradient's extent and angle — no need to redraw its shape with a brush.",
+
+  "tipsToneCurveSepiaTitle": "Tone curve + sepia for a retro-photo feel",
+  "tipsToneCurveSepiaDesc": "Adjust the light/dark contrast with the tone curve effect filter, then layer sepia on top, for a texture like a faded old photograph.",
+
+  "tipsCameraLensBlurTitle": "Camera keyframes + lens blur for a zoom-blur effect",
+  "tipsCameraLensBlurDesc": "Timing a stronger lens blur effect filter to the moment a camera keyframe zooms in gives it the punch of a live-action zoom blur.",
+
+  "tipsBlurVignetteBgTitle": "Gaussian blur + vignette for a soft background bokeh",
+  "tipsBlurVignetteBgDesc": "Layer the Gaussian blur and vignette draw filters onto just the background layer, and your main character naturally stands out, giving a camera-like depth-of-field finish.",
+
+  "tipsSepiaVignetteTitle": "Sepia + vignette for an antique-photo video",
+  "tipsSepiaVignetteDesc": "Combining the sepia effect filter with the vignette draw filter gives your video the darkened corners and faded look of an antique photograph.",
+
   "fontSettingsTabDownloaded": "Downloaded",
   "fontSettingsTabSearch": "Find & Download",
   "fontSettingsTabImport": "Import",

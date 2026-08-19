@@ -691,6 +691,36 @@
   "tipsEndCardWatermarkTitle": "EndCard + marca de agua para protegerte de repostings y reforzar tu marca a la vez",
   "tipsEndCardWatermarkDesc": "Un logo final (EndCard) redondea tu vídeo, mientras que una marca de agua en el metraje principal deja claro el origen si se reposta sin permiso, y también funciona como branding.",
 
+  "tipsVerticalPixelFontTitle": "Texto vertical + fuente píxel para un título pixel art de estilo japonés",
+  "tipsVerticalPixelFontDesc": "Combinar la escritura vertical de la herramienta de texto con una fuente en modo píxel crea un título pixel art de estilo japonés que recuerda a un videojuego retro.",
+
+  "tipsStampBlendModeTitle": "Sellos + modo de fusión para un efecto de luz",
+  "tipsStampBlendModeDesc": "Ajustar el modo de fusión de una capa de sello colocada a \"pantalla\" o \"suma\" hace que las líneas de brillo o los destellos se integren de forma natural en el fondo y realmente destaquen.",
+
+  "tipsQuickToolPenSubTitle": "Herramienta rápida + subherramientas del lápiz para un flujo de trabajo sin pausas",
+  "tipsQuickToolPenSubDesc": "Registra tus herramientas más usadas en la herramienta rápida, y aprovecha también las subherramientas del lápiz (mantén pulsado el lápiz para cambiar a relleno con tramas o colocación de sellos): reducirás cuánto saltas entre paneles y mantendrás el ritmo.",
+
+  "tipsAutofillToneReuseTitle": "Reutiliza un relleno con tramas solo con redibujar la línea, gracias al ajuste de tramas del relleno automático",
+  "tipsAutofillToneReuseDesc": "Configurar cada parte de un preset de relleno automático como \"usar trama\" reproduce el relleno con tramas automáticamente cada vez que redibujas la línea, sin necesidad de volver a aplicar la trama fotograma a fotograma.",
+
+  "tipsRadialVignetteTitle": "Regla radial + viñeteado para un impacto de líneas de velocidad",
+  "tipsRadialVignetteDesc": "Dibuja una ráfaga de líneas de velocidad de golpe con la regla radial, y luego superpón el filtro de dibujo de viñeteado para un golpe de efecto tipo clímax de manga.",
+
+  "tipsClippingGradientTitle": "Recorte + degradado para poder reeditar el sombreado",
+  "tipsClippingGradientDesc": "Recorta una capa de degradado sobre una capa de personaje, y podrás reajustar el sombreado solo cambiando el alcance y el ángulo del degradado, sin necesidad de redibujar su forma con un pincel.",
+
+  "tipsToneCurveSepiaTitle": "Curva de tonos + sepia para un aire de foto retro",
+  "tipsToneCurveSepiaDesc": "Ajusta el contraste de luces y sombras con el filtro de efecto curva de tonos, y luego superpón sepia, para una textura como de fotografía antigua desvaída.",
+
+  "tipsCameraLensBlurTitle": "Fotogramas clave de cámara + desenfoque de lente para un efecto de zoom blur",
+  "tipsCameraLensBlurDesc": "Sincronizar un filtro de efecto de desenfoque de lente más intenso con el momento en que un fotograma clave de cámara hace zoom le da la fuerza de un zoom blur de imagen real.",
+
+  "tipsBlurVignetteBgTitle": "Desenfoque gaussiano + viñeteado para un bokeh de fondo suave",
+  "tipsBlurVignetteBgDesc": "Aplica los filtros de dibujo de desenfoque gaussiano y viñeteado solo a la capa de fondo, y tu personaje principal destacará de forma natural, dando un acabado tipo profundidad de campo de cámara.",
+
+  "tipsSepiaVignetteTitle": "Sepia + viñeteado para un vídeo estilo foto antigua",
+  "tipsSepiaVignetteDesc": "Combinar el filtro de efecto sepia con el filtro de dibujo de viñeteado da a tu vídeo las esquinas oscurecidas y el aspecto desvaído de una fotografía antigua.",
+
   "fontSettingsTabDownloaded": "Descargadas",
   "fontSettingsTabSearch": "Buscar y descargar",
   "fontSettingsTabImport": "Importar",
