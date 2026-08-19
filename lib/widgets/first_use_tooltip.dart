@@ -31,11 +31,6 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
   final GlobalKey _anchorKey = GlobalKey();
   OverlayEntry? _entry;
 
-  /// 対象ツールをタップした瞬間に呼ばれる。タップ自体（ツール選択・長押し
-  /// メニュー等）の処理は子ウィジェット側のジェスチャー検出でそのまま
-  /// 続行されるため、ここでは吹き出し表示の判定のみ行う。
-  void _handleTapDown(TapDownDetails _) => _maybeShow();
-
   void _maybeShow() {
     if (!mounted) return;
     // 既に表示中の吹き出しがある間は再表示しない。ここをガードしないと、
@@ -130,11 +125,17 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
   @override
   Widget build(BuildContext context) {
     // translucentにすることで、この検出用GestureDetectorが子ウィジェット
-    // 自体のタップ・長押し等のジェスチャー認識を妨げない（onTapDownのみを
-    // 追加で受け取り、それ以外は子側の通常のジェスチャー処理へ委ねる）。
+    // 自体のタップ・長押し等のジェスチャー認識を妨げない。
+    // onTapDown（押した瞬間に無条件で発火し、後から長押し/ドラッグに
+    // 負けてもキャンセルされない）ではなく onTap を使うのがポイント：
+    // onTapは同じジェスチャーアリーナ内の長押し認識に「負けた」場合は
+    // 呼ばれないため、「長押しで機能を開くボタンは、長押し操作時に
+    // チュートリアル自体を表示しない」という要件を満たせる
+    // （以前はonTapDownを使っていたため、長押しのつもりで触れた瞬間にも
+    // 毎回チュートリアルが出てしまっていた）。
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTapDown: _handleTapDown,
+      onTap: _maybeShow,
       child: KeyedSubtree(key: _anchorKey, child: widget.child),
     );
   }
