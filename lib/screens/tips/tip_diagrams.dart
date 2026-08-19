@@ -15,6 +15,8 @@ enum TipDiagramKind {
   pressureCurve,
   effectFilter,
   cameraKeyframe,
+  exportFormat,
+  gestureShortcut,
 }
 
 class TipDiagram extends StatelessWidget {
@@ -47,6 +49,8 @@ class _TipDiagramPainter extends CustomPainter {
       case TipDiagramKind.pressureCurve: _paintPressureCurve(canvas, size);
       case TipDiagramKind.effectFilter: _paintEffectFilter(canvas, size);
       case TipDiagramKind.cameraKeyframe: _paintCameraKeyframe(canvas, size);
+      case TipDiagramKind.exportFormat: _paintExportFormat(canvas, size);
+      case TipDiagramKind.gestureShortcut: _paintGestureShortcut(canvas, size);
     }
   }
 
@@ -193,5 +197,52 @@ class _TipDiagramPainter extends CustomPainter {
     canvas.drawRRect(RRect.fromRectAndRadius(small, const Radius.circular(3)), _strokeOutline);
     canvas.drawRRect(RRect.fromRectAndRadius(large, const Radius.circular(4)), _strokePrimary);
     _arrow(canvas, Offset(small.right + 6, size.height * 0.5), Offset(large.left - 6, size.height * 0.5), _strokeOutline);
+  }
+
+  /// 3つの書き出し形式チップ（透過＝市松模様・動画＝塗り＋再生アイコン・GIF＝丸枠）。
+  void _paintExportFormat(Canvas canvas, Size size) {
+    final w = (size.width - 40) / 3;
+    for (int i = 0; i < 3; i++) {
+      final rect = Rect.fromLTWH(16 + i * (w + 12), size.height * 0.22, w, size.height * 0.56);
+      final rr = RRect.fromRectAndRadius(rect, const Radius.circular(5));
+      canvas.drawRRect(rr, _strokeOutline);
+      switch (i) {
+        case 0: // 透過WebM：市松模様
+          canvas.save();
+          canvas.clipRRect(rr);
+          final cell = rect.width / 4;
+          final checker = Paint()..color = scheme.outlineVariant.withValues(alpha: 0.5);
+          for (int gy = 0; gy < 4; gy++) {
+            for (int gx = 0; gx < 4; gx++) {
+              if ((gx + gy).isEven) continue;
+              canvas.drawRect(Rect.fromLTWH(rect.left + gx * cell, rect.top + gy * cell, cell, cell), checker);
+            }
+          }
+          canvas.restore();
+        case 1: // MP4：再生アイコン
+          canvas.drawRRect(rr, _fillPrimaryFaint);
+          final c = rect.center;
+          final play = Path()
+            ..moveTo(c.dx - 6, c.dy - 8)
+            ..lineTo(c.dx - 6, c.dy + 8)
+            ..lineTo(c.dx + 8, c.dy)
+            ..close();
+          canvas.drawPath(play, _fillPrimary);
+        default: // GIF：丸いループ矢印
+          canvas.drawRRect(rr, _fillPrimaryFaint);
+          canvas.drawArc(Rect.fromCenter(center: rect.center, width: 20, height: 20), 0.3, 5, false, _strokePrimary);
+      }
+    }
+  }
+
+  /// 画面の上に重なる2本指タップと、Undoの巻き戻し矢印。
+  void _paintGestureShortcut(Canvas canvas, Size size) {
+    final screen = Rect.fromLTWH(size.width * 0.5 - 42, size.height * 0.3, 84, size.height * 0.6);
+    canvas.drawRRect(RRect.fromRectAndRadius(screen, const Radius.circular(8)), _strokeOutline);
+    canvas.drawArc(Rect.fromCenter(center: screen.center, width: 30, height: 30), 3.7, 4.2, false, _strokePrimary);
+    canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.16), 9, _fillPrimaryFaint);
+    canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.16), 9, _fillPrimaryFaint);
+    canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.16), 9, _strokePrimary);
+    canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.16), 9, _strokePrimary);
   }
 }

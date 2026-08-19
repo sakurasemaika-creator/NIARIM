@@ -464,11 +464,25 @@
   "helpPerformanceSettingsTitle": "Réglages de performance",
   "helpPerformanceSettingsDesc": "Choisissez parmi les préréglages de qualité basse, moyenne ou haute selon les capacités de votre appareil, ou configurez chaque élément individuellement (personnalisé). En plus de la méthode d'enregistrement, du cache de tuiles, du papier calque et de la détection d'inclinaison, les réglages qui affectent la taille de l'application et sa fluidité — comme la longueur de l'historique d'annulation et la suppression automatique de la corbeille — sont également regroupés ici.",
 
+  "helpMaterialClipTitle": "Clips de matériel (image / vidéo / audio)",
+  "helpMaterialClipDesc": "Clips placés sur les pistes image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Toucher un clip ouvre sa fiche détaillée, où l'icône de copie le duplique et l'icône de corbeille le supprime. Les clips image et vidéo sont gérés en interne comme des calques, tandis que l'audio est géré comme un clip rattaché directement à la scène.",
+
+  "helpGestureSettingsTitle": "Réglages des gestes",
+  "helpGestureSettingsDesc": "Permet d'associer des actions — annuler/rétablir, déplacement de fotogramme, pipette et plus — à un appui à deux doigts, un appui à trois doigts, un glissement à deux doigts ou un appui long. Les boutons du stylet (sur les modèles compatibles) peuvent aussi être associés séparément. Pratique pour déclencher des actions fréquentes d'un seul geste sans changer d'outil.",
+
+  "helpBucketDetailSettingsTitle": "Réglages détaillés du seau de peinture",
+  "helpBucketDetailSettingsDesc": "Depuis la section « Seau de peinture » des réglages, vous pouvez ajuster la tolérance (quelle différence de couleur par rapport au pixel cliqué compte encore comme la même zone), l'extension en px (de combien la zone remplie dépasse la bordure pour combler les écarts du trait) et le remplissage sous le trait (compose le remplissage étendu derrière les pixels existants au lieu de peindre par-dessus le trait, préservant son apparence). Les ajuster aide quand le trait a de petits écarts ou que le remplissage semble incomplet.",
+
+  "helpDrawingFilterTitle": "Filtres de dessin",
+  "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d'effet, qui s'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d'origine : il dessine seulement le résultat contourné sur un nouveau calque.",
+
   "tipsScreenTitle": "Astuces",
+  "tipsSearchHint": "Rechercher une astuce...",
   "tipsCategoryVideo": "Astuces pour créer des vidéos",
   "tipsCategoryEfficiency": "Astuces pour travailler plus vite",
   "tipsCategoryDrawing": "Astuces pour un dessin plus fluide",
   "tipsCategoryEffects": "Astuces de style et de finition",
+  "tipsCategoryExport": "Astuces d'export et de flux de travail",
 
   "tipsClipDuplicateTitle": "Les clips de la timeline peuvent être dupliqués, déplacés et supprimés",
   "tipsClipDuplicateDesc": "Touchez un clip image, vidéo ou audio pour ouvrir sa fiche détaillée, puis utilisez l'icône de copie pour le dupliquer. Réutiliser le même effet sonore ou replacer la même image dans plusieurs scènes ne demande qu'un glisser en appui long et un appui sur le bouton de duplication.",
@@ -493,6 +507,12 @@
 
   "tipsCameraKeyframeTitle": "Ajoutez zoom et panoramique avec les images clés de caméra",
   "tipsCameraKeyframeDesc": "Placer des images clés de caméra sur une scène permet d'ajouter un mouvement cinématographique — zoom, panoramique — même à une simple image fixe.",
+
+  "tipsExportFormatTitle": "Choisissez le format d'export selon l'usage",
+  "tipsExportFormatDesc": "Le GIF convient pour publier facilement sur les réseaux sociaux, le WebM transparent pour superposer sur une autre vidéo ou garder un fond transparent, et le MP4 pour un usage vidéo classique. Choisir selon l'usage facilite l'équilibre entre taille de fichier et qualité.",
+
+  "tipsGestureShortcutTitle": "Associez un geste aux actions fréquentes",
+  "tipsGestureShortcutDesc": "Depuis « Gestes » dans les réglages, vous pouvez associer annuler/rétablir ou la pipette à un appui à deux doigts, un appui à trois doigts ou un appui long. Comme vous n'avez pas à changer d'outil, cela ne casse pas le rythme du dessin.",
 
   "fontSettingsTabDownloaded": "Téléchargées",
   "fontSettingsTabSearch": "Rechercher et télécharger",

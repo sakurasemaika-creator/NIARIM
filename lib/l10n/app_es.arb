@@ -464,11 +464,25 @@
   "helpPerformanceSettingsTitle": "Ajustes de rendimiento",
   "helpPerformanceSettingsDesc": "Elige entre los preajustes de calidad baja, media o alta según la capacidad de tu dispositivo, o configura cada elemento individualmente (personalizado). Además del método de guardado, el caché de mosaicos, el papel cebolla y la detección de inclinación, aquí también se agrupan los ajustes que afectan al tamaño de la aplicación y a su fluidez, como la longitud del historial de deshacer y la eliminación automática de la papelera.",
 
+  "helpMaterialClipTitle": "Clips de material (imagen / vídeo / audio)",
+  "helpMaterialClipDesc": "Clips colocados en las pistas de imagen, vídeo y audio de la línea de tiempo. Mantén pulsado y arrastra el cuerpo del clip para mover su posición de inicio, o arrastra las asas de los extremos para cambiar cuánto se usa. Toca un clip para abrir su hoja de detalles, donde el icono de copia lo duplica y el icono de papelera lo elimina. Los clips de imagen y vídeo se gestionan internamente como capas, mientras que los de audio se gestionan como clips vinculados directamente a la escena.",
+
+  "helpGestureSettingsTitle": "Ajustes de gestos",
+  "helpGestureSettingsDesc": "Permite asignar acciones —deshacer/rehacer, mover fotograma, cuentagotas y más— a un toque con dos dedos, un toque con tres dedos, un deslizamiento con dos dedos o una pulsación larga. Los botones del lápiz (en lápices compatibles) también se pueden asignar por separado. Útil para activar acciones frecuentes con un solo toque sin cambiar de herramienta.",
+
+  "helpBucketDetailSettingsTitle": "Ajustes detallados de relleno con cubo",
+  "helpBucketDetailSettingsDesc": "Desde la sección \"Relleno con cubo\" de los ajustes puedes ajustar la tolerancia (cuánta diferencia de color respecto al píxel pulsado sigue contando como la misma zona), la expansión en px (cuánto se extiende el área rellenada más allá del borde para cubrir huecos en la línea) y rellenar bajo la línea (compone el relleno expandido detrás de los píxeles existentes en lugar de pintar sobre la línea, manteniendo su aspecto intacto). Ajustarlos ayuda cuando la línea tiene pequeños huecos o el relleno queda incompleto.",
+
+  "helpDrawingFilterTitle": "Filtros de dibujo",
+  "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva.",
+
   "tipsScreenTitle": "Consejos",
+  "tipsSearchHint": "Buscar consejos...",
   "tipsCategoryVideo": "Consejos para crear vídeos",
   "tipsCategoryEfficiency": "Consejos para trabajar más rápido",
   "tipsCategoryDrawing": "Consejos para dibujar con más fluidez",
   "tipsCategoryEffects": "Consejos de estilo y acabado",
+  "tipsCategoryExport": "Consejos de exportación y flujo de trabajo",
 
   "tipsClipDuplicateTitle": "Los clips de la línea de tiempo se pueden duplicar, mover y eliminar",
   "tipsClipDuplicateDesc": "Toca un clip de imagen, vídeo o audio para abrir su hoja de detalles y usa el icono de copia para duplicarlo. Reutilizar el mismo efecto de sonido o reubicar la misma imagen en varias escenas solo requiere una pulsación larga y arrastrar, y un toque en el botón de duplicar.",
@@ -493,6 +507,12 @@
 
   "tipsCameraKeyframeTitle": "Añade zoom y paneo con fotogramas clave de cámara",
   "tipsCameraKeyframeDesc": "Colocar fotogramas clave de cámara en una escena permite añadir movimiento cinematográfico —zoom, paneo— incluso a una sola imagen fija.",
+
+  "tipsExportFormatTitle": "Elige el formato de exportación según el uso",
+  "tipsExportFormatDesc": "GIF es ideal para publicar rápido en redes sociales; WebM transparente sirve para superponer sobre otro vídeo o mantener el fondo transparente; MP4 es para usarlo como vídeo normal. Elegir según el caso de uso facilita equilibrar tamaño de archivo y calidad.",
+
+  "tipsGestureShortcutTitle": "Asigna un gesto a las acciones frecuentes",
+  "tipsGestureShortcutDesc": "Desde \"Gestos\" en los ajustes puedes asignar deshacer/rehacer o el cuentagotas a un toque con dos dedos, un toque con tres dedos o una pulsación larga. Al no tener que cambiar de herramienta, no rompes el ritmo del dibujo.",
 
   "fontSettingsTabDownloaded": "Descargadas",
   "fontSettingsTabSearch": "Buscar y descargar",

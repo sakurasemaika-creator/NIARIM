@@ -68,8 +68,10 @@ class _HelpScreenState extends State<HelpScreen> {
         // ── タイムライン・アニメーション ──────────────────────────
         _HelpEntry(topicKey: 'タイムライン', title: l10n.helpTimelineTitle, description: l10n.helpTimelineDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'シーン', title: l10n.helpSceneTitle, description: l10n.helpSceneDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '素材クリップ', title: l10n.helpMaterialClipTitle, description: l10n.helpMaterialClipDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '演出フィルター', title: l10n.helpEffectFilterTitle, description: l10n.helpEffectFilterDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '描画フィルター', title: l10n.helpDrawingFilterTitle, description: l10n.helpDrawingFilterDesc, category: l10n.helpCategoryDrawing),
         _HelpEntry(topicKey: 'EndCard（エンドロゴ）', title: l10n.helpEndCardTitle, description: l10n.helpEndCardDesc, category: l10n.helpCategoryExport),
 
         // ── 保存・プロジェクト管理 ─────────────────────────────────
@@ -91,6 +93,8 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium),
         _HelpEntry(topicKey: 'フォント管理', title: l10n.helpFontManagementTitle, description: l10n.helpFontManagementDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'パフォーマンス設定', title: l10n.helpPerformanceSettingsTitle, description: l10n.helpPerformanceSettingsDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: 'バケツ塗り詳細設定', title: l10n.helpBucketDetailSettingsTitle, description: l10n.helpBucketDetailSettingsDesc, category: l10n.helpCategorySettings),
       ];
 
   @override

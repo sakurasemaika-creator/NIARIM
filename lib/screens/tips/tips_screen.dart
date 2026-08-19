@@ -6,8 +6,23 @@ import 'tip_diagrams.dart';
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
 /// 各項目は「図解＋要点」「タイトル＋詳しい説明」の2ページを横スライドで
 /// 見られる構成にし、1画面あたりの図・文章を大きく表示できるようにしている。
-class TipsScreen extends StatelessWidget {
+/// ヘルプ画面と同様、タイトル・説明・カテゴリ名から検索できる。
+class TipsScreen extends StatefulWidget {
   const TipsScreen({super.key});
+
+  @override
+  State<TipsScreen> createState() => _TipsScreenState();
+}
+
+class _TipsScreenState extends State<TipsScreen> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   List<_TipCategory> _buildCategories(AppLocalizations l10n) => [
         _TipCategory(
@@ -42,40 +57,81 @@ class TipsScreen extends StatelessWidget {
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsCameraKeyframeTitle, l10n.tipsCameraKeyframeDesc),
           ],
         ),
+        _TipCategory(
+          title: l10n.tipsCategoryExport,
+          icon: Icons.ios_share_outlined,
+          tips: [
+            _Tip(TipDiagramKind.exportFormat, l10n.tipsExportFormatTitle, l10n.tipsExportFormatDesc),
+            _Tip(TipDiagramKind.gestureShortcut, l10n.tipsGestureShortcutTitle, l10n.tipsGestureShortcutDesc),
+          ],
+        ),
       ];
+
+  bool _matches(_Tip tip, String category) =>
+      _searchQuery.isEmpty ||
+      tip.title.contains(_searchQuery) ||
+      tip.description.contains(_searchQuery) ||
+      category.contains(_searchQuery);
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final categories = _buildCategories(l10n);
+    final categories = _buildCategories(l10n)
+        .map((c) => _TipCategory(title: c.title, icon: c.icon, tips: c.tips.where((t) => _matches(t, c.title)).toList()))
+        .where((c) => c.tips.isNotEmpty)
+        .toList();
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tipsScreenTitle)),
       body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.all(12),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(category.icon, size: 18, color: scheme.primary),
-                      const SizedBox(width: 6),
-                      Text(category.title,
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: scheme.primary)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  for (final tip in category.tips) _TipCard(tip: tip),
-                ],
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: l10n.tipsSearchHint,
+                  prefixIcon: const Icon(Icons.search),
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
               ),
-            );
-          },
+            ),
+            Expanded(
+              child: categories.isEmpty
+                  ? Center(
+                      child: Text(l10n.helpNoResults,
+                          style: TextStyle(color: scheme.onSurfaceVariant)),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(category.icon, size: 18, color: scheme.primary),
+                                  const SizedBox(width: 6),
+                                  Text(category.title,
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: scheme.primary)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              for (final tip in category.tips) _TipCard(tip: tip),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );

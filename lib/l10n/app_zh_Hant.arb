@@ -464,11 +464,25 @@
   "helpPerformanceSettingsTitle": "效能設定",
   "helpPerformanceSettingsDesc": "可依裝置效能從低畫質・中畫質・高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式・圖塊快取・洋蔥皮・傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。",
 
+  "helpMaterialClipTitle": "素材片段（圖片・影片・音訊）",
+  "helpMaterialClipDesc": "放置在時間軸圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。點擊片段會開啟詳細面板，其中的複製圖示用於複製、垃圾桶圖示用於刪除。圖片・影片在內部作為圖層處理，音訊則作為直接掛在場景上的片段管理。",
+
+  "helpGestureSettingsTitle": "手勢設定",
+  "helpGestureSettingsDesc": "可以將復原/重做、跳至影格、取色器等操作指派給雙指點擊、三指點擊、雙指滑動或長按。觸控筆按鍵（在支援的觸控筆上）也可以單獨指派操作。想不切換工具就用一個動作觸發常用操作時很方便。",
+
+  "helpBucketDetailSettingsTitle": "填色工具詳細設定",
+  "helpBucketDetailSettingsDesc": "在設定畫面的「填色工具」中可以調整容許誤差（點擊位置的顏色相差多少仍視為同一區域）、擴充px（填色區域向邊界外擴展多少以填補線稿的縫隙）以及潛入線條下方（不覆蓋線稿本身，而是把擴充部分合成到既有像素的背後，藉此保持線條外觀不變）。當線稿有細小縫隙或填色感覺不完整時，調整這些設定能讓效果更穩定。",
+
+  "helpDrawingFilterTitle": "繪圖濾鏡",
+  "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（與套用於整條時間軸或整個場景的演出濾鏡不同，繪圖濾鏡按圖層生效）。包含模糊、銳化、USM銳化、色調曲線、色階、暗角、雜訊、復古動畫、映像管、動畫風、外框、像素化等。外框不會改寫原圖層，只會把外框後的結果繪製到一個新圖層上。",
+
   "tipsScreenTitle": "使用技巧",
+  "tipsSearchHint": "搜尋技巧...",
   "tipsCategoryVideo": "影片製作技巧",
   "tipsCategoryEfficiency": "提高製作效率的技巧",
   "tipsCategoryDrawing": "讓作畫更流暢的技巧",
   "tipsCategoryEffects": "演出與收尾的技巧",
+  "tipsCategoryExport": "匯出與操作技巧",
 
   "tipsClipDuplicateTitle": "時間軸上的素材也能複製、移動、刪除",
   "tipsClipDuplicateDesc": "點擊圖片、影片或音訊素材可開啟詳細面板，點擊其中的複製圖示即可複製該素材。反覆使用同一段音效，或把同一張圖片重新放到不同場景，只需長按拖曳加上一次複製按鈕就能完成。",
@@ -493,6 +507,12 @@
 
   "tipsCameraKeyframeTitle": "用攝影機關鍵影格製作推拉與平移效果",
   "tipsCameraKeyframeDesc": "在場景中加入攝影機關鍵影格，即使是一張靜止畫面，也能加上拉近、平移等具有影像感的運動效果。",
+
+  "tipsExportFormatTitle": "依用途選擇匯出格式",
+  "tipsExportFormatDesc": "想輕鬆發到社群平台時用GIF匯出，想疊加到其他影片上或保留透明背景時用透明WebM，想作為一般影片使用時用MP4匯出。依用途區分使用，更容易在檔案大小與畫質之間取得平衡。",
+
+  "tipsGestureShortcutTitle": "用手勢把常用操作變成一觸即達",
+  "tipsGestureShortcutDesc": "在設定畫面的「手勢」中，可以把復原/重做或取色器指派給雙指點擊、三指點擊或長按。不用切換工具，就不會打亂作畫的節奏。",
 
   "fontSettingsTabDownloaded": "已下載",
   "fontSettingsTabSearch": "搜尋下載",

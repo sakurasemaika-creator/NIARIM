@@ -464,11 +464,25 @@
   "helpPerformanceSettingsTitle": "Performance Settings",
   "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, tile cache, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.",
 
+  "helpMaterialClipTitle": "Material clips (image / video / audio)",
+  "helpMaterialClipDesc": "Clips placed on the timeline's image, video, and audio tracks. Long-press-drag a clip's body to move its start position, or drag the handles at either end to change how much of it is used. Tap a clip to open its detail sheet, where the copy icon duplicates it and the trash icon deletes it. Image and video clips are internally handled as layers, while audio clips are managed as clips attached directly to the scene.",
+
+  "helpGestureSettingsTitle": "Gesture settings",
+  "helpGestureSettingsDesc": "Lets you assign actions — undo/redo, frame move, eyedropper, and more — to a two-finger tap, three-finger tap, two-finger swipe, or long press. Pen buttons (on supported styluses) can also be assigned separately. Handy for triggering frequent actions with one touch instead of switching tools.",
+
+  "helpBucketDetailSettingsTitle": "Bucket fill detail settings",
+  "helpBucketDetailSettingsDesc": "From the \"Bucket Fill\" section in settings, you can adjust tolerance (how much color difference from the clicked pixel still counts as the same region), expand px (how far the filled area extends past the boundary to cover gaps in the lineart), and fill under line (composites the expanded fill behind existing pixels instead of painting over the lineart, keeping the line's look intact). Adjusting these helps when the lineart has small gaps or fills feel incomplete.",
+
+  "helpDrawingFilterTitle": "Draw filters",
+  "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer.",
+
   "tipsScreenTitle": "Tips",
+  "tipsSearchHint": "Search tips...",
   "tipsCategoryVideo": "Video-making tips",
   "tipsCategoryEfficiency": "Tips to work faster",
   "tipsCategoryDrawing": "Tips for smoother drawing",
   "tipsCategoryEffects": "Tips for styling and polish",
+  "tipsCategoryExport": "Export & workflow tips",
 
   "tipsClipDuplicateTitle": "Timeline clips can be duplicated, moved, and deleted",
   "tipsClipDuplicateDesc": "Tap an image, video, or audio clip to open its detail sheet, then use the copy icon to duplicate it. Reusing the same sound effect or repositioning the same image across scenes only takes a long-press drag and a tap of the duplicate button.",
@@ -493,6 +507,12 @@
 
   "tipsCameraKeyframeTitle": "Add zoom and pan with camera keyframes",
   "tipsCameraKeyframeDesc": "Placing camera keyframes on a scene lets you add cinematic movement — zooming in, panning — even to a single still image.",
+
+  "tipsExportFormatTitle": "Pick the export format that fits your purpose",
+  "tipsExportFormatDesc": "GIF export is great for casual posting to social media, transparent WebM is for layering over other video or keeping the background transparent, and MP4 is for a regular video file. Choosing per use case makes it easier to balance file size against quality.",
+
+  "tipsGestureShortcutTitle": "Bind frequent actions to a gesture",
+  "tipsGestureShortcutDesc": "From \"Gestures\" in settings, you can assign undo/redo or the eyedropper to a two-finger tap, three-finger tap, or long press. Since you don't have to switch tools, it keeps your drawing rhythm from breaking.",
 
   "fontSettingsTabDownloaded": "Downloaded",
   "fontSettingsTabSearch": "Find & Download",
