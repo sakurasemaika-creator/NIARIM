@@ -557,6 +557,21 @@
   "helpConvertToCommonTitle": "Converting a layer to common",
   "helpConvertToCommonDesc": "Converts a normal layer into a common layer (one that keeps showing the same content across multiple frames). You can also merge the currently visible layers into one before converting. Saves you redrawing something like a background that stays the same every frame.",
 
+  "helpAnimatedNoiseFilterTitle": "Animated noise filter",
+  "helpAnimatedNoiseFilterDesc": "An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move.",
+
+  "helpRainFilterTitle": "Rain filter",
+  "helpRainFilterDesc": "An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.",
+
+  "helpPenSubToolTitle": "Pen sub-tools",
+  "helpPenSubToolDesc": "Long-pressing the pen tool switches it from regular drawing to the tone-fill or stamp-placement sub-tools. Lets you move between several tasks from the same pen without constantly switching tools.",
+
+  "helpTiltDetectionTitle": "Tilt detection",
+  "helpTiltDetectionDesc": "A setting that uses tilt data from a supported stylus to thicken or thin the line as you lay the pen tip down, recreating a feel closer to a real drawing tool. Toggle it on/off from performance settings.",
+
+  "helpEffectFilterOrderTitle": "Effect filter order",
+  "helpEffectFilterOrderDesc": "Multiple effect filters can be stacked, and they're applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they're actually applied on screen.",
+
   "helpDrawingFilterTitle": "Draw filters",
   "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer.",
 

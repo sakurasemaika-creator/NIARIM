@@ -557,6 +557,21 @@
   "helpConvertToCommonTitle": "圖層共用化",
   "helpConvertToCommonDesc": "可以把一般圖層轉換為共用圖層（在多個影格中持續顯示相同內容的圖層）的功能。也可以先把目前顯示的圖層合併為一張，再進行共用化。想反覆使用背景等每影格內容相同的部分時，可以省去重新繪製的麻煩。",
 
+  "helpAnimatedNoiseFilterTitle": "動態雜訊濾鏡",
+  "helpAnimatedNoiseFilterDesc": "一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。",
+
+  "helpRainFilterTitle": "下雨濾鏡",
+  "helpRainFilterDesc": "用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。",
+
+  "helpPenSubToolTitle": "畫筆子工具",
+  "helpPenSubToolDesc": "長按畫筆工具，可以從一般繪圖切換到網點填色或印章放置等子工具。不用每次切換工具，就能用同一支筆在多種作業之間來回操作。",
+
+  "helpTiltDetectionTitle": "傾斜偵測",
+  "helpTiltDetectionDesc": "利用支援的觸控筆的傾斜資訊，在筆尖傾斜放倒時讓線條變粗或變淡，重現更接近實際畫具的書寫手感的設定。可以在效能設定中開關。",
+
+  "helpEffectFilterOrderTitle": "演出濾鏡的套用順序",
+  "helpEffectFilterOrderDesc": "演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。",
+
   "helpDrawingFilterTitle": "繪圖濾鏡",
   "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（與套用於整條時間軸或整個場景的演出濾鏡不同，繪圖濾鏡按圖層生效）。包含模糊、銳化、USM銳化、色調曲線、色階、暗角、雜訊、復古動畫、映像管、動畫風、外框、像素化等。外框不會改寫原圖層，只會把外框後的結果繪製到一個新圖層上。",
 

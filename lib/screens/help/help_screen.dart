@@ -50,6 +50,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool),
+        _HelpEntry(topicKey: 'ペンサブツール', title: l10n.helpPenSubToolTitle, description: l10n.helpPenSubToolDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '早替えツール管理', title: l10n.helpQuickToolManagementTitle, description: l10n.helpQuickToolManagementDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool),
         _HelpEntry(topicKey: 'カラーピッカー', title: l10n.helpColorPickerTitle, description: l10n.helpColorPickerDesc, category: l10n.helpCategoryTool),
@@ -90,6 +91,9 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'ウォーターマークの再編集', title: l10n.helpWatermarkEditTitle, description: l10n.helpWatermarkEditDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '演出フィルター', title: l10n.helpEffectFilterTitle, description: l10n.helpEffectFilterDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '演出フィルターの適用順', title: l10n.helpEffectFilterOrderTitle, description: l10n.helpEffectFilterOrderDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '動くノイズフィルター', title: l10n.helpAnimatedNoiseFilterTitle, description: l10n.helpAnimatedNoiseFilterDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: '雨フィルター', title: l10n.helpRainFilterTitle, description: l10n.helpRainFilterDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '描画フィルター', title: l10n.helpDrawingFilterTitle, description: l10n.helpDrawingFilterDesc, category: l10n.helpCategoryDrawing),
         _HelpEntry(topicKey: 'レイヤーキーフレーム', title: l10n.helpLayerKeyframeTitle, description: l10n.helpLayerKeyframeDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'レイヤーグループ', title: l10n.helpLayerGroupTitle, description: l10n.helpLayerGroupDesc, category: l10n.helpCategoryAnimation),
@@ -125,6 +129,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'ワークスペース設定', title: l10n.helpWorkspaceSettingsTitle, description: l10n.helpWorkspaceSettingsDesc, category: l10n.helpCategorySettings),
         _HelpEntry(topicKey: 'ペン設定', title: l10n.helpPenSettingsTitle, description: l10n.helpPenSettingsDesc, category: l10n.helpCategoryPenInput),
         _HelpEntry(topicKey: 'Undo回数設定', title: l10n.helpUndoSettingsTitle, description: l10n.helpUndoSettingsDesc, category: l10n.helpCategorySettings),
+        _HelpEntry(topicKey: '傾き検知', title: l10n.helpTiltDetectionTitle, description: l10n.helpTiltDetectionDesc, category: l10n.helpCategoryPenInput),
       ];
 
   @override

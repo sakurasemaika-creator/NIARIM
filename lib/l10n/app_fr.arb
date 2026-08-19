@@ -557,6 +557,21 @@
   "helpConvertToCommonTitle": "Convertir un calque en calque commun",
   "helpConvertToCommonDesc": "Convertit un calque normal en calque commun (qui continue d'afficher le même contenu sur plusieurs images). Vous pouvez aussi fusionner les calques actuellement visibles en un seul avant la conversion. Vous évite de redessiner un élément comme un arrière-plan qui reste identique à chaque image.",
 
+  "helpAnimatedNoiseFilterTitle": "Filtre de bruit animé",
+  "helpAnimatedNoiseFilterDesc": "Un filtre d'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l'impression que le grain bouge.",
+
+  "helpRainFilterTitle": "Filtre de pluie",
+  "helpRainFilterDesc": "Un filtre d'effet qui fait tomber de la pluie à l'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l'image avance, pour un mouvement de pluie naturel.",
+
+  "helpPenSubToolTitle": "Sous-outils du stylet",
+  "helpPenSubToolDesc": "Un appui long sur l'outil stylet le fait passer du dessin normal aux sous-outils de remplissage en trame ou de placement de tampon. Permet de passer d'une tâche à l'autre avec le même stylet sans changer d'outil sans arrêt.",
+
+  "helpTiltDetectionTitle": "Détection d'inclinaison",
+  "helpTiltDetectionDesc": "Un réglage qui utilise les données d'inclinaison d'un stylet compatible pour épaissir ou affiner le trait quand vous couchez la pointe, reproduisant une sensation plus proche d'un vrai outil de dessin. Activez-le ou désactivez-le depuis les réglages de performance.",
+
+  "helpEffectFilterOrderTitle": "Ordre des filtres d'effet",
+  "helpEffectFilterOrderDesc": "Plusieurs filtres d'effet peuvent être superposés, et ils s'appliquent dans l'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l'ordre réellement appliqué à l'écran.",
+
   "helpDrawingFilterTitle": "Filtres de dessin",
   "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d'effet, qui s'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d'origine : il dessine seulement le résultat contourné sur un nouveau calque.",
 
