@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'mesh_warp_engine.dart';
 
 /// シーンID・フレームIndex・レイヤーIDから、TileManager内部で使用する
 /// 合成キーを生成する。
@@ -289,6 +290,32 @@ class TileManager {
     picture.dispose();
     final byteData = await transformed.toByteData(format: ui.ImageByteFormat.rawRgba);
     transformed.dispose();
+    if (byteData == null) return;
+    replaceLayerPixels(layerId, byteData.buffer.asUint8List());
+  }
+
+  /// レイヤー全体をメッシュ変形（自由変形・格子状の制御点をドラッグして
+  /// 変形する新機能）で変換し、結果をタイルへ書き戻す。[controlPoints]は
+  /// (rows+1)*(cols+1)点、行優先、canvasWidth×canvasHeight座標系
+  /// （[MeshWarpEngine]参照）。
+  Future<void> meshTransformLayer(
+    String layerId,
+    int rows,
+    int cols,
+    List<ui.Offset> controlPoints,
+  ) async {
+    final composite = await compositeLayerToImage(layerId);
+    final warped = await MeshWarpEngine.warp(
+      image: composite,
+      rows: rows,
+      cols: cols,
+      controlPoints: controlPoints,
+      outputWidth: canvasWidth,
+      outputHeight: canvasHeight,
+    );
+    composite.dispose();
+    final byteData = await warped.toByteData(format: ui.ImageByteFormat.rawRgba);
+    warped.dispose();
     if (byteData == null) return;
     replaceLayerPixels(layerId, byteData.buffer.asUint8List());
   }

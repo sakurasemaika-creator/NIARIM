@@ -38,6 +38,7 @@ import 'widgets/onion_skin_panel.dart';
 import 'widgets/ruler_panel.dart';
 import 'widgets/filter_panel.dart';
 import 'widgets/quick_tool_panel.dart';
+import 'widgets/mesh_transform_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
 
@@ -72,12 +73,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showFilterPanel = false;
   bool _showQuickToolPanel = false;
 
+  // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
+  // 実際の格子点ドラッグ・ワーププレビューはCanvasArea側で完結させ、
+  // ここでは分割数・回転・拡大縮小の現在値と、確定／キャンセルの
+  // トークン（増加するたびにCanvasArea側の対応する処理を1回起動する）
+  // だけを持つ（RulerPanel等と同様、パネルの主導権はこの画面側）。
+  bool _showMeshTransformPanel = false;
+  int _meshDensity = 1;
+  double _meshRotateDeg = 0.0;
+  double _meshScaleValue = 1.0;
+  int _meshCommitToken = 0;
+  int _meshCancelToken = 0;
+
   /// モバイルレイアウトのオーバーレイパネル（レイヤー・色・ブラシ・トーン・
   /// スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・早替え
-  /// ツール設定）は、右側/左側に重なって同時表示されると片方が下敷きになり
-  /// 閉じるボタンを押せなくなる不具合があった（「レイヤーパネルが一度表示
-  /// すると非表示に戻せない」の原因）。いずれかを開く前に必ずこれを呼び、
-  /// 常に高々1枚のみが表示された状態を保つ。
+  /// ツール設定・自由変形/メッシュ変形）は、右側/左側に重なって同時表示
+  /// されると片方が下敷きになり閉じるボタンを押せなくなる不具合があった
+  /// （「レイヤーパネルが一度表示すると非表示に戻せない」の原因）。
+  /// いずれかを開く前に必ずこれを呼び、常に高々1枚のみが表示された状態を保つ。
   void _closeAllOverlayPanels() {
     _showLayerPanel = false;
     _showColorPicker = false;
@@ -89,7 +102,43 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showRulerPanel = false;
     _showFilterPanel = false;
     _showQuickToolPanel = false;
+    // 他のパネルを開く操作で自由変形/メッシュ変形パネルが押し出される場合は、
+    // 未確定のワーププレビューを残さないようキャンセル扱いにする。
+    if (_showMeshTransformPanel) {
+      _showMeshTransformPanel = false;
+      _meshCancelToken++;
+      if (_currentTool == DrawingTool.meshTransform) _currentTool = DrawingTool.pen;
+    }
   }
+
+  /// 自由変形・メッシュ変形パネルを開く（キャンバス上部バーの「設定/編集」
+  /// メニューから、仕様書28：既存の変形ツールと異なり範囲選択なしで
+  /// レイヤー全体を対象にする）。開くたびに分割数・回転・拡大縮小の
+  /// スライダー値を初期状態へ戻す。
+  void _openMeshTransformPanel() => setState(() {
+        _closeAllOverlayPanels();
+        _showMeshTransformPanel = true;
+        _meshDensity = 1;
+        _meshRotateDeg = 0.0;
+        _meshScaleValue = 1.0;
+        _currentTool = DrawingTool.meshTransform;
+      });
+
+  /// 自由変形・メッシュ変形の確定（コントロールパネルの「適用」ボタン）。
+  void _applyMeshTransform() => setState(() {
+        _meshCommitToken++;
+        _showMeshTransformPanel = false;
+        _currentTool = DrawingTool.pen;
+      });
+
+  /// 自由変形・メッシュ変形のキャンセル（コントロールパネルの「キャンセル」
+  /// ボタン・閉じるボタン）。ワーププレビューは破棄され、レイヤーへは
+  /// 何も反映されない。
+  void _cancelMeshTransform() => setState(() {
+        _meshCancelToken++;
+        _showMeshTransformPanel = false;
+        _currentTool = DrawingTool.pen;
+      });
 
   /// ブラシサイズ／不透明度が描画結果に影響するツールかどうか
   /// （仕様書02・タスク#96：描画エリア最大化のため、無関係なツール
@@ -210,6 +259,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
               onTap: () {
                 Navigator.pop(ctx);
                 context.push('/settings/pen');
+              },
+            ),
+            // レイヤー全体の自由変形・メッシュ変形（仕様書28：新機能）。
+            // 範囲選択の変形と異なり、選択範囲なしで現在レイヤー全体を
+            // 自由に動かせる。
+            ListTile(
+              leading: const Icon(Icons.crop_free),
+              title: Text(l10n.canvasEditMenuMeshTransform),
+              subtitle: Text(l10n.canvasEditMenuMeshTransformSubtitle),
+              onTap: () {
+                Navigator.pop(ctx);
+                _openMeshTransformPanel();
               },
             ),
           ],
@@ -484,6 +545,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     onNextQuickTool: _applyNextQuickTool,
                     onToggleOnionSkin: () => setState(() =>
                         _onionSkinSettings = _onionSkinSettings.copyWith(enabled: !_onionSkinSettings.enabled)),
+                    meshDensity: _meshDensity,
+                    meshRotateDeg: _meshRotateDeg,
+                    meshScaleValue: _meshScaleValue,
+                    meshCommitToken: _meshCommitToken,
+                    meshCancelToken: _meshCancelToken,
                   ),
                   // ツールオプション系フローティングパネル（ブラシ・トーン・
                   // スタンプ・ペンサブツール・オニオンスキン・定規・
@@ -669,6 +735,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
             // 早替えツール設定パネル（仕様書02・08）
             if (_showQuickToolPanel && !isDesktop)
               _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: null, bottom: 16, child: _quickToolPanel()),
+            // レイヤー全体の自由変形・メッシュ変形パネル（仕様書28：新機能）。
+            // 他パネルと異なり、格子点のドラッグ操作自体はこのパネルの外＝
+            // キャンバス側で行うため、あえて_anyToolPanelOpen（パネル外タップ
+            // で閉じる透明バリア）の対象には含めない（含めると、格子点を
+            // ドラッグしようとした最初のタップでバリアがパネルをキャンセル
+            // してしまい操作不能になる）。
+            if (_showMeshTransformPanel && !isDesktop)
+              _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 56, bottom: null, child: _meshTransformPanel()),
           ],
         ),
       ),
@@ -705,6 +779,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (_showRulerPanel) return _rulerPanel();
     if (_showFilterPanel) return _filterPanel();
     if (_showQuickToolPanel) return _quickToolPanel();
+    if (_showMeshTransformPanel) return _meshTransformPanel();
     return null;
   }
 
@@ -813,6 +888,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
         currentBrushId: context.read<BrushService>().currentBrush?.id,
         currentBrushName: context.read<BrushService>().currentBrush?.name,
         currentSize: _brushSize,
+      );
+
+  /// レイヤー全体の自由変形・メッシュ変形パネル（仕様書28：新機能）。
+  Widget _meshTransformPanel() => MeshTransformPanel(
+        density: _meshDensity,
+        rotateDeg: _meshRotateDeg,
+        scaleValue: _meshScaleValue,
+        onDensityChanged: (v) => setState(() => _meshDensity = v),
+        onRotateChanged: (v) => setState(() => _meshRotateDeg = v),
+        onScaleChanged: (v) => setState(() => _meshScaleValue = v),
+        onApply: _applyMeshTransform,
+        onCancel: _cancelMeshTransform,
+        onClose: _cancelMeshTransform,
       );
 
   /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの
@@ -1423,6 +1511,12 @@ enum DrawingTool {
   // 手のひらツール（仕様書08）：ジェスチャー／ペンボタンからのみ到達する一時ツール。
   // ツールバーには表示せず、描画を行わずキャンバスの平行移動のみを行う。
   pan,
+  // レイヤー全体の自由変形・メッシュ変形：範囲選択せずに現在レイヤー全体を
+  // 変形できる点がtransformと異なる（transformは4隅の一体スケール・回転の
+  // みだが、こちらは格子点を個別にドラッグできる自由変形・メッシュ変形）。
+  // ツールバーには表示せず、キャンバス上部バーの「設定/編集」メニューから
+  // のみ到達する一時ツール。
+  meshTransform,
 }
 
 /// 図形ツールの種別（仕様書03：タップでポップアップ表示・OFF/線/四角形/円）

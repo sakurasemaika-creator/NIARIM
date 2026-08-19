@@ -12,6 +12,7 @@ import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/layer_keyframe_engine.dart';
+import '../../../engine/mesh_warp_engine.dart';
 import '../../../engine/onion_skin.dart';
 import '../../../engine/procedural_texture.dart';
 import '../../../engine/ruler_engine.dart';
@@ -63,6 +64,20 @@ class CanvasArea extends StatefulWidget {
   // オニオンスキンON/OFF切替（仕様書22：ジェスチャーに割り当て可能）
   final VoidCallback? onToggleOnionSkin;
 
+  // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
+  // 実際の格子点ドラッグ操作はポインター処理を持つこのWidget内で完結させ、
+  // 分割数変更・回転・拡大縮小・確定・キャンセルは編集メニューから開く
+  // コントロールパネル（canvas_screen.dart側）から、値の変化・トークンの
+  // 増加という一方向のプロパティ変化として伝える（RulerPanelと同じく
+  // 「操作の主導権は上位Widget、実処理はCanvasArea」という構成だが、
+  // 確定処理がTileManagerへの非同期書き込みを伴うためコールバックではなく
+  // プロパティ監視（didUpdateWidget）で駆動する）。
+  final int meshDensity;
+  final double meshRotateDeg;
+  final double meshScaleValue;
+  final int meshCommitToken;
+  final int meshCancelToken;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -84,6 +99,11 @@ class CanvasArea extends StatefulWidget {
     this.onGestureToggleTool,
     this.onNextQuickTool,
     this.onToggleOnionSkin,
+    this.meshDensity = 1,
+    this.meshRotateDeg = 0.0,
+    this.meshScaleValue = 1.0,
+    this.meshCommitToken = 0,
+    this.meshCancelToken = 0,
   });
 
   @override
@@ -141,7 +161,11 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// （手のひらツール選択中のみ例外的に許可）。既存のInteractiveViewerの
   /// panEnabled/scaleEnabledと同じ条件（仕様書08：パームリジェクション）。
   bool get _canTouchTransform =>
-      !_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan;
+      // メッシュ変形ツール中は、2本指以上でもキャンバス自体のパン・ズーム・
+      // 回転へ渡さず、各指を個別に別々の格子点操作へ渡す（複数指で複数の
+      // 角を同時につまんで引っ張る＝回転・拡大縮小相当の操作、仕様書28）。
+      widget.currentTool != DrawingTool.meshTransform &&
+      (!_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan);
 
   late TileManager _tileManager;
   late DrawingEngine _drawingEngine;
@@ -190,6 +214,26 @@ class _CanvasAreaState extends State<CanvasArea> {
   Offset? _transformStart;
   Offset? _transformCenter;
   Matrix4? _transformLive;
+
+  // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
+  // 格子点は行優先（(rows+1)*(cols+1)点）でキャンバスピクセル座標系。
+  // rows=cols=1（4隅のみ）なら「自由変形」、増やすと「メッシュ変形」になる
+  // （同じ仕組みの分割数違い）。ペン等と違い、範囲選択なしでレイヤー全体を
+  // 対象にする。
+  int meshRows = 1;
+  int meshCols = 1;
+  List<Offset>? meshControlPoints;
+  // 変形対象レイヤーの、ツールを開いた時点での合成画像（ワープのソース）。
+  ui.Image? meshSourceImage;
+  // ポインターID→ドラッグ中の格子点インデックス（複数指で別々の点を同時に
+  // つまんで動かせる。2本の角を掴んで引っ張れば、そのまま「2本指での
+  // 回転・拡大縮小」相当の操作になる）。
+  final Map<int, int> _meshPointerToIndex = {};
+  static const double _meshHandleHitRadius = 28.0;
+  // 確定処理（TileManagerへの非同期書き込み）が進行中はキャンセル処理を
+  // 無効化する（進行中にmeshSourceImageをdisposeしてしまうと、非同期処理が
+  // まだ参照しているui.Imageが破棄され例外になるため）。
+  bool _meshCommitInFlight = false;
 
   // ─── 選択ツールの移動・回転・拡大縮小（仕様書03・16） ─────────────────
   bool _selectionTransformActive = false;
@@ -285,11 +329,44 @@ class _CanvasAreaState extends State<CanvasArea> {
       }
     }
     _recomposeSurroundings(force: frameChanged);
+
+    // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ──────────────────
+    final enteredMeshTransform = old.currentTool != DrawingTool.meshTransform &&
+        widget.currentTool == DrawingTool.meshTransform;
+    final leftMeshTransform = old.currentTool == DrawingTool.meshTransform &&
+        widget.currentTool != DrawingTool.meshTransform;
+    if (enteredMeshTransform) {
+      _beginMeshTransform();
+    }
+    if (widget.currentTool == DrawingTool.meshTransform &&
+        old.meshDensity != widget.meshDensity) {
+      _applyMeshDensity(widget.meshDensity);
+    }
+    if (old.meshRotateDeg != widget.meshRotateDeg) {
+      _applyMeshRotateDelta(widget.meshRotateDeg - old.meshRotateDeg);
+    }
+    if (old.meshScaleValue != widget.meshScaleValue && old.meshScaleValue != 0) {
+      _applyMeshScaleDelta(widget.meshScaleValue / old.meshScaleValue);
+    }
+    if (old.meshCommitToken != widget.meshCommitToken) {
+      _commitMeshTransform();
+    }
+    if (old.meshCancelToken != widget.meshCancelToken) {
+      _cancelMeshTransform();
+    }
+    // ツール切替ボタンなど、確定・キャンセルのトークンを経由せずツールが
+    // 離脱した場合の保険（本来はcanvas_screen.dart側で必ずどちらかの
+    // トークンを増やしてから離脱させる想定だが、念のため）。コミット処理が
+    // 進行中の場合は_cancelMeshTransform内のガードにより何もしない。
+    if (leftMeshTransform) {
+      _cancelMeshTransform();
+    }
   }
 
   @override
   void dispose() {
     _holdEyedropperTimer?.cancel();
+    meshSourceImage?.dispose();
     _transformController.dispose();
     _compositeImage?.dispose();
     _belowImage?.dispose();
@@ -582,6 +659,13 @@ class _CanvasAreaState extends State<CanvasArea> {
       _beginTransform(canvasPos);
       return;
     }
+    if (widget.currentTool == DrawingTool.meshTransform) {
+      final idx = _hitTestMeshPoint(canvasPos);
+      if (idx != null) {
+        _meshPointerToIndex[event.pointer] = idx;
+      }
+      return;
+    }
     if (widget.currentTool == DrawingTool.ruler) {
       _handleRulerDown(canvasPos);
       return;
@@ -681,6 +765,16 @@ class _CanvasAreaState extends State<CanvasArea> {
       _updateTransform(canvasPos);
       return;
     }
+    if (widget.currentTool == DrawingTool.meshTransform) {
+      final idx = _meshPointerToIndex[event.pointer];
+      final points = meshControlPoints;
+      if (idx != null && points != null) {
+        final updated = List<Offset>.of(points);
+        updated[idx] = canvasPos;
+        setState(() => meshControlPoints = updated);
+      }
+      return;
+    }
     if (widget.currentTool == DrawingTool.ruler) {
       _handleRulerMove(canvasPos);
       return;
@@ -774,6 +868,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.transform) {
       _commitTransform();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.meshTransform) {
+      _meshPointerToIndex.remove(event.pointer);
       return;
     }
     if (widget.currentTool == DrawingTool.ruler) {
@@ -1376,6 +1474,152 @@ class _CanvasAreaState extends State<CanvasArea> {
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
       _finishTileUndo();
+    });
+  }
+
+  // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
+  // 範囲選択せずに現在レイヤー全体を対象にする点は変形ツールと同じだが、
+  // 4隅（自由変形）または格子状に分割した各点（メッシュ変形）を個別に
+  // ドラッグでき、台形・平行四辺形・波打つような自由な歪みを付けられる。
+  // 分割数・回転・拡大縮小はcanvas_screen.dart側のコントロールパネルから、
+  // プロパティの変化・トークンの増加としてdidUpdateWidget経由で伝わる。
+
+  /// メッシュ変形ツールへ切り替わった直後：現在レイヤーの合成画像を
+  /// ワープ元として取得し、既定の分割数（widget.meshDensity）で規則格子を
+  /// 初期状態として設定する。
+  Future<void> _beginMeshTransform() async {
+    final key = _tileKeyFor(_layerId);
+    final source = await _tileManager.compositeLayerToImage(key);
+    if (!mounted || widget.currentTool != DrawingTool.meshTransform) {
+      source.dispose();
+      return;
+    }
+    final rows = widget.meshDensity.clamp(1, 10);
+    final bounds = Rect.fromLTWH(
+        0, 0, _tileManager.canvasWidth.toDouble(), _tileManager.canvasHeight.toDouble());
+    setState(() {
+      meshSourceImage?.dispose();
+      meshRows = rows;
+      meshCols = rows;
+      meshSourceImage = source;
+      meshControlPoints = MeshWarpEngine.regularGrid(rows, rows, bounds);
+      _meshPointerToIndex.clear();
+    });
+  }
+
+  /// 分割数（1〜10）が変わった：格子点を新しい分割数の規則格子へ作り直す
+  /// （仕様上、分割数変更時点までの個別ドラッグ・回転・拡大縮小はリセット
+  /// される。単純さを優先した仕様）。
+  void _applyMeshDensity(int density) {
+    if (meshSourceImage == null) return;
+    final rows = density.clamp(1, 10);
+    final bounds = Rect.fromLTWH(
+        0, 0, _tileManager.canvasWidth.toDouble(), _tileManager.canvasHeight.toDouble());
+    setState(() {
+      meshRows = rows;
+      meshCols = rows;
+      meshControlPoints = MeshWarpEngine.regularGrid(rows, rows, bounds);
+      _meshPointerToIndex.clear();
+    });
+  }
+
+  Offset _meshCentroid(List<Offset> points) {
+    var sum = Offset.zero;
+    for (final p in points) {
+      sum += p;
+    }
+    return sum / points.length.toDouble();
+  }
+
+  /// 回転スライダーの値がdeltaDeg（度）分変化した：現在の全格子点を、
+  /// それらの重心を中心にdeltaDeg分だけ追加で回転する（スライダー自体は
+  /// 絶対値を持つが、格子点側は直前の適用分からの差分だけを毎回加える
+  /// ため、個別ドラッグ操作と自然に共存できる）。
+  void _applyMeshRotateDelta(double deltaDeg) {
+    final points = meshControlPoints;
+    if (points == null || deltaDeg == 0) return;
+    final center = _meshCentroid(points);
+    final rad = deltaDeg * math.pi / 180;
+    final cosA = math.cos(rad);
+    final sinA = math.sin(rad);
+    final rotated = points.map((p) {
+      final d = p - center;
+      return Offset(d.dx * cosA - d.dy * sinA, d.dx * sinA + d.dy * cosA) + center;
+    }).toList();
+    setState(() => meshControlPoints = rotated);
+  }
+
+  /// 拡大縮小スライダーの値がratio倍変化した：現在の全格子点を、それらの
+  /// 重心を中心にratio倍だけ追加で拡大縮小する（回転と同様、直前の適用分
+  /// からの差分＝比率のみを加える）。
+  void _applyMeshScaleDelta(double ratio) {
+    final points = meshControlPoints;
+    if (points == null || ratio == 0 || !ratio.isFinite) return;
+    final center = _meshCentroid(points);
+    final scaled = points.map((p) => center + (p - center) * ratio).toList();
+    setState(() => meshControlPoints = scaled);
+  }
+
+  /// タップ・ドラッグ開始位置(canvasPos)に最も近い格子点を探す（現在の
+  /// キャンバス表示倍率に関わらず一定の見た目のヒット半径になるよう、
+  /// _meshHandleHitRadius（画面px相当）を表示倍率で割ってキャンバス
+  /// ピクセル空間の半径へ変換する）。
+  int? _hitTestMeshPoint(Offset canvasPos) {
+    final points = meshControlPoints;
+    if (points == null) return null;
+    final scale = _transformController.value.getMaxScaleOnAxis();
+    final radius = _meshHandleHitRadius / (scale > 0 ? scale : 1);
+    int? best;
+    double bestDist = radius;
+    for (int i = 0; i < points.length; i++) {
+      final d = (points[i] - canvasPos).distance;
+      if (d <= bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  /// 確定（コントロールパネルの「適用」ボタン）：ワープ後の画像をラスタライズ
+  /// してレイヤーのタイルへ書き戻し、Undo履歴へ登録する。
+  Future<void> _commitMeshTransform() async {
+    final points = meshControlPoints;
+    final source = meshSourceImage;
+    if (points == null || source == null) return;
+    final rows = meshRows;
+    final cols = meshCols;
+    _meshCommitInFlight = true;
+    _beginTileUndo();
+    try {
+      await _tileManager.meshTransformLayer(_tileKeyFor(_layerId), rows, cols, points);
+    } finally {
+      _meshCommitInFlight = false;
+    }
+    if (!mounted) return;
+    _scheduleComposite();
+    _markLineartDirtyIfNeeded();
+    _finishTileUndo();
+    setState(() {
+      meshControlPoints = null;
+      meshSourceImage?.dispose();
+      meshSourceImage = null;
+      _meshPointerToIndex.clear();
+    });
+  }
+
+  /// キャンセル（コントロールパネルの「キャンセル」ボタン・閉じるボタン・
+  /// ツール離脱時の保険）：ワープ元画像・格子点を破棄してプレビューを消す
+  /// だけで、レイヤーへは何も書き戻さない。確定処理が進行中の場合は、
+  /// その処理がまだ参照しているui.Imageを誤ってdisposeしないよう何もしない。
+  void _cancelMeshTransform() {
+    if (_meshCommitInFlight) return;
+    if (meshControlPoints == null && meshSourceImage == null) return;
+    setState(() {
+      meshControlPoints = null;
+      meshSourceImage?.dispose();
+      meshSourceImage = null;
+      _meshPointerToIndex.clear();
     });
   }
 
@@ -2307,6 +2551,11 @@ class _CanvasAreaState extends State<CanvasArea> {
                   floatingSelectionImage: _floatingSelectionImage,
                   selectionTransformLive: _selectionTransformLive,
                   selectionTransformBounds: _selectionTransformBounds,
+                  meshRows: meshRows,
+                  meshCols: meshCols,
+                  meshControlPoints: meshControlPoints,
+                  meshSourceImage: meshSourceImage,
+                  showMeshHandles: widget.currentTool == DrawingTool.meshTransform,
                 ),
                 size: Size.infinite,
               ),
@@ -2378,6 +2627,13 @@ class _CanvasPainter extends CustomPainter {
   final ui.Image? floatingSelectionImage;
   final Matrix4? selectionTransformLive;
   final Rect? selectionTransformBounds;
+  // レイヤー全体の自由変形・メッシュ変形（新機能）：ワープ元画像・格子点は
+  // ライブプレビューの描画に、showMeshHandlesは格子線・ハンドルの表示要否に使う。
+  final int meshRows;
+  final int meshCols;
+  final List<Offset>? meshControlPoints;
+  final ui.Image? meshSourceImage;
+  final bool showMeshHandles;
 
   static const Color _outsideColor = Color(0xFF3A3A3A);
   static const double _checkerSize = 16.0;
@@ -2409,6 +2665,11 @@ class _CanvasPainter extends CustomPainter {
     this.floatingSelectionImage,
     this.selectionTransformLive,
     this.selectionTransformBounds,
+    this.meshRows = 1,
+    this.meshCols = 1,
+    this.meshControlPoints,
+    this.meshSourceImage,
+    this.showMeshHandles = false,
   });
 
   @override
@@ -2433,7 +2694,30 @@ class _CanvasPainter extends CustomPainter {
     }
 
     // 現在レイヤー（不透明度・ブレンドモードを反映）
-    if (compositeImage != null) {
+    if (meshSourceImage != null && meshControlPoints != null) {
+      // レイヤー全体の自由変形・メッシュ変形：ドラッグ中はコミット前の
+      // ワーププレビューとして、通常のcompositeImageの代わりにワープ元画像を
+      // ui.Vertices（三角形メッシュ・テクスチャ座標付き）で描画する。
+      final meshCurrentPaint = Paint()
+        ..color = Color.fromARGB(
+            (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(), 255, 255, 255)
+        ..blendMode = mapLayerBlendMode(currentLayerBlendMode);
+      final sx = drawingRect.width / meshSourceImage!.width;
+      final sy = drawingRect.height / meshSourceImage!.height;
+      canvas.save();
+      canvas.translate(drawingRect.left, drawingRect.top);
+      canvas.scale(sx, sy);
+      final vertices = MeshWarpEngine.buildVertices(
+        image: meshSourceImage!,
+        rows: meshRows,
+        cols: meshCols,
+        controlPoints: meshControlPoints!,
+      );
+      meshCurrentPaint.shader = ui.ImageShader(meshSourceImage!, ui.TileMode.clamp,
+          ui.TileMode.clamp, MeshWarpEngine.identityMatrix4, filterQuality: ui.FilterQuality.low);
+      canvas.drawVertices(vertices, BlendMode.srcOver, meshCurrentPaint);
+      canvas.restore();
+    } else if (compositeImage != null) {
       final currentPaint = Paint()
         ..color = Color.fromARGB(
             (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(), 255, 255, 255)
@@ -2584,6 +2868,36 @@ class _CanvasPainter extends CustomPainter {
       }
       handle(ts(Offset(w, h))); // 拡縮ハンドル
       handle(ts(Offset(w / 2, -40))); // 回転ハンドル
+    }
+
+    // レイヤー全体の自由変形・メッシュ変形：格子線・各格子点のドラッグハンドル
+    if (showMeshHandles && meshControlPoints != null && meshSourceImage != null) {
+      final points = meshControlPoints!;
+      final gsx = drawingRect.width / meshSourceImage!.width;
+      final gsy = drawingRect.height / meshSourceImage!.height;
+      Offset gts(Offset p) => drawingRect.topLeft + Offset(p.dx * gsx, p.dy * gsy);
+      final gridPaint = Paint()
+        ..color = Colors.blue.withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      int idxAt(int r, int c) => r * (meshCols + 1) + c;
+      for (int r = 0; r <= meshRows; r++) {
+        for (int c = 0; c <= meshCols; c++) {
+          final p = gts(points[idxAt(r, c)]);
+          if (c < meshCols) {
+            canvas.drawLine(p, gts(points[idxAt(r, c + 1)]), gridPaint);
+          }
+          if (r < meshRows) {
+            canvas.drawLine(p, gts(points[idxAt(r + 1, c)]), gridPaint);
+          }
+        }
+      }
+      for (final p in points) {
+        final hp = gts(p);
+        canvas.drawCircle(hp, 8, Paint()..color = Colors.blue.withValues(alpha: 0.85));
+        canvas.drawCircle(
+            hp, 8, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+      }
     }
 
     // 選択ツールの移動・回転・拡大縮小：選択範囲のバウンディングボックス・
@@ -2824,6 +3138,11 @@ class _CanvasPainter extends CustomPainter {
       old.floatingSelectionImage != floatingSelectionImage ||
       old.selectionTransformLive != selectionTransformLive ||
       old.selectionTransformBounds != selectionTransformBounds ||
+      old.meshRows != meshRows ||
+      old.meshCols != meshCols ||
+      old.meshControlPoints != meshControlPoints ||
+      old.meshSourceImage != meshSourceImage ||
+      old.showMeshHandles != showMeshHandles ||
       old.project?.drawingAreaScale != project?.drawingAreaScale ||
       old.project?.exportWidth != project?.exportWidth ||
       old.project?.exportHeight != project?.exportHeight;
