@@ -72,6 +72,14 @@ class HomeDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.lightbulb_outline),
+            title: Text(l10n.homeDrawerTips),
+            onTap: () {
+              Navigator.pop(context);
+              context.push('/tips');
+            },
+          ),
+          ListTile(
             leading: Icon(Icons.workspace_premium_outlined, color: scheme.primary),
             title: Text(l10n.homeDrawerPremium),
             onTap: () {

@@ -16,6 +16,7 @@ import 'screens/settings/theme_settings_screen.dart';
 import 'screens/settings/watermark_settings_screen.dart';
 import 'screens/export/export_screen.dart';
 import 'screens/help/help_screen.dart';
+import 'screens/tips/tips_screen.dart';
 import 'screens/premium/premium_screen.dart';
 import 'screens/autofill/autofill_preset_screen.dart';
 import 'screens/save_tree/save_tree_screen.dart';
@@ -60,6 +61,7 @@ final appRouter = GoRouter(
       builder: (context, state) =>
           HelpScreen(initialTopic: state.uri.queryParameters['topic']),
     ),
+    GoRoute(path: '/tips', builder: (context, state) => const TipsScreen()),
     GoRoute(path: '/premium', builder: (context, state) => const PremiumScreen()),
     GoRoute(path: '/autofill-presets', builder: (context, state) => const AutofillPresetScreen()),
     GoRoute(

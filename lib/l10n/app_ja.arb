@@ -148,6 +148,7 @@
   "homeDrawerAutofillPreset": "自動塗りプリセット",
   "homeDrawerSettings": "設定",
   "homeDrawerHelp": "ヘルプ",
+  "homeDrawerTips": "活用Tips",
   "homeDrawerPremium": "プレミアム",
 
   "gestureActionNoneShort": "なし",
@@ -508,6 +509,36 @@
 
   "helpPerformanceSettingsTitle": "パフォーマンス設定",
   "helpPerformanceSettingsDesc": "端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・タイルキャッシュ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。",
+
+  "tipsScreenTitle": "活用Tips",
+  "tipsCategoryVideo": "動画制作のコツ",
+  "tipsCategoryEfficiency": "制作を効率化するコツ",
+  "tipsCategoryDrawing": "作画をなめらかにするコツ",
+  "tipsCategoryEffects": "演出・仕上げのコツ",
+
+  "tipsClipDuplicateTitle": "タイムラインの素材は複製・移動・削除ができる",
+  "tipsClipDuplicateDesc": "画像・動画・音声クリップをタップすると開く詳細シートのコピーアイコンから複製できます。同じ効果音を繰り返し使う、同じ画像を場面ごとに配置し直すといった編集が、長押しドラッグと複製ボタンだけで完結します。",
+
+  "tipsTextCaptionTitle": "テキストツールで字幕・ツッコミを入れる",
+  "tipsTextCaptionDesc": "テキストツールを使えば、ミーム動画でおなじみの字幕やツッコミコメントをフレームごとに配置できます。フォントをピクセルモードに切り替えると、あえて古いゲーム風の質感も演出できます。",
+
+  "tipsAutofillPresetTitle": "自動塗りプリセットはパーツごとに登録しておく",
+  "tipsAutofillPresetDesc": "肌・髪・服などパーツごとに陰影込みでプリセット登録しておくと、線画を描くだけで色塗りの大部分を自動化できます。プロジェクトごとに使うプリセットだけを絞り込むこともできます。",
+
+  "tipsBrushFavoriteTitle": "ブラシはお気に入り登録で迷わず選べる",
+  "tipsBrushFavoriteDesc": "よく使うブラシはお気に入り登録しておくと一覧の上部にまとまり、切り替えの手間が減ります。誤って削除しないよう、お気に入り登録中は削除できない仕組みになっています。",
+
+  "tipsOnionSkinTitle": "オニオンスキンで前後のフレームを透かして見る",
+  "tipsOnionSkinDesc": "前後のフレームを半透明で重ねて表示できるオニオンスキン機能を使うと、動きの繋がりを確認しながら作画できます。",
+
+  "tipsPressureCurveTitle": "筆圧カーブを自分好みに調整する",
+  "tipsPressureCurveDesc": "設定画面の筆圧カーブは最大10点の制御点を自由に打てます。強弱の付き方が合わないと感じたら、自分の筆圧の癖に合わせて調整してみましょう。",
+
+  "tipsEffectFilterTitle": "演出フィルターで動画全体の雰囲気を統一する",
+  "tipsEffectFilterDesc": "レトロアニメ・ブラウン管・セピアなどの演出フィルターは、タイムライン全体やシーン単位でまとめて適用できます。Y2K風・懐かしいアニメ風など、動画全体の質感を一括で変えたいときに便利です。",
+
+  "tipsCameraKeyframeTitle": "カメラキーフレームでズーム・パンを演出する",
+  "tipsCameraKeyframeDesc": "シーンにカメラキーフレームを打つと、静止した1枚絵でもズームイン・パンといった映像的な動きを加えられます。",
 
   "fontSettingsTabDownloaded": "ダウンロード済み",
   "fontSettingsTabSearch": "探してDL",

@@ -123,6 +123,7 @@
   "homeDrawerAutofillPreset": "自动上色预设",
   "homeDrawerSettings": "设置",
   "homeDrawerHelp": "帮助",
+  "homeDrawerTips": "使用技巧",
   "homeDrawerPremium": "Premium",
 
   "gestureActionNoneShort": "无",
@@ -462,6 +463,36 @@
 
   "helpPerformanceSettingsTitle": "性能设置",
   "helpPerformanceSettingsDesc": "可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・图块缓存・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。",
+
+  "tipsScreenTitle": "使用技巧",
+  "tipsCategoryVideo": "视频制作技巧",
+  "tipsCategoryEfficiency": "提高制作效率的技巧",
+  "tipsCategoryDrawing": "让作画更流畅的技巧",
+  "tipsCategoryEffects": "演出与收尾的技巧",
+
+  "tipsClipDuplicateTitle": "时间轴上的素材也能复制、移动、删除",
+  "tipsClipDuplicateDesc": "点击图片、视频或音频素材可打开详情面板，点击其中的复制图标即可复制该素材。反复使用同一段音效，或把同一张图片重新摆放到不同场景，只需长按拖动加上一次复制按钮就能完成。",
+
+  "tipsTextCaptionTitle": "用文字工具添加字幕和吐槽",
+  "tipsTextCaptionDesc": "使用文字工具可以逐帧放置梗视频里常见的字幕或吐槽文字。将字体切换为像素模式，还能故意做出老游戏般的复古质感。",
+
+  "tipsAutofillPresetTitle": "按部位分别注册自动上色预设",
+  "tipsAutofillPresetDesc": "为皮肤、头发、衣服等部位分别注册包含阴影的预设后，只需画出线稿，就能自动完成大部分上色。也可以按项目筛选只使用其中一部分预设。",
+
+  "tipsBrushFavoriteTitle": "把常用笔刷加入收藏，切换时不用再找",
+  "tipsBrushFavoriteDesc": "把常用的笔刷加入收藏后会集中显示在列表顶部，减少切换的麻烦。收藏中的笔刷无法被误删。",
+
+  "tipsOnionSkinTitle": "用洋葱皮透视前后帧",
+  "tipsOnionSkinDesc": "洋葱皮功能可以半透明地叠加显示前后帧，让你在作画时确认动作是否衔接自然。",
+
+  "tipsPressureCurveTitle": "把压感曲线调整成适合自己的手感",
+  "tipsPressureCurveDesc": "设置画面中的压感曲线最多可以自由添加10个控制点。如果觉得力度反馈不太合适，可以按照自己的下笔习惯来调整。",
+
+  "tipsEffectFilterTitle": "用演出滤镜统一整段视频的氛围",
+  "tipsEffectFilterDesc": "复古动画、显像管、怀旧色调等演出滤镜，可以一次性应用到整条时间轴或整个场景。想让整段视频呈现Y2K风或怀旧动画感时非常方便。",
+
+  "tipsCameraKeyframeTitle": "用摄像机关键帧制作推拉和平移效果",
+  "tipsCameraKeyframeDesc": "在场景中打上摄像机关键帧，即使是一张静止的画面，也能加上推近、平移等具有影像感的运动效果。",
 
   "fontSettingsTabDownloaded": "已下载",
   "fontSettingsTabSearch": "搜索下载",

@@ -123,6 +123,7 @@
   "homeDrawerAutofillPreset": "Preajustes de coloreado automático",
   "homeDrawerSettings": "Ajustes",
   "homeDrawerHelp": "Ayuda",
+  "homeDrawerTips": "Consejos",
   "homeDrawerPremium": "Premium",
 
   "gestureActionNoneShort": "Ninguna",
@@ -462,6 +463,36 @@
 
   "helpPerformanceSettingsTitle": "Ajustes de rendimiento",
   "helpPerformanceSettingsDesc": "Elige entre los preajustes de calidad baja, media o alta según la capacidad de tu dispositivo, o configura cada elemento individualmente (personalizado). Además del método de guardado, el caché de mosaicos, el papel cebolla y la detección de inclinación, aquí también se agrupan los ajustes que afectan al tamaño de la aplicación y a su fluidez, como la longitud del historial de deshacer y la eliminación automática de la papelera.",
+
+  "tipsScreenTitle": "Consejos",
+  "tipsCategoryVideo": "Consejos para crear vídeos",
+  "tipsCategoryEfficiency": "Consejos para trabajar más rápido",
+  "tipsCategoryDrawing": "Consejos para dibujar con más fluidez",
+  "tipsCategoryEffects": "Consejos de estilo y acabado",
+
+  "tipsClipDuplicateTitle": "Los clips de la línea de tiempo se pueden duplicar, mover y eliminar",
+  "tipsClipDuplicateDesc": "Toca un clip de imagen, vídeo o audio para abrir su hoja de detalles y usa el icono de copia para duplicarlo. Reutilizar el mismo efecto de sonido o reubicar la misma imagen en varias escenas solo requiere una pulsación larga y arrastrar, y un toque en el botón de duplicar.",
+
+  "tipsTextCaptionTitle": "Añade subtítulos y comentarios con la herramienta de texto",
+  "tipsTextCaptionDesc": "Usa la herramienta de texto para colocar, fotograma a fotograma, los subtítulos y comentarios típicos de los vídeos meme. Cambia la fuente al modo píxel para lograr un aire retro de videojuego antiguo.",
+
+  "tipsAutofillPresetTitle": "Registra presets de relleno automático por parte",
+  "tipsAutofillPresetDesc": "Registrar presets por parte (piel, pelo, ropa) con sus sombras incluidas automatiza gran parte del coloreado con solo dibujar la línea. También puedes limitar qué presets se usan en cada proyecto.",
+
+  "tipsBrushFavoriteTitle": "Marca tus pinceles favoritos para cambiarlos sin buscar",
+  "tipsBrushFavoriteDesc": "Marcar como favoritos los pinceles que más usas los fija en la parte superior de la lista, reduciendo el tiempo de cambio. Los pinceles favoritos no se pueden eliminar por error.",
+
+  "tipsOnionSkinTitle": "Transparenta los fotogramas cercanos con la piel de cebolla",
+  "tipsOnionSkinDesc": "La función de piel de cebolla superpone los fotogramas anterior y siguiente de forma semitransparente, para que puedas comprobar cómo conecta el movimiento mientras dibujas.",
+
+  "tipsPressureCurveTitle": "Ajusta la curva de presión a tu propia mano",
+  "tipsPressureCurveDesc": "La curva de presión en ajustes te permite colocar libremente hasta 10 puntos de control. Si la respuesta de fuerza no te convence, ajústala a tus propios hábitos de presión.",
+
+  "tipsEffectFilterTitle": "Usa filtros de efecto para unificar el ambiente del vídeo",
+  "tipsEffectFilterDesc": "Filtros de efecto como anime retro, TRC o sepia se pueden aplicar a toda la línea de tiempo o por escena a la vez. Útil cuando quieres un aire Y2K o un ambiente de anime nostálgico en todo el vídeo de una sola vez.",
+
+  "tipsCameraKeyframeTitle": "Añade zoom y paneo con fotogramas clave de cámara",
+  "tipsCameraKeyframeDesc": "Colocar fotogramas clave de cámara en una escena permite añadir movimiento cinematográfico —zoom, paneo— incluso a una sola imagen fija.",
 
   "fontSettingsTabDownloaded": "Descargadas",
   "fontSettingsTabSearch": "Buscar y descargar",

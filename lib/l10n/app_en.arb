@@ -123,6 +123,7 @@
   "homeDrawerAutofillPreset": "Autofill Presets",
   "homeDrawerSettings": "Settings",
   "homeDrawerHelp": "Help",
+  "homeDrawerTips": "Tips",
   "homeDrawerPremium": "Premium",
 
   "gestureActionNoneShort": "None",
@@ -462,6 +463,36 @@
 
   "helpPerformanceSettingsTitle": "Performance Settings",
   "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, tile cache, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.",
+
+  "tipsScreenTitle": "Tips",
+  "tipsCategoryVideo": "Video-making tips",
+  "tipsCategoryEfficiency": "Tips to work faster",
+  "tipsCategoryDrawing": "Tips for smoother drawing",
+  "tipsCategoryEffects": "Tips for styling and polish",
+
+  "tipsClipDuplicateTitle": "Timeline clips can be duplicated, moved, and deleted",
+  "tipsClipDuplicateDesc": "Tap an image, video, or audio clip to open its detail sheet, then use the copy icon to duplicate it. Reusing the same sound effect or repositioning the same image across scenes only takes a long-press drag and a tap of the duplicate button.",
+
+  "tipsTextCaptionTitle": "Add captions and reaction text with the text tool",
+  "tipsTextCaptionDesc": "Use the text tool to drop in the captions and reaction text that meme videos are known for, frame by frame. Switch the font to pixel mode for a deliberately retro, old-game feel.",
+
+  "tipsAutofillPresetTitle": "Register autofill presets by part",
+  "tipsAutofillPresetDesc": "Registering presets per part — skin, hair, clothes — with their shading included lets you automate most of the coloring just by drawing the lineart. You can also narrow down which presets are used in each project.",
+
+  "tipsBrushFavoriteTitle": "Favorite your go-to brushes to switch without hunting",
+  "tipsBrushFavoriteDesc": "Favoriting the brushes you use most keeps them pinned to the top of the list, cutting down on switching time. Favorited brushes can't be deleted by accident.",
+
+  "tipsOnionSkinTitle": "See through neighboring frames with onion skin",
+  "tipsOnionSkinDesc": "Onion skin overlays the previous and next frames semi-transparently, so you can check how motion connects while you draw.",
+
+  "tipsPressureCurveTitle": "Tune the pressure curve to match your hand",
+  "tipsPressureCurveDesc": "The pressure curve in settings lets you place up to 10 control points freely. If the strength response doesn't feel right, adjust it to match your own pressure habits.",
+
+  "tipsEffectFilterTitle": "Use effect filters to unify a video's mood",
+  "tipsEffectFilterDesc": "Effect filters like retro anime, CRT, and sepia can be applied across the whole timeline or per scene at once. Handy when you want a Y2K look or a nostalgic anime feel across the entire video in one step.",
+
+  "tipsCameraKeyframeTitle": "Add zoom and pan with camera keyframes",
+  "tipsCameraKeyframeDesc": "Placing camera keyframes on a scene lets you add cinematic movement — zooming in, panning — even to a single still image.",
 
   "fontSettingsTabDownloaded": "Downloaded",
   "fontSettingsTabSearch": "Find & Download",

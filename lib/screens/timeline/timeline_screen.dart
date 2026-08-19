@@ -3228,6 +3228,106 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
+  /// 素材クリップ（画像・動画・音声）を複製し、元クリップの直後へ配置する。
+  /// 音声はAudioClipとして、画像・動画は元レイヤーのピクセルデータを
+  /// 新規レイヤーへコピーした上で表示範囲を複製先の位置へずらして追加する。
+  Future<void> _duplicateClip(_TrackClip clip) async {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final projectService = context.read<ProjectService>();
+    final maxStart = (_totalFrames - clip.lengthFrames).clamp(0, 1 << 30);
+    final newStart = (clip.startFrame + clip.lengthFrames).clamp(0, maxStart);
+
+    if (clip.trackType == _ClipTrackType.audio) {
+      final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
+      projectService.addAudioClip(widget.projectId, sceneId, AudioClip(
+        id: id,
+        label: clip.label,
+        materialId: clip.materialId,
+        startFrame: newStart,
+        lengthFrames: clip.lengthFrames,
+        volume: clip.volume,
+        fadeIn: clip.fadeIn,
+        fadeOut: clip.fadeOut,
+        trackRow: clip.trackRow,
+      ));
+      if (mounted) {
+        setState(() => _audioClips.add(_TrackClip(
+          id: id,
+          label: clip.label,
+          startFrame: newStart,
+          lengthFrames: clip.lengthFrames,
+          color: clip.color,
+          trackType: clip.trackType,
+          filePath: clip.filePath,
+          materialId: clip.materialId,
+          volume: clip.volume,
+          fadeIn: clip.fadeIn,
+          fadeOut: clip.fadeOut,
+          useEnd: clip.lengthFrames - 1,
+          trackRow: clip.trackRow,
+        )));
+      }
+      return;
+    }
+
+    final home = projectService.homeOf(widget.projectId, clip.id) ??
+        (sceneId: sceneId, frameIndex: _currentFrame);
+    final sourceLayer = projectService
+        .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .where((l) => l.id == clip.id)
+        .firstOrNull;
+    if (sourceLayer == null) return;
+
+    final newLayer = projectService.addLayer(
+      projectId: widget.projectId,
+      sceneId: home.sceneId,
+      frameIndex: home.frameIndex,
+      type: sourceLayer.type,
+      name: clip.label,
+    );
+    projectService.tileManagerOf(widget.projectId).copyLayer(
+      projectService.tileKeyFor(widget.projectId, home.sceneId, home.frameIndex, clip.id),
+      projectService.tileKeyFor(widget.projectId, home.sceneId, home.frameIndex, newLayer.id),
+    );
+    projectService.updateLayer(
+      projectId: widget.projectId,
+      sceneId: home.sceneId,
+      frameIndex: home.frameIndex,
+      layer: newLayer.copyWith(
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: newStart + 1,
+        rangeEnd: newStart + clip.lengthFrames,
+        materialId: clip.materialId,
+        opacity: (clip.videoOpacity * 100).round(),
+        sourceTrimStart: clip.trackType == _ClipTrackType.video ? clip.useStart : null,
+        sourceTrimEnd: clip.trackType == _ClipTrackType.video ? clip.useEnd : null,
+      ),
+    );
+    if (!mounted) return;
+    final newClip = _TrackClip(
+      id: newLayer.id,
+      label: clip.label,
+      startFrame: newStart,
+      lengthFrames: clip.lengthFrames,
+      color: clip.color,
+      trackType: clip.trackType,
+      filePath: clip.filePath,
+      materialId: clip.materialId,
+      useStart: clip.useStart,
+      useEnd: clip.useEnd,
+      videoOpacity: clip.videoOpacity,
+      trackRow: clip.trackRow,
+    );
+    setState(() {
+      if (clip.trackType == _ClipTrackType.video) {
+        _videoClips.add(newClip);
+      } else {
+        _imageClips.add(newClip);
+      }
+    });
+  }
+
   /// クリップ詳細シートを閉じた時点で、編集内容（音量・フェード・不透明度・
   /// 使用範囲）をまとめて永続化する（スライダー操作のたびに保存すると低スペック
   /// 端末で負荷が高いため、シートを閉じた時点でまとめて反映する）。
@@ -3374,6 +3474,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           });
           _deletePersistedClip(clip, sceneId);
         },
+        onDuplicate: () => _duplicateClip(clip),
         onChanged: () => setState(() {}),
       ),
     ).then((_) => _persistClipUpdate(clip, sceneId));
@@ -4077,11 +4178,13 @@ class _ClipDetailSheet extends StatefulWidget {
   final _TrackClip clip;
   final int totalFrames;
   final VoidCallback onDelete;
+  final VoidCallback onDuplicate;
   final VoidCallback onChanged;
   const _ClipDetailSheet({
     required this.clip,
     required this.totalFrames,
     required this.onDelete,
+    required this.onDuplicate,
     required this.onChanged,
   });
   @override
@@ -4120,6 +4223,14 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
             child: Row(
               children: [
                 Expanded(child: Text(_c.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                IconButton(
+                  icon: const Icon(Icons.copy),
+                  tooltip: l10n.themeDuplicateAction,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    widget.onDuplicate();
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   tooltip: l10n.commonDelete,

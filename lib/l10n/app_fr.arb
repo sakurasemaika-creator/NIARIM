@@ -123,6 +123,7 @@
   "homeDrawerAutofillPreset": "Préréglages de coloriage automatique",
   "homeDrawerSettings": "Réglages",
   "homeDrawerHelp": "Aide",
+  "homeDrawerTips": "Astuces",
   "homeDrawerPremium": "Premium",
 
   "gestureActionNoneShort": "Aucune",
@@ -462,6 +463,36 @@
 
   "helpPerformanceSettingsTitle": "Réglages de performance",
   "helpPerformanceSettingsDesc": "Choisissez parmi les préréglages de qualité basse, moyenne ou haute selon les capacités de votre appareil, ou configurez chaque élément individuellement (personnalisé). En plus de la méthode d'enregistrement, du cache de tuiles, du papier calque et de la détection d'inclinaison, les réglages qui affectent la taille de l'application et sa fluidité — comme la longueur de l'historique d'annulation et la suppression automatique de la corbeille — sont également regroupés ici.",
+
+  "tipsScreenTitle": "Astuces",
+  "tipsCategoryVideo": "Astuces pour créer des vidéos",
+  "tipsCategoryEfficiency": "Astuces pour travailler plus vite",
+  "tipsCategoryDrawing": "Astuces pour un dessin plus fluide",
+  "tipsCategoryEffects": "Astuces de style et de finition",
+
+  "tipsClipDuplicateTitle": "Les clips de la timeline peuvent être dupliqués, déplacés et supprimés",
+  "tipsClipDuplicateDesc": "Touchez un clip image, vidéo ou audio pour ouvrir sa fiche détaillée, puis utilisez l'icône de copie pour le dupliquer. Réutiliser le même effet sonore ou replacer la même image dans plusieurs scènes ne demande qu'un glisser en appui long et un appui sur le bouton de duplication.",
+
+  "tipsTextCaptionTitle": "Ajoutez sous-titres et commentaires avec l'outil texte",
+  "tipsTextCaptionDesc": "Utilisez l'outil texte pour placer, image par image, les sous-titres et commentaires typiques des vidéos meme. Passez la police en mode pixel pour un rendu volontairement rétro façon vieux jeu vidéo.",
+
+  "tipsAutofillPresetTitle": "Enregistrez des préréglages de remplissage automatique par partie",
+  "tipsAutofillPresetDesc": "Enregistrer des préréglages par partie (peau, cheveux, vêtements) avec leurs ombres incluses automatise la majeure partie de la mise en couleur, dès que le trait est dessiné. Vous pouvez aussi limiter les préréglages utilisés dans chaque projet.",
+
+  "tipsBrushFavoriteTitle": "Mettez vos pinceaux favoris en favori pour les retrouver sans chercher",
+  "tipsBrushFavoriteDesc": "Mettre en favori les pinceaux les plus utilisés les regroupe en haut de la liste, réduisant le temps de changement. Un pinceau en favori ne peut pas être supprimé par erreur.",
+
+  "tipsOnionSkinTitle": "Voyez les images voisines en transparence avec le papier calque",
+  "tipsOnionSkinDesc": "La fonction papier calque superpose les images précédente et suivante en semi-transparence, pour vérifier l'enchaînement du mouvement pendant le dessin.",
+
+  "tipsPressureCurveTitle": "Ajustez la courbe de pression à votre main",
+  "tipsPressureCurveDesc": "La courbe de pression dans les réglages permet de placer librement jusqu'à 10 points de contrôle. Si la réponse en intensité ne vous convient pas, ajustez-la selon vos propres habitudes de pression.",
+
+  "tipsEffectFilterTitle": "Utilisez les filtres d'effet pour unifier l'ambiance d'une vidéo",
+  "tipsEffectFilterDesc": "Les filtres d'effet comme anime rétro, tube cathodique ou sépia peuvent s'appliquer d'un coup à toute la timeline ou par scène. Pratique pour donner un look Y2K ou une ambiance anime nostalgique à toute la vidéo en une seule fois.",
+
+  "tipsCameraKeyframeTitle": "Ajoutez zoom et panoramique avec les images clés de caméra",
+  "tipsCameraKeyframeDesc": "Placer des images clés de caméra sur une scène permet d'ajouter un mouvement cinématographique — zoom, panoramique — même à une simple image fixe.",
 
   "fontSettingsTabDownloaded": "Téléchargées",
   "fontSettingsTabSearch": "Rechercher et télécharger",
