@@ -476,6 +476,9 @@
   "helpDrawingFilterTitle": "繪圖濾鏡",
   "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（與套用於整條時間軸或整個場景的演出濾鏡不同，繪圖濾鏡按圖層生效）。包含模糊、銳化、USM銳化、色調曲線、色階、暗角、雜訊、復古動畫、映像管、動畫風、外框、像素化等。外框不會改寫原圖層，只會把外框後的結果繪製到一個新圖層上。",
 
+  "helpLayerKeyframeTitle": "圖層關鍵影格（分部件動畫）",
+  "helpLayerKeyframeDesc": "依影格設定每個圖層的位置・縮放・旋轉，關鍵影格之間會自動內插。攝影機關鍵影格移動的是整個畫面，而這個功能只移動單一圖層。由於自動上色的每個部件都會生成為獨立的圖層，因此可以直接用它來做分部件動畫（只動一隻手臂、只讓嘴巴開合等）。在圖層面板的三點選單「動畫（關鍵影格）」中設定。圖層本身的畫面內容不會改變，只是顯示位置改變的非破壞性變形。",
+
   "tipsScreenTitle": "使用技巧",
   "tipsSearchHint": "搜尋技巧...",
   "tipsCategoryVideo": "影片製作技巧",
@@ -1448,6 +1451,27 @@
   "timelineCameraMoveYLabel": "Y 移動",
   "timelineCameraZoomLabel": "縮放",
   "timelineCameraRotationLabel": "旋轉",
+
+  "layerPanelKeyframeLabel": "動畫（關鍵影格）",
+  "layerKeyframeSheetTitle": "{name} 的關鍵影格",
+  "@layerKeyframeSheetTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerKeyframeSheetDesc": "依影格設定此圖層的位置・縮放・旋轉，關鍵影格之間會自動內插。圖層本身的畫面內容不會改變。",
+  "layerKeyframeAddAtCurrentFrame": "在目前影格（F{n}）加入",
+  "@layerKeyframeAddAtCurrentFrame": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeEmpty": "還沒有關鍵影格，請用上方按鈕加入。",
+  "layerKeyframeScaleShort": "縮放",
+  "layerKeyframeRotationShort": "旋轉",
+  "layerKeyframeEditTitle": "關鍵影格：F{n}",
+  "@layerKeyframeEditTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeFrameLabel": "影格",
+  "layerKeyframeScaleLabel": "縮放",
+  "layerKeyframeRotationLabel": "旋轉",
   "frameStripHoldDialogTitle": "F{n} 保持格數",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

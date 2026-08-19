@@ -476,6 +476,9 @@
   "helpDrawingFilterTitle": "Filtres de dessin",
   "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d'effet, qui s'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d'origine : il dessine seulement le résultat contourné sur un nouveau calque.",
 
+  "helpLayerKeyframeTitle": "Images clés de calque (animation par partie)",
+  "helpLayerKeyframeDesc": "Définissez la position, l'échelle et la rotation de chaque calque par image ; les images clés sont interpolées automatiquement. Là où les images clés de caméra déplacent tout l'écran, celles-ci ne déplacent qu'un seul calque. Comme chaque partie du remplissage automatique est générée comme un calque distinct, cela fonctionne directement pour l'animation par partie — bouger seulement un bras, ouvrir et fermer seulement une bouche, etc. Se configure depuis « Animation (images clés) » dans le menu à trois points de chaque calque, dans le panneau des calques. Le dessin du calque lui-même ne change pas : c'est une transformation non destructive de son emplacement d'affichage.",
+
   "tipsScreenTitle": "Astuces",
   "tipsSearchHint": "Rechercher une astuce...",
   "tipsCategoryVideo": "Astuces pour créer des vidéos",
@@ -1448,6 +1451,27 @@
   "timelineCameraMoveYLabel": "Déplacement Y",
   "timelineCameraZoomLabel": "Zoom",
   "timelineCameraRotationLabel": "Rotation",
+
+  "layerPanelKeyframeLabel": "Animation (images clés)",
+  "layerKeyframeSheetTitle": "Images clés de {name}",
+  "@layerKeyframeSheetTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerKeyframeSheetDesc": "Définissez la position, l'échelle et la rotation de ce calque par image ; les images clés sont interpolées automatiquement. Le dessin du calque lui-même ne change pas.",
+  "layerKeyframeAddAtCurrentFrame": "Ajouter à l'image actuelle (F{n})",
+  "@layerKeyframeAddAtCurrentFrame": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeEmpty": "Aucune image clé pour l'instant. Ajoutez-en une avec le bouton ci-dessus.",
+  "layerKeyframeScaleShort": "Échelle",
+  "layerKeyframeRotationShort": "Rot.",
+  "layerKeyframeEditTitle": "Image clé : F{n}",
+  "@layerKeyframeEditTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeFrameLabel": "Image",
+  "layerKeyframeScaleLabel": "Échelle",
+  "layerKeyframeRotationLabel": "Rotation",
   "frameStripHoldDialogTitle": "F{n} images de maintien",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

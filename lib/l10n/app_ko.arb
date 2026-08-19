@@ -476,6 +476,9 @@
   "helpDrawingFilterTitle": "그리기 필터",
   "helpDrawingFilterDesc": "선택 중인 레이어에 직접 적용하는 필터입니다（연출 필터가 타임라인 전체・장면 단위로 적용되는 것과 달리, 그리기 필터는 레이어 단위입니다）. 흐림・샤프・언샤프 마스크・톤 커브・레벨 보정・비네트・노이즈・레트로 애니메이션・브라운관・애니메이션풍・윤곽선・픽셀화 등이 준비되어 있습니다. 윤곽선은 원본 레이어를 다시 쓰지 않고, 윤곽선을 두른 내용만 새 레이어에 그립니다.",
 
+  "helpLayerKeyframeTitle": "레이어 키프레임（파츠 단위 애니메이션）",
+  "helpLayerKeyframeDesc": "각 레이어의 위치・확대축소・회전을 프레임마다 지정하면 키프레임 사이가 자동으로 보간되는 기능입니다. 카메라 키프레임이 화면 전체를 움직이는 것과 달리, 이것은 개별 레이어만 움직입니다. 자동 채색의 각 파츠는 각각 독립된 레이어로 생성되므로, 파츠 단위 애니메이션（팔만 움직이기, 입만 여닫기 등）에 그대로 사용할 수 있습니다. 레이어 패널의 점 3개 메뉴 「애니메이션（키프레임）」에서 설정합니다. 레이어의 그림 자체는 바뀌지 않고 표시 위치만 바뀌는 비파괴적인 변형입니다.",
+
   "tipsScreenTitle": "활용 팁",
   "tipsSearchHint": "팁 검색...",
   "tipsCategoryVideo": "영상 제작 팁",
@@ -1448,6 +1451,27 @@
   "timelineCameraMoveYLabel": "Y 이동",
   "timelineCameraZoomLabel": "줌",
   "timelineCameraRotationLabel": "회전",
+
+  "layerPanelKeyframeLabel": "애니메이션（키프레임）",
+  "layerKeyframeSheetTitle": "{name}의 키프레임",
+  "@layerKeyframeSheetTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerKeyframeSheetDesc": "이 레이어의 위치・확대축소・회전을 프레임마다 지정하면 키프레임 사이가 자동으로 보간됩니다. 레이어의 그림 자체는 바뀌지 않습니다.",
+  "layerKeyframeAddAtCurrentFrame": "현재 프레임（F{n}）에 추가",
+  "@layerKeyframeAddAtCurrentFrame": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeEmpty": "키프레임이 없습니다. 위 버튼으로 추가하세요.",
+  "layerKeyframeScaleShort": "배율",
+  "layerKeyframeRotationShort": "회전",
+  "layerKeyframeEditTitle": "키프레임: F{n}",
+  "@layerKeyframeEditTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeFrameLabel": "프레임",
+  "layerKeyframeScaleLabel": "확대축소",
+  "layerKeyframeRotationLabel": "회전",
   "frameStripHoldDialogTitle": "F{n} 유지 셀 수",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

@@ -476,6 +476,9 @@
   "helpDrawingFilterTitle": "Draw filters",
   "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer.",
 
+  "helpLayerKeyframeTitle": "Layer keyframes (per-part animation)",
+  "helpLayerKeyframeDesc": "Set each layer's position, scale, and rotation per frame, with the keyframes interpolated automatically. Where camera keyframes move the whole screen, this moves an individual layer only. Since each autofill part is generated as its own separate layer, this works directly for per-part animation — moving just an arm, opening and closing just a mouth, and so on. Set it up from the \"Animation (keyframes)\" entry in each layer's three-dot menu in the layer panel. The layer's artwork itself doesn't change — it's a non-destructive transform of where it's displayed.",
+
   "tipsScreenTitle": "Tips",
   "tipsSearchHint": "Search tips...",
   "tipsCategoryVideo": "Video-making tips",
@@ -1448,6 +1451,27 @@
   "timelineCameraMoveYLabel": "Y move",
   "timelineCameraZoomLabel": "Zoom",
   "timelineCameraRotationLabel": "Rotation",
+
+  "layerPanelKeyframeLabel": "Animation (keyframes)",
+  "layerKeyframeSheetTitle": "Keyframes for {name}",
+  "@layerKeyframeSheetTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerKeyframeSheetDesc": "Set this layer's position, scale, and rotation per frame; the keyframes are interpolated automatically. The layer's artwork itself doesn't change.",
+  "layerKeyframeAddAtCurrentFrame": "Add at current frame (F{n})",
+  "@layerKeyframeAddAtCurrentFrame": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeEmpty": "No keyframes yet. Add one with the button above.",
+  "layerKeyframeScaleShort": "Scale",
+  "layerKeyframeRotationShort": "Rot",
+  "layerKeyframeEditTitle": "Keyframe: F{n}",
+  "@layerKeyframeEditTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeFrameLabel": "Frame",
+  "layerKeyframeScaleLabel": "Scale",
+  "layerKeyframeRotationLabel": "Rotation",
   "frameStripHoldDialogTitle": "F{n} hold cells",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

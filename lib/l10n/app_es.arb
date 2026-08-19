@@ -476,6 +476,9 @@
   "helpDrawingFilterTitle": "Filtros de dibujo",
   "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva.",
 
+  "helpLayerKeyframeTitle": "Fotogramas clave de capa (animación por partes)",
+  "helpLayerKeyframeDesc": "Define la posición, escala y rotación de cada capa por fotograma; los fotogramas clave se interpolan automáticamente. Mientras los fotogramas clave de cámara mueven toda la pantalla, esto mueve una sola capa. Como cada parte del relleno automático se genera como una capa independiente, esto funciona directamente para animar por partes: mover solo un brazo, abrir y cerrar solo una boca, etc. Se configura desde \"Animación (fotogramas clave)\" en el menú de tres puntos de cada capa, en el panel de capas. El dibujo de la capa en sí no cambia: es una transformación no destructiva de dónde se muestra.",
+
   "tipsScreenTitle": "Consejos",
   "tipsSearchHint": "Buscar consejos...",
   "tipsCategoryVideo": "Consejos para crear vídeos",
@@ -1448,6 +1451,27 @@
   "timelineCameraMoveYLabel": "Movimiento Y",
   "timelineCameraZoomLabel": "Zoom",
   "timelineCameraRotationLabel": "Rotación",
+
+  "layerPanelKeyframeLabel": "Animación (fotogramas clave)",
+  "layerKeyframeSheetTitle": "Fotogramas clave de {name}",
+  "@layerKeyframeSheetTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerKeyframeSheetDesc": "Define la posición, escala y rotación de esta capa por fotograma; los fotogramas clave se interpolan automáticamente. El dibujo de la capa en sí no cambia.",
+  "layerKeyframeAddAtCurrentFrame": "Añadir en el fotograma actual (F{n})",
+  "@layerKeyframeAddAtCurrentFrame": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeEmpty": "Aún no hay fotogramas clave. Añade uno con el botón de arriba.",
+  "layerKeyframeScaleShort": "Escala",
+  "layerKeyframeRotationShort": "Rot.",
+  "layerKeyframeEditTitle": "Fotograma clave: F{n}",
+  "@layerKeyframeEditTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeFrameLabel": "Fotograma",
+  "layerKeyframeScaleLabel": "Escala",
+  "layerKeyframeRotationLabel": "Rotación",
   "frameStripHoldDialogTitle": "F{n} fotogramas de espera",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

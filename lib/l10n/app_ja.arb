@@ -522,6 +522,9 @@
   "helpDrawingFilterTitle": "描画フィルター",
   "helpDrawingFilterDesc": "選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ぼかし・シャープ・アンシャープマスク・トーンカーブ・レベル補正・周辺減光・ノイズ・レトロアニメ・ブラウン管・アニメ調・縁取り・ピクセレートなどが用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。",
 
+  "helpLayerKeyframeTitle": "レイヤーキーフレーム（パーツ単位アニメーション）",
+  "helpLayerKeyframeDesc": "各レイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間する機能です。カメラキーフレームが画面全体を動かすのに対し、こちらは個々のレイヤーだけを動かします。自動塗りの各パーツはそれぞれ独立したレイヤーとして生成されるため、パーツ単位でのアニメーション（腕だけ動かす、口だけ開閉させる等）にそのまま使えます。レイヤーパネルの三点メニュー「アニメーション（キーフレーム）」から設定します。レイヤーの絵自体は変わらず、表示位置だけが変わる非破壊な変形です。",
+
   "tipsScreenTitle": "活用Tips",
   "tipsSearchHint": "Tipsを検索...",
   "tipsCategoryVideo": "動画制作のコツ",
@@ -1539,6 +1542,27 @@
   "timelineCameraMoveYLabel": "Y 移動",
   "timelineCameraZoomLabel": "ズーム",
   "timelineCameraRotationLabel": "回転",
+
+  "layerPanelKeyframeLabel": "アニメーション（キーフレーム）",
+  "layerKeyframeSheetTitle": "{name} のキーフレーム",
+  "@layerKeyframeSheetTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerKeyframeSheetDesc": "このレイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間します。レイヤーの絵自体は変わりません。",
+  "layerKeyframeAddAtCurrentFrame": "現在のフレーム（F{n}）に追加",
+  "@layerKeyframeAddAtCurrentFrame": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeEmpty": "キーフレームがありません。上のボタンから追加してください。",
+  "layerKeyframeScaleShort": "倍率",
+  "layerKeyframeRotationShort": "回転",
+  "layerKeyframeEditTitle": "キーフレーム: F{n}",
+  "@layerKeyframeEditTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "layerKeyframeFrameLabel": "フレーム",
+  "layerKeyframeScaleLabel": "拡大縮小",
+  "layerKeyframeRotationLabel": "回転",
   "frameStripHoldDialogTitle": "F{n} 保持セル数",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

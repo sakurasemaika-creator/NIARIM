@@ -9,6 +9,7 @@ import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
+import '../models/layer_keyframe.dart';
 import '../models/project.dart';
 import '../models/scene.dart';
 import '../models/text_object.dart';
@@ -655,6 +656,7 @@ class NiaproSerializer {
         'watermarkAngle': l.watermarkAngle,
         'watermarkScale': l.watermarkScale,
         'trackRow': l.trackRow,
+        if (l.keyframes.isNotEmpty) 'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
         if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
       };
 
@@ -817,6 +819,9 @@ class NiaproSerializer {
         watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
         watermarkScale: (j['watermarkScale'] as num?)?.toDouble() ?? 0.25,
         trackRow: j['trackRow'] as int? ?? 0,
+        keyframes: (j['keyframes'] as List<dynamic>? ?? const [])
+            .map((k) => LayerKeyframe.fromJson(k as Map<String, dynamic>))
+            .toList(),
         textObject: j['textObject'] != null
             ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
             : null,

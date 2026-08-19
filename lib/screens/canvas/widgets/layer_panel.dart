@@ -16,6 +16,7 @@ import '../../../services/tone_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
+import 'layer_keyframe_sheet.dart';
 
 class LayerPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -1133,6 +1134,31 @@ class _LayerPanelState extends State<LayerPanel> {
                 subtitle: Text(l10n.layerPanelClippingDescription, style: const TextStyle(fontSize: 11)),
                 value: layer.hasClipping,
                 onChanged: (v) { update((l) => l.copyWith(hasClipping: v)); Navigator.pop(ctx); },
+              ),
+              ListTile(
+                leading: const Icon(Icons.animation_outlined),
+                title: Text(l10n.layerPanelKeyframeLabel),
+                trailing: layer.keyframes.isEmpty
+                    ? null
+                    : Icon(Icons.diamond, size: 14, color: Theme.of(context).colorScheme.primary),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
+                  showLayerKeyframeSheet(
+                    context,
+                    layer: layer,
+                    currentFrame: widget.frameIndex,
+                    totalFrames: context
+                            .read<ProjectService>()
+                            .sceneOf(widget.projectId, widget.sceneId)
+                            ?.frames
+                            .length ??
+                        1,
+                    canvasWidth: tm.canvasWidth,
+                    canvasHeight: tm.canvasHeight,
+                    onChanged: (kfs) => update((l) => l.copyWith(keyframes: kfs)),
+                  );
+                },
               ),
               if (layer.type == model.LayerType.normal)
                 ListTile(

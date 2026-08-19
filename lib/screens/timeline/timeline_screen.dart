@@ -13,6 +13,7 @@ import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
+import '../../engine/layer_keyframe_engine.dart';
 import '../../engine/layer_range_resolver.dart';
 import '../../engine/text_render.dart';
 import '../../engine/tile_manager.dart';
@@ -3766,6 +3767,7 @@ class _TimelinePreview extends StatefulWidget {
 
 class _TimelinePreviewState extends State<_TimelinePreview> {
   final CameraEngine _cameraEngine = CameraEngine();
+  final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
   final FilterEngine _filterEngine = FilterEngine();
   ui.Image? _image;
   bool _building = false;
@@ -3799,6 +3801,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       (l) => resolveTileKey(widget.layerHomes, widget.sceneId, widget.frameIndex, l.id),
       tm.canvasWidth,
       tm.canvasHeight,
+      keyframeOf: (l) => l.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(l.keyframes, widget.frameIndex),
     );
 
     // カメラ変換を適用する（仕様書05：カメラは表示のみを変更する）
@@ -4531,6 +4534,9 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
       (l) => ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, l.id),
       drawW,
       drawH,
+      keyframeOf: (l) => l.keyframes.isEmpty
+          ? null
+          : LayerKeyframeEngine().valueAt(l.keyframes, widget.frameIndex),
     );
 
     final offsetX = (drawW - exportW) / 2;

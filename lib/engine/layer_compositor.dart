@@ -1,6 +1,10 @@
 import 'dart:ui' as ui;
 import '../models/layer.dart';
+import '../models/layer_keyframe.dart';
+import 'layer_keyframe_engine.dart';
 import 'tile_manager.dart';
+
+final _layerKeyframeEngine = LayerKeyframeEngine();
 
 /// レイヤー種別のうちTileManagerに実ピクセルデータを持つもの
 /// （通常・自動塗り用線画・自動塗り・共通・タイムライン画像/動画素材・
@@ -96,6 +100,10 @@ class LayerCompositor {
     int width,
     int height, {
     bool Function(Layer layer, int index)? shouldRender,
+    // 指定した場合、レイヤーごとの位置・拡大縮小・回転キーフレームを合成時に
+    // 適用する（呼び出し側が現在フレームで補間済みの値を渡す。パーツ単位
+    // キーフレームアニメーション、仕様書未採番）。省略時は従来通り無変形。
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
   }) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -104,7 +112,7 @@ class LayerCompositor {
       if (!layer.isVisible) continue;
       if (!pixelLayerTypes.contains(layer.type)) continue;
       if (shouldRender != null && !shouldRender(layer, i)) continue;
-      await _drawLayer(canvas, tileManager, layers, keyOf, layer, i, width, height);
+      await _drawLayer(canvas, tileManager, layers, keyOf, layer, i, width, height, keyframeOf);
     }
     final picture = recorder.endRecording();
     return picture.toImage(width, height);
@@ -119,12 +127,20 @@ class LayerCompositor {
     int index,
     int width,
     int height,
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
   ) async {
     final img = await tileManager.compositeLayerToImage(keyOf(layer));
     final opacityByte = (layer.opacity.clamp(0, 100) * 255 / 100).round();
     final layerPaint = ui.Paint()
       ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
       ..blendMode = mapLayerBlendMode(layer.blendMode);
+
+    final kf = keyframeOf?.call(layer);
+    final hasTransform = kf != null && !_layerKeyframeEngine.isIdentity(kf);
+    if (hasTransform) {
+      canvas.save();
+      _layerKeyframeEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
+    }
 
     if (layer.hasClipping) {
       final clipSourceId = findClipSourceLayerId(layers, index);
@@ -137,12 +153,14 @@ class LayerCompositor {
         canvas.drawImage(clipImg, ui.Offset.zero, ui.Paint());
         canvas.drawImage(img, ui.Offset.zero, ui.Paint()..blendMode = ui.BlendMode.srcIn);
         canvas.restore();
+        if (hasTransform) canvas.restore();
         clipImg.dispose();
         img.dispose();
         return;
       }
     }
     canvas.drawImage(img, ui.Offset.zero, layerPaint);
+    if (hasTransform) canvas.restore();
     img.dispose();
   }
 }

@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../engine/camera_engine.dart';
 import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';
+import '../engine/layer_keyframe_engine.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/tile_manager.dart';
 import '../models/camera_keyframe.dart';
@@ -40,6 +41,7 @@ class ExportCancelledException implements Exception {
 
 class ExportEngine {
   final CameraEngine _cameraEngine = CameraEngine();
+  final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
   final FilterEngine _filterEngine = FilterEngine();
 
   /// 書き出し結果（MP4/GIF/WebM）の保存先。以前は`getTemporaryDirectory()`
@@ -101,6 +103,8 @@ class ExportEngine {
       (l) => resolveTileKey(layerHomes, sceneId, frameIndex, l.id),
       drawingWidth,
       drawingHeight,
+      keyframeOf: (l) =>
+          l.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(l.keyframes, frameIndex),
     );
 
     final recorder = ui.PictureRecorder();

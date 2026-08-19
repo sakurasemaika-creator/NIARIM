@@ -1,3 +1,4 @@
+import 'layer_keyframe.dart';
 import 'text_object.dart';
 
 class Layer {
@@ -46,6 +47,12 @@ class Layer {
   // LayerType.timelineImage/timelineVideoでのみ使用する。
   final int trackRow;
 
+  // レイヤー単位の位置・拡大縮小・回転キーフレーム。カメラキーフレームが
+  // 画面全体を動かすのに対し、こちらは個々のレイヤーだけを動かす
+  // （自動塗りの各パーツもそれぞれ独立したレイヤーとして生成されるため、
+  // パーツ単位でのアニメーションにそのまま使える）。空の場合は変形なし。
+  final List<LayerKeyframe> keyframes;
+
   const Layer({
     required this.id,
     required this.name,
@@ -72,6 +79,7 @@ class Layer {
     this.watermarkAngle = 0,
     this.watermarkScale = 0.25,
     this.trackRow = 0,
+    this.keyframes = const [],
   });
 
   Layer copyWith({
@@ -100,6 +108,7 @@ class Layer {
     double? watermarkAngle,
     double? watermarkScale,
     int? trackRow,
+    List<LayerKeyframe>? keyframes,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -127,6 +136,7 @@ class Layer {
       watermarkAngle: watermarkAngle ?? this.watermarkAngle,
       watermarkScale: watermarkScale ?? this.watermarkScale,
       trackRow: trackRow ?? this.trackRow,
+      keyframes: keyframes ?? this.keyframes,
     );
   }
 }

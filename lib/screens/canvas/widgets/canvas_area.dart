@@ -10,6 +10,7 @@ import '../../../engine/drawing_engine.dart';
 import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
 import '../../../engine/layer_compositor.dart';
+import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/onion_skin.dart';
 import '../../../engine/procedural_texture.dart';
 import '../../../engine/ruler_engine.dart';
@@ -18,6 +19,7 @@ import '../../../engine/tile_manager.dart';
 import '../../../engine/tone_engine.dart';
 import '../../../engine/undo_manager.dart' as app_undo;
 import '../../../models/layer.dart';
+import '../../../models/layer_keyframe.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../models/project.dart';
 import '../../../models/ruler.dart';
@@ -92,6 +94,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   final InputHandler _inputHandler = InputHandler();
   final OnionSkinEngine _onionSkinEngine = OnionSkinEngine();
   final RulerEngine _rulerEngine = RulerEngine();
+  final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
 
   // 中クリックドラッグでの平行移動（仕様書08：Galaxy DeXモード・マウス入力）。
   // 現在のツールに関係なく、中クリックドラッグ中は常にキャンバスを平行移動する。
@@ -1999,15 +2002,15 @@ class _CanvasAreaState extends State<CanvasArea> {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
 
-    final belowImg =
-        await LayerCompositor.composite(_tileManager, below, (l) => _tileKeyFor(l.id), w, h);
+    final belowImg = await LayerCompositor.composite(
+        _tileManager, below, (l) => _tileKeyFor(l.id), w, h, keyframeOf: _keyframeOf);
     if (!mounted) {
       belowImg.dispose();
       _isComposingSurroundings = false;
       return;
     }
-    final aboveImg =
-        await LayerCompositor.composite(_tileManager, above, (l) => _tileKeyFor(l.id), w, h);
+    final aboveImg = await LayerCompositor.composite(
+        _tileManager, above, (l) => _tileKeyFor(l.id), w, h, keyframeOf: _keyframeOf);
     if (!mounted) {
       belowImg.dispose();
       aboveImg.dispose();
@@ -2025,6 +2028,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     final latest = ps.layersOf(project.id, widget.sceneId, widget.currentFrame);
     if (!_sameLayerList(_layers, latest)) _recomposeSurroundings();
   }
+
+  /// レイヤーキーフレーム（パーツ単位アニメーション）を現在フレームで補間する。
+  LayerKeyframe? _keyframeOf(Layer layer, [int? frameIndex]) =>
+      layer.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(layer.keyframes, frameIndex ?? widget.currentFrame);
 
   bool _sameLayerList(List<Layer> a, List<Layer> b) {
     if (a.length != b.length) return false;
@@ -2069,6 +2076,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         h,
         shouldRender: (layer, _) =>
             layer.type == LayerType.normal || layer.type == LayerType.autoFillLineart,
+        keyframeOf: (layer) => _keyframeOf(layer, frameIdx),
       );
     }
     if (!mounted) {
