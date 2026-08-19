@@ -9,6 +9,7 @@ import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
+import '../models/layer_group.dart';
 import '../models/layer_keyframe.dart';
 import '../models/project.dart';
 import '../models/scene.dart';
@@ -431,7 +432,7 @@ class NiaproSerializer {
       if (framesFile == null) continue;
       final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
       final (name, frames, cameraKeyframes, effectFilters, audioClips,
-          imageRowNames, videoRowNames, audioRowNames) = _deserializeScene(decoded);
+          imageRowNames, videoRowNames, audioRowNames, groups) = _deserializeScene(decoded);
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
       scenes.add(Scene(
           id: sceneId,
@@ -441,6 +442,7 @@ class NiaproSerializer {
           cameraKeyframes: cameraKeyframes,
           effectFilters: effectFilters,
           audioClips: audioClips,
+          groups: groups,
           imageRowNames: imageRowNames,
           videoRowNames: videoRowNames,
           audioRowNames: audioRowNames));
@@ -604,6 +606,9 @@ class NiaproSerializer {
                   'endFrame': e.endFrame,
                   'enabled': e.enabled,
                   'param1': e.param1,
+                  'param2': e.param2,
+                  'param3': e.param3,
+                  'param4': e.param4,
                   'fadeColor': e.fadeColor.toARGB32(),
                 })
             .toList(),
@@ -623,6 +628,7 @@ class NiaproSerializer {
         'imageRowNames': scene.imageRowNames,
         'videoRowNames': scene.videoRowNames,
         'audioRowNames': scene.audioRowNames,
+        'groups': scene.groups.map((g) => g.toJson()).toList(),
       };
 
   static List<dynamic> _serializeFrames(List<Frame> frames) =>
@@ -711,7 +717,7 @@ class NiaproSerializer {
   /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
   /// フレーム配列そのもの。どちらも読み込めるようにする。
   static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>, List<AudioClip>,
-      List<String?>, List<String?>, List<String?>)
+      List<String?>, List<String?>, List<String?>, List<LayerGroup>)
       _deserializeScene(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final name = decoded['name'] as String?;
@@ -736,6 +742,9 @@ class NiaproSerializer {
           endFrame: m['endFrame'] as int,
           enabled: m['enabled'] as bool? ?? true,
           param1: (m['param1'] as num?)?.toDouble() ?? 5.0,
+          param2: (m['param2'] as num?)?.toDouble() ?? 50.0,
+          param3: (m['param3'] as num?)?.toDouble() ?? 2.0,
+          param4: (m['param4'] as num?)?.toDouble() ?? 0.0,
           fadeColor: Color(m['fadeColor'] as int? ?? 0xFF000000),
         );
       }).toList();
@@ -763,8 +772,10 @@ class NiaproSerializer {
       final audioRowNames = (decoded['audioRowNames'] as List<dynamic>? ?? const [])
           .map((e) => e as String?)
           .toList();
+      final groupsJson = decoded['groups'] as List<dynamic>? ?? const [];
+      final groups = groupsJson.map((j) => LayerGroup.fromJson(j as Map<String, dynamic>)).toList();
       return (name, frames, cameraKeyframes, effectFilters, audioClips,
-          imageRowNames, videoRowNames, audioRowNames);
+          imageRowNames, videoRowNames, audioRowNames, groups);
     }
     return (
       null,
@@ -775,6 +786,7 @@ class NiaproSerializer {
       const <String?>[],
       const <String?>[],
       const <String?>[],
+      const <LayerGroup>[],
     );
   }
 

@@ -34,6 +34,34 @@ void showLayerKeyframeSheet(
   );
 }
 
+/// レイヤーグループのキーフレームを一覧・追加・編集・削除するシート。
+/// 中身は[showLayerKeyframeSheet]と共通（対象が1レイヤーかグループかの
+/// 違いだけで、キーフレームの構造・補間方法は同じため）。
+void showLayerGroupKeyframeSheet(
+  BuildContext context, {
+  required String groupName,
+  required List<LayerKeyframe> initialKeyframes,
+  required int currentFrame,
+  required int totalFrames,
+  required int canvasWidth,
+  required int canvasHeight,
+  required ValueChanged<List<LayerKeyframe>> onChanged,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (ctx) => _LayerKeyframeListSheet(
+      layerName: groupName,
+      initialKeyframes: initialKeyframes,
+      currentFrame: currentFrame,
+      totalFrames: totalFrames,
+      canvasWidth: canvasWidth,
+      canvasHeight: canvasHeight,
+      onChanged: onChanged,
+    ),
+  );
+}
+
 class _LayerKeyframeListSheet extends StatefulWidget {
   final String layerName;
   final List<LayerKeyframe> initialKeyframes;

@@ -477,7 +477,10 @@
   "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva.",
 
   "helpLayerKeyframeTitle": "Fotogramas clave de capa (animación por partes)",
-  "helpLayerKeyframeDesc": "Define la posición, escala y rotación de cada capa por fotograma; los fotogramas clave se interpolan automáticamente. Mientras los fotogramas clave de cámara mueven toda la pantalla, esto mueve una sola capa. Como cada parte del relleno automático se genera como una capa independiente, esto funciona directamente para animar por partes: mover solo un brazo, abrir y cerrar solo una boca, etc. Se configura desde \"Animación (fotogramas clave)\" en el menú de tres puntos de cada capa, en el panel de capas. El dibujo de la capa en sí no cambia: es una transformación no destructiva de dónde se muestra.",
+  "helpLayerKeyframeDesc": "Define la posición, escala y rotación de cada capa por fotograma; los fotogramas clave se interpolan automáticamente. Mientras los fotogramas clave de cámara mueven toda la pantalla, esto mueve una sola capa. Como cada parte del relleno automático se genera como una capa independiente, esto funciona directamente para animar por partes: mover solo un brazo, abrir y cerrar solo una boca, etc. Se configura desde \"Animación (fotogramas clave)\" en el menú de tres puntos de cada capa, en el panel de capas. El dibujo de la capa en sí no cambia: es una transformación no destructiva de dónde se muestra. Esto solo afecta a la visualización de la línea de tiempo (vista previa / exportación) y no afecta al dibujo real en el modo lienzo.",
+
+  "helpLayerGroupTitle": "Grupos de capas (mover varias partes juntas)",
+  "helpLayerGroupDesc": "Mueve varias capas juntas con un único flujo de fotogramas clave. Por ejemplo, si un \"brazo\" está formado por dos partes de relleno automático —piel y manga—, agruparlas permite mover ambas con una sola operación de fotograma clave. Crea un grupo seleccionando varias capas (casillas) en el panel de capas y tocando el icono \"Agrupar\" en la barra inferior. El movimiento del grupo se superpone a los fotogramas clave propios de cada capa miembro (si los tiene), por lo que puedes combinar el movimiento general del grupo con ajustes finos por capa. Una capa solo puede pertenecer a un grupo a la vez.",
 
   "tipsScreenTitle": "Consejos",
   "tipsSearchHint": "Buscar consejos...",
@@ -1427,11 +1430,19 @@
   "timelineEffectTypeAnimeStyle": "Estilo anime",
   "timelineEffectTypeRetroAnime": "Anime retro",
   "timelineEffectTypeCrt": "Tubo de rayos catódicos",
+  "timelineEffectTypeAnimatedNoise": "Ruido animado",
+  "timelineEffectTypeRain": "Lluvia",
   "timelineEffectFilterEmptyState": "No hay filtros\nToca + Añadir para crear uno",
   "timelineRangeStartLabel": "Inicio",
   "timelineRangeEndLabel": "Fin",
   "timelineEffectSizeLabel": "Tamaño",
   "timelineEffectStrengthLabel": "Intensidad",
+  "timelineEffectAmountLabel": "Cantidad",
+  "timelineEffectGrainSizeLabel": "Tamaño del grano",
+  "timelineEffectRainIntensityLabel": "Intensidad",
+  "timelineEffectRainSpeedLabel": "Velocidad",
+  "timelineEffectRainSizeLabel": "Tamaño de gota",
+  "timelineEffectWindAngleLabel": "Ángulo del viento",
   "timelineColorLabel": "Color",
   "timelineColorBlack": "Negro",
   "timelineColorWhite": "Blanco",
@@ -1472,6 +1483,14 @@
   "layerKeyframeFrameLabel": "Fotograma",
   "layerKeyframeScaleLabel": "Escala",
   "layerKeyframeRotationLabel": "Rotación",
+
+  "layerPanelGroupTooltip": "Agrupar",
+  "layerPanelGroupDefaultName": "Nuevo grupo",
+  "layerPanelGroupMembershipLabel": "Grupo: {name}",
+  "@layerPanelGroupMembershipLabel": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelGroupLeaveAction": "Salir",
   "frameStripHoldDialogTitle": "F{n} fotogramas de espera",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

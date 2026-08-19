@@ -442,6 +442,11 @@ class _LayerPanelState extends State<LayerPanel> {
                     onPressed: _canMergeSelected() ? () => _mergeSelectedLayers(context) : null,
                     tooltip: l10n.layerPanelMergeTooltip,
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.workspaces_outline, size: 18),
+                    onPressed: _selectedIds.length >= 2 ? () => _showCreateGroupDialog(context) : null,
+                    tooltip: l10n.layerPanelGroupTooltip,
+                  ),
                 ],
               ),
             ),
@@ -496,6 +501,51 @@ class _LayerPanelState extends State<LayerPanel> {
       _selectionBaseType = null;
       _selectedIndex = 0;
     });
+  }
+
+  /// 選択中の複数レイヤーをグループ化する（複数レイヤーを1つのキーフレームで
+  /// まとめて動かす機能）。名前を入力後、すぐにグループのキーフレーム編集
+  /// シートを開き、そのまま動きを設定できるようにする。
+  void _showCreateGroupDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final nameCtrl = TextEditingController(text: l10n.layerPanelGroupDefaultName);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.layerPanelGroupTooltip),
+        content: TextField(controller: nameCtrl, autofocus: true),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          FilledButton(
+            onPressed: () {
+              final ids = _selectedIds.toList();
+              final name = nameCtrl.text.trim().isEmpty ? l10n.layerPanelGroupDefaultName : nameCtrl.text.trim();
+              final group = context.read<ProjectService>().addLayerGroup(widget.projectId, widget.sceneId, name, ids);
+              Navigator.pop(ctx);
+              setState(() {
+                _selectedIds.clear();
+                _isSelectionMode = false;
+                _selectionBaseType = null;
+              });
+              final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
+              showLayerGroupKeyframeSheet(
+                context,
+                groupName: group.name,
+                initialKeyframes: group.keyframes,
+                currentFrame: widget.frameIndex,
+                totalFrames: context.read<ProjectService>().sceneOf(widget.projectId, widget.sceneId)?.frames.length ?? 1,
+                canvasWidth: tm.canvasWidth,
+                canvasHeight: tm.canvasHeight,
+                onChanged: (kfs) => context
+                    .read<ProjectService>()
+                    .updateLayerGroup(widget.projectId, widget.sceneId, group.copyWith(keyframes: kfs)),
+              );
+            },
+            child: Text(l10n.commonAdd),
+          ),
+        ],
+      ),
+    ).then((_) => nameCtrl.dispose());
   }
 
   bool _isTimelineMaterial(model.LayerType type) =>
@@ -1160,6 +1210,48 @@ class _LayerPanelState extends State<LayerPanel> {
                   );
                 },
               ),
+              Builder(builder: (context) {
+                final group = context.read<ProjectService>().groupContainingLayer(widget.projectId, widget.sceneId, layer.id);
+                if (group == null) return const SizedBox.shrink();
+                return ListTile(
+                  leading: const Icon(Icons.workspaces_outline),
+                  title: Text(l10n.layerPanelGroupMembershipLabel(group.name)),
+                  trailing: TextButton(
+                    onPressed: () {
+                      final ps = context.read<ProjectService>();
+                      final remaining = group.memberLayerIds.where((id) => id != layer.id).toList();
+                      if (remaining.isEmpty) {
+                        ps.removeLayerGroup(widget.projectId, widget.sceneId, group.id);
+                      } else {
+                        ps.updateLayerGroup(widget.projectId, widget.sceneId, group.copyWith(memberLayerIds: remaining));
+                      }
+                      Navigator.pop(ctx);
+                    },
+                    child: Text(l10n.layerPanelGroupLeaveAction),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
+                    showLayerGroupKeyframeSheet(
+                      context,
+                      groupName: group.name,
+                      initialKeyframes: group.keyframes,
+                      currentFrame: widget.frameIndex,
+                      totalFrames: context
+                              .read<ProjectService>()
+                              .sceneOf(widget.projectId, widget.sceneId)
+                              ?.frames
+                              .length ??
+                          1,
+                      canvasWidth: tm.canvasWidth,
+                      canvasHeight: tm.canvasHeight,
+                      onChanged: (kfs) => context
+                          .read<ProjectService>()
+                          .updateLayerGroup(widget.projectId, widget.sceneId, group.copyWith(keyframes: kfs)),
+                    );
+                  },
+                );
+              }),
               if (layer.type == model.LayerType.normal)
                 ListTile(
                   leading: const Icon(Icons.link, color: Colors.blue),

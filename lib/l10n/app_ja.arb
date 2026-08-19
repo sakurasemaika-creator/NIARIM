@@ -523,7 +523,10 @@
   "helpDrawingFilterDesc": "選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ぼかし・シャープ・アンシャープマスク・トーンカーブ・レベル補正・周辺減光・ノイズ・レトロアニメ・ブラウン管・アニメ調・縁取り・ピクセレートなどが用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。",
 
   "helpLayerKeyframeTitle": "レイヤーキーフレーム（パーツ単位アニメーション）",
-  "helpLayerKeyframeDesc": "各レイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間する機能です。カメラキーフレームが画面全体を動かすのに対し、こちらは個々のレイヤーだけを動かします。自動塗りの各パーツはそれぞれ独立したレイヤーとして生成されるため、パーツ単位でのアニメーション（腕だけ動かす、口だけ開閉させる等）にそのまま使えます。レイヤーパネルの三点メニュー「アニメーション（キーフレーム）」から設定します。レイヤーの絵自体は変わらず、表示位置だけが変わる非破壊な変形です。",
+  "helpLayerKeyframeDesc": "各レイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間する機能です。カメラキーフレームが画面全体を動かすのに対し、こちらは個々のレイヤーだけを動かします。自動塗りの各パーツはそれぞれ独立したレイヤーとして生成されるため、パーツ単位でのアニメーション（腕だけ動かす、口だけ開閉させる等）にそのまま使えます。レイヤーパネルの三点メニュー「アニメーション（キーフレーム）」から設定します。レイヤーの絵自体は変わらず、表示位置だけが変わる非破壊な変形です。この機能はタイムラインの表示（プレビュー・書き出し）にのみ影響し、キャンバスモードでの実際の作画には影響しません。",
+
+  "helpLayerGroupTitle": "レイヤーグループ（複数パーツをまとめて動かす）",
+  "helpLayerGroupDesc": "複数のレイヤーをまとめて1つのキーフレームストリームで動かす機能です。例えば「腕」が肌・袖の2枚の自動塗りパーツで構成されている場合、この2枚をグループ化しておけば、1回のキーフレーム操作でまとめて動かせます。レイヤーパネルで複数選択（チェックボックス）した状態で下部バーの「グループ化」アイコンから作成します。グループの動きは各レイヤー自身のキーフレーム（設定されていれば）に重ねて適用されるため、グループ全体の動き＋個別レイヤーの微調整、という組み合わせも可能です。1つのレイヤーは同時に1つのグループにのみ所属できます。",
 
   "tipsScreenTitle": "活用Tips",
   "tipsSearchHint": "Tipsを検索...",
@@ -1518,11 +1521,19 @@
   "timelineEffectTypeAnimeStyle": "アニメ調",
   "timelineEffectTypeRetroAnime": "レトロアニメ",
   "timelineEffectTypeCrt": "ブラウン管",
+  "timelineEffectTypeAnimatedNoise": "動くノイズ",
+  "timelineEffectTypeRain": "雨",
   "timelineEffectFilterEmptyState": "フィルターがありません\n＋追加ボタンで追加してください",
   "timelineRangeStartLabel": "開始",
   "timelineRangeEndLabel": "終了",
   "timelineEffectSizeLabel": "サイズ",
   "timelineEffectStrengthLabel": "強度",
+  "timelineEffectAmountLabel": "量",
+  "timelineEffectGrainSizeLabel": "粒の大きさ",
+  "timelineEffectRainIntensityLabel": "降り方",
+  "timelineEffectRainSpeedLabel": "速さ",
+  "timelineEffectRainSizeLabel": "粒の大きさ",
+  "timelineEffectWindAngleLabel": "風向き",
   "timelineColorLabel": "色",
   "timelineColorBlack": "黒",
   "timelineColorWhite": "白",
@@ -1563,6 +1574,14 @@
   "layerKeyframeFrameLabel": "フレーム",
   "layerKeyframeScaleLabel": "拡大縮小",
   "layerKeyframeRotationLabel": "回転",
+
+  "layerPanelGroupTooltip": "グループ化",
+  "layerPanelGroupDefaultName": "新規グループ",
+  "layerPanelGroupMembershipLabel": "グループ: {name}",
+  "@layerPanelGroupMembershipLabel": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelGroupLeaveAction": "解除",
   "frameStripHoldDialogTitle": "F{n} 保持セル数",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

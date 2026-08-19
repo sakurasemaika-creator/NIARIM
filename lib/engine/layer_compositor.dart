@@ -104,6 +104,11 @@ class LayerCompositor {
     // 適用する（呼び出し側が現在フレームで補間済みの値を渡す。パーツ単位
     // キーフレームアニメーション、仕様書未採番）。省略時は従来通り無変形。
     LayerKeyframe? Function(Layer layer)? keyframeOf,
+    // 指定した場合、レイヤーが所属するグループのキーフレームを合成時に
+    // 追加で適用する（グループ＝複数レイヤーをまとめて動かす全体の変形、
+    // keyframeOf＝そのレイヤー個別の追加調整、という関係で両方を重ねて
+    // 適用する）。省略時は従来通り無変形。
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
   }) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -112,7 +117,8 @@ class LayerCompositor {
       if (!layer.isVisible) continue;
       if (!pixelLayerTypes.contains(layer.type)) continue;
       if (shouldRender != null && !shouldRender(layer, i)) continue;
-      await _drawLayer(canvas, tileManager, layers, keyOf, layer, i, width, height, keyframeOf);
+      await _drawLayer(
+          canvas, tileManager, layers, keyOf, layer, i, width, height, keyframeOf, groupKeyframeOf);
     }
     final picture = recorder.endRecording();
     return picture.toImage(width, height);
@@ -128,6 +134,7 @@ class LayerCompositor {
     int width,
     int height,
     LayerKeyframe? Function(Layer layer)? keyframeOf,
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
   ) async {
     final img = await tileManager.compositeLayerToImage(keyOf(layer));
     final opacityByte = (layer.opacity.clamp(0, 100) * 255 / 100).round();
@@ -135,11 +142,21 @@ class LayerCompositor {
       ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
       ..blendMode = mapLayerBlendMode(layer.blendMode);
 
+    final groupKf = groupKeyframeOf?.call(layer);
     final kf = keyframeOf?.call(layer);
-    final hasTransform = kf != null && !_layerKeyframeEngine.isIdentity(kf);
+    final hasGroupTransform = groupKf != null && !_layerKeyframeEngine.isIdentity(groupKf);
+    final hasLayerTransform = kf != null && !_layerKeyframeEngine.isIdentity(kf);
+    final hasTransform = hasGroupTransform || hasLayerTransform;
     if (hasTransform) {
       canvas.save();
-      _layerKeyframeEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
+      // グループの変形（全体の動き）を先に適用し、そこへレイヤー個別の
+      // 変形（その上への微調整）を重ねる。
+      if (hasGroupTransform) {
+        _layerKeyframeEngine.apply(canvas, groupKf, width.toDouble(), height.toDouble());
+      }
+      if (hasLayerTransform) {
+        _layerKeyframeEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
+      }
     }
 
     if (layer.hasClipping) {

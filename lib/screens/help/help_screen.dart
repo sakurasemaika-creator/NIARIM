@@ -73,6 +73,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '演出フィルター', title: l10n.helpEffectFilterTitle, description: l10n.helpEffectFilterDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: '描画フィルター', title: l10n.helpDrawingFilterTitle, description: l10n.helpDrawingFilterDesc, category: l10n.helpCategoryDrawing),
         _HelpEntry(topicKey: 'レイヤーキーフレーム', title: l10n.helpLayerKeyframeTitle, description: l10n.helpLayerKeyframeDesc, category: l10n.helpCategoryAnimation),
+        _HelpEntry(topicKey: 'レイヤーグループ', title: l10n.helpLayerGroupTitle, description: l10n.helpLayerGroupDesc, category: l10n.helpCategoryAnimation),
         _HelpEntry(topicKey: 'EndCard（エンドロゴ）', title: l10n.helpEndCardTitle, description: l10n.helpEndCardDesc, category: l10n.helpCategoryExport),
 
         // ── 保存・プロジェクト管理 ─────────────────────────────────

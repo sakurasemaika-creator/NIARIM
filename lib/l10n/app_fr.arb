@@ -477,7 +477,10 @@
   "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d'effet, qui s'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d'origine : il dessine seulement le résultat contourné sur un nouveau calque.",
 
   "helpLayerKeyframeTitle": "Images clés de calque (animation par partie)",
-  "helpLayerKeyframeDesc": "Définissez la position, l'échelle et la rotation de chaque calque par image ; les images clés sont interpolées automatiquement. Là où les images clés de caméra déplacent tout l'écran, celles-ci ne déplacent qu'un seul calque. Comme chaque partie du remplissage automatique est générée comme un calque distinct, cela fonctionne directement pour l'animation par partie — bouger seulement un bras, ouvrir et fermer seulement une bouche, etc. Se configure depuis « Animation (images clés) » dans le menu à trois points de chaque calque, dans le panneau des calques. Le dessin du calque lui-même ne change pas : c'est une transformation non destructive de son emplacement d'affichage.",
+  "helpLayerKeyframeDesc": "Définissez la position, l'échelle et la rotation de chaque calque par image ; les images clés sont interpolées automatiquement. Là où les images clés de caméra déplacent tout l'écran, celles-ci ne déplacent qu'un seul calque. Comme chaque partie du remplissage automatique est générée comme un calque distinct, cela fonctionne directement pour l'animation par partie — bouger seulement un bras, ouvrir et fermer seulement une bouche, etc. Se configure depuis « Animation (images clés) » dans le menu à trois points de chaque calque, dans le panneau des calques. Le dessin du calque lui-même ne change pas : c'est une transformation non destructive de son emplacement d'affichage. Cela n'affecte que l'affichage de la timeline (aperçu / export) et n'a aucun effet sur le dessin réel en mode canevas.",
+
+  "helpLayerGroupTitle": "Groupes de calques (déplacer plusieurs parties ensemble)",
+  "helpLayerGroupDesc": "Déplace plusieurs calques ensemble avec un seul flux d'images clés. Par exemple, si un « bras » est composé de deux parties de remplissage automatique — peau et manche —, les grouper permet de déplacer les deux avec une seule opération d'image clé. Créez un groupe en sélectionnant plusieurs calques (cases à cocher) dans le panneau des calques puis en appuyant sur l'icône « Grouper » de la barre inférieure. Le mouvement du groupe se superpose aux images clés propres à chaque calque membre (si elles existent), ce qui permet de combiner le mouvement global du groupe avec des ajustements fins par calque. Un calque ne peut appartenir qu'à un seul groupe à la fois.",
 
   "tipsScreenTitle": "Astuces",
   "tipsSearchHint": "Rechercher une astuce...",
@@ -1427,11 +1430,19 @@
   "timelineEffectTypeAnimeStyle": "Style anime",
   "timelineEffectTypeRetroAnime": "Anime rétro",
   "timelineEffectTypeCrt": "Tube cathodique",
+  "timelineEffectTypeAnimatedNoise": "Bruit animé",
+  "timelineEffectTypeRain": "Pluie",
   "timelineEffectFilterEmptyState": "Aucun filtre\nAppuyez sur + Ajouter pour en créer un",
   "timelineRangeStartLabel": "Début",
   "timelineRangeEndLabel": "Fin",
   "timelineEffectSizeLabel": "Taille",
   "timelineEffectStrengthLabel": "Intensité",
+  "timelineEffectAmountLabel": "Quantité",
+  "timelineEffectGrainSizeLabel": "Taille du grain",
+  "timelineEffectRainIntensityLabel": "Intensité",
+  "timelineEffectRainSpeedLabel": "Vitesse",
+  "timelineEffectRainSizeLabel": "Taille des gouttes",
+  "timelineEffectWindAngleLabel": "Angle du vent",
   "timelineColorLabel": "Couleur",
   "timelineColorBlack": "Noir",
   "timelineColorWhite": "Blanc",
@@ -1472,6 +1483,14 @@
   "layerKeyframeFrameLabel": "Image",
   "layerKeyframeScaleLabel": "Échelle",
   "layerKeyframeRotationLabel": "Rotation",
+
+  "layerPanelGroupTooltip": "Grouper",
+  "layerPanelGroupDefaultName": "Nouveau groupe",
+  "layerPanelGroupMembershipLabel": "Groupe : {name}",
+  "@layerPanelGroupMembershipLabel": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelGroupLeaveAction": "Quitter",
   "frameStripHoldDialogTitle": "F{n} images de maintien",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

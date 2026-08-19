@@ -23,6 +23,8 @@ import '../../models/audio_clip.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/effect_filter_instance.dart';
 import '../../models/layer.dart';
+import '../../models/layer_group.dart';
+import '../../models/layer_keyframe.dart';
 import '../../models/material_asset.dart';
 import '../../models/scene.dart';
 import '../../models/text_object.dart';
@@ -658,6 +660,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
                     effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
                     layerHomes: ps.layerHomesOf(widget.projectId),
+                    groups: ps.layerGroupsOf(widget.projectId, sceneId),
                   ),
           ),
           // プレビュー全画面化ボタン（仕様書02・タスク#98：確認・仕上がり
@@ -3750,6 +3753,7 @@ class _TimelinePreview extends StatefulWidget {
   final List<CameraKeyframe> cameraKeyframes;
   final List<EffectFilterInstance> effectFilters;
   final Map<String, LayerHome> layerHomes;
+  final List<LayerGroup> groups;
 
   const _TimelinePreview({
     required this.tileManager,
@@ -3759,6 +3763,7 @@ class _TimelinePreview extends StatefulWidget {
     this.cameraKeyframes = const [],
     this.effectFilters = const [],
     this.layerHomes = const {},
+    this.groups = const [],
   });
 
   @override
@@ -3786,9 +3791,19 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
         old.cameraKeyframes != widget.cameraKeyframes ||
-        old.effectFilters != widget.effectFilters) {
+        old.effectFilters != widget.effectFilters ||
+        old.groups != widget.groups) {
       _rebuild();
     }
+  }
+
+  LayerKeyframe? _groupKeyframeOf(Layer layer) {
+    for (final g in widget.groups) {
+      if (g.memberLayerIds.contains(layer.id)) {
+        return g.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(g.keyframes, widget.frameIndex);
+      }
+    }
+    return null;
   }
 
   Future<void> _rebuild() async {
@@ -3802,6 +3817,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       tm.canvasWidth,
       tm.canvasHeight,
       keyframeOf: (l) => l.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(l.keyframes, widget.frameIndex),
+      groupKeyframeOf: _groupKeyframeOf,
     );
 
     // カメラ変換を適用する（仕様書05：カメラは表示のみを変更する）
@@ -3890,6 +3906,8 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.animeStyle => l10n.timelineEffectTypeAnimeStyle,
     EffectFilterType.retroAnime => l10n.timelineEffectTypeRetroAnime,
     EffectFilterType.crt => l10n.timelineEffectTypeCrt,
+    EffectFilterType.animatedNoise => l10n.timelineEffectTypeAnimatedNoise,
+    EffectFilterType.rain => l10n.timelineEffectTypeRain,
   };
 
   static const _typeIcons = {
@@ -3903,6 +3921,8 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.animeStyle: Icons.auto_awesome,
     EffectFilterType.retroAnime: Icons.movie_filter,
     EffectFilterType.crt: Icons.tv,
+    EffectFilterType.animatedNoise: Icons.blur_on,
+    EffectFilterType.rain: Icons.water_drop,
   };
 
   @override
@@ -3973,6 +3993,9 @@ class _EffectFilterSheet extends StatelessWidget {
       endFrame: e.endFrame,
       enabled: e.enabled,
       param1: e.param1,
+      param2: e.param2,
+      param3: e.param3,
+      param4: e.param4,
       fadeColor: e.fadeColor,
     );
     service.addEffectFilter(projectId, sceneId, copy);
@@ -4024,6 +4047,10 @@ class _EffectFilterSheet extends StatelessWidget {
                     (v) => _update(context, e.copyWith(endFrame: v.clamp(e.startFrame, totalFrames - 1)))),
                 if (e.type == EffectFilterType.fade)
                   ..._fadeParams(context, l10n, e)
+                else if (e.type == EffectFilterType.animatedNoise)
+                  ..._animatedNoiseParams(context, l10n, e)
+                else if (e.type == EffectFilterType.rain)
+                  ..._rainParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -4087,6 +4114,60 @@ class _EffectFilterSheet extends StatelessWidget {
           ),
         ],
       ),
+    ];
+  }
+
+  /// 演出フィルターの汎用パラメータ行（ラベル＋スライダー＋数値入力）。
+  Widget _paramRow(String label, double value, double min, double max, int divisions,
+      ValueChanged<double> onChanged, {String? valueText}) {
+    return Row(
+      children: [
+        SizedBox(width: 56, child: Text(label, style: const TextStyle(fontSize: 11))),
+        Expanded(
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min, max: max,
+            divisions: divisions > 0 ? divisions : null,
+            label: valueText ?? value.round().toString(),
+            onChanged: onChanged,
+          ),
+        ),
+        SizedBox(
+          width: 44,
+          child: EditableSliderValue(
+            text: valueText ?? value.round().toString(),
+            style: const TextStyle(fontSize: 11),
+            value: value, min: min, max: max, isInt: false,
+            onChanged: (v) => onChanged(v.toDouble()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 動くノイズのパラメータ（強度・量・粒の大きさ）。
+  List<Widget> _animatedNoiseParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+    return [
+      _paramRow(l10n.timelineEffectStrengthLabel, e.param1, 1, 20, 19,
+          (v) => _update(context, e.copyWith(param1: v))),
+      _paramRow(l10n.timelineEffectAmountLabel, e.param2, 1, 100, 99,
+          (v) => _update(context, e.copyWith(param2: v)), valueText: '${e.param2.round()}%'),
+      _paramRow(l10n.timelineEffectGrainSizeLabel, e.param3, 1, 8, 7,
+          (v) => _update(context, e.copyWith(param3: v))),
+    ];
+  }
+
+  /// 雨のパラメータ（降り方・速さ・粒の大きさ・風向き）。
+  List<Widget> _rainParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+    return [
+      _paramRow(l10n.timelineEffectRainIntensityLabel, e.param1, 1, 20, 19,
+          (v) => _update(context, e.copyWith(param1: v))),
+      _paramRow(l10n.timelineEffectRainSpeedLabel, e.param2, 2, 40, 0,
+          (v) => _update(context, e.copyWith(param2: v))),
+      _paramRow(l10n.timelineEffectRainSizeLabel, e.param3, 1, 6, 5,
+          (v) => _update(context, e.copyWith(param3: v))),
+      _paramRow(l10n.timelineEffectWindAngleLabel, e.param4, -60, 60, 0,
+          (v) => _update(context, e.copyWith(param4: v)), valueText: '${e.param4.round()}°'),
     ];
   }
 
@@ -4164,6 +4245,8 @@ class _EffectFilterSheet extends StatelessWidget {
                   type: type,
                   startFrame: currentFrame,
                   endFrame: (currentFrame + 11).clamp(0, totalFrames - 1),
+                  // 雨の「速さ」は既定値50だとスライダー上限(40)を超えるため上書きする。
+                  param2: type == EffectFilterType.rain ? 10.0 : 50.0,
                 ));
                 Navigator.pop(ctx);
               },
@@ -4361,6 +4444,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
         frameIndex: _kf.frameIndex,
         cameraKeyframes: cameraKeyframes,
         layerHomes: ps.layerHomesOf(widget.projectId),
+        groups: ps.layerGroupsOf(widget.projectId, widget.sceneId),
       ),
     );
   }
@@ -4537,6 +4621,11 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
       keyframeOf: (l) => l.keyframes.isEmpty
           ? null
           : LayerKeyframeEngine().valueAt(l.keyframes, widget.frameIndex),
+      groupKeyframeOf: (l) {
+        final group = ps.groupContainingLayer(widget.projectId, widget.sceneId, l.id);
+        if (group == null || group.keyframes.isEmpty) return null;
+        return LayerKeyframeEngine().valueAt(group.keyframes, widget.frameIndex);
+      },
     );
 
     final offsetX = (drawW - exportW) / 2;

@@ -103,6 +103,19 @@ class FilterEngine {
         EffectFilterType.retroAnime =>
           applyRetroAnime(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
         EffectFilterType.crt => applyCrt(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
+        EffectFilterType.animatedNoise => applyAnimatedNoise(
+            result, width, height, frameIndex,
+            strength: (e.param1 / 20).clamp(0.0, 1.0),
+            amount: (e.param2 / 100).clamp(0.0, 1.0),
+            size: e.param3.round().clamp(1, 8),
+          ),
+        EffectFilterType.rain => applyRain(
+            result, width, height, frameIndex,
+            intensity: e.param1.round().clamp(1, 20),
+            speed: e.param2,
+            size: e.param3,
+            windAngleDeg: e.param4,
+          ),
       };
     }
     return result;
@@ -259,6 +272,95 @@ class FilterEngine {
       result[i] = (result[i] + n).clamp(0, 255);
       result[i + 1] = (result[i + 1] + n).clamp(0, 255);
       result[i + 2] = (result[i + 2] + n).clamp(0, 255);
+    }
+    return result;
+  }
+
+  /// 動くノイズ（フィルムグレイン風）：[frameIndex]をシードにすることで、
+  /// 同じフレームへ戻ってきた時は毎回同じ粒状になり（スクラブ時にちらつかない）、
+  /// 次のフレームでは別の粒状になる（再生すると粒がちらついて動いて見える）。
+  /// [size]px四方のブロック単位でノイズを乗せることで粒の大きさを、
+  /// [amount]（0〜1）で乗る確率（密度）を、[strength]（0〜1）で強さを調整する。
+  Uint8List applyAnimatedNoise(
+    Uint8List data,
+    int width,
+    int height,
+    int frameIndex, {
+    required double strength,
+    required double amount,
+    required int size,
+  }) {
+    final result = Uint8List.fromList(data);
+    final blockSize = size.clamp(1, 8);
+    final rng = math.Random(frameIndex * 7919 + 13);
+    final s = (strength * 255).round().clamp(0, 255);
+    for (int by = 0; by < height; by += blockSize) {
+      final y1 = math.min(by + blockSize, height);
+      for (int bx = 0; bx < width; bx += blockSize) {
+        final hit = rng.nextDouble() < amount;
+        final n = hit ? (_gaussianRandom(rng) * s).round().clamp(-s, s) : 0;
+        if (n == 0) continue;
+        final x1 = math.min(bx + blockSize, width);
+        for (int y = by; y < y1; y++) {
+          for (int x = bx; x < x1; x++) {
+            final i = (y * width + x) * 4;
+            if (result[i + 3] == 0) continue;
+            result[i] = (result[i] + n).clamp(0, 255);
+            result[i + 1] = (result[i + 1] + n).clamp(0, 255);
+            result[i + 2] = (result[i + 2] + n).clamp(0, 255);
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /// 動く雨：[frameIndex]に応じて雨粒が[speed]で降り落ち、[windAngleDeg]
+  /// （0=真下、正負で左右に傾く）方向へ流れる。各雨粒は自身のインデックスで
+  /// シードした乱数から開始位置・速度のばらつきを決めるため、フレームが
+  /// 変わっても同じ粒が連続して動いて見える（フレームごとに乱数を振り直す
+  /// と粒がテレポートして見えてしまうため）。[intensity]は粒の本数、
+  /// [size]は線の太さ。
+  Uint8List applyRain(
+    Uint8List data,
+    int width,
+    int height,
+    int frameIndex, {
+    required int intensity,
+    required double speed,
+    required double size,
+    required double windAngleDeg,
+  }) {
+    final result = Uint8List.fromList(data);
+    final count = (intensity * 15).clamp(15, 300);
+    final angleRad = windAngleDeg * math.pi / 180.0;
+    final dirX = math.sin(angleRad);
+    final dirY = math.cos(angleRad);
+    final streakLen = (12 + speed * 2).clamp(8.0, 60.0);
+    final thickness = size.clamp(1.0, 6.0).round();
+    for (int i = 0; i < count; i++) {
+      final rng = math.Random(i * 92821 + 17);
+      final x0 = rng.nextDouble() * width;
+      final y0 = rng.nextDouble() * (height + streakLen) - streakLen;
+      final fallSpeed = speed * (0.7 + rng.nextDouble() * 0.6);
+      final travel = frameIndex * fallSpeed;
+      final y = (y0 + travel) % (height + streakLen * 2) - streakLen;
+      final x = (x0 + travel * dirX) % width;
+      final steps = streakLen.round();
+      for (int step = 0; step < steps; step++) {
+        final px = (x - dirX * step).round();
+        final py = (y - dirY * step).round();
+        if (py < 0 || py >= height) continue;
+        final alpha = (1.0 - step / steps) * 0.5;
+        for (int tx = -thickness ~/ 2; tx <= thickness ~/ 2; tx++) {
+          final rx = ((px + tx) % width + width) % width;
+          final idx = (py * width + rx) * 4;
+          if (result[idx + 3] == 0) continue;
+          result[idx] = (result[idx] + (220 - result[idx]) * alpha).round().clamp(0, 255);
+          result[idx + 1] = (result[idx + 1] + (235 - result[idx + 1]) * alpha).round().clamp(0, 255);
+          result[idx + 2] = (result[idx + 2] + (255 - result[idx + 2]) * alpha).round().clamp(0, 255);
+        }
+      }
     }
     return result;
   }
@@ -669,6 +771,7 @@ class EffectFilter {
 enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
   animeStyle, retroAnime, crt,
+  animatedNoise, rain,
 }
 
 enum DrawFilterType {

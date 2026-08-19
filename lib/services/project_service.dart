@@ -12,6 +12,7 @@ import '../engine/niapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
+import '../models/layer_group.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/material_asset.dart' show MaterialType;
@@ -1245,6 +1246,58 @@ class ProjectService extends ChangeNotifier {
     final current = cameraKeyframesOf(projectId, sceneId);
     _updateSceneCameraKeyframes(
         projectId, sceneId, current.where((k) => k.frameIndex != frameIndex).toList());
+  }
+
+  // ─── レイヤーグループ（複数レイヤーを1つのキーフレームでまとめて動かす） ──
+
+  List<LayerGroup> layerGroupsOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.groups ?? const []);
+
+  /// [layerId]が所属するグループを返す（無ければnull）。1レイヤーは
+  /// 同時に1グループにのみ所属できる想定（新規グループ作成時に他グループ
+  /// から自動的に外す）。
+  LayerGroup? groupContainingLayer(String projectId, String sceneId, String layerId) {
+    for (final g in layerGroupsOf(projectId, sceneId)) {
+      if (g.memberLayerIds.contains(layerId)) return g;
+    }
+    return null;
+  }
+
+  void _updateSceneGroups(String projectId, String sceneId, List<LayerGroup> groups) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(groups: groups);
+    notifyListeners();
+  }
+
+  /// 新規グループを作成する。[memberLayerIds]が既存の他グループに属して
+  /// いた場合はそちらから外す（1レイヤーは1グループのみに所属）。
+  LayerGroup addLayerGroup(String projectId, String sceneId, String name, List<String> memberLayerIds) {
+    final group = LayerGroup(
+      id: 'group_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+      memberLayerIds: memberLayerIds,
+    );
+    final cleaned = layerGroupsOf(projectId, sceneId)
+        .map((g) => g.copyWith(
+            memberLayerIds: g.memberLayerIds.where((id) => !memberLayerIds.contains(id)).toList()))
+        .where((g) => g.memberLayerIds.isNotEmpty)
+        .toList();
+    _updateSceneGroups(projectId, sceneId, [...cleaned, group]);
+    return group;
+  }
+
+  void updateLayerGroup(String projectId, String sceneId, LayerGroup group) {
+    final current = layerGroupsOf(projectId, sceneId);
+    final without = current.where((g) => g.id != group.id).toList();
+    _updateSceneGroups(projectId, sceneId, [...without, group]);
+  }
+
+  void removeLayerGroup(String projectId, String sceneId, String groupId) {
+    final current = layerGroupsOf(projectId, sceneId);
+    _updateSceneGroups(projectId, sceneId, current.where((g) => g.id != groupId).toList());
   }
 
   // ─── 演出フィルター（仕様書18：タイムライン非破壊編集） ─────────────────

@@ -2,6 +2,7 @@ import 'audio_clip.dart';
 import 'camera_keyframe.dart';
 import 'effect_filter_instance.dart';
 import 'layer.dart';
+import 'layer_group.dart';
 
 class Scene {
   final String id;
@@ -23,6 +24,9 @@ class Scene {
   final List<String?> imageRowNames;
   final List<String?> videoRowNames;
   final List<String?> audioRowNames;
+  // 複数レイヤーをまとめて1つのキーフレームで動かすグループ
+  // （パーツ単位アニメーションの拡張）。シーンごとに管理する。
+  final List<LayerGroup> groups;
 
   const Scene({
     required this.id,
@@ -35,6 +39,7 @@ class Scene {
     this.imageRowNames = const [],
     this.videoRowNames = const [],
     this.audioRowNames = const [],
+    this.groups = const [],
   });
 
   String get displayName => name ?? 'Scene${index + 1}';
@@ -50,6 +55,7 @@ class Scene {
     List<String?>? imageRowNames,
     List<String?>? videoRowNames,
     List<String?>? audioRowNames,
+    List<LayerGroup>? groups,
   }) {
     return Scene(
       id: id ?? this.id,
@@ -62,6 +68,7 @@ class Scene {
       imageRowNames: imageRowNames ?? this.imageRowNames,
       videoRowNames: videoRowNames ?? this.videoRowNames,
       audioRowNames: audioRowNames ?? this.audioRowNames,
+      groups: groups ?? this.groups,
     );
   }
 }

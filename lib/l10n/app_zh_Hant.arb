@@ -477,7 +477,10 @@
   "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（與套用於整條時間軸或整個場景的演出濾鏡不同，繪圖濾鏡按圖層生效）。包含模糊、銳化、USM銳化、色調曲線、色階、暗角、雜訊、復古動畫、映像管、動畫風、外框、像素化等。外框不會改寫原圖層，只會把外框後的結果繪製到一個新圖層上。",
 
   "helpLayerKeyframeTitle": "圖層關鍵影格（分部件動畫）",
-  "helpLayerKeyframeDesc": "依影格設定每個圖層的位置・縮放・旋轉，關鍵影格之間會自動內插。攝影機關鍵影格移動的是整個畫面，而這個功能只移動單一圖層。由於自動上色的每個部件都會生成為獨立的圖層，因此可以直接用它來做分部件動畫（只動一隻手臂、只讓嘴巴開合等）。在圖層面板的三點選單「動畫（關鍵影格）」中設定。圖層本身的畫面內容不會改變，只是顯示位置改變的非破壞性變形。",
+  "helpLayerKeyframeDesc": "依影格設定每個圖層的位置・縮放・旋轉，關鍵影格之間會自動內插。攝影機關鍵影格移動的是整個畫面，而這個功能只移動單一圖層。由於自動上色的每個部件都會生成為獨立的圖層，因此可以直接用它來做分部件動畫（只動一隻手臂、只讓嘴巴開合等）。在圖層面板的三點選單「動畫（關鍵影格）」中設定。圖層本身的畫面內容不會改變，只是顯示位置改變的非破壞性變形。這個功能只影響時間軸的顯示（預覽・匯出），不會影響畫布模式下的實際作畫。",
+
+  "helpLayerGroupTitle": "圖層群組（把多個部件一起移動）",
+  "helpLayerGroupDesc": "用同一組關鍵影格把多個圖層一起移動的功能。例如「手臂」由皮膚、袖子兩個自動上色部件組成時，把這兩個圖層分到同一群組後，只需一次關鍵影格操作就能讓它們一起移動。在圖層面板中多選（勾選框）圖層，再點擊底部工具列的「群組化」圖示即可建立。群組的運動會疊加在每個成員圖層自身的關鍵影格（如果設定了的話）之上，因此可以把群組整體的運動和單一圖層的微調結合起來使用。一個圖層同時只能屬於一個群組。",
 
   "tipsScreenTitle": "使用技巧",
   "tipsSearchHint": "搜尋技巧...",
@@ -1427,11 +1430,19 @@
   "timelineEffectTypeAnimeStyle": "動漫風",
   "timelineEffectTypeRetroAnime": "復古動漫",
   "timelineEffectTypeCrt": "老電視",
+  "timelineEffectTypeAnimatedNoise": "動態雜訊",
+  "timelineEffectTypeRain": "下雨",
   "timelineEffectFilterEmptyState": "沒有濾鏡\n請點選＋新增按鈕來新增",
   "timelineRangeStartLabel": "開始",
   "timelineRangeEndLabel": "結束",
   "timelineEffectSizeLabel": "大小",
   "timelineEffectStrengthLabel": "強度",
+  "timelineEffectAmountLabel": "數量",
+  "timelineEffectGrainSizeLabel": "顆粒大小",
+  "timelineEffectRainIntensityLabel": "降雨強度",
+  "timelineEffectRainSpeedLabel": "速度",
+  "timelineEffectRainSizeLabel": "雨滴大小",
+  "timelineEffectWindAngleLabel": "風向角度",
   "timelineColorLabel": "顏色",
   "timelineColorBlack": "黑",
   "timelineColorWhite": "白",
@@ -1472,6 +1483,14 @@
   "layerKeyframeFrameLabel": "影格",
   "layerKeyframeScaleLabel": "縮放",
   "layerKeyframeRotationLabel": "旋轉",
+
+  "layerPanelGroupTooltip": "群組化",
+  "layerPanelGroupDefaultName": "新增群組",
+  "layerPanelGroupMembershipLabel": "群組：{name}",
+  "@layerPanelGroupMembershipLabel": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelGroupLeaveAction": "解除",
   "frameStripHoldDialogTitle": "F{n} 保持格數",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

@@ -477,7 +477,10 @@
   "helpDrawingFilterDesc": "선택 중인 레이어에 직접 적용하는 필터입니다（연출 필터가 타임라인 전체・장면 단위로 적용되는 것과 달리, 그리기 필터는 레이어 단위입니다）. 흐림・샤프・언샤프 마스크・톤 커브・레벨 보정・비네트・노이즈・레트로 애니메이션・브라운관・애니메이션풍・윤곽선・픽셀화 등이 준비되어 있습니다. 윤곽선은 원본 레이어를 다시 쓰지 않고, 윤곽선을 두른 내용만 새 레이어에 그립니다.",
 
   "helpLayerKeyframeTitle": "레이어 키프레임（파츠 단위 애니메이션）",
-  "helpLayerKeyframeDesc": "각 레이어의 위치・확대축소・회전을 프레임마다 지정하면 키프레임 사이가 자동으로 보간되는 기능입니다. 카메라 키프레임이 화면 전체를 움직이는 것과 달리, 이것은 개별 레이어만 움직입니다. 자동 채색의 각 파츠는 각각 독립된 레이어로 생성되므로, 파츠 단위 애니메이션（팔만 움직이기, 입만 여닫기 등）에 그대로 사용할 수 있습니다. 레이어 패널의 점 3개 메뉴 「애니메이션（키프레임）」에서 설정합니다. 레이어의 그림 자체는 바뀌지 않고 표시 위치만 바뀌는 비파괴적인 변형입니다.",
+  "helpLayerKeyframeDesc": "각 레이어의 위치・확대축소・회전을 프레임마다 지정하면 키프레임 사이가 자동으로 보간되는 기능입니다. 카메라 키프레임이 화면 전체를 움직이는 것과 달리, 이것은 개별 레이어만 움직입니다. 자동 채색의 각 파츠는 각각 독립된 레이어로 생성되므로, 파츠 단위 애니메이션（팔만 움직이기, 입만 여닫기 등）에 그대로 사용할 수 있습니다. 레이어 패널의 점 3개 메뉴 「애니메이션（키프레임）」에서 설정합니다. 레이어의 그림 자체는 바뀌지 않고 표시 위치만 바뀌는 비파괴적인 변형입니다. 이 기능은 타임라인의 표시（미리보기・내보내기）에만 영향을 주며, 캔버스 모드에서의 실제 작화에는 영향을 주지 않습니다.",
+
+  "helpLayerGroupTitle": "레이어 그룹（여러 파츠를 한꺼번에 움직이기）",
+  "helpLayerGroupDesc": "여러 레이어를 하나의 키프레임 흐름으로 한꺼번에 움직이는 기능입니다. 예를 들어 「팔」이 피부・소매 2장의 자동 채색 파츠로 이루어져 있다면, 이 2장을 그룹화해두면 한 번의 키프레임 조작으로 함께 움직일 수 있습니다. 레이어 패널에서 여러 개를 선택（체크박스）한 상태로 하단 바의 「그룹화」 아이콘에서 만듭니다. 그룹의 움직임은 각 레이어 자체의 키프레임（설정되어 있다면）에 겹쳐서 적용되므로, 그룹 전체의 움직임과 개별 레이어의 미세 조정을 함께 사용할 수도 있습니다. 하나의 레이어는 동시에 하나의 그룹에만 속할 수 있습니다.",
 
   "tipsScreenTitle": "활용 팁",
   "tipsSearchHint": "팁 검색...",
@@ -1427,11 +1430,19 @@
   "timelineEffectTypeAnimeStyle": "애니메 스타일",
   "timelineEffectTypeRetroAnime": "레트로 애니메",
   "timelineEffectTypeCrt": "브라운관",
+  "timelineEffectTypeAnimatedNoise": "움직이는 노이즈",
+  "timelineEffectTypeRain": "비",
   "timelineEffectFilterEmptyState": "필터가 없습니다\n＋추가 버튼으로 추가해 주세요",
   "timelineRangeStartLabel": "시작",
   "timelineRangeEndLabel": "종료",
   "timelineEffectSizeLabel": "크기",
   "timelineEffectStrengthLabel": "강도",
+  "timelineEffectAmountLabel": "양",
+  "timelineEffectGrainSizeLabel": "입자 크기",
+  "timelineEffectRainIntensityLabel": "강수량",
+  "timelineEffectRainSpeedLabel": "속도",
+  "timelineEffectRainSizeLabel": "빗방울 크기",
+  "timelineEffectWindAngleLabel": "바람 방향",
   "timelineColorLabel": "색상",
   "timelineColorBlack": "검정",
   "timelineColorWhite": "흰색",
@@ -1472,6 +1483,14 @@
   "layerKeyframeFrameLabel": "프레임",
   "layerKeyframeScaleLabel": "확대축소",
   "layerKeyframeRotationLabel": "회전",
+
+  "layerPanelGroupTooltip": "그룹화",
+  "layerPanelGroupDefaultName": "새 그룹",
+  "layerPanelGroupMembershipLabel": "그룹: {name}",
+  "@layerPanelGroupMembershipLabel": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "layerPanelGroupLeaveAction": "해제",
   "frameStripHoldDialogTitle": "F{n} 유지 셀 수",
   "@frameStripHoldDialogTitle": {
     "placeholders": {"n": {"type": "int"}}

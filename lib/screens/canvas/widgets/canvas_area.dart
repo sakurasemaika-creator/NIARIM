@@ -2001,16 +2001,23 @@ class _CanvasAreaState extends State<CanvasArea> {
     final below = idx < 0 ? layers : layers.sublist(idx + 1);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
+    LayerKeyframe? groupKf(Layer layer) {
+      final group = ps.groupContainingLayer(project.id, widget.sceneId, layer.id);
+      if (group == null || group.keyframes.isEmpty) return null;
+      return _layerKeyframeEngine.valueAt(group.keyframes, widget.currentFrame);
+    }
 
     final belowImg = await LayerCompositor.composite(
-        _tileManager, below, (l) => _tileKeyFor(l.id), w, h, keyframeOf: _keyframeOf);
+        _tileManager, below, (l) => _tileKeyFor(l.id), w, h,
+        keyframeOf: _keyframeOf, groupKeyframeOf: groupKf);
     if (!mounted) {
       belowImg.dispose();
       _isComposingSurroundings = false;
       return;
     }
     final aboveImg = await LayerCompositor.composite(
-        _tileManager, above, (l) => _tileKeyFor(l.id), w, h, keyframeOf: _keyframeOf);
+        _tileManager, above, (l) => _tileKeyFor(l.id), w, h,
+        keyframeOf: _keyframeOf, groupKeyframeOf: groupKf);
     if (!mounted) {
       belowImg.dispose();
       aboveImg.dispose();
@@ -2077,6 +2084,11 @@ class _CanvasAreaState extends State<CanvasArea> {
         shouldRender: (layer, _) =>
             layer.type == LayerType.normal || layer.type == LayerType.autoFillLineart,
         keyframeOf: (layer) => _keyframeOf(layer, frameIdx),
+        groupKeyframeOf: (layer) {
+          final group = ps.groupContainingLayer(project.id, widget.sceneId, layer.id);
+          if (group == null || group.keyframes.isEmpty) return null;
+          return _layerKeyframeEngine.valueAt(group.keyframes, frameIdx);
+        },
       );
     }
     if (!mounted) {

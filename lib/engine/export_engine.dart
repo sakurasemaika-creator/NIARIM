@@ -14,6 +14,8 @@ import '../engine/tile_manager.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
+import '../models/layer_group.dart';
+import '../models/layer_keyframe.dart';
 import '../models/scene.dart';
 import '../services/hw_video_encoder.dart';
 
@@ -96,7 +98,17 @@ class ExportEngine {
     List<CameraKeyframe> cameraKeyframes = const [],
     List<EffectFilterInstance> effectFilters = const [],
     Map<String, LayerHome> layerHomes = const {},
+    List<LayerGroup> groups = const [],
   }) async {
+    LayerKeyframe? groupKeyframeOf(Layer layer) {
+      for (final g in groups) {
+        if (g.memberLayerIds.contains(layer.id)) {
+          return g.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(g.keyframes, frameIndex);
+        }
+      }
+      return null;
+    }
+
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
@@ -105,6 +117,7 @@ class ExportEngine {
       drawingHeight,
       keyframeOf: (l) =>
           l.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(l.keyframes, frameIndex),
+      groupKeyframeOf: groupKeyframeOf,
     );
 
     final recorder = ui.PictureRecorder();
@@ -221,6 +234,7 @@ class ExportEngine {
           cameraKeyframes: scene.cameraKeyframes,
           effectFilters: scene.effectFilters,
           layerHomes: layerHomes,
+          groups: scene.groups,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
@@ -290,6 +304,7 @@ class ExportEngine {
           cameraKeyframes: scene.cameraKeyframes,
           effectFilters: scene.effectFilters,
           layerHomes: layerHomes,
+          groups: scene.groups,
         );
         final imgFrame = img.Image.fromBytes(
           width: width, height: height, bytes: rgba.buffer, numChannels: 4,
@@ -359,6 +374,7 @@ class ExportEngine {
           cameraKeyframes: scene.cameraKeyframes,
           effectFilters: scene.effectFilters,
           layerHomes: layerHomes,
+          groups: scene.groups,
         );
         final pngBytes = img.encodePng(
           img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
