@@ -1,7 +1,6 @@
 {
   "@@locale": "es",
   "appTitle": "NIARIM",
-
   "homeTabProjects": "Proyectos",
   "homeTabShared": "Compartidos",
   "homeTabTrash": "Papelera",
@@ -16,7 +15,6 @@
   "homeMoveToTrash": "Mover a la papelera",
   "homeMoveToTrashConfirm": "¿Mover {count} elemento(s) a la papelera?",
   "commonMove": "Mover",
-
   "homeShareFileDialogTitle": "Archivo compartido",
   "homeShareFileDialogContent": "¿Duplicar este archivo compartido y guardarlo como un proyecto normal?",
   "homeMissingFontsSnackbar": "Faltan fuentes: {names}",
@@ -45,7 +43,6 @@
   "homePreviewFailed": "No se puede reproducir la vista previa",
   "homeFirstLaunchMessage": "Puedes crear animaciones dibujadas a mano",
   "homeFirstLaunchStart": "Comenzar",
-
   "settingsScreenTitle": "Ajustes",
   "settingsBasicTitle": "General",
   "settingsBasicSubtitle": "FPS, color de fondo, idioma",
@@ -86,7 +83,6 @@
   "settingsDrawingAreaWiden": "Ampliar área de dibujo",
   "settingsDrawingAreaScale": "Escala",
   "settingsScaleValue": "×{scale}",
-
   "commonCancel": "Cancelar",
   "commonCreate": "Crear",
   "commonChange": "Cambiar",
@@ -94,7 +90,11 @@
   "confirmDeleteGenericBody": "¿Seguro que quieres eliminar esto? Esta acción no se puede deshacer.",
   "confirmDeleteNamedBody": "¿Eliminar «{name}»? Esta acción no se puede deshacer.",
   "@confirmDeleteNamedBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "commonFavoriteDeleteBlocked": "No se puede eliminar un elemento favorito. Quítalo primero de favoritos.",
   "commonSave": "Guardar",
@@ -104,7 +104,6 @@
   "commonCopy": "Copiar",
   "commonPaste": "Pegar",
   "commonOk": "Aceptar",
-
   "gestureSettingsTitle": "Ajustes de gestos",
   "gestureTwoFingerTap": "Toque con dos dedos",
   "gestureThreeFingerTap": "Toque con tres dedos",
@@ -118,19 +117,15 @@
   "gestureActionNextTool": "Cambio rápido de herramienta",
   "gestureActionOnionSkinToggle": "Activar/desactivar papel cebolla",
   "gestureActionNone": "No hacer nada",
-
   "homeDrawerAppTagline": "App de creación de animación dibujada a mano",
   "homeDrawerAutofillPreset": "Preajustes de coloreado automático",
   "homeDrawerSettings": "Ajustes",
   "homeDrawerHelp": "Ayuda",
   "homeDrawerTips": "Consejos",
   "homeDrawerPremium": "Premium",
-
   "gestureActionNoneShort": "Ninguna",
-
   "pressureTryDrawHint": "Puedes probar a dibujar con este ajuste (con un lápiz óptico se refleja la presión real)",
   "pressureTryDrawClear": "Borrar",
-
   "penSettingsTitle": "Ajustes de entrada de lápiz",
   "penSettingsCurveSection": "Curva de presión",
   "penSettingsCurveHint": "Un ajuste más débil hace que la presión aumente gradualmente; uno más fuerte hace que aumente de forma pronunciada.",
@@ -152,11 +147,9 @@
   "bucketSettingsUnderLineTitle": "Pasar por debajo de las líneas",
   "bucketSettingsUnderLineHint": "En vez de pintar sobre el dibujo de líneas, la expansión se combina detrás de los píxeles existentes: la línea conserva su aspecto mientras se cierran los huecos en sus bordes suavizados.",
   "bucketSettingsUnderLineDisabledHint": "No tiene efecto cuando «Expansión» es 0 px.",
-
   "fontCatalogSearchHint": "Buscar por nombre de fuente... ({count} fuentes)",
   "fontCatalogAll": "Todas",
   "fontCatalogNoResults": "No se encontraron fuentes coincidentes",
-
   "rulerPanelTitle": "Regla",
   "rulerTypeLine": "Regla recta",
   "rulerTypeEllipse": "Regla elíptica",
@@ -165,7 +158,6 @@
   "rulerTypeTwoPoint": "Perspectiva de dos puntos",
   "rulerTypeThreePoint": "Perspectiva de tres puntos",
   "rulerDivisions": "Divisiones",
-
   "transferScreenTitle": "Transferencia (.niatra)",
   "transferInstructionHint": "Selecciona los elementos que quieres transferir a otro dispositivo.",
   "transferItemSettings": "Ajustes",
@@ -179,7 +171,6 @@
   "transferExportFailedSnackbar": "Error al exportar: {error}",
   "transferImportSuccessSnackbar": "Archivo .niatra importado",
   "transferImportFailedSnackbar": "Error al importar: {error}",
-
   "folderManagementTitle": "Gestión de carpetas",
   "folderManagementCreateNew": "Nueva",
   "folderManagementEmpty": "Aún no hay carpetas",
@@ -187,20 +178,27 @@
   "folderMoveToTitle": "Mover a carpeta",
   "folderNone": "Sin carpeta",
   "creativeAssetNameLabel": "Nombre",
-
   "commonAdd": "Añadir",
   "commonSearch": "Buscar",
   "autofillPresetSelectionTitle": "Ajustes preestablecidos a usar",
   "autofillPresetSelectionHint": "Elegir solo los ajustes preestablecidos de autorrelleno usados en este proyecto mantiene la lista de asignación de partes más corta y fácil de revisar.",
   "autofillPresetSelectionPartCount": "{count} partes",
   "@autofillPresetSelectionPartCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetSelectionButton": "Seleccionar ajustes preestablecidos a usar",
   "autofillPresetSelectionAllLabel": "Usar todos",
   "autofillPresetSelectionCountLabel": "{count} seleccionados",
   "@autofillPresetSelectionCountLabel": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "commonEdit": "Editar",
   "commonFavoriteToggle": "Alternar favorito",
@@ -219,7 +217,6 @@
   "timelineStepBack": "Retroceder un fotograma",
   "timelineStepForward": "Avanzar un fotograma",
   "timelineSkipToEnd": "Ir al último fotograma",
-
   "quickToolPanelTitle": "Ajustes de herramientas rápidas",
   "quickToolEmpty": "No hay herramientas registradas",
   "quickToolAddCurrentBrush": "Añadir pincel actual",
@@ -227,7 +224,6 @@
   "quickToolEyedropper": "Cuentagotas",
   "quickToolBucket": "Cubo de pintura",
   "quickToolSizeDialogTitle": "Tamaño de {brushName}",
-
   "materialListTitle": "Gestión de materiales",
   "materialRemoveUnused": "Eliminar no usados ({count})",
   "materialEmptyTitle": "No hay materiales",
@@ -240,7 +236,6 @@
   "materialRemoveUnusedConfirmTitle": "¿Eliminar todos los materiales sin usar?",
   "materialRemoveUnusedConfirmBody": "Esto eliminará todos los materiales que no estén referenciados en ninguna parte del proyecto. Esta acción no se puede deshacer.",
   "materialRemovedSnackbar": "Se eliminaron {count} material(es) sin usar",
-
   "watermarkEmptyTitle": "Aún no hay marcas de agua",
   "watermarkEmptyHint": "Toca el botón + para añadir una marca de agua de imagen o texto",
   "watermarkAddFromImage": "Añadir desde imagen",
@@ -258,7 +253,6 @@
   "watermarkOutlineLabel": "Contorno",
   "watermarkOutlineColorLabel": "Color de contorno",
   "watermarkOutlineWidthLabel": "Grosor de contorno",
-
   "premiumActiveLabel": "Premium activo",
   "premiumVsTitle": "Gratis vs Premium",
   "premiumCampaignFreeNote": "* Durante la campaña, todas las funciones Premium anteriores son gratuitas para todos",
@@ -290,7 +284,6 @@
   "premiumValueDuration90Sec": "1,5 min",
   "premiumPlanRecommendedBadge": "Recomendado",
   "premiumMonthlyPrice": "¥550/mes",
-
   "toolbarItemPen": "Pluma G",
   "toolbarItemEraser": "Goma de borrar",
   "toolbarItemBucket": "Cubo de pintura",
@@ -301,7 +294,6 @@
   "toolbarItemTransform": "Transformar",
   "toolbarItemText": "Texto",
   "toolbarItemShape": "Forma",
-
   "workspaceScreenTitle": "Ajustes del espacio de trabajo",
   "workspaceToolbarEditSection": "Edición de la barra de herramientas",
   "workspaceToolbarEditHint": "Selecciona qué herramientas mostrar con las casillas y arrastra para reordenarlas.",
@@ -327,11 +319,9 @@
   "workspaceSaveDialogLabel": "Nombre (p. ej., Animación, Dibujo lineal)",
   "workspaceLoadRightHanded": "Diestro",
   "workspaceLoadLeftHanded": "Zurdo",
-
   "helpScreenTitle": "Ayuda",
   "helpSearchHint": "Buscar...",
   "helpNoResults": "No se encontraron elementos coincidentes",
-
   "helpCategoryTool": "Herramientas",
   "helpCategoryLayer": "Capas",
   "helpCategoryAnimation": "Animación",
@@ -343,256 +333,172 @@
   "helpCategoryExport": "Exportación",
   "helpCategoryPremium": "Premium",
   "helpCategorySettings": "Ajustes",
-
   "helpPenToolTitle": "Herramienta de pluma",
   "helpPenToolDesc": "La herramienta básica para dibujar líneas en el lienzo. Mantén pulsado para cambiar el tipo, tamaño y color del pincel (un doble toque muestra un resumen rápido). Es compatible con la presión y la inclinación de tabletas/lápices ópticos, y ajustar la curva de presión en Ajustes > Entrada de lápiz permite personalizar con precisión cómo la presión afecta al tamaño y la opacidad. Al cambiar de subherramienta de pluma, puedes aplicar tramas o colocar sellos con la misma herramienta.",
-
   "helpEraserToolTitle": "Herramienta goma de borrar",
   "helpEraserToolDesc": "La contraparte de la herramienta de pluma, usada para borrar lo que has dibujado. Al igual que un pincel, puedes ajustar su tamaño y opacidad, y los ajustes de pincel como el desvanecido y la atenuación de trazo también se aplican. En lugar de \"añadir\" a las partes transparentes de una capa, \"elimina\" el dibujo existente, por lo que la capa de abajo se vuelve visible a través de ella.",
-
   "helpBucketToolTitle": "Herramienta cubo de pintura",
   "helpBucketToolDesc": "Rellena un área cerrada de una sola vez. Toca dentro de un área rodeada por líneas y toda el área se rellena con el color (o trama) seleccionado. Si hay huecos en las líneas, el relleno puede extenderse a áreas no deseadas, así que asegúrate de que las líneas estén bien cerradas antes de usarlo. Puedes alternar entre relleno plano y relleno de trama en los ajustes. Los ajustes detallados (tolerancia, expansión en px, pasar por debajo de las líneas) se pueden configurar desde «Cubo de pintura» en los ajustes.",
-
   "helpLassoFillTitle": "Relleno de lazo",
   "helpLassoFillDesc": "Traza con el dedo para formar un área poligonal y luego rellena el interior de una sola vez. A diferencia del cubo de pintura, puedes definir el área tú mismo incluso donde las líneas no estén cerradas, lo que lo hace ideal para formas complejas o áreas con líneas interrumpidas.",
-
   "helpEyedropperToolTitle": "Herramienta cuentagotas",
   "helpEyedropperToolDesc": "Toma el color en la posición tocada y lo establece como color de dibujo. Muestrea el aspecto compuesto de todas las capas tal como se muestra en la pantalla, por lo que capta con precisión el \"color tal como se ve\" incluso donde se superponen varias capas.",
-
   "helpSelectToolTitle": "Herramienta de selección",
   "helpSelectToolDesc": "Selecciona parte del lienzo para poder mover, rotar o escalar solo esa área. Mantén pulsado para elegir entre tres métodos de selección: \"Selección rectangular\", \"Selección de lazo\" (contorno libre), o \"Selección automática\" (varita mágica: agrupa automáticamente áreas de color similar). Mientras hay una selección activa, un contorno marca el área seleccionada en el lienzo, y la misma área permanece fija en todos los fotogramas y capas hasta que la deselecciones.",
-
   "helpFingerToolTitle": "Herramienta de dedo (distorsión)",
   "helpFingerToolDesc": "Distorsiona los píxeles empujándolos en la dirección en la que arrastras el dedo, como si untaras pintura húmeda con un dedo. Se usa menos para correcciones precisas y más cuando quieres distorsionar orgánicamente líneas ya dibujadas para darles más expresión.",
-
   "helpShapeToolTitle": "Herramienta de forma",
   "helpShapeToolDesc": "Dibuja formas precisas como líneas, rectángulos y círculos con un solo gesto. Arrastrar desde el punto inicial hasta el punto final muestra una vista previa en vivo, y se finaliza al levantar el dedo. Útil cuando necesitas líneas rectas o círculos perfectos difíciles de dibujar a mano alzada.",
-
   "helpTextToolTitle": "Herramienta de texto",
   "helpTextToolDesc": "Coloca texto en el lienzo. Puedes elegir la fuente, el tamaño, el color y la dirección de escritura vertical/horizontal. La escritura vertical admite la rotación automática de caracteres alfanuméricos de medio ancho, el tate-chu-yoko (mantener los números en horizontal dentro de texto vertical) y el rubi (furigana). El texto colocado también se graba como píxeles al exportar.",
-
   "helpQuickToolTitle": "Herramienta rápida",
   "helpQuickToolDesc": "Permite registrar de antemano combinaciones de pinceles y herramientas usadas con frecuencia, y luego recorrerlas con un solo botón. Mantén pulsado el botón ↺ del lienzo para abrir un panel de ajustes donde puedes añadir, reordenar y eliminar entradas. Arrastra para cambiar el orden.",
-
   "helpLayerTitle": "Capas",
   "helpLayerDesc": "Un mecanismo que permite dividir un solo lienzo en varias \"capas\" transparentes. Al dibujar líneas, coloreado y fondos en capas separadas, puedes rehacer solo el coloreado más tarde o cambiar el fondo sin borrar las líneas. En la pantalla, las capas colocadas más arriba aparecen delante.",
-
   "helpBlendModeTitle": "Modo de fusión",
   "helpBlendModeDesc": "Cambia cómo se combina una capa con las de abajo. Además de Normal (simplemente apiladas), existen Multiplicar (multiplica con la capa de abajo para crear efectos de sombra), Trama (aclara como si se añadiera luz) y Superposición (mezcla colores mientras preserva luces y sombras), entre otros. Se usa a menudo al superponer tramas o efectos de color como capa propia.",
-
   "helpClippingTitle": "Recorte",
   "helpClippingDesc": "Restringe el dibujo únicamente a los píxeles opacos de la capa situada justo debajo. Cuando quieras colorear sin salirte de las líneas, activar el recorte en una capa de coloreado colocada sobre una capa de líneas elimina el riesgo de dibujar accidentalmente fuera de las líneas.",
-
   "helpCommonLayerTitle": "Capa común",
   "helpCommonLayerDesc": "Las capas normales son independientes por fotograma, pero una capa común comparte el mismo contenido en varios fotogramas y escenas. Los elementos que no se mueven entre fotogramas, como los fondos, se pueden dibujar una sola vez en lugar de volver a dibujarlos en cada fotograma. Se muestra como una pista dedicada en la línea de tiempo.",
-
   "helpAutoFillTitle": "Coloreado automático",
   "helpAutoFillDesc": "Crea una capa de coloreado automático debajo de la capa de líneas y la colorea automáticamente según un \"preajuste de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización (❗) en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático.",
-
   "helpOnionSkinTitle": "Papel cebolla",
   "helpOnionSkinDesc": "Superpone en semitransparencia los fotogramas anterior y posterior al que estás editando, para que puedas dibujar mientras compruebas cómo se conecta el movimiento. Puedes ajustar cuántos fotogramas se muestran (antes y después) y su color y opacidad en los ajustes de rendimiento.",
-
   "helpRulerTitle": "Regla",
   "helpRulerDesc": "Una guía para dibujar líneas precisas difíciles de lograr a mano alzada, incluidas reglas rectas, circulares, elípticas y de perspectiva (que usan puntos de fuga para el dibujo en perspectiva). La punta del lápiz se ajusta automáticamente a la regla colocada, facilitando incluso composiciones con profundidad difícil de dibujar sin regla. Las reglas se pueden mover, rotar y redimensionar usando sus controladores.",
-
   "helpFadeTitle": "Desvanecido",
   "helpFadeDesc": "Un ajuste de pincel donde la opacidad y el grosor disminuyen gradualmente a medida que continúas un trazo. Úsalo cuando quieras que el final de una línea se desvanezca, o para crear una sensación de dibujo con un efecto persistente.",
-
   "helpStrokeDecayTitle": "Atenuación de trazo",
   "helpStrokeDecayDesc": "Similar al desvanecido, pero más cercano al efecto de \"la tinta se agota\": el color se desvanece o se vuelve irregular cuanto más sigues dibujando. Reproduce la textura de un pincel o rotulador quedándose sin tinta a medida que lo usas.",
-
   "helpColorMixingTitle": "Mezcla de colores",
   "helpColorMixingDesc": "Al pintar con un pincel, mezcla el color que ya hay justo debajo del pincel con el color que estás a punto de aplicar. Úsalo cuando quieras que los colores nuevos se mezclen con los existentes, como en acuarela u óleo.",
-
   "helpPressureCurveTitle": "Curva de presión",
   "helpPressureCurveDesc": "Una función en los ajustes de entrada de lápiz que permite ajustar libremente, mediante un gráfico, la relación entre la presión real del lápiz y cómo afecta al tamaño y la opacidad del pincel. Ya sea que quieras líneas gruesas incluso con poca presión, o lo contrario —necesitando presión firme para obtener líneas gruesas—, puedes personalizar finamente la sensación para adaptarla a tus hábitos. Puedes probar a dibujar en el momento para comprobar el efecto tras cambiar los ajustes.",
-
   "helpTimelineTitle": "Línea de tiempo",
   "helpTimelineDesc": "La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo.",
-
   "helpSceneTitle": "Escena",
   "helpSceneDesc": "Una función para dividir y gestionar un solo proyecto (un vídeo) por escena (toma). Mientras que las carpetas organizan a nivel de proyecto, las escenas se usan para expresar cambios de escena dentro de un mismo vídeo.",
-
   "helpCameraKeyframeTitle": "Fotograma clave de cámara",
   "helpCameraKeyframeDesc": "Registra la posición, el nivel de zoom y la rotación de la cámara en un punto específico de la línea de tiempo. Como los valores se interpolan automáticamente de forma suave entre fotogramas clave, puedes añadir fácilmente movimientos de cámara como paneos o zoom in/out.",
-
   "helpEffectFilterTitle": "Filtro de efecto",
   "helpEffectFilterDesc": "Un efecto visual (desenfoque, corrección de color, resplandor, etc.) que puedes aplicar a una escena o fotograma. Úsalo cuando quieras ajustar el aspecto general de la pantalla como un toque de dirección, sin cambiar el dibujo hecho a mano en sí.",
-
   "helpEndCardTitle": "EndCard (logotipo final)",
   "helpEndCardDesc": "Un vídeo corto (unos 5 segundos) con el logotipo de NIARIM, añadido automáticamente al final del contenido principal al exportar un vídeo. La versión gratuita no puede ocultarlo ni eliminarlo, pero los miembros Premium pueden activarlo/desactivarlo, cambiar su duración o reemplazarlo.",
-
   "helpAutoSaveTitle": "Guardado automático",
   "helpAutoSaveDesc": "Un guardado dedicado a la recuperación en caso de fallo o corrupción de archivo. Se guarda automáticamente cada vez que hay un cambio, como dibujar, y sobrescribe el más antiguo de un máximo de 3 guardados. Se gestiona de forma completamente separada de los guardados manuales (ranuras de guardado y árbol de guardado) y no sustituye al guardado habitual. Solo se te pregunta si quieres restaurarlo al reiniciar la aplicación tras un cierre anómalo.",
-
   "helpSaveSlotTitle": "Ranura de guardado",
   "helpSaveSlotDesc": "Un método de guardado en un número fijo de ranuras, donde eliges qué ranura usar cada vez. El número de ranuras lo determinan los ajustes (5 para calidad baja, 10 para calidad media). Como eliges qué ranura sobrescribir cada vez, es una forma sencilla de gestionar la conservación del estado de un momento concreto.",
-
   "helpSaveTreeTitle": "Árbol de guardado",
   "helpSaveTreeDesc": "Un método de guardado en el que se crea un nuevo punto de guardado cada vez que guardas, y puedes ramificar desde un punto de guardado pasado para crear un historial diferente. No hay límite en el número de guardados, lo que lo hace muy adecuado para casos como \"quiero volver a esa versión y probar un desarrollo diferente\". En la pantalla, los puntos de guardado se muestran como un diagrama de árbol que crece de abajo hacia arriba.",
-
   "helpFolderTitle": "Carpeta",
   "helpFolderDesc": "Una función para agrupar y organizar tus proyectos (obras). Admite varios niveles de anidación, por lo que también puedes usarla para gestionar juntos varios episodios o una serie de la misma obra (por ejemplo, organizando los proyectos \"Episodio 1\", \"Episodio 2\", etc. dentro de una carpeta con el nombre de la obra). Si quieres dividir un solo vídeo en escenas separadas, usa la función \"Escena\" de la pantalla del lienzo en lugar de carpetas.",
-
   "helpTrashTitle": "Papelera",
   "helpTrashDesc": "El lugar donde se mueven temporalmente los proyectos eliminados. Puedes restaurarlos desde aquí hasta que se eliminen permanentemente. Puedes establecer el número de días hasta la eliminación automática (desactivado/30/60/90 días) en los ajustes.",
-
   "helpShareTitle": "Compartir (.niashare)",
   "helpShareDesc": "Un formato de archivo dedicado para entregar un proyecto a otra persona (o a otro dispositivo tuyo). Cuando el destinatario abre este archivo, se duplica y se añade a su propia lista de proyectos. El archivo .niashare original en sí no se modifica.",
-
   "helpTransferTitle": "Transferencia (.niatra)",
   "helpTransferDesc": "Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, preajustes, tema de interfaz y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación. Si quieres entregar un proyecto individual, usa \"Compartir (.niashare)\" en su lugar.",
-
   "helpVideoExportTitle": "Exportación de vídeo (MP4)",
   "helpVideoExportDesc": "Exporta tu obra como un vídeo MP4 de uso general. Utiliza directamente el codificador de hardware integrado del dispositivo, evitando problemas de licencia relacionados con H.264. La versión gratuita añade automáticamente una tarjeta final, y hay un límite en la duración exportable.",
-
   "helpTransparentWebmTitle": "WebM transparente",
   "helpTransparentWebmDesc": "Un formato de vídeo que se puede exportar conservando el canal alfa (las partes transparentes del fondo). La reproducción transparente solo funciona en entornos de reproducción compatibles. Ideal para superponer como material en otras aplicaciones.",
-
   "helpGifExportTitle": "Exportación de GIF",
   "helpGifExportDesc": "Exporta como GIF animado. El GIF es un formato solo de exportación; no hay un \"modo GIF\" dedicado mientras editas.",
-
   "helpWatermarkEntryTitle": "Marca de agua",
   "helpWatermarkEntryDesc": "Una función exclusiva de Premium que te permite añadir tu propia firma o logotipo como marca de agua en vídeos e imágenes exportados. Puedes ajustar su posición, tamaño y opacidad.",
-
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "Un nivel de membresía que desbloquea funciones restringidas en la versión gratuita, como límites de duración más flexibles, edición del logotipo final, marca de agua, curva de tonos y corrección de niveles. Durante la campaña de lanzamiento, estas funciones son gratuitas incluso en el plan gratuito (no se incluye la eliminación de anuncios ni la compra en sí).",
-
   "helpFontManagementTitle": "Gestión de fuentes",
   "helpFontManagementDesc": "Una pantalla donde puedes añadir, buscar y eliminar fuentes disponibles en la herramienta de texto. Las fuentes gratuitas adicionales más allá de las incluidas por defecto se descargan bajo demanda desde aquí, para mantener reducido el tamaño de instalación inicial.",
-
   "helpPerformanceSettingsTitle": "Ajustes de rendimiento",
   "helpPerformanceSettingsDesc": "Elige entre los preajustes de calidad baja, media o alta según la capacidad de tu dispositivo, o configura cada elemento individualmente (personalizado). Además del método de guardado, el caché de mosaicos, el papel cebolla y la detección de inclinación, aquí también se agrupan los ajustes que afectan al tamaño de la aplicación y a su fluidez, como la longitud del historial de deshacer y la eliminación automática de la papelera.",
-
   "helpMaterialClipTitle": "Clips de material (imagen / vídeo / audio)",
   "helpMaterialClipDesc": "Clips colocados en las pistas de imagen, vídeo y audio de la línea de tiempo. Mantén pulsado y arrastra el cuerpo del clip para mover su posición de inicio, o arrastra las asas de los extremos para cambiar cuánto se usa. Toca un clip para abrir su hoja de detalles, donde el icono de copia lo duplica y el icono de papelera lo elimina. Los clips de imagen y vídeo se gestionan internamente como capas, mientras que los de audio se gestionan como clips vinculados directamente a la escena.",
-
   "helpGestureSettingsTitle": "Ajustes de gestos",
   "helpGestureSettingsDesc": "Permite asignar acciones —deshacer/rehacer, mover fotograma, cuentagotas y más— a un toque con dos dedos, un toque con tres dedos, un deslizamiento con dos dedos o una pulsación larga. Los botones del lápiz (en lápices compatibles) también se pueden asignar por separado. Útil para activar acciones frecuentes con un solo toque sin cambiar de herramienta.",
-
   "helpBucketDetailSettingsTitle": "Ajustes detallados de relleno con cubo",
   "helpBucketDetailSettingsDesc": "Desde la sección \"Relleno con cubo\" de los ajustes puedes ajustar la tolerancia (cuánta diferencia de color respecto al píxel pulsado sigue contando como la misma zona), la expansión en px (cuánto se extiende el área rellenada más allá del borde para cubrir huecos en la línea) y rellenar bajo la línea (compone el relleno expandido detrás de los píxeles existentes en lugar de pintar sobre la línea, manteniendo su aspecto intacto). Ajustarlos ayuda cuando la línea tiene pequeños huecos o el relleno queda incompleto.",
-
   "helpStampToolTitle": "Herramienta de sello",
   "helpStampToolDesc": "Coloca una imagen previamente registrada en el lienzo como un pincel. Reutiliza líneas de efecto, patrones de fondo y objetos pequeños sin volver a dibujarlos cada vez. Con el modo píxel activado, las imágenes selladas se procesan con reducción de resolución tipo mosaico y menos colores, para un aspecto pixel art.",
-
   "helpToneFillTitle": "Relleno con tramas",
   "helpToneFillDesc": "Cambiar el ajuste de la herramienta de cubo de relleno sólido a relleno con tramas permite rellenar con una trama de semitonos o líneas elegida. También hay tramas de damero y cuadrícula exclusivas del modo píxel, para rellenos que combinan con una textura pixel art.",
-
   "helpPixelModeTitle": "Modo píxel",
   "helpPixelModeDesc": "Un ajuste disponible por separado en pinceles, fuentes y sellos. Al activarlo se elimina el suavizado, dando bordes nítidos al estilo pixel art. Úsalo cuando quieras un aire deliberadamente retro o de baja resolución.",
-
   "helpHomeScreenTitle": "Pantalla de inicio",
   "helpHomeScreenDesc": "La primera pantalla que se muestra al abrir la app, con las pestañas Proyectos, Compartidos, Obras y Papelera. El icono de búsqueda arriba a la derecha permite filtrar proyectos por nombre. En la pestaña Proyectos, el botón flotante permite elegir entre crear un nuevo proyecto o una nueva carpeta.",
-
   "helpNewProjectTitle": "Nuevo proyecto",
   "helpNewProjectDesc": "Configura el tamaño del lienzo, los fps, la duración (en segundos; luego se mantiene sincronizada con los cambios de fotogramas hechos en la línea de tiempo), el área de dibujo (permite dibujar más allá de los límites de exportación) y qué presets de relleno automático usar, todo antes de crear el proyecto.",
-
   "helpThemeSettingsTitle": "Ajustes de tema",
   "helpThemeSettingsDesc": "Elige la paleta de colores general de la app entre preajustes, o personaliza libremente el color de acento. Los títulos/etiquetas y el texto de cuerpo usan fuentes distintas, así que puedes cambiar el aspecto de la app manteniendo la legibilidad.",
-
   "helpWorkspaceSettingsTitle": "Ajustes del espacio de trabajo",
   "helpWorkspaceSettingsDesc": "Reúne ajustes como el modo zurdo (invierte los paneles acoplados), el cambio manual entre modo PC/DeX y cuándo se muestra la herramienta de mano. Ajusta el diseño según tu dispositivo y tu mano dominante.",
-
   "helpPenSettingsTitle": "Ajustes del lápiz",
   "helpPenSettingsDesc": "Junto con la curva de presión para tabletas y pantallas con lápiz, esta pantalla permite asignar acciones —como alternar el borrador o el cuentagotas— a los botones laterales de un lápiz compatible.",
-
   "helpMaterialListTitle": "Lista de materiales",
   "helpMaterialListDesc": "Una pantalla que reúne las imágenes, vídeos y audios usados en un proyecto. Recopila los archivos de origen de todo lo colocado en la línea de tiempo.",
-
   "helpFrameOperationsTitle": "Operaciones con fotogramas",
   "helpFrameOperationsDesc": "En la lista de fotogramas puedes añadir, duplicar y eliminar fotogramas, y en modo de selección múltiple mover, duplicar o eliminar varios a la vez. Aumentar el número de retención mantiene un mismo fotograma mostrado durante varias celdas (una \"retención\"), ahorrando trabajo de dibujo en planos con poco movimiento.",
-
   "helpSceneOperationsTitle": "Operaciones con escenas",
   "helpSceneOperationsDesc": "La pestaña de escenas de la línea de tiempo permite añadir, duplicar, eliminar, renombrar y reordenar escenas. El modo de selección múltiple permite mover, duplicar o eliminar varias escenas a la vez.",
-
   "helpQuickToolManagementTitle": "Gestión de herramientas rápidas",
   "helpQuickToolManagementDesc": "Registra un conjunto de herramientas usadas con frecuencia para alternar entre ellas con un solo toque. Abre el popup de gestión con una pulsación larga o un deslizamiento hacia arriba para editar las herramientas registradas y su orden.",
-
   "helpTransformSelectionTitle": "Transformar una selección",
   "helpTransformSelectionDesc": "Una zona delimitada con la herramienta de selección se puede mover, rotar y escalar con la herramienta de transformación. Útil para reposicionar una parte dibujada por error, o para ampliar solo una zona para destacarla.",
-
   "helpGradientAutofillTitle": "Relleno degradado (presets de relleno automático)",
   "helpGradientAutofillDesc": "Cada parte de un preset de relleno automático puede usar un degradado en lugar de un color sólido. Los tiradores simétricos que puedes arrastrar permiten ajustar de forma intuitiva el alcance y el ángulo del degradado.",
-
   "helpColorPickerTitle": "Selector de color",
   "helpColorPickerDesc": "Un selector de color que permite alternar entre HSV y RGB en una sola pantalla. Mantén pulsado para ver un breve consejo de uso. La función de paleta permite guardar y recuperar un conjunto de colores en uso.",
-
   "helpUndoSettingsTitle": "Longitud del historial de deshacer",
   "helpUndoSettingsDesc": "En los ajustes de rendimiento puedes ajustar cuántas acciones puede retroceder deshacer. Un número mayor da más libertad para experimentar, pero también usa más memoria; redúcelo en dispositivos de gama baja para que todo vaya más fluido.",
-
   "helpBrushFavoriteTitle": "Pinceles favoritos",
   "helpBrushFavoriteDesc": "Toca el icono de estrella de un pincel en la lista para marcarlo o desmarcarlo como favorito (la misma interacción usada para los favoritos en toda la app: presets de relleno automático, sellos, fuentes, filtros de dibujo, etc.). El icono de estrella en la parte superior de la lista también permite filtrar solo los favoritos. Los pinceles favoritos no se pueden eliminar por error.",
-
   "helpLayerFolderTitle": "Carpetas de capas",
   "helpLayerFolderDesc": "Permite organizar varias capas en una carpeta. Mantiene el panel de capas manejable incluso en ilustraciones con muchas partes. El recorte no puede cruzar los límites de las carpetas, así que si lo usas, mantén las capas relevantes en la misma carpeta.",
-
   "helpLayerMultiSelectTitle": "Selección múltiple y acciones masivas de capas",
   "helpLayerMultiSelectDesc": "El modo de selección del panel de capas permite marcar varias capas a la vez para fusionarlas o eliminarlas en bloque. La fusión solo funciona entre capas normales, de línea de relleno automático y de relleno automático (las capas comunes, carpetas y materiales de línea de tiempo no se pueden fusionar).",
-
   "helpAutofillBatchRunTitle": "Ejecutar relleno automático",
   "helpAutofillBatchRunDesc": "Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización (❗). Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea.",
-
   "helpAutofillLineColorTitle": "Ajustes de color de línea del relleno automático",
   "helpAutofillLineColorDesc": "Cada parte de un preset de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural.",
-
   "helpAutofillPresetFilterTitle": "Filtrar presets de relleno automático por proyecto",
   "helpAutofillPresetFilterDesc": "A medida que se acumulan presets, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los presets usados en este proyecto, manteniendo la lista ordenada y fácil de elegir.",
-
   "helpDrawingAreaTitle": "Área de dibujo",
   "helpDrawingAreaDesc": "Permite dibujar más allá de los límites de exportación. Un marco rojo en el lienzo señala el área de exportación: lo dibujado fuera de él no se exporta, pero deja margen para ajustar después qué se muestra con movimientos de cámara como paneo y zoom. Define la escala al crear un nuevo proyecto.",
-
   "helpCanvasBackgroundTitle": "Color de fondo del lienzo",
   "helpCanvasBackgroundDesc": "Permite definir el color de fondo del lienzo del proyecto. No afecta a las exportaciones transparentes (WebM transparente), pero puedes cambiarlo al color que te resulte más cómodo para trabajar.",
-
   "helpProjectDetailTitle": "Pantalla de detalles del proyecto",
   "helpProjectDetailDesc": "Una pantalla para consultar y editar en un solo lugar los ajustes de cada proyecto: nombre, miniatura, estado de favorito y qué presets de relleno automático están activados. El acceso al árbol de guardado también está aquí.",
-
   "helpWatermarkEditTitle": "Reeditar una marca de agua",
   "helpWatermarkEditDesc": "Tocar una marca de agua colocada en la pista de capa común de la línea de tiempo permite reeditar en cualquier momento su ángulo, tamaño, opacidad y rango de visualización (bucle). Puedes ajustarla con precisión no solo al registrarla, sino siempre que la estés usando en un proyecto.",
-
   "helpAudioClipTitle": "Volumen y fundidos de clips de audio",
   "helpAudioClipDesc": "Un clip de audio colocado en la línea de tiempo puede tener su volumen y las duraciones de fundido de entrada y salida ajustados desde su hoja de detalles. Úsalo para equilibrar el volumen de efectos de sonido y música, o suavizar el inicio y el final de una pista.",
-
   "helpConvertToCommonTitle": "Convertir una capa en común",
   "helpConvertToCommonDesc": "Convierte una capa normal en una capa común (que sigue mostrando el mismo contenido en varios fotogramas). También puedes fusionar las capas visibles en una sola antes de convertirla. Te ahorra volver a dibujar algo como un fondo que se mantiene igual en cada fotograma.",
-
   "helpAnimatedNoiseFilterTitle": "Filtro de ruido animado",
   "helpAnimatedNoiseFilterDesc": "Un filtro de efecto que aplica un ruido tipo grano de película, cambiándolo fotograma a fotograma. La intensidad, la cantidad (densidad del ruido) y el tamaño del grano se pueden ajustar con controles deslizantes. Volver al mismo fotograma reproduce el mismo grano (sin parpadeo al desplazarte), mientras que al reproducir el grano parece moverse.",
-
   "helpRainFilterTitle": "Filtro de lluvia",
   "helpRainFilterDesc": "Un filtro de efecto que muestra lluvia cayendo por la pantalla. La intensidad (número de gotas), la velocidad, el tamaño de gota y el ángulo del viento se pueden ajustar con controles deslizantes. Cada gota sigue cayendo a velocidad constante conforme avanza el fotograma, dando un movimiento de lluvia natural.",
-
   "helpPenSubToolTitle": "Subherramientas del lápiz",
   "helpPenSubToolDesc": "Mantener pulsada la herramienta lápiz la cambia del dibujo normal a las subherramientas de relleno con tramas o colocación de sellos. Permite alternar entre varias tareas con el mismo lápiz sin cambiar de herramienta constantemente.",
-
   "helpTiltDetectionTitle": "Detección de inclinación",
   "helpTiltDetectionDesc": "Un ajuste que usa los datos de inclinación de un lápiz compatible para engrosar o afinar la línea al tumbar la punta, recreando una sensación más cercana a una herramienta de dibujo real. Actívalo o desactívalo desde los ajustes de rendimiento.",
-
   "helpEffectFilterOrderTitle": "Orden de los filtros de efecto",
   "helpEffectFilterOrderDesc": "Se pueden apilar varios filtros de efecto, y se aplican en el orden en que aparecen en la línea de tiempo. Arrastrar para reordenar la lista de filtros también cambia el orden en que se aplican realmente en pantalla.",
-
   "helpFontImportTitle": "Importar fuentes",
   "helpFontImportDesc": "Permite cargar un archivo de fuente directamente desde el almacenamiento del dispositivo. Añádela desde la pestaña \"Importar\" en la gestión de fuentes, en ajustes. Útil cuando quieres usar una fuente personalizada que no se distribuye en ningún sitio, o una fuente comercial que has comprado.",
-
   "helpStampTransformTitle": "Rotar y escalar sellos",
   "helpStampTransformDesc": "El panel de sellos permite ajustar el ángulo de rotación y el tamaño del sello que colocas. Variar la dirección y el tamaño del mismo sello evita que las líneas de efecto y los objetos pequeños se vean monótonos.",
-
   "helpExportScreenTitle": "Pantalla de exportación",
   "helpExportScreenDesc": "Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. La exportación usa el codificador por hardware del dispositivo, así que el tiempo que tarda depende de su rendimiento.",
-
   "helpFreeDurationLimitTitle": "Límite de duración de la cuenta gratuita",
   "helpFreeDurationLimitDesc": "Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.",
-
   "helpDrawingFilterTitle": "Filtros de dibujo",
   "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva.",
-
   "helpLayerKeyframeTitle": "Fotogramas clave de capa (animación por partes)",
   "helpLayerKeyframeDesc": "Define la posición, escala y rotación de cada capa por fotograma; los fotogramas clave se interpolan automáticamente. Mientras los fotogramas clave de cámara mueven toda la pantalla, esto mueve una sola capa. Como cada parte del relleno automático se genera como una capa independiente, esto funciona directamente para animar por partes: mover solo un brazo, abrir y cerrar solo una boca, etc. Se configura desde \"Animación (fotogramas clave)\" en el menú de tres puntos de cada capa, en el panel de capas. El dibujo de la capa en sí no cambia: es una transformación no destructiva de dónde se muestra. Esto solo afecta a la visualización de la línea de tiempo (vista previa / exportación) y no afecta al dibujo real en el modo lienzo.",
-
   "helpLayerGroupTitle": "Grupos de capas (mover varias partes juntas)",
   "helpLayerGroupDesc": "Mueve varias capas juntas con un único flujo de fotogramas clave. Por ejemplo, si un \"brazo\" está formado por dos partes de relleno automático —piel y manga—, agruparlas permite mover ambas con una sola operación de fotograma clave. Crea un grupo seleccionando varias capas (casillas) en el panel de capas y tocando el icono \"Agrupar\" en la barra inferior. El movimiento del grupo se superpone a los fotogramas clave propios de cada capa miembro (si los tiene), por lo que puedes combinar el movimiento general del grupo con ajustes finos por capa. Una capa solo puede pertenecer a un grupo a la vez.",
-
   "tipsScreenTitle": "Consejos",
   "tipsSearchHint": "Buscar consejos...",
   "tipsCategoryVideo": "Consejos para crear vídeos",
@@ -600,166 +506,98 @@
   "tipsCategoryDrawing": "Consejos para dibujar con más fluidez",
   "tipsCategoryEffects": "Consejos de estilo y acabado",
   "tipsCategoryExport": "Consejos de exportación y flujo de trabajo",
-
   "tipsClipDuplicateTitle": "Los clips de la línea de tiempo se pueden duplicar, mover y eliminar",
   "tipsClipDuplicateDesc": "Toca un clip de imagen, vídeo o audio para abrir su hoja de detalles y usa el icono de copia para duplicarlo. Reutilizar el mismo efecto de sonido o reubicar la misma imagen en varias escenas solo requiere una pulsación larga y arrastrar, y un toque en el botón de duplicar.",
-
   "tipsTextCaptionTitle": "Añade subtítulos y comentarios con la herramienta de texto",
   "tipsTextCaptionDesc": "Usa la herramienta de texto para colocar, fotograma a fotograma, los subtítulos y comentarios típicos de los vídeos meme. Cambia la fuente al modo píxel para lograr un aire retro de videojuego antiguo.",
-
   "tipsAutofillPresetTitle": "Registra presets de relleno automático por parte",
   "tipsAutofillPresetDesc": "Registrar presets por parte (piel, pelo, ropa) con sus sombras incluidas automatiza gran parte del coloreado con solo dibujar la línea. También puedes limitar qué presets se usan en cada proyecto.",
-
   "tipsBrushFavoriteTitle": "Marca tus pinceles favoritos para cambiarlos sin buscar",
   "tipsBrushFavoriteDesc": "Toca el icono de estrella de los pinceles que más usas para marcarlos como favoritos. El icono de estrella en la parte superior de la lista permite filtrar solo los favoritos, reduciendo el tiempo de búsqueda. Los pinceles favoritos no se pueden eliminar por error.",
-
-  "tipsOnionSkinTitle": "Transparenta los fotogramas cercanos con la piel de cebolla",
-  "tipsOnionSkinDesc": "La función de piel de cebolla superpone los fotogramas anterior y siguiente de forma semitransparente, para que puedas comprobar cómo conecta el movimiento mientras dibujas.",
-
   "tipsPressureCurveTitle": "Ajusta la curva de presión a tu propia mano",
   "tipsPressureCurveDesc": "La curva de presión en ajustes te permite colocar libremente hasta 10 puntos de control. Si la respuesta de fuerza no te convence, ajústala a tus propios hábitos de presión.",
-
-  "tipsEffectFilterTitle": "Usa filtros de efecto para unificar el ambiente del vídeo",
-  "tipsEffectFilterDesc": "Filtros de efecto como anime retro, TRC o sepia se pueden aplicar a toda la línea de tiempo o por escena a la vez. Útil cuando quieres un aire Y2K o un ambiente de anime nostálgico en todo el vídeo de una sola vez.",
-
-  "tipsCameraKeyframeTitle": "Añade zoom y paneo con fotogramas clave de cámara",
-  "tipsCameraKeyframeDesc": "Colocar fotogramas clave de cámara en una escena permite añadir movimiento cinematográfico —zoom, paneo— incluso a una sola imagen fija.",
-
   "tipsExportFormatTitle": "Elige el formato de exportación según el uso",
   "tipsExportFormatDesc": "GIF es ideal para publicar rápido en redes sociales; WebM transparente sirve para superponer sobre otro vídeo o mantener el fondo transparente; MP4 es para usarlo como vídeo normal. Elegir según el caso de uso facilita equilibrar tamaño de archivo y calidad.",
-
   "tipsGestureShortcutTitle": "Asigna un gesto a las acciones frecuentes",
   "tipsGestureShortcutDesc": "Desde \"Gestos\" en los ajustes puedes asignar deshacer/rehacer o el cuentagotas a un toque con dos dedos, un toque con tres dedos o una pulsación larga. Al no tener que cambiar de herramienta, no rompes el ritmo del dibujo.",
-
   "tipsAudioRepeatTitle": "Mantén los efectos de sonido a ritmo duplicando clips y usando fundidos",
   "tipsAudioRepeatDesc": "Para reutilizar el mismo efecto de sonido varias veces, duplica el clip y coloca las copias con tiempos escalonados, dando a cada una su propio fundido de entrada/salida. Así consigues una repetición natural y rítmica del efecto.",
-
   "tipsVerticalRubyTitle": "Texto vertical + furigana para un look de logo de título",
   "tipsVerticalRubyDesc": "Combinar escritura vertical con furigana en la herramienta de texto da un logo de título de estilo japonés o un tratamiento de titular distintivo. Los alfanuméricos de medio ancho rotan automáticamente para quedar de lado, manteniéndose legibles incluso mezclados con símbolos o números.",
-
   "tipsBrushTrySaveTreeTitle": "Prueba nuevos ajustes de pincel con el árbol de guardado",
   "tipsBrushTrySaveTreeDesc": "Antes de hacer un cambio grande en el grosor o la estabilización del pincel, guarda primero en el árbol de guardado para mayor tranquilidad. Si no te gusta el resultado, puedes volver directamente al estado anterior, facilitando probar ajustes atrevidos.",
-
   "tipsEyedropperGestureTitle": "Asigna el cuentagotas a un toque con dos dedos para mantener tu paleta coherente",
   "tipsEyedropperGestureDesc": "Asignar el cuentagotas a un toque con dos dedos en los ajustes de gestos te permite tomar un color cercano al instante sin cambiar de herramienta. Útil para colorear manteniendo fiel la paleta de un personaje.",
-
   "tipsRulerOnionTitle": "Regla de perspectiva + papel cebolla para reutilizar un fondo",
   "tipsRulerOnionDesc": "Define la profundidad de un fondo con la regla de perspectiva, y luego mueve solo al personaje mientras compruebas los fotogramas vecinos con el papel cebolla; no hace falta redibujar el fondo en cada fotograma.",
-
   "tipsGradientTraceTitle": "Relleno automático degradado + calco de color para una mezcla natural",
   "tipsGradientTraceDesc": "Al definir un degradado en un preset de relleno automático, pon el modo de color de línea en calco de color para que el color de la línea siga los sutiles cambios de color del degradado, evitando que el borde destaque.",
-
   "tipsRainNoiseTitle": "Lluvia + ruido animado para una atmósfera húmeda",
   "tipsRainNoiseDesc": "Superponer un filtro de ruido animado suave sobre el filtro de lluvia añade una sensación de partículas en el aire además de las propias gotas de lluvia, para una textura húmeda de día lluvioso.",
-
   "tipsPartKeyframeGroupTitle": "Haz rebotar a un personaje con fotogramas clave de parte + agrupación",
   "tipsPartKeyframeGroupDesc": "Anima cada parte de relleno automático con fotogramas clave de capa, y luego agrupa las partes relacionadas para hacerlas rebotar juntas: puedes crear una minianimación que se mece con la música sin volver a dibujar nada.",
-
   "tipsLowSpecSettingsTitle": "En dispositivos de gama baja, revisa los ajustes de rendimiento y el historial de deshacer",
   "tipsLowSpecSettingsDesc": "Si notas que va lento, prueba a cambiar los ajustes de rendimiento al preset de \"baja calidad\" y reduce también la longitud del historial de deshacer. Eso reduce el uso de memoria y puede hacer que todo vaya más fluido.",
-
   "tipsSeriesPresetFolderTitle": "Gestiona una serie con filtrado de presets + organización en carpetas",
   "tipsSeriesPresetFolderDesc": "Al hacer varios episodios de la misma obra, agrupa los proyectos por episodio en una carpeta, y limita qué presets de relleno automático usa cada proyecto. Así evitas mezclar la paleta de cada personaje y mantienes el trabajo eficiente.",
-
-  "tipsFadeEndCardTitle": "Cierra con un fundido de filtro de efecto + la tarjeta final",
-  "tipsFadeEndCardDesc": "Fundir lentamente a negro la última escena con un filtro de efecto suaviza la transición hacia la tarjeta final automática, dando al cierre de tu vídeo un aire notablemente más pulido y profesional.",
-
   "tipsPixelToneRetroTitle": "Sellos en modo píxel + relleno con tramas para un look retro unificado",
   "tipsPixelToneRetroDesc": "Combinar sellos en modo píxel con las tramas de damero y cuadrícula exclusivas del modo píxel permite unificar toda la pantalla con una textura pixel art. Genial para un aire de videojuego retro.",
-
   "tipsMagicWandLassoTitle": "Varita mágica + relleno por lazo para separar colores más rápido",
   "tipsMagicWandLassoDesc": "Selecciona una zona amplia de golpe con la varita mágica de la herramienta de selección, y luego ajusta solo lo que sobra con la selección por lazo; así hasta la separación de colores más compleja va rápido.",
-
   "tipsCommonLayerFolderTitle": "Capas comunes + carpetas para reutilizar entre episodios",
   "tipsCommonLayerFolderDesc": "Para un logo o los créditos usados en todos los episodios de una serie, conviértelo en capa común y mantenlo organizado en una carpeta; así es fácil de manejar al copiarlo al proyecto de un episodio nuevo.",
-
   "tipsStrokeDecayFadeTitle": "Decaimiento de trazo + desvanecimiento para un aire de pincel caligráfico",
   "tipsStrokeDecayFadeDesc": "Combinar decaimiento de trazo y desvanecimiento en los ajustes del pincel afina de forma natural el inicio y el final de un trazo, dando a las líneas esa variación expresiva de grosor propia de un pincel de caligrafía o tinta.",
-
   "tipsColorMixingFadeTitle": "Mezcla de color + desvanecimiento para un mezclado tipo pintura",
   "tipsColorMixingFadeDesc": "Añadir desvanecimiento a un pincel con mezcla de color activada hace que se mezcle con el color de debajo mientras se va aclarando gradualmente, mucho más parecido a cómo se comporta la pintura real.",
-
   "tipsOutlineAnimeStyleTitle": "Contorno + estilo anime para un acabado de animación cel",
   "tipsOutlineAnimeStyleDesc": "Dibuja el contorno en una capa nueva con el contorno del filtro de dibujo, y luego reduce el número de colores con el filtro de estilo anime, para un acabado nítido tipo animación cel.",
-
   "tipsLevelsToneCurveTitle": "Niveles + curva de tonos para un look de diseño gráfico",
   "tipsLevelsToneCurveDesc": "Sube mucho el contraste con niveles primero, y luego esculpe la gradación con la curva de tonos, para un look gráfico tipo cartel que se aleja de la tonalidad fotográfica.",
-
   "tipsMosaicChromaticTitle": "Mosaico + aberración cromática para una textura tosca de tubo de rayos catódicos",
   "tipsMosaicChromaticDesc": "Baja la resolución con el mosaico y luego superpón aberración cromática, para una textura tosca como ver una vieja tele de tubo de rayos catódicos; un matiz distinto al filtro CRT por sí solo.",
-
-  "tipsEndCardWatermarkTitle": "Marca de agua para tu firma, tarjeta final para el logo de cierre",
-  "tipsEndCardWatermarkDesc": "Usa la marca de agua para añadir tu propia firma a un vídeo. La tarjeta final es el logo propio de la app que se añade automáticamente al terminar tu vídeo: las cuentas gratuitas no pueden cambiarlo, pero las cuentas Premium pueden sustituirlo por su propio logo. Combinar una marca de agua contra la republicación no autorizada con una tarjeta final Premium con tu propio logo da a tu vídeo una imagen de marca coherente de principio a fin.",
-
+  "tipsEndCardWatermarkTitle": "La marca de agua es tu firma; la tarjeta final es otra cosa",
+  "tipsEndCardWatermarkDesc": "Usa la función de marca de agua cuando quieras añadir tu propia firma o marca a un vídeo. La tarjeta final es el logotipo propio de la app que aparece automáticamente al final de cada vídeo; los miembros gratuitos no pueden cambiarlo. Los miembros premium pueden ocultarlo o sustituirlo por su propio vídeo o imagen. Si quieres un cierre personalizado sin usar la tarjeta final, puedes recrear un efecto similar añadiendo una capa de imagen con entrada/salida de fundido.",
   "tipsVerticalPixelFontTitle": "Mezcla metraje real con dibujo a mano para \"acción real × anime\"",
   "tipsVerticalPixelFontDesc": "Un truco solo posible porque esta app es a la vez una app de ilustración y un editor de vídeo. Coloca un clip de vídeo real en la línea de tiempo, y luego usa el papel cebolla en una capa encima para dibujar a mano líneas de velocidad o un personaje sobre el metraje, creando un vídeo mixto donde la animación dibujada a mano se superpone a la acción real.",
-
   "tipsTimelineMarkerTitle": "Usa marcas de tiempo para sincronizar sonido y bocas",
   "tipsTimelineMarkerDesc": "Las escenas manejan un rango —un fotograma de inicio y de fin—, mientras que las marcas de tiempo señalan un instante concreto con un comentario al que puedes saltar de un toque. Colocar varias marcas de tiempo dentro de la misma escena —\"efecto de sonido en el fotograma 120\", \"boca 'a' en el fotograma 180\"— hace que sincronizar el sonido con la imagen sea muchísimo más fácil.",
-
   "tipsToolbarCustomizeTitle": "Reordena u oculta herramientas de la barra para reducir el recorrido del dedo",
   "tipsToolbarCustomizeDesc": "Desde la edición de la barra de herramientas en ajustes, puedes ocultar las herramientas que nunca usas y reordenar las que sí usas para que queden donde tu dedo llega fácilmente. Recortar la lista evita que busques una herramienta y acorta el recorrido del dedo, dando ritmo a tu dibujo.",
-
   "tipsAutofillBlendModeTitle": "Cambia la textura del sombreado con el modo de fusión de una parte de relleno automático",
   "tipsAutofillBlendModeDesc": "Cada parte de un preset de relleno automático puede tener su propio modo de fusión. Pon una parte de sombra en \"superponer\" o \"luz suave\" en lugar de \"multiplicar\" para un sombreado más suave, como si la luz lo atravesara. Una libertad oculta que permite cambiar la textura del sombreado sin cambiar el color.",
-
   "tipsStampBlendModeTitle": "Sellos + modo de fusión para un efecto de luz",
   "tipsStampBlendModeDesc": "Ajustar el modo de fusión de una capa de sello colocada a \"pantalla\" o \"suma\" hace que las líneas de brillo o los destellos se integren de forma natural en el fondo y realmente destaquen.",
-
   "tipsQuickToolPenSubTitle": "Herramienta rápida + subherramientas del lápiz para un flujo de trabajo sin pausas",
   "tipsQuickToolPenSubDesc": "Registra tus herramientas más usadas en la herramienta rápida, y aprovecha también las subherramientas del lápiz (mantén pulsado el lápiz para cambiar a relleno con tramas o colocación de sellos): reducirás cuánto saltas entre paneles y mantendrás el ritmo.",
-
   "tipsAutofillToneReuseTitle": "Reutiliza un relleno con tramas solo con redibujar la línea, gracias al ajuste de tramas del relleno automático",
   "tipsAutofillToneReuseDesc": "Configurar cada parte de un preset de relleno automático como \"usar trama\" reproduce el relleno con tramas automáticamente cada vez que redibujas la línea, sin necesidad de volver a aplicar la trama fotograma a fotograma.",
-
   "tipsRadialVignetteTitle": "Regla radial + viñeteado para un impacto de líneas de velocidad",
   "tipsRadialVignetteDesc": "Dibuja una ráfaga de líneas de velocidad de golpe con la regla radial, y luego superpón el filtro de dibujo de viñeteado para un golpe de efecto tipo clímax de manga.",
-
   "tipsClippingGradientTitle": "Recorte + degradado para poder reeditar el sombreado",
   "tipsClippingGradientDesc": "Recorta una capa de degradado sobre una capa de personaje, y podrás reajustar el sombreado solo cambiando el alcance y el ángulo del degradado, sin necesidad de redibujar su forma con un pincel.",
-
   "tipsToneCurveSepiaTitle": "Curva de tonos + sepia para un aire de foto retro",
   "tipsToneCurveSepiaDesc": "Ajusta el contraste de luces y sombras con el filtro de efecto curva de tonos, y luego superpón sepia, para una textura como de fotografía antigua desvaída.",
-
   "tipsCameraLensBlurTitle": "Fotogramas clave de cámara + desenfoque de lente para un efecto de zoom blur",
   "tipsCameraLensBlurDesc": "Sincronizar un filtro de efecto de desenfoque de lente más intenso con el momento en que un fotograma clave de cámara hace zoom le da la fuerza de un zoom blur de imagen real.",
-
   "tipsBlurVignetteBgTitle": "Desenfoque gaussiano + viñeteado para un bokeh de fondo suave",
   "tipsBlurVignetteBgDesc": "Aplica los filtros de dibujo de desenfoque gaussiano y viñeteado solo a la capa de fondo, y tu personaje principal destacará de forma natural, dando un acabado tipo profundidad de campo de cámara.",
-
   "tipsSepiaVignetteTitle": "Sepia + viñeteado para un vídeo estilo foto antigua",
   "tipsSepiaVignetteDesc": "Combinar el filtro de efecto sepia con el filtro de dibujo de viñeteado da a tu vídeo las esquinas oscurecidas y el aspecto desvaído de una fotografía antigua.",
-
-  "tipsGifLoopTitle": "Diseña los GIF pensando en el bucle: acerca el primer y el último fotograma",
-  "tipsGifLoopDesc": "La exportación GIF se reproduce en bucle automático. Mantener parecidos el primer y el último fotograma oculta la costura del bucle, para que la animación parezca girar de forma natural.",
-
   "tipsVideoTrimReuseTitle": "Reutiliza el mismo archivo de vídeo cambiando el recorte de cada clip",
   "tipsVideoTrimReuseDesc": "Incluso el mismo archivo de vídeo puede colocarse como un plano distinto cada vez cambiando su recorte de inicio/fin por clip. Aporta variedad sin añadir más material fuente.",
-
   "tipsSaveSlotAutoSaveTitle": "Usa las ranuras de guardado y el guardado automático para cosas distintas",
   "tipsSaveSlotAutoSaveDesc": "El guardado automático siempre sobrescribe con el último estado, mientras que las ranuras de guardado pueden conservar varios estados a la vez. Guarda en una ranura en un hito importante y deja los cambios pequeños al guardado automático, así podrás volver con fiabilidad al punto que necesites.",
-
   "tipsQuickToolSwipeTitle": "Desliza hacia arriba en la herramienta rápida para reordenarla",
   "tipsQuickToolSwipeDesc": "Para cambiar lo que hay registrado en la herramienta rápida, puedes abrir el popup de gestión con un deslizamiento hacia arriba, no solo con una pulsación larga. Útil para reordenar rápido mientras operas con una sola mano.",
-
-  "tipsColorPickerLongPressTitle": "Mantén pulsado el selector de color para ver una guía rápida",
-  "tipsColorPickerLongPressDesc": "Si no sabes cómo elegir un color, prueba a mantener pulsado el selector de color. Muestra un breve consejo de uso, dejándote comprobar cómo funcionan el HSV, el RGB y la paleta.",
-
   "tipsDrawingAreaCameraTitle": "Área de dibujo más amplia + fotogramas clave de cámara para paneos y zooms seguros",
   "tipsDrawingAreaCameraDesc": "Definir el área de dibujo más amplia que los límites de exportación significa que paneos o zooms con fotogramas clave de cámara no arriesgan cortar el borde de la pantalla. Vale la pena comprobarlo antes de añadir un gran movimiento de cámara.",
-
   "tipsWebmCommonLayerTitle": "WebM transparente + una capa común para mantener el fondo separado",
   "tipsWebmCommonLayerDesc": "Si vas a componer un personaje exportado como WebM transparente sobre un fondo en otro software de vídeo, mantener el fondo en su propia capa común evita que colores no deseados se filtren en la zona transparente, para un recorte más limpio.",
-
   "tipsLeftHandedWorkspaceTitle": "Modo zurdo + ajustes del espacio de trabajo para una configuración más cómoda",
   "tipsLeftHandedWorkspaceDesc": "Si eres zurdo, activar el modo zurdo en los ajustes del espacio de trabajo invierte los paneles acoplados, reduciendo la probabilidad de que queden bajo tu mano de dibujo.",
-
-  "tipsFolderHierarchyTitle": "Organiza una serie con carpetas anidadas",
-  "tipsFolderHierarchyDesc": "Las carpetas admiten varios niveles. Puedes crear una carpeta \"Temporada 1\" dentro de una carpeta con el nombre de la obra, y luego alinear el proyecto de cada episodio dentro de ella.",
-
   "tipsTransferDeviceTitle": "Traslada tu trabajo a otro dispositivo con un archivo de traspaso",
   "tipsTransferDeviceDesc": "Si quieres cambiar de dispositivo y seguir trabajando, la función de traspaso (.niatra) mueve todo el proyecto junto, incluidos los materiales que usa.",
-
   "fontSettingsTabDownloaded": "Descargadas",
   "fontSettingsTabSearch": "Buscar y descargar",
   "fontSettingsTabImport": "Importar",
@@ -776,7 +614,6 @@
   "fontUnsupportedSnackbar": "No se pudo cargar esta fuente.",
   "fontAddedSnackbar": "Se añadió \"{name}\" (visible en la pestaña Descargadas)",
   "fontCorruptedSnackbar": "La fuente está dañada.",
-
   "licenseScreenTitle": "Términos y licencias",
   "licenseSectionTerms": "Términos de uso",
   "licenseSectionFonts": "Fuentes utilizadas",
@@ -785,7 +622,6 @@
   "licenseOssListSubtitle": "Muestra las licencias de los paquetes OSS que usa esta aplicación",
   "licenseFfmpegNote": "La exportación WebM usa FFmpeg (LGPL 3.0, a través de ffmpeg_kit_flutter_new_video). Origen del código fuente modificado: https://github.com/sk3llo/ffmpeg_kit_flutter\nLa exportación MP4 usa directamente el codificador de hardware integrado del dispositivo y no utiliza FFmpeg.",
   "licenseFontCreditMeta": "Autor: {author}   Licencia: {license}",
-
   "toolbarPenTooltip": "Pluma (mantén pulsado para subherramientas)",
   "toolbarPenFirstUseTip": "Mantén pulsada la pluma para alternar entre pincel, trama, sello y relleno de lazo.",
   "toolbarBucketTooltip": "Cubo de pintura (mantén pulsado para cambiar el relleno)",
@@ -804,7 +640,6 @@
   "toolbarSelectRect": "Selección rectangular",
   "toolbarSelectLasso": "Selección de lazo",
   "toolbarSelectMagicWand": "Selección automática (varita mágica)",
-
   "creativePanelFavoritesOnlyTooltip": "Mostrar solo favoritos",
   "creativePanelSearchTooltip": "Buscar por nombre",
   "creativePanelFolderButton": "Carpeta",
@@ -812,7 +647,6 @@
   "creativePanelImportButton": "Importar",
   "creativePanelFolderAllChip": "Todas",
   "creativePanelEditAction": "Editar",
-
   "toneTitle": "Tramas",
   "toneEmpty": "No hay tramas",
   "toneSearchHint": "Buscar por nombre de trama",
@@ -821,9 +655,7 @@
   "toneCreateDialogTitle": "Trama personalizada",
   "toneImportFailedSnackbar": "Error al cargar la trama: {error}",
   "toneExportFailedSnackbar": "Error al exportar la trama: {error}",
-
   "privacyPolicyScreenTitle": "Política de privacidad",
-
   "stampTitle": "Sellos",
   "stampSearchHint": "Buscar por nombre de sello",
   "stampEmpty": "No hay sellos",
@@ -837,7 +669,6 @@
   "stampDensityLabel": "Densidad",
   "stampScatterLabel": "Dispersión",
   "stampChangeImageButton": "Cambiar imagen del sello",
-
   "themeSettingsTitle": "Tema y apariencia",
   "themeSettingsBaseThemeSection": "Tema base",
   "themeBaseLight": "Claro",
@@ -861,7 +692,6 @@
   "themeImportButton": "Importar .niatheme",
   "themePresetNameDialogTitle": "Nombre del preajuste",
   "themeDefaultPresetName": "Mi tema",
-
   "onionSkinTitle": "Papel cebolla",
   "onionSkinPrevFrame": "Fotograma anterior",
   "onionSkinNextFrame": "Fotograma siguiente",
@@ -873,7 +703,6 @@
   "onionSkinFrameCountFixed": "{count} fotograma(s) (fijo)",
   "onionSkinColorLabel": "Color",
   "onionSkinOpacityLabel": "Opacidad",
-
   "exportScreenTitle": "Exportar",
   "exportPresetSection": "Preajuste",
   "exportPresetStandard": "Estándar",
@@ -924,35 +753,79 @@
   "newProjectHeightShort": "Alto",
   "newProjectDurationLabel": "Duración (máx. {max})",
   "@newProjectDurationLabel": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationLabelWithPremiumHint": "Duración (máx. {max}; hasta 2 horas con Premium)",
   "@newProjectDurationLabelWithPremiumHint": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationSeconds": "{n} s",
   "@newProjectDurationSeconds": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHms": "{h} h {m} min {s} s",
   "@newProjectDurationHms": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHm": "{h} h {m} min",
   "@newProjectDurationHm": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationH": "{h} h",
   "@newProjectDurationH": {
-    "placeholders": {"h": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationMs": "{m} min {s} s",
   "@newProjectDurationMs": {
-    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationM": "{m} min",
   "@newProjectDurationM": {
-    "placeholders": {"m": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectBackgroundColorLabel": "Color de fondo",
   "newProjectDrawingAreaTitle": "Ampliar el área de dibujo",
@@ -960,23 +833,49 @@
   "newProjectScaleLabel": "Escala",
   "newProjectScaleValue": "{value}×",
   "@newProjectScaleValue": {
-    "placeholders": {"value": {"type": "String"}}
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawableAreaInfo": "Área dibujable: {width}×{scale} = {result}",
   "@newProjectDrawableAreaInfo": {
-    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      },
+      "result": {
+        "type": "String"
+      }
+    }
   },
   "newProjectTotalFrames": "Total de fotogramas: {count}",
   "@newProjectTotalFrames": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "newProjectExportSizeInfo": "Tamaño de exportación: {size}",
   "@newProjectExportSizeInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawingAreaInfo": "Área de dibujo: {size}",
   "@newProjectDrawingAreaInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "colorPickerTitle": "Selección de color",
   "colorPickerOpacityLabel": "Opacidad",
@@ -1002,7 +901,14 @@
   "penSubToolManageTooltip": "Gestionar",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
-    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "opacity": {
+        "type": "int"
+      }
+    }
   },
   "penSubToolStampRotationSubtitle": "Rotación aleatoria según la dirección del trazo",
   "brushSearchHint": "Buscar por nombre de pincel",
@@ -1010,11 +916,19 @@
   "brushCreateDialogTitle": "Pincel personalizado",
   "brushImportFailedSnackbar": "Error al cargar el pincel: {error}",
   "@brushImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushExportFailedSnackbar": "Error al exportar el pincel: {error}",
   "@brushExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushSettingsSizeLabel": "Tamaño",
   "brushSettingsOpacityLabel": "Opacidad",
@@ -1060,7 +974,14 @@
   "projectDetailInfoDrawingArea": "Área de dibujo",
   "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
   "@projectDetailInfoDrawingAreaValue": {
-    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailInfoTotalFrames": "Total de fotogramas",
   "projectDetailInfoWorkTime": "Tiempo de trabajo",
@@ -1070,7 +991,11 @@
   "projectDetailAddTagHint": "Añadir etiqueta",
   "projectDetailNiashareFailedSnackbar": "Error al crear el .niashare: {error}",
   "@projectDetailNiashareFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailTrashMenuItem": "Mover a la papelera",
   "commonOff": "OFF",
@@ -1089,13 +1014,21 @@
   "perfSettingsUndoLimitSubtitle": "Cuantos más haya, más memoria se consume",
   "perfSettingsUndoLimitValue": "{n} pasos",
   "@perfSettingsUndoLimitValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsTrashAutoDeleteTitle": "Eliminación automática de la papelera",
   "perfSettingsTrashAutoDeleteSubtitle": "Periodo de retención de proyectos eliminados",
   "perfSettingsTrashAutoDeleteValue": "{n} días",
   "@perfSettingsTrashAutoDeleteValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsCurrentSettingsSection": "Ajustes actuales",
   "perfSettingsTiltLabel": "Detección de inclinación",
@@ -1103,13 +1036,21 @@
   "perfSettingsOnionNextLabel": "Papel cebolla (siguiente)",
   "perfSettingsOnionFrameCountValue": "{n} fotogramas",
   "@perfSettingsOnionFrameCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsSaveModeLabel": "Modo de guardado",
   "perfSettingsSlotCountLabel": "Número de ranuras",
   "perfSettingsSlotCountValue": "{n} ranuras",
   "@perfSettingsSlotCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsResetButton": "Restablecer valores predeterminados",
   "perfSettingsCopyPresetButton": "Copiar preajuste actual",
@@ -1123,7 +1064,11 @@
   "perfSettingsResetDialogTitle": "¿Restablecer los ajustes de calidad personalizados a los valores predeterminados?",
   "perfSettingsResetDialogBody": "El valor predeterminado corresponde al ajuste \"{preset}\" que se determinó automáticamente según el rendimiento del dispositivo en el primer inicio.",
   "@perfSettingsResetDialogBody": {
-    "placeholders": {"preset": {"type": "String"}}
+    "placeholders": {
+      "preset": {
+        "type": "String"
+      }
+    }
   },
   "perfSettingsResetConfirmButton": "Restablecer",
   "perfSettingsCopyPresetDialogTitle": "Elige un preajuste para copiar",
@@ -1134,7 +1079,11 @@
   "filterPanelTitle": "Filtro",
   "filterPanelTitleBulk": "Filtro (aplicando a {count} fotogramas)",
   "@filterPanelTitleBulk": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterSearchHint": "Buscar filtros",
   "filterNameGaussianBlur": "Desenfoque gaussiano",
@@ -1157,7 +1106,11 @@
   "filterRetroStrength": "Intensidad",
   "filterOutlineLayerNameSuffix": "{name} (Contorno)",
   "@filterOutlineLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "filterStrengthBlurRadius": "Intensidad (radio de desenfoque)",
   "filterColorLevels": "Número de colores",
@@ -1177,13 +1130,24 @@
   "filterApplyButton": "Aplicar",
   "filterApplyBulkButton": "Aplicar a {count} fotogramas",
   "@filterApplyBulkButton": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterEmpty": "No hay filtros",
   "filterApplyingTitle": "Aplicando filtro",
   "filterApplyingSubtitle": "{name}　{count} fotogramas",
   "@filterApplyingSubtitle": {
-    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "projectListNewFolderTitle": "Nueva carpeta",
   "projectListFolderHint": "También puedes usarlo para agrupar varios episodios o una serie de la misma obra",
@@ -1195,7 +1159,11 @@
   "projectListDeleteFolderConfirmTitle": "¿Eliminar esta carpeta?",
   "projectListDeleteFolderConfirmBody": "Se eliminará \"{name}\". Los proyectos y subcarpetas que contiene se moverán a la raíz.",
   "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "projectListFolderRootOption": "Sin carpeta (raíz)",
   "projectListEditFolderTooltip": "Editar carpeta",
@@ -1239,25 +1207,44 @@
   "autofillPresetEmptyHint": "Toca + en la parte inferior derecha para crear uno",
   "autofillPresetPartsCount": "{count} partes",
   "@autofillPresetPartsCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetNewDialogTitle": "Nuevo preajuste",
   "autofillPresetNameLabel": "Nombre del preajuste",
   "autofillPresetRenameDialogTitle": "Renombrar preajuste",
   "autofillPresetDeleteConfirmTitle": "¿Eliminar \"{name}\"?",
   "@autofillPresetDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartSearchHint": "Buscar por nombre de parte",
   "autofillPartUnconfiguredBanner": "Hay {count} parte(s) sin configurar: {names} (sin trama seleccionada)\nNo puedes cerrar esta pantalla hasta que todo esté configurado.",
   "@autofillPartUnconfiguredBanner": {
-    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredDialogTitle": "Hay partes sin configurar",
   "autofillPartUnconfiguredDialogBody": "Configura las siguientes partes antes de guardar.",
   "autofillPartUnconfiguredItem": "• {name}: sin trama seleccionada",
   "@autofillPartUnconfiguredItem": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredBackButton": "Volver a la configuración",
   "autofillPartEmpty": "No hay partes\nToca + para añadir una",
@@ -1268,7 +1255,11 @@
   "autofillPartRenameDialogTitle": "Renombrar parte",
   "autofillPartDetailDialogTitle": "Detalles de {name}",
   "@autofillPartDetailDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartFillColorLabel": "Color de relleno",
   "autofillPartSelectColorButton": "Elegir color",
@@ -1291,24 +1282,44 @@
   "autofillPartGradientEditButton": "Editar degradado",
   "autofillPartFillOpacityLabel": "Opacidad (capa de relleno): {value}%",
   "@autofillPartFillOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineColorLabel": "Color del trazo",
   "autofillPartTraceHueLabel": "Tono: {value}",
   "@autofillPartTraceHueLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceSaturationLabel": "Saturación: {value}",
   "@autofillPartTraceSaturationLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceLightnessLabel": "Luminosidad: {value}",
   "@autofillPartTraceLightnessLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineOpacityLabel": "Opacidad (capa de trazo): {value}%",
   "@autofillPartLineOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartToneLabel": "Trama",
   "autofillPartUseToneCheckbox": "Usar trama",
@@ -1316,14 +1327,22 @@
   "autofillPartApplyButton": "Aplicar",
   "autofillPartGradientDialogTitle": "Degradado de {name}",
   "@autofillPartGradientDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartGradientTypeLabel": "Tipo",
   "autofillPartGradientTypeInfo": "Lineal: el color cambia siguiendo el ángulo indicado. Radial centro→exterior: los colores cambian desde el centro hacia afuera. Radial exterior→centro: al revés.",
   "autofillPartGradientFeatherInfo": "Con 0%, el límite entre colores vecinos es nítido. Con 100%, los colores se mezclan por completo y suavemente hasta el borde del color vecino.",
   "autofillPartGradientAngleLabel": "Ángulo: {value}°",
   "@autofillPartGradientAngleLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientColorLabel": "Colores",
   "autofillPartGradientAddColorButton": "Añadir color",
@@ -1331,12 +1350,20 @@
   "autofillPartGradientRemoveButton": "Quitar degradado",
   "autofillPartGradientFeatherLabel": "Intensidad del desenfoque: {value}%",
   "@autofillPartGradientFeatherLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientDragHint": "Arrastra el tirador de la derecha para reordenar los colores",
   "autofillPartGradientStopLabel": "Posición: {value}%",
   "@autofillPartGradientStopLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientStopDragHint": "Arrastra los marcadores ▲ hacia los lados para ajustar la posición de cada color",
   "saveTreeScreenTitleTree": "Árbol de guardado",
@@ -1348,29 +1375,53 @@
   "saveTreeCommentHint": "ej.: Fondo terminado",
   "saveTreeSizeWarningSnackbar": "El árbol de guardado está ocupando mucho espacio (unos {mb} MB). Te recomendamos eliminar los guardados que ya no necesites.",
   "@saveTreeSizeWarningSnackbar": {
-    "placeholders": {"mb": {"type": "String"}}
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotSaveDialogTitle": "Guardar en la ranura {n}",
   "@saveTreeSlotSaveDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotOverwriteWarning": "Esto sobrescribirá los datos existentes ({date}).",
   "@saveTreeSlotOverwriteWarning": {
-    "placeholders": {"date": {"type": "String"}}
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeRestoreAction": "Restaurar",
   "saveTreeLoadFailedSnackbar": "No se pudieron cargar los datos guardados",
   "saveTreeRestoredSnackbar": "Se restauró {name}",
   "@saveTreeRestoredSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotLabel": "Ranura {n}",
   "@saveTreeSlotLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotFallbackName": "Ranura {n}",
   "@saveTreeSlotFallbackName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeNoDataLabel": "Sin datos guardados",
   "saveTreeEmptyTitle": "No hay datos guardados",
@@ -1380,21 +1431,40 @@
   "saveTreeChangeDataTitle": "Cambiar datos guardados",
   "saveTreeChangeDataTitleWithProject": "Cambiar datos guardados ({name})",
   "@saveTreeChangeDataTitleWithProject": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeChangeExceedMessage": "El número actual de guardados supera\nel nuevo límite de guardado.\n\nElige qué guardados conservar.",
   "saveTreeKeepableCountLabel": "Guardados que puedes conservar: {n}",
   "@saveTreeKeepableCountLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeKeepLatestButton": "Conservar los {n} más recientes",
   "@saveTreeKeepLatestButton": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSelectDataButton": "Elegir datos guardados",
   "saveTreeSelectedCountLabel": "Seleccionados: {selected} / {limit}",
   "@saveTreeSelectedCountLabel": {
-    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeBackButton": "Atrás",
   "saveTreeNextButton": "Siguiente",
@@ -1404,7 +1474,11 @@
   "saveTreeDeleteOptionTitle": "Eliminar permanentemente",
   "saveTreeDeleteOptionSubtitle": "Elimina permanentemente los {count} elementos no seleccionados.\nLibera espacio de almacenamiento.\n※ Los datos eliminados no se pueden recuperar.",
   "@saveTreeDeleteOptionSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeApplyChangeButton": "Aplicar cambio",
   "canvasEditMenuBackgroundToggle": "Cambiar fondo",
@@ -1423,7 +1497,14 @@
   "canvasSettingsMenuTooltip": "Ajustes/Editar",
   "canvasFrameSelectedCount": "{selected} / {total} fotogramas seleccionados",
   "@canvasFrameSelectedCount": {
-    "placeholders": {"selected": {"type": "int"}, "total": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "canvasSelectAllButton": "Seleccionar todo",
   "canvasDeselectAllButton": "Deseleccionar todo",
@@ -1459,7 +1540,11 @@
   "canvasHelpRubyTitle": "Furigana (glosa fonética)",
   "canvasHelpRubyBody": "Al escribir algo como «{example}» se muestra una pequeña anotación de lectura encima de los caracteres base (en horizontal) o a su derecha (en vertical). Funciona en ambos sentidos, pero el texto que contiene furigana no se ajustará automáticamente de línea en modo horizontal (solo saltos de línea manuales).",
   "@canvasHelpRubyBody": {
-    "placeholders": {"example": {"type": "String"}}
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelTitle": "Capas",
   "layerPanelHelpTooltip": "Ayuda",
@@ -1471,23 +1556,43 @@
   "layerPanelImportImageButton": "Importar imagen",
   "layerPanelDefaultLayerName": "Capa{n}",
   "@layerPanelDefaultLayerName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultFolderName": "Carpeta{n}",
   "@layerPanelDefaultFolderName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultLineartName": "Línea{n}",
   "@layerPanelDefaultLineartName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultAutofillName": "RelleAuto{n}",
   "@layerPanelDefaultAutofillName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultCommonName": "Común{n}",
   "@layerPanelDefaultCommonName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelClippingBadge": "Recorte",
   "layerPanelAddTooltip": "Añadir",
@@ -1499,7 +1604,14 @@
   "layerPanelRangeSceneSpecified": "Escena específica",
   "layerPanelRangeFrameSpan": "{start}–{end}",
   "@layerPanelRangeFrameSpan": {
-    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMenuFrameRangeChange": "Cambiar rango de fotogramas",
   "layerPanelMenuRangeChange": "Cambiar rango de visualización",
@@ -1510,12 +1622,20 @@
   "layerPanelMenuReplaceMaterial": "Reemplazar material",
   "layerPanelDeleteConfirmTitle": "¿Eliminar {name}?",
   "@layerPanelDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelDeleteConfirmBody": "Este material se eliminará de todos los fotogramas dentro de su rango de visualización.",
   "layerPanelMultiDeleteConfirmTitle": "¿Eliminar los {count} elementos seleccionados?",
   "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMultiDeleteConfirmBody": "Los materiales de la línea de tiempo se eliminarán de todos los fotogramas dentro de su rango de visualización.",
   "layerPanelRangeDialogTitle": "Rango de visualización",
@@ -1559,7 +1679,11 @@
   "layerPanelAutofillPresetMissingSnackbar": "No se encontró una parte de preajuste correspondiente.",
   "layerPanelAutofillLayerNameSuffix": "{name} (relleno automático)",
   "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelOrphanFillSuccessSnackbar": "No se encontró una capa de líneas correspondiente, así que se rellenó con el color más reciente.",
   "layerPanelOrphanFillFailSnackbar": "No se pudo procesar: no hay ninguna parte asignada, o no hay una forma que rellenar.",
@@ -1567,15 +1691,27 @@
   "layerPanelAutofillUpdateHelpBody": "El relleno automático actual no está actualizado. Toca para actualizarlo.",
   "layerPanelReplaceMaterialSuccessSnackbar": "Material reemplazado: {name}",
   "@layerPanelReplaceMaterialSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelImportImageSuccessSnackbar": "Imagen importada: {name}",
   "@layerPanelImportImageSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelCopySuffix": "Copia de {name}",
   "@layerPanelCopySuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineFullscreenPreviewCloseTooltip": "Cerrar la vista previa a pantalla completa",
   "timelineDefaultProjectName": "Nombre del proyecto",
@@ -1595,7 +1731,11 @@
   "timelineWatermarkSelectTitle": "Selecciona una marca de agua",
   "timelineWatermarkAddedSnackbar": "Marca de agua añadida (se muestra en todos los fotogramas): {name}",
   "@timelineWatermarkAddedSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineWatermarkEditTitle": "Editar marca de agua",
   "timelineWatermarkAngleLabel": "Ángulo",
@@ -1611,12 +1751,20 @@
   "timelineDurationLimitBodyPremium": "Esto superaría el límite Premium (hasta 2 horas), por lo que no se pueden añadir ni duplicar más fotogramas.",
   "timelineSceneDeleteConfirmTitle": "¿Eliminar «{name}»?",
   "@timelineSceneDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineSceneDeleteConfirmBody": "Se eliminarán todos los datos de la escena, incluidos cada fotograma, las capas comunes, los materiales de vídeo, los materiales de imagen y las marcas de agua.",
   "timelineSceneMultiDeleteConfirmTitle": "¿Eliminar las {count} escenas seleccionadas?",
   "@timelineSceneMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillUpdateHelpBody": "Esta escena/fotograma contiene una capa de relleno automático que no está actualizada. Toca la capa en el panel de capas para actualizarla.",
   "timelineFrameTrackLabel": "Fotograma",
@@ -1628,7 +1776,14 @@
   "timelineEndCardDefaultLogoLabel": "Logo de NIARIM",
   "timelineEndCardStatusFormat": "{label} · {seconds} s",
   "@timelineEndCardStatusFormat": {
-    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
   "timelineEndCardHiddenLabel": "Oculto",
   "timelineEndCardVisibilityToggleTooltip": "Mostrar/ocultar",
@@ -1636,24 +1791,39 @@
   "timelineEndCardReplaceTooltip": "Reemplazar",
   "timelineEndCardLengthDialogTitle": "Duración de la tarjeta final",
   "timelineEndCardTrackLabel": "Pista de tarjeta final",
-
   "timelineMarkerTrackLabel": "Marcas de tiempo",
   "timelineMarkerAddDialogTitle": "Añadir marca de tiempo en F{n}",
   "@timelineMarkerAddDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerEditDialogTitle": "Marca de tiempo: F{n}",
   "@timelineMarkerEditDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerCommentHint": "Comentario (p. ej., boca \"a\" aquí)",
   "timelineSecondsLabel": "{n} s",
   "@timelineSecondsLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineAddClipDialogTitle": "Añadir clip de {trackName}",
   "@timelineAddClipDialogTitle": {
-    "placeholders": {"trackName": {"type": "String"}}
+    "placeholders": {
+      "trackName": {
+        "type": "String"
+      }
+    }
   },
   "timelineClipLabelFieldLabel": "Etiqueta",
   "timelineClipStartLabel": "Inicio:",
@@ -1667,11 +1837,19 @@
   "timelineAutofillProgressTitle": "Ejecutando relleno automático",
   "timelineAutofillProgressSubtitle": "{count} fotogramas",
   "@timelineAutofillProgressSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillCompleteSnackbar": "Relleno automático completado ({count} procesados)",
   "@timelineAutofillCompleteSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineEffectTypeFade": "Desvanecimiento",
   "timelineEffectTypeGaussianBlur": "Desenfoque gaussiano",
@@ -1709,44 +1887,66 @@
   "timelineClipUseEndLabel": "Fin de uso F",
   "timelineCameraKfTitle": "Fotograma clave de cámara: F{n}",
   "@timelineCameraKfTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineCameraMoveXLabel": "Movimiento X",
   "timelineCameraMoveYLabel": "Movimiento Y",
   "timelineCameraZoomLabel": "Zoom",
   "timelineCameraRotationLabel": "Rotación",
-
   "layerPanelKeyframeLabel": "Animación (fotogramas clave)",
   "layerKeyframeSheetTitle": "Fotogramas clave de {name}",
   "@layerKeyframeSheetTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerKeyframeSheetDesc": "Define la posición, escala y rotación de esta capa por fotograma; los fotogramas clave se interpolan automáticamente. El dibujo de la capa en sí no cambia.",
   "layerKeyframeAddAtCurrentFrame": "Añadir en el fotograma actual (F{n})",
   "@layerKeyframeAddAtCurrentFrame": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeEmpty": "Aún no hay fotogramas clave. Añade uno con el botón de arriba.",
   "layerKeyframeScaleShort": "Escala",
   "layerKeyframeRotationShort": "Rot.",
   "layerKeyframeEditTitle": "Fotograma clave: F{n}",
   "@layerKeyframeEditTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeFrameLabel": "Fotograma",
   "layerKeyframeScaleLabel": "Escala",
   "layerKeyframeRotationLabel": "Rotación",
-
   "layerPanelGroupTooltip": "Agrupar",
   "layerPanelGroupDefaultName": "Nuevo grupo",
   "layerPanelGroupMembershipLabel": "Grupo: {name}",
   "@layerPanelGroupMembershipLabel": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelGroupLeaveAction": "Salir",
   "frameStripHoldDialogTitle": "F{n} fotogramas de espera",
   "@frameStripHoldDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "frameStripTimelineModeTooltip": "Modo línea de tiempo",
   "progressDialogAdLoading": "Cargando anuncio…",
@@ -1790,5 +1990,7 @@
   "privacyPolicyArt7Title": "Artículo 7 (Modificaciones de esta Política)",
   "privacyPolicyArt7Body": "El desarrollador podrá modificar esta Política en caso de cambios en la legislación aplicable, cambios en el contenido de la Aplicación u otras circunstancias que considere necesarias. Al modificar esta Política, el desarrollador comunicará con antelación el contenido de la modificación y su fecha de entrada en vigor, dentro de la Aplicación o por otros medios adecuados.",
   "privacyPolicyArt8Title": "Artículo 8 (Contacto)",
-  "privacyPolicyArt8Body": "Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\n(Contacto del desarrollador: aún no definido; complete una dirección de correo electrónico u otros datos de contacto antes de la publicación)."
+  "privacyPolicyArt8Body": "Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\n(Contacto del desarrollador: aún no definido; complete una dirección de correo electrónico u otros datos de contacto antes de la publicación).",
+  "tipsPcDexLayoutTitle": "En pantallas anchas, cambia automáticamente al modo PC (DeX)",
+  "tipsPcDexLayoutDesc": "En un Chromebook, una tablet con teclado, Samsung DeX o cualquier entorno de pantalla ancha, la app cambia automáticamente a un diseño profesional con paneles acoplados. También puedes forzar Siempre modo PC o Siempre modo móvil desde los ajustes de espacio de trabajo, útil al conectar una pantalla externa."
 }

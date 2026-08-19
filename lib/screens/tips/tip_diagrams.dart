@@ -18,6 +18,7 @@ enum TipDiagramKind {
   exportFormat,
   gestureShortcut,
   timelineMarker,
+  pcDexLayout,
 }
 
 class TipDiagram extends StatelessWidget {
@@ -53,6 +54,7 @@ class _TipDiagramPainter extends CustomPainter {
       case TipDiagramKind.exportFormat: _paintExportFormat(canvas, size);
       case TipDiagramKind.gestureShortcut: _paintGestureShortcut(canvas, size);
       case TipDiagramKind.timelineMarker: _paintTimelineMarker(canvas, size);
+      case TipDiagramKind.pcDexLayout: _paintPcDexLayout(canvas, size);
     }
   }
 
@@ -269,5 +271,24 @@ class _TipDiagramPainter extends CustomPainter {
         canvas.drawPath(tail, _fillPrimaryFaint);
       }
     }
+  }
+
+  /// 左：スマホ（下部にツールバー）→矢印→右：PC/DeX（左右にドッキング
+  /// パネル）。ワイド画面で自動的にレイアウトが切り替わることを表す。
+  void _paintPcDexLayout(Canvas canvas, Size size) {
+    final phone = Rect.fromLTWH(size.width * 0.06, size.height * 0.1, size.width * 0.2, size.height * 0.8);
+    canvas.drawRRect(RRect.fromRectAndRadius(phone, const Radius.circular(6)), _strokeOutline);
+    final phoneToolbar = Rect.fromLTWH(phone.left + 3, phone.bottom - 14, phone.width - 6, 10);
+    canvas.drawRRect(RRect.fromRectAndRadius(phoneToolbar, const Radius.circular(2)), _fillPrimaryFaint);
+
+    _arrow(canvas, Offset(phone.right + 8, size.height * 0.5), Offset(size.width * 0.52, size.height * 0.5),
+        _strokeOutline);
+
+    final pc = Rect.fromLTWH(size.width * 0.58, size.height * 0.16, size.width * 0.38, size.height * 0.68);
+    canvas.drawRRect(RRect.fromRectAndRadius(pc, const Radius.circular(6)), _strokePrimary);
+    final leftPanel = Rect.fromLTWH(pc.left + 3, pc.top + 3, pc.width * 0.2, pc.height - 6);
+    final rightPanel = Rect.fromLTWH(pc.right - pc.width * 0.2 - 3, pc.top + 3, pc.width * 0.2, pc.height - 6);
+    canvas.drawRRect(RRect.fromRectAndRadius(leftPanel, const Radius.circular(2)), _fillPrimaryFaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(rightPanel, const Radius.circular(2)), _fillPrimaryFaint);
   }
 }

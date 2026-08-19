@@ -1,7 +1,6 @@
 {
   "@@locale": "zh",
   "appTitle": "NIARIM",
-
   "homeTabProjects": "项目",
   "homeTabShared": "共享",
   "homeTabTrash": "回收站",
@@ -16,7 +15,6 @@
   "homeMoveToTrash": "移至回收站",
   "homeMoveToTrashConfirm": "要将{count}项移至回收站吗？",
   "commonMove": "移动",
-
   "homeShareFileDialogTitle": "共享文件",
   "homeShareFileDialogContent": "要复制此共享文件并另存为普通项目吗？",
   "homeMissingFontsSnackbar": "缺少字体：{names}",
@@ -45,7 +43,6 @@
   "homePreviewFailed": "无法播放预览",
   "homeFirstLaunchMessage": "您可以制作手绘动画",
   "homeFirstLaunchStart": "开始使用",
-
   "settingsScreenTitle": "设置",
   "settingsBasicTitle": "基本",
   "settingsBasicSubtitle": "FPS・背景色・语言",
@@ -86,7 +83,6 @@
   "settingsDrawingAreaWiden": "扩大绘图区域",
   "settingsDrawingAreaScale": "倍率",
   "settingsScaleValue": "{scale}倍",
-
   "commonCancel": "取消",
   "commonCreate": "创建",
   "commonChange": "更改",
@@ -94,7 +90,11 @@
   "confirmDeleteGenericBody": "确定要删除吗？此操作无法撤销。",
   "confirmDeleteNamedBody": "要删除「{name}」吗？此操作无法撤销。",
   "@confirmDeleteNamedBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "commonFavoriteDeleteBlocked": "已收藏的项目无法删除，请先取消收藏。",
   "commonSave": "保存",
@@ -104,7 +104,6 @@
   "commonCopy": "复制",
   "commonPaste": "粘贴",
   "commonOk": "确定",
-
   "gestureSettingsTitle": "手势设置",
   "gestureTwoFingerTap": "双指点按",
   "gestureThreeFingerTap": "三指点按",
@@ -118,19 +117,15 @@
   "gestureActionNextTool": "快速切换工具",
   "gestureActionOnionSkinToggle": "洋葱皮开/关",
   "gestureActionNone": "不执行任何操作",
-
   "homeDrawerAppTagline": "手绘动画制作应用",
   "homeDrawerAutofillPreset": "自动上色预设",
   "homeDrawerSettings": "设置",
   "homeDrawerHelp": "帮助",
   "homeDrawerTips": "使用技巧",
   "homeDrawerPremium": "Premium",
-
   "gestureActionNoneShort": "无",
-
   "pressureTryDrawHint": "可以用此设置试写（使用触控笔时会反映实际笔压）",
   "pressureTryDrawClear": "清除",
-
   "penSettingsTitle": "笔输入设置",
   "penSettingsCurveSection": "笔压曲线",
   "penSettingsCurveHint": "设置越弱，笔压的起始越平缓；设置越强，起始越陡峭。",
@@ -152,11 +147,9 @@
   "bucketSettingsUnderLineTitle": "潜入线稿下方",
   "bucketSettingsUnderLineHint": "扩展部分不会直接覆盖线稿，而是在保持线条外观的同时，将填充色绘制到现有像素的背后，减少线条抗锯齿边缘处出现的缝隙。",
   "bucketSettingsUnderLineDisabledHint": "当「扩展」为0px时无效果。",
-
   "fontCatalogSearchHint": "按字体名称搜索...（共{count}种字体）",
   "fontCatalogAll": "全部",
   "fontCatalogNoResults": "未找到匹配的字体",
-
   "rulerPanelTitle": "标尺",
   "rulerTypeLine": "直线标尺",
   "rulerTypeEllipse": "椭圆标尺",
@@ -165,7 +158,6 @@
   "rulerTypeTwoPoint": "两点透视",
   "rulerTypeThreePoint": "三点透视",
   "rulerDivisions": "分割数",
-
   "transferScreenTitle": "数据迁移（.niatra）",
   "transferInstructionHint": "请选择要迁移到其他设备的项目。",
   "transferItemSettings": "设置",
@@ -179,7 +171,6 @@
   "transferExportFailedSnackbar": "导出失败：{error}",
   "transferImportSuccessSnackbar": "已导入.niatra文件",
   "transferImportFailedSnackbar": "导入失败：{error}",
-
   "folderManagementTitle": "文件夹管理",
   "folderManagementCreateNew": "新建",
   "folderManagementEmpty": "还没有文件夹",
@@ -187,20 +178,27 @@
   "folderMoveToTitle": "移至文件夹",
   "folderNone": "无文件夹",
   "creativeAssetNameLabel": "名称",
-
   "commonAdd": "添加",
   "commonSearch": "搜索",
   "autofillPresetSelectionTitle": "使用的预设",
   "autofillPresetSelectionHint": "只选择本项目会用到的自动上色预设，分配部件时列表会更简洁易找。",
   "autofillPresetSelectionPartCount": "{count}个部件",
   "@autofillPresetSelectionPartCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetSelectionButton": "选择要使用的预设",
   "autofillPresetSelectionAllLabel": "全部使用",
   "autofillPresetSelectionCountLabel": "已选{count}个",
   "@autofillPresetSelectionCountLabel": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "commonEdit": "编辑",
   "commonFavoriteToggle": "切换收藏",
@@ -219,7 +217,6 @@
   "timelineStepBack": "后退一帧",
   "timelineStepForward": "前进一帧",
   "timelineSkipToEnd": "跳到最后一帧",
-
   "quickToolPanelTitle": "快捷工具设置",
   "quickToolEmpty": "暂无已添加的工具",
   "quickToolAddCurrentBrush": "添加当前画笔",
@@ -227,7 +224,6 @@
   "quickToolEyedropper": "吸管",
   "quickToolBucket": "填充桶",
   "quickToolSizeDialogTitle": "{brushName}的大小",
-
   "materialListTitle": "素材管理",
   "materialRemoveUnused": "删除未使用素材（{count}）",
   "materialEmptyTitle": "没有素材",
@@ -240,7 +236,6 @@
   "materialRemoveUnusedConfirmTitle": "要批量删除未使用的素材吗？",
   "materialRemoveUnusedConfirmBody": "将删除项目中未被任何地方引用的全部素材。此操作无法撤销。",
   "materialRemovedSnackbar": "已删除{count}个未使用素材",
-
   "watermarkEmptyTitle": "还没有已注册的水印",
   "watermarkEmptyHint": "点击右下角的+号添加图片或文字水印",
   "watermarkAddFromImage": "从图片添加",
@@ -258,7 +253,6 @@
   "watermarkOutlineLabel": "描边",
   "watermarkOutlineColorLabel": "描边颜色",
   "watermarkOutlineWidthLabel": "描边粗细",
-
   "premiumActiveLabel": "Premium已开通",
   "premiumVsTitle": "免费版 vs 高级版",
   "premiumCampaignFreeNote": "※ 活动期间，免费版也可使用以上全部高级功能",
@@ -290,7 +284,6 @@
   "premiumValueDuration90Sec": "1.5分钟",
   "premiumPlanRecommendedBadge": "推荐",
   "premiumMonthlyPrice": "¥550/月",
-
   "toolbarItemPen": "G笔",
   "toolbarItemEraser": "橡皮擦",
   "toolbarItemBucket": "填充桶",
@@ -301,7 +294,6 @@
   "toolbarItemTransform": "变形",
   "toolbarItemText": "文字",
   "toolbarItemShape": "图形",
-
   "workspaceScreenTitle": "工作区设置",
   "workspaceToolbarEditSection": "工具栏编辑",
   "workspaceToolbarEditHint": "通过复选框选择要显示的工具，并可拖动调整顺序。",
@@ -327,11 +319,9 @@
   "workspaceSaveDialogLabel": "名称（例：动画用・线稿用）",
   "workspaceLoadRightHanded": "右手",
   "workspaceLoadLeftHanded": "左手",
-
   "helpScreenTitle": "帮助",
   "helpSearchHint": "搜索...",
   "helpNoResults": "未找到相关项目",
-
   "helpCategoryTool": "工具",
   "helpCategoryLayer": "图层",
   "helpCategoryAnimation": "动画",
@@ -343,256 +333,172 @@
   "helpCategoryExport": "导出",
   "helpCategoryPremium": "Premium",
   "helpCategorySettings": "设置",
-
   "helpPenToolTitle": "笔工具",
   "helpPenToolDesc": "在画布上绘制线条的基本工具。长按可更改画笔种类・粗细・颜色（双击显示简要说明）。支持数位板/液晶数位板的笔压与倾斜，在设置画面的“笔输入”中调整笔压曲线，可以细致自定义笔压的传达方式（轻压时粗细/不透明度会变化多少）。切换笔的子工具后，还能用同一支笔工具进行贴网点・放置图章。",
-
   "helpEraserToolTitle": "橡皮擦工具",
   "helpEraserToolDesc": "与笔工具相对，用于擦除已绘制的内容。与画笔一样可以调整粗细与不透明度，淡出、笔画衰减等画笔设置也同样适用。它进行的是“擦除”已有绘制内容的处理，而不是在图层的透明部分“添加”内容，因此下方图层会透出显示。",
-
   "helpBucketToolTitle": "填充桶工具",
   "helpBucketToolDesc": "一次性填充被包围的区域。在线稿所围成的区域内点击，整个区域就会被填充为当前选择的颜色（或网点）。如果线稿有缝隙，颜色可能会扩散到意料之外的范围，因此使用前请确认线稿是否已完全闭合。可以在设置中切换纯色填充/网点填充。 详细设置（容差・扩展px・潜入线稿下方）可以在设置画面的「油漆桶填充」中调整。",
-
   "helpLassoFillTitle": "套索填充",
   "helpLassoFillDesc": "用手指沿想要包围的范围描画出多边形区域，然后一次性填充其内部的工具。与填充桶不同，即使线稿有未闭合的部分，也可以自行指定要包围的范围，因此适合形状复杂或线条中断处的填色。",
-
   "helpEyedropperToolTitle": "吸管工具",
   "helpEyedropperToolDesc": "拾取点击位置的颜色并将其设为绘图色的工具。它拾取的是画面上实际显示的全部图层合成后的颜色，因此即使在多个图层重叠的部分，也能准确获取“肉眼所见的颜色”。",
-
   "helpSelectToolTitle": "选择工具",
   "helpSelectToolDesc": "选取画布的一部分区域，仅对所选区域进行移动・旋转・缩放的工具。长按可以从“矩形选择”“套索选择（自由形状包围）”“自动选择（魔术棒，自动合并相近颜色的区域）”三种选择方式中选择。选择中会在画布上显示表示所选范围的边框，在取消选择之前，所有帧・所有图层都会固定显示相同的范围。",
-
   "helpFingerToolTitle": "手指工具（扭曲工具）",
   "helpFingerToolDesc": "沿手指划动的方向推挤像素使其扭曲，营造出用手指涂抹湿颜料般的效果。相较于精细修正，更常用于将已画好的线条进行有机的扭曲以增添表现力。",
-
   "helpShapeToolTitle": "图形工具",
   "helpShapeToolDesc": "一键绘制直线・矩形・圆形等精确图形的工具。从起点拖动到终点时会即时预览，松开手指即可确定。在难以徒手绘制直线或正圆时非常方便。",
-
   "helpTextToolTitle": "文字工具",
   "helpTextToolDesc": "在画布上放置文字的工具。可选择字体・大小・颜色・竖排/横排。竖排时还支持半角字母数字的自动旋转・纵中横（数字保持横向排列的表记）・注音标注（类似日语振假名的读音标注）。放置的文字在导出时也会作为像素烧录进画面。",
-
   "helpQuickToolTitle": "快捷工具",
   "helpQuickToolDesc": "可预先注册常用的画笔・工具组合，用一个按钮依次切换的功能。长按画布上的↺按钮即可打开可添加・排序・删除的设置面板。可通过拖动改变顺序。",
-
   "helpLayerTitle": "图层",
   "helpLayerDesc": "将一张画布分成多个透明“层”进行绘制的机制。将线稿・上色・背景等分别绘制在不同图层上，之后可以只重做上色部分，或在不擦除线稿的情况下更换背景。画面上，位于上方的图层会显示在前面。",
-
   "helpBlendModeTitle": "混合模式",
   "helpBlendModeDesc": "更改图层合成方式的功能。除正常（直接叠加）之外，还有正片叠底（与下方图层相乘产生类似阴影的效果）・滤色（如同加了光线般变亮）・叠加（在保持明暗的同时叠加颜色）等。常用于将网点或色彩效果作为图层叠加时。",
-
   "helpClippingTitle": "剪贴蒙版",
   "helpClippingDesc": "使绘制内容仅限于紧邻下方图层的不透明像素范围内的功能。当想要在不超出线稿的范围内上色时，在线稿图层上方新建上色图层并启用剪贴蒙版，就不必担心不小心画到线稿外面。",
-
   "helpCommonLayerTitle": "公共图层",
   "helpCommonLayerDesc": "普通图层按每一帧独立存在，而公共图层则是在多个帧・场景中共享同一内容的图层。像背景这样不随帧变化而移动的元素，无需每帧重新绘制，只需画一次即可。在时间轴上会以专用轨道的形式显示。",
-
   "helpAutoFillTitle": "自动上色",
   "helpAutoFillDesc": "在线稿图层下方创建自动上色图层，并根据预先制作的“自动上色预设”（各部位的颜色・网点组合）自动进行上色的功能。由于可以在画完线稿后一次性上色，能大幅减少需要反复绘制同一角色的手绘动画中的上色工作量。重新绘制线稿后，时间轴・图层面板会显示更新标记（❗），提示需要重新执行自动上色。",
-
   "helpOnionSkinTitle": "洋葱皮",
   "helpOnionSkinDesc": "将当前编辑帧前后的帧以半透明方式叠加显示，使你可以一边确认动作的连贯性一边绘制的功能。可以在性能设置中调整显示的帧数（前后各显示几帧）以及颜色・透明度。",
-
   "helpRulerTitle": "标尺",
   "helpRulerDesc": "直线・圆・椭圆・透视标尺（使用消失点的透视图法专用标尺）等，用于辅助绘制徒手难以画出的精确线条的功能。放置的标尺会使笔尖自动吸附，即使是没有标尺就难以绘制的具有纵深感的构图也会更容易画出。标尺可以通过操作控制柄进行移动・旋转・调整大小。",
-
   "helpFadeTitle": "淡出",
   "helpFadeDesc": "画笔设置之一，随着笔画的持续绘制，不透明度或粗细会逐渐减少的效果。用于想让线条末端产生渐隐感，或想营造带有余韵的笔触时。",
-
   "helpStrokeDecayTitle": "笔画衰减",
   "helpStrokeDecayDesc": "与淡出类似，但更接近“墨水逐渐用尽”的表现，绘制得越久颜色越淡或越干涩的效果。可再现毛笔或马克笔持续书写时墨水耗尽般的质感。",
-
   "helpColorMixingTitle": "混色",
   "helpColorMixingDesc": "使用画笔上色时，将画笔正下方已有的颜色与即将涂上的选定颜色混合后再绘制的功能。适合想让新颜色与已有颜色自然融合时使用，如水彩或油画般的效果。",
-
   "helpPressureCurveTitle": "笔压曲线",
   "helpPressureCurveDesc": "笔输入设置中的功能，可通过图表自由调整实际笔压强度与画笔粗细・不透明度反映方式之间的关系。无论是希望轻压也能画出粗线的人，还是相反希望必须用力按压才会变粗的人，都能根据自己的用笔习惯细致自定义画感。更改设置后可当场试写确认效果。",
-
   "helpTimelineTitle": "时间轴",
   "helpTimelineDesc": "管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。图片・视频・音频等素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。",
-
   "helpSceneTitle": "场景",
   "helpSceneDesc": "将一个项目（一部动画）内部按场景（镜头）分割管理的功能。文件夹是以项目为单位进行整理，而场景则用于表现一部动画内部的场景转换。",
-
   "helpCameraKeyframeTitle": "摄像机关键帧",
   "helpCameraKeyframeDesc": "在时间轴上的特定位置记录摄像机的位置・缩放比例・旋转角度的功能。关键帧之间会自动平滑插值，因此可以轻松添加平移（横向移动）或拉近拉远等镜头运动。",
-
   "helpEffectFilterTitle": "演出滤镜",
   "helpEffectFilterDesc": "可应用于场景或帧的画面效果（模糊・色调校正・辉光等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。",
-
   "helpEndCardTitle": "EndCard（片尾标志）",
   "helpEndCardDesc": "导出视频时，会在正片结尾自动添加的NIARIM标志短片（约5秒）。免费版无法隐藏或删除，但成为Premium会员后可以开关显示・更改时长・进行替换。",
-
   "helpAutoSaveTitle": "自动保存",
   "helpAutoSaveDesc": "专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。仅在应用异常退出后重新启动时，才会询问是否要恢复。",
-
   "helpSaveSlotTitle": "存档槽",
   "helpSaveSlotDesc": "在固定数量的存档位（槽）中，由自己选择保存位置进行保存的方式。槽位数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的槽位，适合“想保留这个时间点的状态”这类管理方式。",
-
   "helpSaveTreeTitle": "存档树",
   "helpSaveTreeDesc": "每次保存都会创建一个新的存档点，并可以从过去的存档点分支出另一段历史（分叉）的保存方式。没有数量上限，适合“想回到那个版本后再尝试另一种展开”这类用法。画面上存档点会以从下往上生长的树状图形式显示。",
-
   "helpFolderTitle": "文件夹",
   "helpFolderDesc": "将项目（作品）分组整理的功能。支持多层级结构，因此也可以用来统一管理同一作品的多个话数或系列作品（例如：在“作品名”文件夹中依次排列“第1话”“第2话”……等项目）。如果想在一部动画内划分场景，请使用画布画面中的“场景”功能，而不是文件夹。",
-
   "helpTrashTitle": "回收站",
   "helpTrashDesc": "已删除项目暂时移动到的地方。在被彻底删除之前，都可以从这里恢复。可以在设置中指定自动删除的天数（关闭/30天/60天/90天）。",
-
   "helpShareTitle": "共享（.niashare）",
   "helpShareDesc": "用于将项目传递给他人（或自己的其他设备）的专用共享文件格式。接收方打开此文件后，会复制并添加到自己的项目列表中。共享源的.niashare文件本身不会被更改。",
-
   "helpTransferTitle": "数据迁移（.niatra）",
   "helpTransferDesc": "将设置・素材・画笔・预设・UI主题等整个应用环境一并迁移到其他设备的功能。要迁移的项目可通过复选框逐项选择。如果只想传递单个项目，请使用“共享（.niashare）”。",
-
   "helpVideoExportTitle": "视频导出（MP4）",
   "helpVideoExportDesc": "将作品导出为通用的MP4视频。直接使用设备内置的硬件编码器，避免了H.264相关的授权问题。免费版会自动添加片尾标志，且可导出的时长有上限。",
-
   "helpTransparentWebmTitle": "透明WebM",
   "helpTransparentWebmDesc": "可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。",
-
   "helpGifExportTitle": "GIF导出",
   "helpGifExportDesc": "以动态GIF格式导出。GIF仅是导出时的格式，编辑过程中并没有专门的“GIF模式”。",
-
   "helpWatermarkEntryTitle": "水印",
   "helpWatermarkEntryDesc": "可在导出的视频・图片上添加自己的签名或标志作为水印的Premium专属功能。可调整位置・大小・不透明度。",
-
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "可使用时长限制放宽・片尾标志编辑・水印・色调曲线・色阶校正等免费版受限功能的会员类型。上线纪念活动期间，免费版也可免费使用这些功能（不含隐藏广告及购买本身）。",
-
   "helpFontManagementTitle": "字体管理",
   "helpFontManagementDesc": "可添加・搜索・删除文字工具可用字体的画面。除初始内置字体外的其他免费字体，为控制初始安装容量，需从此处按需下载。",
-
   "helpPerformanceSettingsTitle": "性能设置",
   "helpPerformanceSettingsDesc": "可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・图块缓存・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。",
-
   "helpMaterialClipTitle": "素材片段（图片・视频・音频）",
   "helpMaterialClipDesc": "放置在时间轴图片、视频、音频轨道上的片段。长按拖动片段本身可移动其起始位置，拖动两端的手柄可改变使用范围（长度）。点击片段会打开详情面板，其中的复制图标用于复制、垃圾桶图标用于删除。图片・视频在内部作为图层处理，音频则作为直接挂在场景上的片段管理。",
-
   "helpGestureSettingsTitle": "手势设置",
   "helpGestureSettingsDesc": "可以将撤销/重做、跳转帧、取色等操作分配给双指点击、三指点击、双指滑动或长按。数位笔按键（在支持的触控笔上）也可以单独分配操作。想不切换工具就用一个动作触发常用操作时很方便。",
-
   "helpBucketDetailSettingsTitle": "填充工具详细设置",
   "helpBucketDetailSettingsDesc": "在设置画面的“填充工具”中可以调整容差（点击位置的颜色相差多少仍视为同一区域）、扩展px（填充区域向边界外扩展多少以填补线稿的缝隙）以及潜入线条下方（不覆盖线稿本身，而是把扩展部分合成到已有像素的背后，从而保持线条外观不变）。当线稿有细小缝隙或填色感觉不完整时，调整这些设置能让效果更稳定。",
-
   "helpStampToolTitle": "印章工具",
   "helpStampToolDesc": "把预先登记的图片像笔刷一样放置到画布上。特效线、背景图案、小物件等无需每次重画即可反复使用。开启像素模式后，贴上的印章会通过马赛克降分辨率＋减少色数处理成像素画风格。",
-
   "helpToneFillTitle": "网点上色",
   "helpToneFillDesc": "在填充工具的设置中把纯色填充切换为网点填充，就能用选中的网点、线条等网点图案进行填充。还提供像素模式专用的方格纹、格子纹网点，可以做出符合像素画质感的上色效果。",
-
   "helpPixelModeTitle": "像素模式",
   "helpPixelModeDesc": "笔刷、字体、印章各自都提供的设置，开启后会去除抗锯齿，呈现清晰的像素画风轮廓。想特意做出老游戏般的质感，或想营造低分辨率效果时使用。",
-
   "helpHomeScreenTitle": "主页",
   "helpHomeScreenDesc": "启动应用后最先显示的画面，可在项目、共享、作品列表、回收站各标签间切换查看。右上角的搜索图标可按项目名称筛选。在项目标签页中，可通过悬浮按钮选择新建项目或新建文件夹。",
-
   "helpNewProjectTitle": "新建项目",
   "helpNewProjectDesc": "在创建项目前，可以统一设置画布尺寸、帧率、时长（以秒为单位，之后会与在时间轴中增减帧数联动）、作画区域（可比导出范围画得更大的设置）、要使用的自动上色预设等。",
-
   "helpThemeSettingsTitle": "主题设置",
   "helpThemeSettingsDesc": "可以从预设中选择应用整体的配色，也可以自由自定义强调色。标题・项目名称用字体与说明文字用字体是分开的，能在保持可读性的同时享受换装乐趣。",
-
   "helpWorkspaceSettingsTitle": "工作区设置",
   "helpWorkspaceSettingsDesc": "汇集了左手模式（左右翻转停靠面板）、手动切换电脑/DeX模式、手掌工具显示条件等设置的画面。可以根据所用设备和惯用手调整成更方便操作的布局。",
-
   "helpPenSettingsTitle": "画笔设置",
   "helpPenSettingsDesc": "除了数位板・数位屏的压感曲线外，这个设置画面还能把切换橡皮擦、取色器等操作分配给支持的触控笔侧面按键。",
-
   "helpMaterialListTitle": "素材列表",
   "helpMaterialListDesc": "可以统一查看项目中使用的图片、视频、音频素材的画面。放置在时间轴上的素材的原始文件都汇集在这里。",
-
   "helpFrameOperationsTitle": "帧操作",
   "helpFrameOperationsDesc": "在帧列表中，除了新增、复制、删除之外，还可以在多选模式下一次性移动、复制、删除多个帧。增加保留格数可以让同一帧持续显示多个格子（即所谓的“停格”），从而在动作较少的镜头中节省作画张数。",
-
   "helpSceneOperationsTitle": "场景操作",
   "helpSceneOperationsDesc": "在时间轴的场景标签页中，可以新增、复制、删除、重命名、重新排序场景。切换到多选模式后，还可以一次性移动、复制、删除多个场景。",
-
   "helpQuickToolManagementTitle": "快捷工具管理",
   "helpQuickToolManagementDesc": "登记一组常用工具组合，只需一次点击即可依次切换。长按或向上滑动可打开管理弹窗，编辑已登记的内容和顺序。",
-
   "helpTransformSelectionTitle": "变换选区",
   "helpTransformSelectionDesc": "用选择工具圈出的区域，可以用变换工具进行移动、旋转、缩放。适合用来调整误画部分的位置，或只放大强调某一部分。",
-
   "helpGradientAutofillTitle": "渐变上色（自动上色预设）",
   "helpGradientAutofillDesc": "自动上色预设的每个部位不仅可以设置纯色，也可以设置渐变色。通过可拖动的对称控制点，能直观地调整渐变的范围和角度。",
-
   "helpColorPickerTitle": "取色器",
   "helpColorPickerDesc": "可以在一个界面中切换HSV和RGB来选色的取色器。长按还会显示简单的使用说明。调色板功能可以保存和调用当前使用的颜色组合。",
-
   "helpUndoSettingsTitle": "撤销次数设置",
   "helpUndoSettingsDesc": "在性能设置中可以调整撤销能回溯的操作次数。次数越多越能放心地反复尝试，但也会占用更多内存；在低性能设备上减少次数可以让运行更轻快。",
-
   "helpBrushFavoriteTitle": "笔刷收藏",
   "helpBrushFavoriteDesc": "点击笔刷列表中每个笔刷上的星形图标，即可收藏或取消收藏（与自动上色预设、印章、字体、绘图滤镜等应用内其他收藏功能的操作方式相同）。列表顶部的星形图标还可以筛选为只显示收藏。收藏中的笔刷不会被误删。",
-
   "helpLayerFolderTitle": "图层文件夹",
   "helpLayerFolderDesc": "可以把多个图层整理到文件夹中的功能。即使是部位较多的插画，也能让图层面板保持清晰易看。剪裁无法跨文件夹套用，如果要使用剪裁，建议把相关图层放在同一个文件夹内。",
-
   "helpLayerMultiSelectTitle": "图层多选・批量操作",
   "helpLayerMultiSelectDesc": "使用图层面板的选择模式，可以用勾选框一次选中多个图层进行合并或批量删除。合并只能在普通图层、自动上色用线稿、自动上色图层之间进行（共同图层、文件夹、时间轴素材不能合并）。",
-
   "helpAutofillBatchRunTitle": "执行自动上色",
   "helpAutofillBatchRunDesc": "在时间轴画面的三点菜单中选择「执行自动上色」，可以一次性重新计算所有带有更新标记（❗）的自动上色图层。省去了重画线稿后逐个在图层面板中执行的麻烦。",
-
   "helpAutofillLineColorTitle": "自动上色的线稿颜色设置",
   "helpAutofillLineColorDesc": "自动上色预设的每个部位都有线稿颜色的处理方式设置（指定颜色・与填色相同・色彩描摹）。选择色彩描摹（线稿融合）后，会把线稿颜色按填色进行HSL偏移，使线条不再突兀、融合更自然。",
-
   "helpAutofillPresetFilterTitle": "按项目筛选自动上色预设",
   "helpAutofillPresetFilterDesc": "随着预设增多，分配部位时的列表会变长、不易挑选。可以在项目设置（或图层面板的部位分配对话框）中，把列表筛选为只显示本项目使用的预设，让列表更简洁、更容易选择。",
-
   "helpDrawingAreaTitle": "作画区域",
   "helpDrawingAreaDesc": "可以在比导出范围更大的区域内作画的设置。画布上会显示表示导出范围的红色边框，画到边框外的部分不会被导出，但可以为之后用推拉镜头等运镜方式调整所展示的范围留出余地。在新建项目时设置放大倍率。",
-
   "helpCanvasBackgroundTitle": "画布背景色",
   "helpCanvasBackgroundDesc": "可以设置项目画布的背景色。使用透明导出（透明WebM）时背景色不会影响导出结果，但可以改成自己喜欢的颜色，方便作画时查看。",
-
   "helpProjectDetailTitle": "项目详情画面",
   "helpProjectDetailDesc": "可以统一查看和编辑项目相关设置的画面，包括项目名称、缩略图、收藏状态、要使用的自动上色预设筛选等。前往保存树的入口也在这里。",
-
   "helpWatermarkEditTitle": "重新编辑水印",
   "helpWatermarkEditDesc": "点击放置在时间轴共同图层轨道上的水印，随时可以重新编辑其角度、大小、不透明度、显示范围（循环显示）。不仅在登记时，在项目中实际使用时也能随时细致调整。",
-
   "helpAudioClipTitle": "音频片段的音量・淡入淡出",
   "helpAudioClipDesc": "放置在时间轴上的音频片段，可以在详情面板中调整音量、淡入、淡出的秒数。可用来调整音效和背景音乐的音量平衡，或让曲子的开头、结尾更加顺滑。",
-
   "helpConvertToCommonTitle": "图层共同化",
   "helpConvertToCommonDesc": "可以把普通图层转换为共同图层（在多个帧中持续显示相同内容的图层）的功能。也可以先把当前显示的图层合并为一张，再进行共同化。想反复使用背景等每帧内容相同的部分时，可以省去重新绘制的麻烦。",
-
   "helpAnimatedNoiseFilterTitle": "动态噪点滤镜",
   "helpAnimatedNoiseFilterDesc": "一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。",
-
   "helpRainFilterTitle": "下雨滤镜",
   "helpRainFilterDesc": "用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。",
-
   "helpPenSubToolTitle": "画笔子工具",
   "helpPenSubToolDesc": "长按画笔工具，可以从普通绘图切换到网点填充或印章放置等子工具。无需每次切换工具，就能用同一支笔在多种作业之间来回操作。",
-
   "helpTiltDetectionTitle": "倾斜检测",
   "helpTiltDetectionDesc": "利用支持的触控笔的倾斜信息，在笔尖倾斜放倒时让线条变粗或变淡，重现更接近实际画具的书写手感的设置。可以在性能设置中开关。",
-
   "helpEffectFilterOrderTitle": "演出滤镜的应用顺序",
   "helpEffectFilterOrderDesc": "演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。",
-
   "helpFontImportTitle": "字体读取",
   "helpFontImportDesc": "可以直接读取设备内的字体文件来使用的功能。可在设置画面字体管理的「读取」标签页中添加。想使用未公开发布的自制字体或已购买的商用字体时可以使用此功能。",
-
   "helpStampTransformTitle": "印章的旋转与缩放",
   "helpStampTransformDesc": "在印章面板中可以调整所放置印章的旋转角度和大小。即使是同一个印章，改变方向和大小放置，也能让特效线、小物件的排列不显得单调而更自然。",
-
   "helpExportScreenTitle": "导出画面",
   "helpExportScreenDesc": "导出视频、图片期间会显示进度，也可以中途取消。导出使用设备的硬件编码器，因此所需时间会因设备性能而异。",
-
   "helpFreeDurationLimitTitle": "免费会员的时长限制",
   "helpFreeDurationLimitDesc": "免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。",
-
   "helpDrawingFilterTitle": "绘图滤镜",
   "helpDrawingFilterDesc": "直接应用于所选图层的滤镜（与应用于整条时间轴或整个场景的演出滤镜不同，绘图滤镜按图层生效）。包含模糊、锐化、USM锐化、色调曲线、色阶、暗角、噪点、复古动画、显像管、动画风、描边、像素化等。描边不会改写原图层，只会把描边后的结果绘制到一个新图层上。",
-
   "helpLayerKeyframeTitle": "图层关键帧（分部件动画）",
   "helpLayerKeyframeDesc": "按帧设置每个图层的位置・缩放・旋转，关键帧之间会自动插值。摄像机关键帧移动的是整个画面，而这个功能只移动单个图层。由于自动上色的每个部件都会生成为独立的图层，因此可以直接用它来做分部件动画（只动一只手臂、只让嘴巴开合等）。在图层面板的三点菜单「动画（关键帧）」中设置。图层本身的画面内容不会改变，只是显示位置发生变化的非破坏性变形。此功能只影响时间轴的显示（预览・导出），不会影响画布模式下的实际作画。",
-
   "helpLayerGroupTitle": "图层分组（把多个部件一起移动）",
   "helpLayerGroupDesc": "用同一组关键帧把多个图层一起移动的功能。例如「手臂」由皮肤、袖子两个自动上色部件组成时，把这两个图层分到同一组后，只需一次关键帧操作就能让它们一起移动。在图层面板中多选（勾选框）图层，再点击底部工具栏的「分组」图标即可创建。分组的运动会叠加在每个成员图层自身的关键帧（如果设置了的话）之上，因此可以把分组整体的运动和单个图层的微调结合起来使用。一个图层同一时间只能属于一个分组。",
-
   "tipsScreenTitle": "使用技巧",
   "tipsSearchHint": "搜索技巧...",
   "tipsCategoryVideo": "视频制作技巧",
@@ -600,166 +506,98 @@
   "tipsCategoryDrawing": "让作画更流畅的技巧",
   "tipsCategoryEffects": "演出与收尾的技巧",
   "tipsCategoryExport": "导出与操作技巧",
-
   "tipsClipDuplicateTitle": "时间轴上的素材也能复制、移动、删除",
   "tipsClipDuplicateDesc": "点击图片、视频或音频素材可打开详情面板，点击其中的复制图标即可复制该素材。反复使用同一段音效，或把同一张图片重新摆放到不同场景，只需长按拖动加上一次复制按钮就能完成。",
-
   "tipsTextCaptionTitle": "用文字工具添加字幕和吐槽",
   "tipsTextCaptionDesc": "使用文字工具可以逐帧放置梗视频里常见的字幕或吐槽文字。将字体切换为像素模式，还能故意做出老游戏般的复古质感。",
-
   "tipsAutofillPresetTitle": "按部位分别注册自动上色预设",
   "tipsAutofillPresetDesc": "为皮肤、头发、衣服等部位分别注册包含阴影的预设后，只需画出线稿，就能自动完成大部分上色。也可以按项目筛选只使用其中一部分预设。",
-
   "tipsBrushFavoriteTitle": "把常用笔刷加入收藏，切换时不用再找",
   "tipsBrushFavoriteDesc": "把常用的笔刷点击列表中的星形图标加入收藏。列表顶部的星形图标可以筛选为只显示收藏，减少查找的麻烦。收藏中的笔刷无法被误删。",
-
-  "tipsOnionSkinTitle": "用洋葱皮透视前后帧",
-  "tipsOnionSkinDesc": "洋葱皮功能可以半透明地叠加显示前后帧，让你在作画时确认动作是否衔接自然。",
-
   "tipsPressureCurveTitle": "把压感曲线调整成适合自己的手感",
   "tipsPressureCurveDesc": "设置画面中的压感曲线最多可以自由添加10个控制点。如果觉得力度反馈不太合适，可以按照自己的下笔习惯来调整。",
-
-  "tipsEffectFilterTitle": "用演出滤镜统一整段视频的氛围",
-  "tipsEffectFilterDesc": "复古动画、显像管、怀旧色调等演出滤镜，可以一次性应用到整条时间轴或整个场景。想让整段视频呈现Y2K风或怀旧动画感时非常方便。",
-
-  "tipsCameraKeyframeTitle": "用摄像机关键帧制作推拉和平移效果",
-  "tipsCameraKeyframeDesc": "在场景中打上摄像机关键帧，即使是一张静止的画面，也能加上推近、平移等具有影像感的运动效果。",
-
   "tipsExportFormatTitle": "根据用途选择导出格式",
   "tipsExportFormatDesc": "想轻松发到社交平台时用GIF导出，想叠加到其他视频上或保留透明背景时用透明WebM，想作为普通视频使用时用MP4导出。按用途区分使用，更容易在文件大小和画质之间取得平衡。",
-
   "tipsGestureShortcutTitle": "用手势把常用操作变成一触即达",
   "tipsGestureShortcutDesc": "在设置画面的“手势”中，可以把撤销/重做或取色器分配给双指点击、三指点击或长按。不用切换工具，就不会打乱作画的节奏。",
-
   "tipsAudioRepeatTitle": "用复制片段×淡入淡出让音效更有节奏感",
   "tipsAudioRepeatDesc": "想反复使用同一段音效时，复制片段并错开时间排列，再分别设置淡入淡出，就能做出有节奏感的自然音效连击。",
-
   "tipsVerticalRubyTitle": "直书×注音打造标题Logo风效果",
   "tipsVerticalRubyDesc": "在文字工具中把直书和注音（振假名）组合使用，可以做出和风标题Logo或有个性的标题效果。半角英数字会自动横向旋转排列，即使混入符号或数字也能保持易读。",
-
   "tipsBrushTrySaveTreeTitle": "新的笔刷设置先用保存树试试看",
   "tipsBrushTrySaveTreeDesc": "想大幅改动笔刷粗细或稳定化等设置时，改动前先保存到保存树会更安心。如果效果不满意，可以立刻回到之前的状态，更容易大胆尝试各种调整。",
-
   "tipsEyedropperGestureTitle": "把取色器绑定到双指点击，保持配色不跑偏",
   "tipsEyedropperGestureDesc": "在手势设置中把取色器分配给双指点击，就能不切换工具、立即吸取附近的颜色。想保持角色配色统一地继续上色时很方便。",
-
   "tipsRulerOnionTitle": "透视尺×洋葱皮，重复利用背景",
   "tipsRulerOnionDesc": "先用透视尺定好背景的纵深，再一边用洋葱皮透视前后帧，一边只移动角色，就不用每一帧都重新画背景了。",
-
   "tipsGradientTraceTitle": "渐变自动上色×色彩描摹，让色彩更自然融合",
   "tipsGradientTraceDesc": "在自动上色预设中设置渐变时，把线稿颜色设置改为色彩描摹（线稿融合），线稿颜色就会跟随渐变的细微色彩变化而融合，边界不容易显得突兀。",
-
   "tipsRainNoiseTitle": "下雨×动态噪点，营造湿润的空气感",
   "tipsRainNoiseDesc": "在下雨滤镜上叠加较弱的动态噪点滤镜，除了雨滴本身，还能加上空气中的颗粒感，营造出湿润的雨天质感。",
-
   "tipsPartKeyframeGroupTitle": "部件关键帧×分组，让角色一起跳动",
   "tipsPartKeyframeGroupDesc": "给自动上色的各个部件加上图层关键帧使其运动，再把相关部件分组让它们一起跳动，无需重新绘制就能做出随音乐摇摆的迷你动画。",
-
   "tipsLowSpecSettingsTitle": "低性能设备请重新检查性能设置和撤销次数",
   "tipsLowSpecSettingsDesc": "如果感觉运行卡顿，可以把性能设置切换为「低画质」预设，同时减少撤销次数。这样能降低内存占用，有时能让运行更轻快。",
-
   "tipsSeriesPresetFolderTitle": "系列作品用预设筛选×文件夹整理来管理",
   "tipsSeriesPresetFolderDesc": "制作同一作品的多集内容时，用文件夹按集数整理项目，并为每个项目筛选要使用的自动上色预设，这样就不会混淆各角色的配色，也能高效工作。",
-
-  "tipsFadeEndCardTitle": "用演出滤镜淡出×片尾卡收尾",
-  "tipsFadeEndCardDesc": "用演出滤镜让最后一个场景缓缓淡出变黑，能让视频结尾自动衔接的片尾卡过渡更自然，收尾显得更专业。",
-
   "tipsPixelToneRetroTitle": "印章像素模式×网点上色，统一复古感",
   "tipsPixelToneRetroDesc": "把像素模式的印章和像素模式专用的方格纹、格子纹网点组合使用，可以让整个画面统一呈现像素画质感。适合复古游戏风的演出。",
-
   "tipsMagicWandLassoTitle": "魔术棒选取×套索上色，提高分色效率",
   "tipsMagicWandLassoDesc": "先用选择工具的自动选取（魔术棒）一次性选中大致范围，再用套索选取只调整超出的部分，即使是复杂的分色也能快速完成。",
-
   "tipsCommonLayerFolderTitle": "共同图层×文件夹，跨集数重复使用",
   "tipsCommonLayerFolderDesc": "系列作品中每集都会用到的Logo或字幕，做成共同图层后整理进文件夹，复制到新一集的项目时也能轻松处理。",
-
   "tipsStrokeDecayFadeTitle": "笔触衰减×淡出，做出毛笔般的表现",
   "tipsStrokeDecayFadeDesc": "同时启用笔刷设置中的笔触衰减和淡出，线条的起笔、收笔会自然变细，画出如毛笔或墨水笔般富有轻重变化的线条。",
-
   "tipsColorMixingFadeTitle": "混色×淡出，做出类似颜料的融合感",
   "tipsColorMixingFadeDesc": "在开启混色的笔刷上再加上淡出，会与底色融合的同时逐渐变淡，更接近真实颜料的上色手感。",
-
   "tipsOutlineAnimeStyleTitle": "描边×动画风，做出赛璐璐动画质感",
   "tipsOutlineAnimeStyleDesc": "用绘图滤镜的描边把轮廓线画到新图层上，再用动画风滤镜减少色数，就能做出赛璐璐动画般清晰利落的效果。",
-
   "tipsLevelsToneCurveTitle": "色阶×色调曲线，打造平面设计风格",
   "tipsLevelsToneCurveDesc": "先用色阶把明暗对比调得较强，再用色调曲线细致调整层次，可以做出脱离照片式层次感、类似海报的平面设计风格。",
-
   "tipsMosaicChromaticTitle": "马赛克×色差，营造老式显像管的粗糙质感",
   "tipsMosaicChromaticDesc": "先用马赛克降低分辨率，再叠加色差效果，能营造出像在看老式显像管电视般的粗糙质感，与单独使用显像管滤镜的效果又有所不同。",
-
-  "tipsEndCardWatermarkTitle": "水印用于署名，片尾卡用于收尾标志",
-  "tipsEndCardWatermarkDesc": "想在视频中加入自己的署名时，请使用水印功能。片尾卡是应用自动附加在视频结尾的自家Logo，免费会员无法更改，但付费会员可以替换成自己的Logo。用水印防止未经授权的转载，同时付费会员把片尾卡也换成自己的Logo，就能让视频从头到尾保持一致的品牌形象。",
-
+  "tipsEndCardWatermarkTitle": "水印是你的签名，片尾卡是另一回事",
+  "tipsEndCardWatermarkDesc": "想在视频中加入自己的签名或标记时，请使用水印功能。片尾卡是应用自动显示在每个视频结尾的自带Logo，免费会员无法更改；高级会员可以隐藏它，或替换成自己的视频、图片。如果不想使用片尾卡而想自制专属的结尾效果，只需添加图片图层并配合淡入淡出，就能自行还原类似的效果。",
   "tipsVerticalPixelFontTitle": "实拍视频×手绘作画，打造「实拍×动画」",
   "tipsVerticalPixelFontDesc": "正因为这款应用兼具插画App和视频剪辑App的双重身份，才能玩出这种手法。把实拍视频片段放到时间轴上，在其上方图层用洋葱皮一边参考一边手绘特效线或角色，就能做出实拍画面叠加手绘动画的「实拍×动画」混合媒体视频。",
-
   "tipsTimelineMarkerTitle": "对齐声音与口型的时间点，交给时间戳",
   "tipsTimelineMarkerDesc": "场景处理的是「开始～结束帧的范围」，而时间戳则是为「那一瞬间」加上备注、并可一键跳转的功能。像「第120帧配音效」「第180帧对口型『啊』」这样，在同一个场景范围内打上多个时间戳，就能大幅提升声音与画面对齐的效率。",
-
   "tipsToolbarCustomizeTitle": "重新排列・隐藏工具栏，缩短手指移动距离",
   "tipsToolbarCustomizeDesc": "在设置画面的工具栏编辑中，可以隐藏不用的工具，把常用工具排到手指容易点到的位置。只是精简显示项目、让界面更清爽，就能减少寻找工具的时间和手指移动距离，提升作画节奏。",
-
   "tipsAutofillBlendModeTitle": "用自动上色部位的混合模式改变阴影质感",
   "tipsAutofillBlendModeDesc": "自动上色预设的每个部位都可以设置混合模式。把阴影部位从「正片叠底」改成「叠加」或「柔光」，就能做出仿佛透光般柔和的阴影。即使颜色相同，也能改变质感，是隐藏的高自由度玩法。",
-
   "tipsStampBlendModeTitle": "印章×混合模式，做出发光特效",
   "tipsStampBlendModeDesc": "把放置的印章图层的混合模式设为「滤色」或「相加」，光效线条或闪亮特效就能自然融入背景，显得更加突出。",
-
   "tipsQuickToolPenSubTitle": "快捷工具×画笔子工具，打造不间断的作业流程",
   "tipsQuickToolPenSubDesc": "把常用工具登记到快捷工具，同时善用长按画笔即可切换到网点填充、印章放置的子工具，就能减少画面间的来回切换，保持作业节奏。",
-
   "tipsAutofillToneReuseTitle": "利用自动上色的网点设置，只需重画线稿就能重现上色",
   "tipsAutofillToneReuseDesc": "把自动上色预设的各部位设为「使用网点」后，每次重画线稿都能自动重现带网点的上色效果，省去逐帧重新贴网点的麻烦。",
-
   "tipsRadialVignetteTitle": "放射尺×暗角，营造集中线效果",
   "tipsRadialVignetteDesc": "用放射尺一口气画出集中线，再叠加绘图滤镜的暗角效果，就能做出如漫画高潮般有魄力的演出。",
-
   "tipsClippingGradientTitle": "剪裁×渐变，让阴影可以随时重画",
   "tipsClippingGradientDesc": "把渐变图层剪裁到角色图层上，之后只需改变渐变的范围和角度就能重新调整阴影，不必用笔刷重新描绘阴影形状。",
-
   "tipsToneCurveSepiaTitle": "色调曲线×怀旧棕，营造复古照片感",
   "tipsToneCurveSepiaDesc": "先用演出滤镜的色调曲线调整明暗对比，再叠加怀旧棕滤镜，就能营造出仿佛褪色老照片般的质感。",
-
   "tipsCameraLensBlurTitle": "摄像机关键帧×镜头模糊，做出变焦拉伸效果",
   "tipsCameraLensBlurDesc": "在摄像机关键帧推近的瞬间，临时把镜头模糊演出滤镜调强，就能演绎出如实拍变焦拉伸般的魄力。",
-
   "tipsBlurVignetteBgTitle": "高斯模糊×暗角，做出柔和的背景虚化",
   "tipsBlurVignetteBgDesc": "只对背景图层叠加高斯模糊和暗角绘图滤镜，主角就会自然地更加突出，呈现出具有景深感的镜头效果。",
-
   "tipsSepiaVignetteTitle": "怀旧棕×暗角，打造复古老照片风视频",
   "tipsSepiaVignetteDesc": "把演出滤镜的怀旧棕与绘图滤镜的暗角组合使用，能让视频呈现出四角发暗、色彩褪去的复古老照片氛围。",
-
-  "tipsGifLoopTitle": "制作GIF时留意循环，让首尾帧尽量接近",
-  "tipsGifLoopDesc": "GIF导出会自动循环播放。让第一帧和最后一帧的画面尽量接近，可以让循环的接缝不明显，动画看起来会自然地持续转动。",
-
   "tipsVideoTrimReuseTitle": "改变视频片段的使用范围，重复利用同一素材",
   "tipsVideoTrimReuseDesc": "即使是同一个视频素材，只要为每个片段设置不同的使用开始・结束帧，就能当作不同的镜头重复使用。不用增加素材也能做出变化。",
-
   "tipsSaveSlotAutoSaveTitle": "区分使用存档槽和自动保存",
   "tipsSaveSlotAutoSaveDesc": "自动保存总是覆盖为最新状态，而存档槽可以保留多个状态。在重要节点保存到存档槽，其余的细微改动就交给自动保存，这样就能可靠地回到需要的时间点。",
-
   "tipsQuickToolSwipeTitle": "快捷工具可以用上滑手势重新排序",
   "tipsQuickToolSwipeDesc": "想更改快捷工具的登记内容时，除了长按，也可以用向上滑动打开管理弹窗。单手操作时想快速重新排序会很方便。",
-
-  "tipsColorPickerLongPressTitle": "取色器长按可以查看使用说明",
-  "tipsColorPickerLongPressDesc": "如果不知道该怎么选色，可以试着长按取色器。会显示简单的使用说明，帮你了解HSV、RGB、调色板的操作方法。",
-
   "tipsDrawingAreaCameraTitle": "作画区域留宽×摄像机关键帧，安全地推拉与平移",
   "tipsDrawingAreaCameraDesc": "把作画区域设置得比导出范围更宽，就不用担心用摄像机关键帧做平移、缩放时画面边缘被裁切。在加入较大幅度的运镜之前先确认一下会比较放心。",
-
   "tipsWebmCommonLayerTitle": "透明WebM×用共同图层分开管理背景",
   "tipsWebmCommonLayerDesc": "如果打算把导出为透明WebM的角色，在其他视频剪辑软件中与背景合成，把背景用共同图层单独管理，可以避免多余颜色混进透明部分，让抠像效果更干净。",
-
   "tipsLeftHandedWorkspaceTitle": "左手模式×工作区设置，让操作更顺手",
   "tipsLeftHandedWorkspaceDesc": "如果是左撇子，打开工作区设置中的左手模式后，停靠面板会左右翻转，慣用手一侧的画面就不容易被面板遮住。",
-
-  "tipsFolderHierarchyTitle": "用文件夹的多层结构整理系列作品",
-  "tipsFolderHierarchyDesc": "文件夹支持多层结构。可以在「作品名」文件夹中建立「第一季」文件夹，再把每一集的项目排列在里面。",
-
   "tipsTransferDeviceTitle": "用转移文件把制作内容搬到其他设备",
   "tipsTransferDeviceDesc": "想换设备继续制作时，使用转移（.niatra）功能，可以连同正在使用的素材一起把项目整体搬过去。",
-
   "fontSettingsTabDownloaded": "已下载",
   "fontSettingsTabSearch": "搜索下载",
   "fontSettingsTabImport": "导入",
@@ -776,7 +614,6 @@
   "fontUnsupportedSnackbar": "无法读取该字体。",
   "fontAddedSnackbar": "已添加“{name}”（显示在已下载标签页）",
   "fontCorruptedSnackbar": "字体已损坏。",
-
   "licenseScreenTitle": "使用条款・许可",
   "licenseSectionTerms": "使用条款",
   "licenseSectionFonts": "关于所用字体",
@@ -785,7 +622,6 @@
   "licenseOssListSubtitle": "显示本应用所使用的OSS软件包的许可信息",
   "licenseFfmpegNote": "WebM导出使用了FFmpeg（LGPL 3.0，通过ffmpeg_kit_flutter_new_video调用）。修改版源代码获取地址：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4导出直接使用设备内置的硬件编码器，未使用FFmpeg。",
   "licenseFontCreditMeta": "作者：{author}　许可：{license}",
-
   "toolbarPenTooltip": "笔（长按打开子工具）",
   "toolbarPenFirstUseTip": "长按笔工具，可切换画笔・网点・图章・套索填色。",
   "toolbarBucketTooltip": "填充桶（长按切换纯色/网点填充）",
@@ -804,7 +640,6 @@
   "toolbarSelectRect": "矩形选择",
   "toolbarSelectLasso": "套索选择",
   "toolbarSelectMagicWand": "自动选择（魔术棒）",
-
   "creativePanelFavoritesOnlyTooltip": "仅显示收藏",
   "creativePanelSearchTooltip": "按名称搜索",
   "creativePanelFolderButton": "文件夹",
@@ -812,7 +647,6 @@
   "creativePanelImportButton": "导入",
   "creativePanelFolderAllChip": "全部",
   "creativePanelEditAction": "编辑",
-
   "toneTitle": "网点",
   "toneEmpty": "没有网点",
   "toneSearchHint": "按网点名称搜索",
@@ -821,9 +655,7 @@
   "toneCreateDialogTitle": "自制网点",
   "toneImportFailedSnackbar": "网点读取失败：{error}",
   "toneExportFailedSnackbar": "网点导出失败：{error}",
-
   "privacyPolicyScreenTitle": "隐私政策",
-
   "stampTitle": "图章",
   "stampSearchHint": "按图章名称搜索",
   "stampEmpty": "没有图章",
@@ -837,7 +669,6 @@
   "stampDensityLabel": "密度",
   "stampScatterLabel": "散布",
   "stampChangeImageButton": "更改图章图片",
-
   "themeSettingsTitle": "主题・外观",
   "themeSettingsBaseThemeSection": "基础主题",
   "themeBaseLight": "浅色",
@@ -861,7 +692,6 @@
   "themeImportButton": "导入.niatheme",
   "themePresetNameDialogTitle": "预设名称",
   "themeDefaultPresetName": "我的主题",
-
   "onionSkinTitle": "洋葱皮",
   "onionSkinPrevFrame": "前一帧",
   "onionSkinNextFrame": "后一帧",
@@ -873,7 +703,6 @@
   "onionSkinFrameCountFixed": "{count}帧（固定）",
   "onionSkinColorLabel": "颜色",
   "onionSkinOpacityLabel": "不透明度",
-
   "exportScreenTitle": "导出",
   "exportPresetSection": "预设",
   "exportPresetStandard": "标准",
@@ -924,35 +753,79 @@
   "newProjectHeightShort": "高",
   "newProjectDurationLabel": "时长（最大{max}）",
   "@newProjectDurationLabel": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationLabelWithPremiumHint": "时长（最大{max}，升级Premium可达最长2小时）",
   "@newProjectDurationLabelWithPremiumHint": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationSeconds": "{n}秒",
   "@newProjectDurationSeconds": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHms": "{h}小时{m}分{s}秒",
   "@newProjectDurationHms": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHm": "{h}小时{m}分",
   "@newProjectDurationHm": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationH": "{h}小时",
   "@newProjectDurationH": {
-    "placeholders": {"h": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationMs": "{m}分{s}秒",
   "@newProjectDurationMs": {
-    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationM": "{m}分",
   "@newProjectDurationM": {
-    "placeholders": {"m": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectBackgroundColorLabel": "背景色",
   "newProjectDrawingAreaTitle": "扩大绘图区域",
@@ -960,23 +833,49 @@
   "newProjectScaleLabel": "倍率",
   "newProjectScaleValue": "{value}倍",
   "@newProjectScaleValue": {
-    "placeholders": {"value": {"type": "String"}}
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawableAreaInfo": "可绘制范围：{width}×{scale} = {result}",
   "@newProjectDrawableAreaInfo": {
-    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      },
+      "result": {
+        "type": "String"
+      }
+    }
   },
   "newProjectTotalFrames": "总帧数：{count}",
   "@newProjectTotalFrames": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "newProjectExportSizeInfo": "导出尺寸：{size}",
   "@newProjectExportSizeInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawingAreaInfo": "绘图区域：{size}",
   "@newProjectDrawingAreaInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "colorPickerTitle": "选择颜色",
   "colorPickerOpacityLabel": "不透明度",
@@ -1002,7 +901,14 @@
   "penSubToolManageTooltip": "管理",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
-    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "opacity": {
+        "type": "int"
+      }
+    }
   },
   "penSubToolStampRotationSubtitle": "根据笔画方向随机旋转",
   "brushSearchHint": "按画笔名称搜索",
@@ -1010,11 +916,19 @@
   "brushCreateDialogTitle": "自制画笔",
   "brushImportFailedSnackbar": "画笔读取失败：{error}",
   "@brushImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushExportFailedSnackbar": "画笔导出失败：{error}",
   "@brushExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushSettingsSizeLabel": "大小",
   "brushSettingsOpacityLabel": "不透明度",
@@ -1060,7 +974,14 @@
   "projectDetailInfoDrawingArea": "绘图区域",
   "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
   "@projectDetailInfoDrawingAreaValue": {
-    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailInfoTotalFrames": "总帧数",
   "projectDetailInfoWorkTime": "制作时间",
@@ -1070,7 +991,11 @@
   "projectDetailAddTagHint": "添加标签",
   "projectDetailNiashareFailedSnackbar": ".niashare创建失败：{error}",
   "@projectDetailNiashareFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailTrashMenuItem": "移到回收站",
   "commonOff": "OFF",
@@ -1089,13 +1014,21 @@
   "perfSettingsUndoLimitSubtitle": "次数越多越消耗内存",
   "perfSettingsUndoLimitValue": "{n}次",
   "@perfSettingsUndoLimitValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsTrashAutoDeleteTitle": "回收站自动删除",
   "perfSettingsTrashAutoDeleteSubtitle": "已删除项目的保留期限",
   "perfSettingsTrashAutoDeleteValue": "{n}天",
   "@perfSettingsTrashAutoDeleteValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsCurrentSettingsSection": "当前设置",
   "perfSettingsTiltLabel": "倾斜检测",
@@ -1103,13 +1036,21 @@
   "perfSettingsOnionNextLabel": "洋葱皮（后）",
   "perfSettingsOnionFrameCountValue": "{n}张",
   "@perfSettingsOnionFrameCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsSaveModeLabel": "存档方式",
   "perfSettingsSlotCountLabel": "存储槽数量",
   "perfSettingsSlotCountValue": "{n}个",
   "@perfSettingsSlotCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsResetButton": "恢复初始值",
   "perfSettingsCopyPresetButton": "复制当前预设",
@@ -1123,7 +1064,11 @@
   "perfSettingsResetDialogTitle": "要将自定义画质设置恢复为初始值吗？",
   "perfSettingsResetDialogBody": "初始值将恢复为首次启动时根据设备性能自动判定的「{preset}」设置。",
   "@perfSettingsResetDialogBody": {
-    "placeholders": {"preset": {"type": "String"}}
+    "placeholders": {
+      "preset": {
+        "type": "String"
+      }
+    }
   },
   "perfSettingsResetConfirmButton": "恢复",
   "perfSettingsCopyPresetDialogTitle": "选择要复制的预设",
@@ -1134,7 +1079,11 @@
   "filterPanelTitle": "滤镜",
   "filterPanelTitleBulk": "滤镜（批量应用到{count}帧）",
   "@filterPanelTitleBulk": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterSearchHint": "搜索滤镜",
   "filterNameGaussianBlur": "高斯模糊",
@@ -1157,7 +1106,11 @@
   "filterRetroStrength": "强度",
   "filterOutlineLayerNameSuffix": "{name}（描边）",
   "@filterOutlineLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "filterStrengthBlurRadius": "强度（模糊半径）",
   "filterColorLevels": "颜色数",
@@ -1177,13 +1130,24 @@
   "filterApplyButton": "应用",
   "filterApplyBulkButton": "应用到{count}帧",
   "@filterApplyBulkButton": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterEmpty": "没有滤镜",
   "filterApplyingTitle": "正在应用滤镜",
   "filterApplyingSubtitle": "{name}　{count}帧",
   "@filterApplyingSubtitle": {
-    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "projectListNewFolderTitle": "新建文件夹",
   "projectListFolderHint": "也可用于整理同一作品的多话内容或系列作品",
@@ -1195,7 +1159,11 @@
   "projectListDeleteFolderConfirmTitle": "要删除此文件夹吗？",
   "projectListDeleteFolderConfirmBody": "将删除「{name}」。其中的项目・子文件夹将移至根目录。",
   "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "projectListFolderRootOption": "无文件夹（根目录）",
   "projectListEditFolderTooltip": "编辑文件夹",
@@ -1239,25 +1207,44 @@
   "autofillPresetEmptyHint": "点击右下角的「＋」创建",
   "autofillPresetPartsCount": "{count}个部件",
   "@autofillPresetPartsCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetNewDialogTitle": "新建预设",
   "autofillPresetNameLabel": "预设名称",
   "autofillPresetRenameDialogTitle": "重命名预设",
   "autofillPresetDeleteConfirmTitle": "要删除「{name}」吗？",
   "@autofillPresetDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartSearchHint": "按部件名称搜索",
   "autofillPartUnconfiguredBanner": "有{count}个部件尚未设置：{names}（未选择网点）\n全部设置完成前无法关闭此画面。",
   "@autofillPartUnconfiguredBanner": {
-    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredDialogTitle": "有尚未设置的部件",
   "autofillPartUnconfiguredDialogBody": "保存前请先设置以下部件。",
   "autofillPartUnconfiguredItem": "・{name}：未选择网点",
   "@autofillPartUnconfiguredItem": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredBackButton": "返回设置",
   "autofillPartEmpty": "没有部件\n请点击＋按钮添加",
@@ -1268,7 +1255,11 @@
   "autofillPartRenameDialogTitle": "重命名部件",
   "autofillPartDetailDialogTitle": "{name}的详细设置",
   "@autofillPartDetailDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartFillColorLabel": "填充颜色",
   "autofillPartSelectColorButton": "选择颜色",
@@ -1291,24 +1282,44 @@
   "autofillPartGradientEditButton": "编辑渐变",
   "autofillPartFillOpacityLabel": "不透明度（填色图层）：{value}%",
   "@autofillPartFillOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineColorLabel": "线稿颜色",
   "autofillPartTraceHueLabel": "色相：{value}",
   "@autofillPartTraceHueLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceSaturationLabel": "饱和度：{value}",
   "@autofillPartTraceSaturationLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceLightnessLabel": "明度：{value}",
   "@autofillPartTraceLightnessLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineOpacityLabel": "不透明度（线稿图层）：{value}%",
   "@autofillPartLineOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartToneLabel": "网点",
   "autofillPartUseToneCheckbox": "使用网点",
@@ -1316,14 +1327,22 @@
   "autofillPartApplyButton": "应用",
   "autofillPartGradientDialogTitle": "{name}的渐变",
   "@autofillPartGradientDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartGradientTypeLabel": "种类",
   "autofillPartGradientTypeInfo": "线性：颜色沿指定角度渐变。放射：中心→外侧从中心向外变化，外侧→中心则相反。",
   "autofillPartGradientFeatherInfo": "设为0%时相邻颜色的边界会清晰分明。设为100%时会与相邻颜色的边缘完全平滑混合。",
   "autofillPartGradientAngleLabel": "角度：{value}°",
   "@autofillPartGradientAngleLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientColorLabel": "颜色",
   "autofillPartGradientAddColorButton": "添加颜色",
@@ -1331,12 +1350,20 @@
   "autofillPartGradientRemoveButton": "解除渐变",
   "autofillPartGradientFeatherLabel": "模糊强度: {value}%",
   "@autofillPartGradientFeatherLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientDragHint": "拖动右侧的手柄可调整颜色顺序",
   "autofillPartGradientStopLabel": "切换位置: {value}%",
   "@autofillPartGradientStopLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientStopDragHint": "左右拖动▲标记可调整各颜色的位置",
   "saveTreeScreenTitleTree": "存档树",
@@ -1348,29 +1375,53 @@
   "saveTreeCommentHint": "例：背景完成",
   "saveTreeSizeWarningSnackbar": "存档树的容量正在变大（约{mb}MB）。建议删除不需要的存档数据。",
   "@saveTreeSizeWarningSnackbar": {
-    "placeholders": {"mb": {"type": "String"}}
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotSaveDialogTitle": "保存到存储槽 {n}",
   "@saveTreeSlotSaveDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotOverwriteWarning": "将覆盖现有数据（{date}）。",
   "@saveTreeSlotOverwriteWarning": {
-    "placeholders": {"date": {"type": "String"}}
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeRestoreAction": "还原",
   "saveTreeLoadFailedSnackbar": "存档数据读取失败",
   "saveTreeRestoredSnackbar": "已还原{name}",
   "@saveTreeRestoredSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotLabel": "存储槽{n}",
   "@saveTreeSlotLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotFallbackName": "存储槽 {n}",
   "@saveTreeSlotFallbackName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeNoDataLabel": "没有存档数据",
   "saveTreeEmptyTitle": "没有存档数据",
@@ -1380,21 +1431,40 @@
   "saveTreeChangeDataTitle": "更改存档数据",
   "saveTreeChangeDataTitleWithProject": "更改存档数据（{name}）",
   "@saveTreeChangeDataTitleWithProject": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeChangeExceedMessage": "当前的存档数量已\n超过新的可存档数量上限。\n\n请选择要保留的存档数据。",
   "saveTreeKeepableCountLabel": "可保留的存档数：{n}个",
   "@saveTreeKeepableCountLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeKeepLatestButton": "保留最新{n}个",
   "@saveTreeKeepLatestButton": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSelectDataButton": "选择存档数据",
   "saveTreeSelectedCountLabel": "已选择：{selected} / {limit}个",
   "@saveTreeSelectedCountLabel": {
-    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeBackButton": "返回",
   "saveTreeNextButton": "下一步",
@@ -1404,7 +1474,11 @@
   "saveTreeDeleteOptionTitle": "彻底删除",
   "saveTreeDeleteOptionSubtitle": "将彻底删除未选择的{count}个数据。\n可节省存储空间。\n※删除后的数据无法恢复。",
   "@saveTreeDeleteOptionSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeApplyChangeButton": "应用更改",
   "canvasEditMenuBackgroundToggle": "切换背景",
@@ -1423,7 +1497,14 @@
   "canvasSettingsMenuTooltip": "设置/编辑",
   "canvasFrameSelectedCount": "已选择 {selected} / {total} 帧",
   "@canvasFrameSelectedCount": {
-    "placeholders": {"selected": {"type": "int"}, "total": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "canvasSelectAllButton": "全选",
   "canvasDeselectAllButton": "取消全选",
@@ -1459,7 +1540,11 @@
   "canvasHelpRubyTitle": "注音标注（类似日语振假名的读音标注）",
   "canvasHelpRubyBody": "输入类似「{example}」的格式，会在基底文字上方（横排时）或右侧（竖排时）显示小号的读音标注。竖排、横排均可使用，但含有注音标注的文字在横排时将无法自动换行（仅支持手动换行）。",
   "@canvasHelpRubyBody": {
-    "placeholders": {"example": {"type": "String"}}
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelTitle": "图层",
   "layerPanelHelpTooltip": "帮助",
@@ -1471,23 +1556,43 @@
   "layerPanelImportImageButton": "导入图片",
   "layerPanelDefaultLayerName": "图层{n}",
   "@layerPanelDefaultLayerName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultFolderName": "文件夹{n}",
   "@layerPanelDefaultFolderName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultLineartName": "线稿{n}",
   "@layerPanelDefaultLineartName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultAutofillName": "自动上色{n}",
   "@layerPanelDefaultAutofillName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultCommonName": "公共{n}",
   "@layerPanelDefaultCommonName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelClippingBadge": "裁剪",
   "layerPanelAddTooltip": "添加",
@@ -1499,7 +1604,14 @@
   "layerPanelRangeSceneSpecified": "指定场景",
   "layerPanelRangeFrameSpan": "{start}〜{end}",
   "@layerPanelRangeFrameSpan": {
-    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMenuFrameRangeChange": "更改显示帧范围",
   "layerPanelMenuRangeChange": "更改显示范围",
@@ -1510,12 +1622,20 @@
   "layerPanelMenuReplaceMaterial": "替换素材",
   "layerPanelDeleteConfirmTitle": "要删除{name}吗？",
   "@layerPanelDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelDeleteConfirmBody": "将从该素材显示范围内的所有帧中删除。",
   "layerPanelMultiDeleteConfirmTitle": "要删除已选中的{count}项吗？",
   "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMultiDeleteConfirmBody": "将从时间轴素材显示范围内的所有帧中删除。",
   "layerPanelRangeDialogTitle": "显示范围",
@@ -1559,7 +1679,11 @@
   "layerPanelAutofillPresetMissingSnackbar": "未找到对应的预设部件。",
   "layerPanelAutofillLayerNameSuffix": "{name}（自动上色）",
   "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelOrphanFillSuccessSnackbar": "未找到对应的线稿图层，已改为用最新颜色填充。",
   "layerPanelOrphanFillFailSnackbar": "未设置部件，或没有填充形状，因此无法处理。",
@@ -1567,15 +1691,27 @@
   "layerPanelAutofillUpdateHelpBody": "当前的自动上色不是最新状态。点按即可更新。",
   "layerPanelReplaceMaterialSuccessSnackbar": "已替换素材：{name}",
   "@layerPanelReplaceMaterialSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelImportImageSuccessSnackbar": "已导入图片：{name}",
   "@layerPanelImportImageSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelCopySuffix": "{name}的副本",
   "@layerPanelCopySuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineFullscreenPreviewCloseTooltip": "关闭全屏预览",
   "timelineDefaultProjectName": "项目名称",
@@ -1595,7 +1731,11 @@
   "timelineWatermarkSelectTitle": "选择水印",
   "timelineWatermarkAddedSnackbar": "已添加水印（将显示在全部帧中）：{name}",
   "@timelineWatermarkAddedSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineWatermarkEditTitle": "编辑水印",
   "timelineWatermarkAngleLabel": "角度",
@@ -1611,12 +1751,20 @@
   "timelineDurationLimitBodyPremium": "这会超过高级会员的上限（最长2小时），因此无法继续添加或复制帧。",
   "timelineSceneDeleteConfirmTitle": "要删除「{name}」吗？",
   "@timelineSceneDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineSceneDeleteConfirmBody": "场景内的全部帧、公共图层、视频素材、图片素材、水印等全部数据都将被删除。",
   "timelineSceneMultiDeleteConfirmTitle": "要删除已选中的{count}个场景吗？",
   "@timelineSceneMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillUpdateHelpBody": "该场景/帧中包含并非最新状态的自动上色图层。在图层面板中点按目标图层即可更新。",
   "timelineFrameTrackLabel": "帧",
@@ -1628,7 +1776,14 @@
   "timelineEndCardDefaultLogoLabel": "NIARIM标志",
   "timelineEndCardStatusFormat": "{label}・{seconds}秒",
   "@timelineEndCardStatusFormat": {
-    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
   "timelineEndCardHiddenLabel": "隐藏",
   "timelineEndCardVisibilityToggleTooltip": "显示开关",
@@ -1636,24 +1791,39 @@
   "timelineEndCardReplaceTooltip": "替换",
   "timelineEndCardLengthDialogTitle": "片尾卡长度",
   "timelineEndCardTrackLabel": "片尾卡轨道",
-
   "timelineMarkerTrackLabel": "时间戳",
   "timelineMarkerAddDialogTitle": "在F{n}添加时间戳",
   "@timelineMarkerAddDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerEditDialogTitle": "时间戳：F{n}",
   "@timelineMarkerEditDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerCommentHint": "备注（例：这里对口型「啊」）",
   "timelineSecondsLabel": "{n}秒",
   "@timelineSecondsLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineAddClipDialogTitle": "添加{trackName}片段",
   "@timelineAddClipDialogTitle": {
-    "placeholders": {"trackName": {"type": "String"}}
+    "placeholders": {
+      "trackName": {
+        "type": "String"
+      }
+    }
   },
   "timelineClipLabelFieldLabel": "标签",
   "timelineClipStartLabel": "开始：",
@@ -1667,11 +1837,19 @@
   "timelineAutofillProgressTitle": "正在执行自动上色",
   "timelineAutofillProgressSubtitle": "{count}帧",
   "@timelineAutofillProgressSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillCompleteSnackbar": "自动上色已完成（处理了{count}项）",
   "@timelineAutofillCompleteSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineEffectTypeFade": "淡入淡出",
   "timelineEffectTypeGaussianBlur": "高斯模糊",
@@ -1709,44 +1887,66 @@
   "timelineClipUseEndLabel": "使用结束帧",
   "timelineCameraKfTitle": "相机关键帧：F{n}",
   "@timelineCameraKfTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineCameraMoveXLabel": "X 移动",
   "timelineCameraMoveYLabel": "Y 移动",
   "timelineCameraZoomLabel": "缩放",
   "timelineCameraRotationLabel": "旋转",
-
   "layerPanelKeyframeLabel": "动画（关键帧）",
   "layerKeyframeSheetTitle": "{name} 的关键帧",
   "@layerKeyframeSheetTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerKeyframeSheetDesc": "按帧设置该图层的位置・缩放・旋转，关键帧之间会自动插值。图层本身的画面内容不会改变。",
   "layerKeyframeAddAtCurrentFrame": "在当前帧（F{n}）添加",
   "@layerKeyframeAddAtCurrentFrame": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeEmpty": "还没有关键帧，请用上方按钮添加。",
   "layerKeyframeScaleShort": "缩放",
   "layerKeyframeRotationShort": "旋转",
   "layerKeyframeEditTitle": "关键帧：F{n}",
   "@layerKeyframeEditTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeFrameLabel": "帧",
   "layerKeyframeScaleLabel": "缩放",
   "layerKeyframeRotationLabel": "旋转",
-
   "layerPanelGroupTooltip": "分组",
   "layerPanelGroupDefaultName": "新建分组",
   "layerPanelGroupMembershipLabel": "分组：{name}",
   "@layerPanelGroupMembershipLabel": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelGroupLeaveAction": "解除",
   "frameStripHoldDialogTitle": "F{n} 保持格数",
   "@frameStripHoldDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "frameStripTimelineModeTooltip": "时间轴模式",
   "progressDialogAdLoading": "广告加载中…",
@@ -1790,5 +1990,7 @@
   "privacyPolicyArt7Title": "第7条（本政策的变更）",
   "privacyPolicyArt7Body": "因法令修订、本应用内容变更或其他开发者认为必要的情形，开发者可能变更本政策。变更本政策时，开发者将事先通过本应用内或其他适当方式，公告变更内容及生效日期。",
   "privacyPolicyArt8Title": "第8条（咨询）",
-  "privacyPolicyArt8Body": "有关本政策的咨询，请通过以下联系方式与我们联系。\n（开发者联系方式：尚未设定 —— 请在公开前填写电子邮件地址等联系方式信息）"
+  "privacyPolicyArt8Body": "有关本政策的咨询，请通过以下联系方式与我们联系。\n（开发者联系方式：尚未设定 —— 请在公开前填写电子邮件地址等联系方式信息）",
+  "tipsPcDexLayoutTitle": "宽屏环境会自动切换为PC模式（DeX）的专业布局",
+  "tipsPcDexLayoutDesc": "在Chromebook、外接键盘的平板、三星DeX等宽屏环境下使用时，应用会自动切换为停靠面板式的专业布局。也可以在工作区设置中手动固定为始终PC模式或始终手机模式，连接外接显示器工作时同样好用。"
 }

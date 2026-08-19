@@ -36,6 +36,7 @@ import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
+import '../../services/settings_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
 import '../../widgets/ad_banner_widget.dart';
@@ -113,6 +114,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // プレビュー全画面化（仕様書02・タスク#98）：確認・仕上がりチェックに
   // 集中できるよう、プレビューのみ＋再生コントロールだけを全画面表示する。
   bool _isPreviewFullscreen = false;
+  // プレビュー欄のドラッグハンドルで一時的に変更中の高さ（ドラッグ中のみ
+  // 使用し、指を離した時点でSettingsServiceへ確定保存してnullへ戻す）。
+  double? _previewHeightDragOverride;
 
   // カーソル固定方式の移動モード
   bool _isMoveMode = false;
@@ -172,6 +176,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   late final ScrollController _cameraScrollCtrl;
   late final ScrollController _markerScrollCtrl;
   late final ScrollController _commonLayerScrollCtrl;
+  late final ScrollController _effectFilterScrollCtrl;
   bool _syncingScroll = false;
 
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
@@ -269,6 +274,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _cameraScrollCtrl = ScrollController();
     _markerScrollCtrl = ScrollController();
     _commonLayerScrollCtrl = ScrollController();
+    _effectFilterScrollCtrl = ScrollController();
 
     for (final ctrl in _trackScrollCtrls) {
       ctrl.addListener(() => _syncFrom(ctrl));
@@ -286,6 +292,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _cameraScrollCtrl,
     _markerScrollCtrl,
     _commonLayerScrollCtrl,
+    _effectFilterScrollCtrl,
     ..._rowScrollCtrls.values,
   ];
 
@@ -540,47 +547,62 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // 制作時間カウント（仕様書19）：操作のたびに無操作タイマーをリセットする
         onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
         child: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            _buildPreview(),
-            _buildSeekBar(),
-            _buildPlaybackControls(),
-            _buildToolbar(),
-            _buildSceneTabs(),
-            _buildFrameList(),
-            // 共通レイヤートラック（仕様書05：タイムライン表示順はフレーム・
-            // シーン・共通レイヤー・画像・動画・音源・エンドカードの順）
-            _buildCommonLayerTrack(),
-            // シーン・フレームの複数選択モード中の一括操作バー（小さいボタン
-            // ではなく素材タイムラインの上に大きな3分割ボタンで表示）
-            _buildMultiSelectActionBar(),
-            _buildMaterialTrackGroup(
-              type: MaterialType.image,
-              icon: Icons.image,
-              defaultLabel: l10n.projectListMaterialImage,
-              allClips: _imageClips,
-              addColor: Colors.green[700]!,
-            ),
-            _buildMaterialTrackGroup(
-              type: MaterialType.video,
-              icon: Icons.videocam,
-              defaultLabel: l10n.projectListMaterialVideo,
-              allClips: _videoClips,
-              addColor: Colors.blue[700]!,
-            ),
-            _buildMaterialTrackGroup(
-              type: MaterialType.audio,
-              icon: Icons.audiotrack,
-              defaultLabel: l10n.projectListMaterialAudio,
-              allClips: _audioClips,
-              addColor: Colors.orange[700]!,
-            ),
-            _buildCameraTrack(),
-            _buildMarkerTrack(),
-            _buildEndCardTrack(),
-            if (adService.shouldShowAds) const AdBannerWidget(),
-          ],
+        child: LayoutBuilder(
+          builder: (context, outerConstraints) {
+            return Column(
+              children: [
+                _buildTopBar(),
+                _buildPreviewWithHandle(outerConstraints.maxHeight),
+                _buildSeekBar(),
+                _buildPlaybackControls(),
+                _buildToolbar(),
+                _buildSceneTabs(),
+                _buildFrameList(),
+                // 各種タイムライン行（仕様書05）：デフォルトではプレビュー・
+                // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
+                // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
+                // 1つでも追加された行だけを表示する。最後の1件を削除すれば、
+                // その行だけ最初と同じく非表示に戻る（画像素材は共通レイヤー
+                // 機能とキャンバスモードの画像読み込みで代替できるため廃止）。
+                // 表示順：フレーム・シーン・共通レイヤー・動画・音源・カメラ・
+                // タイムスタンプ・演出フィルター・エンドカードの順。
+                // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
+                // スクロールで広く見られるようにExpanded+スクロールにしている。
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildCommonLayerTrack(),
+                        // シーン・フレームの複数選択モード中の一括操作バー
+                        // （小さいボタンではなく素材タイムラインの上に大きな
+                        // 3分割ボタンで表示）
+                        _buildMultiSelectActionBar(),
+                        _buildMaterialTrackGroup(
+                          type: MaterialType.video,
+                          icon: Icons.videocam,
+                          defaultLabel: l10n.projectListMaterialVideo,
+                          allClips: _videoClips,
+                          addColor: Colors.blue[700]!,
+                        ),
+                        _buildMaterialTrackGroup(
+                          type: MaterialType.audio,
+                          icon: Icons.audiotrack,
+                          defaultLabel: l10n.projectListMaterialAudio,
+                          allClips: _audioClips,
+                          addColor: Colors.orange[700]!,
+                        ),
+                        _buildCameraTrack(),
+                        _buildMarkerTrack(),
+                        _buildEffectFilterTrack(),
+                        _buildEndCardTrack(),
+                        if (adService.shouldShowAds) const AdBannerWidget(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         ),
       ),
@@ -645,7 +667,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildPreview() {
+  /// プレビュー本体（プレビュー画像＋全画面化ボタン）。PC/DeXモードでは
+  /// 横幅を制限して中央寄せにし、横に間延びした帯状にならないようにする。
+  Widget _buildPreviewContent() {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.watch<ProjectService>();
     final sceneId = _selectedSceneId;
@@ -670,7 +694,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
           // プレビュー全画面化ボタン（仕様書02・タスク#98：確認・仕上がり
           // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
-          // 全画面表示中は_buildPreview()自体が呼ばれないため、ここには
+          // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
           // 「開く」方向のボタンのみを置けばよい。
           Positioned(
             right: 4,
@@ -694,19 +718,64 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     );
-    return Expanded(
-      flex: 3,
-      // PC/DeXモード（広い画面）：横幅を制限して中央寄せにし、プレビューが
-      // 横に間延びした帯状にならないようにする。
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (!isWideScreen(context)) return preview;
-          final w = constraints.maxWidth < 640 ? constraints.maxWidth : 640.0;
-          return Center(
-            child: SizedBox(width: w, height: constraints.maxHeight, child: preview),
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (!isWideScreen(context)) return preview;
+        final w = constraints.maxWidth < 640 ? constraints.maxWidth : 640.0;
+        return Center(
+          child: SizedBox(width: w, height: constraints.maxHeight, child: preview),
+        );
+      },
+    );
+  }
+
+  /// 全画面プレビュー表示（isPreviewFullscreen）専用。周囲に空きがあれば
+  /// 目一杯まで拡大する。
+  Widget _buildPreview() => Expanded(flex: 3, child: _buildPreviewContent());
+
+  /// 通常表示のプレビュー欄。底辺のドラッグハンドルで縦方向のサイズを
+  /// 変更できるようにする（仕様書05）。高さはアプリ全体で共通の割合として
+  /// SettingsServiceへ保存され、作業を中断したり別プロジェクトへ移動しても
+  /// 最後に設定した位置が引き継がれる。ドラッグ中は指を離すまでローカル
+  /// 状態のみを更新し、離した瞬間に確定値を保存する。
+  Widget _buildPreviewWithHandle(double maxAvailableHeight) {
+    final settings = context.watch<SettingsService>();
+    final maxH = maxAvailableHeight > 0 ? maxAvailableHeight : 600.0;
+    final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(120.0, maxH * 0.75);
+    final previewHeight = _previewHeightDragOverride ?? baseHeight;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(height: previewHeight, child: _buildPreviewContent()),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragUpdate: (d) {
+            setState(() {
+              final current = (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
+              _previewHeightDragOverride = current.clamp(120.0, maxH * 0.75);
+            });
+          },
+          onVerticalDragEnd: (_) {
+            final h = _previewHeightDragOverride;
+            if (h != null) {
+              context.read<SettingsService>().setTimelinePreviewHeightFraction(h / maxH);
+            }
+          },
+          child: SizedBox(
+            height: 14,
+            child: Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -766,11 +835,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
-            icon: const Icon(Icons.image, size: 18),
-            onPressed: () => _showAddClipDialog(l10n.projectListMaterialImage, _imageClips, Colors.green[700]!, _ClipTrackType.image),
-            tooltip: l10n.timelineAddImageTooltip,
-          ),
-          IconButton(
             icon: const Icon(Icons.videocam, size: 18),
             onPressed: () => _showAddClipDialog(l10n.projectListMaterialVideo, _videoClips, Colors.blue[700]!, _ClipTrackType.video),
             tooltip: l10n.timelineAddVideoTooltip,
@@ -784,6 +848,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           _buildWatermarkButton(isPremium),
           IconButton(icon: const Icon(Icons.movie_filter, size: 18), onPressed: () => _showEffectFilterDialog(), tooltip: l10n.timelineEffectFilterLabel),
           IconButton(icon: const Icon(Icons.camera, size: 18), onPressed: _addCameraKf, tooltip: l10n.timelineAddCameraKfTooltip),
+          IconButton(icon: const Icon(Icons.push_pin_outlined, size: 18), onPressed: _showAddMarkerDialog, tooltip: l10n.timelineMarkerTrackLabel),
           IconButton(icon: const Icon(Icons.upload_file, size: 18), onPressed: () => context.push('/export/${widget.projectId}'), tooltip: l10n.transferExport),
         ],
       ),
@@ -1897,6 +1962,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 行数・行名はシーンごとにProjectServiceで管理する。1行目の右端＋は
   /// 「行の追加」用（素材自体の追加は既に上部ツールバーのボタンで行える
   /// ため、この＋は行追加に転用した）。2行目以降は－で行削除ができる。
+  /// 素材種別（動画・音声）のトラック行グループ。1件も素材がなければ
+  /// グループごと非表示にし（仕様書05：デフォルトはプレビュー・フレーム
+  /// 一覧のみ）、中身のある行だけを表示する。同じタイミングで重ねたい
+  /// 素材がある場合のみ、最後尾の行の＋で新しい行を追加できる。
   Widget _buildMaterialTrackGroup({
     required MaterialType type,
     required IconData icon,
@@ -1904,14 +1973,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
     required List<_TrackClip> allClips,
     required Color addColor,
   }) {
+    if (allClips.isEmpty) return const SizedBox.shrink();
     final sceneId = _selectedSceneId;
     final rowNames = sceneId == null
         ? const <String?>[null]
         : context.watch<ProjectService>().rowNamesOf(widget.projectId, sceneId, type);
+    final visibleRows = [
+      for (int row = 0; row < rowNames.length; row++)
+        if (allClips.any((c) => c.trackRow == row)) row,
+    ];
+    if (visibleRows.isEmpty) return const SizedBox.shrink();
+    final lastRow = visibleRows.last;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (int row = 0; row < rowNames.length; row++)
+        for (final row in visibleRows)
           _buildClipTrackRow(
             type: type,
             rowIndex: row,
@@ -1920,6 +1996,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             clips: allClips.where((c) => c.trackRow == row).toList(),
             scrollCtrl: _rowScrollCtrl(type, row),
             addColor: addColor,
+            showAddButton: row == lastRow,
           ),
       ],
     );
@@ -1933,9 +2010,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     required List<_TrackClip> clips,
     required ScrollController scrollCtrl,
     required Color addColor,
+    required bool showAddButton,
   }) {
     final total = _totalFrames;
-    final isFirstRow = rowIndex == 0;
     return Container(
       height: 32,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -1966,25 +2043,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 // クリップ描画
                 ...clips.map((clip) => _buildClipWidget(clip, scrollCtrl)),
-                // 1行目：＋で行を追加。2行目以降：－でこの行を削除する。
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: GestureDetector(
-                    onTap: () => isFirstRow
-                        ? _addTrackRow(type)
-                        : _confirmRemoveTrackRow(type, rowIndex, clips.isNotEmpty),
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: (isFirstRow ? addColor : Colors.grey[700]!).withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(10),
+                // 表示中の最後尾の行にのみ＋を出し、同じタイミングで重ねたい
+                // 素材がある時だけ新しい行を追加できるようにする。行の削除は
+                // 個々のクリップを消せば自動で畳まれるため、専用ボタンは持たない。
+                if (showAddButton)
+                  Positioned(
+                    right: 4,
+                    top: 4,
+                    child: GestureDetector(
+                      onTap: () => _addTrackRow(type),
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: addColor.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.add, size: 14, color: Colors.white),
                       ),
-                      child: Icon(isFirstRow ? Icons.add : Icons.remove, size: 14, color: Colors.white),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -1997,18 +2075,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
     context.read<ProjectService>().addTrackRow(widget.projectId, sceneId, type);
-  }
-
-  void _confirmRemoveTrackRow(MaterialType type, int rowIndex, bool hasClips) {
-    final l10n = AppLocalizations.of(context)!;
-    final sceneId = _selectedSceneId;
-    if (sceneId == null) return;
-    if (hasClips) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.timelineTrackRowDeleteBlockedSnackbar)));
-      return;
-    }
-    context.read<ProjectService>().removeTrackRow(widget.projectId, sceneId, type, rowIndex);
   }
 
   void _showRenameTrackRowDialog(MaterialType type, int rowIndex, String currentLabel) {
@@ -2687,6 +2753,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final cameraKfs = sceneId == null
         ? const <CameraKeyframe>[]
         : context.watch<ProjectService>().cameraKeyframesOf(widget.projectId, sceneId);
+    // キーフレームが1件もない間は非表示にする（仕様書05）。最初の1件は
+    // ツールバーのカメラアイコンから追加できる。
+    if (cameraKfs.isEmpty) return const SizedBox.shrink();
     return Container(
       height: 32,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -2821,6 +2890,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final markers = sceneId == null
         ? const <TimelineMarker>[]
         : context.watch<ProjectService>().timelineMarkersOf(widget.projectId, sceneId);
+    // タイムスタンプが1件もない間は非表示にする（仕様書05）。最初の1件は
+    // ツールバーのタイムスタンプアイコンから追加できる。
+    if (markers.isEmpty) return const SizedBox.shrink();
     return Container(
       height: 32,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -2963,6 +3035,80 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     ).then((_) => ctrl.dispose());
+  }
+
+  /// 演出フィルタートラック（仕様書05・18）。適用中のフィルターが1件も
+  /// なければ非表示にし、フィルターごとに専用の行を自動で表示する
+  /// （共通レイヤートラックと同じ考え方：重ね掛けしても行が自動で増える
+  /// ため、ユーザーが列を手動管理する必要がない）。タップすると演出
+  /// フィルター管理シート（並び替え・詳細編集）を開く。
+  Widget _buildEffectFilterTrack() {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    final total = _totalFrames;
+    final effects = sceneId == null
+        ? const <EffectFilterInstance>[]
+        : context.watch<ProjectService>().effectFiltersOf(widget.projectId, sceneId);
+    if (effects.isEmpty) return const SizedBox.shrink();
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final e in effects)
+            GestureDetector(
+              onTap: _showEffectFilterDialog,
+              child: SizedBox(
+                height: 32,
+                child: Row(
+                  children: [
+                    _buildTrackLabel(Icons.movie_filter, _EffectFilterSheet._typeLabel(l10n, e.type)),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          ListView.builder(
+                            controller: _effectFilterScrollCtrl,
+                            scrollDirection: Axis.horizontal,
+                            physics: const ClampingScrollPhysics(),
+                            itemCount: total,
+                            itemBuilder: (_, i) => Container(
+                              width: _cellW,
+                              decoration: BoxDecoration(
+                                border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                              ),
+                            ),
+                          ),
+                          AnimatedBuilder(
+                            animation: _effectFilterScrollCtrl,
+                            builder: (ctx, child) {
+                              final scrollOffset =
+                                  _effectFilterScrollCtrl.hasClients ? _effectFilterScrollCtrl.offset : 0.0;
+                              final left = e.startFrame * _cellW - scrollOffset;
+                              final width = (e.endFrame - e.startFrame + 1) * _cellW;
+                              return Positioned(
+                                left: left,
+                                top: 6,
+                                child: Container(
+                                  width: width,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    color: Colors.pink[400]!.withValues(alpha: e.enabled ? 0.8 : 0.3),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   /// エンドカードトラック（無料版：ロック状態、プレミアム：編集可能）
@@ -3391,6 +3537,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
         frameIndex: _currentFrame,
         layerId: clip.id,
       );
+    }
+    // 使用中の列だけを表示する方針（仕様書05）：追加専用の行（2行目以降）が
+    // 空になったら自動で畳む（構造ごと削除して行番号を詰め直す）。1行目は
+    // 常に存在する既定行なので畳まず、中身がなければ表示だけを省く。
+    if (clip.trackRow > 0) {
+      final remaining = switch (clip.trackType) {
+        _ClipTrackType.audio => _audioClips,
+        _ClipTrackType.video => _videoClips,
+        _ClipTrackType.image => _imageClips,
+      };
+      final stillUsed = remaining.any((c) => c.trackRow == clip.trackRow);
+      if (!stillUsed) {
+        final materialType = switch (clip.trackType) {
+          _ClipTrackType.audio => MaterialType.audio,
+          _ClipTrackType.video => MaterialType.video,
+          _ClipTrackType.image => MaterialType.image,
+        };
+        projectService.removeTrackRow(widget.projectId, sceneId, materialType, clip.trackRow);
+      }
     }
   }
 

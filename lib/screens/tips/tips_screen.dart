@@ -4,9 +4,11 @@ import 'tip_diagrams.dart';
 
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
-/// 各項目は「図解＋要点」「タイトル＋詳しい説明」の2ページを横スライドで
-/// 見られる構成にし、1画面あたりの図・文章を大きく表示できるようにしている。
-/// ヘルプ画面と同様、タイトル・説明・カテゴリ名から検索できる。
+/// 一覧はタイトルだけのコンパクトな行にし、タップするとポップアップ
+/// （_TipDetailDialog）で「図解＋要点」→「詳しい説明」を横スライドで
+/// 読める構成にしている。説明の分量に応じてページ数は可変（固定2ページ
+/// に限らない）で、下部にページ位置インジケーター、右上に閉じるボタンを
+/// 常設する。ヘルプ画面と同様、タイトル・説明・カテゴリ名から検索できる。
 class TipsScreen extends StatefulWidget {
   const TipsScreen({super.key});
 
@@ -33,11 +35,9 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.textCaption, l10n.tipsTextCaptionTitle, l10n.tipsTextCaptionDesc),
             _Tip(TipDiagramKind.clipDuplicate, l10n.tipsAudioRepeatTitle, l10n.tipsAudioRepeatDesc),
             _Tip(TipDiagramKind.textCaption, l10n.tipsVerticalRubyTitle, l10n.tipsVerticalRubyDesc),
-            _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsFadeEndCardTitle, l10n.tipsFadeEndCardDesc),
             _Tip(TipDiagramKind.textCaption, l10n.tipsEndCardWatermarkTitle, l10n.tipsEndCardWatermarkDesc),
             _Tip(TipDiagramKind.onionSkin, l10n.tipsVerticalPixelFontTitle, l10n.tipsVerticalPixelFontDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsStampBlendModeTitle, l10n.tipsStampBlendModeDesc),
-            _Tip(TipDiagramKind.exportFormat, l10n.tipsGifLoopTitle, l10n.tipsGifLoopDesc),
             _Tip(TipDiagramKind.clipDuplicate, l10n.tipsVideoTrimReuseTitle, l10n.tipsVideoTrimReuseDesc),
             _Tip(TipDiagramKind.timelineMarker, l10n.tipsTimelineMarkerTitle, l10n.tipsTimelineMarkerDesc),
           ],
@@ -57,13 +57,13 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.brushFavorite, l10n.tipsSaveSlotAutoSaveTitle, l10n.tipsSaveSlotAutoSaveDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsQuickToolSwipeTitle, l10n.tipsQuickToolSwipeDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsToolbarCustomizeTitle, l10n.tipsToolbarCustomizeDesc),
+            _Tip(TipDiagramKind.pcDexLayout, l10n.tipsPcDexLayoutTitle, l10n.tipsPcDexLayoutDesc),
           ],
         ),
         _TipCategory(
           title: l10n.tipsCategoryDrawing,
           icon: Icons.brush_outlined,
           tips: [
-            _Tip(TipDiagramKind.onionSkin, l10n.tipsOnionSkinTitle, l10n.tipsOnionSkinDesc),
             _Tip(TipDiagramKind.pressureCurve, l10n.tipsPressureCurveTitle, l10n.tipsPressureCurveDesc),
             _Tip(TipDiagramKind.onionSkin, l10n.tipsRulerOnionTitle, l10n.tipsRulerOnionDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsGradientTraceTitle, l10n.tipsGradientTraceDesc),
@@ -71,7 +71,6 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.pressureCurve, l10n.tipsColorMixingFadeTitle, l10n.tipsColorMixingFadeDesc),
             _Tip(TipDiagramKind.onionSkin, l10n.tipsRadialVignetteTitle, l10n.tipsRadialVignetteDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsClippingGradientTitle, l10n.tipsClippingGradientDesc),
-            _Tip(TipDiagramKind.pressureCurve, l10n.tipsColorPickerLongPressTitle, l10n.tipsColorPickerLongPressDesc),
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsDrawingAreaCameraTitle, l10n.tipsDrawingAreaCameraDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsAutofillBlendModeTitle, l10n.tipsAutofillBlendModeDesc),
           ],
@@ -80,8 +79,6 @@ class _TipsScreenState extends State<TipsScreen> {
           title: l10n.tipsCategoryEffects,
           icon: Icons.auto_awesome_outlined,
           tips: [
-            _Tip(TipDiagramKind.effectFilter, l10n.tipsEffectFilterTitle, l10n.tipsEffectFilterDesc),
-            _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsCameraKeyframeTitle, l10n.tipsCameraKeyframeDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsRainNoiseTitle, l10n.tipsRainNoiseDesc),
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsPartKeyframeGroupTitle, l10n.tipsPartKeyframeGroupDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsOutlineAnimeStyleTitle, l10n.tipsOutlineAnimeStyleDesc),
@@ -104,7 +101,6 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsPixelToneRetroTitle, l10n.tipsPixelToneRetroDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsBlurVignetteBgTitle, l10n.tipsBlurVignetteBgDesc),
             _Tip(TipDiagramKind.exportFormat, l10n.tipsSepiaVignetteTitle, l10n.tipsSepiaVignetteDesc),
-            _Tip(TipDiagramKind.exportFormat, l10n.tipsFolderHierarchyTitle, l10n.tipsFolderHierarchyDesc),
             _Tip(TipDiagramKind.clipDuplicate, l10n.tipsTransferDeviceTitle, l10n.tipsTransferDeviceDesc),
           ],
         ),
@@ -167,7 +163,7 @@ class _TipsScreenState extends State<TipsScreen> {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              for (final tip in category.tips) _TipCard(tip: tip),
+                              for (final tip in category.tips) _TipListTile(tip: tip),
                             ],
                           ),
                         );
@@ -181,19 +177,45 @@ class _TipsScreenState extends State<TipsScreen> {
   }
 }
 
-/// 1件のTipsを「図解＋要点」「詳しい説明」の2ページで横スライド表示する
-/// カード。ページ位置はドットインジケーターで示す。
-class _TipCard extends StatefulWidget {
+/// 一覧に並ぶ1件のTipsの行。図解のミニアイコンとタイトルだけを表示する
+/// コンパクトな行で、タップすると詳細ポップアップ（_TipDetailDialog）を開く。
+class _TipListTile extends StatelessWidget {
   final _Tip tip;
-  const _TipCard({required this.tip});
+  const _TipListTile({required this.tip});
 
   @override
-  State<_TipCard> createState() => _TipCardState();
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 6),
+      child: ListTile(
+        dense: true,
+        leading: SizedBox(width: 40, height: 40, child: TipDiagram(tip.diagram)),
+        title: Text(tip.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 13)),
+        trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+        onTap: () => showDialog(context: context, builder: (_) => _TipDetailDialog(tip: tip)),
+      ),
+    );
+  }
 }
 
-class _TipCardState extends State<_TipCard> {
+/// Tips詳細のポップアップ。1ページ目は図解＋タイトル、2ページ目以降は
+/// 説明文を読みやすい分量ごとに分割したページで、横スライドで読み進める。
+/// 説明の分量に応じてページ数は可変（固定2ページに限らない）。右上の
+/// 閉じるボタンと、下部のページ位置インジケーター（何ページ中何ページ目か）
+/// を常設する。
+class _TipDetailDialog extends StatefulWidget {
+  final _Tip tip;
+  const _TipDetailDialog({required this.tip});
+
+  @override
+  State<_TipDetailDialog> createState() => _TipDetailDialogState();
+}
+
+class _TipDetailDialogState extends State<_TipDetailDialog> {
   final _pageController = PageController();
   int _page = 0;
+  late final List<String> _textPages = _splitIntoPages(widget.tip.description);
 
   @override
   void dispose() {
@@ -201,69 +223,110 @@ class _TipCardState extends State<_TipCard> {
     super.dispose();
   }
 
+  /// 説明文を約140字ごとの読みやすい分量に分割する。改行（段落）の区切りを
+  /// 優先して尊重し、1段落だけで上限を超える場合はそのまま1ページにする。
+  static List<String> _splitIntoPages(String text) {
+    const maxCharsPerPage = 140;
+    final paragraphs = text.split('\n').where((p) => p.trim().isNotEmpty).toList();
+    if (paragraphs.isEmpty) return [text];
+    final pages = <String>[];
+    var current = '';
+    for (final p in paragraphs) {
+      final candidate = current.isEmpty ? p : '$current\n$p';
+      if (candidate.length > maxCharsPerPage && current.isNotEmpty) {
+        pages.add(current);
+        current = p;
+      } else {
+        current = candidate;
+      }
+    }
+    if (current.isNotEmpty) pages.add(current);
+    return pages.isEmpty ? [text] : pages;
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      clipBehavior: Clip.antiAlias,
+    final totalPages = 1 + _textPages.length;
+    return Dialog(
       child: SizedBox(
-        height: 200,
-        child: Column(
+        width: 360,
+        height: 420,
+        child: Stack(
           children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (p) => setState(() => _page = p),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                    child: Column(
-                      children: [
-                        Expanded(child: Center(child: TipDiagram(widget.tip.diagram))),
-                        const SizedBox(height: 8),
-                        Text(widget.tip.title,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 14)),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.tip.title,
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: scheme.primary)),
-                        const SizedBox(height: 6),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Text(widget.tip.description, style: const TextStyle(fontSize: 13, height: 1.4)),
+            Column(
+              children: [
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (p) => setState(() => _page = p),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
+                        child: Column(
+                          children: [
+                            Expanded(child: Center(child: TipDiagram(widget.tip.diagram))),
+                            const SizedBox(height: 12),
+                            Text(widget.tip.title,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 15)),
+                          ],
+                        ),
+                      ),
+                      for (final page in _textPages)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(widget.tip.title,
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: scheme.primary)),
+                              const SizedBox(height: 8),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  child: Text(page, style: const TextStyle(fontSize: 13, height: 1.5)),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                // ページ位置インジケーター（何ページ中何ページ目か）。ページ数が
+                // 多い説明でもドットが横に溢れないよう、6ページを超えたら
+                // 「n / N」のテキスト表示に切り替える。
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: totalPages <= 6
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(totalPages, (i) {
+                            final active = i == _page;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
+                              width: active ? 16 : 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: active ? scheme.primary : scheme.outlineVariant,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            );
+                          }),
+                        )
+                      : Text('${_page + 1} / $totalPages',
+                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(2, (i) {
-                  final active = i == _page;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: active ? 16 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: active ? scheme.primary : scheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  );
-                }),
+            // 右上の閉じるボタン
+            Positioned(
+              right: 4,
+              top: 4,
+              child: IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () => Navigator.pop(context),
               ),
             ),
           ],

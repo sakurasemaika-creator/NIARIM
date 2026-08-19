@@ -1,7 +1,6 @@
 {
   "@@locale": "fr",
   "appTitle": "NIARIM",
-
   "homeTabProjects": "Projets",
   "homeTabShared": "Partagés",
   "homeTabTrash": "Corbeille",
@@ -16,7 +15,6 @@
   "homeMoveToTrash": "Mettre à la corbeille",
   "homeMoveToTrashConfirm": "Mettre {count} élément(s) à la corbeille ?",
   "commonMove": "Déplacer",
-
   "homeShareFileDialogTitle": "Fichier partagé",
   "homeShareFileDialogContent": "Dupliquer ce fichier partagé et l'enregistrer comme projet normal ?",
   "homeMissingFontsSnackbar": "Polices manquantes : {names}",
@@ -45,7 +43,6 @@
   "homePreviewFailed": "Impossible de lire l'aperçu",
   "homeFirstLaunchMessage": "Vous pouvez créer des animations dessinées à la main",
   "homeFirstLaunchStart": "Commencer",
-
   "settingsScreenTitle": "Réglages",
   "settingsBasicTitle": "Général",
   "settingsBasicSubtitle": "FPS, couleur de fond, langue",
@@ -86,7 +83,6 @@
   "settingsDrawingAreaWiden": "Élargir la zone de dessin",
   "settingsDrawingAreaScale": "Échelle",
   "settingsScaleValue": "×{scale}",
-
   "commonCancel": "Annuler",
   "commonCreate": "Créer",
   "commonChange": "Modifier",
@@ -94,7 +90,11 @@
   "confirmDeleteGenericBody": "Voulez-vous vraiment supprimer ceci ? Cette action est irréversible.",
   "confirmDeleteNamedBody": "Supprimer « {name} » ? Cette action est irréversible.",
   "@confirmDeleteNamedBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "commonFavoriteDeleteBlocked": "Impossible de supprimer un élément favori. Retirez-le d'abord des favoris.",
   "commonSave": "Enregistrer",
@@ -104,7 +104,6 @@
   "commonCopy": "Copier",
   "commonPaste": "Coller",
   "commonOk": "OK",
-
   "gestureSettingsTitle": "Réglages des gestes",
   "gestureTwoFingerTap": "Appui à deux doigts",
   "gestureThreeFingerTap": "Appui à trois doigts",
@@ -118,19 +117,15 @@
   "gestureActionNextTool": "Changement rapide d'outil",
   "gestureActionOnionSkinToggle": "Activer/désactiver le papier calque",
   "gestureActionNone": "Ne rien faire",
-
   "homeDrawerAppTagline": "Application de création d'animation dessinée à la main",
   "homeDrawerAutofillPreset": "Préréglages de coloriage automatique",
   "homeDrawerSettings": "Réglages",
   "homeDrawerHelp": "Aide",
   "homeDrawerTips": "Astuces",
   "homeDrawerPremium": "Premium",
-
   "gestureActionNoneShort": "Aucune",
-
   "pressureTryDrawHint": "Vous pouvez essayer de dessiner avec ce réglage (avec un stylet, la pression réelle est prise en compte)",
   "pressureTryDrawClear": "Effacer",
-
   "penSettingsTitle": "Réglages de saisie au stylet",
   "penSettingsCurveSection": "Courbe de pression",
   "penSettingsCurveHint": "Un réglage plus faible fait monter la pression progressivement ; un réglage plus fort la fait monter brusquement.",
@@ -152,11 +147,9 @@
   "bucketSettingsUnderLineTitle": "Passer sous les traits",
   "bucketSettingsUnderLineHint": "Au lieu de peindre par-dessus le trait, l'extension se fond derrière les pixels existants : l'apparence du trait est conservée tout en comblant les interstices de ses bords anticrénelés.",
   "bucketSettingsUnderLineDisabledHint": "Sans effet lorsque « Extension » est à 0 px.",
-
   "fontCatalogSearchHint": "Rechercher par nom de police... ({count} polices)",
   "fontCatalogAll": "Toutes",
   "fontCatalogNoResults": "Aucune police correspondante trouvée",
-
   "rulerPanelTitle": "Règle",
   "rulerTypeLine": "Règle droite",
   "rulerTypeEllipse": "Règle elliptique",
@@ -165,7 +158,6 @@
   "rulerTypeTwoPoint": "Perspective à deux points",
   "rulerTypeThreePoint": "Perspective à trois points",
   "rulerDivisions": "Divisions",
-
   "transferScreenTitle": "Transfert (.niatra)",
   "transferInstructionHint": "Sélectionnez les éléments à transférer vers un autre appareil.",
   "transferItemSettings": "Réglages",
@@ -179,7 +171,6 @@
   "transferExportFailedSnackbar": "Échec de l'exportation : {error}",
   "transferImportSuccessSnackbar": "Fichier .niatra importé",
   "transferImportFailedSnackbar": "Échec de l'importation : {error}",
-
   "folderManagementTitle": "Gestion des dossiers",
   "folderManagementCreateNew": "Nouveau",
   "folderManagementEmpty": "Aucun dossier pour le moment",
@@ -187,20 +178,27 @@
   "folderMoveToTitle": "Déplacer vers un dossier",
   "folderNone": "Aucun dossier",
   "creativeAssetNameLabel": "Nom",
-
   "commonAdd": "Ajouter",
   "commonSearch": "Rechercher",
   "autofillPresetSelectionTitle": "Préréglages à utiliser",
   "autofillPresetSelectionHint": "Ne sélectionner que les préréglages de remplissage automatique utilisés dans ce projet garde la liste d'attribution des parties plus courte et plus lisible.",
   "autofillPresetSelectionPartCount": "{count} parties",
   "@autofillPresetSelectionPartCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetSelectionButton": "Sélectionner les préréglages à utiliser",
   "autofillPresetSelectionAllLabel": "Tout utiliser",
   "autofillPresetSelectionCountLabel": "{count} sélectionné(s)",
   "@autofillPresetSelectionCountLabel": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "commonEdit": "Modifier",
   "commonFavoriteToggle": "Basculer favori",
@@ -219,7 +217,6 @@
   "timelineStepBack": "Reculer d'une image",
   "timelineStepForward": "Avancer d'une image",
   "timelineSkipToEnd": "Aller à la dernière image",
-
   "quickToolPanelTitle": "Réglages des outils rapides",
   "quickToolEmpty": "Aucun outil enregistré",
   "quickToolAddCurrentBrush": "Ajouter le pinceau actuel",
@@ -227,7 +224,6 @@
   "quickToolEyedropper": "Pipette",
   "quickToolBucket": "Pot de peinture",
   "quickToolSizeDialogTitle": "Taille de {brushName}",
-
   "materialListTitle": "Gestion des matériaux",
   "materialRemoveUnused": "Supprimer les inutilisés ({count})",
   "materialEmptyTitle": "Aucun matériau",
@@ -240,7 +236,6 @@
   "materialRemoveUnusedConfirmTitle": "Supprimer tous les matériaux inutilisés ?",
   "materialRemoveUnusedConfirmBody": "Cela supprimera tous les matériaux non référencés dans le projet. Cette action est irréversible.",
   "materialRemovedSnackbar": "{count} matériau(x) inutilisé(s) supprimé(s)",
-
   "watermarkEmptyTitle": "Aucun filigrane pour le moment",
   "watermarkEmptyHint": "Appuyez sur le bouton + pour ajouter un filigrane image ou texte",
   "watermarkAddFromImage": "Ajouter depuis une image",
@@ -258,7 +253,6 @@
   "watermarkOutlineLabel": "Contour",
   "watermarkOutlineColorLabel": "Couleur du contour",
   "watermarkOutlineWidthLabel": "Épaisseur du contour",
-
   "premiumActiveLabel": "Premium actif",
   "premiumVsTitle": "Gratuit vs Premium",
   "premiumCampaignFreeNote": "* Pendant la campagne, toutes les fonctionnalités Premium ci-dessus sont gratuites pour tout le monde",
@@ -290,7 +284,6 @@
   "premiumValueDuration90Sec": "1,5 min",
   "premiumPlanRecommendedBadge": "Recommandé",
   "premiumMonthlyPrice": "550 ¥/mois",
-
   "toolbarItemPen": "Plume G",
   "toolbarItemEraser": "Gomme",
   "toolbarItemBucket": "Pot de peinture",
@@ -301,7 +294,6 @@
   "toolbarItemTransform": "Transformation",
   "toolbarItemText": "Texte",
   "toolbarItemShape": "Forme",
-
   "workspaceScreenTitle": "Réglages de l'espace de travail",
   "workspaceToolbarEditSection": "Édition de la barre d'outils",
   "workspaceToolbarEditHint": "Sélectionnez les outils à afficher avec les cases à cocher, et glissez-déposez pour les réorganiser.",
@@ -327,11 +319,9 @@
   "workspaceSaveDialogLabel": "Nom (ex. : Animation, Dessin au trait)",
   "workspaceLoadRightHanded": "Droitier",
   "workspaceLoadLeftHanded": "Gaucher",
-
   "helpScreenTitle": "Aide",
   "helpSearchHint": "Rechercher...",
   "helpNoResults": "Aucun élément correspondant trouvé",
-
   "helpCategoryTool": "Outils",
   "helpCategoryLayer": "Calques",
   "helpCategoryAnimation": "Animation",
@@ -343,256 +333,172 @@
   "helpCategoryExport": "Export",
   "helpCategoryPremium": "Premium",
   "helpCategorySettings": "Réglages",
-
   "helpPenToolTitle": "Outil plume",
   "helpPenToolDesc": "L'outil de base pour dessiner des lignes sur le canevas. Un appui long permet de changer le type, la taille et la couleur du pinceau (un double appui affiche un résumé rapide). Il prend en charge la pression et l'inclinaison des tablettes/stylets, et ajuster la courbe de pression dans Réglages > Saisie au stylet permet de personnaliser finement la façon dont la pression influence la taille et l'opacité. En changeant de sous-outil de plume, vous pouvez appliquer des trames ou placer des tampons avec le même outil.",
-
   "helpEraserToolTitle": "Outil gomme",
   "helpEraserToolDesc": "L'équivalent de l'outil plume, utilisé pour effacer ce que vous avez dessiné. Comme un pinceau, vous pouvez ajuster sa taille et son opacité, et les réglages de pinceau comme le fondu et l'atténuation de trait s'y appliquent aussi. Plutôt que d'« ajouter » aux parties transparentes d'un calque, il « retire » le dessin existant, si bien que le calque en dessous devient visible à travers.",
-
   "helpBucketToolTitle": "Outil pot de peinture",
   "helpBucketToolDesc": "Remplit une zone fermée en une seule fois. Appuyez à l'intérieur d'une zone entourée par un trait et toute la zone est remplie avec la couleur (ou la trame) sélectionnée. S'il y a des espaces dans le trait, le remplissage peut déborder sur des zones non voulues ; assurez-vous donc que le trait est bien fermé avant de l'utiliser. Vous pouvez basculer entre remplissage uni et remplissage en trame dans les réglages. Les réglages détaillés (tolérance, extension en px, passer sous les traits) sont accessibles depuis « Pot de peinture » dans les réglages.",
-
   "helpLassoFillTitle": "Remplissage lasso",
   "helpLassoFillDesc": "Tracez avec votre doigt pour former une zone polygonale, puis remplissez l'intérieur en une seule fois. Contrairement au pot de peinture, vous pouvez définir la zone vous-même même là où le trait n'est pas fermé, ce qui le rend idéal pour les formes complexes ou les zones avec des lignes interrompues.",
-
   "helpEyedropperToolTitle": "Outil pipette",
   "helpEyedropperToolDesc": "Prélève la couleur à l'endroit où vous appuyez et la définit comme couleur de dessin. Il échantillonne le rendu composité de tous les calques tel qu'affiché à l'écran, ce qui permet de récupérer précisément la « couleur telle que vue » même là où plusieurs calques se superposent.",
-
   "helpSelectToolTitle": "Outil de sélection",
   "helpSelectToolDesc": "Sélectionne une partie du canevas afin de pouvoir déplacer, faire pivoter ou redimensionner uniquement cette zone. Un appui long permet de choisir parmi trois méthodes de sélection : « Sélection rectangulaire », « Sélection au lasso » (contour libre), ou « Sélection automatique » (baguette magique — regroupe automatiquement les zones de couleur similaire). Pendant une sélection, un contour marque la zone sélectionnée sur le canevas, et la même zone reste fixée sur toutes les images et tous les calques jusqu'à ce que vous désélectionniez.",
-
   "helpFingerToolTitle": "Outil doigt (déformation)",
   "helpFingerToolDesc": "Déforme les pixels en les poussant dans la direction où vous faites glisser votre doigt, comme si vous étaliez de la peinture humide avec un doigt. Il sert moins aux corrections précises qu'à déformer de manière organique des lignes déjà dessinées pour leur donner plus d'expression.",
-
   "helpShapeToolTitle": "Outil forme",
   "helpShapeToolDesc": "Dessine des formes précises comme des lignes, des rectangles et des cercles en un seul geste. Faire glisser du point de départ au point d'arrivée affiche un aperçu en direct, et la forme est finalisée lorsque vous relâchez le doigt. Pratique lorsque vous avez besoin de lignes droites ou de cercles parfaits difficiles à réaliser à main levée.",
-
   "helpTextToolTitle": "Outil texte",
   "helpTextToolDesc": "Place du texte sur le canevas. Vous pouvez choisir la police, la taille, la couleur et le sens d'écriture vertical/horizontal. L'écriture verticale prend en charge la rotation automatique des caractères alphanumériques demi-chasse, le tate-chu-yoko (garder les nombres à l'horizontale dans un texte vertical) et le rubi (furigana). Le texte placé est également gravé en pixels lors de l'export.",
-
   "helpQuickToolTitle": "Outil rapide",
   "helpQuickToolDesc": "Permet d'enregistrer à l'avance des combinaisons de pinceaux et d'outils fréquemment utilisées, puis de les parcourir avec un seul bouton. Appuyez longuement sur le bouton ↺ du canevas pour ouvrir un panneau de réglages où vous pouvez ajouter, réorganiser et supprimer des entrées. Faites glisser pour changer l'ordre.",
-
   "helpLayerTitle": "Calques",
   "helpLayerDesc": "Un mécanisme qui permet de diviser un seul canevas en plusieurs « calques » transparents. En dessinant le trait, la coloration et le fond sur des calques séparés, vous pouvez ensuite refaire uniquement la coloration ou changer le fond sans effacer le trait. À l'écran, les calques placés plus haut apparaissent devant.",
-
   "helpBlendModeTitle": "Mode de fusion",
   "helpBlendModeDesc": "Modifie la façon dont un calque est composité avec ceux du dessous. Outre Normal (simplement superposé), il existe Produit (multiplie avec le calque du dessous pour créer des effets d'ombre), Écran (éclaircit comme si on ajoutait de la lumière), et Incrustation (mélange les couleurs tout en préservant les ombres et lumières), entre autres. Souvent utilisé pour superposer des trames ou des effets de couleur en tant que calque distinct.",
-
   "helpClippingTitle": "Écrêtage",
   "helpClippingDesc": "Restreint le dessin aux seuls pixels opaques du calque directement en dessous. Lorsque vous voulez colorer sans dépasser du trait, activer l'écrêtage sur un calque de coloriage placé au-dessus d'un calque de trait supprime le risque de dessiner accidentellement en dehors des lignes.",
-
   "helpCommonLayerTitle": "Calque commun",
   "helpCommonLayerDesc": "Les calques ordinaires sont indépendants par image, mais un calque commun partage le même contenu sur plusieurs images et scènes. Les éléments qui ne bougent pas d'une image à l'autre, comme les fonds, peuvent être dessinés une seule fois au lieu d'être redessinés à chaque image. Il apparaît comme une piste dédiée dans la chronologie.",
-
   "helpAutoFillTitle": "Coloriage automatique",
   "helpAutoFillDesc": "Crée un calque de coloriage automatique sous le calque de trait et le colore automatiquement selon un « préréglage de coloriage automatique » préétabli (une combinaison de couleurs et de trames par partie). Comme vous pouvez tout colorer en une fois après avoir terminé le trait, cela réduit considérablement l'effort de coloriage dans une animation dessinée à la main où le même personnage est dessiné à répétition. Si vous redessinez le trait, une marque de mise à jour (❗) apparaît sur la chronologie et le panneau de calques pour vous indiquer que le coloriage automatique doit être réappliqué.",
-
   "helpOnionSkinTitle": "Papier calque",
   "helpOnionSkinDesc": "Superpose en semi-transparence les images avant et après celle que vous éditez actuellement, afin que vous puissiez dessiner en vérifiant comment le mouvement s'enchaîne. Vous pouvez ajuster le nombre d'images affichées (avant et après) ainsi que leur couleur et leur opacité dans les réglages de performance.",
-
   "helpRulerTitle": "Règle",
   "helpRulerDesc": "Un guide pour dessiner des lignes précises difficiles à réaliser à main levée, y compris des règles droites, circulaires, elliptiques et de perspective (utilisant des points de fuite pour le dessin en perspective). La pointe du stylet s'aligne automatiquement sur la règle placée, rendant même les compositions avec une profondeur difficile plus faciles à dessiner que sans règle. Les règles peuvent être déplacées, pivotées et redimensionnées à l'aide de leurs poignées.",
-
   "helpFadeTitle": "Fondu",
   "helpFadeDesc": "Un réglage de pinceau où l'opacité et l'épaisseur diminuent progressivement à mesure que vous continuez un trait. Utilisez-le lorsque vous voulez que la fin d'une ligne s'estompe, ou pour créer une sensation de dessin avec un effet persistant.",
-
   "helpStrokeDecayTitle": "Atténuation de trait",
   "helpStrokeDecayDesc": "Similaire au fondu, mais plus proche de l'effet d'un « encre qui s'épuise » — la couleur s'estompe ou devient irrégulière plus vous continuez à dessiner. Il reproduit la texture d'un pinceau ou d'un marqueur qui manque d'encre à mesure que vous l'utilisez.",
-
   "helpColorMixingTitle": "Mélange de couleurs",
   "helpColorMixingDesc": "En peignant avec un pinceau, mélange la couleur déjà présente sous le pinceau avec la couleur que vous êtes sur le point d'appliquer. Utilisez-le lorsque vous voulez que de nouvelles couleurs se fondent dans les couleurs existantes, comme à l'aquarelle ou à l'huile.",
-
   "helpPressureCurveTitle": "Courbe de pression",
   "helpPressureCurveDesc": "Une fonctionnalité des réglages de saisie au stylet qui permet d'ajuster librement, via un graphique, la relation entre la pression réelle du stylet et son effet sur la taille et l'opacité du pinceau. Que vous vouliez des lignes épaisses même avec une légère pression, ou l'inverse — nécessitant une pression ferme pour obtenir des lignes épaisses —, vous pouvez personnaliser finement la sensation pour l'adapter à vos habitudes. Vous pouvez essayer de dessiner directement pour vérifier l'effet après avoir modifié les réglages.",
-
   "helpTimelineTitle": "Chronologie",
   "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont tous gérés sur la même chronologie.",
-
   "helpSceneTitle": "Scène",
   "helpSceneDesc": "Une fonctionnalité pour diviser et gérer un seul projet (une vidéo) par scène (plan). Alors que les dossiers organisent au niveau du projet, les scènes sont utilisées pour exprimer des changements de scène au sein d'une même vidéo.",
-
   "helpCameraKeyframeTitle": "Image clé de caméra",
   "helpCameraKeyframeDesc": "Enregistre la position, le niveau de zoom et la rotation de la caméra à un point précis de la chronologie. Comme les valeurs sont automatiquement interpolées en douceur entre les images clés, vous pouvez facilement ajouter des mouvements de caméra tels que des panoramiques ou des zooms avant/arrière.",
-
   "helpEffectFilterTitle": "Filtre d'effet",
   "helpEffectFilterDesc": "Un effet visuel (flou, correction des couleurs, lueur, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l'apparence globale de l'écran comme une touche de mise en scène, sans changer le dessin fait main lui-même.",
-
   "helpEndCardTitle": "EndCard (logo de fin)",
   "helpEndCardDesc": "Une courte vidéo (environ 5 secondes) avec le logo NIARIM, ajoutée automatiquement à la fin du contenu principal lors de l'export d'une vidéo. La version gratuite ne peut pas le masquer ni le supprimer, mais les membres Premium peuvent l'activer/le désactiver, changer sa durée ou le remplacer.",
-
   "helpAutoSaveTitle": "Enregistrement automatique",
   "helpAutoSaveDesc": "Un enregistrement dédié à la récupération en cas de plantage ou de corruption de fichier. Il s'enregistre automatiquement à chaque modification, comme le dessin, et écrase le plus ancien des 3 enregistrements maximum. Il est géré complètement séparément des enregistrements manuels (emplacements de sauvegarde et arbre de sauvegarde) et ne remplace pas l'enregistrement habituel. On ne vous demande de le restaurer que lors du redémarrage de l'application après une fermeture anormale.",
-
   "helpSaveSlotTitle": "Emplacement de sauvegarde",
   "helpSaveSlotDesc": "Une méthode d'enregistrement dans un nombre fixe d'emplacements de sauvegarde, où vous choisissez à chaque fois l'emplacement à utiliser. Le nombre d'emplacements est déterminé par les réglages (5 pour la qualité basse, 10 pour la qualité moyenne). Comme vous choisissez à chaque fois l'emplacement à écraser, c'est un moyen simple de gérer la conservation de l'état d'un moment particulier.",
-
   "helpSaveTreeTitle": "Arbre de sauvegarde",
   "helpSaveTreeDesc": "Une méthode d'enregistrement où un nouveau point de sauvegarde est créé à chaque fois que vous enregistrez, et vous pouvez créer une branche à partir d'un point de sauvegarde passé pour créer un historique différent. Il n'y a pas de limite au nombre d'enregistrements, ce qui le rend bien adapté à des cas d'usage comme « je veux revenir à cette version et essayer une direction différente ». À l'écran, les points de sauvegarde sont affichés sous forme d'un diagramme en arbre qui pousse du bas vers le haut.",
-
   "helpFolderTitle": "Dossier",
   "helpFolderDesc": "Une fonctionnalité pour regrouper et organiser vos projets (œuvres). Elle prend en charge plusieurs niveaux d'imbrication, vous pouvez donc aussi l'utiliser pour gérer ensemble plusieurs épisodes ou une série de la même œuvre (par exemple, en organisant les projets « Épisode 1 », « Épisode 2 », etc. dans un dossier nommé d'après l'œuvre). Si vous voulez diviser une seule vidéo en scènes distinctes, utilisez la fonctionnalité « Scène » de l'écran du canevas plutôt que des dossiers.",
-
   "helpTrashTitle": "Corbeille",
   "helpTrashDesc": "L'endroit où les projets supprimés sont temporairement déplacés. Vous pouvez les restaurer d'ici jusqu'à ce qu'ils soient définitivement supprimés. Vous pouvez définir le nombre de jours avant la suppression automatique (désactivé/30/60/90 jours) dans les réglages.",
-
   "helpShareTitle": "Partage (.niashare)",
   "helpShareDesc": "Un format de fichier dédié pour remettre un projet à quelqu'un d'autre (ou à un autre appareil de vous-même). Lorsque le destinataire ouvre ce fichier, il est dupliqué et ajouté à sa propre liste de projets. Le fichier .niashare d'origine lui-même n'est pas modifié.",
-
   "helpTransferTitle": "Transfert (.niatra)",
   "helpTransferDesc": "Une fonctionnalité permettant de transférer tout l'environnement de l'application — réglages, matériaux, pinceaux, préréglages, thème d'interface, et plus — vers un autre appareil en une seule fois. Vous pouvez choisir les éléments individuels à transférer avec des cases à cocher. Si vous voulez remettre un projet individuel, utilisez plutôt « Partage (.niashare) ».",
-
   "helpVideoExportTitle": "Export vidéo (MP4)",
   "helpVideoExportDesc": "Exporte votre œuvre sous forme de vidéo MP4 universelle. Il utilise directement l'encodeur matériel intégré de l'appareil, évitant les problèmes de licence liés au H.264. La version gratuite ajoute automatiquement une carte de fin, et il y a une limite à la durée exportable.",
-
   "helpTransparentWebmTitle": "WebM transparent",
   "helpTransparentWebmDesc": "Un format vidéo qui peut être exporté en conservant le canal alpha (les parties transparentes du fond). La lecture transparente ne fonctionne que dans les environnements de lecture compatibles. Idéal pour superposer comme matériau dans d'autres applications.",
-
   "helpGifExportTitle": "Export GIF",
   "helpGifExportDesc": "Exporte sous forme de GIF animé. Le GIF est un format d'export uniquement — il n'y a pas de « mode GIF » dédié pendant l'édition.",
-
   "helpWatermarkEntryTitle": "Filigrane",
   "helpWatermarkEntryDesc": "Une fonctionnalité réservée à Premium qui vous permet d'ajouter votre propre signature ou logo comme filigrane sur les vidéos et images exportées. Vous pouvez ajuster sa position, sa taille et son opacité.",
-
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "Un niveau d'abonnement qui débloque des fonctionnalités restreintes dans la version gratuite, telles que des limites de durée assouplies, l'édition du logo de fin, le filigrane, la courbe de tons et la correction des niveaux. Pendant la campagne de lancement, ces fonctionnalités sont gratuites même dans la formule gratuite (la suppression des publicités et l'achat lui-même ne sont pas inclus).",
-
   "helpFontManagementTitle": "Gestion des polices",
   "helpFontManagementDesc": "Un écran où vous pouvez ajouter, rechercher et supprimer des polices disponibles dans l'outil texte. Les polices gratuites supplémentaires au-delà de celles fournies par défaut sont téléchargées à la demande depuis ici, afin de réduire la taille d'installation initiale.",
-
   "helpPerformanceSettingsTitle": "Réglages de performance",
   "helpPerformanceSettingsDesc": "Choisissez parmi les préréglages de qualité basse, moyenne ou haute selon les capacités de votre appareil, ou configurez chaque élément individuellement (personnalisé). En plus de la méthode d'enregistrement, du cache de tuiles, du papier calque et de la détection d'inclinaison, les réglages qui affectent la taille de l'application et sa fluidité — comme la longueur de l'historique d'annulation et la suppression automatique de la corbeille — sont également regroupés ici.",
-
   "helpMaterialClipTitle": "Clips de matériel (image / vidéo / audio)",
   "helpMaterialClipDesc": "Clips placés sur les pistes image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Toucher un clip ouvre sa fiche détaillée, où l'icône de copie le duplique et l'icône de corbeille le supprime. Les clips image et vidéo sont gérés en interne comme des calques, tandis que l'audio est géré comme un clip rattaché directement à la scène.",
-
   "helpGestureSettingsTitle": "Réglages des gestes",
   "helpGestureSettingsDesc": "Permet d'associer des actions — annuler/rétablir, déplacement de fotogramme, pipette et plus — à un appui à deux doigts, un appui à trois doigts, un glissement à deux doigts ou un appui long. Les boutons du stylet (sur les modèles compatibles) peuvent aussi être associés séparément. Pratique pour déclencher des actions fréquentes d'un seul geste sans changer d'outil.",
-
   "helpBucketDetailSettingsTitle": "Réglages détaillés du seau de peinture",
   "helpBucketDetailSettingsDesc": "Depuis la section « Seau de peinture » des réglages, vous pouvez ajuster la tolérance (quelle différence de couleur par rapport au pixel cliqué compte encore comme la même zone), l'extension en px (de combien la zone remplie dépasse la bordure pour combler les écarts du trait) et le remplissage sous le trait (compose le remplissage étendu derrière les pixels existants au lieu de peindre par-dessus le trait, préservant son apparence). Les ajuster aide quand le trait a de petits écarts ou que le remplissage semble incomplet.",
-
   "helpStampToolTitle": "Outil tampon",
   "helpStampToolDesc": "Place une image préenregistrée sur le canevas comme un pinceau. Réutilisez traits de vitesse, motifs de fond et petits objets sans les redessiner à chaque fois. Avec le mode pixel activé, les images tamponnées sont traitées avec un sous-échantillonnage en mosaïque et une réduction des couleurs, pour un rendu pixel art.",
-
   "helpToneFillTitle": "Remplissage en trame",
   "helpToneFillDesc": "Passer le réglage de l'outil seau du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art.",
-
   "helpPixelModeTitle": "Mode pixel",
   "helpPixelModeDesc": "Un réglage disponible séparément sur les pinceaux, les polices et les tampons. L'activer supprime l'anticrénelage pour des contours nets façon pixel art. À utiliser pour un rendu volontairement rétro ou basse résolution.",
-
   "helpHomeScreenTitle": "Écran d'accueil",
   "helpHomeScreenDesc": "Le premier écran affiché au lancement de l'app, avec les onglets Projets, Partagés, Œuvres et Corbeille. L'icône de recherche en haut à droite permet de filtrer les projets par nom. Sur l'onglet Projets, le bouton flottant permet de choisir entre créer un nouveau projet ou un nouveau dossier.",
-
   "helpNewProjectTitle": "Nouveau projet",
   "helpNewProjectDesc": "Définissez la taille du canevas, les fps, la durée (en secondes — ensuite maintenue synchronisée avec les changements de fotogrammes faits dans la timeline), la zone de dessin (permet de dessiner au-delà des limites d'export) et les préréglages de remplissage automatique à utiliser, le tout avant de créer le projet.",
-
   "helpThemeSettingsTitle": "Réglages de thème",
   "helpThemeSettingsDesc": "Choisissez la palette de couleurs globale de l'app parmi des préréglages, ou personnalisez librement la couleur d'accent. Les titres/libellés et le texte courant utilisent des polices distinctes, ce qui permet de changer l'apparence de l'app tout en gardant une bonne lisibilité.",
-
   "helpWorkspaceSettingsTitle": "Réglages de l'espace de travail",
   "helpWorkspaceSettingsDesc": "Regroupe des réglages comme le mode gaucher (inverse les panneaux ancrés), le basculement manuel du mode PC/DeX, et les conditions d'affichage de l'outil main. Ajustez la disposition selon votre appareil et votre main dominante.",
-
   "helpPenSettingsTitle": "Réglages du stylet",
   "helpPenSettingsDesc": "En plus de la courbe de pression pour tablettes et écrans à stylet, cet écran permet d'associer des actions — comme basculer la gomme ou la pipette — aux boutons latéraux d'un stylet compatible.",
-
   "helpMaterialListTitle": "Liste des matériels",
   "helpMaterialListDesc": "Un écran qui rassemble les images, vidéos et audios utilisés dans un projet. Il regroupe les fichiers source de tout ce qui est placé sur la timeline.",
-
   "helpFrameOperationsTitle": "Opérations sur les fotogrammes",
   "helpFrameOperationsDesc": "Dans la liste des fotogrammes, vous pouvez ajouter, dupliquer et supprimer des fotogrammes, et en mode sélection multiple en déplacer, dupliquer ou supprimer plusieurs à la fois. Augmenter le nombre de maintien garde un même fotogramme affiché sur plusieurs cellules (un « maintien »), économisant du travail de dessin sur les plans avec peu de mouvement.",
-
   "helpSceneOperationsTitle": "Opérations sur les scènes",
   "helpSceneOperationsDesc": "L'onglet scènes de la timeline permet d'ajouter, dupliquer, supprimer, renommer et réorganiser les scènes. Le mode sélection multiple permet de déplacer, dupliquer ou supprimer plusieurs scènes à la fois.",
-
   "helpQuickToolManagementTitle": "Gestion des outils rapides",
   "helpQuickToolManagementDesc": "Enregistrez un ensemble d'outils fréquemment utilisés pour les faire défiler d'un seul appui. Ouvrez le popup de gestion par un appui long ou un glissement vers le haut pour modifier les outils enregistrés et leur ordre.",
-
   "helpTransformSelectionTitle": "Transformer une sélection",
   "helpTransformSelectionDesc": "Une zone délimitée avec l'outil de sélection peut être déplacée, pivotée et redimensionnée avec l'outil de transformation. Pratique pour repositionner une partie dessinée par erreur, ou pour agrandir une seule zone afin de la mettre en valeur.",
-
   "helpGradientAutofillTitle": "Remplissage en dégradé (préréglages de remplissage automatique)",
   "helpGradientAutofillDesc": "Chaque partie d'un préréglage de remplissage automatique peut utiliser un dégradé au lieu d'une couleur unie. Des poignées symétriques déplaçables par glisser permettent d'ajuster intuitivement l'étendue et l'angle du dégradé.",
-
   "helpColorPickerTitle": "Sélecteur de couleur",
   "helpColorPickerDesc": "Un sélecteur de couleur permettant de basculer entre HSV et RVB sur un seul écran. Appui long pour afficher une brève astuce d'utilisation. La fonction palette permet d'enregistrer et de rappeler un ensemble de couleurs en cours d'utilisation.",
-
   "helpUndoSettingsTitle": "Longueur de l'historique d'annulation",
   "helpUndoSettingsDesc": "Dans les réglages de performance, vous pouvez ajuster le nombre d'actions que l'annulation peut remonter. Un nombre plus élevé donne plus de liberté pour expérimenter, mais utilise aussi plus de mémoire — réduisez-le sur les appareils bas de gamme pour rester fluide.",
-
   "helpBrushFavoriteTitle": "Pinceaux favoris",
   "helpBrushFavoriteDesc": "Touchez l'icône étoile d'un pinceau dans la liste pour le mettre en favori ou l'en retirer (la même interaction que pour les favoris dans le reste de l'app — préréglages de remplissage automatique, tampons, polices, filtres de dessin, etc.). L'icône étoile en haut de la liste permet aussi de filtrer pour n'afficher que les favoris. Un pinceau en favori ne peut pas être supprimé par erreur.",
-
   "helpLayerFolderTitle": "Dossiers de calques",
   "helpLayerFolderDesc": "Permet d'organiser plusieurs calques dans un dossier. Garde le panneau des calques lisible même pour des illustrations avec beaucoup de parties. Le détourage ne peut pas traverser les limites d'un dossier, donc si vous l'utilisez, gardez les calques concernés dans le même dossier.",
-
   "helpLayerMultiSelectTitle": "Sélection multiple et actions groupées sur les calques",
   "helpLayerMultiSelectDesc": "Le mode de sélection du panneau des calques permet de cocher plusieurs calques à la fois pour les fusionner ou les supprimer en masse. La fusion ne fonctionne qu'entre calques normaux, de trait de remplissage automatique et de remplissage automatique (les calques communs, dossiers et matériels de timeline ne peuvent pas être fusionnés).",
-
   "helpAutofillBatchRunTitle": "Exécuter le remplissage automatique",
   "helpAutofillBatchRunDesc": "Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l'écran timeline recalcule d'un coup tous les calques de remplissage automatique marqués de l'indicateur de mise à jour (❗). Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait.",
-
   "helpAutofillLineColorTitle": "Réglages de couleur du trait pour le remplissage automatique",
   "helpAutofillLineColorDesc": "Chaque partie d'un préréglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou calque de couleur. Choisir le calque de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement.",
-
   "helpAutofillPresetFilterTitle": "Filtrer les préréglages de remplissage automatique par projet",
   "helpAutofillPresetFilterDesc": "À mesure que les préréglages s'accumulent, la liste affichée lors de l'attribution des parties s'allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d'attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls préréglages utilisés dans ce projet, gardant la liste claire et facile à choisir.",
-
   "helpDrawingAreaTitle": "Zone de dessin",
   "helpDrawingAreaDesc": "Permet de dessiner au-delà des limites d'export. Un cadre rouge sur le canevas marque la zone d'export — ce qui est dessiné en dehors n'est pas exporté, mais cela laisse de la marge pour ajuster plus tard ce qui est montré via des mouvements de caméra comme le panoramique et le zoom. Définissez l'échelle à la création d'un nouveau projet.",
-
   "helpCanvasBackgroundTitle": "Couleur de fond du canevas",
   "helpCanvasBackgroundDesc": "Permet de définir la couleur de fond du canevas du projet. Elle n'affecte pas les exports transparents (WebM transparent), mais vous pouvez la changer pour celle qui vous convient le mieux pour travailler.",
-
   "helpProjectDetailTitle": "Écran des détails du projet",
   "helpProjectDetailDesc": "Un écran pour consulter et modifier au même endroit les réglages propres au projet — nom, miniature, statut favori, et quels préréglages de remplissage automatique sont activés. L'accès à l'arbre de sauvegarde se trouve aussi ici.",
-
   "helpWatermarkEditTitle": "Rééditer un filigrane",
   "helpWatermarkEditDesc": "Toucher un filigrane placé sur la piste de calque commun de la timeline permet de rééditer à tout moment son angle, sa taille, son opacité et sa plage d'affichage (boucle). Vous pouvez l'ajuster finement non seulement à l'enregistrement, mais chaque fois que vous l'utilisez réellement dans un projet.",
-
   "helpAudioClipTitle": "Volume et fondus des clips audio",
   "helpAudioClipDesc": "Un clip audio placé sur la timeline peut avoir son volume et ses durées de fondu d'entrée et de sortie ajustés depuis sa fiche détaillée. Utile pour équilibrer le volume des effets sonores et de la musique, ou adoucir le début et la fin d'un morceau.",
-
   "helpConvertToCommonTitle": "Convertir un calque en calque commun",
   "helpConvertToCommonDesc": "Convertit un calque normal en calque commun (qui continue d'afficher le même contenu sur plusieurs images). Vous pouvez aussi fusionner les calques actuellement visibles en un seul avant la conversion. Vous évite de redessiner un élément comme un arrière-plan qui reste identique à chaque image.",
-
   "helpAnimatedNoiseFilterTitle": "Filtre de bruit animé",
   "helpAnimatedNoiseFilterDesc": "Un filtre d'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l'impression que le grain bouge.",
-
   "helpRainFilterTitle": "Filtre de pluie",
   "helpRainFilterDesc": "Un filtre d'effet qui fait tomber de la pluie à l'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l'image avance, pour un mouvement de pluie naturel.",
-
   "helpPenSubToolTitle": "Sous-outils du stylet",
   "helpPenSubToolDesc": "Un appui long sur l'outil stylet le fait passer du dessin normal aux sous-outils de remplissage en trame ou de placement de tampon. Permet de passer d'une tâche à l'autre avec le même stylet sans changer d'outil sans arrêt.",
-
   "helpTiltDetectionTitle": "Détection d'inclinaison",
   "helpTiltDetectionDesc": "Un réglage qui utilise les données d'inclinaison d'un stylet compatible pour épaissir ou affiner le trait quand vous couchez la pointe, reproduisant une sensation plus proche d'un vrai outil de dessin. Activez-le ou désactivez-le depuis les réglages de performance.",
-
   "helpEffectFilterOrderTitle": "Ordre des filtres d'effet",
   "helpEffectFilterOrderDesc": "Plusieurs filtres d'effet peuvent être superposés, et ils s'appliquent dans l'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l'ordre réellement appliqué à l'écran.",
-
   "helpFontImportTitle": "Import de polices",
   "helpFontImportDesc": "Permet de charger un fichier de police directement depuis le stockage de l'appareil. Ajoutez-le depuis l'onglet « Importer » de la gestion des polices, dans les réglages. Pratique pour utiliser une police personnalisée non distribuée, ou une police commerciale achetée.",
-
   "helpStampTransformTitle": "Rotation et mise à l'échelle des tampons",
   "helpStampTransformDesc": "Le panneau des tampons permet d'ajuster l'angle de rotation et la taille du tampon placé. Varier l'orientation et la taille d'un même tampon évite que les traits de vitesse et petits objets paraissent monotones.",
-
   "helpExportScreenTitle": "Écran d'export",
   "helpExportScreenDesc": "Affiche la progression pendant l'export d'une vidéo ou d'une image, et permet d'annuler en cours de route. L'export utilise l'encodeur matériel de l'appareil, donc le temps nécessaire dépend de ses performances.",
-
   "helpFreeDurationLimitTitle": "Limite de durée du compte gratuit",
   "helpFreeDurationLimitDesc": "Les comptes gratuits sont limités à 90 secondes de durée de projet (les comptes Premium ont 2 heures). Si ajouter ou dupliquer des images vous ferait dépasser la limite, une alerte apparaît dès que vous appuyez sur le bouton, donc vous ne dépassez jamais réellement 90 secondes.",
-
   "helpDrawingFilterTitle": "Filtres de dessin",
   "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d'effet, qui s'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d'origine : il dessine seulement le résultat contourné sur un nouveau calque.",
-
   "helpLayerKeyframeTitle": "Images clés de calque (animation par partie)",
   "helpLayerKeyframeDesc": "Définissez la position, l'échelle et la rotation de chaque calque par image ; les images clés sont interpolées automatiquement. Là où les images clés de caméra déplacent tout l'écran, celles-ci ne déplacent qu'un seul calque. Comme chaque partie du remplissage automatique est générée comme un calque distinct, cela fonctionne directement pour l'animation par partie — bouger seulement un bras, ouvrir et fermer seulement une bouche, etc. Se configure depuis « Animation (images clés) » dans le menu à trois points de chaque calque, dans le panneau des calques. Le dessin du calque lui-même ne change pas : c'est une transformation non destructive de son emplacement d'affichage. Cela n'affecte que l'affichage de la timeline (aperçu / export) et n'a aucun effet sur le dessin réel en mode canevas.",
-
   "helpLayerGroupTitle": "Groupes de calques (déplacer plusieurs parties ensemble)",
   "helpLayerGroupDesc": "Déplace plusieurs calques ensemble avec un seul flux d'images clés. Par exemple, si un « bras » est composé de deux parties de remplissage automatique — peau et manche —, les grouper permet de déplacer les deux avec une seule opération d'image clé. Créez un groupe en sélectionnant plusieurs calques (cases à cocher) dans le panneau des calques puis en appuyant sur l'icône « Grouper » de la barre inférieure. Le mouvement du groupe se superpose aux images clés propres à chaque calque membre (si elles existent), ce qui permet de combiner le mouvement global du groupe avec des ajustements fins par calque. Un calque ne peut appartenir qu'à un seul groupe à la fois.",
-
   "tipsScreenTitle": "Astuces",
   "tipsSearchHint": "Rechercher une astuce...",
   "tipsCategoryVideo": "Astuces pour créer des vidéos",
@@ -600,166 +506,98 @@
   "tipsCategoryDrawing": "Astuces pour un dessin plus fluide",
   "tipsCategoryEffects": "Astuces de style et de finition",
   "tipsCategoryExport": "Astuces d'export et de flux de travail",
-
   "tipsClipDuplicateTitle": "Les clips de la timeline peuvent être dupliqués, déplacés et supprimés",
   "tipsClipDuplicateDesc": "Touchez un clip image, vidéo ou audio pour ouvrir sa fiche détaillée, puis utilisez l'icône de copie pour le dupliquer. Réutiliser le même effet sonore ou replacer la même image dans plusieurs scènes ne demande qu'un glisser en appui long et un appui sur le bouton de duplication.",
-
   "tipsTextCaptionTitle": "Ajoutez sous-titres et commentaires avec l'outil texte",
   "tipsTextCaptionDesc": "Utilisez l'outil texte pour placer, image par image, les sous-titres et commentaires typiques des vidéos meme. Passez la police en mode pixel pour un rendu volontairement rétro façon vieux jeu vidéo.",
-
   "tipsAutofillPresetTitle": "Enregistrez des préréglages de remplissage automatique par partie",
   "tipsAutofillPresetDesc": "Enregistrer des préréglages par partie (peau, cheveux, vêtements) avec leurs ombres incluses automatise la majeure partie de la mise en couleur, dès que le trait est dessiné. Vous pouvez aussi limiter les préréglages utilisés dans chaque projet.",
-
   "tipsBrushFavoriteTitle": "Mettez vos pinceaux favoris en favori pour les retrouver sans chercher",
   "tipsBrushFavoriteDesc": "Touchez l'icône étoile des pinceaux que vous utilisez le plus pour les mettre en favori. L'icône étoile en haut de la liste permet de filtrer pour n'afficher que les favoris, réduisant le temps de recherche. Un pinceau en favori ne peut pas être supprimé par erreur.",
-
-  "tipsOnionSkinTitle": "Voyez les images voisines en transparence avec le papier calque",
-  "tipsOnionSkinDesc": "La fonction papier calque superpose les images précédente et suivante en semi-transparence, pour vérifier l'enchaînement du mouvement pendant le dessin.",
-
   "tipsPressureCurveTitle": "Ajustez la courbe de pression à votre main",
   "tipsPressureCurveDesc": "La courbe de pression dans les réglages permet de placer librement jusqu'à 10 points de contrôle. Si la réponse en intensité ne vous convient pas, ajustez-la selon vos propres habitudes de pression.",
-
-  "tipsEffectFilterTitle": "Utilisez les filtres d'effet pour unifier l'ambiance d'une vidéo",
-  "tipsEffectFilterDesc": "Les filtres d'effet comme anime rétro, tube cathodique ou sépia peuvent s'appliquer d'un coup à toute la timeline ou par scène. Pratique pour donner un look Y2K ou une ambiance anime nostalgique à toute la vidéo en une seule fois.",
-
-  "tipsCameraKeyframeTitle": "Ajoutez zoom et panoramique avec les images clés de caméra",
-  "tipsCameraKeyframeDesc": "Placer des images clés de caméra sur une scène permet d'ajouter un mouvement cinématographique — zoom, panoramique — même à une simple image fixe.",
-
   "tipsExportFormatTitle": "Choisissez le format d'export selon l'usage",
   "tipsExportFormatDesc": "Le GIF convient pour publier facilement sur les réseaux sociaux, le WebM transparent pour superposer sur une autre vidéo ou garder un fond transparent, et le MP4 pour un usage vidéo classique. Choisir selon l'usage facilite l'équilibre entre taille de fichier et qualité.",
-
   "tipsGestureShortcutTitle": "Associez un geste aux actions fréquentes",
   "tipsGestureShortcutDesc": "Depuis « Gestes » dans les réglages, vous pouvez associer annuler/rétablir ou la pipette à un appui à deux doigts, un appui à trois doigts ou un appui long. Comme vous n'avez pas à changer d'outil, cela ne casse pas le rythme du dessin.",
-
   "tipsAudioRepeatTitle": "Gardez vos bruitages en rythme avec des clips dupliqués + fondus",
   "tipsAudioRepeatDesc": "Pour réutiliser plusieurs fois le même bruitage, dupliquez le clip et alignez les copies à des moments décalés, en donnant à chacune son propre fondu d'entrée/sortie. Vous obtenez ainsi une répétition naturelle et rythmée de l'effet.",
-
   "tipsVerticalRubyTitle": "Texte vertical + furigana pour un look de logo de titre",
   "tipsVerticalRubyDesc": "Combiner l'écriture verticale avec les furigana dans l'outil texte donne un logo de titre à la japonaise ou un traitement de titre distinctif. Les alphanumériques demi-chasse pivotent automatiquement pour se placer sur le côté, restant lisibles même mélangés à des symboles ou des chiffres.",
-
   "tipsBrushTrySaveTreeTitle": "Testez de nouveaux réglages de pinceau via l'arbre de sauvegarde",
   "tipsBrushTrySaveTreeDesc": "Avant un gros changement d'épaisseur ou de stabilisation du pinceau, sauvegardez d'abord dans l'arbre de sauvegarde pour plus de sérénité. Si le résultat ne vous plaît pas, vous pouvez revenir directement à l'état précédent, ce qui facilite les essais audacieux.",
-
   "tipsEyedropperGestureTitle": "Associez la pipette à un appui à deux doigts pour garder une palette cohérente",
   "tipsEyedropperGestureDesc": "Associer la pipette à un appui à deux doigts dans les réglages de gestes permet de récupérer instantanément une couleur voisine sans changer d'outil. Pratique pour colorer en restant fidèle à la palette d'un personnage.",
-
   "tipsRulerOnionTitle": "Règle de perspective + papier calque pour réutiliser un fond",
   "tipsRulerOnionDesc": "Posez la profondeur d'un fond avec la règle de perspective, puis ne déplacez que le personnage en vérifiant les images voisines via le papier calque — plus besoin de redessiner le fond à chaque image.",
-
   "tipsGradientTraceTitle": "Remplissage automatique en dégradé + calque de couleur pour un fondu naturel",
   "tipsGradientTraceDesc": "En définissant un dégradé dans un préréglage de remplissage automatique, réglez le mode de couleur du trait sur calque de couleur pour que la couleur du trait suive les subtils changements du dégradé, évitant que la limite ne ressorte.",
-
   "tipsRainNoiseTitle": "Pluie + bruit animé pour une atmosphère humide",
   "tipsRainNoiseDesc": "Superposer un filtre de bruit animé léger sur le filtre de pluie ajoute une sensation de particules dans l'air en plus des gouttes elles-mêmes, pour une texture humide de jour de pluie.",
-
   "tipsPartKeyframeGroupTitle": "Faites rebondir un personnage avec images clés de partie + groupement",
   "tipsPartKeyframeGroupDesc": "Animez chaque partie de remplissage automatique avec des images clés de calque, puis groupez les parties liées pour les faire rebondir ensemble — vous pouvez créer une mini-animation qui se balance sur la musique sans rien redessiner.",
-
   "tipsLowSpecSettingsTitle": "Sur les appareils bas de gamme, revoyez les réglages de performance et l'historique d'annulation",
   "tipsLowSpecSettingsDesc": "Si ça semble lent, essayez de passer les réglages de performance au préréglage « basse qualité » et de réduire aussi la longueur de l'historique d'annulation. Cela réduit l'utilisation de la mémoire et peut rendre l'ensemble plus fluide.",
-
   "tipsSeriesPresetFolderTitle": "Gérez une série avec le filtrage de préréglages + l'organisation en dossiers",
   "tipsSeriesPresetFolderDesc": "Pour réaliser plusieurs épisodes d'une même œuvre, regroupez les projets par épisode dans un dossier, et limitez les préréglages de remplissage automatique utilisés par chaque projet. Cela évite de mélanger la palette de chaque personnage et garde le travail efficace.",
-
-  "tipsFadeEndCardTitle": "Terminez avec un fondu de filtre d'effet + la carte de fin",
-  "tipsFadeEndCardDesc": "Fondre lentement au noir la dernière scène avec un filtre d'effet adoucit la transition vers la carte de fin automatique, donnant à la fin de votre vidéo un aspect nettement plus soigné et professionnel.",
-
   "tipsPixelToneRetroTitle": "Tampons en mode pixel + remplissage en trame pour un look rétro unifié",
   "tipsPixelToneRetroDesc": "Combiner des tampons en mode pixel avec les trames en damier et en grille réservées au mode pixel permet d'unifier tout l'écran avec une texture pixel art. Idéal pour un rendu jeu vidéo rétro.",
-
   "tipsMagicWandLassoTitle": "Baguette magique + remplissage au lasso pour séparer les couleurs plus vite",
   "tipsMagicWandLassoDesc": "Sélectionnez une large zone d'un coup avec la baguette magique de l'outil de sélection, puis ajustez seulement le débordement avec la sélection au lasso — même une séparation de couleurs complexe va vite ainsi.",
-
   "tipsCommonLayerFolderTitle": "Calques communs + dossiers pour réutiliser d'un épisode à l'autre",
   "tipsCommonLayerFolderDesc": "Pour un logo ou un générique utilisé à chaque épisode d'une série, transformez-le en calque commun et rangez-le dans un dossier — facile à gérer en le copiant vers le projet d'un nouvel épisode.",
-
   "tipsStrokeDecayFadeTitle": "Dégradé de trait + fondu pour un rendu pinceau calligraphique",
   "tipsStrokeDecayFadeDesc": "Combiner dégradé de trait et fondu dans les réglages du pinceau affine naturellement le début et la fin d'un trait, donnant aux lignes cette variation expressive d'épaisseur propre à un pinceau calligraphique ou à l'encre.",
-
   "tipsColorMixingFadeTitle": "Mélange de couleurs + fondu pour un mélange façon peinture",
   "tipsColorMixingFadeDesc": "Ajouter un fondu à un pinceau avec le mélange de couleurs activé le fait se mélanger avec la couleur dessous tout en s'éclaircissant progressivement, bien plus proche du comportement de la vraie peinture.",
-
   "tipsOutlineAnimeStyleTitle": "Contour + style anime pour une finition animation cel",
   "tipsOutlineAnimeStyleDesc": "Dessinez le contour sur un nouveau calque avec le contour du filtre de dessin, puis réduisez le nombre de couleurs avec le filtre style anime, pour une finition nette façon animation cel.",
-
   "tipsLevelsToneCurveTitle": "Niveaux + courbe de tons pour un look de design graphique",
   "tipsLevelsToneCurveDesc": "Poussez fort le contraste avec les niveaux d'abord, puis sculptez la gradation avec la courbe de tons, pour un look graphique façon affiche qui s'éloigne de la tonalité photographique.",
-
   "tipsMosaicChromaticTitle": "Mosaïque + aberration chromatique pour une texture rêche façon tube cathodique",
   "tipsMosaicChromaticDesc": "Baissez la résolution avec la mosaïque puis superposez l'aberration chromatique, pour une texture rêche façon vieille télé à tube cathodique — une nuance différente du filtre tube cathodique seul.",
-
-  "tipsEndCardWatermarkTitle": "Filigrane pour votre signature, carte de fin pour le logo de clôture",
-  "tipsEndCardWatermarkDesc": "Utilisez le filigrane pour ajouter votre propre signature à une vidéo. La carte de fin est le logo propre de l'app ajouté automatiquement à la fin de votre vidéo — les comptes gratuits ne peuvent pas la modifier, mais les comptes Premium peuvent la remplacer par leur propre logo. Combiner un filigrane contre les republications non autorisées avec une carte de fin Premium personnalisée donne à votre vidéo une image de marque cohérente du début à la fin.",
-
+  "tipsEndCardWatermarkTitle": "Le filigrane, c'est votre signature ; la carte de fin, autre chose",
+  "tipsEndCardWatermarkDesc": "Utilisez le filigrane pour ajouter votre propre signature ou marque à une vidéo. La carte de fin est le logo de l'application affiché automatiquement à la fin de chaque vidéo ; les membres gratuits ne peuvent pas la modifier. Les membres premium peuvent la masquer ou la remplacer par leur propre vidéo ou image. Pour une conclusion personnalisée sans utiliser la carte de fin, vous pouvez recréer un effet similaire en ajoutant un calque image avec un fondu d'entrée/sortie.",
   "tipsVerticalPixelFontTitle": "Mélangez images réelles et dessin à la main pour du « prise de vue réelle × anime »",
   "tipsVerticalPixelFontDesc": "Une astuce possible uniquement parce que cette app est à la fois une app d'illustration et un éditeur vidéo. Placez un clip vidéo réel sur la timeline, puis utilisez le papier calque sur un calque au-dessus pour dessiner à la main des traits de vitesse ou un personnage par-dessus les images — créant une vidéo mixte où une animation dessinée à la main se superpose à des prises de vue réelles.",
-
   "tipsTimelineMarkerTitle": "Utilisez les horodatages pour synchroniser le son et les mouvements de bouche",
   "tipsTimelineMarkerDesc": "Les scènes gèrent une plage — une image de début et de fin —, tandis que les horodatages marquent un instant précis avec un commentaire vers lequel sauter d'un seul geste. Placer plusieurs horodatages dans la même scène — « effet sonore à l'image 120 », « bouche « a » à l'image 180 » — rend la synchronisation du son et de l'image bien plus facile.",
-
   "tipsToolbarCustomizeTitle": "Réorganisez ou masquez des outils de la barre pour réduire le trajet du doigt",
   "tipsToolbarCustomizeDesc": "Depuis l'édition de la barre d'outils dans les réglages, vous pouvez masquer les outils que vous n'utilisez jamais et réorganiser ceux que vous utilisez pour qu'ils soient à portée de doigt facile. Réduire la liste évite de chercher un outil et raccourcit le trajet du doigt, gardant votre rythme de dessin.",
-
   "tipsAutofillBlendModeTitle": "Changez la texture de l'ombrage avec le mode de fusion d'une partie de remplissage automatique",
   "tipsAutofillBlendModeDesc": "Chaque partie d'un préréglage de remplissage automatique peut avoir son propre mode de fusion. Réglez une partie d'ombre sur « incrustation » ou « lumière tamisée » plutôt que « produit » pour un ombrage plus doux, comme traversé par la lumière. Une liberté cachée qui permet de changer la texture de l'ombrage sans changer la couleur.",
-
   "tipsStampBlendModeTitle": "Tampons + mode de fusion pour un effet de lumière",
   "tipsStampBlendModeDesc": "Régler le mode de fusion d'un calque de tampon placé sur « écran » ou « addition » fait que les traits de lumière ou effets scintillants se fondent naturellement dans le fond et ressortent vraiment.",
-
   "tipsQuickToolPenSubTitle": "Outil rapide + sous-outils du stylet pour un flux de travail sans interruption",
   "tipsQuickToolPenSubDesc": "Enregistrez vos outils les plus utilisés dans l'outil rapide, et profitez aussi des sous-outils du stylet (appui long sur le stylet pour passer au remplissage en trame ou au placement de tampon) — vous réduirez les allers-retours entre panneaux et garderez votre rythme.",
-
   "tipsAutofillToneReuseTitle": "Réutilisez un remplissage en trame juste en retraçant le trait, grâce au réglage de trame du remplissage automatique",
   "tipsAutofillToneReuseDesc": "Régler chaque partie d'un préréglage de remplissage automatique sur « utiliser une trame » reproduit automatiquement le remplissage en trame à chaque fois que vous retracez le trait — plus besoin de la réappliquer image par image.",
-
   "tipsRadialVignetteTitle": "Règle radiale + vignettage pour un impact de lignes de vitesse",
   "tipsRadialVignetteDesc": "Dessinez une rafale de lignes de vitesse d'un coup avec la règle radiale, puis superposez le filtre de dessin vignettage pour un effet façon climax de manga.",
-
   "tipsClippingGradientTitle": "Détourage + dégradé pour garder l'ombrage modifiable",
   "tipsClippingGradientDesc": "Détourez un calque de dégradé sur un calque de personnage, et vous pourrez réajuster l'ombrage juste en changeant l'étendue et l'angle du dégradé — plus besoin de redessiner sa forme au pinceau.",
-
   "tipsToneCurveSepiaTitle": "Courbe de tons + sépia pour un rendu photo rétro",
   "tipsToneCurveSepiaDesc": "Ajustez le contraste clair/sombre avec le filtre d'effet courbe de tons, puis superposez le sépia, pour une texture façon vieille photo délavée.",
-
   "tipsCameraLensBlurTitle": "Images clés de caméra + flou d'objectif pour un effet de flou de zoom",
   "tipsCameraLensBlurDesc": "Synchroniser un filtre d'effet de flou d'objectif plus fort avec le moment où une image clé de caméra zoome donne le punch d'un flou de zoom en prise de vue réelle.",
-
   "tipsBlurVignetteBgTitle": "Flou gaussien + vignettage pour un bokeh d'arrière-plan doux",
   "tipsBlurVignetteBgDesc": "Appliquez les filtres de dessin flou gaussien et vignettage uniquement au calque d'arrière-plan, et votre personnage principal ressort naturellement, pour un rendu façon profondeur de champ de caméra.",
-
   "tipsSepiaVignetteTitle": "Sépia + vignettage pour une vidéo façon photo ancienne",
   "tipsSepiaVignetteDesc": "Combiner le filtre d'effet sépia avec le filtre de dessin vignettage donne à votre vidéo les coins assombris et l'aspect délavé d'une photo ancienne.",
-
-  "tipsGifLoopTitle": "Pensez la boucle des GIF : rapprochez la première et la dernière image",
-  "tipsGifLoopDesc": "L'export GIF se lit en boucle automatique. Garder le dessin de la première et de la dernière image proches masque la couture de la boucle, pour que l'animation semble tourner naturellement.",
-
   "tipsVideoTrimReuseTitle": "Réutilisez le même fichier vidéo en changeant la portion utilisée de chaque clip",
   "tipsVideoTrimReuseDesc": "Même le même fichier vidéo peut donner un plan différent à chaque fois en changeant son début/fin d'utilisation par clip. Apporte de la variété sans ajouter de nouveau matériel source.",
-
   "tipsSaveSlotAutoSaveTitle": "Répartissez les emplacements de sauvegarde et la sauvegarde automatique",
   "tipsSaveSlotAutoSaveDesc": "La sauvegarde automatique écrase toujours avec le dernier état, tandis que les emplacements de sauvegarde peuvent conserver plusieurs états à la fois. Sauvegardez sur un emplacement à une étape importante et laissez les petits changements à la sauvegarde automatique, pour pouvoir revenir de façon fiable au point voulu.",
-
   "tipsQuickToolSwipeTitle": "Glissez vers le haut sur l'outil rapide pour le réorganiser",
   "tipsQuickToolSwipeDesc": "Pour changer ce qui est enregistré dans l'outil rapide, vous pouvez ouvrir le popup de gestion par un glissement vers le haut, pas seulement par un appui long. Pratique pour réorganiser vite en utilisant une seule main.",
-
-  "tipsColorPickerLongPressTitle": "Appui long sur le sélecteur de couleur pour un guide rapide",
-  "tipsColorPickerLongPressDesc": "Si vous ne savez pas comment choisir une couleur, essayez un appui long sur le sélecteur de couleur. Une brève astuce d'utilisation s'affiche, vous permettant de vérifier le fonctionnement du HSV, du RVB et de la palette.",
-
   "tipsDrawingAreaCameraTitle": "Zone de dessin plus large + images clés de caméra pour des panoramiques et zooms sûrs",
   "tipsDrawingAreaCameraDesc": "Définir la zone de dessin plus large que les limites d'export signifie qu'un panoramique ou un zoom avec des images clés de caméra ne risque pas de couper le bord de l'écran. À vérifier avant d'ajouter un grand mouvement de caméra.",
-
   "tipsWebmCommonLayerTitle": "WebM transparent + un calque commun pour séparer le fond",
   "tipsWebmCommonLayerDesc": "Si vous compositez un personnage exporté en WebM transparent sur un fond dans un autre logiciel vidéo, garder le fond sur son propre calque commun évite que des couleurs indésirables ne se glissent dans la zone transparente, pour un détourage plus propre.",
-
   "tipsLeftHandedWorkspaceTitle": "Mode gaucher + réglages de l'espace de travail pour une configuration plus confortable",
   "tipsLeftHandedWorkspaceDesc": "Si vous êtes gaucher, activer le mode gaucher dans les réglages de l'espace de travail inverse les panneaux ancrés, réduisant le risque qu'ils se retrouvent sous votre main de dessin.",
-
-  "tipsFolderHierarchyTitle": "Organisez une série avec des dossiers imbriqués",
-  "tipsFolderHierarchyDesc": "Les dossiers acceptent plusieurs niveaux. Vous pouvez créer un dossier « Saison 1 » dans un dossier au nom de l'œuvre, puis aligner le projet de chaque épisode à l'intérieur.",
-
   "tipsTransferDeviceTitle": "Déplacez votre travail vers un autre appareil avec un fichier de transfert",
   "tipsTransferDeviceDesc": "Si vous voulez changer d'appareil et continuer à travailler, la fonction de transfert (.niatra) déplace tout le projet ensemble, y compris les matériels qu'il utilise.",
-
   "fontSettingsTabDownloaded": "Téléchargées",
   "fontSettingsTabSearch": "Rechercher et télécharger",
   "fontSettingsTabImport": "Importer",
@@ -776,7 +614,6 @@
   "fontUnsupportedSnackbar": "Cette police n'a pas pu être chargée.",
   "fontAddedSnackbar": "« {name} » ajoutée (visible dans l'onglet Téléchargées)",
   "fontCorruptedSnackbar": "La police est corrompue.",
-
   "licenseScreenTitle": "Conditions et licences",
   "licenseSectionTerms": "Conditions d'utilisation",
   "licenseSectionFonts": "Polices utilisées",
@@ -785,7 +622,6 @@
   "licenseOssListSubtitle": "Affiche les licences des paquets OSS utilisés par cette application",
   "licenseFfmpegNote": "L'export WebM utilise FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source de la version modifiée : https://github.com/sk3llo/ffmpeg_kit_flutter\nL'export MP4 utilise directement l'encodeur matériel intégré de l'appareil et n'utilise pas FFmpeg.",
   "licenseFontCreditMeta": "Auteur : {author}   Licence : {license}",
-
   "toolbarPenTooltip": "Plume (appui long pour les sous-outils)",
   "toolbarPenFirstUseTip": "Appuyez longuement sur la plume pour basculer entre pinceau, trame, tampon et remplissage au lasso.",
   "toolbarBucketTooltip": "Pot de peinture (appui long pour changer de remplissage)",
@@ -804,7 +640,6 @@
   "toolbarSelectRect": "Sélection rectangulaire",
   "toolbarSelectLasso": "Sélection au lasso",
   "toolbarSelectMagicWand": "Sélection automatique (baguette magique)",
-
   "creativePanelFavoritesOnlyTooltip": "Afficher uniquement les favoris",
   "creativePanelSearchTooltip": "Rechercher par nom",
   "creativePanelFolderButton": "Dossier",
@@ -812,7 +647,6 @@
   "creativePanelImportButton": "Importer",
   "creativePanelFolderAllChip": "Tous",
   "creativePanelEditAction": "Modifier",
-
   "toneTitle": "Trames",
   "toneEmpty": "Aucune trame",
   "toneSearchHint": "Rechercher par nom de trame",
@@ -821,9 +655,7 @@
   "toneCreateDialogTitle": "Trame personnalisée",
   "toneImportFailedSnackbar": "Échec du chargement de la trame : {error}",
   "toneExportFailedSnackbar": "Échec de l'exportation de la trame : {error}",
-
   "privacyPolicyScreenTitle": "Politique de confidentialité",
-
   "stampTitle": "Tampons",
   "stampSearchHint": "Rechercher par nom de tampon",
   "stampEmpty": "Aucun tampon",
@@ -837,7 +669,6 @@
   "stampDensityLabel": "Densité",
   "stampScatterLabel": "Dispersion",
   "stampChangeImageButton": "Changer l'image du tampon",
-
   "themeSettingsTitle": "Thème et apparence",
   "themeSettingsBaseThemeSection": "Thème de base",
   "themeBaseLight": "Clair",
@@ -861,7 +692,6 @@
   "themeImportButton": "Importer un fichier .niatheme",
   "themePresetNameDialogTitle": "Nom du préréglage",
   "themeDefaultPresetName": "Mon thème",
-
   "onionSkinTitle": "Papier calque",
   "onionSkinPrevFrame": "Image précédente",
   "onionSkinNextFrame": "Image suivante",
@@ -873,7 +703,6 @@
   "onionSkinFrameCountFixed": "{count} image(s) (fixe)",
   "onionSkinColorLabel": "Couleur",
   "onionSkinOpacityLabel": "Opacité",
-
   "exportScreenTitle": "Export",
   "exportPresetSection": "Préréglage",
   "exportPresetStandard": "Standard",
@@ -924,35 +753,79 @@
   "newProjectHeightShort": "Hauteur",
   "newProjectDurationLabel": "Durée (max {max})",
   "@newProjectDurationLabel": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationLabelWithPremiumHint": "Durée (max {max} ; jusqu'à 2 heures avec Premium)",
   "@newProjectDurationLabelWithPremiumHint": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationSeconds": "{n} s",
   "@newProjectDurationSeconds": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHms": "{h} h {m} min {s} s",
   "@newProjectDurationHms": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHm": "{h} h {m} min",
   "@newProjectDurationHm": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationH": "{h} h",
   "@newProjectDurationH": {
-    "placeholders": {"h": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationMs": "{m} min {s} s",
   "@newProjectDurationMs": {
-    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationM": "{m} min",
   "@newProjectDurationM": {
-    "placeholders": {"m": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectBackgroundColorLabel": "Couleur de fond",
   "newProjectDrawingAreaTitle": "Agrandir la zone de dessin",
@@ -960,23 +833,49 @@
   "newProjectScaleLabel": "Échelle",
   "newProjectScaleValue": "{value}×",
   "@newProjectScaleValue": {
-    "placeholders": {"value": {"type": "String"}}
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawableAreaInfo": "Zone dessinable : {width}×{scale} = {result}",
   "@newProjectDrawableAreaInfo": {
-    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      },
+      "result": {
+        "type": "String"
+      }
+    }
   },
   "newProjectTotalFrames": "Nombre total d'images : {count}",
   "@newProjectTotalFrames": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "newProjectExportSizeInfo": "Taille d'exportation : {size}",
   "@newProjectExportSizeInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawingAreaInfo": "Zone de dessin : {size}",
   "@newProjectDrawingAreaInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "colorPickerTitle": "Sélection de couleur",
   "colorPickerOpacityLabel": "Opacité",
@@ -1002,7 +901,14 @@
   "penSubToolManageTooltip": "Gérer",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
-    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "opacity": {
+        "type": "int"
+      }
+    }
   },
   "penSubToolStampRotationSubtitle": "Rotation aléatoire selon la direction du trait",
   "brushSearchHint": "Rechercher par nom de pinceau",
@@ -1010,11 +916,19 @@
   "brushCreateDialogTitle": "Pinceau personnalisé",
   "brushImportFailedSnackbar": "Échec du chargement du pinceau : {error}",
   "@brushImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushExportFailedSnackbar": "Échec de l'exportation du pinceau : {error}",
   "@brushExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushSettingsSizeLabel": "Taille",
   "brushSettingsOpacityLabel": "Opacité",
@@ -1060,7 +974,14 @@
   "projectDetailInfoDrawingArea": "Zone de dessin",
   "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
   "@projectDetailInfoDrawingAreaValue": {
-    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailInfoTotalFrames": "Nombre total d'images",
   "projectDetailInfoWorkTime": "Temps de travail",
@@ -1070,7 +991,11 @@
   "projectDetailAddTagHint": "Ajouter une étiquette",
   "projectDetailNiashareFailedSnackbar": "Échec de la création du .niashare : {error}",
   "@projectDetailNiashareFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailTrashMenuItem": "Déplacer vers la corbeille",
   "commonOff": "OFF",
@@ -1089,13 +1014,21 @@
   "perfSettingsUndoLimitSubtitle": "Plus il est élevé, plus il consomme de mémoire",
   "perfSettingsUndoLimitValue": "{n} étapes",
   "@perfSettingsUndoLimitValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsTrashAutoDeleteTitle": "Suppression automatique de la corbeille",
   "perfSettingsTrashAutoDeleteSubtitle": "Durée de conservation des projets supprimés",
   "perfSettingsTrashAutoDeleteValue": "{n} jours",
   "@perfSettingsTrashAutoDeleteValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsCurrentSettingsSection": "Paramètres actuels",
   "perfSettingsTiltLabel": "Détection de l'inclinaison",
@@ -1103,13 +1036,21 @@
   "perfSettingsOnionNextLabel": "Papier calque (après)",
   "perfSettingsOnionFrameCountValue": "{n} images",
   "@perfSettingsOnionFrameCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsSaveModeLabel": "Mode de sauvegarde",
   "perfSettingsSlotCountLabel": "Nombre d'emplacements",
   "perfSettingsSlotCountValue": "{n} emplacements",
   "@perfSettingsSlotCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsResetButton": "Réinitialiser aux valeurs par défaut",
   "perfSettingsCopyPresetButton": "Copier le préréglage actuel",
@@ -1123,7 +1064,11 @@
   "perfSettingsResetDialogTitle": "Réinitialiser les paramètres de qualité personnalisés aux valeurs par défaut ?",
   "perfSettingsResetDialogBody": "Les valeurs par défaut correspondent au réglage « {preset} » déterminé automatiquement au premier lancement selon les performances de l'appareil.",
   "@perfSettingsResetDialogBody": {
-    "placeholders": {"preset": {"type": "String"}}
+    "placeholders": {
+      "preset": {
+        "type": "String"
+      }
+    }
   },
   "perfSettingsResetConfirmButton": "Réinitialiser",
   "perfSettingsCopyPresetDialogTitle": "Choisir un préréglage à copier",
@@ -1134,7 +1079,11 @@
   "filterPanelTitle": "Filtre",
   "filterPanelTitleBulk": "Filtre (appliqué à {count} images)",
   "@filterPanelTitleBulk": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterSearchHint": "Rechercher un filtre",
   "filterNameGaussianBlur": "Flou gaussien",
@@ -1157,7 +1106,11 @@
   "filterRetroStrength": "Intensité",
   "filterOutlineLayerNameSuffix": "{name} (Contour)",
   "@filterOutlineLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "filterStrengthBlurRadius": "Intensité (rayon de flou)",
   "filterColorLevels": "Nombre de couleurs",
@@ -1177,13 +1130,24 @@
   "filterApplyButton": "Appliquer",
   "filterApplyBulkButton": "Appliquer à {count} images",
   "@filterApplyBulkButton": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterEmpty": "Aucun filtre",
   "filterApplyingTitle": "Application du filtre",
   "filterApplyingSubtitle": "{name}　{count} images",
   "@filterApplyingSubtitle": {
-    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "projectListNewFolderTitle": "Nouveau dossier",
   "projectListFolderHint": "Vous pouvez aussi l'utiliser pour regrouper plusieurs épisodes ou une série d'une même œuvre",
@@ -1195,7 +1159,11 @@
   "projectListDeleteFolderConfirmTitle": "Supprimer ce dossier ?",
   "projectListDeleteFolderConfirmBody": "« {name} » sera supprimé. Les projets et sous-dossiers qu'il contient seront déplacés à la racine.",
   "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "projectListFolderRootOption": "Aucun dossier (racine)",
   "projectListEditFolderTooltip": "Modifier le dossier",
@@ -1239,25 +1207,44 @@
   "autofillPresetEmptyHint": "Appuyez sur + en bas à droite pour en créer un",
   "autofillPresetPartsCount": "{count} parties",
   "@autofillPresetPartsCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetNewDialogTitle": "Nouveau préréglage",
   "autofillPresetNameLabel": "Nom du préréglage",
   "autofillPresetRenameDialogTitle": "Renommer le préréglage",
   "autofillPresetDeleteConfirmTitle": "Supprimer « {name} » ?",
   "@autofillPresetDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartSearchHint": "Rechercher par nom de partie",
   "autofillPartUnconfiguredBanner": "{count} partie(s) ne sont pas encore configurées : {names} (aucune trame sélectionnée)\nVous ne pouvez pas fermer cet écran tant que tout n'est pas configuré.",
   "@autofillPartUnconfiguredBanner": {
-    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredDialogTitle": "Il y a des parties non configurées",
   "autofillPartUnconfiguredDialogBody": "Veuillez configurer les parties suivantes avant d'enregistrer.",
   "autofillPartUnconfiguredItem": "• {name} : aucune trame sélectionnée",
   "@autofillPartUnconfiguredItem": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredBackButton": "Retour à la configuration",
   "autofillPartEmpty": "Aucune partie\nAppuyez sur + pour en ajouter une",
@@ -1268,7 +1255,11 @@
   "autofillPartRenameDialogTitle": "Renommer la partie",
   "autofillPartDetailDialogTitle": "Détails de {name}",
   "@autofillPartDetailDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartFillColorLabel": "Couleur de remplissage",
   "autofillPartSelectColorButton": "Choisir une couleur",
@@ -1291,24 +1282,44 @@
   "autofillPartGradientEditButton": "Modifier le dégradé",
   "autofillPartFillOpacityLabel": "Opacité (calque de remplissage) : {value}%",
   "@autofillPartFillOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineColorLabel": "Couleur du trait",
   "autofillPartTraceHueLabel": "Teinte : {value}",
   "@autofillPartTraceHueLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceSaturationLabel": "Saturation : {value}",
   "@autofillPartTraceSaturationLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceLightnessLabel": "Luminosité : {value}",
   "@autofillPartTraceLightnessLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineOpacityLabel": "Opacité (calque de trait) : {value}%",
   "@autofillPartLineOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartToneLabel": "Trame",
   "autofillPartUseToneCheckbox": "Utiliser une trame",
@@ -1316,14 +1327,22 @@
   "autofillPartApplyButton": "Appliquer",
   "autofillPartGradientDialogTitle": "Dégradé de {name}",
   "@autofillPartGradientDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartGradientTypeLabel": "Type",
   "autofillPartGradientTypeInfo": "Linéaire : la couleur change selon l'angle défini. Radial centre→extérieur : les couleurs changent du centre vers l'extérieur. Radial extérieur→centre : l'inverse.",
   "autofillPartGradientFeatherInfo": "À 0%, la limite entre les couleurs adjacentes est nette. À 100%, les couleurs se fondent complètement et en douceur jusqu'au bord de la couleur voisine.",
   "autofillPartGradientAngleLabel": "Angle : {value}°",
   "@autofillPartGradientAngleLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientColorLabel": "Couleurs",
   "autofillPartGradientAddColorButton": "Ajouter une couleur",
@@ -1331,12 +1350,20 @@
   "autofillPartGradientRemoveButton": "Supprimer le dégradé",
   "autofillPartGradientFeatherLabel": "Intensité du flou : {value}%",
   "@autofillPartGradientFeatherLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientDragHint": "Faites glisser la poignée à droite pour réorganiser les couleurs",
   "autofillPartGradientStopLabel": "Position : {value}%",
   "@autofillPartGradientStopLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientStopDragHint": "Faites glisser les repères ▲ pour ajuster la position de chaque couleur",
   "saveTreeScreenTitleTree": "Arbre de sauvegarde",
@@ -1348,29 +1375,53 @@
   "saveTreeCommentHint": "ex. : Arrière-plan terminé",
   "saveTreeSizeWarningSnackbar": "Votre arbre de sauvegardes devient volumineux (environ {mb} Mo). Nous vous recommandons de supprimer les sauvegardes inutiles.",
   "@saveTreeSizeWarningSnackbar": {
-    "placeholders": {"mb": {"type": "String"}}
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotSaveDialogTitle": "Enregistrer dans l'emplacement {n}",
   "@saveTreeSlotSaveDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotOverwriteWarning": "Cela écrasera les données existantes ({date}).",
   "@saveTreeSlotOverwriteWarning": {
-    "placeholders": {"date": {"type": "String"}}
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeRestoreAction": "Restaurer",
   "saveTreeLoadFailedSnackbar": "Échec du chargement des données de sauvegarde",
   "saveTreeRestoredSnackbar": "{name} restauré",
   "@saveTreeRestoredSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotLabel": "Emplacement {n}",
   "@saveTreeSlotLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotFallbackName": "Emplacement {n}",
   "@saveTreeSlotFallbackName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeNoDataLabel": "Aucune donnée de sauvegarde",
   "saveTreeEmptyTitle": "Aucune donnée de sauvegarde",
@@ -1380,21 +1431,40 @@
   "saveTreeChangeDataTitle": "Modifier les données de sauvegarde",
   "saveTreeChangeDataTitleWithProject": "Modifier les données de sauvegarde ({name})",
   "@saveTreeChangeDataTitleWithProject": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeChangeExceedMessage": "Votre nombre actuel de sauvegardes dépasse\nla nouvelle limite.\n\nVeuillez choisir les sauvegardes à conserver.",
   "saveTreeKeepableCountLabel": "Sauvegardes conservables : {n}",
   "@saveTreeKeepableCountLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeKeepLatestButton": "Conserver les {n} plus récentes",
   "@saveTreeKeepLatestButton": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSelectDataButton": "Choisir les données de sauvegarde",
   "saveTreeSelectedCountLabel": "Sélectionné : {selected} / {limit}",
   "@saveTreeSelectedCountLabel": {
-    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeBackButton": "Retour",
   "saveTreeNextButton": "Suivant",
@@ -1404,7 +1474,11 @@
   "saveTreeDeleteOptionTitle": "Supprimer définitivement",
   "saveTreeDeleteOptionSubtitle": "Supprime définitivement les {count} éléments non sélectionnés.\nLibère de l'espace de stockage.\n※ Les données supprimées ne peuvent pas être récupérées.",
   "@saveTreeDeleteOptionSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeApplyChangeButton": "Appliquer le changement",
   "canvasEditMenuBackgroundToggle": "Changer l'arrière-plan",
@@ -1423,7 +1497,14 @@
   "canvasSettingsMenuTooltip": "Paramètres/Édition",
   "canvasFrameSelectedCount": "{selected} / {total} images sélectionnées",
   "@canvasFrameSelectedCount": {
-    "placeholders": {"selected": {"type": "int"}, "total": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "canvasSelectAllButton": "Tout sélectionner",
   "canvasDeselectAllButton": "Tout désélectionner",
@@ -1459,7 +1540,11 @@
   "canvasHelpRubyTitle": "Furigana (glose phonétique)",
   "canvasHelpRubyBody": "Saisir « {example} » affiche une petite annotation de lecture au-dessus des caractères de base (en horizontal) ou à leur droite (en vertical). Cela fonctionne dans les deux sens, mais le texte contenant du furigana ne se retourne pas automatiquement à la ligne en mode horizontal (retours à la ligne manuels uniquement).",
   "@canvasHelpRubyBody": {
-    "placeholders": {"example": {"type": "String"}}
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelTitle": "Calques",
   "layerPanelHelpTooltip": "Aide",
@@ -1471,23 +1556,43 @@
   "layerPanelImportImageButton": "Importer une image",
   "layerPanelDefaultLayerName": "Calque{n}",
   "@layerPanelDefaultLayerName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultFolderName": "Dossier{n}",
   "@layerPanelDefaultFolderName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultLineartName": "Traits{n}",
   "@layerPanelDefaultLineartName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultAutofillName": "RemplissageAuto{n}",
   "@layerPanelDefaultAutofillName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultCommonName": "Commun{n}",
   "@layerPanelDefaultCommonName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelClippingBadge": "Écrêtage",
   "layerPanelAddTooltip": "Ajouter",
@@ -1499,7 +1604,14 @@
   "layerPanelRangeSceneSpecified": "Scène spécifiée",
   "layerPanelRangeFrameSpan": "{start}–{end}",
   "@layerPanelRangeFrameSpan": {
-    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMenuFrameRangeChange": "Modifier la plage d'images",
   "layerPanelMenuRangeChange": "Modifier la plage d'affichage",
@@ -1510,12 +1622,20 @@
   "layerPanelMenuReplaceMaterial": "Remplacer le matériau",
   "layerPanelDeleteConfirmTitle": "Supprimer {name} ?",
   "@layerPanelDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelDeleteConfirmBody": "Ce matériau sera supprimé de toutes les images de sa plage d'affichage.",
   "layerPanelMultiDeleteConfirmTitle": "Supprimer les {count} éléments sélectionnés ?",
   "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMultiDeleteConfirmBody": "Les matériaux de la timeline seront supprimés de toutes les images de leur plage d'affichage.",
   "layerPanelRangeDialogTitle": "Plage d'affichage",
@@ -1559,7 +1679,11 @@
   "layerPanelAutofillPresetMissingSnackbar": "Aucune partie de préréglage correspondante n'a été trouvée.",
   "layerPanelAutofillLayerNameSuffix": "{name} (remplissage auto)",
   "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelOrphanFillSuccessSnackbar": "Aucun calque de trait correspondant trouvé, rempli avec la couleur la plus récente à la place.",
   "layerPanelOrphanFillFailSnackbar": "Impossible de traiter : aucune partie n'est attribuée, ou il n'y a pas de forme à remplir.",
@@ -1567,15 +1691,27 @@
   "layerPanelAutofillUpdateHelpBody": "Le remplissage automatique actuel n'est pas à jour. Touchez pour le mettre à jour.",
   "layerPanelReplaceMaterialSuccessSnackbar": "Matériau remplacé : {name}",
   "@layerPanelReplaceMaterialSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelImportImageSuccessSnackbar": "Image importée : {name}",
   "@layerPanelImportImageSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelCopySuffix": "Copie de {name}",
   "@layerPanelCopySuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineFullscreenPreviewCloseTooltip": "Fermer l'aperçu plein écran",
   "timelineDefaultProjectName": "Nom du projet",
@@ -1595,7 +1731,11 @@
   "timelineWatermarkSelectTitle": "Sélectionner un filigrane",
   "timelineWatermarkAddedSnackbar": "Filigrane ajouté (affiché sur toutes les images) : {name}",
   "@timelineWatermarkAddedSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineWatermarkEditTitle": "Modifier le filigrane",
   "timelineWatermarkAngleLabel": "Angle",
@@ -1611,12 +1751,20 @@
   "timelineDurationLimitBodyPremium": "Cela dépasserait la limite Premium (jusqu'à 2 heures), il n'est donc plus possible d'ajouter ou de dupliquer des images.",
   "timelineSceneDeleteConfirmTitle": "Supprimer « {name} » ?",
   "@timelineSceneDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineSceneDeleteConfirmBody": "Toutes les données de la scène seront supprimées : images, calques communs, matériaux vidéo, matériaux image et filigranes inclus.",
   "timelineSceneMultiDeleteConfirmTitle": "Supprimer les {count} scènes sélectionnées ?",
   "@timelineSceneMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillUpdateHelpBody": "Cette scène/image contient un calque de remplissage automatique qui n'est pas à jour. Touchez le calque concerné dans le panneau des calques pour le mettre à jour.",
   "timelineFrameTrackLabel": "Image",
@@ -1628,7 +1776,14 @@
   "timelineEndCardDefaultLogoLabel": "Logo NIARIM",
   "timelineEndCardStatusFormat": "{label} · {seconds} s",
   "@timelineEndCardStatusFormat": {
-    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
   "timelineEndCardHiddenLabel": "Masqué",
   "timelineEndCardVisibilityToggleTooltip": "Afficher/masquer",
@@ -1636,24 +1791,39 @@
   "timelineEndCardReplaceTooltip": "Remplacer",
   "timelineEndCardLengthDialogTitle": "Durée de la carte de fin",
   "timelineEndCardTrackLabel": "Piste de la carte de fin",
-
   "timelineMarkerTrackLabel": "Horodatages",
   "timelineMarkerAddDialogTitle": "Ajouter un horodatage à F{n}",
   "@timelineMarkerAddDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerEditDialogTitle": "Horodatage : F{n}",
   "@timelineMarkerEditDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerCommentHint": "Commentaire (ex. bouche « a » ici)",
   "timelineSecondsLabel": "{n} s",
   "@timelineSecondsLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineAddClipDialogTitle": "Ajouter un clip {trackName}",
   "@timelineAddClipDialogTitle": {
-    "placeholders": {"trackName": {"type": "String"}}
+    "placeholders": {
+      "trackName": {
+        "type": "String"
+      }
+    }
   },
   "timelineClipLabelFieldLabel": "Libellé",
   "timelineClipStartLabel": "Début :",
@@ -1667,11 +1837,19 @@
   "timelineAutofillProgressTitle": "Remplissage automatique en cours",
   "timelineAutofillProgressSubtitle": "{count} images",
   "@timelineAutofillProgressSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillCompleteSnackbar": "Remplissage automatique terminé ({count} traitées)",
   "@timelineAutofillCompleteSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineEffectTypeFade": "Fondu",
   "timelineEffectTypeGaussianBlur": "Flou gaussien",
@@ -1709,44 +1887,66 @@
   "timelineClipUseEndLabel": "Fin utilisée F",
   "timelineCameraKfTitle": "Image clé caméra : F{n}",
   "@timelineCameraKfTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineCameraMoveXLabel": "Déplacement X",
   "timelineCameraMoveYLabel": "Déplacement Y",
   "timelineCameraZoomLabel": "Zoom",
   "timelineCameraRotationLabel": "Rotation",
-
   "layerPanelKeyframeLabel": "Animation (images clés)",
   "layerKeyframeSheetTitle": "Images clés de {name}",
   "@layerKeyframeSheetTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerKeyframeSheetDesc": "Définissez la position, l'échelle et la rotation de ce calque par image ; les images clés sont interpolées automatiquement. Le dessin du calque lui-même ne change pas.",
   "layerKeyframeAddAtCurrentFrame": "Ajouter à l'image actuelle (F{n})",
   "@layerKeyframeAddAtCurrentFrame": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeEmpty": "Aucune image clé pour l'instant. Ajoutez-en une avec le bouton ci-dessus.",
   "layerKeyframeScaleShort": "Échelle",
   "layerKeyframeRotationShort": "Rot.",
   "layerKeyframeEditTitle": "Image clé : F{n}",
   "@layerKeyframeEditTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeFrameLabel": "Image",
   "layerKeyframeScaleLabel": "Échelle",
   "layerKeyframeRotationLabel": "Rotation",
-
   "layerPanelGroupTooltip": "Grouper",
   "layerPanelGroupDefaultName": "Nouveau groupe",
   "layerPanelGroupMembershipLabel": "Groupe : {name}",
   "@layerPanelGroupMembershipLabel": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelGroupLeaveAction": "Quitter",
   "frameStripHoldDialogTitle": "F{n} images de maintien",
   "@frameStripHoldDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "frameStripTimelineModeTooltip": "Mode timeline",
   "progressDialogAdLoading": "Chargement de la publicité…",
@@ -1790,5 +1990,7 @@
   "privacyPolicyArt7Title": "Article 7 (Modifications de la présente Politique)",
   "privacyPolicyArt7Body": "Le développeur peut modifier la présente Politique en cas de changement de la législation applicable, de modification du contenu de l'Application ou pour toute autre raison qu'il juge nécessaire. En cas de modification de la présente Politique, le développeur en communiquera au préalable le contenu et la date d'entrée en vigueur, dans l'Application ou par tout autre moyen approprié.",
   "privacyPolicyArt8Title": "Article 8 (Contact)",
-  "privacyPolicyArt8Body": "Pour toute question relative à la présente Politique, veuillez nous contacter aux coordonnées ci-dessous.\n(Coordonnées du développeur : non définies — veuillez indiquer une adresse e-mail ou d'autres coordonnées avant la publication.)"
+  "privacyPolicyArt8Body": "Pour toute question relative à la présente Politique, veuillez nous contacter aux coordonnées ci-dessous.\n(Coordonnées du développeur : non définies — veuillez indiquer une adresse e-mail ou d'autres coordonnées avant la publication.)",
+  "tipsPcDexLayoutTitle": "Sur grand écran, bascule automatiquement en mode PC (DeX)",
+  "tipsPcDexLayoutDesc": "Sur un Chromebook, une tablette avec clavier, Samsung DeX ou tout environnement à écran large, l'application bascule automatiquement vers une mise en page professionnelle à panneaux ancrés. Vous pouvez aussi forcer Toujours en mode PC ou Toujours en mode mobile depuis les paramètres d'espace de travail, utile lors d'une connexion à un écran externe."
 }

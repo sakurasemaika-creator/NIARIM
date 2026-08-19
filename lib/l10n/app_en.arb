@@ -1,7 +1,6 @@
 {
   "@@locale": "en",
   "appTitle": "NIARIM",
-
   "homeTabProjects": "Projects",
   "homeTabShared": "Shared",
   "homeTabTrash": "Trash",
@@ -16,7 +15,6 @@
   "homeMoveToTrash": "Move to Trash",
   "homeMoveToTrashConfirm": "Move {count} item(s) to trash?",
   "commonMove": "Move",
-
   "homeShareFileDialogTitle": "Shared File",
   "homeShareFileDialogContent": "Duplicate this shared file and save it as a regular project?",
   "homeMissingFontsSnackbar": "Missing fonts: {names}",
@@ -45,7 +43,6 @@
   "homePreviewFailed": "Unable to play preview",
   "homeFirstLaunchMessage": "You can create hand-drawn animations",
   "homeFirstLaunchStart": "Get Started",
-
   "settingsScreenTitle": "Settings",
   "settingsBasicTitle": "Basic",
   "settingsBasicSubtitle": "FPS, background color, language",
@@ -86,7 +83,6 @@
   "settingsDrawingAreaWiden": "Widen drawing area",
   "settingsDrawingAreaScale": "Scale",
   "settingsScaleValue": "{scale}×",
-
   "commonCancel": "Cancel",
   "commonCreate": "Create",
   "commonChange": "Change",
@@ -94,7 +90,11 @@
   "confirmDeleteGenericBody": "Are you sure you want to delete this? This can't be undone.",
   "confirmDeleteNamedBody": "Delete \"{name}\"? This can't be undone.",
   "@confirmDeleteNamedBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "commonFavoriteDeleteBlocked": "Can't delete a favorited item. Remove it from favorites first.",
   "commonSave": "Save",
@@ -104,7 +104,6 @@
   "commonCopy": "Copy",
   "commonPaste": "Paste",
   "commonOk": "OK",
-
   "gestureSettingsTitle": "Gesture Settings",
   "gestureTwoFingerTap": "Two-Finger Tap",
   "gestureThreeFingerTap": "Three-Finger Tap",
@@ -118,19 +117,15 @@
   "gestureActionNextTool": "Quick Tool Switch",
   "gestureActionOnionSkinToggle": "Onion Skin On/Off",
   "gestureActionNone": "Do Nothing",
-
   "homeDrawerAppTagline": "Hand-drawn animation app",
   "homeDrawerAutofillPreset": "Autofill Presets",
   "homeDrawerSettings": "Settings",
   "homeDrawerHelp": "Help",
   "homeDrawerTips": "Tips",
   "homeDrawerPremium": "Premium",
-
   "gestureActionNoneShort": "None",
-
   "pressureTryDrawHint": "Try drawing with this setting (with a stylus, actual pressure is reflected)",
   "pressureTryDrawClear": "Clear",
-
   "penSettingsTitle": "Pen Input Settings",
   "penSettingsCurveSection": "Pressure Curve",
   "penSettingsCurveHint": "A weaker setting ramps up gradually with pressure; a stronger setting ramps up sharply.",
@@ -152,11 +147,9 @@
   "bucketSettingsUnderLineTitle": "Fill under lines",
   "bucketSettingsUnderLineHint": "Instead of painting over the line art directly, the expanded fill blends in behind existing pixels, keeping the line's appearance while closing gaps in its anti-aliased edges.",
   "bucketSettingsUnderLineDisabledHint": "Has no effect while \"Expand\" is 0px.",
-
   "fontCatalogSearchHint": "Search by font name... ({count} fonts)",
   "fontCatalogAll": "All",
   "fontCatalogNoResults": "No matching fonts found",
-
   "rulerPanelTitle": "Ruler",
   "rulerTypeLine": "Straight Ruler",
   "rulerTypeEllipse": "Ellipse Ruler",
@@ -165,7 +158,6 @@
   "rulerTypeTwoPoint": "Two-Point Perspective",
   "rulerTypeThreePoint": "Three-Point Perspective",
   "rulerDivisions": "Divisions",
-
   "transferScreenTitle": "Transfer (.niatra)",
   "transferInstructionHint": "Select the items to transfer to another device.",
   "transferItemSettings": "Settings",
@@ -179,7 +171,6 @@
   "transferExportFailedSnackbar": "Export failed: {error}",
   "transferImportSuccessSnackbar": "Imported the .niatra file",
   "transferImportFailedSnackbar": "Import failed: {error}",
-
   "folderManagementTitle": "Folder Management",
   "folderManagementCreateNew": "New",
   "folderManagementEmpty": "No folders yet",
@@ -187,20 +178,27 @@
   "folderMoveToTitle": "Move to Folder",
   "folderNone": "No Folder",
   "creativeAssetNameLabel": "Name",
-
   "commonAdd": "Add",
   "commonSearch": "Search",
   "autofillPresetSelectionTitle": "Presets to use",
   "autofillPresetSelectionHint": "Choosing only the autofill presets used in this project keeps the part-assignment list shorter and easier to browse.",
   "autofillPresetSelectionPartCount": "{count} parts",
   "@autofillPresetSelectionPartCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetSelectionButton": "Select presets to use",
   "autofillPresetSelectionAllLabel": "Use all",
   "autofillPresetSelectionCountLabel": "{count} selected",
   "@autofillPresetSelectionCountLabel": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "commonEdit": "Edit",
   "commonFavoriteToggle": "Toggle favorite",
@@ -219,7 +217,6 @@
   "timelineStepBack": "Step back one frame",
   "timelineStepForward": "Step forward one frame",
   "timelineSkipToEnd": "Skip to last frame",
-
   "quickToolPanelTitle": "Quick Tool Settings",
   "quickToolEmpty": "No tools added yet",
   "quickToolAddCurrentBrush": "Add Current Brush",
@@ -227,7 +224,6 @@
   "quickToolEyedropper": "Eyedropper",
   "quickToolBucket": "Bucket",
   "quickToolSizeDialogTitle": "{brushName} Size",
-
   "materialListTitle": "Materials",
   "materialRemoveUnused": "Remove Unused ({count})",
   "materialEmptyTitle": "No materials",
@@ -240,7 +236,6 @@
   "materialRemoveUnusedConfirmTitle": "Delete all unused materials?",
   "materialRemoveUnusedConfirmBody": "This will delete all materials not referenced anywhere in the project. This cannot be undone.",
   "materialRemovedSnackbar": "Removed {count} unused material(s)",
-
   "watermarkEmptyTitle": "No watermarks yet",
   "watermarkEmptyHint": "Tap the + button to add an image or text watermark",
   "watermarkAddFromImage": "Add from Image",
@@ -258,7 +253,6 @@
   "watermarkOutlineLabel": "Outline",
   "watermarkOutlineColorLabel": "Outline color",
   "watermarkOutlineWidthLabel": "Outline width",
-
   "premiumActiveLabel": "Premium Active",
   "premiumVsTitle": "Free vs Premium",
   "premiumCampaignFreeNote": "* During the campaign, all Premium features above are free for everyone",
@@ -290,7 +284,6 @@
   "premiumValueDuration90Sec": "1.5 min",
   "premiumPlanRecommendedBadge": "Recommended",
   "premiumMonthlyPrice": "¥550/month",
-
   "toolbarItemPen": "G-Pen",
   "toolbarItemEraser": "Eraser",
   "toolbarItemBucket": "Bucket",
@@ -301,7 +294,6 @@
   "toolbarItemTransform": "Transform",
   "toolbarItemText": "Text",
   "toolbarItemShape": "Shape",
-
   "workspaceScreenTitle": "Workspace Settings",
   "workspaceToolbarEditSection": "Toolbar Editing",
   "workspaceToolbarEditHint": "Select which tools to show with the checkboxes, and drag to reorder them.",
@@ -327,11 +319,9 @@
   "workspaceSaveDialogLabel": "Name (e.g. Animation, Line Art)",
   "workspaceLoadRightHanded": "Right-Handed",
   "workspaceLoadLeftHanded": "Left-Handed",
-
   "helpScreenTitle": "Help",
   "helpSearchHint": "Search...",
   "helpNoResults": "No matching items found",
-
   "helpCategoryTool": "Tools",
   "helpCategoryLayer": "Layers",
   "helpCategoryAnimation": "Animation",
@@ -343,256 +333,172 @@
   "helpCategoryExport": "Export",
   "helpCategoryPremium": "Premium",
   "helpCategorySettings": "Settings",
-
   "helpPenToolTitle": "Pen Tool",
   "helpPenToolDesc": "The basic tool for drawing lines on the canvas. Long-press to change the brush type, size, and color (double-tap shows a quick summary). It supports pressure and tilt from stylus/tablet devices, and adjusting the pressure curve under Settings > Pen Input lets you finely customize how pressure translates into size and opacity changes. Switching pen sub-tools lets you apply tones or place stamps from the same pen tool.",
-
   "helpEraserToolTitle": "Eraser Tool",
   "helpEraserToolDesc": "The counterpart to the pen tool, used to erase what you've drawn. Like a brush, you can adjust its size and opacity, and brush settings such as fade and stroke decay apply to it as well. Rather than \"adding\" to the transparent parts of a layer, it \"removes\" existing drawing, so the layer below becomes visible through it.",
-
   "helpBucketToolTitle": "Bucket Tool",
   "helpBucketToolDesc": "Fills an enclosed area all at once. Tap inside an area enclosed by line art and the whole area is filled with the selected color (or tone). If there are gaps in the line art, the fill can spread into unintended areas, so it helps to make sure the line art is properly closed before using it. You can switch between flat fill and tone fill in the settings. Detailed settings (tolerance, expand px, fill under lines) can be adjusted from the \"Bucket Fill\" section in Settings.",
-
   "helpLassoFillTitle": "Lasso Fill",
   "helpLassoFillDesc": "Trace with your finger to form a polygonal area, then fill the inside all at once. Unlike the bucket tool, you can define the area yourself even where the line art isn't closed, making it well suited for complex shapes or areas with gaps in the lines.",
-
   "helpEyedropperToolTitle": "Eyedropper Tool",
   "helpEyedropperToolDesc": "Picks up the color at the tapped position and sets it as the drawing color. It samples the composited look of all layers as actually displayed on screen, so it accurately picks up the \"color as seen\" even where multiple layers overlap.",
-
   "helpSelectToolTitle": "Select Tool",
   "helpSelectToolDesc": "Selects part of the canvas so you can move, rotate, or scale just that area. Long-press to choose from three selection methods: \"Rectangle Select,\" \"Lasso Select\" (freeform enclosure), or \"Auto Select\" (magic wand — automatically groups areas of similar color). While a selection is active, an outline marks the selected area on the canvas, and the same area stays fixed across all frames and layers until you deselect.",
-
   "helpFingerToolTitle": "Finger Tool (Warp Tool)",
   "helpFingerToolDesc": "Warps pixels by pushing them in the direction you drag your finger, like smearing wet paint with a finger. It's used less for fine corrections and more when you want to organically warp lines you've already drawn to give them more expression.",
-
   "helpShapeToolTitle": "Shape Tool",
   "helpShapeToolDesc": "Draws precise shapes such as lines, rectangles, and circles with a single gesture. Dragging from the start point to the end point previews the shape live, and it's finalized when you lift your finger. Handy when you need straight lines or perfect circles that are hard to draw freehand.",
-
   "helpTextToolTitle": "Text Tool",
   "helpTextToolDesc": "Places text on the canvas. You can choose the font, size, color, and vertical/horizontal writing direction. Vertical writing supports automatic rotation of half-width alphanumerics, tate-chu-yoko (keeping numbers horizontal within vertical text), and ruby (furigana). Placed text is baked in as pixels when exported as well.",
-
   "helpQuickToolTitle": "Quick Tool",
   "helpQuickToolDesc": "Lets you pre-register combinations of brushes and tools you use often, then cycle through them with a single button. Long-press the ↺ button on the canvas to open a settings panel where you can add, reorder, and delete entries. Drag to change the order.",
-
   "helpLayerTitle": "Layers",
   "helpLayerDesc": "A mechanism that lets you split a single canvas into multiple transparent \"layers.\" By drawing line art, coloring, and backgrounds on separate layers, you can redo just the coloring later or swap out the background without erasing the line art. On screen, layers stacked higher appear in front.",
-
   "helpBlendModeTitle": "Blend Mode",
   "helpBlendModeDesc": "Changes how a layer is composited with the ones below it. Besides Normal (simply stacked), there's Multiply (multiplies with the layer below to create shadow-like effects), Screen (brightens as if adding light), and Overlay (blends colors while preserving light and dark), among others. Often used when layering tones or color effects as their own layer.",
-
   "helpClippingTitle": "Clipping",
   "helpClippingDesc": "Restricts drawing to only the opaque pixels of the layer directly below. When you want to color without going outside the line art, enabling clipping on a coloring layer placed above a line art layer removes the risk of accidentally drawing outside the lines.",
-
   "helpCommonLayerTitle": "Common Layer",
   "helpCommonLayerDesc": "Ordinary layers are independent per frame, but a common layer shares the same content across multiple frames and scenes. Elements that don't move between frames, like backgrounds, can be drawn once instead of redrawn for every frame. It's shown as a dedicated track on the timeline.",
-
   "helpAutoFillTitle": "Auto Fill",
   "helpAutoFillDesc": "Creates an auto-fill layer beneath the line art layer and automatically colors it based on a pre-made \"autofill preset\" (a combination of colors and tones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark (❗) appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied.",
-
   "helpOnionSkinTitle": "Onion Skin",
   "helpOnionSkinDesc": "Overlays the frames before and after the one you're currently editing at partial transparency, so you can draw while checking how the motion connects. You can adjust how many frames are shown (before and after) and their color and opacity in the performance settings.",
-
   "helpRulerTitle": "Ruler",
   "helpRulerDesc": "A guide for drawing precise lines that are hard to achieve freehand, including straight, circle, ellipse, and perspective rulers (using vanishing points for perspective drawing). The pen tip automatically snaps to the placed ruler, making even compositions with challenging depth easier to draw than without a ruler. Rulers can be moved, rotated, and resized using their handles.",
-
   "helpFadeTitle": "Fade",
   "helpFadeDesc": "A brush setting where opacity and thickness gradually decrease as you draw a stroke further. Use it when you want the end of a line to trail off, or to create a drawing feel with a lingering effect.",
-
   "helpStrokeDecayTitle": "Stroke Decay",
   "helpStrokeDecayDesc": "Similar to fade, but closer to the effect of \"ink running out\" — the color fades or gets patchy the longer you keep drawing. It reproduces the texture of a brush or marker running dry as you keep using it.",
-
   "helpColorMixingTitle": "Color Mixing",
   "helpColorMixingDesc": "While painting with a brush, blends the color already under the brush with the color you're about to apply. Use it when you want new colors to blend into existing ones, like watercolor or oil paint.",
-
   "helpPressureCurveTitle": "Pressure Curve",
   "helpPressureCurveDesc": "A feature in the pen input settings that lets you freely adjust, via a graph, the relationship between actual pen pressure and how it affects brush size and opacity. Whether you want thick lines even with light pressure, or the opposite — needing firm pressure to get thick lines — you can finely customize the feel to match your habits. You can try drawing right there to check the effect after changing the settings.",
-
   "helpTimelineTitle": "Timeline",
   "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Image, video, and audio material tracks, common layer tracks, and camera keyframes are all managed on the same timeline.",
-
   "helpSceneTitle": "Scene",
   "helpSceneDesc": "A feature for dividing and managing a single project (one video) by scene (cut). While folders organize at the project level, scenes are used to express scene changes within a single video.",
-
   "helpCameraKeyframeTitle": "Camera Keyframe",
   "helpCameraKeyframeDesc": "Records the camera's position, zoom level, and rotation at a specific point on the timeline. Since the values are automatically interpolated smoothly between keyframes, you can easily add camera work such as panning or zooming in/out.",
-
   "helpEffectFilterTitle": "Effect Filter",
   "helpEffectFilterDesc": "A visual effect (blur, color correction, glow, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself.",
-
   "helpEndCardTitle": "End Card (End Logo)",
   "helpEndCardDesc": "A short video (about 5 seconds) with the NIARIM logo, automatically added to the end of the main content when exporting a video. The free version cannot hide or remove it, but Premium members can turn it on/off, change its length, or replace it.",
-
   "helpAutoSaveTitle": "Auto Save",
   "helpAutoSaveDesc": "A save dedicated to recovery in case of a crash or file corruption. It saves automatically every time there's a change, such as drawing, and overwrites the oldest of up to 3 saves. It's managed completely separately from manual saves (save slots and the save tree) and is not a substitute for regular saving. You're only asked whether to restore it when relaunching the app after an abnormal exit.",
-
   "helpSaveSlotTitle": "Save Slot",
   "helpSaveSlotDesc": "A method of saving into a fixed number of save slots, where you choose which slot to save to each time. The number of slots is determined by the settings (5 for low quality, 10 for medium quality). Since you choose which slot to overwrite every time, it's an easy way to manage keeping a particular moment's state.",
-
   "helpSaveTreeTitle": "Save Tree",
   "helpSaveTreeDesc": "A save method where a new save point is created every time you save, and you can branch off from a past save point to create a different history. There's no limit on the number of saves, making it well suited for use cases like \"I want to go back to that version and try a different direction.\" On screen, save points are shown as a tree diagram growing from bottom to top.",
-
   "helpFolderTitle": "Folder",
   "helpFolderDesc": "A feature for grouping and organizing your projects (works). It supports multiple levels of nesting, so you can also use it to manage multiple episodes or a series of the same work together (for example, arranging projects for \"Episode 1,\" \"Episode 2,\" and so on inside a folder named after the work). If you want to divide a single video into separate scenes, use the \"Scene\" feature on the canvas screen instead of folders.",
-
   "helpTrashTitle": "Trash",
   "helpTrashDesc": "The place where deleted projects are temporarily moved. You can restore them from here until they're permanently deleted. You can set the number of days until automatic deletion (Off/30/60/90 days) in the settings.",
-
   "helpShareTitle": "Share (.niashare)",
   "helpShareDesc": "A dedicated file format for handing a project to someone else (or to another device of your own). When the recipient opens this file, it's duplicated and added to their own project list. The original .niashare file itself is not changed.",
-
   "helpTransferTitle": "Transfer (.niatra)",
   "helpTransferDesc": "A feature for transferring your entire app environment — settings, materials, brushes, presets, UI theme, and more — to another device all at once. You can choose individual items to transfer with checkboxes. If you want to hand over an individual project, use \"Share (.niashare)\" instead.",
-
   "helpVideoExportTitle": "Video Export (MP4)",
   "helpVideoExportDesc": "Exports your work as a general-purpose MP4 video. It uses the device's built-in hardware encoder directly, avoiding H.264 licensing concerns. The free version automatically adds an end card, and there's a limit on the exportable length.",
-
   "helpTransparentWebmTitle": "Transparent WebM",
   "helpTransparentWebmDesc": "A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps.",
-
   "helpGifExportTitle": "GIF Export",
   "helpGifExportDesc": "Exports as an animated GIF. GIF is an export-only format — there's no dedicated \"GIF mode\" while editing.",
-
   "helpWatermarkEntryTitle": "Watermark",
   "helpWatermarkEntryDesc": "A Premium-only feature that lets you add your own signature or logo as a watermark on exported videos and images. You can adjust its position, size, and opacity.",
-
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "A membership tier that unlocks features restricted in the free version, such as relaxed duration limits, end-logo editing, watermark, tone curve, and level correction. During the launch campaign, these features are free even on the free plan (ad removal and the purchase itself are not included).",
-
   "helpFontManagementTitle": "Font Management",
   "helpFontManagementDesc": "A screen where you can add, search, and remove fonts available in the text tool. Additional free fonts beyond the bundled defaults are downloaded on demand from here, in order to keep the initial install size down.",
-
   "helpPerformanceSettingsTitle": "Performance Settings",
   "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, tile cache, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.",
-
   "helpMaterialClipTitle": "Material clips (image / video / audio)",
   "helpMaterialClipDesc": "Clips placed on the timeline's image, video, and audio tracks. Long-press-drag a clip's body to move its start position, or drag the handles at either end to change how much of it is used. Tap a clip to open its detail sheet, where the copy icon duplicates it and the trash icon deletes it. Image and video clips are internally handled as layers, while audio clips are managed as clips attached directly to the scene.",
-
   "helpGestureSettingsTitle": "Gesture settings",
   "helpGestureSettingsDesc": "Lets you assign actions — undo/redo, frame move, eyedropper, and more — to a two-finger tap, three-finger tap, two-finger swipe, or long press. Pen buttons (on supported styluses) can also be assigned separately. Handy for triggering frequent actions with one touch instead of switching tools.",
-
   "helpBucketDetailSettingsTitle": "Bucket fill detail settings",
   "helpBucketDetailSettingsDesc": "From the \"Bucket Fill\" section in settings, you can adjust tolerance (how much color difference from the clicked pixel still counts as the same region), expand px (how far the filled area extends past the boundary to cover gaps in the lineart), and fill under line (composites the expanded fill behind existing pixels instead of painting over the lineart, keeping the line's look intact). Adjusting these helps when the lineart has small gaps or fills feel incomplete.",
-
   "helpStampToolTitle": "Stamp tool",
   "helpStampToolDesc": "Places a pre-registered image onto the canvas like a brush. Reuse speed lines, background patterns, and small props without redrawing them each time. With pixel mode on, stamped images are processed with mosaic downsampling plus color reduction for a pixel-art look.",
-
   "helpToneFillTitle": "Tone fill",
   "helpToneFillDesc": "Switching the bucket tool's setting from solid fill to tone fill lets you fill with a chosen halftone or line-pattern tone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture.",
-
   "helpPixelModeTitle": "Pixel mode",
   "helpPixelModeDesc": "A setting available on brushes, fonts, and stamps individually. Turning it on strips anti-aliasing for crisp, pixel-art-style edges. Use it when you want a deliberately old-game feel or a low-resolution look.",
-
   "helpHomeScreenTitle": "Home screen",
   "helpHomeScreenDesc": "The first screen shown when you launch the app, with Projects, Shared, Works, and Trash tabs. The search icon at the top right lets you filter projects by name. On the Projects tab, the FAB lets you choose between creating a new project or a new folder.",
-
   "helpNewProjectTitle": "New project",
   "helpNewProjectDesc": "Set canvas size, fps, duration (in seconds — later kept in sync with frame changes made in the timeline), drawing area (lets you draw beyond the export bounds), and which autofill presets to use, all before creating the project.",
-
   "helpThemeSettingsTitle": "Theme settings",
   "helpThemeSettingsDesc": "Choose the app's overall color scheme from presets, or freely customize the accent color. Headings/labels and body text use separate fonts, so you can enjoy re-skinning the app while keeping it readable.",
-
   "helpWorkspaceSettingsTitle": "Workspace settings",
   "helpWorkspaceSettingsDesc": "Gathers settings such as left-handed mode (mirrors the docked panels), manually switching PC/DeX mode, and when the pan tool is shown. Adjust the layout to suit your device and dominant hand.",
-
   "helpPenSettingsTitle": "Pen settings",
   "helpPenSettingsDesc": "Along with the pressure curve for tablets and pen displays, this screen lets you assign actions — such as toggling the eraser or the eyedropper — to the side buttons of a supported stylus.",
-
   "helpMaterialListTitle": "Materials list",
   "helpMaterialListDesc": "A screen that gathers the image, video, and audio materials used in a project. It collects the source files for anything placed on the timeline.",
-
   "helpFrameOperationsTitle": "Frame operations",
   "helpFrameOperationsDesc": "In the frame list, you can add, duplicate, and delete frames, and in multi-select mode move, duplicate, or delete several frames at once. Increasing the hold count keeps a single frame displayed across several cells (a \"hold\"), saving you drawing time on cuts with little motion.",
-
   "helpSceneOperationsTitle": "Scene operations",
   "helpSceneOperationsDesc": "The timeline's scene tab lets you add, duplicate, delete, rename, and reorder scenes. Multi-select mode lets you move, duplicate, or delete several scenes at once.",
-
   "helpQuickToolManagementTitle": "Quick tool management",
   "helpQuickToolManagementDesc": "Register a set of frequently used tools to cycle through with a single tap. Open the management popup with a long press or an upward swipe to edit the registered tools and their order.",
-
   "helpTransformSelectionTitle": "Transforming a selection",
   "helpTransformSelectionDesc": "A region enclosed with the select tool can be moved, rotated, and scaled with the transform tool. Handy for repositioning a mistakenly drawn part, or enlarging just one area to emphasize it.",
-
   "helpGradientAutofillTitle": "Gradient fill (autofill presets)",
   "helpGradientAutofillDesc": "Each part in an autofill preset can use a gradient instead of a solid color. Symmetric handles you can drag let you intuitively adjust the gradient's extent and angle.",
-
   "helpColorPickerTitle": "Color picker",
   "helpColorPickerDesc": "A color picker that lets you switch between HSV and RGB on one screen. Long-press for a brief usage tip. The palette feature lets you save and recall a set of colors you're using.",
-
   "helpUndoSettingsTitle": "Undo history length",
   "helpUndoSettingsDesc": "In performance settings, you can adjust how many actions undo can step back through. A larger number gives you more freedom to experiment, but also uses more memory — lower it on low-spec devices to keep things running smoothly.",
-
   "helpBrushFavoriteTitle": "Favorite brushes",
   "helpBrushFavoriteDesc": "Tap the star icon on a brush in the brush list to favorite or unfavorite it (the same interaction used for favorites throughout the app — autofill presets, stamps, fonts, draw filters, and more). The star icon at the top of the list also lets you filter down to favorites only. Favorited brushes can't be deleted by accident.",
-
   "helpLayerFolderTitle": "Layer folders",
   "helpLayerFolderDesc": "Lets you organize several layers into a folder. Keeps the layer panel manageable even in illustrations with many parts. Clipping can't cross folder boundaries, so if you use clipping, keep the relevant layers in the same folder.",
-
   "helpLayerMultiSelectTitle": "Multi-selecting and bulk layer actions",
   "helpLayerMultiSelectDesc": "Selection mode in the layer panel lets you check off several layers at once to merge or bulk-delete them. Merging only works between normal, autofill-lineart, and autofill layers (common layers, folders, and timeline materials can't be merged).",
-
   "helpAutofillBatchRunTitle": "Run autofill",
   "helpAutofillBatchRunDesc": "Choosing \"Run autofill\" from the timeline screen's three-dot menu recalculates every autofill layer flagged with the update mark (❗) at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart.",
-
   "helpAutofillLineColorTitle": "Autofill lineart color settings",
   "helpAutofillLineColorDesc": "Each part in an autofill preset has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color's HSL to match the fill color, so the line doesn't stand out and blends in naturally.",
-
   "helpAutofillPresetFilterTitle": "Filtering autofill presets per project",
   "helpAutofillPresetFilterDesc": "As presets pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the presets used in this project, keeping the list tidy and easy to pick from.",
-
   "helpDrawingAreaTitle": "Drawing area",
   "helpDrawingAreaDesc": "Lets you draw beyond the export bounds. A red frame on the canvas marks the export area — anything drawn outside it isn't exported, but it leaves room to adjust what's shown later with camera moves like panning and zooming. Set the scale when creating a new project.",
-
   "helpCanvasBackgroundTitle": "Canvas background color",
   "helpCanvasBackgroundDesc": "Lets you set the project's canvas background color. It has no effect on transparent exports (transparent WebM), but you can change it to whatever's easiest to work against.",
-
   "helpProjectDetailTitle": "Project details screen",
   "helpProjectDetailDesc": "A screen for checking and editing per-project settings all in one place — name, thumbnail, favorite status, and which autofill presets are enabled. The entry point to the save tree is also here.",
-
   "helpWatermarkEditTitle": "Re-editing a watermark",
   "helpWatermarkEditDesc": "Tapping a watermark placed on the timeline's common-layer track lets you re-edit its angle, size, opacity, and display range (loop) at any time. You can fine-tune it not just when registering it, but whenever you're actually using it in a project.",
-
   "helpAudioClipTitle": "Audio clip volume and fades",
   "helpAudioClipDesc": "An audio clip placed on the timeline can have its volume, fade-in, and fade-out durations adjusted from its detail sheet. Use it to balance sound effect and BGM volume, or smooth out a track's start and end.",
-
   "helpConvertToCommonTitle": "Converting a layer to common",
   "helpConvertToCommonDesc": "Converts a normal layer into a common layer (one that keeps showing the same content across multiple frames). You can also merge the currently visible layers into one before converting. Saves you redrawing something like a background that stays the same every frame.",
-
   "helpAnimatedNoiseFilterTitle": "Animated noise filter",
   "helpAnimatedNoiseFilterDesc": "An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move.",
-
   "helpRainFilterTitle": "Rain filter",
   "helpRainFilterDesc": "An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.",
-
   "helpPenSubToolTitle": "Pen sub-tools",
   "helpPenSubToolDesc": "Long-pressing the pen tool switches it from regular drawing to the tone-fill or stamp-placement sub-tools. Lets you move between several tasks from the same pen without constantly switching tools.",
-
   "helpTiltDetectionTitle": "Tilt detection",
   "helpTiltDetectionDesc": "A setting that uses tilt data from a supported stylus to thicken or thin the line as you lay the pen tip down, recreating a feel closer to a real drawing tool. Toggle it on/off from performance settings.",
-
   "helpEffectFilterOrderTitle": "Effect filter order",
   "helpEffectFilterOrderDesc": "Multiple effect filters can be stacked, and they're applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they're actually applied on screen.",
-
   "helpFontImportTitle": "Font import",
   "helpFontImportDesc": "Lets you load a font file straight from your device's storage. Add it from the \"Import\" tab in font management, in settings. Handy when you want to use a custom-made font that isn't distributed anywhere, or a commercial font you've purchased.",
-
   "helpStampTransformTitle": "Rotating and scaling stamps",
   "helpStampTransformDesc": "The stamp panel lets you adjust the rotation angle and size of the stamp you're placing. Varying the direction and size of the same stamp keeps speed lines and small props from looking monotonous.",
-
   "helpExportScreenTitle": "Export screen",
   "helpExportScreenDesc": "Shows progress while exporting a video or image, and lets you cancel partway through. Export uses the device's hardware encoder, so the time it takes depends on your device's performance.",
-
   "helpFreeDurationLimitTitle": "Free-tier duration limit",
   "helpFreeDurationLimitDesc": "Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.",
-
   "helpDrawingFilterTitle": "Draw filters",
   "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer.",
-
   "helpLayerKeyframeTitle": "Layer keyframes (per-part animation)",
   "helpLayerKeyframeDesc": "Set each layer's position, scale, and rotation per frame, with the keyframes interpolated automatically. Where camera keyframes move the whole screen, this moves an individual layer only. Since each autofill part is generated as its own separate layer, this works directly for per-part animation — moving just an arm, opening and closing just a mouth, and so on. Set it up from the \"Animation (keyframes)\" entry in each layer's three-dot menu in the layer panel. The layer's artwork itself doesn't change — it's a non-destructive transform of where it's displayed. This only affects the timeline's display (preview / export) and has no effect on actual drawing in canvas mode.",
-
   "helpLayerGroupTitle": "Layer groups (moving multiple parts together)",
   "helpLayerGroupDesc": "Moves several layers together with a single keyframe stream. For example, if an \"arm\" is made up of two autofill parts — skin and sleeve — grouping them lets you move both with one keyframe operation. Create a group by multi-selecting layers (checkboxes) in the layer panel and tapping the \"Group\" icon in the bottom bar. A group's motion is layered on top of each member layer's own keyframes (if set), so you can combine the group's overall movement with per-layer fine adjustments. A layer can belong to only one group at a time.",
-
   "tipsScreenTitle": "Tips",
   "tipsSearchHint": "Search tips...",
   "tipsCategoryVideo": "Video-making tips",
@@ -600,166 +506,98 @@
   "tipsCategoryDrawing": "Tips for smoother drawing",
   "tipsCategoryEffects": "Tips for styling and polish",
   "tipsCategoryExport": "Export & workflow tips",
-
   "tipsClipDuplicateTitle": "Timeline clips can be duplicated, moved, and deleted",
   "tipsClipDuplicateDesc": "Tap an image, video, or audio clip to open its detail sheet, then use the copy icon to duplicate it. Reusing the same sound effect or repositioning the same image across scenes only takes a long-press drag and a tap of the duplicate button.",
-
   "tipsTextCaptionTitle": "Add captions and reaction text with the text tool",
   "tipsTextCaptionDesc": "Use the text tool to drop in the captions and reaction text that meme videos are known for, frame by frame. Switch the font to pixel mode for a deliberately retro, old-game feel.",
-
   "tipsAutofillPresetTitle": "Register autofill presets by part",
   "tipsAutofillPresetDesc": "Registering presets per part — skin, hair, clothes — with their shading included lets you automate most of the coloring just by drawing the lineart. You can also narrow down which presets are used in each project.",
-
   "tipsBrushFavoriteTitle": "Favorite your go-to brushes to switch without hunting",
   "tipsBrushFavoriteDesc": "Tap the star icon on the brushes you use most to favorite them. The star icon at the top of the list lets you filter down to favorites only, cutting down on how long it takes to find one. Favorited brushes can't be deleted by accident.",
-
-  "tipsOnionSkinTitle": "See through neighboring frames with onion skin",
-  "tipsOnionSkinDesc": "Onion skin overlays the previous and next frames semi-transparently, so you can check how motion connects while you draw.",
-
   "tipsPressureCurveTitle": "Tune the pressure curve to match your hand",
   "tipsPressureCurveDesc": "The pressure curve in settings lets you place up to 10 control points freely. If the strength response doesn't feel right, adjust it to match your own pressure habits.",
-
-  "tipsEffectFilterTitle": "Use effect filters to unify a video's mood",
-  "tipsEffectFilterDesc": "Effect filters like retro anime, CRT, and sepia can be applied across the whole timeline or per scene at once. Handy when you want a Y2K look or a nostalgic anime feel across the entire video in one step.",
-
-  "tipsCameraKeyframeTitle": "Add zoom and pan with camera keyframes",
-  "tipsCameraKeyframeDesc": "Placing camera keyframes on a scene lets you add cinematic movement — zooming in, panning — even to a single still image.",
-
   "tipsExportFormatTitle": "Pick the export format that fits your purpose",
   "tipsExportFormatDesc": "GIF export is great for casual posting to social media, transparent WebM is for layering over other video or keeping the background transparent, and MP4 is for a regular video file. Choosing per use case makes it easier to balance file size against quality.",
-
   "tipsGestureShortcutTitle": "Bind frequent actions to a gesture",
   "tipsGestureShortcutDesc": "From \"Gestures\" in settings, you can assign undo/redo or the eyedropper to a two-finger tap, three-finger tap, or long press. Since you don't have to switch tools, it keeps your drawing rhythm from breaking.",
-
   "tipsAudioRepeatTitle": "Keep sound effects on rhythm with duplicated clips + fades",
   "tipsAudioRepeatDesc": "To reuse the same sound effect repeatedly, duplicate the clip and line up copies at offset timings, giving each one its own fade-in/fade-out. That produces a natural, rhythmic repeat of the effect.",
-
   "tipsVerticalRubyTitle": "Vertical text + ruby for a title-logo look",
   "tipsVerticalRubyDesc": "Combining vertical writing with ruby (furigana) in the text tool gives you a Japanese-style title logo or a distinctive heading treatment. Half-width alphanumerics automatically rotate to sit sideways, so it stays readable even mixed with symbols or numbers.",
-
   "tipsBrushTrySaveTreeTitle": "Try new brush settings via the save tree",
   "tipsBrushTrySaveTreeDesc": "Before making a big change to brush thickness or stabilization, save to the save tree first for peace of mind. If you don't like the result, you can jump straight back to the previous state, making it easier to try bold adjustments.",
-
   "tipsEyedropperGestureTitle": "Bind the eyedropper to a two-finger tap to keep your palette consistent",
   "tipsEyedropperGestureDesc": "Assigning the eyedropper to a two-finger tap in gesture settings lets you grab a nearby color instantly without switching tools. Handy for coloring while staying true to a character's palette.",
-
   "tipsRulerOnionTitle": "Perspective ruler + onion skin to reuse a background",
   "tipsRulerOnionDesc": "Lay out a background's depth with the perspective ruler, then move just the character while checking neighboring frames through onion skin — no need to redraw the background every frame.",
-
   "tipsGradientTraceTitle": "Gradient autofill + color tracing for a natural blend",
   "tipsGradientTraceDesc": "When setting a gradient in an autofill preset, set the lineart color mode to color tracing so the line's color shifts along with the gradient's subtle color changes, keeping the boundary from standing out.",
-
   "tipsRainNoiseTitle": "Rain + animated noise for a damp atmosphere",
   "tipsRainNoiseDesc": "Layering a light animated noise filter over the rain filter adds a sense of particles in the air on top of the raindrops themselves, for a damp, rainy-day texture.",
-
   "tipsPartKeyframeGroupTitle": "Bounce a character with part keyframes + grouping",
   "tipsPartKeyframeGroupDesc": "Animate each autofill part with layer keyframes, then group the related parts to bounce them together — you can create a mini animation that sways to music without redrawing a thing.",
-
   "tipsLowSpecSettingsTitle": "On low-spec devices, revisit performance settings and undo history",
   "tipsLowSpecSettingsDesc": "If things feel heavy, try switching performance settings to the \"low quality\" preset and lowering the undo history length too. That reduces memory use and can make things run more smoothly.",
-
   "tipsSeriesPresetFolderTitle": "Manage a series with preset filtering + folder organization",
   "tipsSeriesPresetFolderDesc": "When making multiple episodes of the same work, group the projects by episode in a folder, and narrow down which autofill presets each project uses. That keeps each character's palette from getting mixed up and keeps work efficient.",
-
-  "tipsFadeEndCardTitle": "Close out with an effect-filter fade + the end card",
-  "tipsFadeEndCardDesc": "Fading the final scene slowly to black with an effect filter makes the transition into the automatic end card at the very end feel smoother, giving your video's ending a noticeably more polished, professional feel.",
-
   "tipsPixelToneRetroTitle": "Pixel-mode stamps + tone fill for a unified retro look",
   "tipsPixelToneRetroDesc": "Combining pixel-mode stamps with the checker and grid tones exclusive to pixel mode lets you unify the whole screen with a pixel-art texture. Great for a retro-game feel.",
-
   "tipsMagicWandLassoTitle": "Magic wand + lasso fill for faster color separation",
   "tipsMagicWandLassoDesc": "Select a broad area at once with the select tool's magic wand, then fine-tune just the overflow with lasso selection — even complex color separation goes fast this way.",
-
   "tipsCommonLayerFolderTitle": "Common layers + folders to reuse across episodes",
   "tipsCommonLayerFolderDesc": "For a logo or credit text used in every episode of a series, turn it into a common layer and keep it organized in a folder — makes it easy to handle when copying it into a new episode's project.",
-
   "tipsStrokeDecayFadeTitle": "Stroke decay + fade for a brush-pen feel",
   "tipsStrokeDecayFadeDesc": "Combining stroke decay and fade in brush settings tapers the start and end of a stroke naturally, giving lines the kind of expressive thick-thin variation you get from a calligraphy or ink brush.",
-
   "tipsColorMixingFadeTitle": "Color mixing + fade for a paint-like blend",
   "tipsColorMixingFadeDesc": "Adding fade to a brush that has color mixing enabled makes it blend with the color underneath while gradually thinning out — much closer to how real paint behaves.",
-
   "tipsOutlineAnimeStyleTitle": "Outline + anime style for a cel-animation finish",
   "tipsOutlineAnimeStyleDesc": "Draw the outline onto a new layer with the draw filter's outline, then reduce the color count with the anime-style filter, for a crisp, cel-animation-like finish.",
-
   "tipsLevelsToneCurveTitle": "Levels + tone curve for a graphic-design look",
   "tipsLevelsToneCurveDesc": "Push the contrast hard with levels first, then sculpt the gradation with the tone curve, for a poster-like graphic look that departs from photographic tonality.",
-
   "tipsMosaicChromaticTitle": "Mosaic + chromatic aberration for a rough CRT texture",
   "tipsMosaicChromaticDesc": "Lower the resolution with mosaic, then layer chromatic aberration on top, for a rough texture like watching an old CRT TV — a different flavor from the CRT filter on its own.",
-
-  "tipsEndCardWatermarkTitle": "Watermark for your own signature, the end card for the closing logo",
-  "tipsEndCardWatermarkDesc": "Use the watermark feature to add your own signature to a video. The end card is the app's own logo automatically appended after your video — free accounts can't change it, but Premium accounts can swap in their own logo. Combining a watermark against unauthorized reposting with a Premium end card replaced by your own logo gives your video consistent branding from start to finish.",
-
+  "tipsEndCardWatermarkTitle": "Watermark is for your signature, End Card is separate",
+  "tipsEndCardWatermarkDesc": "Use the watermark feature when you want to add your own signature or mark to a video. The end card is the app's own logo shown automatically at the end of every video; free members can't change it. Premium members can hide it or replace it with their own video or image. If you want a custom closing without using the end card, you can recreate a similar effect yourself by adding an image layer with a fade in/out.",
   "tipsVerticalPixelFontTitle": "Mix live-action footage with hand-drawn art for \"live-action × anime\"",
   "tipsVerticalPixelFontDesc": "A trick only possible because this app is both an illustration app and a video editor at once. Place a live-action video clip on the timeline, then use onion skin on a layer above it to hand-draw speed lines or a character over the footage — creating a mixed-media video where hand-drawn animation overlays live action.",
-
   "tipsTimelineMarkerTitle": "Use timestamps to line up sound and mouth flaps",
   "tipsTimelineMarkerDesc": "Scenes handle a range — a start and end frame — while timestamps mark a single instant with a comment you can jump to in one tap. Placing several timestamps inside the same scene — \"sound effect at frame 120,\" \"mouth flap 'ah' at frame 180\" — makes lining up sound with the picture dramatically easier.",
-
   "tipsToolbarCustomizeTitle": "Reorder or hide toolbar tools to cut down finger travel",
   "tipsToolbarCustomizeDesc": "From toolbar editing in settings, you can hide tools you never use and reorder the ones you do to sit somewhere your finger reaches easily. Trimming the list down keeps you from hunting for a tool and shortens finger travel, picking up your drawing rhythm.",
-
   "tipsAutofillBlendModeTitle": "Change shading texture with an autofill part's blend mode",
   "tipsAutofillBlendModeDesc": "Each part in an autofill preset can have its own blend mode. Set a shadow part to \"overlay\" or \"soft light\" instead of \"multiply\" for softer shading that feels like light passing through. A hidden degree of freedom that lets you change the texture of shading without changing the color.",
-
   "tipsStampBlendModeTitle": "Stamps + blend mode for a light effect",
   "tipsStampBlendModeDesc": "Setting a placed stamp layer's blend mode to \"screen\" or \"addition\" makes glow lines or sparkle effects blend naturally into the background and really stand out.",
-
   "tipsQuickToolPenSubTitle": "Quick tool + pen sub-tools for a workflow that never stops",
   "tipsQuickToolPenSubDesc": "Register your most-used tools to the quick tool, and also make use of the pen sub-tools (long-press the pen to switch to tone fill or stamp placement) — you'll cut down how often you jump between panels and keep your rhythm going.",
-
   "tipsAutofillToneReuseTitle": "Reuse a tone fill just by redrawing the lineart, via autofill's tone setting",
   "tipsAutofillToneReuseDesc": "Setting each part in an autofill preset to \"use tone\" reproduces the tone fill automatically every time you redraw the lineart — no need to reapply the tone frame by frame.",
-
   "tipsRadialVignetteTitle": "Radial ruler + vignette for speed-line impact",
   "tipsRadialVignetteDesc": "Draw a burst of speed lines all at once with the radial ruler, then layer the vignette draw filter on top for a manga-climax kind of punch.",
-
   "tipsClippingGradientTitle": "Clipping + gradient to keep shading re-editable",
   "tipsClippingGradientDesc": "Clip a gradient layer onto a character layer, and you can re-adjust the shading just by changing the gradient's extent and angle — no need to redraw its shape with a brush.",
-
   "tipsToneCurveSepiaTitle": "Tone curve + sepia for a retro-photo feel",
   "tipsToneCurveSepiaDesc": "Adjust the light/dark contrast with the tone curve effect filter, then layer sepia on top, for a texture like a faded old photograph.",
-
   "tipsCameraLensBlurTitle": "Camera keyframes + lens blur for a zoom-blur effect",
   "tipsCameraLensBlurDesc": "Timing a stronger lens blur effect filter to the moment a camera keyframe zooms in gives it the punch of a live-action zoom blur.",
-
   "tipsBlurVignetteBgTitle": "Gaussian blur + vignette for a soft background bokeh",
   "tipsBlurVignetteBgDesc": "Layer the Gaussian blur and vignette draw filters onto just the background layer, and your main character naturally stands out, giving a camera-like depth-of-field finish.",
-
   "tipsSepiaVignetteTitle": "Sepia + vignette for an antique-photo video",
   "tipsSepiaVignetteDesc": "Combining the sepia effect filter with the vignette draw filter gives your video the darkened corners and faded look of an antique photograph.",
-
-  "tipsGifLoopTitle": "Design GIFs around the loop — bring the first and last frame close together",
-  "tipsGifLoopDesc": "GIF export plays back on an automatic loop. Keeping the first and last frame's artwork close together hides the loop's seam, so the animation feels like it keeps cycling naturally.",
-
   "tipsVideoTrimReuseTitle": "Reuse the same video file by changing each clip's trim range",
   "tipsVideoTrimReuseDesc": "Even the same video file can be placed as a different-feeling cut each time by changing its start/end trim per clip. Gives you variety without adding more source material.",
-
   "tipsSaveSlotAutoSaveTitle": "Use save slots and autosave for different jobs",
   "tipsSaveSlotAutoSaveDesc": "Autosave always overwrites with the latest state, while save slots can hold several states at once. Save to a slot at a major milestone and leave the small changes to autosave, so you can reliably get back to the point you need.",
-
   "tipsQuickToolSwipeTitle": "Swipe up on the quick tool to reorder it",
   "tipsQuickToolSwipeDesc": "To change what's registered in the quick tool, you can open the management popup with an upward swipe, not just a long press. Handy for reordering fast while operating one-handed.",
-
-  "tipsColorPickerLongPressTitle": "Long-press the color picker for a quick usage guide",
-  "tipsColorPickerLongPressDesc": "If you're not sure how to pick a color, try long-pressing the color picker. It shows a brief usage tip, letting you check how HSV, RGB, and the palette work.",
-
   "tipsDrawingAreaCameraTitle": "A wider drawing area + camera keyframes for safe panning and zooming",
   "tipsDrawingAreaCameraDesc": "Setting the drawing area wider than the export bounds means panning or zooming with camera keyframes won't risk cutting off the edge of the screen. Worth checking before adding a big camera move.",
-
   "tipsWebmCommonLayerTitle": "Transparent WebM + a common layer to keep the background separate",
   "tipsWebmCommonLayerDesc": "If you're compositing a character exported as transparent WebM over a background in other video software, keeping the background on its own common layer avoids unwanted color bleeding into the transparent area, for a cleaner cutout.",
-
   "tipsLeftHandedWorkspaceTitle": "Left-handed mode + workspace settings for an easier setup",
   "tipsLeftHandedWorkspaceDesc": "If you're left-handed, turning on left-handed mode in workspace settings mirrors the docked panels, so they're less likely to sit under your drawing hand.",
-
-  "tipsFolderHierarchyTitle": "Organize a series with nested folders",
-  "tipsFolderHierarchyDesc": "Folders support multiple levels. You can make a \"Season 1\" folder inside a folder named after the work, then line up each episode's project inside it.",
-
   "tipsTransferDeviceTitle": "Move your work to another device with a transfer file",
   "tipsTransferDeviceDesc": "If you want to switch devices and keep working, the transfer (.niatra) feature moves the whole project — including the materials it uses — together.",
-
   "fontSettingsTabDownloaded": "Downloaded",
   "fontSettingsTabSearch": "Find & Download",
   "fontSettingsTabImport": "Import",
@@ -776,7 +614,6 @@
   "fontUnsupportedSnackbar": "This font could not be loaded.",
   "fontAddedSnackbar": "Added \"{name}\" (shown in the Downloaded tab)",
   "fontCorruptedSnackbar": "The font is corrupted.",
-
   "licenseScreenTitle": "Terms & Licenses",
   "licenseSectionTerms": "Terms of Service",
   "licenseSectionFonts": "Fonts Used",
@@ -785,7 +622,6 @@
   "licenseOssListSubtitle": "Shows the licenses of the OSS packages used by this app",
   "licenseFfmpegNote": "WebM export uses FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source for the modified version: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 export uses the device's built-in hardware encoder directly and does not use FFmpeg.",
   "licenseFontCreditMeta": "Author: {author}   License: {license}",
-
   "toolbarPenTooltip": "Pen (long-press for sub-tools)",
   "toolbarPenFirstUseTip": "Long-press the pen to switch between brush, tone, stamp, and lasso fill.",
   "toolbarBucketTooltip": "Bucket (long-press to switch flat/tone fill)",
@@ -804,7 +640,6 @@
   "toolbarSelectRect": "Rectangle Select",
   "toolbarSelectLasso": "Lasso Select",
   "toolbarSelectMagicWand": "Auto Select (Magic Wand)",
-
   "creativePanelFavoritesOnlyTooltip": "Show Favorites Only",
   "creativePanelSearchTooltip": "Search by Name",
   "creativePanelFolderButton": "Folder",
@@ -812,7 +647,6 @@
   "creativePanelImportButton": "Import",
   "creativePanelFolderAllChip": "All",
   "creativePanelEditAction": "Edit",
-
   "toneTitle": "Tones",
   "toneEmpty": "No tones",
   "toneSearchHint": "Search by tone name",
@@ -821,9 +655,7 @@
   "toneCreateDialogTitle": "Custom Tone",
   "toneImportFailedSnackbar": "Failed to load the tone: {error}",
   "toneExportFailedSnackbar": "Failed to export the tone: {error}",
-
   "privacyPolicyScreenTitle": "Privacy Policy",
-
   "stampTitle": "Stamps",
   "stampSearchHint": "Search by stamp name",
   "stampEmpty": "No stamps",
@@ -837,7 +669,6 @@
   "stampDensityLabel": "Density",
   "stampScatterLabel": "Scatter",
   "stampChangeImageButton": "Change Stamp Image",
-
   "themeSettingsTitle": "Theme & Appearance",
   "themeSettingsBaseThemeSection": "Base Theme",
   "themeBaseLight": "Light",
@@ -861,7 +692,6 @@
   "themeImportButton": "Import .niatheme",
   "themePresetNameDialogTitle": "Preset Name",
   "themeDefaultPresetName": "My Theme",
-
   "onionSkinTitle": "Onion Skin",
   "onionSkinPrevFrame": "Previous Frame",
   "onionSkinNextFrame": "Next Frame",
@@ -873,7 +703,6 @@
   "onionSkinFrameCountFixed": "{count} frame(s) (Fixed)",
   "onionSkinColorLabel": "Color",
   "onionSkinOpacityLabel": "Opacity",
-
   "exportScreenTitle": "Export",
   "exportPresetSection": "Preset",
   "exportPresetStandard": "Standard",
@@ -924,35 +753,79 @@
   "newProjectHeightShort": "Height",
   "newProjectDurationLabel": "Length (max {max})",
   "@newProjectDurationLabel": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationLabelWithPremiumHint": "Length (max {max}; up to 2 hours with Premium)",
   "@newProjectDurationLabelWithPremiumHint": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationSeconds": "{n}s",
   "@newProjectDurationSeconds": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHms": "{h}h {m}m {s}s",
   "@newProjectDurationHms": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHm": "{h}h {m}m",
   "@newProjectDurationHm": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationH": "{h}h",
   "@newProjectDurationH": {
-    "placeholders": {"h": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationMs": "{m}m {s}s",
   "@newProjectDurationMs": {
-    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationM": "{m}m",
   "@newProjectDurationM": {
-    "placeholders": {"m": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectBackgroundColorLabel": "Background color",
   "newProjectDrawingAreaTitle": "Expand drawing area",
@@ -960,23 +833,49 @@
   "newProjectScaleLabel": "Scale",
   "newProjectScaleValue": "{value}×",
   "@newProjectScaleValue": {
-    "placeholders": {"value": {"type": "String"}}
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawableAreaInfo": "Drawable area: {width}×{scale} = {result}",
   "@newProjectDrawableAreaInfo": {
-    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      },
+      "result": {
+        "type": "String"
+      }
+    }
   },
   "newProjectTotalFrames": "Total frames: {count}",
   "@newProjectTotalFrames": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "newProjectExportSizeInfo": "Export size: {size}",
   "@newProjectExportSizeInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawingAreaInfo": "Drawing area: {size}",
   "@newProjectDrawingAreaInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "colorPickerTitle": "Color picker",
   "colorPickerOpacityLabel": "Opacity",
@@ -1002,7 +901,14 @@
   "penSubToolManageTooltip": "Manage",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
-    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "opacity": {
+        "type": "int"
+      }
+    }
   },
   "penSubToolStampRotationSubtitle": "Randomly rotate to match the stroke direction",
   "brushSearchHint": "Search by brush name",
@@ -1010,11 +916,19 @@
   "brushCreateDialogTitle": "Custom brush",
   "brushImportFailedSnackbar": "Failed to load brush: {error}",
   "@brushImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushExportFailedSnackbar": "Failed to export brush: {error}",
   "@brushExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushSettingsSizeLabel": "Size",
   "brushSettingsOpacityLabel": "Opacity",
@@ -1060,7 +974,14 @@
   "projectDetailInfoDrawingArea": "Drawing area",
   "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
   "@projectDetailInfoDrawingAreaValue": {
-    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailInfoTotalFrames": "Total frames",
   "projectDetailInfoWorkTime": "Work time",
@@ -1070,7 +991,11 @@
   "projectDetailAddTagHint": "Add a tag",
   "projectDetailNiashareFailedSnackbar": "Failed to create .niashare: {error}",
   "@projectDetailNiashareFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailTrashMenuItem": "Move to trash",
   "commonOff": "OFF",
@@ -1089,13 +1014,21 @@
   "perfSettingsUndoLimitSubtitle": "More steps use more memory",
   "perfSettingsUndoLimitValue": "{n} steps",
   "@perfSettingsUndoLimitValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsTrashAutoDeleteTitle": "Auto-delete trash",
   "perfSettingsTrashAutoDeleteSubtitle": "Retention period for deleted projects",
   "perfSettingsTrashAutoDeleteValue": "{n} days",
   "@perfSettingsTrashAutoDeleteValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsCurrentSettingsSection": "Current settings",
   "perfSettingsTiltLabel": "Tilt detection",
@@ -1103,13 +1036,21 @@
   "perfSettingsOnionNextLabel": "Onion skin (next)",
   "perfSettingsOnionFrameCountValue": "{n} frames",
   "@perfSettingsOnionFrameCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsSaveModeLabel": "Save mode",
   "perfSettingsSlotCountLabel": "Slot count",
   "perfSettingsSlotCountValue": "{n} slots",
   "@perfSettingsSlotCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsResetButton": "Reset to default",
   "perfSettingsCopyPresetButton": "Copy current preset",
@@ -1123,7 +1064,11 @@
   "perfSettingsResetDialogTitle": "Reset custom quality settings to default?",
   "perfSettingsResetDialogBody": "The default restores the \"{preset}\" settings that were automatically chosen from your device's performance at first launch.",
   "@perfSettingsResetDialogBody": {
-    "placeholders": {"preset": {"type": "String"}}
+    "placeholders": {
+      "preset": {
+        "type": "String"
+      }
+    }
   },
   "perfSettingsResetConfirmButton": "Reset",
   "perfSettingsCopyPresetDialogTitle": "Choose a preset to copy",
@@ -1134,7 +1079,11 @@
   "filterPanelTitle": "Filter",
   "filterPanelTitleBulk": "Filter (applying to {count} frames)",
   "@filterPanelTitleBulk": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterSearchHint": "Search filters",
   "filterNameGaussianBlur": "Gaussian Blur",
@@ -1157,7 +1106,11 @@
   "filterRetroStrength": "Strength",
   "filterOutlineLayerNameSuffix": "{name} (Outline)",
   "@filterOutlineLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "filterStrengthBlurRadius": "Strength (blur radius)",
   "filterColorLevels": "Color levels",
@@ -1177,13 +1130,24 @@
   "filterApplyButton": "Apply",
   "filterApplyBulkButton": "Apply to {count} frames",
   "@filterApplyBulkButton": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterEmpty": "No filters",
   "filterApplyingTitle": "Applying filter",
   "filterApplyingSubtitle": "{name}　{count} frames",
   "@filterApplyingSubtitle": {
-    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "projectListNewFolderTitle": "New folder",
   "projectListFolderHint": "You can also use this to group multiple episodes or a series of the same work",
@@ -1195,7 +1159,11 @@
   "projectListDeleteFolderConfirmTitle": "Delete this folder?",
   "projectListDeleteFolderConfirmBody": "\"{name}\" will be deleted. Projects and subfolders inside it will move to the root.",
   "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "projectListFolderRootOption": "No folder (root)",
   "projectListEditFolderTooltip": "Edit folder",
@@ -1239,25 +1207,44 @@
   "autofillPresetEmptyHint": "Tap + in the bottom right to create one",
   "autofillPresetPartsCount": "{count} parts",
   "@autofillPresetPartsCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetNewDialogTitle": "New preset",
   "autofillPresetNameLabel": "Preset name",
   "autofillPresetRenameDialogTitle": "Rename preset",
   "autofillPresetDeleteConfirmTitle": "Delete \"{name}\"?",
   "@autofillPresetDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartSearchHint": "Search by part name",
   "autofillPartUnconfiguredBanner": "{count} part(s) are not yet set up: {names} (no tone selected)\nYou can't close this screen until all are set up.",
   "@autofillPartUnconfiguredBanner": {
-    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredDialogTitle": "There are unconfigured parts",
   "autofillPartUnconfiguredDialogBody": "Please set up the following parts before saving.",
   "autofillPartUnconfiguredItem": "• {name}: No tone selected",
   "@autofillPartUnconfiguredItem": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredBackButton": "Back to setup",
   "autofillPartEmpty": "No parts\nTap + to add one",
@@ -1268,7 +1255,11 @@
   "autofillPartRenameDialogTitle": "Rename part",
   "autofillPartDetailDialogTitle": "{name} details",
   "@autofillPartDetailDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartFillColorLabel": "Fill color",
   "autofillPartSelectColorButton": "Choose color",
@@ -1291,24 +1282,44 @@
   "autofillPartGradientEditButton": "Edit gradient",
   "autofillPartFillOpacityLabel": "Opacity (fill layer): {value}%",
   "@autofillPartFillOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineColorLabel": "Line color",
   "autofillPartTraceHueLabel": "Hue: {value}",
   "@autofillPartTraceHueLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceSaturationLabel": "Saturation: {value}",
   "@autofillPartTraceSaturationLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceLightnessLabel": "Lightness: {value}",
   "@autofillPartTraceLightnessLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineOpacityLabel": "Opacity (line layer): {value}%",
   "@autofillPartLineOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartToneLabel": "Tone",
   "autofillPartUseToneCheckbox": "Use tone",
@@ -1316,14 +1327,22 @@
   "autofillPartApplyButton": "Apply",
   "autofillPartGradientDialogTitle": "{name} gradient",
   "@autofillPartGradientDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartGradientTypeLabel": "Type",
   "autofillPartGradientTypeInfo": "Linear: the color changes along the angle you set. Radial center→out: colors change from the center outward. Radial out→center: colors change from the outside inward.",
   "autofillPartGradientFeatherInfo": "At 0%, the boundary between adjacent colors is sharp. At 100%, colors blend completely and smoothly all the way to the edge of the next color.",
   "autofillPartGradientAngleLabel": "Angle: {value}°",
   "@autofillPartGradientAngleLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientColorLabel": "Colors",
   "autofillPartGradientAddColorButton": "Add color",
@@ -1331,12 +1350,20 @@
   "autofillPartGradientRemoveButton": "Remove gradient",
   "autofillPartGradientFeatherLabel": "Blur strength: {value}%",
   "@autofillPartGradientFeatherLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientDragHint": "Drag the handle on the right to reorder colors",
   "autofillPartGradientStopLabel": "Position: {value}%",
   "@autofillPartGradientStopLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientStopDragHint": "Drag the ▲ markers left or right to adjust each color's position",
   "timelineExportMenuItem": "Export",
@@ -1348,29 +1375,53 @@
   "saveTreeCommentHint": "e.g. Background done",
   "saveTreeSizeWarningSnackbar": "Your save tree is getting large (about {mb}MB). We recommend deleting saves you no longer need.",
   "@saveTreeSizeWarningSnackbar": {
-    "placeholders": {"mb": {"type": "String"}}
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotSaveDialogTitle": "Save to slot {n}",
   "@saveTreeSlotSaveDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotOverwriteWarning": "This will overwrite the existing data ({date}).",
   "@saveTreeSlotOverwriteWarning": {
-    "placeholders": {"date": {"type": "String"}}
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeRestoreAction": "Restore",
   "saveTreeLoadFailedSnackbar": "Failed to load the save data",
   "saveTreeRestoredSnackbar": "Restored {name}",
   "@saveTreeRestoredSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotLabel": "Slot {n}",
   "@saveTreeSlotLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotFallbackName": "Slot {n}",
   "@saveTreeSlotFallbackName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeNoDataLabel": "No save data",
   "saveTreeEmptyTitle": "No save data",
@@ -1380,21 +1431,40 @@
   "saveTreeChangeDataTitle": "Change Save Data",
   "saveTreeChangeDataTitleWithProject": "Change Save Data ({name})",
   "@saveTreeChangeDataTitleWithProject": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeChangeExceedMessage": "Your current save count exceeds\nthe new save limit.\n\nPlease choose which saves to keep.",
   "saveTreeKeepableCountLabel": "Saves you can keep: {n}",
   "@saveTreeKeepableCountLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeKeepLatestButton": "Keep the latest {n}",
   "@saveTreeKeepLatestButton": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSelectDataButton": "Choose save data",
   "saveTreeSelectedCountLabel": "Selected: {selected} / {limit}",
   "@saveTreeSelectedCountLabel": {
-    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeBackButton": "Back",
   "saveTreeNextButton": "Next",
@@ -1404,7 +1474,11 @@
   "saveTreeDeleteOptionTitle": "Delete permanently",
   "saveTreeDeleteOptionSubtitle": "Permanently deletes the {count} unselected item(s).\nFrees up storage space.\n※ Deleted data cannot be recovered.",
   "@saveTreeDeleteOptionSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeApplyChangeButton": "Apply change",
   "canvasEditMenuBackgroundToggle": "Switch background",
@@ -1423,7 +1497,14 @@
   "canvasSettingsMenuTooltip": "Settings/Edit",
   "canvasFrameSelectedCount": "{selected} / {total} frames selected",
   "@canvasFrameSelectedCount": {
-    "placeholders": {"selected": {"type": "int"}, "total": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "canvasSelectAllButton": "Select all",
   "canvasDeselectAllButton": "Deselect all",
@@ -1459,7 +1540,11 @@
   "canvasHelpRubyTitle": "Ruby text (furigana)",
   "canvasHelpRubyBody": "Typing something like \"{example}\" shows small reading annotations above the base characters (in horizontal text) or to their right (in vertical text). It works in both directions, but text containing ruby text won't auto-wrap in horizontal mode (manual line breaks only).",
   "@canvasHelpRubyBody": {
-    "placeholders": {"example": {"type": "String"}}
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelTitle": "Layers",
   "layerPanelHelpTooltip": "Help",
@@ -1471,23 +1556,43 @@
   "layerPanelImportImageButton": "Import image",
   "layerPanelDefaultLayerName": "Layer{n}",
   "@layerPanelDefaultLayerName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultFolderName": "Folder{n}",
   "@layerPanelDefaultFolderName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultLineartName": "Lineart{n}",
   "@layerPanelDefaultLineartName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultAutofillName": "AutoFill{n}",
   "@layerPanelDefaultAutofillName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultCommonName": "Common{n}",
   "@layerPanelDefaultCommonName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelClippingBadge": "Clipping",
   "layerPanelAddTooltip": "Add",
@@ -1499,7 +1604,14 @@
   "layerPanelRangeSceneSpecified": "Specific scene",
   "layerPanelRangeFrameSpan": "{start}–{end}",
   "@layerPanelRangeFrameSpan": {
-    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMenuFrameRangeChange": "Change frame range",
   "layerPanelMenuRangeChange": "Change display range",
@@ -1510,12 +1622,20 @@
   "layerPanelMenuReplaceMaterial": "Replace material",
   "layerPanelDeleteConfirmTitle": "Delete {name}?",
   "@layerPanelDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelDeleteConfirmBody": "This material will be removed from every frame within its display range.",
   "layerPanelMultiDeleteConfirmTitle": "Delete the {count} selected items?",
   "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMultiDeleteConfirmBody": "The timeline materials will be removed from every frame within their display range.",
   "layerPanelRangeDialogTitle": "Display range",
@@ -1559,7 +1679,11 @@
   "layerPanelAutofillPresetMissingSnackbar": "No matching preset part was found.",
   "layerPanelAutofillLayerNameSuffix": "{name} (Auto-fill)",
   "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelOrphanFillSuccessSnackbar": "No matching lineart layer was found, so it was filled with the latest color instead.",
   "layerPanelOrphanFillFailSnackbar": "Couldn't process this: no part is assigned, or there's no fill shape.",
@@ -1567,15 +1691,27 @@
   "layerPanelAutofillUpdateHelpBody": "The current auto-fill is out of date. Tap it to update.",
   "layerPanelReplaceMaterialSuccessSnackbar": "Material replaced: {name}",
   "@layerPanelReplaceMaterialSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelImportImageSuccessSnackbar": "Image imported: {name}",
   "@layerPanelImportImageSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelCopySuffix": "{name} copy",
   "@layerPanelCopySuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineFullscreenPreviewCloseTooltip": "Close fullscreen preview",
   "timelineDefaultProjectName": "Project name",
@@ -1595,7 +1731,11 @@
   "timelineWatermarkSelectTitle": "Select a watermark",
   "timelineWatermarkAddedSnackbar": "Watermark added (shown on every frame): {name}",
   "@timelineWatermarkAddedSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineWatermarkEditTitle": "Edit watermark",
   "timelineWatermarkAngleLabel": "Angle",
@@ -1611,12 +1751,20 @@
   "timelineDurationLimitBodyPremium": "This would exceed the Premium limit (up to 2 hours), so no more frames can be added or duplicated.",
   "timelineSceneDeleteConfirmTitle": "Delete \"{name}\"?",
   "@timelineSceneDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineSceneDeleteConfirmBody": "All data in the scene will be deleted, including every frame, common layers, video materials, image materials, and watermarks.",
   "timelineSceneMultiDeleteConfirmTitle": "Delete the {count} selected scenes?",
   "@timelineSceneMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillUpdateHelpBody": "This scene/frame contains an auto-fill layer that isn't up to date. Tap the layer in the layer panel to update it.",
   "timelineFrameTrackLabel": "Frame",
@@ -1628,7 +1776,14 @@
   "timelineEndCardDefaultLogoLabel": "NIARIM logo",
   "timelineEndCardStatusFormat": "{label} · {seconds}s",
   "@timelineEndCardStatusFormat": {
-    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
   "timelineEndCardHiddenLabel": "Hidden",
   "timelineEndCardVisibilityToggleTooltip": "Show/hide",
@@ -1636,24 +1791,39 @@
   "timelineEndCardReplaceTooltip": "Replace",
   "timelineEndCardLengthDialogTitle": "End card length",
   "timelineEndCardTrackLabel": "End Card Track",
-
   "timelineMarkerTrackLabel": "Timestamps",
   "timelineMarkerAddDialogTitle": "Add timestamp at F{n}",
   "@timelineMarkerAddDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerEditDialogTitle": "Timestamp: F{n}",
   "@timelineMarkerEditDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerCommentHint": "Comment (e.g. mouth flap \"ah\" here)",
   "timelineSecondsLabel": "{n}s",
   "@timelineSecondsLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineAddClipDialogTitle": "Add {trackName} clip",
   "@timelineAddClipDialogTitle": {
-    "placeholders": {"trackName": {"type": "String"}}
+    "placeholders": {
+      "trackName": {
+        "type": "String"
+      }
+    }
   },
   "timelineClipLabelFieldLabel": "Label",
   "timelineClipStartLabel": "Start:",
@@ -1667,11 +1837,19 @@
   "timelineAutofillProgressTitle": "Running auto-fill",
   "timelineAutofillProgressSubtitle": "{count} frames",
   "@timelineAutofillProgressSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillCompleteSnackbar": "Auto-fill complete ({count} processed)",
   "@timelineAutofillCompleteSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineEffectTypeFade": "Fade",
   "timelineEffectTypeGaussianBlur": "Gaussian blur",
@@ -1709,44 +1887,66 @@
   "timelineClipUseEndLabel": "Trim end F",
   "timelineCameraKfTitle": "Camera KF: F{n}",
   "@timelineCameraKfTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineCameraMoveXLabel": "X move",
   "timelineCameraMoveYLabel": "Y move",
   "timelineCameraZoomLabel": "Zoom",
   "timelineCameraRotationLabel": "Rotation",
-
   "layerPanelKeyframeLabel": "Animation (keyframes)",
   "layerKeyframeSheetTitle": "Keyframes for {name}",
   "@layerKeyframeSheetTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerKeyframeSheetDesc": "Set this layer's position, scale, and rotation per frame; the keyframes are interpolated automatically. The layer's artwork itself doesn't change.",
   "layerKeyframeAddAtCurrentFrame": "Add at current frame (F{n})",
   "@layerKeyframeAddAtCurrentFrame": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeEmpty": "No keyframes yet. Add one with the button above.",
   "layerKeyframeScaleShort": "Scale",
   "layerKeyframeRotationShort": "Rot",
   "layerKeyframeEditTitle": "Keyframe: F{n}",
   "@layerKeyframeEditTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeFrameLabel": "Frame",
   "layerKeyframeScaleLabel": "Scale",
   "layerKeyframeRotationLabel": "Rotation",
-
   "layerPanelGroupTooltip": "Group",
   "layerPanelGroupDefaultName": "New Group",
   "layerPanelGroupMembershipLabel": "Group: {name}",
   "@layerPanelGroupMembershipLabel": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelGroupLeaveAction": "Leave",
   "frameStripHoldDialogTitle": "F{n} hold cells",
   "@frameStripHoldDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "frameStripTimelineModeTooltip": "Timeline mode",
   "progressDialogAdLoading": "Loading ad…",
@@ -1790,5 +1990,7 @@
   "privacyPolicyArt7Title": "Article 7 (Changes to This Policy)",
   "privacyPolicyArt7Body": "The developer may change this Policy in the event of a change in applicable laws, a change in the content of the App, or other circumstances the developer deems necessary. When changing this Policy, the developer will give advance notice of the content of the change and its effective date, within the App or by other appropriate means.",
   "privacyPolicyArt8Title": "Article 8 (Contact)",
-  "privacyPolicyArt8Body": "If you have any inquiries regarding this Policy, please contact us using the information below.\n(Developer contact: Not yet set — please fill in an email address or other contact information before publishing.)"
+  "privacyPolicyArt8Body": "If you have any inquiries regarding this Policy, please contact us using the information below.\n(Developer contact: Not yet set — please fill in an email address or other contact information before publishing.)",
+  "tipsPcDexLayoutTitle": "Wide screens auto-switch to the full PC Mode (DeX) layout",
+  "tipsPcDexLayoutDesc": "On a Chromebook, a tablet with a keyboard, Samsung DeX, or any wide-screen setup, the app automatically switches to a professional docked-panel layout. You can also force Always PC Mode or Always Mobile Mode from Workspace Settings, which is handy when connecting to an external display."
 }

@@ -1,8 +1,9 @@
 {
   "@@locale": "ja",
   "appTitle": "NIARIM",
-  "@appTitle": {"description": "アプリ名。翻訳しない固有名詞"},
-
+  "@appTitle": {
+    "description": "アプリ名。翻訳しない固有名詞"
+  },
   "homeTabProjects": "プロジェクト",
   "homeTabShared": "共有",
   "homeTabTrash": "ゴミ箱",
@@ -15,25 +16,40 @@
   "homeSelectionAllDeselect": "全解除",
   "homeSelectionCount": "{count}件選択中",
   "@homeSelectionCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "homeMoveToTrash": "ゴミ箱へ移動",
   "homeMoveToTrashConfirm": "{count}件をゴミ箱へ移動しますか？",
   "@homeMoveToTrashConfirm": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "commonMove": "移動",
-
   "homeShareFileDialogTitle": "共有ファイル",
   "homeShareFileDialogContent": "この共有ファイルを複製して通常プロジェクトとして保存しますか？",
   "homeMissingFontsSnackbar": "不足フォントがあります。{names}",
   "@homeMissingFontsSnackbar": {
-    "placeholders": {"names": {"type": "String"}}
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "homeSharedImportedSnackbar": "プロジェクトタブへ追加しました",
   "homeSharedImportFailedSnackbar": "共有ファイルの読み込みに失敗しました: {error}",
   "@homeSharedImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "homeViewModeLarge": "大",
   "homeViewModeMedium": "中",
@@ -46,12 +62,23 @@
   "homeSharedEmpty": "共有プロジェクトがありません",
   "homeProjectMeta": "{fps}fps · {duration}秒",
   "@homeProjectMeta": {
-    "placeholders": {"fps": {"type": "int"}, "duration": {"type": "int"}}
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      },
+      "duration": {
+        "type": "int"
+      }
+    }
   },
   "homeTrashEmpty": "ゴミ箱は空です",
   "homeTrashDeletedOn": "{date} 削除",
   "@homeTrashDeletedOn": {
-    "placeholders": {"date": {"type": "String"}}
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "homePermanentDelete": "完全削除",
   "homePermanentDeleteConfirmTitle": "完全に削除しますか？",
@@ -61,13 +88,16 @@
   "homeShareOpenWith": "共有・写真アプリ等で開く",
   "homeWorkDeleteConfirmTitle": "{name}を削除しますか？",
   "@homeWorkDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "homeWorkDeleteConfirmBody": "端末内の書き出しファイルが削除されます。元に戻すことはできません。",
   "homePreviewFailed": "プレビューを再生できません",
   "homeFirstLaunchMessage": "手書きアニメーションを制作できます",
   "homeFirstLaunchStart": "はじめる",
-
   "settingsScreenTitle": "設定",
   "settingsBasicTitle": "基本",
   "settingsBasicSubtitle": "FPS・背景色・言語",
@@ -109,9 +139,12 @@
   "settingsDrawingAreaScale": "倍率",
   "settingsScaleValue": "{scale}倍",
   "@settingsScaleValue": {
-    "placeholders": {"scale": {"type": "String"}}
+    "placeholders": {
+      "scale": {
+        "type": "String"
+      }
+    }
   },
-
   "commonCancel": "キャンセル",
   "commonCreate": "作成",
   "commonChange": "変更",
@@ -119,7 +152,11 @@
   "confirmDeleteGenericBody": "本当に削除しますか？この操作は取り消せません。",
   "confirmDeleteNamedBody": "「{name}」を削除しますか？この操作は取り消せません。",
   "@confirmDeleteNamedBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "commonFavoriteDeleteBlocked": "お気に入り登録中は削除できません。先にお気に入りを解除してください。",
   "commonSave": "保存",
@@ -129,7 +166,6 @@
   "commonCopy": "コピー",
   "commonPaste": "貼り付け",
   "commonOk": "OK",
-
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
   "gestureThreeFingerTap": "3本指タップ",
@@ -143,19 +179,15 @@
   "gestureActionNextTool": "ツール早替え",
   "gestureActionOnionSkinToggle": "オニオンスキンON/OFF",
   "gestureActionNone": "何もしない",
-
   "homeDrawerAppTagline": "手書きアニメ制作アプリ",
   "homeDrawerAutofillPreset": "自動塗りプリセット",
   "homeDrawerSettings": "設定",
   "homeDrawerHelp": "ヘルプ",
   "homeDrawerTips": "活用Tips",
   "homeDrawerPremium": "プレミアム",
-
   "gestureActionNoneShort": "なし",
-
   "pressureTryDrawHint": "この設定で試し書きできます（ペンの場合、実際の筆圧が反映されます）",
   "pressureTryDrawClear": "クリア",
-
   "penSettingsTitle": "ペン入力設定",
   "penSettingsCurveSection": "筆圧カーブ",
   "penSettingsCurveHint": "弱い設定ほど筆圧の立ち上がりが緩やかに、強い設定ほど鋭くなります。",
@@ -177,14 +209,16 @@
   "bucketSettingsUnderLineTitle": "線の下まで潜る",
   "bucketSettingsUnderLineHint": "拡張分を線画の上から塗りつぶさず、線の見た目を保ったまま背後へ塗り色を回り込ませます。線のアンチエイリアス部分に隙間が出にくくなります。",
   "bucketSettingsUnderLineDisabledHint": "「拡張」が0pxの場合は効果がありません。",
-
   "fontCatalogSearchHint": "フォント名で検索...（全{count}書体）",
   "@fontCatalogSearchHint": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "fontCatalogAll": "すべて",
   "fontCatalogNoResults": "該当するフォントが見つかりません",
-
   "rulerPanelTitle": "定規",
   "rulerTypeLine": "直線定規",
   "rulerTypeEllipse": "楕円定規",
@@ -193,7 +227,6 @@
   "rulerTypeTwoPoint": "2点透視",
   "rulerTypeThreePoint": "3点透視",
   "rulerDivisions": "分割数",
-
   "transferScreenTitle": "引き継ぎ（.niatra）",
   "transferInstructionHint": "他の端末へ引き継ぐ項目を選択してください。",
   "transferItemSettings": "設定",
@@ -206,14 +239,21 @@
   "transferExportSuccessSnackbar": ".niatraファイルを書き出しました",
   "transferExportFailedSnackbar": "書き出しに失敗しました: {error}",
   "@transferExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "transferImportSuccessSnackbar": ".niatraファイルを読み込みました",
   "transferImportFailedSnackbar": "読み込みに失敗しました: {error}",
   "@transferImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "folderManagementTitle": "フォルダ管理",
   "folderManagementCreateNew": "新規作成",
   "folderManagementEmpty": "フォルダはまだありません",
@@ -221,20 +261,27 @@
   "folderMoveToTitle": "フォルダへ移動",
   "folderNone": "フォルダなし",
   "creativeAssetNameLabel": "名前",
-
   "commonAdd": "追加",
   "commonSearch": "検索",
   "autofillPresetSelectionTitle": "使用するプリセット",
   "autofillPresetSelectionHint": "このプロジェクトで使う自動塗りプリセットだけを選ぶと、パーツ割り当て時に一覧が見やすくなります。",
   "autofillPresetSelectionPartCount": "{count}パーツ",
   "@autofillPresetSelectionPartCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetSelectionButton": "使用するプリセットを選択",
   "autofillPresetSelectionAllLabel": "すべて使用",
   "autofillPresetSelectionCountLabel": "{count}件を使用",
   "@autofillPresetSelectionCountLabel": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "commonEdit": "編集",
   "commonFavoriteToggle": "お気に入り登録/解除",
@@ -253,7 +300,6 @@
   "timelineStepBack": "1フレーム戻る",
   "timelineStepForward": "1フレーム進む",
   "timelineSkipToEnd": "最終フレームへ",
-
   "quickToolPanelTitle": "早替えツール設定",
   "quickToolEmpty": "登録されたツールがありません",
   "quickToolAddCurrentBrush": "現在のブラシを追加",
@@ -262,13 +308,20 @@
   "quickToolBucket": "バケツ",
   "quickToolSizeDialogTitle": "{brushName}のサイズ",
   "@quickToolSizeDialogTitle": {
-    "placeholders": {"brushName": {"type": "String"}}
+    "placeholders": {
+      "brushName": {
+        "type": "String"
+      }
+    }
   },
-
   "materialListTitle": "素材管理",
   "materialRemoveUnused": "未使用素材を削除 ({count})",
   "@materialRemoveUnused": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "materialEmptyTitle": "素材がありません",
   "materialEmptyHint": "タイムラインから画像・動画・音声を追加すると\nここに一覧表示されます",
@@ -281,9 +334,12 @@
   "materialRemoveUnusedConfirmBody": "プロジェクト内のどこからも参照されていない素材をまとめて削除します。この操作は元に戻せません。",
   "materialRemovedSnackbar": "{count}件の未使用素材を削除しました",
   "@materialRemovedSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "watermarkEmptyTitle": "登録されたウォーターマークがありません",
   "watermarkEmptyHint": "右下の＋から画像または文字を登録してください",
   "watermarkAddFromImage": "画像から追加",
@@ -301,7 +357,6 @@
   "watermarkOutlineLabel": "縁取り",
   "watermarkOutlineColorLabel": "縁の色",
   "watermarkOutlineWidthLabel": "縁の太さ",
-
   "premiumActiveLabel": "Premium有効",
   "premiumVsTitle": "無料版 vs プレミアム",
   "premiumCampaignFreeNote": "※ キャンペーン期間中は無料版でも上記プレミアム機能を全てご利用いただけます",
@@ -316,7 +371,11 @@
   "premiumCampaignBannerBody": "期間中は無料版でも全てのプレミアム機能（尺無制限・エンドロゴ編集・ウォーターマーク・トーンカーブ・レベル補正）を無料でご利用いただけます。",
   "premiumCampaignEndLabel": "～{date}まで",
   "@premiumCampaignEndLabel": {
-    "placeholders": {"date": {"type": "String"}}
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "premiumComparisonFeature": "機能",
   "premiumComparisonFree": "無料",
@@ -336,7 +395,6 @@
   "premiumValueDuration90Sec": "1.5分",
   "premiumPlanRecommendedBadge": "おすすめ",
   "premiumMonthlyPrice": "¥550/月",
-
   "toolbarItemPen": "Gペン",
   "toolbarItemEraser": "消しゴム",
   "toolbarItemBucket": "バケツ",
@@ -347,7 +405,6 @@
   "toolbarItemTransform": "変形",
   "toolbarItemText": "テキスト",
   "toolbarItemShape": "図形",
-
   "workspaceScreenTitle": "ワークスペース設定",
   "workspaceToolbarEditSection": "ツールバー編集",
   "workspaceToolbarEditHint": "表示するツールをチェックボックスで選択し、ドラッグで並び替えできます。",
@@ -373,11 +430,9 @@
   "workspaceSaveDialogLabel": "名前（例：アニメ用・線画用）",
   "workspaceLoadRightHanded": "右利き",
   "workspaceLoadLeftHanded": "左利き",
-
   "helpScreenTitle": "ヘルプ",
   "helpSearchHint": "検索...",
   "helpNoResults": "該当する項目が見つかりません",
-
   "helpCategoryTool": "ツール",
   "helpCategoryLayer": "レイヤー",
   "helpCategoryAnimation": "アニメーション",
@@ -389,256 +444,172 @@
   "helpCategoryExport": "書き出し",
   "helpCategoryPremium": "プレミアム",
   "helpCategorySettings": "設定",
-
   "helpPenToolTitle": "ペンツール",
   "helpPenToolDesc": "キャンバスに線を描くための基本ツールです。長押しでブラシの種類・太さ・色を変更できます（ダブルタップは簡易説明の表示）。板タブ・液晶タブレットの筆圧・傾きに対応しており、設定画面の「ペン入力」から筆圧カーブを調整すると筆圧の伝わり方（弱い力でどれだけ太さ・不透明度が変化するか）を細かくカスタマイズできます。ペンサブツールを切り替えると、同じペンツールからトーン貼り・スタンプ配置も行えます。",
-
   "helpEraserToolTitle": "消しゴムツール",
   "helpEraserToolDesc": "ペンツールと対になる、描いた内容を消すためのツールです。ブラシと同様に太さ・不透明度を調整でき、フェードやストローク減衰などのブラシ設定も共通で反映されます。レイヤーの透明部分を「描き足す」のではなく既存の描画を「消す」処理を行うため、下のレイヤーが透けて見えるようになります。",
-
   "helpBucketToolTitle": "バケツツール",
   "helpBucketToolDesc": "囲まれた領域を一括で塗りつぶすツールです。線画で囲まれた範囲内をタップすると、その範囲全体が選択中の色（またはトーン）で塗られます。線画に隙間があると意図しない範囲まで塗り広がってしまうことがあるため、線画がきちんと閉じているか確認してから使うのがコツです。設定でベタ塗り／トーン塗りを切り替えられます。 詳細設定（許容誤差・拡張px・線の下まで潜る）は設定画面の「バケツ塗り」から調整できます。",
-
   "helpLassoFillTitle": "投げ縄塗り",
   "helpLassoFillDesc": "囲みたい範囲を指でなぞって多角形の範囲を作り、その内側をまとめて塗るツールです。バケツツールと違い、線画が閉じていない部分があっても自分で囲む範囲を指定できるため、複雑な形や線が途切れている部分の塗りに向いています。",
-
   "helpEyedropperToolTitle": "スポイトツール",
   "helpEyedropperToolDesc": "タップした位置の色を拾って、描画色として選択するツールです。画面に実際に表示されている全レイヤーを合成した見た目の色を拾うため、複数レイヤーが重なっている部分でも「見た目通りの色」を正確に取得できます。",
-
   "helpSelectToolTitle": "選択ツール",
   "helpSelectToolDesc": "キャンバスの一部分を範囲選択し、選択した範囲だけを移動・回転・拡大縮小できるツールです。長押しすると「矩形選択」「投げ縄選択（自由な形で囲む）」「自動選択（マジックワンド、似た色の範囲を自動でまとめて選択）」の3種類から選択方法を選べます。選択中は選択範囲を示す枠線がキャンバス上に表示され、選択を解除するまで全フレーム・全レイヤーで同じ範囲が固定表示されます。",
-
   "helpFingerToolTitle": "指ツール（歪みツール）",
   "helpFingerToolDesc": "指でなぞった方向にピクセルを押し流すように歪ませる、液体絵の具を指でこすったような効果を作るツールです。細かい修正よりも、既に描いた線を有機的に歪ませて表情をつけたい時に使います。",
-
   "helpShapeToolTitle": "図形ツール",
   "helpShapeToolDesc": "直線・四角形・円といった正確な図形をワンタップで描くためのツールです。ドラッグで始点から終点まで動かすとその場でプレビューされ、指を離すと確定します。フリーハンドでは描きにくい直線や正円が必要な時に便利です。",
-
   "helpTextToolTitle": "テキストツール",
   "helpTextToolDesc": "キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。",
-
   "helpQuickToolTitle": "早替えツール",
   "helpQuickToolDesc": "よく使うブラシ・ツールの組み合わせをあらかじめ登録しておき、ボタン一つで順番に切り替えられる機能です。キャンバス上の↺ボタンを長押しすると登録・並べ替え・削除ができる設定パネルが開きます。ドラッグで並び順を変更できます。",
-
   "helpLayerTitle": "レイヤー",
   "helpLayerDesc": "1枚のキャンバスを複数の透明な「層」に分けて描画できる仕組みです。線画・色塗り・背景などを別々のレイヤーに分けて描くことで、後から色だけをやり直したり、線画を消さずに背景を差し替えたりできます。画面上では上に重なっているレイヤーほど手前に表示されます。",
-
   "helpBlendModeTitle": "ブレンドモード",
   "helpBlendModeDesc": "レイヤーの合成方法を変更する機能です。通常（そのまま重ねる）以外に、乗算（下のレイヤーと掛け合わせて影のような効果を作る）・スクリーン（光が加わったように明るくする）・オーバーレイ（明暗を保ったまま色を重ねる）などがあります。トーンやカラー効果をレイヤーとして重ねる時によく使われます。",
-
   "helpClippingTitle": "クリッピング",
   "helpClippingDesc": "自分のすぐ下にあるレイヤーの、不透明なピクセルの範囲内にのみ描画されるようにする機能です。線画からはみ出さずに色を塗りたい時、線画レイヤーの上に色塗り用レイヤーを作ってクリッピングを有効にすると、線画の外側にうっかりはみ出して描いてしまう心配がなくなります。",
-
   "helpCommonLayerTitle": "共通レイヤー",
   "helpCommonLayerDesc": "通常のレイヤーは1フレームごとに独立していますが、共通レイヤーは複数のフレーム・シーンで同じ内容を共有するレイヤーです。背景などフレームが変わっても動かさない要素を、フレームごとに描き直す手間なく一度描くだけで済ませられます。タイムライン上では専用のトラックとして表示されます。",
-
   "helpAutoFillTitle": "自動塗り",
   "helpAutoFillDesc": "線画レイヤーの下に自動塗りレイヤーを作り、あらかじめ作成した「自動塗りプリセット」（パーツごとの色・トーンの組み合わせ）に基づいて色を自動で塗る機能です。線画を描き終えた後に一括で色を塗れるため、同じキャラクターを何度も描く手描きアニメーションで色塗りの手間を大幅に減らせます。線画を描き直した場合はタイムライン・レイヤーパネルに更新マーク（❗）が表示され、自動塗りの再実行が必要なことを知らせます。",
-
   "helpOnionSkinTitle": "オニオンスキン",
   "helpOnionSkinDesc": "現在編集中のフレームの前後のフレームを半透明で重ねて表示し、動きの繋がりを確認しながら描けるようにする機能です。パフォーマンス設定で表示する枚数（前後何枚まで）や色・透明度を調整できます。",
-
   "helpRulerTitle": "定規",
   "helpRulerDesc": "直線・円・楕円・パース定規（消失点を使った透視図法用の定規）など、フリーハンドでは描きにくい正確な線を補助するための機能です。配置した定規に沿ってペン先が自動でスナップするため、定規なしでは難しい奥行きのある構図も描きやすくなります。定規はハンドルを操作して移動・回転・サイズ変更ができます。",
-
   "helpFadeTitle": "フェード",
   "helpFadeDesc": "ブラシ設定の一つで、ストロークを描き進めるにつれて不透明度や太さが徐々に減少していく効果です。線の端をかすれさせたい時や、余韻を残すような描き味を作りたい時に使います。",
-
   "helpStrokeDecayTitle": "ストローク減衰",
   "helpStrokeDecayDesc": "フェードと似ていますが、こちらは「インクが減っていく」ような表現に近く、描き続けるほど色が薄くなったりかすれたりする効果です。筆やマーカーで描き続けた時のインク切れのような質感を再現します。",
-
   "helpColorMixingTitle": "混色",
   "helpColorMixingDesc": "ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。水彩や油彩のように、既存の色に新しい色をなじませたい時に使います。",
-
   "helpPressureCurveTitle": "筆圧カーブ",
   "helpPressureCurveDesc": "ペン入力設定にある機能で、実際の筆圧の強さと、ブラシの太さ・不透明度への反映のされ方の関係をグラフで自由に調整できます。弱い筆圧でも太く出したい人、逆に強く押さないと太くならないようにしたい人など、手癖に合わせて描き心地を細かくカスタマイズできます。設定変更後はその場で試し書きしながら確認できます。",
-
   "helpTimelineTitle": "タイムライン",
   "helpTimelineDesc": "アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。画像・動画・音声などの素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。",
-
   "helpSceneTitle": "シーン",
   "helpSceneDesc": "1つのプロジェクト（1本の動画）の中を、場面（カット）ごとに分割して管理する機能です。フォルダがプロジェクト単位の整理なのに対し、シーンは1本の動画の中の場面転換を表現するために使います。",
-
   "helpCameraKeyframeTitle": "カメラキーフレーム",
   "helpCameraKeyframeDesc": "タイムライン上の特定の位置にカメラの位置・拡大率・回転を記録しておく機能です。キーフレーム間は自動で滑らかに補間されるため、パン（横移動）やズームイン・ズームアウトのようなカメラワークを簡単に付けられます。",
-
   "helpEffectFilterTitle": "演出フィルター",
   "helpEffectFilterDesc": "シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー等）です。手描きの絵そのものを変えずに、演出として画面全体の見た目を調整したい時に使います。",
-
   "helpEndCardTitle": "エンドカード",
   "helpEndCardDesc": "動画書き出し時、本編の終わりに自動で追加されるNIARIMロゴの短い動画（約5秒）です。無料版では非表示・削除ができませんが、プレミアム会員になると表示のON/OFF・長さ変更・差し替えができるようになります。",
-
   "helpAutoSaveTitle": "自動保存",
   "helpAutoSaveDesc": "クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。アプリを異常終了した後の再起動時のみ、復元するかどうかを尋ねられます。",
-
   "helpSaveSlotTitle": "セーブスロット",
   "helpSaveSlotDesc": "決まった数の保存枠（スロット）に、自分で保存先を選びながら保存する方式です。スロット数は設定（低品質5件・中品質10件）で決まります。上書きしたい枠を毎回自分で選ぶため、「このタイミングの状態は残しておきたい」という管理がしやすい方式です。",
-
   "helpSaveTreeTitle": "セーブツリー",
   "helpSaveTreeDesc": "保存するたびに新しい保存地点が作られ、過去の保存地点から分岐して別の履歴を作れる（枝分かれする）保存方式です。件数の上限がなく、「あの時のバージョンに戻ってから別の展開を試したい」といった使い方に向いています。画面には保存地点が下から上へ伸びる樹形図として表示されます。",
-
   "helpFolderTitle": "フォルダ",
   "helpFolderDesc": "プロジェクト（作品）をグループ化して整理する機能です。複数階層に対応しているので、同じ作品の複数話数やシリーズ物をまとめて管理する使い方もできます（例：「作品名」フォルダの中に「第1話」「第2話」…とプロジェクトを並べる）。1つの動画の中で場面を分けて作りたい場合は、フォルダではなくキャンバス画面の「シーン」機能をご利用ください。",
-
   "helpTrashTitle": "ゴミ箱",
   "helpTrashDesc": "削除したプロジェクトが一時的に移動する場所です。完全に削除するまではここから元に戻せます。設定で自動削除までの日数（OFF/30日/60日/90日）を指定できます。",
-
   "helpShareTitle": "共有（.niashare）",
   "helpShareDesc": "プロジェクトを他の人（または自分の他の端末）へ渡すための共有専用ファイル形式です。受け取った側がこのファイルを開くと、複製されて自分のプロジェクト一覧に追加されます。共有元の.niashare自体は変更されません。",
-
   "helpTransferTitle": "引き継ぎ（.niatra）",
   "helpTransferDesc": "設定・素材・ブラシ・プリセット・UIテーマなど、アプリ全体の環境を別の端末へまとめて引き継ぐための機能です。引き継ぐ項目はチェックボックスで個別に選べます。個別のプロジェクトを渡したい場合は「共有（.niashare）」を使います。",
-
   "helpVideoExportTitle": "動画書き出し（MP4）",
   "helpVideoExportDesc": "作品を汎用的なMP4動画として書き出します。端末内蔵のハードウェアエンコーダーを直接利用しており、H.264関連のライセンス上の懸念を避けています。無料版はエンドカードが自動追加され、書き出せる長さに上限があります。",
-
   "helpTransparentWebmTitle": "透過WebM",
   "helpTransparentWebmDesc": "アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。",
-
   "helpGifExportTitle": "GIF書き出し",
   "helpGifExportDesc": "アニメーションGIFとして書き出します。GIFは書き出し時のみの形式で、編集中に専用の「GIFモード」があるわけではありません。",
-
   "helpWatermarkEntryTitle": "ウォーターマーク",
   "helpWatermarkEntryDesc": "書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。",
-
   "helpPremiumEntryTitle": "プレミアム",
   "helpPremiumEntryDesc": "尺の制限緩和・エンドロゴ編集・ウォーターマーク・トーンカーブ・レベル補正など、無料版では制限されている機能を利用できる会員種別です。リリース記念キャンペーン期間中は無料版でもこれらの機能を無料で利用できます（広告非表示や購入自体はできません）。",
-
   "helpFontManagementTitle": "フォント管理",
   "helpFontManagementDesc": "テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。",
-
   "helpPerformanceSettingsTitle": "パフォーマンス設定",
   "helpPerformanceSettingsDesc": "端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・タイルキャッシュ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。",
-
   "helpMaterialClipTitle": "素材クリップ（画像・動画・音声）",
   "helpMaterialClipDesc": "タイムラインの画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。タップすると開く詳細シートのコピーアイコンから複製、ゴミ箱アイコンから削除もできます。画像・動画は内部的にはレイヤーとして扱われており、音声はシーンに直接紐づくクリップとして管理されます。",
-
   "helpGestureSettingsTitle": "ジェスチャー設定",
   "helpGestureSettingsDesc": "2本指タップ・3本指タップ・2本指スワイプ・長押しに、Undo/Redo・フレーム移動・スポイトなどの操作を割り当てられる設定です。ペンボタン（対応スタイラス使用時）にも別途操作を割り当てられます。指を使わずワンタッチで頻用操作を呼び出したい場合に便利です。",
-
   "helpBucketDetailSettingsTitle": "バケツ塗り詳細設定",
   "helpBucketDetailSettingsDesc": "設定画面の「バケツ塗り」から、許容誤差（クリックした位置の色からどこまでの色差を同一領域とみなすか）・拡張px（塗った範囲を境界の外側へ広げて線画との隙間を埋める量）・線の下まで潜る（拡張分を線画の上から上書きせず、線の見た目を保ったまま背後へ塗り色を合成する）を調整できます。線画に細かい隙間がある場合や、塗り残しが気になる場合に調整すると仕上がりが安定します。",
-
   "helpStampToolTitle": "スタンプツール",
   "helpStampToolDesc": "あらかじめ登録した画像をブラシのようにキャンバスへ配置するツールです。効果線・背景パターン・小物などを毎回描き直さずに使い回せます。ピクセルモードをONにすると、貼り付けたスタンプをモザイク低解像度化＋色数削減でドット絵風に加工できます。",
-
   "helpToneFillTitle": "トーン塗り",
   "helpToneFillDesc": "バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ピクセルモード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。",
-
   "helpPixelModeTitle": "ピクセルモード",
   "helpPixelModeDesc": "ブラシ・フォント・スタンプのそれぞれに用意されている設定で、ONにするとアンチエイリアスを取り除き、くっきりとしたドット絵風の輪郭で描画されます。あえて古いゲームのような質感を出したい時や、低解像度感を演出したい時に使います。",
-
   "helpHomeScreenTitle": "ホーム画面",
   "helpHomeScreenDesc": "アプリを起動して最初に表示される画面で、プロジェクト・共有・作品一覧・ゴミ箱の各タブを切り替えて閲覧できます。右上の検索アイコンからプロジェクト名で絞り込み検索もできます。プロジェクトタブでは新規プロジェクト作成とフォルダ作成をFABから選べます。",
-
   "helpNewProjectTitle": "新規プロジェクト作成",
   "helpNewProjectDesc": "キャンバスサイズ・fps・長さ（秒数。あとからタイムラインでのフレーム増減にも連動）・描画領域（書き出し範囲より広く描いておける設定）・使用する自動塗りプリセットなどをまとめて設定してからプロジェクトを作成します。",
-
   "helpThemeSettingsTitle": "テーマ設定",
   "helpThemeSettingsDesc": "アプリ全体の配色をプリセットから選んだり、差し色を自由にカスタマイズしたりできる画面です。見出し・項目名用フォントと説明文用フォントが分かれており、視認性を保ちながら着せ替えを楽しめます。",
-
   "helpWorkspaceSettingsTitle": "ワークスペース設定",
   "helpWorkspaceSettingsDesc": "左利きモード（ドッキングパネルを左右反転）、PC/DeXモードの手動切替、手のひらツールの表示条件などをまとめて設定できる画面です。使用端末や利き手に合わせて作業しやすいレイアウトに調整できます。",
-
   "helpPenSettingsTitle": "ペン設定",
   "helpPenSettingsDesc": "板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。",
-
   "helpMaterialListTitle": "素材一覧",
   "helpMaterialListDesc": "プロジェクトで使用している画像・動画・音声素材をまとめて確認できる画面です。タイムラインへ配置した素材の元ファイルがここに集約されます。",
-
   "helpFrameOperationsTitle": "フレーム操作",
   "helpFrameOperationsDesc": "フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。",
-
   "helpSceneOperationsTitle": "シーン操作",
   "helpSceneOperationsDesc": "タイムラインのシーンタブでは、シーンの追加・複製・削除・名前変更・並び替えができます。複数選択モードにすると複数シーンをまとめて移動・複製・削除することも可能です。",
-
   "helpQuickToolManagementTitle": "早替えツール管理",
   "helpQuickToolManagementDesc": "よく使うツールの組み合わせを登録し、タップひとつで順番に切り替えられる機能です。長押しまたは上スワイプで管理ポップアップを開き、登録内容や並び順を編集できます。",
-
   "helpTransformSelectionTitle": "選択範囲の変形",
   "helpTransformSelectionDesc": "選択ツールで囲んだ範囲は、変形ツールで移動・回転・拡大縮小できます。誤って描いた部分の位置調整や、一部だけを拡大して強調したい時などに使います。",
-
   "helpGradientAutofillTitle": "グラデーション塗り（自動塗りプリセット）",
   "helpGradientAutofillDesc": "自動塗りプリセットの各パーツには単色だけでなくグラデーションも設定できます。ドラッグで移動できる対称ハンドルにより、直感的にグラデーションの範囲・角度を調整できます。",
-
   "helpColorPickerTitle": "カラーピッカー",
   "helpColorPickerDesc": "HSVとRGBを1つの画面で切り替えながら色を選べるカラーピッカーです。長押しで簡単な使い方の説明も表示されます。パレット機能で使用中のカラーセットを保存・呼び出しできます。",
-
   "helpUndoSettingsTitle": "Undo（元に戻す）回数設定",
   "helpUndoSettingsDesc": "パフォーマンス設定から、Undoで遡れる操作回数を調整できます。回数を増やすほど安心して試行錯誤できますが、メモリ使用量も増えるため、低スペック端末では回数を抑えると動作が軽くなります。",
-
   "helpBrushFavoriteTitle": "ブラシのお気に入り",
   "helpBrushFavoriteDesc": "ブラシ一覧の各ブラシにある星アイコンをタップすると、お気に入り登録・解除ができます（自動塗りプリセット・スタンプ・フォント・描画フィルターなど、アプリ内の他のお気に入り機能と同じ操作方法です）。一覧上部の星アイコンで、お気に入りのみ表示に絞り込むこともできます。誤って削除しないよう、お気に入り登録中のブラシは削除できません。",
-
   "helpLayerFolderTitle": "レイヤーフォルダ",
   "helpLayerFolderDesc": "複数のレイヤーをフォルダにまとめて整理できる機能です。パーツ数が多いイラストでもレイヤーパネルが見やすくなります。クリッピングはフォルダをまたいで適用できない仕様のため、クリッピングを使う場合は同じフォルダ内でまとめておくと安全です。",
-
   "helpLayerMultiSelectTitle": "レイヤーの複数選択・一括操作",
   "helpLayerMultiSelectDesc": "レイヤーパネルの選択モードを使うと、複数のレイヤーをチェックボックスでまとめて選び、結合や一括削除ができます。結合は通常・自動塗り用線画・自動塗りレイヤー同士でのみ可能です（共通レイヤー・フォルダ・タイムライン素材は結合対象外）。",
-
   "helpAutofillBatchRunTitle": "自動塗り実行",
   "helpAutofillBatchRunDesc": "タイムライン画面の三点メニューから「自動塗り実行」を選ぶと、更新マーク（❗）が付いた自動塗りレイヤーをまとめて再計算できます。線画を描き直した後に1枚ずつレイヤーパネルで実行する手間を省けます。",
-
   "helpAutofillLineColorTitle": "自動塗りの線画色設定",
   "helpAutofillLineColorDesc": "自動塗りプリセットの各パーツには、線画の色をどう扱うかの設定（指定色・塗り色と同じ・色トレス）があります。色トレス（線画馴染ませ）を選ぶと、線画の色を塗り色に合わせてHSLシフトし、線が浮かずに馴染んだ仕上がりになります。",
-
   "helpAutofillPresetFilterTitle": "プロジェクトごとの自動塗りプリセット絞り込み",
   "helpAutofillPresetFilterDesc": "プリセットが増えてくると、パーツ割り当て時の一覧が長くなって選びにくくなります。プロジェクト設定（またはレイヤーパネルのパーツ割り当てダイアログ）から、このプロジェクトで使うプリセットだけに絞り込んでおくと、一覧がすっきりして選びやすくなります。",
-
   "helpDrawingAreaTitle": "描画領域",
   "helpDrawingAreaDesc": "書き出し範囲よりも広い範囲まで描いておける設定です。キャンバス上には書き出し範囲を示す赤枠が表示され、枠の外側にはみ出して描いた部分は書き出されませんが、パン・ズームなどのカメラワークで見せる範囲を後から調整する余地を残せます。新規プロジェクト作成時に倍率を設定します。",
-
   "helpCanvasBackgroundTitle": "キャンバスの背景色",
   "helpCanvasBackgroundDesc": "プロジェクトのキャンバス背景色を設定できます。透過書き出し（透過WebM）を使う場合は背景色は書き出しに影響しませんが、作業中の見やすさのために好みの色に変更できます。",
-
   "helpProjectDetailTitle": "プロジェクト詳細画面",
   "helpProjectDetailDesc": "プロジェクト名・サムネイル・お気に入り登録・使用する自動塗りプリセットの絞り込みなど、プロジェクト単位の設定をまとめて確認・編集できる画面です。セーブツリーへの入り口もここにあります。",
-
   "helpWatermarkEditTitle": "ウォーターマークの再編集",
   "helpWatermarkEditDesc": "タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。",
-
   "helpAudioClipTitle": "音声クリップの音量・フェード",
   "helpAudioClipDesc": "タイムラインに配置した音声クリップは、詳細シートから音量・フェードイン・フェードアウトの秒数を調整できます。効果音やBGMの音量バランスを整えたり、曲の始まり・終わりを滑らかにしたりできます。",
-
   "helpConvertToCommonTitle": "レイヤーの共通化",
   "helpConvertToCommonDesc": "通常レイヤーを共通レイヤー（複数フレームに同じ内容を表示し続けるレイヤー）へ変換できる機能です。表示中のレイヤーを複製して1枚に統合してから共通化することもできます。背景など毎フレーム同じ内容を使い回したい場合に、描き直す手間を省けます。",
-
   "helpAnimatedNoiseFilterTitle": "動くノイズフィルター",
   "helpAnimatedNoiseFilterDesc": "フィルムの粒状感のようなノイズをフレームごとに変化させながら適用する演出フィルターです。強度・量（ノイズが乗る密度）・粒の大きさをスライダーで調整できます。同じフレームに戻ると同じ粒状になるため、スクラブ中にちらつかず、再生すると粒が動いて見えます。",
-
   "helpRainFilterTitle": "雨フィルター",
   "helpRainFilterDesc": "画面に降る雨を表現する演出フィルターです。降り方（本数）・速さ・粒の大きさ・風向きの角度をスライダーで調整できます。各雨粒はフレームが進むごとに一定の速度で降り続けるため、自然な雨の動きになります。",
-
   "helpPenSubToolTitle": "ペンサブツール",
   "helpPenSubToolDesc": "ペンツールを長押しすると、通常の描画に加えてトーン貼り・スタンプ配置のサブツールへ切り替えられます。ツールをいちいち切り替えずに、同じペンから複数の作業を行き来できます。",
-
   "helpTiltDetectionTitle": "傾き検知",
   "helpTiltDetectionDesc": "対応スタイラスの傾き情報を使って、筆先を寝かせたときに線を太く・薄くするなど、実際の筆記具に近い描き心地を再現する設定です。パフォーマンス設定からON/OFFを切り替えられます。",
-
   "helpEffectFilterOrderTitle": "演出フィルターの適用順",
   "helpEffectFilterOrderDesc": "演出フィルターは複数重ねて適用でき、その適用順はタイムライン上での並び順に従います。フィルター一覧をドラッグで並び替えると、実際に画面へ反映される順序も変わります。",
-
   "helpFontImportTitle": "フォントの読み込み",
   "helpFontImportDesc": "端末内のフォントファイルを直接読み込んで使えるようにする機能です。設定画面のフォント管理「読み込み」タブから追加できます。配信されていない自作フォントや購入した商用フォントを使いたい場合に利用します。",
-
   "helpStampTransformTitle": "スタンプの回転・拡大縮小",
   "helpStampTransformDesc": "スタンプパネルでは配置するスタンプの回転角度・大きさを調整できます。同じスタンプでも向きやサイズを変えて配置すれば、単調にならず自然な効果線・小物の並びを作れます。",
-
   "helpExportScreenTitle": "書き出し画面",
   "helpExportScreenDesc": "動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しには端末のハードウェアエンコーダーを利用しており、端末の性能に応じて時間が変わります。",
-
   "helpFreeDurationLimitTitle": "無料会員の尺制限",
   "helpFreeDurationLimitDesc": "無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。",
-
   "helpDrawingFilterTitle": "描画フィルター",
   "helpDrawingFilterDesc": "選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ぼかし・シャープ・アンシャープマスク・トーンカーブ・レベル補正・周辺減光・ノイズ・レトロアニメ・ブラウン管・アニメ調・縁取り・ピクセレートなどが用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。",
-
   "helpLayerKeyframeTitle": "レイヤーキーフレーム（パーツ単位アニメーション）",
   "helpLayerKeyframeDesc": "各レイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間する機能です。カメラキーフレームが画面全体を動かすのに対し、こちらは個々のレイヤーだけを動かします。自動塗りの各パーツはそれぞれ独立したレイヤーとして生成されるため、パーツ単位でのアニメーション（腕だけ動かす、口だけ開閉させる等）にそのまま使えます。レイヤーパネルの三点メニュー「アニメーション（キーフレーム）」から設定します。レイヤーの絵自体は変わらず、表示位置だけが変わる非破壊な変形です。この機能はタイムラインの表示（プレビュー・書き出し）にのみ影響し、キャンバスモードでの実際の作画には影響しません。",
-
   "helpLayerGroupTitle": "レイヤーグループ（複数パーツをまとめて動かす）",
   "helpLayerGroupDesc": "複数のレイヤーをまとめて1つのキーフレームストリームで動かす機能です。例えば「腕」が肌・袖の2枚の自動塗りパーツで構成されている場合、この2枚をグループ化しておけば、1回のキーフレーム操作でまとめて動かせます。レイヤーパネルで複数選択（チェックボックス）した状態で下部バーの「グループ化」アイコンから作成します。グループの動きは各レイヤー自身のキーフレーム（設定されていれば）に重ねて適用されるため、グループ全体の動き＋個別レイヤーの微調整、という組み合わせも可能です。1つのレイヤーは同時に1つのグループにのみ所属できます。",
-
   "tipsScreenTitle": "活用Tips",
   "tipsSearchHint": "Tipsを検索...",
   "tipsCategoryVideo": "動画制作のコツ",
@@ -646,166 +617,98 @@
   "tipsCategoryDrawing": "作画をなめらかにするコツ",
   "tipsCategoryEffects": "演出・仕上げのコツ",
   "tipsCategoryExport": "書き出し・操作のコツ",
-
   "tipsClipDuplicateTitle": "タイムラインの素材は複製・移動・削除ができる",
   "tipsClipDuplicateDesc": "画像・動画・音声クリップをタップすると開く詳細シートのコピーアイコンから複製できます。同じ効果音を繰り返し使う、同じ画像を場面ごとに配置し直すといった編集が、長押しドラッグと複製ボタンだけで完結します。",
-
   "tipsTextCaptionTitle": "テキストツールで字幕・ツッコミを入れる",
   "tipsTextCaptionDesc": "テキストツールを使えば、ミーム動画でおなじみの字幕やツッコミコメントをフレームごとに配置できます。フォントをピクセルモードに切り替えると、あえて古いゲーム風の質感も演出できます。",
-
   "tipsAutofillPresetTitle": "自動塗りプリセットはパーツごとに登録しておく",
   "tipsAutofillPresetDesc": "肌・髪・服などパーツごとに陰影込みでプリセット登録しておくと、線画を描くだけで色塗りの大部分を自動化できます。プロジェクトごとに使うプリセットだけを絞り込むこともできます。",
-
   "tipsBrushFavoriteTitle": "ブラシはお気に入り登録で迷わず選べる",
   "tipsBrushFavoriteDesc": "よく使うブラシは一覧の星アイコンをタップしてお気に入り登録しておきましょう。一覧上部の星アイコンでお気に入りのみに絞り込めるので、探す手間が減ります。誤って削除しないよう、お気に入り登録中は削除できない仕組みになっています。",
-
-  "tipsOnionSkinTitle": "オニオンスキンで前後のフレームを透かして見る",
-  "tipsOnionSkinDesc": "前後のフレームを半透明で重ねて表示できるオニオンスキン機能を使うと、動きの繋がりを確認しながら作画できます。",
-
   "tipsPressureCurveTitle": "筆圧カーブを自分好みに調整する",
   "tipsPressureCurveDesc": "設定画面の筆圧カーブは最大10点の制御点を自由に打てます。強弱の付き方が合わないと感じたら、自分の筆圧の癖に合わせて調整してみましょう。",
-
-  "tipsEffectFilterTitle": "演出フィルターで動画全体の雰囲気を統一する",
-  "tipsEffectFilterDesc": "レトロアニメ・ブラウン管・セピアなどの演出フィルターは、タイムライン全体やシーン単位でまとめて適用できます。Y2K風・懐かしいアニメ風など、動画全体の質感を一括で変えたいときに便利です。",
-
-  "tipsCameraKeyframeTitle": "カメラキーフレームでズーム・パンを演出する",
-  "tipsCameraKeyframeDesc": "シーンにカメラキーフレームを打つと、静止した1枚絵でもズームイン・パンといった映像的な動きを加えられます。",
-
   "tipsExportFormatTitle": "用途に合わせて書き出し形式を選ぶ",
   "tipsExportFormatDesc": "SNSに気軽に投稿したいときはGIF書き出し、他の動画に重ねたい・背景を透かしたいときは透過WebM、通常の動画として使いたいときはMP4書き出しが向いています。用途ごとに使い分けると、ファイルサイズと画質のバランスを取りやすくなります。",
-
   "tipsGestureShortcutTitle": "ジェスチャーで頻用操作をワンタッチに",
   "tipsGestureShortcutDesc": "設定画面の「ジェスチャー」から、2本指タップ・3本指タップ・長押しなどにUndo/Redoやスポイトを割り当てられます。ツールを切り替えずに済むので、作画のテンポを崩さずに済みます。",
-
   "tipsAudioRepeatTitle": "効果音はクリップ複製×フェードでリズムよく鳴らす",
   "tipsAudioRepeatDesc": "同じ効果音を繰り返し使いたい場合、クリップを複製してタイミングをずらして並べ、それぞれにフェードイン・アウトを設定すると、リズムに合った自然な効果音の連打が作れます。",
-
   "tipsVerticalRubyTitle": "縦書き×ルビでタイトルロゴ風の演出",
   "tipsVerticalRubyDesc": "テキストツールの縦書きにルビを組み合わせると、和風のタイトルロゴやこだわりの見出し演出が作れます。半角英数字は自動で横向きに回転して並ぶので、記号や数字が混ざっても読みやすく仕上がります。",
-
   "tipsBrushTrySaveTreeTitle": "新しいブラシ設定はセーブツリーで試す",
   "tipsBrushTrySaveTreeDesc": "ブラシの太さや安定化などを大きく変えて試したいときは、変更前にセーブツリーへ保存しておくと安心です。気に入らなければすぐに元の状態へ戻せるので、思い切った調整を試しやすくなります。",
-
   "tipsEyedropperGestureTitle": "2本指タップにスポイトを割り当てて配色を崩さない",
   "tipsEyedropperGestureDesc": "ジェスチャー設定で2本指タップにスポイトを割り当てておくと、ツールを切り替えずに近くの色をすぐ拾えます。キャラクターの配色を保ったまま塗り進めたいときに便利です。",
-
   "tipsRulerOnionTitle": "パース定規×オニオンスキンで背景を使い回す",
   "tipsRulerOnionDesc": "パース定規で背景の奥行きを決めておき、オニオンスキンで前後フレームを透かして見ながらキャラクターだけを動かすと、背景を毎フレーム描き直さずに済みます。",
-
   "tipsGradientTraceTitle": "グラデーション自動塗り×色トレスで馴染ませる",
   "tipsGradientTraceDesc": "自動塗りプリセットでグラデーションを設定する際、線画色設定を色トレス（線画馴染ませ）にしておくと、グラデーションの微妙な色の変化に合わせて線画の色も馴染み、境界が浮きにくくなります。",
-
   "tipsRainNoiseTitle": "雨フィルター×動くノイズでしっとりした空気感",
   "tipsRainNoiseDesc": "雨フィルターに弱めの動くノイズフィルターを重ねると、雨粒だけでなく空気中の粒子感も加わり、しっとりとした雨の日らしい質感を演出できます。",
-
   "tipsPartKeyframeGroupTitle": "パーツキーフレーム×グループ化でキャラを弾ませる",
   "tipsPartKeyframeGroupDesc": "自動塗りの各パーツにレイヤーキーフレームを付けて動かし、さらに関連パーツをグループ化してまとめて弾ませると、音楽に合わせて揺れるようなミニアニメーションを描き直しなしで作れます。",
-
   "tipsLowSpecSettingsTitle": "低スペック端末はパフォーマンス設定とUndo回数を見直す",
   "tipsLowSpecSettingsDesc": "動作が重いと感じたら、パフォーマンス設定を「低品質」プリセットに切り替え、Undo回数も減らしてみましょう。メモリ使用量が減り、動作が軽くなることがあります。",
-
   "tipsSeriesPresetFolderTitle": "シリーズ物はプリセット絞り込み×フォルダ整理で管理する",
   "tipsSeriesPresetFolderDesc": "同じ作品の複数話数を作るときは、フォルダで話数ごとにプロジェクトをまとめ、各プロジェクトで使う自動塗りプリセットを絞り込んでおくと、キャラごとの配色を混同せず効率よく作業できます。",
-
-  "tipsFadeEndCardTitle": "演出フィルターのフェード×エンドカードで締める",
-  "tipsFadeEndCardDesc": "本編の最後に演出フィルターのフェードでゆっくり暗転させると、動画の終わりに自動で続くエンドカードへの繋ぎが自然になり、締めくくりがぐっとプロっぽい印象になります。",
-
   "tipsPixelToneRetroTitle": "スタンプのピクセルモード×トーン塗りでレトロ統一",
   "tipsPixelToneRetroDesc": "ピクセルモードのスタンプと、ピクセルモード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。レトロゲーム風の演出に向いています。",
-
   "tipsMagicWandLassoTitle": "マジックワンド選択×投げ縄塗りで塗り分け効率化",
   "tipsMagicWandLassoDesc": "選択ツールの自動選択（マジックワンド）でおおまかな範囲を一括選択し、はみ出た部分だけ投げ縄選択で調整すると、複雑な塗り分けも素早く行えます。",
-
   "tipsCommonLayerFolderTitle": "共通レイヤー×フォルダで話数をまたいで使い回す",
   "tipsCommonLayerFolderDesc": "シリーズ物で毎話使うロゴやクレジット表記は、共通レイヤー化してフォルダにまとめておくと、新しい話数のプロジェクトへコピーする際も迷わず扱えます。",
-
   "tipsStrokeDecayFadeTitle": "ストローク減衰×フェードで毛筆表現",
   "tipsStrokeDecayFadeDesc": "ブラシ設定のストローク減衰とフェードを両方かけると、線の描き始め・終わりが自然に細くなり、毛筆やインクブラシのような抑揚のある線が描けます。",
-
   "tipsColorMixingFadeTitle": "混色×フェードで絵の具のような混ざり",
   "tipsColorMixingFadeDesc": "混色を有効にしたブラシへフェードも組み合わせると、下の色と混ざりながら徐々に薄くなる、実際の絵の具に近い塗り心地になります。",
-
   "tipsOutlineAnimeStyleTitle": "縁取り×アニメ調でセルアニメ風の仕上げ",
   "tipsOutlineAnimeStyleDesc": "描画フィルターの縁取りで輪郭線を新規レイヤーへ描き出し、アニメ調フィルターで色数を落とすと、セルアニメのようなくっきりした仕上げになります。",
-
   "tipsLevelsToneCurveTitle": "レベル補正×トーンカーブでグラフィック調に",
   "tipsLevelsToneCurveDesc": "レベル補正で明暗差を強めに調整してからトーンカーブで階調を作り込むと、写真的な階調から離れた、ポスターのようなグラフィック調の演出ができます。",
-
   "tipsMosaicChromaticTitle": "モザイク×色収差でブラウン管風の荒れた質感",
   "tipsMosaicChromaticDesc": "モザイクで解像度を落としてから色収差を重ねると、古いブラウン管テレビで見ているような荒れた質感を演出できます。ブラウン管フィルター単体とはひと味違う質感が作れます。",
-
-  "tipsEndCardWatermarkTitle": "自分の署名はウォーターマーク、締めはエンドカードで役割分担",
-  "tipsEndCardWatermarkDesc": "動画に自分の署名を入れたいときはウォーターマーク機能を使います。エンドカードは動画の最後に自動で付くアプリ側のロゴで、無料会員は変更できませんが、プレミアム会員なら自分のロゴへ差し替えられます。ウォーターマークで無断転載対策をしつつ、プレミアム会員はエンドカードも自分のロゴにしておくと、動画の最初から最後まで一貫したブランディングになります。",
-
+  "tipsEndCardWatermarkTitle": "自分の署名はウォーターマーク、エンドカードは別物",
+  "tipsEndCardWatermarkDesc": "動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドカードは動画の最後に自動で表示されるアプリ側のロゴで、無料会員は変更できません。プレミアム会員なら非表示にしたり、自分の動画・画像に差し替えたりできます。エンドカードを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。",
   "tipsVerticalPixelFontTitle": "実写動画×手描き作画で「実写×アニメ」を作る",
   "tipsVerticalPixelFontDesc": "イラストアプリと動画編集アプリを兼ねているからこそできる遊び方です。実写の動画クリップをタイムラインに配置し、その上のレイヤーへオニオンスキンを使いながら手描きで効果線やキャラクターを描き足せば、実写に手描きアニメが重なった「実写×アニメ」のミックスメディア動画が作れます。",
-
   "tipsTimelineMarkerTitle": "音や口パクのタイミング合わせにはタイムスタンプ",
   "tipsTimelineMarkerDesc": "シーンは「開始〜終了フレームの範囲」を扱う機能ですが、タイムスタンプは「その一瞬」にコメントを付けてワンタップで移動できる機能です。「120フレーム目で効果音」「180フレーム目は口パク『あ』」のように、同じシーンの範囲内に複数のタイムスタンプを打っておけば、音と映像のタイミング合わせが格段にやりやすくなります。",
-
   "tipsToolbarCustomizeTitle": "ツールバーの並び替え・非表示で指の移動距離を減らす",
   "tipsToolbarCustomizeDesc": "設定画面のツールバー編集から、使わないツールを非表示にし、よく使うツールを指の届きやすい位置へ並び替えられます。表示項目を絞ってすっきりさせるだけで、ツールを探す時間や指の移動距離が減り、作画のテンポが上がります。",
-
   "tipsAutofillBlendModeTitle": "自動塗りパーツのブレンドモードで陰影の質感を変える",
   "tipsAutofillBlendModeDesc": "自動塗りプリセットの各パーツにはブレンドモードを設定できます。陰影パーツを「乗算」ではなく「オーバーレイ」や「ソフトライト」にすると、光が透けるような柔らかい陰影になります。同じ色でも質感を変えられる、隠れた自由度の高さです。",
-
   "tipsStampBlendModeTitle": "スタンプ×ブレンドモードで光のエフェクト",
   "tipsStampBlendModeDesc": "配置したスタンプのレイヤーをブレンドモード「スクリーン」や「加算」にすると、光の効果線やキラキラしたエフェクトが背景に自然に馴染んで映えます。",
-
   "tipsQuickToolPenSubTitle": "早替えツール×ペンサブツールで手を止めない作業導線",
   "tipsQuickToolPenSubDesc": "よく使うツールを早替えツールに登録しつつ、ペンの長押しでトーン貼り・スタンプへ切り替えられるペンサブツールも活用すると、画面を行き来する回数を減らして作業のテンポを保てます。",
-
   "tipsAutofillToneReuseTitle": "自動塗りのトーン設定で線画差し替えだけで塗りを再現",
   "tipsAutofillToneReuseDesc": "自動塗りプリセットの各パーツを「トーンを使う」設定にしておくと、線画を描き直すたびにトーン込みの塗りを自動で再現できます。フレームごとにトーンを貼り直す手間を省けます。",
-
   "tipsRadialVignetteTitle": "放射定規×周辺減光で集中線演出",
   "tipsRadialVignetteDesc": "放射定規で集中線を一気に描き、描画フィルターの周辺減光を重ねると、漫画のクライマックスのような迫力ある演出になります。",
-
   "tipsClippingGradientTitle": "クリッピング×グラデーションで陰影を描き直し可能に",
   "tipsClippingGradientDesc": "グラデーションレイヤーをキャラクターレイヤーへクリッピングしておくと、陰影の形をブラシで描き込まなくても、グラデーションの範囲・角度の変更だけで陰影を調整し直せます。",
-
   "tipsToneCurveSepiaTitle": "トーンカーブ×セピアでレトロ写真風",
   "tipsToneCurveSepiaDesc": "演出フィルターのトーンカーブで明暗のコントラストを整えてからセピアを重ねると、色あせた古い写真のような質感を演出できます。",
-
   "tipsCameraLensBlurTitle": "カメラキーフレーム×レンズぼかしでズームブラー演出",
   "tipsCameraLensBlurDesc": "カメラキーフレームでズームする瞬間に合わせてレンズぼかしの演出フィルターを一時的に強めに設定すると、実写のズームブラーのような迫力を演出できます。",
-
   "tipsBlurVignetteBgTitle": "ガウスぼかし×周辺減光で柔らかい背景ボケ",
   "tipsBlurVignetteBgDesc": "背景レイヤーだけにガウスぼかしと周辺減光の描画フィルターを重ねてかけると、主役のキャラクターが自然と目立つ、被写界深度のあるカメラ風の仕上がりになります。",
-
   "tipsSepiaVignetteTitle": "セピア×周辺減光でアンティーク写真風の動画に",
   "tipsSepiaVignetteDesc": "演出フィルターのセピアと描画フィルターの周辺減光を組み合わせると、四隅が暗く色あせたアンティーク写真のような雰囲気の動画に仕上げられます。",
-
-  "tipsGifLoopTitle": "GIFはループを意識して最初と最後を近づける",
-  "tipsGifLoopDesc": "GIF書き出しは自動でループ再生されます。最初のフレームと最後のフレームの絵を近い形にしておくと、ループの繋ぎ目が目立たず、自然に回り続けるアニメーションになります。",
-
   "tipsVideoTrimReuseTitle": "動画クリップの使用範囲を変えて同じ素材を使い回す",
   "tipsVideoTrimReuseDesc": "同じ動画素材でも、クリップごとに使用開始・終了フレームを変えて配置すれば、別のカットとして使い回せます。素材を増やさずにバリエーションを作れます。",
-
   "tipsSaveSlotAutoSaveTitle": "セーブスロット×自動保存を使い分ける",
   "tipsSaveSlotAutoSaveDesc": "自動保存は常に最新状態を上書きしますが、セーブスロットは複数の状態を残しておけます。大きな節目でセーブスロットに保存し、それ以外の細かい変更は自動保存に任せると、必要な時点へ確実に戻れます。",
-
   "tipsQuickToolSwipeTitle": "早替えツールは上スワイプで並び替えできる",
   "tipsQuickToolSwipeDesc": "早替えツールの登録内容を変えたいときは、長押しだけでなく上スワイプでも管理ポップアップを開けます。片手で操作しているときに素早く並び替えたい場合に便利です。",
-
-  "tipsColorPickerLongPressTitle": "カラーピッカーは長押しで使い方を確認できる",
-  "tipsColorPickerLongPressDesc": "色の選び方に迷ったら、カラーピッカーを長押ししてみましょう。簡単な使い方の説明が表示されるので、HSV・RGB・パレットの操作を確認できます。",
-
   "tipsDrawingAreaCameraTitle": "描画領域を広めに×カメラキーフレームで安全にパン・ズーム",
   "tipsDrawingAreaCameraDesc": "描画領域を書き出し範囲より広めに設定しておくと、カメラキーフレームでパン・ズームしても画面の端が切れる心配がありません。動きの大きい演出を入れる前に確認しておくと安心です。",
-
   "tipsWebmCommonLayerTitle": "透過WebM×背景を共通レイヤーで分離管理",
   "tipsWebmCommonLayerDesc": "透過WebMとして書き出したキャラクターを別の動画編集ソフトで背景と合成する場合、背景を共通レイヤーで別管理しておくと、透過部分に不要な色が混ざらずきれいに抜けます。",
-
   "tipsLeftHandedWorkspaceTitle": "左利きモード×ワークスペース設定で作業しやすく",
   "tipsLeftHandedWorkspaceDesc": "左利きの場合、ワークスペース設定の左利きモードをONにするとドッキングパネルが左右反転し、利き手側の画面がパネルで隠れにくくなります。",
-
-  "tipsFolderHierarchyTitle": "フォルダの階層構造でシリーズ物を整理",
-  "tipsFolderHierarchyDesc": "フォルダは複数階層に対応しています。「作品名」フォルダの中に「シーズン1」フォルダを作り、その中に各話のプロジェクトを並べる、といった整理ができます。",
-
   "tipsTransferDeviceTitle": "引き継ぎファイルで別端末へ制作を移す",
   "tipsTransferDeviceDesc": "使う端末を変えて続きを描きたいときは、引き継ぎ（.niatra）機能を使うと、使用中の素材も含めてプロジェクトをまとめて移動できます。",
-
   "fontSettingsTabDownloaded": "ダウンロード済み",
   "fontSettingsTabSearch": "探してDL",
   "fontSettingsTabImport": "読み込み",
@@ -817,7 +720,11 @@
   "fontRenameDialogTitle": "フォント名を変更",
   "fontDeleteConfirmTitle": "{name}を削除しますか？",
   "@fontDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "fontImportTitle": "端末に保存済みのフォントを読み込む",
   "fontImportFormats": "対応形式：TTF / OTF",
@@ -825,10 +732,13 @@
   "fontUnsupportedSnackbar": "このフォントは読み込めません。",
   "fontAddedSnackbar": "「{name}」を追加しました（ダウンロード済みタブに表示されます）",
   "@fontAddedSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "fontCorruptedSnackbar": "フォントが破損しています。",
-
   "licenseScreenTitle": "利用規約・ライセンス",
   "licenseSectionTerms": "利用規約",
   "licenseSectionFonts": "使用フォントについて",
@@ -838,9 +748,15 @@
   "licenseFfmpegNote": "WebM書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、FFmpegは使用していません。",
   "licenseFontCreditMeta": "作者：{author}　ライセンス：{license}",
   "@licenseFontCreditMeta": {
-    "placeholders": {"author": {"type": "String"}, "license": {"type": "String"}}
+    "placeholders": {
+      "author": {
+        "type": "String"
+      },
+      "license": {
+        "type": "String"
+      }
+    }
   },
-
   "toolbarPenTooltip": "ペン（長押しでサブツール）",
   "toolbarPenFirstUseTip": "ペンを長押しすると、ブラシ・トーン・スタンプ・投げ縄塗りを切り替えられます。",
   "toolbarBucketTooltip": "バケツ（長押しでベタ/トーン切替）",
@@ -859,7 +775,6 @@
   "toolbarSelectRect": "矩形選択",
   "toolbarSelectLasso": "投げ縄選択",
   "toolbarSelectMagicWand": "自動選択（マジックワンド）",
-
   "creativePanelFavoritesOnlyTooltip": "お気に入りのみ表示",
   "creativePanelSearchTooltip": "名前で検索",
   "creativePanelFolderButton": "フォルダ",
@@ -867,7 +782,6 @@
   "creativePanelImportButton": "読込",
   "creativePanelFolderAllChip": "全て",
   "creativePanelEditAction": "編集",
-
   "toneTitle": "トーン",
   "toneEmpty": "トーンがありません",
   "toneSearchHint": "トーン名で検索",
@@ -876,26 +790,40 @@
   "toneCreateDialogTitle": "自作トーン",
   "toneImportFailedSnackbar": "トーンの読み込みに失敗しました: {error}",
   "@toneImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "toneExportFailedSnackbar": "トーンの書き出しに失敗しました: {error}",
   "@toneExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "privacyPolicyScreenTitle": "プライバシーポリシー",
-
   "stampTitle": "スタンプ",
   "stampSearchHint": "スタンプ名で検索",
   "stampEmpty": "スタンプがありません",
   "stampCreateDialogTitle": "自作スタンプ",
   "stampImportFailedSnackbar": "スタンプの読み込みに失敗しました: {error}",
   "@stampImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "stampExportFailedSnackbar": "スタンプの書き出しに失敗しました: {error}",
   "@stampExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "stampEditTitle": "スタンプを編集",
   "stampRotationLabel": "回転",
@@ -904,7 +832,6 @@
   "stampDensityLabel": "密度",
   "stampScatterLabel": "散布",
   "stampChangeImageButton": "スタンプ画像を変更",
-
   "themeSettingsTitle": "テーマ・外観",
   "themeSettingsBaseThemeSection": "ベーステーマ",
   "themeBaseLight": "ライト",
@@ -920,24 +847,35 @@
   "themePresetSection": "テーマプリセット",
   "themePresetDuplicateName": "{name} (コピー)",
   "@themePresetDuplicateName": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "themeDuplicateAction": "複製",
   "themeExportMenuItem": "書き出し (.niatheme)",
   "themeExportFailedSnackbar": "書き出しに失敗しました: {error}",
   "@themeExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "themeImportSuccessSnackbar": ".niathemeを読み込みました",
   "themeImportFailedSnackbar": "読み込みに失敗しました: {error}",
   "@themeImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "themeSaveAsNewButton": "現在の設定を新しいプリセットとして保存",
   "themeImportButton": ".niathemeを読み込む",
   "themePresetNameDialogTitle": "プリセット名",
   "themeDefaultPresetName": "マイテーマ",
-
   "onionSkinTitle": "オニオンスキン",
   "onionSkinPrevFrame": "前フレーム",
   "onionSkinNextFrame": "後フレーム",
@@ -948,11 +886,14 @@
   "onionSkinFrameCount": "表示枚数",
   "onionSkinFrameCountFixed": "{count}枚（固定）",
   "@onionSkinFrameCountFixed": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "onionSkinColorLabel": "色",
   "onionSkinOpacityLabel": "透明度",
-
   "exportScreenTitle": "書き出し",
   "exportPresetSection": "プリセット",
   "exportPresetStandard": "標準",
@@ -970,7 +911,11 @@
   "exportProjectNotFoundError": "プロジェクトが見つかりません",
   "exportFailedError": "書き出し失敗: {error}",
   "@exportFailedError": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "exportInProgressTitle": "書き出し中",
   "exportCancelledSnackbar": "書き出しをキャンセルしました",
@@ -981,18 +926,33 @@
   "exportDurationExceededTitle": "動画尺の上限を超えています",
   "exportDurationExceededBody": "無料版の最大動画尺は{max}秒です。\n現在のプロジェクトは約{current}秒あります。\nPremiumにアップグレードすると尺の制限がなくなります。",
   "@exportDurationExceededBody": {
-    "placeholders": {"max": {"type": "int"}, "current": {"type": "int"}}
+    "placeholders": {
+      "max": {
+        "type": "int"
+      },
+      "current": {
+        "type": "int"
+      }
+    }
   },
   "exportViewPremiumButton": "Premiumを見る",
   "exportContinueAnywayButton": "このまま続行",
   "exportCompleteTitle": "書き出し完了",
   "exportCompleteFramesBody": "{count} フレームの書き出しが完了しました。",
   "@exportCompleteFramesBody": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "exportSaveLocationLabel": "保存先：アプリ内（{fileName}）",
   "@exportSaveLocationLabel": {
-    "placeholders": {"fileName": {"type": "String"}}
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
   },
   "exportSaveLocationHint": "端末の「写真」アプリやファイルアプリで開くには、下の「共有」から保存先アプリを選んでください。",
   "exportBackToProjectsButton": "プロジェクト一覧へ戻る",
@@ -1015,35 +975,79 @@
   "newProjectHeightShort": "高さ",
   "newProjectDurationLabel": "長さ（最大{max}）",
   "@newProjectDurationLabel": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationLabelWithPremiumHint": "長さ（最大{max}・プレミアムなら最大2時間）",
   "@newProjectDurationLabelWithPremiumHint": {
-    "placeholders": {"max": {"type": "String"}}
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDurationSeconds": "{n}秒",
   "@newProjectDurationSeconds": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHms": "{h}時間{m}分{s}秒",
   "@newProjectDurationHms": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationHm": "{h}時間{m}分",
   "@newProjectDurationHm": {
-    "placeholders": {"h": {"type": "int"}, "m": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationH": "{h}時間",
   "@newProjectDurationH": {
-    "placeholders": {"h": {"type": "int"}}
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationMs": "{m}分{s}秒",
   "@newProjectDurationMs": {
-    "placeholders": {"m": {"type": "int"}, "s": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
   },
   "newProjectDurationM": "{m}分",
   "@newProjectDurationM": {
-    "placeholders": {"m": {"type": "int"}}
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
   },
   "newProjectBackgroundColorLabel": "背景色",
   "newProjectDrawingAreaTitle": "描画領域を広くする",
@@ -1051,23 +1055,49 @@
   "newProjectScaleLabel": "倍率",
   "newProjectScaleValue": "{value}倍",
   "@newProjectScaleValue": {
-    "placeholders": {"value": {"type": "String"}}
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawableAreaInfo": "描画可能範囲: {width}×{scale} = {result}",
   "@newProjectDrawableAreaInfo": {
-    "placeholders": {"width": {"type": "String"}, "scale": {"type": "String"}, "result": {"type": "String"}}
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      },
+      "result": {
+        "type": "String"
+      }
+    }
   },
   "newProjectTotalFrames": "総フレーム数: {count}",
   "@newProjectTotalFrames": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "newProjectExportSizeInfo": "書き出しサイズ: {size}",
   "@newProjectExportSizeInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "newProjectDrawingAreaInfo": "描画領域: {size}",
   "@newProjectDrawingAreaInfo": {
-    "placeholders": {"size": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
   },
   "colorPickerTitle": "色選択",
   "colorPickerOpacityLabel": "不透明度",
@@ -1093,7 +1123,14 @@
   "penSubToolManageTooltip": "管理",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
-    "placeholders": {"size": {"type": "int"}, "opacity": {"type": "int"}}
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "opacity": {
+        "type": "int"
+      }
+    }
   },
   "penSubToolStampRotationSubtitle": "ストローク方向に合わせてランダムに回転",
   "brushSearchHint": "ブラシ名で検索",
@@ -1101,11 +1138,19 @@
   "brushCreateDialogTitle": "自作ブラシ",
   "brushImportFailedSnackbar": "ブラシの読み込みに失敗しました: {error}",
   "@brushImportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushExportFailedSnackbar": "ブラシの書き出しに失敗しました: {error}",
   "@brushExportFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "brushSettingsSizeLabel": "サイズ",
   "brushSettingsOpacityLabel": "不透明度",
@@ -1151,7 +1196,14 @@
   "projectDetailInfoDrawingArea": "描画領域",
   "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
   "@projectDetailInfoDrawingAreaValue": {
-    "placeholders": {"size": {"type": "String"}, "scale": {"type": "String"}}
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailInfoTotalFrames": "総フレーム数",
   "projectDetailInfoWorkTime": "制作時間",
@@ -1161,7 +1213,11 @@
   "projectDetailAddTagHint": "タグを追加",
   "projectDetailNiashareFailedSnackbar": ".niashareの作成に失敗しました: {error}",
   "@projectDetailNiashareFailedSnackbar": {
-    "placeholders": {"error": {"type": "String"}}
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "projectDetailTrashMenuItem": "ゴミ箱へ移動",
   "commonOff": "OFF",
@@ -1180,13 +1236,21 @@
   "perfSettingsUndoLimitSubtitle": "多いほどメモリを消費する",
   "perfSettingsUndoLimitValue": "{n}回",
   "@perfSettingsUndoLimitValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsTrashAutoDeleteTitle": "ゴミ箱の自動削除",
   "perfSettingsTrashAutoDeleteSubtitle": "削除済みプロジェクトの保持期間",
   "perfSettingsTrashAutoDeleteValue": "{n}日",
   "@perfSettingsTrashAutoDeleteValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsCurrentSettingsSection": "現在の設定",
   "perfSettingsTiltLabel": "傾き検知",
@@ -1194,13 +1258,21 @@
   "perfSettingsOnionNextLabel": "オニオンスキン（後）",
   "perfSettingsOnionFrameCountValue": "{n}枚",
   "@perfSettingsOnionFrameCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsSaveModeLabel": "保存方式",
   "perfSettingsSlotCountLabel": "スロット数",
   "perfSettingsSlotCountValue": "{n}件",
   "@perfSettingsSlotCountValue": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "perfSettingsResetButton": "初期値に戻す",
   "perfSettingsCopyPresetButton": "現在のプリセットをコピー",
@@ -1214,7 +1286,11 @@
   "perfSettingsResetDialogTitle": "カスタム品質設定を初期値に戻しますか？",
   "perfSettingsResetDialogBody": "初期値は、初回起動時に端末性能から自動判定された「{preset}」の設定になります。",
   "@perfSettingsResetDialogBody": {
-    "placeholders": {"preset": {"type": "String"}}
+    "placeholders": {
+      "preset": {
+        "type": "String"
+      }
+    }
   },
   "perfSettingsResetConfirmButton": "戻す",
   "perfSettingsCopyPresetDialogTitle": "コピーするプリセットを選択",
@@ -1225,7 +1301,11 @@
   "filterPanelTitle": "フィルター",
   "filterPanelTitleBulk": "フィルター（{count}フレームへ一括適用）",
   "@filterPanelTitleBulk": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterSearchHint": "フィルター検索",
   "filterNameGaussianBlur": "ガウスぼかし",
@@ -1248,7 +1328,11 @@
   "filterRetroStrength": "強さ",
   "filterOutlineLayerNameSuffix": "{name}（縁取り）",
   "@filterOutlineLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "filterStrengthBlurRadius": "強さ（ぼかし半径）",
   "filterColorLevels": "色数",
@@ -1268,13 +1352,24 @@
   "filterApplyButton": "適用",
   "filterApplyBulkButton": "{count}フレームへ適用",
   "@filterApplyBulkButton": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterEmpty": "フィルターがありません",
   "filterApplyingTitle": "フィルター適用中",
   "filterApplyingSubtitle": "{name}　{count}フレーム",
   "@filterApplyingSubtitle": {
-    "placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "projectListNewFolderTitle": "新規フォルダ",
   "projectListFolderHint": "同じ作品の複数話数やシリーズをまとめる場合にも使えます",
@@ -1286,7 +1381,11 @@
   "projectListDeleteFolderConfirmTitle": "フォルダを削除しますか？",
   "projectListDeleteFolderConfirmBody": "「{name}」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。",
   "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "projectListFolderRootOption": "フォルダなし（ルート）",
   "projectListEditFolderTooltip": "フォルダを編集",
@@ -1329,25 +1428,44 @@
   "autofillPresetEmptyHint": "右下の＋から作成できます",
   "autofillPresetPartsCount": "{count}パーツ",
   "@autofillPresetPartsCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "autofillPresetNewDialogTitle": "新規プリセット",
   "autofillPresetNameLabel": "プリセット名",
   "autofillPresetRenameDialogTitle": "プリセット名変更",
   "autofillPresetDeleteConfirmTitle": "「{name}」を削除しますか？",
   "@autofillPresetDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartSearchHint": "パーツ名で検索",
   "autofillPartUnconfiguredBanner": "未設定のパーツが{count}件あります：{names}（トーン未選択）\nすべて設定するまでこの画面を閉じられません。",
   "@autofillPartUnconfiguredBanner": {
-    "placeholders": {"count": {"type": "int"}, "names": {"type": "String"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredDialogTitle": "未設定のパーツがあります",
   "autofillPartUnconfiguredDialogBody": "保存する前に、以下のパーツを設定してください。",
   "autofillPartUnconfiguredItem": "・{name}：トーンが未選択です",
   "@autofillPartUnconfiguredItem": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartUnconfiguredBackButton": "設定へ戻る",
   "autofillPartEmpty": "パーツがありません\n＋ボタンで追加してください",
@@ -1358,7 +1476,11 @@
   "autofillPartRenameDialogTitle": "パーツ名変更",
   "autofillPartDetailDialogTitle": "{name}の詳細設定",
   "@autofillPartDetailDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartFillColorLabel": "塗り色",
   "autofillPartSelectColorButton": "色を選択",
@@ -1381,24 +1503,44 @@
   "autofillPartGradientEditButton": "グラデーション編集",
   "autofillPartFillOpacityLabel": "不透明度（塗りレイヤー）: {value}%",
   "@autofillPartFillOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineColorLabel": "線画色",
   "autofillPartTraceHueLabel": "色相: {value}",
   "@autofillPartTraceHueLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceSaturationLabel": "彩度: {value}",
   "@autofillPartTraceSaturationLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartTraceLightnessLabel": "明度: {value}",
   "@autofillPartTraceLightnessLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartLineOpacityLabel": "不透明度（線画レイヤー）: {value}%",
   "@autofillPartLineOpacityLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartToneLabel": "トーン",
   "autofillPartUseToneCheckbox": "トーンを使用",
@@ -1406,7 +1548,11 @@
   "autofillPartApplyButton": "適用",
   "autofillPartGradientDialogTitle": "{name}のグラデーション",
   "@autofillPartGradientDialogTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "autofillPartGradientTypeLabel": "種類",
   "autofillPartGradientTypeInfo": "直線：指定した角度に沿って色が変化します。放射：中央→外側は中心から外側へ、外側→中央は逆に外側から中心へ色が変化します。",
@@ -1414,7 +1560,11 @@
   "autofillLineColorModeTraceAdjustInfo": "元の線の色を保ったまま、色相・彩度・明度をずらして少しだけ色味を変える機能です。線を単色で塗りつぶすのではなく、線画の濃淡を活かしたい場合に使います。",
   "autofillPartGradientAngleLabel": "角度: {value}°",
   "@autofillPartGradientAngleLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientColorLabel": "色",
   "autofillPartGradientAddColorButton": "色を追加",
@@ -1422,12 +1572,20 @@
   "autofillPartGradientRemoveButton": "グラデーション解除",
   "autofillPartGradientFeatherLabel": "ぼかしの強さ: {value}%",
   "@autofillPartGradientFeatherLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientDragHint": "ドラッグ（右端のハンドル）で色の順番を入れ替えられます",
   "autofillPartGradientStopLabel": "切り替え位置: {value}%",
   "@autofillPartGradientStopLabel": {
-    "placeholders": {"value": {"type": "int"}}
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
   },
   "autofillPartGradientStopDragHint": "▲を左右にドラッグして色の切り替え位置を調整できます",
   "saveTreeScreenTitleTree": "セーブツリー",
@@ -1439,29 +1597,53 @@
   "saveTreeCommentHint": "例：背景完成",
   "saveTreeSizeWarningSnackbar": "セーブツリーの容量が大きくなっています（約{mb}MB）。不要な保存データの削除をおすすめします。",
   "@saveTreeSizeWarningSnackbar": {
-    "placeholders": {"mb": {"type": "String"}}
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotSaveDialogTitle": "スロット {n} に保存",
   "@saveTreeSlotSaveDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotOverwriteWarning": "既存データ（{date}）を上書きします。",
   "@saveTreeSlotOverwriteWarning": {
-    "placeholders": {"date": {"type": "String"}}
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeRestoreAction": "復元",
   "saveTreeLoadFailedSnackbar": "保存データの読み込みに失敗しました",
   "saveTreeRestoredSnackbar": "{name}を復元しました",
   "@saveTreeRestoredSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeSlotLabel": "スロット{n}",
   "@saveTreeSlotLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSlotFallbackName": "スロット {n}",
   "@saveTreeSlotFallbackName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeNoDataLabel": "保存データなし",
   "saveTreeEmptyTitle": "保存データがありません",
@@ -1471,21 +1653,40 @@
   "saveTreeChangeDataTitle": "保存データ変更",
   "saveTreeChangeDataTitleWithProject": "保存データ変更（{name}）",
   "@saveTreeChangeDataTitleWithProject": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "saveTreeChangeExceedMessage": "現在の保存データ数が\n新しい保存可能数を超えています。\n\n保持する保存データを選択してください。",
   "saveTreeKeepableCountLabel": "保持できる保存数：{n}件",
   "@saveTreeKeepableCountLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeKeepLatestButton": "最新{n}件を保存",
   "@saveTreeKeepLatestButton": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeSelectDataButton": "保存データを選択",
   "saveTreeSelectedCountLabel": "選択中：{selected} / {limit}件",
   "@saveTreeSelectedCountLabel": {
-    "placeholders": {"selected": {"type": "int"}, "limit": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeBackButton": "戻る",
   "saveTreeNextButton": "次へ",
@@ -1495,7 +1696,11 @@
   "saveTreeDeleteOptionTitle": "完全に削除する",
   "saveTreeDeleteOptionSubtitle": "選択されなかった{count}件を完全に削除します。\nストレージ容量を節約できます。\n※削除したデータは元に戻せません。",
   "@saveTreeDeleteOptionSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "saveTreeApplyChangeButton": "変更する",
   "canvasEditMenuBackgroundToggle": "背景切替",
@@ -1514,7 +1719,14 @@
   "canvasSettingsMenuTooltip": "設定/編集",
   "canvasFrameSelectedCount": "{selected} / {total} フレーム選択中",
   "@canvasFrameSelectedCount": {
-    "placeholders": {"selected": {"type": "int"}, "total": {"type": "int"}}
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "canvasSelectAllButton": "全選択",
   "canvasDeselectAllButton": "全解除",
@@ -1550,7 +1762,11 @@
   "canvasHelpRubyTitle": "ルビ（ふりがな）",
   "canvasHelpRubyBody": "「{example}」のように入力すると、基底文字の上（横書き）または右側（縦書き）に小さくふりがなが表示されます。縦書き・横書きどちらでも使えますが、ルビを含むテキストは横書きでの自動折り返しが効かなくなります（手動改行のみ対応）。",
   "@canvasHelpRubyBody": {
-    "placeholders": {"example": {"type": "String"}}
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelTitle": "レイヤー",
   "layerPanelHelpTooltip": "ヘルプ",
@@ -1562,23 +1778,43 @@
   "layerPanelImportImageButton": "画像読み込み",
   "layerPanelDefaultLayerName": "レイヤー{n}",
   "@layerPanelDefaultLayerName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultFolderName": "フォルダ{n}",
   "@layerPanelDefaultFolderName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultLineartName": "線画{n}",
   "@layerPanelDefaultLineartName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultAutofillName": "自動塗り{n}",
   "@layerPanelDefaultAutofillName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelDefaultCommonName": "共通{n}",
   "@layerPanelDefaultCommonName": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelClippingBadge": "クリッピング",
   "layerPanelAddTooltip": "追加",
@@ -1590,7 +1826,14 @@
   "layerPanelRangeSceneSpecified": "シーン指定",
   "layerPanelRangeFrameSpan": "{start}〜{end}",
   "@layerPanelRangeFrameSpan": {
-    "placeholders": {"start": {"type": "int"}, "end": {"type": "int"}}
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMenuFrameRangeChange": "表示フレーム範囲変更",
   "layerPanelMenuRangeChange": "表示範囲変更",
@@ -1601,12 +1844,20 @@
   "layerPanelMenuReplaceMaterial": "素材差し替え",
   "layerPanelDeleteConfirmTitle": "{name}を削除しますか？",
   "@layerPanelDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelDeleteConfirmBody": "この素材の表示範囲内のすべてのフレームから削除されます。",
   "layerPanelMultiDeleteConfirmTitle": "選択中の{count}件を削除しますか？",
   "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "layerPanelMultiDeleteConfirmBody": "タイムライン素材の表示範囲内のすべてのフレームから削除されます。",
   "layerPanelRangeDialogTitle": "表示範囲",
@@ -1650,7 +1901,11 @@
   "layerPanelAutofillPresetMissingSnackbar": "対応するプリセットパーツが見つかりません。",
   "layerPanelAutofillLayerNameSuffix": "{name}（自動塗り）",
   "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelOrphanFillSuccessSnackbar": "対応する線画レイヤーが見つからないため、最新の色で塗りつぶしました。",
   "layerPanelOrphanFillFailSnackbar": "パーツが未設定、または塗り形状がないため処理できませんでした。",
@@ -1658,15 +1913,27 @@
   "layerPanelAutofillUpdateHelpBody": "現在の自動塗りは最新ではありません。タップすると更新できます。",
   "layerPanelReplaceMaterialSuccessSnackbar": "素材を差し替えました: {name}",
   "@layerPanelReplaceMaterialSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelImportImageSuccessSnackbar": "画像を読み込みました: {name}",
   "@layerPanelImportImageSuccessSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelCopySuffix": "{name}のコピー",
   "@layerPanelCopySuffix": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineFullscreenPreviewCloseTooltip": "全画面プレビューを閉じる",
   "timelineDefaultProjectName": "プロジェクト名",
@@ -1686,7 +1953,11 @@
   "timelineWatermarkSelectTitle": "ウォーターマークを選択",
   "timelineWatermarkAddedSnackbar": "ウォーターマークを追加しました（全フレームに表示されます）: {name}",
   "@timelineWatermarkAddedSnackbar": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineWatermarkEditTitle": "ウォーターマークを編集",
   "timelineWatermarkAngleLabel": "角度",
@@ -1702,12 +1973,20 @@
   "timelineDurationLimitBodyPremium": "プレミアム会員の上限（最大2時間）を超えてしまうため、これ以上フレームを追加・複製できません。",
   "timelineSceneDeleteConfirmTitle": "「{name}」を削除しますか？",
   "@timelineSceneDeleteConfirmTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "timelineSceneDeleteConfirmBody": "シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。",
   "timelineSceneMultiDeleteConfirmTitle": "選択中の{count}件のシーンを削除しますか？",
   "@timelineSceneMultiDeleteConfirmTitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillUpdateHelpBody": "このシーン・フレームには最新ではない自動塗りレイヤーが含まれています。レイヤーパネルで対象レイヤーをタップすると更新できます。",
   "timelineFrameTrackLabel": "フレーム",
@@ -1719,7 +1998,14 @@
   "timelineEndCardDefaultLogoLabel": "NIARIMロゴ",
   "timelineEndCardStatusFormat": "{label}・{seconds}秒",
   "@timelineEndCardStatusFormat": {
-    "placeholders": {"label": {"type": "String"}, "seconds": {"type": "int"}}
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
   "timelineEndCardHiddenLabel": "非表示",
   "timelineEndCardVisibilityToggleTooltip": "表示ON/OFF",
@@ -1727,24 +2013,39 @@
   "timelineEndCardReplaceTooltip": "差し替え",
   "timelineEndCardLengthDialogTitle": "エンドカードの長さ",
   "timelineEndCardTrackLabel": "エンドカードトラック",
-
   "timelineMarkerTrackLabel": "タイムスタンプ",
   "timelineMarkerAddDialogTitle": "F{n} にタイムスタンプを追加",
   "@timelineMarkerAddDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerEditDialogTitle": "タイムスタンプ: F{n}",
   "@timelineMarkerEditDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineMarkerCommentHint": "コメント（例：ここで口パク「あ」）",
   "timelineSecondsLabel": "{n}秒",
   "@timelineSecondsLabel": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineAddClipDialogTitle": "{trackName}クリップを追加",
   "@timelineAddClipDialogTitle": {
-    "placeholders": {"trackName": {"type": "String"}}
+    "placeholders": {
+      "trackName": {
+        "type": "String"
+      }
+    }
   },
   "timelineClipLabelFieldLabel": "ラベル",
   "timelineClipStartLabel": "開始:",
@@ -1758,11 +2059,19 @@
   "timelineAutofillProgressTitle": "自動塗り実行中",
   "timelineAutofillProgressSubtitle": "{count}フレーム",
   "@timelineAutofillProgressSubtitle": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineAutofillCompleteSnackbar": "自動塗りが完了しました（{count}件処理）",
   "@timelineAutofillCompleteSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timelineEffectTypeFade": "フェード",
   "timelineEffectTypeGaussianBlur": "ガウスぼかし",
@@ -1800,44 +2109,66 @@
   "timelineClipUseEndLabel": "使用終了F",
   "timelineCameraKfTitle": "カメラ KF: F{n}",
   "@timelineCameraKfTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "timelineCameraMoveXLabel": "X 移動",
   "timelineCameraMoveYLabel": "Y 移動",
   "timelineCameraZoomLabel": "ズーム",
   "timelineCameraRotationLabel": "回転",
-
   "layerPanelKeyframeLabel": "アニメーション（キーフレーム）",
   "layerKeyframeSheetTitle": "{name} のキーフレーム",
   "@layerKeyframeSheetTitle": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerKeyframeSheetDesc": "このレイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間します。レイヤーの絵自体は変わりません。",
   "layerKeyframeAddAtCurrentFrame": "現在のフレーム（F{n}）に追加",
   "@layerKeyframeAddAtCurrentFrame": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeEmpty": "キーフレームがありません。上のボタンから追加してください。",
   "layerKeyframeScaleShort": "倍率",
   "layerKeyframeRotationShort": "回転",
   "layerKeyframeEditTitle": "キーフレーム: F{n}",
   "@layerKeyframeEditTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "layerKeyframeFrameLabel": "フレーム",
   "layerKeyframeScaleLabel": "拡大縮小",
   "layerKeyframeRotationLabel": "回転",
-
   "layerPanelGroupTooltip": "グループ化",
   "layerPanelGroupDefaultName": "新規グループ",
   "layerPanelGroupMembershipLabel": "グループ: {name}",
   "@layerPanelGroupMembershipLabel": {
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "layerPanelGroupLeaveAction": "解除",
   "frameStripHoldDialogTitle": "F{n} 保持セル数",
   "@frameStripHoldDialogTitle": {
-    "placeholders": {"n": {"type": "int"}}
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "frameStripTimelineModeTooltip": "タイムラインモード",
   "progressDialogAdLoading": "広告読み込み中…",
@@ -1881,5 +2212,7 @@
   "privacyPolicyArt7Title": "第7条（本ポリシーの変更）",
   "privacyPolicyArt7Body": "開発者は、法令の改正、本アプリの内容の変更その他必要と判断した場合、本ポリシーを変更することがあります。本ポリシーを変更する場合、変更内容および効力発生日を、本アプリ内その他適切な方法により、事前に周知します。",
   "privacyPolicyArt8Title": "第8条（お問い合わせ）",
-  "privacyPolicyArt8Body": "本ポリシーに関するお問い合わせは、下記の連絡先までご連絡ください。\n（開発者連絡先：未設定 ― 公開前にメールアドレス等の連絡先情報をご記入ください）"
+  "privacyPolicyArt8Body": "本ポリシーに関するお問い合わせは、下記の連絡先までご連絡ください。\n（開発者連絡先：未設定 ― 公開前にメールアドレス等の連絡先情報をご記入ください）",
+  "tipsPcDexLayoutTitle": "ワイド画面ではPCモード（DeX）の本格レイアウトに",
+  "tipsPcDexLayoutDesc": "Chromebookやタブレット×キーボード、DeXなど画面の広い環境で使うと、ドッキングパネル方式の本格的なレイアウトへ自動で切り替わります。ワークスペース設定から常にPCモード・常にスマホモードへ手動で固定することもできるので、外部ディスプレイに接続して作業するときなどにも活用できます。"
 }

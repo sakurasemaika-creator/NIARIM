@@ -67,6 +67,22 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ─── タイムラインモードのプレビュー欄の高さ ───────────────────────────
+  // プレビュー下端のドラッグハンドルで変更できる、プレビュー欄が占める
+  // 縦方向の割合（0.0〜1.0）。プロジェクトごとではなくアプリ全体で共通の
+  // 設定として保存するため、作業を中断したり別のプロジェクトへ移動しても
+  // 最後に設定した位置が引き継がれる。
+  double _timelinePreviewHeightFraction = 0.42;
+
+  double get timelinePreviewHeightFraction => _timelinePreviewHeightFraction;
+
+  Future<void> setTimelinePreviewHeightFraction(double value) async {
+    _timelinePreviewHeightFraction = value.clamp(0.18, 0.7);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('timeline_preview_height_fraction', _timelinePreviewHeightFraction);
+    notifyListeners();
+  }
+
   GestureAction _twoFingerTap = GestureAction.undo;
   GestureAction _threeFingerTap = GestureAction.redo;
   GestureAction _twoFingerSwipe = GestureAction.frameMove;
@@ -223,6 +239,8 @@ class SettingsService extends ChangeNotifier {
     _bucketTolerance = prefs.getDouble('bucket_tolerance') ?? 30.0;
     _bucketExpandPx = prefs.getInt('bucket_expand_px') ?? 0;
     _bucketFillUnderLine = prefs.getBool('bucket_fill_under_line') ?? false;
+    _timelinePreviewHeightFraction =
+        prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
     final toolbarOrderNames = prefs.getStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
       final map = ToolbarItemId.values.asNameMap();
