@@ -961,6 +961,14 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         icon: const Icon(Icons.colorize, size: 16),
                         label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
                       ),
+                      const SizedBox(height: 6),
+                      TextButton.icon(
+                        onPressed: current.lineColor == 0xFF000000
+                            ? null
+                            : () => setS(() => current = current.copyWith(lineColor: 0xFF000000)),
+                        icon: const Icon(Icons.restart_alt, size: 16),
+                        label: Text(l10n.autofillPartResetLineColorButton, style: const TextStyle(fontSize: 12)),
+                      ),
                     ],
                     if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
                       EditableSliderValue(

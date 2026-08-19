@@ -37,6 +37,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _rendering = false;
   Timer? _timer;
   ui.Image? _previewImage;
+  // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
+  // プレビューと再生コントロールのみを全画面表示する
+  // （タイムラインモードのプレビュー全画面化と同等の機能）。
+  bool _isPreviewFullscreen = false;
+  // 縮小表示：情報欄を見るためにスクロールする際、プレビューが場所を
+  // 取りすぎないよう、通常のAspectRatio(16:9)より低い高さへ縮小する。
+  bool _isPreviewCollapsed = false;
 
   @override
   void dispose() {
@@ -118,6 +125,31 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _renderFrame(projectService, flat));
     }
 
+    // プレビュー全画面化中：プレビューと再生コントロールのみを全画面表示する
+    // （タイムラインモードのプレビュー全画面化と同等）。
+    if (_isPreviewFullscreen) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.fullscreen_exit, color: Colors.white),
+                  tooltip: l10n.projectDetailFullscreenCloseTooltip,
+                  onPressed: () => setState(() => _isPreviewFullscreen = false),
+                ),
+              ),
+              Expanded(child: _buildPreviewImage(project, showOverlayButtons: false)),
+              _buildSeekBar(flat),
+              _buildPlaybackBar(projectService, flat, project),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(project.name),
@@ -159,17 +191,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Container(
-                decoration: BoxDecoration(color: Color(project.backgroundColor), borderRadius: BorderRadius.circular(8)),
-                clipBehavior: Clip.antiAlias,
-                child: _previewImage != null
-                    ? RawImage(image: _previewImage, fit: BoxFit.contain)
-                    : const Center(child: Icon(Icons.play_circle_outline, size: 48, color: Colors.white38)),
-              ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              height: _isPreviewCollapsed ? 72 : null,
+              child: _isPreviewCollapsed
+                  ? _buildPreviewImage(project)
+                  : AspectRatio(aspectRatio: 16 / 9, child: _buildPreviewImage(project)),
             ),
-            const SizedBox(height: 16),
+            _buildSeekBar(flat),
             // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
             Container(
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -177,47 +206,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, 0),
-                    icon: const Icon(Icons.skip_previous),
-                    tooltip: l10n.projectDetailFirstFrameTooltip,
-                  ),
-                  IconButton(
-                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex - 1),
-                    icon: const Icon(Icons.fast_rewind),
-                    tooltip: l10n.projectDetailPrevFrameTooltip,
-                  ),
-                  const SizedBox(width: 4),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: flat.isEmpty
-                          ? null
-                          : () => _togglePlay(projectService, flat, project.fps),
-                      icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow,
-                          color: Theme.of(context).colorScheme.onPrimary),
-                      tooltip: _isPlaying ? l10n.projectDetailPauseTooltip : l10n.projectDetailPlayTooltip,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex + 1),
-                    icon: const Icon(Icons.fast_forward),
-                    tooltip: l10n.projectDetailNextFrameTooltip,
-                  ),
-                  IconButton(
-                    onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, flat.length - 1),
-                    icon: const Icon(Icons.skip_next),
-                    tooltip: l10n.projectDetailLastFrameTooltip,
-                  ),
-                ],
-              ),
+              child: _buildPlaybackBar(projectService, flat, project),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
@@ -317,6 +306,129 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         ),
       ),
       ),
+    );
+  }
+
+  /// プレビュー画像本体。[showOverlayButtons]がtrueの場合のみ、右上に
+  /// 全画面化ボタン・縮小表示切り替えボタンを重ねる（全画面表示中は
+  /// このメソッド自体を全画面化用に別途呼び出すため不要）。
+  Widget _buildPreviewImage(Project project, {bool showOverlayButtons = true}) {
+    final l10n = AppLocalizations.of(context)!;
+    final image = Container(
+      decoration: BoxDecoration(color: Color(project.backgroundColor), borderRadius: BorderRadius.circular(8)),
+      clipBehavior: Clip.antiAlias,
+      child: _previewImage != null
+          ? RawImage(image: _previewImage, fit: BoxFit.contain)
+          : const Center(child: Icon(Icons.play_circle_outline, size: 48, color: Colors.white38)),
+    );
+    if (!showOverlayButtons) return image;
+    return Stack(
+      children: [
+        Positioned.fill(child: image),
+        Positioned(
+          right: 4,
+          top: 4,
+          child: Row(
+            children: [
+              Material(
+                color: Colors.black.withValues(alpha: 0.4),
+                shape: const CircleBorder(),
+                child: IconButton(
+                  icon: Icon(_isPreviewCollapsed ? Icons.unfold_more : Icons.unfold_less,
+                      color: Colors.white, size: 20),
+                  tooltip: _isPreviewCollapsed
+                      ? l10n.projectDetailExpandPreviewTooltip
+                      : l10n.projectDetailCollapsePreviewTooltip,
+                  onPressed: () => setState(() => _isPreviewCollapsed = !_isPreviewCollapsed),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Material(
+                color: Colors.black.withValues(alpha: 0.4),
+                shape: const CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Icons.fullscreen, color: Colors.white, size: 20),
+                  tooltip: l10n.projectDetailFullscreenTooltip,
+                  onPressed: () => setState(() => _isPreviewFullscreen = true),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// プレビューと再生バーの間のシークバー。ドラッグで任意のフレームへ
+  /// 直接移動できる（タイムラインモードのプレビューと同等の機能）。
+  Widget _buildSeekBar(List<_FlatFrame> flat) {
+    final maxFrame = (flat.length - 1).clamp(0, 1 << 30);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          trackHeight: 2,
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+        ),
+        child: Slider(
+          value: _frameIndex.clamp(0, maxFrame).toDouble(),
+          min: 0,
+          max: maxFrame.toDouble(),
+          divisions: maxFrame > 0 ? maxFrame : null,
+          onChanged: flat.isEmpty
+              ? null
+              : (v) {
+                  _timer?.cancel();
+                  setState(() => _isPlaying = false);
+                  _seekTo(context.read<ProjectService>(), flat, v.round());
+                },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaybackBar(ProjectService projectService, List<_FlatFrame> flat, Project project) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, 0),
+          icon: const Icon(Icons.skip_previous),
+          tooltip: l10n.projectDetailFirstFrameTooltip,
+        ),
+        IconButton(
+          onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex - 1),
+          icon: const Icon(Icons.fast_rewind),
+          tooltip: l10n.projectDetailPrevFrameTooltip,
+        ),
+        const SizedBox(width: 4),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            onPressed: flat.isEmpty
+                ? null
+                : () => _togglePlay(projectService, flat, project.fps),
+            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Theme.of(context).colorScheme.onPrimary),
+            tooltip: _isPlaying ? l10n.projectDetailPauseTooltip : l10n.projectDetailPlayTooltip,
+          ),
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, _frameIndex + 1),
+          icon: const Icon(Icons.fast_forward),
+          tooltip: l10n.projectDetailNextFrameTooltip,
+        ),
+        IconButton(
+          onPressed: flat.isEmpty ? null : () => _seekTo(projectService, flat, flat.length - 1),
+          icon: const Icon(Icons.skip_next),
+          tooltip: l10n.projectDetailLastFrameTooltip,
+        ),
+      ],
     );
   }
 
