@@ -383,7 +383,28 @@ class _FilterPanelState extends State<FilterPanel> {
                             100,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
-                        if (current.kind == FilterKind.vignette)
+                        if (current.kind == FilterKind.vignette) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              children: [
+                                Text(l10n.filterVignetteColor, style: const TextStyle(fontSize: 11)),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () => _pickVignetteColor(filterService, current),
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: Color(current.vignetteColor),
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           _paramSlider(
                             filterService,
                             l10n.filterVignetteStrength,
@@ -392,6 +413,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             100,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
+                        ],
                         if (current.kind == FilterKind.noise)
                           _paramSlider(
                             filterService,
@@ -475,6 +497,26 @@ class _FilterPanelState extends State<FilterPanel> {
           currentColor: Color(current.outlineColor),
           onColorChanged: (c) {
             filterService.updateFilterParams(current.id, outlineColor: c.toARGB32());
+            _updatePreview();
+          },
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
+  /// 周辺減光の減光先の色を選ぶ（縁取り色と同じくアプリ標準の
+  /// ColorPickerPanelを流用。黒以外を選べば、暗くする代わりに指定色を
+  /// 周辺へかぶせる演出にできる）。
+  void _pickVignetteColor(FilterService filterService, FilterDef current) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ColorPickerPanel(
+          currentColor: Color(current.vignetteColor),
+          onColorChanged: (c) {
+            filterService.updateFilterParams(current.id, vignetteColor: c.toARGB32());
             _updatePreview();
           },
           onClose: () => Navigator.of(ctx).pop(),
@@ -588,7 +630,7 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.unsharpMask:
         return _engine.applyUnsharpMask(data, width, height, filter.strength, filter.edgeStrength);
       case FilterKind.vignette:
-        return _engine.applyVignette(data, width, height, filter.strength);
+        return _engine.applyVignette(data, width, height, filter.strength, color: filter.vignetteColor);
       case FilterKind.noise:
         return _engine.applyNoise(
             data, width, height, (filter.strength / 100).clamp(0.0, 1.0), NoiseType.gaussian);

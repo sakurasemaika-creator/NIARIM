@@ -60,6 +60,10 @@ class FilterDef {
   // 縁取り（outlineのみ使用）
   final int outlineColor;
   final double outlineWidth;
+  // 周辺減光の減光先の色（vignetteのみ使用。既定は黒＝従来通りの暗くする
+  // だけの見た目）。ARGB32形式のintで、他パラメータ同様プリミティブ型のみ
+  // で構成する。
+  final int vignetteColor;
 
   const FilterDef({
     required this.id,
@@ -76,6 +80,7 @@ class FilterDef {
     this.toneCurvePreset = ToneCurvePreset.linear,
     this.outlineColor = 0xFF000000,
     this.outlineWidth = 6,
+    this.vignetteColor = 0xFF000000,
   });
 
   FilterDef copyWith({
@@ -93,6 +98,7 @@ class FilterDef {
     ToneCurvePreset? toneCurvePreset,
     int? outlineColor,
     double? outlineWidth,
+    int? vignetteColor,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -109,6 +115,7 @@ class FilterDef {
       toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
       outlineColor: outlineColor ?? this.outlineColor,
       outlineWidth: outlineWidth ?? this.outlineWidth,
+      vignetteColor: vignetteColor ?? this.vignetteColor,
     );
   }
 
@@ -127,6 +134,7 @@ class FilterDef {
         'toneCurvePreset': toneCurvePreset.name,
         'outlineColor': outlineColor,
         'outlineWidth': outlineWidth,
+        'vignetteColor': vignetteColor,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -147,5 +155,6 @@ class FilterDef {
             orElse: () => ToneCurvePreset.linear),
         outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
         outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
+        vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
       );
 }

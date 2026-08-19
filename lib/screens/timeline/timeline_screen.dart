@@ -25,6 +25,7 @@ import '../../models/effect_filter_instance.dart';
 import '../../models/layer.dart';
 import '../../models/layer_group.dart';
 import '../../models/layer_keyframe.dart';
+import '../../models/timeline_marker.dart';
 import '../../models/material_asset.dart';
 import '../../models/scene.dart';
 import '../../models/text_object.dart';
@@ -169,6 +170,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   late final ScrollController _videoScrollCtrl;
   late final ScrollController _imageScrollCtrl;
   late final ScrollController _cameraScrollCtrl;
+  late final ScrollController _markerScrollCtrl;
   late final ScrollController _commonLayerScrollCtrl;
   bool _syncingScroll = false;
 
@@ -265,6 +267,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _videoScrollCtrl = ScrollController();
     _imageScrollCtrl = ScrollController();
     _cameraScrollCtrl = ScrollController();
+    _markerScrollCtrl = ScrollController();
     _commonLayerScrollCtrl = ScrollController();
 
     for (final ctrl in _trackScrollCtrls) {
@@ -281,6 +284,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _videoScrollCtrl,
     _imageScrollCtrl,
     _cameraScrollCtrl,
+    _markerScrollCtrl,
     _commonLayerScrollCtrl,
     ..._rowScrollCtrls.values,
   ];
@@ -573,6 +577,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               addColor: Colors.orange[700]!,
             ),
             _buildCameraTrack(),
+            _buildMarkerTrack(),
             _buildEndCardTrack(),
             if (adService.shouldShowAds) const AdBannerWidget(),
           ],
@@ -2803,7 +2808,164 @@ class _TimelineScreenState extends State<TimelineScreen> {
         );
   }
 
-  /// EndCard Track（無料版：ロック状態、プレミアム：編集可能）
+  /// タイムスタンプ用トラック（特定フレームへワンタップで移動できるマーカー
+  /// ＋コメント）。カメラキーフレームのトラックと見た目・スクロール連動の
+  /// 仕組みは共通だが、役割が異なる：カメラキーフレームは「値の補間」用、
+  /// こちらは「その瞬間の記録・移動」用のため、タップの意味も
+  /// （カメラ＝編集ダイアログを開く、こちら＝その場へジャンプする）で
+  /// あえて分けている。編集・削除は長押しから行う。
+  Widget _buildMarkerTrack() {
+    final l10n = AppLocalizations.of(context)!;
+    final total = _totalFrames;
+    final sceneId = _selectedSceneId;
+    final markers = sceneId == null
+        ? const <TimelineMarker>[]
+        : context.watch<ProjectService>().timelineMarkersOf(widget.projectId, sceneId);
+    return Container(
+      height: 32,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: Row(
+        children: [
+          _buildTrackLabel(Icons.push_pin_outlined, l10n.timelineMarkerTrackLabel),
+          Expanded(
+            child: Stack(
+              children: [
+                ListView.builder(
+                  controller: _markerScrollCtrl,
+                  scrollDirection: Axis.horizontal,
+                  physics: const ClampingScrollPhysics(),
+                  itemCount: total,
+                  itemBuilder: (_, i) => Container(
+                    width: _cellW,
+                    decoration: BoxDecoration(
+                      border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                    ),
+                  ),
+                ),
+                ...markers.map((m) => _buildMarkerPin(m)),
+                Positioned(
+                  right: 4,
+                  top: 4,
+                  child: GestureDetector(
+                    onTap: () => _showAddMarkerDialog(),
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Colors.teal[700]!.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.add, size: 14, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMarkerPin(TimelineMarker m) {
+    return AnimatedBuilder(
+      animation: _markerScrollCtrl,
+      builder: (ctx, child) {
+        final scrollOffset = _markerScrollCtrl.hasClients ? _markerScrollCtrl.offset : 0.0;
+        final cx = m.frameIndex * _cellW + _cellW / 2 - scrollOffset;
+        return Positioned(
+          left: cx - 7,
+          top: 9,
+          child: GestureDetector(
+            // タップ一発でその場所へジャンプする（タイムスタンプの主目的）。
+            onTap: () => setState(() => _currentFrame = m.frameIndex),
+            onLongPress: () => _showEditMarkerDialog(m),
+            child: Tooltip(
+              message: m.comment.isEmpty ? 'F${m.frameIndex + 1}' : m.comment,
+              child: Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: Colors.teal[300],
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddMarkerDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineMarkerAddDialogTitle(_currentFrame + 1)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.timelineMarkerCommentHint),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          FilledButton(
+            onPressed: () {
+              context.read<ProjectService>().addTimelineMarker(widget.projectId, sceneId, _currentFrame, ctrl.text);
+              Navigator.pop(ctx);
+            },
+            child: Text(l10n.commonAdd),
+          ),
+        ],
+      ),
+    ).then((_) => ctrl.dispose());
+  }
+
+  void _showEditMarkerDialog(TimelineMarker m) {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final ctrl = TextEditingController(text: m.comment);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineMarkerEditDialogTitle(m.frameIndex + 1)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.timelineMarkerCommentHint),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            tooltip: l10n.commonDelete,
+            onPressed: () async {
+              if (!await confirmDelete(context)) return;
+              if (!mounted) return;
+              context.read<ProjectService>().removeTimelineMarker(widget.projectId, sceneId, m.id);
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+          ),
+          const Spacer(),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          FilledButton(
+            onPressed: () {
+              context.read<ProjectService>().updateTimelineMarker(widget.projectId, sceneId, m.copyWith(comment: ctrl.text));
+              Navigator.pop(ctx);
+            },
+            child: Text(l10n.commonSave),
+          ),
+        ],
+      ),
+    ).then((_) => ctrl.dispose());
+  }
+
+  /// エンドカードトラック（無料版：ロック状態、プレミアム：編集可能）
   Widget _buildEndCardTrack() {
     return Consumer<PremiumService>(
       builder: (context, premium, _) {
@@ -2816,7 +2978,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           children: [
             const Icon(Icons.movie, size: 14, color: Colors.grey),
             const SizedBox(width: 4),
-            const Text('EndCard Track', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(l10n.timelineEndCardTrackLabel, style: const TextStyle(fontSize: 10, color: Colors.grey)),
             const SizedBox(width: 4),
             if (!premium.isPremium)
               GestureDetector(

@@ -465,7 +465,7 @@
   "helpEffectFilterTitle": "演出フィルター",
   "helpEffectFilterDesc": "シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー等）です。手描きの絵そのものを変えずに、演出として画面全体の見た目を調整したい時に使います。",
 
-  "helpEndCardTitle": "EndCard（エンドロゴ）",
+  "helpEndCardTitle": "エンドカード",
   "helpEndCardDesc": "動画書き出し時、本編の終わりに自動で追加されるNIARIMロゴの短い動画（約5秒）です。無料版では非表示・削除ができませんが、プレミアム会員になると表示のON/OFF・長さ変更・差し替えができるようになります。",
 
   "helpAutoSaveTitle": "自動保存",
@@ -568,7 +568,7 @@
   "helpUndoSettingsDesc": "パフォーマンス設定から、Undoで遡れる操作回数を調整できます。回数を増やすほど安心して試行錯誤できますが、メモリ使用量も増えるため、低スペック端末では回数を抑えると動作が軽くなります。",
 
   "helpBrushFavoriteTitle": "ブラシのお気に入り",
-  "helpBrushFavoriteDesc": "ブラシパネルでブラシを長押しすると、お気に入り登録ができます。お気に入りに登録したブラシは一覧の上部にまとまり、切り替えの手間が減ります。誤って削除しないよう、お気に入り登録中のブラシは削除できない仕組みになっています。",
+  "helpBrushFavoriteDesc": "ブラシ一覧の各ブラシにある星アイコンをタップすると、お気に入り登録・解除ができます（自動塗りプリセット・スタンプ・フォント・描画フィルターなど、アプリ内の他のお気に入り機能と同じ操作方法です）。一覧上部の星アイコンで、お気に入りのみ表示に絞り込むこともできます。誤って削除しないよう、お気に入り登録中のブラシは削除できません。",
 
   "helpLayerFolderTitle": "レイヤーフォルダ",
   "helpLayerFolderDesc": "複数のレイヤーをフォルダにまとめて整理できる機能です。パーツ数が多いイラストでもレイヤーパネルが見やすくなります。クリッピングはフォルダをまたいで適用できない仕様のため、クリッピングを使う場合は同じフォルダ内でまとめておくと安全です。",
@@ -657,7 +657,7 @@
   "tipsAutofillPresetDesc": "肌・髪・服などパーツごとに陰影込みでプリセット登録しておくと、線画を描くだけで色塗りの大部分を自動化できます。プロジェクトごとに使うプリセットだけを絞り込むこともできます。",
 
   "tipsBrushFavoriteTitle": "ブラシはお気に入り登録で迷わず選べる",
-  "tipsBrushFavoriteDesc": "よく使うブラシはお気に入り登録しておくと一覧の上部にまとまり、切り替えの手間が減ります。誤って削除しないよう、お気に入り登録中は削除できない仕組みになっています。",
+  "tipsBrushFavoriteDesc": "よく使うブラシは一覧の星アイコンをタップしてお気に入り登録しておきましょう。一覧上部の星アイコンでお気に入りのみに絞り込めるので、探す手間が減ります。誤って削除しないよう、お気に入り登録中は削除できない仕組みになっています。",
 
   "tipsOnionSkinTitle": "オニオンスキンで前後のフレームを透かして見る",
   "tipsOnionSkinDesc": "前後のフレームを半透明で重ねて表示できるオニオンスキン機能を使うと、動きの繋がりを確認しながら作画できます。",
@@ -707,11 +707,11 @@
   "tipsSeriesPresetFolderTitle": "シリーズ物はプリセット絞り込み×フォルダ整理で管理する",
   "tipsSeriesPresetFolderDesc": "同じ作品の複数話数を作るときは、フォルダで話数ごとにプロジェクトをまとめ、各プロジェクトで使う自動塗りプリセットを絞り込んでおくと、キャラごとの配色を混同せず効率よく作業できます。",
 
-  "tipsFadeEndCardTitle": "演出フィルターのフェード×EndCardで締める",
-  "tipsFadeEndCardDesc": "シーンの最後に演出フィルターのフェードでゆっくり暗転させてからEndCard（エンドロゴ）へ繋ぐと、動画の締めくくりがぐっとプロっぽい印象になります。",
+  "tipsFadeEndCardTitle": "演出フィルターのフェード×エンドカードで締める",
+  "tipsFadeEndCardDesc": "本編の最後に演出フィルターのフェードでゆっくり暗転させると、動画の終わりに自動で続くエンドカードへの繋ぎが自然になり、締めくくりがぐっとプロっぽい印象になります。",
 
   "tipsPixelToneRetroTitle": "スタンプのピクセルモード×トーン塗りでレトロ統一",
-  "tipsPixelToneRetroDesc": "ピクセルモードのスタンプと、ピクセルモード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。Y2K風・レトロゲーム風の演出に向いています。",
+  "tipsPixelToneRetroDesc": "ピクセルモードのスタンプと、ピクセルモード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。レトロゲーム風の演出に向いています。",
 
   "tipsMagicWandLassoTitle": "マジックワンド選択×投げ縄塗りで塗り分け効率化",
   "tipsMagicWandLassoDesc": "選択ツールの自動選択（マジックワンド）でおおまかな範囲を一括選択し、はみ出た部分だけ投げ縄選択で調整すると、複雑な塗り分けも素早く行えます。",
@@ -734,11 +734,20 @@
   "tipsMosaicChromaticTitle": "モザイク×色収差でブラウン管風の荒れた質感",
   "tipsMosaicChromaticDesc": "モザイクで解像度を落としてから色収差を重ねると、古いブラウン管テレビで見ているような荒れた質感を演出できます。ブラウン管フィルター単体とはひと味違う質感が作れます。",
 
-  "tipsEndCardWatermarkTitle": "EndCard×ウォーターマークで転載対策とブランディングを両立",
-  "tipsEndCardWatermarkDesc": "エンドロゴ（EndCard）で動画の締めを整えつつ、本編にはウォーターマークで署名を入れておくと、無断転載された際の出どころが分かりやすくなり、ブランディングにもなります。",
+  "tipsEndCardWatermarkTitle": "自分の署名はウォーターマーク、締めはエンドカードで役割分担",
+  "tipsEndCardWatermarkDesc": "動画に自分の署名を入れたいときはウォーターマーク機能を使います。エンドカードは動画の最後に自動で付くアプリ側のロゴで、無料会員は変更できませんが、プレミアム会員なら自分のロゴへ差し替えられます。ウォーターマークで無断転載対策をしつつ、プレミアム会員はエンドカードも自分のロゴにしておくと、動画の最初から最後まで一貫したブランディングになります。",
 
-  "tipsVerticalPixelFontTitle": "縦書き×ピクセルフォントで和風ドット絵タイトル",
-  "tipsVerticalPixelFontDesc": "テキストツールの縦書きにピクセルモードのフォントを組み合わせると、レトロゲームのような和風ドット絵タイトルが作れます。",
+  "tipsVerticalPixelFontTitle": "実写動画×手描き作画で「実写×アニメ」を作る",
+  "tipsVerticalPixelFontDesc": "イラストアプリと動画編集アプリを兼ねているからこそできる遊び方です。実写の動画クリップをタイムラインに配置し、その上のレイヤーへオニオンスキンを使いながら手描きで効果線やキャラクターを描き足せば、実写に手描きアニメが重なった「実写×アニメ」のミックスメディア動画が作れます。",
+
+  "tipsTimelineMarkerTitle": "音や口パクのタイミング合わせにはタイムスタンプ",
+  "tipsTimelineMarkerDesc": "シーンは「開始〜終了フレームの範囲」を扱う機能ですが、タイムスタンプは「その一瞬」にコメントを付けてワンタップで移動できる機能です。「120フレーム目で効果音」「180フレーム目は口パク『あ』」のように、同じシーンの範囲内に複数のタイムスタンプを打っておけば、音と映像のタイミング合わせが格段にやりやすくなります。",
+
+  "tipsToolbarCustomizeTitle": "ツールバーの並び替え・非表示で指の移動距離を減らす",
+  "tipsToolbarCustomizeDesc": "設定画面のツールバー編集から、使わないツールを非表示にし、よく使うツールを指の届きやすい位置へ並び替えられます。表示項目を絞ってすっきりさせるだけで、ツールを探す時間や指の移動距離が減り、作画のテンポが上がります。",
+
+  "tipsAutofillBlendModeTitle": "自動塗りパーツのブレンドモードで陰影の質感を変える",
+  "tipsAutofillBlendModeDesc": "自動塗りプリセットの各パーツにはブレンドモードを設定できます。陰影パーツを「乗算」ではなく「オーバーレイ」や「ソフトライト」にすると、光が透けるような柔らかい陰影になります。同じ色でも質感を変えられる、隠れた自由度の高さです。",
 
   "tipsStampBlendModeTitle": "スタンプ×ブレンドモードで光のエフェクト",
   "tipsStampBlendModeDesc": "配置したスタンプのレイヤーをブレンドモード「スクリーン」や「加算」にすると、光の効果線やキラキラしたエフェクトが背景に自然に馴染んで映えます。",
@@ -1231,6 +1240,7 @@
   "filterUnsharpAmount": "かかり具合",
   "filterNameVignette": "周辺減光",
   "filterVignetteStrength": "減光の強さ",
+  "filterVignetteColor": "減光色",
   "filterNameNoise": "フィルムグレイン",
   "filterNoiseStrength": "粒子の強さ",
   "filterNameRetroAnime": "レトロアニメ",
@@ -1716,6 +1726,18 @@
   "timelineEndCardLengthChangeTooltip": "長さ変更",
   "timelineEndCardReplaceTooltip": "差し替え",
   "timelineEndCardLengthDialogTitle": "エンドカードの長さ",
+  "timelineEndCardTrackLabel": "エンドカードトラック",
+
+  "timelineMarkerTrackLabel": "タイムスタンプ",
+  "timelineMarkerAddDialogTitle": "F{n} にタイムスタンプを追加",
+  "@timelineMarkerAddDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerEditDialogTitle": "タイムスタンプ: F{n}",
+  "@timelineMarkerEditDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerCommentHint": "コメント（例：ここで口パク「あ」）",
   "timelineSecondsLabel": "{n}秒",
   "@timelineSecondsLabel": {
     "placeholders": {"n": {"type": "int"}}

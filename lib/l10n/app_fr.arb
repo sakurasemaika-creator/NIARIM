@@ -522,7 +522,7 @@
   "helpUndoSettingsDesc": "Dans les réglages de performance, vous pouvez ajuster le nombre d'actions que l'annulation peut remonter. Un nombre plus élevé donne plus de liberté pour expérimenter, mais utilise aussi plus de mémoire — réduisez-le sur les appareils bas de gamme pour rester fluide.",
 
   "helpBrushFavoriteTitle": "Pinceaux favoris",
-  "helpBrushFavoriteDesc": "Un appui long sur un pinceau dans le panneau des pinceaux permet de le mettre en favori. Les pinceaux favoris sont épinglés en haut de la liste, réduisant le temps de changement. Ils ne peuvent pas être supprimés par erreur tant qu'ils sont en favori.",
+  "helpBrushFavoriteDesc": "Touchez l'icône étoile d'un pinceau dans la liste pour le mettre en favori ou l'en retirer (la même interaction que pour les favoris dans le reste de l'app — préréglages de remplissage automatique, tampons, polices, filtres de dessin, etc.). L'icône étoile en haut de la liste permet aussi de filtrer pour n'afficher que les favoris. Un pinceau en favori ne peut pas être supprimé par erreur.",
 
   "helpLayerFolderTitle": "Dossiers de calques",
   "helpLayerFolderDesc": "Permet d'organiser plusieurs calques dans un dossier. Garde le panneau des calques lisible même pour des illustrations avec beaucoup de parties. Le détourage ne peut pas traverser les limites d'un dossier, donc si vous l'utilisez, gardez les calques concernés dans le même dossier.",
@@ -611,7 +611,7 @@
   "tipsAutofillPresetDesc": "Enregistrer des préréglages par partie (peau, cheveux, vêtements) avec leurs ombres incluses automatise la majeure partie de la mise en couleur, dès que le trait est dessiné. Vous pouvez aussi limiter les préréglages utilisés dans chaque projet.",
 
   "tipsBrushFavoriteTitle": "Mettez vos pinceaux favoris en favori pour les retrouver sans chercher",
-  "tipsBrushFavoriteDesc": "Mettre en favori les pinceaux les plus utilisés les regroupe en haut de la liste, réduisant le temps de changement. Un pinceau en favori ne peut pas être supprimé par erreur.",
+  "tipsBrushFavoriteDesc": "Touchez l'icône étoile des pinceaux que vous utilisez le plus pour les mettre en favori. L'icône étoile en haut de la liste permet de filtrer pour n'afficher que les favoris, réduisant le temps de recherche. Un pinceau en favori ne peut pas être supprimé par erreur.",
 
   "tipsOnionSkinTitle": "Voyez les images voisines en transparence avec le papier calque",
   "tipsOnionSkinDesc": "La fonction papier calque superpose les images précédente et suivante en semi-transparence, pour vérifier l'enchaînement du mouvement pendant le dessin.",
@@ -661,11 +661,11 @@
   "tipsSeriesPresetFolderTitle": "Gérez une série avec le filtrage de préréglages + l'organisation en dossiers",
   "tipsSeriesPresetFolderDesc": "Pour réaliser plusieurs épisodes d'une même œuvre, regroupez les projets par épisode dans un dossier, et limitez les préréglages de remplissage automatique utilisés par chaque projet. Cela évite de mélanger la palette de chaque personnage et garde le travail efficace.",
 
-  "tipsFadeEndCardTitle": "Terminez avec un fondu de filtre d'effet + EndCard",
-  "tipsFadeEndCardDesc": "Fondre lentement une scène au noir avec un filtre d'effet avant de passer à l'EndCard donne à la fin de votre vidéo un aspect nettement plus soigné et professionnel.",
+  "tipsFadeEndCardTitle": "Terminez avec un fondu de filtre d'effet + la carte de fin",
+  "tipsFadeEndCardDesc": "Fondre lentement au noir la dernière scène avec un filtre d'effet adoucit la transition vers la carte de fin automatique, donnant à la fin de votre vidéo un aspect nettement plus soigné et professionnel.",
 
   "tipsPixelToneRetroTitle": "Tampons en mode pixel + remplissage en trame pour un look rétro unifié",
-  "tipsPixelToneRetroDesc": "Combiner des tampons en mode pixel avec les trames en damier et en grille réservées au mode pixel permet d'unifier tout l'écran avec une texture pixel art. Idéal pour un rendu Y2K ou jeu vidéo rétro.",
+  "tipsPixelToneRetroDesc": "Combiner des tampons en mode pixel avec les trames en damier et en grille réservées au mode pixel permet d'unifier tout l'écran avec une texture pixel art. Idéal pour un rendu jeu vidéo rétro.",
 
   "tipsMagicWandLassoTitle": "Baguette magique + remplissage au lasso pour séparer les couleurs plus vite",
   "tipsMagicWandLassoDesc": "Sélectionnez une large zone d'un coup avec la baguette magique de l'outil de sélection, puis ajustez seulement le débordement avec la sélection au lasso — même une séparation de couleurs complexe va vite ainsi.",
@@ -688,11 +688,20 @@
   "tipsMosaicChromaticTitle": "Mosaïque + aberration chromatique pour une texture rêche façon tube cathodique",
   "tipsMosaicChromaticDesc": "Baissez la résolution avec la mosaïque puis superposez l'aberration chromatique, pour une texture rêche façon vieille télé à tube cathodique — une nuance différente du filtre tube cathodique seul.",
 
-  "tipsEndCardWatermarkTitle": "EndCard + filigrane pour se protéger des republications et renforcer sa marque",
-  "tipsEndCardWatermarkDesc": "Un logo de fin (EndCard) arrondit votre vidéo, tandis qu'un filigrane sur les images principales rend la source claire en cas de republication non autorisée, tout en servant de branding.",
+  "tipsEndCardWatermarkTitle": "Filigrane pour votre signature, carte de fin pour le logo de clôture",
+  "tipsEndCardWatermarkDesc": "Utilisez le filigrane pour ajouter votre propre signature à une vidéo. La carte de fin est le logo propre de l'app ajouté automatiquement à la fin de votre vidéo — les comptes gratuits ne peuvent pas la modifier, mais les comptes Premium peuvent la remplacer par leur propre logo. Combiner un filigrane contre les republications non autorisées avec une carte de fin Premium personnalisée donne à votre vidéo une image de marque cohérente du début à la fin.",
 
-  "tipsVerticalPixelFontTitle": "Texte vertical + police pixel pour un titre pixel art façon japonaise",
-  "tipsVerticalPixelFontDesc": "Combiner l'écriture verticale de l'outil texte avec une police en mode pixel crée un titre pixel art façon japonaise évoquant un jeu vidéo rétro.",
+  "tipsVerticalPixelFontTitle": "Mélangez images réelles et dessin à la main pour du « prise de vue réelle × anime »",
+  "tipsVerticalPixelFontDesc": "Une astuce possible uniquement parce que cette app est à la fois une app d'illustration et un éditeur vidéo. Placez un clip vidéo réel sur la timeline, puis utilisez le papier calque sur un calque au-dessus pour dessiner à la main des traits de vitesse ou un personnage par-dessus les images — créant une vidéo mixte où une animation dessinée à la main se superpose à des prises de vue réelles.",
+
+  "tipsTimelineMarkerTitle": "Utilisez les horodatages pour synchroniser le son et les mouvements de bouche",
+  "tipsTimelineMarkerDesc": "Les scènes gèrent une plage — une image de début et de fin —, tandis que les horodatages marquent un instant précis avec un commentaire vers lequel sauter d'un seul geste. Placer plusieurs horodatages dans la même scène — « effet sonore à l'image 120 », « bouche « a » à l'image 180 » — rend la synchronisation du son et de l'image bien plus facile.",
+
+  "tipsToolbarCustomizeTitle": "Réorganisez ou masquez des outils de la barre pour réduire le trajet du doigt",
+  "tipsToolbarCustomizeDesc": "Depuis l'édition de la barre d'outils dans les réglages, vous pouvez masquer les outils que vous n'utilisez jamais et réorganiser ceux que vous utilisez pour qu'ils soient à portée de doigt facile. Réduire la liste évite de chercher un outil et raccourcit le trajet du doigt, gardant votre rythme de dessin.",
+
+  "tipsAutofillBlendModeTitle": "Changez la texture de l'ombrage avec le mode de fusion d'une partie de remplissage automatique",
+  "tipsAutofillBlendModeDesc": "Chaque partie d'un préréglage de remplissage automatique peut avoir son propre mode de fusion. Réglez une partie d'ombre sur « incrustation » ou « lumière tamisée » plutôt que « produit » pour un ombrage plus doux, comme traversé par la lumière. Une liberté cachée qui permet de changer la texture de l'ombrage sans changer la couleur.",
 
   "tipsStampBlendModeTitle": "Tampons + mode de fusion pour un effet de lumière",
   "tipsStampBlendModeDesc": "Régler le mode de fusion d'un calque de tampon placé sur « écran » ou « addition » fait que les traits de lumière ou effets scintillants se fondent naturellement dans le fond et ressortent vraiment.",
@@ -1140,6 +1149,7 @@
   "filterUnsharpAmount": "Intensité",
   "filterNameVignette": "Vignettage",
   "filterVignetteStrength": "Intensité du vignettage",
+  "filterVignetteColor": "Couleur du vignettage",
   "filterNameNoise": "Grain de film",
   "filterNoiseStrength": "Intensité du grain",
   "filterNameRetroAnime": "Anime rétro",
@@ -1625,6 +1635,18 @@
   "timelineEndCardLengthChangeTooltip": "Modifier la durée",
   "timelineEndCardReplaceTooltip": "Remplacer",
   "timelineEndCardLengthDialogTitle": "Durée de la carte de fin",
+  "timelineEndCardTrackLabel": "Piste de la carte de fin",
+
+  "timelineMarkerTrackLabel": "Horodatages",
+  "timelineMarkerAddDialogTitle": "Ajouter un horodatage à F{n}",
+  "@timelineMarkerAddDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerEditDialogTitle": "Horodatage : F{n}",
+  "@timelineMarkerEditDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerCommentHint": "Commentaire (ex. bouche « a » ici)",
   "timelineSecondsLabel": "{n} s",
   "@timelineSecondsLabel": {
     "placeholders": {"n": {"type": "int"}}

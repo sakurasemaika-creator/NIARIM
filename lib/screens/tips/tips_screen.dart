@@ -35,10 +35,11 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.textCaption, l10n.tipsVerticalRubyTitle, l10n.tipsVerticalRubyDesc),
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsFadeEndCardTitle, l10n.tipsFadeEndCardDesc),
             _Tip(TipDiagramKind.textCaption, l10n.tipsEndCardWatermarkTitle, l10n.tipsEndCardWatermarkDesc),
-            _Tip(TipDiagramKind.textCaption, l10n.tipsVerticalPixelFontTitle, l10n.tipsVerticalPixelFontDesc),
+            _Tip(TipDiagramKind.onionSkin, l10n.tipsVerticalPixelFontTitle, l10n.tipsVerticalPixelFontDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsStampBlendModeTitle, l10n.tipsStampBlendModeDesc),
             _Tip(TipDiagramKind.exportFormat, l10n.tipsGifLoopTitle, l10n.tipsGifLoopDesc),
             _Tip(TipDiagramKind.clipDuplicate, l10n.tipsVideoTrimReuseTitle, l10n.tipsVideoTrimReuseDesc),
+            _Tip(TipDiagramKind.timelineMarker, l10n.tipsTimelineMarkerTitle, l10n.tipsTimelineMarkerDesc),
           ],
         ),
         _TipCategory(
@@ -55,6 +56,7 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsAutofillToneReuseTitle, l10n.tipsAutofillToneReuseDesc),
             _Tip(TipDiagramKind.brushFavorite, l10n.tipsSaveSlotAutoSaveTitle, l10n.tipsSaveSlotAutoSaveDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsQuickToolSwipeTitle, l10n.tipsQuickToolSwipeDesc),
+            _Tip(TipDiagramKind.gestureShortcut, l10n.tipsToolbarCustomizeTitle, l10n.tipsToolbarCustomizeDesc),
           ],
         ),
         _TipCategory(
@@ -71,6 +73,7 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsClippingGradientTitle, l10n.tipsClippingGradientDesc),
             _Tip(TipDiagramKind.pressureCurve, l10n.tipsColorPickerLongPressTitle, l10n.tipsColorPickerLongPressDesc),
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsDrawingAreaCameraTitle, l10n.tipsDrawingAreaCameraDesc),
+            _Tip(TipDiagramKind.autofillPreset, l10n.tipsAutofillBlendModeTitle, l10n.tipsAutofillBlendModeDesc),
           ],
         ),
         _TipCategory(

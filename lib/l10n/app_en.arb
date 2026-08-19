@@ -522,7 +522,7 @@
   "helpUndoSettingsDesc": "In performance settings, you can adjust how many actions undo can step back through. A larger number gives you more freedom to experiment, but also uses more memory — lower it on low-spec devices to keep things running smoothly.",
 
   "helpBrushFavoriteTitle": "Favorite brushes",
-  "helpBrushFavoriteDesc": "Long-press a brush in the brush panel to favorite it. Favorited brushes are pinned to the top of the list, cutting down on switching time. They can't be deleted by accident while favorited.",
+  "helpBrushFavoriteDesc": "Tap the star icon on a brush in the brush list to favorite or unfavorite it (the same interaction used for favorites throughout the app — autofill presets, stamps, fonts, draw filters, and more). The star icon at the top of the list also lets you filter down to favorites only. Favorited brushes can't be deleted by accident.",
 
   "helpLayerFolderTitle": "Layer folders",
   "helpLayerFolderDesc": "Lets you organize several layers into a folder. Keeps the layer panel manageable even in illustrations with many parts. Clipping can't cross folder boundaries, so if you use clipping, keep the relevant layers in the same folder.",
@@ -611,7 +611,7 @@
   "tipsAutofillPresetDesc": "Registering presets per part — skin, hair, clothes — with their shading included lets you automate most of the coloring just by drawing the lineart. You can also narrow down which presets are used in each project.",
 
   "tipsBrushFavoriteTitle": "Favorite your go-to brushes to switch without hunting",
-  "tipsBrushFavoriteDesc": "Favoriting the brushes you use most keeps them pinned to the top of the list, cutting down on switching time. Favorited brushes can't be deleted by accident.",
+  "tipsBrushFavoriteDesc": "Tap the star icon on the brushes you use most to favorite them. The star icon at the top of the list lets you filter down to favorites only, cutting down on how long it takes to find one. Favorited brushes can't be deleted by accident.",
 
   "tipsOnionSkinTitle": "See through neighboring frames with onion skin",
   "tipsOnionSkinDesc": "Onion skin overlays the previous and next frames semi-transparently, so you can check how motion connects while you draw.",
@@ -661,11 +661,11 @@
   "tipsSeriesPresetFolderTitle": "Manage a series with preset filtering + folder organization",
   "tipsSeriesPresetFolderDesc": "When making multiple episodes of the same work, group the projects by episode in a folder, and narrow down which autofill presets each project uses. That keeps each character's palette from getting mixed up and keeps work efficient.",
 
-  "tipsFadeEndCardTitle": "Close out with an effect-filter fade + EndCard",
-  "tipsFadeEndCardDesc": "Fading a scene slowly to black with an effect filter before cutting to the EndCard gives your video's ending a noticeably more polished, professional feel.",
+  "tipsFadeEndCardTitle": "Close out with an effect-filter fade + the end card",
+  "tipsFadeEndCardDesc": "Fading the final scene slowly to black with an effect filter makes the transition into the automatic end card at the very end feel smoother, giving your video's ending a noticeably more polished, professional feel.",
 
   "tipsPixelToneRetroTitle": "Pixel-mode stamps + tone fill for a unified retro look",
-  "tipsPixelToneRetroDesc": "Combining pixel-mode stamps with the checker and grid tones exclusive to pixel mode lets you unify the whole screen with a pixel-art texture. Great for a Y2K or retro-game feel.",
+  "tipsPixelToneRetroDesc": "Combining pixel-mode stamps with the checker and grid tones exclusive to pixel mode lets you unify the whole screen with a pixel-art texture. Great for a retro-game feel.",
 
   "tipsMagicWandLassoTitle": "Magic wand + lasso fill for faster color separation",
   "tipsMagicWandLassoDesc": "Select a broad area at once with the select tool's magic wand, then fine-tune just the overflow with lasso selection — even complex color separation goes fast this way.",
@@ -688,11 +688,20 @@
   "tipsMosaicChromaticTitle": "Mosaic + chromatic aberration for a rough CRT texture",
   "tipsMosaicChromaticDesc": "Lower the resolution with mosaic, then layer chromatic aberration on top, for a rough texture like watching an old CRT TV — a different flavor from the CRT filter on its own.",
 
-  "tipsEndCardWatermarkTitle": "EndCard + watermark for both anti-repost protection and branding",
-  "tipsEndCardWatermarkDesc": "An end logo (EndCard) rounds off your video, while a watermark on the main footage makes the source clear if it's reposted without permission — and doubles as branding.",
+  "tipsEndCardWatermarkTitle": "Watermark for your own signature, the end card for the closing logo",
+  "tipsEndCardWatermarkDesc": "Use the watermark feature to add your own signature to a video. The end card is the app's own logo automatically appended after your video — free accounts can't change it, but Premium accounts can swap in their own logo. Combining a watermark against unauthorized reposting with a Premium end card replaced by your own logo gives your video consistent branding from start to finish.",
 
-  "tipsVerticalPixelFontTitle": "Vertical text + pixel font for a Japanese-style pixel-art title",
-  "tipsVerticalPixelFontDesc": "Combining vertical writing in the text tool with a pixel-mode font makes a Japanese-style pixel-art title reminiscent of a retro game.",
+  "tipsVerticalPixelFontTitle": "Mix live-action footage with hand-drawn art for \"live-action × anime\"",
+  "tipsVerticalPixelFontDesc": "A trick only possible because this app is both an illustration app and a video editor at once. Place a live-action video clip on the timeline, then use onion skin on a layer above it to hand-draw speed lines or a character over the footage — creating a mixed-media video where hand-drawn animation overlays live action.",
+
+  "tipsTimelineMarkerTitle": "Use timestamps to line up sound and mouth flaps",
+  "tipsTimelineMarkerDesc": "Scenes handle a range — a start and end frame — while timestamps mark a single instant with a comment you can jump to in one tap. Placing several timestamps inside the same scene — \"sound effect at frame 120,\" \"mouth flap 'ah' at frame 180\" — makes lining up sound with the picture dramatically easier.",
+
+  "tipsToolbarCustomizeTitle": "Reorder or hide toolbar tools to cut down finger travel",
+  "tipsToolbarCustomizeDesc": "From toolbar editing in settings, you can hide tools you never use and reorder the ones you do to sit somewhere your finger reaches easily. Trimming the list down keeps you from hunting for a tool and shortens finger travel, picking up your drawing rhythm.",
+
+  "tipsAutofillBlendModeTitle": "Change shading texture with an autofill part's blend mode",
+  "tipsAutofillBlendModeDesc": "Each part in an autofill preset can have its own blend mode. Set a shadow part to \"overlay\" or \"soft light\" instead of \"multiply\" for softer shading that feels like light passing through. A hidden degree of freedom that lets you change the texture of shading without changing the color.",
 
   "tipsStampBlendModeTitle": "Stamps + blend mode for a light effect",
   "tipsStampBlendModeDesc": "Setting a placed stamp layer's blend mode to \"screen\" or \"addition\" makes glow lines or sparkle effects blend naturally into the background and really stand out.",
@@ -1140,6 +1149,7 @@
   "filterUnsharpAmount": "Amount",
   "filterNameVignette": "Vignette",
   "filterVignetteStrength": "Vignette strength",
+  "filterVignetteColor": "Vignette color",
   "filterNameNoise": "Film Grain",
   "filterNoiseStrength": "Grain strength",
   "filterNameRetroAnime": "Retro Anime",
@@ -1625,6 +1635,18 @@
   "timelineEndCardLengthChangeTooltip": "Change length",
   "timelineEndCardReplaceTooltip": "Replace",
   "timelineEndCardLengthDialogTitle": "End card length",
+  "timelineEndCardTrackLabel": "End Card Track",
+
+  "timelineMarkerTrackLabel": "Timestamps",
+  "timelineMarkerAddDialogTitle": "Add timestamp at F{n}",
+  "@timelineMarkerAddDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerEditDialogTitle": "Timestamp: F{n}",
+  "@timelineMarkerEditDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerCommentHint": "Comment (e.g. mouth flap \"ah\" here)",
   "timelineSecondsLabel": "{n}s",
   "@timelineSecondsLabel": {
     "placeholders": {"n": {"type": "int"}}

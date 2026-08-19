@@ -522,7 +522,7 @@
   "helpUndoSettingsDesc": "En los ajustes de rendimiento puedes ajustar cuántas acciones puede retroceder deshacer. Un número mayor da más libertad para experimentar, pero también usa más memoria; redúcelo en dispositivos de gama baja para que todo vaya más fluido.",
 
   "helpBrushFavoriteTitle": "Pinceles favoritos",
-  "helpBrushFavoriteDesc": "Mantén pulsado un pincel en el panel de pinceles para marcarlo como favorito. Los pinceles favoritos se fijan en la parte superior de la lista, reduciendo el tiempo de cambio. No se pueden eliminar por error mientras estén marcados como favoritos.",
+  "helpBrushFavoriteDesc": "Toca el icono de estrella de un pincel en la lista para marcarlo o desmarcarlo como favorito (la misma interacción usada para los favoritos en toda la app: presets de relleno automático, sellos, fuentes, filtros de dibujo, etc.). El icono de estrella en la parte superior de la lista también permite filtrar solo los favoritos. Los pinceles favoritos no se pueden eliminar por error.",
 
   "helpLayerFolderTitle": "Carpetas de capas",
   "helpLayerFolderDesc": "Permite organizar varias capas en una carpeta. Mantiene el panel de capas manejable incluso en ilustraciones con muchas partes. El recorte no puede cruzar los límites de las carpetas, así que si lo usas, mantén las capas relevantes en la misma carpeta.",
@@ -611,7 +611,7 @@
   "tipsAutofillPresetDesc": "Registrar presets por parte (piel, pelo, ropa) con sus sombras incluidas automatiza gran parte del coloreado con solo dibujar la línea. También puedes limitar qué presets se usan en cada proyecto.",
 
   "tipsBrushFavoriteTitle": "Marca tus pinceles favoritos para cambiarlos sin buscar",
-  "tipsBrushFavoriteDesc": "Marcar como favoritos los pinceles que más usas los fija en la parte superior de la lista, reduciendo el tiempo de cambio. Los pinceles favoritos no se pueden eliminar por error.",
+  "tipsBrushFavoriteDesc": "Toca el icono de estrella de los pinceles que más usas para marcarlos como favoritos. El icono de estrella en la parte superior de la lista permite filtrar solo los favoritos, reduciendo el tiempo de búsqueda. Los pinceles favoritos no se pueden eliminar por error.",
 
   "tipsOnionSkinTitle": "Transparenta los fotogramas cercanos con la piel de cebolla",
   "tipsOnionSkinDesc": "La función de piel de cebolla superpone los fotogramas anterior y siguiente de forma semitransparente, para que puedas comprobar cómo conecta el movimiento mientras dibujas.",
@@ -661,11 +661,11 @@
   "tipsSeriesPresetFolderTitle": "Gestiona una serie con filtrado de presets + organización en carpetas",
   "tipsSeriesPresetFolderDesc": "Al hacer varios episodios de la misma obra, agrupa los proyectos por episodio en una carpeta, y limita qué presets de relleno automático usa cada proyecto. Así evitas mezclar la paleta de cada personaje y mantienes el trabajo eficiente.",
 
-  "tipsFadeEndCardTitle": "Cierra con un fundido de filtro de efecto + EndCard",
-  "tipsFadeEndCardDesc": "Fundir lentamente una escena a negro con un filtro de efecto antes de pasar al EndCard le da al final de tu vídeo un aire notablemente más pulido y profesional.",
+  "tipsFadeEndCardTitle": "Cierra con un fundido de filtro de efecto + la tarjeta final",
+  "tipsFadeEndCardDesc": "Fundir lentamente a negro la última escena con un filtro de efecto suaviza la transición hacia la tarjeta final automática, dando al cierre de tu vídeo un aire notablemente más pulido y profesional.",
 
   "tipsPixelToneRetroTitle": "Sellos en modo píxel + relleno con tramas para un look retro unificado",
-  "tipsPixelToneRetroDesc": "Combinar sellos en modo píxel con las tramas de damero y cuadrícula exclusivas del modo píxel permite unificar toda la pantalla con una textura pixel art. Genial para un aire Y2K o de videojuego retro.",
+  "tipsPixelToneRetroDesc": "Combinar sellos en modo píxel con las tramas de damero y cuadrícula exclusivas del modo píxel permite unificar toda la pantalla con una textura pixel art. Genial para un aire de videojuego retro.",
 
   "tipsMagicWandLassoTitle": "Varita mágica + relleno por lazo para separar colores más rápido",
   "tipsMagicWandLassoDesc": "Selecciona una zona amplia de golpe con la varita mágica de la herramienta de selección, y luego ajusta solo lo que sobra con la selección por lazo; así hasta la separación de colores más compleja va rápido.",
@@ -688,11 +688,20 @@
   "tipsMosaicChromaticTitle": "Mosaico + aberración cromática para una textura tosca de tubo de rayos catódicos",
   "tipsMosaicChromaticDesc": "Baja la resolución con el mosaico y luego superpón aberración cromática, para una textura tosca como ver una vieja tele de tubo de rayos catódicos; un matiz distinto al filtro CRT por sí solo.",
 
-  "tipsEndCardWatermarkTitle": "EndCard + marca de agua para protegerte de repostings y reforzar tu marca a la vez",
-  "tipsEndCardWatermarkDesc": "Un logo final (EndCard) redondea tu vídeo, mientras que una marca de agua en el metraje principal deja claro el origen si se reposta sin permiso, y también funciona como branding.",
+  "tipsEndCardWatermarkTitle": "Marca de agua para tu firma, tarjeta final para el logo de cierre",
+  "tipsEndCardWatermarkDesc": "Usa la marca de agua para añadir tu propia firma a un vídeo. La tarjeta final es el logo propio de la app que se añade automáticamente al terminar tu vídeo: las cuentas gratuitas no pueden cambiarlo, pero las cuentas Premium pueden sustituirlo por su propio logo. Combinar una marca de agua contra la republicación no autorizada con una tarjeta final Premium con tu propio logo da a tu vídeo una imagen de marca coherente de principio a fin.",
 
-  "tipsVerticalPixelFontTitle": "Texto vertical + fuente píxel para un título pixel art de estilo japonés",
-  "tipsVerticalPixelFontDesc": "Combinar la escritura vertical de la herramienta de texto con una fuente en modo píxel crea un título pixel art de estilo japonés que recuerda a un videojuego retro.",
+  "tipsVerticalPixelFontTitle": "Mezcla metraje real con dibujo a mano para \"acción real × anime\"",
+  "tipsVerticalPixelFontDesc": "Un truco solo posible porque esta app es a la vez una app de ilustración y un editor de vídeo. Coloca un clip de vídeo real en la línea de tiempo, y luego usa el papel cebolla en una capa encima para dibujar a mano líneas de velocidad o un personaje sobre el metraje, creando un vídeo mixto donde la animación dibujada a mano se superpone a la acción real.",
+
+  "tipsTimelineMarkerTitle": "Usa marcas de tiempo para sincronizar sonido y bocas",
+  "tipsTimelineMarkerDesc": "Las escenas manejan un rango —un fotograma de inicio y de fin—, mientras que las marcas de tiempo señalan un instante concreto con un comentario al que puedes saltar de un toque. Colocar varias marcas de tiempo dentro de la misma escena —\"efecto de sonido en el fotograma 120\", \"boca 'a' en el fotograma 180\"— hace que sincronizar el sonido con la imagen sea muchísimo más fácil.",
+
+  "tipsToolbarCustomizeTitle": "Reordena u oculta herramientas de la barra para reducir el recorrido del dedo",
+  "tipsToolbarCustomizeDesc": "Desde la edición de la barra de herramientas en ajustes, puedes ocultar las herramientas que nunca usas y reordenar las que sí usas para que queden donde tu dedo llega fácilmente. Recortar la lista evita que busques una herramienta y acorta el recorrido del dedo, dando ritmo a tu dibujo.",
+
+  "tipsAutofillBlendModeTitle": "Cambia la textura del sombreado con el modo de fusión de una parte de relleno automático",
+  "tipsAutofillBlendModeDesc": "Cada parte de un preset de relleno automático puede tener su propio modo de fusión. Pon una parte de sombra en \"superponer\" o \"luz suave\" en lugar de \"multiplicar\" para un sombreado más suave, como si la luz lo atravesara. Una libertad oculta que permite cambiar la textura del sombreado sin cambiar el color.",
 
   "tipsStampBlendModeTitle": "Sellos + modo de fusión para un efecto de luz",
   "tipsStampBlendModeDesc": "Ajustar el modo de fusión de una capa de sello colocada a \"pantalla\" o \"suma\" hace que las líneas de brillo o los destellos se integren de forma natural en el fondo y realmente destaquen.",
@@ -1140,6 +1149,7 @@
   "filterUnsharpAmount": "Intensidad",
   "filterNameVignette": "Viñeta",
   "filterVignetteStrength": "Intensidad de viñeta",
+  "filterVignetteColor": "Color de viñeta",
   "filterNameNoise": "Grano de película",
   "filterNoiseStrength": "Intensidad del grano",
   "filterNameRetroAnime": "Anime retro",
@@ -1625,6 +1635,18 @@
   "timelineEndCardLengthChangeTooltip": "Cambiar duración",
   "timelineEndCardReplaceTooltip": "Reemplazar",
   "timelineEndCardLengthDialogTitle": "Duración de la tarjeta final",
+  "timelineEndCardTrackLabel": "Pista de tarjeta final",
+
+  "timelineMarkerTrackLabel": "Marcas de tiempo",
+  "timelineMarkerAddDialogTitle": "Añadir marca de tiempo en F{n}",
+  "@timelineMarkerAddDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerEditDialogTitle": "Marca de tiempo: F{n}",
+  "@timelineMarkerEditDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerCommentHint": "Comentario (p. ej., boca \"a\" aquí)",
   "timelineSecondsLabel": "{n} s",
   "@timelineSecondsLabel": {
     "placeholders": {"n": {"type": "int"}}

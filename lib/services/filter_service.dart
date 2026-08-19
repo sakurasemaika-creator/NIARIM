@@ -90,6 +90,7 @@ class FilterService extends ChangeNotifier {
     ToneCurvePreset? toneCurvePreset,
     int? outlineColor,
     double? outlineWidth,
+    int? vignetteColor,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -104,6 +105,7 @@ class FilterService extends ChangeNotifier {
       toneCurvePreset: toneCurvePreset,
       outlineColor: outlineColor,
       outlineWidth: outlineWidth,
+      vignetteColor: vignetteColor,
     );
     notifyListeners();
     _persist();

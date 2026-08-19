@@ -13,6 +13,7 @@ import '../engine/tile_manager.dart';
 import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
 import '../models/layer_group.dart';
+import '../models/timeline_marker.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/material_asset.dart' show MaterialType;
@@ -1298,6 +1299,44 @@ class ProjectService extends ChangeNotifier {
   void removeLayerGroup(String projectId, String sceneId, String groupId) {
     final current = layerGroupsOf(projectId, sceneId);
     _updateSceneGroups(projectId, sceneId, current.where((g) => g.id != groupId).toList());
+  }
+
+  // ─── タイムスタンプ（特定フレームへのワンタップ移動＋コメント） ──────────
+  // シーンが範囲を単位にするのに対し、こちらは「瞬間」を指すためのもの。
+
+  List<TimelineMarker> timelineMarkersOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.markers ?? const []);
+
+  void _updateSceneMarkers(String projectId, String sceneId, List<TimelineMarker> markers) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final sorted = List<TimelineMarker>.from(markers)
+      ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    scenes[idx] = scenes[idx].copyWith(markers: sorted);
+    notifyListeners();
+  }
+
+  TimelineMarker addTimelineMarker(String projectId, String sceneId, int frameIndex, String comment) {
+    final marker = TimelineMarker(
+      id: 'marker_${DateTime.now().microsecondsSinceEpoch}',
+      frameIndex: frameIndex,
+      comment: comment,
+    );
+    _updateSceneMarkers(projectId, sceneId, [...timelineMarkersOf(projectId, sceneId), marker]);
+    return marker;
+  }
+
+  void updateTimelineMarker(String projectId, String sceneId, TimelineMarker marker) {
+    final current = timelineMarkersOf(projectId, sceneId);
+    final without = current.where((m) => m.id != marker.id).toList();
+    _updateSceneMarkers(projectId, sceneId, [...without, marker]);
+  }
+
+  void removeTimelineMarker(String projectId, String sceneId, String markerId) {
+    final current = timelineMarkersOf(projectId, sceneId);
+    _updateSceneMarkers(projectId, sceneId, current.where((m) => m.id != markerId).toList());
   }
 
   // ─── 演出フィルター（仕様書18：タイムライン非破壊編集） ─────────────────

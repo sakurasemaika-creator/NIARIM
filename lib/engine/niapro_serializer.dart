@@ -12,6 +12,7 @@ import '../models/layer.dart';
 import '../models/layer_group.dart';
 import '../models/layer_keyframe.dart';
 import '../models/project.dart';
+import '../models/timeline_marker.dart';
 import '../models/scene.dart';
 import '../models/text_object.dart';
 import 'filter_engine.dart' show EffectFilterType;
@@ -432,7 +433,7 @@ class NiaproSerializer {
       if (framesFile == null) continue;
       final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
       final (name, frames, cameraKeyframes, effectFilters, audioClips,
-          imageRowNames, videoRowNames, audioRowNames, groups) = _deserializeScene(decoded);
+          imageRowNames, videoRowNames, audioRowNames, groups, markers) = _deserializeScene(decoded);
       final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
       scenes.add(Scene(
           id: sceneId,
@@ -443,6 +444,7 @@ class NiaproSerializer {
           effectFilters: effectFilters,
           audioClips: audioClips,
           groups: groups,
+          markers: markers,
           imageRowNames: imageRowNames,
           videoRowNames: videoRowNames,
           audioRowNames: audioRowNames));
@@ -629,6 +631,7 @@ class NiaproSerializer {
         'videoRowNames': scene.videoRowNames,
         'audioRowNames': scene.audioRowNames,
         'groups': scene.groups.map((g) => g.toJson()).toList(),
+        'markers': scene.markers.map((m) => m.toJson()).toList(),
       };
 
   static List<dynamic> _serializeFrames(List<Frame> frames) =>
@@ -717,7 +720,7 @@ class NiaproSerializer {
   /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
   /// フレーム配列そのもの。どちらも読み込めるようにする。
   static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>, List<AudioClip>,
-      List<String?>, List<String?>, List<String?>, List<LayerGroup>)
+      List<String?>, List<String?>, List<String?>, List<LayerGroup>, List<TimelineMarker>)
       _deserializeScene(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final name = decoded['name'] as String?;
@@ -774,8 +777,10 @@ class NiaproSerializer {
           .toList();
       final groupsJson = decoded['groups'] as List<dynamic>? ?? const [];
       final groups = groupsJson.map((j) => LayerGroup.fromJson(j as Map<String, dynamic>)).toList();
+      final markersJson = decoded['markers'] as List<dynamic>? ?? const [];
+      final markers = markersJson.map((j) => TimelineMarker.fromJson(j as Map<String, dynamic>)).toList();
       return (name, frames, cameraKeyframes, effectFilters, audioClips,
-          imageRowNames, videoRowNames, audioRowNames, groups);
+          imageRowNames, videoRowNames, audioRowNames, groups, markers);
     }
     return (
       null,
@@ -787,6 +792,7 @@ class NiaproSerializer {
       const <String?>[],
       const <String?>[],
       const <LayerGroup>[],
+      const <TimelineMarker>[],
     );
   }
 

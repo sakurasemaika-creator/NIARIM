@@ -17,6 +17,7 @@ enum TipDiagramKind {
   cameraKeyframe,
   exportFormat,
   gestureShortcut,
+  timelineMarker,
 }
 
 class TipDiagram extends StatelessWidget {
@@ -51,6 +52,7 @@ class _TipDiagramPainter extends CustomPainter {
       case TipDiagramKind.cameraKeyframe: _paintCameraKeyframe(canvas, size);
       case TipDiagramKind.exportFormat: _paintExportFormat(canvas, size);
       case TipDiagramKind.gestureShortcut: _paintGestureShortcut(canvas, size);
+      case TipDiagramKind.timelineMarker: _paintTimelineMarker(canvas, size);
     }
   }
 
@@ -244,5 +246,28 @@ class _TipDiagramPainter extends CustomPainter {
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.16), 9, _fillPrimaryFaint);
     canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.16), 9, _strokePrimary);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.16), 9, _strokePrimary);
+  }
+
+  /// タイムラインの帯＋ピン（タイムスタンプ）＋コメントの吹き出し。
+  void _paintTimelineMarker(Canvas canvas, Size size) {
+    final y = size.height * 0.62;
+    canvas.drawLine(Offset(10, y), Offset(size.width - 10, y), _strokeOutline);
+    for (final t in [0.28, 0.56, 0.82]) {
+      final x = size.width * t;
+      final isMain = t == 0.56;
+      canvas.drawCircle(Offset(x, y), isMain ? 6 : 4, isMain ? _fillPrimary : _fillPrimaryFaint);
+      if (isMain) {
+        final bubble = Rect.fromLTWH(x - 20, size.height * 0.08, 40, size.height * 0.34);
+        final rr = RRect.fromRectAndRadius(bubble, const Radius.circular(4));
+        canvas.drawRRect(rr, _fillPrimaryFaint);
+        canvas.drawRRect(rr, _strokePrimary);
+        final tail = Path()
+          ..moveTo(x - 4, bubble.bottom)
+          ..lineTo(x, bubble.bottom + 6)
+          ..lineTo(x + 4, bubble.bottom)
+          ..close();
+        canvas.drawPath(tail, _fillPrimaryFaint);
+      }
+    }
   }
 }

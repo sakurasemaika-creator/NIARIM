@@ -522,7 +522,7 @@
   "helpUndoSettingsDesc": "在效能設定中可以調整復原能回溯的操作次數。次數越多越能放心地反覆嘗試，但也會佔用更多記憶體；在低效能裝置上減少次數可以讓運作更輕快。",
 
   "helpBrushFavoriteTitle": "筆刷收藏",
-  "helpBrushFavoriteDesc": "在筆刷面板中長按筆刷即可收藏。收藏的筆刷會集中顯示在清單頂端，減少切換的麻煩。收藏中的筆刷不會被誤刪。",
+  "helpBrushFavoriteDesc": "點擊筆刷清單中每個筆刷上的星形圖示，即可收藏或取消收藏（與自動上色預設、印章、字型、繪圖濾鏡等App內其他收藏功能的操作方式相同）。清單頂端的星形圖示還可以篩選為只顯示收藏。收藏中的筆刷不會被誤刪。",
 
   "helpLayerFolderTitle": "圖層資料夾",
   "helpLayerFolderDesc": "可以把多個圖層整理到資料夾中的功能。即使是部件較多的插畫，也能讓圖層面板保持清晰易看。剪裁無法跨資料夾套用，如果要使用剪裁，建議把相關圖層放在同一個資料夾內。",
@@ -611,7 +611,7 @@
   "tipsAutofillPresetDesc": "為皮膚、頭髮、衣服等部位分別註冊包含陰影的預設後，只要畫出線稿，就能自動完成大部分上色。也可以依專案篩選只使用其中一部分預設。",
 
   "tipsBrushFavoriteTitle": "把常用筆刷加入我的最愛，切換時不用再找",
-  "tipsBrushFavoriteDesc": "把常用的筆刷加入我的最愛後會集中顯示在清單頂端，減少切換的麻煩。收藏中的筆刷無法被誤刪。",
+  "tipsBrushFavoriteDesc": "把常用的筆刷點擊清單中的星形圖示加入收藏。清單頂端的星形圖示可以篩選為只顯示收藏，減少尋找的麻煩。收藏中的筆刷無法被誤刪。",
 
   "tipsOnionSkinTitle": "用洋蔥皮透視前後格",
   "tipsOnionSkinDesc": "洋蔥皮功能可以半透明疊加顯示前後格畫面，讓你在作畫時確認動作是否銜接自然。",
@@ -661,11 +661,11 @@
   "tipsSeriesPresetFolderTitle": "系列作品用預設篩選×資料夾整理來管理",
   "tipsSeriesPresetFolderDesc": "製作同一作品的多集內容時，用資料夾依集數整理專案，並為每個專案篩選要使用的自動上色預設，這樣就不會混淆各角色的配色，也能有效率地工作。",
 
-  "tipsFadeEndCardTitle": "用演出濾鏡淡出×EndCard收尾",
-  "tipsFadeEndCardDesc": "在場景結尾用演出濾鏡的淡出效果緩緩變黑，再銜接到EndCard（片尾標誌），能讓影片的收尾顯得更專業。",
+  "tipsFadeEndCardTitle": "用演出濾鏡淡出×片尾卡收尾",
+  "tipsFadeEndCardDesc": "用演出濾鏡讓最後一個場景緩緩淡出變黑，能讓影片結尾自動銜接的片尾卡過渡更自然，收尾顯得更專業。",
 
   "tipsPixelToneRetroTitle": "印章像素模式×網點上色，統一復古感",
-  "tipsPixelToneRetroDesc": "把像素模式的印章和像素模式專用的方格紋、格子紋網點組合使用，可以讓整個畫面統一呈現像素畫質感。適合Y2K風、復古遊戲風的演出。",
+  "tipsPixelToneRetroDesc": "把像素模式的印章和像素模式專用的方格紋、格子紋網點組合使用，可以讓整個畫面統一呈現像素畫質感。適合復古遊戲風的演出。",
 
   "tipsMagicWandLassoTitle": "魔術棒選取×套索上色，提高分色效率",
   "tipsMagicWandLassoDesc": "先用選取工具的自動選取（魔術棒）一次選中大致範圍，再用套索選取只調整超出的部分，即使是複雜的分色也能快速完成。",
@@ -688,11 +688,20 @@
   "tipsMosaicChromaticTitle": "馬賽克×色差，營造老式映像管的粗糙質感",
   "tipsMosaicChromaticDesc": "先用馬賽克降低解析度，再疊加色差效果，能營造出像在看老式映像管電視般的粗糙質感，與單獨使用映像管濾鏡的效果又有所不同。",
 
-  "tipsEndCardWatermarkTitle": "EndCard×浮水印，兼顧防盜用與品牌宣傳",
-  "tipsEndCardWatermarkDesc": "用片尾標誌（EndCard）為影片收尾的同時，在正片中加入浮水印簽名，一旦被擅自轉載也容易辨明出處，同時也能起到品牌宣傳的作用。",
+  "tipsEndCardWatermarkTitle": "浮水印用於簽名，片尾卡用於收尾標誌",
+  "tipsEndCardWatermarkDesc": "想在影片中加入自己的簽名時，請使用浮水印功能。片尾卡是App自動附加在影片結尾的自家Logo，免費會員無法更改，但付費會員可以替換成自己的Logo。用浮水印防止未經授權的轉載，同時付費會員把片尾卡也換成自己的Logo，就能讓影片從頭到尾保持一致的品牌形象。",
 
-  "tipsVerticalPixelFontTitle": "直書×像素字型，打造和風像素畫標題",
-  "tipsVerticalPixelFontDesc": "在文字工具的直書中搭配像素模式字型，可以做出讓人聯想到復古遊戲的和風像素畫標題。",
+  "tipsVerticalPixelFontTitle": "實拍影片×手繪作畫，打造「實拍×動畫」",
+  "tipsVerticalPixelFontDesc": "正因為這款App兼具插畫App和影片剪輯App的雙重身分，才能玩出這種手法。把實拍影片片段放到時間軸上，在其上方圖層用洋蔥皮一邊參考一邊手繪特效線或角色，就能做出實拍畫面疊加手繪動畫的「實拍×動畫」混合媒體影片。",
+
+  "tipsTimelineMarkerTitle": "對齊聲音與嘴形的時間點，交給時間戳記",
+  "tipsTimelineMarkerDesc": "場景處理的是「開始～結束影格的範圍」，而時間戳記則是為「那一瞬間」加上備註、並可一鍵跳轉的功能。像「第120格配音效」「第180格對嘴形『啊』」這樣，在同一個場景範圍內打上多個時間戳記，就能大幅提升聲音與畫面對齊的效率。",
+
+  "tipsToolbarCustomizeTitle": "重新排列・隱藏工具列，縮短手指移動距離",
+  "tipsToolbarCustomizeDesc": "在設定畫面的工具列編輯中，可以隱藏不用的工具，把常用工具排到手指容易點到的位置。只是精簡顯示項目、讓介面更清爽，就能減少尋找工具的時間和手指移動距離，提升作畫節奏。",
+
+  "tipsAutofillBlendModeTitle": "用自動上色部位的混合模式改變陰影質感",
+  "tipsAutofillBlendModeDesc": "自動上色預設的每個部位都可以設定混合模式。把陰影部位從「色彩增值」改成「覆蓋」或「柔光」，就能做出彷彿透光般柔和的陰影。即使顏色相同，也能改變質感，是隱藏的高自由度玩法。",
 
   "tipsStampBlendModeTitle": "印章×混合模式，做出發光特效",
   "tipsStampBlendModeDesc": "把放置的印章圖層的混合模式設為「濾色」或「相加」，光效線條或閃亮特效就能自然融入背景，顯得更加突出。",
@@ -1140,6 +1149,7 @@
   "filterUnsharpAmount": "強度",
   "filterNameVignette": "暗角",
   "filterVignetteStrength": "暗角強度",
+  "filterVignetteColor": "暗角顏色",
   "filterNameNoise": "膠片顆粒",
   "filterNoiseStrength": "顆粒強度",
   "filterNameRetroAnime": "復古動漫",
@@ -1625,6 +1635,18 @@
   "timelineEndCardLengthChangeTooltip": "變更長度",
   "timelineEndCardReplaceTooltip": "替換",
   "timelineEndCardLengthDialogTitle": "片尾卡長度",
+  "timelineEndCardTrackLabel": "片尾卡軌道",
+
+  "timelineMarkerTrackLabel": "時間戳記",
+  "timelineMarkerAddDialogTitle": "在F{n}加入時間戳記",
+  "@timelineMarkerAddDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerEditDialogTitle": "時間戳記：F{n}",
+  "@timelineMarkerEditDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerCommentHint": "備註（例：這裡對嘴形「啊」）",
   "timelineSecondsLabel": "{n}秒",
   "@timelineSecondsLabel": {
     "placeholders": {"n": {"type": "int"}}

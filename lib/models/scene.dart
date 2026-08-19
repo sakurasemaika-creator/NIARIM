@@ -3,6 +3,7 @@ import 'camera_keyframe.dart';
 import 'effect_filter_instance.dart';
 import 'layer.dart';
 import 'layer_group.dart';
+import 'timeline_marker.dart';
 
 class Scene {
   final String id;
@@ -27,6 +28,10 @@ class Scene {
   // 複数レイヤーをまとめて1つのキーフレームで動かすグループ
   // （パーツ単位アニメーションの拡張）。シーンごとに管理する。
   final List<LayerGroup> groups;
+  // タイムスタンプ（特定フレームへのワンタップ移動＋コメント）。シーンが
+  // 「範囲」を単位にするのに対し、こちらは「瞬間」を指すためのもので、
+  // 同じシーンの範囲内に複数打てる。
+  final List<TimelineMarker> markers;
 
   const Scene({
     required this.id,
@@ -40,6 +45,7 @@ class Scene {
     this.videoRowNames = const [],
     this.audioRowNames = const [],
     this.groups = const [],
+    this.markers = const [],
   });
 
   String get displayName => name ?? 'Scene${index + 1}';
@@ -56,6 +62,7 @@ class Scene {
     List<String?>? videoRowNames,
     List<String?>? audioRowNames,
     List<LayerGroup>? groups,
+    List<TimelineMarker>? markers,
   }) {
     return Scene(
       id: id ?? this.id,
@@ -69,6 +76,7 @@ class Scene {
       videoRowNames: videoRowNames ?? this.videoRowNames,
       audioRowNames: audioRowNames ?? this.audioRowNames,
       groups: groups ?? this.groups,
+      markers: markers ?? this.markers,
     );
   }
 }

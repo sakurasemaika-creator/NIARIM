@@ -522,7 +522,7 @@
   "helpUndoSettingsDesc": "在性能设置中可以调整撤销能回溯的操作次数。次数越多越能放心地反复尝试，但也会占用更多内存；在低性能设备上减少次数可以让运行更轻快。",
 
   "helpBrushFavoriteTitle": "笔刷收藏",
-  "helpBrushFavoriteDesc": "在笔刷面板中长按笔刷即可收藏。收藏的笔刷会集中显示在列表顶部，减少切换的麻烦。收藏中的笔刷不会被误删。",
+  "helpBrushFavoriteDesc": "点击笔刷列表中每个笔刷上的星形图标，即可收藏或取消收藏（与自动上色预设、印章、字体、绘图滤镜等应用内其他收藏功能的操作方式相同）。列表顶部的星形图标还可以筛选为只显示收藏。收藏中的笔刷不会被误删。",
 
   "helpLayerFolderTitle": "图层文件夹",
   "helpLayerFolderDesc": "可以把多个图层整理到文件夹中的功能。即使是部位较多的插画，也能让图层面板保持清晰易看。剪裁无法跨文件夹套用，如果要使用剪裁，建议把相关图层放在同一个文件夹内。",
@@ -611,7 +611,7 @@
   "tipsAutofillPresetDesc": "为皮肤、头发、衣服等部位分别注册包含阴影的预设后，只需画出线稿，就能自动完成大部分上色。也可以按项目筛选只使用其中一部分预设。",
 
   "tipsBrushFavoriteTitle": "把常用笔刷加入收藏，切换时不用再找",
-  "tipsBrushFavoriteDesc": "把常用的笔刷加入收藏后会集中显示在列表顶部，减少切换的麻烦。收藏中的笔刷无法被误删。",
+  "tipsBrushFavoriteDesc": "把常用的笔刷点击列表中的星形图标加入收藏。列表顶部的星形图标可以筛选为只显示收藏，减少查找的麻烦。收藏中的笔刷无法被误删。",
 
   "tipsOnionSkinTitle": "用洋葱皮透视前后帧",
   "tipsOnionSkinDesc": "洋葱皮功能可以半透明地叠加显示前后帧，让你在作画时确认动作是否衔接自然。",
@@ -661,11 +661,11 @@
   "tipsSeriesPresetFolderTitle": "系列作品用预设筛选×文件夹整理来管理",
   "tipsSeriesPresetFolderDesc": "制作同一作品的多集内容时，用文件夹按集数整理项目，并为每个项目筛选要使用的自动上色预设，这样就不会混淆各角色的配色，也能高效工作。",
 
-  "tipsFadeEndCardTitle": "用演出滤镜淡出×EndCard收尾",
-  "tipsFadeEndCardDesc": "在场景结尾用演出滤镜的淡出效果缓缓变黑，再衔接到EndCard（片尾标志），能让视频的收尾显得更专业。",
+  "tipsFadeEndCardTitle": "用演出滤镜淡出×片尾卡收尾",
+  "tipsFadeEndCardDesc": "用演出滤镜让最后一个场景缓缓淡出变黑，能让视频结尾自动衔接的片尾卡过渡更自然，收尾显得更专业。",
 
   "tipsPixelToneRetroTitle": "印章像素模式×网点上色，统一复古感",
-  "tipsPixelToneRetroDesc": "把像素模式的印章和像素模式专用的方格纹、格子纹网点组合使用，可以让整个画面统一呈现像素画质感。适合Y2K风、复古游戏风的演出。",
+  "tipsPixelToneRetroDesc": "把像素模式的印章和像素模式专用的方格纹、格子纹网点组合使用，可以让整个画面统一呈现像素画质感。适合复古游戏风的演出。",
 
   "tipsMagicWandLassoTitle": "魔术棒选取×套索上色，提高分色效率",
   "tipsMagicWandLassoDesc": "先用选择工具的自动选取（魔术棒）一次性选中大致范围，再用套索选取只调整超出的部分，即使是复杂的分色也能快速完成。",
@@ -688,11 +688,20 @@
   "tipsMosaicChromaticTitle": "马赛克×色差，营造老式显像管的粗糙质感",
   "tipsMosaicChromaticDesc": "先用马赛克降低分辨率，再叠加色差效果，能营造出像在看老式显像管电视般的粗糙质感，与单独使用显像管滤镜的效果又有所不同。",
 
-  "tipsEndCardWatermarkTitle": "EndCard×水印，兼顾防盗用与品牌宣传",
-  "tipsEndCardWatermarkDesc": "用片尾标志（EndCard）为视频收尾的同时，在正片中加入水印署名，一旦被擅自转载也容易辨明出处，同时也能起到品牌宣传的作用。",
+  "tipsEndCardWatermarkTitle": "水印用于署名，片尾卡用于收尾标志",
+  "tipsEndCardWatermarkDesc": "想在视频中加入自己的署名时，请使用水印功能。片尾卡是应用自动附加在视频结尾的自家Logo，免费会员无法更改，但付费会员可以替换成自己的Logo。用水印防止未经授权的转载，同时付费会员把片尾卡也换成自己的Logo，就能让视频从头到尾保持一致的品牌形象。",
 
-  "tipsVerticalPixelFontTitle": "直书×像素字体，打造和风像素画标题",
-  "tipsVerticalPixelFontDesc": "在文字工具的直书中搭配像素模式字体，可以做出让人联想到复古游戏的和风像素画标题。",
+  "tipsVerticalPixelFontTitle": "实拍视频×手绘作画，打造「实拍×动画」",
+  "tipsVerticalPixelFontDesc": "正因为这款应用兼具插画App和视频剪辑App的双重身份，才能玩出这种手法。把实拍视频片段放到时间轴上，在其上方图层用洋葱皮一边参考一边手绘特效线或角色，就能做出实拍画面叠加手绘动画的「实拍×动画」混合媒体视频。",
+
+  "tipsTimelineMarkerTitle": "对齐声音与口型的时间点，交给时间戳",
+  "tipsTimelineMarkerDesc": "场景处理的是「开始～结束帧的范围」，而时间戳则是为「那一瞬间」加上备注、并可一键跳转的功能。像「第120帧配音效」「第180帧对口型『啊』」这样，在同一个场景范围内打上多个时间戳，就能大幅提升声音与画面对齐的效率。",
+
+  "tipsToolbarCustomizeTitle": "重新排列・隐藏工具栏，缩短手指移动距离",
+  "tipsToolbarCustomizeDesc": "在设置画面的工具栏编辑中，可以隐藏不用的工具，把常用工具排到手指容易点到的位置。只是精简显示项目、让界面更清爽，就能减少寻找工具的时间和手指移动距离，提升作画节奏。",
+
+  "tipsAutofillBlendModeTitle": "用自动上色部位的混合模式改变阴影质感",
+  "tipsAutofillBlendModeDesc": "自动上色预设的每个部位都可以设置混合模式。把阴影部位从「正片叠底」改成「叠加」或「柔光」，就能做出仿佛透光般柔和的阴影。即使颜色相同，也能改变质感，是隐藏的高自由度玩法。",
 
   "tipsStampBlendModeTitle": "印章×混合模式，做出发光特效",
   "tipsStampBlendModeDesc": "把放置的印章图层的混合模式设为「滤色」或「相加」，光效线条或闪亮特效就能自然融入背景，显得更加突出。",
@@ -1140,6 +1149,7 @@
   "filterUnsharpAmount": "强度",
   "filterNameVignette": "暗角",
   "filterVignetteStrength": "暗角强度",
+  "filterVignetteColor": "暗角颜色",
   "filterNameNoise": "胶片颗粒",
   "filterNoiseStrength": "颗粒强度",
   "filterNameRetroAnime": "复古动漫",
@@ -1625,6 +1635,18 @@
   "timelineEndCardLengthChangeTooltip": "更改长度",
   "timelineEndCardReplaceTooltip": "替换",
   "timelineEndCardLengthDialogTitle": "片尾卡长度",
+  "timelineEndCardTrackLabel": "片尾卡轨道",
+
+  "timelineMarkerTrackLabel": "时间戳",
+  "timelineMarkerAddDialogTitle": "在F{n}添加时间戳",
+  "@timelineMarkerAddDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerEditDialogTitle": "时间戳：F{n}",
+  "@timelineMarkerEditDialogTitle": {
+    "placeholders": {"n": {"type": "int"}}
+  },
+  "timelineMarkerCommentHint": "备注（例：这里对口型「啊」）",
   "timelineSecondsLabel": "{n}秒",
   "@timelineSecondsLabel": {
     "placeholders": {"n": {"type": "int"}}
