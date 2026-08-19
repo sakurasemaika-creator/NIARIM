@@ -53,17 +53,21 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsMagicWandLassoTitle, l10n.tipsMagicWandLassoDesc),
             _Tip(TipDiagramKind.exportFormat, l10n.tipsCommonLayerFolderTitle, l10n.tipsCommonLayerFolderDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsQuickToolPenSubTitle, l10n.tipsQuickToolPenSubDesc),
+            _Tip(TipDiagramKind.gestureShortcut, l10n.tipsQuickToolVariantTitle, l10n.tipsQuickToolVariantDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsAutofillToneReuseTitle, l10n.tipsAutofillToneReuseDesc),
             _Tip(TipDiagramKind.brushFavorite, l10n.tipsSaveSlotAutoSaveTitle, l10n.tipsSaveSlotAutoSaveDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsQuickToolSwipeTitle, l10n.tipsQuickToolSwipeDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsToolbarCustomizeTitle, l10n.tipsToolbarCustomizeDesc),
             _Tip(TipDiagramKind.pcDexLayout, l10n.tipsPcDexLayoutTitle, l10n.tipsPcDexLayoutDesc),
+            _Tip(TipDiagramKind.exportFormat, l10n.tipsCommonLayerLipSyncTitle, l10n.tipsCommonLayerLipSyncDesc),
+            _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsCommonLayerKeyframeTitle, l10n.tipsCommonLayerKeyframeDesc),
           ],
         ),
         _TipCategory(
           title: l10n.tipsCategoryDrawing,
           icon: Icons.brush_outlined,
           tips: [
+            _Tip(TipDiagramKind.brushFavorite, l10n.tipsTransparentColorTitle, l10n.tipsTransparentColorDesc),
             _Tip(TipDiagramKind.pressureCurve, l10n.tipsPressureCurveTitle, l10n.tipsPressureCurveDesc),
             _Tip(TipDiagramKind.onionSkin, l10n.tipsRulerOnionTitle, l10n.tipsRulerOnionDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsGradientTraceTitle, l10n.tipsGradientTraceDesc),
@@ -87,6 +91,7 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsCameraLensBlurTitle, l10n.tipsCameraLensBlurDesc),
             _Tip(TipDiagramKind.exportFormat, l10n.tipsWebmCommonLayerTitle, l10n.tipsWebmCommonLayerDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsLeftHandedWorkspaceTitle, l10n.tipsLeftHandedWorkspaceDesc),
+            _Tip(TipDiagramKind.effectFilter, l10n.tipsBlendModeUsageTitle, l10n.tipsBlendModeUsageDesc),
           ],
         ),
         _TipCategory(
@@ -102,6 +107,7 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.effectFilter, l10n.tipsBlurVignetteBgTitle, l10n.tipsBlurVignetteBgDesc),
             _Tip(TipDiagramKind.exportFormat, l10n.tipsSepiaVignetteTitle, l10n.tipsSepiaVignetteDesc),
             _Tip(TipDiagramKind.clipDuplicate, l10n.tipsTransferDeviceTitle, l10n.tipsTransferDeviceDesc),
+            _Tip(TipDiagramKind.clipDuplicate, l10n.tipsTransferCustomizationTitle, l10n.tipsTransferCustomizationDesc),
           ],
         ),
       ];
