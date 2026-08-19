@@ -767,6 +767,36 @@
   "tipsSepiaVignetteTitle": "セピア×周辺減光でアンティーク写真風の動画に",
   "tipsSepiaVignetteDesc": "演出フィルターのセピアと描画フィルターの周辺減光を組み合わせると、四隅が暗く色あせたアンティーク写真のような雰囲気の動画に仕上げられます。",
 
+  "tipsGifLoopTitle": "GIFはループを意識して最初と最後を近づける",
+  "tipsGifLoopDesc": "GIF書き出しは自動でループ再生されます。最初のフレームと最後のフレームの絵を近い形にしておくと、ループの繋ぎ目が目立たず、自然に回り続けるアニメーションになります。",
+
+  "tipsVideoTrimReuseTitle": "動画クリップの使用範囲を変えて同じ素材を使い回す",
+  "tipsVideoTrimReuseDesc": "同じ動画素材でも、クリップごとに使用開始・終了フレームを変えて配置すれば、別のカットとして使い回せます。素材を増やさずにバリエーションを作れます。",
+
+  "tipsSaveSlotAutoSaveTitle": "セーブスロット×自動保存を使い分ける",
+  "tipsSaveSlotAutoSaveDesc": "自動保存は常に最新状態を上書きしますが、セーブスロットは複数の状態を残しておけます。大きな節目でセーブスロットに保存し、それ以外の細かい変更は自動保存に任せると、必要な時点へ確実に戻れます。",
+
+  "tipsQuickToolSwipeTitle": "早替えツールは上スワイプで並び替えできる",
+  "tipsQuickToolSwipeDesc": "早替えツールの登録内容を変えたいときは、長押しだけでなく上スワイプでも管理ポップアップを開けます。片手で操作しているときに素早く並び替えたい場合に便利です。",
+
+  "tipsColorPickerLongPressTitle": "カラーピッカーは長押しで使い方を確認できる",
+  "tipsColorPickerLongPressDesc": "色の選び方に迷ったら、カラーピッカーを長押ししてみましょう。簡単な使い方の説明が表示されるので、HSV・RGB・パレットの操作を確認できます。",
+
+  "tipsDrawingAreaCameraTitle": "描画領域を広めに×カメラキーフレームで安全にパン・ズーム",
+  "tipsDrawingAreaCameraDesc": "描画領域を書き出し範囲より広めに設定しておくと、カメラキーフレームでパン・ズームしても画面の端が切れる心配がありません。動きの大きい演出を入れる前に確認しておくと安心です。",
+
+  "tipsWebmCommonLayerTitle": "透過WebM×背景を共通レイヤーで分離管理",
+  "tipsWebmCommonLayerDesc": "透過WebMとして書き出したキャラクターを別の動画編集ソフトで背景と合成する場合、背景を共通レイヤーで別管理しておくと、透過部分に不要な色が混ざらずきれいに抜けます。",
+
+  "tipsLeftHandedWorkspaceTitle": "左利きモード×ワークスペース設定で作業しやすく",
+  "tipsLeftHandedWorkspaceDesc": "左利きの場合、ワークスペース設定の左利きモードをONにするとドッキングパネルが左右反転し、利き手側の画面がパネルで隠れにくくなります。",
+
+  "tipsFolderHierarchyTitle": "フォルダの階層構造でシリーズ物を整理",
+  "tipsFolderHierarchyDesc": "フォルダは複数階層に対応しています。「作品名」フォルダの中に「シーズン1」フォルダを作り、その中に各話のプロジェクトを並べる、といった整理ができます。",
+
+  "tipsTransferDeviceTitle": "引き継ぎファイルで別端末へ制作を移す",
+  "tipsTransferDeviceDesc": "使う端末を変えて続きを描きたいときは、引き継ぎ（.niatra）機能を使うと、使用中の素材も含めてプロジェクトをまとめて移動できます。",
+
   "fontSettingsTabDownloaded": "ダウンロード済み",
   "fontSettingsTabSearch": "探してDL",
   "fontSettingsTabImport": "読み込み",

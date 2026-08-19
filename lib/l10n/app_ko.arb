@@ -721,6 +721,36 @@
   "tipsSepiaVignetteTitle": "세피아×비네트로 앤티크 사진풍 영상으로",
   "tipsSepiaVignetteDesc": "연출 필터의 세피아와 그리기 필터의 비네트를 조합하면, 네 귀퉁이가 어둡고 색이 바랜 앤티크 사진 같은 분위기의 영상으로 완성할 수 있습니다.",
 
+  "tipsGifLoopTitle": "GIF는 루프를 의식해 처음과 끝을 가깝게",
+  "tipsGifLoopDesc": "GIF 내보내기는 자동으로 반복 재생됩니다. 첫 프레임과 마지막 프레임의 그림을 비슷하게 해두면 루프의 이음새가 눈에 띄지 않아 자연스럽게 계속 도는 애니메이션이 됩니다.",
+
+  "tipsVideoTrimReuseTitle": "동영상 클립의 사용 범위를 바꿔 같은 소재를 재사용하기",
+  "tipsVideoTrimReuseDesc": "같은 동영상 소재라도 클립마다 사용 시작・종료 프레임을 바꿔 배치하면 다른 컷으로 재사용할 수 있습니다. 소재를 늘리지 않고도 변화를 줄 수 있습니다.",
+
+  "tipsSaveSlotAutoSaveTitle": "세이브 슬롯×자동 저장을 나눠서 쓰기",
+  "tipsSaveSlotAutoSaveDesc": "자동 저장은 항상 최신 상태를 덮어쓰지만, 세이브 슬롯은 여러 상태를 남겨둘 수 있습니다. 중요한 시점에는 세이브 슬롯에 저장하고, 그 외 자잘한 변경은 자동 저장에 맡기면 필요한 시점으로 확실하게 되돌아갈 수 있습니다.",
+
+  "tipsQuickToolSwipeTitle": "빠른 도구는 위로 스와이프해서 재배열할 수 있어요",
+  "tipsQuickToolSwipeDesc": "빠른 도구의 등록 내용을 바꾸고 싶을 때는 길게 누르기뿐 아니라 위로 스와이프해도 관리 팝업을 열 수 있습니다. 한 손으로 조작할 때 빠르게 재배열하고 싶을 때 편리합니다.",
+
+  "tipsColorPickerLongPressTitle": "컬러 피커는 길게 누르면 사용법을 확인할 수 있어요",
+  "tipsColorPickerLongPressDesc": "색 고르는 방법이 헷갈리면 컬러 피커를 길게 눌러보세요. 간단한 사용법 설명이 표시되어 HSV・RGB・팔레트 조작을 확인할 수 있습니다.",
+
+  "tipsDrawingAreaCameraTitle": "작화 영역을 넓게×카메라 키프레임으로 안전하게 팬・줌",
+  "tipsDrawingAreaCameraDesc": "작화 영역을 내보내기 범위보다 넓게 설정해두면, 카메라 키프레임으로 팬・줌을 해도 화면 끝이 잘릴 걱정이 없습니다. 움직임이 큰 연출을 넣기 전에 확인해두면 안심입니다.",
+
+  "tipsWebmCommonLayerTitle": "투명 WebM×배경을 공통 레이어로 분리 관리",
+  "tipsWebmCommonLayerDesc": "투명 WebM으로 내보낸 캐릭터를 다른 영상 편집 소프트웨어에서 배경과 합성할 경우, 배경을 공통 레이어로 따로 관리해두면 투명 부분에 불필요한 색이 섞이지 않고 깔끔하게 빠집니다.",
+
+  "tipsLeftHandedWorkspaceTitle": "왼손잡이 모드×워크스페이스 설정으로 작업하기 편하게",
+  "tipsLeftHandedWorkspaceDesc": "왼손잡이라면 워크스페이스 설정의 왼손잡이 모드를 켜면 도킹 패널이 좌우 반전되어, 주로 쓰는 손 쪽 화면이 패널에 가려지기 어려워집니다.",
+
+  "tipsFolderHierarchyTitle": "폴더의 계층 구조로 시리즈물 정리하기",
+  "tipsFolderHierarchyDesc": "폴더는 여러 계층을 지원합니다. 「작품명」 폴더 안에 「시즌1」 폴더를 만들고, 그 안에 각 화의 프로젝트를 나열하는 식으로 정리할 수 있습니다.",
+
+  "tipsTransferDeviceTitle": "인계 파일로 다른 기기로 작업을 옮기기",
+  "tipsTransferDeviceDesc": "사용하는 기기를 바꿔서 이어 그리고 싶을 때는 인계（.niatra）기능을 사용하면 사용 중인 소재까지 포함해 프로젝트를 한꺼번에 옮길 수 있습니다.",
+
   "fontSettingsTabDownloaded": "다운로드됨",
   "fontSettingsTabSearch": "찾아서 다운로드",
   "fontSettingsTabImport": "불러오기",

@@ -721,6 +721,36 @@
   "tipsSepiaVignetteTitle": "Sépia + vignettage pour une vidéo façon photo ancienne",
   "tipsSepiaVignetteDesc": "Combiner le filtre d'effet sépia avec le filtre de dessin vignettage donne à votre vidéo les coins assombris et l'aspect délavé d'une photo ancienne.",
 
+  "tipsGifLoopTitle": "Pensez la boucle des GIF : rapprochez la première et la dernière image",
+  "tipsGifLoopDesc": "L'export GIF se lit en boucle automatique. Garder le dessin de la première et de la dernière image proches masque la couture de la boucle, pour que l'animation semble tourner naturellement.",
+
+  "tipsVideoTrimReuseTitle": "Réutilisez le même fichier vidéo en changeant la portion utilisée de chaque clip",
+  "tipsVideoTrimReuseDesc": "Même le même fichier vidéo peut donner un plan différent à chaque fois en changeant son début/fin d'utilisation par clip. Apporte de la variété sans ajouter de nouveau matériel source.",
+
+  "tipsSaveSlotAutoSaveTitle": "Répartissez les emplacements de sauvegarde et la sauvegarde automatique",
+  "tipsSaveSlotAutoSaveDesc": "La sauvegarde automatique écrase toujours avec le dernier état, tandis que les emplacements de sauvegarde peuvent conserver plusieurs états à la fois. Sauvegardez sur un emplacement à une étape importante et laissez les petits changements à la sauvegarde automatique, pour pouvoir revenir de façon fiable au point voulu.",
+
+  "tipsQuickToolSwipeTitle": "Glissez vers le haut sur l'outil rapide pour le réorganiser",
+  "tipsQuickToolSwipeDesc": "Pour changer ce qui est enregistré dans l'outil rapide, vous pouvez ouvrir le popup de gestion par un glissement vers le haut, pas seulement par un appui long. Pratique pour réorganiser vite en utilisant une seule main.",
+
+  "tipsColorPickerLongPressTitle": "Appui long sur le sélecteur de couleur pour un guide rapide",
+  "tipsColorPickerLongPressDesc": "Si vous ne savez pas comment choisir une couleur, essayez un appui long sur le sélecteur de couleur. Une brève astuce d'utilisation s'affiche, vous permettant de vérifier le fonctionnement du HSV, du RVB et de la palette.",
+
+  "tipsDrawingAreaCameraTitle": "Zone de dessin plus large + images clés de caméra pour des panoramiques et zooms sûrs",
+  "tipsDrawingAreaCameraDesc": "Définir la zone de dessin plus large que les limites d'export signifie qu'un panoramique ou un zoom avec des images clés de caméra ne risque pas de couper le bord de l'écran. À vérifier avant d'ajouter un grand mouvement de caméra.",
+
+  "tipsWebmCommonLayerTitle": "WebM transparent + un calque commun pour séparer le fond",
+  "tipsWebmCommonLayerDesc": "Si vous compositez un personnage exporté en WebM transparent sur un fond dans un autre logiciel vidéo, garder le fond sur son propre calque commun évite que des couleurs indésirables ne se glissent dans la zone transparente, pour un détourage plus propre.",
+
+  "tipsLeftHandedWorkspaceTitle": "Mode gaucher + réglages de l'espace de travail pour une configuration plus confortable",
+  "tipsLeftHandedWorkspaceDesc": "Si vous êtes gaucher, activer le mode gaucher dans les réglages de l'espace de travail inverse les panneaux ancrés, réduisant le risque qu'ils se retrouvent sous votre main de dessin.",
+
+  "tipsFolderHierarchyTitle": "Organisez une série avec des dossiers imbriqués",
+  "tipsFolderHierarchyDesc": "Les dossiers acceptent plusieurs niveaux. Vous pouvez créer un dossier « Saison 1 » dans un dossier au nom de l'œuvre, puis aligner le projet de chaque épisode à l'intérieur.",
+
+  "tipsTransferDeviceTitle": "Déplacez votre travail vers un autre appareil avec un fichier de transfert",
+  "tipsTransferDeviceDesc": "Si vous voulez changer d'appareil et continuer à travailler, la fonction de transfert (.niatra) déplace tout le projet ensemble, y compris les matériels qu'il utilise.",
+
   "fontSettingsTabDownloaded": "Téléchargées",
   "fontSettingsTabSearch": "Rechercher et télécharger",
   "fontSettingsTabImport": "Importer",

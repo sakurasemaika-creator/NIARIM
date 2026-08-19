@@ -721,6 +721,36 @@
   "tipsSepiaVignetteTitle": "懷舊棕×暗角，打造復古老照片風影片",
   "tipsSepiaVignetteDesc": "把演出濾鏡的懷舊棕與繪圖濾鏡的暗角組合使用，能讓影片呈現出四角發暗、色彩褪去的復古老照片氛圍。",
 
+  "tipsGifLoopTitle": "製作GIF時留意循環，讓首尾影格盡量接近",
+  "tipsGifLoopDesc": "GIF匯出會自動循環播放。讓第一格和最後一格的畫面盡量接近，可以讓循環的接縫不明顯，動畫看起來會自然地持續轉動。",
+
+  "tipsVideoTrimReuseTitle": "改變影片片段的使用範圍，重複利用同一素材",
+  "tipsVideoTrimReuseDesc": "即使是同一個影片素材，只要為每個片段設定不同的使用開始・結束影格，就能當作不同的鏡頭重複使用。不用增加素材也能做出變化。",
+
+  "tipsSaveSlotAutoSaveTitle": "區分使用存檔槽和自動儲存",
+  "tipsSaveSlotAutoSaveDesc": "自動儲存總是覆蓋為最新狀態，而存檔槽可以保留多個狀態。在重要節點儲存到存檔槽，其餘的細微改動就交給自動儲存，這樣就能可靠地回到需要的時間點。",
+
+  "tipsQuickToolSwipeTitle": "快捷工具可以用上滑手勢重新排序",
+  "tipsQuickToolSwipeDesc": "想更改快捷工具的登記內容時，除了長按，也可以用向上滑動開啟管理彈出視窗。單手操作時想快速重新排序會很方便。",
+
+  "tipsColorPickerLongPressTitle": "取色器長按可以查看使用說明",
+  "tipsColorPickerLongPressDesc": "如果不知道該怎麼選色，可以試著長按取色器。會顯示簡單的使用說明，幫你了解HSV、RGB、調色盤的操作方法。",
+
+  "tipsDrawingAreaCameraTitle": "作畫區域留寬×攝影機關鍵影格，安全地推拉與平移",
+  "tipsDrawingAreaCameraDesc": "把作畫區域設定得比匯出範圍更寬，就不用擔心用攝影機關鍵影格做平移、縮放時畫面邊緣被裁切。在加入較大幅度的運鏡之前先確認一下會比較放心。",
+
+  "tipsWebmCommonLayerTitle": "透明WebM×用共用圖層分開管理背景",
+  "tipsWebmCommonLayerDesc": "如果打算把匯出為透明WebM的角色，在其他影片剪輯軟體中與背景合成，把背景用共用圖層單獨管理，可以避免多餘顏色混進透明部分，讓去背效果更乾淨。",
+
+  "tipsLeftHandedWorkspaceTitle": "左手模式×工作區設定，讓操作更順手",
+  "tipsLeftHandedWorkspaceDesc": "如果是左撇子，打開工作區設定中的左手模式後，停靠面板會左右翻轉，慣用手一側的畫面就不容易被面板遮住。",
+
+  "tipsFolderHierarchyTitle": "用資料夾的多層結構整理系列作品",
+  "tipsFolderHierarchyDesc": "資料夾支援多層結構。可以在「作品名」資料夾中建立「第一季」資料夾，再把每一集的專案排列在裡面。",
+
+  "tipsTransferDeviceTitle": "用轉移檔案把製作內容搬到其他裝置",
+  "tipsTransferDeviceDesc": "想換裝置繼續製作時，使用轉移（.niatra）功能，可以連同正在使用的素材一起把專案整體搬過去。",
+
   "fontSettingsTabDownloaded": "已下載",
   "fontSettingsTabSearch": "搜尋下載",
   "fontSettingsTabImport": "匯入",

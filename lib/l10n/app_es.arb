@@ -721,6 +721,36 @@
   "tipsSepiaVignetteTitle": "Sepia + viñeteado para un vídeo estilo foto antigua",
   "tipsSepiaVignetteDesc": "Combinar el filtro de efecto sepia con el filtro de dibujo de viñeteado da a tu vídeo las esquinas oscurecidas y el aspecto desvaído de una fotografía antigua.",
 
+  "tipsGifLoopTitle": "Diseña los GIF pensando en el bucle: acerca el primer y el último fotograma",
+  "tipsGifLoopDesc": "La exportación GIF se reproduce en bucle automático. Mantener parecidos el primer y el último fotograma oculta la costura del bucle, para que la animación parezca girar de forma natural.",
+
+  "tipsVideoTrimReuseTitle": "Reutiliza el mismo archivo de vídeo cambiando el recorte de cada clip",
+  "tipsVideoTrimReuseDesc": "Incluso el mismo archivo de vídeo puede colocarse como un plano distinto cada vez cambiando su recorte de inicio/fin por clip. Aporta variedad sin añadir más material fuente.",
+
+  "tipsSaveSlotAutoSaveTitle": "Usa las ranuras de guardado y el guardado automático para cosas distintas",
+  "tipsSaveSlotAutoSaveDesc": "El guardado automático siempre sobrescribe con el último estado, mientras que las ranuras de guardado pueden conservar varios estados a la vez. Guarda en una ranura en un hito importante y deja los cambios pequeños al guardado automático, así podrás volver con fiabilidad al punto que necesites.",
+
+  "tipsQuickToolSwipeTitle": "Desliza hacia arriba en la herramienta rápida para reordenarla",
+  "tipsQuickToolSwipeDesc": "Para cambiar lo que hay registrado en la herramienta rápida, puedes abrir el popup de gestión con un deslizamiento hacia arriba, no solo con una pulsación larga. Útil para reordenar rápido mientras operas con una sola mano.",
+
+  "tipsColorPickerLongPressTitle": "Mantén pulsado el selector de color para ver una guía rápida",
+  "tipsColorPickerLongPressDesc": "Si no sabes cómo elegir un color, prueba a mantener pulsado el selector de color. Muestra un breve consejo de uso, dejándote comprobar cómo funcionan el HSV, el RGB y la paleta.",
+
+  "tipsDrawingAreaCameraTitle": "Área de dibujo más amplia + fotogramas clave de cámara para paneos y zooms seguros",
+  "tipsDrawingAreaCameraDesc": "Definir el área de dibujo más amplia que los límites de exportación significa que paneos o zooms con fotogramas clave de cámara no arriesgan cortar el borde de la pantalla. Vale la pena comprobarlo antes de añadir un gran movimiento de cámara.",
+
+  "tipsWebmCommonLayerTitle": "WebM transparente + una capa común para mantener el fondo separado",
+  "tipsWebmCommonLayerDesc": "Si vas a componer un personaje exportado como WebM transparente sobre un fondo en otro software de vídeo, mantener el fondo en su propia capa común evita que colores no deseados se filtren en la zona transparente, para un recorte más limpio.",
+
+  "tipsLeftHandedWorkspaceTitle": "Modo zurdo + ajustes del espacio de trabajo para una configuración más cómoda",
+  "tipsLeftHandedWorkspaceDesc": "Si eres zurdo, activar el modo zurdo en los ajustes del espacio de trabajo invierte los paneles acoplados, reduciendo la probabilidad de que queden bajo tu mano de dibujo.",
+
+  "tipsFolderHierarchyTitle": "Organiza una serie con carpetas anidadas",
+  "tipsFolderHierarchyDesc": "Las carpetas admiten varios niveles. Puedes crear una carpeta \"Temporada 1\" dentro de una carpeta con el nombre de la obra, y luego alinear el proyecto de cada episodio dentro de ella.",
+
+  "tipsTransferDeviceTitle": "Traslada tu trabajo a otro dispositivo con un archivo de traspaso",
+  "tipsTransferDeviceDesc": "Si quieres cambiar de dispositivo y seguir trabajando, la función de traspaso (.niatra) mueve todo el proyecto junto, incluidos los materiales que usa.",
+
   "fontSettingsTabDownloaded": "Descargadas",
   "fontSettingsTabSearch": "Buscar y descargar",
   "fontSettingsTabImport": "Importar",

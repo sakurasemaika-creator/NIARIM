@@ -721,6 +721,36 @@
   "tipsSepiaVignetteTitle": "Sepia + vignette for an antique-photo video",
   "tipsSepiaVignetteDesc": "Combining the sepia effect filter with the vignette draw filter gives your video the darkened corners and faded look of an antique photograph.",
 
+  "tipsGifLoopTitle": "Design GIFs around the loop — bring the first and last frame close together",
+  "tipsGifLoopDesc": "GIF export plays back on an automatic loop. Keeping the first and last frame's artwork close together hides the loop's seam, so the animation feels like it keeps cycling naturally.",
+
+  "tipsVideoTrimReuseTitle": "Reuse the same video file by changing each clip's trim range",
+  "tipsVideoTrimReuseDesc": "Even the same video file can be placed as a different-feeling cut each time by changing its start/end trim per clip. Gives you variety without adding more source material.",
+
+  "tipsSaveSlotAutoSaveTitle": "Use save slots and autosave for different jobs",
+  "tipsSaveSlotAutoSaveDesc": "Autosave always overwrites with the latest state, while save slots can hold several states at once. Save to a slot at a major milestone and leave the small changes to autosave, so you can reliably get back to the point you need.",
+
+  "tipsQuickToolSwipeTitle": "Swipe up on the quick tool to reorder it",
+  "tipsQuickToolSwipeDesc": "To change what's registered in the quick tool, you can open the management popup with an upward swipe, not just a long press. Handy for reordering fast while operating one-handed.",
+
+  "tipsColorPickerLongPressTitle": "Long-press the color picker for a quick usage guide",
+  "tipsColorPickerLongPressDesc": "If you're not sure how to pick a color, try long-pressing the color picker. It shows a brief usage tip, letting you check how HSV, RGB, and the palette work.",
+
+  "tipsDrawingAreaCameraTitle": "A wider drawing area + camera keyframes for safe panning and zooming",
+  "tipsDrawingAreaCameraDesc": "Setting the drawing area wider than the export bounds means panning or zooming with camera keyframes won't risk cutting off the edge of the screen. Worth checking before adding a big camera move.",
+
+  "tipsWebmCommonLayerTitle": "Transparent WebM + a common layer to keep the background separate",
+  "tipsWebmCommonLayerDesc": "If you're compositing a character exported as transparent WebM over a background in other video software, keeping the background on its own common layer avoids unwanted color bleeding into the transparent area, for a cleaner cutout.",
+
+  "tipsLeftHandedWorkspaceTitle": "Left-handed mode + workspace settings for an easier setup",
+  "tipsLeftHandedWorkspaceDesc": "If you're left-handed, turning on left-handed mode in workspace settings mirrors the docked panels, so they're less likely to sit under your drawing hand.",
+
+  "tipsFolderHierarchyTitle": "Organize a series with nested folders",
+  "tipsFolderHierarchyDesc": "Folders support multiple levels. You can make a \"Season 1\" folder inside a folder named after the work, then line up each episode's project inside it.",
+
+  "tipsTransferDeviceTitle": "Move your work to another device with a transfer file",
+  "tipsTransferDeviceDesc": "If you want to switch devices and keep working, the transfer (.niatra) feature moves the whole project — including the materials it uses — together.",
+
   "fontSettingsTabDownloaded": "Downloaded",
   "fontSettingsTabSearch": "Find & Download",
   "fontSettingsTabImport": "Import",

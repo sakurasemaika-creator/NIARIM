@@ -37,6 +37,8 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.textCaption, l10n.tipsEndCardWatermarkTitle, l10n.tipsEndCardWatermarkDesc),
             _Tip(TipDiagramKind.textCaption, l10n.tipsVerticalPixelFontTitle, l10n.tipsVerticalPixelFontDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsStampBlendModeTitle, l10n.tipsStampBlendModeDesc),
+            _Tip(TipDiagramKind.exportFormat, l10n.tipsGifLoopTitle, l10n.tipsGifLoopDesc),
+            _Tip(TipDiagramKind.clipDuplicate, l10n.tipsVideoTrimReuseTitle, l10n.tipsVideoTrimReuseDesc),
           ],
         ),
         _TipCategory(
@@ -51,6 +53,8 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.exportFormat, l10n.tipsCommonLayerFolderTitle, l10n.tipsCommonLayerFolderDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsQuickToolPenSubTitle, l10n.tipsQuickToolPenSubDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsAutofillToneReuseTitle, l10n.tipsAutofillToneReuseDesc),
+            _Tip(TipDiagramKind.brushFavorite, l10n.tipsSaveSlotAutoSaveTitle, l10n.tipsSaveSlotAutoSaveDesc),
+            _Tip(TipDiagramKind.gestureShortcut, l10n.tipsQuickToolSwipeTitle, l10n.tipsQuickToolSwipeDesc),
           ],
         ),
         _TipCategory(
@@ -65,6 +69,8 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.pressureCurve, l10n.tipsColorMixingFadeTitle, l10n.tipsColorMixingFadeDesc),
             _Tip(TipDiagramKind.onionSkin, l10n.tipsRadialVignetteTitle, l10n.tipsRadialVignetteDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsClippingGradientTitle, l10n.tipsClippingGradientDesc),
+            _Tip(TipDiagramKind.pressureCurve, l10n.tipsColorPickerLongPressTitle, l10n.tipsColorPickerLongPressDesc),
+            _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsDrawingAreaCameraTitle, l10n.tipsDrawingAreaCameraDesc),
           ],
         ),
         _TipCategory(
@@ -79,6 +85,8 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.pressureCurve, l10n.tipsLevelsToneCurveTitle, l10n.tipsLevelsToneCurveDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsToneCurveSepiaTitle, l10n.tipsToneCurveSepiaDesc),
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsCameraLensBlurTitle, l10n.tipsCameraLensBlurDesc),
+            _Tip(TipDiagramKind.exportFormat, l10n.tipsWebmCommonLayerTitle, l10n.tipsWebmCommonLayerDesc),
+            _Tip(TipDiagramKind.gestureShortcut, l10n.tipsLeftHandedWorkspaceTitle, l10n.tipsLeftHandedWorkspaceDesc),
           ],
         ),
         _TipCategory(
@@ -93,6 +101,8 @@ class _TipsScreenState extends State<TipsScreen> {
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsPixelToneRetroTitle, l10n.tipsPixelToneRetroDesc),
             _Tip(TipDiagramKind.effectFilter, l10n.tipsBlurVignetteBgTitle, l10n.tipsBlurVignetteBgDesc),
             _Tip(TipDiagramKind.exportFormat, l10n.tipsSepiaVignetteTitle, l10n.tipsSepiaVignetteDesc),
+            _Tip(TipDiagramKind.exportFormat, l10n.tipsFolderHierarchyTitle, l10n.tipsFolderHierarchyDesc),
+            _Tip(TipDiagramKind.clipDuplicate, l10n.tipsTransferDeviceTitle, l10n.tipsTransferDeviceDesc),
           ],
         ),
       ];
