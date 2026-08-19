@@ -44,6 +44,15 @@ void main() async {
 
   final premiumService = PremiumService();
   await premiumService.init();
+  // エンドカードのプレミアム既定設定（デフォルトで非表示にする）は
+  // プレミアム限定の設定のため、権限が切れて無料会員に戻った時点で
+  // 自動的にOFFへリセットする（無料会員に戻ってもこっそり非表示のまま
+  // にはならないようにする）。
+  premiumService.addListener(() {
+    if (!premiumService.isPremium && settingsService.endCardDefaultHiddenForPremium) {
+      settingsService.setEndCardDefaultHiddenForPremium(false);
+    }
+  });
 
   final advertisingService = AdvertisingService(premiumService: premiumService);
   await advertisingService.init();

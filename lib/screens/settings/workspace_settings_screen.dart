@@ -3,12 +3,14 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/quick_tool_entry.dart';
 import '../../models/toolbar_item.dart';
+import '../../services/premium_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/workspace_preset_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/premium_lock_widget.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -18,6 +20,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
     final presetService = context.watch<WorkspacePresetService>();
+    final premium = context.watch<PremiumService>();
     return Scaffold(
       appBar: AppBar(title: Text(l10n.workspaceScreenTitle), actions: const [HelpButton()]),
       body: desktopCentered(context, ListView(
@@ -139,6 +142,23 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                   onChanged: (v) => settings.setForcePcMode(v),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          _sectionLabel(context, l10n.workspaceEndCardSection),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(l10n.workspaceEndCardHint,
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
+          Card(
+            child: SwitchListTile(
+              secondary: premium.isPremium ? null : const Icon(Icons.lock, color: Colors.amber),
+              title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
+              value: premium.isPremium && settings.endCardDefaultHiddenForPremium,
+              onChanged: premium.isPremium
+                  ? (v) => settings.setEndCardDefaultHiddenForPremium(v)
+                  : (_) => showPremiumBanner(context),
             ),
           ),
           const SizedBox(height: 20),

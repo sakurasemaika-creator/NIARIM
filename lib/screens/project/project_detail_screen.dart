@@ -13,6 +13,7 @@ import '../../services/font_service.dart';
 import '../../services/material_service.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
+import '../../services/save_tree_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -289,11 +290,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => context.push('/save-tree/${widget.projectId}'),
-              icon: const Icon(Icons.account_tree),
-              label: Text(l10n.projectDetailSaveTreeButton),
-            ),
+            // ボタンの文言は、パフォーマンス設定で選んでいるセーブ方式
+            // （セーブツリー／セーブスロット）に合わせて切り替える。押した先の
+            // 画面（SaveTreeScreen）のタイトルと表示内容が一致しない
+            // （「セーブツリー」ボタンなのにスロット画面が開く）不具合の対策。
+            Builder(builder: (context) {
+              final isTreeMode = context.watch<SaveTreeService>().isTreeMode;
+              return OutlinedButton.icon(
+                onPressed: () => context.push('/save-tree/${widget.projectId}'),
+                icon: Icon(isTreeMode ? Icons.account_tree : Icons.save_outlined),
+                label: Text(isTreeMode ? l10n.saveTreeScreenTitleTree : l10n.saveTreeScreenTitleSlot),
+              );
+            }),
             const SizedBox(height: 8),
             // このプロジェクトで使う自動塗りプリセットの選択。
             // プリセットは増えていくため、プロジェクト設定内でも選び直せる

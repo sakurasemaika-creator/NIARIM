@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'dart:io';
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:audioplayers/audioplayers.dart' as ap;
@@ -158,10 +159,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final Map<String, ap.AudioPlayer> _audioPlayers = {};
   final Map<String, VideoPlayerController> _videoControllers = {};
 
-  // EndCard Track（プレミアム編集項目、仕様書06・13）
-  bool _endCardVisible = true;
-  int _endCardLengthSeconds = 5;
-  String? _endCardCustomPath;
+  // エンドカードトラック（仕様書06・13）：差し替え不可・アプリが無料会員に
+  // 強制表示するロゴ。プレミアム会員が削除（非表示）した場合のみtrue。
+  // セッション中のみの状態で、次回プロジェクトを開くと「プレミアム会員は
+  // デフォルトで削除する」設定（SettingsService）に従い直す。
+  bool _endCardManuallyDeleted = false;
 
   // フレーム幅（px）
   static const double _frameW = 36.0;
@@ -747,8 +749,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(height: previewHeight, child: _buildPreviewContent()),
+        // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
+        // グリップより広めに取っている（ドラッグ開始位置が少しずれても
+        // 確実にリサイズとして認識されるようにするため）。
         GestureDetector(
           behavior: HitTestBehavior.opaque,
+          dragStartBehavior: DragStartBehavior.down,
           onVerticalDragUpdate: (d) {
             setState(() {
               final current = (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
@@ -761,15 +767,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
               context.read<SettingsService>().setTimelinePreviewHeightFraction(h / maxH);
             }
           },
-          child: SizedBox(
-            height: 14,
+          child: Container(
+            color: Colors.transparent,
+            height: 22,
             child: Center(
               child: Container(
-                width: 36,
-                height: 4,
+                width: 40,
+                height: 5,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
             ),
@@ -1708,7 +1715,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             width: _frameW,
                             margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
                             decoration: BoxDecoration(
-                              color: isChecked ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[850],
+                              // サムネイル画像自体は透明部分を含むため、セルの
+                              // 背景は実際のキャンバス背景（既定は白）に合わせる。
+                              // 濃いグレーのままだと透明部分の見え方が実際の
+                              // キャンバス画面と一致しなかったため修正。
+                              color: isChecked ? Theme.of(context).colorScheme.primaryContainer : Colors.white,
                               border: Border.all(
                                   color: isChecked
                                       ? Theme.of(context).colorScheme.primary
@@ -3111,126 +3122,59 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// エンドカードトラック（無料版：ロック状態、プレミアム：編集可能）
+  /// エンドカードトラック。エンドカードは差し替え不可・アプリが無料会員に
+  /// 強制表示するロゴで、無料会員はタップした瞬間にプレミアム誘導のみ
+  /// （それ以外の操作は一切できない）。プレミアム会員は削除（非表示）
+  /// できるだけで、差し替えや長さ変更はできない。「プレミアム会員は
+  /// デフォルトで削除する」設定（設定画面）がONの場合、この画面を開いた
+  /// 時点で最初から非表示になる。
   Widget _buildEndCardTrack() {
-    return Consumer<PremiumService>(
-      builder: (context, premium, _) {
+    return Consumer2<PremiumService, SettingsService>(
+      builder: (context, premium, settings, _) {
         final l10n = AppLocalizations.of(context)!;
-        return Container(
-        height: 32,
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          children: [
-            const Icon(Icons.movie, size: 14, color: Colors.grey),
-            const SizedBox(width: 4),
-            Text(l10n.timelineEndCardTrackLabel, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            const SizedBox(width: 4),
-            if (!premium.isPremium)
-              GestureDetector(
-                onTap: () => showPremiumBanner(context),
-                child: const Icon(Icons.lock, size: 14, color: Colors.amber),
-              )
-            else ...[
-              const Spacer(),
-              Text(
-                _endCardVisible
-                    ? l10n.timelineEndCardStatusFormat(
-                        _endCardCustomPath != null ? l10n.timelineEndCardCustomLabel : l10n.timelineEndCardDefaultLogoLabel,
-                        _endCardLengthSeconds)
-                    : l10n.timelineEndCardHiddenLabel,
-                style: const TextStyle(fontSize: 9, color: Colors.grey),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: Icon(_endCardVisible ? Icons.visibility : Icons.visibility_off, size: 14),
-                onPressed: () => setState(() => _endCardVisible = !_endCardVisible),
-                tooltip: l10n.timelineEndCardVisibilityToggleTooltip,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.timer, size: 14),
-                onPressed: _showEndCardLengthDialog,
-                tooltip: l10n.timelineEndCardLengthChangeTooltip,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.swap_horiz, size: 14),
-                onPressed: _pickEndCardReplacement,
-                tooltip: l10n.timelineEndCardReplaceTooltip,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, size: 14, color: Colors.red),
-                onPressed: () async {
-                  if (!await confirmDelete(context)) return;
-                  setState(() {
-                    _endCardCustomPath = null;
-                    _endCardVisible = false;
-                  });
-                },
-                tooltip: l10n.commonDelete,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ],
-        ),
+        final defaultHidden = premium.isPremium && settings.endCardDefaultHiddenForPremium;
+        final hidden = _endCardManuallyDeleted || defaultHidden;
+        return GestureDetector(
+          // 無料会員：トラックのどこをタップしてもプレミアム誘導へ（仕様：
+          // 「一切操作できずタップした瞬間に有料会員へ誘導される」）。
+          onTap: premium.isPremium ? null : () => showPremiumBanner(context),
+          child: Container(
+            height: 32,
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.movie, size: 14, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(l10n.timelineEndCardTrackLabel, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                const SizedBox(width: 4),
+                if (!premium.isPremium)
+                  const Icon(Icons.lock, size: 14, color: Colors.amber)
+                else ...[
+                  const Spacer(),
+                  Text(
+                    hidden ? l10n.timelineEndCardHiddenLabel : l10n.timelineEndCardDefaultLogoLabel,
+                    style: const TextStyle(fontSize: 9, color: Colors.grey),
+                  ),
+                  const SizedBox(width: 4),
+                  if (!hidden)
+                    IconButton(
+                      icon: const Icon(Icons.delete, size: 14, color: Colors.red),
+                      onPressed: () async {
+                        if (!await confirmDelete(context)) return;
+                        setState(() => _endCardManuallyDeleted = true);
+                      },
+                      tooltip: l10n.commonDelete,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                ],
+              ],
+            ),
+          ),
         );
       },
     );
-  }
-
-  void _showEndCardLengthDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    int length = _endCardLengthSeconds;
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: Text(l10n.timelineEndCardLengthDialogTitle),
-          content: Row(
-            children: [
-              Expanded(
-                child: Slider(
-                  value: length.toDouble(),
-                  min: 1, max: 15, divisions: 14,
-                  label: l10n.timelineSecondsLabel(length),
-                  onChanged: (v) => setS(() => length = v.round()),
-                ),
-              ),
-              EditableSliderValue(
-                text: l10n.timelineSecondsLabel(length),
-                value: length, min: 1, max: 15,
-                onChanged: (v) => setS(() => length = v.round()),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-            FilledButton(
-              onPressed: () {
-                setState(() => _endCardLengthSeconds = length);
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonOk),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pickEndCardReplacement() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.video);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
-    setState(() {
-      _endCardCustomPath = result.files.first.path;
-      _endCardVisible = true;
-    });
   }
 
   void _addCameraKf() {
@@ -3834,7 +3778,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// ため削除し、代わりに画面を離れるタイミングで自動的に保存されるよう
   /// にした。
   Future<void> _saveAndGoToCanvas() async {
-    await context.read<ProjectService>().saveProject(widget.projectId);
+    // 保存に失敗しても画面遷移自体は必ず行う（保存エラーで「戻る」ボタンが
+    // 反応しなくなったように見える不具合の対策）。
+    try {
+      await context.read<ProjectService>().saveProject(widget.projectId);
+    } catch (e) {
+      debugPrint('timeline: saveProject failed before returning to canvas: $e');
+    }
     if (mounted) context.go('/canvas/${widget.projectId}');
   }
 
@@ -3862,7 +3812,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     if (choice == null || !mounted) return;
     if (choice == 'save') {
-      await context.read<ProjectService>().saveProject(widget.projectId);
+      // 保存に失敗しても「プロジェクト一覧へ戻る」操作自体は必ず完了させる
+      // （保存エラーでタイムライン画面に留まったままになる不具合の対策）。
+      try {
+        await context.read<ProjectService>().saveProject(widget.projectId);
+      } catch (e) {
+        debugPrint('timeline: saveProject failed before returning to project list: $e');
+      }
     }
     if (mounted) context.go('/home');
   }

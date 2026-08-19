@@ -1992,5 +1992,8 @@
   "privacyPolicyArt8Title": "Artículo 8 (Contacto)",
   "privacyPolicyArt8Body": "Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\n(Contacto del desarrollador: aún no definido; complete una dirección de correo electrónico u otros datos de contacto antes de la publicación).",
   "tipsPcDexLayoutTitle": "En pantallas anchas, cambia automáticamente al modo PC (DeX)",
-  "tipsPcDexLayoutDesc": "En un Chromebook, una tablet con teclado, Samsung DeX o cualquier entorno de pantalla ancha, la app cambia automáticamente a un diseño profesional con paneles acoplados. También puedes forzar Siempre modo PC o Siempre modo móvil desde los ajustes de espacio de trabajo, útil al conectar una pantalla externa."
+  "tipsPcDexLayoutDesc": "En un Chromebook, una tablet con teclado, Samsung DeX o cualquier entorno de pantalla ancha, la app cambia automáticamente a un diseño profesional con paneles acoplados. También puedes forzar Siempre modo PC o Siempre modo móvil desde los ajustes de espacio de trabajo, útil al conectar una pantalla externa.",
+  "workspaceEndCardSection": "Tarjeta final",
+  "workspaceEndCardHint": "La tarjeta final es el logotipo propio de la app que aparece automáticamente al final de cada vídeo. Los miembros gratuitos no pueden cambiar esto. Solo para miembros premium: al activarlo, la tarjeta final aparecerá oculta (eliminada) desde el principio la próxima vez que abras la línea de tiempo. Este ajuste vuelve a desactivarse automáticamente si tu suscripción premium caduca.",
+  "workspaceEndCardDefaultHiddenTitle": "Ocultar la tarjeta final de forma predeterminada (solo Premium)"
 }

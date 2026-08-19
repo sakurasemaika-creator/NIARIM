@@ -83,6 +83,23 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ─── エンドカードのプレミアム既定設定 ─────────────────────────────────
+  // プレミアム会員限定：ONにすると、以後タイムラインを開いた時点で
+  // エンドカードが最初から非表示（削除済み）の状態になる。無料会員には
+  // 一切関係がなく、プレミアム権限が切れて無料会員に戻った時点でこの設定
+  // 自体も自動でOFFへリセットする（main.dartでPremiumServiceの状態変化を
+  // 監視して呼び出す）。
+  bool _endCardDefaultHiddenForPremium = false;
+
+  bool get endCardDefaultHiddenForPremium => _endCardDefaultHiddenForPremium;
+
+  Future<void> setEndCardDefaultHiddenForPremium(bool value) async {
+    _endCardDefaultHiddenForPremium = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('endcard_default_hidden_for_premium', value);
+    notifyListeners();
+  }
+
   GestureAction _twoFingerTap = GestureAction.undo;
   GestureAction _threeFingerTap = GestureAction.redo;
   GestureAction _twoFingerSwipe = GestureAction.frameMove;
@@ -241,6 +258,7 @@ class SettingsService extends ChangeNotifier {
     _bucketFillUnderLine = prefs.getBool('bucket_fill_under_line') ?? false;
     _timelinePreviewHeightFraction =
         prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
+    _endCardDefaultHiddenForPremium = prefs.getBool('endcard_default_hidden_for_premium') ?? false;
     final toolbarOrderNames = prefs.getStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
       final map = ToolbarItemId.values.asNameMap();

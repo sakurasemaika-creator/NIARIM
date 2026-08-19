@@ -1992,5 +1992,8 @@
   "privacyPolicyArt8Title": "第8條（聯絡方式）",
   "privacyPolicyArt8Body": "有關本政策之相關詢問，請透過下列聯絡方式與我們聯繫。\n（開發者聯絡方式：尚未設定 —— 請於公開前填寫電子郵件地址等聯絡資訊）",
   "tipsPcDexLayoutTitle": "寬螢幕環境會自動切換為PC模式（DeX）的專業版面",
-  "tipsPcDexLayoutDesc": "在Chromebook、外接鍵盤的平板、三星DeX等寬螢幕環境下使用時，應用程式會自動切換為停靠面板式的專業版面。也可以在工作區設定中手動固定為永遠PC模式或永遠手機模式，連接外接螢幕工作時同樣好用。"
+  "tipsPcDexLayoutDesc": "在Chromebook、外接鍵盤的平板、三星DeX等寬螢幕環境下使用時，應用程式會自動切換為停靠面板式的專業版面。也可以在工作區設定中手動固定為永遠PC模式或永遠手機模式，連接外接螢幕工作時同樣好用。",
+  "workspaceEndCardSection": "片尾卡",
+  "workspaceEndCardHint": "片尾卡是應用程式自動顯示在每支影片結尾的自帶Logo，免費會員無法操作。僅限進階會員：開啟後，下次開啟時間軸時片尾卡會預設隱藏（已刪除）。進階會員資格到期後，此設定會自動恢復為關閉。",
+  "workspaceEndCardDefaultHiddenTitle": "預設隱藏片尾卡（僅限進階會員）"
 }
