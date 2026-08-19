@@ -631,6 +631,36 @@
   "tipsGestureShortcutTitle": "Bind frequent actions to a gesture",
   "tipsGestureShortcutDesc": "From \"Gestures\" in settings, you can assign undo/redo or the eyedropper to a two-finger tap, three-finger tap, or long press. Since you don't have to switch tools, it keeps your drawing rhythm from breaking.",
 
+  "tipsAudioRepeatTitle": "Keep sound effects on rhythm with duplicated clips + fades",
+  "tipsAudioRepeatDesc": "To reuse the same sound effect repeatedly, duplicate the clip and line up copies at offset timings, giving each one its own fade-in/fade-out. That produces a natural, rhythmic repeat of the effect.",
+
+  "tipsVerticalRubyTitle": "Vertical text + ruby for a title-logo look",
+  "tipsVerticalRubyDesc": "Combining vertical writing with ruby (furigana) in the text tool gives you a Japanese-style title logo or a distinctive heading treatment. Half-width alphanumerics automatically rotate to sit sideways, so it stays readable even mixed with symbols or numbers.",
+
+  "tipsBrushTrySaveTreeTitle": "Try new brush settings via the save tree",
+  "tipsBrushTrySaveTreeDesc": "Before making a big change to brush thickness or stabilization, save to the save tree first for peace of mind. If you don't like the result, you can jump straight back to the previous state, making it easier to try bold adjustments.",
+
+  "tipsEyedropperGestureTitle": "Bind the eyedropper to a two-finger tap to keep your palette consistent",
+  "tipsEyedropperGestureDesc": "Assigning the eyedropper to a two-finger tap in gesture settings lets you grab a nearby color instantly without switching tools. Handy for coloring while staying true to a character's palette.",
+
+  "tipsRulerOnionTitle": "Perspective ruler + onion skin to reuse a background",
+  "tipsRulerOnionDesc": "Lay out a background's depth with the perspective ruler, then move just the character while checking neighboring frames through onion skin — no need to redraw the background every frame.",
+
+  "tipsGradientTraceTitle": "Gradient autofill + color tracing for a natural blend",
+  "tipsGradientTraceDesc": "When setting a gradient in an autofill preset, set the lineart color mode to color tracing so the line's color shifts along with the gradient's subtle color changes, keeping the boundary from standing out.",
+
+  "tipsRainNoiseTitle": "Rain + animated noise for a damp atmosphere",
+  "tipsRainNoiseDesc": "Layering a light animated noise filter over the rain filter adds a sense of particles in the air on top of the raindrops themselves, for a damp, rainy-day texture.",
+
+  "tipsPartKeyframeGroupTitle": "Bounce a character with part keyframes + grouping",
+  "tipsPartKeyframeGroupDesc": "Animate each autofill part with layer keyframes, then group the related parts to bounce them together — you can create a mini animation that sways to music without redrawing a thing.",
+
+  "tipsLowSpecSettingsTitle": "On low-spec devices, revisit performance settings and undo history",
+  "tipsLowSpecSettingsDesc": "If things feel heavy, try switching performance settings to the \"low quality\" preset and lowering the undo history length too. That reduces memory use and can make things run more smoothly.",
+
+  "tipsSeriesPresetFolderTitle": "Manage a series with preset filtering + folder organization",
+  "tipsSeriesPresetFolderDesc": "When making multiple episodes of the same work, group the projects by episode in a folder, and narrow down which autofill presets each project uses. That keeps each character's palette from getting mixed up and keeps work efficient.",
+
   "fontSettingsTabDownloaded": "Downloaded",
   "fontSettingsTabSearch": "Find & Download",
   "fontSettingsTabImport": "Import",

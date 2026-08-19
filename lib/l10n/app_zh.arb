@@ -631,6 +631,36 @@
   "tipsGestureShortcutTitle": "用手势把常用操作变成一触即达",
   "tipsGestureShortcutDesc": "在设置画面的“手势”中，可以把撤销/重做或取色器分配给双指点击、三指点击或长按。不用切换工具，就不会打乱作画的节奏。",
 
+  "tipsAudioRepeatTitle": "用复制片段×淡入淡出让音效更有节奏感",
+  "tipsAudioRepeatDesc": "想反复使用同一段音效时，复制片段并错开时间排列，再分别设置淡入淡出，就能做出有节奏感的自然音效连击。",
+
+  "tipsVerticalRubyTitle": "直书×注音打造标题Logo风效果",
+  "tipsVerticalRubyDesc": "在文字工具中把直书和注音（振假名）组合使用，可以做出和风标题Logo或有个性的标题效果。半角英数字会自动横向旋转排列，即使混入符号或数字也能保持易读。",
+
+  "tipsBrushTrySaveTreeTitle": "新的笔刷设置先用保存树试试看",
+  "tipsBrushTrySaveTreeDesc": "想大幅改动笔刷粗细或稳定化等设置时，改动前先保存到保存树会更安心。如果效果不满意，可以立刻回到之前的状态，更容易大胆尝试各种调整。",
+
+  "tipsEyedropperGestureTitle": "把取色器绑定到双指点击，保持配色不跑偏",
+  "tipsEyedropperGestureDesc": "在手势设置中把取色器分配给双指点击，就能不切换工具、立即吸取附近的颜色。想保持角色配色统一地继续上色时很方便。",
+
+  "tipsRulerOnionTitle": "透视尺×洋葱皮，重复利用背景",
+  "tipsRulerOnionDesc": "先用透视尺定好背景的纵深，再一边用洋葱皮透视前后帧，一边只移动角色，就不用每一帧都重新画背景了。",
+
+  "tipsGradientTraceTitle": "渐变自动上色×色彩描摹，让色彩更自然融合",
+  "tipsGradientTraceDesc": "在自动上色预设中设置渐变时，把线稿颜色设置改为色彩描摹（线稿融合），线稿颜色就会跟随渐变的细微色彩变化而融合，边界不容易显得突兀。",
+
+  "tipsRainNoiseTitle": "下雨×动态噪点，营造湿润的空气感",
+  "tipsRainNoiseDesc": "在下雨滤镜上叠加较弱的动态噪点滤镜，除了雨滴本身，还能加上空气中的颗粒感，营造出湿润的雨天质感。",
+
+  "tipsPartKeyframeGroupTitle": "部件关键帧×分组，让角色一起跳动",
+  "tipsPartKeyframeGroupDesc": "给自动上色的各个部件加上图层关键帧使其运动，再把相关部件分组让它们一起跳动，无需重新绘制就能做出随音乐摇摆的迷你动画。",
+
+  "tipsLowSpecSettingsTitle": "低性能设备请重新检查性能设置和撤销次数",
+  "tipsLowSpecSettingsDesc": "如果感觉运行卡顿，可以把性能设置切换为「低画质」预设，同时减少撤销次数。这样能降低内存占用，有时能让运行更轻快。",
+
+  "tipsSeriesPresetFolderTitle": "系列作品用预设筛选×文件夹整理来管理",
+  "tipsSeriesPresetFolderDesc": "制作同一作品的多集内容时，用文件夹按集数整理项目，并为每个项目筛选要使用的自动上色预设，这样就不会混淆各角色的配色，也能高效工作。",
+
   "fontSettingsTabDownloaded": "已下载",
   "fontSettingsTabSearch": "搜索下载",
   "fontSettingsTabImport": "导入",

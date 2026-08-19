@@ -631,6 +631,36 @@
   "tipsGestureShortcutTitle": "Asigna un gesto a las acciones frecuentes",
   "tipsGestureShortcutDesc": "Desde \"Gestos\" en los ajustes puedes asignar deshacer/rehacer o el cuentagotas a un toque con dos dedos, un toque con tres dedos o una pulsación larga. Al no tener que cambiar de herramienta, no rompes el ritmo del dibujo.",
 
+  "tipsAudioRepeatTitle": "Mantén los efectos de sonido a ritmo duplicando clips y usando fundidos",
+  "tipsAudioRepeatDesc": "Para reutilizar el mismo efecto de sonido varias veces, duplica el clip y coloca las copias con tiempos escalonados, dando a cada una su propio fundido de entrada/salida. Así consigues una repetición natural y rítmica del efecto.",
+
+  "tipsVerticalRubyTitle": "Texto vertical + furigana para un look de logo de título",
+  "tipsVerticalRubyDesc": "Combinar escritura vertical con furigana en la herramienta de texto da un logo de título de estilo japonés o un tratamiento de titular distintivo. Los alfanuméricos de medio ancho rotan automáticamente para quedar de lado, manteniéndose legibles incluso mezclados con símbolos o números.",
+
+  "tipsBrushTrySaveTreeTitle": "Prueba nuevos ajustes de pincel con el árbol de guardado",
+  "tipsBrushTrySaveTreeDesc": "Antes de hacer un cambio grande en el grosor o la estabilización del pincel, guarda primero en el árbol de guardado para mayor tranquilidad. Si no te gusta el resultado, puedes volver directamente al estado anterior, facilitando probar ajustes atrevidos.",
+
+  "tipsEyedropperGestureTitle": "Asigna el cuentagotas a un toque con dos dedos para mantener tu paleta coherente",
+  "tipsEyedropperGestureDesc": "Asignar el cuentagotas a un toque con dos dedos en los ajustes de gestos te permite tomar un color cercano al instante sin cambiar de herramienta. Útil para colorear manteniendo fiel la paleta de un personaje.",
+
+  "tipsRulerOnionTitle": "Regla de perspectiva + papel cebolla para reutilizar un fondo",
+  "tipsRulerOnionDesc": "Define la profundidad de un fondo con la regla de perspectiva, y luego mueve solo al personaje mientras compruebas los fotogramas vecinos con el papel cebolla; no hace falta redibujar el fondo en cada fotograma.",
+
+  "tipsGradientTraceTitle": "Relleno automático degradado + calco de color para una mezcla natural",
+  "tipsGradientTraceDesc": "Al definir un degradado en un preset de relleno automático, pon el modo de color de línea en calco de color para que el color de la línea siga los sutiles cambios de color del degradado, evitando que el borde destaque.",
+
+  "tipsRainNoiseTitle": "Lluvia + ruido animado para una atmósfera húmeda",
+  "tipsRainNoiseDesc": "Superponer un filtro de ruido animado suave sobre el filtro de lluvia añade una sensación de partículas en el aire además de las propias gotas de lluvia, para una textura húmeda de día lluvioso.",
+
+  "tipsPartKeyframeGroupTitle": "Haz rebotar a un personaje con fotogramas clave de parte + agrupación",
+  "tipsPartKeyframeGroupDesc": "Anima cada parte de relleno automático con fotogramas clave de capa, y luego agrupa las partes relacionadas para hacerlas rebotar juntas: puedes crear una minianimación que se mece con la música sin volver a dibujar nada.",
+
+  "tipsLowSpecSettingsTitle": "En dispositivos de gama baja, revisa los ajustes de rendimiento y el historial de deshacer",
+  "tipsLowSpecSettingsDesc": "Si notas que va lento, prueba a cambiar los ajustes de rendimiento al preset de \"baja calidad\" y reduce también la longitud del historial de deshacer. Eso reduce el uso de memoria y puede hacer que todo vaya más fluido.",
+
+  "tipsSeriesPresetFolderTitle": "Gestiona una serie con filtrado de presets + organización en carpetas",
+  "tipsSeriesPresetFolderDesc": "Al hacer varios episodios de la misma obra, agrupa los proyectos por episodio en una carpeta, y limita qué presets de relleno automático usa cada proyecto. Así evitas mezclar la paleta de cada personaje y mantienes el trabajo eficiente.",
+
   "fontSettingsTabDownloaded": "Descargadas",
   "fontSettingsTabSearch": "Buscar y descargar",
   "fontSettingsTabImport": "Importar",

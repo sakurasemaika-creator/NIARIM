@@ -631,6 +631,36 @@
   "tipsGestureShortcutTitle": "Associez un geste aux actions fréquentes",
   "tipsGestureShortcutDesc": "Depuis « Gestes » dans les réglages, vous pouvez associer annuler/rétablir ou la pipette à un appui à deux doigts, un appui à trois doigts ou un appui long. Comme vous n'avez pas à changer d'outil, cela ne casse pas le rythme du dessin.",
 
+  "tipsAudioRepeatTitle": "Gardez vos bruitages en rythme avec des clips dupliqués + fondus",
+  "tipsAudioRepeatDesc": "Pour réutiliser plusieurs fois le même bruitage, dupliquez le clip et alignez les copies à des moments décalés, en donnant à chacune son propre fondu d'entrée/sortie. Vous obtenez ainsi une répétition naturelle et rythmée de l'effet.",
+
+  "tipsVerticalRubyTitle": "Texte vertical + furigana pour un look de logo de titre",
+  "tipsVerticalRubyDesc": "Combiner l'écriture verticale avec les furigana dans l'outil texte donne un logo de titre à la japonaise ou un traitement de titre distinctif. Les alphanumériques demi-chasse pivotent automatiquement pour se placer sur le côté, restant lisibles même mélangés à des symboles ou des chiffres.",
+
+  "tipsBrushTrySaveTreeTitle": "Testez de nouveaux réglages de pinceau via l'arbre de sauvegarde",
+  "tipsBrushTrySaveTreeDesc": "Avant un gros changement d'épaisseur ou de stabilisation du pinceau, sauvegardez d'abord dans l'arbre de sauvegarde pour plus de sérénité. Si le résultat ne vous plaît pas, vous pouvez revenir directement à l'état précédent, ce qui facilite les essais audacieux.",
+
+  "tipsEyedropperGestureTitle": "Associez la pipette à un appui à deux doigts pour garder une palette cohérente",
+  "tipsEyedropperGestureDesc": "Associer la pipette à un appui à deux doigts dans les réglages de gestes permet de récupérer instantanément une couleur voisine sans changer d'outil. Pratique pour colorer en restant fidèle à la palette d'un personnage.",
+
+  "tipsRulerOnionTitle": "Règle de perspective + papier calque pour réutiliser un fond",
+  "tipsRulerOnionDesc": "Posez la profondeur d'un fond avec la règle de perspective, puis ne déplacez que le personnage en vérifiant les images voisines via le papier calque — plus besoin de redessiner le fond à chaque image.",
+
+  "tipsGradientTraceTitle": "Remplissage automatique en dégradé + calque de couleur pour un fondu naturel",
+  "tipsGradientTraceDesc": "En définissant un dégradé dans un préréglage de remplissage automatique, réglez le mode de couleur du trait sur calque de couleur pour que la couleur du trait suive les subtils changements du dégradé, évitant que la limite ne ressorte.",
+
+  "tipsRainNoiseTitle": "Pluie + bruit animé pour une atmosphère humide",
+  "tipsRainNoiseDesc": "Superposer un filtre de bruit animé léger sur le filtre de pluie ajoute une sensation de particules dans l'air en plus des gouttes elles-mêmes, pour une texture humide de jour de pluie.",
+
+  "tipsPartKeyframeGroupTitle": "Faites rebondir un personnage avec images clés de partie + groupement",
+  "tipsPartKeyframeGroupDesc": "Animez chaque partie de remplissage automatique avec des images clés de calque, puis groupez les parties liées pour les faire rebondir ensemble — vous pouvez créer une mini-animation qui se balance sur la musique sans rien redessiner.",
+
+  "tipsLowSpecSettingsTitle": "Sur les appareils bas de gamme, revoyez les réglages de performance et l'historique d'annulation",
+  "tipsLowSpecSettingsDesc": "Si ça semble lent, essayez de passer les réglages de performance au préréglage « basse qualité » et de réduire aussi la longueur de l'historique d'annulation. Cela réduit l'utilisation de la mémoire et peut rendre l'ensemble plus fluide.",
+
+  "tipsSeriesPresetFolderTitle": "Gérez une série avec le filtrage de préréglages + l'organisation en dossiers",
+  "tipsSeriesPresetFolderDesc": "Pour réaliser plusieurs épisodes d'une même œuvre, regroupez les projets par épisode dans un dossier, et limitez les préréglages de remplissage automatique utilisés par chaque projet. Cela évite de mélanger la palette de chaque personnage et garde le travail efficace.",
+
   "fontSettingsTabDownloaded": "Téléchargées",
   "fontSettingsTabSearch": "Rechercher et télécharger",
   "fontSettingsTabImport": "Importer",

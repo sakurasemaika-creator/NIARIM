@@ -31,6 +31,8 @@ class _TipsScreenState extends State<TipsScreen> {
           tips: [
             _Tip(TipDiagramKind.clipDuplicate, l10n.tipsClipDuplicateTitle, l10n.tipsClipDuplicateDesc),
             _Tip(TipDiagramKind.textCaption, l10n.tipsTextCaptionTitle, l10n.tipsTextCaptionDesc),
+            _Tip(TipDiagramKind.clipDuplicate, l10n.tipsAudioRepeatTitle, l10n.tipsAudioRepeatDesc),
+            _Tip(TipDiagramKind.textCaption, l10n.tipsVerticalRubyTitle, l10n.tipsVerticalRubyDesc),
           ],
         ),
         _TipCategory(
@@ -39,6 +41,8 @@ class _TipsScreenState extends State<TipsScreen> {
           tips: [
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsAutofillPresetTitle, l10n.tipsAutofillPresetDesc),
             _Tip(TipDiagramKind.brushFavorite, l10n.tipsBrushFavoriteTitle, l10n.tipsBrushFavoriteDesc),
+            _Tip(TipDiagramKind.brushFavorite, l10n.tipsBrushTrySaveTreeTitle, l10n.tipsBrushTrySaveTreeDesc),
+            _Tip(TipDiagramKind.gestureShortcut, l10n.tipsEyedropperGestureTitle, l10n.tipsEyedropperGestureDesc),
           ],
         ),
         _TipCategory(
@@ -47,6 +51,8 @@ class _TipsScreenState extends State<TipsScreen> {
           tips: [
             _Tip(TipDiagramKind.onionSkin, l10n.tipsOnionSkinTitle, l10n.tipsOnionSkinDesc),
             _Tip(TipDiagramKind.pressureCurve, l10n.tipsPressureCurveTitle, l10n.tipsPressureCurveDesc),
+            _Tip(TipDiagramKind.onionSkin, l10n.tipsRulerOnionTitle, l10n.tipsRulerOnionDesc),
+            _Tip(TipDiagramKind.autofillPreset, l10n.tipsGradientTraceTitle, l10n.tipsGradientTraceDesc),
           ],
         ),
         _TipCategory(
@@ -55,6 +61,8 @@ class _TipsScreenState extends State<TipsScreen> {
           tips: [
             _Tip(TipDiagramKind.effectFilter, l10n.tipsEffectFilterTitle, l10n.tipsEffectFilterDesc),
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsCameraKeyframeTitle, l10n.tipsCameraKeyframeDesc),
+            _Tip(TipDiagramKind.effectFilter, l10n.tipsRainNoiseTitle, l10n.tipsRainNoiseDesc),
+            _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsPartKeyframeGroupTitle, l10n.tipsPartKeyframeGroupDesc),
           ],
         ),
         _TipCategory(
@@ -63,6 +71,8 @@ class _TipsScreenState extends State<TipsScreen> {
           tips: [
             _Tip(TipDiagramKind.exportFormat, l10n.tipsExportFormatTitle, l10n.tipsExportFormatDesc),
             _Tip(TipDiagramKind.gestureShortcut, l10n.tipsGestureShortcutTitle, l10n.tipsGestureShortcutDesc),
+            _Tip(TipDiagramKind.pressureCurve, l10n.tipsLowSpecSettingsTitle, l10n.tipsLowSpecSettingsDesc),
+            _Tip(TipDiagramKind.exportFormat, l10n.tipsSeriesPresetFolderTitle, l10n.tipsSeriesPresetFolderDesc),
           ],
         ),
       ];
