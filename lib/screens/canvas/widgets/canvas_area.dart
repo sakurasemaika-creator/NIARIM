@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -119,6 +120,20 @@ class _CanvasAreaState extends State<CanvasArea> {
   // 対応するonPointerUpも同じポインターのみ委譲する（変形操作用に握り
   // つぶしたポインターのUpをツール側の「描画終了」として誤処理しない）。
   final Set<int> _toolHandledPointers = {};
+
+  // ─── 長押しスポイト（設定画面でON/OFF・保持秒数を設定可能、既定ON） ─────
+  // ペン（トーン/スタンプサブツールを除く）・消しゴムで描画中、指を動かさず
+  // 一定時間押し続けると、その場でスポイトのように色を拾って現在色へ反映
+  // する。誤操作防止のため、指定px以上動く・複数指になる・ツールを切り替える
+  // と保留は解除される。保持が成立した時点で、それまでに描かれていた分の
+  // ストロークはUndo履歴に残さず直前の状態へ巻き戻す（TileManagerの
+  // Undo記録機構をそのまま利用：_beginTileUndo()で取得済みの「変更前」
+  // タイルへ書き戻すだけで済むため、ストロークが未確定のまま消える）。
+  static const double _holdEyedropperMoveSlop = 8.0;
+  Timer? _holdEyedropperTimer;
+  int? _holdEyedropperPointerId;
+  Offset? _holdEyedropperDownScreenPos;
+  Offset? _holdEyedropperLastCanvasPos;
   // 手のひらツールでの1本指（スタイラス・マウスも含む）ドラッグ平行移動。
   Offset? _panToolLastScreenPos;
 
@@ -274,6 +289,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   void dispose() {
+    _holdEyedropperTimer?.cancel();
     _transformController.dispose();
     _compositeImage?.dispose();
     _belowImage?.dispose();
@@ -612,6 +628,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _beginTileUndo();
     _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
+    _armHoldEyedropperIfEligible(event, canvasPos);
   }
 
   void _onPointerMove(PointerEvent event) {
@@ -701,6 +718,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         widget.currentTool == DrawingTool.eyedropper) {
       return;
     }
+    _updateHoldEyedropper(event, canvasPos);
     final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
     _drawingEngine.continueStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
@@ -810,6 +828,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
 
+    _disarmHoldEyedropper(event.pointer);
     _drawingEngine.endStroke();
     _inputHandler.onStylusUp();
     _scheduleComposite();
@@ -1032,6 +1051,81 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (idx + 3 >= buffer.length) return;
     widget.onEyedropper?.call(Color.fromARGB(
         buffer[idx + 3], buffer[idx], buffer[idx + 1], buffer[idx + 2]));
+  }
+
+  // ─── 長押しスポイト（設定画面「ジェスチャー」で調整可能） ─────────────────
+
+  /// ペン（トーン/スタンプサブツールを除く）・消しゴムでのストローク開始
+  /// 時にのみ保留タイマーを仕込む。他のツール（バケツ・投げ縄・選択・図形・
+  /// 変形等）は元々タイル未確定のままローカル状態のみで完結するか、
+  /// バケツのように長押し自体が別の意味（連続塗り）を持つため対象外とする。
+  void _armHoldEyedropperIfEligible(PointerEvent event, Offset canvasPos) {
+    _holdEyedropperTimer?.cancel();
+    _holdEyedropperTimer = null;
+    _holdEyedropperPointerId = null;
+    final settings = context.read<SettingsService>();
+    if (!settings.holdEyedropperEnabled) return;
+    final eligible = widget.currentTool == DrawingTool.eraser ||
+        (widget.currentTool == DrawingTool.pen &&
+            widget.currentSubTool != PenSubTool.tone &&
+            widget.currentSubTool != PenSubTool.stamp);
+    if (!eligible) return;
+    _holdEyedropperPointerId = event.pointer;
+    _holdEyedropperDownScreenPos = event.localPosition;
+    _holdEyedropperLastCanvasPos = canvasPos;
+    final ms = (settings.holdEyedropperSeconds * 1000).round().clamp(200, 3000);
+    _holdEyedropperTimer =
+        Timer(Duration(milliseconds: ms), () => _triggerHoldEyedropper(event.pointer));
+  }
+
+  /// 保留中のポインターが指定px以上動いたら、通常のストロークとして継続
+  /// させるため保留を解除する（誤発動防止）。
+  void _updateHoldEyedropper(PointerEvent event, Offset canvasPos) {
+    if (_holdEyedropperPointerId != event.pointer) return;
+    _holdEyedropperLastCanvasPos = canvasPos;
+    final down = _holdEyedropperDownScreenPos;
+    if (down != null && (event.localPosition - down).distance > _holdEyedropperMoveSlop) {
+      _disarmHoldEyedropper(event.pointer);
+    }
+  }
+
+  /// [pointer]を指定した場合はそのポインターの保留のみを解除する
+  /// （既に別ポインターの保留へ差し替わっている場合に誤って解除しないため）。
+  /// 省略した場合は無条件に解除する。
+  void _disarmHoldEyedropper([int? pointer]) {
+    if (pointer != null && _holdEyedropperPointerId != pointer) return;
+    _holdEyedropperTimer?.cancel();
+    _holdEyedropperTimer = null;
+    _holdEyedropperPointerId = null;
+    _holdEyedropperDownScreenPos = null;
+    _holdEyedropperLastCanvasPos = null;
+  }
+
+  /// 長押しが保留時間まで成立した時点で呼ばれる。それまでに描かれていた
+  /// 分のストロークをUndo履歴に残さず巻き戻し（TileManagerが記録している
+  /// 「変更前」タイルへ書き戻すだけ）、その位置の色をスポイトのように拾う。
+  /// このポインターは以後の描画ツール処理から除外する（残りの
+  /// onPointerMove/onPointerUpは無視され、既に離れた状態のまま扱われる）。
+  Future<void> _triggerHoldEyedropper(int pointer) async {
+    if (_holdEyedropperPointerId != pointer) return;
+    final canvasPos = _holdEyedropperLastCanvasPos;
+    _holdEyedropperTimer = null;
+    _holdEyedropperPointerId = null;
+    _holdEyedropperDownScreenPos = null;
+    _holdEyedropperLastCanvasPos = null;
+
+    final snapshot = _tileManager.endUndoRecording();
+    final layerKey = _undoRecordingLayerKey;
+    _undoRecordingLayerKey = null;
+    if (layerKey != null && snapshot.before.isNotEmpty) {
+      _tileManager.applyTileSnapshot(layerKey, snapshot.before);
+    }
+    _drawingEngine.endStroke();
+    _toolHandledPointers.remove(pointer);
+    _scheduleComposite();
+
+    if (canvasPos == null) return;
+    await _pickColor(canvasPos);
   }
 
   // ─── 図形ツール ───────────────────────────────────────────────────────
@@ -2124,6 +2218,9 @@ class _CanvasAreaState extends State<CanvasArea> {
             if (_touchCount == 3) _handleGesture(context, settings.threeFingerTap);
             if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
               _touchTransformActive = true;
+              // 2本指目が触れた時点で、既存の1本指用の長押しスポイト保留は
+              // 変形操作の意図と衝突するため解除する。
+              _disarmHoldEyedropper();
             }
             // 2本指以上でのキャンバス操作モード中は、この指を描画ツールへ
             // 渡さない（複数指での誤描画・二重ストローク防止）。
@@ -2163,6 +2260,7 @@ class _CanvasAreaState extends State<CanvasArea> {
             _activeTouchPositions.remove(e.pointer);
             if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
           }
+          _disarmHoldEyedropper(e.pointer);
           _toolHandledPointers.remove(e.pointer);
         },
         onPointerSignal: _handlePointerSignal,

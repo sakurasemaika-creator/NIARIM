@@ -109,6 +109,18 @@
   "gestureThreeFingerTap": "세 손가락 탭",
   "gestureTwoFingerSwipe": "두 손가락 좌우 스와이프",
   "gestureLongPress": "길게 누르기",
+  "gestureHoldEyedropperSection": "길게 눌러 색상 추출",
+  "gestureHoldEyedropperTitle": "길게 눌러 스포이트 실행",
+  "gestureHoldEyedropperHint": "펜이나 지우개로 그리는 동안 손가락을 움직이지 않고 잠시 누르고 있으면 그 위치의 색상을 현재 색상으로 가져옵니다.",
+  "gestureHoldEyedropperDurationLabel": "유지 시간",
+  "gestureHoldEyedropperSecondsValue": "{seconds}초",
+  "@gestureHoldEyedropperSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "gestureActionEyedropper": "스포이드",
   "gestureActionPanTool": "손 도구",
   "gestureActionEraserToggle": "지우개 전환",

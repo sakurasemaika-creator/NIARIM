@@ -109,6 +109,18 @@
   "gestureThreeFingerTap": "Toque con tres dedos",
   "gestureTwoFingerSwipe": "Deslizar horizontalmente con dos dedos",
   "gestureLongPress": "Pulsación larga",
+  "gestureHoldEyedropperSection": "Cuentagotas al mantener pulsado",
+  "gestureHoldEyedropperTitle": "Activar el cuentagotas al mantener pulsado",
+  "gestureHoldEyedropperHint": "Mientras dibujas con el lápiz o la goma, mantener el dedo quieto un momento toma el color de esa posición como color actual.",
+  "gestureHoldEyedropperDurationLabel": "Duración de espera",
+  "gestureHoldEyedropperSecondsValue": "{seconds} s",
+  "@gestureHoldEyedropperSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "gestureActionEyedropper": "Cuentagotas",
   "gestureActionPanTool": "Herramienta de mano",
   "gestureActionEraserToggle": "Alternar goma de borrar",

@@ -109,6 +109,18 @@
   "gestureThreeFingerTap": "Three-Finger Tap",
   "gestureTwoFingerSwipe": "Two-Finger Swipe Left/Right",
   "gestureLongPress": "Long Press",
+  "gestureHoldEyedropperSection": "Hold to sample color",
+  "gestureHoldEyedropperTitle": "Sample color on hold",
+  "gestureHoldEyedropperHint": "While drawing with the pen or eraser, holding still for a moment picks up the color under your finger as the current color.",
+  "gestureHoldEyedropperDurationLabel": "Hold duration",
+  "gestureHoldEyedropperSecondsValue": "{seconds}s",
+  "@gestureHoldEyedropperSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "gestureActionEyedropper": "Eyedropper",
   "gestureActionPanTool": "Pan Tool",
   "gestureActionEraserToggle": "Toggle Eraser",

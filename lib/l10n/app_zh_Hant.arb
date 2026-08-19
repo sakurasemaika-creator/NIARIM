@@ -109,6 +109,18 @@
   "gestureThreeFingerTap": "三指點按",
   "gestureTwoFingerSwipe": "雙指左右滑動",
   "gestureLongPress": "長按",
+  "gestureHoldEyedropperSection": "長按取色",
+  "gestureHoldEyedropperTitle": "長按啟動取色",
+  "gestureHoldEyedropperHint": "使用畫筆或橡皮擦繪圖時，手指不動按住一段時間即可拾取該處顏色並設為目前顏色。",
+  "gestureHoldEyedropperDurationLabel": "保持時長",
+  "gestureHoldEyedropperSecondsValue": "{seconds}秒",
+  "@gestureHoldEyedropperSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "gestureActionEyedropper": "滴管",
   "gestureActionPanTool": "手形工具",
   "gestureActionEraserToggle": "切換橡皮擦",

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 
@@ -31,6 +32,56 @@ class GestureSettingsScreen extends StatelessWidget {
                     options: GestureAction.values),
                 const Divider(height: 1),
                 _item(context, l10n.gestureLongPress, settings.longPress, (a) => settings.setGesture(GestureType.longPress, a)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(l10n.gestureHoldEyedropperSection,
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
+          Card(
+            child: Column(
+              children: [
+                SwitchListTile(
+                  title: Text(l10n.gestureHoldEyedropperTitle),
+                  subtitle: Text(l10n.gestureHoldEyedropperHint, style: const TextStyle(fontSize: 11)),
+                  value: settings.holdEyedropperEnabled,
+                  onChanged: (v) => settings.setHoldEyedropperEnabled(v),
+                ),
+                if (settings.holdEyedropperEnabled) ...[
+                  const Divider(height: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Row(
+                      children: [
+                        Expanded(child: Text(l10n.gestureHoldEyedropperDurationLabel)),
+                        Slider(
+                          value: settings.holdEyedropperSeconds,
+                          min: 0.2,
+                          max: 3.0,
+                          divisions: 28,
+                          onChanged: (v) => settings.setHoldEyedropperSeconds(v),
+                        ),
+                        SizedBox(
+                          width: 44,
+                          child: EditableSliderValue(
+                            text: l10n.gestureHoldEyedropperSecondsValue(
+                                settings.holdEyedropperSeconds.toStringAsFixed(1)),
+                            value: settings.holdEyedropperSeconds,
+                            min: 0.2,
+                            max: 3.0,
+                            isInt: false,
+                            title: l10n.gestureHoldEyedropperDurationLabel,
+                            onChanged: (v) => settings.setHoldEyedropperSeconds(v.toDouble()),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -67,6 +67,29 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ─── 長押しスポイト（設定画面「ジェスチャー」） ─────────────────────────
+  // ペン・消しゴムでの描画中、指を動かさず一定時間押し続けるとその場の色を
+  // スポイトのように拾う機能のON/OFFと保持秒数。既定はON。
+  bool _holdEyedropperEnabled = true;
+  double _holdEyedropperSeconds = 0.5;
+
+  bool get holdEyedropperEnabled => _holdEyedropperEnabled;
+  double get holdEyedropperSeconds => _holdEyedropperSeconds;
+
+  Future<void> setHoldEyedropperEnabled(bool value) async {
+    _holdEyedropperEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hold_eyedropper_enabled', value);
+    notifyListeners();
+  }
+
+  Future<void> setHoldEyedropperSeconds(double value) async {
+    _holdEyedropperSeconds = value.clamp(0.2, 3.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('hold_eyedropper_seconds', _holdEyedropperSeconds);
+    notifyListeners();
+  }
+
   // ─── タイムラインモードのプレビュー欄の高さ ───────────────────────────
   // プレビュー下端のドラッグハンドルで変更できる、プレビュー欄が占める
   // 縦方向の割合（0.0〜1.0）。プロジェクトごとではなくアプリ全体で共通の
@@ -256,6 +279,8 @@ class SettingsService extends ChangeNotifier {
     _bucketTolerance = prefs.getDouble('bucket_tolerance') ?? 30.0;
     _bucketExpandPx = prefs.getInt('bucket_expand_px') ?? 0;
     _bucketFillUnderLine = prefs.getBool('bucket_fill_under_line') ?? false;
+    _holdEyedropperEnabled = prefs.getBool('hold_eyedropper_enabled') ?? true;
+    _holdEyedropperSeconds = prefs.getDouble('hold_eyedropper_seconds') ?? 0.5;
     _timelinePreviewHeightFraction =
         prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
     _endCardDefaultHiddenForPremium = prefs.getBool('endcard_default_hidden_for_premium') ?? false;

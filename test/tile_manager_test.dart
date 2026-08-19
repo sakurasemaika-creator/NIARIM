@@ -161,6 +161,28 @@ void main() {
     imgAfter.dispose();
   });
 
+  test('beginUndoRecording中の変更をendUndoRecordingのbeforeスナップショットへ'
+      '巻き戻すと、Undo履歴を経由せず描画前の状態へ戻せる（長押しスポイトの'
+      'ストローク取り消しが依拠する仕組み）', () async {
+    final tm = TileManager(canvasWidth: 4, canvasHeight: 4);
+    // 記録開始前：まだ何も描かれていない状態
+    tm.beginUndoRecording('layerA');
+    final tile = tm.getOrCreateTile('layerA', 0, 0);
+    tm.blendPixel(tile, 0, 0, 255, 0, 0, 255);
+    final imgDuring = await tm.compositeLayerToImage('layerA');
+    expect(await pixelAt(imgDuring, 0, 0, 4), const ui.Color.fromARGB(255, 255, 0, 0));
+    imgDuring.dispose();
+
+    // 巻き戻し：Undoスタックへは積まず、beforeスナップショットを直接適用する。
+    final snapshot = tm.endUndoRecording();
+    expect(snapshot.before.containsKey('0,0'), isTrue);
+    tm.applyTileSnapshot('layerA', snapshot.before);
+
+    final imgAfter = await tm.compositeLayerToImage('layerA');
+    expect(await pixelAt(imgAfter, 0, 0, 4), const ui.Color.fromARGB(0, 0, 0, 0));
+    imgAfter.dispose();
+  });
+
   test('importAllは全キャッシュを無効化する', () async {
     final tm = TileManager(canvasWidth: 4, canvasHeight: 4);
     final tile = tm.getOrCreateTile('layerA', 0, 0);

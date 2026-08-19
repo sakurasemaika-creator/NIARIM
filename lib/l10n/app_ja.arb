@@ -171,6 +171,18 @@
   "gestureThreeFingerTap": "3本指タップ",
   "gestureTwoFingerSwipe": "2本指スワイプ左右",
   "gestureLongPress": "長押し",
+  "gestureHoldEyedropperSection": "長押しスポイト",
+  "gestureHoldEyedropperTitle": "長押しでスポイトを起動",
+  "gestureHoldEyedropperHint": "ペン・消しゴムで描画中、指を動かさず一定時間押し続けると、その場の色を拾って現在色に反映します。",
+  "gestureHoldEyedropperDurationLabel": "保持時間",
+  "gestureHoldEyedropperSecondsValue": "{seconds}秒",
+  "@gestureHoldEyedropperSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "gestureActionEyedropper": "スポイト",
   "gestureActionPanTool": "手のひらツール",
   "gestureActionEraserToggle": "消しゴム切替",

@@ -109,6 +109,18 @@
   "gestureThreeFingerTap": "Appui à trois doigts",
   "gestureTwoFingerSwipe": "Balayage horizontal à deux doigts",
   "gestureLongPress": "Appui long",
+  "gestureHoldEyedropperSection": "Pipette par appui long",
+  "gestureHoldEyedropperTitle": "Activer la pipette par appui long",
+  "gestureHoldEyedropperHint": "En dessinant avec le stylo ou la gomme, maintenir le doigt immobile un instant prélève la couleur sous le doigt comme couleur actuelle.",
+  "gestureHoldEyedropperDurationLabel": "Durée de maintien",
+  "gestureHoldEyedropperSecondsValue": "{seconds} s",
+  "@gestureHoldEyedropperSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "gestureActionEyedropper": "Pipette",
   "gestureActionPanTool": "Outil main",
   "gestureActionEraserToggle": "Basculer la gomme",
