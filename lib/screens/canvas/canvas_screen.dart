@@ -590,6 +590,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 }),
                 // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
                 onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
+                // 投げ縄塗り：ペンのサブツールではなくバケツ長押しメニューから
+                // 選べるようにする（投げ縄で囲った範囲を塗る点でバケツ塗りに
+                // 近いため）。
+                onLassoFillSelected: () => setState(() {
+                  _currentSubTool = PenSubTool.lassoFill;
+                  _currentTool = DrawingTool.lasso;
+                }),
               ),
             if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
             // フレーム一覧の折りたたみ用ハンドル（描画領域を

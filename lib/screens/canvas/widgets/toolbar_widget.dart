@@ -9,6 +9,8 @@ import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/responsive.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
+import 'eraser_icon.dart';
+import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
 class ToolbarWidget extends StatelessWidget {
   final DrawingTool currentTool;
@@ -24,6 +26,10 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onQuickToolLongPress;
   // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
   final VoidCallback onSaveTap;
+  // 投げ縄塗り選択（ペンのサブツールではなく、バケツ長押しメニューから
+  // 選べるようにするための導線。投げ縄で囲った範囲を塗りつぶす点で
+  // バケツ塗りに近い性質を持つため）。
+  final VoidCallback onLassoFillSelected;
   // スタンプ選択中かどうか（仕様書17：色アイコンに🚫重ね表示・タップで専用トースト）
   final bool isStampSelected;
 
@@ -41,6 +47,7 @@ class ToolbarWidget extends StatelessWidget {
     required this.onQuickToolTap,
     required this.onQuickToolLongPress,
     required this.onSaveTap,
+    required this.onLassoFillSelected,
     this.isStampSelected = false,
   });
 
@@ -57,10 +64,17 @@ class ToolbarWidget extends StatelessWidget {
             child: _toolButton(context, Icons.brush, DrawingTool.pen, l10n.toolbarPenTooltip),
           ),
         ),
-      // 消しゴム用のアイコン。以前使っていたcrop_square（四角形の枠）は
-      // 選択ツール側へ移し、消しゴムには見た目でそれと分かる専用アイコンを
-      // 割り当てる。
-      ToolbarItemId.eraser => _toolButton(context, Icons.backspace_outlined, DrawingTool.eraser, l10n.toolbarItemEraser),
+      // 消しゴム用のアイコン。Material Iconsに適切なグリフがないため、
+      // 消しゴムらしい斜めの角丸長方形を自作アイコン（EraserIcon）で描画する。
+      ToolbarItemId.eraser => GestureDetector(
+          onDoubleTap: () => _showBriefDescription(context, l10n.toolbarItemEraser),
+          child: CanvasIconButton(
+            iconBuilder: (color) => EraserIcon(size: 20, color: color),
+            onPressed: () => onToolSelected(DrawingTool.eraser),
+            tooltip: l10n.toolbarItemEraser,
+            selected: currentTool == DrawingTool.eraser,
+          ),
+        ),
       // バケツボタン：長押しでベタ塗り／トーン切り替えメニュー表示（仕様書04・17）
       ToolbarItemId.bucket => FirstUseTooltip(
           tooltipKey: 'bucket_tool',
@@ -228,13 +242,13 @@ class ToolbarWidget extends StatelessWidget {
     final isSelected = currentTool == DrawingTool.selectRect ||
         currentTool == DrawingTool.selectLasso ||
         currentTool == DrawingTool.selectMagicWand;
-    // 矩形選択（デフォルト）には、以前消しゴムに使っていたcrop_square
-    // （四角形の枠）を移す（矩形選択の見た目に合っているため。
-    // 消しゴムには専用のink_eraserアイコンを新たに割り当てた）。
+    // 矩形選択（デフォルト）にはhighlight_alt（角に選択ハンドルが付いた
+    // 矩形）を使う。以前のcrop_square（ただの四角い枠）よりも「範囲選択」
+    // であることが一目で伝わるアイコン。
     final icon = switch (currentTool) {
       DrawingTool.selectLasso => Icons.gesture,
       DrawingTool.selectMagicWand => Icons.auto_awesome,
-      _ => Icons.crop_square,
+      _ => Icons.highlight_alt,
     };
     return GestureDetector(
       onLongPress: () => _showSelectMenu(context, l10n),
@@ -277,6 +291,28 @@ class ToolbarWidget extends StatelessWidget {
                       onTap: () {
                         toneService.setBucketUseTone(false);
                         Navigator.pop(ctx);
+                      },
+                    ),
+                    // 投げ縄塗り：投げ縄で囲った範囲を塗りつぶす点でバケツ塗りに
+                    // 近い性質を持つため、ペンではなくここから選べるようにする。
+                    // 選択後は塗りつぶし方（ベタ塗り／トーン）を選ぶシートを続けて
+                    // 開く。「囲って塗る」モード（閉じた線画の内側だけを塗る）は
+                    // ツール選択後、上部バーのスイッチで切り替えられる。
+                    ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.gesture, size: 18),
+                      title: Text(l10n.penSubToolTabLassoFill, style: const TextStyle(fontSize: 13)),
+                      onTap: () {
+                        onLassoFillSelected();
+                        Navigator.pop(ctx);
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (sheetCtx) => SizedBox(
+                            height: MediaQuery.sizeOf(sheetCtx).height * 0.6,
+                            child: LassoFillToneSheet(onClose: () => Navigator.pop(sheetCtx)),
+                          ),
+                        );
                       },
                     ),
                     const Divider(height: 1),

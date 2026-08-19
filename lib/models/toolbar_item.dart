@@ -50,13 +50,16 @@ extension ToolbarItemLabel on ToolbarItemId {
 /// ワークスペース設定＞ツールバー編集のプレビュー表示用アイコン
 /// （実際のキャンバス画面のツールバー、toolbar_widget.dartと同じ
 /// アイコンを使う。選択ツールは既定状態＝矩形選択のアイコンとする）。
-/// 消しゴムと選択ツールのアイコンはタスク#95で入れ替えた
-/// （消しゴムに割り当てられていたauto_fix_highが「魔法の杖」風で、
-/// 選択ツールの自動選択〔マジックワンド〕用アイコンと紛らわしかった）。
+/// 選択ツールはhighlight_alt（角に選択ハンドルが付いた矩形）を使う
+/// （以前のauto_fix_highは「魔法の杖」風で、選択ツールの自動選択
+/// 〔マジックワンド〕用アイコンと紛らわしかったため変更）。消しゴムは
+/// このプレビュー用途では標準アイコン（backspace_outlined）を使うが、
+/// 実際のツールバー本体（toolbar_widget.dart）では専用の自作アイコン
+/// （EraserIcon）を使っている。
 extension ToolbarItemIcon on ToolbarItemId {
   IconData get icon => switch (this) {
         ToolbarItemId.pen => Icons.brush,
-        ToolbarItemId.eraser => Icons.crop_square,
+        ToolbarItemId.eraser => Icons.backspace_outlined,
         ToolbarItemId.bucket => Icons.format_color_fill,
         ToolbarItemId.eyedropper => Icons.colorize,
         // 指先ツール（歪み）：人差し指を立てたアイコンを使う
@@ -64,7 +67,7 @@ extension ToolbarItemIcon on ToolbarItemId {
         // 手のひらツール〔画面移動〕の方へ移した）。
         ToolbarItemId.finger => Icons.pan_tool_alt,
         ToolbarItemId.pan => Icons.back_hand,
-        ToolbarItemId.select => Icons.auto_fix_high,
+        ToolbarItemId.select => Icons.highlight_alt,
         ToolbarItemId.transform => Icons.transform,
         ToolbarItemId.text => Icons.text_fields,
         ToolbarItemId.shape => Icons.category,

@@ -10,7 +10,11 @@ import 'package:flutter/material.dart';
 /// ストローク）を疑似的に作り、どんな背景色のキャンバス上でも視認できる
 /// ようにしている。
 class CanvasIconButton extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  // Material Iconsに適切なグリフがないツール（消しゴム等）向けに、
+  // Canvas描画の自作アイコンを差し込めるようにする。指定時は[icon]より
+  // 優先される。
+  final Widget Function(Color color)? iconBuilder;
   final VoidCallback? onPressed;
   final String tooltip;
   final bool selected;
@@ -18,18 +22,22 @@ class CanvasIconButton extends StatelessWidget {
 
   const CanvasIconButton({
     super.key,
-    required this.icon,
+    this.icon,
+    this.iconBuilder,
     required this.onPressed,
     required this.tooltip,
     this.selected = false,
     this.iconSize = 20,
-  });
+  }) : assert(icon != null || iconBuilder != null, 'iconかiconBuilderのどちらかを指定してください');
 
   static const _offsets = [
     Offset(-1, -1), Offset(0, -1), Offset(1, -1),
     Offset(-1, 0), Offset(1, 0),
     Offset(-1, 1), Offset(0, 1), Offset(1, 1),
   ];
+
+  Widget _renderIcon(Color color) =>
+      iconBuilder != null ? iconBuilder!(color) : Icon(icon, size: iconSize, color: color);
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +62,9 @@ class CanvasIconButton extends StatelessWidget {
                   Positioned(
                     left: o.dx,
                     top: o.dy,
-                    child: Icon(icon, size: iconSize, color: Colors.black.withValues(alpha: 0.55)),
+                    child: _renderIcon(Colors.black.withValues(alpha: 0.55)),
                   ),
-                Icon(icon, size: iconSize, color: iconColor),
+                _renderIcon(iconColor),
               ],
             ),
           ),

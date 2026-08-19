@@ -10,7 +10,9 @@ import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 
 /// ペンツール長押し・上スワイプで表示されるサブツールタブUI
-/// ブラシ / トーン / スタンプ / 投げ縄塗り
+/// ブラシ / トーン / スタンプ
+/// （投げ縄塗りは、投げ縄で囲った範囲を塗る点でバケツ塗りに近い性質を
+/// 持つため、ペンのサブツールからバケツ長押しメニューへ移した）。
 class PenSubToolPanel extends StatefulWidget {
   final DrawingTool currentTool;
   final PenSubTool currentSubTool;
@@ -18,7 +20,7 @@ class PenSubToolPanel extends StatefulWidget {
   final VoidCallback onClose;
   // ブラシ/トーン/スタンプの全機能管理パネル（フォルダ・自作・検索・
   // 読み込み書き出し、仕様書17）を開く。現在表示中のタブに応じて呼び出し側で
-  // 対象を判断する。投げ縄塗りタブには管理パネルが存在しないためnull許容。
+  // 対象を判断する。
   final void Function(PenSubTool subTool)? onManage;
 
   const PenSubToolPanel({
@@ -45,9 +47,12 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
       PenSubTool.brush => 0,
       PenSubTool.tone => 1,
       PenSubTool.stamp => 2,
-      PenSubTool.lassoFill => 3,
+      // 投げ縄塗り選択中にペンサブツールパネルが開かれることはない
+      // （投げ縄塗りはバケツ長押しメニューから選ぶため）が、念のため
+      // ブラシタブへフォールバックする。
+      PenSubTool.lassoFill => 0,
     };
-    _tabController = TabController(length: 4, vsync: this, initialIndex: initialIndex);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: initialIndex);
     // TabControllerのindex変化をonSubToolSelectedに通知
     _tabController.addListener(_onTabChanged);
   }
@@ -58,7 +63,6 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
       0 => PenSubTool.brush,
       1 => PenSubTool.tone,
       2 => PenSubTool.stamp,
-      3 => PenSubTool.lassoFill,
       _ => PenSubTool.brush,
     };
     widget.onSubToolSelected(subTool);
@@ -100,17 +104,11 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                         message: l10n.penSubToolStampTooltipMessage,
                         child: Tab(text: l10n.penSubToolTabStamp),
                       ),
-                      FirstUseTooltip(
-                        tooltipKey: 'pen_subtool_lasso',
-                        message: l10n.penSubToolLassoTooltipMessage,
-                        child: Tab(text: l10n.penSubToolTabLassoFill),
-                      ),
                     ],
                   ),
                 ),
-                // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く
-                // （仕様書17）。投げ縄塗りタブでは非表示。
-                if (widget.onManage != null && _tabController.index != 3)
+                // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く（仕様書17）。
+                if (widget.onManage != null)
                   IconButton(
                     icon: const Icon(Icons.tune, size: 16),
                     tooltip: l10n.penSubToolManageTooltip,
@@ -133,7 +131,6 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                   _BrushTab(onClose: widget.onClose),
                   _ToneTab(onClose: widget.onClose),
                   _StampTab(onClose: widget.onClose),
-                  _LassoFillTab(onClose: widget.onClose),
                 ],
               ),
             ),
@@ -369,11 +366,11 @@ class _StampTab extends StatelessWidget {
   }
 }
 
-/// 投げ縄塗りタブ
-/// ベタ塗り（一番上のボタン）＋トーン一覧
-class _LassoFillTab extends StatelessWidget {
+/// 投げ縄塗りの塗りつぶし方選択（ベタ塗り／トーン一覧）。バケツ長押し
+/// メニューから「投げ縄塗り」を選んだ直後に表示するボトムシートとして使う。
+class LassoFillToneSheet extends StatelessWidget {
   final VoidCallback onClose;
-  const _LassoFillTab({required this.onClose});
+  const LassoFillToneSheet({super.key, required this.onClose});
 
   @override
   Widget build(BuildContext context) {
