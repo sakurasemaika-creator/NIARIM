@@ -130,7 +130,7 @@
   "gestureActionOnionSkinToggle": "Activar/desactivar papel cebolla",
   "gestureActionNone": "No hacer nada",
   "homeDrawerAppTagline": "App de creación de animación dibujada a mano",
-  "homeDrawerAutofillPreset": "Preajustes de coloreado automático",
+  "homeDrawerAutofillPreset": "Personalizados de coloreado automático",
   "homeDrawerSettings": "Ajustes",
   "homeDrawerHelp": "Ayuda",
   "homeDrawerTips": "Consejos",
@@ -175,7 +175,7 @@
   "transferItemSettings": "Ajustes",
   "transferItemMaterials": "Materiales",
   "transferItemBrush": "Pinceles",
-  "transferItemPresets": "Preajustes",
+  "transferItemPresets": "Personalizados de relleno automático",
   "transferItemTheme": "Tema de interfaz",
   "transferImport": "Importar",
   "transferExport": "Exportar",
@@ -192,8 +192,8 @@
   "creativeAssetNameLabel": "Nombre",
   "commonAdd": "Añadir",
   "commonSearch": "Buscar",
-  "autofillPresetSelectionTitle": "Ajustes preestablecidos a usar",
-  "autofillPresetSelectionHint": "Elegir solo los ajustes preestablecidos de autorrelleno usados en este proyecto mantiene la lista de asignación de partes más corta y fácil de revisar.",
+  "autofillPresetSelectionTitle": "Personalizados a usar",
+  "autofillPresetSelectionHint": "Elegir solo los personalizados de relleno automático usados en este proyecto mantiene la lista de asignación de partes más corta y fácil de revisar.",
   "autofillPresetSelectionPartCount": "{count} partes",
   "@autofillPresetSelectionPartCount": {
     "placeholders": {
@@ -202,7 +202,7 @@
       }
     }
   },
-  "autofillPresetSelectionButton": "Seleccionar ajustes preestablecidos a usar",
+  "autofillPresetSelectionButton": "Seleccionar personalizados a usar",
   "autofillPresetSelectionAllLabel": "Usar todos",
   "autofillPresetSelectionCountLabel": "{count} seleccionados",
   "@autofillPresetSelectionCountLabel": {
@@ -374,7 +374,7 @@
   "helpCommonLayerTitle": "Capa común",
   "helpCommonLayerDesc": "Las capas normales son independientes por fotograma, pero una capa común comparte el mismo contenido en varios fotogramas y escenas. Los elementos que no se mueven entre fotogramas, como los fondos, se pueden dibujar una sola vez en lugar de volver a dibujarlos en cada fotograma. Se muestra como una pista dedicada en la línea de tiempo. Convierte una capa normal en una capa común (que sigue mostrando el mismo contenido en varios fotogramas). También puedes fusionar las capas visibles en una sola antes de convertirla. Te ahorra volver a dibujar algo como un fondo que se mantiene igual en cada fotograma.",
   "helpAutoFillTitle": "Coloreado automático",
-  "helpAutoFillDesc": "Crea una capa de coloreado automático debajo de la capa de líneas y la colorea automáticamente según un \"preajuste de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización (❗) en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización (❗). Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un preset de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan presets, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los presets usados en este proyecto, manteniendo la lista ordenada y fácil de elegir.",
+  "helpAutoFillDesc": "Crea una capa de coloreado automático debajo de la capa de líneas y la colorea automáticamente según un \"personalizado de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización (❗) en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización (❗). Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un personalizado de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan personalizados, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los presets usados en este proyecto, manteniendo la lista ordenada y fácil de elegir.",
   "helpOnionSkinTitle": "Papel cebolla",
   "helpOnionSkinDesc": "Superpone en semitransparencia los fotogramas anterior y posterior al que estás editando, para que puedas dibujar mientras compruebas cómo se conecta el movimiento. Puedes ajustar cuántos fotogramas se muestran (antes y después) y su color y opacidad en los ajustes de rendimiento.",
   "helpRulerTitle": "Regla",
@@ -410,7 +410,7 @@
   "helpShareTitle": "Compartir (.niashare)",
   "helpShareDesc": "Un formato de archivo dedicado para entregar un proyecto a otra persona (o a otro dispositivo tuyo). Cuando el destinatario abre este archivo, se duplica y se añade a su propia lista de proyectos. El archivo .niashare original en sí no se modifica.",
   "helpTransferTitle": "Transferencia (.niatra)",
-  "helpTransferDesc": "Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, preajustes, tema de interfaz y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación. Si quieres entregar un proyecto individual, usa \"Compartir (.niashare)\" en su lugar.",
+  "helpTransferDesc": "Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, personalizados, tema de interfaz y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación. Si quieres entregar un proyecto individual, usa \"Compartir (.niashare)\" en su lugar.",
   "helpVideoExportTitle": "Exportación de vídeo (MP4, WebM, GIF)",
   "helpVideoExportDesc": "Exporta tu obra como un video MP4 estandar. La version gratuita tiene un limite de duracion (90 segundos) y anade automaticamente una tarjeta final (logotipo de la app) al final del video. Un formato de vídeo que se puede exportar conservando el canal alfa (las partes transparentes del fondo). La reproducción transparente solo funciona en entornos de reproducción compatibles. Ideal para superponer como material en otras aplicaciones. Exporta como GIF animado. Como se reproduce en bucle automaticamente, es ideal para compartir de forma casual en redes sociales. Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.",
   "helpTransparentWebmTitle": "WebM transparente",
@@ -1193,10 +1193,10 @@
   "autofillGradientTypeLinear": "Lineal",
   "autofillGradientTypeRadialCenterOut": "Radial: centro → exterior",
   "autofillGradientTypeRadialOutCenter": "Radial: exterior → centro",
-  "autofillPresetScreenTitle": "Preajustes de relleno automático",
-  "autofillPresetSearchHint": "Buscar preajustes",
-  "autofillPresetEmptyFavorites": "No hay preajustes favoritos",
-  "autofillPresetEmpty": "No hay preajustes",
+  "autofillPresetScreenTitle": "Personalizados de relleno automático",
+  "autofillPresetSearchHint": "Buscar personalizados",
+  "autofillPresetEmptyFavorites": "No hay personalizados favoritos",
+  "autofillPresetEmpty": "No hay personalizados",
   "autofillPresetEmptyHint": "Toca + en la parte inferior derecha para crear uno",
   "autofillPresetPartsCount": "{count} partes",
   "@autofillPresetPartsCount": {
@@ -1206,9 +1206,9 @@
       }
     }
   },
-  "autofillPresetNewDialogTitle": "Nuevo preajuste",
-  "autofillPresetNameLabel": "Nombre del preajuste",
-  "autofillPresetRenameDialogTitle": "Renombrar preajuste",
+  "autofillPresetNewDialogTitle": "Nuevo personalizado",
+  "autofillPresetNameLabel": "Nombre del personalizado",
+  "autofillPresetRenameDialogTitle": "Renombrar personalizado",
   "autofillPresetDeleteConfirmTitle": "¿Eliminar \"{name}\"?",
   "@autofillPresetDeleteConfirmTitle": {
     "placeholders": {
@@ -1683,7 +1683,7 @@
   "layerPanelAutofillColorUpdateNote": "✳ Bloquea la opacidad y rellena con el color más reciente. Se conserva la forma actual de la capa de relleno automático.",
   "layerPanelExecuteButton": "Ejecutar",
   "layerPanelAutofillPartMissingSnackbar": "No hay ninguna parte asignada. Asigna una desde «Asignar parte».",
-  "layerPanelAutofillPresetMissingSnackbar": "No se encontró una parte de preajuste correspondiente.",
+  "layerPanelAutofillPresetMissingSnackbar": "No se encontró una parte de personalizado correspondiente.",
   "layerPanelAutofillLayerNameSuffix": "{name} (relleno automático)",
   "@layerPanelAutofillLayerNameSuffix": {
     "placeholders": {

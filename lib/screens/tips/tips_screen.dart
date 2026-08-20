@@ -206,11 +206,14 @@ class _TipListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // 図解は一覧の時点では表示しない（ポップアップを開いてから表示する）。
+    // 40×40の小さな領域に押し込めて表示すると、画面全体を模した図解が
+    // つぶれて崩れて見えるうえ、60件超の一覧すべてを常時描画するのは
+    // 無駄が大きいため、詳細ポップアップ（_TipDetailDialog）側でのみ描画する。
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
       child: ListTile(
         dense: true,
-        leading: SizedBox(width: 40, height: 40, child: TipDiagram(tip.diagram)),
         title: Text(tip.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 13)),
         trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
         onTap: () => showDialog(context: context, builder: (_) => _TipDetailDialog(tip: tip)),

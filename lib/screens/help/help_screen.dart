@@ -51,14 +51,14 @@ class _HelpScreenState extends State<HelpScreen> {
         // フォント管理の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         // font_settings_screen.dartのHelpButtonが'テキストツール'を参照する
         // よう合わせて変更済み。
-        _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 6)),
-        _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 5)),
+        _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 6, icon: Icons.text_fields)),
+        _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 5, icon: Icons.restart_alt)),
         // スタンプの回転・拡大縮小の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ペンサブツール', title: l10n.helpPenSubToolTitle, description: l10n.helpPenSubToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 4)),
         // 選択範囲の変形と対になる新機能（仕様書28）。
-        _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.topBar, 1)),
+        _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.topBar, 1, icon: Icons.transform)),
         _HelpEntry(topicKey: 'カラーピッカー', title: l10n.helpColorPickerTitle, description: l10n.helpColorPickerDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: 'ブラシのお気に入り', title: l10n.helpBrushFavoriteTitle, description: l10n.helpBrushFavoriteDesc, category: l10n.helpCategoryBrush, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
 
@@ -68,7 +68,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'クリッピング', title: l10n.helpClippingTitle, description: l10n.helpClippingDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 2)),
         // 「レイヤーの共通化」の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 3)),
-        _HelpEntry(topicKey: 'レイヤーフォルダ', title: l10n.helpLayerFolderTitle, description: l10n.helpLayerFolderDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0)),
+        _HelpEntry(topicKey: 'レイヤーフォルダ', title: l10n.helpLayerFolderTitle, description: l10n.helpLayerFolderDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0, icon: Icons.folder_outlined)),
         // 自動塗り実行・自動塗りの線画色設定・自動塗りプリセット絞り込みの説明は、
         // 独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: '自動塗り', title: l10n.helpAutoFillTitle, description: l10n.helpAutoFillDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 2)),
@@ -94,8 +94,8 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'フレーム操作', title: l10n.helpFrameOperationsTitle, description: l10n.helpFrameOperationsDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 2)),
         _HelpEntry(topicKey: '素材クリップ', title: l10n.helpMaterialClipTitle, description: l10n.helpMaterialClipDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 3)),
         _HelpEntry(topicKey: '素材一覧', title: l10n.helpMaterialListTitle, description: l10n.helpMaterialListDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1)),
-        _HelpEntry(topicKey: '音声クリップ', title: l10n.helpAudioClipTitle, description: l10n.helpAudioClipDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 4)),
-        _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 1)),
+        _HelpEntry(topicKey: '音声クリップ', title: l10n.helpAudioClipTitle, description: l10n.helpAudioClipDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 4, icon: Icons.audiotrack)),
+        _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 1, icon: Icons.videocam)),
         // 演出フィルターの適用順・動くノイズフィルター・雨フィルターの説明は、
         // 独立項目にせずこちらへ統合済み（仕様書28：個々のフィルターを独立項目に
         // せず「演出フィルター」の親項目内へまとめる）。
@@ -109,10 +109,10 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '自動保存', title: l10n.helpAutoSaveTitle, description: l10n.helpAutoSaveDesc, category: l10n.helpCategorySave, diagram: const HelpDiagramSpec(HelpScreenTemplate.saveList, 0)),
         _HelpEntry(topicKey: 'セーブスロット', title: l10n.helpSaveSlotTitle, description: l10n.helpSaveSlotDesc, category: l10n.helpCategorySave, diagram: const HelpDiagramSpec(HelpScreenTemplate.saveList, 1)),
         _HelpEntry(topicKey: 'セーブツリー', title: l10n.helpSaveTreeTitle, description: l10n.helpSaveTreeDesc, category: l10n.helpCategorySave, diagram: const HelpDiagramSpec(HelpScreenTemplate.saveList, 1)),
-        _HelpEntry(topicKey: 'フォルダ', title: l10n.helpFolderTitle, description: l10n.helpFolderDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0)),
-        _HelpEntry(topicKey: 'ゴミ箱', title: l10n.helpTrashTitle, description: l10n.helpTrashDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1)),
+        _HelpEntry(topicKey: 'フォルダ', title: l10n.helpFolderTitle, description: l10n.helpFolderDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0, icon: Icons.folder)),
+        _HelpEntry(topicKey: 'ゴミ箱', title: l10n.helpTrashTitle, description: l10n.helpTrashDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1, icon: Icons.delete_outline)),
         _HelpEntry(topicKey: '共有（.niashare）', title: l10n.helpShareTitle, description: l10n.helpShareDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 2)),
-        _HelpEntry(topicKey: '引き継ぎ（.niatra）', title: l10n.helpTransferTitle, description: l10n.helpTransferDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 3)),
+        _HelpEntry(topicKey: '引き継ぎ（.niatra）', title: l10n.helpTransferTitle, description: l10n.helpTransferDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 3, icon: Icons.sync_alt)),
 
         // ── 書き出し ───────────────────────────────────────────
         // 透過WebM・GIF書き出し・無料会員の尺制限の説明は、独立項目にせず
@@ -124,12 +124,12 @@ class _HelpScreenState extends State<HelpScreen> {
 
         // ── プレミアム ──────────────────────────────────────────
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
-        _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0)),
+        _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0, icon: Icons.workspace_premium_outlined)),
 
         // ── プロジェクト管理 ──────────────────────────────────────
         _HelpEntry(topicKey: 'ホーム画面', title: l10n.helpHomeScreenTitle, description: l10n.helpHomeScreenDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0)),
-        _HelpEntry(topicKey: '新規プロジェクト作成', title: l10n.helpNewProjectTitle, description: l10n.helpNewProjectDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1)),
-        _HelpEntry(topicKey: 'プロジェクト詳細画面', title: l10n.helpProjectDetailTitle, description: l10n.helpProjectDetailDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 2)),
+        _HelpEntry(topicKey: '新規プロジェクト作成', title: l10n.helpNewProjectTitle, description: l10n.helpNewProjectDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1, icon: Icons.add_circle_outline)),
+        _HelpEntry(topicKey: 'プロジェクト詳細画面', title: l10n.helpProjectDetailTitle, description: l10n.helpProjectDetailDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 2, icon: Icons.info_outline)),
 
         // ── 設定画面 ────────────────────────────────────────────
         // 各種設定画面の説明を1箇所にまとめた（仕様書28：ヘルプページの

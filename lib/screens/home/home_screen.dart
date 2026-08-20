@@ -303,7 +303,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       child: Row(
                         children: [
                           FilterChip(
-                            label: Text(l10n.homeFavoritesOnly),
+                            label: Text(l10n.homeFavoritesOnly,
+                                style: const TextStyle(fontFamily: 'Kuramubon')),
                             selected: _showFavoritesOnly,
                             onSelected: (v) => setState(() => _showFavoritesOnly = v),
                           ),

@@ -74,6 +74,19 @@ class _TipDiagramPainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1.8;
 
+  /// [icon]の実際のグリフ（Material Icons）をCanvasへ直接描画する
+  /// （help_diagrams.dartの_drawIconと同じ手法。実アイコンを使うことで
+  /// 抽象的な図形だけよりも実画面に近い印象にする）。
+  void _drawIcon(Canvas canvas, IconData icon, Offset center, {double size = 16, Color? color}) {
+    final tp = TextPainter(textDirection: TextDirection.ltr)
+      ..text = TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(fontSize: size, fontFamily: icon.fontFamily, package: icon.fontPackage, color: color),
+      )
+      ..layout();
+    tp.paint(canvas, center - Offset(tp.width / 2, tp.height / 2));
+  }
+
   void _arrow(Canvas canvas, Offset from, Offset to, Paint paint) {
     canvas.drawLine(from, to, paint);
     final angle = (to - from).direction;
@@ -125,7 +138,8 @@ class _TipDiagramPainter extends CustomPainter {
     canvas.drawLine(Offset(bubble.left + 8, bubble.center.dy + 5), Offset(bubble.right - 26, bubble.center.dy + 5), linePaint);
   }
 
-  /// 3色の配色スウォッチ（肌・髪・服の陰影セット）を積む。
+  /// 3色の配色スウォッチ（肌・髪・服の陰影セット）を積み、実際のパレット
+  /// アイコンを添える。
   void _paintAutofillPreset(Canvas canvas, Size size) {
     final colors = [scheme.primary, scheme.secondary, scheme.tertiary];
     final w = (size.width - 40) / 3;
@@ -137,18 +151,13 @@ class _TipDiagramPainter extends CustomPainter {
       canvas.drawRRect(RRect.fromRectAndRadius(shade, const Radius.circular(3)),
           Paint()..color = colors[i].withValues(alpha: 0.55));
     }
+    _drawIcon(canvas, Icons.palette_outlined, Offset(size.width / 2, size.height * 0.09), size: 14,
+        color: scheme.onSurfaceVariant);
   }
 
-  /// ブラシ（斜めの線＋筆先）と、右上に星マーク。
+  /// 実際のブラシアイコンと、右上に星マーク（お気に入り）。
   void _paintBrushFavorite(Canvas canvas, Size size) {
-    final c = Offset(size.width * 0.42, size.height * 0.52);
-    final brush = Paint()
-      ..color = scheme.primary
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(c + const Offset(-26, 18), c + const Offset(20, -22), brush);
-    final tip = Paint()..color = scheme.tertiary;
-    canvas.drawCircle(c + const Offset(-26, 18), 6, tip);
+    _drawIcon(canvas, Icons.brush, Offset(size.width * 0.42, size.height * 0.52), size: 28, color: scheme.primary);
     _star(canvas, Offset(size.width * 0.78, size.height * 0.3), 12, Paint()..color = scheme.tertiary);
   }
 
@@ -191,6 +200,7 @@ class _TipDiagramPainter extends CustomPainter {
     canvas.drawRect(screen, shader);
     canvas.restore();
     canvas.drawRRect(RRect.fromRectAndRadius(screen, const Radius.circular(8)), _strokeOutline);
+    _drawIcon(canvas, Icons.auto_awesome, screen.center, size: 16, color: scheme.surface);
     _star(canvas, Offset(screen.right + 14, screen.top + 18), 8, Paint()..color = scheme.tertiary);
   }
 
@@ -201,6 +211,7 @@ class _TipDiagramPainter extends CustomPainter {
     canvas.drawRRect(RRect.fromRectAndRadius(small, const Radius.circular(3)), _strokeOutline);
     canvas.drawRRect(RRect.fromRectAndRadius(large, const Radius.circular(4)), _strokePrimary);
     _arrow(canvas, Offset(small.right + 6, size.height * 0.5), Offset(large.left - 6, size.height * 0.5), _strokeOutline);
+    _drawIcon(canvas, Icons.videocam_outlined, large.center, size: 16, color: scheme.primary);
   }
 
   /// 3つの書き出し形式チップ（透過＝市松模様・動画＝塗り＋再生アイコン・GIF＝丸枠）。
@@ -223,31 +234,28 @@ class _TipDiagramPainter extends CustomPainter {
             }
           }
           canvas.restore();
-        case 1: // MP4：再生アイコン
+        case 1: // MP4：実際の再生アイコン
           canvas.drawRRect(rr, _fillPrimaryFaint);
-          final c = rect.center;
-          final play = Path()
-            ..moveTo(c.dx - 6, c.dy - 8)
-            ..lineTo(c.dx - 6, c.dy + 8)
-            ..lineTo(c.dx + 8, c.dy)
-            ..close();
-          canvas.drawPath(play, _fillPrimary);
-        default: // GIF：丸いループ矢印
+          _drawIcon(canvas, Icons.play_circle_outline, rect.center, size: 20, color: scheme.primary);
+        default: // GIF：実際のGIFアイコン
           canvas.drawRRect(rr, _fillPrimaryFaint);
-          canvas.drawArc(Rect.fromCenter(center: rect.center, width: 20, height: 20), 0.3, 5, false, _strokePrimary);
+          _drawIcon(canvas, Icons.gif_box_outlined, rect.center, size: 20, color: scheme.primary);
       }
     }
   }
 
-  /// 画面の上に重なる2本指タップと、Undoの巻き戻し矢印。
+  /// 画面の上に重なる2本指タップ（実際のタップアイコン）と、Undoの巻き戻し矢印。
   void _paintGestureShortcut(Canvas canvas, Size size) {
     final screen = Rect.fromLTWH(size.width * 0.5 - 42, size.height * 0.3, 84, size.height * 0.6);
     canvas.drawRRect(RRect.fromRectAndRadius(screen, const Radius.circular(8)), _strokeOutline);
     canvas.drawArc(Rect.fromCenter(center: screen.center, width: 30, height: 30), 3.7, 4.2, false, _strokePrimary);
+    _drawIcon(canvas, Icons.undo, screen.center, size: 14, color: scheme.primary);
     canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.16), 9, _fillPrimaryFaint);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.16), 9, _fillPrimaryFaint);
     canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.16), 9, _strokePrimary);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.16), 9, _strokePrimary);
+    _drawIcon(canvas, Icons.touch_app, Offset(size.width * 0.5, size.height * 0.16), size: 12,
+        color: scheme.primary);
   }
 
   /// タイムラインの帯＋ピン（タイムスタンプ）＋コメントの吹き出し。
@@ -278,6 +286,8 @@ class _TipDiagramPainter extends CustomPainter {
   void _paintPcDexLayout(Canvas canvas, Size size) {
     final phone = Rect.fromLTWH(size.width * 0.06, size.height * 0.1, size.width * 0.2, size.height * 0.8);
     canvas.drawRRect(RRect.fromRectAndRadius(phone, const Radius.circular(6)), _strokeOutline);
+    _drawIcon(canvas, Icons.smartphone, Offset(phone.center.dx, phone.top + phone.height * 0.35), size: 14,
+        color: scheme.onSurfaceVariant);
     final phoneToolbar = Rect.fromLTWH(phone.left + 3, phone.bottom - 14, phone.width - 6, 10);
     canvas.drawRRect(RRect.fromRectAndRadius(phoneToolbar, const Radius.circular(2)), _fillPrimaryFaint);
 

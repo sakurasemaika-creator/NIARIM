@@ -37,8 +37,18 @@ class HomeDrawer extends StatelessWidget {
                   child: const Icon(Icons.movie_creation_outlined, color: Colors.white, size: 26),
                 ),
                 const SizedBox(height: 12),
+                // ホーム画面AppBarのNIARIMと同じく、白光明朝を明示指定し
+                // 太字・文字間広めで可読性を上げる。
                 const Text('NIARIM',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'HakkouMincho',
+                      fontFamilyFallback: ['NotoSerifJP'],
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5,
+                      height: 1.5,
+                    )),
                 const SizedBox(height: 2),
                 Text(l10n.homeDrawerAppTagline,
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
@@ -46,9 +56,10 @@ class HomeDrawer extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
+          // メニュー項目名はくらむぼんで統一する。
           ListTile(
             leading: const Icon(Icons.palette_outlined),
-            title: Text(l10n.homeDrawerAutofillPreset),
+            title: Text(l10n.homeDrawerAutofillPreset, style: const TextStyle(fontFamily: 'Kuramubon')),
             onTap: () {
               Navigator.pop(context);
               context.push('/autofill-presets');
@@ -57,7 +68,7 @@ class HomeDrawer extends StatelessWidget {
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.settings_outlined),
-            title: Text(l10n.homeDrawerSettings),
+            title: Text(l10n.homeDrawerSettings, style: const TextStyle(fontFamily: 'Kuramubon')),
             onTap: () {
               Navigator.pop(context);
               context.push('/settings');
@@ -65,7 +76,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.help_outline),
-            title: Text(l10n.homeDrawerHelp),
+            title: Text(l10n.homeDrawerHelp, style: const TextStyle(fontFamily: 'Kuramubon')),
             onTap: () {
               Navigator.pop(context);
               context.push('/help');
@@ -73,7 +84,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.lightbulb_outline),
-            title: Text(l10n.homeDrawerTips),
+            title: Text(l10n.homeDrawerTips, style: const TextStyle(fontFamily: 'Kuramubon')),
             onTap: () {
               Navigator.pop(context);
               context.push('/tips');
@@ -81,7 +92,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.workspace_premium_outlined, color: scheme.primary),
-            title: Text(l10n.homeDrawerPremium),
+            title: Text(l10n.homeDrawerPremium, style: const TextStyle(fontFamily: 'Kuramubon')),
             onTap: () {
               Navigator.pop(context);
               context.push('/premium');
