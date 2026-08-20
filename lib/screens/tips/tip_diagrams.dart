@@ -20,6 +20,13 @@ enum TipDiagramKind {
   timelineMarker,
   pcDexLayout,
   lineArtExtraction,
+  selectionTool,
+  layerFolder,
+  saveSlot,
+  transparentColor,
+  performanceGauge,
+  deviceTransfer,
+  toolbarCustomize,
 }
 
 class TipDiagram extends StatelessWidget {
@@ -57,6 +64,13 @@ class _TipDiagramPainter extends CustomPainter {
       case TipDiagramKind.timelineMarker: _paintTimelineMarker(canvas, size);
       case TipDiagramKind.pcDexLayout: _paintPcDexLayout(canvas, size);
       case TipDiagramKind.lineArtExtraction: _paintLineArtExtraction(canvas, size);
+      case TipDiagramKind.selectionTool: _paintSelectionTool(canvas, size);
+      case TipDiagramKind.layerFolder: _paintLayerFolder(canvas, size);
+      case TipDiagramKind.saveSlot: _paintSaveSlot(canvas, size);
+      case TipDiagramKind.transparentColor: _paintTransparentColor(canvas, size);
+      case TipDiagramKind.performanceGauge: _paintPerformanceGauge(canvas, size);
+      case TipDiagramKind.deviceTransfer: _paintDeviceTransfer(canvas, size);
+      case TipDiagramKind.toolbarCustomize: _paintToolbarCustomize(canvas, size);
     }
   }
 
@@ -352,5 +366,156 @@ class _TipDiagramPainter extends CustomPainter {
       ..strokeWidth = 2.2);
     canvas.restore();
     canvas.drawRRect(RRect.fromRectAndRadius(right, const Radius.circular(6)), _strokeOutline);
+  }
+
+  /// 破線の投げ縄パスと、その脇にマジックワンド（きらめき）アイコン。
+  void _paintSelectionTool(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(size.width * 0.16, size.height * 0.72)
+      ..quadraticBezierTo(size.width * 0.1, size.height * 0.32, size.width * 0.34, size.height * 0.22)
+      ..quadraticBezierTo(size.width * 0.58, size.height * 0.1, size.width * 0.6, size.height * 0.4)
+      ..quadraticBezierTo(size.width * 0.62, size.height * 0.68, size.width * 0.34, size.height * 0.7)
+      ..close();
+    final dashed = Path();
+    final metrics = path.computeMetrics();
+    for (final m in metrics) {
+      double dist = 0;
+      const dashLen = 4.0, gapLen = 3.0;
+      while (dist < m.length) {
+        final next = (dist + dashLen).clamp(0, m.length);
+        dashed.addPath(m.extractPath(dist, next.toDouble()), Offset.zero);
+        dist += dashLen + gapLen;
+      }
+    }
+    canvas.drawPath(dashed, _strokePrimary);
+    canvas.drawPath(path, Paint()..color = scheme.primary.withValues(alpha: 0.15));
+    _drawIcon(canvas, Icons.auto_awesome, Offset(size.width * 0.8, size.height * 0.28), size: 20,
+        color: scheme.tertiary);
+    _drawIcon(canvas, Icons.gesture, Offset(size.width * 0.8, size.height * 0.68), size: 20, color: scheme.primary);
+  }
+
+  /// フォルダアイコンの中に、複数プロジェクトへ共有される共通レイヤー
+  /// （重なった四角）を示す。
+  void _paintLayerFolder(Canvas canvas, Size size) {
+    _drawIcon(canvas, Icons.folder, Offset(size.width * 0.28, size.height * 0.5), size: 40, color: scheme.tertiary);
+    final stack = [0, 1, 2];
+    for (final i in stack) {
+      final rect = Rect.fromCenter(
+          center: Offset(size.width * 0.72 - i * 4, size.height * 0.5 - i * 4), width: 34, height: 24);
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(3)),
+          i == 0 ? _fillPrimary : (Paint()..color = scheme.primary.withValues(alpha: 0.4 - i * 0.1)));
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(3)), _strokeOutline);
+    }
+    _drawIcon(canvas, Icons.groups_outlined, Offset(size.width * 0.72, size.height * 0.5), size: 14,
+        color: scheme.onPrimary);
+  }
+
+  /// 手動セーブ（ピン留めされた保存アイコン、複数残る）と自動保存
+  /// （回転する更新アイコン、常に1つだけ）を並べる。
+  void _paintSaveSlot(Canvas canvas, Size size) {
+    for (int i = 0; i < 3; i++) {
+      final cx = size.width * (0.12 + i * 0.16);
+      final rect = Rect.fromCenter(center: Offset(cx, size.height * 0.5), width: 26, height: 34);
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+          i == 2 ? _fillPrimaryFaint : _strokeOutline);
+      if (i == 2) canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(4)), _strokePrimary);
+      _drawIcon(canvas, Icons.bookmark, rect.center, size: 14,
+          color: i == 2 ? scheme.primary : scheme.onSurfaceVariant.withValues(alpha: 0.6));
+    }
+    final autoCenter = Offset(size.width * 0.78, size.height * 0.5);
+    canvas.drawCircle(autoCenter, 22, Paint()..color = scheme.tertiary.withValues(alpha: 0.25));
+    canvas.drawCircle(autoCenter, 22,
+        Paint()..color = scheme.tertiary..style = PaintingStyle.stroke..strokeWidth = 1.8);
+    _drawIcon(canvas, Icons.autorenew, autoCenter, size: 20, color: scheme.tertiary);
+  }
+
+  /// 色の塗られた面の一部が市松模様（透明）に削れた帯＋ブラシアイコン。
+  /// 消しゴムではなく「ブラシで透明色を塗って消す」イメージを表す。
+  void _paintTransparentColor(Canvas canvas, Size size) {
+    final area = Rect.fromLTWH(size.width * 0.5 - 46, 8, 92, size.height - 16);
+    canvas.save();
+    canvas.clipRRect(RRect.fromRectAndRadius(area, const Radius.circular(8)));
+    canvas.drawRect(area, _fillPrimaryFaint);
+    // 帯状に市松模様（透明部分）を重ね、斜めのブラシストロークで
+    // 「なぞって透明にした」帯を表現する。
+    final band = Rect.fromLTWH(area.left, area.top + area.height * 0.36, area.width, area.height * 0.3);
+    final cell = area.width / 6;
+    final checker = Paint()..color = scheme.surface;
+    for (int gy = 0; gy * cell < band.height; gy++) {
+      for (int gx = 0; gx < 6; gx++) {
+        if ((gx + gy).isOdd) continue;
+        canvas.drawRect(Rect.fromLTWH(band.left + gx * cell, band.top + gy * cell, cell, cell), checker);
+      }
+    }
+    canvas.restore();
+    canvas.drawRRect(RRect.fromRectAndRadius(area, const Radius.circular(8)), _strokeOutline);
+    _drawIcon(canvas, Icons.brush, band.center, size: 18, color: scheme.primary);
+  }
+
+  /// 速度計（ゲージ）の針を「低品質」寄りに振り、軽量化を示す。
+  void _paintPerformanceGauge(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height * 0.78);
+    final r = size.height * 0.62;
+    final rect = Rect.fromCircle(center: center, radius: r);
+    canvas.drawArc(rect, 3.14159, 3.14159, false,
+        Paint()..color = scheme.outlineVariant..style = PaintingStyle.stroke..strokeWidth = 8);
+    canvas.drawArc(rect, 3.14159, 3.14159 * 0.35, false,
+        Paint()..color = scheme.tertiary..style = PaintingStyle.stroke..strokeWidth = 8);
+    const needleAngle = 3.14159 * 1.18; // 低品質寄り
+    final needleEnd = center + Offset.fromDirection(needleAngle, r * 0.85);
+    canvas.drawLine(center, needleEnd, _strokePrimary);
+    canvas.drawCircle(center, 4, _fillPrimary);
+    _drawIcon(canvas, Icons.speed, Offset(center.dx, center.dy - r * 0.55), size: 16, color: scheme.onSurfaceVariant);
+  }
+
+  /// スマートフォン→引き継ぎファイルのアイコン→スマートフォンの順で、
+  /// 端末間でプロジェクト・設定がまとめて移動することを示す。
+  void _paintDeviceTransfer(Canvas canvas, Size size) {
+    final left = Offset(size.width * 0.16, size.height * 0.5);
+    final right = Offset(size.width * 0.84, size.height * 0.5);
+    _drawIcon(canvas, Icons.smartphone, left, size: 26, color: scheme.onSurfaceVariant);
+    _drawIcon(canvas, Icons.smartphone, right, size: 26, color: scheme.onSurfaceVariant);
+    final fileCenter = Offset(size.width / 2, size.height * 0.42);
+    _arrow(canvas, left + const Offset(14, 0), fileCenter - const Offset(14, 0), _strokeOutline);
+    _arrow(canvas, fileCenter + const Offset(14, 0), right - const Offset(14, 0), _strokeOutline);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromCenter(center: fileCenter, width: 30, height: 34), const Radius.circular(4)),
+        _fillPrimaryFaint);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromCenter(center: fileCenter, width: 30, height: 34), const Radius.circular(4)),
+        _strokePrimary);
+    _drawIcon(canvas, Icons.sync_alt, fileCenter, size: 16, color: scheme.primary);
+  }
+
+  /// ツールバーの並び（実アイコン）のうち1つを上へずらして「並び替え中」を
+  /// 示し、もう1つを薄く消して「非表示」を示す。
+  void _paintToolbarCustomize(Canvas canvas, Size size) {
+    final y = size.height * 0.6;
+    final barRect = Rect.fromLTWH(4, y - 18, size.width - 8, 36);
+    canvas.drawRRect(RRect.fromRectAndRadius(barRect, const Radius.circular(6)), _fillPrimaryFaint);
+    const icons = [Icons.brush, Icons.auto_fix_high, Icons.colorize, Icons.highlight_alt, Icons.category];
+    final w = barRect.width / icons.length;
+    for (int i = 0; i < icons.length; i++) {
+      final cx = barRect.left + w * (i + 0.5);
+      if (i == 1) {
+        // 非表示にする項目：薄く＋斜線
+        _drawIcon(canvas, icons[i], Offset(cx, y), size: 15, color: scheme.onSurfaceVariant.withValues(alpha: 0.3));
+        canvas.drawLine(Offset(cx - 8, y + 8), Offset(cx + 8, y - 8),
+            Paint()..color = scheme.error.withValues(alpha: 0.7)..strokeWidth = 1.5);
+      } else if (i == 3) {
+        // 並び替え中の項目：上にずらして縁取り＋ドラッグハンドル
+        _drawIcon(canvas, icons[i], Offset(cx, y - 14), size: 16, color: scheme.primary);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(center: Offset(cx, y - 14), width: 22, height: 22), const Radius.circular(5)),
+            Paint()..color = scheme.primary..style = PaintingStyle.stroke..strokeWidth = 1.5);
+        _drawIcon(canvas, Icons.drag_indicator, Offset(cx, y + 10), size: 12,
+            color: scheme.onSurfaceVariant.withValues(alpha: 0.6));
+      } else {
+        _drawIcon(canvas, icons[i], Offset(cx, y), size: 15, color: scheme.onSurfaceVariant);
+      }
+    }
   }
 }
