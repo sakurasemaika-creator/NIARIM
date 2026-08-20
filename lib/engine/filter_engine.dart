@@ -49,6 +49,8 @@ Uint8List applyDrawFilterInIsolate(
       engine.applyNoise(data, width, height, (filter.strength / 100).clamp(0.0, 1.0), NoiseType.gaussian),
     FilterKind.retroAnime => engine.applyRetroAnime(data, width, height, filter.strength),
     FilterKind.crt => engine.applyCrt(data, width, height, filter.strength),
+    FilterKind.monochrome =>
+      engine.applyMonochrome(data, width, height, (filter.strength / 100).clamp(0.0, 1.0)),
   };
 }
 
@@ -98,6 +100,7 @@ class FilterEngine {
         EffectFilterType.noise =>
           applyNoise(result, width, height, (e.param1 / 20).clamp(0.0, 1.0), NoiseType.gaussian),
         EffectFilterType.sepia => applySepia(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
+        EffectFilterType.monochrome => applyMonochrome(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
         EffectFilterType.animeStyle => applyAnimeStyle(
             result, width, height,
             strength: e.param1, colorCount: 6, edgeStrength: (e.param1 / 20).clamp(0.0, 1.0)),
@@ -547,6 +550,23 @@ class FilterEngine {
     return result;
   }
 
+  /// モノクロ（白黒）：輝度を求めてR=G=Bへ揃える。[amount]（0.0〜1.0）で
+  /// 元の色との混合量を調整する（100%で完全な白黒）。1画素あたりの
+  /// 計算のみで負荷は軽い。描画フィルター・演出フィルター両方から使う。
+  Uint8List applyMonochrome(Uint8List data, int width, int height, double amount) {
+    if (amount <= 0) return Uint8List.fromList(data);
+    final result = Uint8List.fromList(data);
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      final r = data[i], g = data[i + 1], b = data[i + 2];
+      final gray = (r * 0.299 + g * 0.587 + b * 0.114).round().clamp(0, 255);
+      result[i] = (r + (gray - r) * amount).round().clamp(0, 255);
+      result[i + 1] = (g + (gray - g) * amount).round().clamp(0, 255);
+      result[i + 2] = (b + (gray - b) * amount).round().clamp(0, 255);
+    }
+    return result;
+  }
+
   /// レトロアニメ風：暖色寄りのカラーグレーディング・彩度低下・粒状ノイズを
   /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。1画素あたりの
   /// 色変換とノイズ処理1回分のみで、既存のanimeStyle（ポスタリゼーション＋
@@ -778,7 +798,7 @@ class EffectFilter {
 enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
   animeStyle, retroAnime, crt,
-  animatedNoise, rain,
+  animatedNoise, rain, monochrome,
 }
 
 enum DrawFilterType {

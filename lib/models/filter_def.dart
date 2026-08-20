@@ -18,7 +18,7 @@
 /// crt：色収差・周辺減光・走査線を組み合わせたブラウン管ディスプレイ風の質感。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
-  retroAnime, crt,
+  retroAnime, crt, monochrome,
 }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。

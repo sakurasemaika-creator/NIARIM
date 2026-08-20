@@ -2028,5 +2028,7 @@
   "layerPanelBrightnessToAlphaColorButton": "Color",
   "layerPanelBrightnessToAlphaGrayButton": "Gray",
   "tipsRoughLayerRescueTitle": "Drew line art on your rough sketch layer? Rescue it with \"Transparency from Brightness\"",
-  "tipsRoughLayerRescueDesc": "Even if you accidentally drew your line art on top of your rough sketch layer, you can pull the line art back out without deleting anything. 1) Add a new layer and set its blend mode to Divide. 2) Pick up the sketch's color with the eyedropper and fill that whole Divide layer with it (this fades the sketch). 3) Duplicate the Divide layer and the sketch disappears completely. 4) Use \"Merge all visible layers\" in the layer panel to flatten everything into one layer. 5) From that merged layer's three-dot menu, choose \"Transparency from Brightness (Gray)\" — the white areas become transparent, leaving just the line art."
+  "tipsRoughLayerRescueDesc": "Even if you accidentally drew your line art on top of your rough sketch layer, you can pull the line art back out without deleting anything. 1) Add a new layer and set its blend mode to Divide. 2) Pick up the sketch's color with the eyedropper and fill that whole Divide layer with it (this fades the sketch). 3) Duplicate the Divide layer and the sketch disappears completely. 4) Use \"Merge all visible layers\" in the layer panel to flatten everything into one layer. 5) From that merged layer's three-dot menu, choose \"Transparency from Brightness (Gray)\" — the white areas become transparent, leaving just the line art.",
+  "filterNameMonochrome": "Monochrome",
+  "timelineEffectTypeMonochrome": "Monochrome"
 }

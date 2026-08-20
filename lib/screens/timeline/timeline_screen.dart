@@ -4210,6 +4210,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.crt => l10n.timelineEffectTypeCrt,
     EffectFilterType.animatedNoise => l10n.timelineEffectTypeAnimatedNoise,
     EffectFilterType.rain => l10n.timelineEffectTypeRain,
+    EffectFilterType.monochrome => l10n.timelineEffectTypeMonochrome,
   };
 
   static const _typeIcons = {
@@ -4225,6 +4226,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.crt: Icons.tv,
     EffectFilterType.animatedNoise: Icons.blur_on,
     EffectFilterType.rain: Icons.water_drop,
+    EffectFilterType.monochrome: Icons.filter_b_and_w,
   };
 
   @override

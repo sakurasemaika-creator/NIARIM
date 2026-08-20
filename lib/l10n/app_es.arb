@@ -2028,5 +2028,7 @@
   "layerPanelBrightnessToAlphaColorButton": "Color",
   "layerPanelBrightnessToAlphaGrayButton": "Gris",
   "tipsRoughLayerRescueTitle": "¿Dibujaste el lineart sobre tu boceto? Rescátalo con \"Transparencia por brillo\"",
-  "tipsRoughLayerRescueDesc": "Aunque hayas dibujado el lineart por accidente encima de la capa de boceto, puedes recuperar solo el lineart sin borrar nada. 1) Añade una nueva capa y pon su modo de fusión en Dividir. 2) Toma el color del boceto con el cuentagotas y rellena toda esa capa Dividir con él (esto desvanece el boceto). 3) Duplica la capa Dividir y el boceto desaparece por completo. 4) Usa \"Combinar todas las capas visibles\" en el panel de capas para aplanar todo en una sola capa. 5) Desde el menú de tres puntos de esa capa combinada, elige \"Transparencia por brillo (Gris)\": las zonas blancas se vuelven transparentes y solo queda el lineart."
+  "tipsRoughLayerRescueDesc": "Aunque hayas dibujado el lineart por accidente encima de la capa de boceto, puedes recuperar solo el lineart sin borrar nada. 1) Añade una nueva capa y pon su modo de fusión en Dividir. 2) Toma el color del boceto con el cuentagotas y rellena toda esa capa Dividir con él (esto desvanece el boceto). 3) Duplica la capa Dividir y el boceto desaparece por completo. 4) Usa \"Combinar todas las capas visibles\" en el panel de capas para aplanar todo en una sola capa. 5) Desde el menú de tres puntos de esa capa combinada, elige \"Transparencia por brillo (Gris)\": las zonas blancas se vuelven transparentes y solo queda el lineart.",
+  "filterNameMonochrome": "Monocromo",
+  "timelineEffectTypeMonochrome": "Monocromo"
 }

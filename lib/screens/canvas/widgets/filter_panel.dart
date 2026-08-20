@@ -589,6 +589,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.noise => l10n.filterNameNoise,
         FilterKind.retroAnime => l10n.filterNameRetroAnime,
         FilterKind.crt => l10n.filterNameCrt,
+        FilterKind.monochrome => l10n.filterNameMonochrome,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -639,6 +640,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return _engine.applyRetroAnime(data, width, height, filter.strength);
       case FilterKind.crt:
         return _engine.applyCrt(data, width, height, filter.strength);
+      case FilterKind.monochrome:
+        return _engine.applyMonochrome(data, width, height, (filter.strength / 100).clamp(0.0, 1.0));
     }
   }
 
@@ -668,6 +671,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.movie_filter;
       case FilterKind.crt:
         return Icons.tv;
+      case FilterKind.monochrome:
+        return Icons.filter_b_and_w;
     }
   }
 
