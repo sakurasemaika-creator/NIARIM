@@ -4211,6 +4211,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.animatedNoise => l10n.timelineEffectTypeAnimatedNoise,
     EffectFilterType.rain => l10n.timelineEffectTypeRain,
     EffectFilterType.monochrome => l10n.timelineEffectTypeMonochrome,
+    EffectFilterType.colorAdjust => l10n.filterNameColorAdjust,
   };
 
   static const _typeIcons = {
@@ -4227,6 +4228,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.animatedNoise: Icons.blur_on,
     EffectFilterType.rain: Icons.water_drop,
     EffectFilterType.monochrome: Icons.filter_b_and_w,
+    EffectFilterType.colorAdjust: Icons.tune,
   };
 
   @override
@@ -4355,6 +4357,8 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._animatedNoiseParams(context, l10n, e)
                 else if (e.type == EffectFilterType.rain)
                   ..._rainParams(context, l10n, e)
+                else if (e.type == EffectFilterType.colorAdjust)
+                  ..._colorAdjustParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -4447,6 +4451,18 @@ class _EffectFilterSheet extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// 色調調整のパラメータ（彩度・明度・コントラスト、いずれも-100〜100）。
+  List<Widget> _colorAdjustParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+    return [
+      _paramRow(l10n.filterColorAdjustSaturationLabel, e.param1, -100, 100, 200,
+          (v) => _update(context, e.copyWith(param1: v))),
+      _paramRow(l10n.filterColorAdjustBrightnessLabel, e.param2, -100, 100, 200,
+          (v) => _update(context, e.copyWith(param2: v))),
+      _paramRow(l10n.filterColorAdjustContrastLabel, e.param3, -100, 100, 200,
+          (v) => _update(context, e.copyWith(param3: v))),
+    ];
   }
 
   /// 動くノイズのパラメータ（強度・量・粒の大きさ）。
@@ -4550,7 +4566,16 @@ class _EffectFilterSheet extends StatelessWidget {
                   startFrame: currentFrame,
                   endFrame: (currentFrame + 11).clamp(0, totalFrames - 1),
                   // 雨の「速さ」は既定値50だとスライダー上限(40)を超えるため上書きする。
-                  param2: type == EffectFilterType.rain ? 10.0 : 50.0,
+                  // 色調調整は彩度・明度・コントラストとも既定値0（変化なし）から
+                  // 始める（他のフィルターと違い既定値5.0/50.0のままだと追加直後に
+                  // 見た目が変わってしまうため）。
+                  param1: type == EffectFilterType.colorAdjust ? 0.0 : 5.0,
+                  param2: type == EffectFilterType.rain
+                      ? 10.0
+                      : type == EffectFilterType.colorAdjust
+                          ? 0.0
+                          : 50.0,
+                  param3: type == EffectFilterType.colorAdjust ? 0.0 : 2.0,
                 ));
                 Navigator.pop(ctx);
               },

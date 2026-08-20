@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show compute;
 import 'brightness_alpha_engine.dart';
+import 'filter_engine.dart';
 import 'mesh_warp_engine.dart';
 
 /// シーンID・フレームIndex・レイヤーIDから、TileManager内部で使用する
@@ -337,6 +338,27 @@ class TileManager {
     final transformed = await compute(
       runBrightnessToAlphaInIsolate,
       BrightnessToAlphaParams(byteData.buffer.asUint8List(), grayMode),
+    );
+    replaceLayerPixels(layerId, transformed);
+  }
+
+  /// 「色調調整」（キャンバス上部バーの設定/編集メニュー）：彩度・明度・
+  /// コントラストの調整結果をレイヤーへ直接（非フィルターとして）焼き込む。
+  /// フィルターとして保存せず「そのまま適用」した場合に使う。
+  Future<void> applyColorAdjustToLayer(
+    String layerId, {
+    required double saturation,
+    required double brightness,
+    required double contrast,
+  }) async {
+    final composite = await compositeLayerToImage(layerId);
+    final byteData = await composite.toByteData(format: ui.ImageByteFormat.rawRgba);
+    composite.dispose();
+    if (byteData == null) return;
+    final engine = FilterEngine();
+    final transformed = engine.applyColorAdjust(
+      byteData.buffer.asUint8List(), canvasWidth, canvasHeight,
+      saturation: saturation, brightness: brightness, contrast: contrast,
     );
     replaceLayerPixels(layerId, transformed);
   }

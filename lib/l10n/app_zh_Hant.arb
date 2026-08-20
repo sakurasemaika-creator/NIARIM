@@ -2030,5 +2030,16 @@
   "tipsRoughLayerRescueTitle": "不小心把線稿畫在草圖圖層上？用「依明度透明化」搶救",
   "tipsRoughLayerRescueDesc": "即使不小心把線稿畫在了草圖圖層上，也能在不刪除任何內容的情況下把線稿單獨取出來。①新增一個圖層，將其混合模式設為「除法」。②用滴管吸取草圖的顏色，將整個除法圖層填滿該顏色（草圖會變淡）。③複製該除法圖層，草圖會完全消失。④在圖層面板中使用「合併所有可見圖層」將其合併為一層。⑤在合併後圖層的三點選單中選擇「依明度透明化（灰色）」，白色部分就會變透明，只留下線稿。",
   "filterNameMonochrome": "單色",
-  "timelineEffectTypeMonochrome": "單色"
+  "timelineEffectTypeMonochrome": "單色",
+  "filterNameColorAdjust": "色調調整",
+  "filterColorAdjustSaturationLabel": "飽和度",
+  "filterColorAdjustBrightnessLabel": "明度",
+  "filterColorAdjustContrastLabel": "對比度",
+  "canvasColorAdjustTitle": "色調調整",
+  "canvasColorAdjustAddToDrawFilter": "新增至繪圖濾鏡",
+  "canvasColorAdjustAddToEffectFilter": "新增至演出濾鏡",
+  "canvasColorAdjustMenuTitle": "色調調整",
+  "filterCustomMenuDuplicate": "複製",
+  "filterCustomMenuFavoriteBlockTitle": "無法刪除",
+  "filterCustomMenuFavoriteBlockBody": "該濾鏡已收藏為常用，無法刪除。請先取消收藏，再進行刪除。"
 }

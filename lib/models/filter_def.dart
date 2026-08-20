@@ -18,7 +18,7 @@
 /// crt：色収差・周辺減光・走査線を組み合わせたブラウン管ディスプレイ風の質感。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
-  retroAnime, crt, monochrome,
+  retroAnime, crt, monochrome, colorAdjust,
 }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
@@ -64,6 +64,11 @@ class FilterDef {
   // だけの見た目）。ARGB32形式のintで、他パラメータ同様プリミティブ型のみ
   // で構成する。
   final int vignetteColor;
+  // 色調調整（colorAdjustのみ使用）：彩度・明度・コントラスト、
+  // いずれも-100〜100（0が変化なし）。
+  final double caSaturation;
+  final double caBrightness;
+  final double caContrast;
 
   const FilterDef({
     required this.id,
@@ -81,6 +86,9 @@ class FilterDef {
     this.outlineColor = 0xFF000000,
     this.outlineWidth = 6,
     this.vignetteColor = 0xFF000000,
+    this.caSaturation = 0,
+    this.caBrightness = 0,
+    this.caContrast = 0,
   });
 
   FilterDef copyWith({
@@ -99,6 +107,9 @@ class FilterDef {
     int? outlineColor,
     double? outlineWidth,
     int? vignetteColor,
+    double? caSaturation,
+    double? caBrightness,
+    double? caContrast,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -116,6 +127,9 @@ class FilterDef {
       outlineColor: outlineColor ?? this.outlineColor,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       vignetteColor: vignetteColor ?? this.vignetteColor,
+      caSaturation: caSaturation ?? this.caSaturation,
+      caBrightness: caBrightness ?? this.caBrightness,
+      caContrast: caContrast ?? this.caContrast,
     );
   }
 
@@ -135,6 +149,9 @@ class FilterDef {
         'outlineColor': outlineColor,
         'outlineWidth': outlineWidth,
         'vignetteColor': vignetteColor,
+        'caSaturation': caSaturation,
+        'caBrightness': caBrightness,
+        'caContrast': caContrast,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -150,6 +167,9 @@ class FilterDef {
         inputWhite: j['inputWhite'] as int? ?? 255,
         outputBlack: j['outputBlack'] as int? ?? 0,
         outputWhite: j['outputWhite'] as int? ?? 255,
+        caSaturation: (j['caSaturation'] as num?)?.toDouble() ?? 0,
+        caBrightness: (j['caBrightness'] as num?)?.toDouble() ?? 0,
+        caContrast: (j['caContrast'] as num?)?.toDouble() ?? 0,
         toneCurvePreset: ToneCurvePreset.values.firstWhere(
             (e) => e.name == j['toneCurvePreset'],
             orElse: () => ToneCurvePreset.linear),

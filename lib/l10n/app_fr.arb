@@ -2030,5 +2030,16 @@
   "tipsRoughLayerRescueTitle": "Encrage dessiné sur le calque de brouillon ? Récupérez-le avec « Transparence par luminosité »",
   "tipsRoughLayerRescueDesc": "Même si vous avez dessiné l'encrage par erreur sur le calque de brouillon, vous pouvez récupérer uniquement l'encrage sans rien supprimer. 1) Ajoutez un nouveau calque et réglez son mode de fusion sur Diviser. 2) Prélevez la couleur du brouillon à la pipette et remplissez tout ce calque Diviser avec (le brouillon s'estompe). 3) Dupliquez le calque Diviser et le brouillon disparaît complètement. 4) Utilisez « Fusionner tous les calques visibles » dans le panneau des calques pour tout aplatir en un seul calque. 5) Depuis le menu à trois points de ce calque fusionné, choisissez « Transparence par luminosité (Gris) » : les zones blanches deviennent transparentes, ne laissant que l'encrage.",
   "filterNameMonochrome": "Monochrome",
-  "timelineEffectTypeMonochrome": "Monochrome"
+  "timelineEffectTypeMonochrome": "Monochrome",
+  "filterNameColorAdjust": "Réglage des couleurs",
+  "filterColorAdjustSaturationLabel": "Saturation",
+  "filterColorAdjustBrightnessLabel": "Luminosité",
+  "filterColorAdjustContrastLabel": "Contraste",
+  "canvasColorAdjustTitle": "Réglage des couleurs",
+  "canvasColorAdjustAddToDrawFilter": "Ajouter aux filtres de dessin",
+  "canvasColorAdjustAddToEffectFilter": "Ajouter aux filtres d'effet",
+  "canvasColorAdjustMenuTitle": "Réglage des couleurs",
+  "filterCustomMenuDuplicate": "Dupliquer",
+  "filterCustomMenuFavoriteBlockTitle": "Suppression impossible",
+  "filterCustomMenuFavoriteBlockBody": "Ce filtre est en favori et ne peut pas être supprimé. Retirez-le des favoris avant de le supprimer."
 }

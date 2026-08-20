@@ -51,6 +51,9 @@ Uint8List applyDrawFilterInIsolate(
     FilterKind.crt => engine.applyCrt(data, width, height, filter.strength),
     FilterKind.monochrome =>
       engine.applyMonochrome(data, width, height, (filter.strength / 100).clamp(0.0, 1.0)),
+    FilterKind.colorAdjust => engine.applyColorAdjust(
+        data, width, height,
+        saturation: filter.caSaturation, brightness: filter.caBrightness, contrast: filter.caContrast),
   };
 }
 
@@ -101,6 +104,10 @@ class FilterEngine {
           applyNoise(result, width, height, (e.param1 / 20).clamp(0.0, 1.0), NoiseType.gaussian),
         EffectFilterType.sepia => applySepia(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
         EffectFilterType.monochrome => applyMonochrome(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
+        // 色調調整：param1=彩度、param2=明度、param3=コントラスト（いずれも-100〜100）。
+        EffectFilterType.colorAdjust => applyColorAdjust(
+            result, width, height,
+            saturation: e.param1, brightness: e.param2, contrast: e.param3),
         EffectFilterType.animeStyle => applyAnimeStyle(
             result, width, height,
             strength: e.param1, colorCount: 6, edgeStrength: (e.param1 / 20).clamp(0.0, 1.0)),
@@ -567,6 +574,53 @@ class FilterEngine {
     return result;
   }
 
+  /// 色調調整：彩度・明度・コントラストをそれぞれ独立に調整する
+  /// （キャンバス上部バーの設定/編集メニュー「色調調整」、描画・演出
+  /// フィルターの「色調調整」種別で共通利用）。各パラメータは-100〜100
+  /// （0が変化なし）。1画素あたりの計算のみで負荷は軽い。
+  Uint8List applyColorAdjust(
+    Uint8List data,
+    int width,
+    int height, {
+    required double saturation,
+    required double brightness,
+    required double contrast,
+  }) {
+    if (saturation == 0 && brightness == 0 && contrast == 0) return Uint8List.fromList(data);
+    final result = Uint8List.fromList(data);
+    final satFactor = 1.0 + saturation / 100.0;
+    final briOffset = brightness / 100.0 * 255.0;
+    // 古典的なコントラスト補正式：F = 259*(C+255) / (255*(259-C))
+    final contrastScaled = (contrast / 100.0 * 255.0).clamp(-255.0, 255.0);
+    final conF = (259 * (contrastScaled + 255)) / (255 * (259 - contrastScaled));
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      var r = data[i].toDouble();
+      var g = data[i + 1].toDouble();
+      var b = data[i + 2].toDouble();
+      if (saturation != 0) {
+        final gray = r * 0.299 + g * 0.587 + b * 0.114;
+        r = gray + (r - gray) * satFactor;
+        g = gray + (g - gray) * satFactor;
+        b = gray + (b - gray) * satFactor;
+      }
+      if (brightness != 0) {
+        r += briOffset;
+        g += briOffset;
+        b += briOffset;
+      }
+      if (contrast != 0) {
+        r = conF * (r - 128) + 128;
+        g = conF * (g - 128) + 128;
+        b = conF * (b - 128) + 128;
+      }
+      result[i] = r.round().clamp(0, 255);
+      result[i + 1] = g.round().clamp(0, 255);
+      result[i + 2] = b.round().clamp(0, 255);
+    }
+    return result;
+  }
+
   /// レトロアニメ風：暖色寄りのカラーグレーディング・彩度低下・粒状ノイズを
   /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。1画素あたりの
   /// 色変換とノイズ処理1回分のみで、既存のanimeStyle（ポスタリゼーション＋
@@ -798,7 +852,7 @@ class EffectFilter {
 enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
   animeStyle, retroAnime, crt,
-  animatedNoise, rain, monochrome,
+  animatedNoise, rain, monochrome, colorAdjust,
 }
 
 enum DrawFilterType {

@@ -92,6 +92,9 @@ class FilterService extends ChangeNotifier {
     int? outlineColor,
     double? outlineWidth,
     int? vignetteColor,
+    double? caSaturation,
+    double? caBrightness,
+    double? caContrast,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -107,6 +110,9 @@ class FilterService extends ChangeNotifier {
       outlineColor: outlineColor,
       outlineWidth: outlineWidth,
       vignetteColor: vignetteColor,
+      caSaturation: caSaturation,
+      caBrightness: caBrightness,
+      caContrast: caContrast,
     );
     notifyListeners();
     _persist();
@@ -119,6 +125,56 @@ class FilterService extends ChangeNotifier {
       notifyListeners();
       _persist();
     }
+  }
+
+  // ─── ユーザー作成フィルターの追加・複製・削除 ──────────────────────────
+  // プリインストールされている初期実装フィルター（_defaultFilters()の
+  // 12件）は削除・複製の対象外とし、色調調整などから新規に追加した
+  // フィルターのみ、フィルター一覧の三点メニューから削除・複製できる。
+
+  static final Set<String> _builtInIds = _defaultFilters().map((f) => f.id).toSet();
+
+  bool isBuiltIn(String id) => _builtInIds.contains(id);
+
+  /// 新規フィルターを一覧へ追加する（色調調整の「フィルターに追加する」等）。
+  void addFilter(FilterDef filter) {
+    _filters.add(filter);
+    _currentFilterId = filter.id;
+    notifyListeners();
+    _persist();
+  }
+
+  /// [id]のフィルターを複製する（名前の末尾に「のコピー」を付けて追加）。
+  /// プリインストールのフィルターも複製自体は可能（複製後の新しいIDは
+  /// プリインストール扱いにならない）。
+  void duplicateFilter(String id) {
+    final idx = _filters.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    final source = _filters[idx];
+    final copy = source.copyWith(
+      id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
+      name: '${source.name}_copy',
+      isFavorite: false,
+    );
+    _filters.insert(idx + 1, copy);
+    notifyListeners();
+    _persist();
+  }
+
+  /// [id]のフィルターを削除する。プリインストール、またはお気に入り登録中の
+  /// 場合は削除せずfalseを返す（呼び出し元でその旨のポップアップを表示する）。
+  bool removeFilter(String id) {
+    if (isBuiltIn(id)) return false;
+    final idx = _filters.indexWhere((f) => f.id == id);
+    if (idx < 0) return false;
+    if (_filters[idx].isFavorite) return false;
+    _filters.removeAt(idx);
+    if (_currentFilterId == id) {
+      _currentFilterId = _filters.firstOrNull?.id;
+    }
+    notifyListeners();
+    _persist();
+    return true;
   }
 
   void setSearchQuery(String query) {

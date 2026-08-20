@@ -248,6 +248,18 @@ class _FilterPanelState extends State<FilterPanel> {
                                   ),
                                 ),
                               ),
+                            // プリインストールではない（色調調整等から新規追加した）
+                            // フィルターにのみ、削除・複製の三点メニューを出す。
+                            // お気に入りアイコンと重ならないよう左上に配置する。
+                            if (!isLocked && !filterService.isBuiltIn(f.id))
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                child: GestureDetector(
+                                  onTap: () => _showCustomFilterMenu(context, filterService, f),
+                                  child: const Icon(Icons.more_vert, size: 14, color: Colors.grey),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -433,6 +445,32 @@ class _FilterPanelState extends State<FilterPanel> {
                             100,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
+                        if (current.kind == FilterKind.colorAdjust) ...[
+                          _paramSlider(
+                            filterService,
+                            l10n.filterColorAdjustSaturationLabel,
+                            current.caSaturation,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, caSaturation: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterColorAdjustBrightnessLabel,
+                            current.caBrightness,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, caBrightness: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterColorAdjustContrastLabel,
+                            current.caContrast,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, caContrast: v),
+                          ),
+                        ],
                         if (current.kind == FilterKind.unsharpMask) ...[
                           _paramSlider(
                             filterService,
@@ -526,6 +564,51 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
+  /// プリインストールではないフィルターの三点メニュー（複製・削除）。
+  /// お気に入り登録中は削除できないため、その旨のポップアップを出す。
+  void _showCustomFilterMenu(BuildContext context, FilterService filterService, FilterDef f) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: Text(l10n.filterCustomMenuDuplicate),
+              onTap: () {
+                filterService.duplicateFilter(f.id);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: Text(l10n.commonDelete),
+              onTap: () {
+                Navigator.pop(ctx);
+                if (f.isFavorite) {
+                  showDialog(
+                    context: context,
+                    builder: (ctx2) => AlertDialog(
+                      title: Text(l10n.filterCustomMenuFavoriteBlockTitle),
+                      content: Text(l10n.filterCustomMenuFavoriteBlockBody),
+                      actions: [
+                        FilledButton(onPressed: () => Navigator.pop(ctx2), child: Text(l10n.commonOk)),
+                      ],
+                    ),
+                  );
+                  return;
+                }
+                filterService.removeFilter(f.id);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   String _toneCurveLabel(AppLocalizations l10n, ToneCurvePreset preset) => switch (preset) {
         ToneCurvePreset.linear => l10n.filterToneCurveLinear,
         ToneCurvePreset.brighten => l10n.filterToneCurveBrighten,
@@ -590,6 +673,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.retroAnime => l10n.filterNameRetroAnime,
         FilterKind.crt => l10n.filterNameCrt,
         FilterKind.monochrome => l10n.filterNameMonochrome,
+        FilterKind.colorAdjust => l10n.filterNameColorAdjust,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -642,6 +726,11 @@ class _FilterPanelState extends State<FilterPanel> {
         return _engine.applyCrt(data, width, height, filter.strength);
       case FilterKind.monochrome:
         return _engine.applyMonochrome(data, width, height, (filter.strength / 100).clamp(0.0, 1.0));
+      case FilterKind.colorAdjust:
+        return _engine.applyColorAdjust(
+          data, width, height,
+          saturation: filter.caSaturation, brightness: filter.caBrightness, contrast: filter.caContrast,
+        );
     }
   }
 
@@ -673,6 +762,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.tv;
       case FilterKind.monochrome:
         return Icons.filter_b_and_w;
+      case FilterKind.colorAdjust:
+        return Icons.tune;
     }
   }
 

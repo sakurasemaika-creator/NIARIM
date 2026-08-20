@@ -29,6 +29,7 @@ import 'widgets/toolbar_widget.dart';
 import 'widgets/frame_strip_widget.dart';
 import 'widgets/brush_size_slider.dart';
 import 'widgets/layer_panel.dart';
+import 'widgets/color_adjust_sheet.dart';
 import 'widgets/color_picker_panel.dart';
 import 'widgets/brush_panel.dart';
 import 'widgets/tone_panel.dart';
@@ -72,6 +73,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showRulerPanel = false;
   bool _showFilterPanel = false;
   bool _showQuickToolPanel = false;
+  bool _showColorAdjustPanel = false;
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
   // 実際の格子点ドラッグ・ワーププレビューはCanvasArea側で完結させ、
@@ -102,6 +104,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showRulerPanel = false;
     _showFilterPanel = false;
     _showQuickToolPanel = false;
+    _showColorAdjustPanel = false;
     // 他のパネルを開く操作で自由変形/メッシュ変形パネルが押し出される場合は、
     // 未確定のワーププレビューを残さないようキャンセル扱いにする。
     if (_showMeshTransformPanel) {
@@ -284,6 +287,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
               onTap: () {
                 Navigator.pop(ctx);
                 _openMeshTransformPanel();
+              },
+            ),
+            // 色調調整（仕様書18：新機能）。彩度・明度・コントラストを
+            // ライブプレビューで調整し、そのまま適用するか、描画/演出
+            // フィルターへ新規フィルターとして追加できる。
+            ListTile(
+              leading: const Icon(Icons.tune),
+              title: Text(l10n.canvasColorAdjustMenuTitle),
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  final next = !_showColorAdjustPanel;
+                  _closeAllOverlayPanels();
+                  _showColorAdjustPanel = next;
+                });
               },
             ),
           ],
@@ -751,6 +769,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
             // してしまい操作不能になる）。
             if (_showMeshTransformPanel && !isDesktop)
               _sidedPanel(anchorLeft: false, leftHanded: leftHanded, top: 56, bottom: null, child: _meshTransformPanel()),
+            // 色調調整パネル（仕様書18：新機能）
+            if (_showColorAdjustPanel && !isDesktop)
+              _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 56, bottom: null, child: _colorAdjustPanel()),
           ],
         ),
       ),
@@ -771,7 +792,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showOnionSkinPanel ||
       _showRulerPanel ||
       _showFilterPanel ||
-      _showQuickToolPanel;
+      _showQuickToolPanel ||
+      _showColorAdjustPanel;
 
   // PC/DeXモード（広い画面）：現在開いているツールオプション系パネルを1つ
   // 返す（複数同時に開いていた場合は優先度の高いものを返す）。左側の
@@ -788,6 +810,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (_showFilterPanel) return _filterPanel();
     if (_showQuickToolPanel) return _quickToolPanel();
     if (_showMeshTransformPanel) return _meshTransformPanel();
+    if (_showColorAdjustPanel) return _colorAdjustPanel();
     return null;
   }
 
@@ -909,6 +932,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
         onApply: _applyMeshTransform,
         onCancel: _cancelMeshTransform,
         onClose: _cancelMeshTransform,
+      );
+
+  /// 色調調整パネル（仕様書18：新機能）。
+  Widget _colorAdjustPanel() => ColorAdjustSheet(
+        projectId: widget.projectId,
+        sceneId: _currentSceneId,
+        layerId: _currentLayerId,
+        frameIndex: _currentFrame,
+        totalFrames: context.read<ProjectService>().frameCount(widget.projectId, _currentSceneId),
+        onClose: () => setState(() => _showColorAdjustPanel = false),
       );
 
   /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの

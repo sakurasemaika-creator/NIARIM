@@ -2030,5 +2030,16 @@
   "tipsRoughLayerRescueTitle": "러프 레이어에 선화를 그려버렸다면 「명도로 투명화」로 구출",
   "tipsRoughLayerRescueDesc": "러프 스케치 레이어 위에 실수로 선화를 그려버려도, 아무것도 지우지 않고 선화만 꺼낼 수 있습니다. ①새 레이어를 추가하고 블렌드 모드를 「나누기」로 설정. ②스포이드로 러프의 색을 추출해 그 나누기 레이어 전체를 채운다（러프가 옅어집니다）. ③나누기 레이어를 복제하면 러프가 완전히 사라집니다. ④레이어 패널의 「표시 중인 모든 레이어 결합」으로 한 장으로 합친다. ⑤합친 레이어의 세 점 메뉴에서 「명도로 투명화（그레이）」를 선택하면 흰 부분이 투명해지고 선화만 남습니다.",
   "filterNameMonochrome": "모노크롬",
-  "timelineEffectTypeMonochrome": "모노크롬"
+  "timelineEffectTypeMonochrome": "모노크롬",
+  "filterNameColorAdjust": "색조 조정",
+  "filterColorAdjustSaturationLabel": "채도",
+  "filterColorAdjustBrightnessLabel": "명도",
+  "filterColorAdjustContrastLabel": "대비",
+  "canvasColorAdjustTitle": "색조 조정",
+  "canvasColorAdjustAddToDrawFilter": "그리기 필터에 추가",
+  "canvasColorAdjustAddToEffectFilter": "연출 필터에 추가",
+  "canvasColorAdjustMenuTitle": "색조 조정",
+  "filterCustomMenuDuplicate": "복제",
+  "filterCustomMenuFavoriteBlockTitle": "삭제할 수 없습니다",
+  "filterCustomMenuFavoriteBlockBody": "즐겨찾기로 등록된 필터는 삭제할 수 없습니다. 먼저 즐겨찾기를 해제한 후 삭제해 주세요."
 }
