@@ -160,6 +160,9 @@ class _BrushPanelState extends State<BrushPanel> {
                   itemBuilder: (context, index) {
                     final brush = brushList[index];
                     final isSelected = current?.id == brush.id;
+                    // プリインストールのブラシは編集・削除できない
+                    // （複製したものは複製元とは別IDになるため編集・削除可能）。
+                    final builtIn = brushService.isBuiltIn(brush.id);
                     return ListTile(
                       key: ValueKey(brush.id),
                       dense: true,
@@ -186,17 +189,18 @@ class _BrushPanelState extends State<BrushPanel> {
                             icon: const Icon(Icons.more_vert, size: 14),
                             onSelected: (action) => _handleBrushAction(context, action, brush),
                             itemBuilder: (_) => [
-                              PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
+                              if (!builtIn) PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
                               PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
                               PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
                               PopupMenuItem(value: 'export', child: Text(l10n.transferExport)),
-                              PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
+                              if (!builtIn)
+                                PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                             ],
                           ),
                         ],
                       ),
                       onTap: () => brushService.selectBrush(brush.id),
-                      onLongPress: () => _showBrushSettings(context, brush),
+                      onLongPress: builtIn ? null : () => _showBrushSettings(context, brush),
                     );
                   },
                 ),

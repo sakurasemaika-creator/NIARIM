@@ -160,25 +160,51 @@ class ToneService extends ChangeNotifier {
     }
   }
 
+  // プリインストールされている初期実装トーン（_defaultTones()の9件）は
+  // 編集・削除の対象外とする（複製したものは別IDになるため、複製後の
+  // 編集・削除は可能）。
+  static final Set<String> _builtInIds = _defaultTones().map((t) => t.id).toSet();
+
+  bool isBuiltIn(String id) => _builtInIds.contains(id);
+
   void addTone(Tone tone) {
     _tones.add(tone);
     notifyListeners();
     _persist();
   }
 
-  void deleteTone(String id) {
-    _tones.removeWhere((t) => t.id == id);
+  /// [id]のトーンを削除する。プリインストール、またはお気に入り登録中の
+  /// 場合は削除せずfalseを返す（呼び出し元でその旨のポップアップを表示する）。
+  bool deleteTone(String id) {
+    if (isBuiltIn(id)) return false;
+    final idx = _tones.indexWhere((t) => t.id == id);
+    if (idx < 0) return false;
+    if (_tones[idx].isFavorite) return false;
+    _tones.removeAt(idx);
     notifyListeners();
     _persist();
+    return true;
   }
 
   void updateTone(Tone tone) {
+    if (isBuiltIn(tone.id)) return;
     final idx = _tones.indexWhere((t) => t.id == tone.id);
     if (idx >= 0) {
       _tones[idx] = tone;
       notifyListeners();
       _persist();
     }
+  }
+
+  /// [id]のトーンを複製する（名前の末尾に「のコピー」を付けて追加）。
+  /// プリインストールのトーンも複製自体は可能（複製後の新しいIDは
+  /// プリインストール扱いにならない）。
+  void duplicateTone(String id) {
+    final tone = _tones.firstWhere((t) => t.id == id);
+    final newId = 'Tone${DateTime.now().millisecondsSinceEpoch}';
+    _tones.add(tone.copyWith(id: newId, name: '${tone.name} (コピー)', isFavorite: false));
+    notifyListeners();
+    _persist();
   }
 
   // ─── フォルダ管理（仕様書17） ─────────────────────────────────────────

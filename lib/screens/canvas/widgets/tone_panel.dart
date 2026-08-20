@@ -139,6 +139,9 @@ class _TonePanelState extends State<TonePanel> {
                         itemBuilder: (context, index) {
                           final tone = toneList[index];
                           final isSelected = current?.id == tone.id;
+                          // プリインストールのトーンは編集・削除できない
+                          // （複製したものは複製元とは別IDになるため編集・削除可能）。
+                          final builtIn = toneService.isBuiltIn(tone.id);
                           return ListTile(
                             dense: true,
                             selected: isSelected,
@@ -157,16 +160,18 @@ class _TonePanelState extends State<TonePanel> {
                                   icon: const Icon(Icons.more_vert, size: 14),
                                   onSelected: (action) => _handleAction(context, action, tone),
                                   itemBuilder: (_) => [
-                                    PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
+                                    if (!builtIn) PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
+                                    PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
                                     PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
                                     PopupMenuItem(value: 'export', child: Text(l10n.transferExport)),
-                                    PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
+                                    if (!builtIn)
+                                      PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                                   ],
                                 ),
                               ],
                             ),
                             onTap: () => toneService.selectTone(tone.id),
-                            onLongPress: () => _showToneSettings(context, tone),
+                            onLongPress: builtIn ? null : () => _showToneSettings(context, tone),
                           );
                         },
                       ),
@@ -193,6 +198,8 @@ class _TonePanelState extends State<TonePanel> {
     switch (action) {
       case 'edit':
         _showToneSettings(context, tone);
+      case 'duplicate':
+        service.duplicateTone(tone.id);
       case 'move':
         showMoveToCreativeFolderSheet(
           context,

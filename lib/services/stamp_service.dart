@@ -98,25 +98,51 @@ class StampService extends ChangeNotifier {
     }
   }
 
+  // プリインストールされている初期実装スタンプ（_defaultStamps()の7件）は
+  // 編集・削除の対象外とする（複製したものは別IDになるため、複製後の
+  // 編集・削除は可能）。
+  static final Set<String> _builtInIds = _defaultStamps().map((s) => s.id).toSet();
+
+  bool isBuiltIn(String id) => _builtInIds.contains(id);
+
   void addStamp(Stamp stamp) {
     _stamps.add(stamp);
     notifyListeners();
     _persist();
   }
 
-  void deleteStamp(String id) {
-    _stamps.removeWhere((s) => s.id == id);
+  /// [id]のスタンプを削除する。プリインストール、またはお気に入り登録中の
+  /// 場合は削除せずfalseを返す（呼び出し元でその旨のポップアップを表示する）。
+  bool deleteStamp(String id) {
+    if (isBuiltIn(id)) return false;
+    final idx = _stamps.indexWhere((s) => s.id == id);
+    if (idx < 0) return false;
+    if (_stamps[idx].isFavorite) return false;
+    _stamps.removeAt(idx);
     notifyListeners();
     _persist();
+    return true;
   }
 
   void updateStamp(Stamp stamp) {
+    if (isBuiltIn(stamp.id)) return;
     final idx = _stamps.indexWhere((s) => s.id == stamp.id);
     if (idx >= 0) {
       _stamps[idx] = stamp;
       notifyListeners();
       _persist();
     }
+  }
+
+  /// [id]のスタンプを複製する（名前の末尾に「のコピー」を付けて追加）。
+  /// プリインストールのスタンプも複製自体は可能（複製後の新しいIDは
+  /// プリインストール扱いにならない）。
+  void duplicateStamp(String id) {
+    final stamp = _stamps.firstWhere((s) => s.id == id);
+    final newId = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
+    _stamps.add(stamp.copyWith(id: newId, name: '${stamp.name} (コピー)', isFavorite: false));
+    notifyListeners();
+    _persist();
   }
 
   // ─── フォルダ管理（仕様書17） ─────────────────────────────────────────

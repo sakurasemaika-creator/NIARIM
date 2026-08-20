@@ -171,6 +171,13 @@ class BrushService extends ChangeNotifier {
     }
   }
 
+  // プリインストールされている初期実装ブラシ（_defaultBrushes()の6件）は
+  // 編集・削除の対象外とする（複製したものは対象外の複製元とは別IDになる
+  // ため、複製後の編集・削除は可能）。
+  static final Set<String> _builtInIds = _defaultBrushes().map((b) => b.id).toSet();
+
+  bool isBuiltIn(String id) => _builtInIds.contains(id);
+
   void addBrush(Brush brush) {
     _brushes.add(brush);
     _preloadTextureIfNeeded(brush);
@@ -178,10 +185,17 @@ class BrushService extends ChangeNotifier {
     _persist();
   }
 
-  void deleteBrush(String id) {
-    _brushes.removeWhere((b) => b.id == id);
+  /// [id]のブラシを削除する。プリインストール、またはお気に入り登録中の
+  /// 場合は削除せずfalseを返す（呼び出し元でその旨のポップアップを表示する）。
+  bool deleteBrush(String id) {
+    if (isBuiltIn(id)) return false;
+    final idx = _brushes.indexWhere((b) => b.id == id);
+    if (idx < 0) return false;
+    if (_brushes[idx].isFavorite) return false;
+    _brushes.removeAt(idx);
     notifyListeners();
     _persist();
+    return true;
   }
 
   void duplicateBrush(String id) {
@@ -210,6 +224,7 @@ class BrushService extends ChangeNotifier {
   }
 
   void updateBrush(Brush brush) {
+    if (isBuiltIn(brush.id)) return;
     final idx = _brushes.indexWhere((b) => b.id == brush.id);
     if (idx >= 0) {
       _brushes[idx] = brush;
