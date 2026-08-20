@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show compute;
+import 'brightness_alpha_engine.dart';
 import 'mesh_warp_engine.dart';
 
 /// シーンID・フレームIndex・レイヤーIDから、TileManager内部で使用する
@@ -318,6 +320,25 @@ class TileManager {
     warped.dispose();
     if (byteData == null) return;
     replaceLayerPixels(layerId, byteData.buffer.asUint8List());
+  }
+
+  /// 「明度で透過」（レイヤーパネル三点メニュー）：レイヤー全体の各ピクセルの
+  /// 明るさから不透明度を作り直し、結果をタイルへ書き戻す（仕様書16）。
+  /// 下描きレイヤーに誤って線画を描いてしまった時、白い部分を透明にして
+  /// 線画だけを取り出す用途などに使う。[grayMode]がtrueならグレー（色は
+  /// そのまま・輝度ベースの単純な不透明度化）、falseならカラー（GIMPの
+  /// 「色を透明に」と同じアルゴリズムで、色を白の外側へ復元しながら透過）。
+  /// 低スペック端末でのUIスレッドブロックを防ぐため、計算自体は別Isolateで行う。
+  Future<void> applyBrightnessToAlpha(String layerId, {required bool grayMode}) async {
+    final composite = await compositeLayerToImage(layerId);
+    final byteData = await composite.toByteData(format: ui.ImageByteFormat.rawRgba);
+    composite.dispose();
+    if (byteData == null) return;
+    final transformed = await compute(
+      runBrightnessToAlphaInIsolate,
+      BrightnessToAlphaParams(byteData.buffer.asUint8List(), grayMode),
+    );
+    replaceLayerPixels(layerId, transformed);
   }
 
   /// レイヤーの全ピクセルを、キャンバス全体サイズのRGBA8888バッファで置き換える。

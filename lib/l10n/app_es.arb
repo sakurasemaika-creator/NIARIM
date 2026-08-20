@@ -2022,5 +2022,11 @@
   "layerPanelMergeAllVisibleTooltip": "Combinar todas las capas visibles",
   "canvasBrushSliderToggleLabel": "Detalles",
   "helpMeshTransformTitle": "Transformación libre / Deformación de malla",
-  "helpMeshTransformDesc": "Una herramienta de transformación para toda la capa, que se abre desde el menú de edición/ajustes en la esquina superior derecha del lienzo. A diferencia de transformar una selección, no hace falta seleccionar nada: arrastra las esquinas o puntos individuales de la cuadrícula con el dedo para un resultado libre. El control deslizante de densidad del panel puede subdividir la malla hasta 10×10, y pellizcar dos puntos distintos con dos dedos a la vez ofrece una forma intuitiva de rotar o escalar."
+  "helpMeshTransformDesc": "Una herramienta de transformación para toda la capa, que se abre desde el menú de edición/ajustes en la esquina superior derecha del lienzo. A diferencia de transformar una selección, no hace falta seleccionar nada: arrastra las esquinas o puntos individuales de la cuadrícula con el dedo para un resultado libre. El control deslizante de densidad del panel puede subdividir la malla hasta 10×10, y pellizcar dos puntos distintos con dos dedos a la vez ofrece una forma intuitiva de rotar o escalar.",
+  "layerPanelBrightnessToAlphaLabel": "Transparencia por brillo",
+  "layerPanelBrightnessToAlphaHint": "Hace que las zonas más claras sean más transparentes. Los colores se mantienen, pero se vuelven translúcidos (toda la imagen se aclara, en lugar de que el fondo blanco simplemente desaparezca).",
+  "layerPanelBrightnessToAlphaColorButton": "Color",
+  "layerPanelBrightnessToAlphaGrayButton": "Gris",
+  "tipsRoughLayerRescueTitle": "¿Dibujaste el lineart sobre tu boceto? Rescátalo con \"Transparencia por brillo\"",
+  "tipsRoughLayerRescueDesc": "Aunque hayas dibujado el lineart por accidente encima de la capa de boceto, puedes recuperar solo el lineart sin borrar nada. 1) Añade una nueva capa y pon su modo de fusión en Dividir. 2) Toma el color del boceto con el cuentagotas y rellena toda esa capa Dividir con él (esto desvanece el boceto). 3) Duplica la capa Dividir y el boceto desaparece por completo. 4) Usa \"Combinar todas las capas visibles\" en el panel de capas para aplanar todo en una sola capa. 5) Desde el menú de tres puntos de esa capa combinada, elige \"Transparencia por brillo (Gris)\": las zonas blancas se vuelven transparentes y solo queda el lineart."
 }

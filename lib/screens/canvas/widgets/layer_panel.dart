@@ -1202,11 +1202,54 @@ class _LayerPanelState extends State<LayerPanel> {
                     _showConvertToCommonDialog(context, layer);
                   },
                 ),
+              // 明度で透過：下描きレイヤーに誤って線画を描いてしまった時などに、
+              // 白い部分ほど透明になるようレイヤーの不透明度を作り直す
+              // （仕様書16）。色を保つ「カラー」と、輝度だけで単純に
+              // 透過させる「グレー」の2種類。元に戻せない操作のため、
+              // Undoには対応していない（このメニューの他の破壊的操作＝
+              // 結合と同様の扱い）。
+              if (layer.type == model.LayerType.normal)
+                ListTile(
+                  leading: const Icon(Icons.opacity),
+                  title: Text(l10n.layerPanelBrightnessToAlphaLabel),
+                  subtitle: Text(l10n.layerPanelBrightnessToAlphaHint, style: const TextStyle(fontSize: 11)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _applyBrightnessToAlpha(context, layer, grayMode: false);
+                        },
+                        child: Text(l10n.layerPanelBrightnessToAlphaColorButton),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _applyBrightnessToAlpha(context, layer, grayMode: true);
+                        },
+                        child: Text(l10n.layerPanelBrightnessToAlphaGrayButton),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// 「明度で透過」を実行し、サムネイル・プレビューを更新する。
+  Future<void> _applyBrightnessToAlpha(BuildContext context, model.Layer layer, {required bool grayMode}) async {
+    final projectService = context.read<ProjectService>();
+    final tileManager = projectService.tileManagerOf(widget.projectId);
+    await tileManager.applyBrightnessToAlpha(
+      frameLayerKey(widget.sceneId, widget.frameIndex, layer.id),
+      grayMode: grayMode,
+    );
+    if (!mounted) return;
+    setState(() => _thumbRevision[layer.id] = (_thumbRevision[layer.id] ?? 0) + 1);
   }
 
   /// 共通レイヤー化ダイアログ（仕様書16）。「現在レイヤーを共通化」／

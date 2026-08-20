@@ -2022,5 +2022,11 @@
   "layerPanelMergeAllVisibleTooltip": "合併所有可見圖層",
   "canvasBrushSliderToggleLabel": "詳細",
   "helpMeshTransformTitle": "自由變形・網格變形",
-  "helpMeshTransformDesc": "從畫布右上角的編輯/設定選單開啟的、以整個圖層為對象的變形工具。與選取範圍變形不同，不需要選取範圍，可以用手指單獨拖曳角點或網格點做出自由的變形。控制面板的分割數滑桿最多可將網格細分為10×10，用兩根手指同時捏住不同的點，即可直覺地進行旋轉、縮放操作。"
+  "helpMeshTransformDesc": "從畫布右上角的編輯/設定選單開啟的、以整個圖層為對象的變形工具。與選取範圍變形不同，不需要選取範圍，可以用手指單獨拖曳角點或網格點做出自由的變形。控制面板的分割數滑桿最多可將網格細分為10×10，用兩根手指同時捏住不同的點，即可直覺地進行旋轉、縮放操作。",
+  "layerPanelBrightnessToAlphaLabel": "依明度透明化",
+  "layerPanelBrightnessToAlphaHint": "越亮的部分會變得越透明。顏色維持不變但會變成半透明（不是白色背景直接消失，而是整張圖都變淡）。",
+  "layerPanelBrightnessToAlphaColorButton": "彩色",
+  "layerPanelBrightnessToAlphaGrayButton": "灰色",
+  "tipsRoughLayerRescueTitle": "不小心把線稿畫在草圖圖層上？用「依明度透明化」搶救",
+  "tipsRoughLayerRescueDesc": "即使不小心把線稿畫在了草圖圖層上，也能在不刪除任何內容的情況下把線稿單獨取出來。①新增一個圖層，將其混合模式設為「除法」。②用滴管吸取草圖的顏色，將整個除法圖層填滿該顏色（草圖會變淡）。③複製該除法圖層，草圖會完全消失。④在圖層面板中使用「合併所有可見圖層」將其合併為一層。⑤在合併後圖層的三點選單中選擇「依明度透明化（灰色）」，白色部分就會變透明，只留下線稿。"
 }

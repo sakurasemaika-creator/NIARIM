@@ -2022,5 +2022,11 @@
   "layerPanelMergeAllVisibleTooltip": "Fusionner tous les calques visibles",
   "canvasBrushSliderToggleLabel": "Détails",
   "helpMeshTransformTitle": "Transformation libre / Déformation maillée",
-  "helpMeshTransformDesc": "Un outil de transformation pour tout le calque, accessible depuis le menu édition/réglages en haut à droite du canevas. Contrairement à la transformation d'une sélection, aucune sélection n'est nécessaire : faites glisser les coins ou des points de la grille individuellement avec le doigt pour un résultat libre. Le curseur de densité du panneau de contrôle peut subdiviser la grille jusqu'à 10×10, et pincer deux points différents avec deux doigts à la fois offre un moyen intuitif de pivoter ou redimensionner."
+  "helpMeshTransformDesc": "Un outil de transformation pour tout le calque, accessible depuis le menu édition/réglages en haut à droite du canevas. Contrairement à la transformation d'une sélection, aucune sélection n'est nécessaire : faites glisser les coins ou des points de la grille individuellement avec le doigt pour un résultat libre. Le curseur de densité du panneau de contrôle peut subdiviser la grille jusqu'à 10×10, et pincer deux points différents avec deux doigts à la fois offre un moyen intuitif de pivoter ou redimensionner.",
+  "layerPanelBrightnessToAlphaLabel": "Transparence par luminosité",
+  "layerPanelBrightnessToAlphaHint": "Rend les zones claires plus transparentes. Les couleurs restent les mêmes mais deviennent translucides (toute l'image s'éclaircit, plutôt que le fond blanc ne disparaisse simplement).",
+  "layerPanelBrightnessToAlphaColorButton": "Couleur",
+  "layerPanelBrightnessToAlphaGrayButton": "Gris",
+  "tipsRoughLayerRescueTitle": "Encrage dessiné sur le calque de brouillon ? Récupérez-le avec « Transparence par luminosité »",
+  "tipsRoughLayerRescueDesc": "Même si vous avez dessiné l'encrage par erreur sur le calque de brouillon, vous pouvez récupérer uniquement l'encrage sans rien supprimer. 1) Ajoutez un nouveau calque et réglez son mode de fusion sur Diviser. 2) Prélevez la couleur du brouillon à la pipette et remplissez tout ce calque Diviser avec (le brouillon s'estompe). 3) Dupliquez le calque Diviser et le brouillon disparaît complètement. 4) Utilisez « Fusionner tous les calques visibles » dans le panneau des calques pour tout aplatir en un seul calque. 5) Depuis le menu à trois points de ce calque fusionné, choisissez « Transparence par luminosité (Gris) » : les zones blanches deviennent transparentes, ne laissant que l'encrage."
 }

@@ -2022,5 +2022,11 @@
   "layerPanelMergeAllVisibleTooltip": "Merge all visible layers",
   "canvasBrushSliderToggleLabel": "Details",
   "helpMeshTransformTitle": "Free Transform / Mesh Warp",
-  "helpMeshTransformDesc": "A transform tool for the whole layer, opened from the edit/settings menu in the top-right of the canvas. Unlike transforming a selection, no selection is needed — drag corners or individual grid points with your finger for a freeform result. The control panel's density slider can subdivide the mesh up to 10×10, and pinching two different points with two fingers at once gives an intuitive way to rotate or scale."
+  "helpMeshTransformDesc": "A transform tool for the whole layer, opened from the edit/settings menu in the top-right of the canvas. Unlike transforming a selection, no selection is needed — drag corners or individual grid points with your finger for a freeform result. The control panel's density slider can subdivide the mesh up to 10×10, and pinching two different points with two fingers at once gives an intuitive way to rotate or scale.",
+  "layerPanelBrightnessToAlphaLabel": "Transparency from Brightness",
+  "layerPanelBrightnessToAlphaHint": "Makes lighter areas more transparent. Colors stay the same but become translucent (the whole picture gets lighter, rather than the white background simply disappearing).",
+  "layerPanelBrightnessToAlphaColorButton": "Color",
+  "layerPanelBrightnessToAlphaGrayButton": "Gray",
+  "tipsRoughLayerRescueTitle": "Drew line art on your rough sketch layer? Rescue it with \"Transparency from Brightness\"",
+  "tipsRoughLayerRescueDesc": "Even if you accidentally drew your line art on top of your rough sketch layer, you can pull the line art back out without deleting anything. 1) Add a new layer and set its blend mode to Divide. 2) Pick up the sketch's color with the eyedropper and fill that whole Divide layer with it (this fades the sketch). 3) Duplicate the Divide layer and the sketch disappears completely. 4) Use \"Merge all visible layers\" in the layer panel to flatten everything into one layer. 5) From that merged layer's three-dot menu, choose \"Transparency from Brightness (Gray)\" — the white areas become transparent, leaving just the line art."
 }
