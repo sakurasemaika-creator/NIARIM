@@ -187,7 +187,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
-            : Text(l10n.appTitle),
+            // アプリ名（NIARIM）はホーム画面左上にのみ表示される固有のロゴ
+            // テキストのため、他画面のAppBarタイトル共通スタイル
+            // （AppBarTheme.titleTextStyle：くらむぼん）とは別に、ここだけ
+            // 白光明朝を明示指定する。明朝体は線が細く小さいと読みにくいため
+            // 太字にし、文字間を少し広げて可読性を上げる。
+            : Text(
+                l10n.appTitle,
+                style: const TextStyle(
+                  fontFamily: 'HakkouMincho',
+                  fontFamilyFallback: ['NotoSerifJP'],
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  height: 1.5,
+                ),
+              ),
         actions: [
           // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
           // トップ画面右上からは重複表示を削除した。
@@ -1184,7 +1198,7 @@ enum ProjectViewMode { large, medium, small, detail }
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
 
 // ─── 初回起動ポップアップ ─────────────────────────────────────────────────
-// 仕様書02・11・19：初回起動時は「手書きアニメーションを制作できます」の
+// 仕様書02・11・19：初回起動時は「手描きアニメーションを制作できます」の
 // ポップアップのみを表示する（複数ページのチュートリアルは表示しない）。
 
 class _FirstLaunchDialog extends StatelessWidget {
@@ -1197,7 +1211,15 @@ class _FirstLaunchDialog extends StatelessWidget {
     return AlertDialog(
       content: Text(l10n.homeFirstLaunchMessage),
       actions: [
-        FilledButton(onPressed: onDone, child: Text(l10n.homeFirstLaunchStart)),
+        // 「はじめる」ボタンの文字はくらむぼんを明示指定する
+        // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
+        FilledButton(
+          onPressed: onDone,
+          child: Text(
+            l10n.homeFirstLaunchStart,
+            style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
   }
