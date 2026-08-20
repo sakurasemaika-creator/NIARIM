@@ -151,6 +151,11 @@ class _BrushPanelState extends State<BrushPanel> {
                 child: brushList.isEmpty
                     ? Center(child: Text(l10n.brushEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
                     : ReorderableListView.builder(
+                  // ドラッグハンドルは行末に明示アイコンとして置く（既定の
+                  // ドラッグハンドルだと、行全体の長押しで開く編集シート
+                  // （onLongPress）や、お気に入り・三点メニューのタップと
+                  // ジェスチャーが競合するため）。
+                  buildDefaultDragHandles: false,
                   itemCount: brushList.length,
                   onReorder: (oldIndex, newIndex) {
                     if (!isFiltering) {
@@ -197,6 +202,14 @@ class _BrushPanelState extends State<BrushPanel> {
                                 PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                             ],
                           ),
+                          if (!isFiltering)
+                            ReorderableDragStartListener(
+                              index: index,
+                              child: const Padding(
+                                padding: EdgeInsets.only(left: 2),
+                                child: Icon(Icons.drag_indicator, size: 16, color: Colors.grey),
+                              ),
+                            ),
                         ],
                       ),
                       onTap: () => brushService.selectBrush(brush.id),

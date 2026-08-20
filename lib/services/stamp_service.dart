@@ -134,6 +134,15 @@ class StampService extends ChangeNotifier {
     }
   }
 
+  /// スタンプ一覧の表示順をドラッグで並べ替える（ブラシと同じ操作方法）。
+  void reorderStamp(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    final stamp = _stamps.removeAt(oldIndex);
+    _stamps.insert(newIndex, stamp);
+    notifyListeners();
+    _persist();
+  }
+
   /// [id]のスタンプを複製する（名前の末尾に「のコピー」を付けて追加）。
   /// プリインストールのスタンプも複製自体は可能（複製後の新しいIDは
   /// プリインストール扱いにならない）。

@@ -196,6 +196,15 @@ class ToneService extends ChangeNotifier {
     }
   }
 
+  /// トーン一覧の表示順をドラッグで並べ替える（ブラシと同じ操作方法）。
+  void reorderTone(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    final tone = _tones.removeAt(oldIndex);
+    _tones.insert(newIndex, tone);
+    notifyListeners();
+    _persist();
+  }
+
   /// [id]のトーンを複製する（名前の末尾に「のコピー」を付けて追加）。
   /// プリインストールのトーンも複製自体は可能（複製後の新しいIDは
   /// プリインストール扱いにならない）。

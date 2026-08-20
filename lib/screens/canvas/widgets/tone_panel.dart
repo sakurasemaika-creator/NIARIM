@@ -50,6 +50,10 @@ class _TonePanelState extends State<TonePanel> {
     }
     final toneList = tones.toList();
     final current = toneService.currentTone;
+    // 絞込中（お気に入りのみ・検索・フォルダ指定）は表示順と実際の並び順が
+    // 一致しないため、並べ替えは絞込なしのときだけ有効にする。
+    final isFiltering = _showFavoritesOnly || query.isNotEmpty ||
+        (_folderFilter != null && _folderFilter != _allFolders);
 
     return Card(
       elevation: 8,
@@ -134,8 +138,16 @@ class _TonePanelState extends State<TonePanel> {
               Expanded(
                 child: toneList.isEmpty
                     ? Center(child: Text(l10n.toneEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
-                    : ListView.builder(
+                    : ReorderableListView.builder(
+                        // ドラッグハンドルは行末に明示アイコンとして置く
+                        // （既定のドラッグハンドルだと、行全体の長押しで開く
+                        // 編集シートや、お気に入り・三点メニューのタップと
+                        // ジェスチャーが競合するため）。
+                        buildDefaultDragHandles: false,
                         itemCount: toneList.length,
+                        onReorder: (oldIndex, newIndex) {
+                          if (!isFiltering) toneService.reorderTone(oldIndex, newIndex);
+                        },
                         itemBuilder: (context, index) {
                           final tone = toneList[index];
                           final isSelected = current?.id == tone.id;
@@ -143,6 +155,7 @@ class _TonePanelState extends State<TonePanel> {
                           // （複製したものは複製元とは別IDになるため編集・削除可能）。
                           final builtIn = toneService.isBuiltIn(tone.id);
                           return ListTile(
+                            key: ValueKey(tone.id),
                             dense: true,
                             selected: isSelected,
                             leading: Icon(Icons.texture, size: 16,
@@ -168,6 +181,14 @@ class _TonePanelState extends State<TonePanel> {
                                       PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                                   ],
                                 ),
+                                if (!isFiltering)
+                                  ReorderableDragStartListener(
+                                    index: index,
+                                    child: const Padding(
+                                      padding: EdgeInsets.only(left: 2),
+                                      child: Icon(Icons.drag_indicator, size: 16, color: Colors.grey),
+                                    ),
+                                  ),
                               ],
                             ),
                             onTap: () => toneService.selectTone(tone.id),

@@ -51,6 +51,10 @@ class _StampPanelState extends State<StampPanel> {
     }
     final stampList = stamps.toList();
     final current = stampService.currentStamp;
+    // 絞込中（お気に入りのみ・検索・フォルダ指定）は表示順と実際の並び順が
+    // 一致しないため、並べ替えは絞込なしのときだけ有効にする。
+    final isFiltering = _showFavoritesOnly || query.isNotEmpty ||
+        (_folderFilter != null && _folderFilter != _allFolders);
 
     return Card(
       elevation: 8,
@@ -135,8 +139,16 @@ class _StampPanelState extends State<StampPanel> {
               Expanded(
                 child: stampList.isEmpty
                     ? Center(child: Text(l10n.stampEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
-                    : ListView.builder(
+                    : ReorderableListView.builder(
+                        // ドラッグハンドルは行末に明示アイコンとして置く
+                        // （既定のドラッグハンドルだと、行全体の長押しで開く
+                        // 編集シートや、お気に入り・三点メニューのタップと
+                        // ジェスチャーが競合するため）。
+                        buildDefaultDragHandles: false,
                         itemCount: stampList.length,
+                        onReorder: (oldIndex, newIndex) {
+                          if (!isFiltering) stampService.reorderStamp(oldIndex, newIndex);
+                        },
                         itemBuilder: (context, index) {
                           final stamp = stampList[index];
                           final isSelected = current?.id == stamp.id;
@@ -144,6 +156,7 @@ class _StampPanelState extends State<StampPanel> {
                           // （複製したものは複製元とは別IDになるため編集・削除可能）。
                           final builtIn = stampService.isBuiltIn(stamp.id);
                           return ListTile(
+                            key: ValueKey(stamp.id),
                             dense: true,
                             selected: isSelected,
                             leading: Icon(Icons.star_border_purple500, size: 16,
@@ -169,6 +182,14 @@ class _StampPanelState extends State<StampPanel> {
                                       PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                                   ],
                                 ),
+                                if (!isFiltering)
+                                  ReorderableDragStartListener(
+                                    index: index,
+                                    child: const Padding(
+                                      padding: EdgeInsets.only(left: 2),
+                                      child: Icon(Icons.drag_indicator, size: 16, color: Colors.grey),
+                                    ),
+                                  ),
                               ],
                             ),
                             onTap: () => stampService.selectStamp(stamp.id),
