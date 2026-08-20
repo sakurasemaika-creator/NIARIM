@@ -119,8 +119,8 @@ class _HelpScreenState extends State<HelpScreen> {
         // こちらへ統合済み（仕様書28：書き出し関連のヘルプ項目をある程度
         // 1つにまとめる）。topicKeyはexport_screen.dartのHelpButtonが参照して
         // いるため変更していない（表示タイトルのみ範囲を広げた）。
-        _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 1)),
-        _HelpEntry(topicKey: '書き出し画面', title: l10n.helpExportScreenTitle, description: l10n.helpExportScreenDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 0)),
+        _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 0)),
+        _HelpEntry(topicKey: '書き出し画面', title: l10n.helpExportScreenTitle, description: l10n.helpExportScreenDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 1)),
 
         // ── プレミアム ──────────────────────────────────────────
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),

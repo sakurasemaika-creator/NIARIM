@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// ヘルプページの図解（仕様書28：ヘルプページ全体の再編）。
 ///
@@ -156,39 +157,55 @@ class _HelpDiagramPainter extends CustomPainter {
 
   // ── テンプレート ────────────────────────────────────────────
 
-  /// キャンバス下部ツールバーの実アイコン（toolbar_item.dartの
-  /// ToolbarItemIcon._iconDataと同じ並び：ペン・消しゴム・バケツ・
-  /// スポイト・選択・指ツール・図形。実画面では消しゴム・バケツ・図形は
-  /// Font Awesomeのアイコンを使っているが、CustomPaint上への直接描画は
-  /// Material Icons（IconData）のみ対応のため、見た目が近いMaterial側の
-  /// アイコンで代替する）。
-  static const List<IconData> _toolbarIcons = [
+  /// キャンバス下部ツールバーの実アイコン（toolbar_widget.dartの
+  /// _buildToolItemと同じ並び・同じアイコン：ペン・消しゴム・バケツ・
+  /// スポイト・選択・指ツール・図形）。
+  static final List<IconData> _toolbarIcons = [
     Icons.brush,
-    Icons.backspace_outlined,
+    FontAwesomeIcons.eraser.data,
     Icons.format_color_fill,
     Icons.colorize,
     Icons.highlight_alt,
     Icons.pan_tool_alt,
-    Icons.category_outlined,
+    Icons.category,
   ];
+
+  /// canvas_icon_button.dartと同じ「アイコンの形にぴったり沿う半透明の
+  /// 黒い縁取り」を8方向へのわずかなオフセット重ね描きで再現する。実画面の
+  /// ツールバーは背景を一切持たず、この縁取りだけでキャンバス上の視認性を
+  /// 確保しているため、図解でも同じ手法を使うことで見た目を近づける。
+  static const List<Offset> _iconOutlineOffsets = [
+    Offset(-1, -1), Offset(0, -1), Offset(1, -1),
+    Offset(-1, 0), Offset(1, 0),
+    Offset(-1, 1), Offset(0, 1), Offset(1, 1),
+  ];
+
+  void _drawOutlinedIcon(Canvas canvas, IconData icon, Offset center, {double size = 15, required Color color}) {
+    for (final o in _iconOutlineOffsets) {
+      _drawIcon(canvas, icon, center + o, size: size, color: Colors.black.withValues(alpha: 0.55));
+    }
+    _drawIcon(canvas, icon, center, size: size, color: color);
+  }
 
   void _paintToolbarRow(Canvas canvas, Size size) {
     const slots = 7;
     final y = size.height * 0.62;
-    final barRect = Rect.fromLTWH(4, y - 14, size.width - 8, 28);
-    canvas.drawRRect(RRect.fromRectAndRadius(barRect, const Radius.circular(6)), _fillMuted);
+    // 実画面のツールバーはアイコン自体に背景を持たせず、キャンバスの
+    // 内容の上に直接浮かべる構成（canvas_icon_button.dart参照）。図解では
+    // 「キャンバスの中身」の代わりに濃色の帯を敷き、その上に同じ描画方式
+    // （黒縁取り＋白／選択時は差し色）でアイコンを乗せる。
+    final barRect = Rect.fromLTWH(4, y - 20, size.width - 8, 40);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(barRect, const Radius.circular(6)),
+      Paint()..color = scheme.inverseSurface.withValues(alpha: 0.82),
+    );
     final w = barRect.width / slots;
     final target = _clampSlot(slots);
     for (int i = 0; i < slots; i++) {
       final cx = barRect.left + w * (i + 0.5);
       final isTarget = i == target;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(cx, y), width: 20, height: 20),
-            const Radius.circular(4)),
-        isTarget ? (Paint()..color = scheme.primary.withValues(alpha: 0.2)) : Paint()..color = Colors.transparent,
-      );
       final icon = (isTarget ? spec.icon : null) ?? _toolbarIcons[i];
-      _drawIcon(canvas, icon, Offset(cx, y), size: 15, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      _drawOutlinedIcon(canvas, icon, Offset(cx, y), color: isTarget ? scheme.primary : Colors.white);
       if (isTarget) _highlightMarker(canvas, Offset(cx, y));
     }
   }
@@ -324,21 +341,38 @@ class _HelpDiagramPainter extends CustomPainter {
     }
   }
 
-  static const List<IconData> _exportIcons = [Icons.image_outlined, Icons.movie_outlined, Icons.gif_box_outlined];
+  // 実画面（export_screen.dart）の書き出し形式選択はRadioListTileの縦並び
+  // （MP4・GIF・透過WebMの順）のため、横並びチップではなくラジオボタン付きの
+  // 縦リストとして再現する。
+  static const List<IconData> _exportIcons = [Icons.movie_outlined, Icons.gif_box_outlined, Icons.layers_outlined];
 
   void _paintExportPicker(Canvas canvas, Size size) {
-    const slots = 3;
-    final w = (size.width - 40) / slots;
-    final target = _clampSlot(slots);
-    for (int i = 0; i < slots; i++) {
-      final rect = Rect.fromLTWH(16 + i * (w + 12), size.height * 0.2, w, size.height * 0.6);
-      final rr = RRect.fromRectAndRadius(rect, const Radius.circular(6));
+    const rows = 3;
+    final rowH = size.height / rows;
+    final target = _clampSlot(rows);
+    for (int i = 0; i < rows; i++) {
       final isTarget = i == target;
-      canvas.drawRRect(rr, isTarget ? _fillPrimaryFaint : _fillMuted);
-      canvas.drawRRect(rr, _strokeOutline);
+      final cy = rowH * (i + 0.5);
+      // ラジオボタン
+      final radioCenter = Offset(20, cy);
+      canvas.drawCircle(radioCenter, 6, Paint()
+        ..color = isTarget ? scheme.primary : scheme.onSurfaceVariant
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5);
+      if (isTarget) canvas.drawCircle(radioCenter, 3, Paint()..color = scheme.primary);
+      // アイコン
       final icon = (isTarget ? spec.icon : null) ?? _exportIcons[i];
-      _drawIcon(canvas, icon, rect.center, size: 18, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
-      if (isTarget) _highlightMarker(canvas, rect.center, r: 18);
+      _drawIcon(canvas, icon, Offset(40, cy), size: 15, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      // タイトル・サブタイトル行（実画面はRadioListTileでtitle+subtitleの2段）
+      final lineX = 54.0;
+      canvas.drawLine(Offset(lineX, cy - 4), Offset(size.width - 16, cy - 4),
+          Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2);
+      canvas.drawLine(Offset(lineX, cy + 6), Offset(lineX + (size.width - lineX) * 0.5, cy + 6),
+          Paint()..color = scheme.onSurfaceVariant.withValues(alpha: 0.55)..strokeWidth = 1.5);
+      if (isTarget) _highlightMarker(canvas, Offset(40, cy), r: 14);
+      if (i < rows - 1) {
+        canvas.drawLine(Offset(8, rowH * (i + 1)), Offset(size.width - 8, rowH * (i + 1)), _strokeOutline);
+      }
     }
   }
 
