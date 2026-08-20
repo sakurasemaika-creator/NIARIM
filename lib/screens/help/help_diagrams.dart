@@ -210,7 +210,12 @@ class _HelpDiagramPainter extends CustomPainter {
     }
   }
 
-  static const List<IconData> _topBarIcons = [Icons.undo, Icons.tune, Icons.more_vert, Icons.cloud_done_outlined];
+  // canvas_screen.dart _buildTopBar()の実際の並び：左詰めにUndo・Redo、
+  // Spacerを挟んで右詰めに定規・設定（編集メニュー、背景色・オニオンスキン・
+  // フィルター・自由変形などを集約）・ヘルプ。4スロットは
+  // 0=Undo・1=Redo・2=定規・3=設定に対応させる（ヘルプボタン自体はヘルプ
+  // 項目の対象にならないため常時非ハイライトで添えるのみ）。
+  static const List<IconData> _topBarIcons = [Icons.undo, Icons.redo, Icons.straighten, Icons.settings];
 
   void _paintTopBar(Canvas canvas, Size size) {
     const slots = 4;
@@ -218,14 +223,24 @@ class _HelpDiagramPainter extends CustomPainter {
     final barRect = Rect.fromLTWH(4, 4, size.width - 8, 24);
     canvas.drawRRect(RRect.fromRectAndRadius(barRect, const Radius.circular(5)), _fillMuted);
     final target = _clampSlot(slots);
-    final w = (size.width - 24) / slots;
-    for (int i = 0; i < slots; i++) {
-      final cx = size.width - 16 - w * i;
+    // 左詰め2つ（Undo・Redo）
+    const leftX = [18.0, 40.0];
+    for (int i = 0; i < 2; i++) {
       final isTarget = i == target;
       final icon = (isTarget ? spec.icon : null) ?? _topBarIcons[i];
-      _drawIcon(canvas, icon, Offset(cx, y), size: 14, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
-      if (isTarget) _highlightMarker(canvas, Offset(cx, y), r: 12);
+      _drawIcon(canvas, icon, Offset(leftX[i], y), size: 14, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      if (isTarget) _highlightMarker(canvas, Offset(leftX[i], y), r: 12);
     }
+    // 右詰め2つ＋ヘルプ（定規・設定・ヘルプの順）
+    final rightX = [size.width - 46, size.width - 24, size.width - 4];
+    for (int i = 2; i < slots; i++) {
+      final isTarget = i == target;
+      final icon = (isTarget ? spec.icon : null) ?? _topBarIcons[i];
+      _drawIcon(canvas, icon, Offset(rightX[i - 2], y), size: 14, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      if (isTarget) _highlightMarker(canvas, Offset(rightX[i - 2], y), r: 12);
+    }
+    _drawIcon(canvas, Icons.help_outline, Offset(rightX[2], y), size: 12,
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.5));
     // 下に画面本体の枠だけ添えて「上部バー」であることを示す。
     canvas.drawRRect(
       RRect.fromRectAndRadius(Rect.fromLTWH(size.width * 0.2, size.height * 0.48, size.width * 0.6, size.height * 0.44),
@@ -234,16 +249,53 @@ class _HelpDiagramPainter extends CustomPainter {
     );
   }
 
-  static const List<IconData> _layerIcons = [
-    Icons.image_outlined,
-    Icons.gradient,
-    Icons.format_paint_outlined,
-    Icons.dashboard_outlined,
+  // layer_panel.dartの実際の行構成：目（表示切替）アイコン→レイヤー種別
+  // アイコン→サムネイル→名前、の順で左から並ぶ（ListTile.leadingがRowで
+  // それらをまとめている）。
+  static const List<IconData> _layerTypeIcons = [
+    Icons.brush_outlined, // 通常レイヤー
+    Icons.folder_outlined, // フォルダ
+    Icons.groups_outlined, // 共通レイヤー
+    Icons.auto_fix_high_outlined, // 自動塗り
   ];
   static const List<IconData> _saveIcons = [Icons.save_outlined, Icons.history, Icons.bookmark_border];
 
-  void _paintLayerPanelList(Canvas canvas, Size size) => _paintRowList(canvas, size, rows: 4, icons: _layerIcons);
+  void _paintLayerPanelList(Canvas canvas, Size size) {
+    const rows = 4;
+    final rowH = size.height / rows;
+    final target = _clampSlot(rows);
+    for (int i = 0; i < rows; i++) {
+      final top = i * rowH + 2;
+      final rowRect = Rect.fromLTWH(4, top, size.width - 8, rowH - 4);
+      final isTarget = i == target;
+      canvas.drawRRect(RRect.fromRectAndRadius(rowRect, const Radius.circular(5)),
+          isTarget ? _fillPrimaryFaint : _fillMuted);
+      final cy = rowRect.center.dy;
+      // 目（表示切替）アイコン：実画面と同じく行の一番左
+      _drawIcon(canvas, Icons.visibility_outlined, Offset(rowRect.left + 12, cy), size: 12,
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.75));
+      // レイヤー種別アイコン
+      final typeIcon = _layerTypeIcons[i % _layerTypeIcons.length];
+      _drawIcon(canvas, typeIcon, Offset(rowRect.left + 26, cy), size: 11, color: scheme.onSurfaceVariant);
+      // サムネイル（対象行はここへ実アイコンを重ねて示す）
+      final thumb = Rect.fromLTWH(rowRect.left + 34, rowRect.top + 4, rowRect.height - 8, rowRect.height - 8);
+      canvas.drawRRect(RRect.fromRectAndRadius(thumb, const Radius.circular(3)), _strokeOutline);
+      if (isTarget && spec.icon != null) {
+        _drawIcon(canvas, spec.icon!, thumb.center, size: thumb.height * 0.5, color: scheme.primary);
+      }
+      // 名前のテキスト行
+      final lineX = thumb.right + 8;
+      canvas.drawLine(Offset(lineX, cy), Offset(rowRect.right - 20, cy),
+          Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2);
+      // 行末のドラッグハンドル（実画面と同じ、並べ替え用）
+      _drawIcon(canvas, Icons.drag_indicator, Offset(rowRect.right - 12, cy), size: 12,
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.55));
+      if (isTarget) _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
+    }
+  }
 
+  // save_tree_screen.dartの実際の行構成：サムネイル→タイトル（1行目）・
+  // 更新日時等（2行目）のListTile。レイヤーパネルと異なり目アイコンは無い。
   void _paintRowList(Canvas canvas, Size size,
       {required int rows, required List<IconData> icons, bool twoLines = false}) {
     final rowH = size.height / rows;
@@ -254,7 +306,6 @@ class _HelpDiagramPainter extends CustomPainter {
       final isTarget = i == target;
       canvas.drawRRect(RRect.fromRectAndRadius(rowRect, const Radius.circular(5)),
           isTarget ? _fillPrimaryFaint : _fillMuted);
-      // サムネイル代わりに実際のアイコンを描く
       final thumb = Rect.fromLTWH(rowRect.left + 6, rowRect.top + 4, rowRect.height - 8, rowRect.height - 8);
       canvas.drawRRect(RRect.fromRectAndRadius(thumb, const Radius.circular(3)), _strokeOutline);
       final icon = (isTarget ? spec.icon : null) ?? icons[i % icons.length];
@@ -263,39 +314,45 @@ class _HelpDiagramPainter extends CustomPainter {
       final lineX = thumb.right + 8;
       final linePaint = Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2;
       canvas.drawLine(Offset(lineX, rowRect.top + rowRect.height * 0.35),
-          Offset(rowRect.right - 26, rowRect.top + rowRect.height * 0.35), linePaint);
+          Offset(rowRect.right - 10, rowRect.top + rowRect.height * 0.35), linePaint);
       if (twoLines) {
         canvas.drawLine(Offset(lineX, rowRect.top + rowRect.height * 0.65),
             Offset(lineX + (rowRect.width * 0.3), rowRect.top + rowRect.height * 0.65),
             Paint()..color = scheme.onSurfaceVariant.withValues(alpha: 0.6)..strokeWidth = 2);
       }
-      // レイヤーパネル実画面と同じ「目（表示切替）」アイコンを行末に置く
-      _drawIcon(canvas, Icons.visibility_outlined, Offset(rowRect.right - 14, rowRect.center.dy), size: 14,
-          color: scheme.onSurfaceVariant.withValues(alpha: 0.7));
       if (isTarget) _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
     }
   }
 
+  // panel_close_bar.dartの実設計：閉じるボタン（×）はタイトル行の右端では
+  // なく、パネル最上部・中央に単独で配置される（仕様書：全パネル共通で
+  // 「ポップアップ中央の×ボタンで閉じる」に統一）。閉じる操作自体が
+  // ヘルプ項目の対象になることはまず無いため、ハイライト対象外の固定要素
+  // として常に描く。
   void _paintFloatingPanel(Canvas canvas, Size size) {
     const slots = 4;
     final panel = Rect.fromLTWH(size.width * 0.08, 2, size.width * 0.84, size.height - 4);
     canvas.drawRRect(RRect.fromRectAndRadius(panel, const Radius.circular(8)), _fillMuted);
     canvas.drawRRect(RRect.fromRectAndRadius(panel, const Radius.circular(8)), _strokeOutline);
     final target = _clampSlot(slots);
-    // 0: タイトル行（実際のパネルと同じく、左にアイコン・右に閉じるボタン）
-    final titleY = panel.top + panel.height * 0.14;
+    // 最上部中央：閉じるボタン（実画面と同じ配置。常時表示・非ハイライト）
+    final closeY = panel.top + panel.height * 0.1;
+    _drawIcon(canvas, Icons.close, Offset(panel.center.dx, closeY), size: 12,
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.6));
+    // 0: タイトル行（アイコン＋見出しテキスト）
+    final titleY = panel.top + panel.height * 0.3;
     _drawIcon(canvas, target == 0 ? (spec.icon ?? Icons.tune) : Icons.tune, Offset(panel.left + 16, titleY),
         size: 14, color: target == 0 ? scheme.primary : scheme.onSurfaceVariant);
-    _drawIcon(canvas, Icons.close, Offset(panel.right - 14, titleY), size: 12,
-        color: scheme.onSurfaceVariant.withValues(alpha: 0.7));
+    canvas.drawLine(Offset(panel.left + 30, titleY), Offset(panel.left + panel.width * 0.6, titleY),
+        Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2.5);
     if (target == 0) _highlightMarker(canvas, Offset(panel.left + 16, titleY), r: 10);
     // 1・2: 設定行
-    final row1Y = panel.top + panel.height * 0.4;
+    final row1Y = panel.top + panel.height * 0.52;
     _rowMark(canvas, panel, row1Y, target == 1, target == 1 ? spec.icon : null);
-    final row2Y = panel.top + panel.height * 0.6;
+    final row2Y = panel.top + panel.height * 0.68;
     _rowMark(canvas, panel, row2Y, target == 2, target == 2 ? spec.icon : null);
     // 3: スライダー行
-    final sliderY = panel.top + panel.height * 0.84;
+    final sliderY = panel.top + panel.height * 0.86;
     final sliderPaint = Paint()..color = scheme.outlineVariant..strokeWidth = 2;
     canvas.drawLine(Offset(panel.left + 12, sliderY), Offset(panel.right - 12, sliderY), sliderPaint);
     final handleX = panel.left + panel.width * 0.6;

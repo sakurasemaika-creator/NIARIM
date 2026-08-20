@@ -58,7 +58,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'ペンサブツール', title: l10n.helpPenSubToolTitle, description: l10n.helpPenSubToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 4)),
         // 選択範囲の変形と対になる新機能（仕様書28）。
-        _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.topBar, 1, icon: Icons.transform)),
+        _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.topBar, 3)),
         _HelpEntry(topicKey: 'カラーピッカー', title: l10n.helpColorPickerTitle, description: l10n.helpColorPickerDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: 'ブラシのお気に入り', title: l10n.helpBrushFavoriteTitle, description: l10n.helpBrushFavoriteDesc, category: l10n.helpCategoryBrush, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
 
