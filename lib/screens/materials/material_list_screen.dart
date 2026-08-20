@@ -51,7 +51,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
       appBar: AppBar(
         title: Text(l10n.materialListTitle),
         actions: [
-          const HelpButton(),
+          const HelpButton(topic: '素材一覧'),
           if (unusedCount > 0)
             TextButton(
               onPressed: _confirmRemoveUnused,

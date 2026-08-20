@@ -15,7 +15,7 @@ class GestureSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.gestureSettingsTitle), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.gestureSettingsTitle), actions: const [HelpButton(topic: 'ジェスチャー設定')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

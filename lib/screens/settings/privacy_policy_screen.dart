@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
-import '../../widgets/help_button.dart';
 
 /// プライバシーポリシー画面。
 ///
@@ -33,7 +32,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.privacyPolicyScreenTitle), actions: const [HelpButton()]),
+      // プライバシーポリシー本文自体が説明そのものであり、対応する専用の
+      // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない
+      // （仕様書28：ヘルプアイコンは対応する項目を開けるページにのみ表示）。
+      appBar: AppBar(title: Text(l10n.privacyPolicyScreenTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),

@@ -377,16 +377,17 @@ class AutofillEngine {
 
   // ─── 色トレス・線画馴染ませ（仕様書20：線画色設定） ─────────────────────
   // 塗り色のHSLへ色相・彩度・明度のオフセットを適用し、線画を塗り色に
-  // 馴染ませた色へ変換する（彩度は絶対値として置き換え、色相・明度は
-  // オフセットとして加算する）。
+  // 馴染ませた色へ変換する（色相・彩度・明度いずれも塗り色からのオフセット
+  // として加算する。以前は彩度のみ絶対値として置き換えていたが、他の2項目と
+  // 挙動が揃っておらず分かりにくかったため統一した）。
 
-  int _traceAdjustColor(int argb, double hueOffset, double saturationAbs, double lightnessOffset) {
+  int _traceAdjustColor(int argb, double hueOffset, double saturationOffset, double lightnessOffset) {
     final r = ((argb >> 16) & 0xFF) / 255.0;
     final g = ((argb >> 8) & 0xFF) / 255.0;
     final b = (argb & 0xFF) / 255.0;
-    final (h, _, l) = _rgbToHsl(r, g, b);
+    final (h, s, l) = _rgbToHsl(r, g, b);
     final newH = (h + hueOffset) % 360;
-    final newS = (saturationAbs / 100.0).clamp(0.0, 1.0);
+    final newS = (s + saturationOffset / 100.0).clamp(0.0, 1.0);
     final newL = (l + lightnessOffset / 100.0).clamp(0.0, 1.0);
     final (nr, ng, nb) = _hslToRgb(newH < 0 ? newH + 360 : newH, newS, newL);
     return 0xFF000000 |

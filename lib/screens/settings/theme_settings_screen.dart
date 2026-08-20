@@ -23,7 +23,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     final current = themeService.current;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.themeSettingsTitle), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.themeSettingsTitle), actions: const [HelpButton(topic: 'テーマ設定')]),
       body: desktopCentered(context, ListView(
         children: [
           // ベーステーマ
@@ -89,7 +89,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                 context, themeService, (p, c) => p.copyWith(updateMarkColor: c), current.updateMarkColor),
           ),
           const Divider(),
-          // プリセット一覧（ドラッグで並び替え可能、仕様書24）
+          // テーマ一覧（ドラッグで並び替え可能、仕様書24）
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: Text(l10n.themePresetSection, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -97,33 +97,38 @@ class ThemeSettingsScreen extends StatelessWidget {
           ReorderableListView(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            // ドラッグハンドルは行末の明示アイコンのみを使う。既定の
+            // ドラッグハンドル（buildDefaultDragHandles）を有効にしたままだと
+            // Flutterが自動でもう1つハンドルを追加してしまい、テーマ色の
+            // スウォッチからはみ出た黒いハンドルが二重に見えるバグになっていた。
+            buildDefaultDragHandles: false,
             onReorder: themeService.reorder,
             children: [
-              for (final preset in presets)
+              for (final entry in presets.asMap().entries)
                 ListTile(
-                  key: ValueKey(preset.id),
-                  tileColor: current.id == preset.id
+                  key: ValueKey(entry.value.id),
+                  tileColor: current.id == entry.value.id
                       ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
                       : null,
-                  leading: _PresetColorSwatch(preset: preset),
-                  title: Text(preset.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  leading: _PresetColorSwatch(preset: entry.value),
+                  title: Text(entry.value.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (current.id == preset.id)
+                      if (current.id == entry.value.id)
                         Icon(Icons.check, color: Theme.of(context).colorScheme.primary, size: 16),
                       IconButton(
                         icon: Icon(
-                          preset.isFavorite ? Icons.star : Icons.star_outline,
+                          entry.value.isFavorite ? Icons.star : Icons.star_outline,
                           size: 16,
-                          color: preset.isFavorite ? Colors.amber : null,
+                          color: entry.value.isFavorite ? Colors.amber : null,
                         ),
                         tooltip: l10n.commonFavoriteToggle,
-                        onPressed: () => themeService.toggleFavorite(preset.id),
+                        onPressed: () => themeService.toggleFavorite(entry.value.id),
                       ),
                       PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert, size: 16),
-                        onSelected: (action) => _handleAction(context, action, preset, themeService),
+                        onSelected: (action) => _handleAction(context, action, entry.value, themeService),
                         itemBuilder: (_) => [
                           PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
                           PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
@@ -131,10 +136,13 @@ class ThemeSettingsScreen extends StatelessWidget {
                           PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
                         ],
                       ),
-                      const Icon(Icons.drag_handle, size: 18),
+                      ReorderableDragStartListener(
+                        index: entry.key,
+                        child: const Icon(Icons.drag_handle, size: 18),
+                      ),
                     ],
                   ),
-                  onTap: () => themeService.applyPreset(preset.id),
+                  onTap: () => themeService.applyPreset(entry.value.id),
                 ),
             ],
           ),

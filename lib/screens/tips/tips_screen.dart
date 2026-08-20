@@ -223,9 +223,11 @@ class _TipListTile extends StatelessWidget {
   }
 }
 
-/// Tips詳細のポップアップ。1ページ目は図解＋タイトル、2ページ目以降は
-/// 説明文を読みやすい分量ごとに分割したページで、横スライドで読み進める。
-/// 説明の分量に応じてページ数は可変（固定2ページに限らない）。右上の
+/// Tips詳細のポップアップ。各ページに図解と本文の両方を必ず表示する
+/// （以前は1ページ目が図解のみ・2ページ目以降が文章のみでスカスカだった）。
+/// 説明文を読みやすい分量ごとに分割し、1ページに収まる分量ならページ数は
+/// 1のまま（＝スワイプ不要）、収まらない場合は必要なだけページ数を
+/// 増やして横スライドで読み進める（ページ数の上限は設けない）。右上の
 /// 閉じるボタンと、下部のページ位置インジケーター（何ページ中何ページ目か）
 /// を常設する。
 class _TipDetailDialog extends StatefulWidget {
@@ -247,10 +249,12 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     super.dispose();
   }
 
-  /// 説明文を約140字ごとの読みやすい分量に分割する。改行（段落）の区切りを
+  /// 説明文を約220字ごとの読みやすい分量に分割する。改行（段落）の区切りを
   /// 優先して尊重し、1段落だけで上限を超える場合はそのまま1ページにする。
+  /// どのページにも図解を併記するため、文章だけのページより少し広めの
+  /// 上限にしている。
   static List<String> _splitIntoPages(String text) {
-    const maxCharsPerPage = 140;
+    const maxCharsPerPage = 220;
     final paragraphs = text.split('\n').where((p) => p.trim().isNotEmpty).toList();
     if (paragraphs.isEmpty) return [text];
     final pages = <String>[];
@@ -271,7 +275,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final totalPages = 1 + _textPages.length;
+    final totalPages = _textPages.length;
     return Dialog(
       child: SizedBox(
         width: 360,
@@ -285,27 +289,19 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                     controller: _pageController,
                     onPageChanged: (p) => setState(() => _page = p),
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
-                        child: Column(
-                          children: [
-                            Expanded(child: Center(child: TipDiagram(widget.tip.diagram))),
-                            const SizedBox(height: 12),
-                            Text(widget.tip.title,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 15)),
-                          ],
-                        ),
-                      ),
                       for (final page in _textPages)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // すべてのページで図解を併記する（文章だけの
+                              // ページを作らない）。
+                              SizedBox(height: 84, child: TipDiagram(widget.tip.diagram)),
+                              const SizedBox(height: 8),
                               Text(widget.tip.title,
                                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: scheme.primary)),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Expanded(
                                 child: SingleChildScrollView(
                                   child: Text(page, style: const TextStyle(fontSize: 13, height: 1.5)),
@@ -317,10 +313,12 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                     ],
                   ),
                 ),
-                // ページ位置インジケーター（何ページ中何ページ目か）。ページ数が
+                // ページ位置インジケーター（何ページ中何ページ目か）。1ページに
+                // 収まる説明ではスワイプ自体が不要なため表示しない。ページ数が
                 // 多い説明でもドットが横に溢れないよう、6ページを超えたら
                 // 「n / N」のテキスト表示に切り替える。
-                Padding(
+                if (totalPages > 1)
+                  Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: totalPages <= 6
                       ? Row(

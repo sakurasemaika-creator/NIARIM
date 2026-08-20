@@ -85,10 +85,14 @@ class AutofillPart {
   final AutofillLineColorMode lineColorMode;
   final int lineColor; // lineColorMode==specified で使用
   final int lineOpacity; // 0〜100（線画レイヤー不透明度）
-  // 色トレス・線画馴染ませ用スライダー（デフォルト値は仕様書20の既定値）
+  // 色トレス・線画馴染ませ用スライダー（デフォルト値は仕様書20の既定値）。
+  // 色相・明度と同じく、彩度も「塗り色そのものからのオフセット」として
+  // 扱う（0＝塗り色と同じ彩度）。以前は0〜100の絶対値として塗り色の彩度を
+  // 置き換えていたが、他の2項目と挙動が揃っておらず分かりにくかったため
+  // 統一した。
   final double traceHue; // -180〜180、既定 -10
-  final double traceSaturation; // 0〜100、既定 60
-  final double traceLightness; // -100〜100、既定 -70
+  final double traceSaturation; // -100〜100、既定 +60（塗り色からのオフセット）
+  final double traceLightness; // -100〜100、既定 -50
 
   final bool isFavorite;
 
@@ -106,7 +110,7 @@ class AutofillPart {
     this.lineOpacity = 100,
     this.traceHue = -10,
     this.traceSaturation = 60,
-    this.traceLightness = -70,
+    this.traceLightness = -50,
     this.isFavorite = false,
   });
 
@@ -187,7 +191,7 @@ class AutofillPart {
         lineOpacity: j['lineOpacity'] as int? ?? 100,
         traceHue: (j['traceHue'] as num?)?.toDouble() ?? -10,
         traceSaturation: (j['traceSaturation'] as num?)?.toDouble() ?? 60,
-        traceLightness: (j['traceLightness'] as num?)?.toDouble() ?? -70,
+        traceLightness: (j['traceLightness'] as num?)?.toDouble() ?? -50,
         isFavorite: j['isFavorite'] as bool? ?? false,
       );
 }

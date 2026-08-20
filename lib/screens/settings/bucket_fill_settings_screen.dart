@@ -20,7 +20,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
     return Scaffold(
       // topicはヘルプ画面側の項目タイトル（日本語固定）と一致させるための
       // 内部検索キーであり、UI表示文字列ではないため翻訳しない。
-      appBar: AppBar(title: Text(l10n.bucketSettingsTitle), actions: const [HelpButton(topic: 'バケツツール')]),
+      appBar: AppBar(title: Text(l10n.bucketSettingsTitle), actions: const [HelpButton(topic: 'バケツ塗り詳細設定')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

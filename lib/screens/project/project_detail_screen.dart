@@ -154,7 +154,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       appBar: AppBar(
         title: Text(project.name),
         actions: [
-          const HelpButton(),
+          const HelpButton(topic: 'プロジェクト詳細画面'),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {

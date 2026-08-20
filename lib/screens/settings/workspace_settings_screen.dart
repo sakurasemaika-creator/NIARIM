@@ -22,7 +22,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     final presetService = context.watch<WorkspacePresetService>();
     final premium = context.watch<PremiumService>();
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.workspaceScreenTitle), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.workspaceScreenTitle), actions: const [HelpButton(topic: 'ワークスペース設定')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [

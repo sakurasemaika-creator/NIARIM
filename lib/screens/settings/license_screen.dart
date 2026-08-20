@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
-import '../../widgets/help_button.dart';
 
 /// 利用規約・ライセンス画面。
 ///
@@ -30,7 +29,10 @@ class LicenseScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.licenseScreenTitle), actions: const [HelpButton()]),
+      // 規約・ライセンス本文自体が説明そのものであり、対応する専用の
+      // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない
+      // （仕様書28：ヘルプアイコンは対応する項目を開けるページにのみ表示）。
+      appBar: AppBar(title: Text(l10n.licenseScreenTitle)),
       body: SafeArea(child: ListView(
         padding: const EdgeInsets.all(16),
         children: [

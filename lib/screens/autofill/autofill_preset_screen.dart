@@ -848,30 +848,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // リアルタイムプレビュー（仕様書20：不透明度を変更した際に
-                    // プレビューでも分かりやすく変化するよう、チェッカー柄の上に
-                    // 塗り色・グラデーションを不透明度を反映して重ねる）。
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _fillPreview(current, height: 40)),
-                        const SizedBox(width: 8),
-                        // 線画色プレビュー（塗り色だけでなく線画色もプレビューする）。
-                        Column(
-                          children: [
-                            Container(
-                              width: 40, height: 40,
-                              decoration: BoxDecoration(
-                                color: _lineColorFor(current),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: Colors.grey),
-                              ),
-                            ),
-                            Text(l10n.autofillPartLineColorLabel, style: const TextStyle(fontSize: 9)),
-                          ],
-                        ),
-                      ],
-                    ),
+                    // 塗り色のリアルタイムプレビュー（仕様書20：不透明度を
+                    // 変更した際にプレビューでも分かりやすく変化するよう、
+                    // チェッカー柄の上に塗り色・グラデーションを不透明度を
+                    // 反映して重ねる）。塗り色設定のすぐ上に置くことで、
+                    // どちらの設定に対応するプレビューかが一目でわかる。
+                    _fillPreview(current, height: 40),
                     const SizedBox(height: 12),
                     Text(l10n.autofillPartFillColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     const SizedBox(height: 4),
@@ -923,6 +905,28 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
                     ),
                     const Divider(),
+                    // 線画色のリアルタイムプレビュー。塗り色プレビューと同じく、
+                    // 線画色設定のすぐ上に置く（色トレス・線画馴染ませ選択時は
+                    // 塗り色からのオフセット適用後の色をプレビューする）。
+                    Container(
+                      height: 32,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CustomPaint(painter: const _CheckerboardPainter()),
+                          Opacity(
+                            opacity: current.lineOpacity / 100,
+                            child: ColoredBox(color: _lineColorFor(current)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Text(l10n.autofillPartLineColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
                     ...AutofillLineColorMode.values.map((m) => RadioListTile<AutofillLineColorMode>(
                           dense: true,
@@ -984,11 +988,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       EditableSliderValue(
                         text: l10n.autofillPartTraceSaturationLabel(current.traceSaturation.round()),
                         style: const TextStyle(fontSize: 11),
-                        value: current.traceSaturation, min: 0, max: 100, isInt: false,
+                        value: current.traceSaturation, min: -100, max: 100, isInt: false,
                         onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v.toDouble())),
                       ),
                       Slider(
-                        value: current.traceSaturation, min: 0, max: 100,
+                        value: current.traceSaturation, min: -100, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v)),
                       ),
                       EditableSliderValue(
@@ -1000,6 +1004,21 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       Slider(
                         value: current.traceLightness, min: -100, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v)),
+                      ),
+                      // 色トレス・線画馴染ませの3項目をまとめて既定値へ戻す。
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: (current.traceHue == -10 &&
+                                  current.traceSaturation == 60 &&
+                                  current.traceLightness == -50)
+                              ? null
+                              : () => setS(() => current = current.copyWith(
+                                    traceHue: -10, traceSaturation: 60, traceLightness: -50,
+                                  )),
+                          icon: const Icon(Icons.restart_alt, size: 16),
+                          label: Text(l10n.autofillPartResetTraceButton, style: const TextStyle(fontSize: 12)),
+                        ),
                       ),
                     ],
                     EditableSliderValue(
@@ -1482,7 +1501,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         final hsl = HSLColor.fromColor(base);
         var newHue = (hsl.hue + p.traceHue) % 360;
         if (newHue < 0) newHue += 360;
-        final newSat = (p.traceSaturation / 100).clamp(0.0, 1.0);
+        final newSat = (hsl.saturation + p.traceSaturation / 100).clamp(0.0, 1.0);
         final newLight = (hsl.lightness + p.traceLightness / 100).clamp(0.0, 1.0);
         return HSLColor.fromAHSL(1.0, newHue, newSat, newLight).toColor();
     }

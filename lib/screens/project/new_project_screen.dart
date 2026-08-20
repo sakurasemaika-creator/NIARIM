@@ -175,7 +175,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.newProjectScreenTitle), actions: const [HelpButton()]),
+      appBar: AppBar(title: Text(l10n.newProjectScreenTitle), actions: const [HelpButton(topic: '新規プロジェクト作成')]),
       body: desktopCentered(
         context,
         SingleChildScrollView(

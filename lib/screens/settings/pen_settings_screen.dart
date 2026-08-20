@@ -34,7 +34,7 @@ class PenSettingsScreen extends StatelessWidget {
     return Scaffold(
       // topicはヘルプ画面側の項目タイトル（日本語固定）と一致させるための
       // 内部検索キーであり、UI表示文字列ではないため翻訳しない。
-      appBar: AppBar(title: Text(l10n.penSettingsTitle), actions: const [HelpButton(topic: '筆圧カーブ')]),
+      appBar: AppBar(title: Text(l10n.penSettingsTitle), actions: const [HelpButton(topic: 'ペン設定')]),
       body: desktopCentered(context, ListView(
         padding: const EdgeInsets.all(16),
         children: [
