@@ -30,6 +30,7 @@ import '../../../services/performance_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../services/stamp_service.dart';
+import '../../../services/theme_service.dart';
 import '../../../services/tone_service.dart';
 import '../canvas_screen.dart';
 import 'pen_sub_tool_panel.dart' show PenSubTool;
@@ -2505,6 +2506,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsService>();
+    final theme = context.watch<ThemeService>().current;
     return GestureDetector(
       // 2本指タップ
       onSecondaryTap: () => _handleGesture(context, settings.twoFingerTap),
@@ -2618,6 +2620,9 @@ class _CanvasAreaState extends State<CanvasArea> {
                   meshControlPoints: meshControlPoints,
                   meshSourceImage: meshSourceImage,
                   showMeshHandles: widget.currentTool == DrawingTool.meshTransform,
+                  handleColor: theme.selectionColor,
+                  handleOutlineColor: theme.menuBgColor,
+                  extendedAreaWarningColor: theme.updateMarkColor,
                 ),
                 size: Size.infinite,
               ),
@@ -2696,6 +2701,14 @@ class _CanvasPainter extends CustomPainter {
   final List<Offset>? meshControlPoints;
   final ui.Image? meshSourceImage;
   final bool showMeshHandles;
+  // 選択範囲・変形ハンドル・定規ハンドルの色（テーマの選択色連動、
+  // 仕様書24：色固定の廃止）。キャンバス内容は任意の絵柄になり得るため、
+  // ハンドル自体の縁取りにはテーマのメニュー背景色を使い、内容色に
+  // 埋もれないコントラストを確保する。
+  final Color handleColor;
+  final Color handleOutlineColor;
+  // 「書き出し範囲外」の警告枠色（テーマの更新マーク色連動）。
+  final Color extendedAreaWarningColor;
 
   static const Color _outsideColor = Color(0xFF3A3A3A);
   static const double _checkerSize = 16.0;
@@ -2732,6 +2745,9 @@ class _CanvasPainter extends CustomPainter {
     this.meshControlPoints,
     this.meshSourceImage,
     this.showMeshHandles = false,
+    this.handleColor = Colors.blue,
+    this.handleOutlineColor = Colors.white,
+    this.extendedAreaWarningColor = Colors.red,
   });
 
   @override
@@ -2846,9 +2862,9 @@ class _CanvasPainter extends CustomPainter {
         drawingRect.topLeft +
             Offset(selectionEnd!.dx * sx, selectionEnd!.dy * sy),
       );
-      canvas.drawRect(r, Paint()..color = Colors.blue.withValues(alpha: 0.2));
+      canvas.drawRect(r, Paint()..color = handleColor.withValues(alpha: 0.2));
       canvas.drawRect(r, Paint()
-        ..color = Colors.blue
+        ..color = handleColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0);
     }
@@ -2866,7 +2882,7 @@ class _CanvasPainter extends CustomPainter {
         path.lineTo(drawingRect.left + p.dx * sx, drawingRect.top + p.dy * sy);
       }
       canvas.drawPath(path, Paint()
-        ..color = Colors.blue
+        ..color = handleColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0);
     }
@@ -2920,13 +2936,13 @@ class _CanvasPainter extends CustomPainter {
       final w = (project?.exportWidth ?? 1920).toDouble();
       final h = (project?.exportHeight ?? 1080).toDouble();
       final boxPaint = Paint()
-        ..color = Colors.blue
+        ..color = handleColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
       canvas.drawRect(Rect.fromPoints(ts(Offset.zero), ts(Offset(w, h))), boxPaint);
       void handle(Offset p) {
-        canvas.drawCircle(p, 8, Paint()..color = Colors.blue.withValues(alpha: 0.85));
-        canvas.drawCircle(p, 8, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+        canvas.drawCircle(p, 8, Paint()..color = handleColor.withValues(alpha: 0.85));
+        canvas.drawCircle(p, 8, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
       }
       handle(ts(Offset(w, h))); // 拡縮ハンドル
       handle(ts(Offset(w / 2, -40))); // 回転ハンドル
@@ -2939,7 +2955,7 @@ class _CanvasPainter extends CustomPainter {
       final gsy = drawingRect.height / meshSourceImage!.height;
       Offset gts(Offset p) => drawingRect.topLeft + Offset(p.dx * gsx, p.dy * gsy);
       final gridPaint = Paint()
-        ..color = Colors.blue.withValues(alpha: 0.85)
+        ..color = handleColor.withValues(alpha: 0.85)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
       int idxAt(int r, int c) => r * (meshCols + 1) + c;
@@ -2956,9 +2972,9 @@ class _CanvasPainter extends CustomPainter {
       }
       for (final p in points) {
         final hp = gts(p);
-        canvas.drawCircle(hp, 8, Paint()..color = Colors.blue.withValues(alpha: 0.85));
+        canvas.drawCircle(hp, 8, Paint()..color = handleColor.withValues(alpha: 0.85));
         canvas.drawCircle(
-            hp, 8, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+            hp, 8, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
       }
     }
 
@@ -2970,13 +2986,13 @@ class _CanvasPainter extends CustomPainter {
       final sy = drawingRect.height / (project?.exportHeight ?? 1080);
       Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final boxPaint = Paint()
-        ..color = Colors.blue
+        ..color = handleColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
       canvas.drawRect(Rect.fromPoints(ts(bounds.topLeft), ts(bounds.bottomRight)), boxPaint);
       void handle(Offset p) {
-        canvas.drawCircle(p, 8, Paint()..color = Colors.blue.withValues(alpha: 0.85));
-        canvas.drawCircle(p, 8, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+        canvas.drawCircle(p, 8, Paint()..color = handleColor.withValues(alpha: 0.85));
+        canvas.drawCircle(p, 8, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
       }
       handle(ts(bounds.bottomRight)); // 拡縮ハンドル
       handle(ts(Offset(bounds.center.dx, bounds.top - 40))); // 回転ハンドル
@@ -2984,7 +3000,7 @@ class _CanvasPainter extends CustomPainter {
 
     if (hasExtended) {
       canvas.drawRect(exportRect, Paint()
-        ..color = Colors.red
+        ..color = extendedAreaWarningColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5);
     }
@@ -2997,7 +3013,7 @@ class _CanvasPainter extends CustomPainter {
     final r = activeRuler;
     if (r == null || !r.isVisible) return;
     final paint = Paint()
-      ..color = Colors.blue.withValues(alpha: 0.5)
+      ..color = handleColor.withValues(alpha: 0.5)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     final cw = project?.exportWidth.toDouble() ?? 1920.0;
@@ -3006,8 +3022,8 @@ class _CanvasPainter extends CustomPainter {
     final sy = drawingRect.height / ch;
     Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
     void handle(Offset p) {
-      canvas.drawCircle(p, 6, Paint()..color = Colors.blue.withValues(alpha: 0.8));
-      canvas.drawCircle(p, 6, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+      canvas.drawCircle(p, 6, Paint()..color = handleColor.withValues(alpha: 0.8));
+      canvas.drawCircle(p, 6, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
     }
     switch (r.type) {
       case RulerType.line:
@@ -3207,5 +3223,8 @@ class _CanvasPainter extends CustomPainter {
       old.showMeshHandles != showMeshHandles ||
       old.project?.drawingAreaScale != project?.drawingAreaScale ||
       old.project?.exportWidth != project?.exportWidth ||
-      old.project?.exportHeight != project?.exportHeight;
+      old.project?.exportHeight != project?.exportHeight ||
+      old.handleColor != handleColor ||
+      old.handleOutlineColor != handleOutlineColor ||
+      old.extendedAreaWarningColor != extendedAreaWarningColor;
 }

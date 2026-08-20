@@ -204,7 +204,9 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                         color: c,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: c == current ? Colors.white : Colors.grey,
+                          color: c == current
+                              ? Theme.of(ctx).colorScheme.primary
+                              : Theme.of(ctx).colorScheme.outlineVariant,
                           width: c == current ? 3 : 1,
                         ),
                       ),

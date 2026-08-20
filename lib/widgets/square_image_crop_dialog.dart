@@ -2,7 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../services/theme_service.dart';
 
 /// クロップ枠（プレビュー領域）の一辺の論理ピクセルサイズ。
 const double _kCropViewSize = 260;
@@ -130,7 +132,10 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
                         onScaleStart: _onScaleStart,
                         onScaleUpdate: _onScaleUpdate,
                         child: ColoredBox(
-                          color: Colors.black,
+                          // 画像が回転してクロップ枠の外側に空きができた部分の背景。
+                          // 固定の黒ではなく、テーマのパネル背景色（暗めの面色）に
+                          // 連動させる。
+                          color: context.watch<ThemeService>().current.panelBgColor,
                           child: CustomPaint(
                             size: const Size(_kCropViewSize, _kCropViewSize),
                             painter: _CropPreviewPainter(

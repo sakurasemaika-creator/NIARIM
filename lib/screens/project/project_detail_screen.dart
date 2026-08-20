@@ -129,15 +129,16 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     // プレビュー全画面化中：プレビューと再生コントロールのみを全画面表示する
     // （タイムラインモードのプレビュー全画面化と同等）。
     if (_isPreviewFullscreen) {
+      final theme = context.watch<ThemeService>().current;
       return Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: theme.panelBgColor,
         body: SafeArea(
           child: Column(
             children: [
               Align(
                 alignment: Alignment.centerLeft,
                 child: IconButton(
-                  icon: const Icon(Icons.fullscreen_exit, color: Colors.white),
+                  icon: Icon(Icons.fullscreen_exit, color: theme.textColor),
                   tooltip: l10n.projectDetailFullscreenCloseTooltip,
                   onPressed: () => setState(() => _isPreviewFullscreen = false),
                 ),

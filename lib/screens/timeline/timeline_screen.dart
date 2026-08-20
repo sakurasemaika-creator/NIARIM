@@ -38,6 +38,7 @@ import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/settings_service.dart';
+import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
 import '../canvas/widgets/color_picker_panel.dart';
@@ -519,8 +520,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // スクラブ操作の挙動に差異は生じない。
     if (_isPreviewFullscreen) {
       final l10n = AppLocalizations.of(context)!;
+      final theme = context.watch<ThemeService>().current;
       return Scaffold(
-        backgroundColor: Colors.black,
+        // 映写モードの背景も固定の黒ではなく、テーマのパネル背景色に連動
+        // させる（それでも大抵は暗色系のためチェック目的の集中は保たれる）。
+        backgroundColor: theme.panelBgColor,
         body: Listener(
           onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
           child: SafeArea(
@@ -529,7 +533,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    icon: const Icon(Icons.fullscreen_exit, color: Colors.white),
+                    icon: Icon(Icons.fullscreen_exit, color: theme.textColor),
                     tooltip: l10n.timelineFullscreenPreviewCloseTooltip,
                     onPressed: () => setState(() => _isPreviewFullscreen = false),
                   ),
@@ -706,10 +710,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
               tooltipKey: 'timeline_preview_fullscreen',
               message: l10n.timelinePreviewFullscreenTip,
               child: Material(
-                color: Colors.black.withValues(alpha: 0.4),
+                color: context.watch<ThemeService>().current.menuBgColor.withValues(alpha: 0.7),
                 shape: const CircleBorder(),
                 child: IconButton(
-                  icon: const Icon(Icons.fullscreen, color: Colors.white, size: 20),
+                  icon: Icon(Icons.fullscreen, color: context.watch<ThemeService>().current.textColor, size: 20),
                   tooltip: l10n.timelinePreviewFullscreenTooltip,
                   onPressed: sceneId == null
                       ? null
@@ -4839,7 +4843,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       height: 140,
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: context.watch<ThemeService>().current.panelBgColor,
         borderRadius: BorderRadius.circular(6),
       ),
       clipBehavior: Clip.antiAlias,

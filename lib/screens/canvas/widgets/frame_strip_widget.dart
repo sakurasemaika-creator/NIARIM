@@ -177,14 +177,14 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       height: 64,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
-        border: Border(top: BorderSide(color: Colors.grey[800]!)),
+        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
       ),
       child: Row(
         children: [
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
               // 左右に((ビューポート幅-アイテム幅)/2)の余白を入れることで、
-              // 先頭・末尾のフレームも赤枠（画面中央）まできっちり
+              // 先頭・末尾のフレームも中央の現在フレーム枠まできっちり
               // スクロールできるようにする。
               final sidePadding = ((constraints.maxWidth - _itemExtent) / 2).clamp(0.0, double.infinity);
               return NotificationListener<ScrollEndNotification>(
@@ -257,13 +257,16 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.55),
+                                  // サムネイルはどんな絵柄・色にもなり得るため、バッジの背景は
+                                  // テーマのメニュー背景色（半透明）、文字は更新マーク色と同じ
+                                  // 目立つ差し色（テーマの警告・注目色）を使う。
+                                  color: context.watch<ThemeService>().current.menuBgColor.withValues(alpha: 0.7),
                                   borderRadius: BorderRadius.circular(3),
                                 ),
                                 child: Text('$hold',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 11,
-                                        color: Colors.amber,
+                                        color: context.watch<ThemeService>().current.updateMarkColor,
                                         fontWeight: FontWeight.bold)),
                               ),
                             ),

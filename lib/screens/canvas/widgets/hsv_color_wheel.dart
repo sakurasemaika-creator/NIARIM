@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../services/theme_service.dart';
 
 /// 正方形（彩度・明度）＋外側カラーサークル（色相）のタップ選択式カラー
 /// ピッカー（仕様書20：色管理仕様、タスク#91）。従来のH/S/Vスライダー方式に
@@ -38,6 +40,9 @@ class HsvColorWheel extends StatelessWidget {
   Widget build(BuildContext context) {
     final ringThickness = _ringThickness;
     final squareSize = _squareSize;
+    // マーカーの縁取りはテーマのメニュー背景色連動にする（ホイール自体は
+    // 色相・彩度・明度を表す機能上のグラデーションのため色固定のまま）。
+    final markerOutlineColor = context.watch<ThemeService>().current.menuBgColor;
     return SizedBox(
       width: size,
       height: size,
@@ -53,7 +58,7 @@ class HsvColorWheel extends StatelessWidget {
             onTapUp: (_) => onChangeEnd?.call(),
             child: CustomPaint(
               size: Size(size, size),
-              painter: _HueRingPainter(hue: hue, thickness: ringThickness),
+              painter: _HueRingPainter(hue: hue, thickness: ringThickness, markerOutlineColor: markerOutlineColor),
             ),
           ),
           GestureDetector(
@@ -87,7 +92,7 @@ class HsvColorWheel extends StatelessWidget {
                   Positioned(
                     left: (saturation * squareSize) - 8,
                     top: ((1 - value) * squareSize) - 8,
-                    child: _marker(),
+                    child: _marker(markerOutlineColor),
                   ),
                 ],
               ),
@@ -107,13 +112,13 @@ class HsvColorWheel extends StatelessWidget {
     );
   }
 
-  Widget _marker() {
+  Widget _marker(Color outlineColor) {
     return Container(
       width: 16,
       height: 16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(color: outlineColor, width: 2),
         boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 2)],
       ),
     );
@@ -137,8 +142,9 @@ class HsvColorWheel extends StatelessWidget {
 class _HueRingPainter extends CustomPainter {
   final double hue;
   final double thickness;
+  final Color markerOutlineColor;
 
-  _HueRingPainter({required this.hue, required this.thickness});
+  _HueRingPainter({required this.hue, required this.thickness, required this.markerOutlineColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -160,12 +166,13 @@ class _HueRingPainter extends CustomPainter {
     // 現在の色相位置のマーカー。
     final angle = hue * math.pi / 180;
     final markerCenter = center + Offset(math.cos(angle), math.sin(angle)) * (outerRadius + innerRadius) / 2;
-    canvas.drawCircle(markerCenter, thickness / 2 - 2, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 3);
+    canvas.drawCircle(markerCenter, thickness / 2 - 2, Paint()..color = markerOutlineColor..style = PaintingStyle.stroke..strokeWidth = 3);
     canvas.drawCircle(markerCenter, thickness / 2 - 2, Paint()..color = Colors.black26..style = PaintingStyle.stroke..strokeWidth = 1);
   }
 
   @override
-  bool shouldRepaint(_HueRingPainter old) => old.hue != hue || old.thickness != thickness;
+  bool shouldRepaint(_HueRingPainter old) =>
+      old.hue != hue || old.thickness != thickness || old.markerOutlineColor != markerOutlineColor;
 }
 
 /// 透明色への切り替えボタン（仕様書20）。チェッカー柄の円で「透明」を表現し、
@@ -185,7 +192,7 @@ class _TransparentToggleButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey,
+            color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant,
             width: isActive ? 2.5 : 1.5,
           ),
         ),
