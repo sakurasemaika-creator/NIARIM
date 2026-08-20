@@ -74,13 +74,16 @@ class ToneService extends ChangeNotifier {
         const Tone(id: 'Tone0005', name: 'ライン 細'),
         const Tone(id: 'Tone0006', name: 'ライン 太'),
         // ピクセルモード用トーン（1ピクセルごとに市松模様／格子柄／散らし
-        // ドットになっているトーン）。procedural_texture.dartの
+        // 配置になっているトーン）。procedural_texture.dartの
         // generateBuiltInToneTextureが名前に「市松」「格子」「散らし」を
         // 含むかで判定する。「散らし」は格子（縦横の線がつながって網目状）
-        // とは逆に、1ドットずつ上下左右を1px空けて独立させたもの。
-        const Tone(id: 'Tone0007', name: 'ドット市松（1px）'),
-        const Tone(id: 'Tone0008', name: 'ドット格子（1px）'),
-        const Tone(id: 'Tone0009', name: 'ドット散らし（1px）'),
+        // とは逆に、1ピクセルずつ上下左右を1px空けて独立させたもの。
+        // 「ドット」という表記は丸い水玉模様と誤認されるため使わず、
+        // 四角い1ピクセル単位のパターンには「ピクセル」を使う
+        // （brush.dartのpixelMode改称と同じ理由・同じ命名規則）。
+        const Tone(id: 'Tone0007', name: 'ピクセル市松（1px）'),
+        const Tone(id: 'Tone0008', name: 'ピクセル格子（1px）'),
+        const Tone(id: 'Tone0009', name: 'ピクセル散らし（1px）'),
       ];
 
   Future<void> init() async {
@@ -96,10 +99,23 @@ class ToneService extends ChangeNotifier {
       // 反映する（既に同名IDのトーンが存在する場合は追加しない）。
       final existingIds = _tones.map((t) => t.id).toSet();
       final missing = _defaultTones().where((t) => !existingIds.contains(t.id));
+      var changed = false;
       if (missing.isNotEmpty) {
         _tones.addAll(missing);
-        await _persist();
+        changed = true;
       }
+      // 「ドット○○（1px）」は「ピクセル○○（1px）」へ改称した（「ドット」が
+      // 丸い水玉模様と誤認されるため）。旧名のまま残っている既存ユーザーの
+      // トーンをIDで特定して更新する。
+      final defaults = {for (final t in _defaultTones()) t.id: t};
+      for (int i = 0; i < _tones.length; i++) {
+        final fresh = defaults[_tones[i].id];
+        if (fresh != null && _tones[i].name != fresh.name && _tones[i].name.contains('ドット')) {
+          _tones[i] = _tones[i].copyWith(name: fresh.name);
+          changed = true;
+        }
+      }
+      if (changed) await _persist();
     }
     final foldersRaw = prefs.getStringList(_foldersKey);
     _folders.clear();
