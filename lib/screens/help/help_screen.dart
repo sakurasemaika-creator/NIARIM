@@ -85,6 +85,10 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '筆圧カーブ', title: l10n.helpPressureCurveTitle, description: l10n.helpPressureCurveDesc, category: l10n.helpCategoryPenInput, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: 'トーン塗り', title: l10n.helpToneFillTitle, description: l10n.helpToneFillDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
         _HelpEntry(topicKey: 'ピクセルモード', title: l10n.helpPixelModeTitle, description: l10n.helpPixelModeDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
+        // 関連する項目同士が近くに並ぶよう、「その他」にあった描画領域・
+        // 背景色の説明をここへ移動（仕様書28：ヘルプページの項目並び替え）。
+        _HelpEntry(topicKey: '描画領域', title: l10n.helpDrawingAreaTitle, description: l10n.helpDrawingAreaDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
+        _HelpEntry(topicKey: 'キャンバスの背景色', title: l10n.helpCanvasBackgroundTitle, description: l10n.helpCanvasBackgroundDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
 
         // ── タイムライン・アニメーション ──────────────────────────
         _HelpEntry(topicKey: 'タイムライン', title: l10n.helpTimelineTitle, description: l10n.helpTimelineDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 2)),
@@ -122,23 +126,27 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 1)),
         _HelpEntry(topicKey: '書き出し画面', title: l10n.helpExportScreenTitle, description: l10n.helpExportScreenDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 0)),
 
-        // ── その他 ────────────────────────────────────────────
+        // ── プレミアム ──────────────────────────────────────────
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0)),
-        _HelpEntry(topicKey: 'フォントの読み込み', title: l10n.helpFontImportTitle, description: l10n.helpFontImportDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
-        _HelpEntry(topicKey: 'パフォーマンス設定', title: l10n.helpPerformanceSettingsTitle, description: l10n.helpPerformanceSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
-        _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
-        _HelpEntry(topicKey: 'バケツ塗り詳細設定', title: l10n.helpBucketDetailSettingsTitle, description: l10n.helpBucketDetailSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
+
+        // ── プロジェクト管理 ──────────────────────────────────────
         _HelpEntry(topicKey: 'ホーム画面', title: l10n.helpHomeScreenTitle, description: l10n.helpHomeScreenDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0)),
         _HelpEntry(topicKey: '新規プロジェクト作成', title: l10n.helpNewProjectTitle, description: l10n.helpNewProjectDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1)),
         _HelpEntry(topicKey: 'プロジェクト詳細画面', title: l10n.helpProjectDetailTitle, description: l10n.helpProjectDetailDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 2)),
-        _HelpEntry(topicKey: '描画領域', title: l10n.helpDrawingAreaTitle, description: l10n.helpDrawingAreaDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
-        _HelpEntry(topicKey: 'キャンバスの背景色', title: l10n.helpCanvasBackgroundTitle, description: l10n.helpCanvasBackgroundDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
+
+        // ── 設定画面 ────────────────────────────────────────────
+        // 各種設定画面の説明を1箇所にまとめた（仕様書28：ヘルプページの
+        // 項目並び替え。以前は「その他」内に他の項目と交互に散らばっていた）。
         _HelpEntry(topicKey: 'テーマ設定', title: l10n.helpThemeSettingsTitle, description: l10n.helpThemeSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ワークスペース設定', title: l10n.helpWorkspaceSettingsTitle, description: l10n.helpWorkspaceSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
+        _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ペン設定', title: l10n.helpPenSettingsTitle, description: l10n.helpPenSettingsDesc, category: l10n.helpCategoryPenInput, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
-        _HelpEntry(topicKey: 'Undo回数設定', title: l10n.helpUndoSettingsTitle, description: l10n.helpUndoSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: '傾き検知', title: l10n.helpTiltDetectionTitle, description: l10n.helpTiltDetectionDesc, category: l10n.helpCategoryPenInput, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
+        _HelpEntry(topicKey: 'パフォーマンス設定', title: l10n.helpPerformanceSettingsTitle, description: l10n.helpPerformanceSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
+        _HelpEntry(topicKey: 'バケツ塗り詳細設定', title: l10n.helpBucketDetailSettingsTitle, description: l10n.helpBucketDetailSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
+        _HelpEntry(topicKey: 'Undo回数設定', title: l10n.helpUndoSettingsTitle, description: l10n.helpUndoSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
+        _HelpEntry(topicKey: 'フォントの読み込み', title: l10n.helpFontImportTitle, description: l10n.helpFontImportDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
       ];
 
   @override
