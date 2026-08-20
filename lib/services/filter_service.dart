@@ -46,6 +46,7 @@ class FilterService extends ChangeNotifier {
         FilterDef(id: 'Filter0011', name: 'レトロアニメ', kind: FilterKind.retroAnime, strength: 60),
         FilterDef(id: 'Filter0012', name: 'ブラウン管', kind: FilterKind.crt, strength: 50),
         FilterDef(id: 'Filter0013', name: 'モノクロ', kind: FilterKind.monochrome, strength: 100),
+        FilterDef(id: 'Filter0014', name: '二値化', kind: FilterKind.threshold, thresholdValue: 128),
       ];
 
   Future<void> init() async {
@@ -95,6 +96,8 @@ class FilterService extends ChangeNotifier {
     double? caSaturation,
     double? caBrightness,
     double? caContrast,
+    int? monochromeColor,
+    double? thresholdValue,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -113,6 +116,8 @@ class FilterService extends ChangeNotifier {
       caSaturation: caSaturation,
       caBrightness: caBrightness,
       caContrast: caContrast,
+      monochromeColor: monochromeColor,
+      thresholdValue: thresholdValue,
     );
     notifyListeners();
     _persist();

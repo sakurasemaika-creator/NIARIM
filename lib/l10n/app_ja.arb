@@ -2251,8 +2251,8 @@
   "layerPanelBrightnessToAlphaGrayButton": "グレー",
   "tipsRoughLayerRescueTitle": "下描きに線画を描いてしまった時は「明度で透過」で救出",
   "tipsRoughLayerRescueDesc": "下描きレイヤーに誤って線画を重ねて描いてしまっても、レイヤーを消さずに線画だけを取り出せます。①新しいレイヤーを追加し、ブレンドモードを「除算」にする。②スポイトで下描きの色を拾い、その除算レイヤー全体を塗りつぶす（下描きが薄くなります）。③除算レイヤーを複製すると、下描きが完全に消えます。④レイヤーパネルの「表示中の全レイヤーを結合」で1枚にまとめる。⑤結合したレイヤーの三点メニューから「明度で透過（グレー）」を選べば、白い部分が透明になり線画だけが残ります。",
-  "filterNameMonochrome": "モノクロ",
-  "timelineEffectTypeMonochrome": "モノクロ",
+  "filterNameMonochrome": "単色化フィルター",
+  "timelineEffectTypeMonochrome": "単色化フィルター",
   "filterNameColorAdjust": "色調調整",
   "filterColorAdjustSaturationLabel": "彩度",
   "filterColorAdjustBrightnessLabel": "明度",
@@ -2263,5 +2263,11 @@
   "canvasColorAdjustMenuTitle": "色調調整",
   "filterCustomMenuDuplicate": "複製",
   "filterCustomMenuFavoriteBlockTitle": "削除できません",
-  "filterCustomMenuFavoriteBlockBody": "お気に入り登録中のフィルターは削除できません。削除するにはお気に入り登録を解除してください。"
+  "filterCustomMenuFavoriteBlockBody": "お気に入り登録中のフィルターは削除できません。削除するにはお気に入り登録を解除してください。",
+  "filterNameThreshold": "二値化フィルター",
+  "filterMonochromeStrength": "単色化の強さ",
+  "filterMonochromeColorLabel": "単色化の色",
+  "filterThresholdLabel": "閾値",
+  "tipsLineArtExtractionTitle": "色調補正・二値化・明度で透過を組み合わせて線画を抽出する",
+  "tipsLineArtExtractionDesc": "色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。"
 }

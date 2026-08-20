@@ -49,11 +49,13 @@ Uint8List applyDrawFilterInIsolate(
       engine.applyNoise(data, width, height, (filter.strength / 100).clamp(0.0, 1.0), NoiseType.gaussian),
     FilterKind.retroAnime => engine.applyRetroAnime(data, width, height, filter.strength),
     FilterKind.crt => engine.applyCrt(data, width, height, filter.strength),
-    FilterKind.monochrome =>
-      engine.applyMonochrome(data, width, height, (filter.strength / 100).clamp(0.0, 1.0)),
+    FilterKind.monochrome => engine.applyMonochrome(
+        data, width, height, (filter.strength / 100).clamp(0.0, 1.0),
+        targetColor: filter.monochromeColor),
     FilterKind.colorAdjust => engine.applyColorAdjust(
         data, width, height,
         saturation: filter.caSaturation, brightness: filter.caBrightness, contrast: filter.caContrast),
+    FilterKind.threshold => engine.applyThreshold(data, width, height, filter.thresholdValue),
   };
 }
 
@@ -103,11 +105,17 @@ class FilterEngine {
         EffectFilterType.noise =>
           applyNoise(result, width, height, (e.param1 / 20).clamp(0.0, 1.0), NoiseType.gaussian),
         EffectFilterType.sepia => applySepia(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
-        EffectFilterType.monochrome => applyMonochrome(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
+        // 単色化：param1=混合量（0〜20相当を0.0〜1.0へ換算）、
+        // fadeColor（他の演出フィルターと共用のColorスロットを流用）=単色化する色。
+        EffectFilterType.monochrome => applyMonochrome(
+            result, width, height, (e.param1 / 20).clamp(0.0, 1.0),
+            targetColor: e.fadeColor.toARGB32()),
         // 色調調整：param1=彩度、param2=明度、param3=コントラスト（いずれも-100〜100）。
         EffectFilterType.colorAdjust => applyColorAdjust(
             result, width, height,
             saturation: e.param1, brightness: e.param2, contrast: e.param3),
+        // 二値化：param1=閾値（0〜255）。
+        EffectFilterType.threshold => applyThreshold(result, width, height, e.param1),
         EffectFilterType.animeStyle => applyAnimeStyle(
             result, width, height,
             strength: e.param1, colorCount: 6, edgeStrength: (e.param1 / 20).clamp(0.0, 1.0)),
@@ -557,19 +565,45 @@ class FilterEngine {
     return result;
   }
 
-  /// モノクロ（白黒）：輝度を求めてR=G=Bへ揃える。[amount]（0.0〜1.0）で
-  /// 元の色との混合量を調整する（100%で完全な白黒）。1画素あたりの
-  /// 計算のみで負荷は軽い。描画フィルター・演出フィルター両方から使う。
-  Uint8List applyMonochrome(Uint8List data, int width, int height, double amount) {
+  /// 単色化：輝度を求め、[targetColor]（既定は白＝従来通りのグレースケール）を
+  /// 輝度で明暗づけした色へ置き換える（duotone的な処理：白を指定すれば普通の
+  /// 白黒、セピア色を指定すればセピア調、というように任意の1色で単色化できる）。
+  /// [amount]（0.0〜1.0）で元の色との混合量を調整する（100%で完全な単色化）。
+  /// 1画素あたりの計算のみで負荷は軽い。描画フィルター・演出フィルター両方から使う。
+  Uint8List applyMonochrome(Uint8List data, int width, int height, double amount,
+      {int targetColor = 0xFFFFFFFF}) {
     if (amount <= 0) return Uint8List.fromList(data);
+    final tr = (targetColor >> 16) & 0xFF;
+    final tg = (targetColor >> 8) & 0xFF;
+    final tb = targetColor & 0xFF;
     final result = Uint8List.fromList(data);
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
       final r = data[i], g = data[i + 1], b = data[i + 2];
-      final gray = (r * 0.299 + g * 0.587 + b * 0.114).round().clamp(0, 255);
-      result[i] = (r + (gray - r) * amount).round().clamp(0, 255);
-      result[i + 1] = (g + (gray - g) * amount).round().clamp(0, 255);
-      result[i + 2] = (b + (gray - b) * amount).round().clamp(0, 255);
+      final luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255.0;
+      final mr = (tr * luminance).round().clamp(0, 255);
+      final mg = (tg * luminance).round().clamp(0, 255);
+      final mb = (tb * luminance).round().clamp(0, 255);
+      result[i] = (r + (mr - r) * amount).round().clamp(0, 255);
+      result[i + 1] = (g + (mg - g) * amount).round().clamp(0, 255);
+      result[i + 2] = (b + (mb - b) * amount).round().clamp(0, 255);
+    }
+    return result;
+  }
+
+  /// 二値化：輝度が[threshold]（0〜255）以上の画素を白、未満を黒に分ける。
+  /// アルファはそのまま維持する。色調調整・単色化・「明度で透過」と組み合わせて
+  /// 線画抽出（仕様書28のTips）に使うことを想定している。
+  Uint8List applyThreshold(Uint8List data, int width, int height, double threshold) {
+    final result = Uint8List.fromList(data);
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      final r = data[i], g = data[i + 1], b = data[i + 2];
+      final luminance = r * 0.299 + g * 0.587 + b * 0.114;
+      final v = luminance >= threshold ? 255 : 0;
+      result[i] = v;
+      result[i + 1] = v;
+      result[i + 2] = v;
     }
     return result;
   }
@@ -852,7 +886,7 @@ class EffectFilter {
 enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
   animeStyle, retroAnime, crt,
-  animatedNoise, rain, monochrome, colorAdjust,
+  animatedNoise, rain, monochrome, colorAdjust, threshold,
 }
 
 enum DrawFilterType {

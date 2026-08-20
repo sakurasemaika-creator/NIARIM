@@ -40,6 +40,7 @@ import '../../services/save_tree_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
+import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/editable_slider_value.dart';
@@ -4212,6 +4213,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.rain => l10n.timelineEffectTypeRain,
     EffectFilterType.monochrome => l10n.timelineEffectTypeMonochrome,
     EffectFilterType.colorAdjust => l10n.filterNameColorAdjust,
+    EffectFilterType.threshold => l10n.filterNameThreshold,
   };
 
   static const _typeIcons = {
@@ -4229,6 +4231,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.rain: Icons.water_drop,
     EffectFilterType.monochrome: Icons.filter_b_and_w,
     EffectFilterType.colorAdjust: Icons.tune,
+    EffectFilterType.threshold: Icons.contrast,
   };
 
   @override
@@ -4359,6 +4362,10 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._rainParams(context, l10n, e)
                 else if (e.type == EffectFilterType.colorAdjust)
                   ..._colorAdjustParams(context, l10n, e)
+                else if (e.type == EffectFilterType.monochrome)
+                  ..._monochromeParams(context, l10n, e)
+                else if (e.type == EffectFilterType.threshold)
+                  ..._thresholdParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -4518,6 +4525,55 @@ class _EffectFilterSheet extends StatelessWidget {
     ];
   }
 
+  /// 単色化のパラメータ（混合量スライダー＋色チップ。チップをタップすると
+  /// フルカラーピッカー（ColorPickerPanel）が開く。仕様書28）。
+  List<Widget> _monochromeParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+    return [
+      _paramRow(l10n.timelineEffectStrengthLabel, e.param1, 1, 20, 19,
+          (v) => _update(context, e.copyWith(param1: v))),
+      const SizedBox(height: 4),
+      Row(
+        children: [
+          SizedBox(width: 56, child: Text(l10n.filterMonochromeColorLabel, style: const TextStyle(fontSize: 11))),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => _pickMonochromeColor(context, e),
+            child: Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: e.fadeColor,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  void _pickMonochromeColor(BuildContext context, EffectFilterInstance e) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ColorPickerPanel(
+          currentColor: e.fadeColor,
+          onColorChanged: (c) => _update(context, e.copyWith(fadeColor: c)),
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
+  /// 二値化のパラメータ（閾値スライダーのみ。0〜255）。
+  List<Widget> _thresholdParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+    return [
+      _paramRow(l10n.filterThresholdLabel, e.param1, 0, 255, 255,
+          (v) => _update(context, e.copyWith(param1: v))),
+    ];
+  }
+
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -4568,14 +4624,23 @@ class _EffectFilterSheet extends StatelessWidget {
                   // 雨の「速さ」は既定値50だとスライダー上限(40)を超えるため上書きする。
                   // 色調調整は彩度・明度・コントラストとも既定値0（変化なし）から
                   // 始める（他のフィルターと違い既定値5.0/50.0のままだと追加直後に
-                  // 見た目が変わってしまうため）。
-                  param1: type == EffectFilterType.colorAdjust ? 0.0 : 5.0,
+                  // 見た目が変わってしまうため）。二値化のparam1は閾値（0〜255）
+                  // なので既定128（中間）から始める。
+                  param1: switch (type) {
+                    EffectFilterType.colorAdjust => 0.0,
+                    EffectFilterType.threshold => 128.0,
+                    _ => 5.0,
+                  },
                   param2: type == EffectFilterType.rain
                       ? 10.0
                       : type == EffectFilterType.colorAdjust
                           ? 0.0
                           : 50.0,
                   param3: type == EffectFilterType.colorAdjust ? 0.0 : 2.0,
+                  // 単色化の色（fadeColorスロットを流用）：既定は白＝通常の
+                  // グレースケール。fadeフィルター自体の既定色は黒のままにする。
+                  fadeColor:
+                      type == EffectFilterType.monochrome ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
                 ));
                 Navigator.pop(ctx);
               },

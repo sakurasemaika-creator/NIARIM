@@ -19,6 +19,7 @@ enum TipDiagramKind {
   gestureShortcut,
   timelineMarker,
   pcDexLayout,
+  lineArtExtraction,
 }
 
 class TipDiagram extends StatelessWidget {
@@ -55,6 +56,7 @@ class _TipDiagramPainter extends CustomPainter {
       case TipDiagramKind.gestureShortcut: _paintGestureShortcut(canvas, size);
       case TipDiagramKind.timelineMarker: _paintTimelineMarker(canvas, size);
       case TipDiagramKind.pcDexLayout: _paintPcDexLayout(canvas, size);
+      case TipDiagramKind.lineArtExtraction: _paintLineArtExtraction(canvas, size);
     }
   }
 
@@ -300,5 +302,55 @@ class _TipDiagramPainter extends CustomPainter {
     final rightPanel = Rect.fromLTWH(pc.right - pc.width * 0.2 - 3, pc.top + 3, pc.width * 0.2, pc.height - 6);
     canvas.drawRRect(RRect.fromRectAndRadius(leftPanel, const Radius.circular(2)), _fillPrimaryFaint);
     canvas.drawRRect(RRect.fromRectAndRadius(rightPanel, const Radius.circular(2)), _fillPrimaryFaint);
+  }
+
+  /// 左：色つきのイラスト（グラデーション＋線）→矢印→右：市松模様（透過）の
+  /// 上に線だけが残った線画。色調補正・二値化・明度で透過を組み合わせて
+  /// 線画を抽出するTipsの図解。
+  void _paintLineArtExtraction(Canvas canvas, Size size) {
+    final left = Rect.fromLTWH(4, size.height * 0.1, size.width * 0.36, size.height * 0.8);
+    final right = Rect.fromLTWH(size.width * 0.6, size.height * 0.1, size.width * 0.36, size.height * 0.8);
+
+    // 左：色つきの元イラスト（グラデーション背景＋輪郭線）
+    canvas.save();
+    canvas.clipRRect(RRect.fromRectAndRadius(left, const Radius.circular(6)));
+    final gradient = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [scheme.primary.withValues(alpha: 0.6), scheme.tertiary.withValues(alpha: 0.6)],
+      ).createShader(left);
+    canvas.drawRect(left, gradient);
+    canvas.restore();
+    canvas.drawRRect(RRect.fromRectAndRadius(left, const Radius.circular(6)), _strokeOutline);
+    final face = Path()
+      ..addOval(Rect.fromCenter(center: left.center, width: left.width * 0.55, height: left.height * 0.5));
+    canvas.drawPath(face, Paint()
+      ..color = scheme.surface
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2);
+
+    _arrow(canvas, Offset(left.right + 6, size.height * 0.5), Offset(right.left - 6, size.height * 0.5),
+        _strokeOutline);
+
+    // 右：市松模様（透過）の上に線だけが残った抽出結果
+    canvas.save();
+    canvas.clipRRect(RRect.fromRectAndRadius(right, const Radius.circular(6)));
+    final cell = right.width / 5;
+    final checker = Paint()..color = scheme.outlineVariant.withValues(alpha: 0.45);
+    for (int gy = 0; gy * cell < right.height; gy++) {
+      for (int gx = 0; gx < 5; gx++) {
+        if ((gx + gy).isEven) continue;
+        canvas.drawRect(Rect.fromLTWH(right.left + gx * cell, right.top + gy * cell, cell, cell), checker);
+      }
+    }
+    final extractedFace = Path()
+      ..addOval(Rect.fromCenter(center: right.center, width: right.width * 0.55, height: right.height * 0.5));
+    canvas.drawPath(extractedFace, Paint()
+      ..color = scheme.onSurface
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2);
+    canvas.restore();
+    canvas.drawRRect(RRect.fromRectAndRadius(right, const Radius.circular(6)), _strokeOutline);
   }
 }

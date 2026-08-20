@@ -506,6 +506,46 @@ class _FilterPanelState extends State<FilterPanel> {
                             (v) => filterService.updateFilterParams(current.id, caContrast: v),
                           ),
                         ],
+                        if (current.kind == FilterKind.monochrome) ...[
+                          _paramSlider(
+                            filterService,
+                            l10n.filterMonochromeStrength,
+                            current.strength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Text(l10n.filterMonochromeColorLabel, style: const TextStyle(fontSize: 11)),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () => _pickMonochromeColor(filterService, current),
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: Color(current.monochromeColor),
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if (current.kind == FilterKind.threshold)
+                          _paramSlider(
+                            filterService,
+                            l10n.filterThresholdLabel,
+                            current.thresholdValue,
+                            0,
+                            255,
+                            (v) => filterService.updateFilterParams(current.id, thresholdValue: v),
+                          ),
                         if (current.kind == FilterKind.unsharpMask) ...[
                           _paramSlider(
                             filterService,
@@ -591,6 +631,26 @@ class _FilterPanelState extends State<FilterPanel> {
           currentColor: Color(current.vignetteColor),
           onColorChanged: (c) {
             filterService.updateFilterParams(current.id, vignetteColor: c.toARGB32());
+            _updatePreview();
+          },
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
+  /// 単色化の色を選ぶ（縁取り・周辺減光と同じくアプリ標準のColorPickerPanel
+  /// を流用。既定は白＝通常のグレースケール、色を変えるとセピア調など
+  /// 任意の単色トーンにできる）。
+  void _pickMonochromeColor(FilterService filterService, FilterDef current) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ColorPickerPanel(
+          currentColor: Color(current.monochromeColor),
+          onColorChanged: (c) {
+            filterService.updateFilterParams(current.id, monochromeColor: c.toARGB32());
             _updatePreview();
           },
           onClose: () => Navigator.of(ctx).pop(),
@@ -709,6 +769,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.crt => l10n.filterNameCrt,
         FilterKind.monochrome => l10n.filterNameMonochrome,
         FilterKind.colorAdjust => l10n.filterNameColorAdjust,
+        FilterKind.threshold => l10n.filterNameThreshold,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -760,12 +821,17 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.crt:
         return _engine.applyCrt(data, width, height, filter.strength);
       case FilterKind.monochrome:
-        return _engine.applyMonochrome(data, width, height, (filter.strength / 100).clamp(0.0, 1.0));
+        return _engine.applyMonochrome(
+          data, width, height, (filter.strength / 100).clamp(0.0, 1.0),
+          targetColor: filter.monochromeColor,
+        );
       case FilterKind.colorAdjust:
         return _engine.applyColorAdjust(
           data, width, height,
           saturation: filter.caSaturation, brightness: filter.caBrightness, contrast: filter.caContrast,
         );
+      case FilterKind.threshold:
+        return _engine.applyThreshold(data, width, height, filter.thresholdValue);
     }
   }
 
@@ -799,6 +865,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.filter_b_and_w;
       case FilterKind.colorAdjust:
         return Icons.tune;
+      case FilterKind.threshold:
+        return Icons.contrast;
     }
   }
 

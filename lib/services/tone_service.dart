@@ -73,11 +73,14 @@ class ToneService extends ChangeNotifier {
         const Tone(id: 'Tone0004', name: '網点 70%'),
         const Tone(id: 'Tone0005', name: 'ライン 細'),
         const Tone(id: 'Tone0006', name: 'ライン 太'),
-        // ピクセルモード用トーン（1ピクセルごとに市松模様／
-        // 格子柄になっているトーン）。procedural_texture.dartの
-        // generateBuiltInToneTextureが名前に「市松」「格子」を含むかで判定する。
+        // ピクセルモード用トーン（1ピクセルごとに市松模様／格子柄／散らし
+        // ドットになっているトーン）。procedural_texture.dartの
+        // generateBuiltInToneTextureが名前に「市松」「格子」「散らし」を
+        // 含むかで判定する。「散らし」は格子（縦横の線がつながって網目状）
+        // とは逆に、1ドットずつ上下左右を1px空けて独立させたもの。
         const Tone(id: 'Tone0007', name: 'ドット市松（1px）'),
         const Tone(id: 'Tone0008', name: 'ドット格子（1px）'),
+        const Tone(id: 'Tone0009', name: 'ドット散らし（1px）'),
       ];
 
   Future<void> init() async {

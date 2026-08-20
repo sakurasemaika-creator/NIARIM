@@ -16,9 +16,15 @@
 /// retroAnime：暖色寄りのカラーグレーディング・彩度低下・粒状ノイズを
 /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。
 /// crt：色収差・周辺減光・走査線を組み合わせたブラウン管ディスプレイ風の質感。
+/// monochrome（単色化）：輝度に応じて指定した1色（[monochromeColor]、既定は
+/// 白＝従来通りのグレースケール）を掛け合わせる。単なる白黒化ではなく、
+/// セピア調・任意の単色トーンなど好きな色で単色化できる。
+/// threshold（二値化）：輝度が[thresholdValue]以上の画素を白、未満を黒へ
+/// 分ける。色調調整・単色化・「明度で透過」と組み合わせると線画抽出に使える
+/// （仕様書28）。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
-  retroAnime, crt, monochrome, colorAdjust,
+  retroAnime, crt, monochrome, colorAdjust, threshold,
 }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
@@ -69,6 +75,11 @@ class FilterDef {
   final double caSaturation;
   final double caBrightness;
   final double caContrast;
+  // 単色化の色（monochromeのみ使用）。既定は白＝輝度そのまま（従来の
+  // グレースケール仕様と完全互換）。ARGB32形式のint。
+  final int monochromeColor;
+  // 二値化の閾値（thresholdのみ使用）。0〜255、既定128。
+  final double thresholdValue;
 
   const FilterDef({
     required this.id,
@@ -89,6 +100,8 @@ class FilterDef {
     this.caSaturation = 0,
     this.caBrightness = 0,
     this.caContrast = 0,
+    this.monochromeColor = 0xFFFFFFFF,
+    this.thresholdValue = 128,
   });
 
   FilterDef copyWith({
@@ -110,6 +123,8 @@ class FilterDef {
     double? caSaturation,
     double? caBrightness,
     double? caContrast,
+    int? monochromeColor,
+    double? thresholdValue,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -130,6 +145,8 @@ class FilterDef {
       caSaturation: caSaturation ?? this.caSaturation,
       caBrightness: caBrightness ?? this.caBrightness,
       caContrast: caContrast ?? this.caContrast,
+      monochromeColor: monochromeColor ?? this.monochromeColor,
+      thresholdValue: thresholdValue ?? this.thresholdValue,
     );
   }
 
@@ -152,6 +169,8 @@ class FilterDef {
         'caSaturation': caSaturation,
         'caBrightness': caBrightness,
         'caContrast': caContrast,
+        'monochromeColor': monochromeColor,
+        'thresholdValue': thresholdValue,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -176,5 +195,7 @@ class FilterDef {
         outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
         outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
         vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
+        monochromeColor: j['monochromeColor'] as int? ?? 0xFFFFFFFF,
+        thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
       );
 }

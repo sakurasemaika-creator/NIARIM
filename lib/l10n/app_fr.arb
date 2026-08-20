@@ -2029,8 +2029,8 @@
   "layerPanelBrightnessToAlphaGrayButton": "Gris",
   "tipsRoughLayerRescueTitle": "Encrage dessiné sur le calque de brouillon ? Récupérez-le avec « Transparence par luminosité »",
   "tipsRoughLayerRescueDesc": "Même si vous avez dessiné l'encrage par erreur sur le calque de brouillon, vous pouvez récupérer uniquement l'encrage sans rien supprimer. 1) Ajoutez un nouveau calque et réglez son mode de fusion sur Diviser. 2) Prélevez la couleur du brouillon à la pipette et remplissez tout ce calque Diviser avec (le brouillon s'estompe). 3) Dupliquez le calque Diviser et le brouillon disparaît complètement. 4) Utilisez « Fusionner tous les calques visibles » dans le panneau des calques pour tout aplatir en un seul calque. 5) Depuis le menu à trois points de ce calque fusionné, choisissez « Transparence par luminosité (Gris) » : les zones blanches deviennent transparentes, ne laissant que l'encrage.",
-  "filterNameMonochrome": "Monochrome",
-  "timelineEffectTypeMonochrome": "Monochrome",
+  "filterNameMonochrome": "Filtre monochrome",
+  "timelineEffectTypeMonochrome": "Filtre monochrome",
   "filterNameColorAdjust": "Réglage des couleurs",
   "filterColorAdjustSaturationLabel": "Saturation",
   "filterColorAdjustBrightnessLabel": "Luminosité",
@@ -2041,5 +2041,11 @@
   "canvasColorAdjustMenuTitle": "Réglage des couleurs",
   "filterCustomMenuDuplicate": "Dupliquer",
   "filterCustomMenuFavoriteBlockTitle": "Suppression impossible",
-  "filterCustomMenuFavoriteBlockBody": "Ce filtre est en favori et ne peut pas être supprimé. Retirez-le des favoris avant de le supprimer."
+  "filterCustomMenuFavoriteBlockBody": "Ce filtre est en favori et ne peut pas être supprimé. Retirez-le des favoris avant de le supprimer.",
+  "filterNameThreshold": "Filtre de seuil",
+  "filterMonochromeStrength": "Intensité du monochrome",
+  "filterMonochromeColorLabel": "Couleur du monochrome",
+  "filterThresholdLabel": "Seuil",
+  "tipsLineArtExtractionTitle": "Extraire un dessin au trait en combinant réglage des couleurs, seuil et transparence par luminosité",
+  "tipsLineArtExtractionDesc": "Augmentez le contraste avec le réglage des couleurs pour faire ressortir les traits, puis utilisez le filtre de seuil pour diviser l'image en noir et blanc purs : les traits se séparent nettement du reste. Le curseur de seuil permet d'ajuster librement l'épaisseur du trait et son aspect plus ou moins estompé. Enfin, utilisez « Transparence par luminosité (gris) » dans le menu à trois points du calque pour rendre transparentes les zones blanches (tout sauf les traits), ne laissant que le dessin au trait. Pratique pour extraire un dessin au trait propre à partir d'une photo ou d'une esquisse."
 }

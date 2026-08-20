@@ -162,6 +162,7 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
             _Tip(TipDiagramKind.cameraKeyframe, l10n.tipsDrawingAreaCameraTitle, l10n.tipsDrawingAreaCameraDesc),
             _Tip(TipDiagramKind.autofillPreset, l10n.tipsAutofillBlendModeTitle, l10n.tipsAutofillBlendModeDesc),
             _Tip(TipDiagramKind.brushFavorite, l10n.tipsRoughLayerRescueTitle, l10n.tipsRoughLayerRescueDesc),
+            _Tip(TipDiagramKind.lineArtExtraction, l10n.tipsLineArtExtractionTitle, l10n.tipsLineArtExtractionDesc),
           ],
         ),
         _TipCategory(

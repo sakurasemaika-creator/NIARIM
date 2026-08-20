@@ -85,6 +85,11 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
   } else if (name.contains('格子')) {
     // ピクセルモード用：1ピクセルごとに格子柄。
     _fillPixelGridPattern(data, size);
+  } else if (name.contains('散らし')) {
+    // ピクセルモード用：1ピクセルの点を上下左右1pxずつ空けて独立配置。
+    // 市松（斜めに隣接）・格子（縦横の線がつながる）とは異なり、
+    // どの点も上下左右の隣接ピクセルとは接しない。
+    _fillPixelScatteredDotPattern(data, size);
   } else {
     _fillDotPattern(data, size, 0.3);
   }
@@ -105,6 +110,17 @@ void _fillPixelGridPattern(Uint8List data, int size) {
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       if (x.isEven || y.isEven) data[(y * size + x) * 4 + 3] = 255;
+    }
+  }
+}
+
+/// 1ピクセルの点を、上下左右に1pxずつの空白を挟んで独立配置する
+/// （2pxおきの格子点のみインクあり。斜め隣接はそのまま残るため、市松
+/// （50%密度で隙間なし）とは見た目が異なる、より疎らな模様になる）。
+void _fillPixelScatteredDotPattern(Uint8List data, int size) {
+  for (int y = 0; y < size; y += 2) {
+    for (int x = 0; x < size; x += 2) {
+      data[(y * size + x) * 4 + 3] = 255;
     }
   }
 }

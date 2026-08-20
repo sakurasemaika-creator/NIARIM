@@ -2029,8 +2029,8 @@
   "layerPanelBrightnessToAlphaGrayButton": "灰色",
   "tipsRoughLayerRescueTitle": "不小心把线稿画在了草图图层上？用「按明度透明化」抢救",
   "tipsRoughLayerRescueDesc": "即使不小心把线稿画在了草图图层上，也能在不删除任何内容的情况下把线稿单独取出来。①新建一个图层，将其混合模式设为「除法」。②用取色器吸取草图的颜色，将整个除法图层填满该颜色（草图会变淡）。③复制该除法图层，草图会完全消失。④在图层面板中使用「合并所有可见图层」将其合并为一层。⑤在合并后图层的三点菜单中选择「按明度透明化（灰色）」，白色部分就会变透明，只留下线稿。",
-  "filterNameMonochrome": "单色",
-  "timelineEffectTypeMonochrome": "单色",
+  "filterNameMonochrome": "单色化滤镜",
+  "timelineEffectTypeMonochrome": "单色化滤镜",
   "filterNameColorAdjust": "色调调整",
   "filterColorAdjustSaturationLabel": "饱和度",
   "filterColorAdjustBrightnessLabel": "明度",
@@ -2041,5 +2041,11 @@
   "canvasColorAdjustMenuTitle": "色调调整",
   "filterCustomMenuDuplicate": "复制",
   "filterCustomMenuFavoriteBlockTitle": "无法删除",
-  "filterCustomMenuFavoriteBlockBody": "该滤镜已收藏为常用，无法删除。请先取消收藏，再进行删除。"
+  "filterCustomMenuFavoriteBlockBody": "该滤镜已收藏为常用，无法删除。请先取消收藏，再进行删除。",
+  "filterNameThreshold": "二值化滤镜",
+  "filterMonochromeStrength": "单色化强度",
+  "filterMonochromeColorLabel": "单色化颜色",
+  "filterThresholdLabel": "阈值",
+  "tipsLineArtExtractionTitle": "组合色调调整・二值化・明度转透明来提取线稿",
+  "tipsLineArtExtractionDesc": "先用色调调整提高对比度，让线条更突出，再用二值化滤镜把图像分成纯黑白两色，线条就会和其余部分清晰分离。二值化的阈值可以用滑块自由调整，按喜好控制线条的粗细和虚实程度。最后，在图层的三点菜单中使用「明度转透明（灰色）」，让白色部分（线条以外）变为透明，就只剩下线稿了。想从照片或草稿中单独提取线稿时非常实用。"
 }

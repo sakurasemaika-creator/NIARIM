@@ -2029,8 +2029,8 @@
   "layerPanelBrightnessToAlphaGrayButton": "Gris",
   "tipsRoughLayerRescueTitle": "¿Dibujaste el lineart sobre tu boceto? Rescátalo con \"Transparencia por brillo\"",
   "tipsRoughLayerRescueDesc": "Aunque hayas dibujado el lineart por accidente encima de la capa de boceto, puedes recuperar solo el lineart sin borrar nada. 1) Añade una nueva capa y pon su modo de fusión en Dividir. 2) Toma el color del boceto con el cuentagotas y rellena toda esa capa Dividir con él (esto desvanece el boceto). 3) Duplica la capa Dividir y el boceto desaparece por completo. 4) Usa \"Combinar todas las capas visibles\" en el panel de capas para aplanar todo en una sola capa. 5) Desde el menú de tres puntos de esa capa combinada, elige \"Transparencia por brillo (Gris)\": las zonas blancas se vuelven transparentes y solo queda el lineart.",
-  "filterNameMonochrome": "Monocromo",
-  "timelineEffectTypeMonochrome": "Monocromo",
+  "filterNameMonochrome": "Filtro monocromo",
+  "timelineEffectTypeMonochrome": "Filtro monocromo",
   "filterNameColorAdjust": "Ajuste de color",
   "filterColorAdjustSaturationLabel": "Saturación",
   "filterColorAdjustBrightnessLabel": "Brillo",
@@ -2041,5 +2041,11 @@
   "canvasColorAdjustMenuTitle": "Ajuste de color",
   "filterCustomMenuDuplicate": "Duplicar",
   "filterCustomMenuFavoriteBlockTitle": "No se puede eliminar",
-  "filterCustomMenuFavoriteBlockBody": "Este filtro está marcado como favorito y no se puede eliminar. Quita el favorito primero y luego elimínalo."
+  "filterCustomMenuFavoriteBlockBody": "Este filtro está marcado como favorito y no se puede eliminar. Quita el favorito primero y luego elimínalo.",
+  "filterNameThreshold": "Filtro de umbral",
+  "filterMonochromeStrength": "Intensidad del monocromo",
+  "filterMonochromeColorLabel": "Color del monocromo",
+  "filterThresholdLabel": "Umbral",
+  "tipsLineArtExtractionTitle": "Extrae el dibujo lineal combinando ajuste de color, umbral y transparencia por brillo",
+  "tipsLineArtExtractionDesc": "Aumenta el contraste con el ajuste de color para que las líneas destaquen, y luego usa el filtro de umbral para dividir la imagen en blanco y negro puros: las líneas se separan claramente del resto. El control deslizante de umbral te permite ajustar el grosor de la línea y lo tenue o marcada que se ve. Por último, usa \"Transparencia por brillo (gris)\" desde el menú de tres puntos de la capa para volver transparentes las zonas blancas (todo excepto las líneas), dejando solo el dibujo lineal. Útil para extraer un dibujo lineal limpio a partir de una foto o un boceto."
 }
