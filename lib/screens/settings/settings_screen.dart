@@ -112,7 +112,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: desktopCentered(
         context,
         filtered.isEmpty
-            ? Center(child: Text(l10n.settingsNoResults, style: const TextStyle(color: Colors.grey)))
+            ? Center(child: Text(l10n.settingsNoResults,
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)))
             : ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [

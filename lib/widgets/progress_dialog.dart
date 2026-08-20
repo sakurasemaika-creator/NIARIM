@@ -97,7 +97,8 @@ class _ProgressDialogState extends State<ProgressDialog> {
           Text('${(widget.progress * 100).round()}%'),
           if (widget.subtitle != null) ...[
             const SizedBox(height: 4),
-            Text(widget.subtitle!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(widget.subtitle!,
+                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ],
           // プレミアム会員限定：広告の代わりにTipsを表示するスペースを使う。
           if (tip != null) ...[
@@ -127,7 +128,9 @@ class _ProgressDialogState extends State<ProgressDialog> {
                     const SizedBox(height: 4),
                     Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 2),
-                    Text(tip.$2, style: const TextStyle(fontSize: 11, color: Colors.grey), maxLines: 3, overflow: TextOverflow.ellipsis),
+                    Text(tip.$2,
+                        style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        maxLines: 3, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -153,7 +156,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
           if (widget.cancelHint != null) ...[
             const SizedBox(height: 8),
             Text(widget.cancelHint!,
-                style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ],
         ],
       ),

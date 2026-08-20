@@ -104,7 +104,8 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
                           if (c != null) setState(() => _previewColor = c);
                         },
                         child: Container(
-                          decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Theme.of(context).colorScheme.outlineVariant)),
                           // dart:ioのFileはWeb版で使えないため、常にバイト列
                           // （_load()で読み込み済み）から表示する。
                           child: Image.memory(_sourceBytes!, fit: BoxFit.contain),
@@ -120,7 +121,7 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
                   decoration: BoxDecoration(
                     color: _previewColor ?? Colors.transparent,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey),
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                   ),
                 ),
                 const SizedBox(width: 8),

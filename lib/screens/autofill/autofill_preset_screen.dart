@@ -881,7 +881,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         decoration: BoxDecoration(
                           color: Color(current.color),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                         ),
                       ),
                       label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
@@ -926,7 +926,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.grey),
+                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                       ),
                       child: Stack(
                         fit: StackFit.expand,
@@ -965,7 +965,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           decoration: BoxDecoration(
                             color: Color(current.lineColor),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey),
+                            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                           ),
                         ),
                         label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
@@ -1143,7 +1143,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   const Divider(height: 1),
                   Expanded(
                     child: tones.isEmpty
-                        ? Center(child: Text(l10n.toneEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
+                        ? Center(child: Text(l10n.toneEmpty,
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)))
                         : GridView.builder(
                             padding: const EdgeInsets.all(8),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1248,7 +1249,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.grey),
+                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                       ),
                       child: Stack(
                         fit: StackFit.expand,
@@ -1315,7 +1316,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                     ),
                     Text(l10n.autofillPartGradientStopDragHint,
-                        style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                        style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -1388,7 +1389,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ],
                     ),
                     Text(l10n.autofillPartGradientDragHint,
-                        style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                        style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     const SizedBox(height: 4),
                     // 色一覧：ドラッグで順番入れ替え、各色ごとにタップで色（不透明度
                     // 含む）変更・画像からスポイト・切り替え位置の調整・削除ができる
@@ -1423,7 +1424,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                   decoration: BoxDecoration(
                                     color: color,
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.grey),
+                                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                                   ),
                                 ),
                               ),
@@ -1526,7 +1527,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Stack(
         fit: StackFit.expand,

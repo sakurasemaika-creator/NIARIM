@@ -195,7 +195,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: selected,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey, width: 1),
+                          border: Border.all(color: Theme.of(ctx).colorScheme.outlineVariant, width: 1),
                         ),
                       ),
                     ),
@@ -356,7 +356,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: color,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey, width: 1),
+                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
               ),
             ),
           ),
