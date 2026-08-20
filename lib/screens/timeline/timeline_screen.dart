@@ -682,6 +682,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     final preview = Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
+      // プレビュー画像自体は透明部分を含むため、背景は実際のキャンバス背景
+      // （既定は白）に合わせる必要がある（濃色にすると透明部分の見え方が
+      // 実際のキャンバス画面と一致しなくなるため、ここは色固定のままにする
+      // ——テーマ連動にはしない、意図的な例外）。
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
       child: Stack(
         children: [
@@ -1728,7 +1732,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               border: Border.all(
                                   color: isChecked
                                       ? Theme.of(context).colorScheme.primary
-                                      : Colors.grey[700]!),
+                                      : Theme.of(context).colorScheme.outlineVariant),
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: ClipRRect(
@@ -2053,7 +2057,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   itemBuilder: (_, i) => Container(
                     width: _cellW,
                     decoration: BoxDecoration(
-                      border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                      border: Border(
+                          right: BorderSide(
+                              color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
                     ),
                   ),
                 ),
@@ -2789,7 +2795,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   itemBuilder: (_, i) => Container(
                     width: _cellW,
                     decoration: BoxDecoration(
-                      border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                      border: Border(
+                          right: BorderSide(
+                              color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
                     ),
                   ),
                 ),
@@ -2926,7 +2934,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   itemBuilder: (_, i) => Container(
                     width: _cellW,
                     decoration: BoxDecoration(
-                      border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                      border: Border(
+                          right: BorderSide(
+                              color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
                     ),
                   ),
                 ),
@@ -4842,8 +4852,11 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       height: 140,
+      // _TimelinePreviewは透明部分を含む合成結果をそのまま描画するため、
+      // 背景はテーマ色ではなく実際のキャンバス背景色に合わせる必要がある
+      // （上の_buildPreviewContent()と同じ理由で、ここは意図的に色固定）。
       decoration: BoxDecoration(
-        color: context.watch<ThemeService>().current.panelBgColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(6),
       ),
       clipBehavior: Clip.antiAlias,
