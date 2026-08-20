@@ -182,7 +182,7 @@ class _HelpDiagramPainter extends CustomPainter {
 
   void _drawOutlinedIcon(Canvas canvas, IconData icon, Offset center, {double size = 15, required Color color}) {
     for (final o in _iconOutlineOffsets) {
-      _drawIcon(canvas, icon, center + o, size: size, color: Colors.black.withValues(alpha: 0.55));
+      _drawIcon(canvas, icon, center + o, size: size, color: scheme.surfaceContainerHighest.withValues(alpha: 0.85));
     }
     _drawIcon(canvas, icon, center, size: size, color: color);
   }
@@ -193,7 +193,9 @@ class _HelpDiagramPainter extends CustomPainter {
     // 実画面のツールバーはアイコン自体に背景を持たせず、キャンバスの
     // 内容の上に直接浮かべる構成（canvas_icon_button.dart参照）。図解では
     // 「キャンバスの中身」の代わりに濃色の帯を敷き、その上に同じ描画方式
-    // （黒縁取り＋白／選択時は差し色）でアイコンを乗せる。
+    // （縁取り＋テーマの文字色／選択時は差し色。色固定をやめてテーマと
+    // 連動させたcanvas_icon_button.dartの実装に合わせている）でアイコンを
+    // 乗せる。
     final barRect = Rect.fromLTWH(4, y - 20, size.width - 8, 40);
     canvas.drawRRect(
       RRect.fromRectAndRadius(barRect, const Radius.circular(6)),
@@ -205,7 +207,7 @@ class _HelpDiagramPainter extends CustomPainter {
       final cx = barRect.left + w * (i + 0.5);
       final isTarget = i == target;
       final icon = (isTarget ? spec.icon : null) ?? _toolbarIcons[i];
-      _drawOutlinedIcon(canvas, icon, Offset(cx, y), color: isTarget ? scheme.primary : Colors.white);
+      _drawOutlinedIcon(canvas, icon, Offset(cx, y), color: isTarget ? scheme.primary : scheme.onInverseSurface);
       if (isTarget) _highlightMarker(canvas, Offset(cx, y));
     }
   }
