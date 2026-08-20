@@ -6,6 +6,18 @@ import '../../services/premium_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 
+/// プレミアム画面（ハンバーガーメニューから開く）。
+///
+/// 2026年8月20日、ユーザーの要望で以下2点を反映した。
+/// - 月額プランを¥550→¥500、年額プランを¥5,500→¥5,000へ変更した上で、
+///   年額プランが「月額×12か月＝¥6,000」より¥1,000（＝月額2か月分）
+///   お得であることを、取り消し線付きの元価格・月あたり換算額
+///   （`premiumYearlyOriginalPrice`・`premiumYearlyPerMonthLabel`）で
+///   具体的に示すようにした（既存の「実質2か月分無料」という一言だけの
+///   訴求から、数字の根拠が見える形へ強化）。
+/// - ページのデザインを、説明文と比較表だけの構成から、導入バナー
+///   （`_heroSection`）・比較表のアイコン化・おすすめプランカードの
+///   グラデーション演出を加えた構成へ作り込んだ。
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
 
@@ -64,6 +76,10 @@ class PremiumScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
             ],
+            if (!premium.hasPurchasedPremium && !premium.isLaunchCampaignActive) ...[
+              _heroSection(context, l10n),
+              const SizedBox(height: 24),
+            ],
             Text(l10n.premiumVsTitle,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 16),
@@ -98,11 +114,13 @@ class PremiumScreen extends StatelessWidget {
                 context,
                 l10n,
                 l10n.premiumYearlyTitle,
-                '¥5,500',
+                l10n.premiumYearlyPrice,
                 l10n.premiumYearlyDescription,
                 true,
                 premium,
                 PremiumService.yearlyProductId,
+                originalPrice: l10n.premiumYearlyOriginalPrice,
+                perMonthLabel: l10n.premiumYearlyPerMonthLabel,
               ),
               const SizedBox(height: 12),
               _planCard(
@@ -194,6 +212,62 @@ class PremiumScreen extends StatelessWidget {
     );
   }
 
+  /// 未加入・キャンペーン非開催時にのみ表示する導入バナー（デザイン強化：
+  /// アイコン付きの見出し＋一言説明で、いきなり比較表から始まるより
+  /// 「プレミアムで何が変わるか」を先に印象づける）。キャンペーン中は
+  /// `_campaignBanner`が同種の役割を既に果たすため、二重表示を避けている。
+  Widget _heroSection(BuildContext context, AppLocalizations l10n) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [scheme.primaryContainer, scheme.surface],
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: scheme.primary, shape: BoxShape.circle),
+            child: Icon(Icons.workspace_premium_rounded, color: scheme.onPrimary, size: 26),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.premiumHeroTitle,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                const SizedBox(height: 4),
+                Text(l10n.premiumHeroSubtitle,
+                    style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 比較表セルの1マス分：「○」「×」は文字ではなくアイコンで視覚的に
+  /// 分かりやすくし、それ以外（数値・「無制限」等の具体的な値）は
+  /// これまで通りテキストで表示する。
+  Widget _comparisonCell(BuildContext context, String value) {
+    final scheme = Theme.of(context).colorScheme;
+    if (value == '○') {
+      return Icon(Icons.check_circle_rounded, color: scheme.primary, size: 20);
+    }
+    if (value == '×') {
+      return Icon(Icons.remove_circle_outline_rounded, color: scheme.outlineVariant, size: 20);
+    }
+    return Text(value, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12));
+  }
+
   Widget _comparisonTable(BuildContext context, AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
     final items = [
@@ -205,24 +279,36 @@ class PremiumScreen extends StatelessWidget {
       (l10n.premiumFeatureAds, l10n.premiumValueYes, l10n.premiumValueNo),
     ];
 
-    return Table(
-      border: TableBorder.all(color: scheme.outlineVariant, borderRadius: BorderRadius.circular(8)),
-      columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)},
-      children: [
-        TableRow(
-          decoration: BoxDecoration(color: scheme.surfaceContainerHighest),
-          children: [
-            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
-            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
-            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonPremium, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
-          ],
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Table(
+        border: TableBorder(
+          horizontalInside: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
         ),
-        ...items.map((item) => TableRow(children: [
-          Padding(padding: const EdgeInsets.all(8), child: Text(item.$1, style: const TextStyle(fontSize: 12))),
-          Padding(padding: const EdgeInsets.all(8), child: Text(item.$2, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
-          Padding(padding: const EdgeInsets.all(8), child: Text(item.$3, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
-        ])),
-      ],
+        columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)},
+        children: [
+          TableRow(
+            decoration: BoxDecoration(color: scheme.surfaceContainerHighest),
+            children: [
+              Padding(padding: const EdgeInsets.all(10), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+              Padding(padding: const EdgeInsets.all(10), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Text(l10n.premiumComparisonPremium,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.primary)),
+              ),
+            ],
+          ),
+          ...items.map((item) => TableRow(children: [
+            Padding(padding: const EdgeInsets.all(10), child: Text(item.$1, style: const TextStyle(fontSize: 12))),
+            Padding(padding: const EdgeInsets.all(10), child: Center(child: _comparisonCell(context, item.$2))),
+            Padding(padding: const EdgeInsets.all(10), child: Center(child: _comparisonCell(context, item.$3))),
+          ])),
+        ],
+      ),
     );
   }
 
@@ -234,13 +320,17 @@ class PremiumScreen extends StatelessWidget {
     String description,
     bool isRecommended,
     PremiumService premium,
-    String productId,
-  ) {
+    String productId, {
+    String? originalPrice,
+    String? perMonthLabel,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
     final busy = premium.purchasePending;
     return Card(
-      elevation: isRecommended ? 4 : 1,
+      elevation: isRecommended ? 6 : 1,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         side: isRecommended ? const BorderSide(color: Colors.amber, width: 2) : BorderSide.none,
       ),
       child: InkWell(
@@ -254,10 +344,21 @@ class PremiumScreen extends StatelessWidget {
                   );
                 }
               },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        child: Container(
+          // おすすめプラン（年額）は淡いグラデーションで視覚的に目立たせる
+          // （デザイン強化：以前は文字と表のみだったため差別化した）。
+          decoration: isRecommended
+              ? BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [scheme.primaryContainer.withValues(alpha: 0.6), scheme.surface],
+                  ),
+                )
+              : null,
           padding: const EdgeInsets.all(16),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Column(
@@ -265,22 +366,50 @@ class PremiumScreen extends StatelessWidget {
                   children: [
                     if (isRecommended)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        margin: const EdgeInsets.only(bottom: 4),
-                        decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(4)),
-                        child: Text(l10n.premiumPlanRecommendedBadge, style: const TextStyle(fontSize: 10, color: Colors.black)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        margin: const EdgeInsets.only(bottom: 6),
+                        decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded, size: 13, color: Colors.black),
+                            const SizedBox(width: 3),
+                            Text(l10n.premiumPlanRecommendedBadge,
+                                style: const TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
                       ),
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', fontSize: 15)),
                     if (description.isNotEmpty)
-                      Text(description,
-                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(description,
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: scheme.primary)),
+                      ),
+                    if (perMonthLabel != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(perMonthLabel, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                      ),
                   ],
                 ),
               ),
               if (busy)
                 const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
               else
-                Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (originalPrice != null)
+                      Text(originalPrice,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                            decoration: TextDecoration.lineThrough,
+                          )),
+                    Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
+                ),
             ],
           ),
         ),
