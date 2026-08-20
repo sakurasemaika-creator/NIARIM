@@ -121,18 +121,20 @@ class _HelpDiagramPainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1.5;
 
-  /// 指定通り「当該ボタンの箇所に白縁取りの赤丸」を描く。
+  /// 該当ボタンの箇所を指し示す縁取り付きの丸マーカーを描く。
+  /// 色固定ではなく、テーマの背景色（縁取り）とエラー色（丸自体、
+  /// どのテーマでも目立つよう用意されている警告・注目色）を使う。
   void _highlightMarker(Canvas canvas, Offset center, {double r = 11}) {
-    final white = Paint()
-      ..color = Colors.white
+    final outline = Paint()
+      ..color = scheme.surface
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5;
-    final red = Paint()
-      ..color = Colors.red
+    final mark = Paint()
+      ..color = scheme.error
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5;
-    canvas.drawCircle(center, r, white);
-    canvas.drawCircle(center, r, red);
+    canvas.drawCircle(center, r, outline);
+    canvas.drawCircle(center, r, mark);
   }
 
   /// [icon]の実際のグリフ（Material Icons／Font Awesome）をCanvasへ直接

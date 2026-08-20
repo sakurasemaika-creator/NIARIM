@@ -13,6 +13,7 @@ class PremiumScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final premium = context.watch<PremiumService>();
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       // topic: 'プレミアム' はhelp_screen.dart側の項目タイトル（日本語固定の
@@ -29,32 +30,33 @@ class PremiumScreen extends StatelessWidget {
               _campaignBanner(context, l10n),
               const SizedBox(height: 24),
             ] else if (premium.hasPurchasedPremium) ...[
-              // キャンペーン終了後、契約中の会員には登録日・次回更新日の
-              // 概算（サーバー側のレシート検証を行っていないため近似値）を
-              // 表示する。
+              // キャンペーン終了後、契約中の会員には登録日・次回更新日
+              // （サーバー側レシート検証が未実装の間は暦計算による推定値）を
+              // 表示する。バナー色は固定の緑ではなく、テーマの差し色に対して
+              // 自動でコントラストが確保されるonPrimaryを文字色に使う。
               Card(
-                color: const Color(0xFF2E7D32),
+                color: scheme.primary,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(children: [
-                        const Icon(Icons.check_circle, color: Colors.white),
+                        Icon(Icons.check_circle, color: scheme.onPrimary),
                         const SizedBox(width: 8),
                         Text(l10n.premiumActiveLabel,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 16, fontFamily: 'Kuramubon', fontWeight: FontWeight.w700)),
+                            style: TextStyle(
+                                color: scheme.onPrimary, fontSize: 16, fontFamily: 'Kuramubon', fontWeight: FontWeight.w700)),
                       ]),
                       if (premium.purchaseDate != null) ...[
                         const SizedBox(height: 8),
                         Text(l10n.premiumRegisteredDateLabel(_formatDate(premium.purchaseDate!)),
-                            style: const TextStyle(color: Colors.white, fontSize: 13)),
+                            style: TextStyle(color: scheme.onPrimary, fontSize: 13)),
                       ],
                       if (premium.nextRenewalDate != null) ...[
                         const SizedBox(height: 2),
                         Text(l10n.premiumNextRenewalDateLabel(_formatDate(premium.nextRenewalDate!)),
-                            style: const TextStyle(color: Colors.white, fontSize: 13)),
+                            style: TextStyle(color: scheme.onPrimary, fontSize: 13)),
                       ],
                     ],
                   ),

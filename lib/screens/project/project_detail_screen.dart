@@ -14,6 +14,7 @@ import '../../services/material_service.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
+import '../../services/theme_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -314,14 +315,19 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   /// このメソッド自体を全画面化用に別途呼び出すため不要）。
   Widget _buildPreviewImage(Project project, {bool showOverlayButtons = true}) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = context.watch<ThemeService>().current;
     final image = Container(
       decoration: BoxDecoration(color: Color(project.backgroundColor), borderRadius: BorderRadius.circular(8)),
       clipBehavior: Clip.antiAlias,
       child: _previewImage != null
           ? RawImage(image: _previewImage, fit: BoxFit.contain)
-          : const Center(child: Icon(Icons.play_circle_outline, size: 48, color: Colors.white38)),
+          : Center(child: Icon(Icons.play_circle_outline, size: 48, color: theme.textColor.withValues(alpha: 0.38))),
     );
     if (!showOverlayButtons) return image;
+    // プレビュー画像の中身は任意のプロジェクトの絵柄でどんな色にもなり
+    // 得るため、ボタン自体は白固定ではなくテーマ連動（アイコン＝文字色、
+    // 背景の縁取り＝メニュー背景色の半透明）にしつつ、キャンバスの
+    // CanvasIconButtonと同じ考え方で視認性を確保する。
     return Stack(
       children: [
         Positioned.fill(child: image),
@@ -331,11 +337,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           child: Row(
             children: [
               Material(
-                color: Colors.black.withValues(alpha: 0.4),
+                color: theme.menuBgColor.withValues(alpha: 0.7),
                 shape: const CircleBorder(),
                 child: IconButton(
                   icon: Icon(_isPreviewCollapsed ? Icons.unfold_more : Icons.unfold_less,
-                      color: Colors.white, size: 20),
+                      color: theme.textColor, size: 20),
                   tooltip: _isPreviewCollapsed
                       ? l10n.projectDetailExpandPreviewTooltip
                       : l10n.projectDetailCollapsePreviewTooltip,
@@ -344,10 +350,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
               const SizedBox(width: 4),
               Material(
-                color: Colors.black.withValues(alpha: 0.4),
+                color: theme.menuBgColor.withValues(alpha: 0.7),
                 shape: const CircleBorder(),
                 child: IconButton(
-                  icon: const Icon(Icons.fullscreen, color: Colors.white, size: 20),
+                  icon: Icon(Icons.fullscreen, color: theme.textColor, size: 20),
                   tooltip: l10n.projectDetailFullscreenTooltip,
                   onPressed: () => setState(() => _isPreviewFullscreen = true),
                 ),

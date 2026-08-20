@@ -292,11 +292,12 @@ class ProjectListWidget extends StatelessWidget {
                       top: 4, left: 4,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? primary : Colors.white,
+                          color: isSelected ? primary : Theme.of(context).colorScheme.surface,
                           shape: BoxShape.circle,
                           border: Border.all(color: primary),
                         ),
-                        child: Icon(isSelected ? Icons.check : null, size: 16, color: Colors.white),
+                        child: Icon(isSelected ? Icons.check : null,
+                            size: 16, color: Theme.of(context).colorScheme.onPrimary),
                       ),
                     ),
                 ],
@@ -345,11 +346,12 @@ class ProjectListWidget extends StatelessWidget {
                       top: 4, left: 4,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? primary : Colors.white,
+                          color: isSelected ? primary : Theme.of(context).colorScheme.surface,
                           shape: BoxShape.circle,
                           border: Border.all(color: primary),
                         ),
-                        child: Icon(isSelected ? Icons.check : null, size: 16, color: Colors.white),
+                        child: Icon(isSelected ? Icons.check : null,
+                            size: 16, color: Theme.of(context).colorScheme.onPrimary),
                       ),
                     ),
                 ],
@@ -658,8 +660,8 @@ class ProjectListWidget extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _colorDot(null, selectedColor, (v) => setS(() => selectedColor = v)),
-                  ..._folderColors.map((c) => _colorDot(c, selectedColor, (v) => setS(() => selectedColor = v))),
+                  _colorDot(ctx, null, selectedColor, (v) => setS(() => selectedColor = v)),
+                  ..._folderColors.map((c) => _colorDot(ctx, c, selectedColor, (v) => setS(() => selectedColor = v))),
                 ],
               ),
             ],
@@ -694,8 +696,9 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _colorDot(int? color, int? selected, ValueChanged<int?> onTap) {
+  Widget _colorDot(BuildContext context, int? color, int? selected, ValueChanged<int?> onTap) {
     final isSelected = color == selected;
+    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => onTap(color),
       child: Container(
@@ -705,11 +708,11 @@ class ProjectListWidget extends StatelessWidget {
           color: color != null ? Color(color) : Colors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
-            color: isSelected ? Colors.black : Colors.grey,
+            color: isSelected ? scheme.primary : scheme.outlineVariant,
             width: isSelected ? 3 : 1,
           ),
         ),
-        child: color == null ? const Icon(Icons.block, size: 16, color: Colors.grey) : null,
+        child: color == null ? Icon(Icons.block, size: 16, color: scheme.onSurfaceVariant) : null,
       ),
     );
   }

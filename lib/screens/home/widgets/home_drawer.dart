@@ -31,19 +31,21 @@ class HomeDrawer extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
+                    color: scheme.onPrimary.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.movie_creation_outlined, color: Colors.white, size: 26),
+                  child: Icon(Icons.movie_creation_outlined, color: scheme.onPrimary, size: 26),
                 ),
                 const SizedBox(height: 12),
-                // ホーム画面AppBarのNIARIMと同じく、白光明朝を明示指定し
-                // 太字・文字間広めで可読性を上げる。
-                const Text('NIARIM',
+                // ホーム画面AppBarのNIARIMと同じく、明朝を明示指定し太字・
+                // 文字間広めで可読性を上げる。文字色はテーマの差し色（背景の
+                // グラデーション）に対して自動でコントラストが確保される
+                // onPrimaryを使う（差し色が明るいテーマでも視認性を保つ）。
+                Text('NIARIM',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onPrimary,
                       fontFamily: 'HakkouMincho',
-                      fontFamilyFallback: ['NotoSerifJP'],
+                      fontFamilyFallback: const ['NotoSerifJP'],
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.5,
@@ -51,7 +53,7 @@ class HomeDrawer extends StatelessWidget {
                     )),
                 const SizedBox(height: 2),
                 Text(l10n.homeDrawerAppTagline,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
+                    style: TextStyle(color: scheme.onPrimary.withValues(alpha: 0.85), fontSize: 12)),
               ],
             ),
           ),
