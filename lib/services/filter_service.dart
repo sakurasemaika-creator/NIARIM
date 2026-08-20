@@ -186,4 +186,24 @@ class FilterService extends ChangeNotifier {
     _favoritesOnly = value;
     notifyListeners();
   }
+
+  // ─── フィルター表示順の並べ替え ────────────────────────────────────
+  // ドラッグハンドルによる並べ替え。順序は_filtersの配列順そのものを
+  // SharedPreferencesへ永続化する既存の仕組み（_persist）をそのまま使う
+  // ため、追加の保存キーは不要。FilterServiceはアプリ全体で単一の
+  // Providerとして共有されるので、この並び順はプロジェクトに依存せず
+  // アプリ内共通になる。
+
+  /// [id]のフィルターを[newIndex]の位置へ移動する。一覧全体（フィルター順
+  /// が絞り込みなしの状態）に対するインデックスで指定する。
+  void reorderFilter(String id, int newIndex) {
+    final oldIndex = _filters.indexWhere((f) => f.id == id);
+    if (oldIndex < 0) return;
+    final target = newIndex.clamp(0, _filters.length - 1);
+    if (oldIndex == target) return;
+    final item = _filters.removeAt(oldIndex);
+    _filters.insert(target, item);
+    notifyListeners();
+    _persist();
+  }
 }

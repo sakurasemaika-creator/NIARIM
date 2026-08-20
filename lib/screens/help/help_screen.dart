@@ -56,7 +56,6 @@ class _HelpScreenState extends State<HelpScreen> {
         // スタンプの回転・拡大縮小の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ペンサブツール', title: l10n.helpPenSubToolTitle, description: l10n.helpPenSubToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
-        _HelpEntry(topicKey: '早替えツール管理', title: l10n.helpQuickToolManagementTitle, description: l10n.helpQuickToolManagementDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 4)),
         // 選択範囲の変形と対になる新機能（仕様書28）。
         _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.topBar, 1)),
@@ -70,7 +69,6 @@ class _HelpScreenState extends State<HelpScreen> {
         // 「レイヤーの共通化」の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 3)),
         _HelpEntry(topicKey: 'レイヤーフォルダ', title: l10n.helpLayerFolderTitle, description: l10n.helpLayerFolderDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0)),
-        _HelpEntry(topicKey: 'レイヤーの複数選択', title: l10n.helpLayerMultiSelectTitle, description: l10n.helpLayerMultiSelectDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 1)),
         // 自動塗り実行・自動塗りの線画色設定・自動塗りプリセット絞り込みの説明は、
         // 独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: '自動塗り', title: l10n.helpAutoFillTitle, description: l10n.helpAutoFillDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 2)),
@@ -93,12 +91,10 @@ class _HelpScreenState extends State<HelpScreen> {
         // ── タイムライン・アニメーション ──────────────────────────
         _HelpEntry(topicKey: 'タイムライン', title: l10n.helpTimelineTitle, description: l10n.helpTimelineDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 2)),
         _HelpEntry(topicKey: 'シーン', title: l10n.helpSceneTitle, description: l10n.helpSceneDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 0)),
-        _HelpEntry(topicKey: 'シーン操作', title: l10n.helpSceneOperationsTitle, description: l10n.helpSceneOperationsDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 0)),
         _HelpEntry(topicKey: 'フレーム操作', title: l10n.helpFrameOperationsTitle, description: l10n.helpFrameOperationsDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 2)),
         _HelpEntry(topicKey: '素材クリップ', title: l10n.helpMaterialClipTitle, description: l10n.helpMaterialClipDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 3)),
         _HelpEntry(topicKey: '素材一覧', title: l10n.helpMaterialListTitle, description: l10n.helpMaterialListDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1)),
         _HelpEntry(topicKey: '音声クリップ', title: l10n.helpAudioClipTitle, description: l10n.helpAudioClipDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 4)),
-        _HelpEntry(topicKey: 'ウォーターマークの再編集', title: l10n.helpWatermarkEditTitle, description: l10n.helpWatermarkEditDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 4)),
         _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 1)),
         // 演出フィルターの適用順・動くノイズフィルター・雨フィルターの説明は、
         // 独立項目にせずこちらへ統合済み（仕様書28：個々のフィルターを独立項目に

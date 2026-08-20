@@ -196,80 +196,115 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                 ),
               const Divider(),
-              SizedBox(
-                height: 90,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: filters.length,
-                  itemBuilder: (context, index) {
-                    final f = filters[index];
-                    final isSelected = f.id == current?.id;
-                    final premiumFeature = _premiumFeatureFor(f.kind);
-                    final isLocked = premiumFeature != null &&
-                        !context.watch<PremiumService>().isFeatureAvailable(premiumFeature);
-                    final chip = GestureDetector(
-                      onTap: isLocked ? null : () => filterService.selectFilter(f.id),
-                      child: Container(
-                        width: 72,
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
-                            width: isSelected ? 2 : 1,
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                          color: Colors.grey[800],
+              // 検索・お気に入り絞込中は表示順とFilterService内の実際の並び順が
+              // 一致しないため、並べ替え（ドラッグハンドル）は絞込なしの
+              // ときだけ有効にする（並び替え結果の意味が曖昧にならないように）。
+              Builder(builder: (context) {
+                final reorderable = query.isEmpty && !_showFavoritesOnly;
+                Widget buildChip(int index) {
+                  final f = filters[index];
+                  final isSelected = f.id == current?.id;
+                  final premiumFeature = _premiumFeatureFor(f.kind);
+                  final isLocked = premiumFeature != null &&
+                      !context.watch<PremiumService>().isFeatureAvailable(premiumFeature);
+                  final chip = GestureDetector(
+                    onTap: isLocked ? null : () => filterService.selectFilter(f.id),
+                    child: Container(
+                      width: 72,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
+                          width: isSelected ? 2 : 1,
                         ),
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(_iconFor(f.kind), size: 22),
-                                  const SizedBox(height: 2),
-                                  Text(_filterDisplayName(l10n, f),
-                                      style: const TextStyle(fontSize: 9),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2),
-                                ],
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.grey[800],
+                      ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(_iconFor(f.kind), size: 22),
+                                const SizedBox(height: 2),
+                                Text(_filterDisplayName(l10n, f),
+                                    style: const TextStyle(fontSize: 9),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2),
+                              ],
+                            ),
+                          ),
+                          if (!isLocked)
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () => filterService.toggleFavorite(f.id),
+                                child: Icon(
+                                  f.isFavorite ? Icons.star : Icons.star_outline,
+                                  size: 12,
+                                  color: f.isFavorite ? Colors.amber : Colors.grey,
+                                ),
                               ),
                             ),
-                            if (!isLocked)
-                              Positioned(
-                                top: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () => filterService.toggleFavorite(f.id),
-                                  child: Icon(
-                                    f.isFavorite ? Icons.star : Icons.star_outline,
-                                    size: 12,
-                                    color: f.isFavorite ? Colors.amber : Colors.grey,
-                                  ),
+                          // プリインストールではない（色調調整等から新規追加した）
+                          // フィルターにのみ、削除・複製の三点メニューを出す。
+                          // お気に入りアイコンと重ならないよう左上に配置する。
+                          if (!isLocked && !filterService.isBuiltIn(f.id))
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              child: GestureDetector(
+                                onTap: () => _showCustomFilterMenu(context, filterService, f),
+                                child: const Icon(Icons.more_vert, size: 14, color: Colors.grey),
+                              ),
+                            ),
+                          // ドラッグハンドル：フィルターの表示順を自由に入れ替えられる
+                          // （並び順はFilterService経由でSharedPreferencesへ永続化され、
+                          // アプリ内共通・プロジェクトをまたいで共有される）。
+                          if (reorderable)
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: ReorderableDragStartListener(
+                                  index: index,
+                                  child: const Icon(Icons.drag_indicator, size: 12, color: Colors.grey),
                                 ),
                               ),
-                            // プリインストールではない（色調調整等から新規追加した）
-                            // フィルターにのみ、削除・複製の三点メニューを出す。
-                            // お気に入りアイコンと重ならないよう左上に配置する。
-                            if (!isLocked && !filterService.isBuiltIn(f.id))
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                child: GestureDetector(
-                                  onTap: () => _showCustomFilterMenu(context, filterService, f),
-                                  child: const Icon(Icons.more_vert, size: 14, color: Colors.grey),
-                                ),
-                              ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
-                    );
-                    return isLocked
-                        ? PremiumLockWidget(feature: premiumFeature, child: chip)
-                        : chip;
-                  },
-                ),
-              ),
+                    ),
+                  );
+                  return isLocked
+                      ? PremiumLockWidget(feature: premiumFeature, child: chip)
+                      : chip;
+                }
+
+                return SizedBox(
+                  height: 90,
+                  child: reorderable
+                      ? ReorderableListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          buildDefaultDragHandles: false,
+                          itemCount: filters.length,
+                          itemBuilder: (context, index) =>
+                              KeyedSubtree(key: ValueKey(filters[index].id), child: buildChip(index)),
+                          onReorder: (oldIndex, newIndex) {
+                            if (newIndex > oldIndex) newIndex -= 1;
+                            filterService.reorderFilter(filters[oldIndex].id, newIndex);
+                          },
+                        )
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: filters.length,
+                          itemBuilder: (context, index) => buildChip(index),
+                        ),
+                );
+              }),
               const Divider(),
               if (current != null) ...[
                 Expanded(
