@@ -79,7 +79,8 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
           border: Border.all(color: scheme.outlineVariant),
         ),
         child: CustomPaint(
-          painter: _PressureCurvePainter(points: widget.points, color: scheme.primary),
+          painter: _PressureCurvePainter(
+              points: widget.points, color: scheme.primary, handleOutlineColor: scheme.surfaceContainerHighest),
         ),
       ),
     );
@@ -89,7 +90,8 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
 class _PressureCurvePainter extends CustomPainter {
   final List<(double, double)> points;
   final Color color;
-  _PressureCurvePainter({required this.points, required this.color});
+  final Color handleOutlineColor;
+  _PressureCurvePainter({required this.points, required this.color, required this.handleOutlineColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -136,7 +138,7 @@ class _PressureCurvePainter extends CustomPainter {
         handle,
         8,
         Paint()
-          ..color = Colors.white
+          ..color = handleOutlineColor
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2,
       );
@@ -144,5 +146,6 @@ class _PressureCurvePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_PressureCurvePainter old) => old.points != points || old.color != color;
+  bool shouldRepaint(_PressureCurvePainter old) =>
+      old.points != points || old.color != color || old.handleOutlineColor != handleOutlineColor;
 }

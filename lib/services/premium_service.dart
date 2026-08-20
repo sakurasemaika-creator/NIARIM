@@ -34,6 +34,12 @@ class PremiumService extends ChangeNotifier {
   // 年・月を直接ずらすDateTimeコンストラクタで計算する）。
   DateTime? _purchaseDate;
   String? _purchasedProductId;
+  // サーバー側レシート検証（Google Play Developer API等）で得られる
+  // 「確定した」有効期限。まだバックエンドが無いため常にnullで、
+  // その間は[nextRenewalDateEstimate]による暦計算の推定値にフォールバック
+  // する。バックエンドが用意でき次第[_verifyReceiptAndUpdateExpiry]の
+  // コメントアウトを外せば、この値が優先的に使われるようになる設計。
+  DateTime? _verifiedExpiryDate;
 
   /// 実際に購入済みかどうか（課金・ストア関連の判定に使用）。
   bool get hasPurchasedPremium => _isPremium;
@@ -41,9 +47,17 @@ class PremiumService extends ChangeNotifier {
   /// 購入日時（登録日表示用）。未購入または記録前はnull。
   DateTime? get purchaseDate => _purchaseDate;
 
-  /// 次回更新日。購入日と同じ月日（年額）／同じ日（月額）を維持したまま、
-  /// 現在時刻以降で最も近い日を年・月単位でずらして求める（暦計算のため、
-  /// 日数の単純な加算と違って月の日数差による誤差が生じない）。
+  /// サーバー側レシート検証で確定した有効期限（分かっていればそれを最優先）。
+  /// 未実装の間は常にnull。
+  DateTime? get verifiedExpiryDate => _verifiedExpiryDate;
+
+  /// 次回更新日。サーバー側レシート検証済みの有効期限があればそれを、
+  /// 無ければ購入日から暦計算した推定値を返す（登録日と同じ月日（年額）／
+  /// 同じ日（月額）を維持したまま、現在時刻以降で最も近い日を年・月単位で
+  /// ずらして求める。暦計算のため、日数の単純な加算と違って月の日数差に
+  /// よる誤差が生じない）。
+  DateTime? get nextRenewalDate => _verifiedExpiryDate ?? nextRenewalDateEstimate;
+
   DateTime? get nextRenewalDateEstimate {
     final start = _purchaseDate;
     if (start == null) return null;
@@ -188,6 +202,13 @@ class PremiumService extends ChangeNotifier {
             }
           }
           await setPremium(true, purchaseDate: parsedDate ?? DateTime.now(), productId: purchase.productID);
+          // サーバー側レシート検証はまだバックエンドが無いため未接続。
+          // 将来Google Play Developer API等の検証エンドポイントが用意でき
+          // 次第、以下のコメントアウトを外せば確定した有効期限が
+          // [nextRenewalDate]へ自動的に反映される（バックエンド未実装の
+          // 現状ではawaitせずfire-and-forgetにしておき、失敗しても
+          // 購入処理自体は成立させる）。
+          // unawaited(_verifyReceiptAndUpdateExpiry(purchase));
           break;
         case PurchaseStatus.error:
           _purchasePending = false;
@@ -221,6 +242,30 @@ class PremiumService extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  // サーバー側レシート検証（未実装：バックエンドAPIが用意でき次第
+  // 実装する）。購入トークン（purchase.verificationData）をバックエンドへ
+  // 送り、Google Play Developer API
+  // (purchases.subscriptions.get)等で検証した上で確定した有効期限を
+  // 受け取る想定。バックエンドが無い現状ではエラーになるためコメント
+  // アウトしているが、呼び出し側（[_onPurchaseUpdate]）は既に
+  // レシート検証がある前提で書いてあるので、この中身だけ実装すれば
+  // 有効化できる。
+  // Future<void> _verifyReceiptAndUpdateExpiry(PurchaseDetails purchase) async {
+  //   try {
+  //     final token = purchase.verificationData.serverVerificationData;
+  //     final result = await _receiptVerificationApi.verify(
+  //       productId: purchase.productID,
+  //       purchaseToken: token,
+  //     );
+  //     _verifiedExpiryDate = result.expiryDate;
+  //     notifyListeners();
+  //   } catch (_) {
+  //     // 検証に失敗した場合は[nextRenewalDateEstimate]の推定値のまま
+  //     // フォールバックする（購入自体は既に成立しているため機能制限は
+  //     // かけない）。
+  //   }
+  // }
 
   // 無料版の最大動画尺（仕様書12実装チェックリスト：90秒）
   int get maxProjectDurationSeconds => isPremium ? 999999 : 90;

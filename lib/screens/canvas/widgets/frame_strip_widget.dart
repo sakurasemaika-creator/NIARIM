@@ -5,6 +5,7 @@ import '../../../engine/layer_compositor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
+import '../../../services/theme_service.dart';
 
 class FrameStripWidget extends StatefulWidget {
   final int currentFrame;
@@ -283,15 +284,19 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                 );
               },
                 ),
-                // 画面中央に固定表示する赤枠。フレーム一覧側が
-                // スクロールして現在位置のフレームをここへ合わせる。
+                // 画面中央に固定表示する枠。フレーム一覧側が
+                // スクロールして現在位置のフレームをここへ合わせる。色は
+                // 赤固定ではなく、テーマの更新マーク色（レイヤーパネルの
+                // 自動塗り更新マーク❗と同じ、警告・注目を引く差し色）と
+                // 連動させる。
                 IgnorePointer(
                   child: Center(
                     child: Container(
                       width: 48,
                       height: 56,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.red, width: 3),
+                        border: Border.all(
+                            color: context.watch<ThemeService>().current.updateMarkColor, width: 3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

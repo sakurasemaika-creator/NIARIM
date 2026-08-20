@@ -51,9 +51,9 @@ class PremiumScreen extends StatelessWidget {
                         Text(l10n.premiumRegisteredDateLabel(_formatDate(premium.purchaseDate!)),
                             style: const TextStyle(color: Colors.white, fontSize: 13)),
                       ],
-                      if (premium.nextRenewalDateEstimate != null) ...[
+                      if (premium.nextRenewalDate != null) ...[
                         const SizedBox(height: 2),
-                        Text(l10n.premiumNextRenewalDateLabel(_formatDate(premium.nextRenewalDateEstimate!)),
+                        Text(l10n.premiumNextRenewalDateLabel(_formatDate(premium.nextRenewalDate!)),
                             style: const TextStyle(color: Colors.white, fontSize: 13)),
                       ],
                     ],
