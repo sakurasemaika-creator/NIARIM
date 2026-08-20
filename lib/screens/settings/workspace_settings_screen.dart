@@ -1,8 +1,11 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/quick_tool_entry.dart';
 import '../../models/toolbar_item.dart';
+import '../../models/workspace_preset.dart';
 import '../../services/premium_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
@@ -100,15 +103,19 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           Builder(builder: (context) {
             // スマホモードではツールバーが画面下部に固定表示されるため、
             // 左右反転（左利きモード）が意味を持つのはパネルを常時
-            // ドッキング表示するPC/DeXモードの場合のみ。スマホモードでは
-            // 無効化し、その旨を案内する。
-            final isPc = isWideScreen(context);
+            // ドッキング表示するPC/DeXモードの場合のみ。ただし判定は
+            // 「設定画面を開いた時点の画面幅」ではなく forcePcMode の設定値
+            // で行う（自動判定・PC固定の場合は、縦画面でこの設定画面を
+            // 開いていても有効にしておく必要がある。横画面へ回転した時に
+            // 初めてパネルがドッキング表示され、左利きモードが必要になる
+            // ため）。強制スマホモード時のみ無効化する。
+            final forceMobile = settings.forcePcMode == false;
             return Card(
               child: SwitchListTile(
                 title: Text(l10n.workspaceLeftHandedMode),
-                subtitle: Text(isPc ? l10n.workspaceLeftHandedSubtitlePc : l10n.workspaceLeftHandedSubtitleMobile),
+                subtitle: Text(forceMobile ? l10n.workspaceLeftHandedSubtitleMobile : l10n.workspaceLeftHandedSubtitlePc),
                 value: settings.isLeftHanded,
-                onChanged: isPc ? (v) => settings.setLeftHanded(v) : null,
+                onChanged: forceMobile ? null : (v) => settings.setLeftHanded(v),
               ),
             );
           }),
@@ -168,19 +175,41 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             child: Text(l10n.workspaceSaveHint,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
+          // 「適用」は名前の登録を必要とせず、UI・外観設定と同じくその場で
+          // アプリ全体へ反映するだけの操作（各設定項目は変更のたびに
+          // 即座に反映済みだが、変更内容が確かに反映されたことを
+          // 明示的に確認できるようにする）。
           FilledButton.icon(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.workspaceAppliedSnackbar)),
+              );
+            },
+            icon: const Icon(Icons.check),
+            label: Text(l10n.workspaceApplyCurrentButton),
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
             onPressed: () => _showSaveDialog(context, settings, presetService),
             icon: const Icon(Icons.save),
-            label: Text(l10n.workspaceSaveCurrentButton),
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            label: Text(l10n.workspaceSaveAsButton),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: presetService.presets.isEmpty
                 ? null
-                : () => _showLoadSheet(context, settings, presetService),
+                : () => _showShareSheet(context, presetService),
+            icon: const Icon(Icons.ios_share),
+            label: Text(l10n.workspaceShareButton),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => _showLoadSheet(context, settings, presetService),
             icon: const Icon(Icons.folder_open),
-            label: Text(presetService.presets.isEmpty ? l10n.workspaceLoadButtonEmpty : l10n.workspaceLoadButton),
+            label: Text(l10n.workspaceLoadButton),
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
         ],
@@ -198,13 +227,139 @@ class WorkspaceSettingsScreen extends StatelessWidget {
   }
 
   void _showSaveDialog(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
     final quickToolService = context.read<QuickToolService>();
     showDialog(
       context: context,
+      builder: (_) => _WorkspaceSaveDialog(
+        settings: settings,
+        presetService: presetService,
+        quickToolEntries: quickToolService.entries.map((e) => e.toJson()).toList(),
+      ),
+    );
+  }
+
+  /// 保存済みワークスペースを1つ選んでファイルとして共有する。
+  void _showShareSheet(BuildContext context, WorkspacePresetService presetService) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.workspaceShareSelectTitle,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+            ),
+            for (final preset in presetService.presets)
+              ListTile(
+                leading: const Icon(Icons.dashboard_customize),
+                title: Text(preset.name),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  try {
+                    final file = await presetService.exportPreset(preset.id);
+                    if (!context.mounted) return;
+                    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(l10n.workspaceShareFailedSnackbar(e.toString()))));
+                  }
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLoadSheet(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+    final l10n = AppLocalizations.of(context)!;
+    final quickToolService = context.read<QuickToolService>();
+
+    void applyPreset(WorkspacePreset preset) {
+      settings.setLeftHanded(preset.isLeftHanded);
+      settings.setForcePcMode(preset.forcePcMode);
+      // 表示ツール・早替えツールも一括で切り替える（仕様書08）
+      settings.applyToolbarPreset(preset.toolbarOrderIds, preset.hiddenToolbarItemIds);
+      if (preset.quickToolEntries.isNotEmpty) {
+        quickToolService.replaceAll(
+            preset.quickToolEntries.map((e) => QuickToolEntry.fromJson(e)).toList());
+      }
+    }
+
+    Future<void> importFromFile() async {
+      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['niaworkspace']);
+      if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+      try {
+        await presetService.importPresetFile(result.files.first.path!);
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.workspaceImportFailedSnackbar(e.toString()))));
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 端末内の一覧より上に、外部ファイル（.niaworkspace）からの
+            // 読み込みを常設する。
+            ListTile(
+              leading: const Icon(Icons.file_upload_outlined),
+              title: Text(l10n.workspaceImportFromFileButton),
+              onTap: () {
+                Navigator.pop(ctx);
+                importFromFile();
+              },
+            ),
+            if (presetService.presets.isNotEmpty) const Divider(height: 1),
+            for (final preset in presetService.presets)
+              ListTile(
+                leading: const Icon(Icons.dashboard_customize),
+                title: Text(preset.name),
+                subtitle: Text(preset.isLeftHanded ? l10n.workspaceLoadLeftHanded : l10n.workspaceLoadRightHanded),
+                onTap: () {
+                  applyPreset(preset);
+                  Navigator.pop(ctx);
+                },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: l10n.commonRename,
+                      onPressed: () => _showRenamePresetDialog(context, presetService, preset),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      tooltip: l10n.commonDelete,
+                      onPressed: () async {
+                        if (!await confirmDelete(context, itemName: preset.name)) return;
+                        presetService.delete(preset.id);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRenamePresetDialog(BuildContext context, WorkspacePresetService presetService, WorkspacePreset preset) {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: preset.name);
+    showDialog(
+      context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.workspaceSaveDialogTitle),
+        title: Text(l10n.commonRename),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -216,14 +371,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             onPressed: () {
               final name = controller.text.trim();
               if (name.isEmpty) return;
-              presetService.save(
-                name,
-                isLeftHanded: settings.isLeftHanded,
-                forcePcMode: settings.forcePcMode,
-                toolbarOrder: settings.toolbarOrder.map((e) => e.name).toList(),
-                hiddenToolbarItems: settings.hiddenToolbarItems.map((e) => e.name).toList(),
-                quickToolEntries: quickToolService.entries.map((e) => e.toJson()).toList(),
-              );
+              presetService.rename(preset.id, name);
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonSave),
@@ -232,44 +380,137 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       ),
     ).then((_) => controller.dispose());
   }
+}
 
-  void _showLoadSheet(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+/// 「ワークスペースに名前を付けて保存・上書き保存」ダイアログ。
+/// 新規保存（名前必須）と上書き保存（既存の一覧から選択、名前は
+/// 未入力なら元の名前を再利用）の両方をここでまとめて扱う。
+class _WorkspaceSaveDialog extends StatefulWidget {
+  final SettingsService settings;
+  final WorkspacePresetService presetService;
+  final List<Map<String, dynamic>> quickToolEntries;
+
+  const _WorkspaceSaveDialog({
+    required this.settings,
+    required this.presetService,
+    required this.quickToolEntries,
+  });
+
+  @override
+  State<_WorkspaceSaveDialog> createState() => _WorkspaceSaveDialogState();
+}
+
+class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
+  final _controller = TextEditingController();
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _saveNew() {
     final l10n = AppLocalizations.of(context)!;
-    final quickToolService = context.read<QuickToolService>();
-    showModalBottomSheet(
+    final name = _controller.text.trim();
+    if (name.isEmpty) {
+      setState(() => _errorText = l10n.workspaceNameRequiredError);
+      return;
+    }
+    widget.presetService.save(
+      name,
+      isLeftHanded: widget.settings.isLeftHanded,
+      forcePcMode: widget.settings.forcePcMode,
+      toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
+      hiddenToolbarItems: widget.settings.hiddenToolbarItems.map((e) => e.name).toList(),
+      quickToolEntries: widget.quickToolEntries,
+    );
+    Navigator.pop(context);
+  }
+
+  Future<void> _overwrite() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (widget.presetService.presets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
+      return;
+    }
+    final selected = await showModalBottomSheet<WorkspacePreset>(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (final preset in presetService.presets)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.workspaceOverwriteSelectTitle,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+            ),
+            for (final preset in widget.presetService.presets)
               ListTile(
                 leading: const Icon(Icons.dashboard_customize),
                 title: Text(preset.name),
-                subtitle: Text(preset.isLeftHanded ? l10n.workspaceLoadLeftHanded : l10n.workspaceLoadRightHanded),
-                onTap: () {
-                  settings.setLeftHanded(preset.isLeftHanded);
-                  settings.setForcePcMode(preset.forcePcMode);
-                  // 表示ツール・早替えツールも一括で切り替える（仕様書08）
-                  settings.applyToolbarPreset(preset.toolbarOrderIds, preset.hiddenToolbarItemIds);
-                  if (preset.quickToolEntries.isNotEmpty) {
-                    quickToolService.replaceAll(
-                        preset.quickToolEntries.map((e) => QuickToolEntry.fromJson(e)).toList());
-                  }
-                  Navigator.pop(ctx);
-                },
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  tooltip: l10n.commonDelete,
-                  onPressed: () async {
-                    if (!await confirmDelete(context, itemName: preset.name)) return;
-                    presetService.delete(preset.id);
-                  },
-                ),
+                onTap: () => Navigator.pop(ctx, preset),
               ),
           ],
         ),
       ),
+    );
+    if (selected == null || !mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.workspaceOverwriteConfirmTitle),
+        content: Text(l10n.workspaceOverwriteConfirmBody(selected.name)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonOk)),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final newName = _controller.text.trim();
+    await widget.presetService.overwrite(
+      selected.id,
+      newName: newName.isEmpty ? null : newName,
+      isLeftHanded: widget.settings.isLeftHanded,
+      forcePcMode: widget.settings.forcePcMode,
+      toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
+      hiddenToolbarItems: widget.settings.hiddenToolbarItems.map((e) => e.name).toList(),
+      quickToolEntries: widget.quickToolEntries,
+    );
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(l10n.workspaceSaveDialogTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            decoration: InputDecoration(labelText: l10n.workspaceSaveDialogLabel, border: const OutlineInputBorder()),
+            onChanged: (_) {
+              if (_errorText != null) setState(() => _errorText = null);
+            },
+          ),
+          if (_errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(_errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+            ),
+        ],
+      ),
+      actionsAlignment: MainAxisAlignment.spaceBetween,
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+        TextButton(onPressed: _overwrite, child: Text(l10n.workspaceOverwriteButton)),
+        FilledButton(onPressed: _saveNew, child: Text(l10n.commonSave)),
+      ],
     );
   }
 }

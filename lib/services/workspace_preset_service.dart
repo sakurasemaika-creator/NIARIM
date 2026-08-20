@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workspace_preset.dart';
 
@@ -52,5 +54,83 @@ class WorkspacePresetService extends ChangeNotifier {
     _presets.removeWhere((p) => p.id == id);
     await _persist();
     notifyListeners();
+  }
+
+  /// 保存済みワークスペースの名前だけを変更する（保存内容は変更しない）。
+  Future<void> rename(String id, String newName) async {
+    final idx = _presets.indexWhere((p) => p.id == id);
+    if (idx < 0 || newName.trim().isEmpty) return;
+    final p = _presets[idx];
+    _presets[idx] = WorkspacePreset(
+      id: p.id,
+      name: newName.trim(),
+      isLeftHanded: p.isLeftHanded,
+      forcePcMode: p.forcePcMode,
+      toolbarOrder: p.toolbarOrder,
+      hiddenToolbarItems: p.hiddenToolbarItems,
+      quickToolEntries: p.quickToolEntries,
+    );
+    await _persist();
+    notifyListeners();
+  }
+
+  /// [id]のワークスペースを現在の設定で上書きする。[newName]を指定しない
+  /// （null）場合は既存の名前をそのまま使う。IDは変えない。
+  Future<void> overwrite(
+    String id, {
+    String? newName,
+    required bool isLeftHanded,
+    required bool? forcePcMode,
+    List<String> toolbarOrder = const [],
+    List<String> hiddenToolbarItems = const [],
+    List<Map<String, dynamic>> quickToolEntries = const [],
+  }) async {
+    final idx = _presets.indexWhere((p) => p.id == id);
+    if (idx < 0) return;
+    final current = _presets[idx];
+    _presets[idx] = WorkspacePreset(
+      id: current.id,
+      name: (newName != null && newName.trim().isNotEmpty) ? newName.trim() : current.name,
+      isLeftHanded: isLeftHanded,
+      forcePcMode: forcePcMode,
+      toolbarOrder: toolbarOrder,
+      hiddenToolbarItems: hiddenToolbarItems,
+      quickToolEntries: quickToolEntries,
+    );
+    await _persist();
+    notifyListeners();
+  }
+
+  // ─── 共有（.niaworkspace、仕様書08）：バイナリ資産を持たない単純な
+  // JSON設定のため、トーン・ブラシ等と異なりzip化はせずJSONそのまま
+  // 書き出す。 ─────────────────────────────────────────────────────
+
+  Future<File> exportPreset(String id) async {
+    final preset = _presets.firstWhere((p) => p.id == id);
+    final base = await getApplicationDocumentsDirectory();
+    final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final file = File('${base.path}/$safeName.niaworkspace');
+    await file.writeAsString(jsonEncode(preset.toJson()));
+    return file;
+  }
+
+  Future<WorkspacePreset> importPresetFile(String filePath) async {
+    final content = await File(filePath).readAsString();
+    final json = jsonDecode(content) as Map<String, dynamic>;
+    final imported = WorkspacePreset.fromJson(json);
+    // IDは取り込み先で既存プリセットと衝突しないよう振り直す。
+    final preset = WorkspacePreset(
+      id: 'ws_${DateTime.now().microsecondsSinceEpoch}',
+      name: imported.name,
+      isLeftHanded: imported.isLeftHanded,
+      forcePcMode: imported.forcePcMode,
+      toolbarOrder: imported.toolbarOrder,
+      hiddenToolbarItems: imported.hiddenToolbarItems,
+      quickToolEntries: imported.quickToolEntries,
+    );
+    _presets.add(preset);
+    await _persist();
+    notifyListeners();
+    return preset;
   }
 }

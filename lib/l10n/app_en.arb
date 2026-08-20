@@ -68,7 +68,7 @@
   "settingsWorkspaceSubtitle": "Toolbar editing, panel layout",
   "settingsBucketTitle": "Bucket Fill",
   "settingsBucketSubtitle": "Tolerance, expand, fill under lines",
-  "settingsThemeTitle": "UI & Theme",
+  "settingsThemeTitle": "Theme & Appearance",
   "settingsThemeSubtitle": "Theme settings, workspace",
   "settingsWatermarkTitle": "Watermark",
   "settingsWatermarkSubtitle": "Custom watermark",
@@ -2048,5 +2048,58 @@
   "filterThresholdLabel": "Threshold",
   "tipsLineArtExtractionTitle": "Extract line art by combining color adjust, threshold, and brightness-to-alpha",
   "tipsLineArtExtractionDesc": "Boost contrast with color adjust to make the lines stand out, then use the threshold filter to split the image into pure black and white — the lines separate cleanly from everything else. The threshold slider lets you fine-tune the line thickness and how faint or bold it looks. Finally, use \"Brightness to alpha (gray)\" from the layer's three-dot menu to make the white areas (everything but the lines) transparent, leaving just the line art. Handy for pulling clean line art out of a photo or rough sketch.",
-  "autofillPartResetTraceButton": "Reset to default"
+  "autofillPartResetTraceButton": "Reset to default",
+  "premiumScreenTitle": "Premium",
+  "premiumComparisonPremium": "Premium",
+  "premiumRegisteredDateLabel": "Registered: {date}",
+  "premiumNextRenewalDateLabel": "Next renewal: {date}",
+  "@premiumRegisteredDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@premiumNextRenewalDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "workspaceApplyCurrentButton": "Apply Configured Workspace",
+  "workspaceAppliedSnackbar": "Workspace settings applied.",
+  "workspaceSaveAsButton": "Save Workspace As / Overwrite",
+  "workspaceShareButton": "Share Workspace",
+  "workspaceShareSelectTitle": "Select a workspace to share",
+  "workspaceShareFailedSnackbar": "Failed to share: {error}",
+  "workspaceImportFromFileButton": "Import from file",
+  "workspaceImportFailedSnackbar": "Failed to import: {error}",
+  "workspaceNameRequiredError": "Please enter a name.",
+  "workspaceNoSavedPresets": "No saved workspaces yet.",
+  "workspaceOverwriteSelectTitle": "Select a workspace to overwrite",
+  "workspaceOverwriteConfirmTitle": "Confirm overwrite",
+  "workspaceOverwriteConfirmBody": "This will overwrite \"{name}\" with the current settings. Its previous contents will be lost. Continue?",
+  "workspaceOverwriteButton": "Overwrite",
+  "@workspaceShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceOverwriteConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

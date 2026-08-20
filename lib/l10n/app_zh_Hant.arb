@@ -68,7 +68,7 @@
   "settingsWorkspaceSubtitle": "工具列編輯・面板配置",
   "settingsBucketTitle": "油漆桶填色",
   "settingsBucketSubtitle": "容差・擴張・潛入線稿下方",
-  "settingsThemeTitle": "UI・主題",
+  "settingsThemeTitle": "主題・外觀",
   "settingsThemeSubtitle": "主題設定・工作區",
   "settingsWatermarkTitle": "浮水印",
   "settingsWatermarkSubtitle": "自訂浮水印",
@@ -2048,5 +2048,58 @@
   "filterThresholdLabel": "閾值",
   "tipsLineArtExtractionTitle": "組合色調調整・二值化・明度轉透明來擷取線稿",
   "tipsLineArtExtractionDesc": "先用色調調整提高對比度，讓線條更突出，再用二值化濾鏡把影像分成純黑白兩色，線條就會與其餘部分清楚分離。二值化的閾值可以用滑桿自由調整，依喜好控制線條的粗細與虛實程度。最後，在圖層的三點選單中使用「明度轉透明（灰階）」，讓白色部分（線條以外）變成透明，就只剩下線稿了。想從照片或草稿中單獨擷取線稿時非常實用。",
-  "autofillPartResetTraceButton": "恢復預設"
+  "autofillPartResetTraceButton": "恢復預設",
+  "premiumScreenTitle": "Premium",
+  "premiumComparisonPremium": "Premium",
+  "premiumRegisteredDateLabel": "註冊日期：{date}",
+  "premiumNextRenewalDateLabel": "下次續訂日期：{date}",
+  "@premiumRegisteredDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@premiumNextRenewalDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "workspaceApplyCurrentButton": "套用已設定的工作區",
+  "workspaceAppliedSnackbar": "已套用工作區設定。",
+  "workspaceSaveAsButton": "將工作區命名儲存・覆蓋儲存",
+  "workspaceShareButton": "共用工作區",
+  "workspaceShareSelectTitle": "選擇要共用的工作區",
+  "workspaceShareFailedSnackbar": "共用失敗：{error}",
+  "workspaceImportFromFileButton": "從外部檔案匯入",
+  "workspaceImportFailedSnackbar": "匯入失敗：{error}",
+  "workspaceNameRequiredError": "請輸入名稱。",
+  "workspaceNoSavedPresets": "目前沒有已儲存的工作區。",
+  "workspaceOverwriteSelectTitle": "選擇要覆蓋的工作區",
+  "workspaceOverwriteConfirmTitle": "確認覆蓋",
+  "workspaceOverwriteConfirmBody": "將用目前設定覆蓋「{name}」，原有內容將被刪除。是否繼續？",
+  "workspaceOverwriteButton": "覆蓋儲存",
+  "@workspaceShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceOverwriteConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -17,8 +17,7 @@ class PremiumScreen extends StatelessWidget {
     return Scaffold(
       // topic: 'プレミアム' はhelp_screen.dart側の項目タイトル（日本語固定の
       // 内部検索キー）と一致させる必要があるため、翻訳対象から除外している。
-      // 「NIARIM Premium」はアプリ名＋英語のPremiumで構成される固有表記のため翻訳しない。
-      appBar: AppBar(title: const Text('NIARIM Premium'), actions: const [HelpButton(topic: 'プレミアム')]),
+      appBar: AppBar(title: Text(l10n.premiumScreenTitle), actions: const [HelpButton(topic: 'プレミアム')]),
       body: desktopCentered(
         context,
         SingleChildScrollView(
@@ -30,20 +29,41 @@ class PremiumScreen extends StatelessWidget {
               _campaignBanner(context, l10n),
               const SizedBox(height: 24),
             ] else if (premium.hasPurchasedPremium) ...[
+              // キャンペーン終了後、契約中の会員には登録日・次回更新日の
+              // 概算（サーバー側のレシート検証を行っていないため近似値）を
+              // 表示する。
               Card(
                 color: const Color(0xFF2E7D32),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Row(children: [
-                    const Icon(Icons.check_circle, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Text(l10n.premiumActiveLabel, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                  ]),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.check_circle, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(l10n.premiumActiveLabel,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 16, fontFamily: 'Kuramubon', fontWeight: FontWeight.w700)),
+                      ]),
+                      if (premium.purchaseDate != null) ...[
+                        const SizedBox(height: 8),
+                        Text(l10n.premiumRegisteredDateLabel(_formatDate(premium.purchaseDate!)),
+                            style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      ],
+                      if (premium.nextRenewalDateEstimate != null) ...[
+                        const SizedBox(height: 2),
+                        Text(l10n.premiumNextRenewalDateLabel(_formatDate(premium.nextRenewalDateEstimate!)),
+                            style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
             ],
-            Text(l10n.premiumVsTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(l10n.premiumVsTitle,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 16),
             _comparisonTable(context, l10n),
             if (premium.isLaunchCampaignActive) ...[
@@ -53,7 +73,8 @@ class PremiumScreen extends StatelessWidget {
             ],
             if (!premium.isLaunchCampaignActive && !premium.hasPurchasedPremium) ...[
               const SizedBox(height: 24),
-              Text(l10n.premiumPlanSectionTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(l10n.premiumPlanSectionTitle,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               const SizedBox(height: 16),
               if (!premium.storeAvailable)
                 Padding(
@@ -132,6 +153,13 @@ class PremiumScreen extends StatelessWidget {
     return l10n.premiumCampaignEndLabel('${end.year}/$mo/$dd $hh:$mm');
   }
 
+  /// 登録日・次回更新日の表示用（西暦YYYY/MM/DD表記）。
+  String _formatDate(DateTime d) {
+    final mo = d.month.toString().padLeft(2, '0');
+    final dd = d.day.toString().padLeft(2, '0');
+    return '${d.year}/$mo/$dd';
+  }
+
   Widget _campaignBanner(BuildContext context, AppLocalizations l10n) {
     return Card(
       color: Theme.of(context).colorScheme.primaryContainer,
@@ -145,7 +173,7 @@ class PremiumScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(l10n.premiumCampaignBannerTitle,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, fontFamily: 'Kuramubon')),
               ),
             ]),
             const SizedBox(height: 8),
@@ -182,9 +210,9 @@ class PremiumScreen extends StatelessWidget {
         TableRow(
           decoration: BoxDecoration(color: scheme.surfaceContainerHighest),
           children: [
-            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold))),
-            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold))),
-            const Padding(padding: EdgeInsets.all(8), child: Text('Premium', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
+            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+            Padding(padding: const EdgeInsets.all(8), child: Text(l10n.premiumComparisonPremium, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
           ],
         ),
         ...items.map((item) => TableRow(children: [
@@ -240,7 +268,7 @@ class PremiumScreen extends StatelessWidget {
                         decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(4)),
                         child: Text(l10n.premiumPlanRecommendedBadge, style: const TextStyle(fontSize: 10, color: Colors.black)),
                       ),
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                     if (description.isNotEmpty)
                       Text(description,
                           style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),

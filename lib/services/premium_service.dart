@@ -25,9 +25,33 @@ class PremiumService extends ChangeNotifier {
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   bool _isPremium = false;
+  // 購入日時・購入商品ID（登録日・次回更新日の表示用）。サーバー側の
+  // レシート検証は行っていないため、次回更新日は「購入日から契約周期
+  // （年額=365日／月額=30日）を現在時刻を超えるまで繰り返し加算した日」
+  // という近似値であり、実際の請求日と数日ずれる可能性がある。
+  DateTime? _purchaseDate;
+  String? _purchasedProductId;
 
   /// 実際に購入済みかどうか（課金・ストア関連の判定に使用）。
   bool get hasPurchasedPremium => _isPremium;
+
+  /// 購入日時（登録日表示用）。未購入または記録前はnull。
+  DateTime? get purchaseDate => _purchaseDate;
+
+  /// 次回更新日の近似値（サーバー側のレシート検証を行っていないための
+  /// 概算。購入日から契約周期を現在時刻を超えるまで繰り返し加算する）。
+  DateTime? get nextRenewalDateEstimate {
+    final start = _purchaseDate;
+    if (start == null) return null;
+    final isYearly = _purchasedProductId == yearlyProductId;
+    final cycle = isYearly ? const Duration(days: 365) : const Duration(days: 30);
+    var next = start.add(cycle);
+    final now = DateTime.now();
+    while (next.isBefore(now)) {
+      next = next.add(cycle);
+    }
+    return next;
+  }
 
   /// プレミアム機能を利用できるかどうか（機能制限の判定に使用）。
   /// 実際の購入済み、またはリリース記念キャンペーン期間中はtrue。
@@ -53,6 +77,11 @@ class PremiumService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _isPremium = prefs.getBool('is_premium') ?? false;
+    final purchaseMillis = prefs.getInt('premium_purchase_date');
+    if (purchaseMillis != null) {
+      _purchaseDate = DateTime.fromMillisecondsSinceEpoch(purchaseMillis);
+    }
+    _purchasedProductId = prefs.getString('premium_purchase_product_id');
 
     if (!isMonetizationEnabled) {
       // 課金一時停止期間：ストアへは一切接続しない。
@@ -125,7 +154,17 @@ class PremiumService extends ChangeNotifier {
         case PurchaseStatus.restored:
           _purchasePending = false;
           _purchaseError = null;
-          await setPremium(true);
+          // transactionDateはミリ秒文字列（ストアによっては秒の場合もある
+          // ため桁数で判定する）。取得できない場合は現在時刻で代用する。
+          final rawDate = purchase.transactionDate;
+          DateTime? parsedDate;
+          if (rawDate != null) {
+            final ms = int.tryParse(rawDate);
+            if (ms != null) {
+              parsedDate = DateTime.fromMillisecondsSinceEpoch(ms.toString().length > 11 ? ms : ms * 1000);
+            }
+          }
+          await setPremium(true, purchaseDate: parsedDate ?? DateTime.now(), productId: purchase.productID);
           break;
         case PurchaseStatus.error:
           _purchasePending = false;
@@ -142,10 +181,21 @@ class PremiumService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setPremium(bool value) async {
+  Future<void> setPremium(bool value, {DateTime? purchaseDate, String? productId}) async {
     _isPremium = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_premium', value);
+    if (value && purchaseDate != null) {
+      _purchaseDate = purchaseDate;
+      _purchasedProductId = productId;
+      await prefs.setInt('premium_purchase_date', purchaseDate.millisecondsSinceEpoch);
+      if (productId != null) await prefs.setString('premium_purchase_product_id', productId);
+    } else if (!value) {
+      _purchaseDate = null;
+      _purchasedProductId = null;
+      await prefs.remove('premium_purchase_date');
+      await prefs.remove('premium_purchase_product_id');
+    }
     notifyListeners();
   }
 

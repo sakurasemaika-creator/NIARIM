@@ -68,7 +68,7 @@
   "settingsWorkspaceSubtitle": "Edición de la barra de herramientas, disposición de paneles",
   "settingsBucketTitle": "Cubo de pintura",
   "settingsBucketSubtitle": "Tolerancia, expansión, bajo las líneas",
-  "settingsThemeTitle": "Interfaz y tema",
+  "settingsThemeTitle": "Tema y apariencia",
   "settingsThemeSubtitle": "Ajustes de tema, espacio de trabajo",
   "settingsWatermarkTitle": "Marca de agua",
   "settingsWatermarkSubtitle": "Marca de agua personalizada",
@@ -2048,5 +2048,58 @@
   "filterThresholdLabel": "Umbral",
   "tipsLineArtExtractionTitle": "Extrae el dibujo lineal combinando ajuste de color, umbral y transparencia por brillo",
   "tipsLineArtExtractionDesc": "Aumenta el contraste con el ajuste de color para que las líneas destaquen, y luego usa el filtro de umbral para dividir la imagen en blanco y negro puros: las líneas se separan claramente del resto. El control deslizante de umbral te permite ajustar el grosor de la línea y lo tenue o marcada que se ve. Por último, usa \"Transparencia por brillo (gris)\" desde el menú de tres puntos de la capa para volver transparentes las zonas blancas (todo excepto las líneas), dejando solo el dibujo lineal. Útil para extraer un dibujo lineal limpio a partir de una foto o un boceto.",
-  "autofillPartResetTraceButton": "Restablecer"
+  "autofillPartResetTraceButton": "Restablecer",
+  "premiumScreenTitle": "Premium",
+  "premiumComparisonPremium": "Premium",
+  "premiumRegisteredDateLabel": "Registrado: {date}",
+  "premiumNextRenewalDateLabel": "Próxima renovación: {date}",
+  "@premiumRegisteredDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@premiumNextRenewalDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "workspaceApplyCurrentButton": "Aplicar espacio de trabajo configurado",
+  "workspaceAppliedSnackbar": "Se aplicaron los ajustes del espacio de trabajo.",
+  "workspaceSaveAsButton": "Guardar espacio de trabajo con nombre / Sobrescribir",
+  "workspaceShareButton": "Compartir espacio de trabajo",
+  "workspaceShareSelectTitle": "Selecciona un espacio de trabajo para compartir",
+  "workspaceShareFailedSnackbar": "Error al compartir: {error}",
+  "workspaceImportFromFileButton": "Importar desde archivo",
+  "workspaceImportFailedSnackbar": "Error al importar: {error}",
+  "workspaceNameRequiredError": "Introduce un nombre.",
+  "workspaceNoSavedPresets": "Todavía no hay espacios de trabajo guardados.",
+  "workspaceOverwriteSelectTitle": "Selecciona un espacio de trabajo para sobrescribir",
+  "workspaceOverwriteConfirmTitle": "Confirmar sobrescritura",
+  "workspaceOverwriteConfirmBody": "Esto sobrescribirá \"{name}\" con los ajustes actuales. Se perderá su contenido anterior. ¿Continuar?",
+  "workspaceOverwriteButton": "Sobrescribir",
+  "@workspaceShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceOverwriteConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

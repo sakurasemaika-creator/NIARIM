@@ -123,7 +123,7 @@
   "settingsWorkspaceSubtitle": "ツールバー編集・パネル配置",
   "settingsBucketTitle": "バケツ塗り",
   "settingsBucketSubtitle": "許容誤差・拡張・線の下まで潜る",
-  "settingsThemeTitle": "UI・テーマ",
+  "settingsThemeTitle": "テーマ・外観",
   "settingsThemeSubtitle": "テーマ設定・ワークスペース",
   "settingsWatermarkTitle": "ウォーターマーク",
   "settingsWatermarkSubtitle": "カスタムウォーターマーク",
@@ -369,7 +369,7 @@
   "watermarkOutlineLabel": "縁取り",
   "watermarkOutlineColorLabel": "縁の色",
   "watermarkOutlineWidthLabel": "縁の太さ",
-  "premiumActiveLabel": "Premium有効",
+  "premiumActiveLabel": "プレミアム有効",
   "premiumVsTitle": "無料版 vs プレミアム",
   "premiumCampaignFreeNote": "※ キャンペーン期間中は無料版でも上記プレミアム機能を全てご利用いただけます",
   "premiumPlanSectionTitle": "プラン",
@@ -913,7 +913,7 @@
   "exportOutdatedAutofillBody": "更新されていない自動塗りレイヤーがあります。このまま書き出しますか？",
   "exportContinueButton": "続行",
   "exportDurationExceededTitle": "動画尺の上限を超えています",
-  "exportDurationExceededBody": "無料版の最大動画尺は{max}秒です。\n現在のプロジェクトは約{current}秒あります。\nPremiumにアップグレードすると尺の制限がなくなります。",
+  "exportDurationExceededBody": "無料版の最大動画尺は{max}秒です。\n現在のプロジェクトは約{current}秒あります。\nプレミアムにアップグレードすると尺の制限がなくなります。",
   "@exportDurationExceededBody": {
     "placeholders": {
       "max": {
@@ -924,7 +924,7 @@
       }
     }
   },
-  "exportViewPremiumButton": "Premiumを見る",
+  "exportViewPremiumButton": "プレミアムを見る",
   "exportContinueAnywayButton": "このまま続行",
   "exportCompleteTitle": "書き出し完了",
   "exportCompleteFramesBody": "{count} フレームの書き出しが完了しました。",
@@ -2180,7 +2180,7 @@
   "frameStripTimelineModeTooltip": "タイムラインモード",
   "progressDialogAdLoading": "広告読み込み中…",
   "progressDialogTipLabel": "ヒント",
-  "premiumBannerRegisterButton": "Premiumに登録",
+  "premiumBannerRegisterButton": "プレミアムに登録",
   "licenseTermsArt1Title": "第1条（適用）",
   "licenseTermsArt1Body": "この利用規約（以下「本規約」といいます。）は、本アプリ「NIARIM」（以下「本アプリ」といいます。）の利用条件を定めるものです。ユーザーは、本規約に同意の上、本アプリをご利用いただくものとします。本アプリを利用することにより、本規約に同意したものとみなします。",
   "licenseTermsArt2Title": "第2条（利用資格・対応環境）",
@@ -2270,5 +2270,58 @@
   "filterThresholdLabel": "閾値",
   "tipsLineArtExtractionTitle": "色調補正・二値化・明度で透過を組み合わせて線画を抽出する",
   "tipsLineArtExtractionDesc": "色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。",
-  "autofillPartResetTraceButton": "デフォルトに戻す"
+  "autofillPartResetTraceButton": "デフォルトに戻す",
+  "premiumScreenTitle": "プレミアム",
+  "premiumComparisonPremium": "プレミアム",
+  "premiumRegisteredDateLabel": "登録日: {date}",
+  "premiumNextRenewalDateLabel": "次回更新日: {date}",
+  "@premiumRegisteredDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@premiumNextRenewalDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "workspaceApplyCurrentButton": "設定したワークスペースを適用",
+  "workspaceAppliedSnackbar": "ワークスペース設定を反映しました",
+  "workspaceSaveAsButton": "ワークスペースに名前を付けて保存・上書き保存",
+  "workspaceShareButton": "ワークスペースを共有",
+  "workspaceShareSelectTitle": "共有するワークスペースを選択",
+  "workspaceShareFailedSnackbar": "共有に失敗しました: {error}",
+  "workspaceImportFromFileButton": "外部ファイルを読み込み",
+  "workspaceImportFailedSnackbar": "読み込みに失敗しました: {error}",
+  "workspaceNameRequiredError": "名前を保存してください",
+  "workspaceNoSavedPresets": "保存済みのワークスペースがありません",
+  "workspaceOverwriteSelectTitle": "上書きするワークスペースを選択",
+  "workspaceOverwriteConfirmTitle": "上書きの確認",
+  "workspaceOverwriteConfirmBody": "「{name}」を現在の設定で上書きします。元の内容は削除されます。よろしいですか？",
+  "workspaceOverwriteButton": "上書き保存",
+  "@workspaceShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceOverwriteConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

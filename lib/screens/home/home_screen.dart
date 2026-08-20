@@ -239,14 +239,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             IconButton(icon: const Icon(Icons.search), tooltip: l10n.commonSearch, onPressed: () => setState(() => _isSearching = true)),
           ],
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.homeTabProjects),
-            Tab(text: l10n.homeTabShared),
-            Tab(text: l10n.homeTabTrash),
-            Tab(text: l10n.homeTabWorks),
-          ],
+        // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
+        // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
+        // 同じ幅しか確保できず、文字が見切れてしまっていた。各項目名の
+        // 実際の描画幅を計測し、その比率でタブ幅を配分する独自実装へ
+        // 差し替える（TabControllerは共通のまま、TabBarViewとの
+        // スワイプ連動はそのまま維持される）。
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(46),
+          child: _HomeTabBar(
+            controller: _tabController,
+            currentIndex: _currentTabIndex,
+            labels: [
+              l10n.homeTabProjects,
+              l10n.homeTabShared,
+              l10n.homeTabTrash,
+              l10n.homeTabWorks,
+            ],
+          ),
         ),
       ),
       drawer: const HomeDrawer(),
@@ -482,6 +492,72 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// ホーム画面のタブバー。標準のTabBarと異なり、各タブ名の実際の描画幅を
+/// 計測してその比率で幅を配分する（均等4分割だと「プロジェクト」のような
+/// 長い項目名が「共有」等より窮屈になり、文字が見切れてしまうため）。
+/// TabControllerを共有しているため、TabBarViewとのスワイプ連動・タップでの
+/// 切り替えはそのまま機能する。
+class _HomeTabBar extends StatelessWidget {
+  final TabController controller;
+  final int currentIndex;
+  final List<String> labels;
+
+  const _HomeTabBar({
+    required this.controller,
+    required this.currentIndex,
+    required this.labels,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textStyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+    // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
+    final weights = labels.map((label) {
+      final tp = TextPainter(
+        text: TextSpan(text: label, style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      return (tp.width + 32).round();
+    }).toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4))),
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < labels.length; i++)
+            Expanded(
+              flex: weights[i],
+              child: InkWell(
+                onTap: () => controller.animateTo(i),
+                child: Container(
+                  height: 46,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: currentIndex == i ? scheme.primary : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    labels[i],
+                    style: textStyle.copyWith(
+                      color: currentIndex == i ? scheme.primary : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
