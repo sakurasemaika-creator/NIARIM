@@ -4275,12 +4275,16 @@ class _EffectFilterSheet extends StatelessWidget {
                 // タイムライン上の並び順に従うため、並び替えが適用順を左右する）
                 : ReorderableListView.builder(
                     scrollController: scrollCtrl,
+                    // ドラッグハンドルを明示アイコンとして置く（既定のまま
+                    // だと行の長押しでしか並べ替えを開始できず、可視の目印が
+                    // 無いままだった。他の並べ替え可能な一覧と操作方法を揃える）。
+                    buildDefaultDragHandles: false,
                     itemCount: effects.length,
                     onReorder: (oldIndex, newIndex) => context
                         .read<ProjectService>()
                         .reorderEffectFilters(projectId, sceneId, oldIndex, newIndex),
                     itemBuilder: (ctx, i) =>
-                        _buildEffectTile(context, effects[i], key: ValueKey(effects[i].id)),
+                        _buildEffectTile(context, effects[i], dragIndex: i, key: ValueKey(effects[i].id)),
                   ),
           ),
         ],
@@ -4314,7 +4318,7 @@ class _EffectFilterSheet extends StatelessWidget {
     }
   }
 
-  Widget _buildEffectTile(BuildContext context, EffectFilterInstance e, {Key? key}) {
+  Widget _buildEffectTile(BuildContext context, EffectFilterInstance e, {int? dragIndex, Key? key}) {
     final l10n = AppLocalizations.of(context)!;
     final effects = context.read<ProjectService>().effectFiltersOf(projectId, sceneId);
     return Card(
@@ -4342,6 +4346,14 @@ class _EffectFilterSheet extends StatelessWidget {
                 context.read<ProjectService>().removeEffectFilter(projectId, sceneId, e.id);
               },
             ),
+            if (dragIndex != null)
+              ReorderableDragStartListener(
+                index: dragIndex,
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 4),
+                  child: Icon(Icons.drag_handle, size: 18),
+                ),
+              ),
           ],
         ),
         children: [

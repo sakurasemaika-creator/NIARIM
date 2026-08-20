@@ -573,9 +573,12 @@ class _FilterPanelState extends State<FilterPanel> {
                 FilledButton.icon(
                   onPressed: (widget.layerId == null || _applying) ? null : _applyFilter,
                   icon: _applying
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 14, height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          // FilledButtonの背景はテーマの差し色（primary）のため、
+                          // 白固定ではなくonPrimaryでコントラストを保つ。
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary))
                       : const Icon(Icons.check, size: 16),
                   label: Text(bulk != null ? l10n.filterApplyBulkButton(bulk.length) : l10n.filterApplyButton),
                 ),

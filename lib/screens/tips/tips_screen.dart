@@ -249,19 +249,27 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     super.dispose();
   }
 
-  /// 説明文を約220字ごとの読みやすい分量に分割する。改行（段落）の区切りを
-  /// 優先して尊重し、1段落だけで上限を超える場合はそのまま1ページにする。
-  /// どのページにも図解を併記するため、文章だけのページより少し広めの
-  /// 上限にしている。
+  /// 説明文を読みやすい分量へ分割する。単純に上限文字数で区切ると、
+  /// 最後のページだけ文章が短く「スカスカ」になりがちなため、まず必要な
+  /// ページ数を概算し、そのページ数へ均等に近い分量で配分し直す（＝
+  /// どのページも中身の詰まった1ページとして成立するようにする）。改行
+  /// （段落）の区切りを優先して尊重し、1段落だけで目標分量を超える場合は
+  /// そのまま1ページにする。どのページにも図解を併記するため、文章だけの
+  /// ページより少し広めの上限にしている。
   static List<String> _splitIntoPages(String text) {
     const maxCharsPerPage = 220;
     final paragraphs = text.split('\n').where((p) => p.trim().isNotEmpty).toList();
     if (paragraphs.isEmpty) return [text];
+    final totalLength = paragraphs.fold<int>(0, (sum, p) => sum + p.length) + (paragraphs.length - 1);
+    final pageCount = (totalLength / maxCharsPerPage).ceil().clamp(1, paragraphs.length);
+    if (pageCount <= 1) return [paragraphs.join('\n')];
+    final targetPerPage = totalLength / pageCount;
     final pages = <String>[];
     var current = '';
     for (final p in paragraphs) {
       final candidate = current.isEmpty ? p : '$current\n$p';
-      if (candidate.length > maxCharsPerPage && current.isNotEmpty) {
+      final remainingPages = pageCount - pages.length;
+      if (candidate.length > targetPerPage && current.isNotEmpty && remainingPages > 1) {
         pages.add(current);
         current = p;
       } else {

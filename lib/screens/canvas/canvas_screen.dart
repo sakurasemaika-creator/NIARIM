@@ -631,7 +631,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 child: Icon(
                   _showToolbar ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
                   size: 16,
-                  color: Colors.white70,
+                  // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
+                  // ToolbarWidgetの色連動と同じ方針）。
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ),
@@ -692,7 +694,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 child: Icon(
                   _showFrameStrip ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
                   size: 16,
-                  color: Colors.white70,
+                  // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
+                  // ToolbarWidgetの色連動と同じ方針）。
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ),

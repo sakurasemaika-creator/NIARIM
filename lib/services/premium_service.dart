@@ -26,9 +26,12 @@ class PremiumService extends ChangeNotifier {
 
   bool _isPremium = false;
   // 購入日時・購入商品ID（登録日・次回更新日の表示用）。サーバー側の
-  // レシート検証は行っていないため、次回更新日は「購入日から契約周期
-  // （年額=365日／月額=30日）を現在時刻を超えるまで繰り返し加算した日」
-  // という近似値であり、実際の請求日と数日ずれる可能性がある。
+  // レシート検証（Google Play Developer API等）は行っていないため、
+  // 実際の請求確定日はストアからは取得できない。ただしサブスクリプションの
+  // 更新日は購入日と同じ「日」（年額なら月日、月額なら日）に固定される
+  // ため、購入日さえ分かれば暦計算だけで正確に求められる（月をまたぐ
+  // 日数の単純な加算だと、月の日数の違いでずれることがあるため、
+  // 年・月を直接ずらすDateTimeコンストラクタで計算する）。
   DateTime? _purchaseDate;
   String? _purchasedProductId;
 
@@ -38,19 +41,39 @@ class PremiumService extends ChangeNotifier {
   /// 購入日時（登録日表示用）。未購入または記録前はnull。
   DateTime? get purchaseDate => _purchaseDate;
 
-  /// 次回更新日の近似値（サーバー側のレシート検証を行っていないための
-  /// 概算。購入日から契約周期を現在時刻を超えるまで繰り返し加算する）。
+  /// 次回更新日。購入日と同じ月日（年額）／同じ日（月額）を維持したまま、
+  /// 現在時刻以降で最も近い日を年・月単位でずらして求める（暦計算のため、
+  /// 日数の単純な加算と違って月の日数差による誤差が生じない）。
   DateTime? get nextRenewalDateEstimate {
     final start = _purchaseDate;
     if (start == null) return null;
     final isYearly = _purchasedProductId == yearlyProductId;
-    final cycle = isYearly ? const Duration(days: 365) : const Duration(days: 30);
-    var next = start.add(cycle);
     final now = DateTime.now();
-    while (next.isBefore(now)) {
-      next = next.add(cycle);
+    if (isYearly) {
+      var next = DateTime(now.year, start.month, start.day, start.hour, start.minute);
+      if (!next.isAfter(now)) next = DateTime(now.year + 1, start.month, start.day, start.hour, start.minute);
+      return next;
+    } else {
+      // 購入日からの経過月数を求め、そこから1か月ずつ進めて現在時刻を
+      // 超える月を探す（DateTime(year, month, day)は月の日数を超える
+      // dayを渡すと自動的に翌月へ繰り上がるため、31日始まりの月をまたいでも
+      // 破綻しない）。
+      var monthsElapsed = (now.year - start.year) * 12 + (now.month - start.month);
+      DateTime candidate() =>
+          DateTime(start.year, start.month + monthsElapsed, start.day, start.hour, start.minute);
+      var next = candidate();
+      if (!next.isAfter(now)) {
+        monthsElapsed++;
+        next = candidate();
+      }
+      // 直前の月も現在時刻を超えていないか一応確認する（うるう年2/29
+      // 購入等、月初側にずれるケースの保険）。
+      while (!next.isAfter(now)) {
+        monthsElapsed++;
+        next = candidate();
+      }
+      return next;
     }
-    return next;
   }
 
   /// プレミアム機能を利用できるかどうか（機能制限の判定に使用）。

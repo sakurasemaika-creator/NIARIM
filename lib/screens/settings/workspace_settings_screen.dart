@@ -49,6 +49,11 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 ReorderableListView(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  // ドラッグハンドルは行末に明示アイコンとして置く（既定の
+                  // ドラッグハンドルを有効にしたままだと、Flutterが自動で
+                  // もう1つハンドルを追加してしまい、二重に表示されるバグに
+                  // なっていた。テーマ設定の並べ替えと同じ不具合）。
+                  buildDefaultDragHandles: false,
                   onReorder: (oldIndex, newIndex) {
                     if (newIndex > oldIndex) newIndex -= 1;
                     final order = List<ToolbarItemId>.of(settings.toolbarOrder);
@@ -57,10 +62,11 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                     settings.setToolbarOrder(order);
                   },
                   children: [
-                    for (final id in settings.toolbarOrder)
+                    for (final entry in settings.toolbarOrder.asMap().entries)
                       Builder(
-                        key: ValueKey(id),
+                        key: ValueKey(entry.value),
                         builder: (context) {
+                          final id = entry.value;
                           // 手のひらツール：強制スマホモード中は
                           // そもそもONにできないよう設定項目自体をグレーアウトする。
                           // PCモード固定・自動判定の場合は設定可能で、ONにした
@@ -78,7 +84,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                             onChanged: isPanForcedOff
                                 ? null
                                 : (v) => settings.setToolbarItemVisible(id, v ?? true),
-                            secondary: const Icon(Icons.drag_handle),
+                            secondary: ReorderableDragStartListener(
+                              index: entry.key,
+                              child: const Icon(Icons.drag_handle),
+                            ),
                             controlAffinity: ListTileControlAffinity.leading,
                           );
                         },

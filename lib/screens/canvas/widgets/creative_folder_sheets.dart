@@ -57,6 +57,10 @@ void showFolderManagementSheet(
                 ),
               Expanded(
                 child: ReorderableListView.builder(
+                  // ドラッグハンドルを明示アイコンとして置く（既定のままだと
+                  // 行の長押しでしか並べ替えを開始できず、可視の目印が無い
+                  // ままだった）。
+                  buildDefaultDragHandles: false,
                   scrollController: controller,
                   itemCount: folders.length,
                   onReorder: (oldIndex, newIndex) {
@@ -105,6 +109,10 @@ void showFolderManagementSheet(
                               onDelete(f.id);
                               setSheetState(() {});
                             },
+                          ),
+                          ReorderableDragStartListener(
+                            index: index,
+                            child: const Icon(Icons.drag_handle, size: 18),
                           ),
                         ],
                       ),

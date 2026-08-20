@@ -57,6 +57,10 @@ class QuickToolPanel extends StatelessWidget {
                         child: Text(l10n.quickToolEmpty,
                             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)))
                     : ReorderableListView.builder(
+                        // ドラッグハンドルを明示アイコンとして置く（既定のまま
+                        // だと行の長押しでしか並べ替えを開始できず、可視の
+                        // 目印が無いままだった）。
+                        buildDefaultDragHandles: false,
                         itemCount: entries.length,
                         onReorder: service.reorder,
                         itemBuilder: (context, index) {
@@ -66,10 +70,19 @@ class QuickToolPanel extends StatelessWidget {
                             dense: true,
                             leading: Text('${index + 1}', style: const TextStyle(fontSize: 12)),
                             title: Text(e.label, style: const TextStyle(fontSize: 13)),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, size: 16, color: Colors.red),
-                              tooltip: l10n.commonDelete,
-                              onPressed: () => service.removeEntry(e.id),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.delete, size: 16, color: Colors.red),
+                                  tooltip: l10n.commonDelete,
+                                  onPressed: () => service.removeEntry(e.id),
+                                ),
+                                ReorderableDragStartListener(
+                                  index: index,
+                                  child: const Icon(Icons.drag_handle, size: 18),
+                                ),
+                              ],
                             ),
                           );
                         },

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/toolbar_item.dart';
 import '../../../services/settings_service.dart';
+import '../../../services/theme_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
@@ -119,9 +120,11 @@ class ToolbarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
-    // 描画領域を可能な限り広げるため、常設ボタン類は背景を
-    // 持たせず、半透明の黒で中くらいの太さの縁取りのみにする（キャンバスの
-    // 内容がどんな色でも視認できるよう、アイコン自体は白で統一する）。
+    // 描画領域を可能な限り広げるため、常設ボタン類は背景を持たせず、
+    // どんな色のキャンバス内容の上でも視認できるよう縁取りのみを付ける
+    // （CanvasIconButton参照）。アイコン・縁取りとも白黒に固定せず、
+    // ユーザーが選んだテーマ・外観のアイコン色・メニュー背景色と連動する。
+    final outlineColor = context.watch<ThemeService>().current.menuBgColor;
     return Container(
       // 描画領域を少しでも広げるため、アイコン自体（20px）が収まる
       // 範囲まで高さを詰めている（以前は48px）。
@@ -158,7 +161,7 @@ class ToolbarWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: currentColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: outlineColor, width: 2),
                     ),
                   ),
                   if (isStampSelected)
@@ -167,7 +170,7 @@ class ToolbarWidget extends StatelessWidget {
                       height: 28,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: outlineColor, width: 2),
                       ),
                       child: const Icon(Icons.block, color: Colors.red, size: 20),
                     ),

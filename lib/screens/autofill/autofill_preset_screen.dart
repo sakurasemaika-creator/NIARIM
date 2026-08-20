@@ -640,6 +640,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   itemBuilder: (context, index) => _partTile(_filteredParts[index]),
                 )
               : ReorderableListView.builder(
+                  // ドラッグハンドルを行末に明示アイコンとして置くため、
+                  // 既定のドラッグハンドル（行全体の長押しで開始・ハンドル
+                  // アイコンなし）は無効化する。他の並べ替え可能な一覧
+                  // （ブラシ・トーン・スタンプ・テーマ等）と操作方法を揃える。
+                  buildDefaultDragHandles: false,
                   itemCount: _preset.parts.length,
                   onReorder: (oldIdx, newIdx) {
                     final parts = List<AutofillPart>.from(_preset.parts);
@@ -647,14 +652,14 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     parts.insert(newIdx > oldIdx ? newIdx - 1 : newIdx, item);
                     _save(_preset.copyWith(parts: parts));
                   },
-                  itemBuilder: (context, index) => _partTile(_preset.parts[index]),
+                  itemBuilder: (context, index) => _partTile(_preset.parts[index], dragIndex: index),
                 );
   }
 
   /// パーツ一覧の1行（仕様書20：「[サムネイル] パーツ名 [色チップ] ✓設定完了マーク」）。
   /// トーンを使用しているパーツは、単色/グラデーションの丸ではなく指定色で
   /// 着色した実際のトーンパターンをサムネイルに表示する（タスク#91）。
-  Widget _partTile(AutofillPart part) {
+  Widget _partTile(AutofillPart part, {int? dragIndex}) {
     final l10n = AppLocalizations.of(context)!;
     Widget thumb;
     if (part.useTone && part.toneId != null) {
@@ -730,6 +735,14 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           _save(_preset.copyWith(parts: parts), changedPartId: part.id);
                         },
                       ),
+                      if (dragIndex != null)
+                        ReorderableDragStartListener(
+                          index: dragIndex,
+                          child: const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(Icons.drag_handle, size: 18),
+                          ),
+                        ),
                     ],
                   ),
                 );

@@ -475,6 +475,9 @@ class _HelpDiagramPainter extends CustomPainter {
     Icons.workspace_premium_outlined,
   ];
 
+  // project_list_widget.dartの実カード構成：サムネイル領域（上部、
+  // お気に入りは右上に星バッジ）＋名前ラベル行（下部、カードの外ではなく
+  // 内側の帯）。
   void _paintCardGrid(Canvas canvas, Size size) {
     const cols = 2, rows = 2;
     final target = _clampSlot(cols * rows);
@@ -486,11 +489,22 @@ class _HelpDiagramPainter extends CustomPainter {
         final rect = Rect.fromLTWH(8 + c * (cw + 8), 4 + r * (ch + 8), cw, ch);
         final rr = RRect.fromRectAndRadius(rect, const Radius.circular(6));
         final isTarget = i == target;
-        canvas.drawRRect(rr, isTarget ? _fillPrimaryFaint : _fillMuted);
-        canvas.drawRRect(rr, _strokeOutline);
+        canvas.drawRRect(rr, _fillMuted);
+        canvas.drawRRect(rr, isTarget ? (Paint()
+          ..color = scheme.primary
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2) : _strokeOutline);
+        // サムネイル領域（下の名前帯を除いた上側）
+        final thumbRect = Rect.fromLTWH(rect.left, rect.top, rect.width, rect.height - 14);
         final icon = (isTarget ? spec.icon : null) ?? _cardIcons[i % _cardIcons.length];
-        _drawIcon(canvas, icon, rect.center, size: 16, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
-        if (isTarget) _highlightMarker(canvas, rect.center, r: 12);
+        _drawIcon(canvas, icon, thumbRect.center, size: 16, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+        // お気に入り星バッジ（右上）
+        _drawIcon(canvas, Icons.star, Offset(rect.right - 9, rect.top + 8), size: 9,
+            color: Colors.amber.withValues(alpha: 0.8));
+        // 名前ラベル行（下部の帯）
+        canvas.drawLine(Offset(rect.left + 6, rect.bottom - 7), Offset(rect.right - 16, rect.bottom - 7),
+            Paint()..color = scheme.onSurfaceVariant.withValues(alpha: 0.7)..strokeWidth = 1.5);
+        if (isTarget) _highlightMarker(canvas, thumbRect.center, r: 12);
       }
     }
   }
