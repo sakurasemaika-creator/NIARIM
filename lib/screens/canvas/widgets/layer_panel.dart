@@ -30,6 +30,14 @@ class LayerPanel extends StatefulWidget {
   // テキストレイヤーをタップした時の編集入口（仕様書15：既存テキストを
   // タップすると編集開始）。nullの場合はテキストレイヤーも通常選択のみ行う。
   final void Function(model.Layer layer)? onEditTextLayer;
+  // 実際にペンストロークが書き込まれる対象レイヤーのID
+  // （canvas_screen.dartの`_currentLayerId`）。パネル初回表示時、この
+  // レイヤーの行を選択状態としてハイライトする。
+  final String? currentLayerId;
+  // レイヤー行をタップして選択を切り替えたときに呼ばれる（フォルダ行を
+  // 除く）。呼び出し元でこの値を`_currentLayerId`へ反映することで、
+  // 以降のペンストロークが選択したレイヤーへ書き込まれるようにする。
+  final void Function(String layerId)? onLayerSelected;
 
   const LayerPanel({
     super.key,
@@ -39,6 +47,8 @@ class LayerPanel extends StatefulWidget {
     required this.frameIndex,
     this.dockedMode = false,
     this.onEditTextLayer,
+    this.currentLayerId,
+    this.onLayerSelected,
   });
 
   @override
@@ -47,6 +57,10 @@ class LayerPanel extends StatefulWidget {
 
 class _LayerPanelState extends State<LayerPanel> {
   int _selectedIndex = 0;
+  // widget.currentLayerIdに基づく_selectedIndexの初回同期が済んだか
+  // （毎buildで探索し直すと、ユーザーがパネル内で選択を変えた直後の
+  // buildで上書きしてしまうため、初回のみに限定する）。
+  bool _syncedInitialSelection = false;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   model.LayerType? _selectionBaseType;
@@ -125,6 +139,18 @@ class _LayerPanelState extends State<LayerPanel> {
     final allLayers = projectService.layersOf(
         widget.projectId, widget.sceneId, widget.frameIndex);
     final layers = _visibleLayers(allLayers);
+
+    // パネル初回表示時、実際にペンストロークが書き込まれる対象
+    // （widget.currentLayerId）を選択行としてハイライトする（このbuild内
+    // のみで完結する直接代入で、setStateは呼ばない。以降ユーザーが別の
+    // 行をタップしても、この同期は初回のみなので上書きしない）。
+    if (!_syncedInitialSelection) {
+      _syncedInitialSelection = true;
+      if (widget.currentLayerId != null) {
+        final idx = layers.indexWhere((l) => l.id == widget.currentLayerId);
+        if (idx >= 0) _selectedIndex = idx;
+      }
+    }
 
     // ストロークが確定した（＝ペンが離れた）タイミングを検知し、現在
     // 選択中のレイヤーのサムネイルだけを再生成対象とする（仕様書16）。
@@ -444,6 +470,12 @@ class _LayerPanelState extends State<LayerPanel> {
                         layer.type == model.LayerType.text &&
                         widget.onEditTextLayer != null) {
                       widget.onEditTextLayer!(layer);
+                    }
+                    // フォルダ行は描画対象になり得ないため、実際の描画先
+                    // レイヤーの切り替え通知からは除外する（グループ化用の
+                    // 見出し行としての選択ハイライトのみ）。
+                    if (!_isSelectionMode && layer.type != model.LayerType.folder) {
+                      widget.onLayerSelected?.call(layer.id);
                     }
                   },
                   onLongPress: () => setState(() {

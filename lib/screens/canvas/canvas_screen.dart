@@ -697,6 +697,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 frameIndex: _currentFrame,
                                 dockedMode: true,
                                 onEditTextLayer: _onEditTextLayerTapped,
+                                currentLayerId: _currentLayerId,
+                                onLayerSelected: (id) => setState(() => _currentLayerId = id),
                               ),
                             ),
                         ],
@@ -843,6 +845,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   sceneId: _currentSceneId,
                   frameIndex: _currentFrame,
                   onEditTextLayer: _onEditTextLayerTapped,
+                  currentLayerId: _currentLayerId,
+                  onLayerSelected: (id) => setState(() => _currentLayerId = id),
                 ),
               ),
             if (_showColorPicker && !isDesktop)
