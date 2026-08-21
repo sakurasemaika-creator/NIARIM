@@ -517,8 +517,7 @@ class _SlotTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    // 他の一覧画面（ホーム・設定・ヘルプ等）と統一した「影付きカード」
-    // デザインへ（デザイン強化：フラットなListTile羅列からの変更）。
+    // 他の一覧画面（ホーム・設定・ヘルプ等）と統一した「影付きカード」デザイン。
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       child: Material(

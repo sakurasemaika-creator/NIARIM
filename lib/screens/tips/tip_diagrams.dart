@@ -7,14 +7,12 @@ import 'package:flutter/material.dart';
 /// 画像アセットを一切使わずに済ませている（ベクター描画はテーマの
 /// 色にも自動追従する）。
 ///
-/// 2026年8月20日、「複数のTipsで図解を使い回さず、それぞれに適した図に
-/// してほしい」という要望を受けて全面刷新した。専用の模式図を持つTip
-/// （[TipDiagramKind.clipDuplicate]等）に加え、「アイコンA×アイコンBの
+/// 各Tipは重複せずそれぞれの内容に即した図解を持つ。専用の模式図を持つ
+/// Tip（[TipDiagramKind.clipDuplicate]等）に加え、「アイコンA×アイコンBの
 /// 組み合わせ」という頻出パターンには[TipDiagramKind.pairCombo]、
 /// 「Aだったものが矢印を経てBになる」という頻出パターンには
 /// [TipDiagramKind.flowArrow]という2つの汎用テンプレートを用意し、
-/// Tip側でアイコンの組み合わせを指定することで、55件すべてが重複なく
-/// 内容に即した組み合わせになるようにした（[TipDiagramSpec]参照）。
+/// Tip側でアイコンの組み合わせを指定する（[TipDiagramSpec]参照）。
 enum TipDiagramKind {
   clipDuplicate,
   textCaption,

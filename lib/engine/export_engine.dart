@@ -46,14 +46,12 @@ class ExportEngine {
   final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
   final FilterEngine _filterEngine = FilterEngine();
 
-  /// 書き出し結果（MP4/GIF/WebM）の保存先。以前は`getTemporaryDirectory()`
-  /// （OSがいつ削除してもよいキャッシュ領域）に書き出しており、書き出し
-  /// 完了後にアプリがバックグラウンドに回っただけで消えてしまう場合が
-  /// あった。書き出し先が分からず不安という指摘もあったため、アプリの
-  /// 永続領域（他の保存データと同じ`getApplicationDocumentsDirectory()`
-  /// 配下）に固定の`exports`フォルダを作り、そこへ保存するよう変更した。
-  /// フレーム生成用の中間PNGファイルは引き続き一時領域（`export_frames`等）
-  /// を使い、書き出し完了後に削除する（最終出力ファイルのみ永続化する）。
+  /// 書き出し結果（MP4/GIF/WebM）の保存先。`getTemporaryDirectory()`
+  /// （OSがいつ削除してもよいキャッシュ領域）ではなく、他の保存データと
+  /// 同じ永続領域（`getApplicationDocumentsDirectory()`配下）に固定の
+  /// `exports`フォルダを作り、そこへ保存する。
+  /// フレーム生成用の中間PNGファイルは一時領域（`export_frames`等）を使い、
+  /// 書き出し完了後に削除する（最終出力ファイルのみ永続化する）。
   ///
   /// staticかつpublicにしているのは、「作品一覧」タブ（プロジェクト一覧
   /// 画面）から過去の書き出し結果を一覧表示するために、ExportEngineの

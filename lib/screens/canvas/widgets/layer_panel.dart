@@ -374,9 +374,8 @@ class _LayerPanelState extends State<LayerPanel> {
                         Icon(Icons.opacity, size: 14, color: Theme.of(context).colorScheme.primary),
                       if (layer.isLocked)
                         const Icon(Icons.lock, size: 14),
-                      // 三点メニュー・ゴミ箱：以前はパネル下部にまとめて配置していたが
-                      // 各レイヤーの右側へ移動した（対象レイヤーが
-                      // 常に明確になり、選択状態に依存しなくなる）。
+                      // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
+                      // （対象レイヤーが常に明確になり、選択状態に依存しない）。
                       GestureDetector(
                         onTap: () => _isTimelineMaterial(layer.type) ||
                                 layer.type == model.LayerType.common ||
@@ -1042,9 +1041,8 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   /// レイヤー詳細設定（不透明度・ブレンドモード・ロック・クリッピング等）。
-  /// 以前は`_selectedIndex`（パネル下部の共通ボタンからの呼び出し）にのみ
-  /// 対応していたが、各レイヤー行の三点メニューから直接[layer]を渡せる
-  /// ようにした（三点メニューは各レイヤーの右側に配置）。
+  /// パネル下部の共通ボタン（`_selectedIndex`使用）と、各レイヤー行の
+  /// 三点メニュー（[layer]を直接指定）の両方から呼び出せる。
   void _showLayerOptions(BuildContext context, model.Layer layer) {
     final l10n = AppLocalizations.of(context)!;
     void update(model.Layer Function(model.Layer) updater) {

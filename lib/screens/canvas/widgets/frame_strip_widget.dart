@@ -67,9 +67,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
 
   // リストの左右にビューポート半分弱の余白（_sidePaddingで算出）を付けて
   // あるため、先頭・末尾のフレームであっても赤枠（画面中央）まで
-  // スクロールしきれる（以前はscrollOffsetを[0,maxScrollExtent]
-  // へclampしていたため、先頭・末尾フレームだけ中央からずれて表示されて
-  // いた。余白を追加したことで「index*_itemExtent」がそのまま中央揃えの
+  // スクロールしきれる（「index*_itemExtent」がそのまま中央揃えの
   // スクロール位置になり、境界のclampが実質的に無害になる）。
   void _scrollToCurrent({required bool animate}) {
     if (!_scrollController.hasClients) return;

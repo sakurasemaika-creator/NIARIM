@@ -32,10 +32,9 @@ bool canShowPanTool(BuildContext context) {
 ///
 /// あわせて、Android標準のジェスチャーナビゲーション/戻るボタン等の
 /// システムUIとアプリ内のボタン・テキストが重なる不具合対策として
-/// SafeAreaで包む。以前はScaffold.bodyへ直接置かれるだけの画面が
-/// 多く、画面下端のボタンがシステムナビゲーションバーと重なる場合が
-/// あった（Scaffoldはbody全体を自動ではセーフエリア化しない）。この
-/// 関数を使う画面はここで一括対応される。
+/// SafeAreaで包む（Scaffoldはbody全体を自動ではセーフエリア化しないため、
+/// 画面下端のボタンがシステムナビゲーションバーと重なる場合がある）。
+/// この関数を使う画面はここで一括対応される。
 Widget desktopCentered(BuildContext context, Widget child, {double maxWidth = 720}) {
   if (!isWideScreen(context)) return SafeArea(child: child);
   return SafeArea(

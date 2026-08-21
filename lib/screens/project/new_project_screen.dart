@@ -313,8 +313,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             const SizedBox(height: 24),
             Builder(builder: (context) {
               // 長さの上限（仕様書07）：無料会員は最大90秒、プレミアム会員は
-              // 最大2時間（7200秒）。以前は会員種別を問わず60秒固定だったため、
-              // 無料会員の上限にも満たない誤った制限になっていた。
+              // 最大2時間（7200秒）。
               final isPremium = context.watch<PremiumService>().isPremium;
               final maxDuration = isPremium ? 7200 : 90;
               if (_durationSeconds > maxDuration) {

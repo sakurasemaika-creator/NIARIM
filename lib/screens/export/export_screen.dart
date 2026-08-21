@@ -246,7 +246,7 @@ class _ExportScreenState extends State<ExportScreen> {
       setState(() { _isExporting = false; _cancelToken = null; });
       if (cancelToken.isCancelled) {
         // 最終エンコード段階でキャンセルされていた場合：処理自体は完了して
-        // いるが、ユーザーの意図はキャンセルのため出力ファイルを破棄する
+        // いるが、キャンセル操作の意図に沿って出力ファイルを破棄する
         // （最終エンコードは安全に中断する手段がないため事後処理となる）。
         try { File(outputPath).deleteSync(); } catch (_) {}
         _showCancelledSnackBar();
@@ -356,8 +356,7 @@ class _ExportScreenState extends State<ExportScreen> {
             // 保存先はアプリ内の永続領域（他端末のファイルアプリ等からは
             // 直接見えないアプリ専用領域）。端末の「写真」アプリや
             // ファイルアプリで見つけたい場合は「共有」から保存先を選ぶ
-            // 必要があることを明示する（従来は保存先が一切表示されず
-            // 分かりにくいという指摘があった）。
+            // 必要があることを明示する。
             Text(l10n.exportSaveLocationLabel(fileName),
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),

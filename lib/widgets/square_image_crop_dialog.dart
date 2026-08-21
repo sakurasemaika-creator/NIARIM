@@ -17,9 +17,8 @@ const int _kOutputSize = 512;
 /// 拡大縮小、2本指回転で角度調整ができる。戻り値はトリミング結果の
 /// PNGバイト列（キャンセル時はnull）。
 /// [imagePath]（デスクトップ/モバイル）と[imageBytes]（Web版：dart:ioの
-/// Fileが使えないため、選択した画像のバイト列を直接渡す。以前はWeb版でも
-/// 常にimagePathを使おうとしており、File(...)の読み込みが失敗して
-/// 「読み込み中のままずっと止まる」不具合があった）のどちらか一方を指定する。
+/// Fileが使えないため、選択した画像のバイト列を直接渡す）のどちらか
+/// 一方を指定する。
 class SquareImageCropDialog extends StatefulWidget {
   final String? imagePath;
   final Uint8List? imageBytes;

@@ -127,7 +127,7 @@ class ToolbarWidget extends StatelessWidget {
     final outlineColor = context.watch<ThemeService>().current.menuBgColor;
     return Container(
       // 描画領域を少しでも広げるため、アイコン自体（20px）が収まる
-      // 範囲まで高さを詰めている（以前は48px）。
+      // 範囲まで高さを詰めている。
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       color: Colors.transparent,

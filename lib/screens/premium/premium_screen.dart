@@ -8,19 +8,12 @@ import '../../widgets/help_button.dart';
 
 /// プレミアム画面（ハンバーガーメニューから開く）。
 ///
-/// 2026年8月20日、ユーザーの要望で以下2点を反映した。
-/// - 年額プラン（¥5,500）が「月額（¥550）×12か月＝¥6,600」より
-///   ¥1,100（＝月額2か月分）お得であることを、取り消し線付きの
-///   元価格・月あたり換算額（`premiumYearlyOriginalPrice`・
-///   `premiumYearlyPerMonthLabel`）で具体的に示すようにした（既存の
-///   「実質2か月分無料」という一言だけの訴求から、数字の根拠が見える
-///   形へ強化）。なお月額・年額の価格自体（¥550・¥5,500）は既に
-///   消費税込みの表示だったため変更していない（当初¥500・¥5,000への
-///   変更を試みたが、ユーザーからの指摘を受けて税込価格のまま維持する
-///   よう戻した）。
-/// - ページのデザインを、説明文と比較表だけの構成から、導入バナー
-///   （`_heroSection`）・比較表のアイコン化・おすすめプランカードの
-///   グラデーション演出を加えた構成へ作り込んだ。
+/// 年額プラン（¥5,500）が「月額（¥550）×12か月＝¥6,600」より¥1,100
+/// （＝月額2か月分）お得であることを、取り消し線付きの元価格・月あたり
+/// 換算額（`premiumYearlyOriginalPrice`・`premiumYearlyPerMonthLabel`）で
+/// 具体的に示す。月額・年額の価格自体（¥550・¥5,500）は消費税込みの表示。
+/// 導入バナー（`_heroSection`）・比較表のアイコン化・おすすめプラン
+/// カードのグラデーション演出でページ全体のデザインを作り込んでいる。
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
 
@@ -162,11 +155,10 @@ class PremiumScreen extends StatelessWidget {
 
   /// リリース記念キャンペーンバナー（仕様書13：課金一時停止期間中は全員へ
   /// プレミアム機能を無料開放する）。
-  /// 「YYYY/MM/DD HH:MM」の形式でキャンペーン終了日時を数値表記し、
-  /// 「まで」の前置き・後置きは各言語の`premiumCampaignEndLabel`に委譲する
-  /// （西暦表記。以前は「～12月31日23:59まで」と年が無く、年をまたぐと
-  /// 誤解を招く表記だった）。kMonetizationEnabledFromの1分前が実際の
-  /// 終了時刻。
+  /// 「YYYY/MM/DD HH:MM」の形式（西暦表記、年をまたいでも誤解を招かない）
+  /// でキャンペーン終了日時を数値表記し、「まで」の前置き・後置きは
+  /// 各言語の`premiumCampaignEndLabel`に委譲する。kMonetizationEnabledFrom
+  /// の1分前が実際の終了時刻。
   String _campaignEndLabel(AppLocalizations l10n) {
     final end = kMonetizationEnabledFrom.subtract(const Duration(minutes: 1));
     final mo = end.month.toString().padLeft(2, '0');
@@ -215,10 +207,10 @@ class PremiumScreen extends StatelessWidget {
     );
   }
 
-  /// 未加入・キャンペーン非開催時にのみ表示する導入バナー（デザイン強化：
-  /// アイコン付きの見出し＋一言説明で、いきなり比較表から始まるより
-  /// 「プレミアムで何が変わるか」を先に印象づける）。キャンペーン中は
-  /// `_campaignBanner`が同種の役割を既に果たすため、二重表示を避けている。
+  /// 未加入・キャンペーン非開催時にのみ表示する導入バナー。アイコン付きの
+  /// 見出し＋一言説明で、いきなり比較表から始まるより「プレミアムで何が
+  /// 変わるか」を先に印象づける。キャンペーン中は`_campaignBanner`が
+  /// 同種の役割を既に果たすため、二重表示を避けている。
   Widget _heroSection(BuildContext context, AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
@@ -265,8 +257,8 @@ class PremiumScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          // 「何が変わるか」を一目で伝える3つのハイライト（デザイン強化：
-          // 文章だけでなく、視覚的な塊として要点を先に見せる）。
+          // 「何が変わるか」を一目で伝える3つのハイライト。文章だけでなく、
+          // 視覚的な塊として要点を先に見せる。
           Row(
             children: [
               Expanded(child: _heroHighlight(context, Icons.all_inclusive, l10n.premiumHeroHighlightDuration)),
@@ -358,7 +350,7 @@ class PremiumScreen extends StatelessWidget {
             ],
           ),
           // 各行のプレミアム列だけ淡くテーマの差し色を敷き、無料/プレミアムの
-          // 差が視線を動かさなくても分かるようにする（デザイン強化）。
+          // 差が視線を動かさなくても分かるようにする。
           ...items.asMap().entries.map((entry) {
             final i = entry.key;
             final item = entry.value;
@@ -419,8 +411,7 @@ class PremiumScreen extends StatelessWidget {
                 }
               },
         child: Container(
-          // おすすめプラン（年額）は淡いグラデーションで視覚的に目立たせる
-          // （デザイン強化：以前は文字と表のみだったため差別化した）。
+          // おすすめプラン（年額）は淡いグラデーションで視覚的に目立たせる。
           decoration: isRecommended
               ? BoxDecoration(
                   gradient: LinearGradient(

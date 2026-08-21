@@ -2378,8 +2378,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 前後に分けてキャッシュする。
   ///
   /// レイヤーの追加・削除・並び替え・表示切替・不透明度・ブレンドモード変更は
-  /// ProjectServiceを経由するため、[force]がfalseの場合は前回取得したレイヤー
-  /// 一覧と参照が変わっていない限り再合成をスキップする（低スペック端末対策）。
+  /// ProjectServiceを経由するため、[force]がfalseの場合は直前に取得した
+  /// レイヤー一覧と参照が変わっていない限り再合成をスキップする（低スペック
+  /// 端末対策）。
   Future<void> _recomposeSurroundings({bool force = false}) async {
     final project = widget.project;
     if (project == null) return;
@@ -3143,11 +3144,9 @@ class _CanvasPainter extends CustomPainter {
   void _paintBackground(Canvas canvas, Rect rect) {
     if (background == CanvasBackground.white) {
       // 新規プロジェクト作成画面で選択した背景色（Project.backgroundColor）
-      // をキャンバス表示にも反映する。以前は常に白固定で描画しており、
-      // 作成時に選んだ色がキャンバス上に一切反映されない不具合があった
-      // （書き出し結果には正しく反映されていた＝export_screen.dartは
-      // 既にproject.backgroundColorを使用していたため、表示側だけが
-      // 実際の設定と食い違っていた）。
+      // をキャンバス表示にも反映する（export_screen.dartの書き出し処理も
+      // 同じくproject.backgroundColorを参照しており、表示・書き出しの
+      // 両方で設定が一致する）。
       final color = project != null ? Color(project!.backgroundColor) : Colors.white;
       canvas.drawRect(rect, Paint()..color = color);
     } else {

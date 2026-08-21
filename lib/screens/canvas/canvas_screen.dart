@@ -105,13 +105,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// （「レイヤーパネルが一度表示すると非表示に戻せない」の原因）。
   /// いずれかを開く前に必ずこれを呼び、常に高々1枚のみが表示された状態を保つ。
   ///
-  /// ただしPC/DeXモード（広い画面）は「画面が大きいので複数パネルを
-  /// 同時表示してよい、ごちゃごちゃ防止はスマホ版のみでよい」という方針
-  /// のため、ドッキング表示される全パネル（レイヤー・カラーピッカー・
-  /// ブラシ・トーン・スタンプ等のサブツール系すべて）を対象外にする
-  /// （ドッキング表示のため重なって閉じられなくなる心配がない）。
-  /// 自由変形/メッシュ変形パネルのみキャンバス上の格子点操作と直接
-  /// 絡むため、画面サイズによらず引き続き排他のままにする。
+  /// PC/DeXモード（広い画面）は複数パネルを同時ドッキング表示できるため
+  /// 対象外にする（レイヤー・カラーピッカー・ブラシ・トーン・スタンプ等の
+  /// サブツール系すべて。ドッキング表示のため重なって閉じられなくなる
+  /// 心配がない）。自由変形/メッシュ変形パネルのみキャンバス上の格子点
+  /// 操作と直接絡むため、画面サイズによらず引き続き排他のままにする。
   void _closeAllOverlayPanels() {
     if (!isWideScreen(context)) {
       _showLayerPanel = false;
@@ -407,16 +405,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
         if (layers.isNotEmpty) _currentLayerId = layers.first.id;
       }
     }
-    // 「ごちゃごちゃさせない」方針はスマホ版のみとし、PC/DeXモード
-    // （広い画面）は画面が大きく余裕があるため、初回表示時にワーク
-    // スペース設定（設定＞ワークスペース＞PC版で既定で開くパネル）で
-    // 選ばれているパネルをまとめて自動でドッキング表示する（プロ向け
-    // ペイントソフトのように主要パネルが常に見えている状態を既定にし、
-    // かつユーザー自身がどのパネルを既定にするかカスタマイズできる）。
-    // 1セッション1回のみで、閉じた後にまた勝手に開き直されると邪魔に
-    // なるため、ユーザーが手動で閉じた後は再度自動では開かない。
-    // いずれも独立して閉じられる（_closeAllOverlayPanelsもPC/DeX
-    // モードではこれらを対象外にしている）。
+    // PC/DeXモード（広い画面）では、初回表示時にワークスペース設定
+    // （設定＞ワークスペース＞PC版で既定で開くパネル）で選ばれている
+    // パネルをまとめて自動でドッキング表示する。1セッション1回のみで、
+    // 閉じた後にまた自動で開き直されると邪魔になるため、手動で閉じた後は
+    // 再度自動では開かない。いずれも独立して閉じられる
+    // （_closeAllOverlayPanelsもPC/DeXモードではこれらを対象外にしている）。
     if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
       _autoOpenedDesktopPanels = true;
       final defaults = context.read<SettingsService>().defaultDockedPanels;
@@ -483,9 +477,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 再開する（仕様書「セーブ／自動保存の再設計」：プロジェクトを開いた際、
   /// 自動保存データがあれば最後の自動保存から自動的に復元する）。
   /// 自動保存は常に「その時点までの最新の編集内容」を表すため、これへ
-  /// 揃えることでユーザーの作業を失うことはない（むしろ、以前のように
-  /// ここで確認ダイアログを出して「無視」を選ばれてしまうと、その分の
-  /// 編集内容が失われる方が問題だった）。
+  /// 揃えることで作業を失うことはない（確認ダイアログを出して「無視」を
+  /// 選ばれると、その分の編集内容が失われてしまう）。
   ///
   /// CanvasScreenはタイムラインモードとの往復（context.go）のたびにWidget
   /// ごと再生成されるため、Widget側の状態フラグだけでは「編集を再開した
@@ -568,8 +561,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
     // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
-    // 排他にせず、開いているものをすべて縦に積んで同時表示する
-    // （「PCは画面が大きいのでいろいろ表示していい」方針）。
+    // 排他にせず、開いているものをすべて縦に積んで同時表示する。
     final isDesktop = isWideScreen(context);
     final openToolPanels = isDesktop ? _openToolOptionPanels() : const <Widget>[];
     // 左利きモード（仕様書08）：フローティング／ドッキングパネルを左右反転し、
@@ -595,9 +587,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         // スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・
         // 早替え設定）は、画面全体を覆うこの一番外側のStackへ配置する
         // ことで、太さ／不透明度スライダーやツールバーなど他のUI要素の
-        // 手前に必ず表示されるようにしている（以前はキャンバス領域内の
-        // Stackに置いていたため、縦スペースが足りない場面で他の要素と
-        // 重なって見えることがあった）。パネルの外側をタップすると
+        // 手前に必ず表示されるようにしている。パネルの外側をタップすると
         // 閉じられる。
         child: Stack(
           children: [
@@ -660,11 +650,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                   if (openToolPanels.isNotEmpty && leftHanded)
                     SizedBox(width: 280, child: _dockedPanelStack(openToolPanels)),
-                  // PC/DeXモード：カラーピッカー・レイヤーパネルは、ツール
-                  // オプション系ドッキング領域（上のopenToolPanels）とは別に、
-                  // 右側（左利きモード時は左側）へ縦に並べて同時常設できる
-                  // ようにする（「画面が大きいPCではいろいろ表示してよい」
-                  // 方針、仕様書08の追記）。どちらも単独でも両方同時でも表示可。
+                  // PC/DeXモード：カラーピッカー・レイヤーパネル・キャンバス
+                  // プレビューは、ツールオプション系ドッキング領域（上の
+                  // openToolPanels）とは別に、右側（左利きモード時は左側）へ
+                  // 縦に並べて同時表示する。単独でも複数同時でも表示可。
                   if (isDesktop && (_showColorPicker || _showLayerPanel || _showCanvasPreviewPanel))
                     SizedBox(
                       width: 280,
@@ -919,9 +908,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showColorAdjustPanel;
 
   // PC/DeXモード（広い画面）：現在開いているツールオプション系パネルを
-  // すべて返す（「PCは画面が大きいのでいろいろ表示していい」方針のため、
-  // 互いに排他にせず開いているものを全部縦積みする）。左側の常時
-  // ドッキング領域に使う。フローティング表示（スマホ）と同じパネル
+  // すべて返す（互いに排他にせず開いているものを全部縦積みする）。左側の
+  // 常時ドッキング領域に使う。フローティング表示（スマホ）と同じパネル
   // インスタンスを流用する。カラーピッカー・レイヤーパネルはここには
   // 含めない（右側ドックで独立に扱うため。build()内を参照）。
   List<Widget> _openToolOptionPanels() {
@@ -1322,7 +1310,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// レイヤーパネルからテキストレイヤーをタップした時に呼び出す編集入口
   /// （仕様書15：既存テキストをタップすると編集開始。本実装ではレイヤー
   /// パネル経由とする。キャンバス上でのテキストボックス当たり判定による
-  /// 直接タップ編集は今回のスコープ外）。
+  /// 直接タップ編集は対象外）。
   void editTextLayer(String layerId, model.TextObject text) {
     _showTextInputDialog(text.position, existingLayerId: layerId, existing: text);
   }

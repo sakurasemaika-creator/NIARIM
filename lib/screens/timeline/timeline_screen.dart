@@ -235,9 +235,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // フレーム一覧の左右には((ビューポート幅-セル幅)/2)の余白（_buildFrameList
   // 参照）を入れてあるため、先頭・末尾のフレームも赤枠（画面中央）まで
-  // きっちりスクロールできる。以前は[0,maxScrollExtent]へのclampにより、
-  // 先頭フレーム・最終フレームへスキップした際に赤枠からずれて表示される
-  // 不具合があった。
+  // きっちりスクロールできる。
   void _centerFrameInList({required bool animate}) {
     if (!_frameScrollCtrl.hasClients) return;
     final target = (_currentFrame * _cellW).clamp(0.0, _frameScrollCtrl.position.maxScrollExtent);
@@ -2256,11 +2254,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (sceneId != null) _persistClipUpdate(clip, sceneId);
   }
 
-  /// シーン・フレームの複数選択モード中の一括操作バー（仕様書05）。以前は
-  /// シーンタブ・フレーム一覧の中に小さいテキストボタンとして表示していたが、
-  /// 素材タイムラインの上に大きな3分割ボタン（移動・複製・
-  /// 削除）＋次の段に全選択・全解除を表示する形へ変更した。移動モード中は
-  /// 専用のカーソルUIが別途表示されるためここでは非表示にする。
+  /// シーン・フレームの複数選択モード中の一括操作バー（仕様書05）。
+  /// 素材タイムラインの上に大きな3分割ボタン（移動・複製・削除）＋
+  /// 次の段に全選択・全解除を表示する。移動モード中は専用のカーソルUIが
+  /// 別途表示されるためここでは非表示にする。
   Widget _buildMultiSelectActionBar() {
     if (!_isSceneMultiSelect && !_isFrameMultiSelect) return const SizedBox.shrink();
     if (_isMoveMode || _isFrameMoveMode) return const SizedBox.shrink();
@@ -4839,8 +4836,9 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     setState(() => _kf = newKf);
   }
 
-  /// カメラ操作がスライダーだけで分かりにくいという指摘への対応（仕様書05）。
-  /// 現在編集中のキーフレーム位置における実際の見え方（カメラ変換適用後の
+  /// カメラ操作の見え方をスライダー操作だけに頼らず確認できるようにする
+  /// プレビュー（仕様書05）。現在編集中のキーフレーム位置における実際の
+  /// 見え方（カメラ変換適用後の
   /// フレーム）をその場でプレビュー表示し、スライダー操作と同時に確認できる
   /// ようにする。カメラキーフレーム一覧はwatchで購読し、スライダー変更の
   /// たびに即時反映されるようにする。

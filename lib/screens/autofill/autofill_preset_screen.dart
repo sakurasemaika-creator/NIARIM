@@ -31,9 +31,8 @@ class AutofillPresetScreen extends StatefulWidget {
 class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   String _searchQuery = '';
   bool _isSearching = false;
-  // お気に入りのみ絞り込み（仕様書20）。以前はパーツ単位にお気に入りが
-  // 付いていたが使いどころが薄かったため廃止し、代わりにプリセット単位の
-  // お気に入り＋絞り込みへ一本化した。
+  // お気に入りのみ絞り込み（仕様書20）。プリセット単位のお気に入り登録・
+  // 絞り込みに使う。
   bool _showFavoritesOnly = false;
 
   // このファイルの各ダイアログが使うTextEditingControllerは、
@@ -301,9 +300,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   Future<void> _pickAndCropThumbnail(AutofillPreset preset) async {
     final l10n = AppLocalizations.of(context)!;
     // withData: trueでバイト列も取得しておく。Web版はdart:ioのFileが
-    // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ
-    // 渡す（以前はpathのみを使っており、Web版では常にFile読み込みに
-    // 失敗して「読み込み中のままぐるぐる止まる」不具合があった）。
+    // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ渡す。
     final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
     if (result == null || result.files.isEmpty) return;
     final picked = result.files.first;
@@ -504,17 +501,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   Future<void> _pickColorFromNewImage(ValueChanged<Color> onPicked) async {
     final l10n = AppLocalizations.of(context)!;
     // withData: trueでバイト列も取得しておく。Web版はdart:ioのFileが
-    // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ
-    // 渡す（以前はpathがnullだと即returnしてしまい、Web版でスポイトが
-    // 全く起動しない不具合があった）。
+    // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ渡す。
     final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
     if (result == null || result.files.isEmpty) return;
     final picked = result.files.first;
     if (picked.path == null && picked.bytes == null) {
-      // ここへ来るのは異常系（ファイルは選ばれたのにpath・bytesとも
-      // 取得できなかった場合）。以前はここで無言でreturnしており、
-      // 「画像を選んでも何も起きず元の画面に戻る」ように見えて原因が
-      // 分からなかったため、理由が分かるようスナックバーで明示する。
+      // ファイルは選ばれたのにpath・bytesとも取得できなかった異常系。
+      // 無言で戻ると原因が分からないため、スナックバーで明示する。
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.autofillEyedropperImageLoadFailedSnackbar)));
@@ -1344,10 +1337,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           }
                           // 放射グラデーション：中心（画面中央）を軸に左右対称のハンドルを
                           // 2つずつ配置し、片方を動かすと反対側も連動する。t=0
-                          // （中心そのもの）でも常に2つ重ねて表示する（以前は1つだけ
-                          // 表示しており、中心にあるハンドルをどちらの方向へ
-                          // ドラッグしても意図通り動かせなかったため、常時2つに
-                          // 修正した）。
+                          // （中心そのもの）でも常に2つ重ねて表示することで、
+                          // どちらの方向へドラッグしても意図通り分割できるようにする。
                           final center = maxWidth / 2;
                           return Stack(
                             clipBehavior: Clip.none,
@@ -1696,9 +1687,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
-  /// グラデーション設定内の色スウォッチ専用のカラーピッカー。上部の×
-  /// 閉じるボタンだけだと「押すと変更が消えるのか適用されるのか
-  /// 分かりにくい」という指摘があったため、通常のColorPickerPanel
+  /// グラデーション設定内の色スウォッチ専用のカラーピッカー。変更が
+  /// 保持されるか破棄されるか明確になるよう、通常のColorPickerPanel
   /// （[_showColorPickerFor]）とは異なり上部の閉じるボタンは表示せず、
   /// グラデーション設定本体と同じ「キャンセル・適用」ボタンを下部に
   /// 常設する。調整中はプレビューだけ更新し、キャンセルなら破棄・

@@ -159,9 +159,7 @@ class SettingsService extends ChangeNotifier {
   /// 筆圧カーブに応じて生の筆圧値（0.0〜1.0）を補正する（仕様書08：
   /// 筆圧カーブはアプリ全体に適用）。弱＝立ち上がりを緩やかに、
   /// 強＝立ち上がりを鋭くする指数カーブ。カスタムのみ、_customPressurePoints
-  /// （最大10点の制御点）を結ぶ折れ線で補間する。以前は
-  /// 制御点を1つしか打てなかったのを、ユーザー好みの筆圧設定を自由に
-  /// 作れるよう最大10点まで打てるようにした。
+  /// （最大10点の制御点）を結ぶ折れ線で補間する。
   double applyPressureCurve(double rawPressure) {
     final p = rawPressure.clamp(0.0, 1.0);
     if (_penPressureCurve == PenPressureCurve.custom) {

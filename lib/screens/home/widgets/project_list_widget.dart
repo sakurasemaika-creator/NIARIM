@@ -300,8 +300,7 @@ class ProjectListWidget extends StatelessWidget {
                   children: [
                     _thumbnail(project),
                     // サムネイル下端に淡いグラデーションの帯を敷き、どんな絵柄の
-                    // 上でもプロジェクト名が読みやすくなるようにする
-                    // （デザイン強化：単なる白地の帯からの変更）。
+                    // 上でもプロジェクト名が読みやすくなるようにする。
                     Positioned(
                       left: 0,
                       right: 0,

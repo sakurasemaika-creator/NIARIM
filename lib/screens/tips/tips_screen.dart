@@ -253,8 +253,7 @@ class _TipListTile extends StatelessWidget {
     // 40×40の小さな領域に押し込めて表示すると、画面全体を模した図解が
     // つぶれて崩れて見えるうえ、60件超の一覧すべてを常時描画するのは
     // 無駄が大きいため、詳細ポップアップ（_TipDetailDialog）側でのみ描画する。
-    // カード自体は影付きで浮かせ、電球アイコンのバッジを添えて「作り込んだ」
-    // 見た目にする（デザイン強化）。
+    // カード自体は影付きで浮かせ、電球アイコンのバッジを添える。
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Material(
@@ -295,8 +294,7 @@ class _TipListTile extends StatelessWidget {
   }
 }
 
-/// Tips詳細のポップアップ。各ページに図解と本文の両方を必ず表示する
-/// （以前は1ページ目が図解のみ・2ページ目以降が文章のみでスカスカだった）。
+/// Tips詳細のポップアップ。各ページに図解と本文の両方を必ず表示する。
 /// 説明文を読みやすい分量ごとに分割し、1ページに収まる分量ならページ数は
 /// 1のまま（＝スワイプ不要）、収まらない場合は必要なだけページ数を
 /// 増やして横スライドで読み進める（ページ数の上限は設けない）。右上の
@@ -373,9 +371,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
                           // タイトルは上寄せ・図解は中央寄せ・本文は下寄せに
-                          // なるよう、縦方向をExpandedで区切って配分する
-                          // （以前はタイトル・図解が上に詰まり、下がスカスカに
-                          // 見える配置だったため、2026年8月20日に変更）。
+                          // なるよう、縦方向をExpandedで区切って配分する。
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

@@ -217,9 +217,7 @@ class NiatraSerializer {
   // ─── AutofillPreset ───────────────────────────────────────────────────
 
   // グラデーション・トーン・線画色・トレス調整など、パーツが持つ設定を
-  // 一切欠かさず引き継げるよう、モデル自身のtoJson/fromJsonをそのまま使う
-  // （以前はid/name/colorの3項目しか書き出しておらず、グラデーションや
-  // トーン設定等が引き継ぎ時に消えてしまっていた）。
+  // 一切欠かさず引き継げるよう、モデル自身のtoJson/fromJsonをそのまま使う。
   static Map<String, dynamic> _serializeAutofillPreset(AutofillPreset p) => p.toJson();
 
   static AutofillPreset _deserializeAutofillPreset(Map<String, dynamic> j) {

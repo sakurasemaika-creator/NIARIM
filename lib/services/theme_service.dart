@@ -334,11 +334,11 @@ class ThemeService extends ChangeNotifier {
       _presets.addAll(_builtInPresets);
     } else {
       _presets.addAll(raw.map((s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
-      // 既存ユーザーにも、後から追加した組み込みプリセット（パステル・
+      // 保存済みプリセット一覧に、組み込みプリセット（パステル・
       // ニュアンス・くすみカラー等）を反映する（同IDが既に存在する場合は
-      // 追加しない。名前変更した「ポップ」「インディゴ」は既存ユーザーの
-      // 手元では旧名のまま残るが、同一IDのため実害はなく、名称変更したい
-      // 場合はプリセットの削除→再度組み込み一覧から選び直しで反映できる）。
+      // 追加しない。プリセット名は同一IDであれば保存済みデータ側が優先
+      // されるため、名称を変更したい場合はプリセットの削除→再度組み込み
+      // 一覧から選び直すことで反映できる）。
       final existingIds = _presets.map((p) => p.id).toSet();
       final missing = _builtInPresets.where((p) => !existingIds.contains(p.id));
       if (missing.isNotEmpty) _presets.addAll(missing);

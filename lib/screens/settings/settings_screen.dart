@@ -146,9 +146,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // 「シンプルというより作り込んだデザインに」という要望に沿って、
-  // フラットなListTile羅列から、各項目を独立したカードとして浮かせる
-  // 構成へ変更した（影・角丸・タップ時のインクエフェクトを角丸に沿わせる）。
+  // 各項目を独立したカードとして浮かせる（影・角丸・タップ時のインク
+  // エフェクトを角丸に沿わせる）。
   Widget _item(IconData icon, String title, String subtitle, VoidCallback onTap, Color accent) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

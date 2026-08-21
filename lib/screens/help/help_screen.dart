@@ -66,10 +66,8 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'レイヤー', title: l10n.helpLayerTitle, description: l10n.helpLayerDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0)),
         _HelpEntry(topicKey: 'ブレンドモード', title: l10n.helpBlendModeTitle, description: l10n.helpBlendModeDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 1)),
         // layerPanelListの行アイコン配列は[通常レイヤー,フォルダ,共通レイヤー,
-        // 自動塗り]の順（help_diagrams.dart _layerTypeIcons）。以前は
-        // クリッピング=2(共通レイヤーアイコン)・共通レイヤー=3(自動塗り
-        // アイコン)・自動塗り/グラデーション塗り=2(共通レイヤーアイコン)と
-        // ずれていたため、実際のアイコンと一致するスロットへ修正した。
+        // 自動塗り]の順（help_diagrams.dart _layerTypeIcons）。各項目の
+        // スロット番号は実際のアイコンと一致させている。
         _HelpEntry(topicKey: 'クリッピング', title: l10n.helpClippingTitle, description: l10n.helpClippingDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 1, icon: Icons.content_cut)),
         // 「レイヤーの共通化」の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
         _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 2)),
@@ -141,8 +139,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'プロジェクト詳細画面', title: l10n.helpProjectDetailTitle, description: l10n.helpProjectDetailDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 2, icon: Icons.info_outline)),
 
         // ── 設定画面 ────────────────────────────────────────────
-        // 各種設定画面の説明を1箇所にまとめた（仕様書28：ヘルプページの
-        // 項目並び替え。以前は「その他」内に他の項目と交互に散らばっていた）。
+        // 各種設定画面の説明を1箇所にまとめている（仕様書28：ヘルプページの項目並び替え）。
         _HelpEntry(topicKey: 'テーマ設定', title: l10n.helpThemeSettingsTitle, description: l10n.helpThemeSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ワークスペース設定', title: l10n.helpWorkspaceSettingsTitle, description: l10n.helpWorkspaceSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
@@ -200,8 +197,7 @@ class _HelpScreenState extends State<HelpScreen> {
               itemBuilder: (context, index) {
                 final entry = filtered[index];
                 final scheme = Theme.of(context).colorScheme;
-                // 各項目を独立したカードとして浮かせる（デザイン強化：
-                // フラットな一覧行の羅列から作り込んだ見た目へ）。
+                // 各項目を独立したカードとして浮かせる。
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   child: Material(
@@ -229,16 +225,11 @@ class _HelpScreenState extends State<HelpScreen> {
                         ),
                         child: Icon(Icons.help_outline, color: scheme.primary, size: 18),
                       ),
-                      // 項目名用フォント（仕様書24：くらむぼん。以前は説明文と
-                      // 逆になっており、項目名が白光明朝・説明文がくらむぼんに
-                      // なっていた不具合を修正）。
+                      // 項目名用フォント（仕様書24：くらむぼん）。
                       title: Text(entry.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w700, fontSize: 14)),
                       subtitle: Text(entry.category, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                       children: [
-                        // 実画面を再現した簡易図解は、あくまで「四角・アイコンを
-                        // 並べた模式図」の域を出ず、実際の画面をほぼ再現できて
-                        // いなかったため廃止した（2026年8月20日、ユーザー指摘）。
-                        // 文章での説明のみとする。
+                        // 実画面の簡易図解は用いず、文章での説明のみとする。
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                           // 説明テキスト用フォント（仕様書24：白光明朝。アプリ全体の
