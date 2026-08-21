@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../engine/export_engine.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
+import '../tips/tips_screen.dart' show allTipEntries;
 
 /// 起動時のスプラッシュ画面。ロゴを約2秒間表示してからプロジェクト一覧
 /// （ホーム画面）へ自動遷移する。
@@ -16,6 +19,8 @@ import '../../services/project_service.dart';
 /// 表示している間に、ホーム画面の各タブが必要とするデータの先読みを
 /// 裏で進めておく（[_preloadHomeData]）。これにより、ホーム画面へ遷移
 /// した瞬間には大半の読み込みが完了済みか完了間近の状態になる。
+/// また、処理中ダイアログ（[ProgressDialog]）と同様に、待ち時間を活用して
+/// ランダムなTipsを1件表示する。
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -26,6 +31,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   static const _displayDuration = Duration(seconds: 2);
   Timer? _timer;
+  (String, String)? _tip;
 
   @override
   void initState() {
@@ -35,7 +41,20 @@ class _SplashScreenState extends State<SplashScreen> {
       // 履歴に残さず置き換える（戻るボタンでスプラッシュへ戻らないようにする）
       context.go('/home');
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _preloadHomeData());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pickRandomTip();
+      _preloadHomeData();
+    });
+  }
+
+  /// 表示するTipsを1件ランダムに選ぶ。スプラッシュは表示時間が短いため
+  /// （約2秒）、[ProgressDialog]のような一定間隔での切り替えは行わない。
+  void _pickRandomTip() {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final tips = allTipEntries(l10n);
+    if (tips.isEmpty) return;
+    setState(() => _tip = tips[Random().nextInt(tips.length)]);
   }
 
   /// ホーム画面の各タブが表示に使うデータを先読みする。
@@ -71,13 +90,52 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tip = _tip;
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: scheme.surface,
       body: Center(
-        child: Image.asset(
-          'assets/logo/splash_logo.png',
-          width: 160,
-          height: 160,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/logo/splash_logo.png',
+              width: 160,
+              height: 160,
+            ),
+            if (tip != null) ...[
+              const SizedBox(height: 32),
+              Container(
+                width: 280,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, size: 14, color: scheme.primary),
+                        const SizedBox(width: 4),
+                        Text(l10n.progressDialogTipLabel,
+                            style: TextStyle(
+                                fontSize: 11, fontWeight: FontWeight.bold, color: scheme.primary)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(tip.$1, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(tip.$2,
+                        style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                        maxLines: 3, overflow: TextOverflow.ellipsis),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
