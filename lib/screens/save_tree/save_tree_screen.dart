@@ -516,33 +516,47 @@ class _SlotTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return ListTile(
-      leading: _SaveNodeThumbnail(node: node),
-      title: Text('${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}'),
-      subtitle: node != null
-          ? Text(_formatDate(node!.savedAt))
-          : Text(l10n.saveTreeNoDataLabel),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.save, size: 20),
-            onPressed: onSave,
-            tooltip: l10n.commonSave,
+    final scheme = Theme.of(context).colorScheme;
+    // 他の一覧画面（ホーム・設定・ヘルプ等）と統一した「影付きカード」
+    // デザインへ（デザイン強化：フラットなListTile羅列からの変更）。
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          leading: _SaveNodeThumbnail(node: node),
+          title: Text('${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: node != null
+              ? Text(_formatDate(node!.savedAt))
+              : Text(l10n.saveTreeNoDataLabel),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.save, size: 20),
+                onPressed: onSave,
+                tooltip: l10n.commonSave,
+              ),
+              if (onRestore != null)
+                IconButton(
+                  icon: const Icon(Icons.restore, size: 20),
+                  onPressed: onRestore,
+                  tooltip: l10n.saveTreeRestoreAction,
+                ),
+              if (onDelete != null)
+                IconButton(
+                  icon: Icon(Icons.delete, size: 20, color: scheme.error),
+                  onPressed: onDelete,
+                  tooltip: l10n.commonDelete,
+                ),
+            ],
           ),
-          if (onRestore != null)
-            IconButton(
-              icon: const Icon(Icons.restore, size: 20),
-              onPressed: onRestore,
-              tooltip: l10n.saveTreeRestoreAction,
-            ),
-          if (onDelete != null)
-            IconButton(
-              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
-              onPressed: onDelete,
-              tooltip: l10n.commonDelete,
-            ),
-        ],
+        ),
       ),
     );
   }
