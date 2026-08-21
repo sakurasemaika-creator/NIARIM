@@ -262,52 +262,99 @@ class ProjectListWidget extends StatelessWidget {
     if (entry.isFolder) return _folderGridCard(context, entry.folder!);
     final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
-    final primary = Theme.of(context).colorScheme.primary;
+    final scheme = Theme.of(context).colorScheme;
+    final primary = scheme.primary;
     return GestureDetector(
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : () => context.push('/project/${project.id}'),
       onDoubleTap: isSelectionMode ? null : () => context.push('/canvas/${project.id}'),
       onLongPress: onLongPress,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        shape: isSelected
-            ? RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: primary, width: 2),
-              )
-            : null,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  _thumbnail(project),
-                  if (project.isFavorite)
-                    const Positioned(top: 4, right: 4, child: Icon(Icons.star, color: Colors.amber, size: 16)),
-                  if (isSelectionMode)
-                    Positioned(
-                      top: 4, left: 4,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected ? primary : Theme.of(context).colorScheme.surface,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: primary),
-                        ),
-                        child: Icon(isSelected ? Icons.check : null,
-                            size: 16, color: Theme.of(context).colorScheme.onPrimary),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(4),
-              child: Text(project.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: (isSelected ? primary : Colors.black).withValues(alpha: isSelected ? 0.28 : 0.12),
+              blurRadius: isSelected ? 14 : 8,
+              offset: const Offset(0, 3),
             ),
           ],
+        ),
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(color: isSelected ? primary : Colors.transparent, width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _thumbnail(project),
+                    // サムネイル下端に淡いグラデーションの帯を敷き、どんな絵柄の
+                    // 上でもプロジェクト名が読みやすくなるようにする
+                    // （デザイン強化：単なる白地の帯からの変更）。
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 30,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 6,
+                      right: 6,
+                      bottom: 4,
+                      child: Text(project.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                    ),
+                    if (project.isFavorite)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4), shape: BoxShape.circle),
+                          child: const Icon(Icons.star, color: Colors.amber, size: 14),
+                        ),
+                      ),
+                    if (isSelectionMode)
+                      Positioned(
+                        top: 4, left: 4,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: isSelected ? primary : scheme.surface.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: primary, width: 1.5),
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 3)],
+                          ),
+                          child: Icon(isSelected ? Icons.check : null, size: 16, color: scheme.onPrimary),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -315,53 +362,83 @@ class ProjectListWidget extends StatelessWidget {
 
   Widget _folderGridCard(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
-    final primary = Theme.of(context).colorScheme.primary;
+    final scheme = Theme.of(context).colorScheme;
+    final primary = scheme.primary;
     final color = folder.color != null ? Color(folder.color!) : primary;
     return GestureDetector(
       onTap: isSelectionMode ? () => onSelectionChanged(folder.id) : () => onOpenFolder(folder.id),
       onLongPress: onLongPress,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        shape: isSelected
-            ? RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: primary, width: 2),
-              )
-            : null,
-        child: Column(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: (isSelected ? primary : Colors.black).withValues(alpha: isSelected ? 0.28 : 0.12),
+              blurRadius: isSelected ? 14 : 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(color: isSelected ? primary : Colors.transparent, width: 2),
+          ),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Container(
-                    color: color.withValues(alpha: 0.15),
-                    child: Center(child: Icon(Icons.folder, color: color, size: 44)),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [color.withValues(alpha: 0.22), color.withValues(alpha: 0.1)],
+                      ),
+                    ),
+                    child: Center(child: Icon(Icons.folder_rounded, color: color, size: 46)),
                   ),
                   if (folder.isFavorite)
-                    const Positioned(top: 4, right: 4, child: Icon(Icons.star, color: Colors.amber, size: 16)),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(color: scheme.surface.withValues(alpha: 0.75), shape: BoxShape.circle),
+                        child: const Icon(Icons.star, color: Colors.amber, size: 14),
+                      ),
+                    ),
                   if (isSelectionMode)
                     Positioned(
                       top: 4, left: 4,
                       child: Container(
+                        padding: const EdgeInsets.all(1),
                         decoration: BoxDecoration(
-                          color: isSelected ? primary : Theme.of(context).colorScheme.surface,
+                          color: isSelected ? primary : scheme.surface.withValues(alpha: 0.9),
                           shape: BoxShape.circle,
-                          border: Border.all(color: primary),
+                          border: Border.all(color: primary, width: 1.5),
                         ),
-                        child: Icon(isSelected ? Icons.check : null,
-                            size: 16, color: Theme.of(context).colorScheme.onPrimary),
+                        child: Icon(isSelected ? Icons.check : null, size: 16, color: scheme.onPrimary),
                       ),
                     ),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(4),
-              child: Text(folder.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+              padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
+              child: Text(folder.name,
+                  overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             ),
           ],
+          ),
         ),
       ),
     );
