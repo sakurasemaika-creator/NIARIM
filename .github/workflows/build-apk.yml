@@ -58,9 +58,11 @@ jobs:
           name: niarim-${{ inputs.build-type }}-apk
           path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
           # APK本体は1回あたり100〜160MB超と大きく、Actions Storage（無料枠
-          # 0.5GB）をすぐ圧迫するため、14日から3日へ短縮した（アカウントの
-          # Actions Storage使用率が90%に達した警告を受けての対応）。
-          retention-days: 3
+          # 0.5GB）をすぐ圧迫する。14日→3日へ短縮した後も、GitHub側の使用量
+          # 再計算が6〜12時間おきにしか走らないため蓄積分が反映されにくく、
+          # 結局ストレージ上限エラーで書き出しに失敗する事態が発生したため、
+          # 1日へさらに短縮した。
+          retention-days: 1
 
       # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
       # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存
@@ -74,5 +76,5 @@ jobs:
             build/app/outputs/mapping/release/mapping.txt
             build/app/outputs/mapping/release/seeds.txt
             build/app/outputs/mapping/release/usage.txt
-          retention-days: 3
+          retention-days: 1
           if-no-files-found: warn
