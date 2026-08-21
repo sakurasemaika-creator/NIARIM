@@ -918,7 +918,7 @@ class _WorksTabState extends State<_WorksTab> {
   }
 
   Future<void> _reload() async {
-    setState(() => _future = ExportEngine.listExportedFiles());
+    setState(() => _future = ExportEngine.listExportedFiles(forceRefresh: true));
     await _future;
   }
 
@@ -1027,7 +1027,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
             itemBuilder: (context, index) => _WorkListItem(
               file: items[index],
               onDeleted: () {
-                setState(() => _future = ExportEngine.listExportedFiles());
+                setState(() => _future = ExportEngine.listExportedFiles(forceRefresh: true));
                 widget.onDeleted();
               },
             ),

@@ -63,12 +63,21 @@ class ExportEngine {
     return dir;
   }
 
+  // 直近の一覧結果のキャッシュ。スプラッシュ表示中に先読みしておいた結果を
+  // 「作品一覧」タブが再利用することで、タブ表示時のディスクアクセス待ちを
+  // 省略できる。
+  static List<File>? _cachedExportedFiles;
+
   /// 作品一覧タブ用：exportsフォルダ内の書き出し済みファイル一覧を
-  /// 更新日時の新しい順で返す。
-  static Future<List<File>> listExportedFiles() async {
+  /// 更新日時の新しい順で返す。[forceRefresh]がfalse（既定）かつキャッシュが
+  /// あればそれを返す。ファイルの追加・削除後は[forceRefresh]をtrueにして
+  /// 呼び出す。
+  static Future<List<File>> listExportedFiles({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedExportedFiles != null) return _cachedExportedFiles!;
     final dir = await exportsDir();
     final files = dir.listSync().whereType<File>().toList();
     files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+    _cachedExportedFiles = files;
     return files;
   }
 
