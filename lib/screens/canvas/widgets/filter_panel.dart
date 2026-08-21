@@ -56,8 +56,13 @@ class _FilterPanelState extends State<FilterPanel> {
   Uint8List? _previewBase;
   int _previewW = 0;
   int _previewH = 0;
+  double _previewScale = 1;
   ui.Image? _previewImage;
   String? _previewFilterId;
+  // 眼鏡断層フィルター（lensDistortion）専用：選択レイヤー
+  // （LayerType.selection）を単体合成しプレビュー解像度へ縮小したもの。
+  // 選択レイヤーが存在しない場合はnull（=対象範囲なし、フィルター無効）。
+  Uint8List? _previewMask;
 
   @override
   void initState() {
@@ -69,6 +74,27 @@ class _FilterPanelState extends State<FilterPanel> {
   void dispose() {
     _previewImage?.dispose();
     super.dispose();
+  }
+
+  /// [img]（[w]×[h]）を[pw]×[ph]へ縮小し、rawRgbaのバイト列を返す
+  /// （プレビュー用の対象レイヤー・選択レイヤーマスクの縮小で共通利用）。
+  /// [img]は呼び出し側の責任でdispose済みとして扱ってよい状態で渡すこと
+  /// （このメソッド内でdisposeする）。
+  Future<Uint8List?> _downscaleToBytes(ui.Image img, int w, int h, int pw, int ph) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      img,
+      ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+      ui.Rect.fromLTWH(0, 0, pw.toDouble(), ph.toDouble()),
+      ui.Paint(),
+    );
+    img.dispose();
+    final picture = recorder.endRecording();
+    final small = await picture.toImage(pw, ph);
+    final byteData = await small.toByteData(format: ui.ImageByteFormat.rawRgba);
+    small.dispose();
+    return byteData?.buffer.asUint8List();
   }
 
   Future<void> _loadPreviewBase() async {
@@ -87,21 +113,29 @@ class _FilterPanelState extends State<FilterPanel> {
     final pw = (w * scale).round().clamp(1, maxSize);
     final ph = (h * scale).round().clamp(1, maxSize);
 
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    canvas.drawImageRect(
-      img,
-      ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-      ui.Rect.fromLTWH(0, 0, pw.toDouble(), ph.toDouble()),
-      ui.Paint(),
-    );
-    img.dispose();
-    final picture = recorder.endRecording();
-    final small = await picture.toImage(pw, ph);
-    final byteData = await small.toByteData(format: ui.ImageByteFormat.rawRgba);
-    small.dispose();
-    if (byteData == null || !mounted) return;
-    _previewBase = byteData.buffer.asUint8List();
+    final bytes = await _downscaleToBytes(img, w, h, pw, ph);
+    if (!mounted) return;
+
+    // 眼鏡断層フィルター用：選択レイヤー（LayerType.selection）があれば
+    // 同じ解像度へ縮小してマスクとして保持する（無ければnullのまま、
+    // applyLensDistortion側で「対象範囲なし」として無効化される）。
+    final selectionLayer = ps
+        .layersOf(widget.projectId, widget.sceneId, widget.frameIndex)
+        .where((l) => l.type == model.LayerType.selection)
+        .firstOrNull;
+    Uint8List? maskBytes;
+    if (selectionLayer != null) {
+      final maskKey =
+          ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, selectionLayer.id);
+      final maskImg = await tm.compositeLayerToImage(maskKey);
+      maskBytes = await _downscaleToBytes(maskImg, w, h, pw, ph);
+      if (!mounted) return;
+    }
+
+    if (bytes == null || !mounted) return;
+    _previewScale = scale;
+    _previewMask = maskBytes;
+    _previewBase = bytes;
     _previewW = pw;
     _previewH = ph;
     await _updatePreview();
@@ -499,6 +533,45 @@ class _FilterPanelState extends State<FilterPanel> {
                             30,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
+                        if (current.kind == FilterKind.lensDistortion) ...[
+                          // 選択レイヤーが無い・空の場合はフィルターが無効に
+                          // なるため、その旨を案内する（キャンバス上には
+                          // テーマの選択色でオーバーレイ表示されている
+                          // はずなので、レイヤーパネル参照を促す）。
+                          if (_previewMask == null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                l10n.filterLensDistortionNoMaskHint,
+                                style: TextStyle(
+                                    fontSize: 10, color: Theme.of(context).colorScheme.error),
+                              ),
+                            ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterLensDistortionStrength,
+                            current.strength,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterLensDistortionOffsetX,
+                            current.lensCenterOffsetX,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, lensCenterOffsetX: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterLensDistortionOffsetY,
+                            current.lensCenterOffsetY,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, lensCenterOffsetY: v),
+                          ),
+                        ],
                         if (current.kind == FilterKind.colorAdjust) ...[
                           _paramSlider(
                             filterService,
@@ -795,6 +868,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.threshold => l10n.filterNameThreshold,
         FilterKind.fisheye => l10n.filterNameFisheye,
         FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
+        FilterKind.lensDistortion => l10n.filterNameLensDistortion,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -861,6 +935,15 @@ class _FilterPanelState extends State<FilterPanel> {
         return _engine.applyFisheye(data, width, height, filter.strength);
       case FilterKind.chromaticAberration:
         return _engine.applyChromaticAberration(data, width, height, filter.strength, 0);
+      case FilterKind.lensDistortion:
+        // lensCenterOffsetX/Yはフル解像度px単位で保存されているため、
+        // 縮小プレビュー用に_previewScale（_loadPreviewBaseで算出した
+        // 縮小率）を掛けて同じ相対位置になるよう変換する。
+        return _engine.applyLensDistortion(
+          data, width, height, filter.strength, _previewMask,
+          centerOffsetX: filter.lensCenterOffsetX * _previewScale,
+          centerOffsetY: filter.lensCenterOffsetY * _previewScale,
+        );
     }
   }
 
@@ -900,6 +983,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.panorama_fish_eye;
       case FilterKind.chromaticAberration:
         return Icons.color_lens;
+      case FilterKind.lensDistortion:
+        return Icons.remove_red_eye;
     }
   }
 
@@ -958,11 +1043,29 @@ class _FilterPanelState extends State<FilterPanel> {
     img.dispose();
     if (byteData == null) return null;
     final data = byteData.buffer.asUint8List();
+    // 眼鏡断層フィルター用：このフレームの選択レイヤー（LayerType.selection）を
+    // フル解像度で単体合成し、マスクとしてisolateへ渡す（他フィルター種別では
+    // applyDrawFilterInIsolate側で無視される）。
+    Uint8List? maskData;
+    if (filter.kind == FilterKind.lensDistortion) {
+      final selectionLayer = ps
+          .layersOf(widget.projectId, widget.sceneId, frameIndex)
+          .where((l) => l.type == model.LayerType.selection)
+          .firstOrNull;
+      if (selectionLayer != null) {
+        final maskKey =
+            ps.tileKeyFor(widget.projectId, widget.sceneId, frameIndex, selectionLayer.id);
+        final maskImg = await tm.compositeLayerToImage(maskKey);
+        final maskByteData = await maskImg.toByteData(format: ui.ImageByteFormat.rawRgba);
+        maskImg.dispose();
+        maskData = maskByteData?.buffer.asUint8List();
+      }
+    }
     // 低スペック端末でのUIスレッドブロックを避けるため、本適用（フル解像度）は
     // バックグラウンドisolateで実行する。プレビュー（縮小画像）は_runFilterのまま
     // メインisolateで即時処理する（isolate起動コストの方が高くつくため）。
-    final result =
-        await compute(applyDrawFilterInIsolate, (data, tm.canvasWidth, tm.canvasHeight, filter));
+    final result = await compute(
+        applyDrawFilterInIsolate, (data, tm.canvasWidth, tm.canvasHeight, filter, maskData));
 
     if (filter.kind == FilterKind.outline) {
       return _applyOutlineToNewLayer(

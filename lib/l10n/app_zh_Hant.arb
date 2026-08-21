@@ -1603,6 +1603,14 @@
       }
     }
   },
+  "layerPanelDefaultSelectionName": "選取{n}",
+  "@layerPanelDefaultSelectionName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "layerPanelDefaultCommonName": "共用{n}",
   "@layerPanelDefaultCommonName": {
     "placeholders": {
@@ -1666,6 +1674,7 @@
   "layerPanelMenuCommonLayer": "共用圖層",
   "layerPanelMenuLineartLayer": "自動上色用線稿圖層",
   "layerPanelMenuAutofillLayer": "自動上色圖層",
+  "layerPanelMenuSelectionLayer": "選取圖層",
   "layerPanelOpacityLabel": "不透明度",
   "layerPanelLockLabel": "鎖定",
   "layerPanelOpacityLockLabel": "鎖定不透明度",
@@ -2081,10 +2090,17 @@
   "filterFisheyeStrength": "彎曲強度",
   "filterNameChromaticAberration": "色差濾鏡",
   "filterChromaticAberrationStrength": "偏移強度",
+  "filterNameLensDistortion": "眼鏡斷層濾鏡",
+  "filterLensDistortionStrength": "鏡片度數（負值為凹透鏡，正值為凸透鏡）",
+  "filterLensDistortionOffsetX": "中心位置微調（左右）",
+  "filterLensDistortionOffsetY": "中心位置微調（上下）",
+  "filterLensDistortionNoMaskHint": "僅套用於在選取圖層上塗抹的範圍。請先在圖層清單中新增「選取圖層」，並塗抹想要變成鏡片的範圍（如眼鏡鏡片部分）。",
   "tipsStockingDenierTitle": "絲襪・褲襪的網眼粗細會隨丹數變化",
   "tipsStockingDenierDesc": "新增的絲襪・褲襪色調依照丹數越低（布料越薄）網格間距越密的設定製作，其中最低的10丹刻意做得非常細密，依顯示或匯出解析度不同甚至可能出現摩爾紋。丹數越高的褲襪間距越寬、看起來更不透明，請依角色的腿部選用合適的一款。",
   "tipsFisheyeChromaticTitle": "用魚眼鏡頭・色差濾鏡營造鏡頭般的變形與色邊",
   "tipsFisheyeChromaticDesc": "魚眼鏡頭濾鏡會讓畫面中心膨脹、邊緣壓縮，重現廣角・魚眼鏡頭拍攝般的彎曲效果。色差濾鏡會讓RGB色版略微錯開，重現廉價鏡頭拍攝時常見的彩色邊緣。兩者都可作為繪圖濾鏡（直接套用於圖層）與演出濾鏡（在時間軸上指定範圍套用）使用。",
+  "tipsLensDistortionTitle": "用選取圖層＋眼鏡斷層濾鏡重現度數鏡片的光學畸變",
+  "tipsLensDistortionDesc": "在圖層清單中新增「選取圖層」，用一般繪圖工具塗抹眼鏡的鏡片部分，即可僅對該塗抹範圍套用眼鏡斷層濾鏡的局部畸變。度數滑桿在負值時呈凹透鏡（近視）般縮小，在正值時呈凸透鏡（遠視）般放大，中心位置也可微調。也可以同時塗抹兩片鏡片並一次套用效果。選取圖層本身不會出現在匯出結果或最終畫面中。",
   "tipsLineArtExtractionTitle": "組合色調調整・二值化・明度轉透明來擷取線稿",
   "tipsLineArtExtractionDesc": "先用色調調整提高對比度，讓線條更突出，再用二值化濾鏡把影像分成純黑白兩色，線條就會與其餘部分清楚分離。二值化的閾值可以用滑桿自由調整，依喜好控制線條的粗細與虛實程度。最後，在圖層的三點選單中使用「明度轉透明（灰階）」，讓白色部分（線條以外）變成透明，就只剩下線稿了。想從照片或草稿中單獨擷取線稿時非常實用。",
   "tipsLineColorUsageTitle": "依用途分開使用線稿顏色，成果會更好",

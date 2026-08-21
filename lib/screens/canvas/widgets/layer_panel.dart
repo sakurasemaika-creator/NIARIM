@@ -85,7 +85,12 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   List<model.Layer> _visibleLayers(List<model.Layer> layers) {
-    final base = layers.where((l) => l.type != model.LayerType.selection).toList();
+    // 選択レイヤー（LayerType.selection）は以前は「内部専用・パネル非表示」
+    // だったが、眼鏡断層フィルター等のマスク編集用にユーザーへ常設表示・
+    // 通常のレイヤーと同様に操作できるようにする方針へ変更したため、
+    // ここでの除外はしない（通常合成からの除外はlayer_compositor.dartの
+    // pixelLayerTypes側で引き続き行う）。
+    final base = layers.toList();
     final visible = base.where((l) => !_isHiddenByCollapsedFolder(l, base)).toList();
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return visible;
@@ -364,7 +369,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           ),
                         ),
                       const SizedBox(width: 4),
-                      _layerTypeIcon(layer.type),
+                      _layerTypeIcon(context, layer.type),
                       const SizedBox(width: 4),
                       _LayerThumbnail(
                         key: ValueKey('${layer.id}-${_thumbRevision[layer.id] ?? 0}'),
@@ -515,7 +520,7 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  Widget _layerTypeIcon(model.LayerType type) {
+  Widget _layerTypeIcon(BuildContext context, model.LayerType type) {
     return switch (type) {
       model.LayerType.autoFillLineart => const Icon(Icons.edit, size: 12, color: Colors.orange),
       model.LayerType.autoFill        => const Icon(Icons.palette, size: 12, color: Colors.green),
@@ -525,6 +530,10 @@ class _LayerPanelState extends State<LayerPanel> {
       model.LayerType.timelineImage   => const Icon(Icons.image, size: 12, color: Colors.teal),
       model.LayerType.timelineVideo   => const Icon(Icons.videocam, size: 12, color: Colors.indigo),
       model.LayerType.watermark       => const Icon(Icons.branding_watermark, size: 12, color: Colors.pink),
+      // 選択レイヤーは他の種別と異なり、固定の意味色ではなく、ユーザーが
+      // カスタマイズできるテーマの選択色（仕様書24）を使う。
+      model.LayerType.selection       =>
+        Icon(Icons.highlight_alt, size: 12, color: Theme.of(context).colorScheme.secondary),
       _ => const SizedBox(width: 12),
     };
   }
@@ -1016,6 +1025,15 @@ class _LayerPanelState extends State<LayerPanel> {
               onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.autoFill,
                   (n) => l10n.layerPanelDefaultAutofillName(n)); },
             ),
+            // 選択レイヤー（眼鏡断層フィルター等、範囲を指定してかけるフィルター用の
+            // マスク専用レイヤー）。通常合成には含まれず、テーマの選択色で
+            // 半透明タイントしてキャンバス上に重ねて表示する。
+            ListTile(
+              leading: Icon(Icons.highlight_alt, color: Theme.of(context).colorScheme.secondary),
+              title: Text(l10n.layerPanelMenuSelectionLayer),
+              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.selection,
+                  (n) => l10n.layerPanelDefaultSelectionName(n)); },
+            ),
             // テキストレイヤーはテキストツールからキャンバスタップで自動生成するため追加しない（仕様書16）
           ],
         ),
@@ -1055,6 +1073,7 @@ class _LayerPanelState extends State<LayerPanel> {
             rangeMode: mode, rangeStart: start, rangeEnd: end, rangeSceneId: rangeSceneId),
         );
         setState(() => _selectedIndex = 0);
+        widget.onLayerSelected?.call(created.id);
       },
     );
   }
@@ -1063,7 +1082,7 @@ class _LayerPanelState extends State<LayerPanel> {
     final layers = context.read<ProjectService>().layersOf(
         widget.projectId, widget.sceneId, widget.frameIndex);
     final visible = _visibleLayers(layers);
-    context.read<ProjectService>().addLayer(
+    final created = context.read<ProjectService>().addLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
@@ -1071,6 +1090,11 @@ class _LayerPanelState extends State<LayerPanel> {
       name: nameBuilder(visible.length + 1),
     );
     setState(() => _selectedIndex = 0);
+    // 追加したレイヤーへそのまま描き始められるよう、実際の描画対象も
+    // 新規レイヤーへ切り替える（フォルダは描画対象になり得ないため除外）。
+    if (type != model.LayerType.folder) {
+      widget.onLayerSelected?.call(created.id);
+    }
   }
 
   /// レイヤー詳細設定（不透明度・ブレンドモード・ロック・クリッピング等）。

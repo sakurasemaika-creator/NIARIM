@@ -1603,6 +1603,14 @@
       }
     }
   },
+  "layerPanelDefaultSelectionName": "选择{n}",
+  "@layerPanelDefaultSelectionName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "layerPanelDefaultCommonName": "公共{n}",
   "@layerPanelDefaultCommonName": {
     "placeholders": {
@@ -1666,6 +1674,7 @@
   "layerPanelMenuCommonLayer": "公共图层",
   "layerPanelMenuLineartLayer": "自动上色用线稿图层",
   "layerPanelMenuAutofillLayer": "自动上色图层",
+  "layerPanelMenuSelectionLayer": "选择图层",
   "layerPanelOpacityLabel": "不透明度",
   "layerPanelLockLabel": "锁定",
   "layerPanelOpacityLockLabel": "锁定不透明度",
@@ -2081,10 +2090,17 @@
   "filterFisheyeStrength": "弯曲强度",
   "filterNameChromaticAberration": "色差滤镜",
   "filterChromaticAberrationStrength": "偏移强度",
+  "filterNameLensDistortion": "眼镜断层滤镜",
+  "filterLensDistortionStrength": "镜片度数（负值为凹透镜，正值为凸透镜）",
+  "filterLensDistortionOffsetX": "中心位置微调（左右）",
+  "filterLensDistortionOffsetY": "中心位置微调（上下）",
+  "filterLensDistortionNoMaskHint": "仅应用于在选择图层上涂抹的范围。请先在图层列表中添加「选择图层」，并涂抹想要变成镜片的范围（如眼镜镜片部分）。",
   "tipsStockingDenierTitle": "丝袜・连裤袜的网眼粗细会随旦数变化",
   "tipsStockingDenierDesc": "新增的丝袜・连裤袜色调按照旦数越低（布料越薄）网格间距越密的设定制作，其中最低的10旦特意做得非常细密，根据显示或导出分辨率的不同甚至可能出现摩尔纹。旦数越高的连裤袜间距越宽、显得更不透明，请根据角色的腿部选用合适的一款。",
   "tipsFisheyeChromaticTitle": "用鱼眼镜头・色差滤镜营造镜头般的畸变与色边",
   "tipsFisheyeChromaticDesc": "鱼眼镜头滤镜会让画面中心膨胀、边缘压缩，重现广角・鱼眼镜头拍摄般的弯曲效果。色差滤镜会让RGB通道略微错开，重现廉价镜头拍摄时常见的彩色边缘。两者都可以作为绘图滤镜（直接应用于图层）和演出滤镜（在时间轴上指定范围应用）使用。",
+  "tipsLensDistortionTitle": "用选择图层＋眼镜断层滤镜再现度数镜片的光学畸变",
+  "tipsLensDistortionDesc": "在图层列表中添加「选择图层」，用普通绘图工具涂抹眼镜的镜片部分，即可只对该涂抹范围应用眼镜断层滤镜的局部畸变。度数滑块在负值时呈凹透镜（近视）般缩小，在正值时呈凸透镜（远视）般放大，中心位置也可微调。也可以同时涂抹两片镜片并一次性应用效果。选择图层本身不会出现在导出结果或最终画面中。",
   "tipsLineArtExtractionTitle": "组合色调调整・二值化・明度转透明来提取线稿",
   "tipsLineArtExtractionDesc": "先用色调调整提高对比度，让线条更突出，再用二值化滤镜把图像分成纯黑白两色，线条就会和其余部分清晰分离。二值化的阈值可以用滑块自由调整，按喜好控制线条的粗细和虚实程度。最后，在图层的三点菜单中使用「明度转透明（灰色）」，让白色部分（线条以外）变为透明，就只剩下线稿了。想从照片或草稿中单独提取线稿时非常实用。",
   "tipsLineColorUsageTitle": "根据用途分开使用线稿颜色，效果会更好",

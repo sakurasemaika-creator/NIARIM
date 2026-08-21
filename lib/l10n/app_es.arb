@@ -1603,6 +1603,14 @@
       }
     }
   },
+  "layerPanelDefaultSelectionName": "Selección{n}",
+  "@layerPanelDefaultSelectionName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "layerPanelDefaultCommonName": "Común{n}",
   "@layerPanelDefaultCommonName": {
     "placeholders": {
@@ -1666,6 +1674,7 @@
   "layerPanelMenuCommonLayer": "Capa común",
   "layerPanelMenuLineartLayer": "Capa de líneas para relleno automático",
   "layerPanelMenuAutofillLayer": "Capa de relleno automático",
+  "layerPanelMenuSelectionLayer": "Capa de selección",
   "layerPanelOpacityLabel": "Opacidad",
   "layerPanelLockLabel": "Bloquear",
   "layerPanelOpacityLockLabel": "Bloquear opacidad",
@@ -2081,10 +2090,17 @@
   "filterFisheyeStrength": "Intensidad de curvatura",
   "filterNameChromaticAberration": "Filtro de aberración cromática",
   "filterChromaticAberrationStrength": "Intensidad del desplazamiento",
+  "filterNameLensDistortion": "Filtro de distorsión de lente",
+  "filterLensDistortionStrength": "Potencia de la lente (negativo = cóncava, positivo = convexa)",
+  "filterLensDistortionOffsetX": "Ajuste fino del centro (horizontal)",
+  "filterLensDistortionOffsetY": "Ajuste fino del centro (vertical)",
+  "filterLensDistortionNoMaskHint": "Solo se aplica a las áreas pintadas en una capa de selección. Primero añada una «Capa de selección» en la lista de capas y pinte el área que desea convertir en lente (por ejemplo, los cristales de unas gafas).",
   "tipsStockingDenierTitle": "Las medias y pantis varían en finura de malla según el denier",
   "tipsStockingDenierDesc": "Las nuevas tramas de medias/pantis en la lista tienen una malla más apretada cuanto menor es el denier (tela más fina); la más baja, 10 denier, es deliberadamente tan fina que puede producir muaré según la resolución de pantalla o exportación. Los pantis de mayor denier usan un espaciado más amplio para un aspecto más opaco, así que elige el que combine con las piernas del personaje.",
   "tipsFisheyeChromaticTitle": "Usa los filtros de ojo de pez y aberración cromática para una distorsión y franjas tipo lente",
   "tipsFisheyeChromaticDesc": "El filtro de ojo de pez abomba el centro del encuadre y comprime los bordes, recreando la curvatura de una toma con lente gran angular o de ojo de pez. El filtro de aberración cromática desplaza ligeramente los canales RGB para recrear las franjas de color de una lente barata. Ambos están disponibles como filtros de dibujo (aplicados directamente a una capa) y como filtros de efecto (aplicados a un rango en la línea de tiempo).",
+  "tipsLensDistortionTitle": "Recrea la distorsión de lentes graduados con una capa de selección y el filtro de distorsión de lente",
+  "tipsLensDistortionDesc": "Añada una «Capa de selección» a la lista de capas y pinte el área de las lentes de unas gafas con cualquier herramienta de dibujo normal; el filtro de distorsión de lente aplicará entonces su deformación local solo a esa área pintada. El control de potencia reduce el área en dirección cóncava (miopía) con valores negativos y la amplía en dirección convexa (hipermetropía) con valores positivos, y también puede ajustar la posición del centro. Puede pintar ambas lentes a la vez y aplicar el efecto a las dos juntas. La capa de selección en sí nunca aparece en las exportaciones ni en la obra final.",
   "tipsLineArtExtractionTitle": "Extrae el dibujo lineal combinando ajuste de color, umbral y transparencia por brillo",
   "tipsLineArtExtractionDesc": "Aumenta el contraste con el ajuste de color para que las líneas destaquen, y luego usa el filtro de umbral para dividir la imagen en blanco y negro puros: las líneas se separan claramente del resto. El control deslizante de umbral te permite ajustar el grosor de la línea y lo tenue o marcada que se ve. Por último, usa \"Transparencia por brillo (gris)\" desde el menú de tres puntos de la capa para volver transparentes las zonas blancas (todo excepto las líneas), dejando solo el dibujo lineal. Útil para extraer un dibujo lineal limpio a partir de una foto o un boceto.",
   "tipsLineColorUsageTitle": "Elige el modo de color de línea según el uso para un mejor acabado",

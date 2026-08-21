@@ -202,6 +202,15 @@ class _CanvasAreaState extends State<CanvasArea> {
   // ProjectServiceの変更を検知して合成し直すために保持する。
   List<Layer> _layers = const [];
 
+  // ─── 選択レイヤー（LayerType.selection、眼鏡断層フィルター等のマスク
+  // 専用レイヤー）のオンスクリーン表示 ────────────────────────────────
+  // pixelLayerTypesから除外されているため通常の合成（_belowImage/
+  // _compositeImage/_aboveImage）には現れない。塗っている最中も内容が
+  // 見えるよう、このレイヤー単体だけを別途合成して保持し、_CanvasPainterで
+  // テーマの選択色によるタイント付きオーバーレイとして最前面付近へ描く。
+  ui.Image? _selectionLayerOverlayImage;
+  bool _isRefreshingSelectionLayerOverlay = false;
+
   Offset? _selectionStart;
   Offset? _selectionEnd;
   List<Offset> _lassoPoints = [];
@@ -393,6 +402,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _belowImage?.dispose();
     _aboveImage?.dispose();
     _selectionOverlayImage?.dispose();
+    _selectionLayerOverlayImage?.dispose();
     _floatingSelectionImage?.dispose();
     for (final img in _onionImages.values) {
       img.dispose();
@@ -2368,6 +2378,39 @@ class _CanvasAreaState extends State<CanvasArea> {
         _compositeImage = img;
         _isCompositing = false;
       });
+      // 現在レイヤーが選択レイヤー自体の場合、たった今描いたストロークを
+      // オーバーレイへも反映する（存在しない・別レイヤーの場合はキャッシュ
+      // 済みの合成結果を返すだけなので軽量）。
+      _refreshSelectionLayerOverlay();
+    });
+  }
+
+  /// 選択レイヤー（LayerType.selection、pixelLayerTypesから除外されて
+  /// いるため通常合成には現れない）が存在する場合、その内容を単体で合成
+  /// してオーバーレイ表示用に保持する。TileManager.compositeLayerToImage
+  /// 自体がレイヤーごとにキャッシュされているため、対象レイヤーの内容が
+  /// 変わっていなければ再デコードは発生しない。
+  Future<void> _refreshSelectionLayerOverlay() async {
+    final selectionLayer = _layers.where((l) => l.type == LayerType.selection).firstOrNull;
+    if (selectionLayer == null) {
+      if (_selectionLayerOverlayImage != null) {
+        final old = _selectionLayerOverlayImage;
+        setState(() => _selectionLayerOverlayImage = null);
+        old?.dispose();
+      }
+      return;
+    }
+    if (_isRefreshingSelectionLayerOverlay) return;
+    _isRefreshingSelectionLayerOverlay = true;
+    final img = await _tileManager.compositeLayerToImage(_tileKeyFor(selectionLayer.id));
+    _isRefreshingSelectionLayerOverlay = false;
+    if (!mounted) {
+      img.dispose();
+      return;
+    }
+    setState(() {
+      _selectionLayerOverlayImage?.dispose();
+      _selectionLayerOverlayImage = img;
     });
   }
 
@@ -2426,6 +2469,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       _aboveImage = aboveImg;
       _isComposingSurroundings = false;
     });
+    // レイヤー一覧が変わった（追加・削除・並び替え・レイヤー切替）ため、
+    // 選択レイヤーのオーバーレイも合わせて確認し直す。
+    _refreshSelectionLayerOverlay();
     // 合成中にさらに変更があった場合に備えて再チェック
     final latest = ps.layersOf(project.id, widget.sceneId, widget.currentFrame);
     if (!_sameLayerList(_layers, latest)) _recomposeSurroundings();
@@ -2604,6 +2650,7 @@ class _CanvasAreaState extends State<CanvasArea> {
                   // 変形操作中は移動前の位置のハイライトが紛らわしいため非表示にする
                   // （ハンドル・浮動画像プレビューの方で現在の状態を示す）。
                   selectionOverlayImage: _selectionTransformActive ? null : _selectionOverlayImage,
+                  selectionLayerOverlayImage: _selectionLayerOverlayImage,
                   lassoPoints: _lassoPoints,
                   subToolStrokePoints: _subToolStrokePoints,
                   activeRuler: widget.activeRuler,
@@ -2681,6 +2728,13 @@ class _CanvasPainter extends CustomPainter {
   final Offset? selectionStart;
   final Offset? selectionEnd;
   final ui.Image? selectionOverlayImage;
+  // 「選択レイヤー」（LayerType.selection、眼鏡断層フィルター等のマスク
+  // 専用レイヤー）の内容。通常の合成（LayerCompositor.pixelLayerTypes）
+  // からは除外され最終成果物には写り込まないが、除外したままだと塗って
+  // いる最中に何も見えず実用にならないため、専用のオーバーレイとして
+  // 常に最前面（選択ツールの確定範囲表示より手前）へ、テーマの選択色
+  // （handleColorと同じ、仕様書24：色固定の廃止）でタイントして重ねる。
+  final ui.Image? selectionLayerOverlayImage;
   final List<Offset> lassoPoints;
   final List<Offset> subToolStrokePoints;
   final Ruler? activeRuler;
@@ -2731,6 +2785,7 @@ class _CanvasPainter extends CustomPainter {
     this.selectionStart,
     this.selectionEnd,
     this.selectionOverlayImage,
+    this.selectionLayerOverlayImage,
     this.activeRuler,
     this.shapeKind = ShapeKind.off,
     this.shapeStart,
@@ -2847,6 +2902,16 @@ class _CanvasPainter extends CustomPainter {
 
     // 現在レイヤーより手前（前面）のレイヤー群
     _drawFrameImage(canvas, drawingRect, aboveImage, Paint());
+
+    // 選択レイヤー（内容そのものは最終成果物に含まれないマスク専用
+    // レイヤーのため、通常合成には含めず、常にテーマの選択色で半透明
+    // タイントして最前面付近へ重ねる。BlendMode.srcInで画像のアルファ形状
+    // はそのまま、色だけをタイント色（透明度50%）へ置き換える）。
+    if (selectionLayerOverlayImage != null) {
+      final tintPaint = Paint()
+        ..colorFilter = ColorFilter.mode(handleColor.withValues(alpha: 0.5), BlendMode.srcIn);
+      _drawFrameImage(canvas, drawingRect, selectionLayerOverlayImage, tintPaint);
+    }
 
     // 確定済み選択範囲（矩形選択・投げ縄選択・自動選択で共通、仕様書03・16・25）
     if (selectionOverlayImage != null) {
@@ -3203,6 +3268,7 @@ class _CanvasPainter extends CustomPainter {
       old.selectionStart != selectionStart ||
       old.selectionEnd != selectionEnd ||
       old.selectionOverlayImage != selectionOverlayImage ||
+      old.selectionLayerOverlayImage != selectionLayerOverlayImage ||
       old.lassoPoints != lassoPoints ||
       old.subToolStrokePoints != subToolStrokePoints ||
       old.activeRuler != activeRuler ||

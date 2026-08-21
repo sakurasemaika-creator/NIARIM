@@ -1603,6 +1603,14 @@
       }
     }
   },
+  "layerPanelDefaultSelectionName": "Sélection{n}",
+  "@layerPanelDefaultSelectionName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "layerPanelDefaultCommonName": "Commun{n}",
   "@layerPanelDefaultCommonName": {
     "placeholders": {
@@ -1666,6 +1674,7 @@
   "layerPanelMenuCommonLayer": "Calque commun",
   "layerPanelMenuLineartLayer": "Calque de trait pour remplissage auto",
   "layerPanelMenuAutofillLayer": "Calque de remplissage auto",
+  "layerPanelMenuSelectionLayer": "Calque de sélection",
   "layerPanelOpacityLabel": "Opacité",
   "layerPanelLockLabel": "Verrouiller",
   "layerPanelOpacityLockLabel": "Verrouiller l'opacité",
@@ -2081,10 +2090,17 @@
   "filterFisheyeStrength": "Intensité de la courbure",
   "filterNameChromaticAberration": "Filtre d'aberration chromatique",
   "filterChromaticAberrationStrength": "Intensité du décalage",
+  "filterNameLensDistortion": "Filtre de distorsion de lentille",
+  "filterLensDistortionStrength": "Puissance de la lentille (négatif = concave, positif = convexe)",
+  "filterLensDistortionOffsetX": "Ajustement fin du centre (horizontal)",
+  "filterLensDistortionOffsetY": "Ajustement fin du centre (vertical)",
+  "filterLensDistortionNoMaskHint": "S'applique uniquement aux zones peintes sur un calque de sélection. Ajoutez d'abord un « Calque de sélection » dans la liste des calques, puis peignez la zone que vous souhaitez transformer en lentille (par exemple les verres de lunettes).",
   "tipsStockingDenierTitle": "La finesse des trames bas/collants varie selon le denier",
   "tipsStockingDenierDesc": "Les nouvelles trames bas/collants de la liste ont un maillage plus serré pour les deniers faibles (tissu plus fin) ; la plus basse, 10 deniers, est volontairement assez fine pour produire du moiré selon la résolution d'affichage ou d'export. Les collants à denier élevé utilisent un espacement plus large pour un rendu plus opaque : choisissez celle qui convient aux jambes du personnage.",
   "tipsFisheyeChromaticTitle": "Utilisez les filtres œil de poisson et aberration chromatique pour une distorsion et un liseré façon objectif",
   "tipsFisheyeChromaticDesc": "Le filtre œil de poisson bombe le centre de l'image et comprime les bords, recréant la courbure d'une prise de vue grand angle ou fisheye. Le filtre d'aberration chromatique décale légèrement les canaux RVB pour recréer le liseré coloré typique d'un objectif bon marché. Les deux sont disponibles à la fois comme filtres de dessin (appliqués directement à un calque) et comme filtres d'effet (appliqués sur une plage de la timeline).",
+  "tipsLensDistortionTitle": "Recréez la distorsion des verres correcteurs avec un calque de sélection et le filtre de distorsion de lentille",
+  "tipsLensDistortionDesc": "Ajoutez un « Calque de sélection » à la liste des calques et peignez la zone des verres de lunettes avec n'importe quel outil de dessin habituel : la déformation locale du filtre de distorsion de lentille s'applique alors uniquement à cette zone peinte. Le curseur de puissance rétrécit la zone dans un sens concave (myopie) pour les valeurs négatives et l'agrandit dans un sens convexe (hypermétropie) pour les valeurs positives ; vous pouvez aussi ajuster finement la position du centre. Vous pouvez peindre les deux verres à la fois et appliquer l'effet aux deux en même temps. Le calque de sélection lui-même n'apparaît jamais dans les exports ni dans l'œuvre finale.",
   "tipsLineArtExtractionTitle": "Extraire un dessin au trait en combinant réglage des couleurs, seuil et transparence par luminosité",
   "tipsLineArtExtractionDesc": "Augmentez le contraste avec le réglage des couleurs pour faire ressortir les traits, puis utilisez le filtre de seuil pour diviser l'image en noir et blanc purs : les traits se séparent nettement du reste. Le curseur de seuil permet d'ajuster librement l'épaisseur du trait et son aspect plus ou moins estompé. Enfin, utilisez « Transparence par luminosité (gris) » dans le menu à trois points du calque pour rendre transparentes les zones blanches (tout sauf les traits), ne laissant que le dessin au trait. Pratique pour extraire un dessin au trait propre à partir d'une photo ou d'une esquisse.",
   "tipsLineColorUsageTitle": "Choisir le mode de couleur du trait selon l’usage améliore le rendu",

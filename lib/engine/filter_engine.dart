@@ -6,9 +6,11 @@ import '../models/filter_def.dart';
 
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
+/// [maskData]はlensDistortion（眼鏡断層フィルター）専用（選択レイヤーを
+/// 単体合成したrawRgba画像）で、それ以外のフィルター種別では無視される。
 Uint8List applyDrawFilterInIsolate(
-    (Uint8List data, int width, int height, FilterDef filter) args) {
-  final (data, width, height, filter) = args;
+    (Uint8List data, int width, int height, FilterDef filter, Uint8List? maskData) args) {
+  final (data, width, height, filter, maskData) = args;
   final engine = FilterEngine();
   return switch (filter.kind) {
     FilterKind.gaussianBlur => engine.applyGaussianBlur(data, width, height, filter.strength),
@@ -59,6 +61,9 @@ Uint8List applyDrawFilterInIsolate(
     FilterKind.fisheye => engine.applyFisheye(data, width, height, filter.strength),
     FilterKind.chromaticAberration =>
       engine.applyChromaticAberration(data, width, height, filter.strength, 0),
+    FilterKind.lensDistortion => engine.applyLensDistortion(
+        data, width, height, filter.strength, maskData,
+        centerOffsetX: filter.lensCenterOffsetX, centerOffsetY: filter.lensCenterOffsetY),
   };
 }
 
@@ -321,6 +326,134 @@ class FilterEngine {
         result[dstIdx + 1] = data[srcIdx + 1];
         result[dstIdx + 2] = data[srcIdx + 2];
         result[dstIdx + 3] = data[srcIdx + 3];
+      }
+    }
+    return result;
+  }
+
+  /// 眼鏡断層フィルター（仕様書28：選択レイヤーで塗った範囲に、度の強い
+  /// レンズの光学屈折を模した局所的な放射状ワープをかける）。
+  /// [maskData]は選択レイヤー（LayerType.selection）を単体合成した
+  /// rawRgba画像（[data]と同じ幅・高さ）で、アルファ値0の画素は対象外、
+  /// それ以外の画素が塗られた範囲となる。[maskData]がnull・全画素透明
+  /// （＝選択レイヤー無し・未使用）の場合は何もしない。
+  ///
+  /// マスクを4連結の連結成分（フラッドフィル）ごとに分け、各成分の
+  /// 重心（＋[centerOffsetX]・[centerOffsetY]による手動オフセット）を
+  /// 中心として、その成分に含まれる画素だけを対象にapplyFisheyeと同じ
+  /// r^exponent型の放射状ワープを適用する（正規化半径は成分内の最大距離
+  /// を1とする＝魚眼フィルターの画像全体版を、成分1つぶんの局所範囲へ
+  /// 縮小適用したもの）。[strength]は-100〜100（0で無効。負で凹レンズ風に
+  /// 縮小、正で凸レンズ風に拡大）。マスクの縁が半透明（フェザリング）の
+  /// 画素は、ワープ後の色と元の色をアルファでブレンドし、境界の継ぎ目を
+  /// 目立たなくする。
+  Uint8List applyLensDistortion(
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+    Uint8List? maskData, {
+    double centerOffsetX = 0,
+    double centerOffsetY = 0,
+  }) {
+    if (maskData == null) return Uint8List.fromList(data);
+    final amount = (strength / 100.0).clamp(-1.0, 1.0);
+    if (amount == 0) return Uint8List.fromList(data);
+    // fisheyeと同じ換算式を符号付きへ拡張：0で1（無変化）、+100で0.15
+    // （凸レンズ・魚眼と同じ最大湾曲）、-100で1.85（凹レンズ・逆方向へ
+    // 同程度の湾曲）。
+    final exponent = (1.0 - amount * 0.85).clamp(0.15, 1.85);
+    final result = Uint8List.fromList(data);
+    final total = width * height;
+    final visited = List<bool>.filled(total, false);
+    final queue = <int>[];
+    for (int start = 0; start < total; start++) {
+      if (visited[start] || maskData[start * 4 + 3] == 0) {
+        visited[start] = true;
+        continue;
+      }
+      // このマスク画素を起点に4連結のフラッドフィルで連結成分を集める。
+      queue
+        ..clear()
+        ..add(start);
+      visited[start] = true;
+      final pixels = <int>[];
+      double sumX = 0, sumY = 0;
+      while (queue.isNotEmpty) {
+        final idx = queue.removeLast();
+        final px = idx % width;
+        final py = idx ~/ width;
+        pixels.add(idx);
+        sumX += px;
+        sumY += py;
+        if (px > 0) {
+          final n = idx - 1;
+          if (!visited[n] && maskData[n * 4 + 3] != 0) {
+            visited[n] = true;
+            queue.add(n);
+          }
+        }
+        if (px < width - 1) {
+          final n = idx + 1;
+          if (!visited[n] && maskData[n * 4 + 3] != 0) {
+            visited[n] = true;
+            queue.add(n);
+          }
+        }
+        if (py > 0) {
+          final n = idx - width;
+          if (!visited[n] && maskData[n * 4 + 3] != 0) {
+            visited[n] = true;
+            queue.add(n);
+          }
+        }
+        if (py < height - 1) {
+          final n = idx + width;
+          if (!visited[n] && maskData[n * 4 + 3] != 0) {
+            visited[n] = true;
+            queue.add(n);
+          }
+        }
+      }
+      if (pixels.isEmpty) continue;
+      final cx = (sumX / pixels.length) + centerOffsetX;
+      final cy = (sumY / pixels.length) + centerOffsetY;
+      double maxR = 1.0;
+      for (final idx in pixels) {
+        final dx = (idx % width) - cx;
+        final dy = (idx ~/ width) - cy;
+        final r = math.sqrt(dx * dx + dy * dy);
+        if (r > maxR) maxR = r;
+      }
+      for (final idx in pixels) {
+        final px = (idx % width).toDouble();
+        final py = (idx ~/ width).toDouble();
+        final nx = (px - cx) / maxR;
+        final ny = (py - cy) / maxR;
+        final r = math.sqrt(nx * nx + ny * ny);
+        double srcX, srcY;
+        if (r <= 1e-6) {
+          srcX = cx;
+          srcY = cy;
+        } else {
+          final newR = math.pow(r, exponent).toDouble();
+          final theta = math.atan2(ny, nx);
+          srcX = cx + math.cos(theta) * newR * maxR;
+          srcY = cy + math.sin(theta) * newR * maxR;
+        }
+        final sx = srcX.round().clamp(0, width - 1);
+        final sy = srcY.round().clamp(0, height - 1);
+        final srcIdx = (sy * width + sx) * 4;
+        final dstIdx = idx * 4;
+        // マスクの縁（フェザリング済みの半透明画素）は、ワープ後の色と
+        // 元の色をアルファでブレンドして継ぎ目を目立たなくする。
+        final maskAlpha = maskData[idx * 4 + 3] / 255.0;
+        for (int c = 0; c < 4; c++) {
+          final warped = data[srcIdx + c];
+          final original = data[dstIdx + c];
+          result[dstIdx + c] =
+              (warped * maskAlpha + original * (1 - maskAlpha)).round().clamp(0, 255);
+        }
       }
     }
     return result;

@@ -49,6 +49,7 @@ class FilterService extends ChangeNotifier {
         FilterDef(id: 'Filter0014', name: '二値化', kind: FilterKind.threshold, thresholdValue: 128),
         FilterDef(id: 'Filter0015', name: '魚眼レンズ', kind: FilterKind.fisheye, strength: 50),
         FilterDef(id: 'Filter0016', name: '色収差', kind: FilterKind.chromaticAberration, strength: 8),
+        FilterDef(id: 'Filter0017', name: '眼鏡断層', kind: FilterKind.lensDistortion, strength: 50),
       ];
 
   Future<void> init() async {
@@ -100,6 +101,8 @@ class FilterService extends ChangeNotifier {
     double? caContrast,
     int? monochromeColor,
     double? thresholdValue,
+    double? lensCenterOffsetX,
+    double? lensCenterOffsetY,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -120,6 +123,8 @@ class FilterService extends ChangeNotifier {
       caContrast: caContrast,
       monochromeColor: monochromeColor,
       thresholdValue: thresholdValue,
+      lensCenterOffsetX: lensCenterOffsetX,
+      lensCenterOffsetY: lensCenterOffsetY,
     );
     notifyListeners();
     _persist();

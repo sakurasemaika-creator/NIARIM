@@ -218,6 +218,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
                 l10n.tipsBlendModeUsageTitle, l10n.tipsBlendModeUsageDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.panorama_fish_eye, iconB: Icons.color_lens),
                 l10n.tipsFisheyeChromaticTitle, l10n.tipsFisheyeChromaticDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.highlight_alt, iconB: Icons.remove_red_eye),
+                l10n.tipsLensDistortionTitle, l10n.tipsLensDistortionDesc),
           ],
         ),
         _TipCategory(

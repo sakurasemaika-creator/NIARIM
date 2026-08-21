@@ -19,6 +19,16 @@
 /// fisheye：魚眼レンズ風の湾曲（[strength]が大きいほど中心が膨らみ、
 /// 周辺が圧縮される）。chromaticAberration：色収差（[strength]が大きいほど
 /// RGBチャンネルの水平方向のずれが大きくなる）。
+/// lensDistortion（眼鏡断層フィルター）：選択レイヤー（LayerType.selection）で
+/// 塗った範囲（連結成分ごと、複数可＝両目分を同時に等）だけを対象に、
+/// 度数の強い眼鏡レンズの光学屈折を模した局所的な放射状ワープをかける。
+/// [strength]は-100〜100（0で無効。負で凹レンズ風に縮小、正で凸レンズ風に
+/// 拡大）。中心点は各連結成分の重心を自動で使うが、[lensCenterOffsetX]・
+/// [lensCenterOffsetY]（px、既定0）でその重心から手動でずらせる
+/// （瞳の位置とレンズ中心を厳密に一致させたい場合の微調整用。全連結成分へ
+/// 同じオフセットを適用する簡略実装）。選択レイヤーが存在しない・
+/// マスクが空の場合、このフィルターは何も行わない（`FilterEngine`
+/// 参照）。
 /// monochrome（単色化）：輝度に応じて指定した1色（[monochromeColor]、既定は
 /// 白＝従来通りのグレースケール）を掛け合わせる。単なる白黒化ではなく、
 /// セピア調・任意の単色トーンなど好きな色で単色化できる。
@@ -27,7 +37,7 @@
 /// （仕様書28）。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
-  retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration,
+  retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration, lensDistortion,
 }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
@@ -83,6 +93,10 @@ class FilterDef {
   final int monochromeColor;
   // 二値化の閾値（thresholdのみ使用）。0〜255、既定128。
   final double thresholdValue;
+  // 眼鏡断層フィルターの中心点手動オフセット（lensDistortionのみ使用）。
+  // 各連結成分の自動重心からのpx単位のずれ、既定0（自動重心そのまま）。
+  final double lensCenterOffsetX;
+  final double lensCenterOffsetY;
 
   const FilterDef({
     required this.id,
@@ -105,6 +119,8 @@ class FilterDef {
     this.caContrast = 0,
     this.monochromeColor = 0xFFFFFFFF,
     this.thresholdValue = 128,
+    this.lensCenterOffsetX = 0,
+    this.lensCenterOffsetY = 0,
   });
 
   FilterDef copyWith({
@@ -128,6 +144,8 @@ class FilterDef {
     double? caContrast,
     int? monochromeColor,
     double? thresholdValue,
+    double? lensCenterOffsetX,
+    double? lensCenterOffsetY,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -150,6 +168,8 @@ class FilterDef {
       caContrast: caContrast ?? this.caContrast,
       monochromeColor: monochromeColor ?? this.monochromeColor,
       thresholdValue: thresholdValue ?? this.thresholdValue,
+      lensCenterOffsetX: lensCenterOffsetX ?? this.lensCenterOffsetX,
+      lensCenterOffsetY: lensCenterOffsetY ?? this.lensCenterOffsetY,
     );
   }
 
@@ -174,6 +194,8 @@ class FilterDef {
         'caContrast': caContrast,
         'monochromeColor': monochromeColor,
         'thresholdValue': thresholdValue,
+        'lensCenterOffsetX': lensCenterOffsetX,
+        'lensCenterOffsetY': lensCenterOffsetY,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -200,5 +222,7 @@ class FilterDef {
         vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
         monochromeColor: j['monochromeColor'] as int? ?? 0xFFFFFFFF,
         thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
+        lensCenterOffsetX: (j['lensCenterOffsetX'] as num?)?.toDouble() ?? 0,
+        lensCenterOffsetY: (j['lensCenterOffsetY'] as num?)?.toDouble() ?? 0,
       );
 }

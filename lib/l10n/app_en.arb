@@ -1603,6 +1603,14 @@
       }
     }
   },
+  "layerPanelDefaultSelectionName": "Selection{n}",
+  "@layerPanelDefaultSelectionName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "layerPanelDefaultCommonName": "Common{n}",
   "@layerPanelDefaultCommonName": {
     "placeholders": {
@@ -1666,6 +1674,7 @@
   "layerPanelMenuCommonLayer": "Common layer",
   "layerPanelMenuLineartLayer": "Auto-fill lineart layer",
   "layerPanelMenuAutofillLayer": "Auto-fill layer",
+  "layerPanelMenuSelectionLayer": "Selection layer",
   "layerPanelOpacityLabel": "Opacity",
   "layerPanelLockLabel": "Lock",
   "layerPanelOpacityLockLabel": "Lock opacity",
@@ -2081,10 +2090,17 @@
   "filterFisheyeStrength": "Curvature strength",
   "filterNameChromaticAberration": "Chromatic Aberration Filter",
   "filterChromaticAberrationStrength": "Shift strength",
+  "filterNameLensDistortion": "Lens Distortion Filter",
+  "filterLensDistortionStrength": "Lens power (negative = concave, positive = convex)",
+  "filterLensDistortionOffsetX": "Center fine-tune (horizontal)",
+  "filterLensDistortionOffsetY": "Center fine-tune (vertical)",
+  "filterLensDistortionNoMaskHint": "Only applies to areas painted on a Selection layer. First add a \"Selection layer\" in the layer list and paint the area you want to turn into a lens (e.g. the lenses of a pair of glasses).",
   "tipsStockingDenierTitle": "Stocking/tights tones vary in mesh fineness by denier",
   "tipsStockingDenierDesc": "The new stocking/tights tones in the tone list have tighter mesh spacing for lower denier values (thinner fabric) — the lowest, 10 denier, is deliberately fine enough that it can produce moiré depending on display or export resolution. Higher denier tights use wider spacing for a more opaque look, so pick the one that matches the character's legs.",
   "tipsFisheyeChromaticTitle": "Use the fisheye and chromatic aberration filters for a lens-like distortion and fringing",
   "tipsFisheyeChromaticDesc": "The fisheye filter bulges the center of the frame and compresses the edges, recreating the curvature of a wide-angle or fisheye lens shot. The chromatic aberration filter shifts the RGB channels slightly to recreate the color fringing you'd get from a cheap lens. Both are available as drawing filters (applied directly to a layer) and as effect filters (applied to a range on the timeline).",
+  "tipsLensDistortionTitle": "Recreate the distortion of prescription lenses with a Selection layer + Lens Distortion filter",
+  "tipsLensDistortionDesc": "Add a \"Selection layer\" to the layer list and paint the lens area of a pair of glasses with any normal drawing tool — the Lens Distortion filter's local warp then applies only to that painted area. The power slider shrinks the area in a concave (myopia) direction for negative values and magnifies it in a convex (hyperopia) direction for positive values, and you can also fine-tune the center position. You can paint both lenses at once and apply the effect to both together. The Selection layer itself never appears in exports or the final artwork.",
   "tipsLineArtExtractionTitle": "Extract line art by combining color adjust, threshold, and brightness-to-alpha",
   "tipsLineArtExtractionDesc": "Boost contrast with color adjust to make the lines stand out, then use the threshold filter to split the image into pure black and white — the lines separate cleanly from everything else. The threshold slider lets you fine-tune the line thickness and how faint or bold it looks. Finally, use \"Brightness to alpha (gray)\" from the layer's three-dot menu to make the white areas (everything but the lines) transparent, leaving just the line art. Handy for pulling clean line art out of a photo or rough sketch.",
   "tipsLineColorUsageTitle": "Pick line-color mode by purpose for a better finish",
