@@ -1003,11 +1003,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
         onClose: () => setState(() => _showOnionSkinPanel = false),
       );
 
-  Widget _rulerPanel() => RulerPanel(
-        activeRuler: _activeRuler,
-        onRulerChanged: _setActiveRulerWithUndo,
-        onClose: () => setState(() => _showRulerPanel = false),
-      );
+  Widget _rulerPanel() {
+    final tileManager = context.read<ProjectService>().tileManagerOf(widget.projectId);
+    return RulerPanel(
+      activeRuler: _activeRuler,
+      onRulerChanged: _setActiveRulerWithUndo,
+      onClose: () => setState(() => _showRulerPanel = false),
+      canvasWidth: tileManager.canvasWidth,
+      canvasHeight: tileManager.canvasHeight,
+    );
+  }
 
   /// CanvasArea側のハンドルドラッグによるライブ更新・Undo/Redoの巻き戻し反映用。
   /// ドラッグ確定時のUndo登録自体はcanvas_area.dart側（_handleRulerUp）が

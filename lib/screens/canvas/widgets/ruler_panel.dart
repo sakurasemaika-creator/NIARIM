@@ -7,12 +7,21 @@ class RulerPanel extends StatelessWidget {
   final Ruler? activeRuler;
   final ValueChanged<Ruler?> onRulerChanged;
   final VoidCallback onClose;
+  // 新規定規の初期位置（中心・消失点等）を実際のキャンバスサイズに
+  // 合わせて配置するために必要（従来は1920×1080固定を前提にした座標を
+  // 直接埋め込んでいたため、それ以外のキャンバスサイズのプロジェクトでは
+  // 定規が画面外に配置され「タップしても何も表示されない」状態になって
+  // いた）。
+  final int canvasWidth;
+  final int canvasHeight;
 
   const RulerPanel({
     super.key,
     required this.activeRuler,
     required this.onRulerChanged,
     required this.onClose,
+    required this.canvasWidth,
+    required this.canvasHeight,
   });
 
   @override
@@ -122,15 +131,23 @@ class RulerPanel extends StatelessWidget {
     );
   }
 
+  /// 新規定規の初期配置。元々は1920×1080キャンバスを基準に設計された
+  /// 絶対座標（中心(960,540)・消失点(200,540)等）だったため、実際の
+  /// キャンバスサイズ（`canvasWidth`・`canvasHeight`。プロジェクトの
+  /// キャンバスサイズ設定や描画領域倍率により1920×1080以外にもなり得る）
+  /// に対する比率でスケーリングし、どのキャンバスサイズでも定規が
+  /// キャンバス内に収まる位置に配置されるようにする。
   Ruler _defaultRuler(RulerType type) {
-    final center = const Offset(960, 540); // キャンバス中央
+    final sx = canvasWidth / 1920.0;
+    final sy = canvasHeight / 1080.0;
+    final center = Offset(canvasWidth / 2, canvasHeight / 2);
     return switch (type) {
       RulerType.line => Ruler(
           type: type, position: center,
           settings: const RulerSettings()),
       RulerType.ellipse => Ruler(
           type: type, position: center,
-          settings: const RulerSettings(radiusX: 200, radiusY: 120)),
+          settings: RulerSettings(radiusX: 200 * sx, radiusY: 120 * sy)),
       RulerType.radial => Ruler(
           type: type, position: center,
           settings: const RulerSettings(divisions: 12)),
@@ -140,15 +157,15 @@ class RulerPanel extends StatelessWidget {
       RulerType.twoPointPerspective => Ruler(
           type: type, position: center,
           settings: RulerSettings(
-            vanishingPoint1: const Offset(200, 540),
-            vanishingPoint2: const Offset(1720, 540),
+            vanishingPoint1: Offset(200 * sx, 540 * sy),
+            vanishingPoint2: Offset(1720 * sx, 540 * sy),
           )),
       RulerType.threePointPerspective => Ruler(
           type: type, position: center,
           settings: RulerSettings(
-            vanishingPoint1: const Offset(200, 540),
-            vanishingPoint2: const Offset(1720, 540),
-            vanishingPoint3: const Offset(960, 100),
+            vanishingPoint1: Offset(200 * sx, 540 * sy),
+            vanishingPoint2: Offset(1720 * sx, 540 * sy),
+            vanishingPoint3: Offset(960 * sx, 100 * sy),
           )),
       _ => Ruler(type: type, position: center, settings: const RulerSettings()),
     };
