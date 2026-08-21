@@ -6,12 +6,12 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/tips/tips_screen.dart' show allTipEntries;
 import '../services/advertising_service.dart';
-import '../services/premium_service.dart';
 
 /// 処理中ダイアログ（仕様書13：フィルター適用／動画書き出し／GIF生成／
 /// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に正方形広告）。
-/// プレミアム会員は広告が表示されない分のスペースへ、10秒おきにランダムで
-/// Tipsを表示する（無料会員は正方形広告でスペースが取られるため対象外）。
+/// 会員種別に関わらず、10秒おきにランダムでTipsを表示する。無料会員は
+/// 正方形広告の下に続けてTipsカードを表示する（縦に並ぶ分、内容全体を
+/// スクロール可能にしている）。
 class ProgressDialog extends StatefulWidget {
   final String title;
   final double progress;
@@ -51,13 +51,12 @@ class _ProgressDialogState extends State<ProgressDialog> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AdvertisingService>().showSquareAd();
-      _startTipRotationIfNeeded();
+      _startTipRotation();
     });
   }
 
-  void _startTipRotationIfNeeded() {
+  void _startTipRotation() {
     if (!mounted) return;
-    if (!context.read<PremiumService>().isPremium) return;
     final l10n = AppLocalizations.of(context)!;
     final tips = allTipEntries(l10n);
     if (tips.isEmpty) return;
@@ -87,78 +86,82 @@ class _ProgressDialogState extends State<ProgressDialog> {
     final tip = (tips != null && tipIndex != null && tipIndex < tips.length) ? tips[tipIndex] : null;
 
     return AlertDialog(
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(value: widget.progress),
-          const SizedBox(height: 8),
-          Text('${(widget.progress * 100).round()}%'),
-          if (widget.subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(widget.subtitle!,
-                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ],
-          // プレミアム会員限定：広告の代わりにTipsを表示するスペースを使う。
-          if (tip != null) ...[
+      // 無料会員は広告＋Tipsカードが縦に並び内容が長くなるため、画面が
+      // 小さい端末でもオーバーフローしないようスクロール可能にする。
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: Container(
-                key: ValueKey(tip.$1),
-                width: 250,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.lightbulb_outline, size: 14, color: Theme.of(context).colorScheme.primary),
-                        const SizedBox(width: 4),
-                        Text(l10n.progressDialogTipLabel,
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary)),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 2),
-                    Text(tip.$2,
-                        style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                        maxLines: 3, overflow: TextOverflow.ellipsis),
-                  ],
-                ),
-              ),
-            ),
-          ] else if (adService.shouldShowAds) ...[
-            const SizedBox(height: 16),
-            if (ad == null)
-              Container(
-                width: 250,
-                height: 250,
-                color: Colors.grey[800],
-                child: Center(
-                  child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey)),
-                ),
-              )
-            else
-              SizedBox(
-                width: ad.size.width.toDouble(),
-                height: ad.size.height.toDouble(),
-                child: AdWidget(ad: ad),
-              ),
-          ],
-          if (widget.cancelHint != null) ...[
+            LinearProgressIndicator(value: widget.progress),
             const SizedBox(height: 8),
-            Text(widget.cancelHint!,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            Text('${(widget.progress * 100).round()}%'),
+            if (widget.subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(widget.subtitle!,
+                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ],
+            if (adService.shouldShowAds) ...[
+              const SizedBox(height: 16),
+              if (ad == null)
+                Container(
+                  width: 250,
+                  height: 250,
+                  color: Colors.grey[800],
+                  child: Center(
+                    child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey)),
+                  ),
+                )
+              else
+                SizedBox(
+                  width: ad.size.width.toDouble(),
+                  height: ad.size.height.toDouble(),
+                  child: AdWidget(ad: ad),
+                ),
+            ],
+            if (tip != null) ...[
+              const SizedBox(height: 16),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Container(
+                  key: ValueKey(tip.$1),
+                  width: 250,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.lightbulb_outline, size: 14, color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 4),
+                          Text(l10n.progressDialogTipLabel,
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(tip.$2,
+                          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          maxLines: 3, overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            if (widget.cancelHint != null) ...[
+              const SizedBox(height: 8),
+              Text(widget.cancelHint!,
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ],
           ],
-        ],
+        ),
       ),
       actions: widget.onCancel == null
           ? null
