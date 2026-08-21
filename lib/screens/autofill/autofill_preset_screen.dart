@@ -300,14 +300,22 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
   Future<void> _pickAndCropThumbnail(AutofillPreset preset) async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    // withData: trueでバイト列も取得しておく。Web版はdart:ioのFileが
+    // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ
+    // 渡す（以前はpathのみを使っており、Web版では常にFile読み込みに
+    // 失敗して「読み込み中のままぐるぐる止まる」不具合があった）。
+    final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.first;
+    if (picked.path == null && picked.bytes == null) return;
     if (!mounted) return;
     // 画像選択後、1:1の正方形へトリミング（位置・大きさ・角度はユーザーが
     // ドラッグ・ピンチ・回転ジェスチャーで調整できる、仕様書20）。
     final cropped = await showDialog<Uint8List>(
       context: context,
-      builder: (_) => SquareImageCropDialog(imagePath: result.files.first.path!),
+      builder: (_) => picked.path != null
+          ? SquareImageCropDialog(imagePath: picked.path!)
+          : SquareImageCropDialog(imageBytes: picked.bytes!),
     );
     if (cropped == null || !mounted) return;
     final service = context.read<AutofillPresetService>();

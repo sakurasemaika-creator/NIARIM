@@ -16,9 +16,15 @@ const int _kOutputSize = 512;
 /// プリセットのサムネイル画像設定）。ドラッグで位置調整、ピンチで
 /// 拡大縮小、2本指回転で角度調整ができる。戻り値はトリミング結果の
 /// PNGバイト列（キャンセル時はnull）。
+/// [imagePath]（デスクトップ/モバイル）と[imageBytes]（Web版：dart:ioの
+/// Fileが使えないため、選択した画像のバイト列を直接渡す。以前はWeb版でも
+/// 常にimagePathを使おうとしており、File(...)の読み込みが失敗して
+/// 「読み込み中のままずっと止まる」不具合があった）のどちらか一方を指定する。
 class SquareImageCropDialog extends StatefulWidget {
-  final String imagePath;
-  const SquareImageCropDialog({super.key, required this.imagePath});
+  final String? imagePath;
+  final Uint8List? imageBytes;
+  const SquareImageCropDialog({super.key, this.imagePath, this.imageBytes})
+      : assert(imagePath != null || imageBytes != null);
 
   @override
   State<SquareImageCropDialog> createState() => _SquareImageCropDialogState();
@@ -29,6 +35,9 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
   double _scale = 1.0;
   double _rotation = 0.0;
   Offset _offset = Offset.zero;
+  // 読み込みに失敗した場合、読み込み中のままぐるぐる止まって見えないよう
+  // エラーとして明示する。
+  bool _loadFailed = false;
 
   double _baseScale = 1.0;
   double _baseRotation = 0.0;
@@ -42,21 +51,28 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
   }
 
   Future<void> _load() async {
-    final bytes = await File(widget.imagePath).readAsBytes();
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    if (!mounted) {
-      frame.image.dispose();
-      return;
+    try {
+      // Web版はdart:ioのFileが使えないため、bytesが渡されていればそちらを
+      // 優先する（imagePathのみが渡されるのはデスクトップ/モバイルのみの
+      // 想定）。
+      final bytes = widget.imageBytes ?? await File(widget.imagePath!).readAsBytes();
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      if (!mounted) {
+        frame.image.dispose();
+        return;
+      }
+      final iw = frame.image.width.toDouble();
+      final ih = frame.image.height.toDouble();
+      // 初期状態：画像の短辺がクロップ枠を覆うように拡大率を決める
+      final initialScale = _kCropViewSize / (iw < ih ? iw : ih);
+      setState(() {
+        _image = frame.image;
+        _scale = initialScale;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadFailed = true);
     }
-    final iw = frame.image.width.toDouble();
-    final ih = frame.image.height.toDouble();
-    // 初期状態：画像の短辺がクロップ枠を覆うように拡大率を決める
-    final initialScale = _kCropViewSize / (iw < ih ? iw : ih);
-    setState(() {
-      _image = frame.image;
-      _scale = initialScale;
-    });
   }
 
   @override
@@ -118,7 +134,17 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
             Text(l10n.autofillThumbnailCropDialogHint,
                 style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            _image == null
+            _loadFailed
+                ? SizedBox(
+                    width: _kCropViewSize,
+                    height: _kCropViewSize,
+                    child: Center(
+                      child: Text(l10n.autofillThumbnailCropLoadFailed,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+                    ),
+                  )
+                : _image == null
                 ? const SizedBox(
                     width: _kCropViewSize,
                     height: _kCropViewSize,

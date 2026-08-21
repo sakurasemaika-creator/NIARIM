@@ -224,34 +224,78 @@ class PremiumScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [scheme.primaryContainer, scheme.surface],
         ),
+        boxShadow: [
+          BoxShadow(color: scheme.primary.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 8)),
+        ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: scheme.primary, shape: BoxShape.circle),
-            child: Icon(Icons.workspace_premium_rounded, color: scheme.onPrimary, size: 26),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: scheme.primary.withValues(alpha: 0.4), blurRadius: 10)],
+                ),
+                child: Icon(Icons.workspace_premium_rounded, color: scheme.onPrimary, size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.premiumHeroTitle,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                    const SizedBox(height: 4),
+                    Text(l10n.premiumHeroSubtitle,
+                        style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.premiumHeroTitle,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
-                const SizedBox(height: 4),
-                Text(l10n.premiumHeroSubtitle,
-                    style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
-              ],
-            ),
+          const SizedBox(height: 18),
+          // 「何が変わるか」を一目で伝える3つのハイライト（デザイン強化：
+          // 文章だけでなく、視覚的な塊として要点を先に見せる）。
+          Row(
+            children: [
+              Expanded(child: _heroHighlight(context, Icons.all_inclusive, l10n.premiumHeroHighlightDuration)),
+              const SizedBox(width: 8),
+              Expanded(child: _heroHighlight(context, Icons.hide_image_outlined, l10n.premiumHeroHighlightWatermark)),
+              const SizedBox(width: 8),
+              Expanded(child: _heroHighlight(context, Icons.tune, l10n.premiumHeroHighlightGrading)),
+            ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _heroHighlight(BuildContext context, IconData icon, String label) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      decoration: BoxDecoration(
+        color: scheme.surface.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 18, color: scheme.primary),
+          const SizedBox(height: 6),
+          Text(label,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: scheme.onSurfaceVariant, height: 1.3)),
         ],
       ),
     );
@@ -284,32 +328,59 @@ class PremiumScreen extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      shadowColor: scheme.primary.withValues(alpha: 0.2),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4))),
       child: Table(
         border: TableBorder(
-          horizontalInside: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          horizontalInside: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)),
         ),
         columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)},
         children: [
           TableRow(
             decoration: BoxDecoration(color: scheme.surfaceContainerHighest),
             children: [
-              Padding(padding: const EdgeInsets.all(10), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
-              Padding(padding: const EdgeInsets.all(10), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+              Padding(padding: const EdgeInsets.all(12), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+              Padding(padding: const EdgeInsets.all(12), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.onSurfaceVariant))),
               Padding(
-                padding: const EdgeInsets.all(10),
-                child: Text(l10n.premiumComparisonPremium,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.primary)),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Icon(Icons.workspace_premium_rounded, size: 14, color: scheme.primary),
+                    const SizedBox(height: 2),
+                    Text(l10n.premiumComparisonPremium,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.primary)),
+                  ],
+                ),
               ),
             ],
           ),
-          ...items.map((item) => TableRow(children: [
-            Padding(padding: const EdgeInsets.all(10), child: Text(item.$1, style: const TextStyle(fontSize: 12))),
-            Padding(padding: const EdgeInsets.all(10), child: Center(child: _comparisonCell(context, item.$2))),
-            Padding(padding: const EdgeInsets.all(10), child: Center(child: _comparisonCell(context, item.$3))),
-          ])),
+          // 各行のプレミアム列だけ淡くテーマの差し色を敷き、無料/プレミアムの
+          // 差が視線を動かさなくても分かるようにする（デザイン強化）。
+          ...items.asMap().entries.map((entry) {
+            final i = entry.key;
+            final item = entry.value;
+            final zebra = i.isOdd ? scheme.surfaceContainerLowest : null;
+            return TableRow(children: [
+              Container(
+                color: zebra,
+                padding: const EdgeInsets.all(12),
+                child: Text(item.$1, style: const TextStyle(fontSize: 12)),
+              ),
+              Container(
+                color: zebra,
+                padding: const EdgeInsets.all(12),
+                child: Center(child: _comparisonCell(context, item.$2)),
+              ),
+              Container(
+                color: Color.alphaBlend(scheme.primary.withValues(alpha: 0.05), zebra ?? scheme.surface),
+                padding: const EdgeInsets.all(12),
+                child: Center(child: _comparisonCell(context, item.$3)),
+              ),
+            ]);
+          }),
         ],
       ),
     );

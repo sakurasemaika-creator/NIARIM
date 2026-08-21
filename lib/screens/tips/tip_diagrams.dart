@@ -6,12 +6,20 @@ import 'package:flutter/material.dart';
 /// 各Tipの要点だけを表す簡易的な模式図をCanvas描画で表現することで、
 /// 画像アセットを一切使わずに済ませている（ベクター描画はテーマの
 /// 色にも自動追従する）。
+///
+/// 2026年8月20日、「複数のTipsで図解を使い回さず、それぞれに適した図に
+/// してほしい」という要望を受けて全面刷新した。専用の模式図を持つTip
+/// （[TipDiagramKind.clipDuplicate]等）に加え、「アイコンA×アイコンBの
+/// 組み合わせ」という頻出パターンには[TipDiagramKind.pairCombo]、
+/// 「Aだったものが矢印を経てBになる」という頻出パターンには
+/// [TipDiagramKind.flowArrow]という2つの汎用テンプレートを用意し、
+/// Tip側でアイコンの組み合わせを指定することで、55件すべてが重複なく
+/// 内容に即した組み合わせになるようにした（[TipDiagramSpec]参照）。
 enum TipDiagramKind {
   clipDuplicate,
   textCaption,
   autofillPreset,
   brushFavorite,
-  onionSkin,
   pressureCurve,
   effectFilter,
   cameraKeyframe,
@@ -27,40 +35,57 @@ enum TipDiagramKind {
   performanceGauge,
   deviceTransfer,
   toolbarCustomize,
+  radialVignette,
+  mirrorLayout,
+  // 汎用テンプレート（iconA・iconBをTip側で指定する）
+  pairCombo,
+  flowArrow,
+}
+
+/// 1件のTipsに紐づく図解の指定。専用の模式図を持つ[kind]は[iconA]等を
+/// 使わない。[TipDiagramKind.pairCombo]・[TipDiagramKind.flowArrow]は
+/// [iconA]・[iconB]（と[separator]）が必須。[TipDiagramKind.gestureShortcut]
+/// は[iconA]で中央のアイコンを、[TipDiagramKind.pressureCurve]は
+/// [iconA]（省略可）でグラフ右上に添えるバッジアイコンを上書きできる。
+class TipDiagramSpec {
+  final TipDiagramKind kind;
+  final IconData? iconA;
+  final IconData? iconB;
+  final String separator;
+  const TipDiagramSpec(this.kind, {this.iconA, this.iconB, this.separator = '×'});
 }
 
 class TipDiagram extends StatelessWidget {
-  final TipDiagramKind kind;
-  const TipDiagram(this.kind, {super.key});
+  final TipDiagramSpec spec;
+  const TipDiagram(this.spec, {super.key});
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return CustomPaint(
       size: const Size(double.infinity, 96),
-      painter: _TipDiagramPainter(kind, scheme),
+      painter: _TipDiagramPainter(spec, scheme),
     );
   }
 }
 
 class _TipDiagramPainter extends CustomPainter {
-  final TipDiagramKind kind;
+  final TipDiagramSpec spec;
   final ColorScheme scheme;
-  _TipDiagramPainter(this.kind, this.scheme);
+  _TipDiagramPainter(this.spec, this.scheme);
 
   @override
   void paint(Canvas canvas, Size size) {
-    switch (kind) {
+    switch (spec.kind) {
       case TipDiagramKind.clipDuplicate: _paintClipDuplicate(canvas, size);
       case TipDiagramKind.textCaption: _paintTextCaption(canvas, size);
       case TipDiagramKind.autofillPreset: _paintAutofillPreset(canvas, size);
       case TipDiagramKind.brushFavorite: _paintBrushFavorite(canvas, size);
-      case TipDiagramKind.onionSkin: _paintOnionSkin(canvas, size);
-      case TipDiagramKind.pressureCurve: _paintPressureCurve(canvas, size);
+      case TipDiagramKind.pressureCurve: _paintPressureCurve(canvas, size, badge: spec.iconA);
       case TipDiagramKind.effectFilter: _paintEffectFilter(canvas, size);
       case TipDiagramKind.cameraKeyframe: _paintCameraKeyframe(canvas, size);
       case TipDiagramKind.exportFormat: _paintExportFormat(canvas, size);
-      case TipDiagramKind.gestureShortcut: _paintGestureShortcut(canvas, size);
+      case TipDiagramKind.gestureShortcut: _paintGestureShortcut(canvas, size, icon: spec.iconA ?? Icons.touch_app);
       case TipDiagramKind.timelineMarker: _paintTimelineMarker(canvas, size);
       case TipDiagramKind.pcDexLayout: _paintPcDexLayout(canvas, size);
       case TipDiagramKind.lineArtExtraction: _paintLineArtExtraction(canvas, size);
@@ -71,12 +96,20 @@ class _TipDiagramPainter extends CustomPainter {
       case TipDiagramKind.performanceGauge: _paintPerformanceGauge(canvas, size);
       case TipDiagramKind.deviceTransfer: _paintDeviceTransfer(canvas, size);
       case TipDiagramKind.toolbarCustomize: _paintToolbarCustomize(canvas, size);
+      case TipDiagramKind.radialVignette: _paintRadialVignette(canvas, size);
+      case TipDiagramKind.mirrorLayout: _paintMirrorLayout(canvas, size);
+      case TipDiagramKind.pairCombo: _paintPairCombo(canvas, size, spec.iconA!, spec.iconB!, spec.separator);
+      case TipDiagramKind.flowArrow: _paintFlowArrow(canvas, size, spec.iconA!, spec.iconB!);
     }
   }
 
   @override
   bool shouldRepaint(covariant _TipDiagramPainter oldDelegate) =>
-      oldDelegate.kind != kind || oldDelegate.scheme != scheme;
+      oldDelegate.spec.kind != spec.kind ||
+      oldDelegate.spec.iconA != spec.iconA ||
+      oldDelegate.spec.iconB != spec.iconB ||
+      oldDelegate.spec.separator != spec.separator ||
+      oldDelegate.scheme != scheme;
 
   // ── 共通パーツ ──────────────────────────────────────────────
   Paint get _fillPrimary => Paint()..color = scheme.primary;
@@ -129,7 +162,52 @@ class _TipDiagramPainter extends CustomPainter {
     canvas.drawPath(path, paint);
   }
 
-  // ── 各Tipの模式図 ────────────────────────────────────────────
+  // ── 汎用テンプレート ─────────────────────────────────────────
+
+  /// 「AとBを組み合わせる」パターン用の汎用図解：左にA、右にB、中央に
+  /// 組み合わせ記号（既定は×）を配した2つの円アイコン。多くのTipsが
+  /// 「○○×○○で△△」という組み合わせ活用法のため、最も出番の多い
+  /// テンプレート。
+  void _paintPairCombo(Canvas canvas, Size size, IconData a, IconData b, String separator) {
+    final cy = size.height / 2;
+    final leftX = size.width * 0.24;
+    final rightX = size.width * 0.76;
+    final r = size.height * 0.32;
+    canvas.drawCircle(Offset(leftX, cy), r, _fillPrimaryFaint);
+    canvas.drawCircle(Offset(leftX, cy), r, _strokePrimary);
+    _drawIcon(canvas, a, Offset(leftX, cy), size: r * 0.95, color: scheme.primary);
+    final rightFill = Paint()..color = scheme.tertiary.withValues(alpha: 0.25);
+    final rightStroke = Paint()
+      ..color = scheme.tertiary
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8;
+    canvas.drawCircle(Offset(rightX, cy), r, rightFill);
+    canvas.drawCircle(Offset(rightX, cy), r, rightStroke);
+    _drawIcon(canvas, b, Offset(rightX, cy), size: r * 0.95, color: scheme.tertiary);
+    final tp = TextPainter(textDirection: TextDirection.ltr)
+      ..text = TextSpan(
+          text: separator,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: scheme.onSurfaceVariant))
+      ..layout();
+    tp.paint(canvas, Offset(size.width / 2 - tp.width / 2, cy - tp.height / 2));
+  }
+
+  /// 「AだったものをBにする／Bで使い回す」パターン用の汎用図解：左に
+  /// 控えめなAのアイコン、矢印、右に強調されたBのアイコン。
+  void _paintFlowArrow(Canvas canvas, Size size, IconData a, IconData b) {
+    final cy = size.height / 2;
+    final leftX = size.width * 0.22;
+    final rightX = size.width * 0.78;
+    final r = size.height * 0.3;
+    canvas.drawCircle(Offset(leftX, cy), r, _strokeOutline);
+    _drawIcon(canvas, a, Offset(leftX, cy), size: r * 0.85, color: scheme.onSurfaceVariant);
+    _arrow(canvas, Offset(leftX + r + 8, cy), Offset(rightX - r - 8, cy), _strokePrimary);
+    canvas.drawCircle(Offset(rightX, cy), r, _fillPrimaryFaint);
+    canvas.drawCircle(Offset(rightX, cy), r, _strokePrimary);
+    _drawIcon(canvas, b, Offset(rightX, cy), size: r * 0.85, color: scheme.primary);
+  }
+
+  // ── 各Tipの模式図（専用）────────────────────────────────────
 
   /// タイムラインの帯＋クリップ1つ→矢印→複製されたクリップ。
   void _paintClipDuplicate(Canvas canvas, Size size) {
@@ -177,17 +255,10 @@ class _TipDiagramPainter extends CustomPainter {
     _star(canvas, Offset(size.width * 0.78, size.height * 0.3), 12, Paint()..color = scheme.tertiary);
   }
 
-  /// 半透明で重なる3枚の丸（前後フレームを透かして見る）。
-  void _paintOnionSkin(Canvas canvas, Size size) {
-    final cy = size.height / 2;
-    final r = size.height * 0.32;
-    canvas.drawCircle(Offset(size.width * 0.38, cy), r, Paint()..color = scheme.primary.withValues(alpha: 0.25));
-    canvas.drawCircle(Offset(size.width * 0.5, cy), r, Paint()..color = scheme.primary.withValues(alpha: 0.5));
-    canvas.drawCircle(Offset(size.width * 0.62, cy), r, _fillPrimary);
-  }
-
-  /// 軸＋曲線＋制御点2つ（筆圧カーブ）。
-  void _paintPressureCurve(Canvas canvas, Size size) {
+  /// 軸＋曲線＋制御点2つ（筆圧カーブ・トーンカーブ等）。[badge]を指定すると
+  /// 右上に小さくアイコンを添え、同じ「曲線グラフ」構図でも他のTipと
+  /// 見分けが付くようにする。
+  void _paintPressureCurve(Canvas canvas, Size size, {IconData? badge}) {
     final origin = Offset(size.width * 0.24, size.height * 0.82);
     final top = Offset(size.width * 0.24, size.height * 0.14);
     final right = Offset(size.width * 0.82, size.height * 0.82);
@@ -200,9 +271,13 @@ class _TipDiagramPainter extends CustomPainter {
     canvas.drawCircle(origin, 4, _fillPrimary);
     canvas.drawCircle(Offset(size.width * 0.52, size.height * 0.48), 4, _fillPrimary);
     canvas.drawCircle(Offset(right.dx, top.dy), 4, _fillPrimary);
+    if (badge != null) {
+      canvas.drawCircle(Offset(size.width * 0.88, size.height * 0.16), 11, _fillPrimaryFaint);
+      _drawIcon(canvas, badge, Offset(size.width * 0.88, size.height * 0.16), size: 13, color: scheme.primary);
+    }
   }
 
-  /// 画面枠に斜めのグラデーション帯＋きらめき（演出フィルター）。
+  /// 画面枠に斜めのグラデーション帯＋きらめき（演出フィルターの組み合わせ）。
   void _paintEffectFilter(Canvas canvas, Size size) {
     final screen = Rect.fromLTWH(size.width * 0.5 - 46, 6, 92, size.height - 12);
     canvas.save();
@@ -220,7 +295,8 @@ class _TipDiagramPainter extends CustomPainter {
     _star(canvas, Offset(screen.right + 14, screen.top + 18), 8, Paint()..color = scheme.tertiary);
   }
 
-  /// 小さい矩形→大きい矩形への矢印（ズーム）＋横矢印（パン）。
+  /// 小さい矩形→大きい矩形への矢印（ズーム）。カメラキーフレームによる
+  /// ズームブラー演出専用。
   void _paintCameraKeyframe(Canvas canvas, Size size) {
     final small = Rect.fromCenter(center: Offset(size.width * 0.24, size.height * 0.5), width: 26, height: 20);
     final large = Rect.fromCenter(center: Offset(size.width * 0.76, size.height * 0.5), width: 46, height: 36);
@@ -260,12 +336,13 @@ class _TipDiagramPainter extends CustomPainter {
     }
   }
 
-  /// 画面の上に重なる2本指タップ（実際のタップアイコン）と、Undoの巻き戻し矢印。
-  void _paintGestureShortcut(Canvas canvas, Size size) {
+  /// 画面の上に重なる2本指タップ（実際のタップアイコン）と、中央の
+  /// アイコン（何を割り当てたジェスチャーかを[icon]で切り替える）。
+  void _paintGestureShortcut(Canvas canvas, Size size, {required IconData icon}) {
     final screen = Rect.fromLTWH(size.width * 0.5 - 42, size.height * 0.3, 84, size.height * 0.6);
     canvas.drawRRect(RRect.fromRectAndRadius(screen, const Radius.circular(8)), _strokeOutline);
     canvas.drawArc(Rect.fromCenter(center: screen.center, width: 30, height: 30), 3.7, 4.2, false, _strokePrimary);
-    _drawIcon(canvas, Icons.undo, screen.center, size: 14, color: scheme.primary);
+    _drawIcon(canvas, icon, screen.center, size: 14, color: scheme.primary);
     canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.16), 9, _fillPrimaryFaint);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.16), 9, _fillPrimaryFaint);
     canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.16), 9, _strokePrimary);
@@ -469,7 +546,7 @@ class _TipDiagramPainter extends CustomPainter {
   }
 
   /// スマートフォン→引き継ぎファイルのアイコン→スマートフォンの順で、
-  /// 端末間でプロジェクト・設定がまとめて移動することを示す。
+  /// 端末間でプロジェクト本体がまとめて移動することを示す。
   void _paintDeviceTransfer(Canvas canvas, Size size) {
     final left = Offset(size.width * 0.16, size.height * 0.5);
     final right = Offset(size.width * 0.84, size.height * 0.5);
@@ -517,5 +594,46 @@ class _TipDiagramPainter extends CustomPainter {
         _drawIcon(canvas, icons[i], Offset(cx, y), size: 15, color: scheme.onSurfaceVariant);
       }
     }
+  }
+
+  /// 中心から放射状に伸びる集中線と、四隅を暗くする周辺減光の
+  /// グラデーション。放射定規×周辺減光専用。
+  void _paintRadialVignette(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final linePaint = Paint()
+      ..color = scheme.primary
+      ..strokeWidth = 1.6;
+    for (int i = 0; i < 12; i++) {
+      final angle = i * 3.14159 * 2 / 12;
+      final inner = center + Offset.fromDirection(angle, size.height * 0.1);
+      final outer = center + Offset.fromDirection(angle, size.height * 0.48);
+      canvas.drawLine(inner, outer, linePaint);
+    }
+    final vignette = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.transparent, scheme.shadow.withValues(alpha: 0.4)],
+        stops: const [0.35, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: size.width * 0.62));
+    canvas.drawRect(Offset.zero & size, vignette);
+    canvas.drawCircle(center, 5, _fillPrimary);
+  }
+
+  /// 右側にドッキングされたパネル（標準）と、左右反転アイコンを挟んで
+  /// 左側にドッキングされたパネル（左利きモード）。ワークスペース設定の
+  /// 左利きモード専用。
+  void _paintMirrorLayout(Canvas canvas, Size size) {
+    final barW = size.width * 0.15;
+    final rightPanel = Rect.fromLTWH(size.width * 0.66, size.height * 0.16, barW, size.height * 0.68);
+    canvas.drawRRect(RRect.fromRectAndRadius(rightPanel, const Radius.circular(4)), _fillPrimaryFaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(rightPanel, const Radius.circular(4)), _strokeOutline);
+    final leftPanel = Rect.fromLTWH(size.width * 0.19, size.height * 0.16, barW, size.height * 0.68);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(leftPanel, const Radius.circular(4)),
+        Paint()..color = scheme.tertiary.withValues(alpha: 0.28));
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(leftPanel, const Radius.circular(4)),
+        Paint()..color = scheme.tertiary..style = PaintingStyle.stroke..strokeWidth = 1.6);
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 16, Paint()..color = scheme.surface);
+    _drawIcon(canvas, Icons.swap_horiz, Offset(size.width / 2, size.height / 2), size: 20, color: scheme.primary);
   }
 }

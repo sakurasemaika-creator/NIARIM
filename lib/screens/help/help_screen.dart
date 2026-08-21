@@ -204,11 +204,10 @@ class _HelpScreenState extends State<HelpScreen> {
                   subtitle: Text(entry.category,
                       style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   children: [
-                    if (entry.diagram != null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                        child: HelpDiagram(entry.diagram!),
-                      ),
+                    // 実画面を再現した簡易図解は、あくまで「四角・アイコンを
+                    // 並べた模式図」の域を出ず、実際の画面をほぼ再現できて
+                    // いなかったため廃止した（2026年8月20日、ユーザー指摘）。
+                    // 文章での説明のみとする。
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       // 説明テキスト用フォント（仕様書24：白光明朝。アプリ全体の
