@@ -10,8 +10,9 @@ import '../services/advertising_service.dart';
 /// 処理中ダイアログ（仕様書13：フィルター適用／動画書き出し／GIF生成／
 /// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に正方形広告）。
 /// 会員種別に関わらず、10秒おきにランダムでTipsを表示する。無料会員は
-/// 正方形広告の下に続けてTipsカードを表示する（縦に並ぶ分、内容全体を
-/// スクロール可能にしている）。
+/// Tipsカードの下に続けて正方形広告を表示する（広告を中間に挟むと
+/// 視線の邪魔になりやすいため、プログレスバー→Tips→広告の順に配置。
+/// 縦に並ぶ分、内容全体をスクロール可能にしている）。
 class ProgressDialog extends StatefulWidget {
   final String title;
   final double progress;
@@ -102,24 +103,8 @@ class _ProgressDialogState extends State<ProgressDialog> {
               Text(widget.subtitle!,
                   style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ],
-            if (adService.shouldShowAds) ...[
-              const SizedBox(height: 16),
-              if (ad == null)
-                Container(
-                  width: 250,
-                  height: 250,
-                  color: Colors.grey[800],
-                  child: Center(
-                    child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey)),
-                  ),
-                )
-              else
-                SizedBox(
-                  width: ad.size.width.toDouble(),
-                  height: ad.size.height.toDouble(),
-                  child: AdWidget(ad: ad),
-                ),
-            ],
+            // 処理中プログレスバー→Tips→広告の順に並べる（広告を中間に
+            // 挟むと視線の邪魔になりやすいため、最後に配置する）。
             if (tip != null) ...[
               const SizedBox(height: 16),
               AnimatedSwitcher(
@@ -154,6 +139,24 @@ class _ProgressDialogState extends State<ProgressDialog> {
                   ),
                 ),
               ),
+            ],
+            if (adService.shouldShowAds) ...[
+              const SizedBox(height: 16),
+              if (ad == null)
+                Container(
+                  width: 250,
+                  height: 250,
+                  color: Colors.grey[800],
+                  child: Center(
+                    child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey)),
+                  ),
+                )
+              else
+                SizedBox(
+                  width: ad.size.width.toDouble(),
+                  height: ad.size.height.toDouble(),
+                  child: AdWidget(ad: ad),
+                ),
             ],
             if (widget.cancelHint != null) ...[
               const SizedBox(height: 8),
