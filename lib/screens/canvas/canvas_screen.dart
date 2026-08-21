@@ -99,9 +99,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// されると片方が下敷きになり閉じるボタンを押せなくなる不具合があった
   /// （「レイヤーパネルが一度表示すると非表示に戻せない」の原因）。
   /// いずれかを開く前に必ずこれを呼び、常に高々1枚のみが表示された状態を保つ。
+  ///
+  /// ただしPC/DeXモード（広い画面）は「画面が大きいので複数パネルを
+  /// 同時表示してよい、ごちゃごちゃ防止はスマホ版のみでよい」という方針
+  /// のため、レイヤーパネル・カラーピッカーは対象外にする（ドッキング表示
+  /// のため重なって閉じられなくなる心配がない）。ツールオプション系
+  /// （ブラシ・トーン・スタンプ等）は引き続き1枠のみのドッキング枠を
+  /// 共有するため、こちらは画面サイズによらず排他のまま。
   void _closeAllOverlayPanels() {
-    _showLayerPanel = false;
-    _showColorPicker = false;
+    if (!isWideScreen(context)) {
+      _showLayerPanel = false;
+      _showColorPicker = false;
+    }
     _showBrushPanel = false;
     _showTonePanel = false;
     _showStampPanel = false;
@@ -380,20 +389,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
         if (layers.isNotEmpty) _currentLayerId = layers.first.id;
       }
     }
-    // レイヤーパネルは画面サイズによらずデフォルトで閉じた状態にする
-    // （以前はPC/DeXモードで自動的に開いていたが、ユーザーが開くボタンを
-    // 押したときだけ表示する方針へ一度統一した）。
-    // 一方で、スマホ表示は「誤タップしにくいすっきりしたUI」・PC表示は
-    // 「ブラシ設定が常に見えているプロ向けの完成されたレイアウト」という
-    // 差別化が改めて求められたため、ブラシパネルのみPC/DeXモードでは
-    // 初回表示時に自動でドッキング表示する（1セッション1回のみ。閉じた
-    // 後にまた勝手に開き直されると邪魔になるため、ユーザーが手動で
-    // 閉じた後は再度自動では開かない）。ドッキング枠は現状1枠のみのため
-    // カラーピッカーと同時常設はできない（カラーサークルは代わりに
-    // ツールバーの現在色スウォッチから素早く開ける）。
+    // 「ごちゃごちゃさせない」方針はスマホ版のみとし、PC/DeXモード
+    // （広い画面）は画面が大きく余裕があるため、ブラシ・カラーピッカー・
+    // レイヤーパネルを初回表示時にまとめて自動でドッキング表示する
+    // （プロ向けペイントソフトのように主要パネルが常に見えている状態を
+    // 既定にする）。1セッション1回のみで、閉じた後にまた勝手に開き
+    // 直されると邪魔になるため、ユーザーが手動で閉じた後は再度自動では
+    // 開かない。3枚とも独立して閉じられる（_closeAllOverlayPanelsも
+    // PC/DeXモードではレイヤー・カラーピッカーを対象外にしている）。
     if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
       _autoOpenedDesktopPanels = true;
       _showBrushPanel = true;
+      _showColorPicker = true;
+      _showLayerPanel = true;
     }
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
     final newPerf = context.read<PerformanceService>();
@@ -619,16 +627,47 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                   if (dockedToolPanel != null && leftHanded)
                     SizedBox(width: 280, child: dockedToolPanel),
-                  if (isDesktop && _showLayerPanel)
+                  // PC/DeXモード：カラーピッカー・レイヤーパネルは、ツール
+                  // オプション系ドッキング枠（上のdockedToolPanel）とは別に、
+                  // 右側（左利きモード時は左側）へ縦に並べて同時常設できる
+                  // ようにする（「画面が大きいPCではいろいろ表示してよい」
+                  // 方針、仕様書08の追記）。どちらも単独でも両方同時でも表示可。
+                  if (isDesktop && (_showColorPicker || _showLayerPanel))
                     SizedBox(
                       width: 280,
-                      child: LayerPanel(
-                        onClose: () => setState(() => _showLayerPanel = false),
-                        projectId: widget.projectId,
-                        sceneId: _currentSceneId,
-                        frameIndex: _currentFrame,
-                        dockedMode: true,
-                        onEditTextLayer: _onEditTextLayerTapped,
+                      child: Column(
+                        children: [
+                          if (_showColorPicker)
+                            Flexible(
+                              child: SingleChildScrollView(
+                                child: ColorPickerPanel(
+                                  currentColor: _currentColor,
+                                  onColorChanged: (color) {
+                                    setState(() => _currentColor = color);
+                                    context.read<BrushService>().setCurrentColor(color);
+                                  },
+                                  onClose: () => setState(() => _showColorPicker = false),
+                                  onEyedropperTap: () => setState(() {
+                                    _currentTool = DrawingTool.eyedropper;
+                                    _showColorPicker = false;
+                                  }),
+                                ),
+                              ),
+                            ),
+                          if (_showColorPicker && _showLayerPanel)
+                            const Divider(height: 1),
+                          if (_showLayerPanel)
+                            Expanded(
+                              child: LayerPanel(
+                                onClose: () => setState(() => _showLayerPanel = false),
+                                projectId: widget.projectId,
+                                sceneId: _currentSceneId,
+                                frameIndex: _currentFrame,
+                                dockedMode: true,
+                                onEditTextLayer: _onEditTextLayerTapped,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                 ],
@@ -841,8 +880,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 返す（複数同時に開いていた場合は優先度の高いものを返す）。左側の
   // 常時ドッキングパネルに使う。フローティング表示（スマホ）と同じ
   // パネルインスタンスを流用する。
+  // カラーピッカーはここには含めない（PC/DeXモードではレイヤーパネルと
+  // 並んで独立にドッキング表示するため。build()内の右側ドックを参照）。
   Widget? _activeToolPanel() {
-    if (_showColorPicker) return _colorPickerPanel();
     if (_showPenSubToolPanel) return _penSubToolPanel();
     if (_showBrushPanel) return _brushPanel();
     if (_showTonePanel) return _tonePanel();
