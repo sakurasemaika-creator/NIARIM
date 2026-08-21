@@ -480,6 +480,24 @@ class _FilterPanelState extends State<FilterPanel> {
                             100,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
+                        if (current.kind == FilterKind.fisheye)
+                          _paramSlider(
+                            filterService,
+                            l10n.filterFisheyeStrength,
+                            current.strength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
+                        if (current.kind == FilterKind.chromaticAberration)
+                          _paramSlider(
+                            filterService,
+                            l10n.filterChromaticAberrationStrength,
+                            current.strength,
+                            1,
+                            30,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
                         if (current.kind == FilterKind.colorAdjust) ...[
                           _paramSlider(
                             filterService,
@@ -773,6 +791,8 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.monochrome => l10n.filterNameMonochrome,
         FilterKind.colorAdjust => l10n.filterNameColorAdjust,
         FilterKind.threshold => l10n.filterNameThreshold,
+        FilterKind.fisheye => l10n.filterNameFisheye,
+        FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -835,6 +855,10 @@ class _FilterPanelState extends State<FilterPanel> {
         );
       case FilterKind.threshold:
         return _engine.applyThreshold(data, width, height, filter.thresholdValue);
+      case FilterKind.fisheye:
+        return _engine.applyFisheye(data, width, height, filter.strength);
+      case FilterKind.chromaticAberration:
+        return _engine.applyChromaticAberration(data, width, height, filter.strength, 0);
     }
   }
 
@@ -870,6 +894,10 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.tune;
       case FilterKind.threshold:
         return Icons.contrast;
+      case FilterKind.fisheye:
+        return Icons.panorama_fish_eye;
+      case FilterKind.chromaticAberration:
+        return Icons.color_lens;
     }
   }
 

@@ -56,6 +56,9 @@ Uint8List applyDrawFilterInIsolate(
         data, width, height,
         saturation: filter.caSaturation, brightness: filter.caBrightness, contrast: filter.caContrast),
     FilterKind.threshold => engine.applyThreshold(data, width, height, filter.thresholdValue),
+    FilterKind.fisheye => engine.applyFisheye(data, width, height, filter.strength),
+    FilterKind.chromaticAberration =>
+      engine.applyChromaticAberration(data, width, height, filter.strength, 0),
   };
 }
 
@@ -135,6 +138,8 @@ class FilterEngine {
             size: e.param3,
             windAngleDeg: e.param4,
           ),
+        EffectFilterType.fisheye =>
+          applyFisheye(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
       };
     }
     return result;
@@ -274,6 +279,48 @@ class FilterEngine {
         final bx = (x - dx).clamp(0, width - 1);
         final by = (y - dy).clamp(0, height - 1);
         result[idx + 2] = data[(by * width + bx) * 4 + 2];
+      }
+    }
+    return result;
+  }
+
+  /// 魚眼レンズ風の湾曲。中心を膨らませ、外側ほど圧縮して見せることで、
+  /// 魚眼・広角レンズで撮影したような歪みを再現する。中心から各画素までの
+  /// 距離（対角線の半分を1.0とする正規化距離）を[exponent]乗することで
+  /// サンプリング元の位置をずらす（[exponent]が1より小さいほど、外側の
+  /// 画素も中心付近の画素からサンプリングされるため、中心が拡大されて
+  /// 見える）。[strength]は0〜100（%）。
+  Uint8List applyFisheye(Uint8List data, int width, int height, double strength) {
+    final amount = (strength / 100.0).clamp(0.0, 1.0);
+    if (amount <= 0) return Uint8List.fromList(data);
+    final exponent = (1.0 - amount * 0.85).clamp(0.15, 1.0);
+    final cx = width / 2.0;
+    final cy = height / 2.0;
+    final maxR = math.sqrt(cx * cx + cy * cy);
+    final result = Uint8List(data.length);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        final nx = (x - cx) / maxR;
+        final ny = (y - cy) / maxR;
+        final r = math.sqrt(nx * nx + ny * ny);
+        double srcX, srcY;
+        if (r <= 1e-6) {
+          srcX = cx;
+          srcY = cy;
+        } else {
+          final newR = math.pow(r, exponent).toDouble();
+          final theta = math.atan2(ny, nx);
+          srcX = cx + math.cos(theta) * newR * maxR;
+          srcY = cy + math.sin(theta) * newR * maxR;
+        }
+        final sx = srcX.round().clamp(0, width - 1);
+        final sy = srcY.round().clamp(0, height - 1);
+        final srcIdx = (sy * width + sx) * 4;
+        final dstIdx = (y * width + x) * 4;
+        result[dstIdx] = data[srcIdx];
+        result[dstIdx + 1] = data[srcIdx + 1];
+        result[dstIdx + 2] = data[srcIdx + 2];
+        result[dstIdx + 3] = data[srcIdx + 3];
       }
     }
     return result;
@@ -886,7 +933,7 @@ class EffectFilter {
 enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
   animeStyle, retroAnime, crt,
-  animatedNoise, rain, monochrome, colorAdjust, threshold,
+  animatedNoise, rain, monochrome, colorAdjust, threshold, fisheye,
 }
 
 enum DrawFilterType {

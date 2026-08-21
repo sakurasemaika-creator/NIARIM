@@ -16,6 +16,9 @@
 /// retroAnime：暖色寄りのカラーグレーディング・彩度低下・粒状ノイズを
 /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。
 /// crt：色収差・周辺減光・走査線を組み合わせたブラウン管ディスプレイ風の質感。
+/// fisheye：魚眼レンズ風の湾曲（[strength]が大きいほど中心が膨らみ、
+/// 周辺が圧縮される）。chromaticAberration：色収差（[strength]が大きいほど
+/// RGBチャンネルの水平方向のずれが大きくなる）。
 /// monochrome（単色化）：輝度に応じて指定した1色（[monochromeColor]、既定は
 /// 白＝従来通りのグレースケール）を掛け合わせる。単なる白黒化ではなく、
 /// セピア調・任意の単色トーンなど好きな色で単色化できる。
@@ -24,7 +27,7 @@
 /// （仕様書28）。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
-  retroAnime, crt, monochrome, colorAdjust, threshold,
+  retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration,
 }
 
 /// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。

@@ -84,6 +84,17 @@ class ToneService extends ChangeNotifier {
         const Tone(id: 'Tone0007', name: 'ピクセル市松（1px）'),
         const Tone(id: 'Tone0008', name: 'ピクセル格子（1px）'),
         const Tone(id: 'Tone0009', name: 'ピクセル散らし（1px）'),
+        // ストッキング・タイツ：デニール数が低いほど生地が薄く目が細かい
+        // ため、パターンの格子間隔を詰めて再現する（procedural_texture.dartの
+        // generateBuiltInToneTextureが名前の「デニール」数値を読み取って
+        // 密度を決める）。デニール数が最も低いものは格子間隔を最小にし、
+        // 意図的に細かすぎてモアレが出るくらいの密度にしている。
+        const Tone(id: 'Tone0010', name: 'ストッキング 10デニール'),
+        const Tone(id: 'Tone0011', name: 'ストッキング 20デニール'),
+        const Tone(id: 'Tone0012', name: 'ストッキング 30デニール'),
+        const Tone(id: 'Tone0013', name: 'タイツ 40デニール'),
+        const Tone(id: 'Tone0014', name: 'タイツ 60デニール'),
+        const Tone(id: 'Tone0015', name: 'タイツ 80デニール'),
       ];
 
   Future<void> init() async {

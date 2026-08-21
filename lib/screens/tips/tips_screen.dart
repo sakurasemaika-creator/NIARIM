@@ -192,6 +192,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
             _Tip(TipDiagramSpec(TipDiagramKind.lineArtExtraction), l10n.tipsLineArtExtractionTitle, l10n.tipsLineArtExtractionDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.lineColorModes), l10n.tipsLineColorUsageTitle, l10n.tipsLineColorUsageDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.blushGradient), l10n.tipsBlushAutofillTitle, l10n.tipsBlushAutofillDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.checkroom_outlined, iconB: Icons.grid_on),
+                l10n.tipsStockingDenierTitle, l10n.tipsStockingDenierDesc),
           ],
         ),
         _TipCategory(
@@ -214,6 +216,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
             _Tip(TipDiagramSpec(TipDiagramKind.mirrorLayout), l10n.tipsLeftHandedWorkspaceTitle, l10n.tipsLeftHandedWorkspaceDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.layers, iconB: Icons.checklist),
                 l10n.tipsBlendModeUsageTitle, l10n.tipsBlendModeUsageDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.panorama_fish_eye, iconB: Icons.color_lens),
+                l10n.tipsFisheyeChromaticTitle, l10n.tipsFisheyeChromaticDesc),
           ],
         ),
         _TipCategory(

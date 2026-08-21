@@ -90,6 +90,10 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
     // 市松（斜めに隣接）・格子（縦横の線がつながる）とは異なり、
     // どの点も上下左右の隣接ピクセルとは接しない。
     _fillPixelScatteredDotPattern(data, size);
+  } else if (name.contains('ストッキング') || name.contains('タイツ')) {
+    final denier =
+        int.tryParse(RegExp(r'(\d+)デニール').firstMatch(name)?.group(1) ?? '20') ?? 20;
+    _fillStockingMeshPattern(data, size, denier);
   } else {
     _fillDotPattern(data, size, 0.3);
   }
@@ -121,6 +125,26 @@ void _fillPixelScatteredDotPattern(Uint8List data, int size) {
   for (int y = 0; y < size; y += 2) {
     for (int x = 0; x < size; x += 2) {
       data[(y * size + x) * 4 + 3] = 255;
+    }
+  }
+}
+
+/// ストッキング・タイツの網目パターン（斜め45度の格子＝クロスハッチ）。
+/// [denier]が低いほど（生地が薄いほど）格子間隔を詰めて密度を上げ、
+/// 意図的に細かすぎるパターンにする（画面表示・書き出し解像度によっては
+/// モアレが生じる密度になる）。[denier]が高いほど格子間隔・線の太さを
+/// 増やし、厚手の生地らしい粗く不透明な見た目にする。
+void _fillStockingMeshPattern(Uint8List data, int size, int denier) {
+  final clampedDenier = denier.clamp(10, 100);
+  final spacing = (2 + (clampedDenier - 10) / 90 * 6).round().clamp(2, 8);
+  final thickness = (1 + (clampedDenier / 40).floor()).clamp(1, 3);
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      final diagA = (x + y) % spacing;
+      final diagB = (x - y).abs() % spacing;
+      if (diagA < thickness || diagB < thickness) {
+        data[(y * size + x) * 4 + 3] = 255;
+      }
     }
   }
 }

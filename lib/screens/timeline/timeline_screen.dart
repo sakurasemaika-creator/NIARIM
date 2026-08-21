@@ -4225,6 +4225,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.monochrome => l10n.timelineEffectTypeMonochrome,
     EffectFilterType.colorAdjust => l10n.filterNameColorAdjust,
     EffectFilterType.threshold => l10n.filterNameThreshold,
+    EffectFilterType.fisheye => l10n.filterNameFisheye,
   };
 
   static const _typeIcons = {
@@ -4243,6 +4244,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.monochrome: Icons.filter_b_and_w,
     EffectFilterType.colorAdjust: Icons.tune,
     EffectFilterType.threshold: Icons.contrast,
+    EffectFilterType.fisheye: Icons.panorama_fish_eye,
   };
 
   @override
