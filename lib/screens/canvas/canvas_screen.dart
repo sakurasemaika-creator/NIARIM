@@ -40,6 +40,7 @@ import 'widgets/ruler_panel.dart';
 import 'widgets/filter_panel.dart';
 import 'widgets/quick_tool_panel.dart';
 import 'widgets/mesh_transform_panel.dart';
+import 'widgets/reference_window.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
 
@@ -62,6 +63,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Color _currentColor = Colors.black;
   int _currentFrame = 0;
   bool _showLayerPanel = false;
+  // 資料ウィンドウ（三面図・参考画像を常に表示）。他のツールオプション系
+  // パネルとは独立して開閉する（ツール切り替えやパネル外タップでは
+  // 閉じない）ため、_closeAllOverlayPanels/_anyToolPanelOpenの対象には
+  // あえて含めていない。
+  bool _showReferenceWindow = false;
   bool _showColorPicker = false;
   bool _showBrushPanel = false;
   // トーン・スタンプの全機能管理パネル（仕様書17：フォルダ・自作・検索・
@@ -304,6 +310,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 });
               },
             ),
+            // 資料ウィンドウ（アニメ制作では三面図・キャラクター設定表などの
+            // 資料を見ながら作業することが多いため、任意の参考画像を常に
+            // フローティング表示できるようにした）。
+            ListTile(
+              leading: Icon(_showReferenceWindow ? Icons.dashboard_customize : Icons.dashboard_customize_outlined),
+              title: Text(l10n.canvasEditMenuReferenceWindow),
+              subtitle: Text(l10n.canvasEditMenuReferenceWindowSubtitle),
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() => _showReferenceWindow = !_showReferenceWindow);
+              },
+            ),
           ],
         ),
       ),
@@ -340,6 +358,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showToolbar = true;
   bool _workTrackingStarted = false;
   bool _missingMaterialChecked = false;
+  // PC/DeXモードでブラシ・カラーピッカーのドッキングパネルを自動で開いた
+  // かどうか（1セッション1回のみ。ユーザーが手動で閉じた後に毎回また
+  // 開き直されると邪魔になるため）。
+  bool _autoOpenedDesktopPanels = false;
 
   @override
   void didChangeDependencies() {
@@ -358,10 +380,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
         if (layers.isNotEmpty) _currentLayerId = layers.first.id;
       }
     }
-    // 画面がごちゃごちゃしないよう、画面サイズによらずレイヤーパネルは
-    // デフォルトで閉じた状態にする（以前はPC/DeXモードなど広い画面では
-    // 自動的に開いていたが、ユーザーが開くボタンを押したときだけ表示する
-    // 方針へ統一した）。
+    // レイヤーパネルは画面サイズによらずデフォルトで閉じた状態にする
+    // （以前はPC/DeXモードで自動的に開いていたが、ユーザーが開くボタンを
+    // 押したときだけ表示する方針へ一度統一した）。
+    // 一方で、スマホ表示は「誤タップしにくいすっきりしたUI」・PC表示は
+    // 「ブラシ設定が常に見えているプロ向けの完成されたレイアウト」という
+    // 差別化が改めて求められたため、ブラシパネルのみPC/DeXモードでは
+    // 初回表示時に自動でドッキング表示する（1セッション1回のみ。閉じた
+    // 後にまた勝手に開き直されると邪魔になるため、ユーザーが手動で
+    // 閉じた後は再度自動では開かない）。ドッキング枠は現状1枠のみのため
+    // カラーピッカーと同時常設はできない（カラーサークルは代わりに
+    // ツールバーの現在色スウォッチから素早く開ける）。
+    if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
+      _autoOpenedDesktopPanels = true;
+      _showBrushPanel = true;
+    }
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
     final newPerf = context.read<PerformanceService>();
     if (newPerf != _perf) {
@@ -776,6 +809,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
             // 色調調整パネル（仕様書18：新機能）
             if (_showColorAdjustPanel && !isDesktop)
               _sidedPanel(anchorLeft: true, leftHanded: leftHanded, top: 56, bottom: null, child: _colorAdjustPanel()),
+            // 資料ウィンドウ：PC/スマホ問わず常にフローティングで表示する
+            // （ツールパネルのようにisDesktopでドッキング化はしない。
+            // 好きな位置へ動かして常駐させる用途のため）。
+            if (_showReferenceWindow)
+              ReferenceWindow(onClose: () => setState(() => _showReferenceWindow = false)),
           ],
         ),
       ),
