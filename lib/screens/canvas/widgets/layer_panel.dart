@@ -16,6 +16,7 @@ import '../../../services/tone_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'layer_keyframe_sheet.dart';
 import 'panel_close_bar.dart';
 
@@ -1073,7 +1074,7 @@ class _LayerPanelState extends State<LayerPanel> {
                     Text(l10n.layerPanelOpacityLabel, style: const TextStyle(fontSize: 13)),
                     Expanded(
                       child: StatefulBuilder(
-                        builder: (ctx, setS) => Slider(
+                        builder: (ctx, setS) => SteppedSlider(
                           value: layer.opacity.toDouble(),
                           min: 0, max: 100, divisions: 100,
                           label: '${layer.opacity}%',

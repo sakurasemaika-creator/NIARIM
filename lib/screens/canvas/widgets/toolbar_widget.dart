@@ -9,6 +9,7 @@ import '../../../services/tone_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/responsive.dart';
+import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
@@ -445,7 +446,7 @@ class ToolbarWidget extends StatelessWidget {
       children: [
         SizedBox(width: 72, child: Text(label, style: const TextStyle(fontSize: 12))),
         Expanded(
-          child: Slider(value: value, min: min, max: max, divisions: divisions, onChanged: onChanged),
+          child: SteppedSlider(value: value, min: min, max: max, divisions: divisions, onChanged: onChanged),
         ),
         SizedBox(
           width: 28,

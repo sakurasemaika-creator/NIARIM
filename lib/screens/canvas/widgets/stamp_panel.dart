@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/stamp.dart';
 import '../../../services/stamp_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 
@@ -394,7 +395,7 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
     return Row(
       children: [
         SizedBox(width: 60, child: Text(label, style: const TextStyle(fontSize: 12))),
-        Expanded(child: Slider(min: min, max: max, value: value.clamp(min, max), onChanged: onChanged)),
+        Expanded(child: SteppedSlider(min: min, max: max, value: value.clamp(min, max), step: 0.1, onChanged: onChanged)),
         SizedBox(
           width: 40,
           child: EditableSliderValue(

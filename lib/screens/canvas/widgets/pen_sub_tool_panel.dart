@@ -6,6 +6,7 @@ import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../models/stamp.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 
@@ -315,8 +316,8 @@ class _StampTab extends StatelessWidget {
                 children: [
                   Text(l10n.stampDensityLabel, style: const TextStyle(fontSize: 12)),
                   Expanded(
-                    child: Slider(
-                      value: density, min: 0.1, max: 1.0,
+                    child: SteppedSlider(
+                      value: density, min: 0.1, max: 1.0, step: 0.01,
                       label: '${(density * 100).round()}%',
                       onChanged: (v) => setS(() => density = v),
                     ),
@@ -333,8 +334,8 @@ class _StampTab extends StatelessWidget {
                 children: [
                   Text(l10n.stampScatterLabel, style: const TextStyle(fontSize: 12)),
                   Expanded(
-                    child: Slider(
-                      value: scatter, min: 0, max: 1.0,
+                    child: SteppedSlider(
+                      value: scatter, min: 0, max: 1.0, step: 0.01,
                       label: '${(scatter * 100).round()}%',
                       onChanged: (v) => setS(() => scatter = v),
                     ),

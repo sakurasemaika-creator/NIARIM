@@ -11,6 +11,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/stepped_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定、仕様書01・08・13）。
@@ -369,7 +370,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
     return Row(
       children: [
         SizedBox(width: 90, child: Text(label, style: const TextStyle(fontSize: 12))),
-        Expanded(child: Slider(value: value, min: min, max: max, onChanged: onChanged)),
+        Expanded(child: SteppedSlider(value: value, min: min, max: max, onChanged: onChanged)),
         SizedBox(
           width: 32,
           child: EditableSliderValue(

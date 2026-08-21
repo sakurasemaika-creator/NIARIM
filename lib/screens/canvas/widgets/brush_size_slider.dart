@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 
 /// ブラシの太さ・不透明度スライダー。描画エリアを圧迫しないよう、
 /// デフォルトでは折りたたまれた1行の要約表示にし、ユーザーが開閉
@@ -77,7 +78,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Slider(min: 1, max: 500, value: widget.brushSize, onChanged: widget.onSizeChanged),
+                          child: SteppedSlider(min: 1, max: 500, value: widget.brushSize, onChanged: widget.onSizeChanged),
                         ),
                         // 数値部分をタップすると直接入力できる。
                         SizedBox(
@@ -98,7 +99,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Slider(
+                          child: SteppedSlider(
                               min: 1, max: 100, value: widget.opacity.toDouble(),
                               onChanged: (v) => widget.onOpacityChanged(v.round())),
                         ),

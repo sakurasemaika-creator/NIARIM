@@ -15,6 +15,7 @@ import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/first_use_tooltip.dart';
+import '../../widgets/stepped_slider.dart';
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
@@ -1385,7 +1386,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   children: [
                     Text(l10n.brushSettingsSizeLabel, style: const TextStyle(fontSize: 12)),
                     Expanded(
-                      child: Slider(
+                      child: SteppedSlider(
                         value: fontSize,
                         min: 8, max: 200,
                         label: fontSize.round().toString(),
@@ -1461,8 +1462,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   children: [
                     Text(l10n.canvasTextLineHeight, style: const TextStyle(fontSize: 12)),
                     Expanded(
-                      child: Slider(
-                        value: lineHeight, min: 0.8, max: 3.0,
+                      child: SteppedSlider(
+                        value: lineHeight, min: 0.8, max: 3.0, step: 0.1,
                         label: lineHeight.toStringAsFixed(1),
                         onChanged: (v) => setS(() => lineHeight = v),
                       ),
@@ -1479,7 +1480,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   children: [
                     Text(l10n.canvasTextLetterSpacing, style: const TextStyle(fontSize: 12)),
                     Expanded(
-                      child: Slider(
+                      child: SteppedSlider(
                         value: letterSpacing, min: -2, max: 20,
                         label: letterSpacing.toStringAsFixed(0),
                         onChanged: (v) => setS(() => letterSpacing = v),
@@ -1538,7 +1539,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     children: [
                       Text(l10n.canvasOutlineWidthLabel, style: const TextStyle(fontSize: 12)),
                       Expanded(
-                        child: Slider(
+                        child: SteppedSlider(
                           value: outlineWidth, min: 0, max: 20,
                           label: outlineWidth.round().toString(),
                           onChanged: (v) => setS(() => outlineWidth = v),

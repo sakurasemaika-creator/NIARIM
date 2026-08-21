@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 
@@ -476,7 +477,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     return Row(
       children: [
         SizedBox(width: 80, child: Text(label, style: const TextStyle(fontSize: 12))),
-        Expanded(child: Slider(min: min, max: max, value: value.clamp(min, max), onChanged: onChanged)),
+        Expanded(child: SteppedSlider(min: min, max: max, value: value.clamp(min, max), onChanged: onChanged)),
         SizedBox(
           width: 40,
           child: EditableSliderValue(

@@ -14,6 +14,7 @@ import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/stepped_slider.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
 import '../../widgets/info_icon_tooltip.dart';
@@ -924,7 +925,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       title: l10n.autofillPartFillOpacityLabel(current.opacity),
                       onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
                     ),
-                    Slider(
+                    SteppedSlider(
                       value: current.opacity.toDouble(),
                       min: 0, max: 100, divisions: 100,
                       onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
@@ -1002,7 +1003,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: current.traceHue, min: -180, max: 180, isInt: false,
                         onChanged: (v) => setS(() => current = current.copyWith(traceHue: v.toDouble())),
                       ),
-                      Slider(
+                      SteppedSlider(
                         value: current.traceHue, min: -180, max: 180,
                         onChanged: (v) => setS(() => current = current.copyWith(traceHue: v)),
                       ),
@@ -1012,7 +1013,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: current.traceSaturation, min: -100, max: 100, isInt: false,
                         onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v.toDouble())),
                       ),
-                      Slider(
+                      SteppedSlider(
                         value: current.traceSaturation, min: -100, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v)),
                       ),
@@ -1022,7 +1023,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: current.traceLightness, min: -100, max: 100, isInt: false,
                         onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v.toDouble())),
                       ),
-                      Slider(
+                      SteppedSlider(
                         value: current.traceLightness, min: -100, max: 100,
                         onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v)),
                       ),
@@ -1048,7 +1049,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       value: current.lineOpacity, min: 0, max: 100,
                       onChanged: (v) => setS(() => current = current.copyWith(lineOpacity: v.round())),
                     ),
-                    Slider(
+                    SteppedSlider(
                       value: current.lineOpacity.toDouble(),
                       min: 0, max: 100, divisions: 100,
                       onChanged: (v) => setS(() => current = current.copyWith(lineOpacity: v.round())),
@@ -1380,7 +1381,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: gradient.angle, min: 0, max: 359,
                         onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v.toDouble())),
                       ),
-                      Slider(
+                      SteppedSlider(
                         value: gradient.angle,
                         min: 0, max: 359,
                         onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v)),
@@ -1402,9 +1403,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         InfoIconTooltip(message: l10n.autofillPartGradientFeatherInfo),
                       ],
                     ),
-                    Slider(
+                    SteppedSlider(
                       value: gradient.feather,
-                      min: 0, max: 1,
+                      min: 0, max: 1, step: 0.01,
                       onChanged: (v) => setS(() => gradient = gradient.copyWith(feather: v)),
                     ),
                     const SizedBox(height: 8),

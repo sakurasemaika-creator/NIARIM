@@ -10,6 +10,7 @@ import '../../../models/effect_filter_instance.dart';
 import '../../../models/filter_def.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'panel_close_bar.dart';
 
 /// 色調調整（キャンバス上部バーの設定/編集メニュー、仕様書18）。
@@ -250,7 +251,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
               trackHeight: 2,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
             ),
-            child: Slider(value: value, min: -100, max: 100, onChanged: onChanged),
+            child: SteppedSlider(value: value, min: -100, max: 100, onChanged: onChanged),
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import '../../services/save_tree_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/stepped_slider.dart';
 import '../save_tree/save_tree_screen.dart';
 import '../../widgets/help_button.dart';
 
@@ -434,7 +435,7 @@ class _PerformanceSettingsScreenState
       children: [
         const SizedBox(width: 16),
         Expanded(
-          child: Slider(
+          child: SteppedSlider(
             min: 1,
             max: 10,
             divisions: 9,
@@ -525,7 +526,7 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
       children: [
         const SizedBox(width: 16),
         Expanded(
-          child: Slider(
+          child: SteppedSlider(
             min: 1,
             max: 20,
             divisions: 19,

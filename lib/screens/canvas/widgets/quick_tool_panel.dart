@@ -5,6 +5,7 @@ import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/quick_tool_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import 'panel_close_bar.dart';
 
@@ -187,7 +188,7 @@ class QuickToolPanel extends StatelessWidget {
           content: Row(
             children: [
               Expanded(
-                child: Slider(
+                child: SteppedSlider(
                   value: size.clamp(1, 200),
                   min: 1, max: 200,
                   label: '${size.round()}px',

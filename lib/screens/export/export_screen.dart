@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/stepped_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
@@ -97,7 +98,7 @@ class _ExportScreenState extends State<ExportScreen> {
                               children: [
                                 Text(l10n.exportFpsLabel),
                                 Expanded(
-                                  child: Slider(
+                                  child: SteppedSlider(
                                     value: _customFps.toDouble(),
                                     min: 12, max: 60, divisions: 48,
                                     label: '$_customFps',

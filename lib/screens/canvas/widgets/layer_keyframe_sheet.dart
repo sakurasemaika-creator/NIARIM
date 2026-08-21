@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 
 /// レイヤー単位の位置・拡大縮小・回転キーフレーム（パーツ単位アニメーション）を
 /// 一覧・追加・編集・削除するシート。カメラキーフレームと違い専用のタイムライン
@@ -280,7 +281,7 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
                 _row('Y', _kf.y, -widget.canvasHeight.toDouble(), widget.canvasHeight.toDouble(), 0,
                     (v) => setState(() => _kf = _kf.copyWith(y: v)), _kf.y.round().toString()),
                 _row(l10n.layerKeyframeScaleLabel, _kf.scale, 0.1, 3.0, 0,
-                    (v) => setState(() => _kf = _kf.copyWith(scale: v)), '${(_kf.scale * 100).round()}%', isInt: false),
+                    (v) => setState(() => _kf = _kf.copyWith(scale: v)), '${(_kf.scale * 100).round()}%', isInt: false, step: 0.05),
                 _row(l10n.layerKeyframeRotationLabel, _kf.rotation, -180, 180, 0,
                     (v) => setState(() => _kf = _kf.copyWith(rotation: v)), '${_kf.rotation.round()}°'),
               ],
@@ -305,17 +306,18 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
   }
 
   Widget _row(String label, double value, double min, double max, int divisions,
-      ValueChanged<double> onChanged, String valueText, {bool isInt = false}) {
+      ValueChanged<double> onChanged, String valueText, {bool isInt = false, double step = 1}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           SizedBox(width: 56, child: Text(label, style: const TextStyle(fontSize: 12))),
           Expanded(
-            child: Slider(
+            child: SteppedSlider(
               value: value.clamp(min, max),
               min: min, max: max,
               divisions: divisions > 0 ? divisions : null,
+              step: step,
               onChanged: onChanged,
             ),
           ),

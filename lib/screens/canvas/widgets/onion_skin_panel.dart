@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../services/performance_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'panel_close_bar.dart';
 
 class OnionSkinPanel extends StatefulWidget {
@@ -289,7 +290,7 @@ class _OnionSideSection extends StatelessWidget {
                   child: Text(l10n.onionSkinFrameCount, style: const TextStyle(fontSize: 11))),
               if (isCustom) ...[
                 Expanded(
-                  child: Slider(
+                  child: SteppedSlider(
                     min: 1,
                     max: 10,
                     divisions: 9,
@@ -342,9 +343,10 @@ class _OnionSideSection extends StatelessWidget {
                   width: 56,
                   child: Text(l10n.onionSkinOpacityLabel, style: const TextStyle(fontSize: 11))),
               Expanded(
-                child: Slider(
+                child: SteppedSlider(
                   min: 0,
                   max: 1,
+                  step: 0.01,
                   value: opacity,
                   onChanged: onOpacityChanged,
                 ),

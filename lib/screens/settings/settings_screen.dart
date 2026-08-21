@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/stepped_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -319,10 +320,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Text(l10n.settingsDrawingAreaScale),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Slider(
+                        child: SteppedSlider(
                           min: 1.0, max: 10.0,
                           value: scale,
                           divisions: 18,
+                          step: 0.5,
                           label: l10n.settingsScaleValue(scale.toStringAsFixed(1)),
                           onChanged: (v) {
                             setS(() => scale = v);

@@ -5,6 +5,7 @@ import '../../services/settings_service.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/stepped_slider.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
   const GestureSettingsScreen({super.key});
@@ -58,12 +59,16 @@ class GestureSettingsScreen extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(child: Text(l10n.gestureHoldEyedropperDurationLabel)),
-                        Slider(
-                          value: settings.holdEyedropperSeconds,
-                          min: 0.2,
-                          max: 3.0,
-                          divisions: 28,
-                          onChanged: (v) => settings.setHoldEyedropperSeconds(v),
+                        SizedBox(
+                          width: 180,
+                          child: SteppedSlider(
+                            value: settings.holdEyedropperSeconds,
+                            min: 0.2,
+                            max: 3.0,
+                            divisions: 28,
+                            step: 0.1,
+                            onChanged: (v) => settings.setHoldEyedropperSeconds(v),
+                          ),
                         ),
                         SizedBox(
                           width: 44,

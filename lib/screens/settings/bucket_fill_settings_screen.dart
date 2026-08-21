@@ -5,6 +5,7 @@ import '../../services/settings_service.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/stepped_slider.dart';
 
 /// バケツ塗り詳細設定（仕様書03・17：許容誤差・拡張px・線の下まで潜る）。
 /// ここでの設定はバケツツール使用時に常に適用される（プロジェクト単位では
@@ -31,7 +32,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Slider(
+                child: SteppedSlider(
                   value: settings.bucketTolerance,
                   min: 0,
                   max: 100,
@@ -60,7 +61,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Slider(
+                child: SteppedSlider(
                   value: settings.bucketExpandPx.toDouble(),
                   min: 0,
                   max: 10,

@@ -18,6 +18,7 @@ import '../../services/theme_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/stepped_slider.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
 
@@ -377,7 +378,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           trackHeight: 2,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
         ),
-        child: Slider(
+        child: SteppedSlider(
           value: _frameIndex.clamp(0, maxFrame).toDouble(),
           min: 0,
           max: maxFrame.toDouble(),

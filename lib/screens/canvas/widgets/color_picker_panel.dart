@@ -6,6 +6,7 @@ import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'hsv_color_wheel.dart';
 import 'panel_close_bar.dart';
 
@@ -190,8 +191,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Slider(
-                      min: 0, max: 1, value: _alpha,
+                    child: SteppedSlider(
+                      min: 0, max: 1, value: _alpha, step: 0.01,
                       label: '${(_alpha * 100).round()}%',
                       onChanged: (v) { _alpha = v; _applyAlpha(); },
                       onChangeEnd: (_) => _commitToRecent(),
@@ -478,7 +479,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     return Row(
       children: [
         SizedBox(width: 14, child: Text(label, style: const TextStyle(fontSize: 12))),
-        Expanded(child: Slider(min: min, max: max, value: value, onChanged: onChanged, onChangeEnd: onChangeEnd)),
+        Expanded(child: SteppedSlider(min: min, max: max, value: value, onChanged: onChanged, onChangeEnd: onChangeEnd)),
         // 数値部分をタップすると直接入力できる。
         SizedBox(
           width: 32,

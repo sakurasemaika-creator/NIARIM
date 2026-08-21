@@ -45,6 +45,7 @@ import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/stepped_slider.dart';
 import '../../widgets/first_use_tooltip.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
@@ -804,7 +805,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           trackHeight: 2,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
         ),
-        child: Slider(
+        child: SteppedSlider(
           value: _currentFrame.clamp(0, maxFrame).toDouble(),
           min: 0,
           max: maxFrame.toDouble(),
@@ -2674,7 +2675,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Slider(
+                      child: SteppedSlider(
                         value: angle,
                         min: -180, max: 180,
                         label: '${angle.round()}°',
@@ -2693,9 +2694,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Slider(
+                      child: SteppedSlider(
                         value: scale,
-                        min: 0.05, max: 1.0,
+                        min: 0.05, max: 1.0, step: 0.01,
                         label: '${(scale * 100).round()}%',
                         onChanged: (v) => setS(() => scale = v),
                       ),
@@ -2712,9 +2713,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Slider(
+                      child: SteppedSlider(
                         value: opacity,
-                        min: 0, max: 1.0,
+                        min: 0, max: 1.0, step: 0.01,
                         label: '${(opacity * 100).round()}%',
                         onChanged: (v) => setS(() => opacity = v),
                       ),
@@ -3268,7 +3269,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   Text(l10n.timelineClipStartLabel, style: const TextStyle(fontSize: 12)),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Slider(
+                    child: SteppedSlider(
                       value: start.toDouble(),
                       min: 0,
                       max: (_totalFrames - 1).toDouble(),
@@ -3290,7 +3291,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   Text(l10n.timelineClipLengthLabel, style: const TextStyle(fontSize: 12)),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Slider(
+                    child: SteppedSlider(
                       value: length.toDouble(),
                       min: 1,
                       max: _totalFrames.toDouble(),
@@ -4406,7 +4407,7 @@ class _EffectFilterSheet extends StatelessWidget {
       children: [
         SizedBox(width: 36, child: Text(label, style: const TextStyle(fontSize: 11))),
         Expanded(
-          child: Slider(
+          child: SteppedSlider(
             value: value.toDouble(),
             min: min.toDouble(), max: max.toDouble(),
             divisions: max > min ? max - min : 1,
@@ -4435,7 +4436,7 @@ class _EffectFilterSheet extends StatelessWidget {
         children: [
           SizedBox(width: 36, child: Text(label, style: const TextStyle(fontSize: 11))),
           Expanded(
-            child: Slider(
+            child: SteppedSlider(
               value: e.param1.clamp(1, maxVal),
               min: 1, max: maxVal,
               divisions: maxVal.round() - 1,
@@ -4464,7 +4465,7 @@ class _EffectFilterSheet extends StatelessWidget {
       children: [
         SizedBox(width: 56, child: Text(label, style: const TextStyle(fontSize: 11))),
         Expanded(
-          child: Slider(
+          child: SteppedSlider(
             value: value.clamp(min, max),
             min: min, max: max,
             divisions: divisions > 0 ? divisions : null,
@@ -4756,12 +4757,12 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 if (_c.trackType == _ClipTrackType.audio) ...[
-                  _row(l10n.timelineClipVolumeLabel, _c.volume, 0, 1, 100, (v) { _c.volume = v; _notify(); }, '${(_c.volume * 100).round()}%'),
-                  _row(l10n.timelineClipFadeInLabel, _c.fadeIn, 0, 5, 50, (v) { _c.fadeIn = v; _notify(); }, '${_c.fadeIn.toStringAsFixed(1)}s'),
-                  _row(l10n.timelineClipFadeOutLabel, _c.fadeOut, 0, 5, 50, (v) { _c.fadeOut = v; _notify(); }, '${_c.fadeOut.toStringAsFixed(1)}s'),
+                  _row(l10n.timelineClipVolumeLabel, _c.volume, 0, 1, 100, (v) { _c.volume = v; _notify(); }, '${(_c.volume * 100).round()}%', step: 0.01),
+                  _row(l10n.timelineClipFadeInLabel, _c.fadeIn, 0, 5, 50, (v) { _c.fadeIn = v; _notify(); }, '${_c.fadeIn.toStringAsFixed(1)}s', step: 0.1),
+                  _row(l10n.timelineClipFadeOutLabel, _c.fadeOut, 0, 5, 50, (v) { _c.fadeOut = v; _notify(); }, '${_c.fadeOut.toStringAsFixed(1)}s', step: 0.1),
                 ],
                 if (_c.trackType == _ClipTrackType.video) ...[
-                  _row(l10n.layerPanelOpacityLabel, _c.videoOpacity, 0, 1, 100, (v) { _c.videoOpacity = v; _notify(); }, '${(_c.videoOpacity * 100).round()}%'),
+                  _row(l10n.layerPanelOpacityLabel, _c.videoOpacity, 0, 1, 100, (v) { _c.videoOpacity = v; _notify(); }, '${(_c.videoOpacity * 100).round()}%', step: 0.01),
                   _row(l10n.timelineClipUseStartLabel, _c.useStart.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
                       (v) { _c.useStart = v.round().clamp(0, _c.useEnd); _notify(); }, 'F${_c.useStart + 1}'),
                   _row(l10n.timelineClipUseEndLabel, _c.useEnd.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
@@ -4776,17 +4777,18 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   }
 
   Widget _row(String label, double value, double min, double max, int divisions,
-      ValueChanged<double> onChanged, String valueText) {
+      ValueChanged<double> onChanged, String valueText, {double step = 1}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           SizedBox(width: 72, child: Text(label, style: const TextStyle(fontSize: 12))),
           Expanded(
-            child: Slider(
+            child: SteppedSlider(
               value: value.clamp(min, max),
               min: min, max: max,
               divisions: divisions > 0 ? divisions : 1,
+              step: step,
               onChanged: onChanged,
             ),
           ),
@@ -4915,7 +4917,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
               children: [
                 _row(l10n.timelineCameraMoveXLabel, _kf.x, -1920, 1920, (v) => _update(_kf.copyWith(x: v)), _kf.x.toStringAsFixed(0)),
                 _row(l10n.timelineCameraMoveYLabel, _kf.y, -1080, 1080, (v) => _update(_kf.copyWith(y: v)), _kf.y.toStringAsFixed(0)),
-                _row(l10n.timelineCameraZoomLabel, _kf.zoom, 0.1, 5.0, (v) => _update(_kf.copyWith(zoom: v)), '×${_kf.zoom.toStringAsFixed(2)}'),
+                _row(l10n.timelineCameraZoomLabel, _kf.zoom, 0.1, 5.0, (v) => _update(_kf.copyWith(zoom: v)), '×${_kf.zoom.toStringAsFixed(2)}', step: 0.05),
                 _row(l10n.timelineCameraRotationLabel, _kf.rotation, -180, 180, (v) => _update(_kf.copyWith(rotation: v)), '${_kf.rotation.toStringAsFixed(1)}°'),
                 const SizedBox(height: 8),
                 Padding(
@@ -4924,7 +4926,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                     children: [
                       SizedBox(width: 72, child: Text(l10n.timelineFrameTrackLabel, style: const TextStyle(fontSize: 12))),
                       Expanded(
-                        child: Slider(
+                        child: SteppedSlider(
                           value: _kf.frameIndex.toDouble(),
                           min: 0,
                           max: (widget.totalFrames - 1).toDouble(),
@@ -4954,7 +4956,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
   }
 
   Widget _row(String label, double value, double min, double max,
-      ValueChanged<double> onChanged, String valueText) {
+      ValueChanged<double> onChanged, String valueText, {double step = 1}) {
     final divisions = ((max - min) * 10).round().clamp(1, 1000);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -4962,10 +4964,11 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
         children: [
           SizedBox(width: 72, child: Text(label, style: const TextStyle(fontSize: 12))),
           Expanded(
-            child: Slider(
+            child: SteppedSlider(
               value: value.clamp(min, max),
               min: min, max: max,
               divisions: divisions,
+              step: step,
               onChanged: onChanged,
             ),
           ),

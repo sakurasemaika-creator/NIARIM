@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'panel_close_bar.dart';
 
 /// レイヤー全体の自由変形・メッシュ変形のコントロールパネル（仕様書28：
@@ -61,7 +62,7 @@ class MeshTransformPanel extends StatelessWidget {
               context,
               label: l10n.meshTransformDensityLabel,
               valueText: '$density×$density',
-              child: Slider(
+              child: SteppedSlider(
                 value: density.toDouble(),
                 min: 1,
                 max: 10,
@@ -73,7 +74,7 @@ class MeshTransformPanel extends StatelessWidget {
               context,
               label: l10n.meshTransformRotateLabel,
               valueText: '${rotateDeg.round()}°',
-              child: Slider(
+              child: SteppedSlider(
                 value: rotateDeg,
                 min: -180,
                 max: 180,
@@ -84,10 +85,11 @@ class MeshTransformPanel extends StatelessWidget {
               context,
               label: l10n.meshTransformScaleLabel,
               valueText: '${scaleValue.toStringAsFixed(2)}×',
-              child: Slider(
+              child: SteppedSlider(
                 value: scaleValue,
                 min: 0.2,
                 max: 3.0,
+                step: 0.05,
                 onChanged: onScaleChanged,
               ),
             ),

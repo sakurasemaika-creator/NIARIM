@@ -8,6 +8,7 @@ import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 
@@ -252,7 +253,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               Row(children: [
                 SizedBox(width: 56, child: Text(l10n.newProjectWidthShort, textAlign: TextAlign.center)),
                 Expanded(
-                  child: Slider(
+                  child: SteppedSlider(
                     min: 64, max: _maxCustomEdge.toDouble(),
                     value: _exportWidth.clamp(64, _maxCustomEdge).toDouble(),
                     label: '${_exportWidth}px',
@@ -271,7 +272,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               Row(children: [
                 SizedBox(width: 56, child: Text(l10n.newProjectHeightShort, textAlign: TextAlign.center)),
                 Expanded(
-                  child: Slider(
+                  child: SteppedSlider(
                     min: 64, max: _maxCustomEdge.toDouble(),
                     value: _exportHeight.clamp(64, _maxCustomEdge).toDouble(),
                     label: '${_exportHeight}px',
@@ -337,7 +338,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: Slider(
+                        child: SteppedSlider(
                           min: 1,
                           max: maxDuration.toDouble(),
                           value: _durationSeconds.clamp(1, maxDuration).toDouble(),
@@ -431,10 +432,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   Text(l10n.newProjectScaleLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Slider(
+                    child: SteppedSlider(
                       min: 1.0, max: 10.0,
                       value: _drawingAreaScale,
                       divisions: 18, // 0.5刻み
+                      step: 0.5,
                       label: l10n.newProjectScaleValue(_drawingAreaScale.toStringAsFixed(1)),
                       onChanged: (v) => setState(() => _drawingAreaScale = v),
                     ),

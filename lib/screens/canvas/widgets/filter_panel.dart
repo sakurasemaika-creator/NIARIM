@@ -16,6 +16,7 @@ import '../../../services/project_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
+import '../../../widgets/stepped_slider.dart';
 import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 
@@ -756,10 +757,11 @@ class _FilterPanelState extends State<FilterPanel> {
               trackHeight: 2,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
             ),
-            child: Slider(
+            child: SteppedSlider(
               value: value.clamp(min, max),
               min: min,
               max: max,
+              step: decimals > 0 ? 0.1 : 1,
               onChanged: (v) {
                 onChanged(v);
                 _updatePreview();
