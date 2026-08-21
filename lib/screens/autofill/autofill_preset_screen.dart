@@ -1219,6 +1219,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   Future<AutofillPart?> _showGradientEditor(AutofillPart part) {
     final l10n = AppLocalizations.of(context)!;
     var gradient = part.gradient ?? AutofillGradient.defaultTwoColor(part.color, 0xFFFFFFFF);
+    // 放射グラデーションで中心（t=0）から始まるドラッグは、重なって表示
+    // されている左右2つの分身ハンドルのどちらをつまんだか区別できない
+    // （常に見た目上の一番上＝右分身側だけがジェスチャーを受け取る）。
+    // そのままだと「つまんだ側の想定方向」にしか反応せず、逆方向へ
+    // ドラッグすると反応しないように見えるため、ドラッグ開始時に中心
+    // ぴったりだった場合は、実際に動かした最初の方向をそのジェスチャー
+    // 中ずっと「外側へ広がる方向」として固定し、左右どちらへ引っ張っても
+    // 素直に分割できるようにする（indexごとに保持、setSでは再生成
+    // されないようこのメソッドのスコープに置く）。
+    final Map<int, int> centerDragSign = {};
     return showDialog<AutofillPart>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -1288,15 +1298,33 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               top: 0,
                               child: GestureDetector(
                                 behavior: HitTestBehavior.opaque,
-                                onHorizontalDragUpdate: (d) {
-                                  final halfWidth = isRadial ? maxWidth / 2 : maxWidth;
-                                  final dt = d.delta.dx / halfWidth * (mirrorDrag ? -1 : 1);
-                                  if (isRadial) {
-                                    setGeomT(i, geomT(i) + dt);
+                                onHorizontalDragStart: (_) {
+                                  // 中心ぴったりから始まる場合だけ「未確定」の
+                                  // 印として0を入れる（それ以外の通常ドラッグは
+                                  // 記録を残さず、常にmirrorDragの向きで動く）。
+                                  if (isRadial && geomT(i) <= 0.001) {
+                                    centerDragSign[i] = 0;
                                   } else {
-                                    setStopAt(i, gradient.stops[i] + dt);
+                                    centerDragSign.remove(i);
                                   }
                                 },
+                                onHorizontalDragUpdate: (d) {
+                                  final halfWidth = isRadial ? maxWidth / 2 : maxWidth;
+                                  if (isRadial) {
+                                    final locked = centerDragSign[i];
+                                    if (locked == 0 && d.delta.dx != 0) {
+                                      centerDragSign[i] = d.delta.dx > 0 ? 1 : -1;
+                                    }
+                                    final sign = centerDragSign[i];
+                                    final dt = (sign != null && sign != 0)
+                                        ? d.delta.dx / halfWidth * sign
+                                        : d.delta.dx / halfWidth * (mirrorDrag ? -1 : 1);
+                                    setGeomT(i, geomT(i) + dt);
+                                  } else {
+                                    setStopAt(i, gradient.stops[i] + d.delta.dx / halfWidth);
+                                  }
+                                },
+                                onHorizontalDragEnd: (_) => centerDragSign.remove(i),
                                 child: CustomPaint(
                                   size: const Size(14, 12),
                                   painter: _StopHandlePainter(color: Color(gradient.colors[i])),
