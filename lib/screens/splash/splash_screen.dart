@@ -1,26 +1,24 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
-import '../tips/tips_screen.dart' show allTipEntries;
 
-/// 起動時のスプラッシュ画面。ロゴを約2秒間表示してからプロジェクト一覧
-/// （ホーム画面）へ自動遷移する。
+/// 起動画面。ロゴを中央に表示し、その上に「みんなのアニメを見る」、下に
+/// 「アニメを作る」の2つの大きな導線ボタンを配置する。どちらかをタップする
+/// まで自動遷移はしない。
+///
+/// 表示している間に、ホーム画面の各タブが必要とするデータの先読みを
+/// 裏で進めておく（[_preloadHomeData]）。これにより、「アニメを作る」を
+/// タップしてホーム画面へ遷移した瞬間には大半の読み込みが完了済みか
+/// 完了間近の状態になる。
 ///
 /// ロゴ画像は未完成のため、現時点では単色のプレースホルダー画像
 /// （assets/logo/splash_logo.png）を表示している。本番ロゴが用意でき
 /// 次第、同じファイル名・パスへ差し替えるだけでよい（コード変更不要）。
-///
-/// 表示している間に、ホーム画面の各タブが必要とするデータの先読みを
-/// 裏で進めておく（[_preloadHomeData]）。これにより、ホーム画面へ遷移
-/// した瞬間には大半の読み込みが完了済みか完了間近の状態になる。
-/// また、処理中ダイアログ（[ProgressDialog]）と同様に、待ち時間を活用して
-/// ランダムなTipsを1件表示する。
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -29,32 +27,10 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  static const _displayDuration = Duration(seconds: 2);
-  Timer? _timer;
-  (String, String)? _tip;
-
   @override
   void initState() {
     super.initState();
-    _timer = Timer(_displayDuration, () {
-      if (!mounted) return;
-      // 履歴に残さず置き換える（戻るボタンでスプラッシュへ戻らないようにする）
-      context.go('/home');
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pickRandomTip();
-      _preloadHomeData();
-    });
-  }
-
-  /// 表示するTipsを1件ランダムに選ぶ。スプラッシュは表示時間が短いため
-  /// （約2秒）、[ProgressDialog]のような一定間隔での切り替えは行わない。
-  void _pickRandomTip() {
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    final tips = allTipEntries(l10n);
-    if (tips.isEmpty) return;
-    setState(() => _tip = tips[Random().nextInt(tips.length)]);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _preloadHomeData());
   }
 
   /// ホーム画面の各タブが表示に使うデータを先読みする。
@@ -83,59 +59,104 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final tip = _tip;
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/logo/splash_logo.png',
-              width: 160,
-              height: 160,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _SplashActionButton(
+                    icon: Icons.movie_filter_outlined,
+                    label: l10n.splashViewCommunityButton,
+                    colors: [scheme.tertiary, scheme.tertiaryContainer],
+                    onTap: () => context.push('/community-coming-soon'),
+                  ),
+                  const SizedBox(height: 40),
+                  Image.asset(
+                    'assets/logo/splash_logo.png',
+                    width: 160,
+                    height: 160,
+                  ),
+                  const SizedBox(height: 40),
+                  _SplashActionButton(
+                    icon: Icons.brush_outlined,
+                    label: l10n.splashCreateButton,
+                    colors: [scheme.primary, scheme.primaryContainer],
+                    onTap: () => context.go('/home'),
+                  ),
+                ],
+              ),
             ),
-            if (tip != null) ...[
-              const SizedBox(height: 32),
-              Container(
-                width: 280,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.lightbulb_outline, size: 14, color: scheme.primary),
-                        const SizedBox(width: 4),
-                        Text(l10n.progressDialogTipLabel,
-                            style: TextStyle(
-                                fontSize: 11, fontWeight: FontWeight.bold, color: scheme.primary)),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(tip.$1, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 2),
-                    Text(tip.$2,
-                        style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-                        maxLines: 3, overflow: TextOverflow.ellipsis),
-                  ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 起動画面の大きな導線ボタン。単なるテキストボタンではなく、グラデーション
+/// 背景・角丸・影を持つカード状のボタンにして存在感を出す。
+class _SplashActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final List<Color> colors;
+  final VoidCallback onTap;
+
+  const _SplashActionButton({
+    required this.icon,
+    required this.label,
+    required this.colors,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(28),
+      elevation: 4,
+      shadowColor: colors.first.withValues(alpha: 0.5),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: onTap,
+        child: Container(
+          width: 280,
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              colors: colors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: 26),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );

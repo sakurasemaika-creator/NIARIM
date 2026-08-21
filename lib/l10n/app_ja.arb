@@ -2358,5 +2358,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "splashViewCommunityButton": "みんなのアニメを見る",
+  "splashCreateButton": "アニメを作る",
+  "communityComingSoonTitle": "準備中",
+  "communityComingSoonBody": "みんなのアニメを見る機能は現在準備中です。今後のアップデートをお楽しみに。"
 }

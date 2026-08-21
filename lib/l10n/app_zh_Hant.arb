@@ -2136,5 +2136,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "splashViewCommunityButton": "查看大家的動畫",
+  "splashCreateButton": "製作動畫",
+  "communityComingSoonTitle": "敬請期待",
+  "communityComingSoonBody": "「查看大家的動畫」功能目前正在開發中，敬請期待後續更新。"
 }

@@ -2136,5 +2136,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "splashViewCommunityButton": "See Everyone's Animations",
+  "splashCreateButton": "Create an Animation",
+  "communityComingSoonTitle": "Coming Soon",
+  "communityComingSoonBody": "The \"See Everyone's Animations\" feature is currently under development. Stay tuned for future updates."
 }

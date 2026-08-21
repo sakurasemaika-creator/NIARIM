@@ -2136,5 +2136,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "splashViewCommunityButton": "Ver las animaciones de todos",
+  "splashCreateButton": "Crear una animación",
+  "communityComingSoonTitle": "Próximamente",
+  "communityComingSoonBody": "La función \"Ver las animaciones de todos\" está actualmente en desarrollo. Estate atento a futuras actualizaciones."
 }

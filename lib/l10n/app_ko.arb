@@ -2136,5 +2136,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "splashViewCommunityButton": "모두의 애니메이션 보기",
+  "splashCreateButton": "애니메이션 만들기",
+  "communityComingSoonTitle": "준비 중",
+  "communityComingSoonBody": "'모두의 애니메이션 보기' 기능은 현재 준비 중입니다. 다음 업데이트를 기대해 주세요."
 }
