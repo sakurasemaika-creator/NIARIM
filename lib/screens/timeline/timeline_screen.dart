@@ -844,7 +844,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(top: BorderSide(color: Colors.grey[800]!)),
+        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -887,7 +887,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.branding_watermark, size: 18, color: Colors.grey[500]),
+            Icon(Icons.branding_watermark, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(width: 2),
             const Icon(Icons.lock, size: 12, color: Colors.amber),
           ],
@@ -1275,7 +1275,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               child: Container(
                                 width: 3,
                                 height: 28,
-                                color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[600],
+                                color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
                               ),
                             ),
                           );
@@ -1602,7 +1602,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           Positioned(
             left: 0, right: 0, bottom: 0, height: 50,
             child: Container(
-              decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Colors.grey[800]!))),
+              decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Theme.of(context).colorScheme.outlineVariant))),
               child: Row(
                 children: [
                   _buildTrackLabel(Icons.movie_filter, l10n.timelineFrameTrackLabel),
@@ -1648,7 +1648,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 alignment: Alignment.center,
                                 child: Container(
                                   width: 3, height: 28,
-                                  color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[600],
+                                  color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
                                 ),
                               ),
                             );
@@ -1969,9 +1969,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: [
-          Icon(icon, size: 12, color: Colors.grey),
+          Icon(icon, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 2),
-          Flexible(child: Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey), overflow: TextOverflow.ellipsis)),
+          Flexible(child: Text(label, style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.onSurfaceVariant), overflow: TextOverflow.ellipsis)),
         ],
       ),
     );
@@ -2315,7 +2315,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHigh,
-        border: Border.symmetric(horizontal: BorderSide(color: Colors.grey[800]!)),
+        border: Border.symmetric(horizontal: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 6, offset: const Offset(0, 2)),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -2416,7 +2419,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   Container(
                                     width: _cellW,
                                     decoration: BoxDecoration(
-                                      border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                                      border: Border(right: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
                                     ),
                                   ),
                               ],
@@ -3098,7 +3101,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             itemBuilder: (_, i) => Container(
                               width: _cellW,
                               decoration: BoxDecoration(
-                                border: Border(right: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                                border: Border(right: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
                               ),
                             ),
                           ),
@@ -3157,9 +3160,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               children: [
-                const Icon(Icons.movie, size: 14, color: Colors.grey),
+                Icon(Icons.movie, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 const SizedBox(width: 4),
-                Text(l10n.timelineEndCardTrackLabel, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                Text(l10n.timelineEndCardTrackLabel, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 const SizedBox(width: 4),
                 if (!premium.isPremium)
                   const Icon(Icons.lock, size: 14, color: Colors.amber)
@@ -3167,7 +3170,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   const Spacer(),
                   Text(
                     hidden ? l10n.timelineEndCardHiddenLabel : l10n.timelineEndCardDefaultLogoLabel,
-                    style: const TextStyle(fontSize: 9, color: Colors.grey),
+                    style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(width: 4),
                   if (!hidden)
@@ -4284,7 +4287,7 @@ class _EffectFilterSheet extends StatelessWidget {
                 ? Center(
                     child: Text(l10n.timelineEffectFilterEmptyState,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.grey)))
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)))
                 // ドラッグで並び替え可能（仕様書18：「複数フィルターの適用順」は
                 // タイムライン上の並び順に従うため、並び替えが適用順を左右する）
                 : ReorderableListView.builder(
@@ -4338,6 +4341,9 @@ class _EffectFilterSheet extends StatelessWidget {
     return Card(
       key: key,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      elevation: 1,
+      shadowColor: Colors.black.withValues(alpha: 0.15),
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: ExpansionTile(
         leading: Icon(_typeIcons[e.type], size: 20),
         title: Text(_typeLabel(l10n, e.type), style: const TextStyle(fontSize: 13)),
