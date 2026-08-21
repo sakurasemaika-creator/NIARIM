@@ -82,6 +82,10 @@ class PenSettingsScreen extends StatelessWidget {
           const SizedBox(height: 20),
           _sectionLabel(context, l10n.penSettingsButtonSection),
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: Column(
               children: [
                 _buttonItem(context, l10n.penSettingsButton1, settings.penButton1, (a) => settings.setPenButton(1, a)),

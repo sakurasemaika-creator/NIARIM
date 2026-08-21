@@ -134,6 +134,10 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                     itemBuilder: (context, index) {
                       final f = sorted[index];
                       return Card(
+                        elevation: 1,
+                        shadowColor: Colors.black.withValues(alpha: 0.15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        color: Theme.of(context).colorScheme.surfaceContainerLow,
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: scheme.primaryContainer,

@@ -21,6 +21,10 @@ class GestureSettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: Column(
               children: [
                 _item(context, l10n.gestureTwoFingerTap, settings.twoFingerTap, (a) => settings.setGesture(GestureType.twoFingerTap, a)),
@@ -44,6 +48,10 @@ class GestureSettingsScreen extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: Column(
               children: [
                 SwitchListTile(

@@ -62,6 +62,10 @@ class _TransferScreenState extends State<TransferScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 Card(
+                  elevation: 1,
+                  shadowColor: Colors.black.withValues(alpha: 0.15),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
                   child: Column(
                     children: [
                       for (final key in _items.keys) ...[

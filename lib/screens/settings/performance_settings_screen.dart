@@ -143,25 +143,36 @@ class _PerformanceSettingsScreenState
           Text(l10n.perfSettingsCapacitySection,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          ListTile(
-            title: Text(l10n.perfSettingsUndoLimitTitle),
-            subtitle: Text(l10n.perfSettingsUndoLimitSubtitle),
-            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(l10n.perfSettingsUndoLimitValue(settings.undoLimit)),
-              const Icon(Icons.chevron_right),
-            ]),
-            onTap: () => _showUndoLimitDialog(context, settings),
-          ),
-          ListTile(
-            title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
-            subtitle: Text(l10n.perfSettingsTrashAutoDeleteSubtitle),
-            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(settings.trashAutoDeleteDays == 0
-                  ? l10n.commonOff
-                  : l10n.perfSettingsTrashAutoDeleteValue(settings.trashAutoDeleteDays)),
-              const Icon(Icons.chevron_right),
-            ]),
-            onTap: () => _showTrashAutoDeleteDialog(context, settings),
+          Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(l10n.perfSettingsUndoLimitTitle),
+                  subtitle: Text(l10n.perfSettingsUndoLimitSubtitle),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text(l10n.perfSettingsUndoLimitValue(settings.undoLimit)),
+                    const Icon(Icons.chevron_right),
+                  ]),
+                  onTap: () => _showUndoLimitDialog(context, settings),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
+                  subtitle: Text(l10n.perfSettingsTrashAutoDeleteSubtitle),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text(settings.trashAutoDeleteDays == 0
+                        ? l10n.commonOff
+                        : l10n.perfSettingsTrashAutoDeleteValue(settings.trashAutoDeleteDays)),
+                    const Icon(Icons.chevron_right),
+                  ]),
+                  onTap: () => _showTrashAutoDeleteDialog(context, settings),
+                ),
+              ],
+            ),
           ),
           const Divider(height: 32),
           Text(l10n.perfSettingsCurrentSettingsSection,

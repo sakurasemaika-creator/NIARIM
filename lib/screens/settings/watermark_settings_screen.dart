@@ -432,6 +432,9 @@ class _WatermarkTile extends StatelessWidget {
     final service = context.read<WatermarkService>();
     return Card(
       clipBehavior: Clip.antiAlias,
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Column(
         children: [
           Expanded(

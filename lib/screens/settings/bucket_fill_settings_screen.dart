@@ -84,6 +84,10 @@ class BucketFillSettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: SwitchListTile(
               title: Text(l10n.bucketSettingsUnderLineTitle),
               subtitle: Text(

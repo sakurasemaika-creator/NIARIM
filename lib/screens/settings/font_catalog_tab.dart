@@ -83,6 +83,10 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
                   itemBuilder: (context, index) {
                     final entry = filtered[index];
                     return Card(
+                      elevation: 1,
+                      shadowColor: Colors.black.withValues(alpha: 0.15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      color: scheme.surfaceContainerLow,
                       child: ListTile(
                         leading: const Icon(Icons.font_download_outlined),
                         title: Text(entry.displayName),
