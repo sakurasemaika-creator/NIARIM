@@ -494,6 +494,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// 画像を都度読み込めるようにして」）。読み込んだ画像はスクラッチ領域へ
   /// コピーし、この画面を離れる際に削除する。
   Future<void> _pickColorFromNewImage(ValueChanged<Color> onPicked) async {
+    final l10n = AppLocalizations.of(context)!;
     // withData: trueでバイト列も取得しておく。Web版はdart:ioのFileが
     // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ
     // 渡す（以前はpathがnullだと即returnしてしまい、Web版でスポイトが
@@ -501,7 +502,17 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
     if (result == null || result.files.isEmpty) return;
     final picked = result.files.first;
-    if (picked.path == null && picked.bytes == null) return;
+    if (picked.path == null && picked.bytes == null) {
+      // ここへ来るのは異常系（ファイルは選ばれたのにpath・bytesとも
+      // 取得できなかった場合）。以前はここで無言でreturnしており、
+      // 「画像を選んでも何も起きず元の画面に戻る」ように見えて原因が
+      // 分からなかったため、理由が分かるようスナックバーで明示する。
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.autofillEyedropperImageLoadFailedSnackbar)));
+      }
+      return;
+    }
     if (!mounted) return;
 
     Color? pickedColor;

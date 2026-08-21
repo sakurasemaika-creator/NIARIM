@@ -1269,6 +1269,7 @@
   "autofillEyedropperDialogTitle": "從圖片中拾取顏色",
   "autofillEyedropperDialogHint": "點擊圖片以選擇顏色",
   "autofillEyedropperPickedLabel": "已選顏色",
+  "autofillEyedropperImageLoadFailedSnackbar": "無法載入圖片。",
   "autofillThumbnailMenuItem": "設定縮圖",
   "autofillThumbnailLoadButton": "載入圖片",
   "autofillThumbnailDeleteButton": "刪除縮圖",

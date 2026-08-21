@@ -1269,6 +1269,7 @@
   "autofillEyedropperDialogTitle": "Prélever une couleur depuis l'image",
   "autofillEyedropperDialogHint": "Touchez l'image pour choisir une couleur",
   "autofillEyedropperPickedLabel": "Couleur choisie",
+  "autofillEyedropperImageLoadFailedSnackbar": "Impossible de charger l’image.",
   "autofillThumbnailMenuItem": "Définir l'image miniature",
   "autofillThumbnailLoadButton": "Charger une image",
   "autofillThumbnailDeleteButton": "Supprimer l'image miniature",

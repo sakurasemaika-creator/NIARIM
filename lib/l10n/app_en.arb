@@ -1269,6 +1269,7 @@
   "autofillEyedropperDialogTitle": "Pick a color from the image",
   "autofillEyedropperDialogHint": "Tap the image to pick a color",
   "autofillEyedropperPickedLabel": "Picked color",
+  "autofillEyedropperImageLoadFailedSnackbar": "Couldn’t load the image.",
   "autofillThumbnailMenuItem": "Set thumbnail image",
   "autofillThumbnailLoadButton": "Load image",
   "autofillThumbnailDeleteButton": "Delete thumbnail image",

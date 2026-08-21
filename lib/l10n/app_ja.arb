@@ -1490,6 +1490,7 @@
   "autofillEyedropperDialogTitle": "画像から色を拾う",
   "autofillEyedropperDialogHint": "画像をタップして色を選択してください",
   "autofillEyedropperPickedLabel": "選択した色",
+  "autofillEyedropperImageLoadFailedSnackbar": "画像を読み込めませんでした",
   "autofillThumbnailMenuItem": "サムネイル画像設定",
   "autofillThumbnailLoadButton": "画像読み込み",
   "autofillThumbnailDeleteButton": "サムネイル画像削除",

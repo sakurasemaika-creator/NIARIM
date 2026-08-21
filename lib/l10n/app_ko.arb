@@ -1269,6 +1269,7 @@
   "autofillEyedropperDialogTitle": "이미지에서 색상 추출",
   "autofillEyedropperDialogHint": "이미지를 탭하여 색상을 선택하세요",
   "autofillEyedropperPickedLabel": "선택한 색상",
+  "autofillEyedropperImageLoadFailedSnackbar": "이미지를 불러올 수 없었습니다.",
   "autofillThumbnailMenuItem": "썸네일 이미지 설정",
   "autofillThumbnailLoadButton": "이미지 불러오기",
   "autofillThumbnailDeleteButton": "썸네일 이미지 삭제",
