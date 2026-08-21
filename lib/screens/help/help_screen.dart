@@ -174,10 +174,17 @@ class _HelpScreenState extends State<HelpScreen> {
       body: SafeArea(child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
             child: TextField(
               controller: _searchController,
-              decoration: InputDecoration(hintText: l10n.helpSearchHint, prefixIcon: const Icon(Icons.search), border: const OutlineInputBorder(), isDense: true),
+              decoration: InputDecoration(
+                hintText: l10n.helpSearchHint,
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                isDense: true,
+              ),
               onChanged: (v) => setState(() => _searchQuery = v),
             ),
           ),
@@ -188,33 +195,59 @@ class _HelpScreenState extends State<HelpScreen> {
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   )
                 : ListView.builder(
+              padding: const EdgeInsets.only(top: 4, bottom: 12),
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final entry = filtered[index];
-                return ExpansionTile(
-                  // 各画面のヘルプボタンから遷移した場合、該当項目を
-                  // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
-                  // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。
-                  initiallyExpanded: widget.initialTopic != null && entry.topicKey == widget.initialTopic,
-                  leading: Icon(Icons.help_outline, color: Theme.of(context).colorScheme.primary, size: 20),
-                  // 項目名用フォント（仕様書24：くらむぼん。以前は説明文と
-                  // 逆になっており、項目名が白光明朝・説明文がくらむぼんに
-                  // なっていた不具合を修正）。
-                  title: Text(entry.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600)),
-                  subtitle: Text(entry.category,
-                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                  children: [
-                    // 実画面を再現した簡易図解は、あくまで「四角・アイコンを
-                    // 並べた模式図」の域を出ず、実際の画面をほぼ再現できて
-                    // いなかったため廃止した（2026年8月20日、ユーザー指摘）。
-                    // 文章での説明のみとする。
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      // 説明テキスト用フォント（仕様書24：白光明朝。アプリ全体の
-                      // 基本フォントを継承するため明示指定不要）。
-                      child: Text(entry.description),
+                final scheme = Theme.of(context).colorScheme;
+                // 各項目を独立したカードとして浮かせる（デザイン強化：
+                // フラットな一覧行の羅列から作り込んだ見た目へ）。
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Material(
+                    color: scheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(14),
+                    elevation: 1,
+                    shadowColor: Colors.black.withValues(alpha: 0.15),
+                    clipBehavior: Clip.antiAlias,
+                    child: ExpansionTile(
+                      // 各画面のヘルプボタンから遷移した場合、該当項目を
+                      // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
+                      // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。
+                      initiallyExpanded: widget.initialTopic != null && entry.topicKey == widget.initialTopic,
+                      shape: const Border(),
+                      leading: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [scheme.primary.withValues(alpha: 0.22), scheme.primary.withValues(alpha: 0.1)],
+                          ),
+                        ),
+                        child: Icon(Icons.help_outline, color: scheme.primary, size: 18),
+                      ),
+                      // 項目名用フォント（仕様書24：くらむぼん。以前は説明文と
+                      // 逆になっており、項目名が白光明朝・説明文がくらむぼんに
+                      // なっていた不具合を修正）。
+                      title: Text(entry.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w700, fontSize: 14)),
+                      subtitle: Text(entry.category, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                      children: [
+                        // 実画面を再現した簡易図解は、あくまで「四角・アイコンを
+                        // 並べた模式図」の域を出ず、実際の画面をほぼ再現できて
+                        // いなかったため廃止した（2026年8月20日、ユーザー指摘）。
+                        // 文章での説明のみとする。
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          // 説明テキスト用フォント（仕様書24：白光明朝。アプリ全体の
+                          // 基本フォントを継承するため明示指定不要）。
+                          child: Text(entry.description, style: const TextStyle(height: 1.5)),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 );
               },
             ),

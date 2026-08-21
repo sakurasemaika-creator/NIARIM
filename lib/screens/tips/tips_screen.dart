@@ -59,13 +59,15 @@ class _TipsScreenState extends State<TipsScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: l10n.tipsSearchHint,
                   prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: scheme.surfaceContainerLow,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                   isDense: true,
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
@@ -251,13 +253,43 @@ class _TipListTile extends StatelessWidget {
     // 40×40の小さな領域に押し込めて表示すると、画面全体を模した図解が
     // つぶれて崩れて見えるうえ、60件超の一覧すべてを常時描画するのは
     // 無駄が大きいため、詳細ポップアップ（_TipDetailDialog）側でのみ描画する。
-    return Card(
-      margin: const EdgeInsets.only(bottom: 6),
-      child: ListTile(
-        dense: true,
-        title: Text(tip.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 13)),
-        trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-        onTap: () => showDialog(context: context, builder: (_) => _TipDetailDialog(tip: tip)),
+    // カード自体は影付きで浮かせ、電球アイコンのバッジを添えて「作り込んだ」
+    // 見た目にする（デザイン強化）。
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => showDialog(context: context, builder: (_) => _TipDetailDialog(tip: tip)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9),
+                    gradient: LinearGradient(
+                      colors: [scheme.tertiary.withValues(alpha: 0.25), scheme.tertiary.withValues(alpha: 0.1)],
+                    ),
+                  ),
+                  child: Icon(Icons.lightbulb_outline, color: scheme.tertiary, size: 16),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(tip.title,
+                      style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 13)),
+                ),
+                Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
