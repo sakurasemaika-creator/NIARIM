@@ -592,19 +592,25 @@ class _SharedTab extends StatelessWidget {
       ),
       onRenameFolder: (id, name) => context.read<ProjectService>().renameSharedFolder(id, name),
       onDeleteFolder: (id) => context.read<ProjectService>().deleteSharedFolder(id),
-      itemBuilder: (context, project) => ListTile(
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Color(project.backgroundColor),
-            borderRadius: BorderRadius.circular(10),
+      itemBuilder: (context, project) => Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        child: ListTile(
+          leading: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Color(project.backgroundColor),
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
+          title: Text(project.name),
+          subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
+          onTap: () => context.push('/project/${project.id}'),
+          onLongPress: () => _showMoveToSharedFolderSheet(context, project),
         ),
-        title: Text(project.name),
-        subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
-        onTap: () => context.push('/project/${project.id}'),
-        onLongPress: () => _showMoveToSharedFolderSheet(context, project),
       ),
     );
   }
@@ -662,18 +668,24 @@ class _SharedFolderScreen extends StatelessWidget {
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final project = items[index];
-                return ListTile(
-                  leading: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Color(project.backgroundColor),
-                      borderRadius: BorderRadius.circular(10),
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  elevation: 1,
+                  shadowColor: Colors.black.withValues(alpha: 0.15),
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  child: ListTile(
+                    leading: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Color(project.backgroundColor),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
+                    title: Text(project.name),
+                    subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
+                    onTap: () => context.push('/project/${project.id}'),
                   ),
-                  title: Text(project.name),
-                  subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
-                  onTap: () => context.push('/project/${project.id}'),
                 );
               },
             ),
@@ -842,30 +854,36 @@ class _TrashTab extends StatelessWidget {
             : l10n.homeTrashDeletedOn(
                 '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')}');
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
-        return ListTile(
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Color(project.backgroundColor),
-              borderRadius: BorderRadius.circular(10),
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          elevation: 1,
+          shadowColor: Colors.black.withValues(alpha: 0.15),
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          child: ListTile(
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Color(project.backgroundColor),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-          ),
-          title: Text(project.name),
-          subtitle: Text(deletedLabel.isEmpty ? meta : '$deletedLabel · $meta'),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton(
-                onPressed: () => context.read<ProjectService>().restoreProject(project.id),
-                child: Text(l10n.commonRestore),
-              ),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                onPressed: () => _confirmPermanentDelete(context, project.id),
-                child: Text(l10n.homePermanentDelete),
-              ),
-            ],
+            title: Text(project.name),
+            subtitle: Text(deletedLabel.isEmpty ? meta : '$deletedLabel · $meta'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(
+                  onPressed: () => context.read<ProjectService>().restoreProject(project.id),
+                  child: Text(l10n.commonRestore),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  onPressed: () => _confirmPermanentDelete(context, project.id),
+                  child: Text(l10n.homePermanentDelete),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -1074,6 +1092,9 @@ class _WorkListItem extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 1,
+      shadowColor: Colors.black.withValues(alpha: 0.15),
+      color: scheme.surfaceContainerLow,
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: scheme.primaryContainer,
