@@ -45,6 +45,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: Column(
               children: [
                 ReorderableListView(
@@ -121,6 +125,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             // ため）。強制スマホモード時のみ無効化する。
             final forceMobile = settings.forcePcMode == false;
             return Card(
+              elevation: 1,
+              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
               child: SwitchListTile(
                 title: Text(l10n.workspaceLeftHandedMode),
                 subtitle: Text(forceMobile ? l10n.workspaceLeftHandedSubtitleMobile : l10n.workspaceLeftHandedSubtitlePc),
@@ -138,6 +146,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: Column(
               children: [
                 RadioListTile<bool?>(
@@ -171,6 +183,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: Column(
               children: [
                 for (final panel in CanvasDockPanel.values)
@@ -199,6 +215,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           Card(
+            elevation: 1,
+            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: SwitchListTile(
               secondary: premium.isPremium ? null : const Icon(Icons.lock, color: Colors.amber),
               title: Text(l10n.workspaceEndCardDefaultHiddenTitle),

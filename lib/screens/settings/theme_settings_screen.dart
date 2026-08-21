@@ -104,45 +104,66 @@ class ThemeSettingsScreen extends StatelessWidget {
             buildDefaultDragHandles: false,
             onReorder: themeService.reorder,
             children: [
+              // 他の画面（設定トップ・セーブツリー等）と統一した、影付き
+              // カードとして浮かせるデザイン（作り込みの一環）。選択中の
+              // テーマだけは背景をprimaryContainerに敷いて区別する。
               for (final entry in presets.asMap().entries)
-                ListTile(
+                Padding(
                   key: ValueKey(entry.value.id),
-                  tileColor: current.id == entry.value.id
-                      ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
-                      : null,
-                  leading: _PresetColorSwatch(preset: entry.value),
-                  title: Text(entry.value.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (current.id == entry.value.id)
-                        Icon(Icons.check, color: Theme.of(context).colorScheme.primary, size: 16),
-                      IconButton(
-                        icon: Icon(
-                          entry.value.isFavorite ? Icons.star : Icons.star_outline,
-                          size: 16,
-                          color: entry.value.isFavorite ? Colors.amber : null,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Material(
+                    color: current.id == entry.value.id
+                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
+                        : Theme.of(context).colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(14),
+                    elevation: 1,
+                    shadowColor: Colors.black.withValues(alpha: 0.15),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => themeService.applyPreset(entry.value.id),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        child: Row(
+                          children: [
+                            _PresetColorSwatch(preset: entry.value),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(entry.value.name,
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                            ),
+                            if (current.id == entry.value.id)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Icon(Icons.check, color: Theme.of(context).colorScheme.primary, size: 16),
+                              ),
+                            IconButton(
+                              icon: Icon(
+                                entry.value.isFavorite ? Icons.star : Icons.star_outline,
+                                size: 16,
+                                color: entry.value.isFavorite ? Colors.amber : null,
+                              ),
+                              tooltip: l10n.commonFavoriteToggle,
+                              onPressed: () => themeService.toggleFavorite(entry.value.id),
+                            ),
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert, size: 16),
+                              onSelected: (action) => _handleAction(context, action, entry.value, themeService),
+                              itemBuilder: (_) => [
+                                PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+                                PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+                                PopupMenuItem(value: 'export', child: Text(l10n.themeExportMenuItem)),
+                                PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
+                              ],
+                            ),
+                            ReorderableDragStartListener(
+                              index: entry.key,
+                              child: const Icon(Icons.drag_handle, size: 18),
+                            ),
+                          ],
                         ),
-                        tooltip: l10n.commonFavoriteToggle,
-                        onPressed: () => themeService.toggleFavorite(entry.value.id),
                       ),
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert, size: 16),
-                        onSelected: (action) => _handleAction(context, action, entry.value, themeService),
-                        itemBuilder: (_) => [
-                          PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-                          PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
-                          PopupMenuItem(value: 'export', child: Text(l10n.themeExportMenuItem)),
-                          PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
-                        ],
-                      ),
-                      ReorderableDragStartListener(
-                        index: entry.key,
-                        child: const Icon(Icons.drag_handle, size: 18),
-                      ),
-                    ],
+                    ),
                   ),
-                  onTap: () => themeService.applyPreset(entry.value.id),
                 ),
             ],
           ),
@@ -334,20 +355,39 @@ class _ColorCustomizeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      dense: true,
-      leading: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+    // 他の画面（設定トップ・セーブツリー・テーマプリセット一覧）と統一した
+    // 影付きカードデザイン（作り込みの一環）。
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+                Icon(Icons.chevron_right, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ],
+            ),
+          ),
         ),
       ),
-      title: Text(label),
-      trailing: const Icon(Icons.chevron_right, size: 18),
-      onTap: onTap,
     );
   }
 }
