@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/canvas_dock_panel.dart';
 import '../../models/quick_tool_entry.dart';
 import '../../models/toolbar_item.dart';
 import '../../models/workspace_preset.dart';
@@ -161,6 +162,36 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          _sectionLabel(context, l10n.workspaceDockPanelSection),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            // PC/DeXモードでは複数パネルを同時にドッキング表示できる
+            // （スマホ版は誤操作防止のため対象外、常に非表示スタート）。
+            child: Text(l10n.workspaceDockPanelHint,
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
+          Card(
+            child: Column(
+              children: [
+                for (final panel in CanvasDockPanel.values)
+                  CheckboxListTile(
+                    dense: true,
+                    title: Text(_dockPanelLabel(l10n, panel)),
+                    value: settings.defaultDockedPanels.contains(panel),
+                    onChanged: (v) {
+                      final next = Set<CanvasDockPanel>.of(settings.defaultDockedPanels);
+                      if (v ?? false) {
+                        next.add(panel);
+                      } else {
+                        next.remove(panel);
+                      }
+                      settings.setDefaultDockedPanels(next);
+                    },
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           _sectionLabel(context, l10n.workspaceEndCardSection),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -235,6 +266,21 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     );
   }
 
+  String _dockPanelLabel(AppLocalizations l10n, CanvasDockPanel panel) => switch (panel) {
+        CanvasDockPanel.brush => l10n.workspaceDockPanelBrush,
+        CanvasDockPanel.colorPicker => l10n.workspaceDockPanelColorPicker,
+        CanvasDockPanel.layer => l10n.workspaceDockPanelLayer,
+        CanvasDockPanel.tone => l10n.workspaceDockPanelTone,
+        CanvasDockPanel.stamp => l10n.workspaceDockPanelStamp,
+        CanvasDockPanel.penSubTool => l10n.workspaceDockPanelPenSubTool,
+        CanvasDockPanel.onionSkin => l10n.workspaceDockPanelOnionSkin,
+        CanvasDockPanel.ruler => l10n.workspaceDockPanelRuler,
+        CanvasDockPanel.filter => l10n.workspaceDockPanelFilter,
+        CanvasDockPanel.quickTool => l10n.workspaceDockPanelQuickTool,
+        CanvasDockPanel.colorAdjust => l10n.workspaceDockPanelColorAdjust,
+        CanvasDockPanel.canvasPreview => l10n.workspaceDockPanelCanvasPreview,
+      };
+
   void _showSaveDialog(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
     final quickToolService = context.read<QuickToolService>();
     showDialog(
@@ -296,6 +342,14 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       if (preset.quickToolEntries.isNotEmpty) {
         quickToolService.replaceAll(
             preset.quickToolEntries.map((e) => QuickToolEntry.fromJson(e)).toList());
+      }
+      // PC版で既定で開くパネルも一括で切り替える。保存時点で1枚も選んで
+      // いなかった場合（空リスト）は、アプリの既定値を保つため上書きしない。
+      if (preset.defaultDockedPanels.isNotEmpty) {
+        final map = CanvasDockPanel.values.asNameMap();
+        final panels =
+            preset.defaultDockedPanels.map((n) => map[n]).whereType<CanvasDockPanel>().toSet();
+        settings.setDefaultDockedPanels(panels);
       }
     }
 
@@ -433,6 +487,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
       toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
       hiddenToolbarItems: widget.settings.hiddenToolbarItems.map((e) => e.name).toList(),
       quickToolEntries: widget.quickToolEntries,
+      defaultDockedPanels: widget.settings.defaultDockedPanels.map((e) => e.name).toList(),
     );
     Navigator.pop(context);
   }
@@ -486,6 +541,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
       toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
       hiddenToolbarItems: widget.settings.hiddenToolbarItems.map((e) => e.name).toList(),
       quickToolEntries: widget.quickToolEntries,
+      defaultDockedPanels: widget.settings.defaultDockedPanels.map((e) => e.name).toList(),
     );
     if (mounted) Navigator.pop(context);
   }

@@ -15,6 +15,12 @@ class WorkspacePreset {
   final List<String> hiddenToolbarItems;
   // ツール早替え登録内容（QuickToolEntry.toJson()のリスト）
   final List<Map<String, dynamic>> quickToolEntries;
+  // PC/DeXモードでキャンバスを開いた際に既定でドッキング表示するパネル
+  // （CanvasDockPanel.nameのリスト）。空リストは「未設定＝アプリの既定値
+  // を使う」を意味する（保存時点で0枚選択していた場合と区別しないが、
+  // 実運用上ワークスペースを保存する場面で意図的に0枚にすることは
+  // 想定していない）。
+  final List<String> defaultDockedPanels;
 
   const WorkspacePreset({
     required this.id,
@@ -24,6 +30,7 @@ class WorkspacePreset {
     this.toolbarOrder = const [],
     this.hiddenToolbarItems = const [],
     this.quickToolEntries = const [],
+    this.defaultDockedPanels = const [],
   });
 
   List<ToolbarItemId> get toolbarOrderIds {
@@ -44,6 +51,7 @@ class WorkspacePreset {
         'toolbarOrder': toolbarOrder,
         'hiddenToolbarItems': hiddenToolbarItems,
         'quickToolEntries': quickToolEntries,
+        'defaultDockedPanels': defaultDockedPanels,
       };
 
   factory WorkspacePreset.fromJson(Map<String, dynamic> json) => WorkspacePreset(
@@ -57,5 +65,6 @@ class WorkspacePreset {
                 ?.map((e) => Map<String, dynamic>.from(e as Map))
                 .toList() ??
             const [],
+        defaultDockedPanels: (json['defaultDockedPanels'] as List?)?.cast<String>() ?? const [],
       );
 }

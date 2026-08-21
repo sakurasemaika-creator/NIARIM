@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/canvas_dock_panel.dart';
 import '../models/toolbar_item.dart';
 
 class SettingsService extends ChangeNotifier {
@@ -20,6 +21,14 @@ class SettingsService extends ChangeNotifier {
   // ツールバー編集（仕様書08：表示するツールをチェックボックスで選択・ドラッグで並び替え）
   List<ToolbarItemId> _toolbarOrder = List.of(ToolbarItemId.values);
   Set<ToolbarItemId> _hiddenToolbarItems = {};
+  // PC/DeXモードでキャンバス画面を開いた際に既定でドッキング表示する
+  // パネル（仕様書08：ワークスペース設定）。スマホ版は常に全パネル
+  // 非表示スタートのため、この設定は使わない。
+  Set<CanvasDockPanel> _defaultDockedPanels = {
+    CanvasDockPanel.brush,
+    CanvasDockPanel.colorPicker,
+    CanvasDockPanel.layer,
+  };
 
   int get defaultFps => _defaultFps;
   int get undoLimit => _undoLimit;
@@ -31,6 +40,7 @@ class SettingsService extends ChangeNotifier {
   bool get isLeftHanded => _isLeftHanded;
   List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
   Set<ToolbarItemId> get hiddenToolbarItems => Set.unmodifiable(_hiddenToolbarItems);
+  Set<CanvasDockPanel> get defaultDockedPanels => Set.unmodifiable(_defaultDockedPanels);
 
   // ─── バケツ塗り詳細設定（設定画面「バケツ塗り」） ───────────────────────
   // 許容誤差：クリックした位置の色からどこまで色差を許容して同一領域とみなすか
@@ -296,6 +306,11 @@ class SettingsService extends ChangeNotifier {
     }
     final hiddenNames = prefs.getStringList('toolbar_hidden') ?? const [];
     _hiddenToolbarItems = hiddenNames.map((n) => ToolbarItemId.values.asNameMap()[n]).whereType<ToolbarItemId>().toSet();
+    final dockedPanelNames = prefs.getStringList('default_docked_panels');
+    if (dockedPanelNames != null) {
+      final map = CanvasDockPanel.values.asNameMap();
+      _defaultDockedPanels = dockedPanelNames.map((n) => map[n]).whereType<CanvasDockPanel>().toSet();
+    }
     _twoFingerTap = _gestureActionFromName(prefs.getString('gesture_two_finger_tap'), GestureAction.undo);
     _threeFingerTap = _gestureActionFromName(prefs.getString('gesture_three_finger_tap'), GestureAction.redo);
     _twoFingerSwipe = _gestureActionFromName(prefs.getString('gesture_two_finger_swipe'), GestureAction.frameMove);
@@ -412,6 +427,15 @@ class SettingsService extends ChangeNotifier {
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('toolbar_hidden', _hiddenToolbarItems.map((e) => e.name).toList());
+    notifyListeners();
+  }
+
+  /// PC/DeXモードで既定でドッキング表示するパネルの一覧を丸ごと入れ替える
+  /// （仕様書08：ワークスペース設定＞PC版で既定で開くパネル）。
+  Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
+    _defaultDockedPanels = Set.of(panels);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('default_docked_panels', _defaultDockedPanels.map((e) => e.name).toList());
     notifyListeners();
   }
 

@@ -35,6 +35,7 @@ class WorkspacePresetService extends ChangeNotifier {
     List<String> toolbarOrder = const [],
     List<String> hiddenToolbarItems = const [],
     List<Map<String, dynamic>> quickToolEntries = const [],
+    List<String> defaultDockedPanels = const [],
   }) async {
     _presets.removeWhere((p) => p.name == name);
     _presets.add(WorkspacePreset(
@@ -45,6 +46,7 @@ class WorkspacePresetService extends ChangeNotifier {
       toolbarOrder: toolbarOrder,
       hiddenToolbarItems: hiddenToolbarItems,
       quickToolEntries: quickToolEntries,
+      defaultDockedPanels: defaultDockedPanels,
     ));
     await _persist();
     notifyListeners();
@@ -69,6 +71,7 @@ class WorkspacePresetService extends ChangeNotifier {
       toolbarOrder: p.toolbarOrder,
       hiddenToolbarItems: p.hiddenToolbarItems,
       quickToolEntries: p.quickToolEntries,
+      defaultDockedPanels: p.defaultDockedPanels,
     );
     await _persist();
     notifyListeners();
@@ -84,6 +87,7 @@ class WorkspacePresetService extends ChangeNotifier {
     List<String> toolbarOrder = const [],
     List<String> hiddenToolbarItems = const [],
     List<Map<String, dynamic>> quickToolEntries = const [],
+    List<String> defaultDockedPanels = const [],
   }) async {
     final idx = _presets.indexWhere((p) => p.id == id);
     if (idx < 0) return;
@@ -96,6 +100,7 @@ class WorkspacePresetService extends ChangeNotifier {
       toolbarOrder: toolbarOrder,
       hiddenToolbarItems: hiddenToolbarItems,
       quickToolEntries: quickToolEntries,
+      defaultDockedPanels: defaultDockedPanels,
     );
     await _persist();
     notifyListeners();
@@ -127,6 +132,7 @@ class WorkspacePresetService extends ChangeNotifier {
       toolbarOrder: imported.toolbarOrder,
       hiddenToolbarItems: imported.hiddenToolbarItems,
       quickToolEntries: imported.quickToolEntries,
+      defaultDockedPanels: imported.defaultDockedPanels,
     );
     _presets.add(preset);
     await _persist();

@@ -41,6 +41,8 @@ import 'widgets/filter_panel.dart';
 import 'widgets/quick_tool_panel.dart';
 import 'widgets/mesh_transform_panel.dart';
 import 'widgets/reference_window.dart';
+import 'widgets/canvas_preview_navigator.dart';
+import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
 
@@ -68,6 +70,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 閉じない）ため、_closeAllOverlayPanels/_anyToolPanelOpenの対象には
   // あえて含めていない。
   bool _showReferenceWindow = false;
+  // キャンバスプレビュー（ナビゲーター）：拡大表示中でも全体を縮小表示で
+  // 確認できるPC/DeXモード専用のドッキングパネル。スマホ版では扱わない。
+  bool _showCanvasPreviewPanel = false;
   bool _showColorPicker = false;
   bool _showBrushPanel = false;
   // トーン・スタンプの全機能管理パネル（仕様書17：フォルダ・自作・検索・
@@ -102,24 +107,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
   ///
   /// ただしPC/DeXモード（広い画面）は「画面が大きいので複数パネルを
   /// 同時表示してよい、ごちゃごちゃ防止はスマホ版のみでよい」という方針
-  /// のため、レイヤーパネル・カラーピッカーは対象外にする（ドッキング表示
-  /// のため重なって閉じられなくなる心配がない）。ツールオプション系
-  /// （ブラシ・トーン・スタンプ等）は引き続き1枠のみのドッキング枠を
-  /// 共有するため、こちらは画面サイズによらず排他のまま。
+  /// のため、ドッキング表示される全パネル（レイヤー・カラーピッカー・
+  /// ブラシ・トーン・スタンプ等のサブツール系すべて）を対象外にする
+  /// （ドッキング表示のため重なって閉じられなくなる心配がない）。
+  /// 自由変形/メッシュ変形パネルのみキャンバス上の格子点操作と直接
+  /// 絡むため、画面サイズによらず引き続き排他のままにする。
   void _closeAllOverlayPanels() {
     if (!isWideScreen(context)) {
       _showLayerPanel = false;
       _showColorPicker = false;
+      _showBrushPanel = false;
+      _showTonePanel = false;
+      _showStampPanel = false;
+      _showPenSubToolPanel = false;
+      _showOnionSkinPanel = false;
+      _showRulerPanel = false;
+      _showFilterPanel = false;
+      _showQuickToolPanel = false;
+      _showColorAdjustPanel = false;
     }
-    _showBrushPanel = false;
-    _showTonePanel = false;
-    _showStampPanel = false;
-    _showPenSubToolPanel = false;
-    _showOnionSkinPanel = false;
-    _showRulerPanel = false;
-    _showFilterPanel = false;
-    _showQuickToolPanel = false;
-    _showColorAdjustPanel = false;
     // 他のパネルを開く操作で自由変形/メッシュ変形パネルが押し出される場合は、
     // 未確定のワーププレビューを残さないようキャンセル扱いにする。
     if (_showMeshTransformPanel) {
@@ -331,6 +337,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 setState(() => _showReferenceWindow = !_showReferenceWindow);
               },
             ),
+            // キャンバスプレビュー（ナビゲーター）：PC/DeXモード専用。
+            // ドッキング表示のためスマホ版では意味を持たない。
+            if (isWideScreen(context))
+              ListTile(
+                leading: Icon(_showCanvasPreviewPanel ? Icons.map : Icons.map_outlined),
+                title: Text(l10n.canvasEditMenuPreviewNavigator),
+                subtitle: Text(l10n.canvasEditMenuPreviewNavigatorSubtitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  setState(() => _showCanvasPreviewPanel = !_showCanvasPreviewPanel);
+                },
+              ),
           ],
         ),
       ),
@@ -390,18 +408,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
       }
     }
     // 「ごちゃごちゃさせない」方針はスマホ版のみとし、PC/DeXモード
-    // （広い画面）は画面が大きく余裕があるため、ブラシ・カラーピッカー・
-    // レイヤーパネルを初回表示時にまとめて自動でドッキング表示する
-    // （プロ向けペイントソフトのように主要パネルが常に見えている状態を
-    // 既定にする）。1セッション1回のみで、閉じた後にまた勝手に開き
-    // 直されると邪魔になるため、ユーザーが手動で閉じた後は再度自動では
-    // 開かない。3枚とも独立して閉じられる（_closeAllOverlayPanelsも
-    // PC/DeXモードではレイヤー・カラーピッカーを対象外にしている）。
+    // （広い画面）は画面が大きく余裕があるため、初回表示時にワーク
+    // スペース設定（設定＞ワークスペース＞PC版で既定で開くパネル）で
+    // 選ばれているパネルをまとめて自動でドッキング表示する（プロ向け
+    // ペイントソフトのように主要パネルが常に見えている状態を既定にし、
+    // かつユーザー自身がどのパネルを既定にするかカスタマイズできる）。
+    // 1セッション1回のみで、閉じた後にまた勝手に開き直されると邪魔に
+    // なるため、ユーザーが手動で閉じた後は再度自動では開かない。
+    // いずれも独立して閉じられる（_closeAllOverlayPanelsもPC/DeX
+    // モードではこれらを対象外にしている）。
     if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
       _autoOpenedDesktopPanels = true;
-      _showBrushPanel = true;
-      _showColorPicker = true;
-      _showLayerPanel = true;
+      final defaults = context.read<SettingsService>().defaultDockedPanels;
+      _showBrushPanel = defaults.contains(CanvasDockPanel.brush);
+      _showColorPicker = defaults.contains(CanvasDockPanel.colorPicker);
+      _showLayerPanel = defaults.contains(CanvasDockPanel.layer);
+      _showTonePanel = defaults.contains(CanvasDockPanel.tone);
+      _showStampPanel = defaults.contains(CanvasDockPanel.stamp);
+      _showPenSubToolPanel = defaults.contains(CanvasDockPanel.penSubTool);
+      _showOnionSkinPanel = defaults.contains(CanvasDockPanel.onionSkin);
+      _showRulerPanel = defaults.contains(CanvasDockPanel.ruler);
+      _showFilterPanel = defaults.contains(CanvasDockPanel.filter);
+      _showQuickToolPanel = defaults.contains(CanvasDockPanel.quickTool);
+      _showColorAdjustPanel = defaults.contains(CanvasDockPanel.colorAdjust);
+      _showCanvasPreviewPanel = defaults.contains(CanvasDockPanel.canvasPreview);
     }
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
     final newPerf = context.read<PerformanceService>();
@@ -537,8 +567,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .firstOrNull;
     // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
+    // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
+    // 排他にせず、開いているものをすべて縦に積んで同時表示する
+    // （「PCは画面が大きいのでいろいろ表示していい」方針）。
     final isDesktop = isWideScreen(context);
-    final dockedToolPanel = isDesktop ? _activeToolPanel() : null;
+    final openToolPanels = isDesktop ? _openToolOptionPanels() : const <Widget>[];
     // 左利きモード（仕様書08）：フローティング／ドッキングパネルを左右反転し、
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = context.watch<SettingsService>().isLeftHanded;
@@ -577,10 +610,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Row(
                 children: [
                   // PC/DeXモード：ツールオプション系パネルはフローティングではなく
-                  // キャンバス左側（左利きモード時は右側）の常時ドッキングパネル
-                  // として表示する。
-                  if (dockedToolPanel != null && !leftHanded)
-                    SizedBox(width: 280, child: dockedToolPanel),
+                  // キャンバス左側（左利きモード時は右側）の常時ドッキング領域
+                  // として表示する（複数同時に開いていれば縦に積んで並べる）。
+                  if (openToolPanels.isNotEmpty && !leftHanded)
+                    SizedBox(width: 280, child: _dockedPanelStack(openToolPanels)),
                   Expanded(
                     child: Stack(
                       children: [
@@ -625,18 +658,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ],
                     ),
                   ),
-                  if (dockedToolPanel != null && leftHanded)
-                    SizedBox(width: 280, child: dockedToolPanel),
+                  if (openToolPanels.isNotEmpty && leftHanded)
+                    SizedBox(width: 280, child: _dockedPanelStack(openToolPanels)),
                   // PC/DeXモード：カラーピッカー・レイヤーパネルは、ツール
-                  // オプション系ドッキング枠（上のdockedToolPanel）とは別に、
+                  // オプション系ドッキング領域（上のopenToolPanels）とは別に、
                   // 右側（左利きモード時は左側）へ縦に並べて同時常設できる
                   // ようにする（「画面が大きいPCではいろいろ表示してよい」
                   // 方針、仕様書08の追記）。どちらも単独でも両方同時でも表示可。
-                  if (isDesktop && (_showColorPicker || _showLayerPanel))
+                  if (isDesktop && (_showColorPicker || _showLayerPanel || _showCanvasPreviewPanel))
                     SizedBox(
                       width: 280,
                       child: Column(
                         children: [
+                          if (_showCanvasPreviewPanel)
+                            CanvasPreviewNavigator(
+                              projectId: widget.projectId,
+                              sceneId: _currentSceneId,
+                              frameIndex: _currentFrame,
+                              onClose: () => setState(() => _showCanvasPreviewPanel = false),
+                            ),
+                          if (_showCanvasPreviewPanel && (_showColorPicker || _showLayerPanel))
+                            const Divider(height: 1),
                           if (_showColorPicker)
                             Flexible(
                               child: SingleChildScrollView(
@@ -876,25 +918,41 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showQuickToolPanel ||
       _showColorAdjustPanel;
 
-  // PC/DeXモード（広い画面）：現在開いているツールオプション系パネルを1つ
-  // 返す（複数同時に開いていた場合は優先度の高いものを返す）。左側の
-  // 常時ドッキングパネルに使う。フローティング表示（スマホ）と同じ
-  // パネルインスタンスを流用する。
-  // カラーピッカーはここには含めない（PC/DeXモードではレイヤーパネルと
-  // 並んで独立にドッキング表示するため。build()内の右側ドックを参照）。
-  Widget? _activeToolPanel() {
-    if (_showPenSubToolPanel) return _penSubToolPanel();
-    if (_showBrushPanel) return _brushPanel();
-    if (_showTonePanel) return _tonePanel();
-    if (_showStampPanel) return _stampPanel();
-    if (_showOnionSkinPanel) return _onionSkinPanel();
-    if (_showRulerPanel) return _rulerPanel();
-    if (_showFilterPanel) return _filterPanel();
-    if (_showQuickToolPanel) return _quickToolPanel();
-    if (_showMeshTransformPanel) return _meshTransformPanel();
-    if (_showColorAdjustPanel) return _colorAdjustPanel();
-    return null;
+  // PC/DeXモード（広い画面）：現在開いているツールオプション系パネルを
+  // すべて返す（「PCは画面が大きいのでいろいろ表示していい」方針のため、
+  // 互いに排他にせず開いているものを全部縦積みする）。左側の常時
+  // ドッキング領域に使う。フローティング表示（スマホ）と同じパネル
+  // インスタンスを流用する。カラーピッカー・レイヤーパネルはここには
+  // 含めない（右側ドックで独立に扱うため。build()内を参照）。
+  List<Widget> _openToolOptionPanels() {
+    final panels = <Widget>[];
+    if (_showPenSubToolPanel) panels.add(_penSubToolPanel());
+    if (_showBrushPanel) panels.add(_brushPanel());
+    if (_showTonePanel) panels.add(_tonePanel());
+    if (_showStampPanel) panels.add(_stampPanel());
+    if (_showOnionSkinPanel) panels.add(_onionSkinPanel());
+    if (_showRulerPanel) panels.add(_rulerPanel());
+    if (_showFilterPanel) panels.add(_filterPanel());
+    if (_showQuickToolPanel) panels.add(_quickToolPanel());
+    if (_showMeshTransformPanel) panels.add(_meshTransformPanel());
+    if (_showColorAdjustPanel) panels.add(_colorAdjustPanel());
+    return panels;
   }
+
+  /// 複数のドッキングパネルを縦に積んで表示する（PC/DeXモード）。
+  /// 開いているパネル数が多く画面高さに収まらない場合はスクロールできる
+  /// ようにする。各パネル間には視認しやすいよう余白を入れる。
+  Widget _dockedPanelStack(List<Widget> panels) => SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (int i = 0; i < panels.length; i++) ...[
+              if (i > 0) const SizedBox(height: 8),
+              panels[i],
+            ],
+          ],
+        ),
+      );
 
   Widget _colorPickerPanel() => ColorPickerPanel(
         currentColor: _currentColor,
