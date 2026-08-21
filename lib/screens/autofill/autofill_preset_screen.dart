@@ -990,20 +990,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                       ),
                       const SizedBox(height: 6),
+                      // 指定色は「何が既定か」という基準が無く、ユーザーが自由に
+                      // 選んだ色を黒へ戻すこと自体に意味がないため、デフォルトに
+                      // 戻すボタンは置かない（色トレス・線画馴染ませのみ、既定の
+                      // 補正値へ戻す意味のあるボタンとして下に用意している）。
                       OutlinedButton.icon(
                         onPressed: () => _pickColorFromNewImage(
                           (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
                         ),
                         icon: const Icon(Icons.colorize, size: 16),
                         label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
-                      ),
-                      const SizedBox(height: 6),
-                      TextButton.icon(
-                        onPressed: current.lineColor == 0xFF000000
-                            ? null
-                            : () => setS(() => current = current.copyWith(lineColor: 0xFF000000)),
-                        icon: const Icon(Icons.restart_alt, size: 16),
-                        label: Text(l10n.autofillPartResetLineColorButton, style: const TextStyle(fontSize: 12)),
                       ),
                     ],
                     if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
@@ -1319,15 +1315,18 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             );
                           }
                           // 放射グラデーション：中心（画面中央）を軸に左右対称のハンドルを
-                          // 2つずつ配置し、片方を動かすと反対側も連動する。
-                          // t=0（中心そのもの）は1つだけ・中央に表示する。
+                          // 2つずつ配置し、片方を動かすと反対側も連動する。t=0
+                          // （中心そのもの）でも常に2つ重ねて表示する（以前は1つだけ
+                          // 表示しており、中心にあるハンドルをどちらの方向へ
+                          // ドラッグしても意図通り動かせなかったため、常時2つに
+                          // 修正した）。
                           final center = maxWidth / 2;
                           return Stack(
                             clipBehavior: Clip.none,
                             children: [
                               for (int i = 0; i < gradient.stops.length; i++) ...[
                                 handle(i, center + geomT(i) * center, mirrorDrag: false),
-                                if (geomT(i) > 0.001) handle(i, center - geomT(i) * center, mirrorDrag: true),
+                                handle(i, center - geomT(i) * center, mirrorDrag: true),
                               ],
                             ],
                           );
@@ -1416,6 +1415,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
+                      // 手動のドラッグハンドルアイコンを行末に置いているため、
+                      // 既定のドラッグハンドルは無効化する（有効のままだと
+                      // 二重に表示されるバグがあった）。
+                      buildDefaultDragHandles: false,
                       itemCount: gradient.colors.length,
                       onReorder: (oldIndex, newIndex) {
                         if (newIndex > oldIndex) newIndex -= 1;
@@ -1437,7 +1440,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           child: Row(
                             children: [
                               GestureDetector(
-                                onTap: () => _showColorPickerFor(context, color, (c) => setColorAt(i, c.toARGB32())),
+                                onTap: () =>
+                                    _showGradientColorPicker(context, color, (c) => setColorAt(i, c.toARGB32())),
                                 child: Container(
                                   width: 32, height: 32,
                                   decoration: BoxDecoration(
@@ -1569,10 +1573,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// autofill_engine.dartの実際の塗り計算式（_gradientColorAt/_sampleGradient）
   /// と挙動を合わせている。
   Gradient _previewGradient(AutofillGradient g) {
-    final expanded = _expandForFeather(g.colors, g.stops, g.feather);
-    final center = Alignment(g.centerX * 2 - 1, g.centerY * 2 - 1);
     switch (g.type) {
       case AutofillGradientType.linear:
+        final expanded = _expandForFeather(g.colors, g.stops, g.feather);
         final rad = g.angle * math.pi / 180;
         final dx = math.cos(rad);
         final dy = math.sin(rad);
@@ -1583,16 +1586,30 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           stops: expanded.stops,
         );
       case AutofillGradientType.radialCenterOut:
-        return RadialGradient(center: center, radius: 0.85, colors: expanded.colors, stops: expanded.stops);
       case AutofillGradientType.radialOutCenter:
-        // engineは中心からの距離tを反転（t=1-t）させて同じ配列をサンプルする。
-        // Flutterのradiusベース補間で同じ見た目にするには、色・stopsの
-        // 双方を反転させる（詳細はコミット時のコメント参照）。
-        return RadialGradient(
-          center: center,
-          radius: 0.85,
-          colors: expanded.colors.reversed.toList(),
-          stops: expanded.stops.map((s) => 1 - s).toList().reversed.toList(),
+        // プレビューは横長・薄い帯（本来の塗り範囲とは形が違う簡易表示）
+        // のため、Flutter標準のRadialGradient（箱の短辺基準の円）を
+        // そのまま使うと、下の三角ハンドル（幅いっぱいを使って中心からの
+        // 距離を表す）とは全く違う位置に色の境界が来てしまっていた
+        // （ぼかしの強さを下げてはっきりした帯にすると特に目立つズレ）。
+        // ハンドルと同じ「中心からの距離＝箱の幅に対する割合」で色を
+        // 配置した、左右対称のLinearGradientとして描き直す。
+        final isOutCenter = g.type == AutofillGradientType.radialOutCenter;
+        final pairs = <MapEntry<double, int>>[
+          for (int i = 0; i < g.colors.length; i++)
+            MapEntry(isOutCenter ? 1 - g.stops[i] : g.stops[i], g.colors[i]),
+        ]..sort((a, b) => a.key.compareTo(b.key));
+        final geomStops = pairs.map((p) => p.key).toList();
+        final geomColors = pairs.map((p) => p.value).toList();
+        final expanded = _expandForFeather(geomColors, geomStops, g.feather);
+        return LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          stops: [
+            for (final t in expanded.stops.reversed) 0.5 - t * 0.5,
+            for (final t in expanded.stops) 0.5 + t * 0.5,
+          ],
+          colors: [...expanded.colors.reversed, ...expanded.colors],
         );
     }
   }
@@ -1646,6 +1663,56 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           currentColor: initial,
           onColorChanged: onChanged,
           onClose: () => Navigator.pop(ctx),
+        ),
+      ),
+    );
+  }
+
+  /// グラデーション設定内の色スウォッチ専用のカラーピッカー。上部の×
+  /// 閉じるボタンだけだと「押すと変更が消えるのか適用されるのか
+  /// 分かりにくい」という指摘があったため、通常のColorPickerPanel
+  /// （[_showColorPickerFor]）とは異なり上部の閉じるボタンは表示せず、
+  /// グラデーション設定本体と同じ「キャンセル・適用」ボタンを下部に
+  /// 常設する。調整中はプレビューだけ更新し、キャンセルなら破棄・
+  /// 適用を押して初めて[onApply]（グラデーションの当該色）へ反映する。
+  void _showGradientColorPicker(BuildContext context, Color initial, ValueChanged<Color> onApply) {
+    final l10n = AppLocalizations.of(context)!;
+    var working = initial;
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ColorPickerPanel(
+              currentColor: initial,
+              showCloseBar: false,
+              onColorChanged: (c) => working = c,
+              onClose: () {},
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: () {
+                        onApply(working);
+                        Navigator.pop(ctx);
+                      },
+                      child: Text(l10n.autofillPartApplyButton),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

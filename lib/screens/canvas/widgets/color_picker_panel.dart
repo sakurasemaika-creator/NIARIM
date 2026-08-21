@@ -17,6 +17,11 @@ class ColorPickerPanel extends StatefulWidget {
   final VoidCallback onClose;
   // スポイトボタン：カラーピッカー内からキャンバス上の色を取得できる（仕様書20）
   final VoidCallback? onEyedropperTap;
+  // 上部中央の×閉じるボタンを表示するかどうか。呼び出し元がキャンセル・
+  // 適用ボタンを別途下部に用意する場合（自動塗りグラデーションの色選択
+  // 等）は、上の×ボタンがあると「押すと変更が消えるのか適用されるのか
+  // 分かりにくい」ため非表示にできるようにしている。
+  final bool showCloseBar;
 
   const ColorPickerPanel({
     super.key,
@@ -24,6 +29,7 @@ class ColorPickerPanel extends StatefulWidget {
     required this.onColorChanged,
     required this.onClose,
     this.onEyedropperTap,
+    this.showCloseBar = true,
   });
 
   @override
@@ -131,7 +137,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
+              if (widget.showCloseBar) PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold)),

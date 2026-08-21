@@ -188,6 +188,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
             _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.edit_note, iconB: Icons.brightness_6),
                 l10n.tipsRoughLayerRescueTitle, l10n.tipsRoughLayerRescueDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.lineArtExtraction), l10n.tipsLineArtExtractionTitle, l10n.tipsLineArtExtractionDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.lineColorModes), l10n.tipsLineColorUsageTitle, l10n.tipsLineColorUsageDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.blushGradient), l10n.tipsBlushAutofillTitle, l10n.tipsBlushAutofillDesc),
           ],
         ),
         _TipCategory(

@@ -37,6 +37,8 @@ enum TipDiagramKind {
   toolbarCustomize,
   radialVignette,
   mirrorLayout,
+  lineColorModes,
+  blushGradient,
   // 汎用テンプレート（iconA・iconBをTip側で指定する）
   pairCombo,
   flowArrow,
@@ -98,6 +100,8 @@ class _TipDiagramPainter extends CustomPainter {
       case TipDiagramKind.toolbarCustomize: _paintToolbarCustomize(canvas, size);
       case TipDiagramKind.radialVignette: _paintRadialVignette(canvas, size);
       case TipDiagramKind.mirrorLayout: _paintMirrorLayout(canvas, size);
+      case TipDiagramKind.lineColorModes: _paintLineColorModes(canvas, size);
+      case TipDiagramKind.blushGradient: _paintBlushGradient(canvas, size);
       case TipDiagramKind.pairCombo: _paintPairCombo(canvas, size, spec.iconA!, spec.iconB!, spec.separator);
       case TipDiagramKind.flowArrow: _paintFlowArrow(canvas, size, spec.iconA!, spec.iconB!);
     }
@@ -635,5 +639,49 @@ class _TipDiagramPainter extends CustomPainter {
         Paint()..color = scheme.tertiary..style = PaintingStyle.stroke..strokeWidth = 1.6);
     canvas.drawCircle(Offset(size.width / 2, size.height / 2), 16, Paint()..color = scheme.surface);
     _drawIcon(canvas, Icons.swap_horiz, Offset(size.width / 2, size.height / 2), size: 20, color: scheme.primary);
+  }
+
+  /// 線画色の3つの使い分け（輪郭線＝色トレス／影・ハイライト＝塗り色と
+  /// 同化／指定色＝あえて別色）を、3つの小さな「線」見本として横に並べる。
+  void _paintLineColorModes(Canvas canvas, Size size) {
+    final labels = [
+      (Icons.border_color, scheme.primary), // 輪郭線：色トレス・線画馴染ませ
+      (Icons.gradient, scheme.onSurfaceVariant.withValues(alpha: 0.5)), // 影・ハイライト：塗り色と同化
+      (Icons.palette, scheme.tertiary), // 指定色：あえて別色
+    ];
+    final w = (size.width - 32) / 3;
+    for (int i = 0; i < 3; i++) {
+      final x = 16 + i * (w + 8);
+      final swatch = Rect.fromLTWH(x, size.height * 0.18, w, size.height * 0.36);
+      canvas.drawRRect(RRect.fromRectAndRadius(swatch, const Radius.circular(4)), _fillPrimaryFaint);
+      // 見本の輪郭線（各モードの色でなぞる）
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(swatch, const Radius.circular(4)),
+          Paint()
+            ..color = labels[i].$2
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.4);
+      _drawIcon(canvas, labels[i].$1, Offset(x + w / 2, size.height * 0.72), size: 16, color: labels[i].$2);
+    }
+  }
+
+  /// 肌色の丸の中心に、頬の赤みが放射状に馴染みながら透明色へ溶け込む
+  /// 表現（自動塗りの「線画色＝透明色の指定色」×「塗り色＝放射：中央→
+  /// 外側」の組み合わせで頬の赤みだけを乗せるTips専用）。
+  void _paintBlushGradient(Canvas canvas, Size size) {
+    final skin = Rect.fromLTWH(size.width * 0.5 - 44, 6, 88, size.height - 12);
+    canvas.save();
+    canvas.clipRRect(RRect.fromRectAndRadius(skin, const Radius.circular(44)));
+    canvas.drawRect(skin, Paint()..color = const Color(0xFFF3C9A0));
+    final blushCenter = Offset(skin.center.dx, skin.center.dy);
+    canvas.drawCircle(
+        blushCenter,
+        skin.width * 0.32,
+        Paint()
+          ..shader = RadialGradient(
+            colors: [scheme.error.withValues(alpha: 0.55), scheme.error.withValues(alpha: 0.0)],
+          ).createShader(Rect.fromCircle(center: blushCenter, radius: skin.width * 0.32)));
+    canvas.restore();
+    canvas.drawRRect(RRect.fromRectAndRadius(skin, const Radius.circular(44)), _strokeOutline);
   }
 }
