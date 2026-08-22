@@ -16,6 +16,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # GitHub Releaseへapkを添付するために書き込み権限が必要
+    # （Actions Storageの上限に達している間の代替配布経路。下記
+    # 「APKをGitHub Releaseへ公開」ステップ参照）。
+    permissions:
+      contents: write
     steps:
       - name: リポジトリ取得
         uses: actions/checkout@v4
@@ -52,8 +57,13 @@ jobs:
         if: ${{ inputs.build-type == 'release' }}
         run: flutter build apk --release
 
+      # Actions Storage（無料枠0.5GB）の上限に達っていると、このステップ
+      # だけが失敗してジョブ全体が失敗扱いになる（ビルド自体は成功済み）。
+      # そのため下の「GitHub Releaseへ公開」ステップを代替配布経路として
+      # 追加し、こちらは失敗してもジョブを止めないようにした。
       - name: APKをArtifactsへアップロード
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: niarim-${{ inputs.build-type }}-apk
           path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
@@ -70,6 +80,7 @@ jobs:
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
         if: ${{ inputs.build-type == 'release' }}
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: niarim-release-r8-reports
           path: |
@@ -78,3 +89,21 @@ jobs:
             build/app/outputs/mapping/release/usage.txt
           retention-days: 1
           if-no-files-found: warn
+
+      # Actions Storageの上限とは別枠のGitHub Releaseへapkを添付する代替
+      # 配布経路。実機での動作確認用に、Actions Storageの上限に達っていても
+      # 確実にapkを取得できるようにするための保険。ビルド種別ごとに
+      # 固定タグ（build-debug-latest／build-release-latest）を使い回し、
+      # 実行のたびに前回分を上書きする（Release自体をアーティファクト置き場
+      # 代わりに使う設計のため、古いRelease履歴を積み上げない）。
+      - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-${{ inputs.build-type }}-latest"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" \
+            "build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk" \
+            --title "NIARIM ${{ inputs.build-type }} 最新ビルド（実機確認用）" \
+            --notes "コミット ${{ github.sha }} からの自動ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。" \
+            --prerelease
