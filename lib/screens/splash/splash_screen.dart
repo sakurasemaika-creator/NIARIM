@@ -102,7 +102,8 @@ class _SplashScreenState extends State<SplashScreen> {
 }
 
 /// 起動画面の大きな導線ボタン。単なるテキストボタンではなく、グラデーション
-/// 背景・角丸・影を持つカード状のボタンにして存在感を出す。
+/// 背景・角丸・影を持つ正方形に近いタイル状のボタンにして存在感を出す
+/// （中央に大きめのアイコンを図として配置し、下にラベルを添える構成）。
 class _SplashActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -127,9 +128,9 @@ class _SplashActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         onTap: onTap,
         child: Container(
-          width: 280,
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          width: 200,
+          height: 200,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
             gradient: LinearGradient(
@@ -138,22 +139,21 @@ class _SplashActionButton extends StatelessWidget {
               end: Alignment.bottomRight,
             ),
           ),
-          child: Row(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 26),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Icon(icon, color: Colors.white, size: 84),
+              const SizedBox(height: 16),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

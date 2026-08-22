@@ -182,7 +182,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, fontFamily: 'Kuramubon')),
                       const SizedBox(height: 2),
                       Text(subtitle,
                           style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),

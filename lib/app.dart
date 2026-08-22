@@ -29,9 +29,6 @@ class NiarimApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeService = context.watch<ThemeService>();
-    // OSのbrightnessをThemeServiceに注入（BaseTheme.system対応）
-    final platformBrightness = MediaQuery.platformBrightnessOf(context);
-    themeService.updateSystemBrightness(platformBrightness);
     // 表示言語（設定画面「言語」、仕様書08＋タスク#102）。
     // 日本語・English・简体中文・한국어・繁體中文・Français・Españolの7言語対応。
     final language = context.watch<SettingsService>().language;

@@ -15,31 +15,17 @@ class ThemeService extends ChangeNotifier {
 
   ThemeData get themeData => _buildTheme(_current);
 
-  /// OSのbrightnessを外部から注入する（BaseTheme.system対応用）。
-  /// 実際のOS設定を読み取る前の初期値はlight（仕様書24：「初回起動時の
-  /// 初期値：システム設定に合わせる」＋デフォルトプリセットは見た目としては
-  /// ライト基調のため、OS設定が読み取れるまでの間もライトで表示する）。
-  Brightness systemBrightness = Brightness.light;
-
-  void updateSystemBrightness(Brightness brightness) {
-    if (systemBrightness != brightness) {
-      systemBrightness = brightness;
-      notifyListeners();
-    }
-  }
-
   // 虹7色（赤・橙・黄・緑・青・藍・紫）のテーマプリセットを、それぞれ
   // ライト/ダーク両方用意する（仕様書24・タスク#93）。「赤」はアプリの
   // 既定色である珊瑚ピンク（defaultLight/defaultDark）が該当する。
-  // デフォルトで選択されるのはdefaultLight（システム設定に合わせる、
-  // 見た目はライト基調）となるよう、リストの先頭に置く。
+  // デフォルトで選択されるのはdefaultLight（見た目はライト基調）と
+  // なるよう、リストの先頭に置く。
   static const List<AppThemePreset> _builtInPresets = [
     AppThemePreset.defaultLight, // 赤（ライト・既定選択）
     AppThemePreset.defaultDark, // 赤（ダーク）
     AppThemePreset(
       id: 'orange_light',
       name: 'オレンジ（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFFFF8A3D),
       textColor: Color(0xFF2E2013),
       panelBgColor: Color(0xFFFFF6EE),
@@ -50,7 +36,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'orange_dark',
       name: 'オレンジ（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFFFF8A3D),
       textColor: Color(0xFFFAF0E6),
       panelBgColor: Color(0xFF1F160E),
@@ -61,7 +46,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'yellow_light',
       name: 'イエロー（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFFF2B90F),
       textColor: Color(0xFF2E2A12),
       panelBgColor: Color(0xFFFFFBEA),
@@ -72,7 +56,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'yellow_dark',
       name: 'イエロー（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFFF2B90F),
       textColor: Color(0xFFFAF6E6),
       panelBgColor: Color(0xFF1E1B0C),
@@ -83,7 +66,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'green_light',
       name: 'グリーン（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFF3DDC97),
       textColor: Color(0xFF16291F),
       panelBgColor: Color(0xFFF1FBF6),
@@ -94,7 +76,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'green_dark',
       name: 'グリーン（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF3DDC97),
       textColor: Color(0xFFF1FAF5),
       panelBgColor: Color(0xFF101A15),
@@ -105,7 +86,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'blue_light',
       name: 'ブルー（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFF3AA6FF),
       textColor: Color(0xFF16232E),
       panelBgColor: Color(0xFFF1F7FC),
@@ -116,7 +96,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'blue_dark',
       name: 'ブルー（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF3AA6FF),
       textColor: Color(0xFFF2F6FA),
       panelBgColor: Color(0xFF11181F),
@@ -128,7 +107,6 @@ class ThemeService extends ChangeNotifier {
       id: 'indigo_light',
       // 同じ藍色系統を指す馴染み深い和名（藍色）を名前に使う。
       name: '藍色（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFF5C6BFF),
       textColor: Color(0xFF1E2033),
       panelBgColor: Color(0xFFF3F3FC),
@@ -139,7 +117,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'indigo_dark',
       name: '藍色（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF5C6BFF),
       textColor: Color(0xFFF0F1FA),
       panelBgColor: Color(0xFF14151F),
@@ -150,7 +127,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'purple_light',
       name: 'パープル（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFFB15CFF),
       textColor: Color(0xFF2B2033),
       panelBgColor: Color(0xFFF8F1FC),
@@ -161,7 +137,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'purple_dark',
       name: 'パープル（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFFB15CFF),
       textColor: Color(0xFFF6F1FA),
       panelBgColor: Color(0xFF19141F),
@@ -173,7 +148,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'pink_light',
       name: 'ピンク（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFFFF7EB3),
       textColor: Color(0xFF33202A),
       panelBgColor: Color(0xFFFFF1F6),
@@ -184,7 +158,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'pink_dark',
       name: 'ピンク（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFFFF7EB3),
       textColor: Color(0xFFFAEEF3),
       panelBgColor: Color(0xFF1F1418),
@@ -195,7 +168,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'light_purple_light',
       name: 'ライトパープル（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFFB39DDB),
       textColor: Color(0xFF272233),
       panelBgColor: Color(0xFFF6F2FC),
@@ -206,7 +178,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'light_purple_dark',
       name: 'ライトパープル（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFFB39DDB),
       textColor: Color(0xFFF2EFF9),
       panelBgColor: Color(0xFF19171F),
@@ -217,7 +188,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'light_blue_light',
       name: 'ライトブルー（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFF90CAF9),
       textColor: Color(0xFF1D2733),
       panelBgColor: Color(0xFFF0F8FE),
@@ -228,7 +198,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'light_blue_dark',
       name: 'ライトブルー（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF90CAF9),
       textColor: Color(0xFFEDF5FB),
       panelBgColor: Color(0xFF141A1F),
@@ -239,7 +208,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'emerald_light',
       name: 'エメラルドグリーン（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFF10B981),
       textColor: Color(0xFF13291F),
       panelBgColor: Color(0xFFECFAF4),
@@ -250,7 +218,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'emerald_dark',
       name: 'エメラルドグリーン（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF10B981),
       textColor: Color(0xFFE9FAF3),
       panelBgColor: Color(0xFF0D1815),
@@ -262,7 +229,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_pink_light',
       name: 'くすみピンク（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFFD8A0A6),
       textColor: Color(0xFF2E2325),
       panelBgColor: Color(0xFFFAF2F2),
@@ -273,7 +239,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_pink_dark',
       name: 'くすみピンク（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFFD8A0A6),
       textColor: Color(0xFFF5ECED),
       panelBgColor: Color(0xFF1C1516),
@@ -284,7 +249,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_blue_light',
       name: 'くすみブルー（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFF8DA9C4),
       textColor: Color(0xFF212B33),
       panelBgColor: Color(0xFFF1F5F9),
@@ -295,7 +259,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_blue_dark',
       name: 'くすみブルー（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF8DA9C4),
       textColor: Color(0xFFEDF1F5),
       panelBgColor: Color(0xFF151A1E),
@@ -306,7 +269,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_green_light',
       name: 'くすみグリーン（ライト）',
-      baseTheme: BaseTheme.light,
       accentColor: Color(0xFF8FB89D),
       textColor: Color(0xFF20281F),
       panelBgColor: Color(0xFFF2F8F3),
@@ -317,7 +279,6 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_green_dark',
       name: 'くすみグリーン（ダーク）',
-      baseTheme: BaseTheme.dark,
       accentColor: Color(0xFF8FB89D),
       textColor: Color(0xFFEEF4EF),
       panelBgColor: Color(0xFF151A16),
@@ -419,12 +380,13 @@ class ThemeService extends ChangeNotifier {
   /// Material標準の角丸・階調をそのまま使わず、フラット・大きめタップ領域・
   /// 丸みの強い形状で統一し、スマホでの誤タップを減らす。
   ThemeData _buildTheme(AppThemePreset preset) {
-    final brightness = switch (preset.baseTheme) {
-      BaseTheme.light => Brightness.light,
-      BaseTheme.dark => Brightness.dark,
-      // system: OSのbrightnessを参照。updateSystemBrightness()で外部から注入すること
-      BaseTheme.system => systemBrightness,
-    };
+    // 明暗（Brightness）は、以前は独立した「ベーステーマ」設定から決めて
+    // いたが、プリセット自身の文字色・背景色と噛み合わない組み合わせを
+    // 選べてしまい、暗い文字が暗い背景に埋もれて読めなくなる不具合の
+    // 原因になっていた。プリセット自身の背景色（panelBgColor）の明るさ
+    // から自動的に決めることで、常に矛盾のない組み合わせになるようにする。
+    final brightness =
+        preset.panelBgColor.computeLuminance() > 0.5 ? Brightness.light : Brightness.dark;
     // 「文字色」（仕様書24：UI全体の文字色）はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて

@@ -235,18 +235,19 @@ class NiatraSerializer {
   // ─── ThemePreset ──────────────────────────────────────────────────────
 
   static Map<String, dynamic> _serializeThemePreset(AppThemePreset t) => {
-        'id': t.id, 'name': t.name, 'baseTheme': t.baseTheme.name,
+        'id': t.id, 'name': t.name,
         'accentColor': t.accentColor.toARGB32(), 'textColor': t.textColor.toARGB32(),
         'panelBgColor': t.panelBgColor.toARGB32(), 'menuBgColor': t.menuBgColor.toARGB32(),
         'selectionColor': t.selectionColor.toARGB32(), 'updateMarkColor': t.updateMarkColor.toARGB32(),
         'isFavorite': t.isFavorite,
       };
 
+  // 'baseTheme'キーは廃止済みだが、旧バージョンで書き出された.niatraファイル
+  // に含まれている場合があるため、jにあっても単に無視する（読み込みエラー
+  // にしない）。
   static AppThemePreset _deserializeThemePreset(Map<String, dynamic> j) => AppThemePreset(
         id: 'theme_${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
         name: j['name'] as String,
-        baseTheme: BaseTheme.values
-            .firstWhere((e) => e.name == j['baseTheme'], orElse: () => BaseTheme.dark),
         accentColor: Color(j['accentColor'] as int),
         textColor: Color(j['textColor'] as int),
         panelBgColor: Color(j['panelBgColor'] as int),

@@ -26,25 +26,6 @@ class ThemeSettingsScreen extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.themeSettingsTitle), actions: const [HelpButton(topic: 'テーマ設定')]),
       body: desktopCentered(context, ListView(
         children: [
-          // ベーステーマ
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-            child: Text(l10n.themeSettingsBaseThemeSection, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          ...BaseTheme.values.map((theme) => RadioListTile<BaseTheme>(
-            title: Text(_baseThemeLabel(l10n, theme)),
-            value: theme,
-            groupValue: current.baseTheme,
-            onChanged: (v) {
-              if (v != null) {
-                final updated = current.copyWith(baseTheme: v);
-                themeService.savePreset(updated);
-                themeService.applyPreset(updated.id);
-              }
-            },
-            dense: true,
-          )),
-          const Divider(),
           // カラーカスタマイズ（仕様書24：「すべてカラーピッカー（HSV/RGB/HEX）で
           // 自由に設定できる」）。変更は即座にアプリ全体（現在のプリセット）へ
           // 反映される。
@@ -216,12 +197,6 @@ class ThemeSettingsScreen extends StatelessWidget {
       ),
     );
   }
-
-  String _baseThemeLabel(AppLocalizations l10n, BaseTheme theme) => switch (theme) {
-    BaseTheme.light => l10n.themeBaseLight,
-    BaseTheme.dark => l10n.themeBaseDark,
-    BaseTheme.system => l10n.themeBaseSystem,
-  };
 
   void _handleAction(BuildContext context, String action, AppThemePreset preset, ThemeService service) {
     final l10n = AppLocalizations.of(context)!;

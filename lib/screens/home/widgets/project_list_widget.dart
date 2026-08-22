@@ -322,7 +322,8 @@ class ProjectListWidget extends StatelessWidget {
                       bottom: 4,
                       child: Text(project.name,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                          style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600,
+                              fontFamily: 'Kuramubon')),
                     ),
                     if (project.isFavorite)
                       Positioned(
@@ -434,7 +435,8 @@ class ProjectListWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
               child: Text(folder.name,
-                  overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
             ),
           ],
           ),

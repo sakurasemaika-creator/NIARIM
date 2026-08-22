@@ -1,10 +1,19 @@
 import 'dart:ui';
 
-/// UIテーマプリセットモデル（仕様書24）
+/// UIテーマプリセットモデル（仕様書24）。
+///
+/// 以前は「ベーステーマ」（ライト／ダーク／システム設定に合わせる）を
+/// プリセットとは独立に切り替えられる仕組みを持っていたが、プリセット
+/// 自身の色（textColor・panelBgColor等）と噛み合わない組み合わせ（例：
+/// ライト用に調整した文字色のプリセットで「システム設定に合わせる」を
+/// 選び、端末がダークモードだった場合）を選べてしまい、暗い文字が暗い
+/// 背景に埋もれて読めなくなる不具合の原因になっていた。そのため
+/// ベーステーマの概念自体を廃止し、明暗（Brightness）はプリセット自身の
+/// 背景色（panelBgColor）の明るさから自動的に、かつ常に矛盾なく決まる
+/// ようにした（`ThemeService._buildTheme()`参照）。
 class AppThemePreset {
   final String id;
   final String name;
-  final BaseTheme baseTheme;
   final Color accentColor;
   final Color textColor;
   final Color panelBgColor;
@@ -16,7 +25,6 @@ class AppThemePreset {
   const AppThemePreset({
     required this.id,
     required this.name,
-    required this.baseTheme,
     required this.accentColor,
     required this.textColor,
     required this.panelBgColor,
@@ -29,7 +37,6 @@ class AppThemePreset {
   AppThemePreset copyWith({
     String? id,
     String? name,
-    BaseTheme? baseTheme,
     Color? accentColor,
     Color? textColor,
     Color? panelBgColor,
@@ -41,7 +48,6 @@ class AppThemePreset {
     return AppThemePreset(
       id: id ?? this.id,
       name: name ?? this.name,
-      baseTheme: baseTheme ?? this.baseTheme,
       accentColor: accentColor ?? this.accentColor,
       textColor: textColor ?? this.textColor,
       panelBgColor: panelBgColor ?? this.panelBgColor,
@@ -54,16 +60,13 @@ class AppThemePreset {
 
   // 既定テーマ：珊瑚ピンク（虹7色の「赤」に相当）を差し色にしたポップな
   // フラットデザイン（Material標準色をそのまま使わず、暖色寄りの配色で
-  // オリジナリティを出す）。仕様書24：「初回起動時の初期値：システム設定に
-  // 合わせる」のため、アプリの既定プリセット（defaultLight）はbaseThemeを
-  // systemにしている。defaultDarkは「常にダーク」を選びたい場合の
+  // オリジナリティを出す）。defaultDarkは「常にダーク」を選びたい場合の
   // 独立した選択肢として残す。
   static const defaultDark = AppThemePreset(
     id: 'default_dark',
     // 何色を指すか伝わる名前にするため、実際の差し色（珊瑚ピンク・虹7色で
     // いう「赤」）が分かる名前にしている。
     name: 'レッド（ダーク）',
-    baseTheme: BaseTheme.dark,
     accentColor: Color(0xFFFF5C7A),
     textColor: Color(0xFFF5F1F0),
     panelBgColor: Color(0xFF17161C),
@@ -75,7 +78,6 @@ class AppThemePreset {
   static const defaultLight = AppThemePreset(
     id: 'default_light',
     name: 'レッド（ライト）',
-    baseTheme: BaseTheme.system,
     accentColor: Color(0xFFFF5C7A),
     textColor: Color(0xFF2B2730),
     panelBgColor: Color(0xFFFAF7F5),
@@ -87,7 +89,6 @@ class AppThemePreset {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'baseTheme': baseTheme.name,
         'accentColor': accentColor.toARGB32(),
         'textColor': textColor.toARGB32(),
         'panelBgColor': panelBgColor.toARGB32(),
@@ -100,7 +101,9 @@ class AppThemePreset {
   factory AppThemePreset.fromJson(Map<String, dynamic> json) => AppThemePreset(
         id: json['id'] as String,
         name: json['name'] as String,
-        baseTheme: BaseTheme.values.asNameMap()[json['baseTheme'] as String?] ?? BaseTheme.dark,
+        // 'baseTheme'キーは廃止済みだが、旧バージョンで保存されたデータ
+        // （プリセット・.niatra引き継ぎファイル等）に含まれている場合が
+        // あるため、存在しても単に無視する（読み込みエラーにしない）。
         accentColor: Color(json['accentColor'] as int),
         textColor: Color(json['textColor'] as int),
         panelBgColor: Color(json['panelBgColor'] as int),
@@ -110,5 +113,3 @@ class AppThemePreset {
         isFavorite: json['isFavorite'] as bool? ?? false,
       );
 }
-
-enum BaseTheme { light, dark, system }
