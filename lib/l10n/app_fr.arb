@@ -108,6 +108,16 @@
   "commonClose": "Fermer",
   "commonRename": "Renommer",
   "commonCopy": "Copier",
+  "commonCut": "Couper",
+  "homePasteTooltip": "Coller {count} élément(s)",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "Collé",
   "commonPaste": "Coller",
   "commonOk": "OK",
   "gestureSettingsTitle": "Réglages des gestes",

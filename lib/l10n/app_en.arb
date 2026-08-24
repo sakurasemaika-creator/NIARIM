@@ -108,6 +108,16 @@
   "commonClose": "Close",
   "commonRename": "Rename",
   "commonCopy": "Copy",
+  "commonCut": "Cut",
+  "homePasteTooltip": "Paste {count} item(s)",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "Pasted",
   "commonPaste": "Paste",
   "commonOk": "OK",
   "gestureSettingsTitle": "Gesture Settings",

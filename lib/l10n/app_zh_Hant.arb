@@ -108,6 +108,16 @@
   "commonClose": "關閉",
   "commonRename": "重新命名",
   "commonCopy": "複製",
+  "commonCut": "剪下",
+  "homePasteTooltip": "貼上{count}項",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "已貼上",
   "commonPaste": "貼上",
   "commonOk": "確定",
   "gestureSettingsTitle": "手勢設定",

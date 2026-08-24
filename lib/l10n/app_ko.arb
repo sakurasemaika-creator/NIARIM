@@ -108,6 +108,16 @@
   "commonClose": "닫기",
   "commonRename": "이름 변경",
   "commonCopy": "복사",
+  "commonCut": "잘라내기",
+  "homePasteTooltip": "{count}건 붙여넣기",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "붙여넣었습니다",
   "commonPaste": "붙여넣기",
   "commonOk": "확인",
   "gestureSettingsTitle": "제스처 설정",

@@ -170,7 +170,17 @@
   "commonClose": "閉じる",
   "commonRename": "名前変更",
   "commonCopy": "コピー",
+  "commonCut": "切り取り",
   "commonPaste": "貼り付け",
+  "homePasteTooltip": "{count}件を貼り付け",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "貼り付けました",
   "commonOk": "OK",
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",

@@ -108,6 +108,16 @@
   "commonClose": "Cerrar",
   "commonRename": "Renombrar",
   "commonCopy": "Copiar",
+  "commonCut": "Cortar",
+  "homePasteTooltip": "Pegar {count} elemento(s)",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "Pegado",
   "commonPaste": "Pegar",
   "commonOk": "Aceptar",
   "gestureSettingsTitle": "Ajustes de gestos",

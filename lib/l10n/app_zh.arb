@@ -108,6 +108,16 @@
   "commonClose": "关闭",
   "commonRename": "重命名",
   "commonCopy": "复制",
+  "commonCut": "剪切",
+  "homePasteTooltip": "粘贴{count}项",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "已粘贴",
   "commonPaste": "粘贴",
   "commonOk": "确定",
   "gestureSettingsTitle": "手势设置",

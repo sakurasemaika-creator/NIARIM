@@ -2174,7 +2174,14 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
-  Future<void> duplicateProject(String id) async {
+  /// [useTargetFolder]がtrueの場合、複製先のフォルダを[targetFolderId]
+  /// （nullはルート直下）で明示的に上書きする。falseの場合（既定）は
+  /// 複製元と同じフォルダのまま複製する。
+  Future<void> duplicateProject(
+    String id, {
+    String? targetFolderId,
+    bool useTargetFolder = false,
+  }) async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       final original = _projects[idx];
@@ -2184,6 +2191,7 @@ class ProjectService extends ChangeNotifier {
         name: '${original.name} (コピー)',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        folderId: useTargetFolder ? targetFolderId : original.folderId,
       );
       _projects.add(copy);
 

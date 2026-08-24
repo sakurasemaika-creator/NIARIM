@@ -28,12 +28,23 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   ProjectViewMode _viewMode = ProjectViewMode.medium;
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
+  // 複数選択モードの切り取り・コピー・貼り付け。フォルダ間の移動を手軽に
+  // するための内部クリップボード（アプリを離れると保持しない、
+  // セッション内のみのUI状態）。_clipboardIsCutがtrueなら切り取り（貼り付け
+  // で移動し1回でクリップボードを空にする）、falseならコピー（貼り付けは
+  // 複製し、繰り返し貼り付け可能）。フォルダは複製の実装を持たないため、
+  // コピー時は選択にプロジェクトのみを含める（フォルダが混在していれば
+  // コピー操作自体を無効化する）。
+  final Set<String> _clipboardProjectIds = {};
+  final Set<String> _clipboardFolderIds = {};
+  bool _clipboardIsCut = false;
   bool _showFavoritesOnly = false;
   bool _isSearching = false;
   String _searchQuery = '';
@@ -94,7 +105,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if (bytes == null) return;
       final tmpDir = await getTemporaryDirectory();
       final file = File(
-          '${tmpDir.path}/shared_${DateTime.now().millisecondsSinceEpoch}.niashare');
+        '${tmpDir.path}/shared_${DateTime.now().millisecondsSinceEpoch}.niashare',
+      );
       await file.writeAsBytes(bytes);
       localPath = file.path;
     }
@@ -106,8 +118,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         title: Text(l10n.homeShareFileDialogTitle),
         content: Text(l10n.homeShareFileDialogContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonSave)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonSave),
+          ),
         ],
       ),
     );
@@ -134,23 +152,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       // 端末側にも存在しないものを警告する。
       if (!mounted) return;
       final usedFamilies = projectService.usedFontFamiliesOf(project.id);
-      final installedFamilies = fontService.fonts.map(fontService.familyNameOf).toSet();
-      final missing = usedFamilies.where((f) =>
-          f.startsWith('UserFont_') && !installedFamilies.contains(f));
+      final installedFamilies = fontService.fonts
+          .map(fontService.familyNameOf)
+          .toSet();
+      final missing = usedFamilies.where(
+        (f) => f.startsWith('UserFont_') && !installedFamilies.contains(f),
+      );
       if (missing.isNotEmpty) {
-        final names = missing.map((f) => f.replaceFirst('UserFont_', '')).join('、');
+        final names = missing
+            .map((f) => f.replaceFirst('UserFont_', ''))
+            .join('、');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.homeMissingFontsSnackbar(names))),
         );
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.homeSharedImportedSnackbar)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.homeSharedImportedSnackbar)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.homeSharedImportFailedSnackbar(e.toString()))),
+        SnackBar(
+          content: Text(l10n.homeSharedImportFailedSnackbar(e.toString())),
+        ),
       );
     }
   }
@@ -174,15 +199,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // ［名前昇順/降順・更新日時昇順/降順］の4値のままだが、UI上は
   // 「項目（名前／更新日時）」と「昇順/降順」を別々の操作にする）。
   bool get _sortByName =>
-      _sortMode == ProjectSortMode.nameAsc || _sortMode == ProjectSortMode.nameDesc;
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.nameDesc;
   bool get _sortAscending =>
-      _sortMode == ProjectSortMode.nameAsc || _sortMode == ProjectSortMode.updatedAsc;
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.updatedAsc;
 
   void _setSortByName(bool byName) {
     setState(() {
       _sortMode = byName
-          ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
-          : (_sortAscending ? ProjectSortMode.updatedAsc : ProjectSortMode.updatedDesc);
+          ? (_sortAscending
+                ? ProjectSortMode.nameAsc
+                : ProjectSortMode.nameDesc)
+          : (_sortAscending
+                ? ProjectSortMode.updatedAsc
+                : ProjectSortMode.updatedDesc);
     });
   }
 
@@ -224,20 +255,39 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   PopupMenuButton<bool>(
                     onSelected: _setSortByName,
                     itemBuilder: (_) => [
-                      PopupMenuItem(value: true, child: Text(l10n.homeSortFieldName)),
-                      PopupMenuItem(value: false, child: Text(l10n.homeSortFieldUpdated)),
+                      PopupMenuItem(
+                        value: true,
+                        child: Text(l10n.homeSortFieldName),
+                      ),
+                      PopupMenuItem(
+                        value: false,
+                        child: Text(l10n.homeSortFieldUpdated),
+                      ),
                     ],
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_sortByName ? l10n.homeSortFieldName : l10n.homeSortFieldUpdated,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'Kuramubon')),
+                        Text(
+                          _sortByName
+                              ? l10n.homeSortFieldName
+                              : l10n.homeSortFieldUpdated,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Kuramubon',
+                          ),
+                        ),
                         const Icon(Icons.arrow_drop_down),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward, size: 20),
+                    icon: Icon(
+                      _sortAscending
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                      size: 20,
+                    ),
                     tooltip: _sortAscending
                         ? l10n.homeSortDirectionAscTooltip
                         : l10n.homeSortDirectionDescTooltip,
@@ -259,17 +309,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               }),
             )
           else ...[
+            if (_hasClipboard)
+              IconButton(
+                icon: const Icon(Icons.content_paste),
+                tooltip: l10n.homePasteTooltip(
+                  _clipboardProjectIds.length + _clipboardFolderIds.length,
+                ),
+                onPressed: _pasteClipboard,
+              ),
             PopupMenuButton<ProjectViewMode>(
               icon: const Icon(Icons.view_module),
               onSelected: (mode) => setState(() => _viewMode = mode),
               itemBuilder: (_) => [
-                PopupMenuItem(value: ProjectViewMode.large, child: Text(l10n.homeViewModeLarge)),
-                PopupMenuItem(value: ProjectViewMode.medium, child: Text(l10n.homeViewModeMedium)),
-                PopupMenuItem(value: ProjectViewMode.small, child: Text(l10n.homeViewModeSmall)),
-                PopupMenuItem(value: ProjectViewMode.detail, child: Text(l10n.homeViewModeDetail)),
+                PopupMenuItem(
+                  value: ProjectViewMode.large,
+                  child: Text(l10n.homeViewModeLarge),
+                ),
+                PopupMenuItem(
+                  value: ProjectViewMode.medium,
+                  child: Text(l10n.homeViewModeMedium),
+                ),
+                PopupMenuItem(
+                  value: ProjectViewMode.small,
+                  child: Text(l10n.homeViewModeSmall),
+                ),
+                PopupMenuItem(
+                  value: ProjectViewMode.detail,
+                  child: Text(l10n.homeViewModeDetail),
+                ),
               ],
             ),
-            IconButton(icon: const Icon(Icons.search), tooltip: l10n.commonSearch, onPressed: () => setState(() => _isSearching = true)),
+            IconButton(
+              icon: const Icon(Icons.search),
+              tooltip: l10n.commonSearch,
+              onPressed: () => setState(() => _isSearching = true),
+            ),
           ],
         ],
         // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
@@ -311,7 +385,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       final folderIds = service.folders
                           .where((f) => f.parentFolderId == _currentFolderId)
                           .map((f) => f.id);
-                      setState(() => _selectedIds..addAll(projectIds)..addAll(folderIds));
+                      setState(
+                        () => _selectedIds
+                          ..addAll(projectIds)
+                          ..addAll(folderIds),
+                      );
                     },
                     child: Text(l10n.homeSelectionAllSelect),
                   ),
@@ -336,6 +414,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       tooltip: l10n.homeSelectionRemoveFavorite,
                     ),
                     IconButton(
+                      icon: const Icon(Icons.content_cut),
+                      onPressed: _cutSelected,
+                      tooltip: l10n.commonCut,
+                    ),
+                    // フォルダの複製は未対応のため、選択にフォルダが1つでも
+                    // 含まれる場合はコピー操作自体を無効化する。
+                    IconButton(
+                      icon: const Icon(Icons.content_copy),
+                      onPressed:
+                          _selectedIds.every(
+                            (id) => context.read<ProjectService>().projects.any(
+                              (p) => p.id == id,
+                            ),
+                          )
+                          ? _copySelected
+                          : null,
+                      tooltip: l10n.commonCopy,
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: _deleteSelected,
                       tooltip: l10n.homeMoveToTrash,
@@ -351,14 +448,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       child: Row(
                         children: [
                           FilterChip(
-                            label: Text(l10n.homeFavoritesOnly,
-                                style: const TextStyle(fontFamily: 'Kuramubon')),
+                            label: Text(
+                              l10n.homeFavoritesOnly,
+                              style: const TextStyle(fontFamily: 'Kuramubon'),
+                            ),
                             selected: _showFavoritesOnly,
-                            onSelected: (v) => setState(() => _showFavoritesOnly = v),
+                            onSelected: (v) =>
+                                setState(() => _showFavoritesOnly = v),
                           ),
                         ],
                       ),
@@ -393,7 +496,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         showFavoritesOnly: _showFavoritesOnly,
                         searchQuery: _searchQuery,
                         currentFolderId: _currentFolderId,
-                        onOpenFolder: (id) => setState(() => _currentFolderId = id),
+                        onOpenFolder: (id) =>
+                            setState(() => _currentFolderId = id),
                       ),
                     ),
                   ],
@@ -414,21 +518,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       // 非表示のまま。
       floatingActionButton: switch (_currentTabIndex) {
         0 => FloatingActionButton(
-            onPressed: () => _showAddChoiceSheet(context),
-            child: const Icon(Icons.add),
-          ),
+          onPressed: () => _showAddChoiceSheet(context),
+          child: const Icon(Icons.add),
+        ),
         1 => FloatingActionButton(
-            tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
-            onPressed: () => showCreateFolderNameDialog(
-                context, (name) => context.read<ProjectService>().createSharedFolder(name)),
-            child: const Icon(Icons.create_new_folder_outlined),
+          tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
+          onPressed: () => showCreateFolderNameDialog(
+            context,
+            (name) => context.read<ProjectService>().createSharedFolder(name),
           ),
+          child: const Icon(Icons.create_new_folder_outlined),
+        ),
         3 => FloatingActionButton(
-            tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
-            onPressed: () => showCreateFolderNameDialog(
-                context, (name) => context.read<WorkFolderService>().createFolder(name)),
-            child: const Icon(Icons.create_new_folder_outlined),
+          tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
+          onPressed: () => showCreateFolderNameDialog(
+            context,
+            (name) => context.read<WorkFolderService>().createFolder(name),
           ),
+          child: const Icon(Icons.create_new_folder_outlined),
+        ),
         _ => null,
       },
     );
@@ -461,9 +569,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 // 現在開いているフォルダの直下に作成する（ルートに固定しない）。
                 showCreateFolderNameDialog(context, (name) async {
                   await context.read<ProjectService>().createFolder(
-                        name,
-                        parentFolderId: _currentFolderId,
-                      );
+                    name,
+                    parentFolderId: _currentFolderId,
+                  );
                 });
               },
             ),
@@ -504,7 +612,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         title: Text(l10n.homeMoveToTrash),
         content: Text(l10n.homeMoveToTrashConfirm(targetIds.length)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -522,6 +633,82 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ],
       ),
     );
+  }
+
+  /// 選択中のプロジェクト・フォルダを切り取り、内部クリップボードへ保持する。
+  /// 貼り付け時は[moveToFolder]/[moveFolderTo]で移動し、1回貼り付けると
+  /// クリップボードは空になる。
+  void _cutSelected() {
+    final service = context.read<ProjectService>();
+    final projectIds = service.projects.map((p) => p.id).toSet();
+    final folderIds = service.folders.map((f) => f.id).toSet();
+    setState(() {
+      _clipboardProjectIds
+        ..clear()
+        ..addAll(_selectedIds.where(projectIds.contains));
+      _clipboardFolderIds
+        ..clear()
+        ..addAll(_selectedIds.where(folderIds.contains));
+      _clipboardIsCut = true;
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  /// 選択中のプロジェクトを内部クリップボードへコピーする。フォルダの
+  /// 複製は未対応のため、選択にフォルダが含まれる場合はプロジェクトのみを
+  /// 対象にする。貼り付けのたびに複製するため、クリップボードは
+  /// 貼り付け後も保持したままにする。
+  void _copySelected() {
+    final service = context.read<ProjectService>();
+    final projectIds = service.projects.map((p) => p.id).toSet();
+    setState(() {
+      _clipboardProjectIds
+        ..clear()
+        ..addAll(_selectedIds.where(projectIds.contains));
+      _clipboardFolderIds.clear();
+      _clipboardIsCut = false;
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  bool get _hasClipboard =>
+      _clipboardProjectIds.isNotEmpty || _clipboardFolderIds.isNotEmpty;
+
+  /// クリップボードの内容を現在開いているフォルダ（[_currentFolderId]、
+  /// nullはルート直下）へ貼り付ける。切り取りの場合は移動して
+  /// クリップボードを空にし、コピーの場合は複製してクリップボードは
+  /// 保持したままにする。
+  void _pasteClipboard() {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<ProjectService>();
+    final isCut = _clipboardIsCut;
+    for (final id in _clipboardProjectIds) {
+      if (isCut) {
+        service.moveToFolder(id, _currentFolderId);
+      } else {
+        service.duplicateProject(
+          id,
+          targetFolderId: _currentFolderId,
+          useTargetFolder: true,
+        );
+      }
+    }
+    if (isCut) {
+      for (final id in _clipboardFolderIds) {
+        service.moveFolderTo(id, _currentFolderId);
+      }
+    }
+    if (isCut) {
+      setState(() {
+        _clipboardProjectIds.clear();
+        _clipboardFolderIds.clear();
+      });
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
   }
 
   /// フォルダ階層のパンくずリスト。フォルダ内移動時に現在位置を表示する。
@@ -556,7 +743,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 onTap: () => setState(() => _currentFolderId = folder.id),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(folder.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
+                  child: Text(
+                    folder.name,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontFamily: 'Kuramubon',
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -586,7 +779,11 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final textStyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon');
+    final textStyle = const TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      fontFamily: 'Kuramubon',
+    );
     // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
     final weights = labels.map((label) {
       final tp = TextPainter(
@@ -598,7 +795,11 @@ class _HomeTabBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4))),
+        border: Border(
+          bottom: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.4),
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -613,7 +814,9 @@ class _HomeTabBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: currentIndex == i ? scheme.primary : Colors.transparent,
+                        color: currentIndex == i
+                            ? scheme.primary
+                            : Colors.transparent,
                         width: 2,
                       ),
                     ),
@@ -621,7 +824,9 @@ class _HomeTabBar extends StatelessWidget {
                   child: Text(
                     labels[i],
                     style: textStyle.copyWith(
-                      color: currentIndex == i ? scheme.primary : scheme.onSurfaceVariant,
+                      color: currentIndex == i
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -644,7 +849,11 @@ class _SharedTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.share_outlined, size: 64, color: muted.withValues(alpha: 0.6)),
+            Icon(
+              Icons.share_outlined,
+              size: 64,
+              color: muted.withValues(alpha: 0.6),
+            ),
             const SizedBox(height: 16),
             Text(l10n.homeSharedEmpty, style: TextStyle(color: muted)),
           ],
@@ -655,13 +864,19 @@ class _SharedTab extends StatelessWidget {
       allItems: shared,
       folders: context.watch<ProjectService>().sharedFolders,
       folderIdOf: (p) => p.sharedFolderId,
-      onEnterFolder: (folderId, folderName, itemsInFolder) => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => _SharedFolderScreen(folderId: folderId, folderName: folderName),
-        ),
-      ),
-      onRenameFolder: (id, name) => context.read<ProjectService>().renameSharedFolder(id, name),
-      onDeleteFolder: (id) => context.read<ProjectService>().deleteSharedFolder(id),
+      onEnterFolder: (folderId, folderName, itemsInFolder) =>
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => _SharedFolderScreen(
+                folderId: folderId,
+                folderName: folderName,
+              ),
+            ),
+          ),
+      onRenameFolder: (id, name) =>
+          context.read<ProjectService>().renameSharedFolder(id, name),
+      onDeleteFolder: (id) =>
+          context.read<ProjectService>().deleteSharedFolder(id),
       itemBuilder: (context, project) => Card(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         elevation: 1,
@@ -676,8 +891,13 @@ class _SharedTab extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          title: Text(project.name, style: const TextStyle(fontFamily: 'Kuramubon')),
-          subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
+          title: Text(
+            project.name,
+            style: const TextStyle(fontFamily: 'Kuramubon'),
+          ),
+          subtitle: Text(
+            l10n.homeProjectMeta(project.fps, project.durationSeconds),
+          ),
           onTap: () => context.push('/project/${project.id}'),
           onLongPress: () => _showMoveToSharedFolderSheet(context, project),
         ),
@@ -727,19 +947,31 @@ class _SharedFolderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final items = context.watch<ProjectService>().shared.where((p) => p.sharedFolderId == folderId).toList();
+    final items = context
+        .watch<ProjectService>()
+        .shared
+        .where((p) => p.sharedFolderId == folderId)
+        .toList();
     return Scaffold(
       appBar: AppBar(title: Text(folderName)),
       body: items.isEmpty
           ? Center(
-              child: Text(l10n.folderManagementEmpty,
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)))
+              child: Text(
+                l10n.folderManagementEmpty,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            )
           : ListView.builder(
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final project = items[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   elevation: 1,
                   shadowColor: Colors.black.withValues(alpha: 0.15),
                   color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -752,8 +984,16 @@ class _SharedFolderScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    title: Text(project.name, style: const TextStyle(fontFamily: 'Kuramubon')),
-                    subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
+                    title: Text(
+                      project.name,
+                      style: const TextStyle(fontFamily: 'Kuramubon'),
+                    ),
+                    subtitle: Text(
+                      l10n.homeProjectMeta(
+                        project.fps,
+                        project.durationSeconds,
+                      ),
+                    ),
                     onTap: () => context.push('/project/${project.id}'),
                   ),
                 );
@@ -769,7 +1009,8 @@ class _FolderableList<T> extends StatelessWidget {
   final List<T> allItems;
   final List<ProjectFolder> folders;
   final String? Function(T) folderIdOf;
-  final void Function(String folderId, String folderName, List<T> itemsInFolder) onEnterFolder;
+  final void Function(String folderId, String folderName, List<T> itemsInFolder)
+  onEnterFolder;
   final void Function(String id, String name) onRenameFolder;
   final void Function(String id) onDeleteFolder;
   final Widget Function(BuildContext, T) itemBuilder;
@@ -796,16 +1037,26 @@ class _FolderableList<T> extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: folders.map((f) {
-                final count = allItems.where((e) => folderIdOf(e) == f.id).length;
+                final count = allItems
+                    .where((e) => folderIdOf(e) == f.id)
+                    .length;
                 return InkWell(
                   borderRadius: BorderRadius.circular(10),
                   onTap: () => onEnterFolder(
-                      f.id, f.name, allItems.where((e) => folderIdOf(e) == f.id).toList()),
+                    f.id,
+                    f.name,
+                    allItems.where((e) => folderIdOf(e) == f.id).toList(),
+                  ),
                   onLongPress: () => _showFolderMenu(context, f),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -815,8 +1066,15 @@ class _FolderableList<T> extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(f.name),
                         const SizedBox(width: 4),
-                        Text('($count)',
-                            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                        Text(
+                          '($count)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -848,13 +1106,23 @@ class _FolderableList<T> extends StatelessWidget {
                   context: context,
                   builder: (dctx) => AlertDialog(
                     title: Text(l10n.commonRename),
-                    content: TextField(controller: controller, autofocus: true,
-                        decoration: const InputDecoration(border: OutlineInputBorder())),
+                    content: TextField(
+                      controller: controller,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dctx),
+                        child: Text(l10n.commonCancel),
+                      ),
                       FilledButton(
                         onPressed: () {
-                          if (controller.text.trim().isNotEmpty) onRenameFolder(folder.id, controller.text.trim());
+                          if (controller.text.trim().isNotEmpty) {
+                            onRenameFolder(folder.id, controller.text.trim());
+                          }
                           Navigator.pop(dctx);
                         },
                         child: Text(l10n.commonChange),
@@ -866,18 +1134,28 @@ class _FolderableList<T> extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
+              title: Text(
+                l10n.commonDelete,
+                style: const TextStyle(color: Colors.red),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 showDialog(
                   context: context,
                   builder: (dctx) => AlertDialog(
                     title: Text(l10n.projectListDeleteFolderConfirmTitle),
-                    content: Text(l10n.projectListDeleteFolderConfirmBody(folder.name)),
+                    content: Text(
+                      l10n.projectListDeleteFolderConfirmBody(folder.name),
+                    ),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dctx),
+                        child: Text(l10n.commonCancel),
+                      ),
                       FilledButton(
-                        style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
                         onPressed: () {
                           onDeleteFolder(folder.id);
                           Navigator.pop(dctx);
@@ -907,7 +1185,11 @@ class _TrashTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.delete_outline, size: 64, color: muted.withValues(alpha: 0.6)),
+            Icon(
+              Icons.delete_outline,
+              size: 64,
+              color: muted.withValues(alpha: 0.6),
+            ),
             const SizedBox(height: 16),
             Text(l10n.homeTrashEmpty, style: TextStyle(color: muted)),
           ],
@@ -918,11 +1200,14 @@ class _TrashTab extends StatelessWidget {
       itemCount: trash.length,
       itemBuilder: (context, index) {
         final project = trash[index];
-        final deletedAt = context.read<ProjectService>().deletedAtOf(project.id);
+        final deletedAt = context.read<ProjectService>().deletedAtOf(
+          project.id,
+        );
         final deletedLabel = deletedAt == null
             ? ''
             : l10n.homeTrashDeletedOn(
-                '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')}');
+                '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')}',
+              );
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -938,13 +1223,19 @@ class _TrashTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            title: Text(project.name, style: const TextStyle(fontFamily: 'Kuramubon')),
-            subtitle: Text(deletedLabel.isEmpty ? meta : '$deletedLabel · $meta'),
+            title: Text(
+              project.name,
+              style: const TextStyle(fontFamily: 'Kuramubon'),
+            ),
+            subtitle: Text(
+              deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextButton(
-                  onPressed: () => context.read<ProjectService>().restoreProject(project.id),
+                  onPressed: () =>
+                      context.read<ProjectService>().restoreProject(project.id),
                   child: Text(l10n.commonRestore),
                 ),
                 TextButton(
@@ -968,7 +1259,10 @@ class _TrashTab extends StatelessWidget {
         title: Text(l10n.homePermanentDeleteConfirmTitle),
         content: Text(l10n.homePermanentDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -1006,7 +1300,9 @@ class _WorksTabState extends State<_WorksTab> {
   }
 
   Future<void> _reload() async {
-    setState(() => _future = ExportEngine.listExportedFiles(forceRefresh: true));
+    setState(
+      () => _future = ExportEngine.listExportedFiles(forceRefresh: true),
+    );
     await _future;
   }
 
@@ -1032,13 +1328,22 @@ class _WorksTabState extends State<_WorksTab> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.video_library_outlined, size: 64, color: muted.withValues(alpha: 0.6)),
+                        Icon(
+                          Icons.video_library_outlined,
+                          size: 64,
+                          color: muted.withValues(alpha: 0.6),
+                        ),
                         const SizedBox(height: 16),
-                        Text(l10n.homeWorksEmpty, style: TextStyle(color: muted)),
+                        Text(
+                          l10n.homeWorksEmpty,
+                          style: TextStyle(color: muted),
+                        ),
                         const SizedBox(height: 4),
-                        Text(l10n.homeWorksEmptyHint,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: muted, fontSize: 12)),
+                        Text(
+                          l10n.homeWorksEmptyHint,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: muted, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
@@ -1053,18 +1358,22 @@ class _WorksTabState extends State<_WorksTab> {
           child: _FolderableList<File>(
             allItems: files,
             folders: workFolders.folders,
-            folderIdOf: (f) => workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
-            onEnterFolder: (folderId, folderName, itemsInFolder) => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => _WorksFolderScreen(folderId: folderId, folderName: folderName, onDeleted: _reload),
-              ),
-            ),
+            folderIdOf: (f) =>
+                workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
+            onEnterFolder: (folderId, folderName, itemsInFolder) =>
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => _WorksFolderScreen(
+                      folderId: folderId,
+                      folderName: folderName,
+                      onDeleted: _reload,
+                    ),
+                  ),
+                ),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
             onDeleteFolder: (id) => workFolders.deleteFolder(id),
-            itemBuilder: (context, file) => _WorkListItem(
-              file: file,
-              onDeleted: _reload,
-            ),
+            itemBuilder: (context, file) =>
+                _WorkListItem(file: file, onDeleted: _reload),
           ),
         );
       },
@@ -1077,7 +1386,11 @@ class _WorksFolderScreen extends StatefulWidget {
   final String folderId;
   final String folderName;
   final VoidCallback onDeleted;
-  const _WorksFolderScreen({required this.folderId, required this.folderName, required this.onDeleted});
+  const _WorksFolderScreen({
+    required this.folderId,
+    required this.folderName,
+    required this.onDeleted,
+  });
 
   @override
   State<_WorksFolderScreen> createState() => _WorksFolderScreenState();
@@ -1101,21 +1414,38 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
       body: FutureBuilder<List<File>>(
         future: _future,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final items = snapshot.data!
-              .where((f) => workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last) == widget.folderId)
+              .where(
+                (f) =>
+                    workFolders.folderIdOf(
+                      f.path.split(RegExp(r'[\\/]')).last,
+                    ) ==
+                    widget.folderId,
+              )
               .toList();
           if (items.isEmpty) {
             return Center(
-                child: Text(l10n.folderManagementEmpty,
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)));
+              child: Text(
+                l10n.folderManagementEmpty,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            );
           }
           return ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) => _WorkListItem(
               file: items[index],
               onDeleted: () {
-                setState(() => _future = ExportEngine.listExportedFiles(forceRefresh: true));
+                setState(
+                  () => _future = ExportEngine.listExportedFiles(
+                    forceRefresh: true,
+                  ),
+                );
                 widget.onDeleted();
               },
             ),
@@ -1189,10 +1519,16 @@ class _WorkListItem extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.ios_share, size: 20),
               tooltip: l10n.homeShareOpenWith,
-              onPressed: () => SharePlus.instance.share(ShareParams(files: [XFile(file.path)])),
+              onPressed: () => SharePlus.instance.share(
+                ShareParams(files: [XFile(file.path)]),
+              ),
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+              icon: const Icon(
+                Icons.delete_outline,
+                size: 20,
+                color: Colors.red,
+              ),
               tooltip: l10n.commonDelete,
               onPressed: () => _confirmDelete(context),
             ),
@@ -1253,7 +1589,10 @@ class _WorkListItem extends StatelessWidget {
         title: Text(l10n.homeWorkDeleteConfirmTitle(file.path.split('/').last)),
         content: Text(l10n.homeWorkDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -1291,14 +1630,16 @@ class _WorkPreviewState extends State<_WorkPreview> {
     _isGif = widget.file.path.toLowerCase().endsWith('.gif');
     if (!_isGif) {
       _controller = VideoPlayerController.file(widget.file)
-        ..initialize().then((_) {
-          if (!mounted) return;
-          setState(() {});
-          _controller?.play();
-          _controller?.setLooping(true);
-        }).catchError((_) {
-          if (mounted) setState(() => _failed = true);
-        });
+        ..initialize()
+            .then((_) {
+              if (!mounted) return;
+              setState(() {});
+              _controller?.play();
+              _controller?.setLooping(true);
+            })
+            .catchError((_) {
+              if (mounted) setState(() => _failed = true);
+            });
     }
   }
 
@@ -1324,7 +1665,9 @@ class _WorkPreviewState extends State<_WorkPreview> {
         aspectRatio: _controller!.value.aspectRatio,
         child: GestureDetector(
           onTap: () => setState(() {
-            _controller!.value.isPlaying ? _controller!.pause() : _controller!.play();
+            _controller!.value.isPlaying
+                ? _controller!.pause()
+                : _controller!.play();
           }),
           child: VideoPlayer(_controller!),
         ),
@@ -1332,7 +1675,11 @@ class _WorkPreviewState extends State<_WorkPreview> {
     } else {
       content = const Padding(
         padding: EdgeInsets.all(24),
-        child: SizedBox(width: 32, height: 32, child: CircularProgressIndicator()),
+        child: SizedBox(
+          width: 32,
+          height: 32,
+          child: CircularProgressIndicator(),
+        ),
       );
     }
     return Padding(
@@ -1348,8 +1695,9 @@ class _WorkPreviewState extends State<_WorkPreview> {
               TextButton.icon(
                 icon: const Icon(Icons.ios_share, size: 18),
                 label: Text(l10n.homeShareOpenWith),
-                onPressed: () =>
-                    SharePlus.instance.share(ShareParams(files: [XFile(widget.file.path)])),
+                onPressed: () => SharePlus.instance.share(
+                  ShareParams(files: [XFile(widget.file.path)]),
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -1364,6 +1712,7 @@ class _WorkPreviewState extends State<_WorkPreview> {
 }
 
 enum ProjectViewMode { large, medium, small, detail }
+
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
 
 // ─── 初回起動ポップアップ ─────────────────────────────────────────────────
@@ -1386,7 +1735,10 @@ class _FirstLaunchDialog extends StatelessWidget {
           onPressed: onDone,
           child: Text(
             l10n.homeFirstLaunchStart,
-            style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontFamily: 'Kuramubon',
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
