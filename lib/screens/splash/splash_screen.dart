@@ -90,9 +90,9 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               communityButton,
-              const SizedBox(width: 32),
+              const SizedBox(width: 64),
               logo,
-              const SizedBox(width: 32),
+              const SizedBox(width: 64),
               createButton,
             ],
           )
@@ -100,9 +100,9 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               communityButton,
-              const SizedBox(height: 40),
+              const SizedBox(height: 72),
               logo,
-              const SizedBox(height: 40),
+              const SizedBox(height: 72),
               createButton,
             ],
           );
