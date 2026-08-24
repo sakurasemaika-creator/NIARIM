@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/color_palette.dart';
 
-/// カラーピッカーの「最近使った色」「パレット」を管理する（仕様書20：色管理仕様）。
+/// カラーピッカーの「最近使った色」「パレット」を管理する。
 /// - 最近使った色：直近10色をタップで即座に選択できるよう保持する。
 /// - パレット：ユーザーが任意の色を登録できる複数パレットを作成・切替・
 ///   編集（色の追加・削除・並び替え）・お気に入り登録できる。

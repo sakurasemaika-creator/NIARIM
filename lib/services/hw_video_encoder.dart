@@ -1,9 +1,8 @@
 import 'package:flutter/services.dart';
 
 /// 端末内蔵ハードウェアH.264エンコーダー（Android MediaCodec + MediaMuxer、
-/// android/app側のネイティブ実装）の呼び出し（仕様書13：MP4書き出しで
-/// FFmpeg/libx264（GPL）を使わないことでGPLコピーレフト・H.264特許
-/// ロイヤリティの論点を回避する）。
+/// android/app側のネイティブ実装）の呼び出し。MP4書き出しでFFmpeg/libx264
+/// （GPL）を使わないことでGPLコピーレフト・H.264特許ロイヤリティの論点を回避する。
 class HardwareVideoEncoder {
   static const _channel = MethodChannel('com.niarim.niarim/hw_video_encoder');
 

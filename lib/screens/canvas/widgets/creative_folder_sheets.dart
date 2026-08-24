@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_delete.dart';
 
-/// ブラシ・トーン・スタンプで共通のフォルダ管理UI（仕様書17：フォルダ管理）。
+/// ブラシ・トーン・スタンプで共通のフォルダ管理UI。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
 /// レコード型でフォルダ情報を受け取り、操作はコールバックで委譲する。
 

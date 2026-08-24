@@ -1,4 +1,4 @@
-/// 自動塗りプリセットの塗り色グラデーション（仕様書20：色管理仕様）。
+/// 自動塗りプリセットの塗り色グラデーション。
 /// nullの場合はAutofillPart.colorの単色塗りを使用する。
 enum AutofillGradientType {
   linear,          // 直線（角度指定）
@@ -14,7 +14,7 @@ class AutofillGradient {
   final List<int> colors; // ARGB、2〜10色。アルファ値＝その色の不透明度
   final List<double> stops; // 0.0〜1.0、colorsと同じ数。境界（色比率）
   // ぼかしの強さ（0.0〜1.0、既定1.0＝従来通りの滑らかなブレンド）。値を
-  // 下げるほど各色の境界がはっきりした帯状（バンド）表示に近づく（仕様書20）。
+  // 下げるほど各色の境界がはっきりした帯状（バンド）表示に近づく。
   final double feather;
 
   const AutofillGradient({

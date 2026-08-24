@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../services/advertising_service.dart';
 
-/// 無料版の固定バナー広告（仕様書13）。
+/// 無料版の固定バナー広告。
 /// 呼び出し側で`if (adService.shouldShowAds) const AdBannerWidget()`のように
 /// プレミアム時はwidgetツリーから完全に除外すること。
 class AdBannerWidget extends StatefulWidget {

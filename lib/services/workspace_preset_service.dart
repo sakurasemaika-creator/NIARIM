@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workspace_preset.dart';
 
 /// ワークスペース（左利き設定・PC/DeXモード）を名前を付けて保存・読込・削除する
-/// （仕様書08：ワークスペース保存・読込。例：アニメ用／線画用／背景用）。
+/// （ワークスペース保存・読込。例：アニメ用／線画用／背景用）。
 class WorkspacePresetService extends ChangeNotifier {
   static const _prefsKey = 'workspace_presets';
   final List<WorkspacePreset> _presets = [];
@@ -35,7 +35,7 @@ class WorkspacePresetService extends ChangeNotifier {
   }
 
   /// 現在の操作環境を[name]で保存する。同名の既存プリセットは上書きする。
-  /// 表示ツール・並び順・ツール早替え登録内容も併せて保存する（仕様書08）。
+  /// 表示ツール・並び順・ツール早替え登録内容も併せて保存する。
   Future<void> save(
     String name, {
     required bool isLeftHanded,
@@ -138,7 +138,7 @@ class WorkspacePresetService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── 共有（.niaworkspace、仕様書08）：バイナリ資産を持たない単純な
+  // ─── 共有（.niaworkspace）：バイナリ資産を持たない単純な
   // JSON設定のため、トーン・ブラシ等と異なりzip化はせずJSONそのまま
   // 書き出す。 ─────────────────────────────────────────────────────
 

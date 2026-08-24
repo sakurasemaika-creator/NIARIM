@@ -67,8 +67,8 @@ Uint8List applyDrawFilterInIsolate(
   };
 }
 
-/// トーンカーブのプリセット形状を制御点（0.0〜1.0の正規化座標）へ変換する
-/// （仕様書20：トーンカーブ。プレビュー・本適用の両方から共通利用する）。
+/// トーンカーブのプリセット形状を制御点（0.0〜1.0の正規化座標）へ変換する。
+/// プレビュー・本適用の両方から共通利用する。
 List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
   return switch (preset) {
     ToneCurvePreset.linear => const [ui.Offset(0, 0), ui.Offset(1, 1)],
@@ -84,7 +84,7 @@ List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
 
 class FilterEngine {
   /// タイムラインの演出フィルター一覧を、[frameIndex]が範囲内かつ有効なものだけ、
-  /// タイムライン上の並び順（[effects]の順）に適用する（仕様書18：演出フィルター）。
+  /// タイムライン上の並び順（[effects]の順）に適用する。
   Uint8List applyEffectFilters(
     Uint8List data,
     int width,
@@ -331,7 +331,7 @@ class FilterEngine {
     return result;
   }
 
-  /// 眼鏡断層フィルター（仕様書28：選択レイヤーで塗った範囲に、度の強い
+  /// 眼鏡断層フィルター（選択レイヤーで塗った範囲に、度の強い
   /// レンズの光学屈折を模した局所的な放射状ワープをかける）。
   /// [maskData]は選択レイヤー（LayerType.selection）を単体合成した
   /// rawRgba画像（[data]と同じ幅・高さ）で、アルファ値0の画素は対象外、
@@ -773,7 +773,7 @@ class FilterEngine {
 
   /// 二値化：輝度が[threshold]（0〜255）以上の画素を白、未満を黒に分ける。
   /// アルファはそのまま維持する。色調調整・単色化・「明度で透過」と組み合わせて
-  /// 線画抽出（仕様書28のTips）に使うことを想定している。
+  /// 線画抽出に使うことを想定している。
   Uint8List applyThreshold(Uint8List data, int width, int height, double threshold) {
     final result = Uint8List.fromList(data);
     for (int i = 0; i < data.length; i += 4) {

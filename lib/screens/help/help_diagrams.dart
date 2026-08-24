@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-/// ヘルプページの図解（仕様書28：ヘルプページ全体の再編）。
+/// ヘルプページの図解。
 ///
 /// Tips画面の`TipDiagramKind`（`tip_diagrams.dart`）は「その機能が何を
 /// もたらすか」という抽象的な概念図だったのに対し、こちらは「実際の画面の
@@ -329,7 +329,7 @@ class _HelpDiagramPainter extends CustomPainter {
   }
 
   // panel_close_bar.dartの実設計：閉じるボタン（×）はタイトル行の右端では
-  // なく、パネル最上部・中央に単独で配置される（仕様書：全パネル共通で
+  // なく、パネル最上部・中央に単独で配置される（全パネル共通で
   // 「ポップアップ中央の×ボタンで閉じる」に統一）。閉じる操作自体が
   // ヘルプ項目の対象になることはまず無いため、ハイライト対象外の固定要素
   // として常に描く。

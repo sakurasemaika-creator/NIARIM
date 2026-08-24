@@ -11,7 +11,7 @@ import 'procedural_texture.dart';
 import 'tile_manager.dart';
 
 /// 自動塗り用線画レイヤー1枚分の自動塗り・線画色再着色を実行し、結果を
-/// 対応レイヤーへ書き戻す（仕様書04）。layer_panel.dart（描画モード：手動
+/// 対応レイヤーへ書き戻す。layer_panel.dart（描画モード：手動
 /// 単体実行）とtimeline_screen.dart（一括実行）の両方が使う共通処理。
 ///
 /// パーツ未設定・対応プリセットが見つからない場合は何もせず[AutofillBatchResult.skipped]
@@ -147,8 +147,7 @@ Future<AutofillBatchResult> runAutofillForLayer({
 }
 
 /// 対応する自動塗り用線画レイヤーが存在しない自動塗りレイヤー（線画レイヤーを
-/// 削除した後に残った状態）を処理する（仕様書04「4パターンまとめ」：
-/// 「線画レイヤーなし・塗りレイヤーあり」の行）。参照する線画が無いため領域の
+/// 削除した後に残った状態）を処理する。参照する線画が無いため領域の
 /// 再判定はできず、常に不透明度ロック＋最新色での塗りつぶし（色更新と同じ
 /// 処理）のみを行う。
 Future<AutofillBatchResult> runAutofillForOrphanedLayer({
@@ -197,8 +196,8 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
 
 /// [layers]内で[autofillLayer]（LayerType.autoFill）が、直上に対応する
 /// LayerType.autoFillLineartレイヤーを持たない「孤立した自動塗りレイヤー」
-/// かどうかを判定する（仕様書04：自動塗りレイヤーは対応する線画レイヤーの
-/// 直下に配置されるという配置ルールに基づく判定）。
+/// かどうかを判定する。自動塗りレイヤーは対応する線画レイヤーの
+/// 直下に配置されるという配置ルールに基づく判定。
 bool isOrphanedAutofillLayer(List<Layer> layers, Layer autofillLayer) {
   if (autofillLayer.type != LayerType.autoFill) return false;
   final idx = layers.indexWhere((l) => l.id == autofillLayer.id);

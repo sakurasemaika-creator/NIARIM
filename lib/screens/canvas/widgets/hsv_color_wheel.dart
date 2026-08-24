@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../services/theme_service.dart';
 
 /// 正方形（彩度・明度）＋外側カラーサークル（色相）のタップ選択式カラー
-/// ピッカー（仕様書20：色管理仕様、タスク#91）。従来のH/S/Vスライダー方式に
+/// ピッカー。従来のH/S/Vスライダー方式に
 /// 代わるもの。外周のリングをタップ・ドラッグすると色相が、内側の正方形を
 /// タップ・ドラッグすると彩度（横）・明度（縦）が変わる。
 class HsvColorWheel extends StatelessWidget {
@@ -15,7 +15,7 @@ class HsvColorWheel extends StatelessWidget {
   final void Function(double saturation, double value) onSvChanged;
   final VoidCallback? onChangeEnd;
   final double size;
-  // 透明色への切り替えボタン（仕様書20：カラーピッカーは常に透明色も選択
+  // 透明色への切り替えボタン（カラーピッカーは常に透明色も選択
   // できるようにする）。円の外側・左下の空きスペースに配置する。
   final bool isTransparent;
   final VoidCallback? onToggleTransparent;
@@ -175,7 +175,7 @@ class _HueRingPainter extends CustomPainter {
       old.hue != hue || old.thickness != thickness || old.markerOutlineColor != markerOutlineColor;
 }
 
-/// 透明色への切り替えボタン（仕様書20）。チェッカー柄の円で「透明」を表現し、
+/// 透明色への切り替えボタン。チェッカー柄の円で「透明」を表現し、
 /// 現在すでに透明色を選択中の場合は縁を強調表示する。
 class _TransparentToggleButton extends StatelessWidget {
   final bool isActive;

@@ -39,7 +39,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             _sectionLabel(context, l10n.workspaceToolbarEditSection),
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              // 仕様書08：ツールバー編集機能に対応する説明文。
+              // ツールバー編集機能に対応する説明文。
               child: Text(
                 l10n.workspaceToolbarEditHint,
                 style: TextStyle(
@@ -49,7 +49,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               ),
             ),
             // 実際のキャンバス画面での横並び配置を模したプレビュー
-            // （タスク#93：設定項目の一覧だけでは仕上がりが分かりにくいため）。
+            // （設定項目の一覧だけでは仕上がりが分かりにくいため）。
             _ToolbarPreview(
               order: settings.toolbarOrder,
               hidden: settings.hiddenToolbarItems,
@@ -175,7 +175,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             _sectionLabel(context, l10n.workspacePcModeSection),
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              // 仕様書02：PC/DeXモードの手動固定機能に対応する説明文。
+              // PC/DeXモードの手動固定機能に対応する説明文。
               child: Text(
                 l10n.workspacePcModeHint,
                 style: TextStyle(
@@ -835,7 +835,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
 }
 
 /// キャンバス画面の実際のツールバー（横並び）を模したプレビュー
-/// （タスク#93：設定のチェックボックス一覧だけでは仕上がりが分かり
+/// （設定のチェックボックス一覧だけでは仕上がりが分かり
 /// にくいため、非表示にしたツールが除かれた状態の並びをそのまま示す）。
 class _ToolbarPreview extends StatelessWidget {
   final List<ToolbarItemId> order;

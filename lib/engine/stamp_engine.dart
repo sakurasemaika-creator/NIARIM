@@ -31,7 +31,7 @@ Uint8List runStampStrokeInIsolate(
   );
 }
 
-/// スタンプ描画エンジン（仕様書17：色情報はスタンプ画像自体が保持・
+/// スタンプ描画エンジン（色情報はスタンプ画像自体が保持・
 /// ブラシサイズに連動・回転／密度／散布に対応）。
 class StampEngine {
   /// [texture]（texSize x texSize、RGBA）を、ストローク上の各[points]位置へ

@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final isPremium = context.watch<PremiumService>().isPremium;
     final l10n = AppLocalizations.of(context)!;
-    // 仕様書08：「設定内検索バーあり（項目が増えても検索で到達可能）」。
+    // 設定内検索バーあり（項目が増えても検索で到達可能）。
     // 各項目にタイトル・サブタイトルに加えて検索キーワードを持たせ、
     // 部分一致でカテゴリ一覧を絞り込む。
     final entries = [
@@ -75,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: Icons.palette, title: l10n.settingsThemeTitle, subtitle: l10n.settingsThemeSubtitle,
         keywords: 'テーマ 配色 ベースカラー アクセントカラー theme color', onTap: () => context.push('/settings/theme'), accent: const Color(0xFFFF5C7A),
       ),
-      // 無料会員のみ🔒マーク付きで表示（仕様書08）
+      // 無料会員のみ🔒マーク付きで表示
       (
         icon: Icons.water, title: isPremium ? l10n.settingsWatermarkTitle : '${l10n.settingsWatermarkTitle} 🔒',
         subtitle: l10n.settingsWatermarkSubtitle, keywords: 'ウォーターマーク premium プレミアム watermark',
@@ -198,10 +198,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// 言語コードから、その言語自身の表記による表示名を返す（仕様書08＋
-  /// タスク#102：言語名は現在のUI言語に関わらず、その言語自身の文字で
-  /// 表示する。「日本語」「English」「简体中文」「한국어」「繁體中文」
-  /// 「Français」「Español」）。
+  /// 言語コードから、その言語自身の表記による表示名を返す（言語名は
+  /// 現在のUI言語に関わらず、その言語自身の文字で表示する。「日本語」
+  /// 「English」「简体中文」「한국어」「繁體中文」「Français」「Español」）。
   String _languageLabel(AppLocalizations l10n, String code) => switch (code) {
         'ja' => l10n.settingsLanguageJapanese,
         'en' => l10n.settingsLanguageEnglish,
@@ -275,7 +274,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ]),
                   onTap: () async {
                     // 対応言語：日本語・English・简体中文・한국어・繁體中文・
-                    // Français・Español（仕様書08＋タスク#102）。
+                    // Français・Español。
                     final languages = <String>['ja', 'en', 'zh', 'ko', 'zh_Hant', 'fr', 'es'];
                     final selected = await showDialog<String>(
                       context: ctx,
@@ -300,7 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 const Divider(),
-                // 描画領域初期値（仕様書26）
+                // 描画領域初期値
                 Text(l10n.settingsDrawingAreaTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                 const SizedBox(height: 4),
                 Text(l10n.settingsDrawingAreaHint,

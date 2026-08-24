@@ -15,7 +15,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
-/// 閾値（仕様書23：「容量が大きくなる場合はユーザーへ通知」）。ツリー方式は
+/// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
 /// 各ノードが差分でなく完全なアーカイブとして保存され保存件数に比例して
 /// 増え続けるため、スロット方式（件数上限あり）と異なり自然には頭打ちにならない。
 const int _saveTreeSizeWarningThresholdBytes = 300 * 1024 * 1024; // 300MB
@@ -62,8 +62,7 @@ Future<Uint8List?> _generateSaveNodeThumbnail(
   return byteData?.buffer.asUint8List();
 }
 
-/// セーブツリー／セーブスロット画面をどこから開いたか（仕様書「セーブ／
-/// 自動保存の再設計」）。過去のセーブへの「復元」（現在の内容を破棄する
+/// セーブツリー／セーブスロット画面をどこから開いたか。過去のセーブへの「復元」（現在の内容を破棄する
 /// 操作）を許可するか、許可する場合にどの確認フローを見せるかをこれで
 /// 分岐する。
 enum SaveTreeEntryMode {
@@ -215,7 +214,7 @@ void _showTreeSaveDialog(BuildContext context, String projectId,
 }
 
 /// セーブツリーの合計容量が閾値を超えている場合に通知する
-/// （仕様書23：「容量が大きくなる場合はユーザーへ通知」）。
+/// 「容量が大きくなる場合はユーザーへ通知」するために使う。
 Future<void> _warnIfSaveTreeSizeLarge(BuildContext context, String projectId) async {
   final sizeBytes = await NiaproSerializer.saveTreeSizeBytes(projectId);
   if (sizeBytes < _saveTreeSizeWarningThresholdBytes) return;
@@ -233,7 +232,7 @@ Future<void> _warnIfSaveTreeSizeLarge(BuildContext context, String projectId) as
 enum _SaveNodeChoice { overwrite, resume }
 
 /// セーブノードに対する「復元」操作を、開いた入口（[entryMode]）に応じた
-/// 確認フローで実行する（仕様書「セーブ／自動保存の再設計」）。
+/// 確認フローで実行する。
 /// タイムラインモードからは編集セッションが生きているため「上書きする」
 /// （[onOverwrite]：スロット方式ならそのスロットへの保存ダイアログ、
 /// ツリー方式ならこのノードを親とした新規保存ダイアログを開く）か
@@ -684,8 +683,7 @@ class _TreeView extends StatelessWidget {
               onSelected: (action) => _handleAction(context, action, node),
               itemBuilder: (_) => [
                 // 過去のセーブへの復元は、タイムラインモード・プロジェクト
-                // 詳細画面からの2つの入口からのみ行える（仕様書「セーブ／
-                // 自動保存の再設計」）。
+                // 詳細画面からの2つの入口からのみ行える。
                 if (entryMode != SaveTreeEntryMode.quickSave)
                   PopupMenuItem(value: 'restore', child: Text(l10n.saveTreeRestoreAction)),
                 PopupMenuItem(
@@ -793,7 +791,7 @@ Future<void> showSaveModeChangeFlowIfNeeded({
   required bool newIsTreeMode,
   int? newSlotMax,
   // 設定画面から複数プロジェクトへ順番に適用する場合、どのプロジェクトの
-  // 変更画面かを示すために使う（仕様書23）。単一プロジェクト文脈からの
+  // 変更画面かを示すために使う。単一プロジェクト文脈からの
   // 呼び出しでは省略可能。
   String? projectName,
 }) async {

@@ -55,7 +55,7 @@ import '../../widgets/help_button.dart';
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
 
-// クリップの長押しドラッグ操作の種別（仕様書05・タスク#99）。
+// クリップの長押しドラッグ操作の種別。
 enum _ClipDragMode { move, resizeLeft, resizeRight }
 
 class _TrackClip {
@@ -66,9 +66,9 @@ class _TrackClip {
   final Color color;
   final _ClipTrackType trackType;
   // 実ファイルパス（音声・動画の再生位置連動に使用。プロジェクトの
-  // Materials/フォルダ内のコピーを指す。仕様書21：MaterialID方式）
+  // Materials/フォルダ内のコピーを指す。MaterialID方式）
   String? filePath;
-  // 参照している素材ID（仕様書21）
+  // 参照している素材ID
   final String? materialId;
   // 音声
   double volume;       // 0.0〜1.0
@@ -79,7 +79,7 @@ class _TrackClip {
   int useEnd;          // 使用終了フレーム（素材内）
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
-  // このクリップが属する行番号（0始まり、仕様書05）。
+  // このクリップが属する行番号（0始まり）。
   final int trackRow;
 
   _TrackClip({
@@ -115,7 +115,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   String? _selectedSceneId;
   bool _isPlaying = false;
   Timer? _playTimer;
-  // プレビュー全画面化（仕様書02・タスク#98）：確認・仕上がりチェックに
+  // プレビュー全画面化：確認・仕上がりチェックに
   // 集中できるよう、プレビューのみ＋再生コントロールだけを全画面表示する。
   bool _isPreviewFullscreen = false;
   // プレビュー欄のドラッグハンドルで一時的に変更中の高さ（ドラッグ中のみ
@@ -125,8 +125,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // カーソル固定方式の移動モード
   bool _isMoveMode = false;
   int _moveCursorPos = 0;
-  // 移動・複製時のカーソル吹き出しに表示する先頭サムネイル（仕様書05：
-  // 「先頭のサムネイルのみ実画像を表示」）。シーン移動・フレーム移動で共用する。
+  // 移動・複製時のカーソル吹き出しに表示する先頭サムネイル（
+  // 先頭のサムネイルのみ実画像を表示する）。シーン移動・フレーム移動で共用する。
   ui.Image? _moveThumbnail;
 
   // トラッククリップ
@@ -135,7 +135,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final List<_TrackClip> _imageClips = [];
 
   // クリップの長押しドラッグ（表示開始位置の移動）・端のハンドルドラッグ
-  // （使用範囲の変更）用の一時状態（仕様書05・タスク#99）。ジェスチャー中は
+  // （使用範囲の変更）用の一時状態。ジェスチャー中は
   // setState()のたびに_buildClipWidget()が再構築されるため、絶対座標の
   // アンカー（ドラッグ開始時点のグローバルX座標・開始フレーム位置・
   // 開始長さ）をStateフィールドとして保持し、毎回そこからの差分で
@@ -147,8 +147,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _clipDragStartFrame = 0;
   int _clipDragStartLength = 0;
 
-  // カメラキーフレームマーカーの長押し不要ドラッグ用の一時状態（仕様書05
-  // 「カメラ：XY移動・拡大・回転・キーフレーム」・タスク#100）。持ち方は
+  // カメラキーフレームマーカーの長押し不要ドラッグ用の一時状態。持ち方は
   // クリップドラッグと同じアンカー方式だが、ProjectServiceへの反映は
   // ドラッグ終了時の1回のみに留める（ドラッグ中に毎回notifyListeners()
   // すると、プレビューが持つcameraKeyframesの再合成が連続発生し重くなる
@@ -158,11 +157,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   double _cameraKfDragStartX = 0;
   int _cameraKfDragStartFrame = 0;
 
-  // 音声・動画クリップの再生位置連動（仕様書05）
+  // 音声・動画クリップの再生位置連動
   final Map<String, ap.AudioPlayer> _audioPlayers = {};
   final Map<String, VideoPlayerController> _videoControllers = {};
 
-  // エンドカードトラック（仕様書06・13）：差し替え不可・アプリが無料会員に
+  // エンドカードトラック：差し替え不可・アプリが無料会員に
   // 強制表示するロゴ。プレミアム会員が削除（非表示）した場合のみtrue。
   // セッション中のみの状態で、次回プロジェクトを開くと「プレミアム会員は
   // デフォルトで削除する」設定（SettingsService）に従い直す。
@@ -186,7 +185,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _syncingScroll = false;
 
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
-  // 2行目以降の行専用スクロールコントローラー（仕様書05）。1行目は既存の
+  // 2行目以降の行専用スクロールコントローラー。1行目は既存の
   // _audioScrollCtrl等をそのまま使う。キー形式は'種別名_行番号'。
   final Map<String, ScrollController> _rowScrollCtrls = {};
 
@@ -206,15 +205,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
-  // 共通レイヤートラックのドラッグハンドル操作用の累積ピクセル（仕様書16：
+  // 共通レイヤートラックのドラッグハンドル操作用の累積ピクセル（
   // タイムライン上では左右のドラッグハンドルでも表示範囲を変更できる）
   double _commonDragAccumPx = 0;
 
-  // シーン複数選択モード（仕様書05：「選択」ボタンで開始）
+  // シーン複数選択モード（「選択」ボタンで開始）
   bool _isSceneMultiSelect = false;
   final Set<String> _selectedSceneIds = {};
 
-  // フレーム複数選択モード（仕様書05：シーンと同じ操作体系。「選択」ボタン、または
+  // フレーム複数選択モード（シーンと同じ操作体系。「選択」ボタン、または
   // シーンチップの長押し「シーン内フレームを全選択」から開始）
   bool _isFrameMultiSelect = false;
   final Set<int> _selectedFrameIndices = {};
@@ -284,7 +283,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ctrl.addListener(() => _syncFrom(ctrl));
     }
 
-    // 制作時間カウント（仕様書19：タイムラインモードのみカウント）
+    // 制作時間カウント（タイムラインモードのみカウント）
     context.read<ProjectService>().beginWorkTracking(widget.projectId);
   }
 
@@ -331,7 +330,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// 移動モードのカーソル吹き出し用に、指定シーン・フレームの先頭サムネイルを
-  /// 生成する（仕様書05：「先頭のサムネイルのみ実画像を表示」）。
+  /// 生成する（先頭のサムネイルのみ実画像を表示する）。
   /// 小さいプレビュー用に縮小したui.Imageを返す。生成できない場合はnull。
   Future<void> _loadMoveThumbnail(String sceneId, {int frameIndex = 0}) async {
     final ps = context.read<ProjectService>();
@@ -413,7 +412,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// 現在フレームに応じて音声・動画クリップの再生位置・再生状態を同期する。
-  /// 仕様書05：音声＝再生位置変更・フェードイン/アウト・音量変更、動画＝再生位置変更。
+  /// 音声＝再生位置変更・フェードイン/アウト・音量変更、動画＝再生位置変更。
   void _syncMediaPlayback() {
     final ps = context.read<ProjectService>();
     final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
@@ -514,8 +513,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
 
     // プレビュー全画面化中：確認・仕上がりチェックに集中できるよう、
-    // プレビューと再生コントロールのみを全画面表示する（仕様書02・
-    // タスク#98）。_buildPreview()・_buildPlaybackControls()は通常表示と
+    // プレビューと再生コントロールのみを全画面表示する。
+    // _buildPreview()・_buildPlaybackControls()は通常表示と
     // 完全に同じメソッドをそのまま再利用するため、再生中のフレーム送りや
     // スクラブ操作の挙動に差異は生じない。
     if (_isPreviewFullscreen) {
@@ -551,7 +550,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Listener(
-        // 制作時間カウント（仕様書19）：操作のたびに無操作タイマーをリセットする
+        // 制作時間カウント：操作のたびに無操作タイマーをリセットする
         onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
         child: SafeArea(
         child: LayoutBuilder(
@@ -565,7 +564,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 _buildToolbar(),
                 _buildSceneTabs(),
                 _buildFrameList(),
-                // 各種タイムライン行（仕様書05）：デフォルトではプレビュー・
+                // 各種タイムライン行：デフォルトではプレビュー・
                 // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
                 // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
                 // 1つでも追加された行だけを表示する。最後の1件を削除すれば、
@@ -716,7 +715,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     groups: ps.layerGroupsOf(widget.projectId, sceneId),
                   ),
           ),
-          // プレビュー全画面化ボタン（仕様書02・タスク#98：確認・仕上がり
+          // プレビュー全画面化ボタン（確認・仕上がり
           // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
           // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
           // 「開く」方向のボタンのみを置けばよい。
@@ -757,7 +756,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget _buildPreview() => Expanded(flex: 3, child: _buildPreviewContent());
 
   /// 通常表示のプレビュー欄。底辺のドラッグハンドルで縦方向のサイズを
-  /// 変更できるようにする（仕様書05）。高さはアプリ全体で共通の割合として
+  /// 変更できるようにする。高さはアプリ全体で共通の割合として
   /// SettingsServiceへ保存され、作業を中断したり別プロジェクトへ移動しても
   /// 最後に設定した位置が引き継がれる。ドラッグ中は指を離すまでローカル
   /// 状態のみを更新し、離した瞬間に確定値を保存する。
@@ -936,7 +935,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 登録済みウォーターマーク一覧から選択して追加する（仕様書05・13：
+  /// 登録済みウォーターマーク一覧から選択して追加する（
   /// ウォーターマークは専用トラックを持たず、画像素材と同じレイヤー機構
   /// 〔LayerType.watermark〕を使ってタイムライン素材として追加する）。
   void _showWatermarkPicker() {
@@ -988,7 +987,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 選択したウォーターマーク（画像 or 文字入力、仕様書01・13）をラスタライズし、
+  /// 選択したウォーターマーク（画像 or 文字入力）をラスタライズし、
   /// LayerType.watermarkのレイヤーとして現在シーンへ追加する（表示範囲は
   /// デフォルトで全フレーム＝常時表示。以後の表示範囲・不透明度・差し替えは
   /// レイヤーパネルから調整できる）。
@@ -1021,7 +1020,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     // 既定は「常時表示」（全フレーム）。表示範囲・角度・大きさ・不透明度は
     // タイムラインの共通レイヤートラックでウォーターマークをタップすれば
-    // いつでも変更できる（仕様書05：常時表示／エンドカード／任意フレーム
+    // いつでも変更できる（常時表示／エンドカード／任意フレーム
     // のみ表示はすべて表示範囲設定で実現する）。
     projectService.updateLayer(
       projectId: widget.projectId,
@@ -1176,7 +1175,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// 文字入力ウォーターマークをキャンバス全体サイズのRGBAピクセルへ
-  /// ラスタライズする（仕様書01・13：「設定項目：画像選択 / 文字入力」）。
+  /// ラスタライズする（設定項目：画像選択 / 文字入力）。
   /// 既存のテキストレイヤー描画エンジン（text_render.dart）を再利用し、
   /// 画像ウォーターマークと同様に右下へ配置する。フォント・[angle]（回転角）・
   /// [scale]（大きさ倍率）はいずれもタイムラインでウォーターマークをタップ
@@ -1200,7 +1199,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return rasterizeTextObject(textObject, w, h);
   }
 
-  // 移動モード中の吹き出しプレビュー（仕様書05）
+  // 移動モード中の吹き出しプレビュー
   // 先頭サムネイル＋白カード最大3枚、右上に枚数バッジ
   Widget _buildCursorBubble() {
     // 移動は複数選択モードからのみ起動するため常に_selectedSceneIds.lengthを使用
@@ -1233,7 +1232,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
               ),
-            // 先頭サムネイル（仕様書05：「先頭のサムネイルのみ実画像を表示」）
+            // 先頭サムネイル（先頭のサムネイルのみ実画像を表示する）
             Container(
               width: 48,
               height: 48,
@@ -1266,7 +1265,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// シーンタブ（仕様書05：カーソル固定方式で並び替え）
+  /// シーンタブ（カーソル固定方式で並び替え）
   Widget _buildSceneTabs() {
     final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
@@ -1361,14 +1360,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       if (_selectedSceneIds.isEmpty) _isSceneMultiSelect = false;
                                     });
                                   }
-                                  // 未選択シーンは何もしない（仕様書05）
+                                  // 未選択シーンは何もしない
                                 } else {
                                   _showRenameSceneDialog(scene);
                                 }
                               },
                               onDoubleTap: _isSceneMultiSelect ? null : () => setState(() => _selectedSceneId = scene.id),
                               // 長押し：シーン内フレームを全選択し、フレーム複数選択モードへ
-                              // 移行する（仕様書05：フレーム一覧と操作体系を統一）。
+                              // 移行する（フレーム一覧と操作体系を統一）。
                               // シーン自体の複数選択（移動・削除）は上部の「選択」ボタンから行う。
                               onLongPress: () {
                                 if (_isSceneMultiSelect || _isFrameMultiSelect) return;
@@ -1400,7 +1399,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                       Text(scene.displayName, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                                       // シーン内に自動塗り未更新のフレームがある場合の❗マーク
-                                      // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
+                                      // （更新マークはレイヤー・タイムライン両方に表示）
                                       if (projectService.sceneHasOutdatedAutofillLayers(widget.projectId, scene.id))
                                         GestureDetector(
                                           onTap: () => _showAutofillUpdateHelp(context),
@@ -1447,7 +1446,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 選択中シーンを複製する（仕様書05：シーンのコピー。素材タイムラインの
+  /// 選択中シーンを複製する（シーンのコピー。素材タイムラインの
   /// 上の大きなボタンから起動する）。並び順（シーン一覧の
   /// 実際の順序）に沿って1件ずつ複製元の直後へ挿入していく。
   void _duplicateSelectedScenes(List<Scene> scenes) {
@@ -1464,7 +1463,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
-  // 移動モード開始（仕様書05：複数選択モードからのみ起動）
+  // 移動モード開始（複数選択モードからのみ起動）
   void _startMoveMode(List<Scene> scenes) {
     if (_selectedSceneIds.isEmpty) return;
     setState(() {
@@ -1477,7 +1476,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (first != null) _loadMoveThumbnail(first.id);
   }
 
-  // カーソル固定方式の移動確定（仕様書05：複数選択モードからのみ起動）
+  // カーソル固定方式の移動確定（複数選択モードからのみ起動）
   void _confirmMove(List<Scene> scenes) {
     if (_selectedSceneIds.isEmpty) return;
     // 選択シーンを並び順で抽出
@@ -1497,7 +1496,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
-  // 三点メニュー（仕様書05：シーン名変更・複製・削除）
+  // 三点メニュー（シーン名変更・複製・削除）
   void _showSceneMenu(Scene scene, List<Scene> scenes) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
@@ -1535,7 +1534,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  // 単体シーン削除の確認ダイアログ（仕様書05）
+  // 単体シーン削除の確認ダイアログ
   void _showSingleDeleteConfirm(Scene scene) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -1558,7 +1557,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  // 複数選択シーン削除の確認ダイアログ（仕様書05）
+  // 複数選択シーン削除の確認ダイアログ
   void _showMultiDeleteConfirm() {
     final l10n = AppLocalizations.of(context)!;
     final count = _selectedSceneIds.length;
@@ -1612,7 +1611,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ).then((_) => controller.dispose());
   }
 
-  // タイムライン側❗マークのヘルプ（仕様書04：レイヤーパネル側と同一文言）
+  // タイムライン側❗マークのヘルプ（レイヤーパネル側と同一文言）
   void _showAutofillUpdateHelp(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -1627,7 +1626,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// フレーム一覧（仕様書05：シーンと同じ複数選択・カーソル固定移動の操作体系）。
+  /// フレーム一覧（シーンと同じ複数選択・カーソル固定移動の操作体系）。
   Widget _buildFrameList() {
     final l10n = AppLocalizations.of(context)!;
     final total = _totalFrames;
@@ -1733,7 +1732,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         // ここで色分けする）。
                         final isChecked = _selectedFrameIndices.contains(index);
                         // このフレームに自動塗り未更新のレイヤーがある場合の❗マーク
-                        // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
+                        // （更新マークはレイヤー・タイムライン両方に表示）
                         final hasOutdatedAutofill = frameListSceneId != null &&
                             projectService.frameHasOutdatedAutofillLayers(
                                 widget.projectId, frameListSceneId, index);
@@ -1746,7 +1745,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   if (_selectedFrameIndices.isEmpty) _isFrameMultiSelect = false;
                                 });
                               }
-                              // 未選択フレームは何もしない（シーンと同じ操作体系、仕様書05）
+                              // 未選択フレームは何もしない（シーンと同じ操作体系）
                             } else {
                               setState(() => _currentFrame = index);
                             }
@@ -1971,7 +1970,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
-  // 移動モード開始（仕様書05：複数選択モードからのみ起動）
+  // 移動モード開始（複数選択モードからのみ起動）
   void _startFrameMoveMode() {
     if (_selectedFrameIndices.isEmpty) return;
     final sorted = _selectedFrameIndices.toList()..sort();
@@ -1983,7 +1982,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (sceneId != null) _loadMoveThumbnail(sceneId, frameIndex: sorted.first);
   }
 
-  // カーソル固定方式の移動確定（仕様書05：複数選択モードからのみ起動）
+  // カーソル固定方式の移動確定（複数選択モードからのみ起動）
   void _confirmFrameMove() {
     if (_selectedFrameIndices.isEmpty) return;
     final sceneId = _selectedSceneId;
@@ -2019,12 +2018,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 素材種別（画像・動画・音源）ごとのタイムライン行グループ（仕様書05）。
+  /// 素材種別（画像・動画・音源）ごとのタイムライン行グループ。
   /// 行数・行名はシーンごとにProjectServiceで管理する。1行目の右端＋は
   /// 「行の追加」用（素材自体の追加は既に上部ツールバーのボタンで行える
   /// ため、この＋は行追加に転用した）。2行目以降は－で行削除ができる。
   /// 素材種別（動画・音声）のトラック行グループ。1件も素材がなければ
-  /// グループごと非表示にし（仕様書05：デフォルトはプレビュー・フレーム
+  /// グループごと非表示にし（デフォルトはプレビュー・フレーム
   /// 一覧のみ）、中身のある行だけを表示する。同じタイミングで重ねたい
   /// 素材がある場合のみ、最後尾の行の＋で新しい行を追加できる。
   Widget _buildMaterialTrackGroup({
@@ -2079,7 +2078,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Row(
         children: [
-          // 行名タップで名称変更（仕様書05：「タイムライン左側の素材種別名は
+          // 行名タップで名称変更（「タイムライン左側の素材種別名は
           // タップでユーザーがテキスト変更できる」）。種別を示すアイコン自体は
           // 変更不可のまま常時表示する。
           GestureDetector(
@@ -2193,8 +2192,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           child: GestureDetector(
             onTap: () => _showEditClipDialog(clip),
             // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
-            // （仕様書05：「開始フレーム変更：タイムライン上で表示開始
-            // 位置を変更」、タスク#99）。
+            // （「開始フレーム変更：タイムライン上で表示開始
+            // 位置を変更」）。
             onLongPressStart: (d) => _beginClipDrag(clip, _ClipDragMode.move, d.globalPosition.dx),
             onLongPressMoveUpdate: (d) => _updateClipDrag(clip, d.globalPosition.dx),
             onLongPressEnd: (_) => _endClipDrag(clip),
@@ -2217,8 +2216,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
                 // 左右端のドラッグハンドル：表示範囲（長さ）を変更する
-                // （仕様書05：「使用範囲変更：タイムライン上でドラッグ
-                // ハンドルにより変更」、タスク#99）。
+                // （「使用範囲変更：タイムライン上でドラッグ
+                // ハンドルにより変更」）。
                 _buildClipResizeHandle(clip, handleW, isLeft: true),
                 _buildClipResizeHandle(clip, handleW, isLeft: false),
               ],
@@ -2297,7 +2296,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (sceneId != null) _persistClipUpdate(clip, sceneId);
   }
 
-  /// シーン・フレームの複数選択モード中の一括操作バー（仕様書05）。
+  /// シーン・フレームの複数選択モード中の一括操作バー。
   /// 素材タイムラインの上に大きな3分割ボタン（移動・複製・削除）＋
   /// 次の段に全選択・全解除を表示する。移動モード中は専用のカーソルUIが
   /// 別途表示されるためここでは非表示にする。
@@ -2384,7 +2383,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 共通レイヤー専用トラック（仕様書05・16）。共通レイヤーは通常レイヤーとは
+  /// 共通レイヤー専用トラック。共通レイヤーは通常レイヤーとは
   /// 別に表示範囲（rangeMode）を持ち、複数フレーム・複数シーンにまたがって
   /// 同一の描画内容を共有表示する。現在選択中のシーンに表示範囲が適用される
   /// 共通レイヤーのみを1レイヤーにつき1行で表示する。
@@ -2481,7 +2480,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// 共通レイヤーの表示範囲バー。シングルタップで表示範囲設定ダイアログを開き、
-  /// 左右のドラッグハンドルで開始・終了フレームを直接変更できる（仕様書16：
+  /// 左右のドラッグハンドルで開始・終了フレームを直接変更できる（
   /// 「タイムライン上では左右のドラッグハンドルでも表示範囲を変更できる」）。
   Widget _buildCommonLayerBar(Layer layer, LayerHome home, int start, int end, int total) {
     final left = start * _cellW + _frameMargin;
@@ -2578,7 +2577,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 共通レイヤーの表示範囲設定ダイアログ（仕様書16「三点メニュー（共通レイヤー専用）」
+  /// 共通レイヤーの表示範囲設定ダイアログ（「三点メニュー（共通レイヤー専用）」
   /// の「表示フレーム範囲変更」と同一内容。レイヤーパネル側の同名ダイアログとUIを揃える）。
   void _showCommonLayerRangeDialog(Layer layer, LayerHome home) {
     final l10n = AppLocalizations.of(context)!;
@@ -2818,7 +2817,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final cameraKfs = sceneId == null
         ? const <CameraKeyframe>[]
         : context.watch<ProjectService>().cameraKeyframesOf(widget.projectId, sceneId);
-    // キーフレームが1件もない間は非表示にする（仕様書05）。最初の1件は
+    // キーフレームが1件もない間は非表示にする。最初の1件は
     // ツールバーのカメラアイコンから追加できる。
     if (cameraKfs.isEmpty) return const SizedBox.shrink();
     return Container(
@@ -2884,8 +2883,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           top: 9,
           child: GestureDetector(
             onTap: () => _showEditCameraKfDialog(kf),
-            // ドラッグでキーフレーム位置（フレーム）を変更する（仕様書05：
-            // 「カメラ：XY移動・拡大・回転・キーフレーム」、タスク#100）。
+            // ドラッグでキーフレーム位置（フレーム）を変更する。
             onHorizontalDragStart: (d) => _beginCameraKfDrag(kf, d.globalPosition.dx),
             onHorizontalDragUpdate: (d) => _updateCameraKfDrag(d.globalPosition.dx),
             onHorizontalDragEnd: (_) => _endCameraKfDrag(kf),
@@ -2957,7 +2955,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final markers = sceneId == null
         ? const <TimelineMarker>[]
         : context.watch<ProjectService>().timelineMarkersOf(widget.projectId, sceneId);
-    // タイムスタンプが1件もない間は非表示にする（仕様書05）。最初の1件は
+    // タイムスタンプが1件もない間は非表示にする。最初の1件は
     // ツールバーのタイムスタンプアイコンから追加できる。
     if (markers.isEmpty) return const SizedBox.shrink();
     return Container(
@@ -3106,7 +3104,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ).then((_) => ctrl.dispose());
   }
 
-  /// 演出フィルタートラック（仕様書05・18）。適用中のフィルターが1件も
+  /// 演出フィルタートラック。適用中のフィルターが1件も
   /// なければ非表示にし、フィルターごとに専用の行を自動で表示する
   /// （共通レイヤートラックと同じ考え方：重ね掛けしても行が自動で増える
   /// ため、ユーザーが列を手動管理する必要がない）。タップすると演出
@@ -3277,7 +3275,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final pickedSourcePath = result.files.first.path!;
     if (!mounted) return;
 
-    // 素材管理（仕様書21）：プロジェクトのMaterials/フォルダへコピーし
+    // 素材管理：プロジェクトのMaterials/フォルダへコピーし
     // MaterialIDで管理する。同一内容のファイルは重複保存しない。
     final materialType = switch (trackType) {
       _ClipTrackType.audio => MaterialType.audio,
@@ -3384,7 +3382,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ).then((_) => labelCtrl.dispose());
   }
 
-  // ─── タイムライン素材クリップの永続化（仕様書05・16・21） ───────────────
+  // ─── タイムライン素材クリップの永続化 ───────────────
   // 音声はシーンのAudioClipsとして、画像・動画はLayerType.timelineImage/
   // timelineVideoのレイヤー（common・watermarkと同じ表示範囲の仕組み）として
   // 永続化する。従来はこの永続化が一切なく、タイムライン画面を離れる・
@@ -3540,7 +3538,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         layerId: clip.id,
       );
     }
-    // 使用中の列だけを表示する方針（仕様書05）：追加専用の行（2行目以降）が
+    // 使用中の列だけを表示する方針：追加専用の行（2行目以降）が
     // 空になったら自動で畳む（構造ごと削除して行番号を詰め直す）。1行目は
     // 常に存在する既定行なので畳まず、中身がなければ表示だけを省く。
     if (clip.trackRow > 0) {
@@ -3700,7 +3698,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           sourceTrimStart: clip.useStart,
           sourceTrimEnd: clip.useEnd,
           // 表示開始位置・使用範囲（タイムライン上のドラッグ移動・
-          // ハンドルによるリサイズ、タスク#99）。従来はここが抜けており、
+          // ハンドルによるリサイズ）。
           // ドラッグ操作で見た目上は移動・リサイズできても実際には
           // 永続化されない不具合があった。
           rangeStart: clip.startFrame + 1,
@@ -4132,7 +4130,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _showAutofillDialog() {
     final l10n = AppLocalizations.of(context)!;
     int selected = 0;
-    // 実行対象は選択フレーム・シーン単位・全フレームから選べる（仕様書04）。
+    // 実行対象は選択フレーム・シーン単位・全フレームから選べる。
     // フレーム一覧に複数選択機能がないため「選択フレーム」は「現在のフレームのみ」で代替する。
     _AutofillScope scope = _AutofillScope.currentFrame;
     showDialog(
@@ -4232,7 +4230,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// 自動塗り一括実行（仕様書04：タイムラインモードからの実行、対象は
+  /// 自動塗り一括実行（タイムラインモードからの実行、対象は
   /// 現在フレーム／シーン単位／全フレームから選択）。対象範囲内の全フレームを
   /// 走査し、自動塗り用線画レイヤーごとにruleAutofillForLayerを実行する。
   Future<void> _runBatchAutofill(_AutofillScope scope, AutofillMode mode) async {
@@ -4301,7 +4299,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         );
         if (result == AutofillBatchResult.applied) applied++;
       }
-      // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（仕様書04：
+      // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（
       // 「線画レイヤーなし・塗りレイヤーあり」の行）は、選択中のモードに
       // 関わらず不透明度ロック＋最新色での塗りつぶしのみを行う。
       final orphanedLayers = layers.where((l) => isOrphanedAutofillLayer(layers, l));
@@ -4409,7 +4407,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       groupKeyframeOf: _groupKeyframeOf,
     );
 
-    // カメラ変換を適用する（仕様書05：カメラは表示のみを変更する）
+    // カメラ変換を適用する（カメラは表示のみを変更する）
     final kf = _cameraEngine.valueAt(widget.cameraKeyframes, widget.frameIndex);
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -4421,7 +4419,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     final picture = recorder.endRecording();
     var img = await picture.toImage(tm.canvasWidth, tm.canvasHeight);
 
-    // 演出フィルター（仕様書18）：合成・カメラ適用後の映像へ非破壊で適用する
+    // 演出フィルター：合成・カメラ適用後の映像へ非破壊で適用する
     if (widget.effectFilters.isNotEmpty) {
       final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
       if (byteData != null) {
@@ -4469,7 +4467,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
 
 
 // ─── 演出フィルターシート ───────────────────────────────────────────────────
-// 選択中シーンのProjectService.effectFiltersOf()を直接読み書きする（仕様書18：
+// 選択中シーンのProjectService.effectFiltersOf()を直接読み書きする（
 // タイムライン非破壊編集。プレビュー再生・書き出し時にFilterEngineが適用する）。
 
 class _EffectFilterSheet extends StatelessWidget {
@@ -4559,7 +4557,7 @@ class _EffectFilterSheet extends StatelessWidget {
                     child: Text(l10n.timelineEffectFilterEmptyState,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)))
-                // ドラッグで並び替え可能（仕様書18：「複数フィルターの適用順」は
+                // ドラッグで並び替え可能（「複数フィルターの適用順」は
                 // タイムライン上の並び順に従うため、並び替えが適用順を左右する）
                 : ReorderableListView.builder(
                     scrollController: scrollCtrl,
@@ -4583,7 +4581,7 @@ class _EffectFilterSheet extends StatelessWidget {
   void _update(BuildContext context, EffectFilterInstance e) =>
       context.read<ProjectService>().updateEffectFilter(projectId, sceneId, e);
 
-  /// 演出フィルターを複製する（仕様書18「フィルター操作＞複製」）。
+  /// 演出フィルターを複製する（「フィルター操作＞複製」）。
   /// 複製先は元フィルターの直後へ挿入する。
   void _duplicate(BuildContext context, EffectFilterInstance e, List<EffectFilterInstance> effects) {
     final service = context.read<ProjectService>();
@@ -4829,7 +4827,7 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   /// 単色化のパラメータ（混合量スライダー＋色チップ。チップをタップすると
-  /// フルカラーピッカー（ColorPickerPanel）が開く。仕様書28）。
+  /// フルカラーピッカー（ColorPickerPanel）が開く。
   List<Widget> _monochromeParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
     return [
       _paramRow(l10n.timelineEffectStrengthLabel, e.param1, 1, 20, 19,
@@ -5118,7 +5116,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
   }
 
   /// カメラ操作の見え方をスライダー操作だけに頼らず確認できるようにする
-  /// プレビュー（仕様書05）。現在編集中のキーフレーム位置における実際の
+  /// プレビュー。現在編集中のキーフレーム位置における実際の
   /// 見え方（カメラ変換適用後の
   /// フレーム）をその場でプレビュー表示し、スライダー操作と同時に確認できる
   /// ようにする。カメラキーフレーム一覧はwatchで購読し、スライダー変更の

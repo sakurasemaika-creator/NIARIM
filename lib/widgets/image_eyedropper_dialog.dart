@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 
 /// 画像ファイルを表示し、タップした位置のピクセル色を取得するダイアログ
-/// （仕様書20：自動塗りプリセットのサムネイル画像から、謎のパレットではなく
+/// （自動塗りプリセットのサムネイル画像から、謎のパレットではなく
 /// スポイトで色を拾えるようにする機能）。戻り値は選択されたColor（未選択で
 /// 閉じた場合はnull）。
 /// [imagePath]（デスクトップ/モバイル）と[imageBytes]（Web版：dart:ioの

@@ -8,7 +8,7 @@ import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 
-/// トーンの全機能管理パネル（仕様書04・17・25：一覧・お気に入り・検索・
+/// トーンの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
 class TonePanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -325,7 +325,7 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // 仕様書17：トーンの編集可能項目は名前・テクスチャ画像のみ
+    // トーンの編集可能項目は名前・テクスチャ画像のみ
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16),

@@ -7,7 +7,7 @@ class RulerEngine {
   Ruler? get activeRuler => _activeRuler;
 
   // 透視定規（1〜3点透視）用：1ストローク中は最初に決定した消失点・直線を
-  // 維持し続けるための状態（仕様書14：消失点へ向かう直線に沿って描画補助）。
+  // 維持し続けるための状態（消失点へ向かう直線に沿って描画補助する）。
   Offset? _strokeAnchor;
   Offset? _strokeVp;
 
@@ -77,7 +77,7 @@ class RulerEngine {
     final ry = ruler.settings.radiusY ?? 60;
     final dx = point.dx - ruler.position.dx;
     final dy = point.dy - ruler.position.dy;
-    // rotationは楕円全体の回転角度（仕様書14：楕円定規の回転）。
+    // rotationは楕円全体の回転角度（楕円定規の回転）。
     // 一旦楕円のローカル座標系（回転前）へ変換してから楕円上の最近傍角度を求め、
     // 再度ワールド座標へ回転させて戻す。
     final cr = cos(-ruler.rotation);
@@ -100,7 +100,7 @@ class RulerEngine {
     final divisions = ruler.settings.divisions ?? 8;
     final dx = point.dx - ruler.position.dx;
     final dy = point.dy - ruler.position.dy;
-    // rotationは各スポークの基準角度のオフセット（仕様書14：回転角度変更可能）。
+    // rotationは各スポークの基準角度のオフセット（回転角度は変更可能）。
     final angle = atan2(dy, dx) - ruler.rotation;
     final sliceAngle = 2 * pi / divisions;
     final snappedAngle = (angle / sliceAngle).round() * sliceAngle + ruler.rotation;

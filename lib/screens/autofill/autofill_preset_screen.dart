@@ -32,8 +32,7 @@ class AutofillPresetScreen extends StatefulWidget {
 class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   String _searchQuery = '';
   bool _isSearching = false;
-  // お気に入りのみ絞り込み（仕様書20）。プリセット単位のお気に入り登録・
-  // 絞り込みに使う。
+  // お気に入りのみ絞り込み。プリセット単位のお気に入り登録・絞り込みに使う。
   bool _showFavoritesOnly = false;
 
   // このファイルの各ダイアログが使うTextEditingControllerは、
@@ -241,8 +240,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     );
   }
 
-  /// サムネイル画像設定ポップアップ（仕様書20：三点メニューの「名前変更」
-  /// と「削除」の間に追加。「画像読み込み」でトリミングして設定、
+  /// サムネイル画像設定ポップアップ（三点メニューの「名前変更」と「削除」
+  /// の間に追加。「画像読み込み」でトリミングして設定、
   /// 「サムネイル画像削除」で確認の上、既定の色表示へ戻す）。
   void _showThumbnailDialog(AutofillPreset preset) {
     final l10n = AppLocalizations.of(context)!;
@@ -308,7 +307,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     if (picked.path == null && picked.bytes == null) return;
     if (!mounted) return;
     // 画像選択後、1:1の正方形へトリミング（位置・大きさ・角度はユーザーが
-    // ドラッグ・ピンチ・回転ジェスチャーで調整できる、仕様書20）。
+    // ドラッグ・ピンチ・回転ジェスチャーで調整できる）。
     final cropped = await showDialog<Uint8List>(
       context: context,
       builder: (_) => picked.path != null
@@ -355,7 +354,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           preset: preset,
           onUpdate: (updated, {String? changedPartId}) {
             presetService.updatePreset(updated);
-            // パーツ色・名前の変更を、当該パーツIDを参照する全フレームの自動塗りレイヤーへ伝播（仕様書04）
+            // パーツ色・名前の変更を、当該パーツIDを参照する全フレームの自動塗りレイヤーへ伝播
             if (changedPartId != null) {
               projectService.markAutofillUpdateForPartId(changedPartId);
             }
@@ -397,8 +396,8 @@ class _PresetCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           // サムネイル画像が設定されている場合はそれを優先表示し、未設定の
-          // 場合のみ従来通りパーツの色（最大4色）をグリッド表示する
-          // （仕様書20：サムネイル画像削除時は既定の色表示へ戻る）。
+          // 場合のみパーツの色（最大4色）をグリッド表示する
+          // （サムネイル画像削除時は既定の色表示へ戻る）。
           child: preset.thumbnailPath != null
               ? Image.file(
                   File(preset.thumbnailPath!),
@@ -469,7 +468,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   bool _isSearchingParts = false;
 
   // パーツの色選択時に「画像からスポイト」で都度読み込んだ参考画像の
-  // スクラッチコピー（仕様書20）。この画面を離れる（＝プリセット編集を
+  // スクラッチコピー。この画面を離れる（＝プリセット編集を
   // 終える）タイミングでまとめて削除し容量を節約する。取得した色自体は
   // 各パーツのcolor/lineColorへ既に反映済みのため消えない。
   final Set<String> _scratchImagePaths = {};
@@ -496,8 +495,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     widget.onUpdate(updated, changedPartId: changedPartId);
   }
 
-  /// 画像を都度読み込んでスポイトする（仕様書20：「各パーツ設定の色選択時に
-  /// 画像を都度読み込めるようにして」）。読み込んだ画像はスクラッチ領域へ
+  /// 各パーツ設定の色選択時に画像を都度読み込んでスポイトする。読み込んだ画像はスクラッチ領域へ
   /// コピーし、この画面を離れる際に削除する。
   Future<void> _pickColorFromNewImage(ValueChanged<Color> onPicked) async {
     final l10n = AppLocalizations.of(context)!;
@@ -549,8 +547,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       ? _preset.parts
       : _preset.parts.where((p) => p.name.contains(_partSearchQuery)).toList();
 
-  /// 未設定パーツ一覧（仕様書20：保存チェック「未設定項目が1つでもある場合は
-  /// 保存不可」）。
+  /// 未設定パーツ一覧。保存チェックで、未設定項目が1つでもある場合は
+  /// 保存不可とする。
   List<AutofillPart> get _unconfiguredParts =>
       _preset.parts.where((p) => !p.isConfigured).toList();
 
@@ -559,7 +557,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     final unconfigured = _unconfiguredParts;
     return PopScope(
-      // 未設定パーツがある間はこの画面を離れられない（仕様書20：保存不可）。
+      // 未設定パーツがある間はこの画面を離れられない（保存不可）。
       canPop: unconfigured.isEmpty,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
@@ -575,7 +573,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               )
             : Text(_preset.name),
         actions: [
-          // 検索（仕様書20：「検索・並び替え・お気に入り登録に対応」）
+          // 検索・並び替え・お気に入り登録に対応
           IconButton(
             icon: Icon(_isSearchingParts ? Icons.close : Icons.search),
             tooltip: _isSearchingParts ? l10n.commonClose : l10n.commonSearch,
@@ -588,8 +586,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       ),
       body: SafeArea(child: Column(
         children: [
-          // 未設定パーツがある場合の警告バナー（仕様書20：「赤文字で不足している
-          // パーツ名と設定内容を表示」）
+          // 未設定パーツがある場合の警告バナー（赤文字で不足している
+          // パーツ名と設定内容を表示）
           if (unconfigured.isNotEmpty)
             Container(
               width: double.infinity,
@@ -622,7 +620,6 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 保存チェックの仕様根拠は内部コメントに留め、UI文言からは仕様書番号を除いている
             Text(l10n.autofillPartUnconfiguredDialogBody),
             const SizedBox(height: 8),
             for (final p in unconfigured)
@@ -669,9 +666,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 );
   }
 
-  /// パーツ一覧の1行（仕様書20：「[サムネイル] パーツ名 [色チップ] ✓設定完了マーク」）。
+  /// パーツ一覧の1行（[サムネイル] パーツ名 [色チップ] ✓設定完了マーク）。
   /// トーンを使用しているパーツは、単色/グラデーションの丸ではなく指定色で
-  /// 着色した実際のトーンパターンをサムネイルに表示する（タスク#91）。
+  /// 着色した実際のトーンパターンをサムネイルに表示する。
   Widget _partTile(AutofillPart part, {int? dragIndex}) {
     final l10n = AppLocalizations.of(context)!;
     Widget thumb;
@@ -719,7 +716,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     ),
                   ),
                   title: Text(part.name),
-                  // ✓設定完了マーク（仕様書20：保存チェック）
+                  // ✓設定完了マーク（保存チェック用）
                   subtitle: part.isConfigured
                       ? null
                       : Text(l10n.autofillPartToneUnselected, style: const TextStyle(fontSize: 10, color: Colors.red)),
@@ -852,7 +849,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     LayerBlendMode.luminosity: l10n.blendModeLuminosity,
   };
 
-  /// 詳細設定ポップアップ（仕様書20：色チップタップ時。塗り色・線画色・
+  /// 詳細設定ポップアップ（色チップタップ時。塗り色・線画色・
   /// グラデーション・トーン・ブレンドモード・不透明度をすべてリアルタイム
   /// プレビュー付きで設定する）。
   void _showPartDetailDialog(AutofillPart part) {
@@ -874,7 +871,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 塗り色のリアルタイムプレビュー（仕様書20：不透明度を
+                    // 塗り色のリアルタイムプレビュー（不透明度を
                     // 変更した際にプレビューでも分かりやすく変化するよう、
                     // チェッカー柄の上に塗り色・グラデーションを不透明度を
                     // 反映して重ねる）。塗り色設定のすぐ上に置くことで、
@@ -900,7 +897,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
                     ),
                     const SizedBox(height: 6),
-                    // 画像を都度読み込んでスポイトで色を拾う（仕様書20：カラー
+                    // 画像を都度読み込んでスポイトで色を拾う（カラー
                     // ピッカーだけでなく、任意の画像から直接色を取得できる）。
                     OutlinedButton.icon(
                       onPressed: () => _pickColorFromNewImage(
@@ -1126,7 +1123,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
-  /// トーン選択シート（仕様書04・20）。ブラシと同様にユーザーが自作・追加・
+  /// トーン選択シート。ブラシと同様にユーザーが自作・追加・
   /// 配布物のDLができるトーンは種類が増えやすいため、名前だけのチップ一覧
   /// ではなく各トーンの実際のパターンプレビュー（指定色で着色）付きの
   /// グリッドから選べるようにする。戻り値は選択されたトーンID（キャンセル時
@@ -1207,7 +1204,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
-  /// グラデーション編集ダイアログ（仕様書20：塗り色設定・グラデーション）。
+  /// グラデーション編集ダイアログ（塗り色設定・グラデーション）。
   /// 自由な色比率編集の代わりに均等配置とし、種類・角度（直線時）・
   /// 中心位置（放射時、既定は中央）・色（2〜5色）を編集する簡略実装。
   Future<AutofillPart?> _showGradientEditor(AutofillPart part) {
@@ -1261,8 +1258,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 実際の種類・角度・放射方向・ぼかしを反映した正確なプレビュー
-                    // （仕様書20：「角度の違うグラデーションや放射状のグラデーション
-                    // など対応したプレビューを表示する」）。
+                    // （角度の違うグラデーションや放射状のグラデーションなど
+                    // 対応したプレビューを表示する）。
                     Container(
                       height: 48,
                       clipBehavior: Clip.antiAlias,
@@ -1388,8 +1385,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                     ],
                     const SizedBox(height: 8),
-                    // ぼかしの強さ（仕様書20）：0%＝境界がはっきりした帯状、
-                    // 100%＝従来通りの滑らかなブレンド。
+                    // ぼかしの強さ：0%＝境界がはっきりした帯状、
+                    // 100%＝滑らかなブレンド。
                     Row(
                       children: [
                         Expanded(
@@ -1430,8 +1427,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     const SizedBox(height: 4),
                     // 色一覧：ドラッグで順番入れ替え、各色ごとにタップで色（不透明度
-                    // 含む）変更・画像からスポイト・切り替え位置の調整・削除ができる
-                    // （仕様書20）。
+                    // 含む）変更・画像からスポイト・切り替え位置の調整・削除ができる。
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -1472,7 +1468,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              // 画像から色をスポイト（仕様書20：グラデーション設定内
+                              // 画像から色をスポイト（グラデーション設定内
                               // でもカラーピッカーだけでなく画像からスポイトできる）。
                               IconButton(
                                 icon: const Icon(Icons.colorize, size: 16),
@@ -1588,8 +1584,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   }
 
   /// [g]の種類（直線／放射2種）・角度・中心位置・ぼかしの強さを反映した
-  /// Flutter用Gradientへ変換する（仕様書20：「角度の違うグラデーションや
-  /// 放射状のグラデーションなど対応したプレビューを表示する」）。
+  /// Flutter用Gradientへ変換する（角度の違うグラデーションや
+  /// 放射状のグラデーションなど対応したプレビューを表示する）。
   /// autofill_engine.dartの実際の塗り計算式（_gradientColorAt/_sampleGradient）
   /// と挙動を合わせている。
   Gradient _previewGradient(AutofillGradient g) {
@@ -1635,9 +1631,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   }
 
   /// ぼかしの強さ（0.0〜1.0）を反映した表示用の色・stops列を生成する
-  /// （仕様書20：ぼかしの強さのプレビューへの反映。autofill_engine.dartの
-  /// _sampleGradientと同じアルゴリズムを、Flutter Gradientが扱える
-  /// 離散stops列へ展開したもの）。
+  /// （autofill_engine.dartの_sampleGradientと同じアルゴリズムを、
+  /// Flutter Gradientが扱える離散stops列へ展開したもの）。
   ({List<Color> colors, List<double> stops}) _expandForFeather(
       List<int> colorsInt, List<double> stopsIn, double feather) {
     if (colorsInt.length < 2) {
@@ -1670,9 +1665,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   }
 
   /// パーツの塗り色・線画色・グラデーション色の選択に共通利用するカラー
-  /// ピッカー（仕様書20・タスク#91：固定12色の「謎パレット」を廃止し、
-  /// アプリ全体と同じHSVホイール／RGB／HEX／最近使った色／ユーザーパレット
-  /// を備えたColorPickerPanelへ統一した）。
+  /// ピッカー。アプリ全体と同じHSVホイール／RGB／HEX／最近使った色／
+  /// ユーザーパレットを備えたColorPickerPanelを使う。
   void _showColorPickerFor(BuildContext context, Color initial, ValueChanged<Color> onChanged) {
     showDialog(
       context: context,
@@ -1744,7 +1738,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       };
 }
 
-/// 不透明度プレビュー用のチェッカー柄背景（仕様書20：不透明度を変更した際
+/// 不透明度プレビュー用のチェッカー柄背景（不透明度を変更した際
 /// にプレビューでも分かりやすく変化するようにする）。
 class _CheckerboardPainter extends CustomPainter {
   const _CheckerboardPainter();
@@ -1769,7 +1763,7 @@ class _CheckerboardPainter extends CustomPainter {
   bool shouldRepaint(covariant _CheckerboardPainter oldDelegate) => false;
 }
 
-/// グラデーションの切り替え位置（stops）を表す三角形ハンドル（仕様書20：
+/// グラデーションの切り替え位置（stops）を表す三角形ハンドル（
 /// プレビュー直下でドラッグして直接位置調整できるようにする）。
 class _StopHandlePainter extends CustomPainter {
   final Color color;

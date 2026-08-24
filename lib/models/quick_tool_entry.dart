@@ -1,4 +1,4 @@
-/// ツール早替え機能の1エントリー（仕様書08）。
+/// ツール早替え機能の1エントリー。
 /// [toolKey]はDrawingTool（lib/screens/canvas/canvas_screen.dart）のenum名
 /// （DrawingTool.values.byNameで復元する）。
 class QuickToolEntry {

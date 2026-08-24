@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import '../models/camera_keyframe.dart';
 
 /// カメラのXY移動・拡大・回転をキーフレーム間で補間し、表示へ適用する
-/// エンジン（仕様書05）。カメラは表示のみを変更し、レイヤー自体の座標は
+/// エンジン。カメラは表示のみを変更し、レイヤー自体の座標は
 /// 変更しない。
 class CameraEngine {
   /// [keyframes]から[frame]時点の値を補間する。キーフレームが無い場合は

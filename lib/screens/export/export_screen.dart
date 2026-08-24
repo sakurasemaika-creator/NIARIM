@@ -29,12 +29,12 @@ class _ExportScreenState extends State<ExportScreen> {
   double _progress = 0;
   String? _error;
   void Function(void Function())? _progressDialogSetState;
-  // 誤タップ対応のキャンセルボタン（仕様書06・13）。フレーム生成中のみ
+  // 誤タップ対応のキャンセルボタン。フレーム生成中のみ
   // 実際に中断できる（最終エンコード処理自体は安全に中断する手段がない
   // ため、その段階でのキャンセルは処理完了後に出力ファイルを破棄する形で
   // 反映される）。
   ExportCancelToken? _cancelToken;
-  // 「カスタム」選択時のみ編集可能なFPS（仕様書06・11：「カスタム」タップで
+  // 「カスタム」選択時のみ編集可能なFPS（「カスタム」タップで
   // アコーディオン展開して詳細設定を表示する）
   int _customFps = 30;
 
@@ -77,9 +77,8 @@ class _ExportScreenState extends State<ExportScreen> {
             selected: {_preset},
             onSelectionChanged: (v) => setState(() => _preset = v.first),
           ),
-          // 「カスタム」選択時のみ詳細設定を展開表示する（仕様書06・11：
-          // 「初心者はプリセットを選ぶだけで書き出しが完了する。詳細設定は
-          // 「カスタム」タップ時のみ表示」）。
+          // 「カスタム」選択時のみ詳細設定を展開表示する（初心者はプリセットを
+          // 選ぶだけで書き出しが完了する。詳細設定は「カスタム」タップ時のみ表示）。
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             child: _preset != ExportPreset.custom
@@ -153,13 +152,13 @@ class _ExportScreenState extends State<ExportScreen> {
     final projectService = context.read<ProjectService>();
     final premiumService = context.read<PremiumService>();
 
-    // 自動塗り未更新警告（仕様書04・06：書き出し前の未更新警告）
+    // 自動塗り未更新警告（書き出し前の未更新警告）
     if (projectService.hasOutdatedAutofillLayers(widget.projectId)) {
       final proceed = await _confirmOutdatedAutofill();
       if (proceed != true) return;
     }
 
-    // 無料版の最大動画尺チェック（仕様書13・19）
+    // 無料版の最大動画尺チェック
     if (!premiumService.isPremium) {
       final scenesPreview = projectService.scenesOf(widget.projectId);
       final totalFramesPreview = scenesPreview.fold(0, (sum, s) => sum + s.frames.length);
@@ -192,7 +191,7 @@ class _ExportScreenState extends State<ExportScreen> {
       }
 
       // 無料版：書き出し時にエンドカード（NIARIMロゴ・約5秒）を本編末尾へ
-      // 自動追加する（仕様書06・13）。mp4/webmとも、動画の結合ではなく
+      // 自動追加する。mp4/webmとも、動画の結合ではなく
       // フレーム生成の段階で末尾へ焼き込む（endcard_frame参照）。
       final shouldAppendEndCard = !premiumService.isPremium &&
           (_format == ExportFormat.mp4 || _format == ExportFormat.webm);
@@ -265,7 +264,7 @@ class _ExportScreenState extends State<ExportScreen> {
     }
   }
 
-  /// 処理中ダイアログ（仕様書13：動画書き出し・GIF生成・透過WebM生成時に
+  /// 処理中ダイアログ（動画書き出し・GIF生成・透過WebM生成時に
   /// プログレスバー下部へ正方形広告を表示、処理完了時に自動消去）。
   void _showProgressDialog() {
     final l10n = AppLocalizations.of(context)!;

@@ -8,7 +8,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
 
-/// フォント管理画面（仕様書15：設定 → フォント管理）。
+/// フォント管理画面（設定 → フォント管理）。
 /// 3つのタブで構成する。
 /// - ダウンロード済み：端末に取り込み済みのフォント一覧（お気に入り対応）
 /// - 探してDL：Google Fonts全書体からのオンデマンドダウンロード
@@ -26,7 +26,7 @@ class FontSettingsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.settingsFontTitle),
-          // ヘルプ項目「フォント管理」はテキストツールの説明へ統合済み（仕様書28）。
+          // ヘルプ項目「フォント管理」はテキストツールの説明へ統合済み。
           actions: const [HelpButton(topic: 'テキストツール')],
           bottom: TabBar(
             tabs: [

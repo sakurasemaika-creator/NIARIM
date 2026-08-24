@@ -58,7 +58,7 @@ class CanvasScreen extends StatefulWidget {
 class _CanvasScreenState extends State<CanvasScreen> {
   DrawingTool _currentTool = DrawingTool.pen;
   // ジェスチャー／ペンボタンでの消しゴム切替・ブラシ切替・手のひらツール
-  // トグル用に、切替前のツールを一時的に覚えておく（仕様書08）。
+  // トグル用に、切替前のツールを一時的に覚えておく。
   DrawingTool? _toolBeforeGestureToggle;
   PenSubTool _currentSubTool = PenSubTool.brush;
   double _brushSize = 5;
@@ -76,7 +76,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showCanvasPreviewPanel = false;
   bool _showColorPicker = false;
   bool _showBrushPanel = false;
-  // トーン・スタンプの全機能管理パネル（仕様書17：フォルダ・自作・検索・
+  // トーン・スタンプの全機能管理パネル（フォルダ・自作・検索・
   // 読み込み書き出し）。ペンサブツールタブの「管理」ボタンから開く。
   bool _showTonePanel = false;
   bool _showStampPanel = false;
@@ -144,7 +144,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   /// 自由変形・メッシュ変形パネルを開く（キャンバス上部バーの「設定/編集」
-  /// メニューから、仕様書28：既存の変形ツールと異なり範囲選択なしで
+  /// メニューから、既存の変形ツールと異なり範囲選択なしで
   /// レイヤー全体を対象にする）。開くたびに分割数・回転・拡大縮小の
   /// スライダー値を初期状態へ戻す。
   void _openMeshTransformPanel() => setState(() {
@@ -184,7 +184,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _ => false,
   };
 
-  /// 定規ボタン（仕様書08・タスク#95：下部ツールバーからキャンバス上部
+  /// 定規ボタン（下部ツールバーからキャンバス上部
   /// バーの常設ボタンへ昇格）。定規パネルの開閉と定規ツールへの切替を
   /// 同時に行う（従来の下部ツールバー版と同じ挙動）。
   void _toggleRuler() => setState(() {
@@ -196,7 +196,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     }
   });
 
-  /// オニオンスキンパネルの開閉（仕様書08・タスク#95：キャンバス上部
+  /// オニオンスキンパネルの開閉（キャンバス上部
   /// バーの「設定/編集」メニューへ集約）。
   void _toggleOnionSkinPanel() => setState(() {
     final next = !_showOnionSkinPanel;
@@ -204,7 +204,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showOnionSkinPanel = next;
   });
 
-  /// フィルターパネルの開閉（仕様書08・タスク#95：キャンバス上部バーの
+  /// フィルターパネルの開閉（キャンバス上部バーの
   /// 「設定/編集」メニューへ集約）。
   void _toggleFilterPanel() => setState(() {
     final next = !_showFilterPanel;
@@ -212,7 +212,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showFilterPanel = next;
   });
 
-  /// 背景切替（白/プロジェクト背景色 ⟷ 透過、仕様書27・タスク#95：
+  /// 背景切替（白/プロジェクト背景色 ⟷ 透過、
   /// キャンバス上部バーの「設定/編集」メニューへ集約）。
   void _toggleBackground() => setState(() {
     _canvasBackground = _canvasBackground == CanvasBackground.white
@@ -220,7 +220,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         : CanvasBackground.white;
   });
 
-  /// フレーム複数選択モードの切替（仕様書18・タスク#95：キャンバス上部
+  /// フレーム複数選択モードの切替（キャンバス上部
   /// バーの「設定/編集」メニューへ集約。大量処理実行時のフィルター
   /// 一括適用などに使用）。
   void _toggleFrameMultiSelect() => setState(() {
@@ -228,7 +228,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _selectedFrameIndices = {};
   });
 
-  /// 画面端ダブルタップでのフレーム送り（仕様書28：フレーム一覧の開閉
+  /// 画面端ダブルタップでのフレーム送り（フレーム一覧の開閉
   /// 状態と無関係に常時使える操作）。範囲外へは移動しない。
   void _goToNextFrame() {
     final total = context.read<ProjectService>().frameCount(
@@ -244,7 +244,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     setState(() => _currentFrame -= 1);
   }
 
-  /// キャンバス上部バーの「設定/編集」メニュー（仕様書08・タスク#95：
+  /// キャンバス上部バーの「設定/編集」メニュー（
   /// 背景色・オニオンスキン・フィルター・フレーム範囲選択を集約）。
   void _showEditMenu(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -326,7 +326,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   context.push('/settings/pen');
                 },
               ),
-              // レイヤー全体の自由変形・メッシュ変形（仕様書28：新機能）。
+              // レイヤー全体の自由変形・メッシュ変形。
               // 範囲選択の変形と異なり、選択範囲なしで現在レイヤー全体を
               // 自由に動かせる。
               ListTile(
@@ -338,7 +338,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   _openMeshTransformPanel();
                 },
               ),
-              // 色調調整（仕様書18：新機能）。彩度・明度・コントラストを
+              // 色調調整。彩度・明度・コントラストを
               // ライブプレビューで調整し、そのまま適用するか、描画/演出
               // フィルターへ新規フィルターとして追加できる。
               ListTile(
@@ -392,14 +392,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  // フレーム複数選択モード（仕様書18：大量処理実行時のフィルター一括適用）
+  // フレーム複数選択モード（大量処理実行時のフィルター一括適用）
   bool _frameMultiSelectMode = false;
   Set<int> _selectedFrameIndices = {};
   // nullなら現在フレームのみへ適用、非nullなら選択中の全フレームへ一括適用
   Set<int>? _filterBulkFrames;
   Ruler? _activeRuler;
 
-  // キャンバス背景（仕様書27：白 / 透過）
+  // キャンバス背景（白 / 透過）
   CanvasBackground _canvasBackground = CanvasBackground.white;
 
   // 投げ縄塗り：囲って塗るモード
@@ -476,7 +476,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _perf!.addListener(_onPerfChanged);
       _syncOnionFromPerf();
     }
-    // 自動保存（クラッシュ復元専用）をこのプロジェクトへ接続する（仕様書06・09）
+    // 自動保存（クラッシュ復元専用）をこのプロジェクトへ接続する
     if (!_autosaveAttached) {
       _autosaveAttached = true;
       final autosave = context.read<AutosaveService>();
@@ -489,12 +489,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
         (_) => _checkCrashRecovery(autosave),
       );
     }
-    // 制作時間カウント（仕様書19：描画モードのみカウント）
+    // 制作時間カウント（描画モードのみカウント）
     if (!_workTrackingStarted) {
       _workTrackingStarted = true;
       context.read<ProjectService>().beginWorkTracking(widget.projectId);
     }
-    // 不足素材の検出（仕様書21：プロジェクトを開いた際に参照先の素材が
+    // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
     // 見つからない場合は「不足素材があります」と表示。「再検索」で再確認）
     if (!_missingMaterialChecked) {
       _missingMaterialChecked = true;
@@ -510,7 +510,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _perf?.removeListener(_onPerfChanged);
     if (_autosaveAttached) context.read<AutosaveService>().detach();
     if (_workTrackingStarted) context.read<ProjectService>().endWorkTracking();
-    // プロジェクトカードのサムネイルを編集終了時に更新する（仕様書19）。
+    // プロジェクトカードのサムネイルを編集終了時に更新する。
     // 非同期処理だがdispose()自体は同期のままfire-and-forgetで発火する
     // （ProjectService内部状態のみを参照するため、Widget破棄後も安全）。
     context.read<ProjectService>().generateAndSaveThumbnail(widget.projectId);
@@ -519,7 +519,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// クラッシュ・ファイル破損時の復元用：プロジェクトの最終保存より新しい
   /// 自動保存があれば、確認ダイアログを出さずそのまま自動的に復元して
-  /// 再開する（仕様書「セーブ／自動保存の再設計」：プロジェクトを開いた際、
+  /// 再開する（プロジェクトを開いた際、
   /// 自動保存データがあれば最後の自動保存から自動的に復元する）。
   /// 自動保存は常に「その時点までの最新の編集内容」を表すため、これへ
   /// 揃えることで作業を失うことはない（確認ダイアログを出して「無視」を
@@ -549,7 +549,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     context.read<ProjectService>().restoreFromAutosave(widget.projectId, data);
   }
 
-  /// 不足素材の検出（仕様書21）。プロジェクトを開いた際に参照先の素材ファイルが
+  /// 不足素材の検出。プロジェクトを開いた際に参照先の素材ファイルが
   /// 見つからない場合、「不足素材があります」と「再検索」ボタンを表示する。
   Future<void> _checkMissingMaterials(MaterialService materialService) async {
     final missing = await materialService.detectMissing(widget.projectId);
@@ -617,11 +617,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final openToolPanels = isDesktop
         ? _openToolOptionPanels()
         : const <Widget>[];
-    // 左利きモード（仕様書08）：フローティング／ドッキングパネルを左右反転し、
+    // 左利きモード：フローティング／ドッキングパネルを左右反転し、
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = context.watch<SettingsService>().isLeftHanded;
 
-    // DeXモード・マウス/キーボード入力（仕様書08）：Ctrl+Z/Ctrl+Y/Ctrl+Shift+Zで
+    // DeXモード・マウス/キーボード入力：Ctrl+Z/Ctrl+Y/Ctrl+Shift+Zで
     // Undo/Redoを行えるようにする。
     return CallbackShortcuts(
       bindings: {
@@ -959,7 +959,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     bottom: null,
                     child: _brushPanel(),
                   ),
-                // トーン・スタンプの全機能管理パネル（仕様書17）
+                // トーン・スタンプの全機能管理パネル
                 if (_showTonePanel && !isDesktop)
                   _sidedPanel(
                     anchorLeft: true,
@@ -1003,7 +1003,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     bottom: null,
                     child: _rulerPanel(),
                   ),
-                // フィルターパネル（仕様書18：描画フィルター）
+                // フィルターパネル（描画フィルター）
                 if (_showFilterPanel && !isDesktop)
                   _sidedPanel(
                     anchorLeft: false,
@@ -1012,7 +1012,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     bottom: null,
                     child: _filterPanel(),
                   ),
-                // 早替えツール設定パネル（仕様書02・08）
+                // 早替えツール設定パネル
                 if (_showQuickToolPanel && !isDesktop)
                   _sidedPanel(
                     anchorLeft: false,
@@ -1021,7 +1021,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     bottom: 16,
                     child: _quickToolPanel(),
                   ),
-                // レイヤー全体の自由変形・メッシュ変形パネル（仕様書28：新機能）。
+                // レイヤー全体の自由変形・メッシュ変形パネル。
                 // 他パネルと異なり、格子点のドラッグ操作自体はこのパネルの外＝
                 // キャンバス側で行うため、あえて_anyToolPanelOpen（パネル外タップ
                 // で閉じる透明バリア）の対象には含めない（含めると、格子点を
@@ -1035,7 +1035,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     bottom: null,
                     child: _meshTransformPanel(),
                   ),
-                // 色調調整パネル（仕様書18：新機能）
+                // 色調調整パネル
                 if (_showColorAdjustPanel && !isDesktop)
                   _sidedPanel(
                     anchorLeft: true,
@@ -1140,7 +1140,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _closeAllOverlayPanels();
       _showQuickToolPanel = next;
     }),
-    // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+    // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
     onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
     // 投げ縄塗り：ペンのサブツールではなくバケツ長押しメニューから
     // 選べるようにする（投げ縄で囲った範囲を塗る点でバケツ塗りに
@@ -1229,7 +1229,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       context.read<BrushService>().setCurrentColor(color);
     },
     onClose: () => setState(() => _showColorPicker = false),
-    // カラーピッカー内のスポイトボタン（仕様書20）：スポイトツールへ切り替えて
+    // カラーピッカー内のスポイトボタン：スポイトツールへ切り替えて
     // キャンバス上の色を取得できるようにする
     onEyedropperTap: () => setState(() {
       _currentTool = DrawingTool.eyedropper;
@@ -1258,7 +1258,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       });
     },
     onClose: () => setState(() => _showPenSubToolPanel = false),
-    // フル機能管理パネル（フォルダ・自作・検索・読み込み書き出し、仕様書17）
+    // フル機能管理パネル（フォルダ・自作・検索・読み込み書き出し）
     onManage: (subTool) => setState(() {
       _showPenSubToolPanel = false;
       switch (subTool) {
@@ -1302,7 +1302,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   /// 定規パネルからの選択・削除など、1回で完結する変更をUndoへ登録しつつ反映する
-  /// （仕様書14：Undo通常対応）。
+  /// （Undo通常対応）。
   void _setActiveRulerWithUndo(Ruler? newRuler) {
     final old = _activeRuler;
     if (identical(old, newRuler)) return;
@@ -1340,7 +1340,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     currentSize: _brushSize,
   );
 
-  /// レイヤー全体の自由変形・メッシュ変形パネル（仕様書28：新機能）。
+  /// レイヤー全体の自由変形・メッシュ変形パネル。
   Widget _meshTransformPanel() => MeshTransformPanel(
     density: _meshDensity,
     rotateDeg: _meshRotateDeg,
@@ -1353,7 +1353,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onClose: _cancelMeshTransform,
   );
 
-  /// 色調調整パネル（仕様書18：新機能）。
+  /// 色調調整パネル。
   Widget _colorAdjustPanel() => ColorAdjustSheet(
     projectId: widget.projectId,
     sceneId: _currentSceneId,
@@ -1368,7 +1368,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの
   /// 配置側。左利きモード時は[leftHanded]により全パネルをまとめて左右反転する
-  /// （仕様書08：描画する手の側にパネルが重ならないようにする）。
+  /// （描画する手の側にパネルが重ならないようにする）。
   Widget _sidedPanel({
     required bool anchorLeft,
     required bool leftHanded,
@@ -1386,7 +1386,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  /// ツール早替えボタンタップ時：登録順に次のツールへ切り替える（仕様書02・08）。
+  /// ツール早替えボタンタップ時：登録順に次のツールへ切り替える。
   void _applyNextQuickTool() {
     final entry = context.read<QuickToolService>().next();
     if (entry == null) return;
@@ -1403,7 +1403,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   /// ジェスチャー／ペンボタンからのトグル切替（消しゴム切替・ブラシ切替・
-  /// 手のひらツール）。既にそのツールならトグル前のツールへ戻す（仕様書08）。
+  /// 手のひらツール）。既にそのツールならトグル前のツールへ戻す。
   void _handleGestureToggleTool(DrawingTool tool) {
     setState(() {
       if (_currentTool == tool) {
@@ -1482,7 +1482,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
-          // 定規ボタン（仕様書08・タスク#95：下部ツールバーから昇格した常設ボタン）
+          // 定規ボタン（下部ツールバーから昇格した常設ボタン）
           FirstUseTooltip(
             tooltipKey: 'ruler_tool',
             message: l10n.canvasRulerFirstUseTip,
@@ -1494,8 +1494,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
               selected: _currentTool == DrawingTool.ruler,
             ),
           ),
-          // 設定/編集メニュー（仕様書08・タスク#95：背景色・オニオンスキン・
-          // フィルター・フレーム範囲選択を集約。旧・個別ボタンを整理統合した）。
+          // 設定/編集メニュー（背景色・オニオンスキン・
+          // フィルター・フレーム範囲選択を集約）。
           _topBarIconButton(
             context,
             Icons.settings,
@@ -1508,7 +1508,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  /// フレーム複数選択モード時のアクションバー（仕様書18：大量処理実行時の
+  /// フレーム複数選択モード時のアクションバー（大量処理実行時の
   /// フィルター一括適用）。全選択・全解除・フィルター一括適用・キャンセルを提供する。
   Widget _buildFrameMultiSelectBar() {
     final l10n = AppLocalizations.of(context)!;
@@ -1572,7 +1572,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  /// 図形ツールタップ時のポップアップ（仕様書03：OFF/線/四角形/円）
+  /// 図形ツールタップ時のポップアップ（OFF/線/四角形/円）
   void _showShapeMenu(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
@@ -1648,7 +1648,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   /// レイヤーパネルからテキストレイヤーをタップした時に呼び出す編集入口
-  /// （仕様書15：既存テキストをタップすると編集開始。本実装ではレイヤー
+  /// （既存テキストをタップすると編集開始。本実装ではレイヤー
   /// パネル経由とする。キャンバス上でのテキストボックス当たり判定による
   /// 直接タップ編集は対象外）。
   void editTextLayer(String layerId, model.TextObject text) {
@@ -1797,7 +1797,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       onSelected: (v) => setS(() => isItalic = v),
                     ),
                     const SizedBox(width: 8),
-                    // 縦書き・横書きのワンタップ切替（仕様書15）
+                    // 縦書き・横書きのワンタップ切替
                     ActionChip(
                       avatar: Icon(
                         direction == model.TextWritingDirection.vertical
@@ -1817,7 +1817,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             : model.TextWritingDirection.vertical;
                       }),
                     ),
-                    // ルビ・縦中横・半角英数字回転の説明（仕様書15。ルビは縦書き・
+                    // ルビ・縦中横・半角英数字回転の説明（ルビは縦書き・
                     // 横書きどちらでも使えるため、書字方向によらず常に表示する）
                     IconButton(
                       icon: const Icon(Icons.help_outline, size: 18),
@@ -2104,7 +2104,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     ).then((_) => controller.dispose());
   }
 
-  /// 組版・ルビに関する説明（仕様書15：半角英数字の回転・縦中横・ルビ）。
+  /// 組版・ルビに関する説明（半角英数字の回転・縦中横・ルビ）。
   void _showVerticalTextHelp(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -2203,7 +2203,7 @@ enum DrawingTool {
   ruler,
   text,
   shape,
-  // 手のひらツール（仕様書08）：ジェスチャー／ペンボタンからのみ到達する一時ツール。
+  // 手のひらツール：ジェスチャー／ペンボタンからのみ到達する一時ツール。
   // ツールバーには表示せず、描画を行わずキャンバスの平行移動のみを行う。
   pan,
   // レイヤー全体の自由変形・メッシュ変形：範囲選択せずに現在レイヤー全体を
@@ -2214,5 +2214,5 @@ enum DrawingTool {
   meshTransform,
 }
 
-/// 図形ツールの種別（仕様書03：タップでポップアップ表示・OFF/線/四角形/円）
+/// 図形ツールの種別（タップでポップアップ表示・OFF/線/四角形/円）
 enum ShapeKind { off, line, rect, circle }

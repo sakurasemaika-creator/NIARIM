@@ -4,7 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/downloadable_font.dart';
 import '../../services/font_service.dart';
 
-/// 「探してDL」タブの中身（仕様書15）。Google Fontsの全ファミリー
+/// 「探してDL」タブの中身。Google Fontsの全ファミリー
 /// （約2000書体）を検索・カテゴリ絞り込みで探し、ダウンロードボタンで
 /// 取得する。ダウンロードしたフォントは「ダウンロード済み」タブへ
 /// 自動的に反映される（FontService._fontsへ追加されるため）。

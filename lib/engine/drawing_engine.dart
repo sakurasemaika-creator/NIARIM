@@ -18,7 +18,7 @@ class DrawingEngine {
   ui.Color currentColor = const ui.Color(0xFF000000);
   bool isEraser = false;
 
-  // 手ブレ補正用：直近の平滑化済み座標（仕様書03・17：ON/OFF・強度調整）
+  // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）
   StrokePoint? _smoothed;
 
   DrawingEngine({required this.tileManager});
@@ -76,7 +76,7 @@ class DrawingEngine {
   /// （サイズ・不透明度・フェード等を除く形状ラスタライズ）を使い、パス上を
   /// ブラシでなぞって描画する。トーンでの図形描画は本メソッドではなく
   /// 呼び出し側（canvas_area.dartの_commitShapeWithTone）がToneEngineへ
-  /// 直接分岐する（仕様書03：ブラシ・トーンどちらでも描画可能）。
+  /// 直接分岐する（ブラシ・トーンどちらでも描画可能）。
   void commitShapePath(List<StrokePoint> pathPoints, String layerId, {bool closeLoop = false}) {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();
@@ -167,7 +167,7 @@ class DrawingEngine {
           )
         : calcTiltTransform(tiltX, tiltY);
 
-    // 自作ブラシ（仕様書17：ブラシ画像からのブラシ作成）が選択され、
+    // 自作ブラシ（ブラシ画像からのブラシ作成）が選択され、
     // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
     // モード）でスタンプする。
     final texturePath = brush.customImagePath;

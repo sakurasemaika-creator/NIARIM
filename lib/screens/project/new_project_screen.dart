@@ -28,7 +28,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   int _fps = 12;
   int _durationSeconds = 10;
   Color _backgroundColor = Colors.white;
-  // 書き出しサイズ（仕様書07・26：1920×1080/1280×720/3840×2160等から選択、
+  // 書き出しサイズ（1920×1080/1280×720/3840×2160等から選択、
   // またはカスタムサイズを指定できる）。
   int _exportWidth = 1920;
   int _exportHeight = 1080;
@@ -49,7 +49,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // 選択肢から除外している（基本設定画面のデフォルトFPS選択肢とも統一）。
   static const List<int> fpsOptions = [8, 12, 24];
 
-  // 書き出しサイズプリセット（仕様書07・26：上限はFull HD相当。1:1・
+  // 書き出しサイズプリセット（上限はFull HD相当。1:1・
   // アナログ放送比率・公開先メディアの比率別に用意する）。
   // 3つ目の要素は表示文言の内部キー（_presetLabelでl10nの文言に変換する）。
   static const List<(int, int, String)> sizePresets = [
@@ -464,7 +464,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ],
               const SizedBox(height: 12),
               // 比率プレビュー：プリセットタップ・カスタム数値変更のどちらでも
-              // 即座に連動する（仕様書07・26）。
+              // 即座に連動する。
               Center(
                 child: SizedBox(
                   height: 90,
@@ -496,7 +496,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               const SizedBox(height: 24),
               Builder(
                 builder: (context) {
-                  // 長さの上限（仕様書07）：無料会員は最大90秒、プレミアム会員は
+                  // 長さの上限：無料会員は最大90秒、プレミアム会員は
                   // 最大2時間（7200秒）。
                   final isPremium = context.watch<PremiumService>().isPremium;
                   final maxDuration = isPremium ? 7200 : 90;
@@ -652,7 +652,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     }).toList(),
               ),
               const SizedBox(height: 24),
-              // 描画領域設定（仕様書26）
+              // 描画領域設定
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(

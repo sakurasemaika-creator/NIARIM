@@ -58,10 +58,9 @@ void main() async {
   await advertisingService.init();
 
   final projectService = ProjectService();
-  // 端末性能判定（仕様書01：低スペック端末対応）に応じて、TileManagerの
-  // 合成キャッシュ上限を絞る。見た目・機能は変わらず、低スペック端末での
-  // メモリ使用量のみを抑える（init()より前に設定し、起動時読み込み分の
-  // TileManagerにも反映させる）。
+  // 端末性能判定に応じて、TileManagerの合成キャッシュ上限を絞る。見た目・
+  // 機能は変わらず、低スペック端末でのメモリ使用量のみを抑える（init()より
+  // 前に設定し、起動時読み込み分のTileManagerにも反映させる）。
   projectService.configureTileCacheBudget(switch (performanceService.qualityLevel) {
     QualityLevel.low => 6, // 最大概算約48MB程度
     QualityLevel.medium => 10, // 最大概算約80MB程度

@@ -7,7 +7,7 @@ typedef LayerHome = ({String sceneId, int frameIndex});
 
 /// [scenes]全体を走査し、表示範囲レイヤー（共通・タイムライン素材・
 /// ウォーターマーク）のホーム位置インデックスを構築する。ExportEngineなど
-/// ProjectServiceを介さずシーンデータを直接扱う箇所で使う（仕様書05・16）。
+/// ProjectServiceを介さずシーンデータを直接扱う箇所で使う。
 Map<String, LayerHome> buildLayerHomeIndex(List<Scene> scenes) {
   final homes = <String, LayerHome>{};
   for (final scene in scenes) {

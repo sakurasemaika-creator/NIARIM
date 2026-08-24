@@ -27,7 +27,7 @@ class LayerPanel extends StatefulWidget {
   final int frameIndex;
   // PC/DeXモードの常時ドッキング表示時はtrue。閉じるボタンを非表示にする。
   final bool dockedMode;
-  // テキストレイヤーをタップした時の編集入口（仕様書15：既存テキストを
+  // テキストレイヤーをタップした時の編集入口（既存テキストを
   // タップすると編集開始）。nullの場合はテキストレイヤーも通常選択のみ行う。
   final void Function(model.Layer layer)? onEditTextLayer;
   // 実際にペンストロークが書き込まれる対象レイヤーのID
@@ -68,8 +68,8 @@ class _LayerPanelState extends State<LayerPanel> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
 
-  // レイヤーサムネイル更新用（仕様書16：「サムネイルはペンを離した瞬間に
-  // 現在レイヤーのみ更新する（全レイヤー一括更新はしない）」）。
+  // レイヤーサムネイル更新用（サムネイルはペンを離した瞬間に
+  // 現在レイヤーのみ更新する。全レイヤー一括更新はしない）。
   // UndoManagerはストローク確定（push）・Undo・Redoのたびに必ず
   // notifyListeners()するため、これを「ペンが離れた（＝描画内容が変わり
   // 得た）」タイミングの検知に利用する。undoCountの値そのものは増減する
@@ -112,7 +112,7 @@ class _LayerPanelState extends State<LayerPanel> {
         .toList();
   }
 
-  /// フォルダの折りたたみ状態に基づき、祖先フォルダが折りたたまれている場合はtrue（仕様書16）
+  /// フォルダの折りたたみ状態に基づき、祖先フォルダが折りたたまれている場合はtrue
   bool _isHiddenByCollapsedFolder(model.Layer layer, List<model.Layer> all) {
     final byId = {for (final l in all) l.id: l};
     String? pid = layer.parentFolderId;
@@ -158,7 +158,7 @@ class _LayerPanelState extends State<LayerPanel> {
     }
 
     // ストロークが確定した（＝ペンが離れた）タイミングを検知し、現在
-    // 選択中のレイヤーのサムネイルだけを再生成対象とする（仕様書16）。
+    // 選択中のレイヤーのサムネイルだけを再生成対象とする。
     final undoCount = context.watch<UndoManager>().undoCount;
     if (_lastUndoCount != undoCount) {
       _lastUndoCount = undoCount;
@@ -395,8 +395,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 自動塗り更新マーク：初回使用時の吹き出し説明（仕様書04・11：
-                      // 「自動塗り：初回使用時に吹き出し説明」）
+                      // 自動塗り更新マーク：初回使用時の吹き出し説明
                       if (layer.needsAutofillUpdate)
                         FirstUseTooltip(
                           tooltipKey: 'autofill_mark',
@@ -536,14 +535,14 @@ class _LayerPanelState extends State<LayerPanel> {
       model.LayerType.timelineVideo   => const Icon(Icons.videocam, size: 12, color: Colors.indigo),
       model.LayerType.watermark       => const Icon(Icons.branding_watermark, size: 12, color: Colors.pink),
       // 選択レイヤーは他の種別と異なり、固定の意味色ではなく、ユーザーが
-      // カスタマイズできるテーマの選択色（仕様書24）を使う。
+      // カスタマイズできるテーマの選択色を使う。
       model.LayerType.selection       =>
         Icon(Icons.highlight_alt, size: 12, color: Theme.of(context).colorScheme.secondary),
       _ => const SizedBox(width: 12),
     };
   }
 
-  // 結合可能なレイヤー種別（仕様書16：共通レイヤー・フォルダ・タイムライン
+  // 結合可能なレイヤー種別（共通レイヤー・フォルダ・タイムライン
   // 素材は結合不可）。
   static const _mergeableLayerTypesForPanel = {
     model.LayerType.normal,
@@ -702,7 +701,7 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  /// 共通レイヤーの表示範囲を「🔗 名前（開始〜終了）」の形式で要約する（仕様書16）
+  /// 共通レイヤーの表示範囲を「🔗 名前（開始〜終了）」の形式で要約する
   String _rangeSummary(AppLocalizations l10n, model.Layer layer) {
     switch (layer.rangeMode) {
       case model.LayerRangeMode.allFrames:
@@ -725,7 +724,7 @@ class _LayerPanelState extends State<LayerPanel> {
     final l10n = AppLocalizations.of(context)!;
     final isCommon = layer.type == model.LayerType.common;
     final isLineart = layer.type == model.LayerType.autoFillLineart;
-    // 対応する線画レイヤーを持たない自動塗りレイヤー（仕様書04：線画レイヤーを
+    // 対応する線画レイヤーを持たない自動塗りレイヤー（線画レイヤーを
     // 削除した後に残った状態）かどうかを判定する。
     final allLayers = context.read<ProjectService>().layersOf(
         widget.projectId, widget.sceneId, widget.frameIndex);
@@ -767,7 +766,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   _showAutofillDialog(context, layer, isLineartLayer: true);
                 },
               ),
-            // 線画レイヤーを削除して残った孤立した自動塗りレイヤー（仕様書04）：
+            // 線画レイヤーを削除して残った孤立した自動塗りレイヤー：
             // 領域再判定はできないため、不透明度ロック＋最新色での塗りつぶしのみ実行
             if (isOrphanedAutofill)
               ListTile(
@@ -855,7 +854,7 @@ class _LayerPanelState extends State<LayerPanel> {
     ).then((_) => nameCtrl.dispose());
   }
 
-  /// 表示範囲設定ダイアログ（仕様書16：共通レイヤー・タイムライン素材レイヤー）。
+  /// 表示範囲設定ダイアログ（共通レイヤー・タイムライン素材レイヤー）。
   /// 既存レイヤーの変更（[onConfirm]省略時はupdateLayerを直接呼ぶ）・新規作成時の
   /// 設定（[onConfirm]を渡すとその関数へ結果を渡すのみで自動更新しない）の両方に使う。
   void _showRangeChangeDialog(
@@ -1039,14 +1038,14 @@ class _LayerPanelState extends State<LayerPanel> {
               onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.selection,
                   (n) => l10n.layerPanelDefaultSelectionName(n)); },
             ),
-            // テキストレイヤーはテキストツールからキャンバスタップで自動生成するため追加しない（仕様書16）
+            // テキストレイヤーはテキストツールからキャンバスタップで自動生成するため追加しない
           ],
         ),
       ),
     );
   }
 
-  /// 共通レイヤーの新規追加（仕様書16「追加時の設定」）。追加前に表示範囲
+  /// 共通レイヤーの新規追加。追加前に表示範囲
   /// （共通レイヤー範囲）を設定するダイアログを表示してから作成する。
   void _addCommonLayer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1264,7 +1263,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
               // 明度で透過：下描きレイヤーに誤って線画を描いてしまった時などに、
               // 白い部分ほど透明になるようレイヤーの不透明度を作り直す
-              // （仕様書16）。色を保つ「カラー」と、輝度だけで単純に
+              // 色を保つ「カラー」と、輝度だけで単純に
               // 透過させる「グレー」の2種類。元に戻せない操作のため、
               // Undoには対応していない（このメニューの他の破壊的操作＝
               // 結合と同様の扱い）。
@@ -1312,7 +1311,7 @@ class _LayerPanelState extends State<LayerPanel> {
     setState(() => _thumbRevision[layer.id] = (_thumbRevision[layer.id] ?? 0) + 1);
   }
 
-  /// 共通レイヤー化ダイアログ（仕様書16）。「現在レイヤーを共通化」／
+  /// 共通レイヤー化ダイアログ。「現在レイヤーを共通化」／
   /// 「表示中レイヤーを複製して全統合して共通化」の2択→表示範囲設定→変換実行。
   void _showConvertToCommonDialog(BuildContext context, model.Layer layer) {
     final l10n = AppLocalizations.of(context)!;
@@ -1485,8 +1484,8 @@ class _LayerPanelState extends State<LayerPanel> {
       }
     }
     if (lineartLayer == null) {
-      // 線画レイヤーを削除して自動塗りレイヤーのみが残っている場合（仕様書04：
-      // 「線画レイヤーなし・塗りレイヤーあり」の行）は、参照する線画が無いため
+      // 線画レイヤーを削除して自動塗りレイヤーのみが残っている場合（
+      // 「線画レイヤーなし・塗りレイヤーあり」の状態）は、参照する線画が無いため
       // 領域の再判定はできない。不透明度ロック＋最新色での塗りつぶしのみを行う。
       if (layer.type == model.LayerType.autoFill && layer.partId != null) {
         _runOrphanedAutofill(context, layer);
@@ -1562,7 +1561,7 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   /// 自動塗りエンジンを実行し、結果を対象自動塗りレイヤーのタイルへ書き戻す
-  /// （仕様書04）。本処理自体はautofill_batch_runner.dart（タイムラインの
+  /// 本処理自体はautofill_batch_runner.dart（タイムラインの
   /// 一括実行とも共通）に集約し、ここではUI固有のエラー案内のみ行う。
   Future<void> _executeAutofill(
       BuildContext context, model.Layer lineartLayer, autofill.AutofillMode mode) async {
@@ -1593,8 +1592,8 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   /// 対応する自動塗り用線画レイヤーが存在しない自動塗りレイヤー（線画レイヤーを
-  /// 削除した後に残った状態）を処理する（仕様書04「4パターンまとめ」：
-  /// 「線画レイヤーなし・塗りレイヤーあり」の行）。参照する線画が無いため
+  /// 削除した後に残った状態）を処理する。
+  /// 「線画レイヤーなし・塗りレイヤーあり」の行。参照する線画が無いため
   /// 領域の再判定はできず、不透明度ロック＋最新色での塗りつぶしのみを行う
   /// （モード選択の余地がないため確認ダイアログは出さず直接実行する）。
   Future<void> _runOrphanedAutofill(BuildContext context, model.Layer autofillLayer) async {
@@ -1617,7 +1616,7 @@ class _LayerPanelState extends State<LayerPanel> {
             : l10n.layerPanelOrphanFillFailSnackbar)));
   }
 
-  /// 自動塗り用線画レイヤーへプリセットパーツを割り当てるダイアログ（仕様書04：パーツID管理）。
+  /// 自動塗り用線画レイヤーへプリセットパーツを割り当てるダイアログ（パーツID管理）。
   void _showPartAssignDialog(BuildContext context, model.Layer lineartLayer) {
     final l10n = AppLocalizations.of(context)!;
     final allPresets = context.read<AutofillPresetService>().presets;
@@ -1694,7 +1693,7 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   /// 画像を選択し、キャンバスサイズへアスペクト比維持で中央フィットさせて
-  /// ラスタライズし、通常レイヤーとして追加する（仕様書16：画像読み込みは
+  /// ラスタライズし、通常レイヤーとして追加する（画像読み込みは
   /// タイムライン素材ではなく描画レイヤーとして扱う）。
   /// レイヤーのピクセル内容を新しい画像で丸ごと差し替える（位置・トランスフォームは
   /// 維持したまま、キャンバス全体に収まるよう中央寄せ・アスペクト比維持で描き直す）。
@@ -1833,7 +1832,7 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 }
 
-/// レイヤー一覧の各行に表示するサムネイル（仕様書16：レイヤーパネル）。
+/// レイヤー一覧の各行に表示するサムネイル。
 ///
 /// `TileManager.compositeLayerToImage()`は合成結果を内部キャッシュして
 /// おり、対象レイヤーのタイルに変更が無ければ再合成せずキャッシュ済み

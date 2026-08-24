@@ -50,7 +50,7 @@ class _PerformanceSettingsScreenState
     }
   }
 
-  /// カスタム保存方式変更：仕様書23に従い変更フローを経由する
+  /// カスタム保存方式変更：変更フローを経由する
   Future<void> _onCustomSaveModeChanged(
       BuildContext context, SaveMode newMode, PerformanceService perf) async {
     final saveService = context.read<SaveTreeService>();
@@ -80,8 +80,8 @@ class _PerformanceSettingsScreenState
     perf.setCustomSlotCount(newCount);
   }
 
-  /// 保存方式・保存可能数は端末全体の設定（仕様書09）だが、実際の保存データは
-  /// プロジェクトごとに管理されている（仕様書23）。この画面はどのプロジェクトも
+  /// 保存方式・保存可能数は端末全体の設定だが、実際の保存データは
+  /// プロジェクトごとに管理されている。この画面はどのプロジェクトも
   /// 開いていない文脈で呼ばれるため、保存データを持つ全プロジェクトを1件ずつ
   /// チェックし、新しい上限を超えるものがあれば変更画面（保持するデータの選択・
   /// アーカイブ/完全削除）を順番に経由する。超えないプロジェクトは即時反映される。

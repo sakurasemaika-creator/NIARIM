@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/settings_service.dart';
 
-/// 筆圧カーブの「試し書きコーナー」（仕様書08・タスク#93）：適用前に
+/// 筆圧カーブの「試し書きコーナー」：適用前に
 /// 実際にこの設定で描いてみて、太さの変化を確認できる小さな描画エリア。
 /// スタイラス使用時は実際の筆圧を反映し、タッチ・マウスは筆圧情報を
 /// 持たないため一定の太さで描画される。

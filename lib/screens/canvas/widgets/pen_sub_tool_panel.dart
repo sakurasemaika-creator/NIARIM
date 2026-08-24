@@ -20,7 +20,7 @@ class PenSubToolPanel extends StatefulWidget {
   final ValueChanged<PenSubTool> onSubToolSelected;
   final VoidCallback onClose;
   // ブラシ/トーン/スタンプの全機能管理パネル（フォルダ・自作・検索・
-  // 読み込み書き出し、仕様書17）を開く。現在表示中のタブに応じて呼び出し側で
+  // 読み込み書き出し）を開く。現在表示中のタブに応じて呼び出し側で
   // 対象を判断する。
   final void Function(PenSubTool subTool)? onManage;
 
@@ -92,7 +92,7 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                   child: TabBar(
                     controller: _tabController,
                     labelStyle: const TextStyle(fontSize: 11),
-                    // 各サブツールタブの初回使用時に吹き出し説明を表示する（仕様書02・11）
+                    // 各サブツールタブの初回使用時に吹き出し説明を表示する
                     tabs: [
                       Tab(text: l10n.penSubToolTabBrush),
                       FirstUseTooltip(
@@ -108,7 +108,7 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                     ],
                   ),
                 ),
-                // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く（仕様書17）。
+                // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く。
                 if (widget.onManage != null)
                   IconButton(
                     icon: const Icon(Icons.tune, size: 16),
@@ -264,7 +264,7 @@ class _StampTab extends StatelessWidget {
             stampService.selectStamp(stamp.id);
             onClose();
           },
-          // 長押しでスタンプ設定（回転・密度・散布、仕様書17）を編集
+          // 長押しでスタンプ設定（回転・密度・散布）を編集
           onLongPress: () => _showStampSettingsDialog(context, stampService, stamp),
           child: Container(
             decoration: BoxDecoration(
@@ -290,7 +290,7 @@ class _StampTab extends StatelessWidget {
     );
   }
 
-  /// スタンプ設定ダイアログ（仕様書17：回転ON/OFF・密度・散布）
+  /// スタンプ設定ダイアログ（回転ON/OFF・密度・散布）
   void _showStampSettingsDialog(BuildContext context, StampService service, Stamp stamp) {
     final l10n = AppLocalizations.of(context)!;
     bool rotation = stamp.rotation;

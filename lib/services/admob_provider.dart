@@ -4,7 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ad_provider.dart';
 import 'advertising_service.dart';
 
-/// AdMob広告プロバイダー（仕様書13：初期実装）。
+/// AdMob広告プロバイダー。
 ///
 /// AdUnitIDはGoogle公式のテスト用ID（常にテスト広告を返し、収益は発生しない）。
 /// ストア公開前に必ずAdMobコンソールで発行した本番用AdUnitIDへ差し替えること。

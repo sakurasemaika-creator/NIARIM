@@ -26,9 +26,9 @@ class ProjectFolder {
   final String id;
   final String name;
   final int? color; // ARGB。nullの場合はデフォルトのフォルダアイコン色を使う
-  // 仕様書19：「フォルダは複数階層に対応」。nullはルート直下。
+  // フォルダは複数階層に対応する。nullはルート直下。
   final String? parentFolderId;
-  // 仕様書19：「フォルダもお気に入り登録可能」
+  // フォルダもお気に入り登録可能。
   final bool isFavorite;
   // 更新日時ソート時にプロジェクトと同じ基準で並べられるようにするための作成日時
   final DateTime createdAt;
@@ -90,7 +90,7 @@ class ProjectService extends ChangeNotifier {
   int _idCounter = 0;
   String _nextId(String prefix) => '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_idCounter++}';
 
-  // TileManagerの合成キャッシュ上限（仕様書01：低スペック端末対応）。
+  // TileManagerの合成キャッシュ上限（低スペック端末対応）。
   // 端末性能判定（PerformanceService.qualityLevel）に応じてmain.dartから
   // configureTileCacheBudget()で絞り込む。未設定時は既定値16（従来通り）。
   // 見た目・機能には影響せず、低スペック端末でのメモリ使用量のみを抑える。
@@ -163,7 +163,7 @@ class ProjectService extends ChangeNotifier {
         if (!niaproFile.existsSync()) continue;
         try {
           final data = await NiaproSerializer.load(niaproFile.path);
-          // 容量（仕様書07・19：Manifest「容量」）は実ファイルサイズから都度算出する
+          // 容量（Manifest「容量」）は実ファイルサイズから都度算出する
           // （保存済みの数値をそのまま信用すると、外部要因での差分等でズレうるため）。
           final sizeBytes = niaproFile.lengthSync();
           final project = data.project.copyWith(sizeBytes: sizeBytes);
@@ -185,11 +185,9 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
-  // ─── ゴミ箱の状態永続化（仕様書06・19：ゴミ箱・自動削除設定） ───────────
-  // 従来はゴミ箱への移動が純粋にメモリ上の状態でしかなく、アプリを再起動する
-  // と全プロジェクトディレクトリを無条件に読み込み直すため削除が取り消された
-  // ように見えるバグがあった。ゴミ箱移動日時をSharedPreferencesへ保存し、
-  // 起動時にどのプロジェクトがゴミ箱内かを復元することで解消する。
+  // ─── ゴミ箱の状態永続化（ゴミ箱・自動削除設定） ─────────────────────────
+  // ゴミ箱移動日時をSharedPreferencesへ保存し、起動時にどのプロジェクトが
+  // ゴミ箱内かを復元する。
 
   static const _trashPrefsKey = 'trashed_projects';
 
@@ -282,10 +280,9 @@ class ProjectService extends ChangeNotifier {
     return max;
   }
 
-  /// materialIdがプロジェクト内のどこかで参照されているか判定する
-  /// （仕様書21：使用中でない素材のみ削除可能）。タイムライン画像・動画
-  /// レイヤーのmaterialId、および各シーンの音声クリップのmaterialIdを
-  /// 対象に走査する。
+  /// materialIdがプロジェクト内のどこかで参照されているか判定する。
+  /// タイムライン画像・動画レイヤーのmaterialId、および各シーンの
+  /// 音声クリップのmaterialIdを対象に走査する。
   bool isMaterialUsed(String projectId, String materialId) {
     for (final scene in _scenes[projectId] ?? const <Scene>[]) {
       for (final clip in scene.audioClips) {
@@ -300,8 +297,8 @@ class ProjectService extends ChangeNotifier {
     return false;
   }
 
-  // ─── 制作時間カウント（仕様書19：描画モード・タイムラインモードのみ
-  // カウント、一定時間無操作でカウント停止・操作再開でカウント再開） ─────
+  // ─── 制作時間カウント（描画モード・タイムラインモードのみカウント、
+  // 一定時間無操作でカウント停止・操作再開でカウント再開） ────────────────
   // 秒単位の細かい精度ではなく、一定間隔（tick）ごとに直近の操作有無を
   // 見て加算するかどうかを決める簡易実装。低スペック端末での負荷を
   // 抑えるためnotifyListeners()もtick間隔でのみ発生する。
@@ -350,8 +347,8 @@ class ProjectService extends ChangeNotifier {
       List.unmodifiable(_scenes[projectId] ?? []);
 
   /// プロジェクト内で実際に使用されているフォントのファミリー名一覧を取得する
-  /// （仕様書15：プロジェクト共有時の「フォントを含める」判定・不足フォント
-  /// 検出に使用）。アプリ標準フォントも含まれるが、共有・不足検出側で
+  /// （プロジェクト共有時の「フォントを含める」判定・不足フォント検出に使用）。
+  /// アプリ標準フォントも含まれるが、共有・不足検出側で
   /// ユーザー追加フォント（FontService管理分）のみへ絞り込んで扱う。
   Set<String> usedFontFamiliesOf(String projectId) {
     final result = <String>{};
@@ -369,7 +366,7 @@ class ProjectService extends ChangeNotifier {
   Scene? sceneOf(String projectId, String sceneId) =>
       (_scenes[projectId] ?? []).where((s) => s.id == sceneId).firstOrNull;
 
-  // ─── シーンCRUD（仕様書05：Scene0001形式で内部管理） ───────────────────
+  // ─── シーンCRUD（Scene0001形式で内部管理） ───────────────────────────
 
   int _nextSceneIndex(String projectId) {
     final scenes = _scenes[projectId] ?? [];
@@ -401,7 +398,7 @@ class ProjectService extends ChangeNotifier {
     return scene;
   }
 
-  /// シーンを複製し、複製元の直後へ挿入する（仕様書05：シーンのコピー）。
+  /// シーンを複製し、複製元の直後へ挿入する（シーンのコピー）。
   /// 全フレームのレイヤー構成・描画データ（タイル）を複製する。表示範囲
   /// レイヤー（common・timelineImage・timelineVideo・watermark）はホームが
   /// 別フレーム/シーンに存在する参照であり、シーン単位の複製対象では
@@ -451,7 +448,7 @@ class ProjectService extends ChangeNotifier {
     return newScene;
   }
 
-  /// シーンを削除する（最低1シーンは残す。仕様書05）。描画タイルも破棄する。
+  /// シーンを削除する（最低1シーンは残す）。描画タイルも破棄する。
   void removeScene(String projectId, String sceneId) => removeScenes(projectId, [sceneId]);
 
   /// 複数シーンを一括削除する（最低1シーンは残す）。
@@ -475,7 +472,7 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// シーン名を変更する（仕様書05：シーン名変更ダイアログ）。
+  /// シーン名を変更する（シーン名変更ダイアログ）。
   void renameScene(String projectId, String sceneId, String newName) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
@@ -485,7 +482,7 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// シーンを指定した順序（IDのリスト）へ並び替える（仕様書05：カーソル固定方式）。
+  /// シーンを指定した順序（IDのリスト）へ並び替える（カーソル固定方式）。
   /// sceneIdはそのまま・indexのみ新しい並び順に合わせて振り直す。
   void reorderScenesByIds(String projectId, List<String> orderedSceneIds) {
     final scenes = _scenes[projectId];
@@ -510,7 +507,7 @@ class ProjectService extends ChangeNotifier {
   /// 指定フレームで実際に表示すべきレイヤー一覧を返す。このフレームに物理的に
   /// 存在するレイヤー（先頭側）に加え、他のフレームがホーム位置となっている
   /// 表示範囲レイヤー（共通・タイムライン素材・ウォーターマーク）のうち、
-  /// 表示範囲がこのフレームを含むものを末尾へ動的に合成する（仕様書05・16：
+  /// 表示範囲がこのフレームを含むものを末尾へ動的に合成する（
   /// 表示範囲内のフレームのみレイヤーパレット・キャンバスへ表示）。
   List<Layer> layersOf(String projectId, String sceneId, int frameIndex) {
     final scene = sceneOf(projectId, sceneId);
@@ -533,7 +530,7 @@ class ProjectService extends ChangeNotifier {
 
   /// タイムライン共通レイヤートラックUI用：プロジェクト内の全共通レイヤーと
   /// ウォーターマークレイヤーのホーム位置（実データが物理的に存在する
-  /// シーン・フレーム）を返す（仕様書05・16：共通レイヤーの表示範囲を
+  /// シーン・フレーム）を返す（共通レイヤーの表示範囲を
   /// タイムライン上で確認・変更する。ウォーターマークも同じ表示範囲の
   /// 仕組みを使うため同じトラックに乗せ、タップで角度・大きさ・不透明度・
   /// 表示範囲をまとめて編集できるようにする）。
@@ -636,7 +633,7 @@ class ProjectService extends ChangeNotifier {
     required Offset position,
   }) {
     final layerId = _nextLayerId(projectId);
-    // テキストレイヤー名：テキスト1 / テキスト2 / テキスト3 …（仕様書15）
+    // テキストレイヤー名：テキスト1 / テキスト2 / テキスト3 …
     final existingTextCount = layersOf(projectId, sceneId, frameIndex)
         .where((l) => l.type == LayerType.text)
         .length;
@@ -772,7 +769,7 @@ class ProjectService extends ChangeNotifier {
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
   }
 
-  /// .niashare を複製して通常プロジェクトとして追加する（仕様書06：共有フロー）。
+  /// .niashare を複製して通常プロジェクトとして追加する（共有フロー）。
   /// 新規プロジェクトIDを採番し、共有元ファイル自体は変更しない。
   Future<Project> importSharedProject(NiaproData data) async {
     final newId = _nextId('proj');
@@ -792,14 +789,14 @@ class ProjectService extends ChangeNotifier {
     tm.importAll(data.tileData);
     _tileManagers[newId] = tm;
     _layerIdCounters[newId] = _maxLayerCounter(data.scenes);
-    // 同梱素材（仕様書06・21：共有時に選択した画像/動画/音声）をMaterials/へ復元する。
+    // 同梱素材（共有時に選択した画像/動画/音声）をMaterials/へ復元する。
     await NiaproSerializer.restoreBundledMaterials(newId, data);
     _saveAsync(newId);
     notifyListeners();
     return project;
   }
 
-  /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用、仕様書06・09）。
+  /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用）。
   /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
   void restoreFromAutosave(String projectId, NiaproData data) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
@@ -821,7 +818,7 @@ class ProjectService extends ChangeNotifier {
   // ─── 自動塗り連携 ─────────────────────────────────────────────────────
 
   /// 自動塗り用線画レイヤーの直下にある自動塗りレイヤーへ更新マークを立てる。
-  /// 線画レイヤーへ描画があった際に呼び出す（仕様書16：needsAutofillUpdate自動セット）。
+  /// 線画レイヤーへ描画があった際に呼び出す（needsAutofillUpdate自動セット）。
   void markLineartDirty(
       String projectId, String sceneId, int frameIndex, String lineartLayerId) {
     final layers = layersOf(projectId, sceneId, frameIndex);
@@ -841,7 +838,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// 自動塗りプリセットのパーツ色・名前が変更／削除された際、当該パーツIDを参照する
-  /// 全プロジェクト・全フレームの自動塗りレイヤーへ更新マークを伝播する（仕様書04）。
+  /// 全プロジェクト・全フレームの自動塗りレイヤーへ更新マークを伝播する。
   void markAutofillUpdateForPartId(String partId) {
     bool changed = false;
     for (final entry in _scenes.entries) {
@@ -870,7 +867,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// 自動塗り用線画レイヤーへプリセットのパーツを割り当てる。表示名はパーツ名に連動し、
-  /// 直下に自動塗りレイヤーが存在する場合はそちらの表示名・パーツIDも一括更新する（仕様書04）。
+  /// 直下に自動塗りレイヤーが存在する場合はそちらの表示名・パーツIDも一括更新する。
   void assignAutofillPart({
     required String projectId,
     required String sceneId,
@@ -899,7 +896,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// 書き出し前の未更新警告用：指定プロジェクトの全シーン・全フレームに
-  /// needsAutofillUpdate==true の自動塗りレイヤーが存在するかを判定する（仕様書04・06）。
+  /// needsAutofillUpdate==true の自動塗りレイヤーが存在するかを判定する。
   bool hasOutdatedAutofillLayers(String projectId) {
     final scenes = _scenes[projectId];
     if (scenes == null) return false;
@@ -914,7 +911,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// タイムライン❗マーク表示用：指定フレームにneedsAutofillUpdate==trueの
-  /// 自動塗りレイヤーが存在するかを判定する（仕様書04：更新マークはレイヤー・
+  /// 自動塗りレイヤーが存在するかを判定する（更新マークはレイヤー・
   /// タイムライン両方に表示）。
   bool frameHasOutdatedAutofillLayers(String projectId, String sceneId, int frameIndex) {
     final scene = sceneOf(projectId, sceneId);
@@ -1015,7 +1012,7 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// フレームを複製し、指定位置の直後へ挿入する（仕様書05：フレームのコピー）。
+  /// フレームを複製し、指定位置の直後へ挿入する（フレームのコピー）。
   /// レイヤー構成・描画データ（タイル）の両方を複製する。表示範囲レイヤー
   /// （common・timelineImage・timelineVideo・watermark）はホームが別フレームに
   /// 存在する参照であり、フレーム単位の複製対象ではないため除外する。
@@ -1178,7 +1175,7 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
-  /// フレームをカーソル固定方式で並び替える（仕様書05：シーン移動と同じ操作体系を
+  /// フレームをカーソル固定方式で並び替える（シーン移動と同じ操作体系を
   /// フレームにも適用）。[oldIndicesInNewOrder]は現在のフレームindexを新しい並び順
   /// で並べたリスト（全フレーム数と同じ長さの並び替え）。
   void reorderFrames(String projectId, String sceneId, List<int> oldIndicesInNewOrder) {
@@ -1230,7 +1227,7 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── カメラキーフレーム（仕様書05：XY移動・拡大・回転） ─────────────────
+  // ─── カメラキーフレーム（XY移動・拡大・回転） ─────────────────
 
   List<CameraKeyframe> cameraKeyframesOf(String projectId, String sceneId) =>
       List.unmodifiable(sceneOf(projectId, sceneId)?.cameraKeyframes ?? const []);
@@ -1360,7 +1357,7 @@ class ProjectService extends ChangeNotifier {
     _updateSceneMarkers(projectId, sceneId, current.where((m) => m.id != markerId).toList());
   }
 
-  // ─── 演出フィルター（仕様書18：タイムライン非破壊編集） ─────────────────
+  // ─── 演出フィルター（タイムライン非破壊編集） ─────────────────
 
   List<EffectFilterInstance> effectFiltersOf(String projectId, String sceneId) =>
       List.unmodifiable(sceneOf(projectId, sceneId)?.effectFilters ?? const []);
@@ -1392,7 +1389,7 @@ class ProjectService extends ChangeNotifier {
         effectFiltersOf(projectId, sceneId).where((f) => f.id != filterId).toList());
   }
 
-  /// 演出フィルターの並び替え（仕様書18：「複数フィルターの適用順」は
+  /// 演出フィルターの並び替え（「複数フィルターの適用順」は
   /// タイムライン上の並び順に従うため、並び替えが適用順そのものを変える）。
   void reorderEffectFilters(String projectId, String sceneId, int oldIndex, int newIndex) {
     final list = effectFiltersOf(projectId, sceneId).toList();
@@ -1402,7 +1399,7 @@ class ProjectService extends ChangeNotifier {
     _updateSceneEffectFilters(projectId, sceneId, list);
   }
 
-  // ─── 音声トラック（仕様書05：タイムライン音声クリップ） ─────────────────
+  // ─── 音声トラック（タイムライン音声クリップ） ─────────────────
   // シーンに直接紐づく（音声は視覚的なピクセルを持たずレイヤーではないため）。
 
   List<AudioClip> audioClipsOf(String projectId, String sceneId) =>
@@ -1433,7 +1430,7 @@ class ProjectService extends ChangeNotifier {
         projectId, sceneId, audioClipsOf(projectId, sceneId).where((c) => c.id != clipId).toList());
   }
 
-  // ─── 素材タイムライン行（画像・動画・音源、仕様書05） ────────────────────
+  // ─── 素材タイムライン行（画像・動画・音源） ────────────────────
   // タイムライン右側の＋マークは素材の追加ではなく行の追加、二列目以降は
   // －マークで行削除、行名はタップで変更可能。
   // 行数・行名はScene.imageRowNames/videoRowNames/audioRowNames（リスト長＝
@@ -1544,7 +1541,7 @@ class ProjectService extends ChangeNotifier {
 
   // ─── レイヤー結合 ─────────────────────────────────────────────────────
 
-  /// 結合可能なレイヤー種別（仕様書16）。共通レイヤー・フォルダ・
+  /// 結合可能なレイヤー種別。共通レイヤー・フォルダ・
   /// タイムライン素材（画像/動画/ウォーターマーク）・テキストは結合不可。
   static const _mergeableLayerTypes = {
     LayerType.normal,
@@ -1552,7 +1549,7 @@ class ProjectService extends ChangeNotifier {
     LayerType.autoFill,
   };
 
-  /// 選択したレイヤー群を1枚の通常レイヤーへ結合する（仕様書16）。
+  /// 選択したレイヤー群を1枚の通常レイヤーへ結合する。
   /// - 自動塗り用線画・自動塗りレイヤーが含まれる場合は結合後に通常レイヤーへ
   ///   変換される（パーツID・更新マークは破棄）。
   /// - ブレンドモード・不透明度・クリッピングは一番下（配列末尾側＝背面）の
@@ -1623,7 +1620,7 @@ class ProjectService extends ChangeNotifier {
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, latestLayers);
   }
 
-  /// 通常レイヤーを共通レイヤーへ変換する（仕様書16：共通レイヤー化ダイアログ
+  /// 通常レイヤーを共通レイヤーへ変換する（共通レイヤー化ダイアログ
   /// 「現在レイヤーを共通化」）。既存のピクセルデータ・位置はそのまま、
   /// 変換した時点のフレームを新しいホーム位置として登録する。
   void convertLayerToCommon({
@@ -1653,7 +1650,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// 表示中の全レイヤーを1枚に統合し、新しい共通レイヤーとして追加する
-  /// （仕様書16：共通レイヤー化ダイアログ「表示中レイヤーを複製して全統合して
+  /// （共通レイヤー化ダイアログ「表示中レイヤーを複製して全統合して
   /// 共通化」）。元のレイヤーは変更しない。
   Future<void> addFlattenedCommonLayer({
     required String projectId,
@@ -1731,7 +1728,7 @@ class ProjectService extends ChangeNotifier {
     );
     _projects.add(project);
 
-    // 初期シーン・フレーム・レイヤーを生成（仕様書07：Scene0001/Frame0/Layer0001）
+    // 初期シーン・フレーム・レイヤーを生成（Scene0001/Frame0/Layer0001）
     _layerIdCounters[projectId] = 1;
     final initialLayerId = _nextLayerId(projectId); // → 'Layer0001'、以降は2から採番
     final initialLayer = Layer(
@@ -1827,7 +1824,7 @@ class ProjectService extends ChangeNotifier {
       _trashDeletedAt.remove(id);
       await _persistTrashState();
       // ディスク上のプロジェクトフォルダ（.niapro・自動保存・セーブツリー等）を
-      // 完全に削除する（仕様書06・19：完全削除は元に戻せない）。
+      // 完全に削除する（完全削除は元に戻せない）。
       try {
         final basePath = await NiaproSerializer.projectsBasePath();
         final dir = Directory('$basePath/$id');
@@ -1990,7 +1987,7 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
-  /// プロジェクトのタグ一覧を置き換える（仕様書19：詳細情報画面のタグ機能）。
+  /// プロジェクトのタグ一覧を置き換える（詳細情報画面のタグ機能）。
   Future<void> setProjectTags(String projectId, List<String> tags) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx >= 0) {
@@ -2001,7 +1998,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// プロジェクト一覧カード表示用のサムネイルを生成し、Project.thumbnailPathへ反映する
-  /// （仕様書19：先頭シーン・先頭フレームを縮小合成してPNG化する。セーブノードの
+  /// （先頭シーン・先頭フレームを縮小合成してPNG化する。セーブノードの
   /// サムネイル生成（save_tree_screen.dart）と同じ方式）。
   /// 生成できない場合（シーン・フレームが存在しない等）は何もしない。
   Future<void> generateAndSaveThumbnail(String projectId) async {
@@ -2055,7 +2052,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
-  /// （仕様書19：「フォルダは複数階層に対応」）。nullはルート直下。
+  /// （「フォルダは複数階層に対応」）。nullはルート直下。
   Future<ProjectFolder> createFolder(String name, {String? parentFolderId}) async {
     final folder = ProjectFolder(
       id: _nextId('folder'),
@@ -2076,7 +2073,7 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// フォルダの色を変更する（仕様書02・19：フォルダ管理・色変更対応）。
+  /// フォルダの色を変更する（フォルダ管理・色変更対応）。
   /// colorにnullを渡すとデフォルト色（未設定）へ戻す。
   Future<void> setFolderColor(String folderId, int? color) async {
     final idx = _folders.indexWhere((f) => f.id == folderId);
@@ -2086,7 +2083,7 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// フォルダのお気に入り登録を切り替える（仕様書19：「フォルダもお気に入り登録可能」）。
+  /// フォルダのお気に入り登録を切り替える（「フォルダもお気に入り登録可能」）。
   Future<void> toggleFolderFavorite(String folderId) async {
     final idx = _folders.indexWhere((f) => f.id == folderId);
     if (idx < 0) return;
@@ -2118,7 +2115,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// フォルダ削除時、直下のプロジェクト・子フォルダはルート（トップレベル）へ戻す
-  /// （仕様書19：「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを
+  /// （「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを
   /// 表示する」。確認ダイアログ自体はUI側で表示し、本メソッドは確定後の処理）。
   Future<void> deleteFolder(String folderId) async {
     _folders.removeWhere((f) => f.id == folderId);

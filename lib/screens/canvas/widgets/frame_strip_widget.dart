@@ -13,7 +13,7 @@ class FrameStripWidget extends StatefulWidget {
   final String sceneId;
   final ValueChanged<int> onFrameSelected;
   final VoidCallback onTimelineTap;
-  // フレーム複数選択モード（仕様書18：大量処理実行時のフレーム一括選択）
+  // フレーム複数選択モード（大量処理実行時のフレーム一括選択）
   final bool multiSelectMode;
   final Set<int> selectedFrames;
   final ValueChanged<int>? onFrameToggle;
@@ -303,7 +303,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    // フレームのサムネイル（仕様書26：赤枠＝書き出し範囲の
+                                    // フレームのサムネイル（赤枠＝書き出し範囲の
                                     // 内側のみを表示する。描画領域を拡張していても
                                     // 赤枠外の描画内容はここには映らない）。
                                     _FrameThumbnail(
@@ -438,7 +438,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   }
 }
 
-/// フレーム一覧の1コマ分のサムネイル（仕様書26：赤枠固定表示）。
+/// フレーム一覧の1コマ分のサムネイル（赤枠固定表示）。
 ///
 /// 描画領域全体（描画領域倍率を反映した拡張範囲）を合成した上で、
 /// 中央に配置された書き出し範囲（赤枠）分だけを切り出して縮小表示する。

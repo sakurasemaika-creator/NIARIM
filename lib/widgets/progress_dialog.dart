@@ -7,7 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../screens/tips/tips_screen.dart' show allTipEntries;
 import '../services/advertising_service.dart';
 
-/// 処理中ダイアログ（仕様書13：フィルター適用／動画書き出し／GIF生成／
+/// 処理中ダイアログ（フィルター適用／動画書き出し／GIF生成／
 /// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に正方形広告）。
 /// 会員種別に関わらず、10秒おきにランダムでTipsを表示する。無料会員は
 /// Tipsカードの下に続けて正方形広告を表示する（広告を中間に挟むと
@@ -17,7 +17,7 @@ class ProgressDialog extends StatefulWidget {
   final String title;
   final double progress;
   final String? subtitle;
-  // キャンセルボタン（仕様書06・13：誤タップ対応）。nullの場合は非表示
+  // キャンセルボタン（誤タップ対応）。nullの場合は非表示
   // （キャンセルに対応していない処理からの呼び出しとの後方互換のため）。
   final VoidCallback? onCancel;
   // キャンセル要求後、実際に中断できないフェーズ（例：最終エンコード中）

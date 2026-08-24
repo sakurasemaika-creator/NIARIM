@@ -77,7 +77,7 @@ Uint8List runAutofillColorUpdateInIsolate(
 class AutofillEngine {
   /// 塗りなおし：形状を破棄して領域再判定→塗りなおす
   /// [toneTexture]が指定され[part].useTone==trueの場合は、単色/グラデーションの
-  /// 代わりにトーンパターンで塗る（仕様書20：トーン設定、バケツトーンエンジンと
+  /// 代わりにトーンパターンで塗る（バケツトーンエンジンと
   /// 同じループ配置方式）。
   Uint8List repaint({
     required Uint8List lineartData,
@@ -160,7 +160,7 @@ class AutofillEngine {
     };
   }
 
-  /// 線画色設定を適用した線画レイヤーのRGBAバッファを返す（仕様書20：線画色設定）。
+  /// 線画色設定を適用した線画レイヤーのRGBAバッファを返す。
   /// アルファ値（線の形状）はそのまま維持し、不透明ピクセルのRGBのみ差し替える。
   /// 不透明度は「塗り色の不透明度は100%固定」と同じ理由でレイヤー不透明度側
   /// （AutofillPart.lineOpacityをLayer.opacityへ反映）で管理するため、ここでは
@@ -240,7 +240,7 @@ class AutofillEngine {
         if (paint) {
           if (gradient != null) {
             // グラデーションは色ごとに不透明度を持てるため、そのままアルファも
-            // 書き込む（仕様書20：塗り色の不透明度は100%固定だが、グラデーション
+            // 書き込む（塗り色の不透明度は100%固定だが、グラデーション
             // の各色は個別に不透明度を設定できる）。
             final argb = _gradientColorAt(gradient, cx, cy, width, height);
             outputData[idx]     = (argb >> 16) & 0xFF;
@@ -302,7 +302,7 @@ class AutofillEngine {
   }) =>
       (lineartHash ^ presetHash) == lastUpdateHash;
 
-  // ─── グラデーション（仕様書20：塗り色設定・グラデーション） ─────────────
+  // ─── グラデーション（塗り色設定・グラデーション） ─────────────
 
   /// キャンバス座標(x, y)におけるグラデーション色をARGB intで返す。
   int _gradientColorAt(AutofillGradient g, int x, int y, int width, int height) {
@@ -333,8 +333,7 @@ class AutofillEngine {
   /// [feather]（0.0〜1.0）：1.0なら隣接する2色の境界（stops[i]〜stops[i+1]）
   /// の全区間を使い、隣の色の端（stops[i+1]）まで完全に混ざり切る滑らかな
   /// ブレンドにする。値を下げるほど境界の中央付近だけで急に切り替わる帯状
-  /// 表示に近づき、0では中間色を持たない完全な帯（ハードエッジ）になる
-  /// （仕様書20）。
+  /// 表示に近づき、0では中間色を持たない完全な帯（ハードエッジ）になる。
   int _sampleGradient(List<int> colors, List<double> stops, double t, [double feather = 1.0]) {
     if (colors.isEmpty) return 0xFF000000;
     if (colors.length == 1) return colors.first;
@@ -364,7 +363,7 @@ class AutofillEngine {
     return colors.last;
   }
 
-  /// RGBだけでなくアルファ（色ごとの不透明度、仕様書20）も補間する。
+  /// RGBだけでなくアルファ（色ごとの不透明度）も補間する。
   int _lerpColor(int a, int b, double t) {
     final aa = (a >> 24) & 0xFF, ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
     final ba = (b >> 24) & 0xFF, br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
@@ -375,7 +374,7 @@ class AutofillEngine {
     return (alpha << 24) | (r << 16) | (g << 8) | bl;
   }
 
-  // ─── 色トレス・線画馴染ませ（仕様書20：線画色設定） ─────────────────────
+  // ─── 色トレス・線画馴染ませ（線画色設定） ─────────────────────
   // 塗り色のHSLへ色相・彩度・明度のオフセットを適用し、線画を塗り色に
   // 馴染ませた色へ変換する（色相・彩度・明度いずれも塗り色からのオフセット
   // として加算する）。

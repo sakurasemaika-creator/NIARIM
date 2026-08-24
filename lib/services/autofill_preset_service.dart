@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/autofill_preset.dart';
 
-/// 自動塗りプリセットの管理サービス（仕様書04・20）。
+/// 自動塗りプリセットの管理サービス。
 /// プロジェクト保存とは独立してプリセットを保持し、SharedPreferencesへ
 /// 永続化する（端末単位。プロジェクトファイルには含めない）。
 /// レイヤーパネルからのパーツ割り当てUIと、プリセット編集画面の双方から参照する。
@@ -234,8 +234,7 @@ class AutofillPresetService extends ChangeNotifier {
   }
 
   /// [pngBytes]（1:1トリミング済みのPNG）をプリセットのサムネイル画像として
-  /// 登録する（仕様書20：三点メニュー「サムネイル画像設定」）。アプリ専用
-  /// 領域へ保存して永続化する。
+  /// 登録する。アプリ専用領域へ保存して永続化する。
   Future<void> setPresetThumbnailBytes(String presetId, Uint8List pngBytes) async {
     final idx = _presets.indexWhere((p) => p.id == presetId);
     if (idx < 0) return;

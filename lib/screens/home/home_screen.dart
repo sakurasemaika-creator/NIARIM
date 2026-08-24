@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String _searchQuery = '';
   final _searchController = TextEditingController();
   StreamSubscription<String>? _sharedFileSub;
-  // 現在開いているフォルダ（仕様書19：フォルダは複数階層に対応・
+  // 現在開いているフォルダ（フォルダは複数階層に対応・
   // パンくずリストで現在位置を表示）。nullはルート直下。
   String? _currentFolderId;
   // 新規追加系のFAB（＋ボタン）はプロジェクトタブでのみ表示する
@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         setState(() => _currentTabIndex = _tabController.index);
       }
     });
-    // 仕様書19：「低スペック端末では小表示を自動推奨」。ユーザーが表示切替
+    // 低スペック端末では小表示を自動推奨する。ユーザーが表示切替
     // メニューからいつでも変更できる初期値としてのみ適用する。
     if (context.read<PerformanceService>().qualityLevel == QualityLevel.low) {
       _viewMode = ProjectViewMode.small;
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  /// .niashare受信フロー（仕様書06）：OSから共有ファイルを開いた場合の処理。
+  /// .niashare受信フロー：OSから共有ファイルを開いた場合の処理。
   void _initShareIntentHandling() {
     final service = context.read<ShareIntentService>();
     final initialUri = service.pendingInitialUri;
@@ -118,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       final projectService = context.read<ProjectService>();
       final project = await projectService.importSharedProject(data);
       if (!mounted) return;
-      // 同梱フォント（仕様書15：「フォントを含める」選択時）を取り込み登録する。
+      // 同梱フォント（「フォントを含める」選択時）を取り込み登録する。
       final fontService = context.read<FontService>();
       final bundledFonts = NiaproSerializer.bundledFonts(data);
       for (final font in bundledFonts) {
@@ -129,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           bytes: font.bytes,
         );
       }
-      // 不足フォント検出（仕様書15：「不足フォントがあります。○○」）：
+      // 不足フォント検出（「不足フォントがあります。○○」を表示）：
       // プロジェクトが使用するユーザー追加フォントのうち、同梱もされておらず
       // 端末側にも存在しないものを警告する。
       if (!mounted) return;
@@ -303,8 +303,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 children: [
                   TextButton(
                     onPressed: () {
-                      // 現在開いているフォルダ直下のプロジェクト・フォルダを両方選択
-                      // （仕様書19：「対象：プロジェクト・フォルダ両方」）。
+                      // 現在開いているフォルダ直下のプロジェクト・フォルダを両方選択する。
                       final service = context.read<ProjectService>();
                       final projectIds = service.projects
                           .where((p) => p.folderId == _currentFolderId)
@@ -364,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ],
                       ),
                     ),
-                    // フォルダ内移動時のパンくずリスト（仕様書19）。検索中は
+                    // フォルダ内移動時のパンくずリスト。検索中は
                     // 全体から検索するため非表示にする。
                     if (_searchQuery.trim().isEmpty) _buildBreadcrumb(),
                     Expanded(
@@ -435,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  /// FABタップ時：新規プロジェクトか新規フォルダかを選ばせる（仕様書19：
+  /// FABタップ時：新規プロジェクトか新規フォルダかを選ばせる（
   /// フォルダとプロジェクトを同一一覧内で扱う設計のため、どちらも一覧の
   /// ＋ボタンから作成できる必要がある）。
   void _showAddChoiceSheet(BuildContext context) {
@@ -493,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _deleteSelected() {
-    // ゴミ箱はプロジェクトのみが対象（仕様書19：ゴミ箱＝「削除したプロジェクト」）。
+    // ゴミ箱はプロジェクトのみが対象（ゴミ箱＝「削除したプロジェクト」）。
     // 選択にフォルダが含まれていても、フォルダ自体はここでは削除しない。
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
@@ -525,8 +524,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  /// フォルダ階層のパンくずリスト（仕様書19：「フォルダ内移動時はパンくずリストで
-  /// 現在位置を表示する」）。ホームアイコンでルートへ、各フォルダ名でその階層へ移動。
+  /// フォルダ階層のパンくずリスト。フォルダ内移動時に現在位置を表示する。
+  /// ホームアイコンでルートへ、各フォルダ名でその階層へ移動。
   Widget _buildBreadcrumb() {
     if (_currentFolderId == null) return const SizedBox.shrink();
     final folders = context.watch<ProjectService>().folders;
@@ -984,7 +983,7 @@ class _TrashTab extends StatelessWidget {
   }
 }
 
-/// 「作品一覧」タブ（仕様書06・仕様書AI設計書#101）：書き出し済みの動画・GIF
+/// 「作品一覧」タブ：書き出し済みの動画・GIF
 /// ファイルをアプリ内保存先（ExportEngine.exportsDir、
 /// getApplicationDocumentsDirectory()/exports）から一覧表示する。
 /// タップでアプリ内プレビュー、共有ボタンでOSの共有シートから写真アプリ等へ
@@ -1368,7 +1367,7 @@ enum ProjectViewMode { large, medium, small, detail }
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
 
 // ─── 初回起動ポップアップ ─────────────────────────────────────────────────
-// 仕様書02・11・19：初回起動時は「手描きアニメーションを制作できます」の
+// 初回起動時は「手描きアニメーションを制作できます」の
 // ポップアップのみを表示する（複数ページのチュートリアルは表示しない）。
 
 class _FirstLaunchDialog extends StatelessWidget {

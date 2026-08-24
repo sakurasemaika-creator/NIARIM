@@ -24,7 +24,7 @@ class InputHandler {
     }
   }
 
-  /// [pressureCurve]は仕様書08の筆圧カーブ（アプリ全体に適用）を掛けるための
+  /// [pressureCurve]は筆圧カーブ（アプリ全体に適用）を掛けるための
   /// 変換関数。未指定の場合は生の筆圧値をそのまま使う。
   StrokePoint toStrokePoint(PointerEvent event, {double Function(double)? pressureCurve}) {
     final type = _lastInputType; // classifyInput()は呼び出し元で既に実行済み

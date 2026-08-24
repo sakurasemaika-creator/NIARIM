@@ -1,4 +1,4 @@
-// キャンバス背景表示設定（仕様書27）
+// キャンバス背景表示設定
 // 書き出し結果には影響しない・キャンバス表示のみ
 enum CanvasBackground {
   white,        // 白背景
@@ -24,12 +24,12 @@ class Project {
   final bool isFavorite;
   final String? thumbnailPath;
   final int sizeBytes;
-  // タグ（仕様書19：詳細情報画面のタグ機能）
+  // タグ（詳細情報画面のタグ機能）
   final List<String> tags;
-  // 書き出しサイズ（仕様書26）
+  // 書き出しサイズ
   final int exportWidth;
   final int exportHeight;
-  // 描画領域設定（仕様書26）
+  // 描画領域設定
   // drawingAreaScale == 1.0 の場合は描画領域 = 書き出し領域（OFF相当）
   final double drawingAreaScale;
   // このプロジェクトで使用する自動塗りプリセットのID一覧。自動塗り

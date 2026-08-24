@@ -10,13 +10,13 @@ import '../../../widgets/stepped_slider.dart';
 import 'hsv_color_wheel.dart';
 import 'panel_close_bar.dart';
 
-/// カラーピッカーパネル（仕様書20：色管理仕様）。
+/// カラーピッカーパネル。
 /// カラーピッカー（HSV/RGB/HEX）・最近使った色・パレットの3セクション構成。
 class ColorPickerPanel extends StatefulWidget {
   final Color currentColor;
   final ValueChanged<Color> onColorChanged;
   final VoidCallback onClose;
-  // スポイトボタン：カラーピッカー内からキャンバス上の色を取得できる（仕様書20）
+  // スポイトボタン：カラーピッカー内からキャンバス上の色を取得できる
   final VoidCallback? onEyedropperTap;
   // 上部中央の×閉じるボタンを表示するかどうか。呼び出し元がキャンセル・
   // 適用ボタンを別途下部に用意する場合（自動塗りグラデーションの色選択
@@ -41,7 +41,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   late double _hue;
   late double _saturation;
   late double _value;
-  late double _alpha; // 0.0〜1.0（仕様書20：カラーピッカーは常に透明色も選択できる）
+  late double _alpha; // 0.0〜1.0（カラーピッカーは常に透明色も選択できる）
   late int _r, _g, _b;
   final _hexController = TextEditingController();
 
@@ -102,7 +102,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     _hexController.text = _colorToHex(_currentColor);
   }
 
-  /// カラーサークル左下の透明トグルボタン（仕様書20）：タップで現在色を
+  /// カラーサークル左下の透明トグルボタン：タップで現在色を
   /// 透明（alpha=0）にする。既に透明の場合はタップ前の不透明色へ戻す。
   void _toggleTransparent() {
     setState(() => _alpha = _alpha == 0 ? 1.0 : 0.0);
@@ -118,7 +118,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   }
 
   /// 色の確定操作（スライダーの操作終了・HEX確定・スウォッチ選択）時に
-  /// 「最近使った色」履歴へ登録する（仕様書20：直近10色）。
+  /// 「最近使った色」履歴へ登録する（直近10色）。
   void _commitToRecent() {
     context.read<PaletteService>().addRecentColor(_currentColor.toARGB32());
   }
@@ -143,7 +143,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 children: [
                   Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const Spacer(),
-                  // スポイトボタン（仕様書20：カラーピッカー内のスポイトボタン）
+                  // スポイトボタン（カラーピッカー内のスポイトボタン）
                   if (widget.onEyedropperTap != null)
                     IconButton(
                       icon: const Icon(Icons.colorize, size: 18),
@@ -157,7 +157,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               // どちらを操作してももう片方へ即座に反映することで、RGB側が
               // 実質的にHSV操作のプレビューにもなるようにする。
               // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
-              // 方式（仕様書20・タスク#91：従来のスライダー方式から刷新）。円の
+              // 方式。円の
               // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
               Center(
                 child: HsvColorWheel(
@@ -176,7 +176,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               _slider('G', _g.toDouble(), 0, 255, (v) { _g = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
               _slider('B', _b.toDouble(), 0, 255, (v) { _b = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
               const SizedBox(height: 4),
-              // 不透明度スライダー（仕様書20：カラーピッカーは常に透明色も選択
+              // 不透明度スライダー（カラーピッカーは常に透明色も選択
               // できるようにする）。チェッカー柄の上にプレビューを
               // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
               // 現在色プレビューは一目で分かるよう大きめに表示する。
@@ -232,7 +232,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       },
                     ),
                   ),
-                  // HEXコピー・貼り付け（仕様書20：「HEXは入力・コピー・貼り付けすべて対応」）
+                  // HEXコピー・貼り付け（入力・コピー・貼り付けすべて対応）
                   IconButton(
                     icon: const Icon(Icons.copy, size: 16),
                     tooltip: l10n.commonCopy,
@@ -296,7 +296,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     );
   }
 
-  /// パレットセクション（仕様書20：「ユーザーが任意の色を登録できる」
+  /// パレットセクション（「ユーザーが任意の色を登録できる」
   /// 「パレットの作成・名前変更・削除が可能」「複数パレットを切替えて使用」
   /// 「色の追加・削除・ドラッグで並び替えが可能」「お気に入り登録に対応」）。
   Widget _paletteSection(BuildContext context, AppLocalizations l10n, PaletteService paletteService) {
@@ -495,7 +495,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   }
 
   /// RRGGBB（不透明時）またはRRGGBBAA（透明色を含む場合）で出力する
-  /// （仕様書20：カラーピッカーは常に透明色も選択できる）。
+  /// （カラーピッカーは常に透明色も選択できる）。
   String _colorToHex(Color color) {
     final rgb = color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase();
     final a = (color.a * 255).round();
@@ -519,7 +519,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   }
 }
 
-/// 透明度プレビュー用のチェッカー柄背景（仕様書20：カラーピッカーは常に
+/// 透明度プレビュー用のチェッカー柄背景（カラーピッカーは常に
 /// 透明色も選択できるようにし、透明度を視覚的に分かりやすくする）。
 class _CheckerboardPainter extends CustomPainter {
   const _CheckerboardPainter();

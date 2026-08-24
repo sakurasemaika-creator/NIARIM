@@ -16,7 +16,7 @@ class ThemeService extends ChangeNotifier {
   ThemeData get themeData => _buildTheme(_current);
 
   // 虹7色（赤・橙・黄・緑・青・藍・紫）のテーマプリセットを、それぞれ
-  // ライト/ダーク両方用意する（仕様書24・タスク#93）。「赤」はアプリの
+  // ライト/ダーク両方用意する。「赤」はアプリの
   // 既定色である珊瑚ピンク（defaultLight/defaultDark）が該当する。
   // デフォルトで選択されるのはdefaultLight（見た目はライト基調）と
   // なるよう、リストの先頭に置く。
@@ -325,7 +325,7 @@ class ThemeService extends ChangeNotifier {
     _persist();
   }
 
-  /// カラーピッカーでのライブプレビュー用（仕様書24：「変更はアプリ全体へ
+  /// カラーピッカーでのライブプレビュー用（「変更はアプリ全体へ
   /// 即時反映される」）。ドラッグ中に毎回SharedPreferencesへ書き込むのを
   /// 避けるため、通知のみ行い永続化はしない。確定はcommitCurrent()で行う。
   void previewCurrent(AppThemePreset preset) {
@@ -335,7 +335,7 @@ class ThemeService extends ChangeNotifier {
 
   /// previewCurrent()でのライブプレビュー結果を確定保存する（プリセット
   /// 一覧にも反映：組み込みプリセットを編集した場合はそのプリセット自体が
-  /// 上書きされる。これは仕様書24の「上書き保存」と同じ挙動）。
+  /// 上書きされる。これは「上書き保存」と同じ挙動）。
   void commitCurrent() {
     savePreset(_current);
   }
@@ -358,7 +358,7 @@ class ThemeService extends ChangeNotifier {
     _persist();
   }
 
-  /// テーマプリセットの並び替え（仕様書24：「並び替え | ドラッグで順序変更」）。
+  /// テーマプリセットの並び替え（「並び替え | ドラッグで順序変更」）。
   void reorder(int oldIndex, int newIndex) {
     if (newIndex > oldIndex) newIndex -= 1;
     final item = _presets.removeAt(oldIndex);
@@ -376,7 +376,7 @@ class ThemeService extends ChangeNotifier {
     }
   }
 
-  /// ポップなフラットデザインのThemeDataを構築する（仕様書24）。
+  /// ポップなフラットデザインのThemeDataを構築する。
   /// Material標準の角丸・階調をそのまま使わず、フラット・大きめタップ領域・
   /// 丸みの強い形状で統一し、スマホでの誤タップを減らす。
   ThemeData _buildTheme(AppThemePreset preset) {
@@ -387,7 +387,7 @@ class ThemeService extends ChangeNotifier {
     // から自動的に決めることで、常に矛盾のない組み合わせになるようにする。
     final brightness =
         preset.panelBgColor.computeLuminance() > 0.5 ? Brightness.light : Brightness.dark;
-    // 「文字色」（仕様書24：UI全体の文字色）はonSurface系にも反映し、
+    // 「文字色」（UI全体の文字色）はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
     // しまわないようにする。
@@ -405,9 +405,9 @@ class ThemeService extends ChangeNotifier {
     const radius = 18.0;
     const minTapSize = Size(48, 48);
     // Text等が明示的に色指定していない場合に使うデフォルト文字色
-    // （仕様書24「文字色 | UI全体の文字色」）。
+    // （「文字色 | UI全体の文字色」）。
     final baseTextTheme = ThemeData(brightness: brightness, useMaterial3: true).textTheme;
-    // アプリ全体の基本フォント（仕様書24：白光明朝）。白光明朝に無い文字
+    // アプリ全体の基本フォント（白光明朝）。白光明朝に無い文字
     // （対応外の漢字・記号等）は、Android標準フォントへ直接落ちて浮いて
     // 見えないよう、まず源ノ明朝相当（Noto Serif JP）で穴埋めし、それでも
     // 無い場合のみ端末標準フォントへフォールバックする。数値表示は個別の
@@ -602,7 +602,7 @@ class ThemeService extends ChangeNotifier {
   }
 
   /// 明朝体は線が細く視認性が低いため、太さがRegular（w400）以下、または
-  /// 未指定のスタイルをMedium（w500）以上へ底上げする（仕様書24：
+  /// 未指定のスタイルをMedium（w500）以上へ底上げする（
   /// 「全体的に明朝体の文字が読みにくいので太くする」）。既に太字指定済み
   /// のスタイルはそのまま維持する。
   TextTheme _boldenForReadability(TextTheme textTheme) {

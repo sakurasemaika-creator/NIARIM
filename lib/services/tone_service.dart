@@ -27,7 +27,7 @@ class ToneFolder {
       );
 }
 
-/// トーン管理サービス（仕様書04・17・21・25）。SharedPreferencesへ永続化する
+/// トーン管理サービス。SharedPreferencesへ永続化する
 /// （端末単位。プロジェクトファイルには含めない）。従来はインメモリのみで、
 /// お気に入り・追加・削除・編集のすべてがアプリ再起動のたびに失われていた
 /// （Task#83で修正）。自作トーン・フォルダ管理・読み込み/書き出しは
@@ -43,9 +43,9 @@ class ToneService extends ChangeNotifier {
   // バケツ塗りと投げ縄塗りはそれぞれ独立して最後に使用したトーンを保持
   Tone? _lastBucketTone;
   Tone? _lastLassoTone;
-  // 投げ縄塗り：ベタ塗り／トーンの選択状態（仕様書25）
+  // 投げ縄塗り：ベタ塗り／トーンの選択状態
   bool _lassoUseTone = false;
-  // バケツ塗り：ベタ塗り／トーンの選択状態（仕様書04・17）
+  // バケツ塗り：ベタ塗り／トーンの選択状態
   bool _bucketUseTone = false;
 
   List<Tone> get tones => List.unmodifiable(_tones);
@@ -227,7 +227,7 @@ class ToneService extends ChangeNotifier {
     _persist();
   }
 
-  // ─── フォルダ管理（仕様書17） ─────────────────────────────────────────
+  // ─── フォルダ管理 ─────────────────────────────────────────
 
   Future<ToneFolder> createFolder(String name) async {
     final folder = ToneFolder(id: 'ToneFolder${DateTime.now().millisecondsSinceEpoch}', name: name);
@@ -281,7 +281,7 @@ class ToneService extends ChangeNotifier {
     _persist();
   }
 
-  // ─── 自作トーン（画像からの新規作成、仕様書17） ──────────────────────────
+  // ─── 自作トーン（画像からの新規作成） ──────────────────────────
 
   Future<Directory> _tonesDir() async {
     final base = await getApplicationDocumentsDirectory();
@@ -305,7 +305,7 @@ class ToneService extends ChangeNotifier {
     return tone;
   }
 
-  // ─── 読み込み・書き出し（仕様書17：個別ファイル単位） ───────────────────
+  // ─── 読み込み・書き出し（個別ファイル単位） ───────────────────
 
   static const _bundleDataFile = 'data.json';
 

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import '../engine/procedural_texture.dart';
 import '../models/tone.dart';
 
-/// トーンを指定色で着色したプレビューを表示するウィジェット（仕様書04・20：
+/// トーンを指定色で着色したプレビューを表示するウィジェット。
 /// 自動塗りプリセットのパーツ一覧で「トーンを使用」しているパーツの
-/// プレビューに、実際のトーンパターンを反映させるために使う。タスク#91）。
+/// プレビューに、実際のトーンパターンを反映させるために使う。
 class TonePreviewThumb extends StatefulWidget {
   final Tone? tone;
   final Color color;

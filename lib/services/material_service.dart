@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/material_asset.dart';
 
-/// 素材管理サービス（仕様書21：MaterialID方式）。
+/// 素材管理サービス（MaterialID方式）。
 /// 画像・音声・動画をプロジェクト内`Materials/`フォルダへコピーし、
 /// ファイル名ではなく素材ID（Material0001形式）で参照する。
 /// 同一内容のファイルはプロジェクト内に1つだけ保存し、重複保存を防ぐ。
@@ -113,7 +113,7 @@ class MaterialService extends ChangeNotifier {
 
   /// [sourcePath]のファイルを素材として登録し、Materials/フォルダへコピーする。
   /// 同一種別・同一内容（バイト一致）の素材が既にある場合はそれを再利用し、
-  /// 新規コピーは行わない（仕様書21：重複保存の防止）。
+  /// 新規コピーは行わない（重複保存の防止）。
   Future<MaterialAsset> addMaterial({
     required String projectId,
     required String sourcePath,
@@ -155,7 +155,7 @@ class MaterialService extends ChangeNotifier {
   }
 
   /// 素材IDの実ファイルパスを解決する。ファイルが見つからない場合はnull
-  /// を返す（仕様書21：不足素材の検出）。
+  /// を返す（不足素材の検出）。
   Future<String?> pathOf(String projectId, String materialId) async {
     await ensureLoaded(projectId);
     final asset = assetOf(projectId, materialId);
@@ -169,7 +169,7 @@ class MaterialService extends ChangeNotifier {
       (_materials[projectId] ?? const []).where((m) => m.id == materialId).firstOrNull;
 
   /// 使用中でない素材を削除する。[isUsed]がtrueを返す場合は削除しない
-  /// （仕様書21：使用中の素材は削除できない）。
+  /// （使用中の素材は削除できない）。
   Future<bool> removeMaterial({
     required String projectId,
     required String materialId,
@@ -190,7 +190,7 @@ class MaterialService extends ChangeNotifier {
     return true;
   }
 
-  /// 未使用の素材を一括削除する（仕様書21）。削除件数を返す。
+  /// 未使用の素材を一括削除する。削除件数を返す。
   Future<int> removeUnused({
     required String projectId,
     required bool Function(String materialId) isUsed,
@@ -206,7 +206,7 @@ class MaterialService extends ChangeNotifier {
   }
 
   /// 登録済み素材のうち、実ファイルが見つからないものを返す
-  /// （仕様書21：プロジェクトを開いた際の不足素材検出）。
+  /// （プロジェクトを開いた際の不足素材検出）。
   Future<List<MaterialAsset>> detectMissing(String projectId) async {
     await ensureLoaded(projectId);
     final dir = await _materialsDir(projectId);
@@ -218,7 +218,7 @@ class MaterialService extends ChangeNotifier {
   }
 
   /// 指定した種類の素材のみを対象に、.niashare同梱用のファイルbyte列と
-  /// マニフェストJSONを作成する（仕様書06・21：共有時の素材同梱チェックボックス）。
+  /// マニフェストJSONを作成する（共有時の素材同梱チェックボックス用）。
   /// [includeTypes]が空、または対象素材が実ファイルとして見つからない場合は
   /// filesが空・manifestがnullの結果を返す。
   Future<({Map<String, Uint8List> files, String? manifest})> buildShareBundle(

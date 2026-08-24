@@ -1,6 +1,6 @@
-/// 描画フィルターの種別（仕様書18：初期実装フィルター）。
+/// 描画フィルターの種別。
 /// 実際のピクセル処理はlib/engine/filter_engine.dartのFilterEngineが行う。
-/// toneCurve・levelsはプレミアム限定（仕様書01・13・20）。
+/// toneCurve・levelsはプレミアム限定。
 /// outline：選択レイヤーの描画内容（不透明部分）の周囲を指定色・指定px幅で
 /// 縁取る。
 /// sharpen：3x3カーネルによるシャープ化。unsharpMask：ぼかしとの差分を
@@ -33,14 +33,13 @@
 /// 白＝従来通りのグレースケール）を掛け合わせる。単なる白黒化ではなく、
 /// セピア調・任意の単色トーンなど好きな色で単色化できる。
 /// threshold（二値化）：輝度が[thresholdValue]以上の画素を白、未満を黒へ
-/// 分ける。色調調整・単色化・「明度で透過」と組み合わせると線画抽出に使える
-/// （仕様書28）。
+/// 分ける。色調調整・単色化・「明度で透過」と組み合わせると線画抽出に使える。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
   retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration, lensDistortion,
 }
 
-/// トーンカーブのプリセット形状（仕様書20：トーンカーブ）。
+/// トーンカーブのプリセット形状。
 /// 本格的な自由曲線編集の代わりに、よく使う形状をプリセットとして提供する。
 enum ToneCurvePreset { linear, brighten, darken, highContrast, lowContrast, invert }
 
@@ -69,7 +68,7 @@ class FilterDef {
   final double strength;
   final int colorLevels;
   final double edgeStrength;
-  // レベル補正（levelsのみ使用。仕様書20：入力・出力レベル）
+  // レベル補正（levelsのみ使用。入力・出力レベル）
   final int inputBlack;
   final int inputWhite;
   final int outputBlack;

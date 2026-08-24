@@ -20,11 +20,11 @@ import '../../../widgets/stepped_slider.dart';
 import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 
-/// 描画フィルターパネル（仕様書18）。
+/// 描画フィルターパネル。
 /// フィルターの選択・パラメータ調整・プレビュー・適用を行う。
 /// [bulkFrameIndices]が指定された場合は「大量処理」として、指定した全フレームの
 /// 同一レイヤーへフィルターを一括適用し、進捗をProgressDialog（正方形広告付き）
-/// で表示する（仕様書13・18：大量処理実行時の広告表示）。
+/// で表示する（大量処理実行時の広告表示）。
 class FilterPanel extends StatefulWidget {
   final String projectId;
   final String sceneId;
@@ -696,7 +696,7 @@ class _FilterPanelState extends State<FilterPanel> {
   }
 
   /// 縁取り色の選択：アプリ標準のColorPickerPanel（HSV/RGB/HEX）を
-  /// ダイアログ上に載せて表示する（仕様書20のカラーピッカーをそのまま流用）。
+  /// ダイアログ上に載せて表示する（カラーピッカーをそのまま流用）。
   void _pickOutlineColor(FilterService filterService, FilterDef current) {
     showDialog(
       context: context,
@@ -846,7 +846,7 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
-  /// フィルターの表示名を多言語対応で返す（仕様書18の初期実装フィルターは
+  /// フィルターの表示名を多言語対応で返す（初期実装フィルターは
   /// 種別ごとに1つずつの固定セットで、ユーザーが新規フィルターを追加できる
   /// UIは無いため、kindから一意に決まる）。永続化される[FilterDef.name]
   /// 自体は内部識別用の日本語文字列のまま残し、表示のみここで差し替える。
@@ -1096,7 +1096,7 @@ class _FilterPanelState extends State<FilterPanel> {
   /// 書き換えず、[ringData]（縁取りリング部分のみ・それ以外は透明。
   /// applyDrawFilterInIsolate経由のapplyOutlineLayerの結果）を新規の
   /// 通常レイヤーへ描画し、選択レイヤーの直下（背面側）へ挿入する。
-  /// 新規レイヤー作成は仕様書04の自動塗りレイヤー作成（layer_panel.dart）
+  /// 新規レイヤー作成は自動塗りレイヤー作成（layer_panel.dart）
   /// と同じ手順：addLayer()で追加した後、目的の位置へreorderLayer()で
   /// 移動する（addLayer()は常に最前面へ挿入するため）。
   /// [outlineLayerId]を渡した場合はそのIDでレイヤーを作成する（複数フレーム
@@ -1151,7 +1151,7 @@ class _FilterPanelState extends State<FilterPanel> {
     return created.id;
   }
 
-  /// 大量処理実行時（仕様書18）：選択した全フレームへ順に適用し、
+  /// 大量処理実行時：選択した全フレームへ順に適用し、
   /// ProgressDialog（正方形広告付き）で進捗を表示する。
   Future<void> _applyBulk(
     ProjectService ps,

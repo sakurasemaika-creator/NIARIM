@@ -210,7 +210,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
             const SizedBox(height: 16),
-            // フォルダ・タグ・お気に入り・共有のクイックアクセス（仕様書19の詳細画面モックアップ）
+            // フォルダ・タグ・お気に入り・共有のクイックアクセス
             Row(
               children: [
                 Expanded(
@@ -544,7 +544,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     ).then((_) => controller.dispose());
   }
 
-  /// .niashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・19・21）。
+  /// .niashare（共有用ファイル）を作成し、共有シートを表示する。
   Future<void> _createNiashare(BuildContext context, ProjectService service, Project project) async {
     final includeOptions = await showMaterialIncludeDialog(context);
     if (includeOptions == null || !context.mounted) return; // キャンセル

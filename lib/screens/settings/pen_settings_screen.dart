@@ -7,14 +7,14 @@ import '../../widgets/help_button.dart';
 import 'widgets/pressure_curve_graph.dart';
 import 'widgets/pressure_curve_try_draw.dart';
 
-/// ペン入力設定（仕様書08）。
-/// 筆圧の「無効／サイズ／不透明度／両方」反映モードは仕様書17により
-/// ブラシ個別設定のため、ブラシ設定パネル側で管理する（ここでは扱わない）。
+/// ペン入力設定。
+/// 筆圧の「無効／サイズ／不透明度／両方」反映モードはブラシ個別設定のため、
+/// ブラシ設定パネル側で管理する（ここでは扱わない）。
 /// このため、この画面では「筆圧カーブ（アプリ全体に適用）」と「ペンボタン設定」を扱う。
 class PenSettingsScreen extends StatelessWidget {
   const PenSettingsScreen({super.key});
 
-  // ペンボタンに割り当て可能なアクション（仕様書08：消しゴム切替・スポイト・
+  // ペンボタンに割り当て可能なアクション（消しゴム切替・スポイト・
   // Undo・Redo・ツール早替え・なし）。ジェスチャー設定の全アクションとは異なる
   // 限定リストであることに注意。
   static const _penButtonActions = [

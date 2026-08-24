@@ -94,7 +94,7 @@ class _BrushPanelState extends State<BrushPanel> {
                   ),
                 ],
               ),
-              // フォルダ管理・自作ブラシ・読み込み（仕様書17・21）
+              // フォルダ管理・自作ブラシ・読み込み
               Row(
                 children: [
                   TextButton.icon(
@@ -366,7 +366,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           // 間隔
           _sliderRow(l10n.brushSettingsSpacingLabel, _brush.spacing.toDouble(), 1, 100,
               (v) => setState(() => _brush = _brush.copyWith(spacing: v.round()))),
-          // ぼかし半径（仕様書17：0〜100・デフォルト0）
+          // ぼかし半径（0〜100・デフォルト0）
           _sliderRow(l10n.brushSettingsBlurRadiusLabel, _brush.blurRadius.toDouble(), 0, 100,
               (v) => setState(() => _brush = _brush.copyWith(blurRadius: v.round()))),
           const Divider(),

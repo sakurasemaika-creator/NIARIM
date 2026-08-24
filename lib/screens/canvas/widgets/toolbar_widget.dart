@@ -26,13 +26,13 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onShapeTap;
   final VoidCallback onQuickToolTap;
   final VoidCallback onQuickToolLongPress;
-  // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+  // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
   final VoidCallback onSaveTap;
   // 投げ縄塗り選択（ペンのサブツールではなく、バケツ長押しメニューから
   // 選べるようにするための導線。投げ縄で囲った範囲を塗りつぶす点で
   // バケツ塗りに近い性質を持つため）。
   final VoidCallback onLassoFillSelected;
-  // スタンプ選択中かどうか（仕様書17：色アイコンに🚫重ね表示・タップで専用トースト）
+  // スタンプ選択中かどうか（色アイコンに🚫重ね表示・タップで専用トースト）
   final bool isStampSelected;
   // trueの場合、画面下部の横並びバーではなく左側（左利きモードでは右側）に
   // 常設する縦並びのツールレールとして表示する。
@@ -57,7 +57,7 @@ class ToolbarWidget extends StatelessWidget {
     this.vertical = false,
   });
 
-  /// ツールバー編集（仕様書08）でカスタマイズ可能な項目を、現在の並び順・
+  /// ツールバー編集でカスタマイズ可能な項目を、現在の並び順・
   /// 表示設定に従って構築する。
   Widget _buildToolItem(
     BuildContext context,
@@ -65,7 +65,7 @@ class ToolbarWidget extends StatelessWidget {
     ToolbarItemId id,
   ) {
     return switch (id) {
-      // ペンボタン：長押しでサブツールパネル表示（仕様書02・17：初回使用時の吹き出し説明）
+      // ペンボタン：長押しでサブツールパネル表示（初回使用時の吹き出し説明）
       ToolbarItemId.pen => FirstUseTooltip(
         tooltipKey: 'pen_tool',
         message: l10n.toolbarPenFirstUseTip,
@@ -99,7 +99,7 @@ class ToolbarWidget extends StatelessWidget {
         ),
       ),
       // バケツボタン：長押しまたは上スワイプでベタ塗り／トーン切り替え
-      // メニュー表示（仕様書04・17。他の詳細設定ポップアップと操作方法を
+      // メニュー表示（他の詳細設定ポップアップと操作方法を
       // 統一するため、長押しに加えて上スワイプにも対応させている）。
       ToolbarItemId.bucket => FirstUseTooltip(
         tooltipKey: 'bucket_tool',
@@ -125,7 +125,7 @@ class ToolbarWidget extends StatelessWidget {
         DrawingTool.eyedropper,
         l10n.toolbarItemEyedropper,
       ),
-      // 指先ツール（歪み）：仕様書03。スマホ・PC両モードで使用可能。
+      // 指先ツール（歪み）：スマホ・PC両モードで使用可能。
       ToolbarItemId.finger => _toolButton(
         context,
         Icons.pan_tool_alt,
@@ -148,7 +148,7 @@ class ToolbarWidget extends StatelessWidget {
         DrawingTool.transform,
         l10n.toolbarItemTransform,
       ),
-      // 初回タップ時の吹き出し説明（仕様書15）
+      // 初回タップ時の吹き出し説明
       ToolbarItemId.text => FirstUseTooltip(
         tooltipKey: 'text_tool',
         message: l10n.toolbarTextFirstUseTip,
@@ -183,7 +183,7 @@ class ToolbarWidget extends StatelessWidget {
         ? const SizedBox(height: 4)
         : const SizedBox(width: 4);
     final items = [
-      // ツールバー編集（仕様書08）でカスタマイズ可能な項目を並び順・表示設定通りに表示。
+      // ツールバー編集でカスタマイズ可能な項目を並び順・表示設定通りに表示。
       // 手のひらツールは強制スマホモードでは常に非表示、それ以外
       // （PCモード固定・自動判定）では横画面のときのみ表示する
       // （液タブ接続時のDeXモード等を考慮）。
@@ -192,7 +192,7 @@ class ToolbarWidget extends StatelessWidget {
             (id != ToolbarItemId.pan || canShowPanTool(context)))
           _buildToolItem(context, l10n, id),
       spacer,
-      // 色インジケーター（仕様書17：スタンプ選択中は色情報を保持しているため
+      // 色インジケーター（スタンプ選択中は色情報を保持しているため
       // 色変更不可を🚫重ね表示で示し、タップで専用トーストを表示する）
       GestureDetector(
         onTap: isStampSelected
@@ -237,11 +237,11 @@ class ToolbarWidget extends StatelessWidget {
         onPressed: onLayerTap,
         tooltip: l10n.toolbarLayerTooltip,
       ),
-      // オニオンスキンは仕様書08・タスク#95によりここから削除し、
+      // オニオンスキンはここから削除し、
       // キャンバス上部バーの「設定/編集」メニューへ集約した。
       // ツール早替えボタン（↺）
       // ツール早替えボタン：タップで登録順に切替、長押しまたは上スワイプで
-      // 管理ポップアップ（登録・並び替え）を表示（仕様書02・08）
+      // 管理ポップアップ（登録・並び替え）を表示
       FirstUseTooltip(
         tooltipKey: 'quick_tool',
         message: l10n.toolbarQuickToolFirstUseTip,
@@ -262,10 +262,10 @@ class ToolbarWidget extends StatelessWidget {
           ),
         ),
       ),
-      // タイムラインへの切替ボタンは仕様書08・タスク#95によりここから
+      // タイムラインへの切替ボタンはここから
       // 削除し、フレーム一覧右下のボタン（frame_strip_widget.dart）
       // へ統一した（同じ役割のボタンが2箇所にあり冗長だったため）。
-      // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+      // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
       _borderedIconButton(
         context,
         Icons.save_outlined,
@@ -381,7 +381,7 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  /// バケツツールのベタ塗り／トーン切り替えメニュー（仕様書04・17）。
+  /// バケツツールのベタ塗り／トーン切り替えメニュー。
   /// 詳細設定（許容誤差・拡張px・線の下まで潜るか）も同じシートから
   /// 調整できる。ここでの変更はSettingsServiceを直接更新するため、
   /// 設定画面「バケツ塗り」で行った変更と常に連動する（単一の設定値を

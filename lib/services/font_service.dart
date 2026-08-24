@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/downloadable_font.dart';
 import '../models/font_asset.dart';
 
-/// フォント管理サービス（仕様書15・21：ユーザーフォント追加）。
+/// フォント管理サービス（ユーザーフォント追加）。
 /// アプリ全体で共有するFonts/フォルダにTTF/OTFを保存し、FontLoaderで
 /// Flutterへ登録することでテキストツールのフォント選択に利用可能にする。
 /// プロジェクトとは独立して管理する（引き継ぎ・フォント共有の対象）。
@@ -85,10 +85,10 @@ class FontService extends ChangeNotifier {
     }
   }
 
-  /// TTF/OTFファイルを追加する。対応形式以外はnullを返す（仕様書15：
-  /// 「このフォントは読み込めません。」）。読み込みはできても登録（パース）に
-  /// 失敗した場合は[FontCorruptedException]を投げる（仕様書15：
-  /// 「フォントが破損しています。」）。
+  /// TTF/OTFファイルを追加する。対応形式以外はnullを返す
+  /// （「このフォントは読み込めません。」）。読み込みはできても登録（パース）に
+  /// 失敗した場合は[FontCorruptedException]を投げる
+  /// （「フォントが破損しています。」）。
   Future<FontAsset?> addFont(String sourcePath, String displayName) async {
     final ext = sourcePath.split('.').last.toLowerCase();
     if (ext != 'ttf' && ext != 'otf') return null;
@@ -123,8 +123,7 @@ class FontService extends ChangeNotifier {
     return asset;
   }
 
-  /// フォントファイルの生データを取得する（仕様書15：プロジェクト共有時の
-  /// フォント同梱に使用）。
+  /// フォントファイルの生データを取得する（プロジェクト共有時のフォント同梱に使用）。
   Future<Uint8List?> readFontBytes(FontAsset asset) async {
     final dir = await _fontsDir();
     final file = File('${dir.path}/${asset.fileName}');
@@ -132,8 +131,8 @@ class FontService extends ChangeNotifier {
     return file.readAsBytes();
   }
 
-  /// 共有ファイル（.niashare）に同梱されたフォントを取り込む（仕様書15：
-  /// 「「フォントを含める」を選択した場合のみフォントを同梱」）。
+  /// 共有ファイル（.niashare）に同梱されたフォントを取り込む
+  /// （「フォントを含める」を選択した場合のみフォントを同梱）。
   /// [id]・[fileName]を送信元と同じものに保つことで、familyNameOf()が
   /// 生成するファミリー名（インポートしたテキストレイヤーのfontFamilyが
   /// 参照する値）が送信元と一致し、正しくフォントが解決されるようにする。
@@ -270,8 +269,8 @@ class FontService extends ChangeNotifier {
   }
 }
 
-/// フォントファイルの読み込み（パース）に失敗した場合の例外（仕様書15：
-/// 「フォントが破損しています。」）。拡張子は正しいが内容が壊れているケースを表す。
+/// フォントファイルの読み込み（パース）に失敗した場合の例外
+/// （「フォントが破損しています。」）。拡張子は正しいが内容が壊れているケースを表す。
 class FontCorruptedException implements Exception {}
 
 /// 追加フリーフォントのダウンロードに失敗した場合の例外（[FontService.

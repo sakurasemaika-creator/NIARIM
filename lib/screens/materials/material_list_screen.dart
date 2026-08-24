@@ -8,7 +8,7 @@ import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 
-/// 素材一覧画面（仕様書21：素材管理仕様）。
+/// 素材一覧画面。
 /// サムネイル・種類アイコン・ファイル名・容量等を一覧表示し、
 /// 使用中でない素材の個別削除・一括削除・不足素材の検出を行う。
 class MaterialListScreen extends StatefulWidget {
@@ -160,7 +160,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
   }
 
   // 素材は追加後に編集する手段がないため、追加日時＝最終更新日時として
-  // 表示する（仕様書21：「詳細表示」の「最終更新日時」）。
+  // 表示する（「詳細表示」の「最終更新日時」欄に使用）。
   String _formatDate(DateTime d) =>
       '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
 

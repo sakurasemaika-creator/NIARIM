@@ -1,16 +1,16 @@
-/// タイムライン音声トラックのクリップ（仕様書05：音声）。
+/// タイムライン音声トラックのクリップ。
 /// レイヤーではなくシーンに直接紐づく（音声は視覚的なピクセルを持たないため）。
 class AudioClip {
   final String id;
   final String label;
-  final String? materialId; // 参照している素材ID（仕様書21：MaterialID方式）
+  final String? materialId; // 参照している素材ID
   final int startFrame;
   final int lengthFrames;
   final double volume; // 0.0〜1.0
   final double fadeIn; // フェードイン秒数
   final double fadeOut; // フェードアウト秒数
-  // 音声タイムラインの表示行番号（0始まり、仕様書05：素材種別ごとに複数行の
-  // タイムライン行を追加/削除できるようにする）。
+  // 音声タイムラインの表示行番号（0始まり）。素材種別ごとに複数行の
+  // タイムライン行を追加/削除できる。
   final int trackRow;
 
   const AudioClip({

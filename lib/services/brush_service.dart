@@ -8,13 +8,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/brush_texture_cache.dart';
 import '../models/brush.dart';
 
-/// ブラシ管理サービス（仕様書17・21）。
+/// ブラシ管理サービス。
 /// SharedPreferencesへ永続化する（端末単位。プロジェクトファイルには含めない）。
-/// 従来はインメモリのみで、お気に入り・並び替え・複製・削除・パラメータ編集の
-/// すべてがアプリ再起動のたびに失われていた（Task#83で修正）。
-/// 自作ブラシ（画像からの新規作成）・フォルダ管理・読み込み/書き出しは
-/// Task#84で追加した。カスタム画像はアプリ全体の`Brushes/`フォルダへ
-/// コピーして保存する（仕様書21）。
+/// お気に入り・並び替え・複製・削除・パラメータ編集の内容を保持する。
+/// 自作ブラシ（画像からの新規作成）・フォルダ管理・読み込み/書き出しにも対応し、
+/// カスタム画像はアプリ全体の`Brushes/`フォルダへコピーして保存する。
 class BrushService extends ChangeNotifier {
   static const _prefsKey = 'brushes';
   static const _currentIdKey = 'brushes_current_id';
@@ -235,7 +233,7 @@ class BrushService extends ChangeNotifier {
     }
   }
 
-  // ─── フォルダ管理（仕様書17：ブラシ・トーン・スタンプすべてフォルダ管理対応） ──
+  // ─── フォルダ管理 ─────────────────────────────────────────────────────
 
   Future<BrushFolder> createFolder(String name) async {
     final folder = BrushFolder(id: 'BrushFolder${DateTime.now().millisecondsSinceEpoch}', name: name);
@@ -269,7 +267,7 @@ class BrushService extends ChangeNotifier {
     _persistFolders();
   }
 
-  /// フォルダを削除する。中の素材はルート（フォルダなし）へ戻す（仕様書17）。
+  /// フォルダを削除する。中の素材はルート（フォルダなし）へ戻す。
   void deleteFolder(String id) {
     _folders.removeWhere((f) => f.id == id);
     for (int i = 0; i < _brushes.length; i++) {
@@ -290,7 +288,7 @@ class BrushService extends ChangeNotifier {
     _persist();
   }
 
-  // ─── 自作ブラシ（画像からの新規作成、仕様書17） ──────────────────────────
+  // ─── 自作ブラシ（画像からの新規作成） ────────────────────────────────────
 
   Future<Directory> _brushesDir() async {
     final base = await getApplicationDocumentsDirectory();
@@ -299,8 +297,7 @@ class BrushService extends ChangeNotifier {
     return dir;
   }
 
-  /// [sourcePath]の画像ファイルを取り込み、新規ブラシとして追加する
-  /// （仕様書17：ブラシ画像からのブラシ作成）。
+  /// [sourcePath]の画像ファイルを取り込み、新規ブラシとして追加する。
   Future<Brush> createBrushFromImage(String sourcePath, {String? name}) async {
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
     final ext = sourcePath.split('.').last;
@@ -321,7 +318,7 @@ class BrushService extends ChangeNotifier {
     return brush;
   }
 
-  // ─── 読み込み・書き出し（仕様書17：個別ファイル単位） ───────────────────
+  // ─── 読み込み・書き出し（個別ファイル単位） ──────────────────────────────
 
   static const _bundleDataFile = 'data.json';
 

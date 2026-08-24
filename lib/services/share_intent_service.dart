@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 /// .niashare のOSレベル受信（他アプリ/ファイラーからのタップで開く）を扱うサービス。
-/// ネイティブ側（MainActivity.kt）とMethodChannelで連携する（仕様書06）。
+/// ネイティブ側（MainActivity.kt）とMethodChannelで連携する。
 class ShareIntentService {
   static const MethodChannel _channel =
       MethodChannel('com.niarim.niarim/share_intent');

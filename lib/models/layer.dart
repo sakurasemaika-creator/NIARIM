@@ -16,34 +16,34 @@ class Layer {
   final String? partId; // 自動塗り用線画レイヤーのパーツID
   final TextObject? textObject; // テキストレイヤーのテキストオブジェクト
 
-  // 共通レイヤー・タイムライン素材レイヤーの表示範囲（仕様書05・16）
+  // 共通レイヤー・タイムライン素材レイヤーの表示範囲
   final LayerRangeMode rangeMode;
   final int? rangeStart; // 1始まり・ユーザー表示値
   final int? rangeEnd;
-  // rangeMode == sceneRange の場合に対象となるシーンID（仕様書16：「シーン指定」）
+  // rangeMode == sceneRange の場合に対象となるシーンID（「シーン指定」）
   final String? rangeSceneId;
-  final bool isExpanded; // フォルダの展開・折りたたみ状態（仕様書16）
+  final bool isExpanded; // フォルダの展開・折りたたみ状態
 
-  // タイムライン画像・動画素材レイヤーが参照する素材ID（仕様書21：MaterialID方式）。
+  // タイムライン画像・動画素材レイヤーが参照する素材ID。
   // タイムライン画像・動画素材レイヤー（LayerType.timelineImage/timelineVideo）
   // でのみ使用する。
   final String? materialId;
-  // 動画素材の使用範囲（素材内でのトリム開始・終了フレーム、仕様書05）。
+  // 動画素材の使用範囲（素材内でのトリム開始・終了フレーム）。
   // LayerType.timelineVideoでのみ使用する。
   final int? sourceTrimStart;
   final int? sourceTrimEnd;
 
   // ウォーターマークレイヤー（LayerType.watermark）が参照する登録済み
-  // ウォーターマークID・角度・大きさ（仕様書08・13：配置後にタイムライン上で
-  // ウォーターマークをタップして角度・大きさ・不透明度・表示範囲＝ループ表示を
+  // ウォーターマークID・角度・大きさ（配置後にタイムライン上でウォーター
+  // マークをタップして角度・大きさ・不透明度・表示範囲＝ループ表示を
   // 再編集できるようにするための、配置ごとの個別設定）。
   // 不透明度はopacity、表示範囲（ループ表示）はrangeModeを流用する。
   final String? watermarkAssetId;
   final double watermarkAngle; // 度数法、0が基準
   final double watermarkScale; // キャンバス幅に対する倍率（既定0.25）
 
-  // タイムライン画像・動画素材レイヤーが表示される行番号（0始まり、仕様書05：
-  // 「素材種別ごとに複数行のタイムライン行を追加/削除できるようにする」）。
+  // タイムライン画像・動画素材レイヤーが表示される行番号（0始まり）。
+  // 素材種別ごとに複数行のタイムライン行を追加/削除できる。
   // LayerType.timelineImage/timelineVideoでのみ使用する。
   final int trackRow;
 
@@ -141,7 +141,7 @@ class Layer {
   }
 }
 
-/// 共通レイヤー・タイムライン素材レイヤーの表示範囲モード（仕様書16）
+/// 共通レイヤー・タイムライン素材レイヤーの表示範囲モード
 enum LayerRangeMode { allFrames, currentScene, sceneRange, frameRange }
 
 const Object _sentinel = Object();
@@ -165,7 +165,7 @@ enum LayerType {
 }
 
 /// 表示範囲（rangeMode/rangeStart/rangeEnd）を持ち、複数フレームにまたがって
-/// 同一のピクセルデータを共有表示しうるレイヤー種別（仕様書05・16）。
+/// 同一のピクセルデータを共有表示しうるレイヤー種別。
 bool isRangeLayerType(LayerType type) =>
     type == LayerType.common ||
     type == LayerType.timelineImage ||

@@ -53,16 +53,16 @@ class CanvasArea extends StatefulWidget {
   final String sceneId;
   final Ruler? activeRuler;
   // 定規のハンドルドラッグ（移動・回転・サイズ変更・消失点移動）による更新通知
-  // （仕様書14）。ライブ更新・Undo確定の両方でこのコールバックを呼ぶ。
+  // ライブ更新・Undo確定の両方でこのコールバックを呼ぶ。
   final ValueChanged<Ruler?>? onRulerChanged;
   final ShapeKind shapeKind;
-  // ジェスチャー／ペンボタンによるツール切替の通知先（仕様書08）。
+  // ジェスチャー／ペンボタンによるツール切替の通知先。
   // onGestureToolChange：直接切り替え（スポイト等、押し続けの必要がないもの）
   // onGestureToggleTool：現在のツールとトグル切替（消しゴム切替・ブラシ切替・手のひらツール）
   final ValueChanged<DrawingTool>? onGestureToolChange;
   final ValueChanged<DrawingTool>? onGestureToggleTool;
   final VoidCallback? onNextQuickTool;
-  // オニオンスキンON/OFF切替（仕様書22：ジェスチャーに割り当て可能）
+  // オニオンスキンON/OFF切替（ジェスチャーに割り当て可能）
   final VoidCallback? onToggleOnionSkin;
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
@@ -79,8 +79,8 @@ class CanvasArea extends StatefulWidget {
   final int meshCommitToken;
   final int meshCancelToken;
 
-  // ─── 画面端ダブルタップでのフレーム送り（仕様書28：フレーム一覧の開閉
-  // 状態と無関係に常時使える操作として新規実装） ────────────────────────
+  // ─── 画面端ダブルタップでのフレーム送り（フレーム一覧の開閉
+  // 状態と無関係に常時使える操作） ────────────────────────
   final VoidCallback? onNextFrame;
   final VoidCallback? onPreviousFrame;
 
@@ -125,14 +125,14 @@ class _CanvasAreaState extends State<CanvasArea> {
   final RulerEngine _rulerEngine = RulerEngine();
   final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
 
-  // 中クリックドラッグでの平行移動（仕様書08：Galaxy DeXモード・マウス入力）。
+  // 中クリックドラッグでの平行移動（Galaxy DeXモード・マウス入力）。
   // 現在のツールに関係なく、中クリックドラッグ中は常にキャンバスを平行移動する。
   bool _middleClickPanning = false;
   Offset? _middleClickLastScreenPos;
   // トーン・スタンプ・投げ縄塗りの本処理はisolate側で都度インスタンス化するため
   // （runToneStrokeInIsolate等を参照）、ここではエンジンインスタンスを保持しない。
 
-  // ─── キャンバスの平行移動・拡大縮小・回転（仕様書03・08） ────────────────
+  // ─── キャンバスの平行移動・拡大縮小・回転 ────────────────
   // Flutter標準のInteractiveViewerは回転ジェスチャーに非対応のため、独自の
   // ポインタートラッキングでパン・ピンチズーム・2本指回転を実装する（既知の
   // バグ「二本指回転未対応・ピンチアウトでのキャンバスサイズ超縮小」の修正）。
@@ -165,8 +165,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   // 手のひらツールでの1本指（スタイラス・マウスも含む）ドラッグ平行移動。
   Offset? _panToolLastScreenPos;
 
-  // ─── 画面端ダブルタップでのフレーム送り（仕様書28：フレーム一覧の開閉
-  // 状態と無関係に常時使える操作として新規実装） ────────────────────────
+  // ─── 画面端ダブルタップでのフレーム送り（フレーム一覧の開閉
+  // 状態と無関係に常時使える操作） ────────────────────────
   // 画面の左右端の狭い帯（_edgeDoubleTapZoneWidth）は「キャンバス外」の
   // ジェスチャー専用ゾーンとして扱い、通常の描画ツールへは一切渡さない
   // （渡してしまうと、素早い2回タップの1回目で微小な点が描画されてしまう
@@ -180,11 +180,11 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// スタイラス使用中は誤操作防止のため2本指キャンバス操作を無効化する
   /// （手のひらツール選択中のみ例外的に許可）。既存のInteractiveViewerの
-  /// panEnabled/scaleEnabledと同じ条件（仕様書08：パームリジェクション）。
+  /// panEnabled/scaleEnabledと同じ条件（パームリジェクション）。
   bool get _canTouchTransform =>
       // メッシュ変形ツール中は、2本指以上でもキャンバス自体のパン・ズーム・
       // 回転へ渡さず、各指を個別に別々の格子点操作へ渡す（複数指で複数の
-      // 角を同時につまんで引っ張る＝回転・拡大縮小相当の操作、仕様書28）。
+      // 角を同時につまんで引っ張る＝回転・拡大縮小相当の操作）。
       widget.currentTool != DrawingTool.meshTransform &&
       (!_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan);
 
@@ -216,7 +216,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   List<Offset> _lassoPoints = [];
   int _touchCount = 0;
 
-  // ─── 選択範囲（矩形選択・投げ縄選択・自動選択で共通利用、仕様書03・16） ──
+  // ─── 選択範囲（矩形選択・投げ縄選択・自動選択で共通利用） ──
   // ドラッグ中は_selectionStart/_selectionEnd・_lassoPointsでプレビューのみ
   // 表示し、確定時に1px=1byteのマスクへ変換して保持する。投げ縄塗り・バケツ
   // 塗りはこのマスクを参照して選択範囲内のみ描画する。
@@ -265,7 +265,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   // まだ参照しているui.Imageが破棄され例外になるため）。
   bool _meshCommitInFlight = false;
 
-  // ─── 選択ツールの移動・回転・拡大縮小（仕様書03・16） ─────────────────
+  // ─── 選択ツールの移動・回転・拡大縮小 ─────────────────
   bool _selectionTransformActive = false;
   _TransformMode _selectionTransformMode = _TransformMode.translate;
   Offset? _selectionTransformStart;
@@ -283,7 +283,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   Uint8List? _bucketRefBuffer;
   Uint8List? _bucketVisitedMask;
 
-  // ─── 指ツール（歪み、仕様書03） ───────────────────────────────────────
+  // ─── 指ツール（歪み） ───────────────────────────────────────
   // ストローク中はこのバッファを読み書きの起点にする（ストローク終了時に
   // 破棄）。指でなぞった方向へピクセルを押し流すLiquify系の「押す」効果。
   Uint8List? _warpBuffer;
@@ -410,7 +410,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     super.dispose();
   }
 
-  // ─── 選択範囲マスク（矩形選択・投げ縄選択・自動選択で共通、仕様書03・16・25） ──
+  // ─── 選択範囲マスク（矩形選択・投げ縄選択・自動選択で共通） ──
 
   void _clearSelectionMask() {
     if (_selectionMask == null && _selectionOverlayImage == null) return;
@@ -467,7 +467,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// 自動選択（マジックワンド）：タップ位置から表示中の全レイヤー合成色を基準に
-  /// フラッドフィルし、選択範囲マスクを生成する（仕様書03：選択ツール）。
+  /// フラッドフィルし、選択範囲マスクを生成する。
   Future<void> _magicWandSelectAt(Offset canvasPos) async {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -519,7 +519,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// レイヤーIDをTileManager用の合成キーへ変換する。通常レイヤーはフレームごとに
   /// 独立したキー（[frameLayerKey]）を使うが、共通・タイムライン素材・
   /// ウォーターマークなど表示範囲を持つレイヤーは、表示中のフレームに関わらず
-  /// 常にホーム位置（実データのあるフレーム）のキーを指す（仕様書05・16：
+  /// 常にホーム位置（実データのあるフレーム）のキーを指す（
   /// 複数フレームでの共有表示・共有編集のため）。
   String _tileKeyFor(String layerId, {int? frameIndex}) {
     final project = widget.project;
@@ -542,8 +542,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
-  /// 筆圧カーブ（仕様書08：アプリ全体に適用）と、品質設定の「傾き検知」ON/OFF
-  /// （仕様書08：低品質・中品質はOFF固定）を反映したStrokePointを生成する。
+  /// 筆圧カーブ（アプリ全体に適用）と、品質設定の「傾き検知」ON/OFF
+  /// （低品質・中品質はOFF固定）を反映したStrokePointを生成する。
   StrokePoint _rawToStrokePoint(PointerEvent event) {
     final settings = context.read<SettingsService>();
     final tiltEnabled = context.read<PerformanceService>().tiltEnabled;
@@ -569,7 +569,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// 画面端ゾーンでのタップを記録し、一定時間内に同じ側へ2回タップされて
-  /// いれば前後のフレームへ移動する（仕様書28）。
+  /// いれば前後のフレームへ移動する。
   void _handleEdgeZoneTap(bool isRight) {
     final now = DateTime.now();
     final last = _lastEdgeTapTime;
@@ -590,7 +590,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
   }
 
-  /// マウスホイールでのズーム（仕様書08：Galaxy DeXモード・マウス入力）。
+  /// マウスホイールでのズーム（Galaxy DeXモード・マウス入力）。
   /// カーソル位置を中心に拡大縮小する。
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
@@ -642,12 +642,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
 
-    // 制作時間カウント（仕様書19）：キャンバスへの操作のたびに無操作タイマーをリセットする
+    // 制作時間カウント：キャンバスへの操作のたびに無操作タイマーをリセットする
     if (widget.project != null) {
       context.read<ProjectService>().pingWorkActivity();
     }
 
-    // ペンボタン検出（仕様書08：対応端末のみ）。バレルボタン押下時は割り当てられた
+    // ペンボタン検出（対応端末のみ）。バレルボタン押下時は割り当てられた
     // アクションを実行し、描画は開始しない。
     if (type == InputType.stylus) {
       final settings = context.read<SettingsService>();
@@ -662,7 +662,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
 
     // 中クリックドラッグ：現在のツールに関係なくキャンバスを平行移動する
-    // （仕様書08：Galaxy DeXモード・マウス入力）。
+    // （Galaxy DeXモード・マウス入力）。
     if (event.kind == PointerDeviceKind.mouse && event.buttons & kMiddleMouseButton != 0) {
       _middleClickPanning = true;
       _middleClickLastScreenPos = event.localPosition;
@@ -686,7 +686,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (_isSelectionTool && _selectionMask != null && _beginSelectionTransformIfHit(canvasPos)) {
       // 既存の選択範囲の中・またはハンドルをタップ＝新規選択ではなく
-      // 移動・拡大縮小・回転操作として扱う（仕様書03・16）。
+      // 移動・拡大縮小・回転操作として扱う。
       return;
     }
     if (widget.currentTool == DrawingTool.selectRect) {
@@ -1001,7 +1001,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// 自動塗り用線画レイヤーへ描画があった場合、直下の自動塗りレイヤーへ更新マークを立てる
-  /// （仕様書16：needsAutofillUpdate自動セット）。
+  /// （needsAutofillUpdate自動セット）。
   void _markLineartDirtyIfNeeded() {
     final project = widget.project;
     if (project == null) return;
@@ -1037,7 +1037,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     ));
   }
 
-  // ─── 投げ縄塗り（ペンサブツール、仕様書25） ─────────────────────────────
+  // ─── 投げ縄塗り（ペンサブツール） ─────────────────────────────
 
   /// 投げ縄塗りを確定する。囲って塗るモードON/OFF・ベタ/トーン・透明色=消しゴム
   /// の判定は LassoFillEngine 側で行う。
@@ -1091,7 +1091,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   // ─── ペンサブツール：トーン自由描画・スタンプ ─────────────────────────
 
-  /// トーン自由描画を確定する（仕様書17：現在色で描画・サイズ一定・
+  /// トーン自由描画を確定する（現在色で描画・サイズ一定・
   /// 回転なし・密度なし・散布なし）。ドラッグ中はプレビューのみで、
   /// 指を離した時点でまとめてタイルへ反映する。
   Future<void> _commitToneStroke() async {
@@ -1144,7 +1144,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _finishTileUndo();
   }
 
-  /// スタンプ描画を確定する（仕様書17：色情報はスタンプ自身が保持・
+  /// スタンプ描画を確定する（色情報はスタンプ自身が保持・
   /// ブラシサイズ連動・回転／密度／散布対応）。
   Future<void> _commitStampStroke() async {
     if (_subToolStrokePoints.isEmpty) return;
@@ -1202,7 +1202,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// スポイトは表示中の全レイヤーを不透明度・ブレンドモード・クリッピングを
-  /// 反映して合成した色をサンプリングする（仕様書16：表示されている見た目の色を拾う）。
+  /// 反映して合成した色をサンプリングする（表示されている見た目の色を拾う）。
   Future<void> _pickColor(Offset canvasPos) async {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -1353,7 +1353,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       case ShapeKind.off:
         return;
     }
-    // 図形はブラシ・トーンどちらでも描画可能（仕様書03）。ペンサブツールが
+    // 図形はブラシ・トーンどちらでも描画可能。ペンサブツールが
     // トーンの場合はトーンストロークエンジンで、それ以外はブラシで描画する。
     if (widget.currentSubTool == PenSubTool.tone) {
       _commitShapeWithTone(points, closeLoop);
@@ -1369,7 +1369,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
   }
 
-  /// 図形をトーンで塗る（仕様書03：ブラシ・トーンどちらでも描画可能）。
+  /// 図形をトーンで塗る（ブラシ・トーンどちらでも描画可能）。
   /// トーン自由描画（_commitToneStroke）と同じ仕組みで、図形の輪郭線上に
   /// 一定間隔で補間した密な点列をトーンストロークとして描画する。
   Future<void> _commitShapeWithTone(List<Offset> pathPoints, bool closeLoop) async {
@@ -1503,7 +1503,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// 移動・拡大縮小・回転の行列を計算する（変形ツール・選択ツールの
-  /// 変形操作で共通利用、仕様書03・16）。
+  /// 変形操作で共通利用）。
   static Matrix4 _computeTransformMatrix(
       _TransformMode mode, Offset start, Offset current, Offset center) {
     switch (mode) {
@@ -1689,7 +1689,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     });
   }
 
-  // ─── 選択ツールの移動・回転・拡大縮小（仕様書03・16） ─────────────────
+  // ─── 選択ツールの移動・回転・拡大縮小 ─────────────────
   // 選択範囲がある状態で選択ツールを使うと、選択範囲の中をタップ＝移動、
   // 右下ハンドル＝拡大縮小、上部ハンドル＝回転として操作できる（変形ツール
   // と同じ操作感）。ドラッグ中は選択範囲の中身を切り取った「浮動画像」を
@@ -1906,7 +1906,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   // ─── バケツ連続塗り ───────────────────────────────────────────────────
 
   /// バケツ塗りの参照用に、表示中の全レイヤーを不透明度・ブレンドモード・
-  /// クリッピングを反映して合成する（仕様書04：バケツは表示中の全レイヤーの線を参照）。
+  /// クリッピングを反映して合成する（バケツは表示中の全レイヤーの線を参照）。
   Future<Uint8List> _flattenVisibleLayers() async {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -2041,7 +2041,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (changed) _scheduleComposite();
   }
 
-  // ─── 指ツール（歪み、仕様書03） ───────────────────────────────────────
+  // ─── 指ツール（歪み） ───────────────────────────────────────
   // 指でなぞった方向にピクセルを押し流す「Liquify」系の歪み効果。
   // ストローク開始時に現在レイヤーの合成画像をバッファへ読み込み、以後の
   // 移動ごとにドラッグ方向・距離に応じて円形の範囲内のピクセルを再配置する
@@ -2176,7 +2176,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
-  // ─── 定規の編集（移動・回転・サイズ変更・消失点移動、仕様書14） ───────────
+  // ─── 定規の編集（移動・回転・サイズ変更・消失点移動） ───────────
   // 定規ツール選択中はキャンバスタップがハンドル操作として扱われる。
   // ハンドル座標は_paintRulerの描画と同じ座標系（ルーラーの position/
   // vanishingPoint と同じ、export解像度基準）で計算する。
@@ -2253,7 +2253,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         } else {
           newRy = local.dy.abs().clamp(10.0, 4000.0);
         }
-        // 正円スナップ（仕様書14：横幅≒縦幅になると自動で正円に吸い付く）
+        // 正円スナップ（横幅≒縦幅になると自動で正円に吸い付く）
         final maxR = math.max(newRx, newRy);
         if (maxR > 0 && (newRx - newRy).abs() / maxR < 0.08) {
           if (handleId == 'resizeX') {
@@ -2336,7 +2336,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// 現在レイヤーの画像を合成する。クリッピングONの場合はクリッピング元レイヤーの
   /// 形状でマスクした状態まで合成しておく（不透明度・ブレンドモードはpaint時に
-  /// 適用するためここでは反映しない。仕様書16）。
+  /// 適用するためここでは反映しない）。
   Future<ui.Image> _composeCurrentLayerImage() async {
     final key = _tileKeyFor(_layerId);
     final raw = await _tileManager.compositeLayerToImage(key);
@@ -2416,7 +2416,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// 現在レイヤーより手前（above）／奥（below）にあるレイヤー群を、
   /// 不透明度・ブレンドモード・クリッピングを反映して合成しておく
-  /// （仕様書16）。ドラッグ中の移動・変形プレビューでは現在レイヤーの画像
+  /// ドラッグ中の移動・変形プレビューでは現在レイヤーの画像
   /// （_compositeImage）だけを動かせば済むよう、あえて現在レイヤーを含めず
   /// 前後に分けてキャッシュする。
   ///
@@ -2490,7 +2490,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// オニオンスキン用の前後フレーム画像を合成する。対象レイヤーは通常レイヤーと
-  /// 自動塗り用線画レイヤーのみ（仕様書22：共通・テキスト・自動塗り・タイムライン
+  /// 自動塗り用線画レイヤーのみ（共通・テキスト・自動塗り・タイムライン
   /// 素材レイヤーは対象外）。
   Future<void> _buildOnionImages() async {
     if (!widget.onionSkinSettings.enabled) {
@@ -2703,7 +2703,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         widget.onToggleOnionSkin?.call();
       case GestureAction.frameMove:
         // 2本指スワイプ専用の連続操作を想定した機能のため、単発ジェスチャー／
-        // ペンボタンからの割り当ては未対応（仕様書08）
+        // ペンボタンからの割り当ては未対応
         break;
       case GestureAction.none:
         break;
@@ -2733,7 +2733,7 @@ class _CanvasPainter extends CustomPainter {
   // からは除外され最終成果物には写り込まないが、除外したままだと塗って
   // いる最中に何も見えず実用にならないため、専用のオーバーレイとして
   // 常に最前面（選択ツールの確定範囲表示より手前）へ、テーマの選択色
-  // （handleColorと同じ、仕様書24：色固定の廃止）でタイントして重ねる。
+  // （handleColorと同じ、色固定を廃止している）でタイントして重ねる。
   final ui.Image? selectionLayerOverlayImage;
   final List<Offset> lassoPoints;
   final List<Offset> subToolStrokePoints;
@@ -2744,7 +2744,7 @@ class _CanvasPainter extends CustomPainter {
   final Offset? moveDelta;
   final Matrix4? transformLive;
   final bool showTransformHandles;
-  // 選択ツールの移動・回転・拡大縮小（仕様書03・16）：ドラッグ中は選択範囲の
+  // 選択ツールの移動・回転・拡大縮小：ドラッグ中は選択範囲の
   // 中身を切り取った「浮動画像」をコミット前のプレビューとして表示する。
   final ui.Image? floatingSelectionImage;
   final Matrix4? selectionTransformLive;
@@ -2757,7 +2757,7 @@ class _CanvasPainter extends CustomPainter {
   final ui.Image? meshSourceImage;
   final bool showMeshHandles;
   // 選択範囲・変形ハンドル・定規ハンドルの色（テーマの選択色連動、
-  // 仕様書24：色固定の廃止）。キャンバス内容は任意の絵柄になり得るため、
+  // 色固定を廃止している）。キャンバス内容は任意の絵柄になり得るため、
   // ハンドル自体の縁取りにはテーマのメニュー背景色を使い、内容色に
   // 埋もれないコントラストを確保する。
   final Color handleColor;
@@ -2913,7 +2913,7 @@ class _CanvasPainter extends CustomPainter {
       _drawFrameImage(canvas, drawingRect, selectionLayerOverlayImage, tintPaint);
     }
 
-    // 確定済み選択範囲（矩形選択・投げ縄選択・自動選択で共通、仕様書03・16・25）
+    // 確定済み選択範囲（矩形選択・投げ縄選択・自動選択で共通）
     if (selectionOverlayImage != null) {
       _drawFrameImage(canvas, drawingRect, selectionOverlayImage, Paint());
     }

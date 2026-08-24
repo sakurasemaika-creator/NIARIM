@@ -4,7 +4,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/monetization_gate.dart';
 
-/// プレミアム加入状態・課金処理を管理する（仕様書13）。
+/// プレミアム加入状態・課金処理を管理する。
 /// 実際の課金はGoogle Play Billing（in_app_purchase）経由で行い、
 /// purchaseStreamの結果を受けてisPremiumを更新する。
 ///
@@ -147,7 +147,7 @@ class PremiumService extends ChangeNotifier {
     }
   }
 
-  /// 指定商品IDの購入フローを開始する（サブスクリプション、仕様書13）。
+  /// 指定商品IDの購入フローを開始する（サブスクリプション）。
   /// 戻り値は購入フローの開始に成功したかどうか。実際の購入完了・失敗結果は
   /// purchaseStream経由で非同期に届き、isPremiumへ反映される。
   Future<bool> buy(String productId) async {
@@ -175,7 +175,7 @@ class PremiumService extends ChangeNotifier {
     return _iap.buyNonConsumable(purchaseParam: param);
   }
 
-  /// 購入の復元（機種変更・再インストール時、仕様書13）。
+  /// 購入の復元（機種変更・再インストール時）。
   Future<void> restorePurchases() async {
     if (!_storeAvailable) return;
     await _iap.restorePurchases();
@@ -267,7 +267,7 @@ class PremiumService extends ChangeNotifier {
   //   }
   // }
 
-  // 無料版の最大動画尺（仕様書12実装チェックリスト：90秒）
+  // 無料版の最大動画尺（90秒）
   int get maxProjectDurationSeconds => isPremium ? 999999 : 90;
 
   bool isFeatureAvailable(PremiumFeature feature) => isPremium;

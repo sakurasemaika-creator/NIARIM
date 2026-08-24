@@ -10,7 +10,7 @@ import '../models/scene.dart';
 /// ツリー方式：保存数制限なし・ツリー状に履歴管理
 ///
 /// 各ノードはSaveTree/{nodeId}.niaproとして実データ（シーン・タイル）を
-/// ディスクへ保存する（仕様書08）。自動保存（クラッシュ復元専用）とは
+/// ディスクへ保存する。自動保存（クラッシュ復元専用）とは
 /// 完全に別領域・別ライフサイクルで管理される。
 class SaveTreeService extends ChangeNotifier {
   int _slotMax = 10;

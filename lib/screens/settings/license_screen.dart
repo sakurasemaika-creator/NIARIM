@@ -57,8 +57,8 @@ import '../../l10n/app_localizations.dart';
 /// `monthlyProductId`・`yearlyProductId`によるサブスクリプション2種）と
 /// 一致していることを確認済み。
 ///
-/// 多言語対応（タスク#102）について：利用規約12条の本文を含め、画面
-/// 全体を7言語対応した（本文も翻訳対象に追加）。
+/// 多言語対応について：利用規約12条の本文を含め、画面
+/// 全体を7言語対応している（本文も翻訳対象）。
 /// 各言語の本文は、確定済みの日本語原文をAI翻訳・逆翻訳照合の上で
 /// 反映したものであり、専門家（弁護士・専門翻訳者等）による正式な
 /// 法的確認を経たものではない点は日本語原文と同様。公開前に各言語版を
@@ -73,8 +73,7 @@ class LicenseScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       // 規約・ライセンス本文自体が説明そのものであり、対応する専用の
-      // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない
-      // （仕様書28：ヘルプアイコンは対応する項目を開けるページにのみ表示）。
+      // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない。
       appBar: AppBar(title: Text(l10n.licenseScreenTitle)),
       body: SafeArea(child: ListView(
         padding: const EdgeInsets.all(16),

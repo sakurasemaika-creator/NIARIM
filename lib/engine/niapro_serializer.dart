@@ -18,7 +18,7 @@ import '../models/text_object.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
 
-/// .niapro ファイルの保存・読み込み（仕様書06・07）
+/// .niapro ファイルの保存・読み込み。
 /// 形式：ZIP アーカイブ
 ///   manifest.json
 ///   Scene/Scene0001/frames.json
@@ -28,10 +28,10 @@ class NiaproSerializer {
   static const String _framesFile = 'frames.json';
   static const String _tilesDir = 'tiles'; // 旧形式（Scene毎重複保存）の読み込み互換用
   static const String _rootTilesDir = 'Tiles'; // 新形式：プロジェクト全体で1箇所のみ保存
-  static const String _materialsArchiveDir = 'Materials'; // 同梱素材（仕様書06・21、.niashareのみ）
-  static const String _fontsArchiveDir = 'Fonts'; // 同梱フォント（仕様書15、.niashareのみ）
+  static const String _materialsArchiveDir = 'Materials'; // 同梱素材（.niashareのみ）
+  static const String _fontsArchiveDir = 'Fonts'; // 同梱フォント（.niashareのみ）
 
-  // アプリの.niaproフォーマットバージョン（仕様書06・12：内部データManifest）。
+  // アプリの.niaproフォーマットバージョン（内部データManifest）。
   // manifest.jsonへ書き込み、読み込み時は_migrateManifestJson()で過去バージョンとの
   // 差異を吸収する拡張点として使う。現在はv1.0.0のみが存在するため実際の変換処理は
   // まだ発生しないが、将来フォーマットが変わった際にここへ分岐を追加する。
@@ -53,8 +53,8 @@ class NiaproSerializer {
   }
 
   /// [json]（manifest.json由来）のappVersionを確認し、旧バージョン形式との差異を
-  /// 現行フォーマットへ変換する（仕様書12：「AppVersionによる将来バージョン
-  /// 自動変換対応」）。
+  /// 現行フォーマットへ変換する（AppVersionによる将来バージョンの
+  /// 自動変換に対応するための仕組み）。
   ///
   /// 将来フォーマットを変更する際は、下の「旧バージョン」分岐へ
   /// `if (_compareVersions(version, 'X.Y.Z') < 0) { json = ...; }` の形で
@@ -88,7 +88,7 @@ class NiaproSerializer {
   // ─── 保存 ─────────────────────────────────────────────────────────────
 
   /// プロジェクトを保存する。既存の.niaproがある場合は差分保存（変更されたタイルのみ
-  /// 再書き込みし、未変更タイルは前回保存分をそのまま引き継ぐ）を行う（仕様書09：差分保存）。
+  /// 再書き込みし、未変更タイルは前回保存分をそのまま引き継ぐ）差分保存を行う。
   static Future<File> save({
     required Project project,
     required List<Scene> scenes,
@@ -106,10 +106,10 @@ class NiaproSerializer {
   }
 
   /// .niashare として保存する（内容は.niaproと同一形式、拡張子のみ異なる）。
-  /// 仕様書06：共有用ファイル。受信側で複製して通常プロジェクトとして追加する。
+  /// 共有用ファイル。受信側で複製して通常プロジェクトとして追加する。
   ///
   /// [materialFiles]・[materialsManifest] を渡すと、選択した種類の素材の実ファイルを
-  /// Materials/ として同梱する（仕様書21：共有時の素材同梱チェックボックス）。
+  /// Materials/ として同梱する（共有時の素材同梱チェックボックス）。
   /// 画像・動画レイヤーはピクセルタイルへラスタライズ済みのため同梱がなくても表示は
   /// 崩れないが、音声はMaterialService経由でファイルを都度再生するため、同梱しないと
   /// 受信側で「不足素材」となり再生できない。
@@ -135,7 +135,7 @@ class NiaproSerializer {
   static Future<NiaproData> loadShare(String filePath) => load(filePath);
 
   /// .niashareに同梱された素材ファイルを、新規プロジェクトのMaterials/フォルダへ
-  /// 書き出す（仕様書06・21：共有時の素材同梱）。同梱がない場合は何もしない。
+  /// 書き出す（共有時の素材同梱）。同梱がない場合は何もしない。
   static Future<void> restoreBundledMaterials(String projectId, NiaproData data) async {
     if (data.materialFiles.isEmpty && data.materialsManifest == null) return;
     final dir = await _projectDir(projectId);
@@ -150,7 +150,7 @@ class NiaproSerializer {
   }
 
   /// .niashareに同梱されたフォントのメタデータ・実データ一覧を取得する
-  /// （仕様書15：プロジェクト共有時の「フォントを含める」）。実際の登録
+  /// （プロジェクト共有時の「フォントを含める」）。実際の登録
   /// （FontLoaderへの読み込み・一覧への追加）はFontServiceが行うため、
   /// engine層であるここではアーカイブのパースのみ行う。
   static List<({String id, String displayName, String fileName, Uint8List bytes})> bundledFonts(
@@ -173,7 +173,7 @@ class NiaproSerializer {
     return result;
   }
 
-  // ─── 自動保存（クラッシュ復元専用・最大3件固定、仕様書06・09） ────────
+  // ─── 自動保存（クラッシュ復元専用・最大3件固定） ────────────────────
 
   static Future<String> _autosaveDir(String projectId) async {
     final dir = await _projectDir(projectId);
@@ -197,7 +197,7 @@ class NiaproSerializer {
     return load('$dir/slot_$slotIndex.niapro');
   }
 
-  // ─── セーブツリー／スロット（手動保存、仕様書08） ───────────────────────
+  // ─── セーブツリー／スロット（手動保存） ───────────────────────────────
   // 自動保存とは完全に別領域（SaveTree/）へ、ノードID単位でスナップショットを保存する。
 
   static Future<String> _saveTreeDir(String projectId) async {
@@ -232,7 +232,7 @@ class NiaproSerializer {
   }
 
   /// プロジェクトカード表示用のサムネイル画像（PNG）を保存し、保存先パスを返す
-  /// （仕様書19：プロジェクト一覧のカードサムネイル）。
+  /// （プロジェクト一覧のカードサムネイル）。
   static Future<String> saveProjectThumbnail(String projectId, Uint8List pngBytes) async {
     final dir = await _projectDir(projectId);
     final path = '${dir.path}/thumbnail.png';
@@ -250,7 +250,7 @@ class NiaproSerializer {
   }
 
   /// セーブツリー（SaveTree/、アーカイブ含む）が実際にディスク上で占めている
-  /// 合計バイト数を取得する（仕様書23：「容量が大きくなる場合はユーザーへ通知」）。
+  /// 合計バイト数を取得する（容量が大きくなる場合はユーザーへ通知するために使う）。
   /// ツリー方式は各ノードが差分ではなく完全なアーカイブとして保存されるため、
   /// 保存件数に比例して単純に増え続ける点に注意。
   static Future<int> saveTreeSizeBytes(String projectId) async {
@@ -310,7 +310,7 @@ class NiaproSerializer {
       }
     }
 
-    // 同梱素材（仕様書06・21：.niashare作成時に選択した画像/動画/音声）
+    // 同梱素材（.niashare作成時に選択した画像/動画/音声）
     if (materialFiles != null) {
       for (final entry in materialFiles.entries) {
         encoder.addArchiveFile(
@@ -323,7 +323,7 @@ class NiaproSerializer {
           ArchiveFile('$_materialsArchiveDir/materials.json', bytes.length, bytes));
     }
 
-    // 同梱フォント（仕様書15：.niashare作成時に選択した「フォントを含める」）
+    // 同梱フォント（.niashare作成時に選択した「フォントを含める」）
     if (fontFiles != null) {
       for (final entry in fontFiles.entries) {
         encoder.addArchiveFile(
@@ -522,7 +522,7 @@ class NiaproSerializer {
       }
     }
 
-    // 同梱素材（仕様書06・21：.niashare作成時に選択した画像/動画/音声の実ファイル）。
+    // 同梱素材（.niashare作成時に選択した画像/動画/音声の実ファイル）。
     // 画像・動画レイヤーの表示自体はタイルへラスタライズ済みのため同梱がなくても
     // 崩れないが、音声はタイル化されずMaterialService経由でファイルを都度再生する
     // ため、同梱しないと受信側で音声が再生できなくなる。
@@ -538,7 +538,7 @@ class NiaproSerializer {
       }
     }
 
-    // 同梱フォント（仕様書15：.niashare作成時に選択した「フォントを含める」）
+    // 同梱フォント（.niashare作成時に選択した「フォントを含める」）
     final fontFiles = <String, Uint8List>{};
     String? fontsManifest;
     for (final file in archive.files) {
@@ -577,9 +577,8 @@ class NiaproSerializer {
         'updatedAt': DateTime.now().toIso8601String(),
         'totalWorkSeconds': p.totalWorkSeconds,
         'appVersion': currentAppVersion,
-        // 仕様書19：お気に入り登録・フォルダ管理・タグはホーム画面の永続状態の
-        // 一部であり、マニフェストへ保存しないとアプリ再起動のたびに失われる
-        // （実際にそのバグが発生していたため追加した）。
+        // お気に入り登録・フォルダ管理・タグはホーム画面の永続状態の
+        // 一部であり、マニフェストへ保存しないとアプリ再起動のたびに失われる。
         'isFavorite': p.isFavorite,
         'folderId': p.folderId,
         'sharedFolderId': p.sharedFolderId,
@@ -899,11 +898,11 @@ class NiaproData {
   final Project project;
   final List<Scene> scenes;
   final Map<String, Map<String, Uint8List>> tileData;
-  // 同梱素材（仕様書06・21：.niashareに同梱された画像/動画/音声の実ファイル）。
+  // 同梱素材（.niashareに同梱された画像/動画/音声の実ファイル）。
   // 通常の.niapro読み込みでは常に空。
   final Map<String, Uint8List> materialFiles;
   final String? materialsManifest;
-  // 同梱フォント（仕様書15：.niashareに同梱されたユーザー追加フォントの実
+  // 同梱フォント（.niashareに同梱されたユーザー追加フォントの実
   // ファイル）。通常の.niapro読み込みでは常に空。
   final Map<String, Uint8List> fontFiles;
   final String? fontsManifest;

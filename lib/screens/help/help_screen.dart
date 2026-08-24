@@ -48,16 +48,16 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '選択ツール', title: l10n.helpSelectToolTitle, description: l10n.helpSelectToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 4)),
         _HelpEntry(topicKey: '指ツール（歪みツール）', title: l10n.helpFingerToolTitle, description: l10n.helpFingerToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 5)),
         _HelpEntry(topicKey: '図形ツール', title: l10n.helpShapeToolTitle, description: l10n.helpShapeToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 6)),
-        // フォント管理の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
+        // フォント管理の説明は、独立項目にせずこちらへ統合済み。
         // font_settings_screen.dartのHelpButtonが'テキストツール'を参照する
         // よう合わせて変更済み。
         _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 6, icon: Icons.text_fields)),
         _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 5, icon: Icons.restart_alt)),
-        // スタンプの回転・拡大縮小の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
+        // スタンプの回転・拡大縮小の説明は、独立項目にせずこちらへ統合済み。
         _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ペンサブツール', title: l10n.helpPenSubToolTitle, description: l10n.helpPenSubToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: '選択範囲の変形', title: l10n.helpTransformSelectionTitle, description: l10n.helpTransformSelectionDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 4)),
-        // 選択範囲の変形と対になる新機能（仕様書28）。
+        // 選択範囲の変形と対になる機能。
         _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.topBar, 3)),
         _HelpEntry(topicKey: 'カラーピッカー', title: l10n.helpColorPickerTitle, description: l10n.helpColorPickerDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: 'ブラシのお気に入り', title: l10n.helpBrushFavoriteTitle, description: l10n.helpBrushFavoriteDesc, category: l10n.helpCategoryBrush, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
@@ -69,11 +69,11 @@ class _HelpScreenState extends State<HelpScreen> {
         // 自動塗り]の順（help_diagrams.dart _layerTypeIcons）。各項目の
         // スロット番号は実際のアイコンと一致させている。
         _HelpEntry(topicKey: 'クリッピング', title: l10n.helpClippingTitle, description: l10n.helpClippingDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 1, icon: Icons.content_cut)),
-        // 「レイヤーの共通化」の説明は、独立項目にせずこちらへ統合済み（仕様書28）。
+        // 「レイヤーの共通化」の説明は、独立項目にせずこちらへ統合済み。
         _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 2)),
         _HelpEntry(topicKey: 'レイヤーフォルダ', title: l10n.helpLayerFolderTitle, description: l10n.helpLayerFolderDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0, icon: Icons.folder_outlined)),
         // 自動塗り実行・自動塗りの線画色設定・自動塗りプリセット絞り込みの説明は、
-        // 独立項目にせずこちらへ統合済み（仕様書28）。
+        // 独立項目にせずこちらへ統合済み。
         _HelpEntry(topicKey: '自動塗り', title: l10n.helpAutoFillTitle, description: l10n.helpAutoFillDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 3)),
         _HelpEntry(topicKey: 'グラデーション塗り', title: l10n.helpGradientAutofillTitle, description: l10n.helpGradientAutofillDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 3)),
 
@@ -87,7 +87,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'トーン塗り', title: l10n.helpToneFillTitle, description: l10n.helpToneFillDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
         _HelpEntry(topicKey: 'ピクセルモード', title: l10n.helpPixelModeTitle, description: l10n.helpPixelModeDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
         // 関連する項目同士が近くに並ぶよう、「その他」にあった描画領域・
-        // 背景色の説明をここへ移動（仕様書28：ヘルプページの項目並び替え）。
+        // 背景色の説明をここへ移動。
         _HelpEntry(topicKey: '描画領域', title: l10n.helpDrawingAreaTitle, description: l10n.helpDrawingAreaDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
         _HelpEntry(topicKey: 'キャンバスの背景色', title: l10n.helpCanvasBackgroundTitle, description: l10n.helpCanvasBackgroundDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.canvasArea, 0)),
 
@@ -100,7 +100,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '音声クリップ', title: l10n.helpAudioClipTitle, description: l10n.helpAudioClipDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 4, icon: Icons.audiotrack)),
         _HelpEntry(topicKey: 'カメラキーフレーム', title: l10n.helpCameraKeyframeTitle, description: l10n.helpCameraKeyframeDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 1, icon: Icons.videocam)),
         // 演出フィルターの適用順・動くノイズフィルター・雨フィルターの説明は、
-        // 独立項目にせずこちらへ統合済み（仕様書28：個々のフィルターを独立項目に
+        // 独立項目にせずこちらへ統合済み（個々のフィルターを独立項目に
         // せず「演出フィルター」の親項目内へまとめる）。
         _HelpEntry(topicKey: '演出フィルター', title: l10n.helpEffectFilterTitle, description: l10n.helpEffectFilterDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 1)),
         _HelpEntry(topicKey: '描画フィルター', title: l10n.helpDrawingFilterTitle, description: l10n.helpDrawingFilterDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
@@ -123,7 +123,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
         // ── 書き出し ───────────────────────────────────────────
         // 透過WebM・GIF書き出し・無料会員の尺制限の説明は、独立項目にせず
-        // こちらへ統合済み（仕様書28：書き出し関連のヘルプ項目をある程度
+        // こちらへ統合済み（書き出し関連のヘルプ項目をある程度
         // 1つにまとめる）。topicKeyはexport_screen.dartのHelpButtonが参照して
         // いるため変更していない（表示タイトルのみ範囲を広げた）。
         _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 0)),
@@ -139,7 +139,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'プロジェクト詳細画面', title: l10n.helpProjectDetailTitle, description: l10n.helpProjectDetailDesc, category: l10n.helpCategoryProjectManagement, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 2, icon: Icons.info_outline)),
 
         // ── 設定画面 ────────────────────────────────────────────
-        // 各種設定画面の説明を1箇所にまとめている（仕様書28：ヘルプページの項目並び替え）。
+        // 各種設定画面の説明を1箇所にまとめている。
         _HelpEntry(topicKey: 'テーマ設定', title: l10n.helpThemeSettingsTitle, description: l10n.helpThemeSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ワークスペース設定', title: l10n.helpWorkspaceSettingsTitle, description: l10n.helpWorkspaceSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'ジェスチャー設定', title: l10n.helpGestureSettingsTitle, description: l10n.helpGestureSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
@@ -225,14 +225,14 @@ class _HelpScreenState extends State<HelpScreen> {
                         ),
                         child: Icon(Icons.help_outline, color: scheme.primary, size: 18),
                       ),
-                      // 項目名用フォント（仕様書24：くらむぼん）。
+                      // 項目名用フォント（くらむぼん）。
                       title: Text(entry.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w700, fontSize: 14)),
                       subtitle: Text(entry.category, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                       children: [
                         // 実画面の簡易図解は用いず、文章での説明のみとする。
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          // 説明テキスト用フォント（仕様書24：白光明朝。アプリ全体の
+                          // 説明テキスト用フォント（白光明朝。アプリ全体の
                           // 基本フォントを継承するため明示指定不要）。
                           child: Text(entry.description, style: const TextStyle(height: 1.5)),
                         ),
@@ -256,7 +256,7 @@ class _HelpEntry {
   final String title;
   final String description;
   final String category;
-  /// 実際の画面を再現した簡易図解（仕様書28）。nullなら図解なし
+  /// 実際の画面を再現した簡易図解。nullなら図解なし
   /// （どの画面のどこにあるかというより抽象的な概念を説明する項目は省略）。
   final HelpDiagramSpec? diagram;
   const _HelpEntry({

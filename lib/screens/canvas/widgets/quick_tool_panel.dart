@@ -9,11 +9,11 @@ import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import 'panel_close_bar.dart';
 
-/// 早替えツール設定ポップアップ（仕様書02・08）。
+/// 早替えツール設定ポップアップ。
 /// ↺ボタンの長押しで表示する。ドラッグで順番変更・削除・追加ができる。
 class QuickToolPanel extends StatelessWidget {
   final VoidCallback onClose;
-  // 「現在のブラシを追加」用（仕様書08：使用中のブラシ設定をそのまま登録可能）
+  // 「現在のブラシを追加」用（使用中のブラシ設定をそのまま登録可能）
   final DrawingTool currentTool;
   final String? currentBrushId;
   final String? currentBrushName;
@@ -111,7 +111,7 @@ class QuickToolPanel extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録（仕様書08）
+            // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録
             if (currentTool == DrawingTool.pen && currentBrushId != null)
               ListTile(
                 leading: const Icon(Icons.bolt, color: Colors.amber),

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/filter_def.dart';
 
-/// 描画フィルターサービス（仕様書18）。
+/// 描画フィルターサービス。
 /// フィルター一覧・現在選択中フィルター・お気に入り・検索を管理する。
 /// 実際のピクセル処理はFilterEngineが担当し、本サービスは定義とパラメータの
 /// 状態管理のみを行う（ToneService／StampServiceと同じ設計方針）。

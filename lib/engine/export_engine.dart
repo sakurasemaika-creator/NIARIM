@@ -21,8 +21,8 @@ import '../services/hw_video_encoder.dart';
 
 typedef ExportProgressCallback = void Function(int currentFrame, int totalFrames);
 
-/// 書き出し中のキャンセル要求を伝えるためのトークン（仕様書06・13：
-/// 誤タップ対応のキャンセルボタン）。フレーム生成ループの各反復で
+/// 書き出し中のキャンセル要求を伝えるためのトークン（誤タップ対応の
+/// キャンセルボタン）。フレーム生成ループの各反復で
 /// チェックされ、キャンセルされていれば[ExportCancelledException]を
 /// 投げてループを打ち切る。ハードウェアエンコーダー（MediaCodec）・
 /// FFmpegセッションによる最終エンコード処理自体は安全に中断する手段が
@@ -85,13 +85,13 @@ class ExportEngine {
   ///
   /// [drawingWidth]・[drawingHeight]は描画領域全体のサイズ（描画領域倍率を
   /// 反映済み）、[width]・[height]は書き出しサイズ。描画領域が書き出し領域より
-  /// 広い場合（仕様書26）は、描画領域の中央にある書き出しサイズ分だけを
+  /// 広い場合は、描画領域の中央にある書き出しサイズ分だけを
   /// 切り出す（キャンバス表示の赤枠と同じ中央配置）。
   /// 合成対象はTileManagerに実ピクセルデータを持つレイヤー種別（通常・
   /// 自動塗り用線画・自動塗り）全てで、不透明度・ブレンドモード・
-  /// クリッピングを反映する（仕様書16）。[cameraKeyframes]が設定されている
+  /// クリッピングを反映する。[cameraKeyframes]が設定されている
   /// 場合はカメラのXY移動・拡大・回転を、[effectFilters]が設定されている場合は
-  /// 演出フィルターを書き出し結果へ反映する（仕様書05・18）。
+  /// 演出フィルターを書き出し結果へ反映する。
   Future<Uint8List> renderFrame({
     required List<Layer> layers,
     required TileManager tileManager,
@@ -160,7 +160,7 @@ class ExportEngine {
   }
 
   /// 無料版のエンドカード（NIARIMロゴ、約5秒）のフレーム画像をPNGとして
-  /// 生成する（仕様書06・13）。FFmpegのdrawtextフィルターに依存せず、
+  /// 生成する。FFmpegのdrawtextフィルターに依存せず、
   /// 他のテキスト描画と同じdart:uiのParagraphBuilderで焼き込む。
   Future<Uint8List> _renderEndCardPng({required int width, required int height}) async {
     final recorder = ui.PictureRecorder();
@@ -190,7 +190,7 @@ class ExportEngine {
     );
   }
 
-  /// MP4書き出し（仕様書13）。Android標準のハードウェアH.264エンコーダー
+  /// MP4書き出し。Android標準のハードウェアH.264エンコーダー
   /// （MediaCodec、android/app側のネイティブ実装）を使う。FFmpeg/libx264
   /// （GPLライセンス）は使わないことで、コピーレフト・H.264特許
   /// ロイヤリティの論点を回避する。[appendEndCard]がtrueの場合、無料版の
@@ -218,7 +218,7 @@ class ExportEngine {
     int globalIndex = 0;
     int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
     // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
-    // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する（仕様書05・16）。
+    // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する。
     final layerHomes = buildLayerHomeIndex(scenes);
     final framePaths = <String>[];
 
@@ -333,7 +333,7 @@ class ExportEngine {
     return outputPath;
   }
 
-  /// WebM書き出し（VP9、仕様書13）。libvpxはBSDライセンスかつVP9自体が
+  /// WebM書き出し（VP9）。libvpxはBSDライセンスかつVP9自体が
   /// ロイヤリティフリーのため、引き続きFFmpeg（GPLコーデックを含まない
   /// LGPL版のffmpeg_kit_flutter_new_video）で問題ない。[appendEndCard]が
   /// trueの場合、無料版のエンドカードをフレーム列の末尾へ同一シーケンス内で

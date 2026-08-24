@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/quick_tool_entry.dart';
 
-/// ツール早替え機能（仕様書08・仕様書02のUI仕様「↺ ツール早替えボタン」）。
+/// ツール早替え機能（「↺ ツール早替えボタン」）。
 /// 登録済みツールを順番にサイクルし、最後まで行くと先頭へループする。
 /// 早替えツールの編集はキャンバス上のポップアップで行う（設定画面では管理しない）。
 class QuickToolService extends ChangeNotifier {
@@ -58,7 +58,7 @@ class QuickToolService extends ChangeNotifier {
     _persist();
   }
 
-  /// ワークスペースプリセットの読込用：登録内容を丸ごと置き換える（仕様書08：
+  /// ワークスペースプリセットの読込用：登録内容を丸ごと置き換える（
   /// 「切り替えると表示ツール・早替えツール・パネル配置が一括で変わる」）。
   void replaceAll(List<QuickToolEntry> newEntries) {
     _entries

@@ -5,7 +5,7 @@ import '../engine/niapro_serializer.dart';
 import '../engine/undo_manager.dart';
 import 'project_service.dart';
 
-/// 自動保存（クラッシュ・ファイル破損時の復元専用、仕様書06・09）。
+/// 自動保存（クラッシュ・ファイル破損時の復元専用）。
 /// 最大3件固定・古い順に自動削除。手動保存（セーブスロット・セーブツリー）とは完全に独立。
 /// 描画などで変更が発生したタイミング（Undo更新と連動）で自動保存する。
 class AutosaveService extends ChangeNotifier {

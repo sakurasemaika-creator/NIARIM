@@ -12,8 +12,8 @@ import 'mesh_warp_engine.dart';
 /// フレーム間で描画データが独立しない（同じlayerIdを複数フレームが共有すると
 /// 同一のタイルバッファを指してしまう）。アプリ側（キャンバス描画・書き出し・
 /// 自動塗り・保存）は必ずこの関数で生成したキーをTileManagerへ渡すことで、
-/// フレームごとに独立した描画データを保持する（仕様書05・07：フレームは
-/// レイヤー構成〔ID〕を引き継ぐが、描画データ自体は各フレーム独立である）。
+/// フレームごとに独立した描画データを保持する（フレームはレイヤー構成
+/// 〔ID〕を引き継ぐが、描画データ自体は各フレーム独立である）。
 String frameLayerKey(String sceneId, int frameIndex, String layerId) =>
     '$sceneId#$frameIndex#$layerId';
 
@@ -29,7 +29,7 @@ FrameLayerKeyParts? parseFrameLayerKey(String key) {
   return (sceneId: parts[0], frameIndex: frameIndex, layerId: parts[2]);
 }
 
-/// Sparse Tile 方式のキャンバスバッファ管理（仕様書26）
+/// Sparse Tile 方式のキャンバスバッファ管理。
 /// 描画済みタイルのみメモリに保持し、未描画タイルは保持しない。
 class TileManager {
   static const int tileSize = 256;
@@ -61,7 +61,7 @@ class TileManager {
   // 効果は十分に得られる。書き出し等、多数の異なるレイヤーを1回ずつしか
   // 触れない処理ではキャッシュ効果は薄いが、上限があるためメモリへの
   // 悪影響も出ない。既定値16（最大概算約130MB程度）は変更していないが、
-  // 端末性能判定（仕様書01・PerformanceService）に応じてProjectService
+  // 端末性能判定（PerformanceService）に応じてProjectService
   // 経由で小さい値へ絞れるよう、コンストラクタで上書きできるようにしてある
   // （見た目・機能は変わらず、再合成の頻度がわずかに増えるのみ）。
   final int compositeCacheMax;
@@ -101,7 +101,7 @@ class TileManager {
   }
 
   // Copy-on-Write：copyLayerで参照共有されたタイルバッファの集合。
-  // 実際に書き込みが発生するまで複製しない（仕様書09）。
+  // 実際に書き込みが発生するまで複製しない。
   final Set<Uint8List> _sharedTiles = {};
 
   // Undo記録：1回の描画操作（ストローク・バケツ・投げ縄・変形等）で実際に
@@ -278,7 +278,7 @@ class TileManager {
   }
 
   /// レイヤー全体を指定した4x4行列（Matrix4.storage形式・列優先）で変換し、
-  /// 結果をタイルへ書き戻す（移動・変形ツール用、仕様書03）。
+  /// 結果をタイルへ書き戻す（移動・変形ツール用）。
   Future<void> transformLayer(String layerId, Float64List matrix) async {
     final composite = await compositeLayerToImage(layerId);
     final recorder = ui.PictureRecorder();
@@ -324,7 +324,7 @@ class TileManager {
   }
 
   /// 「明度で透過」（レイヤーパネル三点メニュー）：レイヤー全体の各ピクセルの
-  /// 明るさから不透明度を作り直し、結果をタイルへ書き戻す（仕様書16）。
+  /// 明るさから不透明度を作り直し、結果をタイルへ書き戻す。
   /// 下描きレイヤーに誤って線画を描いてしまった時、白い部分を透明にして
   /// 線画だけを取り出す用途などに使う。[grayMode]がtrueならグレー（色は
   /// そのまま・輝度ベースの単純な不透明度化）、falseならカラー（GIMPの

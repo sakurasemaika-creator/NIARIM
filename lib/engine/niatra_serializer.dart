@@ -15,7 +15,7 @@ import '../services/stamp_service.dart';
 import '../services/theme_service.dart';
 import '../services/tone_service.dart';
 
-/// .niatra（引き継ぎファイル、旧称.stutra）の書き出し・読み込み（仕様書06）。
+/// .niatra（引き継ぎファイル、旧称.stutra）の書き出し・読み込み。
 /// 引き継ぐ項目（設定/素材/ブラシ/プリセット/UIテーマ）をチェックボックスで選択できる。
 /// 形式：ZIPアーカイブ内に data.json 一枚のみを持つシンプル構成。
 class NiatraSerializer {

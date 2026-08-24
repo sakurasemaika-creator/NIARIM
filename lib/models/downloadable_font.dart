@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 /// テキストツール用の「追加フリーフォント」カタログ（オンデマンド
-/// ダウンロード方式。仕様書15）。
+/// ダウンロード方式）。
 ///
 /// Google Fonts配布分（SIL Open Font License / Apache License 2.0 /
 /// Ubuntu Font License、いずれも個人・商用問わず無償で利用可能）の

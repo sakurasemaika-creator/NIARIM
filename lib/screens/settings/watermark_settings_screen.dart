@@ -14,7 +14,7 @@ import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 
-/// ウォーターマーク登録・管理画面（プレミアム限定、仕様書01・08・13）。
+/// ウォーターマーク登録・管理画面（プレミアム限定）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
 /// ウォーターマークを複数登録できる。位置・サイズ・透明度・表示範囲は
 /// タイムラインへ追加後にレイヤーパネル・変形ツールから調整する。
@@ -153,8 +153,8 @@ class WatermarkSettingsScreen extends StatelessWidget {
                   decoration: InputDecoration(labelText: l10n.watermarkTextFieldLabel, border: const OutlineInputBorder()),
                 ),
                 const SizedBox(height: 12),
-                // フォント選択（仕様書08・13：文字ウォーターマークもキャンバスの
-                // テキストツールと同じくフォントを自由に選べるようにした）
+                // フォント選択（文字ウォーターマークもキャンバスの
+                // テキストツールと同じくフォントを自由に選べる）
                 DropdownButtonFormField<String>(
                   initialValue: fontFamily,
                   isExpanded: true,

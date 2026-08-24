@@ -12,20 +12,20 @@ class SettingsService extends ChangeNotifier {
   int _undoLimit = 50;
   int _trashAutoDeleteDays = 0;
   String _language = 'ja';
-  // 描画領域初期値（ホーム画面設定・仕様書26）
+  // 描画領域初期値（ホーム画面設定）
   bool _defaultDrawingAreaEnabled = false;
   double _defaultDrawingAreaScale = 2.0;
-  // PC/DeXモードの手動切替（仕様書02：ワークスペース設定）。
+  // PC/DeXモードの手動切替（ワークスペース設定）。
   // null=自動（画面幅で判定）、true/false=手動で強制ON/OFF。
   bool? _forcePcMode;
-  // 左利きモード（仕様書08）：ONの場合、キャンバスのドッキングパネルを
+  // 左利きモード：ONの場合、キャンバスのドッキングパネルを
   // 左右反転して配置する。
   bool _isLeftHanded = false;
-  // ツールバー編集（仕様書08：表示するツールをチェックボックスで選択・ドラッグで並び替え）
+  // ツールバー編集（表示するツールをチェックボックスで選択・ドラッグで並び替え）
   List<ToolbarItemId> _toolbarOrder = List.of(ToolbarItemId.values);
   Set<ToolbarItemId> _hiddenToolbarItems = {};
   // PC/DeXモードでキャンバス画面を開いた際に既定でドッキング表示する
-  // パネル（仕様書08：ワークスペース設定）。スマホ版は常に全パネル
+  // パネル（ワークスペース設定）。スマホ版は常に全パネル
   // 非表示スタートのため、この設定は使わない。
   Set<CanvasDockPanel> _defaultDockedPanels = {
     CanvasDockPanel.brush,
@@ -329,10 +329,10 @@ class SettingsService extends ChangeNotifier {
   GestureAction get twoFingerSwipe => _twoFingerSwipe;
   GestureAction get longPress => _longPress;
 
-  // ─── ペン入力設定（仕様書08：筆圧カーブ・ペンボタン） ─────────────────
-  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは仕様書17（ブラシ仕様）
-  // により「ブラシ個別設定」と明記されているため、ブラシ設定側(Brush.pressureMode)
-  // のみで管理する（グローバル設定としては持たない＝仕様書08との重複記載を解消）。
+  // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────
+  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは
+  // 「ブラシ個別設定」であるため、ブラシ設定側(Brush.pressureMode)
+  // のみで管理する（グローバル設定としては持たない）。
   // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
   PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
   GestureAction _penButton1 = GestureAction.eraserToggle;
@@ -342,7 +342,7 @@ class SettingsService extends ChangeNotifier {
   GestureAction get penButton1 => _penButton1;
   GestureAction get penButton2 => _penButton2;
 
-  /// 筆圧カーブに応じて生の筆圧値（0.0〜1.0）を補正する（仕様書08：
+  /// 筆圧カーブに応じて生の筆圧値（0.0〜1.0）を補正する（
   /// 筆圧カーブはアプリ全体に適用）。弱＝立ち上がりを緩やかに、
   /// 強＝立ち上がりを鋭くする指数カーブ。カスタムのみ、_customPressurePoints
   /// （最大10点の制御点）を結ぶ折れ線で補間する。
@@ -661,7 +661,7 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// PC/DeXモードを手動で切り替える（仕様書02）。[value]がnullなら自動判定
+  /// PC/DeXモードを手動で切り替える。[value]がnullなら自動判定
   /// （画面幅ベース）に戻す。
   Future<void> setForcePcMode(bool? value) async {
     _forcePcMode = value;
@@ -670,7 +670,7 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 左利きモードを切り替える（仕様書08：キャンバスのドッキングパネル配置を反転）。
+  /// 左利きモードを切り替える（キャンバスのドッキングパネル配置を反転）。
   Future<void> setLeftHanded(bool value) async {
     _isLeftHanded = value;
     final prefs = await SharedPreferences.getInstance();
@@ -678,7 +678,7 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// ツールバーの表示順を変更する（仕様書08：ドラッグで並び替え）。
+  /// ツールバーの表示順を変更する（ドラッグで並び替え）。
   Future<void> setToolbarOrder(List<ToolbarItemId> order) async {
     _toolbarOrder = List.of(order);
     final prefs = await SharedPreferences.getInstance();
@@ -689,7 +689,7 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// ツールバー項目の表示/非表示を切り替える（仕様書08：チェックボックスで選択）。
+  /// ツールバー項目の表示/非表示を切り替える（チェックボックスで選択）。
   Future<void> setToolbarItemVisible(ToolbarItemId id, bool visible) async {
     if (visible) {
       _hiddenToolbarItems.remove(id);
@@ -705,7 +705,7 @@ class SettingsService extends ChangeNotifier {
   }
 
   /// PC/DeXモードで既定でドッキング表示するパネルの一覧を丸ごと入れ替える
-  /// （仕様書08：ワークスペース設定＞PC版で既定で開くパネル）。
+  /// （ワークスペース設定＞PC版で既定で開くパネル）。
   Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
     _defaultDockedPanels = Set.of(panels);
     final prefs = await SharedPreferences.getInstance();
@@ -730,7 +730,7 @@ class SettingsService extends ChangeNotifier {
   }
 
   /// ワークスペースプリセットの読込用：並び順・非表示項目をまとめて適用する
-  /// （仕様書08：「切り替えると表示ツール・早替えツール・パネル配置が一括で変わる」）。
+  /// （「切り替えると表示ツール・早替えツール・パネル配置が一括で変わる」）。
   Future<void> applyToolbarPreset(
     List<ToolbarItemId> order,
     Set<ToolbarItemId> hidden,
@@ -783,9 +783,9 @@ enum GestureAction {
   frameMove,
   nextTool,
   none,
-  // オニオンスキンON/OFF切替（仕様書22：ジェスチャーに割り当て可能）
+  // オニオンスキンON/OFF切替（ジェスチャーに割り当て可能）
   onionSkinToggle,
 }
 
-/// 筆圧カーブ（仕様書08・17：アプリ全体に適用）。
+/// 筆圧カーブ（アプリ全体に適用）。
 enum PenPressureCurve { weak, normal, strong, custom }

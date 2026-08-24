@@ -146,7 +146,7 @@ class LayerRemoveUndoAction extends UndoAction {
   String get description => 'Remove layer $layerId';
 }
 
-/// 定規の作成・削除・移動・回転・サイズ変更・消失点変更のUndo/Redo（仕様書14）。
+/// 定規の作成・削除・移動・回転・サイズ変更・消失点変更のUndo/Redo。
 class RulerUndoAction extends UndoAction {
   final Ruler? before;
   final Ruler? after;

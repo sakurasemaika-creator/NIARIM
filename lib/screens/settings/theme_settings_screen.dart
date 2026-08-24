@@ -26,8 +26,8 @@ class ThemeSettingsScreen extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.themeSettingsTitle), actions: const [HelpButton(topic: 'テーマ設定')]),
       body: desktopCentered(context, ListView(
         children: [
-          // カラーカスタマイズ（仕様書24：「すべてカラーピッカー（HSV/RGB/HEX）で
-          // 自由に設定できる」）。変更は即座にアプリ全体（現在のプリセット）へ
+          // カラーカスタマイズ：すべてカラーピッカー（HSV/RGB/HEX）で
+          // 自由に設定できる。変更は即座にアプリ全体（現在のプリセット）へ
           // 反映される。
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -70,7 +70,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                 context, themeService, (p, c) => p.copyWith(updateMarkColor: c), current.updateMarkColor),
           ),
           const Divider(),
-          // テーマ一覧（ドラッグで並び替え可能、仕様書24）
+          // テーマ一覧（ドラッグで並び替え可能）
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: Text(l10n.themePresetSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
@@ -172,7 +172,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     );
   }
 
-  /// カラーピッカーダイアログを表示する（仕様書24：カラーカスタマイズ）。
+  /// カラーピッカーダイアログを表示する（カラーカスタマイズ）。
   /// ドラッグ中は`ThemeService.previewCurrent()`でアプリ全体へ即時反映し
   /// （見た目確認用、未保存）、ダイアログを閉じた時点で確定保存する。
   void _showColorPickerDialog(
@@ -315,7 +315,7 @@ class ThemeSettingsScreen extends StatelessWidget {
   }
 }
 
-/// カラーカスタマイズ項目1件（仕様書24）：色見本＋ラベル＋タップでカラー
+/// カラーカスタマイズ項目1件：色見本＋ラベル＋タップでカラー
 /// ピッカーを開く。
 class _ColorCustomizeTile extends StatelessWidget {
   final String label;

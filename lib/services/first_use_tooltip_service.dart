@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 初回使用時の吹き出し説明（仕様書02・11・14・15・17等）の表示済み管理。
+/// 初回使用時の吹き出し説明の表示済み管理。
 /// 各機能ごとに一意なキーで「表示済みかどうか」を永続化する。表示は一度のみ・
 /// 再表示なし（再確認はヘルプページから行う）。
 class FirstUseTooltipService extends ChangeNotifier {

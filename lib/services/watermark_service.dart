@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/watermark_asset.dart';
 
-/// ユーザーウォーターマーク管理サービス（プレミアム限定、仕様書08・13）。
+/// ユーザーウォーターマーク管理サービス（プレミアム限定）。
 /// ウォーターマークは専用機能ではなく画像素材と同じタイムライン素材として
 /// 扱うが、登録・管理自体はプロジェクトをまたぐアプリ全体の設定として行う。
 class WatermarkService extends ChangeNotifier {
@@ -49,7 +49,7 @@ class WatermarkService extends ChangeNotifier {
     return asset;
   }
 
-  /// 入力した文字列をウォーターマークとして登録する（仕様書01・13：
+  /// 入力した文字列をウォーターマークとして登録する（
   /// 「設定項目：画像選択 / 文字入力」の文字入力側）。ドロップシャドウ・
   /// 縁取りも登録時点で既定値として設定できる。
   Future<WatermarkAsset> addTextWatermark(

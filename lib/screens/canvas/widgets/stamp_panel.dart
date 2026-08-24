@@ -10,7 +10,7 @@ import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 
-/// スタンプの全機能管理パネル（仕様書17：一覧・お気に入り・検索・
+/// スタンプの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
 class StampPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -346,7 +346,7 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
             decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
           ),
           const SizedBox(height: 8),
-          // 仕様書17：スタンプは回転・密度・散布に対応
+          // スタンプは回転・密度・散布に対応
           SwitchListTile(
             title: Text(l10n.stampRotationLabel),
             value: _stamp.rotation,

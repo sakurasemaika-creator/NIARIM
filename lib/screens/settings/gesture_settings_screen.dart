@@ -31,8 +31,7 @@ class GestureSettingsScreen extends StatelessWidget {
                 const Divider(height: 1),
                 _item(context, l10n.gestureThreeFingerTap, settings.threeFingerTap, (a) => settings.setGesture(GestureType.threeFingerTap, a)),
                 const Divider(height: 1),
-                // 2本指スワイプ左右のみ、連続動作前提の「フレーム移動」を選択肢に含める
-                // （仕様書08：フレーム移動は2本指スワイプ専用の初期割り当て）。
+                // 2本指スワイプ左右のみ、連続動作前提の「フレーム移動」を選択肢に含める。
                 _item(context, l10n.gestureTwoFingerSwipe, settings.twoFingerSwipe, (a) => settings.setGesture(GestureType.twoFingerSwipe, a),
                     options: GestureAction.values),
                 const Divider(height: 1),
@@ -104,8 +103,7 @@ class GestureSettingsScreen extends StatelessWidget {
   }
 
   // 「フレーム移動」は2本指スワイプのような連続操作前提の機能のため、
-  // タップ・長押しのような単発トリガーへ割り当てても何も起こらない
-  // （仕様書08：カスタマイズ可能な割り当て候補にフレーム移動は含まれない）。
+  // タップ・長押しのような単発トリガーへ割り当てても何も起こらない。
   // 選べても無反応になるだけの死んだ選択肢を防ぐため、既定では除外する。
   static final List<GestureAction> _defaultOptions =
       GestureAction.values.where((a) => a != GestureAction.frameMove).toList();

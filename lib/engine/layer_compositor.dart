@@ -11,7 +11,7 @@ final _layerKeyframeEngine = LayerKeyframeEngine();
 /// ウォーターマーク・テキスト。いずれも frameLayerKey 経由でタイルへ
 /// ラスタライズ済みのピクセルを持つ。テキストは編集時のみtextObjectを
 /// 保持し、表示・書き出し時はラスタライズ済みピクセル（text_render.dart）
-/// を使う、仕様書15のラスター専用方針に沿う）。
+/// を使う、ラスター専用方針に沿う）。
 /// フォルダ（表示構造のみ）・選択レイヤー（内部専用）は対象外。
 const Set<LayerType> pixelLayerTypes = {
   LayerType.normal,
@@ -24,7 +24,7 @@ const Set<LayerType> pixelLayerTypes = {
   LayerType.text,
 };
 
-/// LayerBlendMode（仕様書16の17種）をdart:uiのBlendModeへ変換する。
+/// LayerBlendMode（17種）をdart:uiのBlendModeへ変換する。
 /// 「減算」はdart:ui標準のBlendModeに直接対応するものが無いため、
 /// 視覚的に近い「差の絶対値」で近似する。
 ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
@@ -68,10 +68,10 @@ ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
 
 /// [layers]（先頭が最前面／末尾が最背面、レイヤーパネル表示順）の中で、
 /// index番目のレイヤーがクリッピングONの場合に参照すべき「一番下の
-/// クリッピング元レイヤー」のIDを探す（仕様書16）。
+/// クリッピング元レイヤー」のIDを探す。
 /// クリッピング元もさらにクリッピングされている場合は、非クリッピングの
 /// レイヤーが見つかるまで下（配列の後方）を辿る。
-/// 「フォルダを跨ぐクリッピングは禁止」（仕様書16）のため、同じ
+/// 「フォルダを跨ぐクリッピングは禁止」のため、同じ
 /// parentFolderId（同一フォルダ内、またはどちらもトップレベル）の
 /// レイヤーのみを探索対象とし、フォルダ境界に達したら探索を打ち切る。
 String? findClipSourceLayerId(List<Layer> layers, int index) {
@@ -102,7 +102,7 @@ class LayerCompositor {
     bool Function(Layer layer, int index)? shouldRender,
     // 指定した場合、レイヤーごとの位置・拡大縮小・回転キーフレームを合成時に
     // 適用する（呼び出し側が現在フレームで補間済みの値を渡す。パーツ単位
-    // キーフレームアニメーション、仕様書未採番）。省略時は従来通り無変形。
+    // キーフレームアニメーション）。省略時は従来通り無変形。
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     // 指定した場合、レイヤーが所属するグループのキーフレームを合成時に
     // 追加で適用する（グループ＝複数レイヤーをまとめて動かす全体の変形、

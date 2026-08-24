@@ -16,7 +16,7 @@ class TipsScreen extends StatefulWidget {
   State<TipsScreen> createState() => _TipsScreenState();
 }
 
-/// 進捗ダイアログ（ProgressDialog、仕様書13：書き出し・複数フレーム加工時）が
+/// 進捗ダイアログ（ProgressDialog、書き出し・複数フレーム加工時に表示）が
 /// 10秒おきにランダム表示するTips用に、全カテゴリのTipsをタイトル・説明の
 /// ペアへ平坦化して返す。Tips画面本体（[_TipsScreenState._buildCategories]）
 /// と同じ一覧を参照するため、内容を追加・変更してもここでの二重管理は不要。

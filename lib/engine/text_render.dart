@@ -3,17 +3,16 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/text_object.dart';
 
-/// ルビ注釈の記法：`{漢字|かんじ}`。縦書き・横書きの両方に対応する
-/// （仕様書15）。ルビを含まない場合は通常のParagraphBuilder一括レイアウト
+/// ルビ注釈の記法：`{漢字|かんじ}`。縦書き・横書きの両方に対応する。
+/// ルビを含まない場合は通常のParagraphBuilder一括レイアウト
 /// （自動折り返し対応）を使い、ルビを含む場合のみ実行単位ごとの手動配置
 /// （自動折り返し非対応）へ切り替える。
 final RegExp _rubyPattern = RegExp(r'\{([^{}|]+)\|([^{}|]+)\}');
 
-/// テキストレイヤーのラスタライズ（仕様書15：テキストツール・フォント仕様）。
+/// テキストレイヤーのラスタライズ。
 /// TextObjectをキャンバスサイズのRGBAバッファへ焼き込む。編集時のみ文字情報を
 /// 保持し、表示・書き出し時はこの結果（キャッシュ画像）を使うというラスター専用
-/// アプリの方針に沿う。横書き・縦書きの両方に対応する（仕様書15：横書き・縦書き
-/// 切替）。
+/// アプリの方針に沿う。横書き・縦書きの両方に対応する。
 /// [pixelMode]がtrueの場合、ラスタライズ後にアンチエイリアスを除去する
 /// （呼び出し元でFontService.pixelModeForFamily(text.fontFamily)の結果を
 /// 渡す想定。ドットフォントをにじませずくっきり表示するための設定で、
@@ -303,7 +302,7 @@ bool _isHalfWidth(String ch) => ch.isNotEmpty && ch.codeUnitAt(0) <= 0x7F;
 bool _isDigit(String ch) => RegExp(r'^[0-9]$').hasMatch(ch);
 
 /// ルビ記法を含む1列分のテキストを、レイアウト単位の列へ分解する
-/// （仕様書15：縦書き・ルビ・縦中横・半角英数字回転）。
+/// （縦書き・ルビ・縦中横・半角英数字回転に対応）。
 List<_VUnit> _parseColumnUnits(String column) {
   final units = <_VUnit>[];
   int cursor = 0;
@@ -403,7 +402,7 @@ Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canv
     }
   }
 
-  // 半角英数字の回転（仕様書15）：文字を90°回転し、1文字分の高さのマス内に収める。
+  // 半角英数字の回転：文字を90°回転し、1文字分の高さのマス内に収める。
   void drawRotatedChar(String ch, ui.TextStyle style, double columnX, double y) {
     final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
       ..pushStyle(style)
@@ -417,7 +416,7 @@ Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canv
     canvas.restore();
   }
 
-  // 縦中横（仕様書15）：半角数字2桁を正立のまま横並びで1文字分の高さに収める。
+  // 縦中横：半角数字2桁を正立のまま横並びで1文字分の高さに収める。
   void drawTateChuYoko(String pair, ui.Color color, double columnX, double y) {
     final miniSize = text.fontSize * 0.55;
     final miniStyle = styleFor(color, size: miniSize);
@@ -429,7 +428,7 @@ Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canv
     canvas.drawParagraph(paragraph, ui.Offset(columnX, y + yOffset.clamp(0, charAdvance)));
   }
 
-  // ルビ（{base|ruby}記法、仕様書15）：基底文字の右側（列の右隣＝既に描画済みの
+  // ルビ（{base|ruby}記法）：基底文字の右側（列の右隣＝既に描画済みの
   // 前の列側）へ、基底が占める高さへ均等配置した小さな縦書きで表示する。
   void drawRuby(String ruby, double columnX, double y, double slotHeight, ui.Color color) {
     final chars = ruby.characters;

@@ -59,7 +59,7 @@ void showCreateFolderNameDialog(BuildContext context, Future<void> Function(Stri
 }
 
 /// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
-/// （仕様書19：「フォルダとプロジェクトを同一一覧内で並び替え」）。
+/// （フォルダとプロジェクトを同一一覧内で並び替え可能にする）。
 class _Entry {
   final ProjectFolder? folder;
   final Project? project;
@@ -85,7 +85,7 @@ class ProjectListWidget extends StatelessWidget {
   final List<Project>? projects; // nullの場合はServiceから取得
   final bool showFavoritesOnly;
   final String searchQuery;
-  // 現在開いているフォルダ（nullはルート直下、仕様書19：フォルダ階層）
+  // 現在開いているフォルダ（nullはルート直下、フォルダ階層）
   final String? currentFolderId;
   final ValueChanged<String> onOpenFolder;
 
@@ -129,8 +129,8 @@ class ProjectListWidget extends StatelessWidget {
 
     List<_Entry> entries;
     if (query.isNotEmpty) {
-      // 検索時はフォルダ階層を無視して全体から名前一致するものを表示
-      // （仕様書19：「検索対象：プロジェクト名 / フォルダ名」）。
+      // 検索時はフォルダ階層を無視して全体から名前一致するものを表示する
+      // （検索対象：プロジェクト名 / フォルダ名）。
       entries = [
         ...allFolders.where((f) => f.name.toLowerCase().contains(query)).map((f) => _Entry.folder(f)),
         ...source.where((p) => p.name.toLowerCase().contains(query)).map((p) => _Entry.project(p)),
@@ -197,7 +197,7 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  /// プロジェクトカードのサムネイル（仕様書19）。生成済みのPNGがあればそれを表示し、
+  /// プロジェクトカードのサムネイル。生成済みのPNGがあればそれを表示し、
   /// 未生成・読み込み失敗の場合は背景色のプレースホルダーへフォールバックする。
   Widget _thumbnail(Project project) {
     final placeholder = Container(
@@ -539,7 +539,7 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   /// フォルダ削除時、中のプロジェクト・子フォルダをルートへ戻す旨を確認する
-  /// （仕様書19：「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する」）。
+  /// （フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する）。
   void _confirmDeleteFolder(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
     // お気に入り登録中は削除できない。
@@ -568,7 +568,7 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  /// .niashare（共有用ファイル）を作成し、共有シートを表示する（仕様書06・21）。
+  /// .niashare（共有用ファイル）を作成し、共有シートを表示する。
   Future<void> _createNiashare(BuildContext context, Project project) async {
     final includeOptions = await showMaterialIncludeDialog(context);
     if (includeOptions == null || !context.mounted) return; // キャンセル
@@ -709,7 +709,7 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  // フォルダ名変更・色変更・削除（仕様書02・19：フォルダ管理）
+  // フォルダ名変更・色変更・削除（フォルダ管理）
   static const _folderColors = [
     0xFFFF5C7A, 0xFFFFB020, 0xFFFFE066, 0xFF3DDC97,
     0xFF3AA6FF, 0xFFB15CFF, 0xFF9E9E9E,
@@ -798,7 +798,7 @@ class ProjectListWidget extends StatelessWidget {
   }
 }
 
-/// .niashare作成時の同梱選択ダイアログ（仕様書06・15・21：画像/動画/音声を
+/// .niashare作成時の同梱選択ダイアログ（画像/動画/音声を
 /// 種類ごとに選択できる。デフォルトは全種類ON。「フォントを含める」を
 /// 選択した場合のみユーザー追加フォントも同梱する）。キャンセル時はnullを返す。
 Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncludeDialog(
@@ -861,8 +861,8 @@ Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncl
 }
 
 /// プロジェクトで使用中のユーザー追加フォントをまとめ、.niashareへ同梱する
-/// ためのファイル群とマニフェストを作成する（仕様書15：プロジェクト共有時の
-/// 「フォントを含める」）。使用フォントがアプリ標準フォントのみの場合は空を返す。
+/// ためのファイル群とマニフェストを作成する（プロジェクト共有時の
+/// 「フォントを含める」選択時に使用）。使用フォントがアプリ標準フォントのみの場合は空を返す。
 Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(
     ProjectService projectService, FontService fontService, String projectId) async {
   final usedFamilies = projectService.usedFontFamiliesOf(projectId);

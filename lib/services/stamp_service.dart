@@ -27,7 +27,7 @@ class StampFolder {
       );
 }
 
-/// スタンプ管理サービス（仕様書17・21）。SharedPreferencesへ永続化する
+/// スタンプ管理サービス。SharedPreferencesへ永続化する
 /// （端末単位。プロジェクトファイルには含めない）。従来はインメモリのみで、
 /// お気に入り・追加・削除・編集のすべてがアプリ再起動のたびに失われていた
 /// （Task#83で修正）。自作スタンプ・フォルダ管理・読み込み/書き出しは
@@ -154,7 +154,7 @@ class StampService extends ChangeNotifier {
     _persist();
   }
 
-  // ─── フォルダ管理（仕様書17） ─────────────────────────────────────────
+  // ─── フォルダ管理 ─────────────────────────────────────────
 
   Future<StampFolder> createFolder(String name) async {
     final folder =
@@ -209,7 +209,7 @@ class StampService extends ChangeNotifier {
     _persist();
   }
 
-  // ─── 自作スタンプ（画像からの新規作成、仕様書17） ─────────────────────────
+  // ─── 自作スタンプ（画像からの新規作成） ─────────────────────────
 
   Future<Directory> _stampsDir() async {
     final base = await getApplicationDocumentsDirectory();
@@ -233,7 +233,7 @@ class StampService extends ChangeNotifier {
     return stamp;
   }
 
-  // ─── 読み込み・書き出し（仕様書17：個別ファイル単位） ───────────────────
+  // ─── 読み込み・書き出し（個別ファイル単位） ───────────────────
 
   static const _bundleDataFile = 'data.json';
 

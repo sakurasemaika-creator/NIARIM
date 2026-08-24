@@ -65,7 +65,7 @@ class RulerPanel extends StatelessWidget {
             _rulerTile(context, RulerType.onePointPerspective,   Icons.filter_center_focus, l10n.rulerTypeOnePoint),
             _rulerTile(context, RulerType.twoPointPerspective,   Icons.compare_arrows,    l10n.rulerTypeTwoPoint),
             _rulerTile(context, RulerType.threePointPerspective, Icons.grid_3x3,          l10n.rulerTypeThreePoint),
-            // 集中線定規の分割数設定（仕様書14：2〜360分割を自由指定）
+            // 集中線定規の分割数設定（2〜360分割を自由指定）
             if (activeRuler?.type == RulerType.radial) ...[
               const Divider(height: 1),
               _divisionsRow(context),
