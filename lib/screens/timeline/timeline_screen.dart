@@ -769,8 +769,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ? project.exportWidth / project.exportHeight
         : 16 / 9;
     final maxH = maxAvailableHeight > 0 ? maxAvailableHeight : 600.0;
-    final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(120.0, maxH * 0.75);
-    final previewHeight = _previewHeightDragOverride ?? baseHeight;
+    // 上限は「表示中のキャンバス横幅が画面の横幅ぴったりになる高さ」と
+    // レイアウト上実際に使える高さ（maxH）のうち小さい方。下限は0（ハンドルが
+    // プレビュー領域の一番上に付くまで、加減なく縮小できるようにする）。
+    final screenWidth = MediaQuery.of(context).size.width;
+    final maxHeightByScreenWidth = aspect > 0 ? screenWidth / aspect : maxH;
+    final maxPreviewHeight = maxHeightByScreenWidth < maxH ? maxHeightByScreenWidth : maxH;
+    final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(0.0, maxPreviewHeight);
+    final previewHeight = (_previewHeightDragOverride ?? baseHeight).clamp(0.0, maxPreviewHeight);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -797,7 +803,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           onVerticalDragUpdate: (d) {
             setState(() {
               final current = (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
-              _previewHeightDragOverride = current.clamp(120.0, maxH * 0.75);
+              _previewHeightDragOverride = current.clamp(0.0, maxPreviewHeight);
             });
           },
           onVerticalDragEnd: (_) {
