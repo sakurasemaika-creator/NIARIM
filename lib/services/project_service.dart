@@ -1157,6 +1157,27 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// シーンのフレーム数を[targetCount]へ一括で揃える（タイムラインの
+  /// 「長さ変更」メニュー：秒数・フレーム数のどちらから指定しても、
+  /// 呼び出し側でフレーム数へ換算してから渡す）。現在のフレーム数より
+  /// 多ければ末尾に追加、少なければ末尾から削除する。既存の
+  /// addFrame/removeFrameを内部的に繰り返し呼ぶことで、タイルデータの
+  /// 付け替え・表示範囲レイヤーのホーム位置更新など既存の安全な処理を
+  /// そのまま再利用する。
+  void setSceneFrameCount(String projectId, String sceneId, int targetCount) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final clamped = targetCount.clamp(1, 1 << 30);
+    while (scenes[sceneIdx].frames.length < clamped) {
+      addFrame(projectId, sceneId);
+    }
+    while (scenes[sceneIdx].frames.length > clamped) {
+      removeFrame(projectId, sceneId, scenes[sceneIdx].frames.length - 1);
+    }
+  }
+
   /// フレームをカーソル固定方式で並び替える（仕様書05：シーン移動と同じ操作体系を
   /// フレームにも適用）。[oldIndicesInNewOrder]は現在のフレームindexを新しい並び順
   /// で並べたリスト（全フレーム数と同じ長さの並び替え）。
@@ -1875,6 +1896,68 @@ class ProjectService extends ChangeNotifier {
 
       notifyListeners();
     }
+  }
+
+  /// キャンバスサイズを変更する（タイムライン三点メニュー「キャンバス
+  /// サイズ変更」）。[cropX]・[cropY]は現在の描画キャンバス座標系における
+  /// 切り出し開始位置、[newWidth]・[newHeight]は新しい描画キャンバス
+  /// サイズ（px）。全フレーム・全レイヤーのピクセルデータを、指定範囲を
+  /// 切り出す形で新しいサイズのTileManagerへ移し替える（範囲外にはみ出す
+  /// 部分は破棄し、元画像より広い範囲を指定した部分は透明で埋める）。
+  /// exportWidth・exportHeightは、描画領域倍率（drawingAreaScale）を
+  /// 保ったまま逆算して更新する。
+  Future<void> resizeCanvas(
+    String projectId, {
+    required int newWidth,
+    required int newHeight,
+    required int cropX,
+    required int cropY,
+  }) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    final project = _projects[idx];
+    final sourceTm = _tileManagers[projectId];
+    if (sourceTm == null) return;
+
+    final newTm = TileManager(
+      canvasWidth: newWidth,
+      canvasHeight: newHeight,
+      compositeCacheMax: _tileCacheBudget,
+    );
+
+    final oldWidth = sourceTm.canvasWidth;
+    final oldHeight = sourceTm.canvasHeight;
+    for (final key in sourceTm.exportAll().keys.toList()) {
+      final image = await sourceTm.compositeLayerToImage(key);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      if (byteData == null) continue;
+      final oldBytes = byteData.buffer.asUint8List();
+      final newBytes = Uint8List(newWidth * newHeight * 4);
+      for (int y = 0; y < newHeight; y++) {
+        final srcY = y + cropY;
+        if (srcY < 0 || srcY >= oldHeight) continue;
+        for (int x = 0; x < newWidth; x++) {
+          final srcX = x + cropX;
+          if (srcX < 0 || srcX >= oldWidth) continue;
+          final srcIdx = (srcY * oldWidth + srcX) * 4;
+          final dstIdx = (y * newWidth + x) * 4;
+          newBytes[dstIdx] = oldBytes[srcIdx];
+          newBytes[dstIdx + 1] = oldBytes[srcIdx + 1];
+          newBytes[dstIdx + 2] = oldBytes[srcIdx + 2];
+          newBytes[dstIdx + 3] = oldBytes[srcIdx + 3];
+        }
+      }
+      newTm.replaceLayerPixels(key, newBytes);
+    }
+
+    _tileManagers[projectId] = newTm;
+    final scale = project.drawingAreaScale <= 0 ? 1.0 : project.drawingAreaScale;
+    final newExportWidth = (newWidth / scale).round().clamp(64, 1 << 30);
+    final newExportHeight = (newHeight / scale).round().clamp(64, 1 << 30);
+    _projects[idx] = project.copyWith(exportWidth: newExportWidth, exportHeight: newExportHeight);
+    _saveAsync(projectId);
+    notifyListeners();
   }
 
   Future<void> toggleFavorite(String id) async {

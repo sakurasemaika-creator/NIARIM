@@ -665,6 +665,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               if (action == 'autofill') _showAutofillDialog();
               if (action == 'save_tree') context.push('/save-tree/${widget.projectId}?entry=timeline');
               if (action == 'export') context.push('/export/${widget.projectId}');
+              if (action == 'duration') _showDurationChangeDialog();
+              if (action == 'canvas_size') _showCanvasSizeChangeDialog();
             },
             itemBuilder: (_) => [
               PopupMenuItem(
@@ -674,6 +676,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     : l10n.saveTreeScreenTitleSlot),
               ),
               PopupMenuItem(value: 'autofill', child: Text(l10n.layerPanelMenuRunAutofill)),
+              PopupMenuItem(value: 'duration', child: Text(l10n.timelineDurationChangeMenuItem)),
+              PopupMenuItem(value: 'canvas_size', child: Text(l10n.timelineCanvasSizeChangeMenuItem)),
               PopupMenuItem(value: 'export', child: Text(l10n.timelineExportMenuItem)),
             ],
           ),
@@ -3871,6 +3875,229 @@ class _TimelineScreenState extends State<TimelineScreen> {
       }
     }
     if (mounted) context.go('/home');
+  }
+
+  /// 現在のシーンの長さ（フレーム数）を、フレーム数またはそこから換算した
+  /// 秒数のどちらからでも一括変更できるダイアログ（タイムライン三点メニュー
+  /// 「長さ変更」）。1コマずつの＋／－操作の手間を省く。fps自体は変更しない
+  /// （fpsは基本設定・プロジェクト作成時に決めるものとして扱う）。
+  void _showDurationChangeDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final fps = project?.fps ?? 24;
+    int frames = ps.frameCount(widget.projectId, sceneId).clamp(1, 1 << 30);
+    const maxFrames = 7200 * 60; // プレミアム上限2時間相当を目安にした上限
+    final framesController = TextEditingController(text: '$frames');
+    final secondsController =
+        TextEditingController(text: (frames / fps).toStringAsFixed(1));
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text(l10n.timelineDurationChangeMenuItem),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SteppedSlider(
+                value: frames.toDouble(),
+                min: 1,
+                max: maxFrames.toDouble(),
+                onChanged: (v) => setS(() {
+                  frames = v.round();
+                  framesController.text = '$frames';
+                  secondsController.text = (frames / fps).toStringAsFixed(1);
+                }),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: framesController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(isDense: true, labelText: l10n.timelineDurationFramesLabel),
+                      onChanged: (v) {
+                        final parsed = int.tryParse(v);
+                        if (parsed == null) return;
+                        setS(() {
+                          frames = parsed.clamp(1, maxFrames);
+                          secondsController.text = (frames / fps).toStringAsFixed(1);
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: secondsController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(isDense: true, labelText: l10n.timelineDurationSecondsLabel),
+                      onChanged: (v) {
+                        final parsed = double.tryParse(v);
+                        if (parsed == null) return;
+                        setS(() {
+                          frames = (parsed * fps).round().clamp(1, maxFrames);
+                          framesController.text = '$frames';
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            FilledButton(
+              onPressed: () {
+                ps.setSceneFrameCount(widget.projectId, sceneId, frames);
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonOk),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) {
+      framesController.dispose();
+      secondsController.dispose();
+    });
+  }
+
+  /// キャンバスサイズ変更ダイアログ（タイムライン三点メニュー）。現在の
+  /// フレームのプレビュー上に、新しいキャンバスサイズに対応する矩形を
+  /// 重ねて表示し、指でドラッグして切り出し位置を直感的に調整できる
+  /// ようにする（幅・高さ自体は下のスライダー・数値入力で指定する）。
+  void _showCanvasSizeChangeDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    if (project == null) return;
+    final oldW = project.drawingWidth;
+    final oldH = project.drawingHeight;
+    int newW = oldW;
+    int newH = oldH;
+    // 既定は中央寄せ（サイズを変えなければcropX/Y=0で全域そのまま）。
+    int cropX = 0;
+    int cropY = 0;
+    const maxEdge = 4096;
+    const previewBoxSize = 260.0;
+
+    void clampCrop() {
+      cropX = cropX.clamp(0, (oldW - newW).clamp(0, 1 << 30));
+      cropY = cropY.clamp(0, (oldH - newH).clamp(0, 1 << 30));
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          final scale = previewBoxSize / (oldW > oldH ? oldW : oldH);
+          final boxW = oldW * scale;
+          final boxH = oldH * scale;
+          return AlertDialog(
+            title: Text(l10n.timelineCanvasSizeChangeMenuItem),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l10n.timelineCanvasSizeDragHint,
+                      style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  // プレビュー：実際のフレーム内容の上に、新サイズの範囲を
+                  // 示す枠を重ねてドラッグで移動できるようにする。
+                  SizedBox(
+                    width: boxW,
+                    height: boxH,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: _TimelinePreview(
+                            tileManager: ps.tileManagerOf(widget.projectId),
+                            layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
+                            sceneId: sceneId,
+                            frameIndex: _currentFrame,
+                            cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
+                            effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
+                            layerHomes: ps.layerHomesOf(widget.projectId),
+                            groups: ps.layerGroupsOf(widget.projectId, sceneId),
+                          ),
+                        ),
+                        Positioned(
+                          left: cropX * scale,
+                          top: cropY * scale,
+                          width: newW * scale,
+                          height: newH * scale,
+                          child: GestureDetector(
+                            onPanUpdate: (d) => setS(() {
+                              cropX += (d.delta.dx / scale).round();
+                              cropY += (d.delta.dy / scale).round();
+                              clampCrop();
+                            }),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.amber, width: 2),
+                                color: Colors.amber.withValues(alpha: 0.15),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(l10n.newProjectWidthShort),
+                  SteppedSlider(
+                    min: 64,
+                    max: maxEdge.toDouble(),
+                    value: newW.clamp(64, maxEdge).toDouble(),
+                    label: '${newW}px',
+                    onChanged: (v) => setS(() {
+                      newW = v.round();
+                      clampCrop();
+                    }),
+                  ),
+                  Text(l10n.newProjectHeightShort),
+                  SteppedSlider(
+                    min: 64,
+                    max: maxEdge.toDouble(),
+                    value: newH.clamp(64, maxEdge).toDouble(),
+                    label: '${newH}px',
+                    onChanged: (v) => setS(() {
+                      newH = v.round();
+                      clampCrop();
+                    }),
+                  ),
+                  Text('$newW × $newH px', style: const TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+              FilledButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await ps.resizeCanvas(
+                    widget.projectId,
+                    newWidth: newW,
+                    newHeight: newH,
+                    cropX: cropX,
+                    cropY: cropY,
+                  );
+                },
+                child: Text(l10n.commonOk),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   void _showAutofillDialog() {
