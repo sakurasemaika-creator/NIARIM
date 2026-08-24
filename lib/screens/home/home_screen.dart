@@ -170,6 +170,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+  // 現在の並び替えが名前基準かどうか（項目自体はProjectSortMode
+  // ［名前昇順/降順・更新日時昇順/降順］の4値のままだが、UI上は
+  // 「項目（名前／更新日時）」と「昇順/降順」を別々の操作にする）。
+  bool get _sortByName =>
+      _sortMode == ProjectSortMode.nameAsc || _sortMode == ProjectSortMode.nameDesc;
+  bool get _sortAscending =>
+      _sortMode == ProjectSortMode.nameAsc || _sortMode == ProjectSortMode.updatedAsc;
+
+  void _setSortByName(bool byName) {
+    setState(() {
+      _sortMode = byName
+          ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
+          : (_sortAscending ? ProjectSortMode.updatedAsc : ProjectSortMode.updatedDesc);
+    });
+  }
+
+  void _toggleSortDirection() {
+    setState(() {
+      _sortMode = switch (_sortMode) {
+        ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+        ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+        ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+        ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
+      };
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final adService = context.watch<AdvertisingService>();
@@ -187,20 +214,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
-            // アプリ名（NIARIM）はホーム画面左上にのみ表示される固有のロゴ
-            // テキストのため、他画面のAppBarタイトル共通スタイル
-            // （AppBarTheme.titleTextStyle：くらむぼん）とは別に、ここだけ
-            // 白光明朝を明示指定する。明朝体は線が細く小さいと読みにくいため
-            // 太字にし、文字間を少し広げて可読性を上げる。
-            : Text(
-                l10n.appTitle,
-                style: const TextStyle(
-                  fontFamily: 'HakkouMincho',
-                  fontFamilyFallback: ['NotoSerifJP'],
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                  height: 1.5,
-                ),
+            // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
+            // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
+            // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
+            // ための変更。
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PopupMenuButton<bool>(
+                    onSelected: _setSortByName,
+                    itemBuilder: (_) => [
+                      PopupMenuItem(value: true, child: Text(l10n.homeSortFieldName)),
+                      PopupMenuItem(value: false, child: Text(l10n.homeSortFieldUpdated)),
+                    ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_sortByName ? l10n.homeSortFieldName : l10n.homeSortFieldUpdated,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        const Icon(Icons.arrow_drop_down),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward, size: 20),
+                    tooltip: _sortAscending
+                        ? l10n.homeSortDirectionAscTooltip
+                        : l10n.homeSortDirectionDescTooltip,
+                    onPressed: _toggleSortDirection,
+                  ),
+                ],
               ),
         actions: [
           // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
@@ -224,16 +267,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 PopupMenuItem(value: ProjectViewMode.medium, child: Text(l10n.homeViewModeMedium)),
                 PopupMenuItem(value: ProjectViewMode.small, child: Text(l10n.homeViewModeSmall)),
                 PopupMenuItem(value: ProjectViewMode.detail, child: Text(l10n.homeViewModeDetail)),
-              ],
-            ),
-            PopupMenuButton<ProjectSortMode>(
-              icon: const Icon(Icons.sort),
-              onSelected: (mode) => setState(() => _sortMode = mode),
-              itemBuilder: (_) => [
-                PopupMenuItem(value: ProjectSortMode.nameAsc, child: Text(l10n.homeSortNameAsc)),
-                PopupMenuItem(value: ProjectSortMode.nameDesc, child: Text(l10n.homeSortNameDesc)),
-                PopupMenuItem(value: ProjectSortMode.updatedAsc, child: Text(l10n.homeSortUpdatedAsc)),
-                PopupMenuItem(value: ProjectSortMode.updatedDesc, child: Text(l10n.homeSortUpdatedDesc)),
               ],
             ),
             IconButton(icon: const Icon(Icons.search), tooltip: l10n.commonSearch, onPressed: () => setState(() => _isSearching = true)),
@@ -294,6 +327,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Text(l10n.homeSelectionCount(_selectedIds.length)),
                   if (_selectedIds.isNotEmpty) ...[
                     IconButton(
+                      icon: const Icon(Icons.star, color: Colors.amber),
+                      onPressed: () => _bulkSetFavorite(true),
+                      tooltip: l10n.homeSelectionAddFavorite,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.star_border),
+                      onPressed: () => _bulkSetFavorite(false),
+                      tooltip: l10n.homeSelectionRemoveFavorite,
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: _deleteSelected,
                       tooltip: l10n.homeMoveToTrash,
@@ -330,13 +373,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         sortMode: _sortMode,
                         isSelectionMode: _isSelectionMode,
                         selectedIds: _selectedIds,
-                        onLongPress: () => setState(() => _isSelectionMode = true),
+                        // 長押しモードへ入ると同時に、長押しした項目自体も
+                        // 選択状態にする（複数選択モードに入っただけで
+                        // 何も選ばれていない状態を避ける）。
+                        onLongPress: (id) => setState(() {
+                          _isSelectionMode = true;
+                          _selectedIds.add(id);
+                        }),
                         onSelectionChanged: (id) => setState(() {
                           if (_selectedIds.contains(id)) {
                             _selectedIds.remove(id);
                           } else {
                             _selectedIds.add(id);
                           }
+                          // 手動でのタップ操作によって選択が0件になった場合も、
+                          // 「全解除」ボタンを押した時と同様に複数選択モードを
+                          // 自動終了する。
+                          if (_selectedIds.isEmpty) _isSelectionMode = false;
                         }),
                         showFavoritesOnly: _showFavoritesOnly,
                         searchQuery: _searchQuery,
@@ -419,6 +472,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ),
       ),
     );
+  }
+
+  /// 選択中のプロジェクト・フォルダのお気に入り状態をまとめて[favorite]へ
+  /// 揃える（toggleFavorite系は反転のみのため、既に望む状態のものは
+  /// スキップする）。
+  void _bulkSetFavorite(bool favorite) {
+    final service = context.read<ProjectService>();
+    for (final id in _selectedIds) {
+      final project = service.projects.where((p) => p.id == id).firstOrNull;
+      if (project != null) {
+        if (project.isFavorite != favorite) service.toggleFavorite(id);
+        continue;
+      }
+      final folder = service.folders.where((f) => f.id == id).firstOrNull;
+      if (folder != null && folder.isFavorite != favorite) {
+        service.toggleFolderFavorite(id);
+      }
+    }
   }
 
   void _deleteSelected() {

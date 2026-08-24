@@ -629,13 +629,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // プロジェクト一覧へ戻るボタン（キャンバスモードではなくタイムライン
-          // モードに実装する）。左矢印はここでは「プロジェクト
-          // 一覧へ戻る」の意味に変更し、従来この矢印が担っていた
-          // 「キャンバスへ戻る」はパレットアイコンの新規ボタンへ移した。
-          IconButton(icon: const Icon(Icons.arrow_back), tooltip: l10n.timelineBackToProjectListTooltip, onPressed: _confirmBackToProjectList),
+          // キャンバスモードへ戻るボタン：矢印＋パレットアイコンの組み合わせで
+          // 「戻る」と「戻り先はキャンバス（描画）モード」の両方を一目で
+          // 表せるようにする。プロジェクト名の直前（左側）に置く。
+          IconButton(
+            icon: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.arrow_back), Icon(Icons.palette_outlined, size: 18)],
+            ),
+            tooltip: l10n.timelineBackToCanvasTooltip,
+            onPressed: _saveAndGoToCanvas,
+          ),
           Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
-          IconButton(icon: const Icon(Icons.palette_outlined), tooltip: l10n.timelineBackToCanvasTooltip, onPressed: _saveAndGoToCanvas),
+          // プロジェクト一覧へ戻るボタン。上記のキャンバスへ戻るボタンと
+          // 位置を入れ替え、家アイコンにしてプロジェクト一覧＝ホームである
+          // ことをわかりやすくしている。
+          IconButton(icon: const Icon(Icons.home_outlined), tooltip: l10n.timelineBackToProjectListTooltip, onPressed: _confirmBackToProjectList),
           IconButton(
             icon: const Icon(Icons.undo),
             tooltip: l10n.commonUndo,

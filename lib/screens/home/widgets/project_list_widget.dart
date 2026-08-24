@@ -78,7 +78,9 @@ class ProjectListWidget extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool isSelectionMode;
   final Set<String> selectedIds;
-  final VoidCallback onLongPress;
+  // 長押しされた項目（プロジェクトまたはフォルダ）のIDを渡す。呼び出し側で
+  // 複数選択モードへ入ると同時にその項目を選択状態にできるようにするため。
+  final ValueChanged<String> onLongPress;
   final ValueChanged<String> onSelectionChanged;
   final List<Project>? projects; // nullの場合はServiceから取得
   final bool showFavoritesOnly;
@@ -234,7 +236,7 @@ class ProjectListWidget extends StatelessWidget {
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : () => context.push('/project/${project.id}'),
-      onLongPress: onLongPress,
+      onLongPress: () => onLongPress(project.id),
     );
   }
 
@@ -254,7 +256,7 @@ class ProjectListWidget extends StatelessWidget {
         ],
       ),
       onTap: isSelectionMode ? () => onSelectionChanged(folder.id) : () => onOpenFolder(folder.id),
-      onLongPress: onLongPress,
+      onLongPress: () => onLongPress(folder.id),
     );
   }
 
@@ -269,7 +271,7 @@ class ProjectListWidget extends StatelessWidget {
           ? () => onSelectionChanged(project.id)
           : () => context.push('/project/${project.id}'),
       onDoubleTap: isSelectionMode ? null : () => context.push('/canvas/${project.id}'),
-      onLongPress: onLongPress,
+      onLongPress: () => onLongPress(project.id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOut,
@@ -367,7 +369,7 @@ class ProjectListWidget extends StatelessWidget {
     final color = folder.color != null ? Color(folder.color!) : primary;
     return GestureDetector(
       onTap: isSelectionMode ? () => onSelectionChanged(folder.id) : () => onOpenFolder(folder.id),
-      onLongPress: onLongPress,
+      onLongPress: () => onLongPress(folder.id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOut,
