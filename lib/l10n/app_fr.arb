@@ -2002,6 +2002,8 @@
     }
   },
   "frameStripTimelineModeTooltip": "Mode timeline",
+  "frameStripFrameListModeLabel": "Images",
+  "frameStripTimelineModeLabel": "Timeline",
   "progressDialogAdLoading": "Chargement de la publicité…",
   "progressDialogTipLabel": "Astuce",
   "premiumBannerRegisterButton": "Passer à Premium",

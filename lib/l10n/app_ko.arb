@@ -2002,6 +2002,8 @@
     }
   },
   "frameStripTimelineModeTooltip": "타임라인 모드",
+  "frameStripFrameListModeLabel": "프레임 목록",
+  "frameStripTimelineModeLabel": "타임라인",
   "progressDialogAdLoading": "광고 불러오는 중…",
   "progressDialogTipLabel": "팁",
   "premiumBannerRegisterButton": "Premium에 가입",

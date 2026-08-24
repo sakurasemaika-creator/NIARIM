@@ -2002,6 +2002,8 @@
     }
   },
   "frameStripTimelineModeTooltip": "Timeline mode",
+  "frameStripFrameListModeLabel": "Frames",
+  "frameStripTimelineModeLabel": "Timeline",
   "progressDialogAdLoading": "Loading ad…",
   "progressDialogTipLabel": "Tip",
   "premiumBannerRegisterButton": "Upgrade to Premium",

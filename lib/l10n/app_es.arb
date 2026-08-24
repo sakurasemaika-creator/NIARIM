@@ -2002,6 +2002,8 @@
     }
   },
   "frameStripTimelineModeTooltip": "Modo línea de tiempo",
+  "frameStripFrameListModeLabel": "Fotogramas",
+  "frameStripTimelineModeLabel": "Línea de tiempo",
   "progressDialogAdLoading": "Cargando anuncio…",
   "progressDialogTipLabel": "Consejo",
   "premiumBannerRegisterButton": "Pasar a Premium",

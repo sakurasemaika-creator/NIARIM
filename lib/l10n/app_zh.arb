@@ -2002,6 +2002,8 @@
     }
   },
   "frameStripTimelineModeTooltip": "时间轴模式",
+  "frameStripFrameListModeLabel": "帧列表",
+  "frameStripTimelineModeLabel": "时间轴",
   "progressDialogAdLoading": "广告加载中…",
   "progressDialogTipLabel": "提示",
   "premiumBannerRegisterButton": "升级Premium",

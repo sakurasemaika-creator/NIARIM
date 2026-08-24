@@ -2002,6 +2002,8 @@
     }
   },
   "frameStripTimelineModeTooltip": "時間軸模式",
+  "frameStripFrameListModeLabel": "影格清單",
+  "frameStripTimelineModeLabel": "時間軸",
   "progressDialogAdLoading": "廣告載入中…",
   "progressDialogTipLabel": "提示",
   "premiumBannerRegisterButton": "升級Premium",
