@@ -2755,10 +2755,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       color: clip.color.withValues(
                         alpha: isDragging ? 1.0 : 0.85,
                       ),
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(4),
                       border: isDragging
                           ? Border.all(color: Colors.white, width: 1.5)
                           : null,
+                      boxShadow: isDragging
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     alignment: Alignment.centerLeft,
@@ -2807,7 +2816,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
         onHorizontalDragEnd: (_) => _endClipDrag(clip),
         child: MouseRegion(
           cursor: SystemMouseCursors.resizeLeftRight,
-          child: Container(color: Colors.white.withValues(alpha: 0.25)),
+          child: Container(
+            color: Colors.white.withValues(alpha: 0.25),
+            alignment: Alignment.center,
+            child: Container(
+              width: 2,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -3135,13 +3155,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
             color:
                 (layer.type == LayerType.watermark ? Colors.pink : Colors.blue)
                     .withValues(alpha: 0.75),
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(
               color: layer.type == LayerType.watermark
                   ? Colors.pink[200]!
                   : Colors.blue[200]!,
               width: 1,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
           child: Stack(
             children: [
@@ -3619,6 +3646,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     color: Colors.white,
                     width: isDragging ? 2 : 1.5,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -3773,6 +3806,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   color: Colors.teal[300],
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
               ),
             ),
