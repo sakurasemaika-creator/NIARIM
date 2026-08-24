@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../engine/export_engine.dart';
@@ -16,9 +17,8 @@ import '../../services/project_service.dart';
 /// タップしてホーム画面へ遷移した瞬間には大半の読み込みが完了済みか
 /// 完了間近の状態になる。
 ///
-/// ロゴ画像は未完成のため、現時点では単色のプレースホルダー画像
-/// （assets/logo/splash_logo.png）を表示している。本番ロゴが用意でき
-/// 次第、同じファイル名・パスへ差し替えるだけでよい（コード変更不要）。
+/// ロゴはSVG形式（assets/logo/app_logo.svg）で保持し、flutter_svgで
+/// 描画する。画面中央に、上下の導線ボタンに挟まれる形で配置される。
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -54,7 +54,9 @@ class _SplashScreenState extends State<SplashScreen> {
     };
     for (final path in thumbnailPaths) {
       if (!mounted) return;
-      unawaited(precacheImage(FileImage(File(path)), context).catchError((_) {}));
+      unawaited(
+        precacheImage(FileImage(File(path)), context).catchError((_) {}),
+      );
     }
   }
 
@@ -62,7 +64,8 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     final communityButton = _SplashActionButton(
       icon: Icons.movie_filter_outlined,
@@ -79,8 +82,8 @@ class _SplashScreenState extends State<SplashScreen> {
       colors: [scheme.primary, scheme.primaryContainer],
       onTap: () => context.go('/home'),
     );
-    final logo = Image.asset(
-      'assets/logo/splash_logo.png',
+    final logo = SvgPicture.asset(
+      'assets/logo/app_logo.svg',
       width: 160,
       height: 160,
     );
