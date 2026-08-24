@@ -1395,6 +1395,8 @@
   "timelineCanvasSizeChangeMenuItem": "Change canvas size",
   "timelineDurationFramesLabel": "Frames",
   "timelineDurationSecondsLabel": "Seconds",
+  "timelineDurationShrinkConfirmTitle": "Shorten anyway?",
+  "timelineDurationShrinkConfirmBody": "The frames that will be cut contain changes such as drawn content or added layers. If you continue, those frames cannot be recovered. Are you sure you want to delete them?",
   "timelineCanvasSizeDragHint": "Drag the frame to adjust the crop position",
   "saveTreeScreenTitleTree": "Save Tree",
   "saveTreeScreenTitleSlot": "Save Slots",

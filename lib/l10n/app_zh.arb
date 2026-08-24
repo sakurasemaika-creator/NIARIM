@@ -1397,6 +1397,8 @@
   "timelineCanvasSizeChangeMenuItem": "更改画布尺寸",
   "timelineDurationFramesLabel": "帧数",
   "timelineDurationSecondsLabel": "秒数",
+  "timelineDurationShrinkConfirmTitle": "确定要缩短吗？",
+  "timelineDurationShrinkConfirmBody": "将被裁掉的范围内的帧中，含有绘制内容或新增图层等更改。继续操作后，这些帧将无法恢复。确定要删除吗？",
   "timelineCanvasSizeDragHint": "拖动方框可调整裁剪位置",
   "saveTreeSaveAsChildHint": "将保存为所选节点的子节点。",
   "saveTreeSaveAsRootHint": "将保存为根节点。",

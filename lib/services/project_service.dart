@@ -47,35 +47,36 @@ class ProjectFolder {
     Object? color = _folderSentinel,
     Object? parentFolderId = _folderSentinel,
     bool? isFavorite,
-  }) =>
-      ProjectFolder(
-        id: id,
-        name: name ?? this.name,
-        color: identical(color, _folderSentinel) ? this.color : color as int?,
-        parentFolderId: identical(parentFolderId, _folderSentinel)
-            ? this.parentFolderId
-            : parentFolderId as String?,
-        isFavorite: isFavorite ?? this.isFavorite,
-        createdAt: createdAt,
-      );
+  }) => ProjectFolder(
+    id: id,
+    name: name ?? this.name,
+    color: identical(color, _folderSentinel) ? this.color : color as int?,
+    parentFolderId: identical(parentFolderId, _folderSentinel)
+        ? this.parentFolderId
+        : parentFolderId as String?,
+    isFavorite: isFavorite ?? this.isFavorite,
+    createdAt: createdAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'color': color,
-        'parentFolderId': parentFolderId,
-        'isFavorite': isFavorite,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'color': color,
+    'parentFolderId': parentFolderId,
+    'isFavorite': isFavorite,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory ProjectFolder.fromJson(Map<String, dynamic> json) => ProjectFolder(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        color: json['color'] as int?,
-        parentFolderId: json['parentFolderId'] as String?,
-        isFavorite: json['isFavorite'] as bool? ?? false,
-        createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    color: json['color'] as int?,
+    parentFolderId: json['parentFolderId'] as String?,
+    isFavorite: json['isFavorite'] as bool? ?? false,
+    createdAt: json['createdAt'] != null
+        ? DateTime.parse(json['createdAt'] as String)
+        : DateTime.now(),
+  );
 }
 
 const _folderSentinel = Object();
@@ -88,7 +89,8 @@ class ProjectService extends ChangeNotifier {
   // ID採番用カウンター。DateTime.now().millisecondsSinceEpoch単独だと、
   // 同一ミリ秒内に連続生成した場合にIDが衝突しうるため併用する。
   int _idCounter = 0;
-  String _nextId(String prefix) => '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_idCounter++}';
+  String _nextId(String prefix) =>
+      '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_idCounter++}';
 
   // TileManagerの合成キャッシュ上限（低スペック端末対応）。
   // 端末性能判定（PerformanceService.qualityLevel）に応じてmain.dartから
@@ -101,6 +103,7 @@ class ProjectService extends ChangeNotifier {
   void configureTileCacheBudget(int maxEntries) {
     _tileCacheBudget = maxEntries;
   }
+
   // ゴミ箱へ移動した日時（projectId -> deletedAt）。自動削除設定（設定画面の
   // 日数）に基づく期限切れ判定に使用する。SharedPreferencesへ永続化することで
   // アプリ再起動後もゴミ箱の状態（どのプロジェクトが削除済みか）を維持する。
@@ -118,7 +121,8 @@ class ProjectService extends ChangeNotifier {
   // シーン・フレーム）を保持するインデックス。projectId -> layerId -> 位置。
   // これらのレイヤーは他のフレームからは layersOf() で動的に合成表示される
   // （同一データを複数フレームへ複製せず、メモリを節約するため）。
-  final Map<String, Map<String, ({String sceneId, int frameIndex})>> _layerHomes = {};
+  final Map<String, Map<String, ({String sceneId, int frameIndex})>>
+  _layerHomes = {};
 
   // TileManager をプロジェクトIDごとに保持
   final Map<String, TileManager> _tileManagers = {};
@@ -224,11 +228,14 @@ class ProjectService extends ChangeNotifier {
   Future<void> sweepExpiredTrash(int days) async {
     if (days <= 0) return;
     final now = DateTime.now();
-    final expired = _trash.where((p) {
-      final deletedAt = _trashDeletedAt[p.id];
-      if (deletedAt == null) return false;
-      return now.difference(deletedAt).inDays >= days;
-    }).map((p) => p.id).toList();
+    final expired = _trash
+        .where((p) {
+          final deletedAt = _trashDeletedAt[p.id];
+          if (deletedAt == null) return false;
+          return now.difference(deletedAt).inDays >= days;
+        })
+        .map((p) => p.id)
+        .toList();
     for (final id in expired) {
       await permanentDelete(id);
     }
@@ -272,7 +279,8 @@ class ProjectService extends ChangeNotifier {
     for (final scene in scenes) {
       for (final frame in scene.frames) {
         for (final layer in frame.layers) {
-          final num = int.tryParse(layer.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+          final num =
+              int.tryParse(layer.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
           if (num >= max) max = num + 1;
         }
       }
@@ -333,11 +341,15 @@ class ProjectService extends ChangeNotifier {
     final projectId = _trackedProjectId;
     if (projectId == null) return;
     // 直近一定時間操作がなければカウントを一時停止する
-    if (DateTime.now().difference(_lastActivity) > _workInactivityThreshold) return;
+    if (DateTime.now().difference(_lastActivity) > _workInactivityThreshold) {
+      return;
+    }
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
-    _projects[idx] = _projects[idx]
-        .copyWith(totalWorkSeconds: _projects[idx].totalWorkSeconds + _workTickInterval.inSeconds);
+    _projects[idx] = _projects[idx].copyWith(
+      totalWorkSeconds:
+          _projects[idx].totalWorkSeconds + _workTickInterval.inSeconds,
+    );
     notifyListeners();
   }
 
@@ -391,7 +403,9 @@ class ProjectService extends ChangeNotifier {
     final scene = Scene(
       id: sceneId,
       index: scenes.length,
-      frames: [Frame(index: 0, layers: [layer])],
+      frames: [
+        Frame(index: 0, layers: [layer]),
+      ],
     );
     scenes.add(scene);
     notifyListeners();
@@ -417,7 +431,9 @@ class ProjectService extends ChangeNotifier {
     final newFrames = <Frame>[];
     for (final frame in source.frames) {
       final sourceLayers = frame.layers
-          .where((l) => !isRangeLayerType(l.type) && l.type != LayerType.selection)
+          .where(
+            (l) => !isRangeLayerType(l.type) && l.type != LayerType.selection,
+          )
           .toList();
       final newLayers = sourceLayers.map((l) {
         final newId = _nextLayerId(projectId);
@@ -429,7 +445,9 @@ class ProjectService extends ChangeNotifier {
         }
         return l.copyWith(id: newId);
       }).toList();
-      newFrames.add(Frame(index: frame.index, layers: newLayers, hold: frame.hold));
+      newFrames.add(
+        Frame(index: frame.index, layers: newLayers, hold: frame.hold),
+      );
     }
 
     final newScene = Scene(
@@ -442,14 +460,19 @@ class ProjectService extends ChangeNotifier {
       audioClips: source.audioClips,
     );
     scenes.insert(sourceIdx + 1, newScene);
-    final reindexed = scenes.asMap().entries.map((e) => e.value.copyWith(index: e.key)).toList();
+    final reindexed = scenes
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
     _scenes[projectId] = reindexed;
     notifyListeners();
     return newScene;
   }
 
   /// シーンを削除する（最低1シーンは残す）。描画タイルも破棄する。
-  void removeScene(String projectId, String sceneId) => removeScenes(projectId, [sceneId]);
+  void removeScene(String projectId, String sceneId) =>
+      removeScenes(projectId, [sceneId]);
 
   /// 複数シーンを一括削除する（最低1シーンは残す）。
   void removeScenes(String projectId, List<String> sceneIds) {
@@ -468,7 +491,9 @@ class ProjectService extends ChangeNotifier {
         .map((e) => e.value.copyWith(index: e.key))
         .toList();
     _scenes[projectId] = reindexed;
-    _layerHomes[projectId]?.removeWhere((_, home) => idsToRemove.contains(home.sceneId));
+    _layerHomes[projectId]?.removeWhere(
+      (_, home) => idsToRemove.contains(home.sceneId),
+    );
     notifyListeners();
   }
 
@@ -515,13 +540,21 @@ class ProjectService extends ChangeNotifier {
     final ownLayers = scene.frames[frameIndex].layers;
     final homes = _layerHomes[projectId];
     if (homes == null || homes.isEmpty) return List.unmodifiable(ownLayers);
-    return List.unmodifiable(resolveFrameLayers(
-        _scenes[projectId] ?? const [], homes, sceneId, frameIndex, ownLayers));
+    return List.unmodifiable(
+      resolveFrameLayers(
+        _scenes[projectId] ?? const [],
+        homes,
+        sceneId,
+        frameIndex,
+        ownLayers,
+      ),
+    );
   }
 
   /// レイヤーIDから、表示範囲レイヤーの「ホーム位置」（実データが存在する
   /// シーン・フレーム）を取得する。範囲レイヤーでない場合はnull。
-  LayerHome? homeOf(String projectId, String layerId) => _layerHomes[projectId]?[layerId];
+  LayerHome? homeOf(String projectId, String layerId) =>
+      _layerHomes[projectId]?[layerId];
 
   /// プロジェクト全体の表示範囲レイヤーのホーム位置インデックスを返す
   /// （プレビュー・書き出しでの合成キー解決用）。
@@ -542,8 +575,12 @@ class ProjectService extends ChangeNotifier {
       final home = entry.value;
       final scene = sceneOf(projectId, home.sceneId);
       if (scene == null || home.frameIndex >= scene.frames.length) continue;
-      final layer = scene.frames[home.frameIndex].layers.where((l) => l.id == entry.key).firstOrNull;
-      if (layer != null && (layer.type == LayerType.common || layer.type == LayerType.watermark)) {
+      final layer = scene.frames[home.frameIndex].layers
+          .where((l) => l.id == entry.key)
+          .firstOrNull;
+      if (layer != null &&
+          (layer.type == LayerType.common ||
+              layer.type == LayerType.watermark)) {
         result.add((layer: layer, home: home));
       }
     }
@@ -553,13 +590,29 @@ class ProjectService extends ChangeNotifier {
   /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは、実際に
   /// 表示中のフレームに関わらず常にホーム位置のタイルバッファを参照する
   /// （複数フレームでの共有表示・共有編集を実現するため）。
-  String tileKeyFor(String projectId, String sceneId, int frameIndex, String layerId) =>
-      resolveTileKey(_layerHomes[projectId] ?? const {}, sceneId, frameIndex, layerId);
+  String tileKeyFor(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+  ) => resolveTileKey(
+    _layerHomes[projectId] ?? const {},
+    sceneId,
+    frameIndex,
+    layerId,
+  );
 
   void _registerHomeIfNeeded(
-      String projectId, String sceneId, int frameIndex, Layer layer) {
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    Layer layer,
+  ) {
     if (!isRangeLayerType(layer.type)) return;
-    (_layerHomes[projectId] ??= {})[layer.id] = (sceneId: sceneId, frameIndex: frameIndex);
+    (_layerHomes[projectId] ??= {})[layer.id] = (
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+    );
   }
 
   // ─── レイヤーID生成 ───────────────────────────────────────────────────
@@ -573,7 +626,11 @@ class ProjectService extends ChangeNotifier {
   // ─── レイヤー追加（内部・Undo/Redo から呼ばれる） ─────────────────────
 
   void _insertLayerById(
-      String projectId, String sceneId, int frameIndex, String layerId) {
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+  ) {
     final layer = _removedLayers[layerId];
     if (layer == null) return;
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
@@ -581,7 +638,11 @@ class ProjectService extends ChangeNotifier {
   }
 
   void _removeLayerById(
-      String projectId, String sceneId, int frameIndex, String layerId) {
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -598,8 +659,13 @@ class ProjectService extends ChangeNotifier {
     _layerHomes[projectId]?.remove(layerId);
   }
 
-  void _applyLayerInsert(String projectId, String sceneId, int frameIndex,
-      Layer layer, int insertIndex) {
+  void _applyLayerInsert(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    Layer layer,
+    int insertIndex,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -613,11 +679,17 @@ class ProjectService extends ChangeNotifier {
   }
 
   void _applyFrameUpdate(
-      String projectId, int sceneIdx, int frameIndex, List<Layer> newLayers) {
+    String projectId,
+    int sceneIdx,
+    int frameIndex,
+    List<Layer> newLayers,
+  ) {
     final scenes = _scenes[projectId]!;
     final scene = scenes[sceneIdx];
     final newFrames = List<Frame>.from(scene.frames);
-    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(layers: newLayers);
+    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(
+      layers: newLayers,
+    );
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
     notifyListeners();
   }
@@ -634,14 +706,12 @@ class ProjectService extends ChangeNotifier {
   }) {
     final layerId = _nextLayerId(projectId);
     // テキストレイヤー名：テキスト1 / テキスト2 / テキスト3 …
-    final existingTextCount = layersOf(projectId, sceneId, frameIndex)
-        .where((l) => l.type == LayerType.text)
-        .length;
-    final textObject = TextObject(
-      id: layerId,
-      text: text,
-      position: position,
-    );
+    final existingTextCount = layersOf(
+      projectId,
+      sceneId,
+      frameIndex,
+    ).where((l) => l.type == LayerType.text).length;
+    final textObject = TextObject(id: layerId, text: text, position: position);
     final layer = Layer(
       id: layerId,
       name: 'テキスト${existingTextCount + 1}',
@@ -650,15 +720,17 @@ class ProjectService extends ChangeNotifier {
     );
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
 
-    _undoManager?.push(LayerAddUndoAction(
-      projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-      layerId: layerId,
-      insertIndex: 0,
-      doAdd: _insertLayerById,
-      doRemove: _removeLayerById,
-    ));
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: layerId,
+        insertIndex: 0,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
     return layer;
   }
 
@@ -679,15 +751,17 @@ class ProjectService extends ChangeNotifier {
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
 
-    _undoManager?.push(LayerAddUndoAction(
-      projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-      layerId: layerId,
-      insertIndex: 0,
-      doAdd: _insertLayerById,
-      doRemove: _removeLayerById,
-    ));
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: layerId,
+        insertIndex: 0,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
     return layer;
   }
 
@@ -700,7 +774,8 @@ class ProjectService extends ChangeNotifier {
     required int frameIndex,
     required String layerId,
   }) {
-    final home = _layerHomes[projectId]?[layerId] ??
+    final home =
+        _layerHomes[projectId]?[layerId] ??
         (sceneId: sceneId, frameIndex: frameIndex);
     final layers = layersOf(projectId, home.sceneId, home.frameIndex);
     final removedIndex = layers.indexWhere((l) => l.id == layerId);
@@ -708,15 +783,17 @@ class ProjectService extends ChangeNotifier {
     _removedLayers[layerId] = layers[removedIndex];
     _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId);
 
-    _undoManager?.push(LayerRemoveUndoAction(
-      projectId: projectId,
-      sceneId: home.sceneId,
-      frameIndex: home.frameIndex,
-      layerId: layerId,
-      removedIndex: removedIndex,
-      doAdd: _insertLayerById,
-      doRemove: _removeLayerById,
-    ));
+    _undoManager?.push(
+      LayerRemoveUndoAction(
+        projectId: projectId,
+        sceneId: home.sceneId,
+        frameIndex: home.frameIndex,
+        layerId: layerId,
+        removedIndex: removedIndex,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
   }
 
   /// レイヤーを更新する（表示切替・ロック等）。表示範囲レイヤーは実データの
@@ -728,7 +805,8 @@ class ProjectService extends ChangeNotifier {
     required int frameIndex,
     required Layer layer,
   }) {
-    final home = _layerHomes[projectId]?[layer.id] ??
+    final home =
+        _layerHomes[projectId]?[layer.id] ??
         (sceneId: sceneId, frameIndex: frameIndex);
     final scenes = _scenes[projectId];
     if (scenes == null) return;
@@ -764,7 +842,10 @@ class ProjectService extends ChangeNotifier {
     if (oldIndex < 0 || oldIndex >= frame.layers.length) return;
     final newLayers = List<Layer>.from(frame.layers);
     final layer = newLayers.removeAt(oldIndex);
-    final target = (newIndex > oldIndex ? newIndex - 1 : newIndex).clamp(0, newLayers.length);
+    final target = (newIndex > oldIndex ? newIndex - 1 : newIndex).clamp(
+      0,
+      newLayers.length,
+    );
     newLayers.insert(target, layer);
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
   }
@@ -801,15 +882,20 @@ class ProjectService extends ChangeNotifier {
   void restoreFromAutosave(String projectId, NiaproData data) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
-    _projects[idx] = data.project.copyWith(id: projectId, updatedAt: DateTime.now());
+    _projects[idx] = data.project.copyWith(
+      id: projectId,
+      updatedAt: DateTime.now(),
+    );
     _scenes[projectId] = data.scenes;
     _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
     final tm = _tileManagers.putIfAbsent(
-        projectId,
-        () => TileManager(
-            canvasWidth: data.project.drawingWidth,
-            canvasHeight: data.project.drawingHeight,
-            compositeCacheMax: _tileCacheBudget));
+      projectId,
+      () => TileManager(
+        canvasWidth: data.project.drawingWidth,
+        canvasHeight: data.project.drawingHeight,
+        compositeCacheMax: _tileCacheBudget,
+      ),
+    );
     tm.importAll(data.tileData);
     _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
     notifyListeners();
@@ -820,7 +906,11 @@ class ProjectService extends ChangeNotifier {
   /// 自動塗り用線画レイヤーの直下にある自動塗りレイヤーへ更新マークを立てる。
   /// 線画レイヤーへ描画があった際に呼び出す（needsAutofillUpdate自動セット）。
   void markLineartDirty(
-      String projectId, String sceneId, int frameIndex, String lineartLayerId) {
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String lineartLayerId,
+  ) {
     final layers = layersOf(projectId, sceneId, frameIndex);
     final idx = layers.indexWhere((l) => l.id == lineartLayerId);
     if (idx < 0 || layers[idx].type != LayerType.autoFillLineart) return;
@@ -849,12 +939,20 @@ class ProjectService extends ChangeNotifier {
           final layers = scene.frames[fi].layers;
           for (int li = 0; li < layers.length; li++) {
             final lineart = layers[li];
-            if (lineart.type != LayerType.autoFillLineart || lineart.partId != partId) continue;
-            if (li + 1 >= layers.length || layers[li + 1].type != LayerType.autoFill) continue;
+            if (lineart.type != LayerType.autoFillLineart ||
+                lineart.partId != partId) {
+              continue;
+            }
+            if (li + 1 >= layers.length ||
+                layers[li + 1].type != LayerType.autoFill) {
+              continue;
+            }
             final autofillLayer = layers[li + 1];
             if (autofillLayer.needsAutofillUpdate) continue;
             final newLayers = List<Layer>.from(layers);
-            newLayers[li + 1] = autofillLayer.copyWith(needsAutofillUpdate: true);
+            newLayers[li + 1] = autofillLayer.copyWith(
+              needsAutofillUpdate: true,
+            );
             final newFrames = List<Frame>.from(scene.frames);
             newFrames[fi] = scene.frames[fi].copyWith(layers: newLayers);
             scenes[si] = scene.copyWith(frames: newFrames);
@@ -890,7 +988,10 @@ class ProjectService extends ChangeNotifier {
         projectId: projectId,
         sceneId: sceneId,
         frameIndex: frameIndex,
-        layer: layers[idx + 1].copyWith(partId: partId, name: '$partName（自動塗り）'),
+        layer: layers[idx + 1].copyWith(
+          partId: partId,
+          name: '$partName（自動塗り）',
+        ),
       );
     }
   }
@@ -902,7 +1003,9 @@ class ProjectService extends ChangeNotifier {
     if (scenes == null) return false;
     for (final scene in scenes) {
       for (final frame in scene.frames) {
-        if (frame.layers.any((l) => l.type == LayerType.autoFill && l.needsAutofillUpdate)) {
+        if (frame.layers.any(
+          (l) => l.type == LayerType.autoFill && l.needsAutofillUpdate,
+        )) {
           return true;
         }
       }
@@ -913,11 +1016,18 @@ class ProjectService extends ChangeNotifier {
   /// タイムライン❗マーク表示用：指定フレームにneedsAutofillUpdate==trueの
   /// 自動塗りレイヤーが存在するかを判定する（更新マークはレイヤー・
   /// タイムライン両方に表示）。
-  bool frameHasOutdatedAutofillLayers(String projectId, String sceneId, int frameIndex) {
+  bool frameHasOutdatedAutofillLayers(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+  ) {
     final scene = sceneOf(projectId, sceneId);
-    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) return false;
-    return scene.frames[frameIndex].layers
-        .any((l) => l.type == LayerType.autoFill && l.needsAutofillUpdate);
+    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) {
+      return false;
+    }
+    return scene.frames[frameIndex].layers.any(
+      (l) => l.type == LayerType.autoFill && l.needsAutofillUpdate,
+    );
   }
 
   /// タイムライン❗マーク表示用：指定シーン内のいずれかのフレームに
@@ -926,7 +1036,9 @@ class ProjectService extends ChangeNotifier {
     final scene = sceneOf(projectId, sceneId);
     if (scene == null) return false;
     for (final frame in scene.frames) {
-      if (frame.layers.any((l) => l.type == LayerType.autoFill && l.needsAutofillUpdate)) {
+      if (frame.layers.any(
+        (l) => l.type == LayerType.autoFill && l.needsAutofillUpdate,
+      )) {
         return true;
       }
     }
@@ -939,7 +1051,12 @@ class ProjectService extends ChangeNotifier {
       sceneOf(projectId, sceneId)?.frames.length ?? 0;
 
   /// フレームの保持セル数を変更する
-  void setFrameHold(String projectId, String sceneId, int frameIndex, int hold) {
+  void setFrameHold(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    int hold,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -947,7 +1064,9 @@ class ProjectService extends ChangeNotifier {
     final scene = scenes[sceneIdx];
     if (frameIndex >= scene.frames.length) return;
     final newFrames = List<Frame>.from(scene.frames);
-    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(hold: hold.clamp(1, 99));
+    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(
+      hold: hold.clamp(1, 99),
+    );
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
     notifyListeners();
   }
@@ -1001,10 +1120,16 @@ class ProjectService extends ChangeNotifier {
     // 直前フレームの通常レイヤー構成を引き継ぐ（描画データは空）
     final prevLayers = scene.frames.isNotEmpty
         ? scene.frames.last.layers
-            .where((l) => l.type == LayerType.normal)
-            .map((l) => Layer(id: l.id, name: l.name, type: l.type))
-            .toList()
-        : [Layer(id: _nextLayerId(projectId), name: 'レイヤー1', type: LayerType.normal)];
+              .where((l) => l.type == LayerType.normal)
+              .map((l) => Layer(id: l.id, name: l.name, type: l.type))
+              .toList()
+        : [
+            Layer(
+              id: _nextLayerId(projectId),
+              name: 'レイヤー1',
+              type: LayerType.normal,
+            ),
+          ];
     final newFrame = Frame(index: scene.frames.length, layers: prevLayers);
     final newFrames = List<Frame>.from(scene.frames)..add(newFrame);
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
@@ -1045,7 +1170,9 @@ class ProjectService extends ChangeNotifier {
     // 複製対象レイヤー（表示範囲レイヤー・内部専用selectionレイヤーは除外）。
     // 新しいレイヤーIDを割り当て、Copy-on-Writeでタイルデータも複製する。
     final sourceLayers = source.layers
-        .where((l) => !isRangeLayerType(l.type) && l.type != LayerType.selection)
+        .where(
+          (l) => !isRangeLayerType(l.type) && l.type != LayerType.selection,
+        )
         .toList();
     final idMap = <String, String>{};
     final newLayers = sourceLayers.map((l) {
@@ -1064,8 +1191,13 @@ class ProjectService extends ChangeNotifier {
       }
     }
 
-    final newFrame = Frame(index: insertAt, layers: newLayers, hold: source.hold);
-    final newFrames = List<Frame>.from(scene.frames)..insert(insertAt, newFrame);
+    final newFrame = Frame(
+      index: insertAt,
+      layers: newLayers,
+      hold: source.hold,
+    );
+    final newFrames = List<Frame>.from(scene.frames)
+      ..insert(insertAt, newFrame);
     final reindexed = newFrames
         .asMap()
         .entries
@@ -1161,6 +1293,45 @@ class ProjectService extends ChangeNotifier {
   /// addFrame/removeFrameを内部的に繰り返し呼ぶことで、タイルデータの
   /// 付け替え・表示範囲レイヤーのホーム位置更新など既存の安全な処理を
   /// そのまま再利用する。
+  /// [setSceneFrameCount]で[targetCount]へ短縮した場合に削除される末尾の
+  /// フレーム範囲に、新規追加時の初期状態（通常レイヤー1枚のみ・描画データ
+  /// なし）から変更が加えられているものが含まれるかを判定する。レイヤー
+  /// 構成が既定と異なる（枚数が1枚でない、通常レイヤー以外の種別を含む）
+  /// 場合、またはいずれかのレイヤーに実際の描画データ（タイル）が存在する
+  /// 場合を「変更あり」とみなす。[targetCount]が現在のフレーム数以上
+  /// （短縮ではない）場合は常にfalseを返す。
+  bool sceneFrameShrinkHasContent(
+    String projectId,
+    String sceneId,
+    int targetCount,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return false;
+    final scene = scenes.where((s) => s.id == sceneId).firstOrNull;
+    if (scene == null) return false;
+    final currentCount = scene.frames.length;
+    if (targetCount >= currentCount) return false;
+    final tm = _tileManagers[projectId];
+    final tiles = tm?.exportAll();
+    for (int i = targetCount; i < currentCount; i++) {
+      final frame = scene.frames[i];
+      final normalLayers = frame.layers
+          .where((l) => l.type == LayerType.normal)
+          .toList();
+      if (frame.layers.length != normalLayers.length ||
+          normalLayers.length != 1) {
+        return true;
+      }
+      if (tiles != null) {
+        for (final layer in frame.layers) {
+          final key = frameLayerKey(sceneId, i, layer.id);
+          if (tiles[key]?.isNotEmpty ?? false) return true;
+        }
+      }
+    }
+    return false;
+  }
+
   void setSceneFrameCount(String projectId, String sceneId, int targetCount) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
@@ -1178,7 +1349,11 @@ class ProjectService extends ChangeNotifier {
   /// フレームをカーソル固定方式で並び替える（シーン移動と同じ操作体系を
   /// フレームにも適用）。[oldIndicesInNewOrder]は現在のフレームindexを新しい並び順
   /// で並べたリスト（全フレーム数と同じ長さの並び替え）。
-  void reorderFrames(String projectId, String sceneId, List<int> oldIndicesInNewOrder) {
+  void reorderFrames(
+    String projectId,
+    String sceneId,
+    List<int> oldIndicesInNewOrder,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1200,7 +1375,9 @@ class ProjectService extends ChangeNotifier {
           tempToFinal[tempKey] = frameLayerKey(sceneId, newIdx, layer.id);
         }
       }
-      tempToFinal.forEach((tempKey, finalKey) => tm.renameKey(tempKey, finalKey));
+      tempToFinal.forEach(
+        (tempKey, finalKey) => tm.renameKey(tempKey, finalKey),
+      );
     }
 
     final newFrames = <Frame>[
@@ -1219,7 +1396,10 @@ class ProjectService extends ChangeNotifier {
       final updates = <String, LayerHome>{};
       homes.forEach((layerId, home) {
         if (home.sceneId == sceneId && oldToNew.containsKey(home.frameIndex)) {
-          updates[layerId] = (sceneId: sceneId, frameIndex: oldToNew[home.frameIndex]!);
+          updates[layerId] = (
+            sceneId: sceneId,
+            frameIndex: oldToNew[home.frameIndex]!,
+          );
         }
       });
       updates.forEach((id, home) => homes[id] = home);
@@ -1230,10 +1410,15 @@ class ProjectService extends ChangeNotifier {
   // ─── カメラキーフレーム（XY移動・拡大・回転） ─────────────────
 
   List<CameraKeyframe> cameraKeyframesOf(String projectId, String sceneId) =>
-      List.unmodifiable(sceneOf(projectId, sceneId)?.cameraKeyframes ?? const []);
+      List.unmodifiable(
+        sceneOf(projectId, sceneId)?.cameraKeyframes ?? const [],
+      );
 
   void _updateSceneCameraKeyframes(
-      String projectId, String sceneId, List<CameraKeyframe> keyframes) {
+    String projectId,
+    String sceneId,
+    List<CameraKeyframe> keyframes,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1247,24 +1432,37 @@ class ProjectService extends ChangeNotifier {
   /// キーフレームを追加する。同じframeIndexが既にあれば置き換える。
   void addCameraKeyframe(String projectId, String sceneId, CameraKeyframe kf) {
     final current = cameraKeyframesOf(projectId, sceneId);
-    final without = current.where((k) => k.frameIndex != kf.frameIndex).toList();
+    final without = current
+        .where((k) => k.frameIndex != kf.frameIndex)
+        .toList();
     _updateSceneCameraKeyframes(projectId, sceneId, [...without, kf]);
   }
 
   /// 既存キーフレーム（[oldFrameIndex]で特定）を[newKf]で置き換える。
   /// newKf.frameIndexが他のキーフレームと重複する場合はその既存分を消す。
   void updateCameraKeyframe(
-      String projectId, String sceneId, int oldFrameIndex, CameraKeyframe newKf) {
+    String projectId,
+    String sceneId,
+    int oldFrameIndex,
+    CameraKeyframe newKf,
+  ) {
     final current = cameraKeyframesOf(projectId, sceneId);
-    final without =
-        current.where((k) => k.frameIndex != oldFrameIndex && k.frameIndex != newKf.frameIndex).toList();
+    final without = current
+        .where(
+          (k) =>
+              k.frameIndex != oldFrameIndex && k.frameIndex != newKf.frameIndex,
+        )
+        .toList();
     _updateSceneCameraKeyframes(projectId, sceneId, [...without, newKf]);
   }
 
   void removeCameraKeyframe(String projectId, String sceneId, int frameIndex) {
     final current = cameraKeyframesOf(projectId, sceneId);
     _updateSceneCameraKeyframes(
-        projectId, sceneId, current.where((k) => k.frameIndex != frameIndex).toList());
+      projectId,
+      sceneId,
+      current.where((k) => k.frameIndex != frameIndex).toList(),
+    );
   }
 
   // ─── レイヤーグループ（複数レイヤーを1つのキーフレームでまとめて動かす） ──
@@ -1275,14 +1473,22 @@ class ProjectService extends ChangeNotifier {
   /// [layerId]が所属するグループを返す（無ければnull）。1レイヤーは
   /// 同時に1グループにのみ所属できる想定（新規グループ作成時に他グループ
   /// から自動的に外す）。
-  LayerGroup? groupContainingLayer(String projectId, String sceneId, String layerId) {
+  LayerGroup? groupContainingLayer(
+    String projectId,
+    String sceneId,
+    String layerId,
+  ) {
     for (final g in layerGroupsOf(projectId, sceneId)) {
       if (g.memberLayerIds.contains(layerId)) return g;
     }
     return null;
   }
 
-  void _updateSceneGroups(String projectId, String sceneId, List<LayerGroup> groups) {
+  void _updateSceneGroups(
+    String projectId,
+    String sceneId,
+    List<LayerGroup> groups,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1293,15 +1499,25 @@ class ProjectService extends ChangeNotifier {
 
   /// 新規グループを作成する。[memberLayerIds]が既存の他グループに属して
   /// いた場合はそちらから外す（1レイヤーは1グループのみに所属）。
-  LayerGroup addLayerGroup(String projectId, String sceneId, String name, List<String> memberLayerIds) {
+  LayerGroup addLayerGroup(
+    String projectId,
+    String sceneId,
+    String name,
+    List<String> memberLayerIds,
+  ) {
     final group = LayerGroup(
       id: 'group_${DateTime.now().microsecondsSinceEpoch}',
       name: name,
       memberLayerIds: memberLayerIds,
     );
     final cleaned = layerGroupsOf(projectId, sceneId)
-        .map((g) => g.copyWith(
-            memberLayerIds: g.memberLayerIds.where((id) => !memberLayerIds.contains(id)).toList()))
+        .map(
+          (g) => g.copyWith(
+            memberLayerIds: g.memberLayerIds
+                .where((id) => !memberLayerIds.contains(id))
+                .toList(),
+          ),
+        )
         .where((g) => g.memberLayerIds.isNotEmpty)
         .toList();
     _updateSceneGroups(projectId, sceneId, [...cleaned, group]);
@@ -1316,7 +1532,11 @@ class ProjectService extends ChangeNotifier {
 
   void removeLayerGroup(String projectId, String sceneId, String groupId) {
     final current = layerGroupsOf(projectId, sceneId);
-    _updateSceneGroups(projectId, sceneId, current.where((g) => g.id != groupId).toList());
+    _updateSceneGroups(
+      projectId,
+      sceneId,
+      current.where((g) => g.id != groupId).toList(),
+    );
   }
 
   // ─── タイムスタンプ（特定フレームへのワンタップ移動＋コメント） ──────────
@@ -1325,7 +1545,11 @@ class ProjectService extends ChangeNotifier {
   List<TimelineMarker> timelineMarkersOf(String projectId, String sceneId) =>
       List.unmodifiable(sceneOf(projectId, sceneId)?.markers ?? const []);
 
-  void _updateSceneMarkers(String projectId, String sceneId, List<TimelineMarker> markers) {
+  void _updateSceneMarkers(
+    String projectId,
+    String sceneId,
+    List<TimelineMarker> markers,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1336,17 +1560,29 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  TimelineMarker addTimelineMarker(String projectId, String sceneId, int frameIndex, String comment) {
+  TimelineMarker addTimelineMarker(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String comment,
+  ) {
     final marker = TimelineMarker(
       id: 'marker_${DateTime.now().microsecondsSinceEpoch}',
       frameIndex: frameIndex,
       comment: comment,
     );
-    _updateSceneMarkers(projectId, sceneId, [...timelineMarkersOf(projectId, sceneId), marker]);
+    _updateSceneMarkers(projectId, sceneId, [
+      ...timelineMarkersOf(projectId, sceneId),
+      marker,
+    ]);
     return marker;
   }
 
-  void updateTimelineMarker(String projectId, String sceneId, TimelineMarker marker) {
+  void updateTimelineMarker(
+    String projectId,
+    String sceneId,
+    TimelineMarker marker,
+  ) {
     final current = timelineMarkersOf(projectId, sceneId);
     final without = current.where((m) => m.id != marker.id).toList();
     _updateSceneMarkers(projectId, sceneId, [...without, marker]);
@@ -1354,16 +1590,26 @@ class ProjectService extends ChangeNotifier {
 
   void removeTimelineMarker(String projectId, String sceneId, String markerId) {
     final current = timelineMarkersOf(projectId, sceneId);
-    _updateSceneMarkers(projectId, sceneId, current.where((m) => m.id != markerId).toList());
+    _updateSceneMarkers(
+      projectId,
+      sceneId,
+      current.where((m) => m.id != markerId).toList(),
+    );
   }
 
   // ─── 演出フィルター（タイムライン非破壊編集） ─────────────────
 
-  List<EffectFilterInstance> effectFiltersOf(String projectId, String sceneId) =>
+  List<EffectFilterInstance> effectFiltersOf(
+    String projectId,
+    String sceneId,
+  ) =>
       List.unmodifiable(sceneOf(projectId, sceneId)?.effectFilters ?? const []);
 
   void _updateSceneEffectFilters(
-      String projectId, String sceneId, List<EffectFilterInstance> filters) {
+    String projectId,
+    String sceneId,
+    List<EffectFilterInstance> filters,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1372,26 +1618,48 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addEffectFilter(String projectId, String sceneId, EffectFilterInstance filter) {
-    _updateSceneEffectFilters(
-        projectId, sceneId, [...effectFiltersOf(projectId, sceneId), filter]);
+  void addEffectFilter(
+    String projectId,
+    String sceneId,
+    EffectFilterInstance filter,
+  ) {
+    _updateSceneEffectFilters(projectId, sceneId, [
+      ...effectFiltersOf(projectId, sceneId),
+      filter,
+    ]);
   }
 
-  void updateEffectFilter(String projectId, String sceneId, EffectFilterInstance filter) {
-    final updated = effectFiltersOf(projectId, sceneId)
-        .map((f) => f.id == filter.id ? filter : f)
-        .toList();
+  void updateEffectFilter(
+    String projectId,
+    String sceneId,
+    EffectFilterInstance filter,
+  ) {
+    final updated = effectFiltersOf(
+      projectId,
+      sceneId,
+    ).map((f) => f.id == filter.id ? filter : f).toList();
     _updateSceneEffectFilters(projectId, sceneId, updated);
   }
 
   void removeEffectFilter(String projectId, String sceneId, String filterId) {
-    _updateSceneEffectFilters(projectId, sceneId,
-        effectFiltersOf(projectId, sceneId).where((f) => f.id != filterId).toList());
+    _updateSceneEffectFilters(
+      projectId,
+      sceneId,
+      effectFiltersOf(
+        projectId,
+        sceneId,
+      ).where((f) => f.id != filterId).toList(),
+    );
   }
 
   /// 演出フィルターの並び替え（「複数フィルターの適用順」は
   /// タイムライン上の並び順に従うため、並び替えが適用順そのものを変える）。
-  void reorderEffectFilters(String projectId, String sceneId, int oldIndex, int newIndex) {
+  void reorderEffectFilters(
+    String projectId,
+    String sceneId,
+    int oldIndex,
+    int newIndex,
+  ) {
     final list = effectFiltersOf(projectId, sceneId).toList();
     if (newIndex > oldIndex) newIndex -= 1;
     final item = list.removeAt(oldIndex);
@@ -1405,7 +1673,11 @@ class ProjectService extends ChangeNotifier {
   List<AudioClip> audioClipsOf(String projectId, String sceneId) =>
       List.unmodifiable(sceneOf(projectId, sceneId)?.audioClips ?? const []);
 
-  void _updateSceneAudioClips(String projectId, String sceneId, List<AudioClip> clips) {
+  void _updateSceneAudioClips(
+    String projectId,
+    String sceneId,
+    List<AudioClip> clips,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1416,18 +1688,26 @@ class ProjectService extends ChangeNotifier {
   }
 
   void addAudioClip(String projectId, String sceneId, AudioClip clip) {
-    _updateSceneAudioClips(projectId, sceneId, [...audioClipsOf(projectId, sceneId), clip]);
+    _updateSceneAudioClips(projectId, sceneId, [
+      ...audioClipsOf(projectId, sceneId),
+      clip,
+    ]);
   }
 
   void updateAudioClip(String projectId, String sceneId, AudioClip clip) {
-    final updated =
-        audioClipsOf(projectId, sceneId).map((c) => c.id == clip.id ? clip : c).toList();
+    final updated = audioClipsOf(
+      projectId,
+      sceneId,
+    ).map((c) => c.id == clip.id ? clip : c).toList();
     _updateSceneAudioClips(projectId, sceneId, updated);
   }
 
   void removeAudioClip(String projectId, String sceneId, String clipId) {
     _updateSceneAudioClips(
-        projectId, sceneId, audioClipsOf(projectId, sceneId).where((c) => c.id != clipId).toList());
+      projectId,
+      sceneId,
+      audioClipsOf(projectId, sceneId).where((c) => c.id != clipId).toList(),
+    );
   }
 
   // ─── 素材タイムライン行（画像・動画・音源） ────────────────────
@@ -1436,7 +1716,11 @@ class ProjectService extends ChangeNotifier {
   // 行数・行名はScene.imageRowNames/videoRowNames/audioRowNames（リスト長＝
   // 行数、要素は行名。nullなら既定表示）で管理する。
 
-  List<String?> rowNamesOf(String projectId, String sceneId, MaterialType type) {
+  List<String?> rowNamesOf(
+    String projectId,
+    String sceneId,
+    MaterialType type,
+  ) {
     final scene = sceneOf(projectId, sceneId);
     if (scene == null) return const [null];
     final names = switch (type) {
@@ -1447,7 +1731,8 @@ class ProjectService extends ChangeNotifier {
     return names.isEmpty ? const [null] : names;
   }
 
-  Scene _applyRowNames(Scene scene, MaterialType type, List<String?> names) => switch (type) {
+  Scene _applyRowNames(Scene scene, MaterialType type, List<String?> names) =>
+      switch (type) {
         MaterialType.image => scene.copyWith(imageRowNames: names),
         MaterialType.video => scene.copyWith(videoRowNames: names),
         MaterialType.audio => scene.copyWith(audioRowNames: names),
@@ -1455,15 +1740,23 @@ class ProjectService extends ChangeNotifier {
 
   /// scene直下のtimelineImage/timelineVideoレイヤー（ホームがこのシーンに
   /// あるもの）を列挙する。素材タイムライン行のクリップ有無判定に使う。
-  List<Layer> _materialLayersInScene(String projectId, String sceneId, LayerType type) {
+  List<Layer> _materialLayersInScene(
+    String projectId,
+    String sceneId,
+    LayerType type,
+  ) {
     final homes = _layerHomes[projectId];
     final scene = sceneOf(projectId, sceneId);
     if (homes == null || scene == null) return const [];
     final result = <Layer>[];
     for (final entry in homes.entries) {
       final home = entry.value;
-      if (home.sceneId != sceneId || home.frameIndex >= scene.frames.length) continue;
-      final layer = scene.frames[home.frameIndex].layers.where((l) => l.id == entry.key).firstOrNull;
+      if (home.sceneId != sceneId || home.frameIndex >= scene.frames.length) {
+        continue;
+      }
+      final layer = scene.frames[home.frameIndex].layers
+          .where((l) => l.id == entry.key)
+          .firstOrNull;
       if (layer != null && layer.type == type) result.add(layer);
     }
     return result;
@@ -1482,14 +1775,23 @@ class ProjectService extends ChangeNotifier {
 
   /// [rowIndex]の行を削除する。先頭行（0）は削除不可。その行にクリップが
   /// 存在する場合も削除できず、falseを返す（呼び出し元で案内を表示する）。
-  bool removeTrackRow(String projectId, String sceneId, MaterialType type, int rowIndex) {
+  bool removeTrackRow(
+    String projectId,
+    String sceneId,
+    MaterialType type,
+    int rowIndex,
+  ) {
     final names = rowNamesOf(projectId, sceneId, type);
     if (rowIndex <= 0 || rowIndex >= names.length) return false;
     final hasClips = type == MaterialType.audio
         ? audioClipsOf(projectId, sceneId).any((c) => c.trackRow == rowIndex)
-        : _materialLayersInScene(projectId, sceneId,
-                type == MaterialType.image ? LayerType.timelineImage : LayerType.timelineVideo)
-            .any((l) => l.trackRow == rowIndex);
+        : _materialLayersInScene(
+            projectId,
+            sceneId,
+            type == MaterialType.image
+                ? LayerType.timelineImage
+                : LayerType.timelineVideo,
+          ).any((l) => l.trackRow == rowIndex);
     if (hasClips) return false;
 
     final scenes = _scenes[projectId];
@@ -1503,11 +1805,17 @@ class ProjectService extends ChangeNotifier {
     // rowIndexより後ろの行の割り当てを1つずつ詰める
     if (type == MaterialType.audio) {
       final updatedClips = scene.audioClips
-          .map((c) => c.trackRow > rowIndex ? c.copyWith(trackRow: c.trackRow - 1) : c)
+          .map(
+            (c) => c.trackRow > rowIndex
+                ? c.copyWith(trackRow: c.trackRow - 1)
+                : c,
+          )
           .toList();
       scene = scene.copyWith(audioClips: updatedClips);
     } else {
-      final targetType = type == MaterialType.image ? LayerType.timelineImage : LayerType.timelineVideo;
+      final targetType = type == MaterialType.image
+          ? LayerType.timelineImage
+          : LayerType.timelineVideo;
       final newFrames = scene.frames.map((f) {
         final newLayers = f.layers.map((l) {
           if (l.type == targetType && l.trackRow > rowIndex) {
@@ -1526,7 +1834,13 @@ class ProjectService extends ChangeNotifier {
     return true;
   }
 
-  void renameTrackRow(String projectId, String sceneId, MaterialType type, int rowIndex, String? name) {
+  void renameTrackRow(
+    String projectId,
+    String sceneId,
+    MaterialType type,
+    int rowIndex,
+    String? name,
+  ) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1570,7 +1884,9 @@ class ProjectService extends ChangeNotifier {
       if (idx < 0) return;
       indices.add(idx);
     }
-    if (indices.any((i) => !_mergeableLayerTypes.contains(layers[i].type))) return;
+    if (indices.any((i) => !_mergeableLayerTypes.contains(layers[i].type))) {
+      return;
+    }
 
     indices.sort();
     final bottomIndex = indices.last;
@@ -1586,11 +1902,15 @@ class ProjectService extends ChangeNotifier {
         tm.canvasWidth,
         tm.canvasHeight,
       );
-      final byteData = await mergedImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await mergedImage.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       mergedImage.dispose();
       if (byteData != null) {
         tm.replaceLayerPixels(
-            frameLayerKey(sceneId, frameIndex, bottomLayer.id), byteData.buffer.asUint8List());
+          frameLayerKey(sceneId, frameIndex, bottomLayer.id),
+          byteData.buffer.asUint8List(),
+        );
       }
       for (final layer in selectedLayers) {
         if (layer.id == bottomLayer.id) continue;
@@ -1607,8 +1927,10 @@ class ProjectService extends ChangeNotifier {
     final scene = scenes[sceneIdx];
     if (frameIndex >= scene.frames.length) return;
     final latestLayers = List<Layer>.from(scene.frames[frameIndex].layers);
-    final removeIds =
-        selectedLayers.map((l) => l.id).where((id) => id != bottomLayer.id).toSet();
+    final removeIds = selectedLayers
+        .map((l) => l.id)
+        .where((id) => id != bottomLayer.id)
+        .toSet();
     latestLayers.removeWhere((l) => removeIds.contains(l.id));
     final insertAt = latestLayers.indexWhere((l) => l.id == bottomLayer.id);
     if (insertAt < 0) return;
@@ -1645,7 +1967,10 @@ class ProjectService extends ChangeNotifier {
         rangeSceneId: rangeSceneId,
       ),
     );
-    (_layerHomes[projectId] ??= {})[layer.id] = (sceneId: sceneId, frameIndex: frameIndex);
+    (_layerHomes[projectId] ??= {})[layer.id] = (
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+    );
     notifyListeners();
   }
 
@@ -1672,7 +1997,9 @@ class ProjectService extends ChangeNotifier {
       tm.canvasWidth,
       tm.canvasHeight,
     );
-    final byteData = await flattened.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await flattened.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     flattened.dispose();
     if (byteData == null) return;
 
@@ -1685,7 +2012,9 @@ class ProjectService extends ChangeNotifier {
       name: '共通${visible + 1}',
     );
     tm.replaceLayerPixels(
-        frameLayerKey(sceneId, frameIndex, created.id), byteData.buffer.asUint8List());
+      frameLayerKey(sceneId, frameIndex, created.id),
+      byteData.buffer.asUint8List(),
+    );
     updateLayer(
       projectId: projectId,
       sceneId: sceneId,
@@ -1742,9 +2071,7 @@ class ProjectService extends ChangeNotifier {
       totalFrames,
       (i) => i == 0 ? initialFrame : Frame(index: i, layers: [initialLayer]),
     );
-    _scenes[projectId] = [
-      Scene(id: 'Scene0001', index: 0, frames: frames),
-    ];
+    _scenes[projectId] = [Scene(id: 'Scene0001', index: 0, frames: frames)];
 
     // TileManager 初期化
     _tileManagers[projectId] = TileManager(
@@ -1926,7 +2253,9 @@ class ProjectService extends ChangeNotifier {
     final oldHeight = sourceTm.canvasHeight;
     for (final key in sourceTm.exportAll().keys.toList()) {
       final image = await sourceTm.compositeLayerToImage(key);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       image.dispose();
       if (byteData == null) continue;
       final oldBytes = byteData.buffer.asUint8List();
@@ -1949,10 +2278,15 @@ class ProjectService extends ChangeNotifier {
     }
 
     _tileManagers[projectId] = newTm;
-    final scale = project.drawingAreaScale <= 0 ? 1.0 : project.drawingAreaScale;
+    final scale = project.drawingAreaScale <= 0
+        ? 1.0
+        : project.drawingAreaScale;
     final newExportWidth = (newWidth / scale).round().clamp(64, 1 << 30);
     final newExportHeight = (newHeight / scale).round().clamp(64, 1 << 30);
-    _projects[idx] = project.copyWith(exportWidth: newExportWidth, exportHeight: newExportHeight);
+    _projects[idx] = project.copyWith(
+      exportWidth: newExportWidth,
+      exportHeight: newExportHeight,
+    );
     _saveAsync(projectId);
     notifyListeners();
   }
@@ -1960,7 +2294,9 @@ class ProjectService extends ChangeNotifier {
   Future<void> toggleFavorite(String id) async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
-      _projects[idx] = _projects[idx].copyWith(isFavorite: !_projects[idx].isFavorite);
+      _projects[idx] = _projects[idx].copyWith(
+        isFavorite: !_projects[idx].isFavorite,
+      );
       _saveAsync(id);
       notifyListeners();
     }
@@ -1969,7 +2305,10 @@ class ProjectService extends ChangeNotifier {
   /// このプロジェクトで使用する自動塗りプリセットを設定する。
   /// プロジェクトごとに使うプリセットだけを選べるようにする。
   /// [ids]がnullの場合は「すべて使用する」に戻す。
-  Future<void> setEnabledAutofillPresetIds(String projectId, List<String>? ids) async {
+  Future<void> setEnabledAutofillPresetIds(
+    String projectId,
+    List<String>? ids,
+  ) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx >= 0) {
       _projects[idx] = _projects[idx].copyWith(enabledAutofillPresetIds: ids);
@@ -2038,12 +2377,17 @@ class ProjectService extends ChangeNotifier {
     final picture = recorder.endRecording();
     final thumbImage = await picture.toImage(tw, th);
     picture.dispose();
-    final byteData = await thumbImage.toByteData(format: ui.ImageByteFormat.png);
+    final byteData = await thumbImage.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     thumbImage.dispose();
     final pngBytes = byteData?.buffer.asUint8List();
     if (pngBytes == null) return;
 
-    final path = await NiaproSerializer.saveProjectThumbnail(projectId, pngBytes);
+    final path = await NiaproSerializer.saveProjectThumbnail(
+      projectId,
+      pngBytes,
+    );
     final curIdx = _projects.indexWhere((p) => p.id == projectId);
     if (curIdx < 0) return;
     _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);
@@ -2053,7 +2397,10 @@ class ProjectService extends ChangeNotifier {
 
   /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
   /// （「フォルダは複数階層に対応」）。nullはルート直下。
-  Future<ProjectFolder> createFolder(String name, {String? parentFolderId}) async {
+  Future<ProjectFolder> createFolder(
+    String name, {
+    String? parentFolderId,
+  }) async {
     final folder = ProjectFolder(
       id: _nextId('folder'),
       name: name,
@@ -2087,7 +2434,9 @@ class ProjectService extends ChangeNotifier {
   Future<void> toggleFolderFavorite(String folderId) async {
     final idx = _folders.indexWhere((f) => f.id == folderId);
     if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(isFavorite: !_folders[idx].isFavorite);
+    _folders[idx] = _folders[idx].copyWith(
+      isFavorite: !_folders[idx].isFavorite,
+    );
     await _persistFolders();
     notifyListeners();
   }
@@ -2096,7 +2445,9 @@ class ProjectService extends ChangeNotifier {
   /// 自分自身または自分の子孫フォルダへの移動は無視する（循環防止）。
   Future<void> moveFolderTo(String folderId, String? newParentId) async {
     if (folderId == newParentId) return;
-    if (newParentId != null && _isDescendantFolder(newParentId, folderId)) return;
+    if (newParentId != null && _isDescendantFolder(newParentId, folderId)) {
+      return;
+    }
     final idx = _folders.indexWhere((f) => f.id == folderId);
     if (idx < 0) return;
     _folders[idx] = _folders[idx].copyWith(parentFolderId: newParentId);
@@ -2109,7 +2460,10 @@ class ProjectService extends ChangeNotifier {
     String? current = candidateId;
     while (current != null) {
       if (current == ancestorId) return true;
-      current = _folders.where((f) => f.id == current).firstOrNull?.parentFolderId;
+      current = _folders
+          .where((f) => f.id == current)
+          .firstOrNull
+          ?.parentFolderId;
     }
     return false;
   }
@@ -2180,7 +2534,9 @@ class ProjectService extends ChangeNotifier {
     // .niaproへの保存（_saveAsync）もそちら経由で行う。
     final mainIdx = _projects.indexWhere((p) => p.id == projectId);
     if (mainIdx >= 0) {
-      _projects[mainIdx] = _projects[mainIdx].copyWith(sharedFolderId: folderId);
+      _projects[mainIdx] = _projects[mainIdx].copyWith(
+        sharedFolderId: folderId,
+      );
       _saveAsync(projectId);
     }
     notifyListeners();
@@ -2196,7 +2552,9 @@ class ProjectService extends ChangeNotifier {
       final list = jsonDecode(raw) as List<dynamic>;
       _sharedFolders
         ..clear()
-        ..addAll(list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)));
+        ..addAll(
+          list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
+        );
     } catch (_) {
       // 読み込み失敗時はフォルダなしとして続行
     }
@@ -2206,7 +2564,9 @@ class ProjectService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
-          _sharedFoldersPrefsKey, jsonEncode(_sharedFolders.map((f) => f.toJson()).toList()));
+        _sharedFoldersPrefsKey,
+        jsonEncode(_sharedFolders.map((f) => f.toJson()).toList()),
+      );
     } catch (_) {
       // 保存失敗時も続行（次回操作時に再試行される）
     }
@@ -2228,7 +2588,9 @@ class ProjectService extends ChangeNotifier {
       final list = jsonDecode(raw) as List<dynamic>;
       _folders
         ..clear()
-        ..addAll(list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)));
+        ..addAll(
+          list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
+        );
     } catch (_) {
       // 読み込み失敗時はフォルダなしとして続行
     }
@@ -2237,7 +2599,10 @@ class ProjectService extends ChangeNotifier {
   Future<void> _persistFolders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_foldersPrefsKey, jsonEncode(_folders.map((f) => f.toJson()).toList()));
+      await prefs.setString(
+        _foldersPrefsKey,
+        jsonEncode(_folders.map((f) => f.toJson()).toList()),
+      );
     } catch (_) {
       // 保存失敗時も続行（次回操作時に再試行される）
     }

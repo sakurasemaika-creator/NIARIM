@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'dart:typed_data';
@@ -71,12 +71,12 @@ class _TrackClip {
   // 参照している素材ID
   final String? materialId;
   // 音声
-  double volume;       // 0.0〜1.0
-  double fadeIn;       // フェードイン秒数
-  double fadeOut;      // フェードアウト秒数
+  double volume; // 0.0〜1.0
+  double fadeIn; // フェードイン秒数
+  double fadeOut; // フェードアウト秒数
   // 動画
-  int useStart;        // 使用開始フレーム（素材内）
-  int useEnd;          // 使用終了フレーム（素材内）
+  int useStart; // 使用開始フレーム（素材内）
+  int useEnd; // 使用終了フレーム（素材内）
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // このクリップが属する行番号（0始まり）。
@@ -100,7 +100,6 @@ class _TrackClip {
     this.trackRow = 0,
   });
 }
-
 
 class TimelineScreen extends StatefulWidget {
   final String projectId;
@@ -231,7 +230,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_lastCenteredFrame == _currentFrame) return;
     final hadPrevious = _lastCenteredFrame != null;
     _lastCenteredFrame = _currentFrame;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _centerFrameInList(animate: hadPrevious));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _centerFrameInList(animate: hadPrevious),
+    );
   }
 
   // フレーム一覧の左右には((ビューポート幅-セル幅)/2)の余白（_buildFrameList
@@ -239,9 +240,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // きっちりスクロールできる。
   void _centerFrameInList({required bool animate}) {
     if (!_frameScrollCtrl.hasClients) return;
-    final target = (_currentFrame * _cellW).clamp(0.0, _frameScrollCtrl.position.maxScrollExtent);
+    final target = (_currentFrame * _cellW).clamp(
+      0.0,
+      _frameScrollCtrl.position.maxScrollExtent,
+    );
     if (animate) {
-      _frameScrollCtrl.animateTo(target, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      _frameScrollCtrl.animateTo(
+        target,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
     } else {
       _frameScrollCtrl.jumpTo(target);
     }
@@ -255,7 +263,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_isFrameMoveMode || _isFrameMultiSelect) return false;
     final total = _totalFrames;
     if (total <= 0 || !_frameScrollCtrl.hasClients) return false;
-    final nearest = (_frameScrollCtrl.offset / _cellW).round().clamp(0, total - 1);
+    final nearest = (_frameScrollCtrl.offset / _cellW).round().clamp(
+      0,
+      total - 1,
+    );
     if (nearest != _currentFrame) {
       setState(() => _currentFrame = nearest);
     } else {
@@ -334,7 +345,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 小さいプレビュー用に縮小したui.Imageを返す。生成できない場合はnull。
   Future<void> _loadMoveThumbnail(String sceneId, {int frameIndex = 0}) async {
     final ps = context.read<ProjectService>();
-    final scene = ps.scenesOf(widget.projectId).where((s) => s.id == sceneId).firstOrNull;
+    final scene = ps
+        .scenesOf(widget.projectId)
+        .where((s) => s.id == sceneId)
+        .firstOrNull;
     if (scene == null || scene.frames.isEmpty) return;
     final frame = scene.frames[frameIndex.clamp(0, scene.frames.length - 1)];
     final tileManager = ps.tileManagerOf(widget.projectId);
@@ -385,7 +399,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _pauseAllMedia();
     } else {
       final ps = context.read<ProjectService>();
-      final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+      final project = ps.projects
+          .where((p) => p.id == widget.projectId)
+          .firstOrNull;
       final fps = project?.fps ?? 24;
       _playTimer = Timer.periodic(
         Duration(milliseconds: (1000 / fps).round()),
@@ -415,7 +431,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 音声＝再生位置変更・フェードイン/アウト・音量変更、動画＝再生位置変更。
   void _syncMediaPlayback() {
     final ps = context.read<ProjectService>();
-    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     final fps = (project?.fps ?? 24).toDouble();
     for (final clip in _audioClips) {
       _syncAudioClip(clip, fps);
@@ -426,7 +444,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   bool _clipInRange(_TrackClip clip) =>
-      _currentFrame >= clip.startFrame && _currentFrame < clip.startFrame + clip.lengthFrames;
+      _currentFrame >= clip.startFrame &&
+      _currentFrame < clip.startFrame + clip.lengthFrames;
 
   Future<void> _syncAudioClip(_TrackClip clip, double fps) async {
     final path = clip.filePath;
@@ -462,7 +481,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (path == null) return;
     var controller = _videoControllers[clip.id];
     if (!_clipInRange(clip)) {
-      if (controller != null && controller.value.isInitialized && controller.value.isPlaying) {
+      if (controller != null &&
+          controller.value.isInitialized &&
+          controller.value.isPlaying) {
         await controller.pause();
       }
       return;
@@ -481,7 +502,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     await controller.setVolume(clip.videoOpacity.clamp(0.0, 1.0));
     final elapsedFrames = _currentFrame - clip.startFrame;
     final targetFrame = clip.useStart + elapsedFrames;
-    final targetPos = Duration(milliseconds: (targetFrame / fps * 1000).round());
+    final targetPos = Duration(
+      milliseconds: (targetFrame / fps * 1000).round(),
+    );
     if (!_isPlaying) {
       if (controller.value.isPlaying) await controller.pause();
       await controller.seekTo(targetPos);
@@ -501,7 +524,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // 選択中シーンが未設定・削除済みの場合は先頭シーンへ同期する。
     final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
     if (scenes.isNotEmpty &&
-        (_selectedSceneId == null || !scenes.any((s) => s.id == _selectedSceneId))) {
+        (_selectedSceneId == null ||
+            !scenes.any((s) => s.id == _selectedSceneId))) {
       _selectedSceneId = scenes.first.id;
     }
     // タイムライン素材クリップ（音声・画像・動画）を永続データから復元する。
@@ -525,7 +549,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // させる（それでも大抵は暗色系のためチェック目的の集中は保たれる）。
         backgroundColor: theme.panelBgColor,
         body: Listener(
-          onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
+          onPointerDown: (_) =>
+              context.read<ProjectService>().pingWorkActivity(),
           child: SafeArea(
             child: Column(
               children: [
@@ -534,7 +559,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   child: IconButton(
                     icon: Icon(Icons.fullscreen_exit, color: theme.textColor),
                     tooltip: l10n.timelineFullscreenPreviewCloseTooltip,
-                    onPressed: () => setState(() => _isPreviewFullscreen = false),
+                    onPressed: () =>
+                        setState(() => _isPreviewFullscreen = false),
                   ),
                 ),
                 _buildPreview(),
@@ -553,63 +579,63 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // 制作時間カウント：操作のたびに無操作タイマーをリセットする
         onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
         child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, outerConstraints) {
-            return Column(
-              children: [
-                _buildTopBar(),
-                _buildPreviewWithHandle(outerConstraints.maxHeight),
-                _buildSeekBar(),
-                _buildPlaybackControls(),
-                _buildToolbar(),
-                _buildSceneTabs(),
-                _buildFrameList(),
-                // 各種タイムライン行：デフォルトではプレビュー・
-                // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
-                // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
-                // 1つでも追加された行だけを表示する。最後の1件を削除すれば、
-                // その行だけ最初と同じく非表示に戻る（画像素材は共通レイヤー
-                // 機能とキャンバスモードの画像読み込みで代替できるため廃止）。
-                // 表示順：フレーム・シーン・共通レイヤー・動画・音源・カメラ・
-                // タイムスタンプ・演出フィルター・エンドカードの順。
-                // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
-                // スクロールで広く見られるようにExpanded+スクロールにしている。
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        _buildCommonLayerTrack(),
-                        // シーン・フレームの複数選択モード中の一括操作バー
-                        // （小さいボタンではなく素材タイムラインの上に大きな
-                        // 3分割ボタンで表示）
-                        _buildMultiSelectActionBar(),
-                        _buildMaterialTrackGroup(
-                          type: MaterialType.video,
-                          icon: Icons.videocam,
-                          defaultLabel: l10n.projectListMaterialVideo,
-                          allClips: _videoClips,
-                          addColor: Colors.blue[700]!,
-                        ),
-                        _buildMaterialTrackGroup(
-                          type: MaterialType.audio,
-                          icon: Icons.audiotrack,
-                          defaultLabel: l10n.projectListMaterialAudio,
-                          allClips: _audioClips,
-                          addColor: Colors.orange[700]!,
-                        ),
-                        _buildCameraTrack(),
-                        _buildMarkerTrack(),
-                        _buildEffectFilterTrack(),
-                        _buildEndCardTrack(),
-                        if (adService.shouldShowAds) const AdBannerWidget(),
-                      ],
+          child: LayoutBuilder(
+            builder: (context, outerConstraints) {
+              return Column(
+                children: [
+                  _buildTopBar(),
+                  _buildPreviewWithHandle(outerConstraints.maxHeight),
+                  _buildSeekBar(),
+                  _buildPlaybackControls(),
+                  _buildToolbar(),
+                  _buildSceneTabs(),
+                  _buildFrameList(),
+                  // 各種タイムライン行：デフォルトではプレビュー・
+                  // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
+                  // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
+                  // 1つでも追加された行だけを表示する。最後の1件を削除すれば、
+                  // その行だけ最初と同じく非表示に戻る（画像素材は共通レイヤー
+                  // 機能とキャンバスモードの画像読み込みで代替できるため廃止）。
+                  // 表示順：フレーム・シーン・共通レイヤー・動画・音源・カメラ・
+                  // タイムスタンプ・演出フィルター・エンドカードの順。
+                  // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
+                  // スクロールで広く見られるようにExpanded+スクロールにしている。
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildCommonLayerTrack(),
+                          // シーン・フレームの複数選択モード中の一括操作バー
+                          // （小さいボタンではなく素材タイムラインの上に大きな
+                          // 3分割ボタンで表示）
+                          _buildMultiSelectActionBar(),
+                          _buildMaterialTrackGroup(
+                            type: MaterialType.video,
+                            icon: Icons.videocam,
+                            defaultLabel: l10n.projectListMaterialVideo,
+                            allClips: _videoClips,
+                            addColor: Colors.blue[700]!,
+                          ),
+                          _buildMaterialTrackGroup(
+                            type: MaterialType.audio,
+                            icon: Icons.audiotrack,
+                            defaultLabel: l10n.projectListMaterialAudio,
+                            allClips: _audioClips,
+                            addColor: Colors.orange[700]!,
+                          ),
+                          _buildCameraTrack(),
+                          _buildMarkerTrack(),
+                          _buildEffectFilterTrack(),
+                          _buildEndCardTrack(),
+                          if (adService.shouldShowAds) const AdBannerWidget(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
-        ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -617,11 +643,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
-    final projectName = context.watch<ProjectService>()
-        .projects
-        .where((p) => p.id == widget.projectId)
-        .firstOrNull
-        ?.name ??
+    final projectName =
+        context
+            .watch<ProjectService>()
+            .projects
+            .where((p) => p.id == widget.projectId)
+            .firstOrNull
+            ?.name ??
         l10n.timelineDefaultProjectName;
     final undoManager = context.watch<UndoManager>();
     return Padding(
@@ -634,16 +662,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
           IconButton(
             icon: const Row(
               mainAxisSize: MainAxisSize.min,
-              children: [Icon(Icons.arrow_back), Icon(Icons.palette_outlined, size: 18)],
+              children: [
+                Icon(Icons.arrow_back),
+                Icon(Icons.palette_outlined, size: 18),
+              ],
             ),
             tooltip: l10n.timelineBackToCanvasTooltip,
             onPressed: _saveAndGoToCanvas,
           ),
-          Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'Kuramubon'))),
+          Expanded(
+            child: Text(
+              projectName,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Kuramubon',
+              ),
+            ),
+          ),
           // プロジェクト一覧へ戻るボタン。上記のキャンバスへ戻るボタンと
           // 位置を入れ替え、家アイコンにしてプロジェクト一覧＝ホームである
           // ことをわかりやすくしている。
-          IconButton(icon: const Icon(Icons.home_outlined), tooltip: l10n.timelineBackToProjectListTooltip, onPressed: _confirmBackToProjectList),
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            tooltip: l10n.timelineBackToProjectListTooltip,
+            onPressed: _confirmBackToProjectList,
+          ),
           IconButton(
             icon: const Icon(Icons.undo),
             tooltip: l10n.commonUndo,
@@ -662,22 +707,40 @@ class _TimelineScreenState extends State<TimelineScreen> {
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {
               if (action == 'autofill') _showAutofillDialog();
-              if (action == 'save_tree') context.push('/save-tree/${widget.projectId}?entry=timeline');
-              if (action == 'export') context.push('/export/${widget.projectId}');
+              if (action == 'save_tree') {
+                context.push('/save-tree/${widget.projectId}?entry=timeline');
+              }
+              if (action == 'export') {
+                context.push('/export/${widget.projectId}');
+              }
               if (action == 'duration') _showDurationChangeDialog();
               if (action == 'canvas_size') _showCanvasSizeChangeDialog();
             },
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: 'save_tree',
-                child: Text(context.read<SaveTreeService>().isTreeMode
-                    ? l10n.saveTreeScreenTitleTree
-                    : l10n.saveTreeScreenTitleSlot),
+                child: Text(
+                  context.read<SaveTreeService>().isTreeMode
+                      ? l10n.saveTreeScreenTitleTree
+                      : l10n.saveTreeScreenTitleSlot,
+                ),
               ),
-              PopupMenuItem(value: 'autofill', child: Text(l10n.layerPanelMenuRunAutofill)),
-              PopupMenuItem(value: 'duration', child: Text(l10n.timelineDurationChangeMenuItem)),
-              PopupMenuItem(value: 'canvas_size', child: Text(l10n.timelineCanvasSizeChangeMenuItem)),
-              PopupMenuItem(value: 'export', child: Text(l10n.timelineExportMenuItem)),
+              PopupMenuItem(
+                value: 'autofill',
+                child: Text(l10n.layerPanelMenuRunAutofill),
+              ),
+              PopupMenuItem(
+                value: 'duration',
+                child: Text(l10n.timelineDurationChangeMenuItem),
+              ),
+              PopupMenuItem(
+                value: 'canvas_size',
+                child: Text(l10n.timelineCanvasSizeChangeMenuItem),
+              ),
+              PopupMenuItem(
+                value: 'export',
+                child: Text(l10n.timelineExportMenuItem),
+              ),
             ],
           ),
           const HelpButton(topic: 'タイムライン'),
@@ -698,19 +761,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
       // （既定は白）に合わせる必要がある（濃色にすると透明部分の見え方が
       // 実際のキャンバス画面と一致しなくなるため、ここは色固定のままにする
       // ——テーマ連動にはしない、意図的な例外）。
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(4),
+      ),
       child: Stack(
         children: [
           Positioned.fill(
             child: sceneId == null
-                ? Center(child: Text(l10n.timelinePreviewPlaceholder, style: const TextStyle(color: Colors.grey)))
+                ? Center(
+                    child: Text(
+                      l10n.timelinePreviewPlaceholder,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  )
                 : _TimelinePreview(
                     tileManager: ps.tileManagerOf(widget.projectId),
-                    layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
+                    layers: ps.layersOf(
+                      widget.projectId,
+                      sceneId,
+                      _currentFrame,
+                    ),
                     sceneId: sceneId,
                     frameIndex: _currentFrame,
-                    cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
-                    effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
+                    cameraKeyframes: ps.cameraKeyframesOf(
+                      widget.projectId,
+                      sceneId,
+                    ),
+                    effectFilters: ps.effectFiltersOf(
+                      widget.projectId,
+                      sceneId,
+                    ),
                     layerHomes: ps.layerHomesOf(widget.projectId),
                     groups: ps.layerGroupsOf(widget.projectId, sceneId),
                   ),
@@ -726,10 +807,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
               tooltipKey: 'timeline_preview_fullscreen',
               message: l10n.timelinePreviewFullscreenTip,
               child: Material(
-                color: context.watch<ThemeService>().current.menuBgColor.withValues(alpha: 0.7),
+                color: context
+                    .watch<ThemeService>()
+                    .current
+                    .menuBgColor
+                    .withValues(alpha: 0.7),
                 shape: const CircleBorder(),
                 child: IconButton(
-                  icon: Icon(Icons.fullscreen, color: context.watch<ThemeService>().current.textColor, size: 20),
+                  icon: Icon(
+                    Icons.fullscreen,
+                    color: context.watch<ThemeService>().current.textColor,
+                    size: 20,
+                  ),
                   tooltip: l10n.timelinePreviewFullscreenTooltip,
                   onPressed: sceneId == null
                       ? null
@@ -763,7 +852,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget _buildPreviewWithHandle(double maxAvailableHeight) {
     final settings = context.watch<SettingsService>();
     final ps = context.watch<ProjectService>();
-    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     final aspect = (project != null && project.exportHeight > 0)
         ? project.exportWidth / project.exportHeight
         : 16 / 9;
@@ -773,9 +864,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // プレビュー領域の一番上に付くまで、加減なく縮小できるようにする）。
     final screenWidth = MediaQuery.of(context).size.width;
     final maxHeightByScreenWidth = aspect > 0 ? screenWidth / aspect : maxH;
-    final maxPreviewHeight = maxHeightByScreenWidth < maxH ? maxHeightByScreenWidth : maxH;
-    final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(0.0, maxPreviewHeight);
-    final previewHeight = (_previewHeightDragOverride ?? baseHeight).clamp(0.0, maxPreviewHeight);
+    final maxPreviewHeight = maxHeightByScreenWidth < maxH
+        ? maxHeightByScreenWidth
+        : maxH;
+    final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(
+      0.0,
+      maxPreviewHeight,
+    );
+    final previewHeight = (_previewHeightDragOverride ?? baseHeight).clamp(
+      0.0,
+      maxPreviewHeight,
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -790,7 +889,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           height: previewHeight,
           width: double.infinity,
           child: Center(
-            child: AspectRatio(aspectRatio: aspect, child: _buildPreviewContent()),
+            child: AspectRatio(
+              aspectRatio: aspect,
+              child: _buildPreviewContent(),
+            ),
           ),
         ),
         // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
@@ -801,14 +903,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
           dragStartBehavior: DragStartBehavior.down,
           onVerticalDragUpdate: (d) {
             setState(() {
-              final current = (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
+              final current =
+                  (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
               _previewHeightDragOverride = current.clamp(0.0, maxPreviewHeight);
             });
           },
           onVerticalDragEnd: (_) {
             final h = _previewHeightDragOverride;
             if (h != null) {
-              context.read<SettingsService>().setTimelinePreviewHeightFraction(h / maxH);
+              context.read<SettingsService>().setTimelinePreviewHeightFraction(
+                h / maxH,
+              );
             }
           },
           child: Container(
@@ -865,11 +970,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(icon: const Icon(Icons.skip_previous), tooltip: l10n.timelineSkipToStart, onPressed: () => setState(() => _currentFrame = 0)),
-          IconButton(icon: const Icon(Icons.fast_rewind), tooltip: l10n.timelineStepBack, onPressed: () { if (_currentFrame > 0) setState(() => _currentFrame--); }),
-          IconButton(icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow), tooltip: _isPlaying ? l10n.commonPause : l10n.commonPlay, onPressed: _togglePlay),
-          IconButton(icon: const Icon(Icons.fast_forward), tooltip: l10n.timelineStepForward, onPressed: () { if (_currentFrame < _totalFrames - 1) setState(() => _currentFrame++); }),
-          IconButton(icon: const Icon(Icons.skip_next), tooltip: l10n.timelineSkipToEnd, onPressed: () => setState(() => _currentFrame = _totalFrames - 1)),
+          IconButton(
+            icon: const Icon(Icons.skip_previous),
+            tooltip: l10n.timelineSkipToStart,
+            onPressed: () => setState(() => _currentFrame = 0),
+          ),
+          IconButton(
+            icon: const Icon(Icons.fast_rewind),
+            tooltip: l10n.timelineStepBack,
+            onPressed: () {
+              if (_currentFrame > 0) setState(() => _currentFrame--);
+            },
+          ),
+          IconButton(
+            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+            tooltip: _isPlaying ? l10n.commonPause : l10n.commonPlay,
+            onPressed: _togglePlay,
+          ),
+          IconButton(
+            icon: const Icon(Icons.fast_forward),
+            tooltip: l10n.timelineStepForward,
+            onPressed: () {
+              if (_currentFrame < _totalFrames - 1) {
+                setState(() => _currentFrame++);
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.skip_next),
+            tooltip: l10n.timelineSkipToEnd,
+            onPressed: () => setState(() => _currentFrame = _totalFrames - 1),
+          ),
         ],
       ),
     );
@@ -883,27 +1014,55 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+        border: Border(
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
             icon: const Icon(Icons.videocam, size: 18),
-            onPressed: () => _showAddClipDialog(l10n.projectListMaterialVideo, _videoClips, Colors.blue[700]!, _ClipTrackType.video),
+            onPressed: () => _showAddClipDialog(
+              l10n.projectListMaterialVideo,
+              _videoClips,
+              Colors.blue[700]!,
+              _ClipTrackType.video,
+            ),
             tooltip: l10n.timelineAddVideoTooltip,
           ),
           IconButton(
             icon: const Icon(Icons.audiotrack, size: 18),
-            onPressed: () => _showAddClipDialog(l10n.projectListMaterialAudio, _audioClips, Colors.orange[700]!, _ClipTrackType.audio),
+            onPressed: () => _showAddClipDialog(
+              l10n.projectListMaterialAudio,
+              _audioClips,
+              Colors.orange[700]!,
+              _ClipTrackType.audio,
+            ),
             tooltip: l10n.timelineAddAudioTooltip,
           ),
           // ウォーターマーク：無料会員は🔒付き表示、タップで共通Premiumバナー
           _buildWatermarkButton(isPremium),
-          IconButton(icon: const Icon(Icons.movie_filter, size: 18), onPressed: () => _showEffectFilterDialog(), tooltip: l10n.timelineEffectFilterLabel),
-          IconButton(icon: const Icon(Icons.camera, size: 18), onPressed: _addCameraKf, tooltip: l10n.timelineAddCameraKfTooltip),
-          IconButton(icon: const Icon(Icons.push_pin_outlined, size: 18), onPressed: _showAddMarkerDialog, tooltip: l10n.timelineMarkerTrackLabel),
-          IconButton(icon: const Icon(Icons.upload_file, size: 18), onPressed: () => context.push('/export/${widget.projectId}'), tooltip: l10n.transferExport),
+          IconButton(
+            icon: const Icon(Icons.movie_filter, size: 18),
+            onPressed: () => _showEffectFilterDialog(),
+            tooltip: l10n.timelineEffectFilterLabel,
+          ),
+          IconButton(
+            icon: const Icon(Icons.camera, size: 18),
+            onPressed: _addCameraKf,
+            tooltip: l10n.timelineAddCameraKfTooltip,
+          ),
+          IconButton(
+            icon: const Icon(Icons.push_pin_outlined, size: 18),
+            onPressed: _showAddMarkerDialog,
+            tooltip: l10n.timelineMarkerTrackLabel,
+          ),
+          IconButton(
+            icon: const Icon(Icons.upload_file, size: 18),
+            onPressed: () => context.push('/export/${widget.projectId}'),
+            tooltip: l10n.transferExport,
+          ),
         ],
       ),
     );
@@ -926,7 +1085,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.branding_watermark, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            Icon(
+              Icons.branding_watermark,
+              size: 18,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 2),
             const Icon(Icons.lock, size: 12, color: Colors.amber),
           ],
@@ -949,7 +1112,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           title: Text(l10n.timelineWatermarkNotRegisteredTitle),
           content: Text(l10n.timelineWatermarkNotRegisteredBody),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonClose),
+            ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
@@ -970,11 +1136,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Text(l10n.timelineWatermarkSelectTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              child: Text(
+                l10n.timelineWatermarkSelectTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
             ),
             for (final asset in assets)
               ListTile(
-                leading: Icon(asset.type == WatermarkAssetType.text ? Icons.text_fields : Icons.branding_watermark),
+                leading: Icon(
+                  asset.type == WatermarkAssetType.text
+                      ? Icons.text_fields
+                      : Icons.branding_watermark,
+                ),
                 title: Text(asset.name),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -1003,8 +1179,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
     const defaultAngle = 0.0;
     const defaultScale = 0.25;
     final pixels = asset.type == WatermarkAssetType.text
-        ? await _rasterizeTextWatermark(asset, w, h, angle: defaultAngle, scale: defaultScale)
-        : await _rasterizeImageWatermark(asset, w, h, angle: defaultAngle, scale: defaultScale);
+        ? await _rasterizeTextWatermark(
+            asset,
+            w,
+            h,
+            angle: defaultAngle,
+            scale: defaultScale,
+          )
+        : await _rasterizeImageWatermark(
+            asset,
+            w,
+            h,
+            angle: defaultAngle,
+            scale: defaultScale,
+          );
     if (pixels == null || !mounted) return;
 
     final layer = projectService.addLayer(
@@ -1041,12 +1229,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// [layer]の角度・大きさ・不透明度の変更をピクセルへ反映し直す
   /// （タイムラインでウォーターマークをタップして編集した際に呼ばれる）。
-  Future<void> _reRasterizeWatermark(Layer layer, LayerHome home, {
+  Future<void> _reRasterizeWatermark(
+    Layer layer,
+    LayerHome home, {
     required double angle,
     required double scale,
   }) async {
     final watermarkService = context.read<WatermarkService>();
-    final asset = watermarkService.assets.where((a) => a.id == layer.watermarkAssetId).firstOrNull;
+    final asset = watermarkService.assets
+        .where((a) => a.id == layer.watermarkAssetId)
+        .firstOrNull;
     if (asset == null || !mounted) return;
     final projectService = context.read<ProjectService>();
     final tileManager = projectService.tileManagerOf(widget.projectId);
@@ -1054,11 +1246,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final h = tileManager.canvasHeight;
     var pixels = asset.type == WatermarkAssetType.text
         ? await _rasterizeTextWatermark(asset, w, h, angle: angle, scale: scale)
-        : await _rasterizeImageWatermark(asset, w, h, angle: angle, scale: scale);
+        : await _rasterizeImageWatermark(
+            asset,
+            w,
+            h,
+            angle: angle,
+            scale: scale,
+          );
     if (pixels == null || !mounted) return;
     pixels = _applyWatermarkEffects(pixels, w, h, asset);
     tileManager.replaceLayerPixels(
-      projectService.tileKeyFor(widget.projectId, home.sceneId, home.frameIndex, layer.id),
+      projectService.tileKeyFor(
+        widget.projectId,
+        home.sceneId,
+        home.frameIndex,
+        layer.id,
+      ),
       pixels,
     );
   }
@@ -1070,11 +1273,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// リング状に描く）をそのまま使い、ドロップシャドウは元画像のシルエット
   /// （アルファそのまま・RGBを影色に置換）をオフセット＋ガウスぼかしした
   /// ものを下に敷いてから元画像を重ねて作る。
-  Uint8List _applyWatermarkEffects(Uint8List pixels, int w, int h, WatermarkAsset asset) {
+  Uint8List _applyWatermarkEffects(
+    Uint8List pixels,
+    int w,
+    int h,
+    WatermarkAsset asset,
+  ) {
     var result = pixels;
     if (asset.outlineEnabled) {
-      result = FilterEngine().applyOutline(result, w, h,
-          color: asset.outlineColor, widthPx: asset.outlineWidth);
+      result = FilterEngine().applyOutline(
+        result,
+        w,
+        h,
+        color: asset.outlineColor,
+        widthPx: asset.outlineWidth,
+      );
     }
     if (asset.shadowEnabled) {
       final silhouette = Uint8List(result.length);
@@ -1115,10 +1328,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
         } else {
           // アルファブレンド（src over dst）
           final invA = 255 - srcA;
-          composited[i] = ((result[i] * srcA + composited[i] * invA) / 255).round();
-          composited[i + 1] = ((result[i + 1] * srcA + composited[i + 1] * invA) / 255).round();
-          composited[i + 2] = ((result[i + 2] * srcA + composited[i + 2] * invA) / 255).round();
-          composited[i + 3] = (srcA + (composited[i + 3] * invA / 255)).round().clamp(0, 255);
+          composited[i] = ((result[i] * srcA + composited[i] * invA) / 255)
+              .round();
+          composited[i + 1] =
+              ((result[i + 1] * srcA + composited[i + 1] * invA) / 255).round();
+          composited[i + 2] =
+              ((result[i + 2] * srcA + composited[i + 2] * invA) / 255).round();
+          composited[i + 3] = (srcA + (composited[i + 3] * invA / 255))
+              .round()
+              .clamp(0, 255);
         }
       }
       result = composited;
@@ -1130,8 +1348,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 右下に配置する一般的なウォーターマーク位置をデフォルトとする。
   /// [angle]は度数法での回転角、[scale]はキャンバス幅に対する大きさの倍率
   /// （タイムラインでウォーターマークをタップすればいつでも変更できる）。
-  Future<Uint8List?> _rasterizeImageWatermark(WatermarkAsset asset, int w, int h,
-      {double angle = 0, double scale = 0.25}) async {
+  Future<Uint8List?> _rasterizeImageWatermark(
+    WatermarkAsset asset,
+    int w,
+    int h, {
+    double angle = 0,
+    double scale = 0.25,
+  }) async {
     final watermarkService = context.read<WatermarkService>();
     final path = await watermarkService.pathOf(asset.id);
     if (path == null || !mounted) return null;
@@ -1169,7 +1392,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
     image.dispose();
-    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await rendered.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     rendered.dispose();
     return byteData?.buffer.asUint8List();
   }
@@ -1180,8 +1405,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 画像ウォーターマークと同様に右下へ配置する。フォント・[angle]（回転角）・
   /// [scale]（大きさ倍率）はいずれもタイムラインでウォーターマークをタップ
   /// すればいつでも変更できる。
-  Future<Uint8List?> _rasterizeTextWatermark(WatermarkAsset asset, int w, int h,
-      {double angle = 0, double scale = 0.25}) async {
+  Future<Uint8List?> _rasterizeTextWatermark(
+    WatermarkAsset asset,
+    int w,
+    int h, {
+    double angle = 0,
+    double scale = 0.25,
+  }) async {
     final text = asset.text ?? '';
     if (text.isEmpty) return null;
     final fontSize = h * 0.18 * scale;
@@ -1251,12 +1481,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 right: -8,
                 top: -8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text('×$count', style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    '×$count',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -1276,7 +1516,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            left: 0, right: 0,
+            left: 0,
+            right: 0,
             bottom: 0,
             height: 36,
             child: Row(
@@ -1287,12 +1528,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 if (_isMoveMode)
                   TextButton(
                     onPressed: () => _confirmMove(scenes),
-                    child: Text(l10n.timelineConfirmButton, style: const TextStyle(fontSize: 11)),
+                    child: Text(
+                      l10n.timelineConfirmButton,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   )
                 else if (!_isSceneMultiSelect)
                   TextButton(
                     onPressed: () => setState(() => _isSceneMultiSelect = true),
-                    child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
+                    child: Text(
+                      l10n.toolbarItemSelect,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
                 Expanded(
                   child: ListView.builder(
@@ -1300,21 +1547,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     // 移動モード：カーソル位置(n+1) + シーンチップ(n) = 2n+1
                     // 通常モード：シーンチップ(n) + ＋ボタン(1) = n+1
-                    itemCount: _isMoveMode ? scenes.length * 2 + 1 : scenes.length + 1,
+                    itemCount: _isMoveMode
+                        ? scenes.length * 2 + 1
+                        : scenes.length + 1,
                     itemBuilder: (context, index) {
                       if (_isMoveMode) {
                         if (index.isEven) {
                           final cursorPos = index ~/ 2;
                           final isActive = _moveCursorPos == cursorPos;
                           return GestureDetector(
-                            onTap: () => setState(() => _moveCursorPos = cursorPos),
+                            onTap: () =>
+                                setState(() => _moveCursorPos = cursorPos),
                             child: Container(
                               width: 16,
                               alignment: Alignment.center,
                               child: Container(
                                 width: 3,
                                 height: 28,
-                                color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
+                                color: isActive
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.outline,
                               ),
                             ),
                           );
@@ -1325,18 +1577,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
                             child: Chip(
-                              label: Text(scene.displayName,
-                                  style: TextStyle(fontSize: 11,
-                                      color: isMoving ? Theme.of(context).colorScheme.primary : null)),
-                              backgroundColor: isMoving ? Theme.of(context).colorScheme.primaryContainer : null,
+                              label: Text(
+                                scene.displayName,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isMoving
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
+                                ),
+                              ),
+                              backgroundColor: isMoving
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer
+                                  : null,
                             ),
                           );
                         }
                       } else {
                         if (index == scenes.length) {
                           return TextButton(
-                            onPressed: () =>
-                                context.read<ProjectService>().addScene(widget.projectId),
+                            onPressed: () => context
+                                .read<ProjectService>()
+                                .addScene(widget.projectId),
                             child: const Text('＋'),
                           );
                         }
@@ -1357,7 +1620,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   if (_selectedSceneIds.contains(scene.id)) {
                                     setState(() {
                                       _selectedSceneIds.remove(scene.id);
-                                      if (_selectedSceneIds.isEmpty) _isSceneMultiSelect = false;
+                                      if (_selectedSceneIds.isEmpty) {
+                                        _isSceneMultiSelect = false;
+                                      }
                                     });
                                   }
                                   // 未選択シーンは何もしない
@@ -1365,31 +1630,45 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   _showRenameSceneDialog(scene);
                                 }
                               },
-                              onDoubleTap: _isSceneMultiSelect ? null : () => setState(() => _selectedSceneId = scene.id),
+                              onDoubleTap: _isSceneMultiSelect
+                                  ? null
+                                  : () => setState(
+                                      () => _selectedSceneId = scene.id,
+                                    ),
                               // 長押し：シーン内フレームを全選択し、フレーム複数選択モードへ
                               // 移行する（フレーム一覧と操作体系を統一）。
                               // シーン自体の複数選択（移動・削除）は上部の「選択」ボタンから行う。
                               onLongPress: () {
-                                if (_isSceneMultiSelect || _isFrameMultiSelect) return;
-                                final frameCount =
-                                    context.read<ProjectService>().frameCount(widget.projectId, scene.id);
+                                if (_isSceneMultiSelect ||
+                                    _isFrameMultiSelect) {
+                                  return;
+                                }
+                                final frameCount = context
+                                    .read<ProjectService>()
+                                    .frameCount(widget.projectId, scene.id);
                                 setState(() {
                                   _selectedSceneId = scene.id;
                                   _isFrameMultiSelect = true;
                                   _selectedFrameIndices
                                     ..clear()
-                                    ..addAll(List.generate(frameCount, (i) => i));
+                                    ..addAll(
+                                      List.generate(frameCount, (i) => i),
+                                    );
                                 });
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
                                 child: ChoiceChip(
                                   label: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       if (_isSceneMultiSelect)
                                         Padding(
-                                          padding: const EdgeInsets.only(right: 4),
+                                          padding: const EdgeInsets.only(
+                                            right: 4,
+                                          ),
                                           child: Icon(
                                             _selectedSceneIds.contains(scene.id)
                                                 ? Icons.check_circle
@@ -1397,15 +1676,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             size: 12,
                                           ),
                                         ),
-                                      Text(scene.displayName, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                                      Text(
+                                        scene.displayName,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontFamily: 'Kuramubon',
+                                        ),
+                                      ),
                                       // シーン内に自動塗り未更新のフレームがある場合の❗マーク
                                       // （更新マークはレイヤー・タイムライン両方に表示）
-                                      if (projectService.sceneHasOutdatedAutofillLayers(widget.projectId, scene.id))
+                                      if (projectService
+                                          .sceneHasOutdatedAutofillLayers(
+                                            widget.projectId,
+                                            scene.id,
+                                          ))
                                         GestureDetector(
-                                          onTap: () => _showAutofillUpdateHelp(context),
+                                          onTap: () =>
+                                              _showAutofillUpdateHelp(context),
                                           child: const Padding(
                                             padding: EdgeInsets.only(left: 4),
-                                            child: Icon(Icons.error, color: Colors.orange, size: 12),
+                                            child: Icon(
+                                              Icons.error,
+                                              color: Colors.orange,
+                                              size: 12,
+                                            ),
                                           ),
                                         ),
                                     ],
@@ -1434,7 +1728,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 if (_isMoveMode)
                   TextButton(
                     onPressed: () => setState(() => _isMoveMode = false),
-                    child: Text(l10n.commonCancel, style: const TextStyle(fontSize: 11)),
+                    child: Text(
+                      l10n.commonCancel,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
               ],
             ),
@@ -1453,9 +1750,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_selectedSceneIds.isEmpty) return;
     final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
-    final targets = scenes.where((s) => _selectedSceneIds.contains(s.id)).toList();
+    final targets = scenes
+        .where((s) => _selectedSceneIds.contains(s.id))
+        .toList();
     for (final scene in targets) {
-      ps.duplicateScene(widget.projectId, scene.id, name: l10n.layerPanelCopySuffix(scene.displayName));
+      ps.duplicateScene(
+        widget.projectId,
+        scene.id,
+        name: l10n.layerPanelCopySuffix(scene.displayName),
+      );
     }
     setState(() {
       _selectedSceneIds.clear();
@@ -1469,10 +1772,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     setState(() {
       _isMoveMode = true;
       // 選択中シーンの並び順で最後のシーンの直後にカーソルを初期配置
-      final lastIdx = scenes.lastIndexWhere((s) => _selectedSceneIds.contains(s.id));
+      final lastIdx = scenes.lastIndexWhere(
+        (s) => _selectedSceneIds.contains(s.id),
+      );
       _moveCursorPos = lastIdx + 1;
     });
-    final first = scenes.where((s) => _selectedSceneIds.contains(s.id)).firstOrNull;
+    final first = scenes
+        .where((s) => _selectedSceneIds.contains(s.id))
+        .firstOrNull;
     if (first != null) _loadMoveThumbnail(first.id);
   }
 
@@ -1480,15 +1787,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _confirmMove(List<Scene> scenes) {
     if (_selectedSceneIds.isEmpty) return;
     // 選択シーンを並び順で抽出
-    final moving = scenes.where((s) => _selectedSceneIds.contains(s.id)).toList();
+    final moving = scenes
+        .where((s) => _selectedSceneIds.contains(s.id))
+        .toList();
     final selectedIndices = moving.map((s) => scenes.indexOf(s)).toList();
-    final removedBefore = selectedIndices.where((i) => i < _moveCursorPos).length;
-    final insertPos = (_moveCursorPos - removedBefore).clamp(0, scenes.length - moving.length);
+    final removedBefore = selectedIndices
+        .where((i) => i < _moveCursorPos)
+        .length;
+    final insertPos = (_moveCursorPos - removedBefore).clamp(
+      0,
+      scenes.length - moving.length,
+    );
     final reordered = List<Scene>.from(scenes)
       ..removeWhere((s) => _selectedSceneIds.contains(s.id))
       ..insertAll(insertPos, moving);
     context.read<ProjectService>().reorderScenesByIds(
-        widget.projectId, reordered.map((s) => s.id).toList());
+      widget.projectId,
+      reordered.map((s) => s.id).toList(),
+    );
     setState(() {
       _isMoveMode = false;
       _isSceneMultiSelect = false;
@@ -1508,7 +1824,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ListTile(
               leading: const Icon(Icons.edit),
               title: Text(l10n.timelineSceneRenameTitle),
-              onTap: () { Navigator.pop(ctx); _showRenameSceneDialog(scene); },
+              onTap: () {
+                Navigator.pop(ctx);
+                _showRenameSceneDialog(scene);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.copy),
@@ -1516,16 +1835,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
               onTap: () {
                 Navigator.pop(ctx);
                 context.read<ProjectService>().duplicateScene(
-                    widget.projectId, scene.id,
-                    name: l10n.layerPanelCopySuffix(scene.displayName));
+                  widget.projectId,
+                  scene.id,
+                  name: l10n.layerPanelCopySuffix(scene.displayName),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: Text(l10n.timelineSceneDeleteMenuItem, style: const TextStyle(color: Colors.red)),
+              title: Text(
+                l10n.timelineSceneDeleteMenuItem,
+                style: const TextStyle(color: Colors.red),
+              ),
               // シーンが1件のみの場合は削除不可
               onTap: scenes.length > 1
-                  ? () { Navigator.pop(ctx); _showSingleDeleteConfirm(scene); }
+                  ? () {
+                      Navigator.pop(ctx);
+                      _showSingleDeleteConfirm(scene);
+                    }
                   : null,
             ),
           ],
@@ -1543,12 +1870,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
         title: Text(l10n.timelineSceneDeleteConfirmTitle(scene.displayName)),
         content: Text(l10n.timelineSceneDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<ProjectService>().removeScene(widget.projectId, scene.id);
+              context.read<ProjectService>().removeScene(
+                widget.projectId,
+                scene.id,
+              );
             },
             child: Text(l10n.commonDelete),
           ),
@@ -1567,13 +1900,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
         title: Text(l10n.timelineSceneMultiDeleteConfirmTitle(count)),
         content: Text(l10n.timelineSceneDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<ProjectService>()
-                  .removeScenes(widget.projectId, _selectedSceneIds.toList());
+              context.read<ProjectService>().removeScenes(
+                widget.projectId,
+                _selectedSceneIds.toList(),
+              );
               setState(() {
                 _selectedSceneIds.clear();
                 _isSceneMultiSelect = false;
@@ -1593,14 +1931,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.timelineSceneRenameTitle),
-        content: TextField(controller: controller, decoration: const InputDecoration(border: OutlineInputBorder())),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                context.read<ProjectService>()
-                    .renameScene(widget.projectId, scene.id, controller.text);
+                context.read<ProjectService>().renameScene(
+                  widget.projectId,
+                  scene.id,
+                  controller.text,
+                );
               }
               Navigator.pop(ctx);
             },
@@ -1620,7 +1967,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
         title: Text(l10n.layerPanelAutofillUpdateHelpTitle),
         content: Text(l10n.timelineAutofillUpdateHelpBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonClose),
+          ),
         ],
       ),
     );
@@ -1639,209 +1989,331 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            left: 0, right: 0, bottom: 0, height: 50,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 50,
             child: Container(
-              decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Theme.of(context).colorScheme.outlineVariant))),
+              decoration: BoxDecoration(
+                border: Border.symmetric(
+                  horizontal: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+              ),
               child: Row(
                 children: [
-                  _buildTrackLabel(Icons.movie_filter, l10n.timelineFrameTrackLabel),
+                  _buildTrackLabel(
+                    Icons.movie_filter,
+                    l10n.timelineFrameTrackLabel,
+                  ),
                   // 移動モード中：「決定」。通常時：「選択」。複数選択モード中の移動・複製・
                   // 削除・全選択・全解除は素材タイムラインの上の大きなボタンへ移動した
                   // （_buildMultiSelectActionBar参照）。
                   if (_isFrameMoveMode)
                     TextButton(
                       onPressed: _confirmFrameMove,
-                      child: Text(l10n.timelineConfirmButton, style: const TextStyle(fontSize: 11)),
+                      child: Text(
+                        l10n.timelineConfirmButton,
+                        style: const TextStyle(fontSize: 11),
+                      ),
                     )
                   else if (!_isFrameMultiSelect)
                     TextButton(
-                      onPressed: () => setState(() => _isFrameMultiSelect = true),
-                      child: Text(l10n.toolbarItemSelect, style: const TextStyle(fontSize: 11)),
+                      onPressed: () =>
+                          setState(() => _isFrameMultiSelect = true),
+                      child: Text(
+                        l10n.toolbarItemSelect,
+                        style: const TextStyle(fontSize: 11),
+                      ),
                     ),
                   Expanded(
-                    child: LayoutBuilder(builder: (context, constraints) {
-                      // 左右に((ビューポート幅-セル幅)/2)の余白を入れることで、
-                      // 先頭・末尾のフレームも赤枠（画面中央）まできっちり
-                      // スクロールできるようにする。
-                      final sidePadding = ((constraints.maxWidth - _cellW) / 2).clamp(0.0, double.infinity);
-                      return NotificationListener<ScrollEndNotification>(
-                        onNotification: _handleFrameListScrollEnd,
-                        child: Stack(
-                      children: [
-                        ListView.builder(
-                      controller: _frameScrollCtrl,
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(vertical: 4, horizontal: sidePadding),
-                      // 移動モード：カーソル位置(n+1) + フレームチップ(n) = 2n+1
-                      // 通常モード：フレームチップ(n) + ＋ボタン(1) = n+1
-                      itemCount: _isFrameMoveMode ? total * 2 + 1 : total + 1,
-                      itemBuilder: (context, index) {
-                        if (_isFrameMoveMode) {
-                          if (index.isEven) {
-                            final cursorPos = index ~/ 2;
-                            final isActive = _frameMoveCursorPos == cursorPos;
-                            return GestureDetector(
-                              onTap: () => setState(() => _frameMoveCursorPos = cursorPos),
-                              child: Container(
-                                width: 12,
-                                alignment: Alignment.center,
-                                child: Container(
-                                  width: 3, height: 28,
-                                  color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // 左右に((ビューポート幅-セル幅)/2)の余白を入れることで、
+                        // 先頭・末尾のフレームも赤枠（画面中央）まできっちり
+                        // スクロールできるようにする。
+                        final sidePadding =
+                            ((constraints.maxWidth - _cellW) / 2).clamp(
+                              0.0,
+                              double.infinity,
+                            );
+                        return NotificationListener<ScrollEndNotification>(
+                          onNotification: _handleFrameListScrollEnd,
+                          child: Stack(
+                            children: [
+                              ListView.builder(
+                                controller: _frameScrollCtrl,
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 4,
+                                  horizontal: sidePadding,
+                                ),
+                                // 移動モード：カーソル位置(n+1) + フレームチップ(n) = 2n+1
+                                // 通常モード：フレームチップ(n) + ＋ボタン(1) = n+1
+                                itemCount: _isFrameMoveMode
+                                    ? total * 2 + 1
+                                    : total + 1,
+                                itemBuilder: (context, index) {
+                                  if (_isFrameMoveMode) {
+                                    if (index.isEven) {
+                                      final cursorPos = index ~/ 2;
+                                      final isActive =
+                                          _frameMoveCursorPos == cursorPos;
+                                      return GestureDetector(
+                                        onTap: () => setState(
+                                          () => _frameMoveCursorPos = cursorPos,
+                                        ),
+                                        child: Container(
+                                          width: 12,
+                                          alignment: Alignment.center,
+                                          child: Container(
+                                            width: 3,
+                                            height: 28,
+                                            color: isActive
+                                                ? Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary
+                                                : Theme.of(
+                                                    context,
+                                                  ).colorScheme.outline,
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      final frameIndex = index ~/ 2;
+                                      final isMoving = _selectedFrameIndices
+                                          .contains(frameIndex);
+                                      return Container(
+                                        width: _frameW,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: _frameMargin,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isMoving
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primaryContainer
+                                              : Colors.grey[850],
+                                          border: Border.all(
+                                            color: Colors.grey[700]!,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${frameIndex + 1}',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: isMoving
+                                                  ? Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary
+                                                  : null,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  if (index == total) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        final sceneId = _selectedSceneId;
+                                        if (sceneId == null) return;
+                                        if (!_canAddFrames(1)) return;
+                                        context.read<ProjectService>().addFrame(
+                                          widget.projectId,
+                                          sceneId,
+                                        );
+                                      },
+                                      child: Container(
+                                        width: _frameW,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: _frameMargin,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey[600]!,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
+                                        ),
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.add,
+                                            size: 16,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  // 現在フレームの強調表示は画面中央固定の赤枠が担うため、
+                                  // 通常モードでは枠色を変えない（複数選択のチェック状態のみ
+                                  // ここで色分けする）。
+                                  final isChecked = _selectedFrameIndices
+                                      .contains(index);
+                                  // このフレームに自動塗り未更新のレイヤーがある場合の❗マーク
+                                  // （更新マークはレイヤー・タイムライン両方に表示）
+                                  final hasOutdatedAutofill =
+                                      frameListSceneId != null &&
+                                      projectService
+                                          .frameHasOutdatedAutofillLayers(
+                                            widget.projectId,
+                                            frameListSceneId,
+                                            index,
+                                          );
+                                  return GestureDetector(
+                                    onTap: () {
+                                      if (_isFrameMultiSelect) {
+                                        if (isChecked) {
+                                          setState(() {
+                                            _selectedFrameIndices.remove(index);
+                                            if (_selectedFrameIndices.isEmpty) {
+                                              _isFrameMultiSelect = false;
+                                            }
+                                          });
+                                        }
+                                        // 未選択フレームは何もしない（シーンと同じ操作体系）
+                                      } else {
+                                        setState(() => _currentFrame = index);
+                                      }
+                                    },
+                                    // 長押し：このフレームを選択済みの状態でフレーム複数選択モードを開始する
+                                    onLongPress: () {
+                                      if (_isFrameMultiSelect) return;
+                                      setState(() {
+                                        _isFrameMultiSelect = true;
+                                        _selectedFrameIndices.add(index);
+                                      });
+                                    },
+                                    child: Container(
+                                      width: _frameW,
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: _frameMargin,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        // サムネイル画像自体は透明部分を含むため、セルの
+                                        // 背景は実際のキャンバス背景（既定は白）に合わせる。
+                                        // 濃いグレーのままだと透明部分の見え方が実際の
+                                        // キャンバス画面と一致しなかったため修正。
+                                        color: isChecked
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primaryContainer
+                                            : Colors.white,
+                                        border: Border.all(
+                                          color: isChecked
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.outlineVariant,
+                                        ),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(2),
+                                        child: Stack(
+                                          children: [
+                                            // フレームの実プレビュー（ただの四角形では
+                                            // なくちゃんとしたプレビューにする）。
+                                            if (frameListSceneId != null)
+                                              Positioned.fill(
+                                                child: _TimelineFrameThumbnail(
+                                                  projectId: widget.projectId,
+                                                  sceneId: frameListSceneId,
+                                                  frameIndex: index,
+                                                ),
+                                              ),
+                                            Positioned(
+                                              left: 1,
+                                              bottom: 1,
+                                              child: Text(
+                                                '${index + 1}',
+                                                style: const TextStyle(
+                                                  fontSize: 8,
+                                                  color: Colors.white,
+                                                  shadows: [
+                                                    Shadow(
+                                                      color: Colors.black,
+                                                      blurRadius: 2,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            if (hasOutdatedAutofill)
+                                              Positioned(
+                                                left: 1,
+                                                top: 1,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showAutofillUpdateHelp(
+                                                        context,
+                                                      ),
+                                                  child: const Icon(
+                                                    Icons.error,
+                                                    color: Colors.orange,
+                                                    size: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                            if (_isFrameMultiSelect)
+                                              Positioned(
+                                                right: 1,
+                                                top: 1,
+                                                child: Icon(
+                                                  isChecked
+                                                      ? Icons.check_circle
+                                                      : Icons
+                                                            .radio_button_unchecked,
+                                                  size: 10,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              // 画面中央に固定表示する赤枠。フレーム一覧側が
+                              // スクロールして現在位置のフレームをここへ合わせる。
+                              IgnorePointer(
+                                child: Center(
+                                  child: Container(
+                                    width: _frameW,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.red,
+                                        width: 3,
+                                      ),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            );
-                          } else {
-                            final frameIndex = index ~/ 2;
-                            final isMoving = _selectedFrameIndices.contains(frameIndex);
-                            return Container(
-                              width: _frameW,
-                              margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
-                              decoration: BoxDecoration(
-                                color: isMoving ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[850],
-                                border: Border.all(color: Colors.grey[700]!),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: Center(child: Text('${frameIndex + 1}',
-                                  style: TextStyle(fontSize: 9,
-                                      color: isMoving ? Theme.of(context).colorScheme.primary : null))),
-                            );
-                          }
-                        }
-                        if (index == total) {
-                          return GestureDetector(
-                            onTap: () {
-                              final sceneId = _selectedSceneId;
-                              if (sceneId == null) return;
-                              if (!_canAddFrames(1)) return;
-                              context.read<ProjectService>().addFrame(widget.projectId, sceneId);
-                            },
-                            child: Container(
-                              width: _frameW,
-                              margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey[600]!),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: const Center(child: Icon(Icons.add, size: 16, color: Colors.grey)),
-                            ),
-                          );
-                        }
-                        // 現在フレームの強調表示は画面中央固定の赤枠が担うため、
-                        // 通常モードでは枠色を変えない（複数選択のチェック状態のみ
-                        // ここで色分けする）。
-                        final isChecked = _selectedFrameIndices.contains(index);
-                        // このフレームに自動塗り未更新のレイヤーがある場合の❗マーク
-                        // （更新マークはレイヤー・タイムライン両方に表示）
-                        final hasOutdatedAutofill = frameListSceneId != null &&
-                            projectService.frameHasOutdatedAutofillLayers(
-                                widget.projectId, frameListSceneId, index);
-                        return GestureDetector(
-                          onTap: () {
-                            if (_isFrameMultiSelect) {
-                              if (isChecked) {
-                                setState(() {
-                                  _selectedFrameIndices.remove(index);
-                                  if (_selectedFrameIndices.isEmpty) _isFrameMultiSelect = false;
-                                });
-                              }
-                              // 未選択フレームは何もしない（シーンと同じ操作体系）
-                            } else {
-                              setState(() => _currentFrame = index);
-                            }
-                          },
-                          // 長押し：このフレームを選択済みの状態でフレーム複数選択モードを開始する
-                          onLongPress: () {
-                            if (_isFrameMultiSelect) return;
-                            setState(() {
-                              _isFrameMultiSelect = true;
-                              _selectedFrameIndices.add(index);
-                            });
-                          },
-                          child: Container(
-                            width: _frameW,
-                            margin: const EdgeInsets.symmetric(horizontal: _frameMargin),
-                            decoration: BoxDecoration(
-                              // サムネイル画像自体は透明部分を含むため、セルの
-                              // 背景は実際のキャンバス背景（既定は白）に合わせる。
-                              // 濃いグレーのままだと透明部分の見え方が実際の
-                              // キャンバス画面と一致しなかったため修正。
-                              color: isChecked ? Theme.of(context).colorScheme.primaryContainer : Colors.white,
-                              border: Border.all(
-                                  color: isChecked
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.outlineVariant),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(2),
-                              child: Stack(
-                              children: [
-                                // フレームの実プレビュー（ただの四角形では
-                                // なくちゃんとしたプレビューにする）。
-                                if (frameListSceneId != null)
-                                  Positioned.fill(
-                                    child: _TimelineFrameThumbnail(
-                                      projectId: widget.projectId,
-                                      sceneId: frameListSceneId,
-                                      frameIndex: index,
-                                    ),
-                                  ),
-                                Positioned(
-                                  left: 1, bottom: 1,
-                                  child: Text('${index + 1}',
-                                      style: const TextStyle(
-                                          fontSize: 8,
-                                          color: Colors.white,
-                                          shadows: [Shadow(color: Colors.black, blurRadius: 2)])),
-                                ),
-                                if (hasOutdatedAutofill)
-                                  Positioned(
-                                    left: 1, top: 1,
-                                    child: GestureDetector(
-                                      onTap: () => _showAutofillUpdateHelp(context),
-                                      child: const Icon(Icons.error, color: Colors.orange, size: 10),
-                                    ),
-                                  ),
-                                if (_isFrameMultiSelect)
-                                  Positioned(
-                                    right: 1, top: 1,
-                                    child: Icon(
-                                      isChecked ? Icons.check_circle : Icons.radio_button_unchecked,
-                                      size: 10,
-                                    ),
-                                  ),
-                              ],
-                              ),
-                            ),
+                            ],
                           ),
                         );
                       },
                     ),
-                    // 画面中央に固定表示する赤枠。フレーム一覧側が
-                    // スクロールして現在位置のフレームをここへ合わせる。
-                    IgnorePointer(
-                      child: Center(
-                        child: Container(
-                          width: _frameW,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.red, width: 3),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                      ),
-                    ),
-                      ],
-                    ),
-                      );
-                    }),
                   ),
                   // 移動モード中：キャンセルボタン
                   if (_isFrameMoveMode)
                     TextButton(
                       onPressed: () => setState(() => _isFrameMoveMode = false),
-                      child: Text(l10n.commonCancel, style: const TextStyle(fontSize: 11)),
+                      child: Text(
+                        l10n.commonCancel,
+                        style: const TextStyle(fontSize: 11),
+                      ),
                     ),
                 ],
               ),
@@ -1858,18 +2330,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final count = _selectedFrameIndices.length;
     final cardCount = count.clamp(1, 3);
     return Positioned(
-      bottom: 50, left: 0, right: 0,
+      bottom: 50,
+      left: 0,
+      right: 0,
       child: Center(
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             for (int i = cardCount - 1; i >= 1; i--)
               Positioned(
-                left: i * 3.0, top: -(i * 3.0),
+                left: i * 3.0,
+                top: -(i * 3.0),
                 child: Transform.rotate(
                   angle: (i.isOdd ? 1 : -1) * 0.025,
                   child: Container(
-                    width: 40, height: 40,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(color: Colors.grey[400]!),
@@ -1879,7 +2355,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
               ),
             Container(
-              width: 40, height: 40,
+              width: 40,
+              height: 40,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.grey[700],
@@ -1887,18 +2364,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
               child: _moveThumbnail != null
                   ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
-                  : const Icon(Icons.movie_filter, size: 18, color: Colors.white54),
+                  : const Icon(
+                      Icons.movie_filter,
+                      size: 18,
+                      color: Colors.white54,
+                    ),
             ),
             if (count > 1)
               Positioned(
-                right: -8, top: -8,
+                right: -8,
+                top: -8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text('×$count', style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    '×$count',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -1917,18 +2409,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final isPremium = context.read<PremiumService>().isPremium;
     final ps = context.read<ProjectService>();
     final maxSeconds = isPremium ? 7200 : 90;
-    final projected = ps.projectedDurationSeconds(widget.projectId, frameDelta: count);
+    final projected = ps.projectedDurationSeconds(
+      widget.projectId,
+      frameDelta: count,
+    );
     if (projected <= maxSeconds) return true;
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.timelineDurationLimitTitle),
-        content: Text(isPremium
-            ? l10n.timelineDurationLimitBodyPremium
-            : l10n.timelineDurationLimitBodyFree),
+        content: Text(
+          isPremium
+              ? l10n.timelineDurationLimitBodyPremium
+              : l10n.timelineDurationLimitBodyFree,
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonClose),
+          ),
         ],
       ),
     );
@@ -1990,10 +2490,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final total = _totalFrames;
     final moving = _selectedFrameIndices.toList()..sort();
     final removedBefore = moving.where((i) => i < _frameMoveCursorPos).length;
-    final insertPos = (_frameMoveCursorPos - removedBefore).clamp(0, total - moving.length);
-    final remaining = [for (int i = 0; i < total; i++) if (!_selectedFrameIndices.contains(i)) i];
+    final insertPos = (_frameMoveCursorPos - removedBefore).clamp(
+      0,
+      total - moving.length,
+    );
+    final remaining = [
+      for (int i = 0; i < total; i++)
+        if (!_selectedFrameIndices.contains(i)) i,
+    ];
     final newOrder = List<int>.from(remaining)..insertAll(insertPos, moving);
-    context.read<ProjectService>().reorderFrames(widget.projectId, sceneId, newOrder);
+    context.read<ProjectService>().reorderFrames(
+      widget.projectId,
+      sceneId,
+      newOrder,
+    );
     setState(() {
       _isFrameMoveMode = false;
       _isFrameMultiSelect = false;
@@ -2008,11 +2518,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: [
-          Icon(icon, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            icon,
+            size: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: 2),
-          Flexible(child: Text(label,
-              style: TextStyle(fontSize: 9, fontFamily: 'Kuramubon', color: Theme.of(context).colorScheme.onSurfaceVariant),
-              overflow: TextOverflow.ellipsis)),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 9,
+                fontFamily: 'Kuramubon',
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -2037,7 +2559,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     final rowNames = sceneId == null
         ? const <String?>[null]
-        : context.watch<ProjectService>().rowNamesOf(widget.projectId, sceneId, type);
+        : context.watch<ProjectService>().rowNamesOf(
+            widget.projectId,
+            sceneId,
+            type,
+          );
     final visibleRows = [
       for (int row = 0; row < rowNames.length; row++)
         if (allClips.any((c) => c.trackRow == row)) row,
@@ -2098,8 +2624,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     width: _cellW,
                     decoration: BoxDecoration(
                       border: Border(
-                          right: BorderSide(
-                              color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
+                        right: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                          width: 0.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -2121,7 +2650,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           color: addColor.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.add, size: 14, color: Colors.white),
+                        child: const Icon(
+                          Icons.add,
+                          size: 14,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -2139,7 +2672,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     context.read<ProjectService>().addTrackRow(widget.projectId, sceneId, type);
   }
 
-  void _showRenameTrackRowDialog(MaterialType type, int rowIndex, String currentLabel) {
+  void _showRenameTrackRowDialog(
+    MaterialType type,
+    int rowIndex,
+    String currentLabel,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
@@ -2154,18 +2691,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
-              context.read<ProjectService>()
-                  .renameTrackRow(widget.projectId, sceneId, type, rowIndex, ctrl.text.trim());
+              context.read<ProjectService>().renameTrackRow(
+                widget.projectId,
+                sceneId,
+                type,
+                rowIndex,
+                ctrl.text.trim(),
+              );
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonChange),
           ),
         ],
       ),
-    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose()));
+    ).then(
+      (_) =>
+          WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose()),
+    );
   }
 
   Widget _buildClipWidget(_TrackClip clip, ScrollController scrollCtrl) {
@@ -2194,23 +2742,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
             // （「開始フレーム変更：タイムライン上で表示開始
             // 位置を変更」）。
-            onLongPressStart: (d) => _beginClipDrag(clip, _ClipDragMode.move, d.globalPosition.dx),
-            onLongPressMoveUpdate: (d) => _updateClipDrag(clip, d.globalPosition.dx),
+            onLongPressStart: (d) =>
+                _beginClipDrag(clip, _ClipDragMode.move, d.globalPosition.dx),
+            onLongPressMoveUpdate: (d) =>
+                _updateClipDrag(clip, d.globalPosition.dx),
             onLongPressEnd: (_) => _endClipDrag(clip),
             child: Stack(
               children: [
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: clip.color.withValues(alpha: isDragging ? 1.0 : 0.85),
+                      color: clip.color.withValues(
+                        alpha: isDragging ? 1.0 : 0.85,
+                      ),
                       borderRadius: BorderRadius.circular(3),
-                      border: isDragging ? Border.all(color: Colors.white, width: 1.5) : null,
+                      border: isDragging
+                          ? Border.all(color: Colors.white, width: 1.5)
+                          : null,
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     alignment: Alignment.centerLeft,
                     child: Text(
                       clip.label,
-                      style: const TextStyle(fontSize: 9, color: Colors.white, fontFamily: 'Kuramubon'),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: Colors.white,
+                        fontFamily: 'Kuramubon',
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -2228,7 +2786,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildClipResizeHandle(_TrackClip clip, double handleW, {required bool isLeft}) {
+  Widget _buildClipResizeHandle(
+    _TrackClip clip,
+    double handleW, {
+    required bool isLeft,
+  }) {
     final mode = isLeft ? _ClipDragMode.resizeLeft : _ClipDragMode.resizeRight;
     return Positioned(
       left: isLeft ? 0 : null,
@@ -2238,8 +2800,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       width: handleW,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onHorizontalDragStart: (d) => _beginClipDrag(clip, mode, d.globalPosition.dx),
-        onHorizontalDragUpdate: (d) => _updateClipDrag(clip, d.globalPosition.dx),
+        onHorizontalDragStart: (d) =>
+            _beginClipDrag(clip, mode, d.globalPosition.dx),
+        onHorizontalDragUpdate: (d) =>
+            _updateClipDrag(clip, d.globalPosition.dx),
         onHorizontalDragEnd: (_) => _endClipDrag(clip),
         child: MouseRegion(
           cursor: SystemMouseCursors.resizeLeftRight,
@@ -2266,12 +2830,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
     switch (_clipDragMode!) {
       case _ClipDragMode.move:
         final maxStart = total - _clipDragStartLength;
-        final newStart = (_clipDragStartFrame + deltaFrames).clamp(0, maxStart < 0 ? 0 : maxStart);
-        if (newStart != clip.startFrame) setState(() => clip.startFrame = newStart);
+        final newStart = (_clipDragStartFrame + deltaFrames).clamp(
+          0,
+          maxStart < 0 ? 0 : maxStart,
+        );
+        if (newStart != clip.startFrame) {
+          setState(() => clip.startFrame = newStart);
+        }
       case _ClipDragMode.resizeLeft:
         // 右端（startFrame + lengthFrames）を固定し、左端だけ伸縮する。
         final fixedEnd = _clipDragStartFrame + _clipDragStartLength;
-        final newStart = (_clipDragStartFrame + deltaFrames).clamp(0, fixedEnd - 1);
+        final newStart = (_clipDragStartFrame + deltaFrames).clamp(
+          0,
+          fixedEnd - 1,
+        );
         final newLength = fixedEnd - newStart;
         if (newStart != clip.startFrame || newLength != clip.lengthFrames) {
           setState(() {
@@ -2281,8 +2853,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
         }
       case _ClipDragMode.resizeRight:
         final maxLength = total - _clipDragStartFrame;
-        final newLength = (_clipDragStartLength + deltaFrames).clamp(1, maxLength < 1 ? 1 : maxLength);
-        if (newLength != clip.lengthFrames) setState(() => clip.lengthFrames = newLength);
+        final newLength = (_clipDragStartLength + deltaFrames).clamp(
+          1,
+          maxLength < 1 ? 1 : maxLength,
+        );
+        if (newLength != clip.lengthFrames) {
+          setState(() => clip.lengthFrames = newLength);
+        }
     }
   }
 
@@ -2301,7 +2878,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 次の段に全選択・全解除を表示する。移動モード中は専用のカーソルUIが
   /// 別途表示されるためここでは非表示にする。
   Widget _buildMultiSelectActionBar() {
-    if (!_isSceneMultiSelect && !_isFrameMultiSelect) return const SizedBox.shrink();
+    if (!_isSceneMultiSelect && !_isFrameMultiSelect) {
+      return const SizedBox.shrink();
+    }
     if (_isMoveMode || _isFrameMoveMode) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
     final isScene = _isSceneMultiSelect;
@@ -2309,7 +2888,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final scenes = projectService.scenesOf(widget.projectId);
     final total = _totalFrames;
 
-    final selectedCount = isScene ? _selectedSceneIds.length : _selectedFrameIndices.length;
+    final selectedCount = isScene
+        ? _selectedSceneIds.length
+        : _selectedFrameIndices.length;
     final canMove = selectedCount > 0;
     final canDuplicate = selectedCount > 0;
     final canDelete = isScene
@@ -2317,24 +2898,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
         : (selectedCount > 0 && selectedCount < total);
 
     void onMove() => isScene ? _startMoveMode(scenes) : _startFrameMoveMode();
-    void onDuplicate() => isScene ? _duplicateSelectedScenes(scenes) : _duplicateSelectedFrames();
-    void onDelete() => isScene ? _showMultiDeleteConfirm() : _deleteSelectedFrames();
+    void onDuplicate() =>
+        isScene ? _duplicateSelectedScenes(scenes) : _duplicateSelectedFrames();
+    void onDelete() =>
+        isScene ? _showMultiDeleteConfirm() : _deleteSelectedFrames();
     void onSelectAll() => setState(() {
-          if (isScene) {
-            _selectedSceneIds.addAll(scenes.map((s) => s.id));
-          } else {
-            _selectedFrameIndices.addAll(List.generate(total, (i) => i));
-          }
-        });
+      if (isScene) {
+        _selectedSceneIds.addAll(scenes.map((s) => s.id));
+      } else {
+        _selectedFrameIndices.addAll(List.generate(total, (i) => i));
+      }
+    });
     void onDeselectAll() => setState(() {
-          if (isScene) {
-            _selectedSceneIds.clear();
-            _isSceneMultiSelect = false;
-          } else {
-            _selectedFrameIndices.clear();
-            _isFrameMultiSelect = false;
-          }
-        });
+      if (isScene) {
+        _selectedSceneIds.clear();
+        _isSceneMultiSelect = false;
+      } else {
+        _selectedFrameIndices.clear();
+        _isFrameMultiSelect = false;
+      }
+    });
 
     Widget bigButton(String label, VoidCallback? onTap, {Color? color}) {
       return Expanded(
@@ -2356,9 +2939,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHigh,
-        border: Border.symmetric(horizontal: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+        border: Border.symmetric(
+          horizontal: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -2367,8 +2958,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
           Row(
             children: [
               bigButton(l10n.commonMove, canMove ? onMove : null),
-              bigButton(l10n.themeDuplicateAction, canDuplicate ? onDuplicate : null),
-              bigButton(l10n.commonDelete, canDelete ? onDelete : null, color: Colors.red),
+              bigButton(
+                l10n.themeDuplicateAction,
+                canDuplicate ? onDuplicate : null,
+              ),
+              bigButton(
+                l10n.commonDelete,
+                canDelete ? onDelete : null,
+                color: Colors.red,
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -2434,7 +3032,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 SizedBox(
                   height: 32,
                   child: _buildTrackLabel(
-                    r.layer.type == LayerType.watermark ? Icons.branding_watermark : Icons.link,
+                    r.layer.type == LayerType.watermark
+                        ? Icons.branding_watermark
+                        : Icons.link,
                     r.layer.name,
                   ),
                 ),
@@ -2460,12 +3060,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   Container(
                                     width: _cellW,
                                     decoration: BoxDecoration(
-                                      border: Border(right: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
+                                      border: Border(
+                                        right: BorderSide(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.outlineVariant,
+                                          width: 0.5,
+                                        ),
+                                      ),
                                     ),
                                   ),
                               ],
                             ),
-                            _buildCommonLayerBar(r.layer, r.home, r.start, r.end, total),
+                            _buildCommonLayerBar(
+                              r.layer,
+                              r.home,
+                              r.start,
+                              r.end,
+                              total,
+                            ),
                           ],
                         ),
                       ),
@@ -2482,7 +3095,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 共通レイヤーの表示範囲バー。シングルタップで表示範囲設定ダイアログを開き、
   /// 左右のドラッグハンドルで開始・終了フレームを直接変更できる（
   /// 「タイムライン上では左右のドラッグハンドルでも表示範囲を変更できる」）。
-  Widget _buildCommonLayerBar(Layer layer, LayerHome home, int start, int end, int total) {
+  Widget _buildCommonLayerBar(
+    Layer layer,
+    LayerHome home,
+    int start,
+    int end,
+    int total,
+  ) {
     final left = start * _cellW + _frameMargin;
     final width = (end - start + 1) * _cellW - _frameMargin * 2;
 
@@ -2490,16 +3109,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       newStart = newStart.clamp(0, total - 1);
       newEnd = newEnd.clamp(newStart, total - 1);
       context.read<ProjectService>().updateLayer(
-            projectId: widget.projectId,
-            sceneId: home.sceneId,
-            frameIndex: home.frameIndex,
-            layer: layer.copyWith(
-              rangeMode: LayerRangeMode.frameRange,
-              rangeStart: newStart + 1,
-              rangeEnd: newEnd + 1,
-              rangeSceneId: null,
-            ),
-          );
+        projectId: widget.projectId,
+        sceneId: home.sceneId,
+        frameIndex: home.frameIndex,
+        layer: layer.copyWith(
+          rangeMode: LayerRangeMode.frameRange,
+          rangeStart: newStart + 1,
+          rangeEnd: newEnd + 1,
+          rangeSceneId: null,
+        ),
+      );
     }
 
     return Positioned(
@@ -2513,10 +3132,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
             : _showCommonLayerRangeDialog(layer, home),
         child: Container(
           decoration: BoxDecoration(
-            color: (layer.type == LayerType.watermark ? Colors.pink : Colors.blue).withValues(alpha: 0.75),
+            color:
+                (layer.type == LayerType.watermark ? Colors.pink : Colors.blue)
+                    .withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(3),
             border: Border.all(
-              color: layer.type == LayerType.watermark ? Colors.pink[200]! : Colors.blue[200]!,
+              color: layer.type == LayerType.watermark
+                  ? Colors.pink[200]!
+                  : Colors.blue[200]!,
               width: 1,
             ),
           ),
@@ -2527,7 +3150,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     layer.name,
-                    style: const TextStyle(fontSize: 9, color: Colors.white, fontFamily: 'Kuramubon'),
+                    style: const TextStyle(
+                      fontSize: 9,
+                      color: Colors.white,
+                      fontFamily: 'Kuramubon',
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -2547,8 +3174,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     _commonDragAccumPx -= frameDelta * _cellW;
                     applyDrag(start + frameDelta, end);
                   },
-                  child: Container(width: 8, color: Colors.white24,
-                      child: const Icon(Icons.drag_indicator, size: 8, color: Colors.white70)),
+                  child: Container(
+                    width: 8,
+                    color: Colors.white24,
+                    child: const Icon(
+                      Icons.drag_indicator,
+                      size: 8,
+                      color: Colors.white70,
+                    ),
+                  ),
                 ),
               ),
               // 右ドラッグハンドル：終了フレームを変更
@@ -2566,8 +3200,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     _commonDragAccumPx -= frameDelta * _cellW;
                     applyDrag(start, end + frameDelta);
                   },
-                  child: Container(width: 8, color: Colors.white24,
-                      child: const Icon(Icons.drag_indicator, size: 8, color: Colors.white70)),
+                  child: Container(
+                    width: 8,
+                    color: Colors.white24,
+                    child: const Icon(
+                      Icons.drag_indicator,
+                      size: 8,
+                      color: Colors.white70,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -2584,9 +3225,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.read<ProjectService>();
     final totalFrames = ps.frameCount(widget.projectId, home.sceneId);
     final scenes = ps.scenesOf(widget.projectId);
-    final startCtrl = TextEditingController(text: (layer.rangeStart ?? 1).toString());
+    final startCtrl = TextEditingController(
+      text: (layer.rangeStart ?? 1).toString(),
+    );
     final endCtrl = TextEditingController(
-        text: (layer.rangeEnd ?? (totalFrames > 0 ? totalFrames : 1)).toString());
+      text: (layer.rangeEnd ?? (totalFrames > 0 ? totalFrames : 1)).toString(),
+    );
     LayerRangeMode mode = layer.rangeMode;
     String? rangeSceneId = layer.rangeSceneId ?? home.sceneId;
     showDialog(
@@ -2605,15 +3249,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       child: TextField(
                         controller: startCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(labelText: l10n.layerPanelRangeStartFrameLabel, border: const OutlineInputBorder()),
+                        decoration: InputDecoration(
+                          labelText: l10n.layerPanelRangeStartFrameLabel,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
-                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(l10n.layerPanelRangeTilde)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(l10n.layerPanelRangeTilde),
+                    ),
                     Expanded(
                       child: TextField(
                         controller: endCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(labelText: l10n.layerPanelRangeEndFrameLabel, border: const OutlineInputBorder()),
+                        decoration: InputDecoration(
+                          labelText: l10n.layerPanelRangeEndFrameLabel,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ],
@@ -2642,13 +3295,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 if (mode == LayerRangeMode.sceneRange)
                   Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 8,
+                      bottom: 8,
+                    ),
                     child: DropdownButtonFormField<String>(
-                      initialValue: scenes.any((s) => s.id == rangeSceneId) ? rangeSceneId : scenes.firstOrNull?.id,
+                      initialValue: scenes.any((s) => s.id == rangeSceneId)
+                          ? rangeSceneId
+                          : scenes.firstOrNull?.id,
                       isExpanded: true,
-                      decoration: InputDecoration(labelText: l10n.layerPanelRangeTargetSceneLabel, isDense: true),
+                      decoration: InputDecoration(
+                        labelText: l10n.layerPanelRangeTargetSceneLabel,
+                        isDense: true,
+                      ),
                       items: scenes
-                          .map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName)))
+                          .map(
+                            (s) => DropdownMenuItem(
+                              value: s.id,
+                              child: Text(s.displayName),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) => setS(() => rangeSceneId = v),
                     ),
@@ -2664,12 +3331,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
                 final start = int.tryParse(startCtrl.text) ?? 1;
                 final end = int.tryParse(endCtrl.text) ?? start;
-                final resolvedSceneId = mode == LayerRangeMode.sceneRange ? rangeSceneId : null;
+                final resolvedSceneId = mode == LayerRangeMode.sceneRange
+                    ? rangeSceneId
+                    : null;
                 ps.updateLayer(
                   projectId: widget.projectId,
                   sceneId: home.sceneId,
@@ -2715,13 +3387,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.timelineWatermarkAngleLabel, style: const TextStyle(fontSize: 12)),
+                Text(
+                  l10n.timelineWatermarkAngleLabel,
+                  style: const TextStyle(fontSize: 12),
+                ),
                 Row(
                   children: [
                     Expanded(
                       child: SteppedSlider(
                         value: angle,
-                        min: -180, max: 180,
+                        min: -180,
+                        max: 180,
                         label: '${angle.round()}°',
                         onChanged: (v) => setS(() => angle = v),
                       ),
@@ -2729,18 +3405,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     EditableSliderValue(
                       text: '${angle.round()}°',
                       style: const TextStyle(fontSize: 12),
-                      value: angle, min: -180, max: 180,
+                      value: angle,
+                      min: -180,
+                      max: 180,
                       onChanged: (v) => setS(() => angle = v.toDouble()),
                     ),
                   ],
                 ),
-                Text(l10n.timelineWatermarkSizeLabel, style: const TextStyle(fontSize: 12)),
+                Text(
+                  l10n.timelineWatermarkSizeLabel,
+                  style: const TextStyle(fontSize: 12),
+                ),
                 Row(
                   children: [
                     Expanded(
                       child: SteppedSlider(
                         value: scale,
-                        min: 0.05, max: 1.0, step: 0.01,
+                        min: 0.05,
+                        max: 1.0,
+                        step: 0.01,
                         label: '${(scale * 100).round()}%',
                         onChanged: (v) => setS(() => scale = v),
                       ),
@@ -2748,18 +3431,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     EditableSliderValue(
                       text: '${(scale * 100).round()}%',
                       style: const TextStyle(fontSize: 12),
-                      value: (scale * 100).round(), min: 5, max: 100,
+                      value: (scale * 100).round(),
+                      min: 5,
+                      max: 100,
                       onChanged: (v) => setS(() => scale = v / 100),
                     ),
                   ],
                 ),
-                Text(l10n.timelineWatermarkOpacityLabel, style: const TextStyle(fontSize: 12)),
+                Text(
+                  l10n.timelineWatermarkOpacityLabel,
+                  style: const TextStyle(fontSize: 12),
+                ),
                 Row(
                   children: [
                     Expanded(
                       child: SteppedSlider(
                         value: opacity,
-                        min: 0, max: 1.0, step: 0.01,
+                        min: 0,
+                        max: 1.0,
+                        step: 0.01,
                         label: '${(opacity * 100).round()}%',
                         onChanged: (v) => setS(() => opacity = v),
                       ),
@@ -2767,7 +3457,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     EditableSliderValue(
                       text: '${(opacity * 100).round()}%',
                       style: const TextStyle(fontSize: 12),
-                      value: (opacity * 100).round(), min: 0, max: 100,
+                      value: (opacity * 100).round(),
+                      min: 0,
+                      max: 100,
                       onChanged: (v) => setS(() => opacity = v / 100),
                     ),
                   ],
@@ -2776,7 +3468,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   title: Text(l10n.timelineWatermarkLoopLabel),
-                  subtitle: Text(l10n.timelineWatermarkLoopSubtitle, style: const TextStyle(fontSize: 11)),
+                  subtitle: Text(
+                    l10n.timelineWatermarkLoopSubtitle,
+                    style: const TextStyle(fontSize: 11),
+                  ),
                   value: loop,
                   onChanged: (v) => setS(() => loop = v),
                 ),
@@ -2784,11 +3479,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () async {
                 Navigator.pop(ctx);
-                await _reRasterizeWatermark(layer, home, angle: angle, scale: scale);
+                await _reRasterizeWatermark(
+                  layer,
+                  home,
+                  angle: angle,
+                  scale: scale,
+                );
                 if (!mounted) return;
                 ps.updateLayer(
                   projectId: widget.projectId,
@@ -2798,7 +3501,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     watermarkAngle: angle,
                     watermarkScale: scale,
                     opacity: (opacity * 100).round(),
-                    rangeMode: loop ? LayerRangeMode.allFrames : LayerRangeMode.currentScene,
+                    rangeMode: loop
+                        ? LayerRangeMode.allFrames
+                        : LayerRangeMode.currentScene,
                   ),
                 );
               },
@@ -2816,7 +3521,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     final cameraKfs = sceneId == null
         ? const <CameraKeyframe>[]
-        : context.watch<ProjectService>().cameraKeyframesOf(widget.projectId, sceneId);
+        : context.watch<ProjectService>().cameraKeyframesOf(
+            widget.projectId,
+            sceneId,
+          );
     // キーフレームが1件もない間は非表示にする。最初の1件は
     // ツールバーのカメラアイコンから追加できる。
     if (cameraKfs.isEmpty) return const SizedBox.shrink();
@@ -2838,8 +3546,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     width: _cellW,
                     decoration: BoxDecoration(
                       border: Border(
-                          right: BorderSide(
-                              color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
+                        right: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                          width: 0.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -2858,7 +3569,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         color: Colors.purple[700]!.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.add, size: 14, color: Colors.white),
+                      child: const Icon(
+                        Icons.add,
+                        size: 14,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -2874,9 +3589,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return AnimatedBuilder(
       animation: _cameraScrollCtrl,
       builder: (ctx, child) {
-        final scrollOffset = _cameraScrollCtrl.hasClients ? _cameraScrollCtrl.offset : 0.0;
+        final scrollOffset = _cameraScrollCtrl.hasClients
+            ? _cameraScrollCtrl.offset
+            : 0.0;
         final isDragging = _draggingCameraKfOriginalFrame == kf.frameIndex;
-        final displayFrame = isDragging ? (_draggingCameraKfLiveFrame ?? kf.frameIndex) : kf.frameIndex;
+        final displayFrame = isDragging
+            ? (_draggingCameraKfLiveFrame ?? kf.frameIndex)
+            : kf.frameIndex;
         final cx = displayFrame * _cellW + _cellW / 2 - scrollOffset;
         return Positioned(
           left: cx - 7,
@@ -2884,8 +3603,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           child: GestureDetector(
             onTap: () => _showEditCameraKfDialog(kf),
             // ドラッグでキーフレーム位置（フレーム）を変更する。
-            onHorizontalDragStart: (d) => _beginCameraKfDrag(kf, d.globalPosition.dx),
-            onHorizontalDragUpdate: (d) => _updateCameraKfDrag(d.globalPosition.dx),
+            onHorizontalDragStart: (d) =>
+                _beginCameraKfDrag(kf, d.globalPosition.dx),
+            onHorizontalDragUpdate: (d) =>
+                _updateCameraKfDrag(d.globalPosition.dx),
             onHorizontalDragEnd: (_) => _endCameraKfDrag(kf),
             child: Transform.rotate(
               angle: 0.785, // 45°
@@ -2894,7 +3615,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 height: isDragging ? 18 : 14,
                 decoration: BoxDecoration(
                   color: Colors.purple[400],
-                  border: Border.all(color: Colors.white, width: isDragging ? 2 : 1.5),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: isDragging ? 2 : 1.5,
+                  ),
                 ),
               ),
             ),
@@ -2917,7 +3641,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_draggingCameraKfOriginalFrame == null) return;
     final total = _totalFrames;
     final deltaFrames = ((globalX - _cameraKfDragStartX) / _cellW).round();
-    final newFrame = (_cameraKfDragStartFrame + deltaFrames).clamp(0, total > 0 ? total - 1 : 0);
+    final newFrame = (_cameraKfDragStartFrame + deltaFrames).clamp(
+      0,
+      total > 0 ? total - 1 : 0,
+    );
     if (newFrame != _draggingCameraKfLiveFrame) {
       setState(() => _draggingCameraKfLiveFrame = newFrame);
     }
@@ -2931,15 +3658,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _draggingCameraKfLiveFrame = null;
     });
     final sceneId = _selectedSceneId;
-    if (sceneId == null || originalFrame == null || liveFrame == null || liveFrame == originalFrame) {
+    if (sceneId == null ||
+        originalFrame == null ||
+        liveFrame == null ||
+        liveFrame == originalFrame) {
       return;
     }
     context.read<ProjectService>().updateCameraKeyframe(
-          widget.projectId,
-          sceneId,
-          originalFrame,
-          kf.copyWith(frameIndex: liveFrame),
-        );
+      widget.projectId,
+      sceneId,
+      originalFrame,
+      kf.copyWith(frameIndex: liveFrame),
+    );
   }
 
   /// タイムスタンプ用トラック（特定フレームへワンタップで移動できるマーカー
@@ -2954,7 +3684,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     final markers = sceneId == null
         ? const <TimelineMarker>[]
-        : context.watch<ProjectService>().timelineMarkersOf(widget.projectId, sceneId);
+        : context.watch<ProjectService>().timelineMarkersOf(
+            widget.projectId,
+            sceneId,
+          );
     // タイムスタンプが1件もない間は非表示にする。最初の1件は
     // ツールバーのタイムスタンプアイコンから追加できる。
     if (markers.isEmpty) return const SizedBox.shrink();
@@ -2963,7 +3696,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Row(
         children: [
-          _buildTrackLabel(Icons.push_pin_outlined, l10n.timelineMarkerTrackLabel),
+          _buildTrackLabel(
+            Icons.push_pin_outlined,
+            l10n.timelineMarkerTrackLabel,
+          ),
           Expanded(
             child: Stack(
               children: [
@@ -2976,8 +3712,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     width: _cellW,
                     decoration: BoxDecoration(
                       border: Border(
-                          right: BorderSide(
-                              color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
+                        right: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                          width: 0.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -2994,7 +3733,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         color: Colors.teal[700]!.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.add, size: 14, color: Colors.white),
+                      child: const Icon(
+                        Icons.add,
+                        size: 14,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -3010,7 +3753,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return AnimatedBuilder(
       animation: _markerScrollCtrl,
       builder: (ctx, child) {
-        final scrollOffset = _markerScrollCtrl.hasClients ? _markerScrollCtrl.offset : 0.0;
+        final scrollOffset = _markerScrollCtrl.hasClients
+            ? _markerScrollCtrl.offset
+            : 0.0;
         final cx = m.frameIndex * _cellW + _cellW / 2 - scrollOffset;
         return Positioned(
           left: cx - 7,
@@ -3052,10 +3797,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
           decoration: InputDecoration(hintText: l10n.timelineMarkerCommentHint),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
-              context.read<ProjectService>().addTimelineMarker(widget.projectId, sceneId, _currentFrame, ctrl.text);
+              context.read<ProjectService>().addTimelineMarker(
+                widget.projectId,
+                sceneId,
+                _currentFrame,
+                ctrl.text,
+              );
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonAdd),
@@ -3086,15 +3839,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
             onPressed: () async {
               if (!await confirmDelete(context)) return;
               if (!mounted) return;
-              context.read<ProjectService>().removeTimelineMarker(widget.projectId, sceneId, m.id);
+              context.read<ProjectService>().removeTimelineMarker(
+                widget.projectId,
+                sceneId,
+                m.id,
+              );
               if (ctx.mounted) Navigator.pop(ctx);
             },
           ),
           const Spacer(),
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
-              context.read<ProjectService>().updateTimelineMarker(widget.projectId, sceneId, m.copyWith(comment: ctrl.text));
+              context.read<ProjectService>().updateTimelineMarker(
+                widget.projectId,
+                sceneId,
+                m.copyWith(comment: ctrl.text),
+              );
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonSave),
@@ -3115,7 +3879,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final total = _totalFrames;
     final effects = sceneId == null
         ? const <EffectFilterInstance>[]
-        : context.watch<ProjectService>().effectFiltersOf(widget.projectId, sceneId);
+        : context.watch<ProjectService>().effectFiltersOf(
+            widget.projectId,
+            sceneId,
+          );
     if (effects.isEmpty) return const SizedBox.shrink();
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -3129,7 +3896,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 height: 32,
                 child: Row(
                   children: [
-                    _buildTrackLabel(Icons.movie_filter, _EffectFilterSheet._typeLabel(l10n, e.type)),
+                    _buildTrackLabel(
+                      Icons.movie_filter,
+                      _EffectFilterSheet._typeLabel(l10n, e.type),
+                    ),
                     Expanded(
                       child: Stack(
                         children: [
@@ -3141,7 +3911,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             itemBuilder: (_, i) => Container(
                               width: _cellW,
                               decoration: BoxDecoration(
-                                border: Border(right: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
+                                border: Border(
+                                  right: BorderSide(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
+                                    width: 0.5,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -3149,9 +3926,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             animation: _effectFilterScrollCtrl,
                             builder: (ctx, child) {
                               final scrollOffset =
-                                  _effectFilterScrollCtrl.hasClients ? _effectFilterScrollCtrl.offset : 0.0;
+                                  _effectFilterScrollCtrl.hasClients
+                                  ? _effectFilterScrollCtrl.offset
+                                  : 0.0;
                               final left = e.startFrame * _cellW - scrollOffset;
-                              final width = (e.endFrame - e.startFrame + 1) * _cellW;
+                              final width =
+                                  (e.endFrame - e.startFrame + 1) * _cellW;
                               return Positioned(
                                 left: left,
                                 top: 6,
@@ -3159,7 +3939,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   width: width,
                                   height: 20,
                                   decoration: BoxDecoration(
-                                    color: Colors.pink[400]!.withValues(alpha: e.enabled ? 0.8 : 0.3),
+                                    color: Colors.pink[400]!.withValues(
+                                      alpha: e.enabled ? 0.8 : 0.3,
+                                    ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
@@ -3188,7 +3970,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return Consumer2<PremiumService, SettingsService>(
       builder: (context, premium, settings, _) {
         final l10n = AppLocalizations.of(context)!;
-        final defaultHidden = premium.isPremium && settings.endCardDefaultHiddenForPremium;
+        final defaultHidden =
+            premium.isPremium && settings.endCardDefaultHiddenForPremium;
         final hidden = _endCardManuallyDeleted || defaultHidden;
         return GestureDetector(
           // 無料会員：トラックのどこをタップしてもプレミアム誘導へ（仕様：
@@ -3200,22 +3983,41 @@ class _TimelineScreenState extends State<TimelineScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               children: [
-                Icon(Icons.movie, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                Icon(
+                  Icons.movie,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(width: 4),
-                Text(l10n.timelineEndCardTrackLabel, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                Text(
+                  l10n.timelineEndCardTrackLabel,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(width: 4),
                 if (!premium.isPremium)
                   const Icon(Icons.lock, size: 14, color: Colors.amber)
                 else ...[
                   const Spacer(),
                   Text(
-                    hidden ? l10n.timelineEndCardHiddenLabel : l10n.timelineEndCardDefaultLogoLabel,
-                    style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    hidden
+                        ? l10n.timelineEndCardHiddenLabel
+                        : l10n.timelineEndCardDefaultLogoLabel,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   if (!hidden)
                     IconButton(
-                      icon: const Icon(Icons.delete, size: 14, color: Colors.red),
+                      icon: const Icon(
+                        Icons.delete,
+                        size: 14,
+                        color: Colors.red,
+                      ),
                       onPressed: () async {
                         if (!await confirmDelete(context)) return;
                         setState(() => _endCardManuallyDeleted = true);
@@ -3239,7 +4041,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.read<ProjectService>();
     final existing = ps.cameraKeyframesOf(widget.projectId, sceneId);
     if (existing.any((k) => k.frameIndex == _currentFrame)) return;
-    ps.addCameraKeyframe(widget.projectId, sceneId, CameraKeyframe(frameIndex: _currentFrame));
+    ps.addCameraKeyframe(
+      widget.projectId,
+      sceneId,
+      CameraKeyframe(frameIndex: _currentFrame),
+    );
   }
 
   void _showEditCameraKfDialog(CameraKeyframe kf) {
@@ -3256,14 +4062,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
         onDelete: (currentFrameIndex) => context
             .read<ProjectService>()
             .removeCameraKeyframe(widget.projectId, sceneId, currentFrameIndex),
-        onSave: (oldFrameIndex, newKf) => context
-            .read<ProjectService>()
-            .updateCameraKeyframe(widget.projectId, sceneId, oldFrameIndex, newKf),
+        onSave: (oldFrameIndex, newKf) =>
+            context.read<ProjectService>().updateCameraKeyframe(
+              widget.projectId,
+              sceneId,
+              oldFrameIndex,
+              newKf,
+            ),
       ),
     );
   }
 
-  Future<void> _showAddClipDialog(String trackName, List<_TrackClip> clips, Color color, _ClipTrackType trackType) async {
+  Future<void> _showAddClipDialog(
+    String trackName,
+    List<_TrackClip> clips,
+    Color color,
+    _ClipTrackType trackType,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final fileType = switch (trackType) {
       _ClipTrackType.audio => FileType.audio,
@@ -3271,7 +4086,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _ClipTrackType.image => FileType.image,
     };
     final result = await FilePicker.platform.pickFiles(type: fileType);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (result == null ||
+        result.files.isEmpty ||
+        result.files.first.path == null) {
+      return;
+    }
     final pickedSourcePath = result.files.first.path!;
     if (!mounted) return;
 
@@ -3283,12 +4102,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _ClipTrackType.image => MaterialType.image,
     };
     final asset = await context.read<MaterialService>().addMaterial(
-          projectId: widget.projectId,
-          sourcePath: pickedSourcePath,
-          type: materialType,
-        );
+      projectId: widget.projectId,
+      sourcePath: pickedSourcePath,
+      type: materialType,
+    );
     if (!mounted) return;
-    final pickedPath = await context.read<MaterialService>().pathOf(widget.projectId, asset.id);
+    final pickedPath = await context.read<MaterialService>().pathOf(
+      widget.projectId,
+      asset.id,
+    );
     final labelCtrl = TextEditingController(
       text: asset.originalFileName.replaceAll(RegExp(r'\.[^.]+$'), ''),
     );
@@ -3304,12 +4126,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
             children: [
               TextField(
                 controller: labelCtrl,
-                decoration: InputDecoration(labelText: l10n.timelineClipLabelFieldLabel, border: const OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: l10n.timelineClipLabelFieldLabel,
+                  border: const OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Text(l10n.timelineClipStartLabel, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    l10n.timelineClipStartLabel,
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: SteppedSlider(
@@ -3324,14 +4152,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   EditableSliderValue(
                     text: 'F${start + 1}',
                     style: const TextStyle(fontSize: 11),
-                    value: start + 1, min: 1, max: _totalFrames,
+                    value: start + 1,
+                    min: 1,
+                    max: _totalFrames,
                     onChanged: (v) => setS(() => start = v.round() - 1),
                   ),
                 ],
               ),
               Row(
                 children: [
-                  Text(l10n.timelineClipLengthLabel, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    l10n.timelineClipLengthLabel,
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: SteppedSlider(
@@ -3346,7 +4179,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   EditableSliderValue(
                     text: '${length}F',
                     style: const TextStyle(fontSize: 11),
-                    value: length, min: 1, max: _totalFrames,
+                    value: length,
+                    min: 1,
+                    max: _totalFrames,
                     onChanged: (v) => setS(() => length = v.round()),
                   ),
                 ],
@@ -3354,7 +4189,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () async {
                 final sceneId = _selectedSceneId;
@@ -3405,13 +4243,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     if (trackType == _ClipTrackType.audio) {
       final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
-      projectService.addAudioClip(widget.projectId, sceneId, AudioClip(
-        id: id,
-        label: label,
-        materialId: asset.id,
-        startFrame: startFrame,
-        lengthFrames: lengthFrames,
-      ));
+      projectService.addAudioClip(
+        widget.projectId,
+        sceneId,
+        AudioClip(
+          id: id,
+          label: label,
+          materialId: asset.id,
+          startFrame: startFrame,
+          lengthFrames: lengthFrames,
+        ),
+      );
       return _TrackClip(
         id: id,
         label: label,
@@ -3440,12 +4282,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
       projectId: widget.projectId,
       sceneId: sceneId,
       frameIndex: _currentFrame,
-      type: trackType == _ClipTrackType.video ? LayerType.timelineVideo : LayerType.timelineImage,
+      type: trackType == _ClipTrackType.video
+          ? LayerType.timelineVideo
+          : LayerType.timelineImage,
       name: label,
     );
     final tileManager = projectService.tileManagerOf(widget.projectId);
     tileManager.replaceLayerPixels(
-      projectService.tileKeyFor(widget.projectId, sceneId, _currentFrame, layer.id),
+      projectService.tileKeyFor(
+        widget.projectId,
+        sceneId,
+        _currentFrame,
+        layer.id,
+      ),
       bytes,
     );
     projectService.updateLayer(
@@ -3458,7 +4307,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         rangeEnd: startFrame + lengthFrames,
         materialId: asset.id,
         sourceTrimStart: trackType == _ClipTrackType.video ? 0 : null,
-        sourceTrimEnd: trackType == _ClipTrackType.video ? lengthFrames - 1 : null,
+        sourceTrimEnd: trackType == _ClipTrackType.video
+            ? lengthFrames - 1
+            : null,
       ),
     );
 
@@ -3481,7 +4332,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final codec = await ui.instantiateImageCodec(fileBytes);
     final frame = await codec.getNextFrame();
     final image = frame.image;
-    final scale = (w / image.width < h / image.height) ? w / image.width : h / image.height;
+    final scale = (w / image.width < h / image.height)
+        ? w / image.width
+        : h / image.height;
     final drawW = image.width * scale;
     final drawH = image.height * scale;
     final dx = (w - drawW) / 2;
@@ -3497,7 +4350,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
     image.dispose();
-    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await rendered.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     rendered.dispose();
     return byteData?.buffer.asUint8List();
   }
@@ -3508,8 +4363,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Future<Uint8List?> _placeholderVideoFrame(int w, int h) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
-    canvas.drawRect(ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-        ui.Paint()..color = const ui.Color(0xFF1A1A1A));
+    canvas.drawRect(
+      ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+      ui.Paint()..color = const ui.Color(0xFF1A1A1A),
+    );
     final iconSize = (w < h ? w : h) * 0.15;
     final cx = w / 2;
     final cy = h / 2;
@@ -3521,7 +4378,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     canvas.drawPath(path, ui.Paint()..color = const ui.Color(0xFF666666));
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
-    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await rendered.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     rendered.dispose();
     return byteData?.buffer.asUint8List();
   }
@@ -3554,7 +4413,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
           _ClipTrackType.video => MaterialType.video,
           _ClipTrackType.image => MaterialType.image,
         };
-        projectService.removeTrackRow(widget.projectId, sceneId, materialType, clip.trackRow);
+        projectService.removeTrackRow(
+          widget.projectId,
+          sceneId,
+          materialType,
+          clip.trackRow,
+        );
       }
     }
   }
@@ -3571,38 +4435,47 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     if (clip.trackType == _ClipTrackType.audio) {
       final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
-      projectService.addAudioClip(widget.projectId, sceneId, AudioClip(
-        id: id,
-        label: clip.label,
-        materialId: clip.materialId,
-        startFrame: newStart,
-        lengthFrames: clip.lengthFrames,
-        volume: clip.volume,
-        fadeIn: clip.fadeIn,
-        fadeOut: clip.fadeOut,
-        trackRow: clip.trackRow,
-      ));
-      if (mounted) {
-        setState(() => _audioClips.add(_TrackClip(
+      projectService.addAudioClip(
+        widget.projectId,
+        sceneId,
+        AudioClip(
           id: id,
           label: clip.label,
+          materialId: clip.materialId,
           startFrame: newStart,
           lengthFrames: clip.lengthFrames,
-          color: clip.color,
-          trackType: clip.trackType,
-          filePath: clip.filePath,
-          materialId: clip.materialId,
           volume: clip.volume,
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
-          useEnd: clip.lengthFrames - 1,
           trackRow: clip.trackRow,
-        )));
+        ),
+      );
+      if (mounted) {
+        setState(
+          () => _audioClips.add(
+            _TrackClip(
+              id: id,
+              label: clip.label,
+              startFrame: newStart,
+              lengthFrames: clip.lengthFrames,
+              color: clip.color,
+              trackType: clip.trackType,
+              filePath: clip.filePath,
+              materialId: clip.materialId,
+              volume: clip.volume,
+              fadeIn: clip.fadeIn,
+              fadeOut: clip.fadeOut,
+              useEnd: clip.lengthFrames - 1,
+              trackRow: clip.trackRow,
+            ),
+          ),
+        );
       }
       return;
     }
 
-    final home = projectService.homeOf(widget.projectId, clip.id) ??
+    final home =
+        projectService.homeOf(widget.projectId, clip.id) ??
         (sceneId: sceneId, frameIndex: _currentFrame);
     final sourceLayer = projectService
         .layersOf(widget.projectId, home.sceneId, home.frameIndex)
@@ -3617,10 +4490,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
       type: sourceLayer.type,
       name: clip.label,
     );
-    projectService.tileManagerOf(widget.projectId).copyLayer(
-      projectService.tileKeyFor(widget.projectId, home.sceneId, home.frameIndex, clip.id),
-      projectService.tileKeyFor(widget.projectId, home.sceneId, home.frameIndex, newLayer.id),
-    );
+    projectService
+        .tileManagerOf(widget.projectId)
+        .copyLayer(
+          projectService.tileKeyFor(
+            widget.projectId,
+            home.sceneId,
+            home.frameIndex,
+            clip.id,
+          ),
+          projectService.tileKeyFor(
+            widget.projectId,
+            home.sceneId,
+            home.frameIndex,
+            newLayer.id,
+          ),
+        );
     projectService.updateLayer(
       projectId: widget.projectId,
       sceneId: home.sceneId,
@@ -3631,8 +4516,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
         rangeEnd: newStart + clip.lengthFrames,
         materialId: clip.materialId,
         opacity: (clip.videoOpacity * 100).round(),
-        sourceTrimStart: clip.trackType == _ClipTrackType.video ? clip.useStart : null,
-        sourceTrimEnd: clip.trackType == _ClipTrackType.video ? clip.useEnd : null,
+        sourceTrimStart: clip.trackType == _ClipTrackType.video
+            ? clip.useStart
+            : null,
+        sourceTrimEnd: clip.trackType == _ClipTrackType.video
+            ? clip.useEnd
+            : null,
       ),
     );
     if (!mounted) return;
@@ -3663,26 +4552,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 使用範囲）をまとめて永続化する（スライダー操作のたびに保存すると低スペック
   /// 端末で負荷が高いため、シートを閉じた時点でまとめて反映する）。
   void _persistClipUpdate(_TrackClip clip, String sceneId) {
-    final stillExists = _audioClips.contains(clip) ||
+    final stillExists =
+        _audioClips.contains(clip) ||
         _videoClips.contains(clip) ||
         _imageClips.contains(clip);
     if (!stillExists) return; // 削除済みなら何もしない
     final projectService = context.read<ProjectService>();
     if (clip.trackType == _ClipTrackType.audio) {
-      projectService.updateAudioClip(widget.projectId, sceneId, AudioClip(
-        id: clip.id,
-        label: clip.label,
-        materialId: clip.materialId,
-        startFrame: clip.startFrame,
-        lengthFrames: clip.lengthFrames,
-        volume: clip.volume,
-        fadeIn: clip.fadeIn,
-        fadeOut: clip.fadeOut,
-      ));
+      projectService.updateAudioClip(
+        widget.projectId,
+        sceneId,
+        AudioClip(
+          id: clip.id,
+          label: clip.label,
+          materialId: clip.materialId,
+          startFrame: clip.startFrame,
+          lengthFrames: clip.lengthFrames,
+          volume: clip.volume,
+          fadeIn: clip.fadeIn,
+          fadeOut: clip.fadeOut,
+        ),
+      );
     } else {
       // レイヤーの実データが物理的に存在する「ホーム」フレームを使う
       // （表示範囲を持つレイヤーは_currentFrameが範囲外の場合があるため）。
-      final home = projectService.homeOf(widget.projectId, clip.id) ??
+      final home =
+          projectService.homeOf(widget.projectId, clip.id) ??
           (sceneId: sceneId, frameIndex: _currentFrame);
       final layer = projectService
           .layersOf(widget.projectId, home.sceneId, home.frameIndex)
@@ -3730,28 +4625,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
       final path = a.materialId == null
           ? null
           : await materialService.pathOf(widget.projectId, a.materialId!);
-      audio.add(_TrackClip(
-        id: a.id,
-        label: a.label,
-        startFrame: a.startFrame,
-        lengthFrames: a.lengthFrames,
-        color: Colors.orange[700]!,
-        trackType: _ClipTrackType.audio,
-        filePath: path,
-        materialId: a.materialId,
-        volume: a.volume,
-        fadeIn: a.fadeIn,
-        fadeOut: a.fadeOut,
-        useEnd: a.lengthFrames - 1,
-        trackRow: a.trackRow,
-      ));
+      audio.add(
+        _TrackClip(
+          id: a.id,
+          label: a.label,
+          startFrame: a.startFrame,
+          lengthFrames: a.lengthFrames,
+          color: Colors.orange[700]!,
+          trackType: _ClipTrackType.audio,
+          filePath: path,
+          materialId: a.materialId,
+          volume: a.volume,
+          fadeIn: a.fadeIn,
+          fadeOut: a.fadeOut,
+          useEnd: a.lengthFrames - 1,
+          trackRow: a.trackRow,
+        ),
+      );
     }
 
     final video = <_TrackClip>[];
     final image = <_TrackClip>[];
     for (final frame in scene.frames) {
       for (final layer in frame.layers) {
-        if (layer.type != LayerType.timelineVideo && layer.type != LayerType.timelineImage) continue;
+        if (layer.type != LayerType.timelineVideo &&
+            layer.type != LayerType.timelineImage) {
+          continue;
+        }
         final start = (layer.rangeStart ?? 1) - 1;
         final end = layer.rangeEnd ?? (start + 1);
         final length = (end - start).clamp(1, 1 << 30);
@@ -3763,8 +4663,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
           label: layer.name,
           startFrame: start,
           lengthFrames: length,
-          color: layer.type == LayerType.timelineVideo ? Colors.blue[700]! : Colors.green[700]!,
-          trackType: layer.type == LayerType.timelineVideo ? _ClipTrackType.video : _ClipTrackType.image,
+          color: layer.type == LayerType.timelineVideo
+              ? Colors.blue[700]!
+              : Colors.green[700]!,
+          trackType: layer.type == LayerType.timelineVideo
+              ? _ClipTrackType.video
+              : _ClipTrackType.image,
           filePath: path,
           materialId: layer.materialId,
           useStart: layer.sourceTrimStart ?? 0,
@@ -3782,9 +4686,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     if (!mounted) return;
     setState(() {
-      _audioClips..clear()..addAll(audio);
-      _videoClips..clear()..addAll(video);
-      _imageClips..clear()..addAll(image);
+      _audioClips
+        ..clear()
+        ..addAll(audio);
+      _videoClips
+        ..clear()
+        ..addAll(video);
+      _imageClips
+        ..clear()
+        ..addAll(image);
     });
   }
 
@@ -3855,7 +4765,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
         title: Text(l10n.timelineSaveFailedDialogTitle),
         content: Text(l10n.timelineSaveFailedDialogBody),
         actions: [
-          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonOk),
+          ),
         ],
       ),
     );
@@ -3871,7 +4784,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
         title: Text(l10n.timelineBackToProjectListDialogTitle),
         content: Text(l10n.timelineBackToProjectListDialogBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'discard'),
             child: Text(l10n.timelineBackToProjectListDiscardButton),
@@ -3890,7 +4806,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       try {
         await context.read<ProjectService>().saveProject(widget.projectId);
       } catch (e) {
-        debugPrint('timeline: saveProject failed before returning to project list: $e');
+        debugPrint(
+          'timeline: saveProject failed before returning to project list: $e',
+        );
         if (mounted) await _showSaveFailedDialog();
         return;
       }
@@ -3907,13 +4825,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.read<ProjectService>();
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
-    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     final fps = project?.fps ?? 24;
     int frames = ps.frameCount(widget.projectId, sceneId).clamp(1, 1 << 30);
     const maxFrames = 7200 * 60; // プレミアム上限2時間相当を目安にした上限
     final framesController = TextEditingController(text: '$frames');
-    final secondsController =
-        TextEditingController(text: (frames / fps).toStringAsFixed(1));
+    final secondsController = TextEditingController(
+      text: (frames / fps).toStringAsFixed(1),
+    );
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -3939,13 +4860,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       controller: framesController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
-                      decoration: InputDecoration(isDense: true, labelText: l10n.timelineDurationFramesLabel),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        labelText: l10n.timelineDurationFramesLabel,
+                      ),
                       onChanged: (v) {
                         final parsed = int.tryParse(v);
                         if (parsed == null) return;
                         setS(() {
                           frames = parsed.clamp(1, maxFrames);
-                          secondsController.text = (frames / fps).toStringAsFixed(1);
+                          secondsController.text = (frames / fps)
+                              .toStringAsFixed(1);
                         });
                       },
                     ),
@@ -3954,9 +4879,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   Expanded(
                     child: TextField(
                       controller: secondsController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       textAlign: TextAlign.center,
-                      decoration: InputDecoration(isDense: true, labelText: l10n.timelineDurationSecondsLabel),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        labelText: l10n.timelineDurationSecondsLabel,
+                      ),
                       onChanged: (v) {
                         final parsed = double.tryParse(v);
                         if (parsed == null) return;
@@ -3972,11 +4902,41 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
-              onPressed: () {
+              onPressed: () async {
+                if (ps.sceneFrameShrinkHasContent(
+                  widget.projectId,
+                  sceneId,
+                  frames,
+                )) {
+                  final confirmed = await showDialog<bool>(
+                    context: ctx,
+                    builder: (dialogCtx) => AlertDialog(
+                      title: Text(l10n.timelineDurationShrinkConfirmTitle),
+                      content: Text(l10n.timelineDurationShrinkConfirmBody),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogCtx, false),
+                          child: Text(l10n.commonCancel),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          onPressed: () => Navigator.pop(dialogCtx, true),
+                          child: Text(l10n.commonDelete),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed != true) return;
+                }
                 ps.setSceneFrameCount(widget.projectId, sceneId, frames);
-                Navigator.pop(ctx);
+                if (ctx.mounted) Navigator.pop(ctx);
               },
               child: Text(l10n.commonOk),
             ),
@@ -3998,7 +4958,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.read<ProjectService>();
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
-    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     if (project == null) return;
     final oldW = project.drawingWidth;
     final oldH = project.drawingHeight;
@@ -4028,8 +4990,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(l10n.timelineCanvasSizeDragHint,
-                      style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
+                  Text(
+                    l10n.timelineCanvasSizeDragHint,
+                    style: const TextStyle(fontSize: 11),
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 8),
                   // プレビュー：実際のフレーム内容の上に、新サイズの範囲を
                   // 示す枠を重ねてドラッグで移動できるようにする。
@@ -4041,11 +5006,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         Positioned.fill(
                           child: _TimelinePreview(
                             tileManager: ps.tileManagerOf(widget.projectId),
-                            layers: ps.layersOf(widget.projectId, sceneId, _currentFrame),
+                            layers: ps.layersOf(
+                              widget.projectId,
+                              sceneId,
+                              _currentFrame,
+                            ),
                             sceneId: sceneId,
                             frameIndex: _currentFrame,
-                            cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
-                            effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
+                            cameraKeyframes: ps.cameraKeyframesOf(
+                              widget.projectId,
+                              sceneId,
+                            ),
+                            effectFilters: ps.effectFiltersOf(
+                              widget.projectId,
+                              sceneId,
+                            ),
                             layerHomes: ps.layerHomesOf(widget.projectId),
                             groups: ps.layerGroupsOf(widget.projectId, sceneId),
                           ),
@@ -4061,18 +5036,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               cropY += (d.delta.dy / scale).round();
                               clampCrop();
                             }),
-                            child: Builder(builder: (context) {
-                              // 色固定にせず、更新マーク（❗）やフレーム現在地の
-                              // 赤枠と同じ「目立たせる」役割の色（テーマの
-                              // updateMarkColor）に揃える。
-                              final markColor = context.watch<ThemeService>().current.updateMarkColor;
-                              return Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: markColor, width: 2),
-                                  color: markColor.withValues(alpha: 0.15),
-                                ),
-                              );
-                            }),
+                            child: Builder(
+                              builder: (context) {
+                                // 色固定にせず、更新マーク（❗）やフレーム現在地の
+                                // 赤枠と同じ「目立たせる」役割の色（テーマの
+                                // updateMarkColor）に揃える。
+                                final markColor = context
+                                    .watch<ThemeService>()
+                                    .current
+                                    .updateMarkColor;
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: markColor,
+                                      width: 2,
+                                    ),
+                                    color: markColor.withValues(alpha: 0.15),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ],
@@ -4101,12 +5084,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       clampCrop();
                     }),
                   ),
-                  Text('$newW × $newH px', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    '$newW × $newH px',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
               FilledButton(
                 onPressed: () async {
                   Navigator.pop(ctx);
@@ -4143,11 +5132,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.layerPanelAutofillNote1,
-                    style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+                Text(
+                  l10n.layerPanelAutofillNote1,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(l10n.timelineAutofillNote2,
-                    style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+                Text(
+                  l10n.timelineAutofillNote2,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 RadioGroup<int>(
                   groupValue: selected,
@@ -4159,8 +5158,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(l10n.layerPanelAutofillRepaintHint, style: const TextStyle(fontSize: 11)),
-                            Text(l10n.layerPanelAutofillRepaintNote, style: const TextStyle(fontSize: 11)),
+                            Text(
+                              l10n.layerPanelAutofillRepaintHint,
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            Text(
+                              l10n.layerPanelAutofillRepaintNote,
+                              style: const TextStyle(fontSize: 11),
+                            ),
                           ],
                         ),
                         value: 0,
@@ -4171,8 +5176,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(l10n.layerPanelAutofillColorUpdateHint, style: const TextStyle(fontSize: 11)),
-                            Text(l10n.layerPanelAutofillColorUpdateNote, style: const TextStyle(fontSize: 11)),
+                            Text(
+                              l10n.layerPanelAutofillColorUpdateHint,
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            Text(
+                              l10n.layerPanelAutofillColorUpdateNote,
+                              style: const TextStyle(fontSize: 11),
+                            ),
                           ],
                         ),
                         value: 1,
@@ -4183,8 +5194,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 const Divider(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Text(l10n.timelineAutofillTargetLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Text(
+                    l10n.timelineAutofillTargetLabel,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      fontFamily: 'Kuramubon',
+                    ),
+                  ),
                 ),
                 RadioGroup<_AutofillScope>(
                   groupValue: scope,
@@ -4213,13 +5234,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 _runBatchAutofill(
                   scope,
-                  selected == 0 ? AutofillMode.repaint : AutofillMode.colorUpdate,
+                  selected == 0
+                      ? AutofillMode.repaint
+                      : AutofillMode.colorUpdate,
                 );
               },
               child: Text(l10n.layerPanelExecuteButton),
@@ -4233,7 +5259,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 自動塗り一括実行（タイムラインモードからの実行、対象は
   /// 現在フレーム／シーン単位／全フレームから選択）。対象範囲内の全フレームを
   /// 走査し、自動塗り用線画レイヤーごとにruleAutofillForLayerを実行する。
-  Future<void> _runBatchAutofill(_AutofillScope scope, AutofillMode mode) async {
+  Future<void> _runBatchAutofill(
+    _AutofillScope scope,
+    AutofillMode mode,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
     final presetService = context.read<AutofillPresetService>();
@@ -4266,26 +5295,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
     int applied = 0;
     void Function(void Function())? setDialogState;
     if (!mounted) return;
-    unawaited(showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) {
-          setDialogState = setS;
-          return ProgressDialog(
-            title: l10n.timelineAutofillProgressTitle,
-            progress: progress,
-            subtitle: l10n.timelineAutofillProgressSubtitle(targets.length),
-          );
-        },
+    unawaited(
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setS) {
+            setDialogState = setS;
+            return ProgressDialog(
+              title: l10n.timelineAutofillProgressTitle,
+              progress: progress,
+              subtitle: l10n.timelineAutofillProgressSubtitle(targets.length),
+            );
+          },
+        ),
       ),
-    ));
+    );
     await Future.delayed(const Duration(milliseconds: 16));
 
     for (int i = 0; i < targets.length; i++) {
       final (sceneId, frameIndex) = targets[i];
       final layers = ps.layersOf(widget.projectId, sceneId, frameIndex);
-      final lineartLayers = layers.where((l) => l.type == LayerType.autoFillLineart);
+      final lineartLayers = layers.where(
+        (l) => l.type == LayerType.autoFillLineart,
+      );
       for (final lineartLayer in lineartLayers) {
         final result = await runAutofillForLayer(
           projectService: ps,
@@ -4302,7 +5335,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（
       // 「線画レイヤーなし・塗りレイヤーあり」の行）は、選択中のモードに
       // 関わらず不透明度ロック＋最新色での塗りつぶしのみを行う。
-      final orphanedLayers = layers.where((l) => isOrphanedAutofillLayer(layers, l));
+      final orphanedLayers = layers.where(
+        (l) => isOrphanedAutofillLayer(layers, l),
+      );
       for (final orphanedLayer in orphanedLayers) {
         final result = await runAutofillForOrphanedLayer(
           projectService: ps,
@@ -4328,7 +5363,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
 }
 
 enum _AutofillScope { currentFrame, currentScene, allScenes }
-
 
 // ─── タイムラインプレビューウィジェット ───────────────────────────────────
 
@@ -4387,7 +5421,9 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   LayerKeyframe? _groupKeyframeOf(Layer layer) {
     for (final g in widget.groups) {
       if (g.memberLayerIds.contains(layer.id)) {
-        return g.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(g.keyframes, widget.frameIndex);
+        return g.keyframes.isEmpty
+            ? null
+            : _layerKeyframeEngine.valueAt(g.keyframes, widget.frameIndex);
       }
     }
     return null;
@@ -4400,10 +5436,17 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     final layered = await LayerCompositor.composite(
       tm,
       widget.layers,
-      (l) => resolveTileKey(widget.layerHomes, widget.sceneId, widget.frameIndex, l.id),
+      (l) => resolveTileKey(
+        widget.layerHomes,
+        widget.sceneId,
+        widget.frameIndex,
+        l.id,
+      ),
       tm.canvasWidth,
       tm.canvasHeight,
-      keyframeOf: (l) => l.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(l.keyframes, widget.frameIndex),
+      keyframeOf: (l) => l.keyframes.isEmpty
+          ? null
+          : _layerKeyframeEngine.valueAt(l.keyframes, widget.frameIndex),
       groupKeyframeOf: _groupKeyframeOf,
     );
 
@@ -4412,7 +5455,12 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     canvas.save();
-    _cameraEngine.apply(canvas, kf, tm.canvasWidth.toDouble(), tm.canvasHeight.toDouble());
+    _cameraEngine.apply(
+      canvas,
+      kf,
+      tm.canvasWidth.toDouble(),
+      tm.canvasHeight.toDouble(),
+    );
     canvas.drawImage(layered, ui.Offset.zero, ui.Paint());
     canvas.restore();
     layered.dispose();
@@ -4436,7 +5484,11 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       }
     }
 
-    if (!mounted) { img.dispose(); _building = false; return; }
+    if (!mounted) {
+      img.dispose();
+      _building = false;
+      return;
+    }
     setState(() {
       _image?.dispose();
       _image = img;
@@ -4446,7 +5498,13 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
 
   Future<ui.Image> _decodeRgba(Uint8List bytes, int width, int height) {
     final completer = Completer<ui.Image>();
-    ui.decodeImageFromPixels(bytes, width, height, ui.PixelFormat.rgba8888, completer.complete);
+    ui.decodeImageFromPixels(
+      bytes,
+      width,
+      height,
+      ui.PixelFormat.rgba8888,
+      completer.complete,
+    );
     return completer.future;
   }
 
@@ -4459,12 +5517,12 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   @override
   Widget build(BuildContext context) {
     final img = _image;
-    if (img == null) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    if (img == null) {
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    }
     return RawImage(image: img, fit: BoxFit.contain);
   }
 }
-
-
 
 // ─── 演出フィルターシート ───────────────────────────────────────────────────
 // 選択中シーンのProjectService.effectFiltersOf()を直接読み書きする（
@@ -4482,24 +5540,26 @@ class _EffectFilterSheet extends StatelessWidget {
     required this.currentFrame,
   });
 
-  static String _typeLabel(AppLocalizations l10n, EffectFilterType type) => switch (type) {
-    EffectFilterType.fade => l10n.timelineEffectTypeFade,
-    EffectFilterType.gaussianBlur => l10n.timelineEffectTypeGaussianBlur,
-    EffectFilterType.lensBlur => l10n.timelineEffectTypeLensBlur,
-    EffectFilterType.mosaic => l10n.timelineEffectTypeMosaic,
-    EffectFilterType.chromaticAberration => l10n.timelineEffectTypeChromaticAberration,
-    EffectFilterType.noise => l10n.timelineEffectTypeNoise,
-    EffectFilterType.sepia => l10n.timelineEffectTypeSepia,
-    EffectFilterType.animeStyle => l10n.timelineEffectTypeAnimeStyle,
-    EffectFilterType.retroAnime => l10n.timelineEffectTypeRetroAnime,
-    EffectFilterType.crt => l10n.timelineEffectTypeCrt,
-    EffectFilterType.animatedNoise => l10n.timelineEffectTypeAnimatedNoise,
-    EffectFilterType.rain => l10n.timelineEffectTypeRain,
-    EffectFilterType.monochrome => l10n.timelineEffectTypeMonochrome,
-    EffectFilterType.colorAdjust => l10n.filterNameColorAdjust,
-    EffectFilterType.threshold => l10n.filterNameThreshold,
-    EffectFilterType.fisheye => l10n.filterNameFisheye,
-  };
+  static String _typeLabel(AppLocalizations l10n, EffectFilterType type) =>
+      switch (type) {
+        EffectFilterType.fade => l10n.timelineEffectTypeFade,
+        EffectFilterType.gaussianBlur => l10n.timelineEffectTypeGaussianBlur,
+        EffectFilterType.lensBlur => l10n.timelineEffectTypeLensBlur,
+        EffectFilterType.mosaic => l10n.timelineEffectTypeMosaic,
+        EffectFilterType.chromaticAberration =>
+          l10n.timelineEffectTypeChromaticAberration,
+        EffectFilterType.noise => l10n.timelineEffectTypeNoise,
+        EffectFilterType.sepia => l10n.timelineEffectTypeSepia,
+        EffectFilterType.animeStyle => l10n.timelineEffectTypeAnimeStyle,
+        EffectFilterType.retroAnime => l10n.timelineEffectTypeRetroAnime,
+        EffectFilterType.crt => l10n.timelineEffectTypeCrt,
+        EffectFilterType.animatedNoise => l10n.timelineEffectTypeAnimatedNoise,
+        EffectFilterType.rain => l10n.timelineEffectTypeRain,
+        EffectFilterType.monochrome => l10n.timelineEffectTypeMonochrome,
+        EffectFilterType.colorAdjust => l10n.filterNameColorAdjust,
+        EffectFilterType.threshold => l10n.filterNameThreshold,
+        EffectFilterType.fisheye => l10n.filterNameFisheye,
+      };
 
   static const _typeIcons = {
     EffectFilterType.fade: Icons.gradient,
@@ -4523,7 +5583,10 @@ class _EffectFilterSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final effects = context.watch<ProjectService>().effectFiltersOf(projectId, sceneId);
+    final effects = context.watch<ProjectService>().effectFiltersOf(
+      projectId,
+      sceneId,
+    );
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.6,
@@ -4533,14 +5596,25 @@ class _EffectFilterSheet extends StatelessWidget {
         children: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(2)),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Text(l10n.timelineEffectFilterLabel, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                Text(
+                  l10n.timelineEffectFilterLabel,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                  ),
+                ),
                 const Spacer(),
                 FilledButton.icon(
                   icon: const Icon(Icons.add, size: 16),
@@ -4554,9 +5628,14 @@ class _EffectFilterSheet extends StatelessWidget {
           Expanded(
             child: effects.isEmpty
                 ? Center(
-                    child: Text(l10n.timelineEffectFilterEmptyState,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)))
+                    child: Text(
+                      l10n.timelineEffectFilterEmptyState,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
                 // ドラッグで並び替え可能（「複数フィルターの適用順」は
                 // タイムライン上の並び順に従うため、並び替えが適用順を左右する）
                 : ReorderableListView.builder(
@@ -4566,11 +5645,19 @@ class _EffectFilterSheet extends StatelessWidget {
                     // 無いままだった。他の並べ替え可能な一覧と操作方法を揃える）。
                     buildDefaultDragHandles: false,
                     itemCount: effects.length,
-                    onReorder: (oldIndex, newIndex) => context
-                        .read<ProjectService>()
-                        .reorderEffectFilters(projectId, sceneId, oldIndex, newIndex),
-                    itemBuilder: (ctx, i) =>
-                        _buildEffectTile(context, effects[i], dragIndex: i, key: ValueKey(effects[i].id)),
+                    onReorder: (oldIndex, newIndex) =>
+                        context.read<ProjectService>().reorderEffectFilters(
+                          projectId,
+                          sceneId,
+                          oldIndex,
+                          newIndex,
+                        ),
+                    itemBuilder: (ctx, i) => _buildEffectTile(
+                      context,
+                      effects[i],
+                      dragIndex: i,
+                      key: ValueKey(effects[i].id),
+                    ),
                   ),
           ),
         ],
@@ -4583,7 +5670,11 @@ class _EffectFilterSheet extends StatelessWidget {
 
   /// 演出フィルターを複製する（「フィルター操作＞複製」）。
   /// 複製先は元フィルターの直後へ挿入する。
-  void _duplicate(BuildContext context, EffectFilterInstance e, List<EffectFilterInstance> effects) {
+  void _duplicate(
+    BuildContext context,
+    EffectFilterInstance e,
+    List<EffectFilterInstance> effects,
+  ) {
     final service = context.read<ProjectService>();
     final copy = EffectFilterInstance(
       id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
@@ -4600,13 +5691,26 @@ class _EffectFilterSheet extends StatelessWidget {
     service.addEffectFilter(projectId, sceneId, copy);
     final index = effects.indexWhere((f) => f.id == e.id);
     if (index >= 0 && index + 1 < effects.length) {
-      service.reorderEffectFilters(projectId, sceneId, effects.length, index + 1);
+      service.reorderEffectFilters(
+        projectId,
+        sceneId,
+        effects.length,
+        index + 1,
+      );
     }
   }
 
-  Widget _buildEffectTile(BuildContext context, EffectFilterInstance e, {int? dragIndex, Key? key}) {
+  Widget _buildEffectTile(
+    BuildContext context,
+    EffectFilterInstance e, {
+    int? dragIndex,
+    Key? key,
+  }) {
     final l10n = AppLocalizations.of(context)!;
-    final effects = context.read<ProjectService>().effectFiltersOf(projectId, sceneId);
+    final effects = context.read<ProjectService>().effectFiltersOf(
+      projectId,
+      sceneId,
+    );
     return Card(
       key: key,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -4615,12 +5719,21 @@ class _EffectFilterSheet extends StatelessWidget {
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: ExpansionTile(
         leading: Icon(_typeIcons[e.type], size: 20),
-        title: Text(_typeLabel(l10n, e.type), style: const TextStyle(fontSize: 13)),
-        subtitle: Text('F${e.startFrame + 1} ～ F${e.endFrame + 1}', style: const TextStyle(fontSize: 11)),
+        title: Text(
+          _typeLabel(l10n, e.type),
+          style: const TextStyle(fontSize: 13),
+        ),
+        subtitle: Text(
+          'F${e.startFrame + 1} ～ F${e.endFrame + 1}',
+          style: const TextStyle(fontSize: 11),
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Switch(value: e.enabled, onChanged: (v) => _update(context, e.copyWith(enabled: v))),
+            Switch(
+              value: e.enabled,
+              onChanged: (v) => _update(context, e.copyWith(enabled: v)),
+            ),
             IconButton(
               icon: const Icon(Icons.copy, size: 18),
               tooltip: l10n.themeDuplicateAction,
@@ -4630,9 +5743,18 @@ class _EffectFilterSheet extends StatelessWidget {
               icon: const Icon(Icons.delete, size: 18, color: Colors.red),
               tooltip: l10n.commonDelete,
               onPressed: () async {
-                if (!await confirmDelete(context, itemName: _typeLabel(l10n, e.type))) return;
+                if (!await confirmDelete(
+                  context,
+                  itemName: _typeLabel(l10n, e.type),
+                )) {
+                  return;
+                }
                 if (!context.mounted) return;
-                context.read<ProjectService>().removeEffectFilter(projectId, sceneId, e.id);
+                context.read<ProjectService>().removeEffectFilter(
+                  projectId,
+                  sceneId,
+                  e.id,
+                );
               },
             ),
             if (dragIndex != null)
@@ -4651,10 +5773,28 @@ class _EffectFilterSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _rangeRow(l10n.timelineRangeStartLabel, e.startFrame, 0, totalFrames - 1,
-                    (v) => _update(context, e.copyWith(startFrame: v.clamp(0, e.endFrame)))),
-                _rangeRow(l10n.timelineRangeEndLabel, e.endFrame, 0, totalFrames - 1,
-                    (v) => _update(context, e.copyWith(endFrame: v.clamp(e.startFrame, totalFrames - 1)))),
+                _rangeRow(
+                  l10n.timelineRangeStartLabel,
+                  e.startFrame,
+                  0,
+                  totalFrames - 1,
+                  (v) => _update(
+                    context,
+                    e.copyWith(startFrame: v.clamp(0, e.endFrame)),
+                  ),
+                ),
+                _rangeRow(
+                  l10n.timelineRangeEndLabel,
+                  e.endFrame,
+                  0,
+                  totalFrames - 1,
+                  (v) => _update(
+                    context,
+                    e.copyWith(
+                      endFrame: v.clamp(e.startFrame, totalFrames - 1),
+                    ),
+                  ),
+                ),
                 if (e.type == EffectFilterType.fade)
                   ..._fadeParams(context, l10n, e)
                 else if (e.type == EffectFilterType.animatedNoise)
@@ -4677,14 +5817,24 @@ class _EffectFilterSheet extends StatelessWidget {
     );
   }
 
-  Widget _rangeRow(String label, int value, int min, int max, ValueChanged<int> onChanged) {
+  Widget _rangeRow(
+    String label,
+    int value,
+    int min,
+    int max,
+    ValueChanged<int> onChanged,
+  ) {
     return Row(
       children: [
-        SizedBox(width: 36, child: Text(label, style: const TextStyle(fontSize: 11))),
+        SizedBox(
+          width: 36,
+          child: Text(label, style: const TextStyle(fontSize: 11)),
+        ),
         Expanded(
           child: SteppedSlider(
             value: value.toDouble(),
-            min: min.toDouble(), max: max.toDouble(),
+            min: min.toDouble(),
+            max: max.toDouble(),
             divisions: max > min ? max - min : 1,
             label: 'F${value + 1}',
             onChanged: (v) => onChanged(v.round()),
@@ -4695,7 +5845,9 @@ class _EffectFilterSheet extends StatelessWidget {
           child: EditableSliderValue(
             text: 'F${value + 1}',
             style: const TextStyle(fontSize: 11),
-            value: value + 1, min: min + 1, max: max + 1,
+            value: value + 1,
+            min: min + 1,
+            max: max + 1,
             onChanged: (v) => onChanged(v.round() - 1),
           ),
         ),
@@ -4703,17 +5855,27 @@ class _EffectFilterSheet extends StatelessWidget {
     );
   }
 
-  List<Widget> _strengthParam(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
-    final label = e.type == EffectFilterType.mosaic ? l10n.timelineEffectSizeLabel : l10n.timelineEffectStrengthLabel;
+  List<Widget> _strengthParam(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    final label = e.type == EffectFilterType.mosaic
+        ? l10n.timelineEffectSizeLabel
+        : l10n.timelineEffectStrengthLabel;
     final maxVal = e.type == EffectFilterType.mosaic ? 64.0 : 20.0;
     return [
       Row(
         children: [
-          SizedBox(width: 36, child: Text(label, style: const TextStyle(fontSize: 11))),
+          SizedBox(
+            width: 36,
+            child: Text(label, style: const TextStyle(fontSize: 11)),
+          ),
           Expanded(
             child: SteppedSlider(
               value: e.param1.clamp(1, maxVal),
-              min: 1, max: maxVal,
+              min: 1,
+              max: maxVal,
               divisions: maxVal.round() - 1,
               label: e.param1.round().toString(),
               onChanged: (v) => _update(context, e.copyWith(param1: v)),
@@ -4724,8 +5886,11 @@ class _EffectFilterSheet extends StatelessWidget {
             child: EditableSliderValue(
               text: e.param1.round().toString(),
               style: const TextStyle(fontSize: 11),
-              value: e.param1, min: 1, max: maxVal,
-              onChanged: (v) => _update(context, e.copyWith(param1: v.toDouble())),
+              value: e.param1,
+              min: 1,
+              max: maxVal,
+              onChanged: (v) =>
+                  _update(context, e.copyWith(param1: v.toDouble())),
             ),
           ),
         ],
@@ -4734,15 +5899,26 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   /// 演出フィルターの汎用パラメータ行（ラベル＋スライダー＋数値入力）。
-  Widget _paramRow(String label, double value, double min, double max, int divisions,
-      ValueChanged<double> onChanged, {String? valueText}) {
+  Widget _paramRow(
+    String label,
+    double value,
+    double min,
+    double max,
+    int divisions,
+    ValueChanged<double> onChanged, {
+    String? valueText,
+  }) {
     return Row(
       children: [
-        SizedBox(width: 56, child: Text(label, style: const TextStyle(fontSize: 11))),
+        SizedBox(
+          width: 56,
+          child: Text(label, style: const TextStyle(fontSize: 11)),
+        ),
         Expanded(
           child: SteppedSlider(
             value: value.clamp(min, max),
-            min: min, max: max,
+            min: min,
+            max: max,
             divisions: divisions > 0 ? divisions : null,
             label: valueText ?? value.round().toString(),
             onChanged: onChanged,
@@ -4753,7 +5929,10 @@ class _EffectFilterSheet extends StatelessWidget {
           child: EditableSliderValue(
             text: valueText ?? value.round().toString(),
             style: const TextStyle(fontSize: 11),
-            value: value, min: min, max: max, isInt: false,
+            value: value,
+            min: min,
+            max: max,
+            isInt: false,
             onChanged: (v) => onChanged(v.toDouble()),
           ),
         ),
@@ -4762,53 +5941,138 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   /// 色調調整のパラメータ（彩度・明度・コントラスト、いずれも-100〜100）。
-  List<Widget> _colorAdjustParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+  List<Widget> _colorAdjustParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
     return [
-      _paramRow(l10n.filterColorAdjustSaturationLabel, e.param1, -100, 100, 200,
-          (v) => _update(context, e.copyWith(param1: v))),
-      _paramRow(l10n.filterColorAdjustBrightnessLabel, e.param2, -100, 100, 200,
-          (v) => _update(context, e.copyWith(param2: v))),
-      _paramRow(l10n.filterColorAdjustContrastLabel, e.param3, -100, 100, 200,
-          (v) => _update(context, e.copyWith(param3: v))),
+      _paramRow(
+        l10n.filterColorAdjustSaturationLabel,
+        e.param1,
+        -100,
+        100,
+        200,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
+      _paramRow(
+        l10n.filterColorAdjustBrightnessLabel,
+        e.param2,
+        -100,
+        100,
+        200,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+      _paramRow(
+        l10n.filterColorAdjustContrastLabel,
+        e.param3,
+        -100,
+        100,
+        200,
+        (v) => _update(context, e.copyWith(param3: v)),
+      ),
     ];
   }
 
   /// 動くノイズのパラメータ（強度・量・粒の大きさ）。
-  List<Widget> _animatedNoiseParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+  List<Widget> _animatedNoiseParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
     return [
-      _paramRow(l10n.timelineEffectStrengthLabel, e.param1, 1, 20, 19,
-          (v) => _update(context, e.copyWith(param1: v))),
-      _paramRow(l10n.timelineEffectAmountLabel, e.param2, 1, 100, 99,
-          (v) => _update(context, e.copyWith(param2: v)), valueText: '${e.param2.round()}%'),
-      _paramRow(l10n.timelineEffectGrainSizeLabel, e.param3, 1, 8, 7,
-          (v) => _update(context, e.copyWith(param3: v))),
+      _paramRow(
+        l10n.timelineEffectStrengthLabel,
+        e.param1,
+        1,
+        20,
+        19,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
+      _paramRow(
+        l10n.timelineEffectAmountLabel,
+        e.param2,
+        1,
+        100,
+        99,
+        (v) => _update(context, e.copyWith(param2: v)),
+        valueText: '${e.param2.round()}%',
+      ),
+      _paramRow(
+        l10n.timelineEffectGrainSizeLabel,
+        e.param3,
+        1,
+        8,
+        7,
+        (v) => _update(context, e.copyWith(param3: v)),
+      ),
     ];
   }
 
   /// 雨のパラメータ（降り方・速さ・粒の大きさ・風向き）。
-  List<Widget> _rainParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+  List<Widget> _rainParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
     return [
-      _paramRow(l10n.timelineEffectRainIntensityLabel, e.param1, 1, 20, 19,
-          (v) => _update(context, e.copyWith(param1: v))),
-      _paramRow(l10n.timelineEffectRainSpeedLabel, e.param2, 2, 40, 0,
-          (v) => _update(context, e.copyWith(param2: v))),
-      _paramRow(l10n.timelineEffectRainSizeLabel, e.param3, 1, 6, 5,
-          (v) => _update(context, e.copyWith(param3: v))),
-      _paramRow(l10n.timelineEffectWindAngleLabel, e.param4, -60, 60, 0,
-          (v) => _update(context, e.copyWith(param4: v)), valueText: '${e.param4.round()}°'),
+      _paramRow(
+        l10n.timelineEffectRainIntensityLabel,
+        e.param1,
+        1,
+        20,
+        19,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
+      _paramRow(
+        l10n.timelineEffectRainSpeedLabel,
+        e.param2,
+        2,
+        40,
+        0,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+      _paramRow(
+        l10n.timelineEffectRainSizeLabel,
+        e.param3,
+        1,
+        6,
+        5,
+        (v) => _update(context, e.copyWith(param3: v)),
+      ),
+      _paramRow(
+        l10n.timelineEffectWindAngleLabel,
+        e.param4,
+        -60,
+        60,
+        0,
+        (v) => _update(context, e.copyWith(param4: v)),
+        valueText: '${e.param4.round()}°',
+      ),
     ];
   }
 
-  List<Widget> _fadeParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+  List<Widget> _fadeParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
     return [
       Row(
         children: [
-          SizedBox(width: 36, child: Text(l10n.timelineColorLabel, style: const TextStyle(fontSize: 11))),
+          SizedBox(
+            width: 36,
+            child: Text(
+              l10n.timelineColorLabel,
+              style: const TextStyle(fontSize: 11),
+            ),
+          ),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () => _pickFadeColor(context, e),
             child: Container(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: e.fadeColor,
                 border: Border.all(color: Colors.grey),
@@ -4818,7 +6082,11 @@ class _EffectFilterSheet extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            e.fadeColor == Colors.black ? l10n.timelineColorBlack : e.fadeColor == Colors.white ? l10n.timelineColorWhite : l10n.timelineColorCustom,
+            e.fadeColor == Colors.black
+                ? l10n.timelineColorBlack
+                : e.fadeColor == Colors.white
+                ? l10n.timelineColorWhite
+                : l10n.timelineColorCustom,
             style: const TextStyle(fontSize: 11),
           ),
         ],
@@ -4828,19 +6096,36 @@ class _EffectFilterSheet extends StatelessWidget {
 
   /// 単色化のパラメータ（混合量スライダー＋色チップ。チップをタップすると
   /// フルカラーピッカー（ColorPickerPanel）が開く。
-  List<Widget> _monochromeParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+  List<Widget> _monochromeParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
     return [
-      _paramRow(l10n.timelineEffectStrengthLabel, e.param1, 1, 20, 19,
-          (v) => _update(context, e.copyWith(param1: v))),
+      _paramRow(
+        l10n.timelineEffectStrengthLabel,
+        e.param1,
+        1,
+        20,
+        19,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
       const SizedBox(height: 4),
       Row(
         children: [
-          SizedBox(width: 56, child: Text(l10n.filterMonochromeColorLabel, style: const TextStyle(fontSize: 11))),
+          SizedBox(
+            width: 56,
+            child: Text(
+              l10n.filterMonochromeColorLabel,
+              style: const TextStyle(fontSize: 11),
+            ),
+          ),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () => _pickMonochromeColor(context, e),
             child: Container(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: e.fadeColor,
                 border: Border.all(color: Colors.grey),
@@ -4868,10 +6153,20 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   /// 二値化のパラメータ（閾値スライダーのみ。0〜255）。
-  List<Widget> _thresholdParams(BuildContext context, AppLocalizations l10n, EffectFilterInstance e) {
+  List<Widget> _thresholdParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
     return [
-      _paramRow(l10n.filterThresholdLabel, e.param1, 0, 255, 255,
-          (v) => _update(context, e.copyWith(param1: v))),
+      _paramRow(
+        l10n.filterThresholdLabel,
+        e.param1,
+        0,
+        255,
+        255,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
     ];
   }
 
@@ -4882,13 +6177,23 @@ class _EffectFilterSheet extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: Text(l10n.timelineFadeColorDialogTitle),
         content: Wrap(
-          spacing: 12, runSpacing: 12,
+          spacing: 12,
+          runSpacing: 12,
           children: [
-            for (final c in [Colors.black, Colors.white, Colors.red, Colors.blue])
+            for (final c in [
+              Colors.black,
+              Colors.white,
+              Colors.red,
+              Colors.blue,
+            ])
               GestureDetector(
-                onTap: () { _update(context, e.copyWith(fadeColor: c)); Navigator.pop(ctx); },
+                onTap: () {
+                  _update(context, e.copyWith(fadeColor: c));
+                  Navigator.pop(ctx);
+                },
                 child: Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: c,
                     border: Border.all(color: Colors.grey),
@@ -4913,39 +6218,53 @@ class _EffectFilterSheet extends StatelessWidget {
           width: 280,
           child: ListView(
             shrinkWrap: true,
-            children: EffectFilterType.values.map((type) => ListTile(
-              leading: Icon(_typeIcons[type]),
-              title: Text(_typeLabel(l10n, type)),
-              onTap: () {
-                ps.addEffectFilter(projectId, sceneId, EffectFilterInstance(
-                  id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
-                  type: type,
-                  startFrame: currentFrame,
-                  endFrame: (currentFrame + 11).clamp(0, totalFrames - 1),
-                  // 雨の「速さ」は既定値50だとスライダー上限(40)を超えるため上書きする。
-                  // 色調調整は彩度・明度・コントラストとも既定値0（変化なし）から
-                  // 始める（他のフィルターと違い既定値5.0/50.0のままだと追加直後に
-                  // 見た目が変わってしまうため）。二値化のparam1は閾値（0〜255）
-                  // なので既定128（中間）から始める。
-                  param1: switch (type) {
-                    EffectFilterType.colorAdjust => 0.0,
-                    EffectFilterType.threshold => 128.0,
-                    _ => 5.0,
-                  },
-                  param2: type == EffectFilterType.rain
-                      ? 10.0
-                      : type == EffectFilterType.colorAdjust
-                          ? 0.0
-                          : 50.0,
-                  param3: type == EffectFilterType.colorAdjust ? 0.0 : 2.0,
-                  // 単色化の色（fadeColorスロットを流用）：既定は白＝通常の
-                  // グレースケール。fadeフィルター自体の既定色は黒のままにする。
-                  fadeColor:
-                      type == EffectFilterType.monochrome ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-                ));
-                Navigator.pop(ctx);
-              },
-            )).toList(),
+            children: EffectFilterType.values
+                .map(
+                  (type) => ListTile(
+                    leading: Icon(_typeIcons[type]),
+                    title: Text(_typeLabel(l10n, type)),
+                    onTap: () {
+                      ps.addEffectFilter(
+                        projectId,
+                        sceneId,
+                        EffectFilterInstance(
+                          id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
+                          type: type,
+                          startFrame: currentFrame,
+                          endFrame: (currentFrame + 11).clamp(
+                            0,
+                            totalFrames - 1,
+                          ),
+                          // 雨の「速さ」は既定値50だとスライダー上限(40)を超えるため上書きする。
+                          // 色調調整は彩度・明度・コントラストとも既定値0（変化なし）から
+                          // 始める（他のフィルターと違い既定値5.0/50.0のままだと追加直後に
+                          // 見た目が変わってしまうため）。二値化のparam1は閾値（0〜255）
+                          // なので既定128（中間）から始める。
+                          param1: switch (type) {
+                            EffectFilterType.colorAdjust => 0.0,
+                            EffectFilterType.threshold => 128.0,
+                            _ => 5.0,
+                          },
+                          param2: type == EffectFilterType.rain
+                              ? 10.0
+                              : type == EffectFilterType.colorAdjust
+                              ? 0.0
+                              : 50.0,
+                          param3: type == EffectFilterType.colorAdjust
+                              ? 0.0
+                              : 2.0,
+                          // 単色化の色（fadeColorスロットを流用）：既定は白＝通常の
+                          // グレースケール。fadeフィルター自体の既定色は黒のままにする。
+                          fadeColor: type == EffectFilterType.monochrome
+                              ? const Color(0xFFFFFFFF)
+                              : const Color(0xFF000000),
+                        ),
+                      );
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),
@@ -4982,7 +6301,10 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     if (_c.useEnd == 0 && _c.lengthFrames > 1) _c.useEnd = _c.lengthFrames - 1;
   }
 
-  void _notify() { widget.onChanged(); setState(() {}); }
+  void _notify() {
+    widget.onChanged();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -4996,14 +6318,27 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
         children: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(2)),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Expanded(child: Text(_c.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+                Expanded(
+                  child: Text(
+                    _c.label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                    ),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.copy),
                   tooltip: l10n.themeDuplicateAction,
@@ -5016,7 +6351,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                   icon: const Icon(Icons.delete, color: Colors.red),
                   tooltip: l10n.commonDelete,
                   onPressed: () async {
-                    if (!await confirmDelete(context, itemName: _c.label)) return;
+                    if (!await confirmDelete(context, itemName: _c.label)) {
+                      return;
+                    }
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     widget.onDelete();
@@ -5032,16 +6369,87 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 if (_c.trackType == _ClipTrackType.audio) ...[
-                  _row(l10n.timelineClipVolumeLabel, _c.volume, 0, 1, 100, (v) { _c.volume = v; _notify(); }, '${(_c.volume * 100).round()}%', step: 0.01),
-                  _row(l10n.timelineClipFadeInLabel, _c.fadeIn, 0, 5, 50, (v) { _c.fadeIn = v; _notify(); }, '${_c.fadeIn.toStringAsFixed(1)}s', step: 0.1),
-                  _row(l10n.timelineClipFadeOutLabel, _c.fadeOut, 0, 5, 50, (v) { _c.fadeOut = v; _notify(); }, '${_c.fadeOut.toStringAsFixed(1)}s', step: 0.1),
+                  _row(
+                    l10n.timelineClipVolumeLabel,
+                    _c.volume,
+                    0,
+                    1,
+                    100,
+                    (v) {
+                      _c.volume = v;
+                      _notify();
+                    },
+                    '${(_c.volume * 100).round()}%',
+                    step: 0.01,
+                  ),
+                  _row(
+                    l10n.timelineClipFadeInLabel,
+                    _c.fadeIn,
+                    0,
+                    5,
+                    50,
+                    (v) {
+                      _c.fadeIn = v;
+                      _notify();
+                    },
+                    '${_c.fadeIn.toStringAsFixed(1)}s',
+                    step: 0.1,
+                  ),
+                  _row(
+                    l10n.timelineClipFadeOutLabel,
+                    _c.fadeOut,
+                    0,
+                    5,
+                    50,
+                    (v) {
+                      _c.fadeOut = v;
+                      _notify();
+                    },
+                    '${_c.fadeOut.toStringAsFixed(1)}s',
+                    step: 0.1,
+                  ),
                 ],
                 if (_c.trackType == _ClipTrackType.video) ...[
-                  _row(l10n.layerPanelOpacityLabel, _c.videoOpacity, 0, 1, 100, (v) { _c.videoOpacity = v; _notify(); }, '${(_c.videoOpacity * 100).round()}%', step: 0.01),
-                  _row(l10n.timelineClipUseStartLabel, _c.useStart.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
-                      (v) { _c.useStart = v.round().clamp(0, _c.useEnd); _notify(); }, 'F${_c.useStart + 1}'),
-                  _row(l10n.timelineClipUseEndLabel, _c.useEnd.toDouble(), 0, (_c.lengthFrames - 1).toDouble(), _c.lengthFrames,
-                      (v) { _c.useEnd = v.round().clamp(_c.useStart, _c.lengthFrames - 1); _notify(); }, 'F${_c.useEnd + 1}'),
+                  _row(
+                    l10n.layerPanelOpacityLabel,
+                    _c.videoOpacity,
+                    0,
+                    1,
+                    100,
+                    (v) {
+                      _c.videoOpacity = v;
+                      _notify();
+                    },
+                    '${(_c.videoOpacity * 100).round()}%',
+                    step: 0.01,
+                  ),
+                  _row(
+                    l10n.timelineClipUseStartLabel,
+                    _c.useStart.toDouble(),
+                    0,
+                    (_c.lengthFrames - 1).toDouble(),
+                    _c.lengthFrames,
+                    (v) {
+                      _c.useStart = v.round().clamp(0, _c.useEnd);
+                      _notify();
+                    },
+                    'F${_c.useStart + 1}',
+                  ),
+                  _row(
+                    l10n.timelineClipUseEndLabel,
+                    _c.useEnd.toDouble(),
+                    0,
+                    (_c.lengthFrames - 1).toDouble(),
+                    _c.lengthFrames,
+                    (v) {
+                      _c.useEnd = v.round().clamp(
+                        _c.useStart,
+                        _c.lengthFrames - 1,
+                      );
+                      _notify();
+                    },
+                    'F${_c.useEnd + 1}',
+                  ),
                 ],
               ],
             ),
@@ -5051,17 +6459,29 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     );
   }
 
-  Widget _row(String label, double value, double min, double max, int divisions,
-      ValueChanged<double> onChanged, String valueText, {double step = 1}) {
+  Widget _row(
+    String label,
+    double value,
+    double min,
+    double max,
+    int divisions,
+    ValueChanged<double> onChanged,
+    String valueText, {
+    double step = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(width: 72, child: Text(label, style: const TextStyle(fontSize: 12))),
+          SizedBox(
+            width: 72,
+            child: Text(label, style: const TextStyle(fontSize: 12)),
+          ),
           Expanded(
             child: SteppedSlider(
               value: value.clamp(min, max),
-              min: min, max: max,
+              min: min,
+              max: max,
               divisions: divisions > 0 ? divisions : 1,
               step: step,
               onChanged: onChanged,
@@ -5073,7 +6493,10 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               text: valueText,
               style: const TextStyle(fontSize: 11),
               textAlign: TextAlign.right,
-              value: value, min: min, max: max, isInt: false,
+              value: value,
+              min: min,
+              max: max,
+              isInt: false,
               onChanged: (v) => onChanged(v.toDouble()),
             ),
           ),
@@ -5108,7 +6531,10 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
   late CameraKeyframe _kf;
 
   @override
-  void initState() { super.initState(); _kf = widget.kf; }
+  void initState() {
+    super.initState();
+    _kf = widget.kf;
+  }
 
   void _update(CameraKeyframe newKf) {
     widget.onSave(_kf.frameIndex, newKf);
@@ -5124,8 +6550,15 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
   Widget _buildLivePreview(BuildContext context) {
     final ps = context.watch<ProjectService>();
     final tileManager = ps.tileManagerOf(widget.projectId);
-    final layers = ps.layersOf(widget.projectId, widget.sceneId, _kf.frameIndex);
-    final cameraKeyframes = ps.cameraKeyframesOf(widget.projectId, widget.sceneId);
+    final layers = ps.layersOf(
+      widget.projectId,
+      widget.sceneId,
+      _kf.frameIndex,
+    );
+    final cameraKeyframes = ps.cameraKeyframesOf(
+      widget.projectId,
+      widget.sceneId,
+    );
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       height: 140,
@@ -5161,15 +6594,27 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
         children: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(2)),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Expanded(child: Text(l10n.timelineCameraKfTitle(_kf.frameIndex + 1),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+                Expanded(
+                  child: Text(
+                    l10n.timelineCameraKfTitle(_kf.frameIndex + 1),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                    ),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   tooltip: l10n.commonDelete,
@@ -5190,23 +6635,61 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
               controller: scrollCtrl,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _row(l10n.timelineCameraMoveXLabel, _kf.x, -1920, 1920, (v) => _update(_kf.copyWith(x: v)), _kf.x.toStringAsFixed(0)),
-                _row(l10n.timelineCameraMoveYLabel, _kf.y, -1080, 1080, (v) => _update(_kf.copyWith(y: v)), _kf.y.toStringAsFixed(0)),
-                _row(l10n.timelineCameraZoomLabel, _kf.zoom, 0.1, 5.0, (v) => _update(_kf.copyWith(zoom: v)), '×${_kf.zoom.toStringAsFixed(2)}', step: 0.05),
-                _row(l10n.timelineCameraRotationLabel, _kf.rotation, -180, 180, (v) => _update(_kf.copyWith(rotation: v)), '${_kf.rotation.toStringAsFixed(1)}°'),
+                _row(
+                  l10n.timelineCameraMoveXLabel,
+                  _kf.x,
+                  -1920,
+                  1920,
+                  (v) => _update(_kf.copyWith(x: v)),
+                  _kf.x.toStringAsFixed(0),
+                ),
+                _row(
+                  l10n.timelineCameraMoveYLabel,
+                  _kf.y,
+                  -1080,
+                  1080,
+                  (v) => _update(_kf.copyWith(y: v)),
+                  _kf.y.toStringAsFixed(0),
+                ),
+                _row(
+                  l10n.timelineCameraZoomLabel,
+                  _kf.zoom,
+                  0.1,
+                  5.0,
+                  (v) => _update(_kf.copyWith(zoom: v)),
+                  '×${_kf.zoom.toStringAsFixed(2)}',
+                  step: 0.05,
+                ),
+                _row(
+                  l10n.timelineCameraRotationLabel,
+                  _kf.rotation,
+                  -180,
+                  180,
+                  (v) => _update(_kf.copyWith(rotation: v)),
+                  '${_kf.rotation.toStringAsFixed(1)}°',
+                ),
                 const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      SizedBox(width: 72, child: Text(l10n.timelineFrameTrackLabel, style: const TextStyle(fontSize: 12))),
+                      SizedBox(
+                        width: 72,
+                        child: Text(
+                          l10n.timelineFrameTrackLabel,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
                       Expanded(
                         child: SteppedSlider(
                           value: _kf.frameIndex.toDouble(),
                           min: 0,
                           max: (widget.totalFrames - 1).toDouble(),
-                          divisions: widget.totalFrames > 1 ? widget.totalFrames - 1 : 1,
-                          onChanged: (v) => _update(_kf.copyWith(frameIndex: v.round())),
+                          divisions: widget.totalFrames > 1
+                              ? widget.totalFrames - 1
+                              : 1,
+                          onChanged: (v) =>
+                              _update(_kf.copyWith(frameIndex: v.round())),
                         ),
                       ),
                       SizedBox(
@@ -5215,8 +6698,11 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                           text: 'F${_kf.frameIndex + 1}',
                           style: const TextStyle(fontSize: 11),
                           textAlign: TextAlign.right,
-                          value: _kf.frameIndex + 1, min: 1, max: widget.totalFrames,
-                          onChanged: (v) => _update(_kf.copyWith(frameIndex: v.round() - 1)),
+                          value: _kf.frameIndex + 1,
+                          min: 1,
+                          max: widget.totalFrames,
+                          onChanged: (v) =>
+                              _update(_kf.copyWith(frameIndex: v.round() - 1)),
                         ),
                       ),
                     ],
@@ -5230,18 +6716,29 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     );
   }
 
-  Widget _row(String label, double value, double min, double max,
-      ValueChanged<double> onChanged, String valueText, {double step = 1}) {
+  Widget _row(
+    String label,
+    double value,
+    double min,
+    double max,
+    ValueChanged<double> onChanged,
+    String valueText, {
+    double step = 1,
+  }) {
     final divisions = ((max - min) * 10).round().clamp(1, 1000);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(width: 72, child: Text(label, style: const TextStyle(fontSize: 12))),
+          SizedBox(
+            width: 72,
+            child: Text(label, style: const TextStyle(fontSize: 12)),
+          ),
           Expanded(
             child: SteppedSlider(
               value: value.clamp(min, max),
-              min: min, max: max,
+              min: min,
+              max: max,
               divisions: divisions,
               step: step,
               onChanged: onChanged,
@@ -5253,7 +6750,10 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
               text: valueText,
               style: const TextStyle(fontSize: 11),
               textAlign: TextAlign.right,
-              value: value, min: min, max: max, isInt: false,
+              value: value,
+              min: min,
+              max: max,
+              isInt: false,
               onChanged: (v) => onChanged(v.toDouble()),
             ),
           ),
@@ -5279,7 +6779,8 @@ class _TimelineFrameThumbnail extends StatefulWidget {
   });
 
   @override
-  State<_TimelineFrameThumbnail> createState() => _TimelineFrameThumbnailState();
+  State<_TimelineFrameThumbnail> createState() =>
+      _TimelineFrameThumbnailState();
 }
 
 class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
@@ -5303,7 +6804,9 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
 
   Future<void> _generate() async {
     final ps = context.read<ProjectService>();
-    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     final tileManager = ps.tileManagerOf(widget.projectId);
     final drawW = tileManager.canvasWidth;
     final drawH = tileManager.canvasHeight;
@@ -5311,21 +6814,37 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
     final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
 
-    final layers = ps.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
+    final layers = ps.layersOf(
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
 
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
-      (l) => ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, l.id),
+      (l) => ps.tileKeyFor(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+        l.id,
+      ),
       drawW,
       drawH,
       keyframeOf: (l) => l.keyframes.isEmpty
           ? null
           : LayerKeyframeEngine().valueAt(l.keyframes, widget.frameIndex),
       groupKeyframeOf: (l) {
-        final group = ps.groupContainingLayer(widget.projectId, widget.sceneId, l.id);
+        final group = ps.groupContainingLayer(
+          widget.projectId,
+          widget.sceneId,
+          l.id,
+        );
         if (group == null || group.keyframes.isEmpty) return null;
-        return LayerKeyframeEngine().valueAt(group.keyframes, widget.frameIndex);
+        return LayerKeyframeEngine().valueAt(
+          group.keyframes,
+          widget.frameIndex,
+        );
       },
     );
 
@@ -5338,7 +6857,12 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     final canvas = ui.Canvas(recorder);
     canvas.drawImageRect(
       fullImage,
-      ui.Rect.fromLTWH(offsetX, offsetY, exportW.toDouble(), exportH.toDouble()),
+      ui.Rect.fromLTWH(
+        offsetX,
+        offsetY,
+        exportW.toDouble(),
+        exportH.toDouble(),
+      ),
       ui.Rect.fromLTWH(0, 0, thumbW.toDouble(), thumbH.toDouble()),
       ui.Paint(),
     );

@@ -1619,6 +1619,8 @@
   "timelineCanvasSizeChangeMenuItem": "キャンバスサイズ変更",
   "timelineDurationFramesLabel": "フレーム数",
   "timelineDurationSecondsLabel": "秒数",
+  "timelineDurationShrinkConfirmTitle": "本当に短くしますか？",
+  "timelineDurationShrinkConfirmBody": "カットされる範囲のフレームには、描画内容やレイヤー追加などの変更が加えられています。この操作を行うと、それらのフレームは元に戻せなくなります。本当に削除してよいですか？",
   "timelineCanvasSizeDragHint": "枠をドラッグして切り出し位置を調整できます",
   "saveTreeSaveAsChildHint": "選択中のノードの子として保存します。",
   "saveTreeSaveAsRootHint": "ルートノードとして保存します。",

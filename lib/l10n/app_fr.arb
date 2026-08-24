@@ -1397,6 +1397,8 @@
   "timelineCanvasSizeChangeMenuItem": "Modifier la taille du canevas",
   "timelineDurationFramesLabel": "Images",
   "timelineDurationSecondsLabel": "Secondes",
+  "timelineDurationShrinkConfirmTitle": "Raccourcir quand même ?",
+  "timelineDurationShrinkConfirmBody": "Les images qui seront supprimées contiennent des modifications (dessin, calques ajoutés, etc.). Si vous continuez, ces images ne pourront pas être récupérées. Voulez-vous vraiment les supprimer ?",
   "timelineCanvasSizeDragHint": "Faites glisser le cadre pour ajuster la position de recadrage",
   "saveTreeSaveAsChildHint": "Sera enregistré comme enfant du nœud sélectionné.",
   "saveTreeSaveAsRootHint": "Sera enregistré comme nœud racine.",

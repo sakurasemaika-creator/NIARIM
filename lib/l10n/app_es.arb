@@ -1397,6 +1397,8 @@
   "timelineCanvasSizeChangeMenuItem": "Cambiar tamaño de lienzo",
   "timelineDurationFramesLabel": "Fotogramas",
   "timelineDurationSecondsLabel": "Segundos",
+  "timelineDurationShrinkConfirmTitle": "¿Acortar de todos modos?",
+  "timelineDurationShrinkConfirmBody": "Los fotogramas que se recortarán contienen cambios, como contenido dibujado o capas añadidas. Si continúas, esos fotogramas no se podrán recuperar. ¿Seguro que quieres eliminarlos?",
   "timelineCanvasSizeDragHint": "Arrastra el marco para ajustar la posición de recorte",
   "saveTreeSaveAsChildHint": "Se guardará como elemento secundario del nodo seleccionado.",
   "saveTreeSaveAsRootHint": "Se guardará como nodo raíz.",
