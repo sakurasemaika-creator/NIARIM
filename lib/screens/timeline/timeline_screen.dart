@@ -742,14 +742,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     );
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (!isWideScreen(context)) return preview;
-        final w = constraints.maxWidth < 640 ? constraints.maxWidth : 640.0;
-        return Center(
-          child: SizedBox(width: w, height: constraints.maxHeight, child: preview),
-        );
-      },
+    // 幅の制限は呼び出し元（_buildPreviewWithHandle）のAspectRatioが
+    // 実際のキャンバス比率に応じて行うため、ここでは横に間延びしない
+    // よう最低限の上限（PC/DeXモードのみ）だけを設けておく。
+    if (!isWideScreen(context)) return preview;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 900),
+      child: preview,
     );
   }
 
@@ -764,13 +763,31 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 状態のみを更新し、離した瞬間に確定値を保存する。
   Widget _buildPreviewWithHandle(double maxAvailableHeight) {
     final settings = context.watch<SettingsService>();
+    final ps = context.watch<ProjectService>();
+    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final aspect = (project != null && project.exportHeight > 0)
+        ? project.exportWidth / project.exportHeight
+        : 16 / 9;
     final maxH = maxAvailableHeight > 0 ? maxAvailableHeight : 600.0;
     final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(120.0, maxH * 0.75);
     final previewHeight = _previewHeightDragOverride ?? baseHeight;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(height: previewHeight, child: _buildPreviewContent()),
+        // ドラッグハンドルで指定した高さぶん、プレビュー画像自体が実際に
+        // 拡大縮小されるようにする（以前は外枠の高さだけが変わり、内側の
+        // 画像はBoxFit.containの都合で横幅が頭打ちになるとそれ以上大きく
+        // ならず、「ハンドルが下のタイムラインにしか効いていないように
+        // 見える」問題があった）。AspectRatioでキャンバスの実際の縦横比に
+        // 合わせて幅も高さに追従させ、画面幅を超える場合のみ幅が頭打ちに
+        // なるようにする。
+        SizedBox(
+          height: previewHeight,
+          width: double.infinity,
+          child: Center(
+            child: AspectRatio(aspectRatio: aspect, child: _buildPreviewContent()),
+          ),
+        ),
         // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
         // グリップより広めに取っている（ドラッグ開始位置が少しずれても
         // 確実にリサイズとして認識されるようにするため）。
