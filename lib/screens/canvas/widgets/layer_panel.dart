@@ -380,7 +380,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       ),
                     ],
                   ),
-                  title: Text(layer.name, style: const TextStyle(fontSize: 12)),
+                  title: Text(layer.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon')),
                   subtitle: layer.type == model.LayerType.common
                       ? Text(_rangeSummary(l10n, layer), style: const TextStyle(fontSize: 9, color: Colors.blue))
                       : layer.hasClipping
@@ -733,7 +733,7 @@ class _LayerPanelState extends State<LayerPanel> {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Text(layer.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(layer.name, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             ),
             if (!isLineart)
               ListTile(
@@ -1120,7 +1120,7 @@ class _LayerPanelState extends State<LayerPanel> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: Text(layer.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(layer.name, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               ),
               // 不透明度スライダー
               Padding(

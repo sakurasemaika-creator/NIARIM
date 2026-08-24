@@ -640,7 +640,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             tooltip: l10n.timelineBackToCanvasTooltip,
             onPressed: _saveAndGoToCanvas,
           ),
-          Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
+          Expanded(child: Text(projectName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'Kuramubon'))),
           // プロジェクト一覧へ戻るボタン。上記のキャンバスへ戻るボタンと
           // 位置を入れ替え、家アイコンにしてプロジェクト一覧＝ホームである
           // ことをわかりやすくしている。
@@ -1371,7 +1371,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             size: 12,
                                           ),
                                         ),
-                                      Text(scene.displayName, style: const TextStyle(fontSize: 11)),
+                                      Text(scene.displayName, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                                       // シーン内に自動塗り未更新のフレームがある場合の❗マーク
                                       // （仕様書04：更新マークはレイヤー・タイムライン両方に表示）
                                       if (projectService.sceneHasOutdatedAutofillLayers(widget.projectId, scene.id))
@@ -1984,7 +1984,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         children: [
           Icon(icon, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 2),
-          Flexible(child: Text(label, style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.onSurfaceVariant), overflow: TextOverflow.ellipsis)),
+          Flexible(child: Text(label,
+              style: TextStyle(fontSize: 9, fontFamily: 'Kuramubon', color: Theme.of(context).colorScheme.onSurfaceVariant),
+              overflow: TextOverflow.ellipsis)),
         ],
       ),
     );
@@ -2182,7 +2184,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       clip.label,
-                      style: const TextStyle(fontSize: 9, color: Colors.white),
+                      style: const TextStyle(fontSize: 9, color: Colors.white, fontFamily: 'Kuramubon'),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -2499,7 +2501,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     layer.name,
-                    style: const TextStyle(fontSize: 9, color: Colors.white),
+                    style: const TextStyle(fontSize: 9, color: Colors.white, fontFamily: 'Kuramubon'),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -4747,7 +4749,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Expanded(child: Text(_c.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                Expanded(child: Text(_c.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
                 IconButton(
                   icon: const Icon(Icons.copy),
                   tooltip: l10n.themeDuplicateAction,
