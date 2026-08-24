@@ -62,38 +62,58 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final communityButton = _SplashActionButton(
+      icon: Icons.movie_filter_outlined,
+      label: l10n.splashViewCommunityButton,
+      colors: [scheme.tertiary, scheme.tertiaryContainer],
+      onTap: () => context.push('/community-coming-soon'),
+    );
+    final createButton = _SplashActionButton(
+      icon: Icons.brush_outlined,
+      label: l10n.splashCreateButton,
+      colors: [scheme.primary, scheme.primaryContainer],
+      onTap: () => context.go('/home'),
+    );
+    final logo = Image.asset(
+      'assets/logo/splash_logo.png',
+      width: 160,
+      height: 160,
+    );
+
+    // 縦画面はロゴを挟んで上下にボタンを積む構成、横画面は画面の縦幅が
+    // 狭くボタンが上下端に迫って見えるため、ロゴを挟んで左右にボタンを
+    // 並べる構成へ切り替える（縦方向の余白を確保するのが目的）。
+    final content = isLandscape
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              communityButton,
+              const SizedBox(width: 32),
+              logo,
+              const SizedBox(width: 32),
+              createButton,
+            ],
+          )
+        : Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              communityButton,
+              const SizedBox(height: 40),
+              logo,
+              const SizedBox(height: 40),
+              createButton,
+            ],
+          );
+
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _SplashActionButton(
-                    icon: Icons.movie_filter_outlined,
-                    label: l10n.splashViewCommunityButton,
-                    colors: [scheme.tertiary, scheme.tertiaryContainer],
-                    onTap: () => context.push('/community-coming-soon'),
-                  ),
-                  const SizedBox(height: 40),
-                  Image.asset(
-                    'assets/logo/splash_logo.png',
-                    width: 160,
-                    height: 160,
-                  ),
-                  const SizedBox(height: 40),
-                  _SplashActionButton(
-                    icon: Icons.brush_outlined,
-                    label: l10n.splashCreateButton,
-                    colors: [scheme.primary, scheme.primaryContainer],
-                    onTap: () => context.go('/home'),
-                  ),
-                ],
-              ),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            child: content,
           ),
         ),
       ),
