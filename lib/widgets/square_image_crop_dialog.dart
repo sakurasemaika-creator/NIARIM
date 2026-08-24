@@ -12,6 +12,12 @@ const double _kCropViewSize = 260;
 /// 出力する正方形サムネイルの実ピクセルサイズ。
 const int _kOutputSize = 512;
 
+/// デコード時に画像の長辺をこのサイズ以下へ縮小する。スマホのカメラ写真
+/// （数千px四方）をそのままフル解像度でデコードすると、特にWeb版
+/// （ブラウザのcanvas最大サイズ制限）で失敗することがあるため、
+/// 出力サイズより十分大きい範囲で上限を設けておく。
+const int _kDecodeMaxEdge = 2048;
+
 /// 画像を1:1の正方形へトリミングするダイアログ（仕様書20：自動塗り
 /// プリセットのサムネイル画像設定）。ドラッグで位置調整、ピンチで
 /// 拡大縮小、2本指回転で角度調整ができる。戻り値はトリミング結果の
@@ -55,7 +61,16 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
       // 優先する（imagePathのみが渡されるのはデスクトップ/モバイルのみの
       // 想定）。
       final bytes = widget.imageBytes ?? await File(widget.imagePath!).readAsBytes();
-      final codec = await ui.instantiateImageCodec(bytes);
+      // 長辺が_kDecodeMaxEdgeを超える場合のみ縮小してデコードする
+      // （allowUpscaling: falseにより、それより小さい画像は等倍のまま）。
+      // targetWidth・targetHeightを両方指定すると、アスペクト比を保ったまま
+      // その範囲に収まるサイズへデコードされる。
+      final codec = await ui.instantiateImageCodec(
+        bytes,
+        targetWidth: _kDecodeMaxEdge,
+        targetHeight: _kDecodeMaxEdge,
+        allowUpscaling: false,
+      );
       final frame = await codec.getNextFrame();
       if (!mounted) {
         frame.image.dispose();

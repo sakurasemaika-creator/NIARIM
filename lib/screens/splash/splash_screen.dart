@@ -67,7 +67,10 @@ class _SplashScreenState extends State<SplashScreen> {
     final communityButton = _SplashActionButton(
       icon: Icons.movie_filter_outlined,
       label: l10n.splashViewCommunityButton,
-      colors: [scheme.tertiary, scheme.tertiaryContainer],
+      // secondaryはテーマ・外観設定の「選択色」（AppThemePreset.selectionColor）
+      // を直接反映する。tertiaryはColorScheme.fromSeedによる自動算出値のため、
+      // ユーザーが選んだ色との対応が分かりにくくなるのを避ける。
+      colors: [scheme.secondary, scheme.secondaryContainer],
       onTap: () => context.push('/community-coming-soon'),
     );
     final createButton = _SplashActionButton(

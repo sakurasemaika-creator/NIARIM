@@ -516,7 +516,7 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final textStyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+    final textStyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon');
     // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
     final weights = labels.map((label) {
       final tp = TextPainter(

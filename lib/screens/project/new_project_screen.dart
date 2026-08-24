@@ -351,9 +351,13 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         ),
                       ),
                       // 数字入力欄（秒単位。スライダーだけでなく
-                      // 数字入力でも長さを指定できるようにする）。
+                      // 数字入力でも長さを指定できるようにする）。プレミアム会員は
+                      // 最大7200（4桁）まで入力できるため、幅は「秒」の
+                      // 接尾辞込みで4桁の数字がすべて見える広さを確保する
+                      // （以前は64pxで、4桁の数字が入ると欄内で見切れて
+                      // 実際の値と表示が食い違って見えることがあった）。
                       SizedBox(
-                        width: 64,
+                        width: 88,
                         child: TextField(
                           controller: _durationController,
                           keyboardType: TextInputType.number,

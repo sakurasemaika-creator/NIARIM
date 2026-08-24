@@ -128,7 +128,30 @@ class _PerformanceSettingsScreenState
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           ...QualityLevel.values.map((level) => RadioListTile<QualityLevel>(
-                title: Text(_qualityLabel(l10n, level)),
+                title: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_qualityLabel(l10n, level)),
+                    // この端末の性能から判定した推奨プリセット（初回起動時に
+                    // 自動選択されたもの）を、後から手動で変更していても
+                    // 常にわかるようにする。
+                    if (level == perf.defaultPreset) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(l10n.premiumPlanRecommendedBadge,
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer)),
+                      ),
+                    ],
+                  ],
+                ),
                 subtitle: Text(_qualityDesc(l10n, level),
                     style: const TextStyle(fontSize: 12)),
                 value: level,
