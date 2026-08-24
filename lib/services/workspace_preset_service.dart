@@ -18,12 +18,20 @@ class WorkspacePresetService extends ChangeNotifier {
     final raw = prefs.getStringList(_prefsKey) ?? const [];
     _presets
       ..clear()
-      ..addAll(raw.map((s) => WorkspacePreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      ..addAll(
+        raw.map(
+          (s) =>
+              WorkspacePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _presets.map((p) => jsonEncode(p.toJson())).toList());
+    await prefs.setStringList(
+      _prefsKey,
+      _presets.map((p) => jsonEncode(p.toJson())).toList(),
+    );
   }
 
   /// 現在の操作環境を[name]で保存する。同名の既存プリセットは上書きする。
@@ -36,18 +44,28 @@ class WorkspacePresetService extends ChangeNotifier {
     List<String> hiddenToolbarItems = const [],
     List<Map<String, dynamic>> quickToolEntries = const [],
     List<String> defaultDockedPanels = const [],
+    double? desktopPanelWidth,
+    double? desktopToolPanelWidth,
+    List<String> toolOptionDockOrder = const [],
+    List<String> rightDockOrder = const [],
   }) async {
     _presets.removeWhere((p) => p.name == name);
-    _presets.add(WorkspacePreset(
-      id: 'ws_${DateTime.now().microsecondsSinceEpoch}',
-      name: name,
-      isLeftHanded: isLeftHanded,
-      forcePcMode: forcePcMode,
-      toolbarOrder: toolbarOrder,
-      hiddenToolbarItems: hiddenToolbarItems,
-      quickToolEntries: quickToolEntries,
-      defaultDockedPanels: defaultDockedPanels,
-    ));
+    _presets.add(
+      WorkspacePreset(
+        id: 'ws_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        isLeftHanded: isLeftHanded,
+        forcePcMode: forcePcMode,
+        toolbarOrder: toolbarOrder,
+        hiddenToolbarItems: hiddenToolbarItems,
+        quickToolEntries: quickToolEntries,
+        defaultDockedPanels: defaultDockedPanels,
+        desktopPanelWidth: desktopPanelWidth,
+        desktopToolPanelWidth: desktopToolPanelWidth,
+        toolOptionDockOrder: toolOptionDockOrder,
+        rightDockOrder: rightDockOrder,
+      ),
+    );
     await _persist();
     notifyListeners();
   }
@@ -72,6 +90,10 @@ class WorkspacePresetService extends ChangeNotifier {
       hiddenToolbarItems: p.hiddenToolbarItems,
       quickToolEntries: p.quickToolEntries,
       defaultDockedPanels: p.defaultDockedPanels,
+      desktopPanelWidth: p.desktopPanelWidth,
+      desktopToolPanelWidth: p.desktopToolPanelWidth,
+      toolOptionDockOrder: p.toolOptionDockOrder,
+      rightDockOrder: p.rightDockOrder,
     );
     await _persist();
     notifyListeners();
@@ -88,19 +110,29 @@ class WorkspacePresetService extends ChangeNotifier {
     List<String> hiddenToolbarItems = const [],
     List<Map<String, dynamic>> quickToolEntries = const [],
     List<String> defaultDockedPanels = const [],
+    double? desktopPanelWidth,
+    double? desktopToolPanelWidth,
+    List<String> toolOptionDockOrder = const [],
+    List<String> rightDockOrder = const [],
   }) async {
     final idx = _presets.indexWhere((p) => p.id == id);
     if (idx < 0) return;
     final current = _presets[idx];
     _presets[idx] = WorkspacePreset(
       id: current.id,
-      name: (newName != null && newName.trim().isNotEmpty) ? newName.trim() : current.name,
+      name: (newName != null && newName.trim().isNotEmpty)
+          ? newName.trim()
+          : current.name,
       isLeftHanded: isLeftHanded,
       forcePcMode: forcePcMode,
       toolbarOrder: toolbarOrder,
       hiddenToolbarItems: hiddenToolbarItems,
       quickToolEntries: quickToolEntries,
       defaultDockedPanels: defaultDockedPanels,
+      desktopPanelWidth: desktopPanelWidth,
+      desktopToolPanelWidth: desktopToolPanelWidth,
+      toolOptionDockOrder: toolOptionDockOrder,
+      rightDockOrder: rightDockOrder,
     );
     await _persist();
     notifyListeners();
@@ -133,6 +165,10 @@ class WorkspacePresetService extends ChangeNotifier {
       hiddenToolbarItems: imported.hiddenToolbarItems,
       quickToolEntries: imported.quickToolEntries,
       defaultDockedPanels: imported.defaultDockedPanels,
+      desktopPanelWidth: imported.desktopPanelWidth,
+      desktopToolPanelWidth: imported.desktopToolPanelWidth,
+      toolOptionDockOrder: imported.toolOptionDockOrder,
+      rightDockOrder: imported.rightDockOrder,
     );
     _presets.add(preset);
     await _persist();

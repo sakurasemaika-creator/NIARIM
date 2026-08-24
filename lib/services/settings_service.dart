@@ -138,6 +138,75 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 左側（左利きモードでは右側）ツールオプション系ドッキング領域の横幅。
+  double _desktopToolPanelWidth = 280.0;
+
+  double get desktopToolPanelWidth => _desktopToolPanelWidth;
+
+  Future<void> setDesktopToolPanelWidth(double value) async {
+    _desktopToolPanelWidth = value.clamp(200.0, 480.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('desktop_tool_panel_width', _desktopToolPanelWidth);
+    notifyListeners();
+  }
+
+  // ツールオプション系ドッキング領域（ブラシ・トーン・スタンプ等）の
+  // 積み重ね順。
+  static const List<CanvasDockPanel> _defaultToolOptionDockOrder = [
+    CanvasDockPanel.penSubTool,
+    CanvasDockPanel.brush,
+    CanvasDockPanel.tone,
+    CanvasDockPanel.stamp,
+    CanvasDockPanel.onionSkin,
+    CanvasDockPanel.ruler,
+    CanvasDockPanel.filter,
+    CanvasDockPanel.quickTool,
+    CanvasDockPanel.colorAdjust,
+  ];
+  List<CanvasDockPanel> _toolOptionDockOrder = List.of(
+    _defaultToolOptionDockOrder,
+  );
+
+  List<CanvasDockPanel> get toolOptionDockOrder =>
+      List.unmodifiable(_toolOptionDockOrder);
+
+  Future<void> setToolOptionDockOrder(List<CanvasDockPanel> order) async {
+    _toolOptionDockOrder = List.of(order);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      order.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  Future<void> resetToolOptionDockOrder() =>
+      setToolOptionDockOrder(_defaultToolOptionDockOrder);
+
+  // カラーピッカー・レイヤーパネル・キャンバスプレビューの積み重ね順。
+  static const List<CanvasDockPanel> _defaultRightDockOrder = [
+    CanvasDockPanel.canvasPreview,
+    CanvasDockPanel.colorPicker,
+    CanvasDockPanel.layer,
+  ];
+  List<CanvasDockPanel> _rightDockOrder = List.of(_defaultRightDockOrder);
+
+  List<CanvasDockPanel> get rightDockOrder =>
+      List.unmodifiable(_rightDockOrder);
+
+  Future<void> setRightDockOrder(List<CanvasDockPanel> order) async {
+    _rightDockOrder = List.of(order);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'right_dock_order',
+      order.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  Future<void> resetRightDockOrder() =>
+      setRightDockOrder(_defaultRightDockOrder);
+
   // マウス・スタイラス（ペンタブ等）の接続検出フラグ。ポインティング
   // デバイスの接続を一度でも検知したら、以後アプリ終了までtrueを保持する
   // （永続化はしない）。app.dartのListenerがポインターイベントのkindを
@@ -415,6 +484,35 @@ class SettingsService extends ChangeNotifier {
     _timelinePreviewHeightFraction =
         prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
     _desktopPanelWidth = prefs.getDouble('desktop_panel_width') ?? 280.0;
+    _desktopToolPanelWidth =
+        prefs.getDouble('desktop_tool_panel_width') ?? 280.0;
+    final toolOptionDockOrderNames = prefs.getStringList(
+      'tool_option_dock_order',
+    );
+    if (toolOptionDockOrderNames != null &&
+        toolOptionDockOrderNames.isNotEmpty) {
+      final map = CanvasDockPanel.values.asNameMap();
+      final restored = toolOptionDockOrderNames
+          .map((n) => map[n])
+          .whereType<CanvasDockPanel>()
+          .toList();
+      for (final p in _defaultToolOptionDockOrder) {
+        if (!restored.contains(p)) restored.add(p);
+      }
+      _toolOptionDockOrder = restored;
+    }
+    final rightDockOrderNames = prefs.getStringList('right_dock_order');
+    if (rightDockOrderNames != null && rightDockOrderNames.isNotEmpty) {
+      final map = CanvasDockPanel.values.asNameMap();
+      final restored = rightDockOrderNames
+          .map((n) => map[n])
+          .whereType<CanvasDockPanel>()
+          .toList();
+      for (final p in _defaultRightDockOrder) {
+        if (!restored.contains(p)) restored.add(p);
+      }
+      _rightDockOrder = restored;
+    }
     final sizePresetStrings = prefs.getStringList('custom_size_presets') ?? [];
     _customSizePresets = sizePresetStrings
         .map(

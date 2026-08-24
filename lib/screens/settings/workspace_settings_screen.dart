@@ -15,6 +15,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/premium_lock_widget.dart';
+import 'pc_workspace_layout_settings_screen.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -26,267 +27,363 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     final presetService = context.watch<WorkspacePresetService>();
     final premium = context.watch<PremiumService>();
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.workspaceScreenTitle), actions: const [HelpButton(topic: 'ワークスペース設定')]),
-      body: desktopCentered(context, ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _sectionLabel(context, l10n.workspaceToolbarEditSection),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            // 仕様書08：ツールバー編集機能に対応する説明文。
-            child: Text(l10n.workspaceToolbarEditHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          // 実際のキャンバス画面での横並び配置を模したプレビュー
-          // （タスク#93：設定項目の一覧だけでは仕上がりが分かりにくいため）。
-          _ToolbarPreview(
-            order: settings.toolbarOrder,
-            hidden: settings.hiddenToolbarItems,
-          ),
-          const SizedBox(height: 8),
-          Card(
-            elevation: 1,
-            shadowColor: Colors.black.withValues(alpha: 0.15),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: Column(
-              children: [
-                ReorderableListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  // ドラッグハンドルは行末に明示アイコンとして置く（既定の
-                  // ドラッグハンドルを有効にしたままだと、Flutterが自動で
-                  // もう1つハンドルを追加してしまい、二重に表示されるバグに
-                  // なっていた。テーマ設定の並べ替えと同じ不具合）。
-                  buildDefaultDragHandles: false,
-                  onReorder: (oldIndex, newIndex) {
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    final order = List<ToolbarItemId>.of(settings.toolbarOrder);
-                    final item = order.removeAt(oldIndex);
-                    order.insert(newIndex, item);
-                    settings.setToolbarOrder(order);
-                  },
-                  children: [
-                    for (final entry in settings.toolbarOrder.asMap().entries)
-                      Builder(
-                        key: ValueKey(entry.value),
-                        builder: (context) {
-                          final id = entry.value;
-                          // 手のひらツール：強制スマホモード中は
-                          // そもそもONにできないよう設定項目自体をグレーアウトする。
-                          // PCモード固定・自動判定の場合は設定可能で、ONにした
-                          // 場合でも実際の表示は横画面時のみ（canShowPanTool）。
-                          final isPanForcedOff =
-                              id == ToolbarItemId.pan && settings.forcePcMode == false;
-                          return CheckboxListTile(
-                            title: Text(id.label(l10n)),
-                            subtitle: id == ToolbarItemId.pan
-                                ? Text(isPanForcedOff
-                                    ? l10n.workspaceToolbarPanDisabledHint
-                                    : l10n.workspaceToolbarPcOnlyHint)
-                                : null,
-                            value: !settings.hiddenToolbarItems.contains(id),
-                            onChanged: isPanForcedOff
-                                ? null
-                                : (v) => settings.setToolbarItemVisible(id, v ?? true),
-                            secondary: ReorderableDragStartListener(
-                              index: entry.key,
-                              child: const Icon(Icons.drag_handle),
-                            ),
-                            controlAffinity: ListTileControlAffinity.leading,
-                          );
-                        },
-                      ),
-                  ],
+      appBar: AppBar(
+        title: Text(l10n.workspaceScreenTitle),
+        actions: const [HelpButton(topic: 'ワークスペース設定')],
+      ),
+      body: desktopCentered(
+        context,
+        ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _sectionLabel(context, l10n.workspaceToolbarEditSection),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              // 仕様書08：ツールバー編集機能に対応する説明文。
+              child: Text(
+                l10n.workspaceToolbarEditHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => settings.resetToolbarDefault(),
-                      child: Text(l10n.workspaceResetToolbarDefault),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.workspacePanelLayoutSection),
-          Builder(builder: (context) {
-            // スマホモードではツールバーが画面下部に固定表示されるため、
-            // 左右反転（左利きモード）が意味を持つのはパネルを常時
-            // ドッキング表示するPC/DeXモードの場合のみ。ただし判定は
-            // 「設定画面を開いた時点の画面幅」ではなく forcePcMode の設定値
-            // で行う（自動判定・PC固定の場合は、縦画面でこの設定画面を
-            // 開いていても有効にしておく必要がある。横画面へ回転した時に
-            // 初めてパネルがドッキング表示され、左利きモードが必要になる
-            // ため）。強制スマホモード時のみ無効化する。
-            final forceMobile = settings.forcePcMode == false;
-            return Card(
+            // 実際のキャンバス画面での横並び配置を模したプレビュー
+            // （タスク#93：設定項目の一覧だけでは仕上がりが分かりにくいため）。
+            _ToolbarPreview(
+              order: settings.toolbarOrder,
+              hidden: settings.hiddenToolbarItems,
+            ),
+            const SizedBox(height: 8),
+            Card(
               elevation: 1,
               shadowColor: Colors.black.withValues(alpha: 0.15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: Column(
+                children: [
+                  ReorderableListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    // ドラッグハンドルは行末に明示アイコンとして置く（既定の
+                    // ドラッグハンドルを有効にしたままだと、Flutterが自動で
+                    // もう1つハンドルを追加してしまい、二重に表示されるバグに
+                    // なっていた。テーマ設定の並べ替えと同じ不具合）。
+                    buildDefaultDragHandles: false,
+                    onReorder: (oldIndex, newIndex) {
+                      if (newIndex > oldIndex) newIndex -= 1;
+                      final order = List<ToolbarItemId>.of(
+                        settings.toolbarOrder,
+                      );
+                      final item = order.removeAt(oldIndex);
+                      order.insert(newIndex, item);
+                      settings.setToolbarOrder(order);
+                    },
+                    children: [
+                      for (final entry in settings.toolbarOrder.asMap().entries)
+                        Builder(
+                          key: ValueKey(entry.value),
+                          builder: (context) {
+                            final id = entry.value;
+                            // 手のひらツール：強制スマホモード中は
+                            // そもそもONにできないよう設定項目自体をグレーアウトする。
+                            // PCモード固定・自動判定の場合は設定可能で、ONにした
+                            // 場合でも実際の表示は横画面時のみ（canShowPanTool）。
+                            final isPanForcedOff =
+                                id == ToolbarItemId.pan &&
+                                settings.forcePcMode == false;
+                            return CheckboxListTile(
+                              title: Text(id.label(l10n)),
+                              subtitle: id == ToolbarItemId.pan
+                                  ? Text(
+                                      isPanForcedOff
+                                          ? l10n.workspaceToolbarPanDisabledHint
+                                          : l10n.workspaceToolbarPcOnlyHint,
+                                    )
+                                  : null,
+                              value: !settings.hiddenToolbarItems.contains(id),
+                              onChanged: isPanForcedOff
+                                  ? null
+                                  : (v) => settings.setToolbarItemVisible(
+                                      id,
+                                      v ?? true,
+                                    ),
+                              secondary: ReorderableDragStartListener(
+                                index: entry.key,
+                                child: const Icon(Icons.drag_handle),
+                              ),
+                              controlAffinity: ListTileControlAffinity.leading,
+                            );
+                          },
+                        ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => settings.resetToolbarDefault(),
+                        child: Text(l10n.workspaceResetToolbarDefault),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            _sectionLabel(context, l10n.workspacePanelLayoutSection),
+            Builder(
+              builder: (context) {
+                // スマホモードではツールバーが画面下部に固定表示されるため、
+                // 左右反転（左利きモード）が意味を持つのはパネルを常時
+                // ドッキング表示するPC/DeXモードの場合のみ。ただし判定は
+                // 「設定画面を開いた時点の画面幅」ではなく forcePcMode の設定値
+                // で行う（自動判定・PC固定の場合は、縦画面でこの設定画面を
+                // 開いていても有効にしておく必要がある。横画面へ回転した時に
+                // 初めてパネルがドッキング表示され、左利きモードが必要になる
+                // ため）。強制スマホモード時のみ無効化する。
+                final forceMobile = settings.forcePcMode == false;
+                return Card(
+                  elevation: 1,
+                  shadowColor: Colors.black.withValues(alpha: 0.15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  child: SwitchListTile(
+                    title: Text(l10n.workspaceLeftHandedMode),
+                    subtitle: Text(
+                      forceMobile
+                          ? l10n.workspaceLeftHandedSubtitleMobile
+                          : l10n.workspaceLeftHandedSubtitlePc,
+                    ),
+                    value: settings.isLeftHanded,
+                    onChanged: forceMobile
+                        ? null
+                        : (v) => settings.setLeftHanded(v),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            _sectionLabel(context, l10n.workspacePcModeSection),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              // 仕様書02：PC/DeXモードの手動固定機能に対応する説明文。
+              child: Text(
+                l10n.workspacePcModeHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Card(
+              elevation: 1,
+              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: Column(
+                children: [
+                  RadioListTile<bool?>(
+                    title: Text(l10n.workspacePcModeAuto),
+                    value: null,
+                    groupValue: settings.forcePcMode,
+                    onChanged: (v) => settings.setForcePcMode(v),
+                  ),
+                  RadioListTile<bool?>(
+                    title: Text(l10n.workspacePcModeAlwaysPc),
+                    value: true,
+                    groupValue: settings.forcePcMode,
+                    onChanged: (v) => settings.setForcePcMode(v),
+                  ),
+                  RadioListTile<bool?>(
+                    title: Text(l10n.workspacePcModeAlwaysMobile),
+                    value: false,
+                    groupValue: settings.forcePcMode,
+                    onChanged: (v) => settings.setForcePcMode(v),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            _sectionLabel(context, l10n.workspaceDockPanelSection),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              // PC/DeXモードでは複数パネルを同時にドッキング表示できる
+              // （スマホ版は誤操作防止のため対象外、常に非表示スタート）。
+              child: Text(
+                l10n.workspaceDockPanelHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Card(
+              elevation: 1,
+              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: Column(
+                children: [
+                  for (final panel in CanvasDockPanel.values)
+                    CheckboxListTile(
+                      dense: true,
+                      title: Text(_dockPanelLabel(l10n, panel)),
+                      value: settings.defaultDockedPanels.contains(panel),
+                      onChanged: (v) {
+                        final next = Set<CanvasDockPanel>.of(
+                          settings.defaultDockedPanels,
+                        );
+                        if (v ?? false) {
+                          next.add(panel);
+                        } else {
+                          next.remove(panel);
+                        }
+                        settings.setDefaultDockedPanels(next);
+                      },
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PcWorkspaceLayoutSettingsScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.dashboard_customize_outlined),
+              label: Text(l10n.workspacePcLayoutButton),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+            const SizedBox(height: 20),
+            _sectionLabel(context, l10n.workspaceEndCardSection),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l10n.workspaceEndCardHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Card(
+              elevation: 1,
+              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
               color: Theme.of(context).colorScheme.surfaceContainerLow,
               child: SwitchListTile(
-                title: Text(l10n.workspaceLeftHandedMode),
-                subtitle: Text(forceMobile ? l10n.workspaceLeftHandedSubtitleMobile : l10n.workspaceLeftHandedSubtitlePc),
-                value: settings.isLeftHanded,
-                onChanged: forceMobile ? null : (v) => settings.setLeftHanded(v),
+                secondary: premium.isPremium
+                    ? null
+                    : const Icon(Icons.lock, color: Colors.amber),
+                title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
+                value:
+                    premium.isPremium &&
+                    settings.endCardDefaultHiddenForPremium,
+                onChanged: premium.isPremium
+                    ? (v) => settings.setEndCardDefaultHiddenForPremium(v)
+                    : (_) => showPremiumBanner(context),
               ),
-            );
-          }),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.workspacePcModeSection),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            // 仕様書02：PC/DeXモードの手動固定機能に対応する説明文。
-            child: Text(l10n.workspacePcModeHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          Card(
-            elevation: 1,
-            shadowColor: Colors.black.withValues(alpha: 0.15),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: Column(
-              children: [
-                RadioListTile<bool?>(
-                  title: Text(l10n.workspacePcModeAuto),
-                  value: null,
-                  groupValue: settings.forcePcMode,
-                  onChanged: (v) => settings.setForcePcMode(v),
-                ),
-                RadioListTile<bool?>(
-                  title: Text(l10n.workspacePcModeAlwaysPc),
-                  value: true,
-                  groupValue: settings.forcePcMode,
-                  onChanged: (v) => settings.setForcePcMode(v),
-                ),
-                RadioListTile<bool?>(
-                  title: Text(l10n.workspacePcModeAlwaysMobile),
-                  value: false,
-                  groupValue: settings.forcePcMode,
-                  onChanged: (v) => settings.setForcePcMode(v),
-                ),
-              ],
             ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.workspaceDockPanelSection),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            // PC/DeXモードでは複数パネルを同時にドッキング表示できる
-            // （スマホ版は誤操作防止のため対象外、常に非表示スタート）。
-            child: Text(l10n.workspaceDockPanelHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          Card(
-            elevation: 1,
-            shadowColor: Colors.black.withValues(alpha: 0.15),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: Column(
-              children: [
-                for (final panel in CanvasDockPanel.values)
-                  CheckboxListTile(
-                    dense: true,
-                    title: Text(_dockPanelLabel(l10n, panel)),
-                    value: settings.defaultDockedPanels.contains(panel),
-                    onChanged: (v) {
-                      final next = Set<CanvasDockPanel>.of(settings.defaultDockedPanels);
-                      if (v ?? false) {
-                        next.add(panel);
-                      } else {
-                        next.remove(panel);
-                      }
-                      settings.setDefaultDockedPanels(next);
-                    },
-                  ),
-              ],
+            const SizedBox(height: 20),
+            _sectionLabel(context, l10n.workspaceSaveSection),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l10n.workspaceSaveHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.workspaceEndCardSection),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(l10n.workspaceEndCardHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          Card(
-            elevation: 1,
-            shadowColor: Colors.black.withValues(alpha: 0.15),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: SwitchListTile(
-              secondary: premium.isPremium ? null : const Icon(Icons.lock, color: Colors.amber),
-              title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
-              value: premium.isPremium && settings.endCardDefaultHiddenForPremium,
-              onChanged: premium.isPremium
-                  ? (v) => settings.setEndCardDefaultHiddenForPremium(v)
-                  : (_) => showPremiumBanner(context),
+            // 「適用」は名前の登録を必要とせず、UI・外観設定と同じくその場で
+            // アプリ全体へ反映するだけの操作（各設定項目は変更のたびに
+            // 即座に反映済みだが、変更内容が確かに反映されたことを
+            // 明示的に確認できるようにする）。
+            FilledButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.workspaceAppliedSnackbar)),
+                );
+              },
+              icon: const Icon(Icons.check),
+              label: Text(l10n.workspaceApplyCurrentButton),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.workspaceSaveSection),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(l10n.workspaceSaveHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          // 「適用」は名前の登録を必要とせず、UI・外観設定と同じくその場で
-          // アプリ全体へ反映するだけの操作（各設定項目は変更のたびに
-          // 即座に反映済みだが、変更内容が確かに反映されたことを
-          // 明示的に確認できるようにする）。
-          FilledButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.workspaceAppliedSnackbar)),
-              );
-            },
-            icon: const Icon(Icons.check),
-            label: Text(l10n.workspaceApplyCurrentButton),
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => _showSaveDialog(context, settings, presetService),
-            icon: const Icon(Icons.save),
-            label: Text(l10n.workspaceSaveAsButton),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: presetService.presets.isEmpty
-                ? null
-                : () => _showShareSheet(context, presetService),
-            icon: const Icon(Icons.ios_share),
-            label: Text(l10n.workspaceShareButton),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => _showLoadSheet(context, settings, presetService),
-            icon: const Icon(Icons.folder_open),
-            label: Text(l10n.workspaceLoadButton),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          ),
-        ],
-      )),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () =>
+                  _showSaveDialog(context, settings, presetService),
+              icon: const Icon(Icons.save),
+              label: Text(l10n.workspaceSaveAsButton),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: presetService.presets.isEmpty
+                  ? null
+                  : () => _showShareSheet(context, presetService),
+              icon: const Icon(Icons.ios_share),
+              label: Text(l10n.workspaceShareButton),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => _showLoadSheet(context, settings, presetService),
+              icon: const Icon(Icons.folder_open),
+              label: Text(l10n.workspaceLoadButton),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _sectionLabel(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(text,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
-              color: Theme.of(context).colorScheme.onSurfaceVariant)),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          fontFamily: 'Kuramubon',
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 
-  String _dockPanelLabel(AppLocalizations l10n, CanvasDockPanel panel) => switch (panel) {
+  String _dockPanelLabel(AppLocalizations l10n, CanvasDockPanel panel) =>
+      switch (panel) {
         CanvasDockPanel.brush => l10n.workspaceDockPanelBrush,
         CanvasDockPanel.colorPicker => l10n.workspaceDockPanelColorPicker,
         CanvasDockPanel.layer => l10n.workspaceDockPanelLayer,
@@ -301,20 +398,29 @@ class WorkspaceSettingsScreen extends StatelessWidget {
         CanvasDockPanel.canvasPreview => l10n.workspaceDockPanelCanvasPreview,
       };
 
-  void _showSaveDialog(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+  void _showSaveDialog(
+    BuildContext context,
+    SettingsService settings,
+    WorkspacePresetService presetService,
+  ) {
     final quickToolService = context.read<QuickToolService>();
     showDialog(
       context: context,
       builder: (_) => _WorkspaceSaveDialog(
         settings: settings,
         presetService: presetService,
-        quickToolEntries: quickToolService.entries.map((e) => e.toJson()).toList(),
+        quickToolEntries: quickToolService.entries
+            .map((e) => e.toJson())
+            .toList(),
       ),
     );
   }
 
   /// 保存済みワークスペースを1つ選んでファイルとして共有する。
-  void _showShareSheet(BuildContext context, WorkspacePresetService presetService) {
+  void _showShareSheet(
+    BuildContext context,
+    WorkspacePresetService presetService,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
@@ -324,8 +430,13 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.workspaceShareSelectTitle,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              child: Text(
+                l10n.workspaceShareSelectTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
             ),
             for (final preset in presetService.presets)
               ListTile(
@@ -336,11 +447,18 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                   try {
                     final file = await presetService.exportPreset(preset.id);
                     if (!context.mounted) return;
-                    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+                    await SharePlus.instance.share(
+                      ShareParams(files: [XFile(file.path)]),
+                    );
                   } catch (e) {
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(l10n.workspaceShareFailedSnackbar(e.toString()))));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          l10n.workspaceShareFailedSnackbar(e.toString()),
+                        ),
+                      ),
+                    );
                   }
                 },
               ),
@@ -350,38 +468,82 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showLoadSheet(BuildContext context, SettingsService settings, WorkspacePresetService presetService) {
+  void _showLoadSheet(
+    BuildContext context,
+    SettingsService settings,
+    WorkspacePresetService presetService,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final quickToolService = context.read<QuickToolService>();
 
     void applyPreset(WorkspacePreset preset) {
       settings.setLeftHanded(preset.isLeftHanded);
       settings.setForcePcMode(preset.forcePcMode);
-      // 表示ツール・早替えツールも一括で切り替える（仕様書08）
-      settings.applyToolbarPreset(preset.toolbarOrderIds, preset.hiddenToolbarItemIds);
+      // 表示ツール・早替えツールも一括で切り替える。
+      settings.applyToolbarPreset(
+        preset.toolbarOrderIds,
+        preset.hiddenToolbarItemIds,
+      );
       if (preset.quickToolEntries.isNotEmpty) {
         quickToolService.replaceAll(
-            preset.quickToolEntries.map((e) => QuickToolEntry.fromJson(e)).toList());
+          preset.quickToolEntries
+              .map((e) => QuickToolEntry.fromJson(e))
+              .toList(),
+        );
       }
       // PC版で既定で開くパネルも一括で切り替える。保存時点で1枚も選んで
       // いなかった場合（空リスト）は、アプリの既定値を保つため上書きしない。
       if (preset.defaultDockedPanels.isNotEmpty) {
         final map = CanvasDockPanel.values.asNameMap();
-        final panels =
-            preset.defaultDockedPanels.map((n) => map[n]).whereType<CanvasDockPanel>().toSet();
+        final panels = preset.defaultDockedPanels
+            .map((n) => map[n])
+            .whereType<CanvasDockPanel>()
+            .toSet();
         settings.setDefaultDockedPanels(panels);
+      }
+      if (preset.desktopPanelWidth != null) {
+        settings.setDesktopPanelWidth(preset.desktopPanelWidth!);
+      }
+      if (preset.desktopToolPanelWidth != null) {
+        settings.setDesktopToolPanelWidth(preset.desktopToolPanelWidth!);
+      }
+      if (preset.toolOptionDockOrder.isNotEmpty) {
+        final map = CanvasDockPanel.values.asNameMap();
+        final order = preset.toolOptionDockOrder
+            .map((n) => map[n])
+            .whereType<CanvasDockPanel>()
+            .toList();
+        settings.setToolOptionDockOrder(order);
+      }
+      if (preset.rightDockOrder.isNotEmpty) {
+        final map = CanvasDockPanel.values.asNameMap();
+        final order = preset.rightDockOrder
+            .map((n) => map[n])
+            .whereType<CanvasDockPanel>()
+            .toList();
+        settings.setRightDockOrder(order);
       }
     }
 
     Future<void> importFromFile() async {
-      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['niaworkspace']);
-      if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['niaworkspace'],
+      );
+      if (result == null ||
+          result.files.isEmpty ||
+          result.files.first.path == null) {
+        return;
+      }
       try {
         await presetService.importPresetFile(result.files.first.path!);
       } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.workspaceImportFailedSnackbar(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.workspaceImportFailedSnackbar(e.toString())),
+          ),
+        );
       }
     }
 
@@ -406,7 +568,11 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.dashboard_customize),
                 title: Text(preset.name),
-                subtitle: Text(preset.isLeftHanded ? l10n.workspaceLoadLeftHanded : l10n.workspaceLoadRightHanded),
+                subtitle: Text(
+                  preset.isLeftHanded
+                      ? l10n.workspaceLoadLeftHanded
+                      : l10n.workspaceLoadRightHanded,
+                ),
                 onTap: () {
                   applyPreset(preset);
                   Navigator.pop(ctx);
@@ -417,13 +583,22 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       tooltip: l10n.commonRename,
-                      onPressed: () => _showRenamePresetDialog(context, presetService, preset),
+                      onPressed: () => _showRenamePresetDialog(
+                        context,
+                        presetService,
+                        preset,
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       tooltip: l10n.commonDelete,
                       onPressed: () async {
-                        if (!await confirmDelete(context, itemName: preset.name)) return;
+                        if (!await confirmDelete(
+                          context,
+                          itemName: preset.name,
+                        )) {
+                          return;
+                        }
                         presetService.delete(preset.id);
                       },
                     ),
@@ -436,7 +611,11 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showRenamePresetDialog(BuildContext context, WorkspacePresetService presetService, WorkspacePreset preset) {
+  void _showRenamePresetDialog(
+    BuildContext context,
+    WorkspacePresetService presetService,
+    WorkspacePreset preset,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: preset.name);
     showDialog(
@@ -446,10 +625,16 @@ class WorkspaceSettingsScreen extends StatelessWidget {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(labelText: l10n.workspaceSaveDialogLabel, border: const OutlineInputBorder()),
+          decoration: InputDecoration(
+            labelText: l10n.workspaceSaveDialogLabel,
+            border: const OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               final name = controller.text.trim();
@@ -505,9 +690,21 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
       isLeftHanded: widget.settings.isLeftHanded,
       forcePcMode: widget.settings.forcePcMode,
       toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
-      hiddenToolbarItems: widget.settings.hiddenToolbarItems.map((e) => e.name).toList(),
+      hiddenToolbarItems: widget.settings.hiddenToolbarItems
+          .map((e) => e.name)
+          .toList(),
       quickToolEntries: widget.quickToolEntries,
-      defaultDockedPanels: widget.settings.defaultDockedPanels.map((e) => e.name).toList(),
+      defaultDockedPanels: widget.settings.defaultDockedPanels
+          .map((e) => e.name)
+          .toList(),
+      desktopPanelWidth: widget.settings.desktopPanelWidth,
+      desktopToolPanelWidth: widget.settings.desktopToolPanelWidth,
+      toolOptionDockOrder: widget.settings.toolOptionDockOrder
+          .map((e) => e.name)
+          .toList(),
+      rightDockOrder: widget.settings.rightDockOrder
+          .map((e) => e.name)
+          .toList(),
     );
     Navigator.pop(context);
   }
@@ -515,7 +712,9 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
   Future<void> _overwrite() async {
     final l10n = AppLocalizations.of(context)!;
     if (widget.presetService.presets.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
       return;
     }
     final selected = await showModalBottomSheet<WorkspacePreset>(
@@ -526,8 +725,13 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.workspaceOverwriteSelectTitle,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              child: Text(
+                l10n.workspaceOverwriteSelectTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
             ),
             for (final preset in widget.presetService.presets)
               ListTile(
@@ -546,8 +750,14 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
         title: Text(l10n.workspaceOverwriteConfirmTitle),
         content: Text(l10n.workspaceOverwriteConfirmBody(selected.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonOk)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonOk),
+          ),
         ],
       ),
     );
@@ -559,9 +769,21 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
       isLeftHanded: widget.settings.isLeftHanded,
       forcePcMode: widget.settings.forcePcMode,
       toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
-      hiddenToolbarItems: widget.settings.hiddenToolbarItems.map((e) => e.name).toList(),
+      hiddenToolbarItems: widget.settings.hiddenToolbarItems
+          .map((e) => e.name)
+          .toList(),
       quickToolEntries: widget.quickToolEntries,
-      defaultDockedPanels: widget.settings.defaultDockedPanels.map((e) => e.name).toList(),
+      defaultDockedPanels: widget.settings.defaultDockedPanels
+          .map((e) => e.name)
+          .toList(),
+      desktopPanelWidth: widget.settings.desktopPanelWidth,
+      desktopToolPanelWidth: widget.settings.desktopToolPanelWidth,
+      toolOptionDockOrder: widget.settings.toolOptionDockOrder
+          .map((e) => e.name)
+          .toList(),
+      rightDockOrder: widget.settings.rightDockOrder
+          .map((e) => e.name)
+          .toList(),
     );
     if (mounted) Navigator.pop(context);
   }
@@ -578,7 +800,10 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           TextField(
             controller: _controller,
             autofocus: true,
-            decoration: InputDecoration(labelText: l10n.workspaceSaveDialogLabel, border: const OutlineInputBorder()),
+            decoration: InputDecoration(
+              labelText: l10n.workspaceSaveDialogLabel,
+              border: const OutlineInputBorder(),
+            ),
             onChanged: (_) {
               if (_errorText != null) setState(() => _errorText = null);
             },
@@ -586,14 +811,23 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           if (_errorText != null)
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text(_errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              child: Text(
+                _errorText!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
             ),
         ],
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
-        TextButton(onPressed: _overwrite, child: Text(l10n.workspaceOverwriteButton)),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
+        TextButton(
+          onPressed: _overwrite,
+          child: Text(l10n.workspaceOverwriteButton),
+        ),
         FilledButton(onPressed: _saveNew, child: Text(l10n.commonSave)),
       ],
     );
@@ -628,8 +862,10 @@ class _ToolbarPreview extends StatelessWidget {
       ),
       child: visible.isEmpty
           ? Center(
-              child: Text(l10n.workspaceEmptyToolbar,
-                  style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+              child: Text(
+                l10n.workspaceEmptyToolbar,
+                style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+              ),
             )
           : SingleChildScrollView(
               scrollDirection: Axis.horizontal,
