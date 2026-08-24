@@ -31,44 +31,86 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/shared', builder: (context, state) => const SharedScreen()),
+    GoRoute(path: '/trash', builder: (context, state) => const TrashScreen()),
     GoRoute(
       path: '/community-coming-soon',
       builder: (context, state) => const CommunityComingSoonScreen(),
     ),
-    GoRoute(path: '/new-project', builder: (context, state) => const NewProjectScreen()),
+    GoRoute(
+      path: '/new-project',
+      builder: (context, state) => const NewProjectScreen(),
+    ),
     GoRoute(
       path: '/project/:id',
-      builder: (context, state) => ProjectDetailScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) =>
+          ProjectDetailScreen(projectId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/canvas/:id',
-      builder: (context, state) => CanvasScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) =>
+          CanvasScreen(projectId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/timeline/:id',
-      builder: (context, state) => TimelineScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) =>
+          TimelineScreen(projectId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/export/:id',
-      builder: (context, state) => ExportScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) =>
+          ExportScreen(projectId: state.pathParameters['id']!),
     ),
-    GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
-    GoRoute(path: '/settings/gestures', builder: (context, state) => const GestureSettingsScreen()),
-    GoRoute(path: '/settings/performance', builder: (context, state) => const PerformanceSettingsScreen()),
-    GoRoute(path: '/settings/pen', builder: (context, state) => const PenSettingsScreen()),
-    GoRoute(path: '/settings/bucket', builder: (context, state) => const BucketFillSettingsScreen()),
-    GoRoute(path: '/settings/workspace', builder: (context, state) => const WorkspaceSettingsScreen()),
-    GoRoute(path: '/settings/transfer', builder: (context, state) => const TransferScreen()),
-    GoRoute(path: '/settings/theme', builder: (context, state) => const ThemeSettingsScreen()),
-    GoRoute(path: '/settings/watermark', builder: (context, state) => const WatermarkSettingsScreen()),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/gestures',
+      builder: (context, state) => const GestureSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/performance',
+      builder: (context, state) => const PerformanceSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/pen',
+      builder: (context, state) => const PenSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/bucket',
+      builder: (context, state) => const BucketFillSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/workspace',
+      builder: (context, state) => const WorkspaceSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/transfer',
+      builder: (context, state) => const TransferScreen(),
+    ),
+    GoRoute(
+      path: '/settings/theme',
+      builder: (context, state) => const ThemeSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/watermark',
+      builder: (context, state) => const WatermarkSettingsScreen(),
+    ),
     GoRoute(
       path: '/help',
       builder: (context, state) =>
           HelpScreen(initialTopic: state.uri.queryParameters['topic']),
     ),
     GoRoute(path: '/tips', builder: (context, state) => const TipsScreen()),
-    GoRoute(path: '/premium', builder: (context, state) => const PremiumScreen()),
-    GoRoute(path: '/autofill-presets', builder: (context, state) => const AutofillPresetScreen()),
+    GoRoute(
+      path: '/premium',
+      builder: (context, state) => const PremiumScreen(),
+    ),
+    GoRoute(
+      path: '/autofill-presets',
+      builder: (context, state) => const AutofillPresetScreen(),
+    ),
     GoRoute(
       path: '/save-tree/:id',
       builder: (context, state) => SaveTreeScreen(
@@ -78,10 +120,20 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/materials/:id',
-      builder: (context, state) => MaterialListScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) =>
+          MaterialListScreen(projectId: state.pathParameters['id']!),
     ),
-    GoRoute(path: '/settings/fonts', builder: (context, state) => const FontSettingsScreen()),
-    GoRoute(path: '/settings/license', builder: (context, state) => const LicenseScreen()),
-    GoRoute(path: '/settings/privacy-policy', builder: (context, state) => const PrivacyPolicyScreen()),
+    GoRoute(
+      path: '/settings/fonts',
+      builder: (context, state) => const FontSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/license',
+      builder: (context, state) => const LicenseScreen(),
+    ),
+    GoRoute(
+      path: '/settings/privacy-policy',
+      builder: (context, state) => const PrivacyPolicyScreen(),
+    ),
   ],
 );

@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         setState(() => _currentTabIndex = _tabController.index);
@@ -357,12 +357,7 @@ class _HomeScreenState extends State<HomeScreen>
           child: _HomeTabBar(
             controller: _tabController,
             currentIndex: _currentTabIndex,
-            labels: [
-              l10n.homeTabProjects,
-              l10n.homeTabShared,
-              l10n.homeTabTrash,
-              l10n.homeTabWorks,
-            ],
+            labels: [l10n.homeTabProjects, l10n.homeTabWorks],
           ),
         ),
       ),
@@ -502,8 +497,6 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ],
                 ),
-                _SharedTab(),
-                _TrashTab(),
                 const _WorksTab(),
               ],
             ),
@@ -512,24 +505,14 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
       // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
-      // 共有・作品一覧タブ：新規プロジェクト作成の導線は不要なため、
-      // フォルダの新規作成のみをワンタップ・選択肢なしで直接行えるFABに
-      // する。ゴミ箱タブでは新規作成自体が不要なため
-      // 非表示のまま。
+      // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
+      // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
       floatingActionButton: switch (_currentTabIndex) {
         0 => FloatingActionButton(
           onPressed: () => _showAddChoiceSheet(context),
           child: const Icon(Icons.add),
         ),
         1 => FloatingActionButton(
-          tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
-          onPressed: () => showCreateFolderNameDialog(
-            context,
-            (name) => context.read<ProjectService>().createSharedFolder(name),
-          ),
-          child: const Icon(Icons.create_new_folder_outlined),
-        ),
-        3 => FloatingActionButton(
           tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
           onPressed: () => showCreateFolderNameDialog(
             context,
@@ -785,13 +768,35 @@ class _HomeTabBar extends StatelessWidget {
       fontFamily: 'Kuramubon',
     );
     // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
-    final weights = labels.map((label) {
+    final naturalWidths = labels.map((label) {
       final tp = TextPainter(
         text: TextSpan(text: label, style: textStyle),
         textDirection: TextDirection.ltr,
       )..layout();
-      return (tp.width + 32).round();
+      return tp.width + 32;
     }).toList();
+
+    Widget tabItem(int i) => InkWell(
+      onTap: () => controller.animateTo(i),
+      child: Container(
+        height: 46,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: currentIndex == i ? scheme.primary : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Text(
+          labels[i],
+          style: textStyle.copyWith(
+            color: currentIndex == i ? scheme.primary : scheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -801,39 +806,71 @@ class _HomeTabBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        children: [
-          for (int i = 0; i < labels.length; i++)
-            Expanded(
-              flex: weights[i],
-              child: InkWell(
-                onTap: () => controller.animateTo(i),
-                child: Container(
-                  height: 46,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: currentIndex == i
-                            ? scheme.primary
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    labels[i],
-                    style: textStyle.copyWith(
-                      color: currentIndex == i
-                          ? scheme.primary
-                          : scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
+      // タブ名の実測幅の合計が画面幅に収まる場合は、これまで通り画面幅
+      // いっぱいに比率配分して表示する。収まらない場合（タブ数が多い・
+      // 画面が狭い場合）は、各タブを実測幅ぶんの固定幅で並べ、横スクロール
+      // で残りのタブを表示できるようにする（タブ名を省略・縮小しない）。
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalNatural = naturalWidths.fold<double>(0, (a, b) => a + b);
+          if (totalNatural <= constraints.maxWidth) {
+            final weights = naturalWidths.map((w) => w.round()).toList();
+            return Row(
+              children: [
+                for (int i = 0; i < labels.length; i++)
+                  Expanded(flex: weights[i], child: tabItem(i)),
+              ],
+            );
+          }
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (int i = 0; i < labels.length; i++)
+                  SizedBox(width: naturalWidths[i], child: tabItem(i)),
+              ],
             ),
-        ],
+          );
+        },
       ),
+    );
+  }
+}
+
+/// 「共有」一覧画面。ホーム画面のタブからハンバーガーメニューへ移動した
+/// ため、独立した画面として起動する（'/shared'ルート）。
+class SharedScreen extends StatelessWidget {
+  const SharedScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.homeTabShared)),
+      body: _SharedTab(),
+      floatingActionButton: FloatingActionButton(
+        tooltip: l10n.homeAddSheetNewFolder,
+        onPressed: () => showCreateFolderNameDialog(
+          context,
+          (name) => context.read<ProjectService>().createSharedFolder(name),
+        ),
+        child: const Icon(Icons.create_new_folder_outlined),
+      ),
+    );
+  }
+}
+
+/// 「ゴミ箱」一覧画面。ホーム画面のタブからハンバーガーメニューへ移動した
+/// ため、独立した画面として起動する（'/trash'ルート）。
+class TrashScreen extends StatelessWidget {
+  const TrashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.homeTabTrash)),
+      body: _TrashTab(),
     );
   }
 }
