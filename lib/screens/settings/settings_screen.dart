@@ -237,7 +237,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               controller: controller,
               padding: const EdgeInsets.all(16),
               children: [
-                Text(l10n.settingsBasicSheetTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(l10n.settingsBasicSheetTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                 const SizedBox(height: 16),
                 ListTile(
                   title: Text(l10n.settingsDefaultFps),
@@ -301,7 +301,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(),
                 // 描画領域初期値（仕様書26）
-                Text(l10n.settingsDrawingAreaTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(l10n.settingsDrawingAreaTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                 const SizedBox(height: 4),
                 Text(l10n.settingsDrawingAreaHint,
                     style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),

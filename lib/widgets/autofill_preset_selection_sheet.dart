@@ -38,7 +38,7 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                   children: [
                     Expanded(
                       child: Text(l10n.autofillPresetSelectionTitle,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon')),
                     ),
                     TextButton(
                       onPressed: () => setS(() => selected.addAll(allPresets.map((p) => p.id))),

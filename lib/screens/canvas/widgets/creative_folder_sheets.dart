@@ -34,7 +34,7 @@ void showFolderManagementSheet(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    Text(l10n.folderManagementTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(l10n.folderManagementTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                     const Spacer(),
                     TextButton.icon(
                       icon: const Icon(Icons.create_new_folder, size: 18),
@@ -164,7 +164,7 @@ void showMoveToCreativeFolderSheet(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           ),
           ListTile(
             leading: const Icon(Icons.folder_open),

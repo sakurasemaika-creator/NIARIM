@@ -47,7 +47,7 @@ class QuickToolPanel extends StatelessWidget {
               PanelCenterCloseBar(onClose: onClose),
               Row(
                 children: [
-                  Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const Spacer(),
                 ],
               ),
@@ -70,7 +70,7 @@ class QuickToolPanel extends StatelessWidget {
                             key: ValueKey(e.id),
                             dense: true,
                             leading: Text('${index + 1}', style: const TextStyle(fontSize: 12)),
-                            title: Text(e.label, style: const TextStyle(fontSize: 13)),
+                            title: Text(e.label, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [

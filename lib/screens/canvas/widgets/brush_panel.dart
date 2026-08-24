@@ -69,7 +69,7 @@ class _BrushPanelState extends State<BrushPanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.penSubToolTabBrush, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.penSubToolTabBrush, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const Spacer(),
                   // お気に入りのみ表示
                   IconButton(
@@ -99,17 +99,17 @@ class _BrushPanelState extends State<BrushPanel> {
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _openFolderManagement(context, brushService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _createFromImage(context, brushService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _importBrush(context, brushService),
                   ),
                 ],
@@ -175,7 +175,7 @@ class _BrushPanelState extends State<BrushPanel> {
                       selected: isSelected,
                       leading: Icon(Icons.brush, size: 16,
                           color: isSelected ? Theme.of(context).colorScheme.primary : null),
-                      title: Text(brush.name, style: const TextStyle(fontSize: 13)),
+                      title: Text(brush.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
                       subtitle: Text(
                         l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
                         style: const TextStyle(fontSize: 10),
@@ -230,7 +230,7 @@ class _BrushPanelState extends State<BrushPanel> {
     return Padding(
       padding: const EdgeInsets.only(right: 4),
       child: ChoiceChip(
-        label: Text(label, style: const TextStyle(fontSize: 11)),
+        label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
         selected: selected,
         onSelected: (_) => onTap(),
         visualDensity: VisualDensity.compact,
@@ -356,7 +356,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
         controller: controller,
         padding: const EdgeInsets.all(16),
         children: [
-          Text(_brush.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(_brush.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           const SizedBox(height: 16),
           // サイズ
           _sliderRow(l10n.brushSettingsSizeLabel, _brush.size, 1, 500, (v) => setState(() => _brush = _brush.copyWith(size: v))),
@@ -388,7 +388,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           ),
           const Divider(),
           // 筆圧設定
-          Text(l10n.brushSettingsPressureModeTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(l10n.brushSettingsPressureModeTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           ...PressureMode.values.map((mode) => RadioListTile<PressureMode>(
             title: Text(_pressureLabel(l10n, mode)),
             value: mode,
@@ -398,7 +398,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           )),
           const Divider(),
           // フェード
-          Text(l10n.brushSettingsFadeModeTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(l10n.brushSettingsFadeModeTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           ...FadeMode.values.map((mode) => RadioListTile<FadeMode>(
             title: Text(_fadeModeLabel(l10n, mode)),
             value: mode,
@@ -439,7 +439,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           ),
           const Divider(),
           // 混色
-          Text(l10n.brushSettingsMixingTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(l10n.brushSettingsMixingTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           ...BrushMixingMode.values.map((mode) => RadioListTile<BrushMixingMode>(
             title: Text(_mixingModeLabel(l10n, mode)),
             value: mode,

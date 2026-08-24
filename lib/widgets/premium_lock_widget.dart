@@ -85,7 +85,7 @@ class _PremiumBannerDialog extends StatelessWidget {
                       children: [
                         Icon(Icons.star, color: Colors.amber, size: 48),
                         SizedBox(height: 8),
-                        Text('NIARIM Premium', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('NIARIM Premium', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                         SizedBox(height: 4),
                         Text('premium_banner.webp', style: TextStyle(fontSize: 11, color: Colors.grey)),
                       ],

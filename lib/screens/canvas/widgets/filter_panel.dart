@@ -198,7 +198,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 children: [
                   Text(
                     bulk != null ? l10n.filterPanelTitleBulk(bulk.length) : l10n.filterPanelTitle,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon'),
                   ),
                   const Spacer(),
                   IconButton(

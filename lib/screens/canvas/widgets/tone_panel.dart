@@ -68,7 +68,7 @@ class _TonePanelState extends State<TonePanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.toneTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.toneTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const Spacer(),
                   IconButton(
                     icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
@@ -90,17 +90,17 @@ class _TonePanelState extends State<TonePanel> {
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _openFolderManagement(context, toneService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _createFromImage(context, toneService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _importTone(context, toneService),
                   ),
                 ],
@@ -160,7 +160,7 @@ class _TonePanelState extends State<TonePanel> {
                             selected: isSelected,
                             leading: Icon(Icons.texture, size: 16,
                                 color: isSelected ? Theme.of(context).colorScheme.primary : null),
-                            title: Text(tone.name, style: const TextStyle(fontSize: 13)),
+                            title: Text(tone.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -207,7 +207,7 @@ class _TonePanelState extends State<TonePanel> {
   Widget _folderChip(String label, bool selected, VoidCallback onTap) => Padding(
         padding: const EdgeInsets.only(right: 4),
         child: ChoiceChip(
-          label: Text(label, style: const TextStyle(fontSize: 11)),
+          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
           selected: selected,
           onSelected: (_) => onTap(),
           visualDensity: VisualDensity.compact,
@@ -333,7 +333,7 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.toneEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(l10n.toneEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 12),
             TextField(
               controller: _nameController,

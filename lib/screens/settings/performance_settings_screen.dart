@@ -125,7 +125,7 @@ class _PerformanceSettingsScreenState
         children: [
           Text(l10n.perfSettingsQualitySection,
               style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           const SizedBox(height: 8),
           ...QualityLevel.values.map((level) => RadioListTile<QualityLevel>(
                 title: Row(
@@ -147,6 +147,7 @@ class _PerformanceSettingsScreenState
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
+                                fontFamily: 'Kuramubon',
                                 color: Theme.of(context).colorScheme.onPrimaryContainer)),
                       ),
                     ],
@@ -164,7 +165,7 @@ class _PerformanceSettingsScreenState
           // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
           // 移設。品質プリセットとは独立して常に変更可能）。
           Text(l10n.perfSettingsCapacitySection,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           const SizedBox(height: 8),
           Card(
             elevation: 1,
@@ -200,7 +201,7 @@ class _PerformanceSettingsScreenState
           const Divider(height: 32),
           Text(l10n.perfSettingsCurrentSettingsSection,
               style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           const SizedBox(height: 8),
           _infoTile(l10n.perfSettingsTiltLabel, perf.tiltEnabled ? 'ON' : l10n.commonOff),
           _infoTile(l10n.perfSettingsOnionPrevLabel,
@@ -246,7 +247,7 @@ class _PerformanceSettingsScreenState
             ),
             if (perf.showPrevOnion) ...[
               Text(l10n.perfSettingsOnionCountPrevLabel,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               _onionSlider(
                 l10n: l10n,
                 value: perf.prevOnionSkinFrames,
@@ -262,7 +263,7 @@ class _PerformanceSettingsScreenState
             ),
             if (perf.showNextOnion) ...[
               Text(l10n.perfSettingsOnionCountNextLabel,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               _onionSlider(
                 l10n: l10n,
                 value: perf.nextOnionSkinFrames,
@@ -271,7 +272,7 @@ class _PerformanceSettingsScreenState
             ],
             const SizedBox(height: 8),
             Text(l10n.perfSettingsSaveModeLabel,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             ...SaveMode.values.map((mode) => RadioListTile<SaveMode>(
                   title: Text(_saveModeLabel(l10n, mode)),
                   value: mode,
@@ -285,7 +286,7 @@ class _PerformanceSettingsScreenState
             if (perf.saveMode == SaveMode.slot) ...[
               const SizedBox(height: 8),
               Text(l10n.perfSettingsSlotCountLabel,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               _SlotCountSlider(
                 value: perf.slotCount,
                 onChangeEnd: (newCount) =>

@@ -174,6 +174,7 @@ class _SplashActionButton extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

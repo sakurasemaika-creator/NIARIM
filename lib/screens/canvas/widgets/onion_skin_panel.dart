@@ -91,7 +91,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
               Row(
                 children: [
                   Text(l10n.onionSkinTitle,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const Spacer(),
                   Switch(
                     value: _settings.enabled,

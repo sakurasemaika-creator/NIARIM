@@ -965,7 +965,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Text(l10n.timelineWatermarkSelectTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(l10n.timelineWatermarkSelectTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             ),
             for (final asset in assets)
               ListTile(
@@ -4180,7 +4180,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 const Divider(),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Text(l10n.timelineAutofillTargetLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: Text(l10n.timelineAutofillTargetLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
                 ),
                 RadioGroup<_AutofillScope>(
                   groupValue: scope,
@@ -4536,7 +4536,7 @@ class _EffectFilterSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Text(l10n.timelineEffectFilterLabel, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(l10n.timelineEffectFilterLabel, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                 const Spacer(),
                 FilledButton.icon(
                   icon: const Icon(Icons.add, size: 16),
@@ -5165,7 +5165,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
             child: Row(
               children: [
                 Expanded(child: Text(l10n.timelineCameraKfTitle(_kf.frameIndex + 1),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   tooltip: l10n.commonDelete,

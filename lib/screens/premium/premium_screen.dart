@@ -287,7 +287,7 @@ class PremiumScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(label,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: scheme.onSurfaceVariant, height: 1.3)),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon', color: scheme.onSurfaceVariant, height: 1.3)),
         ],
       ),
     );
@@ -440,7 +440,7 @@ class PremiumScreen extends StatelessWidget {
                             const Icon(Icons.star_rounded, size: 13, color: Colors.black),
                             const SizedBox(width: 3),
                             Text(l10n.premiumPlanRecommendedBadge,
-                                style: const TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w700)),
+                                style: const TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon')),
                           ],
                         ),
                       ),

@@ -115,7 +115,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(_showFavoritesOnly ? l10n.autofillPresetEmptyFavorites : l10n.autofillPresetEmpty,
-                            style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+                            style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon', color: Theme.of(context).colorScheme.onSurface)),
                         const SizedBox(height: 8),
                         Text(l10n.autofillPresetEmptyHint,
                             style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
@@ -1147,7 +1147,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Text(l10n.autofillPartToneLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(l10n.autofillPartToneLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   ),
                   const Divider(height: 1),
                   Expanded(

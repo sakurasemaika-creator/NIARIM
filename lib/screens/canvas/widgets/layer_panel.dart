@@ -183,7 +183,7 @@ class _LayerPanelState extends State<LayerPanel> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                Text(l10n.layerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(l10n.layerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                 const Spacer(),
                 // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
                 // 使わずに済む一括操作の一つ）。
@@ -1450,13 +1450,13 @@ class _LayerPanelState extends State<LayerPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(l10n.autofillPartBlendModeLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.autofillPartBlendModeLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               Text(l10n.layerPanelHelpBlendModeBody),
               const SizedBox(height: 8),
-              Text(l10n.layerPanelClippingBadge, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.layerPanelClippingBadge, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               Text(l10n.layerPanelHelpClippingBody),
               const SizedBox(height: 8),
-              Text(l10n.layerPanelCommonLayerLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.layerPanelCommonLayerLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               Text(l10n.layerPanelHelpCommonLayerBody),
             ],
           ),
@@ -1644,7 +1644,7 @@ class _LayerPanelState extends State<LayerPanel> {
                     for (final preset in presets) ...[
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                        child: Text(preset.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text(preset.name, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                       ),
                       for (final part in preset.parts)
                         ListTile(

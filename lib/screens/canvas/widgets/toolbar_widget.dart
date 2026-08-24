@@ -376,7 +376,7 @@ class ToolbarWidget extends StatelessWidget {
                               children: [
                                 const Icon(Icons.grid_on, size: 16),
                                 const SizedBox(height: 2),
-                                Text(tone.name, style: const TextStyle(fontSize: 7),
+                                Text(tone.name, style: const TextStyle(fontSize: 7, fontFamily: 'Kuramubon'),
                                     textAlign: TextAlign.center, maxLines: 2),
                               ],
                             ),

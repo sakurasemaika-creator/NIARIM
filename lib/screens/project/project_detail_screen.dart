@@ -248,7 +248,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 8),
               child: Text(l10n.projectDetailInfoSectionTitle,
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
                       color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
             Card(
@@ -462,7 +462,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),

@@ -78,7 +78,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(l10n.referenceWindowTitle,
-                            style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon'),
                             overflow: TextOverflow.ellipsis),
                       ),
                       InkWell(

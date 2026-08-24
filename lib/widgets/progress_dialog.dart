@@ -93,7 +93,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 16),
             LinearProgressIndicator(value: widget.progress),
             const SizedBox(height: 8),
@@ -126,11 +126,12 @@ class _ProgressDialogState extends State<ProgressDialog> {
                           const SizedBox(width: 4),
                           Text(l10n.progressDialogTipLabel,
                               style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+                                  fontFamily: 'Kuramubon',
                                   color: Theme.of(context).colorScheme.primary)),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
                       const SizedBox(height: 2),
                       Text(tip.$2,
                           style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),

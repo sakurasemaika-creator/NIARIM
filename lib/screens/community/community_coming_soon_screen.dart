@@ -22,7 +22,7 @@ class CommunityComingSoonScreen extends StatelessWidget {
               Icon(Icons.construction_outlined, size: 64, color: scheme.primary.withValues(alpha: 0.6)),
               const SizedBox(height: 16),
               Text(l10n.communityComingSoonTitle,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               const SizedBox(height: 8),
               Text(
                 l10n.communityComingSoonBody,

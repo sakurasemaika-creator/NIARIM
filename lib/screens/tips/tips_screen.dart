@@ -94,7 +94,7 @@ class _TipsScreenState extends State<TipsScreen> {
                                   Icon(category.icon, size: 18, color: scheme.primary),
                                   const SizedBox(width: 6),
                                   Text(category.title,
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: scheme.primary)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.primary)),
                                 ],
                               ),
                               const SizedBox(height: 8),

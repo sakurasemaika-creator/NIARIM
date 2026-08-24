@@ -72,7 +72,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                       child: Icon(Icons.perm_media_outlined, size: 40, color: scheme.primary),
                     ),
                     const SizedBox(height: 16),
-                    Text(l10n.materialEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(l10n.materialEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                     const SizedBox(height: 4),
                     Text(l10n.materialEmptyHint,
                         textAlign: TextAlign.center,

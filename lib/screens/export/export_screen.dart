@@ -66,7 +66,7 @@ class _ExportScreenState extends State<ExportScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(_error!, style: const TextStyle(color: Colors.red)),
             ),
-          Text(l10n.exportPresetSection, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(l10n.exportPresetSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           const SizedBox(height: 8),
           SegmentedButton<ExportPreset>(
             segments: [
@@ -92,7 +92,7 @@ class _ExportScreenState extends State<ExportScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(l10n.exportAdvancedSettings, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text(l10n.exportAdvancedSettings, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -122,7 +122,7 @@ class _ExportScreenState extends State<ExportScreen> {
                   ),
           ),
           const SizedBox(height: 24),
-          Text(l10n.exportFormatSection, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(l10n.exportFormatSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           const SizedBox(height: 8),
           RadioGroup<ExportFormat>(
             groupValue: _format,

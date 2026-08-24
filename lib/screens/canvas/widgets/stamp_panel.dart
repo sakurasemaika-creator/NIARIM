@@ -70,7 +70,7 @@ class _StampPanelState extends State<StampPanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.stampTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.stampTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const Spacer(),
                   IconButton(
                     icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
@@ -92,17 +92,17 @@ class _StampPanelState extends State<StampPanel> {
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _openFolderManagement(context, stampService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _createFromImage(context, stampService),
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
                     onPressed: () => _importStamp(context, stampService),
                   ),
                 ],
@@ -162,7 +162,7 @@ class _StampPanelState extends State<StampPanel> {
                             selected: isSelected,
                             leading: Icon(Icons.star_border_purple500, size: 16,
                                 color: isSelected ? Theme.of(context).colorScheme.primary : null),
-                            title: Text(stamp.name, style: const TextStyle(fontSize: 13)),
+                            title: Text(stamp.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -209,7 +209,7 @@ class _StampPanelState extends State<StampPanel> {
   Widget _folderChip(String label, bool selected, VoidCallback onTap) => Padding(
         padding: const EdgeInsets.only(right: 4),
         child: ChoiceChip(
-          label: Text(label, style: const TextStyle(fontSize: 11)),
+          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
           selected: selected,
           onSelected: (_) => onTap(),
           visualDensity: VisualDensity.compact,
@@ -339,7 +339,7 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
         controller: controller,
         padding: const EdgeInsets.all(16),
         children: [
-          Text(l10n.stampEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(l10n.stampEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           const SizedBox(height: 12),
           TextField(
             controller: _nameController,

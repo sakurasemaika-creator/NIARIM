@@ -159,7 +159,7 @@ class ProjectListWidget extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(l10n.projectListEmptyTitle,
-                style: TextStyle(color: scheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: scheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
             const SizedBox(height: 8),
             Text(l10n.projectListEmptyHint,
                 style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
@@ -247,7 +247,7 @@ class ProjectListWidget extends StatelessWidget {
       leading: isSelectionMode
           ? Checkbox(value: isSelected, onChanged: (_) => onSelectionChanged(folder.id))
           : Icon(Icons.folder, color: color, size: 32),
-      title: Text(folder.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(folder.name, style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -672,7 +672,7 @@ class ProjectListWidget extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),

@@ -172,7 +172,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PanelCenterCloseBar(onClose: widget.onClose),
-              Text(l10n.canvasColorAdjustTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(l10n.canvasColorAdjustTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
               const Divider(),
               Center(
                 child: Container(

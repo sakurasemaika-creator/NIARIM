@@ -53,7 +53,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(l10n.watermarkEmptyTitle,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
                     const SizedBox(height: 8),
                     Text(l10n.watermarkEmptyHint,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
@@ -479,7 +479,7 @@ class _WatermarkTile extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(asset.name, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
+                  child: Text(asset.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon'), overflow: TextOverflow.ellipsis),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, size: 16, color: Colors.red),

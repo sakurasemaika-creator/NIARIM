@@ -151,7 +151,7 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
               children: [
                 Expanded(
                   child: Text(l10n.layerKeyframeSheetTitle(widget.layerName),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                 ),
               ],
             ),
@@ -256,7 +256,7 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
             child: Row(
               children: [
                 Expanded(child: Text(l10n.layerKeyframeEditTitle(_kf.frameIndex + 1),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
                 if (widget.onDelete != null)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),

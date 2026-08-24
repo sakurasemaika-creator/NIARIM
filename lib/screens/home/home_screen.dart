@@ -231,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(_sortByName ? l10n.homeSortFieldName : l10n.homeSortFieldUpdated,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'Kuramubon')),
                         const Icon(Icons.arrow_drop_down),
                       ],
                     ),
@@ -557,7 +557,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 onTap: () => setState(() => _currentFolderId = folder.id),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(folder.name, style: const TextStyle(fontSize: 13)),
+                  child: Text(folder.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
                 ),
               ),
             ],

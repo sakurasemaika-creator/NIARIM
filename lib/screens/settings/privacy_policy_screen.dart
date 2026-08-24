@@ -98,7 +98,7 @@ class _PolicyBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon')),
                 const SizedBox(height: 2),
                 Text(body, style: const TextStyle(fontSize: 12, height: 1.5)),
               ],

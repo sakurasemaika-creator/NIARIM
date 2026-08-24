@@ -189,7 +189,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               decoration: InputDecoration(labelText: l10n.newProjectNameLabel, border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 24),
-            const Text('FPS', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('FPS', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -200,7 +200,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               )).toList(),
             ),
             const SizedBox(height: 24),
-            Text(l10n.newProjectSizeLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(l10n.newProjectSizeLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -333,7 +333,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       isPremium
                           ? l10n.newProjectDurationLabel(maxDurationText)
                           : l10n.newProjectDurationLabelWithPremiumHint(maxDurationText),
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -381,7 +381,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               );
             }),
             const SizedBox(height: 24),
-            Text(l10n.newProjectBackgroundColorLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(l10n.newProjectBackgroundColorLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 8),
             Wrap(
               spacing: 12,
@@ -424,7 +424,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             // 描画領域設定（仕様書26）
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(l10n.newProjectDrawingAreaTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(l10n.newProjectDrawingAreaTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               subtitle: Text(l10n.newProjectDrawingAreaSubtitle),
               value: _drawingAreaEnabled,
               onChanged: (v) => setState(() => _drawingAreaEnabled = v),
@@ -433,7 +433,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Text(l10n.newProjectScaleLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.newProjectScaleLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const SizedBox(width: 16),
                   Expanded(
                     child: SteppedSlider(

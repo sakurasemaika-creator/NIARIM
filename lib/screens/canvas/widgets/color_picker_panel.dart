@@ -141,7 +141,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               if (widget.showCloseBar) PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                   const Spacer(),
                   // スポイトボタン（仕様書20：カラーピッカー内のスポイトボタン）
                   if (widget.onEyedropperTap != null)
@@ -333,7 +333,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (p.isFavorite) const Icon(Icons.star, size: 10, color: Colors.amber),
-                    Text(p.name, style: const TextStyle(fontSize: 10)),
+                    Text(p.name, style: const TextStyle(fontSize: 10, fontFamily: 'Kuramubon')),
                   ],
                 ),
                 selected: isActive,

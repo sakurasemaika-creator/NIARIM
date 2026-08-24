@@ -103,7 +103,7 @@ class PenSettingsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(text,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
               color: Theme.of(context).colorScheme.onSurfaceVariant)),
     );
   }

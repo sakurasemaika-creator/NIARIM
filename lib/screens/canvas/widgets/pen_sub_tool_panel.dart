@@ -164,7 +164,7 @@ class _BrushTab extends StatelessWidget {
           selected: isSelected,
           leading: Icon(Icons.brush, size: 16,
               color: isSelected ? Theme.of(context).colorScheme.primary : null),
-          title: Text(brush.name, style: const TextStyle(fontSize: 12)),
+          title: Text(brush.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon')),
           subtitle: Text(l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
               style: const TextStyle(fontSize: 10)),
           trailing: GestureDetector(
@@ -226,7 +226,7 @@ class _ToneTab extends StatelessWidget {
               children: [
                 const Icon(Icons.grid_on, size: 20),
                 const SizedBox(height: 2),
-                Text(tone.name, style: const TextStyle(fontSize: 8),
+                Text(tone.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon'),
                     textAlign: TextAlign.center, maxLines: 2),
               ],
             ),
@@ -280,7 +280,7 @@ class _StampTab extends StatelessWidget {
               children: [
                 const Icon(Icons.star, size: 20),
                 const SizedBox(height: 2),
-                Text(stamp.name, style: const TextStyle(fontSize: 8),
+                Text(stamp.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon'),
                     textAlign: TextAlign.center, maxLines: 2),
               ],
             ),
@@ -434,7 +434,7 @@ class LassoFillToneSheet extends StatelessWidget {
                     children: [
                       const Icon(Icons.grid_on, size: 16),
                       const SizedBox(height: 2),
-                      Text(tone.name, style: const TextStyle(fontSize: 7),
+                      Text(tone.name, style: const TextStyle(fontSize: 7, fontFamily: 'Kuramubon'),
                           textAlign: TextAlign.center, maxLines: 2),
                     ],
                   ),

@@ -118,7 +118,7 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(l10n.canvasPreviewNavigatorTitle,
-                      style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon'),
                       overflow: TextOverflow.ellipsis),
                 ),
                 InkWell(onTap: widget.onClose, child: Icon(Icons.close, size: 16, color: theme.textColor)),

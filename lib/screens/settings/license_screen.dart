@@ -162,7 +162,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon')),
     );
   }
 }
@@ -196,7 +196,7 @@ class _TermsBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon')),
                 const SizedBox(height: 2),
                 Text(body, style: const TextStyle(fontSize: 12, height: 1.5)),
               ],
@@ -237,7 +237,7 @@ class _FontCredit extends StatelessWidget {
             // ライセンス・クレジット表示のみを残す形で削除した。
             Text(usage,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, fontFamily: 'Kuramubon')),
             Text(l10n.licenseFontCreditMeta(author, license), style: const TextStyle(fontSize: 12)),
           ],
         ),
