@@ -168,9 +168,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // デフォルトで削除する」設定（SettingsService）に従い直す。
   bool _endCardManuallyDeleted = false;
 
-  // フレーム幅（px）
+  // フレーム幅（px）。フレーム同士は隙間なく詰めて表示するため
+  // 左右マージンは0にしている。
   static const double _frameW = 36.0;
-  static const double _frameMargin = 4.0;
+  static const double _frameMargin = 0.0;
   static const double _cellW = _frameW + _frameMargin * 2;
 
   // 横スクロール連動
@@ -805,11 +806,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
           trackHeight: 2,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
         ),
+        // コマ送りボタンは再生ボタンの左右に既にあるため、シークバー自体には
+        // ±ボタンを表示しない（役割が重複するため）。
         child: SteppedSlider(
           value: _currentFrame.clamp(0, maxFrame).toDouble(),
           min: 0,
           max: maxFrame.toDouble(),
           divisions: maxFrame > 0 ? maxFrame : null,
+          showSteppers: false,
           onChanged: (v) => setState(() {
             _currentFrame = v.round();
             _isPlaying = false;

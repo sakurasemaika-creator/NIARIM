@@ -1487,6 +1487,8 @@
     }
   },
   "saveTreeApplyChangeButton": "Apply change",
+  "canvasEditMenuAutofillPresets": "Autofill settings",
+  "canvasEditMenuAutofillPresetsSubtitle": "Edit the color/tone combinations for each part",
   "canvasEditMenuBackgroundToggle": "Switch background",
   "canvasEditMenuBackgroundCurrentColor": "Current: project background color (tap for transparent)",
   "canvasEditMenuBackgroundCurrentTransparent": "Current: transparent (tap for project background color)",

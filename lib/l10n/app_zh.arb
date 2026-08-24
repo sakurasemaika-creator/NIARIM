@@ -1487,6 +1487,8 @@
     }
   },
   "saveTreeApplyChangeButton": "应用更改",
+  "canvasEditMenuAutofillPresets": "自动上色设置",
+  "canvasEditMenuAutofillPresetsSubtitle": "编辑各部位的颜色・网点组合",
   "canvasEditMenuBackgroundToggle": "切换背景",
   "canvasEditMenuBackgroundCurrentColor": "当前：项目背景色（点击切换为透明）",
   "canvasEditMenuBackgroundCurrentTransparent": "当前：透明（点击切换为项目背景色）",

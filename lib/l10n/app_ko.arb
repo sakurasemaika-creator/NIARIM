@@ -1487,6 +1487,8 @@
     }
   },
   "saveTreeApplyChangeButton": "변경 적용",
+  "canvasEditMenuAutofillPresets": "자동 채색 설정",
+  "canvasEditMenuAutofillPresetsSubtitle": "부위별 색・톤 조합을 편집",
   "canvasEditMenuBackgroundToggle": "배경 전환",
   "canvasEditMenuBackgroundCurrentColor": "현재: 프로젝트 배경색(탭하면 투명으로)",
   "canvasEditMenuBackgroundCurrentTransparent": "현재: 투명(탭하면 프로젝트 배경색으로)",

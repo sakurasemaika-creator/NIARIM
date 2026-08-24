@@ -1487,6 +1487,8 @@
     }
   },
   "saveTreeApplyChangeButton": "Aplicar cambio",
+  "canvasEditMenuAutofillPresets": "Ajustes de coloreado automático",
+  "canvasEditMenuAutofillPresetsSubtitle": "Edita las combinaciones de color/tono de cada parte",
   "canvasEditMenuBackgroundToggle": "Cambiar fondo",
   "canvasEditMenuBackgroundCurrentColor": "Actual: color de fondo del proyecto (toca para pasar a transparente)",
   "canvasEditMenuBackgroundCurrentTransparent": "Actual: transparente (toca para pasar al color de fondo del proyecto)",

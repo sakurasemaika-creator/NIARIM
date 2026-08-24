@@ -44,7 +44,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   // そこに来るよう一覧側をスクロールさせる。タップ・
   // スワイプでフレームが変わっても赤枠自体は動かない。
   final ScrollController _scrollController = ScrollController();
-  static const double _itemExtent = 56; // 幅48＋左右マージン4ずつ
+  static const double _itemExtent = 48; // 幅48、左右マージンなし（フレーム同士を隙間なく詰める）
 
   @override
   void initState() {
@@ -227,7 +227,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                       : () => _showHoldDialog(context, service, index, hold),
                   child: Container(
                     width: 48,
-                    margin: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey[isSelected ? 700 : 850],
                       border: Border.all(

@@ -43,9 +43,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // プレビューと再生コントロールのみを全画面表示する
   // （タイムラインモードのプレビュー全画面化と同等の機能）。
   bool _isPreviewFullscreen = false;
-  // 縮小表示：情報欄を見るためにスクロールする際、プレビューが場所を
-  // 取りすぎないよう、通常のAspectRatio(16:9)より低い高さへ縮小する。
-  bool _isPreviewCollapsed = false;
 
   @override
   void dispose() {
@@ -194,13 +191,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              height: _isPreviewCollapsed ? 72 : null,
-              child: _isPreviewCollapsed
-                  ? _buildPreviewImage(project)
-                  : AspectRatio(aspectRatio: 16 / 9, child: _buildPreviewImage(project)),
-            ),
+            AspectRatio(aspectRatio: 16 / 9, child: _buildPreviewImage(project)),
             _buildSeekBar(flat),
             // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
             Container(
@@ -313,8 +304,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   /// プレビュー画像本体。[showOverlayButtons]がtrueの場合のみ、右上に
-  /// 全画面化ボタン・縮小表示切り替えボタンを重ねる（全画面表示中は
-  /// このメソッド自体を全画面化用に別途呼び出すため不要）。
+  /// 全画面化ボタンを重ねる（全画面表示中はこのメソッド自体を全画面化用に
+  /// 別途呼び出すため不要）。
   Widget _buildPreviewImage(Project project, {bool showOverlayButtons = true}) {
     final l10n = AppLocalizations.of(context)!;
     final theme = context.watch<ThemeService>().current;
@@ -336,31 +327,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         Positioned(
           right: 4,
           top: 4,
-          child: Row(
-            children: [
-              Material(
-                color: theme.menuBgColor.withValues(alpha: 0.7),
-                shape: const CircleBorder(),
-                child: IconButton(
-                  icon: Icon(_isPreviewCollapsed ? Icons.unfold_more : Icons.unfold_less,
-                      color: theme.textColor, size: 20),
-                  tooltip: _isPreviewCollapsed
-                      ? l10n.projectDetailExpandPreviewTooltip
-                      : l10n.projectDetailCollapsePreviewTooltip,
-                  onPressed: () => setState(() => _isPreviewCollapsed = !_isPreviewCollapsed),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Material(
-                color: theme.menuBgColor.withValues(alpha: 0.7),
-                shape: const CircleBorder(),
-                child: IconButton(
-                  icon: Icon(Icons.fullscreen, color: theme.textColor, size: 20),
-                  tooltip: l10n.projectDetailFullscreenTooltip,
-                  onPressed: () => setState(() => _isPreviewFullscreen = true),
-                ),
-              ),
-            ],
+          child: Material(
+            color: theme.menuBgColor.withValues(alpha: 0.7),
+            shape: const CircleBorder(),
+            child: IconButton(
+              icon: Icon(Icons.fullscreen, color: theme.textColor, size: 20),
+              tooltip: l10n.projectDetailFullscreenTooltip,
+              onPressed: () => setState(() => _isPreviewFullscreen = true),
+            ),
           ),
         ),
       ],
@@ -378,11 +352,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           trackHeight: 2,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
         ),
+        // コマ送りボタンは再生ボタンの左右に既にあるため、シークバー自体には
+        // ±ボタンを表示しない（役割が重複するため）。
         child: SteppedSlider(
           value: _frameIndex.clamp(0, maxFrame).toDouble(),
           min: 0,
           max: maxFrame.toDouble(),
           divisions: maxFrame > 0 ? maxFrame : null,
+          showSteppers: false,
           onChanged: flat.isEmpty
               ? null
               : (v) {

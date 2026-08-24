@@ -1487,6 +1487,8 @@
     }
   },
   "saveTreeApplyChangeButton": "套用變更",
+  "canvasEditMenuAutofillPresets": "自動上色設定",
+  "canvasEditMenuAutofillPresetsSubtitle": "編輯各部位的顏色・網點組合",
   "canvasEditMenuBackgroundToggle": "切換背景",
   "canvasEditMenuBackgroundCurrentColor": "目前：專案背景色（點擊切換為透明）",
   "canvasEditMenuBackgroundCurrentTransparent": "目前：透明（點擊切換為專案背景色）",

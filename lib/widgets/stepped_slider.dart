@@ -20,6 +20,9 @@ class SteppedSlider extends StatelessWidget {
   final Color? activeColor;
   final Color? inactiveColor;
   final String? label;
+  // シークバーのように、既に再生ボタンの左右に同じ役割のコマ送りボタンが
+  // あるなど±ボタンが冗長になる場面ではfalseにして非表示にする。
+  final bool showSteppers;
 
   const SteppedSlider({
     super.key,
@@ -33,11 +36,24 @@ class SteppedSlider extends StatelessWidget {
     this.activeColor,
     this.inactiveColor,
     this.label,
+    this.showSteppers = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final clamped = value.clamp(min, max);
+    final slider = Slider(
+      value: clamped,
+      min: min,
+      max: max,
+      divisions: divisions,
+      label: label,
+      activeColor: activeColor,
+      inactiveColor: inactiveColor,
+      onChanged: onChanged,
+      onChangeEnd: onChangeEnd,
+    );
+    if (!showSteppers) return slider;
     return Row(
       children: [
         IconButton(
@@ -54,19 +70,7 @@ class SteppedSlider extends StatelessWidget {
                   onChangeEnd?.call(v);
                 },
         ),
-        Expanded(
-          child: Slider(
-            value: clamped,
-            min: min,
-            max: max,
-            divisions: divisions,
-            label: label,
-            activeColor: activeColor,
-            inactiveColor: inactiveColor,
-            onChanged: onChanged,
-            onChangeEnd: onChangeEnd,
-          ),
-        ),
+        Expanded(child: slider),
         IconButton(
           icon: const Icon(Icons.add_circle_outline, size: 18),
           padding: EdgeInsets.zero,

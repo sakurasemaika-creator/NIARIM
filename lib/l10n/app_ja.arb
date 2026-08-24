@@ -1709,6 +1709,8 @@
     }
   },
   "saveTreeApplyChangeButton": "変更する",
+  "canvasEditMenuAutofillPresets": "自動塗り設定",
+  "canvasEditMenuAutofillPresetsSubtitle": "パーツごとの色・トーンの組み合わせを編集",
   "canvasEditMenuBackgroundToggle": "背景切替",
   "canvasEditMenuBackgroundCurrentColor": "現在：プロジェクト背景色（タップで透過へ）",
   "canvasEditMenuBackgroundCurrentTransparent": "現在：透過（タップでプロジェクト背景色へ）",

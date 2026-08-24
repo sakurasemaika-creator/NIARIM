@@ -241,10 +241,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
+      // 項目数が多く、画面の低い端末では収まりきらないことがあるため
+      // スクロール可能にする（以前はColumnを直置きしており、画面下端で
+      // オーバーフローすることがあった）。
+      isScrollControlled: true,
       builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            ListTile(
+              leading: const Icon(Icons.auto_fix_high_outlined),
+              title: Text(l10n.canvasEditMenuAutofillPresets),
+              subtitle: Text(l10n.canvasEditMenuAutofillPresetsSubtitle),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/autofill-presets');
+              },
+            ),
             ListTile(
               leading: Icon(_canvasBackground == CanvasBackground.white
                   ? Icons.check_box_outline_blank
@@ -349,6 +363,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 },
               ),
           ],
+        ),
         ),
       ),
     );
