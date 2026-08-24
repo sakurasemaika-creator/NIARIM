@@ -53,14 +53,14 @@ class _HomeScreenState extends State<HomeScreen>
   // 現在開いているフォルダ（フォルダは複数階層に対応・
   // パンくずリストで現在位置を表示）。nullはルート直下。
   String? _currentFolderId;
-  // 新規追加系のFAB（＋ボタン）はプロジェクトタブでのみ表示する
-  // （共有・ゴミ箱タブに新規プロジェクト作成の導線があるのは不自然なため）。
+  // 新規追加系のFAB（＋ボタン）はプロジェクトタブ・作品一覧タブでのみ
+  // 表示する（ブクマ済みタブに新規作成の導線があるのは不自然なため）。
   int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         setState(() => _currentTabIndex = _tabController.index);
@@ -357,7 +357,11 @@ class _HomeScreenState extends State<HomeScreen>
           child: _HomeTabBar(
             controller: _tabController,
             currentIndex: _currentTabIndex,
-            labels: [l10n.homeTabProjects, l10n.homeTabWorks],
+            labels: [
+              l10n.homeTabProjects,
+              l10n.homeTabWorks,
+              l10n.homeTabBookmarked,
+            ],
           ),
         ),
       ),
@@ -498,6 +502,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ],
                 ),
                 const _WorksTab(),
+                const _BookmarkedTab(),
               ],
             ),
           ),
@@ -1320,6 +1325,50 @@ class _TrashTab extends StatelessWidget {
 /// タップでアプリ内プレビュー、共有ボタンでOSの共有シートから写真アプリ等へ
 /// 「開く」ことができる（share_plusは書き出し完了ダイアログで既に使用している
 /// 実績のある仕組みのため、新規ネイティブ依存を追加せずに実現できる）。
+/// 「ブクマ済みの作品」タブ。他ユーザーが公開した作品をブックマークして
+/// 一覧表示する機能の器のみを先行して用意した状態で、実際のブックマーク
+/// データ・一覧表示は「みんなのアニメを見る」機能の実装に合わせて後から
+/// つなぎ込む（現時点では常に準備中の案内のみを表示する）。
+class _BookmarkedTab extends StatelessWidget {
+  const _BookmarkedTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.bookmark_border,
+              size: 64,
+              color: scheme.primary.withValues(alpha: 0.6),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.homeBookmarkedComingSoonTitle,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.homeBookmarkedComingSoonBody,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _WorksTab extends StatefulWidget {
   const _WorksTab();
 
