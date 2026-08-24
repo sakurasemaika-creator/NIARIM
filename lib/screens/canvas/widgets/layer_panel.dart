@@ -168,7 +168,12 @@ class _LayerPanelState extends State<LayerPanel> {
       }
     }
 
-    return Container(
+    // Container(color:)はColoredBoxとして描画されるため、内部のListTile
+    // （選択中ハイライト・タップ時のインクスプラッシュ）が隠れてしまう
+    // （「ListTile background color or ink splashes may be invisible」）。
+    // Materialに替えることで、背景色を保ちつつ内部のリップル効果も
+    // 正しく表示されるようにする。
+    return Material(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Column(
         children: [

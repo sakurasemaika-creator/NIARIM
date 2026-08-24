@@ -4040,12 +4040,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               cropY += (d.delta.dy / scale).round();
                               clampCrop();
                             }),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.amber, width: 2),
-                                color: Colors.amber.withValues(alpha: 0.15),
-                              ),
-                            ),
+                            child: Builder(builder: (context) {
+                              // 色固定にせず、更新マーク（❗）やフレーム現在地の
+                              // 赤枠と同じ「目立たせる」役割の色（テーマの
+                              // updateMarkColor）に揃える。
+                              final markColor = context.watch<ThemeService>().current.updateMarkColor;
+                              return Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: markColor, width: 2),
+                                  color: markColor.withValues(alpha: 0.15),
+                                ),
+                              );
+                            }),
                           ),
                         ),
                       ],
