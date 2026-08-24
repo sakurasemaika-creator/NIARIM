@@ -1185,7 +1185,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(tone.name,
-                                        style: const TextStyle(fontSize: 10),
+                                        style: const TextStyle(fontSize: 10, fontFamily: 'Kuramubon'),
                                         textAlign: TextAlign.center,
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis),

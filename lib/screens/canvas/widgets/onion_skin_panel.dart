@@ -265,7 +265,7 @@ class _OnionSideSection extends StatelessWidget {
           children: [
             Text(label,
                 style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold)),
+                    fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const Spacer(),
             if (isCustom)
               Switch(

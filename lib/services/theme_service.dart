@@ -496,10 +496,19 @@ class ThemeService extends ChangeNotifier {
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(minimumSize: minTapSize),
       ),
+      // Material3のListTileはタイトルに既定でbodyLarge（＝白光明朝）を使う
+      // 仕様のため、fontFamilyを明示していないtitle: Text(...)は軒並み
+      // 明朝体になってしまっていた（項目名フォント回帰の主因の一つ）。
+      // titleTextStyleをここで明示することで、SwitchListTile・
+      // RadioListTile・CheckboxListTile（いずれも内部でListTileを使う）を
+      // 含め、アプリ全体のリスト項目タイトルを一括でくらむぼんへ揃える。
+      // 個別のTextウィジェットが独自styleを指定していれば、そちらが
+      // 優先されるため既存の明示指定箇所への影響はない。
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 12,
         iconColor: scheme.primary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        titleTextStyle: textTheme.titleMedium?.copyWith(color: preset.textColor),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

@@ -5760,7 +5760,7 @@ class _EffectFilterSheet extends StatelessWidget {
         leading: Icon(_typeIcons[e.type], size: 20),
         title: Text(
           _typeLabel(l10n, e.type),
-          style: const TextStyle(fontSize: 13),
+          style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon'),
         ),
         subtitle: Text(
           'F${e.startFrame + 1} ～ F${e.endFrame + 1}',

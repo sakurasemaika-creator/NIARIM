@@ -522,7 +522,7 @@ class ToolbarWidget extends StatelessWidget {
                         leading: const Icon(Icons.tune, size: 18),
                         title: Text(
                           l10n.bucketSettingsTitle,
-                          style: const TextStyle(fontSize: 13),
+                          style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon'),
                         ),
                         childrenPadding: const EdgeInsets.fromLTRB(
                           16,

@@ -358,7 +358,7 @@ class _ExportScreenState extends State<ExportScreen> {
             // ファイルアプリで見つけたい場合は「共有」から保存先を選ぶ
             // 必要があることを明示する。
             Text(l10n.exportSaveLocationLabel(fileName),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
             const SizedBox(height: 4),
             Text(l10n.exportSaveLocationHint,
                 style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
