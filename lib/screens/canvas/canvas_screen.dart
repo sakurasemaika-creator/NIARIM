@@ -99,6 +99,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _meshCommitToken = 0;
   int _meshCancelToken = 0;
 
+  // PC専用ワークスペースUI（仕様書02）：右側ドッキング領域（カラー
+  // ピッカー・レイヤーパネル・キャンバスプレビュー）の横幅。ドラッグ中は
+  // ここへローカルに反映し、指を離した時点でSettingsServiceへ確定値を
+  // 保存する（タイムラインのプレビュー高さドラッグと同じ方式）。
+  double? _panelWidthDragOverride;
+
   /// モバイルレイアウトのオーバーレイパネル（レイヤー・色・ブラシ・トーン・
   /// スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・早替え
   /// ツール設定・自由変形/メッシュ変形）は、右側/左側に重なって同時表示
@@ -671,8 +677,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   // openToolPanels）とは別に、右側（左利きモード時は左側）へ
                   // 縦に並べて同時表示する。単独でも複数同時でも表示可。
                   if (isDesktop && (_showColorPicker || _showLayerPanel || _showCanvasPreviewPanel))
+                    _ResizeHandle(
+                      onDeltaX: (dx) => setState(() {
+                        final settings = context.read<SettingsService>();
+                        final current = _panelWidthDragOverride ?? settings.desktopPanelWidth;
+                        // 左利きモードでは領域が左側にあるため、ハンドルを
+                        // 左へ引くほど広がる（右側配置とドラッグ方向を反転）。
+                        _panelWidthDragOverride = (current + (leftHanded ? dx : -dx)).clamp(200.0, 480.0);
+                      }),
+                      onDragEnd: () {
+                        final w = _panelWidthDragOverride;
+                        if (w != null) context.read<SettingsService>().setDesktopPanelWidth(w);
+                      },
+                    ),
+                  if (isDesktop && (_showColorPicker || _showLayerPanel || _showCanvasPreviewPanel))
                     SizedBox(
-                      width: 280,
+                      width: _panelWidthDragOverride ?? context.watch<SettingsService>().desktopPanelWidth,
                       child: Column(
                         children: [
                           if (_showCanvasPreviewPanel)
@@ -1692,6 +1712,38 @@ class _CanvasScreenState extends State<CanvasScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
         ],
+      ),
+    );
+  }
+}
+
+/// PC専用ワークスペースUI（仕様書02）：ドッキングパネルとキャンバスの
+/// 境界に置く、横方向ドラッグ専用のリサイズハンドル。ドラッグ中は
+/// [onDeltaX]で移動量（デバイス非依存の論理px）を都度通知し、指を離した
+/// 時点で[onDragEnd]を呼んで確定値の永続化を行わせる。
+class _ResizeHandle extends StatelessWidget {
+  final ValueChanged<double> onDeltaX;
+  final VoidCallback onDragEnd;
+  const _ResizeHandle({required this.onDeltaX, required this.onDragEnd});
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.resizeLeftRight,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragUpdate: (d) => onDeltaX(d.delta.dx),
+        onHorizontalDragEnd: (_) => onDragEnd(),
+        child: Container(
+          width: 8,
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              width: 2,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+        ),
       ),
     );
   }

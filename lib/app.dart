@@ -46,6 +46,16 @@ class NiarimApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      // PC専用ワークスペースUI（仕様書02）：マウス・スタイラス（ペンタブ等）の
+      // 接続を検出し、画面幅だけでは判定できない「スマホ＋外部ペンタブ」等の
+      // 構成でも自動でPCモードへ切り替えられるようにする。画面全体を覆う
+      // 一番外側でポインターイベントの種類を監視するだけの軽量な実装。
+      builder: (context, child) => Listener(
+        onPointerDown: (e) => context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
+        onPointerHover: (e) => context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
+        behavior: HitTestBehavior.translucent,
+        child: child!,
+      ),
     );
   }
 }

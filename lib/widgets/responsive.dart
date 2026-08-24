@@ -7,11 +7,16 @@ import '../services/settings_service.dart';
 const double kDesktopBreakpoint = 840;
 
 /// PC/DeXモードかどうかを判定する。ワークスペース設定で手動指定されていれば
-/// それを優先し（仕様書02）、未指定（自動）の場合は画面幅で判定する。
+/// それを優先し（仕様書02）、未指定（自動）の場合は画面幅、または
+/// マウス・スタイラス（ペンタブ等）の接続検出（main.dartのListenerが
+/// SettingsService.notifyPointerDeviceSeenへ通知）のいずれかで判定する。
+/// これにより、スマホでも外部ペンタブレット等を接続すればPCモードへ
+/// 自動で切り替わる。
 bool isWideScreen(BuildContext context) {
-  final forced = context.watch<SettingsService>().forcePcMode;
+  final settings = context.watch<SettingsService>();
+  final forced = settings.forcePcMode;
   if (forced != null) return forced;
-  return MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+  return MediaQuery.sizeOf(context).width >= kDesktopBreakpoint || settings.hasNonTouchPointer;
 }
 
 /// 手のひらツール（画面移動専用）を実際にツールバーへ表示してよいかを

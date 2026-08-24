@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/canvas_dock_panel.dart';
 import '../models/toolbar_item.dart';
@@ -114,6 +115,39 @@ class SettingsService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('timeline_preview_height_fraction', _timelinePreviewHeightFraction);
     notifyListeners();
+  }
+
+  // ─── PC専用ワークスペースUI（仕様書02）─────────────────────────────────
+  // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
+  // プレビュー）の横幅。ドラッグハンドルで変更でき、アプリ全体で
+  // 共通の設定として保存される。
+  double _desktopPanelWidth = 280.0;
+
+  double get desktopPanelWidth => _desktopPanelWidth;
+
+  Future<void> setDesktopPanelWidth(double value) async {
+    _desktopPanelWidth = value.clamp(200.0, 480.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('desktop_panel_width', _desktopPanelWidth);
+    notifyListeners();
+  }
+
+  // マウス・スタイラス（ペンタブ等）の接続検出（仕様書02）。スマホの
+  // 狭い画面でもポインティングデバイスが接続されたことを一度でも検知
+  // したら、以後アプリ終了までPCモード判定に反映する（永続化はしない
+  // ——物理的な接続状態はアプリ再起動のたびに再判定すればよいため）。
+  // main.dartのListenerがポインターイベントのkindを渡して呼び出す。
+  bool _hasNonTouchPointer = false;
+
+  bool get hasNonTouchPointer => _hasNonTouchPointer;
+
+  void notifyPointerDeviceSeen(PointerDeviceKind kind) {
+    final isNonTouch = kind == PointerDeviceKind.mouse || kind == PointerDeviceKind.stylus ||
+        kind == PointerDeviceKind.invertedStylus;
+    if (isNonTouch && !_hasNonTouchPointer) {
+      _hasNonTouchPointer = true;
+      notifyListeners();
+    }
   }
 
   // ─── エンドカードのプレミアム既定設定 ─────────────────────────────────
@@ -291,6 +325,7 @@ class SettingsService extends ChangeNotifier {
     _holdEyedropperSeconds = prefs.getDouble('hold_eyedropper_seconds') ?? 0.5;
     _timelinePreviewHeightFraction =
         prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
+    _desktopPanelWidth = prefs.getDouble('desktop_panel_width') ?? 280.0;
     _endCardDefaultHiddenForPremium = prefs.getBool('endcard_default_hidden_for_premium') ?? false;
     final toolbarOrderNames = prefs.getStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
