@@ -15,12 +15,12 @@ import 'services/theme_service.dart';
 class _AppScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.invertedStylus,
-        PointerDeviceKind.trackpad,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.invertedStylus,
+    PointerDeviceKind.trackpad,
+  };
 }
 
 class NiarimApp extends StatelessWidget {
@@ -29,8 +29,7 @@ class NiarimApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeService = context.watch<ThemeService>();
-    // 表示言語（設定画面「言語」、仕様書08＋タスク#102）。
-    // 日本語・English・简体中文・한국어・繁體中文・Français・Españolの7言語対応。
+    // 表示言語（日本語・English・简体中文・한국어・繁體中文・Français・Españolの7言語対応）。
     final language = context.watch<SettingsService>().language;
     return MaterialApp.router(
       title: 'NIARIM',
@@ -46,13 +45,13 @@ class NiarimApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      // PC専用ワークスペースUI（仕様書02）：マウス・スタイラス（ペンタブ等）の
-      // 接続を検出し、画面幅だけでは判定できない「スマホ＋外部ペンタブ」等の
-      // 構成でも自動でPCモードへ切り替えられるようにする。画面全体を覆う
-      // 一番外側でポインターイベントの種類を監視するだけの軽量な実装。
+      // 画面全体を覆う一番外側でポインターイベントの種類を監視し、
+      // マウス・スタイラス（ペンタブ等）の接続をSettingsServiceへ伝える。
       builder: (context, child) => Listener(
-        onPointerDown: (e) => context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
-        onPointerHover: (e) => context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
+        onPointerDown: (e) =>
+            context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
+        onPointerHover: (e) =>
+            context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
         behavior: HitTestBehavior.translucent,
         child: child!,
       ),

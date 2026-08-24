@@ -750,6 +750,24 @@
   "newProjectHeightLabel": "높이(px)",
   "newProjectWidthShort": "너비",
   "newProjectHeightShort": "높이",
+  "newProjectSizePresetManageButton": "크기 설정",
+  "newProjectSaveCustomSizeButton": "이 크기 저장하기",
+  "newProjectSaveCustomSizeDialogTitle": "크기 이름을 입력하세요",
+  "newProjectSaveCustomSizeNameLabel": "크기 이름",
+  "newProjectSaveCustomSizeSavedSnackbar": "크기를 저장했습니다",
+  "canvasSizePresetManageScreenTitle": "크기 설정",
+  "canvasSizePresetEmpty": "저장된 크기가 없습니다",
+  "canvasSizePresetEmptyHint": "새 프로젝트 화면에서 사용자 지정 크기를 지정하고 「이 크기 저장하기」로 추가할 수 있습니다",
+  "canvasSizePresetEditDialogTitle": "크기 편집",
+  "canvasSizePresetDeleteConfirmTitle": "「{name}」을(를) 삭제할까요?",
+  "@canvasSizePresetDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasSizePresetDuplicateSuffix": "사본",
   "newProjectDurationLabel": "길이(최대 {max})",
   "@newProjectDurationLabel": {
     "placeholders": {

@@ -2,22 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 
-/// 画面幅がこの値以上の場合、PC/DeXモード向けのプロ仕様レイアウト
-/// （パネルをフローティング表示ではなく常時ドッキング表示にする等）へ切り替える。
-const double kDesktopBreakpoint = 840;
-
 /// PC/DeXモードかどうかを判定する。ワークスペース設定で手動指定されていれば
-/// それを優先し（仕様書02）、未指定（自動）の場合は画面幅で判定する。
-/// マウス・スタイラス（ペンタブ等）の接続検出（main.dartのListenerが
-/// SettingsService.notifyPointerDeviceSeenへ通知）は、横画面のときのみ
-/// 追加の判定材料として使う——縦画面（スマホを普段どおり縦に持った状態）
-/// では、ペンタブ等を接続していてもスマホ表示のままにする。
+/// 画面の向きに関わらずそれを優先する。未指定（自動）の場合は、画面が
+/// 横向き（幅>高さ）かつマウス・スタイラス（ペンタブ等）のポインティング
+/// デバイス接続を検知している（SettingsService.hasNonTouchPointer、
+/// app.dartのListenerがポインターイベントのkindを渡して更新する）ときの
+/// みPCモードとし、それ以外は常にスマホモードとする。
 bool isWideScreen(BuildContext context) {
   final settings = context.watch<SettingsService>();
   final forced = settings.forcePcMode;
   if (forced != null) return forced;
   final size = MediaQuery.sizeOf(context);
-  if (size.width >= kDesktopBreakpoint) return true;
   final isLandscape = size.width > size.height;
   return isLandscape && settings.hasNonTouchPointer;
 }
@@ -43,7 +38,11 @@ bool canShowPanTool(BuildContext context) {
 /// SafeAreaで包む（Scaffoldはbody全体を自動ではセーフエリア化しないため、
 /// 画面下端のボタンがシステムナビゲーションバーと重なる場合がある）。
 /// この関数を使う画面はここで一括対応される。
-Widget desktopCentered(BuildContext context, Widget child, {double maxWidth = 720}) {
+Widget desktopCentered(
+  BuildContext context,
+  Widget child, {
+  double maxWidth = 720,
+}) {
   if (!isWideScreen(context)) return SafeArea(child: child);
   return SafeArea(
     child: Align(

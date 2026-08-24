@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/canvas_dock_panel.dart';
+import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
 
 class SettingsService extends ChangeNotifier {
@@ -40,8 +42,10 @@ class SettingsService extends ChangeNotifier {
   bool? get forcePcMode => _forcePcMode;
   bool get isLeftHanded => _isLeftHanded;
   List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
-  Set<ToolbarItemId> get hiddenToolbarItems => Set.unmodifiable(_hiddenToolbarItems);
-  Set<CanvasDockPanel> get defaultDockedPanels => Set.unmodifiable(_defaultDockedPanels);
+  Set<ToolbarItemId> get hiddenToolbarItems =>
+      Set.unmodifiable(_hiddenToolbarItems);
+  Set<CanvasDockPanel> get defaultDockedPanels =>
+      Set.unmodifiable(_defaultDockedPanels);
 
   // ─── バケツ塗り詳細設定（設定画面「バケツ塗り」） ───────────────────────
   // 許容誤差：クリックした位置の色からどこまで色差を許容して同一領域とみなすか
@@ -113,11 +117,13 @@ class SettingsService extends ChangeNotifier {
   Future<void> setTimelinePreviewHeightFraction(double value) async {
     _timelinePreviewHeightFraction = value.clamp(0.18, 0.7);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('timeline_preview_height_fraction', _timelinePreviewHeightFraction);
+    await prefs.setDouble(
+      'timeline_preview_height_fraction',
+      _timelinePreviewHeightFraction,
+    );
     notifyListeners();
   }
 
-  // ─── PC専用ワークスペースUI（仕様書02）─────────────────────────────────
   // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
   // プレビュー）の横幅。ドラッグハンドルで変更でき、アプリ全体で
   // 共通の設定として保存される。
@@ -132,22 +138,99 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // マウス・スタイラス（ペンタブ等）の接続検出（仕様書02）。スマホの
-  // 狭い画面でもポインティングデバイスが接続されたことを一度でも検知
-  // したら、以後アプリ終了までPCモード判定に反映する（永続化はしない
-  // ——物理的な接続状態はアプリ再起動のたびに再判定すればよいため）。
-  // main.dartのListenerがポインターイベントのkindを渡して呼び出す。
+  // マウス・スタイラス（ペンタブ等）の接続検出フラグ。ポインティング
+  // デバイスの接続を一度でも検知したら、以後アプリ終了までtrueを保持する
+  // （永続化はしない）。app.dartのListenerがポインターイベントのkindを
+  // 渡して更新する。
   bool _hasNonTouchPointer = false;
 
   bool get hasNonTouchPointer => _hasNonTouchPointer;
 
   void notifyPointerDeviceSeen(PointerDeviceKind kind) {
-    final isNonTouch = kind == PointerDeviceKind.mouse || kind == PointerDeviceKind.stylus ||
+    final isNonTouch =
+        kind == PointerDeviceKind.mouse ||
+        kind == PointerDeviceKind.stylus ||
         kind == PointerDeviceKind.invertedStylus;
     if (isNonTouch && !_hasNonTouchPointer) {
       _hasNonTouchPointer = true;
       notifyListeners();
     }
+  }
+
+  // ─── 新規プロジェクト画面のカスタムキャンバスサイズプリセット ─────────
+  List<CanvasSizePreset> _customSizePresets = [];
+
+  List<CanvasSizePreset> get customSizePresets =>
+      List.unmodifiable(_customSizePresets);
+
+  Future<void> _persistCustomSizePresets() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'custom_size_presets',
+      _customSizePresets.map((p) => jsonEncode(p.toJson())).toList(),
+    );
+  }
+
+  Future<void> addCustomSizePreset(String name, int width, int height) async {
+    _customSizePresets = [
+      ..._customSizePresets,
+      CanvasSizePreset(
+        id: 'size_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        width: width,
+        height: height,
+      ),
+    ];
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> updateCustomSizePreset(
+    String id, {
+    String? name,
+    int? width,
+    int? height,
+  }) async {
+    _customSizePresets = _customSizePresets
+        .map(
+          (p) => p.id == id
+              ? p.copyWith(name: name, width: width, height: height)
+              : p,
+        )
+        .toList();
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> duplicateCustomSizePreset(String id, String newName) async {
+    final source = _customSizePresets.where((p) => p.id == id).firstOrNull;
+    if (source == null) return;
+    _customSizePresets = [
+      ..._customSizePresets,
+      CanvasSizePreset(
+        id: 'size_${DateTime.now().microsecondsSinceEpoch}',
+        name: newName,
+        width: source.width,
+        height: source.height,
+      ),
+    ];
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> removeCustomSizePreset(String id) async {
+    _customSizePresets = _customSizePresets.where((p) => p.id != id).toList();
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> reorderCustomSizePresets(int oldIndex, int newIndex) async {
+    final list = List<CanvasSizePreset>.from(_customSizePresets);
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, item);
+    _customSizePresets = list;
+    await _persistCustomSizePresets();
+    notifyListeners();
   }
 
   // ─── エンドカードのプレミアム既定設定 ─────────────────────────────────
@@ -229,7 +312,8 @@ class SettingsService extends ChangeNotifier {
   /// （0〜1全域をカバーするため）。デフォルトは対角線（傾き1）の2点のみ。
   static const int maxPressurePoints = 10;
   List<(double, double)> _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
-  List<(double, double)> get customPressurePoints => List.unmodifiable(_customPressurePoints);
+  List<(double, double)> get customPressurePoints =>
+      List.unmodifiable(_customPressurePoints);
 
   Future<void> setPenPressureCurve(PenPressureCurve curve) async {
     _penPressureCurve = curve;
@@ -242,7 +326,9 @@ class SettingsService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final flat = _customPressurePoints.expand((p) => [p.$1, p.$2]).toList();
     await prefs.setStringList(
-        'pen_pressure_custom_points', flat.map((v) => v.toString()).toList());
+      'pen_pressure_custom_points',
+      flat.map((v) => v.toString()).toList(),
+    );
   }
 
   /// 新しい制御点を追加する（最大10点まで。x昇順を保つ）。
@@ -279,7 +365,8 @@ class SettingsService extends ChangeNotifier {
   /// 中間の制御点を削除する（先頭・末尾は削除不可）。
   Future<void> removeCustomPressurePoint(int index) async {
     if (index <= 0 || index >= _customPressurePoints.length - 1) return;
-    final points = List<(double, double)>.from(_customPressurePoints)..removeAt(index);
+    final points = List<(double, double)>.from(_customPressurePoints)
+      ..removeAt(index);
     _customPressurePoints = points;
     await _persistCustomPressurePoints();
     notifyListeners();
@@ -311,8 +398,10 @@ class SettingsService extends ChangeNotifier {
     _undoLimit = prefs.getInt('undo_limit') ?? 50;
     _trashAutoDeleteDays = prefs.getInt('trash_auto_delete') ?? 0;
     _language = prefs.getString('language') ?? 'ja';
-    _defaultDrawingAreaEnabled = prefs.getBool('default_drawing_area_enabled') ?? false;
-    _defaultDrawingAreaScale = prefs.getDouble('default_drawing_area_scale') ?? 2.0;
+    _defaultDrawingAreaEnabled =
+        prefs.getBool('default_drawing_area_enabled') ?? false;
+    _defaultDrawingAreaScale =
+        prefs.getDouble('default_drawing_area_scale') ?? 2.0;
     _isFirstLaunch = prefs.getBool('first_launch') ?? true;
     // -1=自動（未設定）、0=OFF、1=ON
     final pcModeValue = prefs.getInt('force_pc_mode') ?? -1;
@@ -326,11 +415,22 @@ class SettingsService extends ChangeNotifier {
     _timelinePreviewHeightFraction =
         prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
     _desktopPanelWidth = prefs.getDouble('desktop_panel_width') ?? 280.0;
-    _endCardDefaultHiddenForPremium = prefs.getBool('endcard_default_hidden_for_premium') ?? false;
+    final sizePresetStrings = prefs.getStringList('custom_size_presets') ?? [];
+    _customSizePresets = sizePresetStrings
+        .map(
+          (s) =>
+              CanvasSizePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        )
+        .toList();
+    _endCardDefaultHiddenForPremium =
+        prefs.getBool('endcard_default_hidden_for_premium') ?? false;
     final toolbarOrderNames = prefs.getStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
       final map = ToolbarItemId.values.asNameMap();
-      final restored = toolbarOrderNames.map((n) => map[n]).whereType<ToolbarItemId>().toList();
+      final restored = toolbarOrderNames
+          .map((n) => map[n])
+          .whereType<ToolbarItemId>()
+          .toList();
       // バージョンアップで項目が追加された場合、欠けている項目は末尾へ補完
       for (final id in ToolbarItemId.values) {
         if (!restored.contains(id)) restored.add(id);
@@ -338,17 +438,39 @@ class SettingsService extends ChangeNotifier {
       _toolbarOrder = restored;
     }
     final hiddenNames = prefs.getStringList('toolbar_hidden') ?? const [];
-    _hiddenToolbarItems = hiddenNames.map((n) => ToolbarItemId.values.asNameMap()[n]).whereType<ToolbarItemId>().toSet();
+    _hiddenToolbarItems = hiddenNames
+        .map((n) => ToolbarItemId.values.asNameMap()[n])
+        .whereType<ToolbarItemId>()
+        .toSet();
     final dockedPanelNames = prefs.getStringList('default_docked_panels');
     if (dockedPanelNames != null) {
       final map = CanvasDockPanel.values.asNameMap();
-      _defaultDockedPanels = dockedPanelNames.map((n) => map[n]).whereType<CanvasDockPanel>().toSet();
+      _defaultDockedPanels = dockedPanelNames
+          .map((n) => map[n])
+          .whereType<CanvasDockPanel>()
+          .toSet();
     }
-    _twoFingerTap = _gestureActionFromName(prefs.getString('gesture_two_finger_tap'), GestureAction.undo);
-    _threeFingerTap = _gestureActionFromName(prefs.getString('gesture_three_finger_tap'), GestureAction.redo);
-    _twoFingerSwipe = _gestureActionFromName(prefs.getString('gesture_two_finger_swipe'), GestureAction.frameMove);
-    _longPress = _gestureActionFromName(prefs.getString('gesture_long_press'), GestureAction.eyedropper);
-    _penPressureCurve = PenPressureCurve.values.asNameMap()[prefs.getString('pen_pressure_curve')] ?? PenPressureCurve.normal;
+    _twoFingerTap = _gestureActionFromName(
+      prefs.getString('gesture_two_finger_tap'),
+      GestureAction.undo,
+    );
+    _threeFingerTap = _gestureActionFromName(
+      prefs.getString('gesture_three_finger_tap'),
+      GestureAction.redo,
+    );
+    _twoFingerSwipe = _gestureActionFromName(
+      prefs.getString('gesture_two_finger_swipe'),
+      GestureAction.frameMove,
+    );
+    _longPress = _gestureActionFromName(
+      prefs.getString('gesture_long_press'),
+      GestureAction.eyedropper,
+    );
+    _penPressureCurve =
+        PenPressureCurve.values.asNameMap()[prefs.getString(
+          'pen_pressure_curve',
+        )] ??
+        PenPressureCurve.normal;
     final rawPoints = prefs.getStringList('pen_pressure_custom_points');
     if (rawPoints != null && rawPoints.length >= 4 && rawPoints.length.isEven) {
       final values = rawPoints.map((s) => double.tryParse(s)).toList();
@@ -368,8 +490,14 @@ class SettingsService extends ChangeNotifier {
         _customPressurePoints = [(0.0, 0.0), (0.5, midY), (1.0, 1.0)];
       }
     }
-    _penButton1 = _gestureActionFromName(prefs.getString('pen_button_1'), GestureAction.eraserToggle);
-    _penButton2 = _gestureActionFromName(prefs.getString('pen_button_2'), GestureAction.eyedropper);
+    _penButton1 = _gestureActionFromName(
+      prefs.getString('pen_button_1'),
+      GestureAction.eraserToggle,
+    );
+    _penButton2 = _gestureActionFromName(
+      prefs.getString('pen_button_2'),
+      GestureAction.eyedropper,
+    );
   }
 
   GestureAction _gestureActionFromName(String? name, GestureAction fallback) {
@@ -403,12 +531,21 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setDefaultDrawingArea({required bool enabled, required double scale}) async {
+  Future<void> setDefaultDrawingArea({
+    required bool enabled,
+    required double scale,
+  }) async {
     _defaultDrawingAreaEnabled = enabled;
     _defaultDrawingAreaScale = scale.clamp(1.0, 10.0);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('default_drawing_area_enabled', _defaultDrawingAreaEnabled);
-    await prefs.setDouble('default_drawing_area_scale', _defaultDrawingAreaScale);
+    await prefs.setBool(
+      'default_drawing_area_enabled',
+      _defaultDrawingAreaEnabled,
+    );
+    await prefs.setDouble(
+      'default_drawing_area_scale',
+      _defaultDrawingAreaScale,
+    );
     notifyListeners();
   }
 
@@ -447,7 +584,10 @@ class SettingsService extends ChangeNotifier {
   Future<void> setToolbarOrder(List<ToolbarItemId> order) async {
     _toolbarOrder = List.of(order);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('toolbar_order', _toolbarOrder.map((e) => e.name).toList());
+    await prefs.setStringList(
+      'toolbar_order',
+      _toolbarOrder.map((e) => e.name).toList(),
+    );
     notifyListeners();
   }
 
@@ -459,7 +599,10 @@ class SettingsService extends ChangeNotifier {
       _hiddenToolbarItems.add(id);
     }
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('toolbar_hidden', _hiddenToolbarItems.map((e) => e.name).toList());
+    await prefs.setStringList(
+      'toolbar_hidden',
+      _hiddenToolbarItems.map((e) => e.name).toList(),
+    );
     notifyListeners();
   }
 
@@ -468,7 +611,10 @@ class SettingsService extends ChangeNotifier {
   Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
     _defaultDockedPanels = Set.of(panels);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('default_docked_panels', _defaultDockedPanels.map((e) => e.name).toList());
+    await prefs.setStringList(
+      'default_docked_panels',
+      _defaultDockedPanels.map((e) => e.name).toList(),
+    );
     notifyListeners();
   }
 
@@ -477,19 +623,33 @@ class SettingsService extends ChangeNotifier {
     _toolbarOrder = List.of(ToolbarItemId.values);
     _hiddenToolbarItems = {};
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('toolbar_order', _toolbarOrder.map((e) => e.name).toList());
+    await prefs.setStringList(
+      'toolbar_order',
+      _toolbarOrder.map((e) => e.name).toList(),
+    );
     await prefs.setStringList('toolbar_hidden', const []);
     notifyListeners();
   }
 
   /// ワークスペースプリセットの読込用：並び順・非表示項目をまとめて適用する
   /// （仕様書08：「切り替えると表示ツール・早替えツール・パネル配置が一括で変わる」）。
-  Future<void> applyToolbarPreset(List<ToolbarItemId> order, Set<ToolbarItemId> hidden) async {
-    _toolbarOrder = order.isEmpty ? List.of(ToolbarItemId.values) : List.of(order);
+  Future<void> applyToolbarPreset(
+    List<ToolbarItemId> order,
+    Set<ToolbarItemId> hidden,
+  ) async {
+    _toolbarOrder = order.isEmpty
+        ? List.of(ToolbarItemId.values)
+        : List.of(order);
     _hiddenToolbarItems = Set.of(hidden);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('toolbar_order', _toolbarOrder.map((e) => e.name).toList());
-    await prefs.setStringList('toolbar_hidden', _hiddenToolbarItems.map((e) => e.name).toList());
+    await prefs.setStringList(
+      'toolbar_order',
+      _toolbarOrder.map((e) => e.name).toList(),
+    );
+    await prefs.setStringList(
+      'toolbar_hidden',
+      _hiddenToolbarItems.map((e) => e.name).toList(),
+    );
     notifyListeners();
   }
 
@@ -516,8 +676,15 @@ class SettingsService extends ChangeNotifier {
 enum GestureType { twoFingerTap, threeFingerTap, twoFingerSwipe, longPress }
 
 enum GestureAction {
-  undo, redo, eyedropper, panTool, eraserToggle,
-  brushToggle, frameMove, nextTool, none,
+  undo,
+  redo,
+  eyedropper,
+  panTool,
+  eraserToggle,
+  brushToggle,
+  frameMove,
+  nextTool,
+  none,
   // オニオンスキンON/OFF切替（仕様書22：ジェスチャーに割り当て可能）
   onionSkinToggle,
 }

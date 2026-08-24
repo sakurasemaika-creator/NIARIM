@@ -99,10 +99,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _meshCommitToken = 0;
   int _meshCancelToken = 0;
 
-  // PC専用ワークスペースUI（仕様書02）：右側ドッキング領域（カラー
-  // ピッカー・レイヤーパネル・キャンバスプレビュー）の横幅。ドラッグ中は
-  // ここへローカルに反映し、指を離した時点でSettingsServiceへ確定値を
-  // 保存する（タイムラインのプレビュー高さドラッグと同じ方式）。
+  // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
+  // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
+  // 時点でSettingsServiceへ確定値を保存する。
   double? _panelWidthDragOverride;
 
   /// モバイルレイアウトのオーバーレイパネル（レイヤー・色・ブラシ・トーン・
@@ -171,9 +170,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _currentTool = DrawingTool.pen;
   });
 
-  /// ブラシサイズ／不透明度が描画結果に影響するツールかどうか
-  /// （仕様書02・タスク#96：描画エリア最大化のため、無関係なツール
-  /// 使用中はブラシサイズスライダーを非表示にして縦スペースを還元する）。
+  /// ブラシサイズ／不透明度が描画結果に影響するツールかどうか。
   /// ペン・消しゴム・投げ縄塗り・指（ワープ）・定規（定規ガイド沿いの
   /// 描画にペンと同じブラシ設定を使う）が対象。
   bool _usesBrushSize(DrawingTool tool) => switch (tool) {
@@ -657,9 +654,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     Expanded(
                       child: Row(
                         children: [
-                          // PC専用ワークスペースUI（仕様書02）：常設ツールバーを画面下部の
-                          // 横並びバーではなく、左側（左利きモード時は右側）の縦レールと
-                          // して常時表示する。
+                          // デスクトップでは常設ツールバーを画面下部の横並びバーではなく、
+                          // 左側（左利きモード時は右側）の縦レールとして常時表示する。
                           if (isDesktop && !leftHanded)
                             _buildToolbarWidget(vertical: true),
                           // PC/DeXモード：ツールオプション系パネルはフローティングではなく
@@ -834,10 +830,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     ),
                     // ブラシサイズ／不透明度スライダーは、サイズ・不透明度が実際に
-                    // 意味を持つツール（仕様書02・タスク#96：描画エリア最大化）を
-                    // 使用中のみ表示する。バケツ・スポイト・選択系・変形・テキスト・
-                    // 図形ツールではブラシ設定が描画結果に影響しないため、常設表示
-                    // していた分の縦スペースをキャンバスへ還元する。
+                    // 意味を持つツール使用中のみ表示する。バケツ・スポイト・選択系・
+                    // 変形・テキスト・図形ツールではブラシ設定が描画結果に影響しない
+                    // ため非表示にし、縦スペースをキャンバスへ還元する。
                     if (_usesBrushSize(_currentTool))
                       BrushSizeSlider(
                         brushSize: _brushSize,
@@ -880,9 +875,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           ),
                         ),
                       ),
-                    // PC専用ワークスペースUI（仕様書02）：デスクトップでは左側（左利き
-                    // モードでは右側）の常設縦レールとして表示するため、下部の横並び
-                    // バーはモバイルレイアウトのみで表示する。
+                    // デスクトップでは左側（左利きモードでは右側）の常設縦レールとして
+                    // 表示するため、下部の横並びバーはモバイルレイアウトのみで表示する。
                     if (_showToolbar && !isDesktop)
                       _buildToolbarWidget(vertical: false),
                     if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
@@ -1108,12 +1102,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     return panels;
   }
 
-  /// 複数のドッキングパネルを縦に積んで表示する（PC/DeXモード）。
-  /// 開いているパネル数が多く画面高さに収まらない場合はスクロールできる
-  /// ようにする。各パネル間には視認しやすいよう余白を入れる。
-  /// 常設ツールバー本体。[vertical]がtrueの場合、PC専用ワークスペースUI
-  /// （仕様書02）の左側（左利きモードでは右側）縦レールとして、falseの場合は
-  /// 従来どおり画面下部の横並びバーとして表示する。
+  /// 常設ツールバー本体。[vertical]がtrueの場合は左側（左利きモードでは
+  /// 右側）の縦レールとして、falseの場合は画面下部の横並びバーとして
+  /// 表示する。
   Widget _buildToolbarWidget({required bool vertical}) => ToolbarWidget(
     vertical: vertical,
     currentTool: _currentTool,
@@ -1159,6 +1150,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     }),
   );
 
+  /// 複数のドッキングパネルを縦に積んで表示する。開いているパネル数が
+  /// 多く画面高さに収まらない場合はスクロールできるようにする。各パネル
+  /// 間には視認しやすいよう余白を入れる。
   Widget _dockedPanelStack(List<Widget> panels) => SingleChildScrollView(
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -2105,8 +2099,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 }
 
-/// PC専用ワークスペースUI（仕様書02）：ドッキングパネルとキャンバスの
-/// 境界に置く、横方向ドラッグ専用のリサイズハンドル。ドラッグ中は
+/// ドッキングパネルとキャンバスの境界に置く、横方向ドラッグ専用の
+/// リサイズハンドル。ドラッグ中は
 /// [onDeltaX]で移動量（デバイス非依存の論理px）を都度通知し、指を離した
 /// 時点で[onDragEnd]を呼んで確定値の永続化を行わせる。
 class _ResizeHandle extends StatelessWidget {

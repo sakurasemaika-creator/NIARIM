@@ -34,8 +34,8 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onLassoFillSelected;
   // スタンプ選択中かどうか（仕様書17：色アイコンに🚫重ね表示・タップで専用トースト）
   final bool isStampSelected;
-  // PC専用ワークスペースUI（仕様書02）：trueの場合、画面下部の横並びバーではなく
-  // 左側（左利きモードでは右側）に常設する縦並びのツールレールとして表示する。
+  // trueの場合、画面下部の横並びバーではなく左側（左利きモードでは右側）に
+  // 常設する縦並びのツールレールとして表示する。
   final bool vertical;
 
   const ToolbarWidget({
@@ -273,9 +273,8 @@ class ToolbarWidget extends StatelessWidget {
         tooltip: l10n.toolbarSaveTooltip,
       ),
     ];
-    // PC専用ワークスペースUI（仕様書02）：verticalの場合は左側（左利き
-    // モードでは右側）に常設する縦並びのツールレールとして表示する。
-    // 通常（スマホ・モバイルレイアウト）は画面下部の横並びバーのまま。
+    // verticalの場合は縦並びのツールレール、falseの場合は画面下部の
+    // 横並びバーとして表示する。
     return Container(
       height: vertical ? null : 40,
       width: vertical ? 40 : null,

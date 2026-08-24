@@ -750,6 +750,24 @@
   "newProjectHeightLabel": "Height (px)",
   "newProjectWidthShort": "Width",
   "newProjectHeightShort": "Height",
+  "newProjectSizePresetManageButton": "Size settings",
+  "newProjectSaveCustomSizeButton": "Save this size",
+  "newProjectSaveCustomSizeDialogTitle": "Enter a name for this size",
+  "newProjectSaveCustomSizeNameLabel": "Size name",
+  "newProjectSaveCustomSizeSavedSnackbar": "Size saved",
+  "canvasSizePresetManageScreenTitle": "Size settings",
+  "canvasSizePresetEmpty": "No saved sizes yet",
+  "canvasSizePresetEmptyHint": "Specify a custom size on the new project screen and tap \"Save this size\" to add one",
+  "canvasSizePresetEditDialogTitle": "Edit size",
+  "canvasSizePresetDeleteConfirmTitle": "Delete \"{name}\"?",
+  "@canvasSizePresetDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasSizePresetDuplicateSuffix": "copy",
   "newProjectDurationLabel": "Length (max {max})",
   "@newProjectDurationLabel": {
     "placeholders": {

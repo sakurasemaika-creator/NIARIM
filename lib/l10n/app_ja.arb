@@ -972,6 +972,24 @@
   "newProjectHeightLabel": "高さ(px)",
   "newProjectWidthShort": "幅",
   "newProjectHeightShort": "高さ",
+  "newProjectSizePresetManageButton": "サイズ設定",
+  "newProjectSaveCustomSizeButton": "このサイズを保存する",
+  "newProjectSaveCustomSizeDialogTitle": "サイズ名を入力",
+  "newProjectSaveCustomSizeNameLabel": "サイズ名",
+  "newProjectSaveCustomSizeSavedSnackbar": "サイズを保存しました",
+  "canvasSizePresetManageScreenTitle": "サイズ設定",
+  "canvasSizePresetEmpty": "保存されたサイズはありません",
+  "canvasSizePresetEmptyHint": "新規プロジェクト画面でカスタムサイズを指定し、「このサイズを保存する」から追加できます",
+  "canvasSizePresetEditDialogTitle": "サイズを編集",
+  "canvasSizePresetDeleteConfirmTitle": "「{name}」を削除しますか？",
+  "@canvasSizePresetDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasSizePresetDuplicateSuffix": "のコピー",
   "newProjectDurationLabel": "長さ（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {

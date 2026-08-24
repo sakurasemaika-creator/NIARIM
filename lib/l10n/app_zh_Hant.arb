@@ -750,6 +750,24 @@
   "newProjectHeightLabel": "高度(px)",
   "newProjectWidthShort": "寬",
   "newProjectHeightShort": "高",
+  "newProjectSizePresetManageButton": "尺寸設定",
+  "newProjectSaveCustomSizeButton": "儲存此尺寸",
+  "newProjectSaveCustomSizeDialogTitle": "請輸入此尺寸的名稱",
+  "newProjectSaveCustomSizeNameLabel": "尺寸名稱",
+  "newProjectSaveCustomSizeSavedSnackbar": "已儲存尺寸",
+  "canvasSizePresetManageScreenTitle": "尺寸設定",
+  "canvasSizePresetEmpty": "尚無已儲存的尺寸",
+  "canvasSizePresetEmptyHint": "在新增專案畫面指定自訂尺寸後，點選「儲存此尺寸」即可新增",
+  "canvasSizePresetEditDialogTitle": "編輯尺寸",
+  "canvasSizePresetDeleteConfirmTitle": "要刪除「{name}」嗎？",
+  "@canvasSizePresetDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasSizePresetDuplicateSuffix": "副本",
   "newProjectDurationLabel": "時長（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {

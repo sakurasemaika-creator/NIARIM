@@ -750,6 +750,24 @@
   "newProjectHeightLabel": "Alto (px)",
   "newProjectWidthShort": "Ancho",
   "newProjectHeightShort": "Alto",
+  "newProjectSizePresetManageButton": "Ajustes de tamaño",
+  "newProjectSaveCustomSizeButton": "Guardar este tamaño",
+  "newProjectSaveCustomSizeDialogTitle": "Introduce un nombre para este tamaño",
+  "newProjectSaveCustomSizeNameLabel": "Nombre del tamaño",
+  "newProjectSaveCustomSizeSavedSnackbar": "Tamaño guardado",
+  "canvasSizePresetManageScreenTitle": "Ajustes de tamaño",
+  "canvasSizePresetEmpty": "Todavía no hay tamaños guardados",
+  "canvasSizePresetEmptyHint": "Especifica un tamaño personalizado en la pantalla de nuevo proyecto y toca «Guardar este tamaño» para añadirlo",
+  "canvasSizePresetEditDialogTitle": "Editar tamaño",
+  "canvasSizePresetDeleteConfirmTitle": "¿Eliminar «{name}»?",
+  "@canvasSizePresetDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasSizePresetDuplicateSuffix": "copia",
   "newProjectDurationLabel": "Duración (máx. {max})",
   "@newProjectDurationLabel": {
     "placeholders": {
