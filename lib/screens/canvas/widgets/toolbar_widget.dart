@@ -34,6 +34,9 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onLassoFillSelected;
   // スタンプ選択中かどうか（仕様書17：色アイコンに🚫重ね表示・タップで専用トースト）
   final bool isStampSelected;
+  // PC専用ワークスペースUI（仕様書02）：trueの場合、画面下部の横並びバーではなく
+  // 左側（左利きモードでは右側）に常設する縦並びのツールレールとして表示する。
+  final bool vertical;
 
   const ToolbarWidget({
     super.key,
@@ -51,69 +54,119 @@ class ToolbarWidget extends StatelessWidget {
     required this.onSaveTap,
     required this.onLassoFillSelected,
     this.isStampSelected = false,
+    this.vertical = false,
   });
 
   /// ツールバー編集（仕様書08）でカスタマイズ可能な項目を、現在の並び順・
   /// 表示設定に従って構築する。
-  Widget _buildToolItem(BuildContext context, AppLocalizations l10n, ToolbarItemId id) {
+  Widget _buildToolItem(
+    BuildContext context,
+    AppLocalizations l10n,
+    ToolbarItemId id,
+  ) {
     return switch (id) {
       // ペンボタン：長押しでサブツールパネル表示（仕様書02・17：初回使用時の吹き出し説明）
       ToolbarItemId.pen => FirstUseTooltip(
-          tooltipKey: 'pen_tool',
-          message: l10n.toolbarPenFirstUseTip,
-          child: GestureDetector(
-            onLongPress: onPenLongPress,
-            // 長押しに加えて上スワイプでもサブツールパネルを開けるように
-            // する（早替えツールボタンと同じ操作方法に揃える）。
-            onVerticalDragEnd: (details) {
-              if ((details.primaryVelocity ?? 0) < -200) onPenLongPress();
-            },
-            child: _toolButton(context, Icons.brush, DrawingTool.pen, l10n.toolbarPenTooltip),
+        tooltipKey: 'pen_tool',
+        message: l10n.toolbarPenFirstUseTip,
+        child: GestureDetector(
+          onLongPress: onPenLongPress,
+          // 長押しに加えて上スワイプでもサブツールパネルを開けるように
+          // する（早替えツールボタンと同じ操作方法に揃える）。
+          onVerticalDragEnd: (details) {
+            if ((details.primaryVelocity ?? 0) < -200) onPenLongPress();
+          },
+          child: _toolButton(
+            context,
+            Icons.brush,
+            DrawingTool.pen,
+            l10n.toolbarPenTooltip,
           ),
         ),
+      ),
       // 消しゴム用のアイコン。Material Iconsには適切な消しゴムのグリフが
       // ないため、Font Awesome Free（font_awesome_flutter、CC BY 4.0。
       // クレジットは設定＞利用規約・ライセンス画面に表示）のeraserアイコンを使う。
       ToolbarItemId.eraser => GestureDetector(
-          onDoubleTap: () => _showBriefDescription(context, l10n.toolbarItemEraser),
-          child: CanvasIconButton(
-            iconBuilder: (color) => FaIcon(FontAwesomeIcons.eraser, size: 18, color: color),
-            onPressed: () => onToolSelected(DrawingTool.eraser),
-            tooltip: l10n.toolbarItemEraser,
-            selected: currentTool == DrawingTool.eraser,
-          ),
+        onDoubleTap: () =>
+            _showBriefDescription(context, l10n.toolbarItemEraser),
+        child: CanvasIconButton(
+          iconBuilder: (color) =>
+              FaIcon(FontAwesomeIcons.eraser, size: 18, color: color),
+          onPressed: () => onToolSelected(DrawingTool.eraser),
+          tooltip: l10n.toolbarItemEraser,
+          selected: currentTool == DrawingTool.eraser,
         ),
+      ),
       // バケツボタン：長押しまたは上スワイプでベタ塗り／トーン切り替え
       // メニュー表示（仕様書04・17。他の詳細設定ポップアップと操作方法を
       // 統一するため、長押しに加えて上スワイプにも対応させている）。
       ToolbarItemId.bucket => FirstUseTooltip(
-          tooltipKey: 'bucket_tool',
-          message: l10n.toolbarBucketFirstUseTip,
-          child: GestureDetector(
-            onLongPress: () => _showBucketToneMenu(context),
-            onVerticalDragEnd: (details) {
-              if ((details.primaryVelocity ?? 0) < -200) _showBucketToneMenu(context);
-            },
-            child: _toolButton(context, Icons.format_color_fill, DrawingTool.bucket, l10n.toolbarBucketTooltip),
+        tooltipKey: 'bucket_tool',
+        message: l10n.toolbarBucketFirstUseTip,
+        child: GestureDetector(
+          onLongPress: () => _showBucketToneMenu(context),
+          onVerticalDragEnd: (details) {
+            if ((details.primaryVelocity ?? 0) < -200) {
+              _showBucketToneMenu(context);
+            }
+          },
+          child: _toolButton(
+            context,
+            Icons.format_color_fill,
+            DrawingTool.bucket,
+            l10n.toolbarBucketTooltip,
           ),
         ),
-      ToolbarItemId.eyedropper => _toolButton(context, Icons.colorize, DrawingTool.eyedropper, l10n.toolbarItemEyedropper),
+      ),
+      ToolbarItemId.eyedropper => _toolButton(
+        context,
+        Icons.colorize,
+        DrawingTool.eyedropper,
+        l10n.toolbarItemEyedropper,
+      ),
       // 指先ツール（歪み）：仕様書03。スマホ・PC両モードで使用可能。
-      ToolbarItemId.finger => _toolButton(context, Icons.pan_tool_alt, DrawingTool.finger, l10n.toolbarItemFinger),
+      ToolbarItemId.finger => _toolButton(
+        context,
+        Icons.pan_tool_alt,
+        DrawingTool.finger,
+        l10n.toolbarItemFinger,
+      ),
       // 手のひらツール（画面移動専用）：呼び出し側のfor文でcanShowPanTool()
       // により表示条件（強制スマホモードでは非表示、それ以外は横画面のみ）が
       // 既に判定済みのため、ここでは単に描画するだけでよい。
-      ToolbarItemId.pan => _toolButton(context, Icons.back_hand, DrawingTool.pan, l10n.toolbarItemPan),
+      ToolbarItemId.pan => _toolButton(
+        context,
+        Icons.back_hand,
+        DrawingTool.pan,
+        l10n.toolbarItemPan,
+      ),
       ToolbarItemId.select => _selectToolButton(context, l10n),
-      ToolbarItemId.transform => _toolButton(context, Icons.transform, DrawingTool.transform, l10n.toolbarItemTransform),
+      ToolbarItemId.transform => _toolButton(
+        context,
+        Icons.transform,
+        DrawingTool.transform,
+        l10n.toolbarItemTransform,
+      ),
       // 初回タップ時の吹き出し説明（仕様書15）
       ToolbarItemId.text => FirstUseTooltip(
-          tooltipKey: 'text_tool',
-          message: l10n.toolbarTextFirstUseTip,
-          child: _toolButton(context, Icons.text_fields, DrawingTool.text, l10n.toolbarItemText, onTap: onTextTap),
+        tooltipKey: 'text_tool',
+        message: l10n.toolbarTextFirstUseTip,
+        child: _toolButton(
+          context,
+          Icons.text_fields,
+          DrawingTool.text,
+          l10n.toolbarItemText,
+          onTap: onTextTap,
         ),
-      ToolbarItemId.shape =>
-        _toolButton(context, Icons.category, DrawingTool.shape, l10n.toolbarShapeTooltip, onTap: onShapeTap),
+      ),
+      ToolbarItemId.shape => _toolButton(
+        context,
+        Icons.category,
+        DrawingTool.shape,
+        l10n.toolbarShapeTooltip,
+        onTap: onShapeTap,
+      ),
     };
   }
 
@@ -126,89 +179,114 @@ class ToolbarWidget extends StatelessWidget {
     // （CanvasIconButton参照）。アイコン・縁取りとも白黒に固定せず、
     // ユーザーが選んだテーマ・外観のアイコン色・メニュー背景色と連動する。
     final outlineColor = context.watch<ThemeService>().current.menuBgColor;
-    return Container(
-      // 描画領域を少しでも広げるため、アイコン自体（20px）が収まる
-      // 範囲まで高さを詰めている。
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      color: Colors.transparent,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
+    final spacer = vertical
+        ? const SizedBox(height: 4)
+        : const SizedBox(width: 4);
+    final items = [
+      // ツールバー編集（仕様書08）でカスタマイズ可能な項目を並び順・表示設定通りに表示。
+      // 手のひらツールは強制スマホモードでは常に非表示、それ以外
+      // （PCモード固定・自動判定）では横画面のときのみ表示する
+      // （液タブ接続時のDeXモード等を考慮）。
+      for (final id in settings.toolbarOrder)
+        if (!settings.hiddenToolbarItems.contains(id) &&
+            (id != ToolbarItemId.pan || canShowPanTool(context)))
+          _buildToolItem(context, l10n, id),
+      spacer,
+      // 色インジケーター（仕様書17：スタンプ選択中は色情報を保持しているため
+      // 色変更不可を🚫重ね表示で示し、タップで専用トーストを表示する）
+      GestureDetector(
+        onTap: isStampSelected
+            ? () => ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.toolbarStampColorLockedSnackbar)),
+              )
+            : onColorTap,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            // ツールバー編集（仕様書08）でカスタマイズ可能な項目を並び順・表示設定通りに表示。
-            // 手のひらツールは強制スマホモードでは常に非表示、それ以外
-            // （PCモード固定・自動判定）では横画面のときのみ表示する
-            // （液タブ接続時のDeXモード等を考慮）。
-            for (final id in settings.toolbarOrder)
-              if (!settings.hiddenToolbarItems.contains(id) &&
-                  (id != ToolbarItemId.pan || canShowPanTool(context)))
-                _buildToolItem(context, l10n, id),
-            const SizedBox(width: 4),
-            // 色インジケーター（仕様書17：スタンプ選択中は色情報を保持しているため
-            // 色変更不可を🚫重ね表示で示し、タップで専用トーストを表示する）
-            GestureDetector(
-              onTap: isStampSelected
-                  ? () => ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.toolbarStampColorLockedSnackbar)),
-                      )
-                  : onColorTap,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: currentColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: outlineColor, width: 2),
-                    ),
-                  ),
-                  if (isStampSelected)
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: outlineColor, width: 2),
-                      ),
-                      child: const Icon(Icons.block, color: Colors.red, size: 20),
-                    ),
-                ],
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: currentColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: outlineColor, width: 2),
               ),
             ),
-            _borderedIconButton(context, Icons.tune, onPressed: onBrushTap, tooltip: l10n.toolbarBrushSettingsTooltip),
-            _borderedIconButton(context, Icons.layers, onPressed: onLayerTap, tooltip: l10n.toolbarLayerTooltip),
-            // オニオンスキンは仕様書08・タスク#95によりここから削除し、
-            // キャンバス上部バーの「設定/編集」メニューへ集約した。
-            // ツール早替えボタン（↺）
-            // ツール早替えボタン：タップで登録順に切替、長押しまたは上スワイプで
-            // 管理ポップアップ（登録・並び替え）を表示（仕様書02・08）
-            FirstUseTooltip(
-              tooltipKey: 'quick_tool',
-              message: l10n.toolbarQuickToolFirstUseTip,
-              child: GestureDetector(
-                onLongPress: onQuickToolLongPress,
-                onVerticalDragEnd: (details) {
-                  // 上方向への素早いスワイプで長押しと同じ編集ポップアップを開く
-                  // （primaryVelocityは下向き正・上向き負）。
-                  if ((details.primaryVelocity ?? 0) < -200) {
-                    onQuickToolLongPress();
-                  }
-                },
-                child: _borderedIconButton(context, Icons.loop,
-                    onPressed: onQuickToolTap, tooltip: l10n.toolbarQuickToolTooltip),
+            if (isStampSelected)
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: outlineColor, width: 2),
+                ),
+                child: const Icon(Icons.block, color: Colors.red, size: 20),
               ),
-            ),
-            // タイムラインへの切替ボタンは仕様書08・タスク#95によりここから
-            // 削除し、フレーム一覧右下のボタン（frame_strip_widget.dart）
-            // へ統一した（同じ役割のボタンが2箇所にあり冗長だったため）。
-            // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
-            _borderedIconButton(context, Icons.save_outlined,
-                onPressed: onSaveTap, tooltip: l10n.toolbarSaveTooltip),
           ],
         ),
+      ),
+      _borderedIconButton(
+        context,
+        Icons.tune,
+        onPressed: onBrushTap,
+        tooltip: l10n.toolbarBrushSettingsTooltip,
+      ),
+      _borderedIconButton(
+        context,
+        Icons.layers,
+        onPressed: onLayerTap,
+        tooltip: l10n.toolbarLayerTooltip,
+      ),
+      // オニオンスキンは仕様書08・タスク#95によりここから削除し、
+      // キャンバス上部バーの「設定/編集」メニューへ集約した。
+      // ツール早替えボタン（↺）
+      // ツール早替えボタン：タップで登録順に切替、長押しまたは上スワイプで
+      // 管理ポップアップ（登録・並び替え）を表示（仕様書02・08）
+      FirstUseTooltip(
+        tooltipKey: 'quick_tool',
+        message: l10n.toolbarQuickToolFirstUseTip,
+        child: GestureDetector(
+          onLongPress: onQuickToolLongPress,
+          onVerticalDragEnd: (details) {
+            // 上方向への素早いスワイプで長押しと同じ編集ポップアップを開く
+            // （primaryVelocityは下向き正・上向き負）。
+            if ((details.primaryVelocity ?? 0) < -200) {
+              onQuickToolLongPress();
+            }
+          },
+          child: _borderedIconButton(
+            context,
+            Icons.loop,
+            onPressed: onQuickToolTap,
+            tooltip: l10n.toolbarQuickToolTooltip,
+          ),
+        ),
+      ),
+      // タイムラインへの切替ボタンは仕様書08・タスク#95によりここから
+      // 削除し、フレーム一覧右下のボタン（frame_strip_widget.dart）
+      // へ統一した（同じ役割のボタンが2箇所にあり冗長だったため）。
+      // 手動保存（セーブツリー）：仕様書10「キャンバス → 保存 → キャンバスへ戻る」
+      _borderedIconButton(
+        context,
+        Icons.save_outlined,
+        onPressed: onSaveTap,
+        tooltip: l10n.toolbarSaveTooltip,
+      ),
+    ];
+    // PC専用ワークスペースUI（仕様書02）：verticalの場合は左側（左利き
+    // モードでは右側）に常設する縦並びのツールレールとして表示する。
+    // 通常（スマホ・モバイルレイアウト）は画面下部の横並びバーのまま。
+    return Container(
+      height: vertical ? null : 40,
+      width: vertical ? 40 : null,
+      padding: EdgeInsets.symmetric(
+        horizontal: vertical ? 0 : 4,
+        vertical: vertical ? 4 : 0,
+      ),
+      color: Colors.transparent,
+      child: SingleChildScrollView(
+        scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
+        child: vertical ? Column(children: items) : Row(children: items),
       ),
     );
   }
@@ -219,13 +297,23 @@ class ToolbarWidget extends StatelessWidget {
   // GestureDetectorを重ねてもペン/バケツ/選択ツールの既存の
   // onLongPress用GestureDetectorとは別のジェスチャー種別（ダブルタップ
   // vs 長押し）を検出するため、ジェスチャーアリーナで正しく共存する。
-  Widget _toolButton(BuildContext context, IconData icon, DrawingTool tool, String tooltip,
-      {VoidCallback? onTap}) {
+  Widget _toolButton(
+    BuildContext context,
+    IconData icon,
+    DrawingTool tool,
+    String tooltip, {
+    VoidCallback? onTap,
+  }) {
     final isSelected = currentTool == tool;
     return GestureDetector(
       onDoubleTap: () => _showBriefDescription(context, tooltip),
-      child: _borderedIconButton(context, icon,
-          onPressed: onTap ?? () => onToolSelected(tool), tooltip: tooltip, selected: isSelected),
+      child: _borderedIconButton(
+        context,
+        icon,
+        onPressed: onTap ?? () => onToolSelected(tool),
+        tooltip: tooltip,
+        selected: isSelected,
+      ),
     );
   }
 
@@ -252,11 +340,17 @@ class ToolbarWidget extends StatelessWidget {
     required String tooltip,
     bool selected = false,
   }) {
-    return CanvasIconButton(icon: icon, onPressed: onPressed, tooltip: tooltip, selected: selected);
+    return CanvasIconButton(
+      icon: icon,
+      onPressed: onPressed,
+      tooltip: tooltip,
+      selected: selected,
+    );
   }
 
   Widget _selectToolButton(BuildContext context, AppLocalizations l10n) {
-    final isSelected = currentTool == DrawingTool.selectRect ||
+    final isSelected =
+        currentTool == DrawingTool.selectRect ||
         currentTool == DrawingTool.selectLasso ||
         currentTool == DrawingTool.selectMagicWand;
     // 矩形選択（デフォルト）にはhighlight_alt（角に選択ハンドルが付いた
@@ -269,16 +363,22 @@ class ToolbarWidget extends StatelessWidget {
     };
     return GestureDetector(
       onLongPress: () => _showSelectMenu(context, l10n),
-      onDoubleTap: () => _showBriefDescription(context, l10n.toolbarSelectTooltip),
+      onDoubleTap: () =>
+          _showBriefDescription(context, l10n.toolbarSelectTooltip),
       // 長押しに加えて上スワイプでも選択メニューを開けるようにする
       // （他の詳細設定ポップアップと操作方法を統一するため）。
       onVerticalDragEnd: (details) {
-        if ((details.primaryVelocity ?? 0) < -200) _showSelectMenu(context, l10n);
+        if ((details.primaryVelocity ?? 0) < -200) {
+          _showSelectMenu(context, l10n);
+        }
       },
-      child: _borderedIconButton(context, icon,
-          onPressed: () => onToolSelected(DrawingTool.selectRect),
-          tooltip: l10n.toolbarSelectTooltip,
-          selected: isSelected),
+      child: _borderedIconButton(
+        context,
+        icon,
+        onPressed: () => onToolSelected(DrawingTool.selectRect),
+        tooltip: l10n.toolbarSelectTooltip,
+        selected: isSelected,
+      ),
     );
   }
 
@@ -299,7 +399,9 @@ class ToolbarWidget extends StatelessWidget {
           final lastBucketTone = toneService.lastBucketTone;
           return SafeArea(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(ctx).height * 0.85),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(ctx).height * 0.85,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -308,7 +410,10 @@ class ToolbarWidget extends StatelessWidget {
                     ListTile(
                       dense: true,
                       leading: const Icon(Icons.format_color_fill, size: 18),
-                      title: Text(l10n.toolbarBucketFlatFill, style: const TextStyle(fontSize: 13)),
+                      title: Text(
+                        l10n.toolbarBucketFlatFill,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                       selected: !useTone,
                       onTap: () {
                         toneService.setBucketUseTone(false);
@@ -323,7 +428,10 @@ class ToolbarWidget extends StatelessWidget {
                     ListTile(
                       dense: true,
                       leading: const Icon(Icons.gesture, size: 18),
-                      title: Text(l10n.penSubToolTabLassoFill, style: const TextStyle(fontSize: 13)),
+                      title: Text(
+                        l10n.penSubToolTabLassoFill,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                       onTap: () {
                         onLassoFillSelected();
                         Navigator.pop(ctx);
@@ -332,30 +440,40 @@ class ToolbarWidget extends StatelessWidget {
                           isScrollControlled: true,
                           builder: (sheetCtx) => SizedBox(
                             height: MediaQuery.sizeOf(sheetCtx).height * 0.6,
-                            child: LassoFillToneSheet(onClose: () => Navigator.pop(sheetCtx)),
+                            child: LassoFillToneSheet(
+                              onClose: () => Navigator.pop(sheetCtx),
+                            ),
                           ),
                         );
                       },
                     ),
                     const Divider(height: 1),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      child: Text(l10n.toolbarBucketToneListLabel, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      child: Text(
+                        l10n.toolbarBucketToneListLabel,
+                        style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                      ),
                     ),
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        crossAxisSpacing: 4,
-                        mainAxisSpacing: 4,
-                        childAspectRatio: 1,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 4,
+                            mainAxisSpacing: 4,
+                            childAspectRatio: 1,
+                          ),
                       itemCount: tones.length,
                       itemBuilder: (context, index) {
                         final tone = tones[index];
-                        final isSelected = useTone && lastBucketTone?.id == tone.id;
+                        final isSelected =
+                            useTone && lastBucketTone?.id == tone.id;
                         return GestureDetector(
                           onTap: () {
                             toneService.setBucketUseTone(true);
@@ -365,7 +483,9 @@ class ToolbarWidget extends StatelessWidget {
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.grey[600]!,
                                 width: isSelected ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(4),
@@ -376,8 +496,15 @@ class ToolbarWidget extends StatelessWidget {
                               children: [
                                 const Icon(Icons.grid_on, size: 16),
                                 const SizedBox(height: 2),
-                                Text(tone.name, style: const TextStyle(fontSize: 7, fontFamily: 'Kuramubon'),
-                                    textAlign: TextAlign.center, maxLines: 2),
+                                Text(
+                                  tone.name,
+                                  style: const TextStyle(
+                                    fontSize: 7,
+                                    fontFamily: 'Kuramubon',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                ),
                               ],
                             ),
                           ),
@@ -388,12 +515,22 @@ class ToolbarWidget extends StatelessWidget {
                     Theme(
                       // ExpansionTileの区切り線を消す（前後のDividerと二重に
                       // ならないようにするため）。
-                      data: Theme.of(ctx).copyWith(dividerColor: Colors.transparent),
+                      data: Theme.of(
+                        ctx,
+                      ).copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
                         dense: true,
                         leading: const Icon(Icons.tune, size: 18),
-                        title: Text(l10n.bucketSettingsTitle, style: const TextStyle(fontSize: 13)),
-                        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        title: Text(
+                          l10n.bucketSettingsTitle,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        childrenPadding: const EdgeInsets.fromLTRB(
+                          16,
+                          0,
+                          16,
+                          12,
+                        ),
                         children: [
                           _bucketDetailSlider(
                             ctx: ctx,
@@ -411,14 +548,19 @@ class ToolbarWidget extends StatelessWidget {
                             min: 0,
                             max: 10,
                             divisions: 10,
-                            onChanged: (v) => settings.setBucketExpandPx(v.round()),
+                            onChanged: (v) =>
+                                settings.setBucketExpandPx(v.round()),
                           ),
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
                             dense: true,
-                            title: Text(l10n.bucketSettingsUnderLineTitle, style: const TextStyle(fontSize: 13)),
+                            title: Text(
+                              l10n.bucketSettingsUnderLineTitle,
+                              style: const TextStyle(fontSize: 13),
+                            ),
                             value: settings.bucketFillUnderLine,
-                            onChanged: (v) => settings.setBucketFillUnderLine(v),
+                            onChanged: (v) =>
+                                settings.setBucketFillUnderLine(v),
                           ),
                         ],
                       ),
@@ -444,9 +586,18 @@ class ToolbarWidget extends StatelessWidget {
   }) {
     return Row(
       children: [
-        SizedBox(width: 72, child: Text(label, style: const TextStyle(fontSize: 12))),
+        SizedBox(
+          width: 72,
+          child: Text(label, style: const TextStyle(fontSize: 12)),
+        ),
         Expanded(
-          child: SteppedSlider(value: value, min: min, max: max, divisions: divisions, onChanged: onChanged),
+          child: SteppedSlider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
+          ),
         ),
         SizedBox(
           width: 28,
@@ -470,9 +621,30 @@ class ToolbarWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: const Icon(Icons.auto_fix_high), title: Text(l10n.toolbarSelectRect), onTap: () { onToolSelected(DrawingTool.selectRect); Navigator.pop(ctx); }),
-            ListTile(leading: const Icon(Icons.gesture), title: Text(l10n.toolbarSelectLasso), onTap: () { onToolSelected(DrawingTool.selectLasso); Navigator.pop(ctx); }),
-            ListTile(leading: const Icon(Icons.auto_awesome), title: Text(l10n.toolbarSelectMagicWand), onTap: () { onToolSelected(DrawingTool.selectMagicWand); Navigator.pop(ctx); }),
+            ListTile(
+              leading: const Icon(Icons.auto_fix_high),
+              title: Text(l10n.toolbarSelectRect),
+              onTap: () {
+                onToolSelected(DrawingTool.selectRect);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.gesture),
+              title: Text(l10n.toolbarSelectLasso),
+              onTap: () {
+                onToolSelected(DrawingTool.selectLasso);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.auto_awesome),
+              title: Text(l10n.toolbarSelectMagicWand),
+              onTap: () {
+                onToolSelected(DrawingTool.selectMagicWand);
+                Navigator.pop(ctx);
+              },
+            ),
           ],
         ),
       ),
