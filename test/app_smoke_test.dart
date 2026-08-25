@@ -189,4 +189,104 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: '有料会員画面への遷移で例外');
   }, timeout: const Timeout(Duration(seconds: 60)));
+
+  /// 指定したルートへ順番に遷移して戻ってくることを繰り返し、途中で
+  /// 例外が発生しないかを確認する。プロジェクトIDを必要としない設定・
+  /// ヘルプ系の画面など、UIタップより直接遷移の方が経路が安定する
+  /// 画面のために使う共通処理（新規プロジェクト作成テストで既に
+  /// 使っている「経路の妥当性よりも画面自体の描画確認を優先する」方針を
+  /// 複数画面へ拡張したもの）。
+  Future<void> visitRoutesAndPop(
+    WidgetTester tester,
+    List<String> routes, {
+    Duration settleDelay = const Duration(milliseconds: 300),
+  }) async {
+    for (final route in routes) {
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).push(route);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(settleDelay);
+      expect(tester.takeException(), isNull, reason: '$route への遷移で例外');
+      expect(find.byType(Scaffold), findsWidgets);
+      GoRouter.of(routerContext).pop();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '$route から戻る際に例外');
+    }
+  }
+
+  testWidgets(
+    '起動→ホーム→各種設定画面（ショートカット以外）を例外なく巡回できる',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+      await visitRoutesAndPop(tester, const [
+        '/settings/gestures',
+        '/settings/performance',
+        '/settings/pen',
+        '/settings/bucket',
+        '/settings/workspace',
+        '/settings/transfer',
+        '/settings/theme',
+        '/settings/watermark',
+        '/settings/fonts',
+        '/settings/license',
+        '/settings/privacy-policy',
+      ]);
+    },
+    timeout: const Timeout(Duration(seconds: 90)),
+  );
+
+  testWidgets('起動→ホーム→ヘルプ・ヒント画面を例外なく表示できる', (WidgetTester tester) async {
+    await bootToHome(tester);
+    await visitRoutesAndPop(
+      tester,
+      const ['/help', '/tips'],
+      settleDelay: const Duration(milliseconds: 500),
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets('起動→ホーム→共有・ゴミ箱画面を例外なく表示できる', (WidgetTester tester) async {
+    await bootToHome(tester);
+    await visitRoutesAndPop(tester, const ['/shared', '/trash']);
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets(
+    '起動→新規プロジェクト作成→詳細・素材管理・書き出し・自動塗りプリセット・'
+    'セーブツリー画面を例外なく表示できる',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      final projectId = tester
+          .element(find.byType(Scaffold).first)
+          .read<ProjectService>()
+          .projects
+          .first
+          .id;
+
+      await visitRoutesAndPop(
+        tester,
+        [
+          '/project/$projectId',
+          '/materials/$projectId',
+          '/export/$projectId',
+          '/autofill-presets',
+          '/save-tree/$projectId',
+        ],
+        settleDelay: const Duration(milliseconds: 500),
+      );
+    },
+    timeout: const Timeout(Duration(seconds: 90)),
+  );
 }
