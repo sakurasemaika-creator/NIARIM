@@ -82,10 +82,14 @@ class _SplashScreenState extends State<SplashScreen> {
       colors: [scheme.primary, scheme.primaryContainer],
       onTap: () => context.go('/home'),
     );
+    // ロゴは単色のモノグラムSVGのため、テーマ・外観設定の「アクセント色」
+    // （AppThemePreset.accentColor → colorScheme.primary）で着色する。
+    // 固定色にしてしまうと、ユーザーが選んだテーマ配色から浮いて見える。
     final logo = SvgPicture.asset(
       'assets/logo/app_logo.svg',
       width: 110,
       height: 110,
+      colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
     );
 
     // 縦画面はロゴを挟んで上下にボタンを積む構成、横画面は画面の縦幅が
