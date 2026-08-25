@@ -618,7 +618,6 @@
   "fontSettingsTabSearch": "搜尋下載",
   "fontSettingsTabImport": "匯入",
   "fontDownloadedSearchHint": "以字型名稱搜尋...",
-  "fontFavoritesOnly": "僅★",
   "fontPixelModeTooltip": "像素模式（適用於點陣字型，無抗鋸齒清晰顯示）",
   "fontEmptyTitle": "沒有字型",
   "fontEmptyHint": "可從「搜尋下載」或「匯入」分頁新增",

@@ -18,6 +18,7 @@ import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/work_folder_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/sort_mode_control.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
 
@@ -249,51 +250,11 @@ class _HomeScreenState extends State<HomeScreen>
             // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
             // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
             // ための変更。
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  PopupMenuButton<bool>(
-                    onSelected: _setSortByName,
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: true,
-                        child: Text(l10n.homeSortFieldName),
-                      ),
-                      PopupMenuItem(
-                        value: false,
-                        child: Text(l10n.homeSortFieldUpdated),
-                      ),
-                    ],
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _sortByName
-                              ? l10n.homeSortFieldName
-                              : l10n.homeSortFieldUpdated,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Kuramubon',
-                          ),
-                        ),
-                        const Icon(Icons.arrow_drop_down),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _sortAscending
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      size: 20,
-                    ),
-                    tooltip: _sortAscending
-                        ? l10n.homeSortDirectionAscTooltip
-                        : l10n.homeSortDirectionDescTooltip,
-                    onPressed: _toggleSortDirection,
-                  ),
-                ],
+            : SortModeControl(
+                sortByName: _sortByName,
+                sortAscending: _sortAscending,
+                onSortByNameChanged: _setSortByName,
+                onToggleDirection: _toggleSortDirection,
               ),
         actions: [
           // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
@@ -844,15 +805,86 @@ class _HomeTabBar extends StatelessWidget {
 
 /// 「共有」一覧画面。ホーム画面のタブからハンバーガーメニューへ移動した
 /// ため、独立した画面として起動する（'/shared'ルート）。
-class SharedScreen extends StatelessWidget {
+class SharedScreen extends StatefulWidget {
   const SharedScreen({super.key});
+
+  @override
+  State<SharedScreen> createState() => _SharedScreenState();
+}
+
+class _SharedScreenState extends State<SharedScreen> {
+  // プロジェクトタブと同じ並び替え基準・お気に入り絞り込みを、共有一覧にも
+  // 同じ見た目・操作性で提供する。
+  ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
+  bool _showFavoritesOnly = false;
+
+  bool get _sortByName =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.nameDesc;
+  bool get _sortAscending =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.updatedAsc;
+
+  void _setSortByName(bool byName) {
+    setState(() {
+      _sortMode = byName
+          ? (_sortAscending
+                ? ProjectSortMode.nameAsc
+                : ProjectSortMode.nameDesc)
+          : (_sortAscending
+                ? ProjectSortMode.updatedAsc
+                : ProjectSortMode.updatedDesc);
+    });
+  }
+
+  void _toggleSortDirection() {
+    setState(() {
+      _sortMode = switch (_sortMode) {
+        ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+        ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+        ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+        ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
+      };
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.homeTabShared)),
-      body: _SharedTab(),
+      appBar: AppBar(
+        title: SortModeControl(
+          sortByName: _sortByName,
+          sortAscending: _sortAscending,
+          onSortByNameChanged: _setSortByName,
+          onToggleDirection: _toggleSortDirection,
+        ),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                FilterChip(
+                  label: Text(
+                    l10n.homeFavoritesOnly,
+                    style: const TextStyle(fontFamily: 'Kuramubon'),
+                  ),
+                  selected: _showFavoritesOnly,
+                  onSelected: (v) => setState(() => _showFavoritesOnly = v),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _SharedTab(
+              sortMode: _sortMode,
+              showFavoritesOnly: _showFavoritesOnly,
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         tooltip: l10n.homeAddSheetNewFolder,
         onPressed: () => showCreateFolderNameDialog(
@@ -867,23 +899,94 @@ class SharedScreen extends StatelessWidget {
 
 /// 「ゴミ箱」一覧画面。ホーム画面のタブからハンバーガーメニューへ移動した
 /// ため、独立した画面として起動する（'/trash'ルート）。
-class TrashScreen extends StatelessWidget {
+class TrashScreen extends StatefulWidget {
   const TrashScreen({super.key});
 
   @override
+  State<TrashScreen> createState() => _TrashScreenState();
+}
+
+class _TrashScreenState extends State<TrashScreen> {
+  // 共有一覧・プロジェクトタブと同じ並び替え基準を、同じ見た目・操作性で
+  // 提供する（ゴミ箱にお気に入りの概念はないため絞り込みは対象外）。
+  ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
+
+  bool get _sortByName =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.nameDesc;
+  bool get _sortAscending =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.updatedAsc;
+
+  void _setSortByName(bool byName) {
+    setState(() {
+      _sortMode = byName
+          ? (_sortAscending
+                ? ProjectSortMode.nameAsc
+                : ProjectSortMode.nameDesc)
+          : (_sortAscending
+                ? ProjectSortMode.updatedAsc
+                : ProjectSortMode.updatedDesc);
+    });
+  }
+
+  void _toggleSortDirection() {
+    setState(() {
+      _sortMode = switch (_sortMode) {
+        ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+        ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+        ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+        ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
+      };
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.homeTabTrash)),
-      body: _TrashTab(),
+      appBar: AppBar(
+        title: SortModeControl(
+          sortByName: _sortByName,
+          sortAscending: _sortAscending,
+          onSortByNameChanged: _setSortByName,
+          onToggleDirection: _toggleSortDirection,
+        ),
+      ),
+      body: _TrashTab(sortMode: _sortMode),
     );
   }
 }
 
+/// [ProjectSortMode]に従って並び替えたリストを返す。共有一覧・ゴミ箱一覧
+/// ・プロジェクト一覧のいずれでも同じ基準（名前／更新日時）で並び替える。
+List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
+  final list = List<Project>.from(projects);
+  switch (mode) {
+    case ProjectSortMode.nameAsc:
+      list.sort((a, b) => a.name.compareTo(b.name));
+    case ProjectSortMode.nameDesc:
+      list.sort((a, b) => b.name.compareTo(a.name));
+    case ProjectSortMode.updatedAsc:
+      list.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+    case ProjectSortMode.updatedDesc:
+      list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+  }
+  return list;
+}
+
 class _SharedTab extends StatelessWidget {
+  final ProjectSortMode sortMode;
+  final bool showFavoritesOnly;
+
+  const _SharedTab({required this.sortMode, required this.showFavoritesOnly});
+
   @override
   Widget build(BuildContext context) {
-    final shared = context.watch<ProjectService>().shared;
+    var shared = context.watch<ProjectService>().shared;
+    if (showFavoritesOnly) {
+      shared = shared.where((p) => p.isFavorite).toList();
+    }
+    shared = _sortProjects(shared, sortMode);
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final l10n = AppLocalizations.of(context)!;
     if (shared.isEmpty) {
@@ -1217,9 +1320,16 @@ class _FolderableList<T> extends StatelessWidget {
 }
 
 class _TrashTab extends StatelessWidget {
+  final ProjectSortMode sortMode;
+
+  const _TrashTab({required this.sortMode});
+
   @override
   Widget build(BuildContext context) {
-    final trash = context.watch<ProjectService>().trash;
+    final trash = _sortProjects(
+      context.watch<ProjectService>().trash,
+      sortMode,
+    );
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final l10n = AppLocalizations.of(context)!;
     if (trash.isEmpty) {

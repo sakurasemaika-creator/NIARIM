@@ -68,7 +68,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         title: _isSearching
             ? TextField(
                 autofocus: true,
-                decoration: InputDecoration(hintText: l10n.autofillPresetSearchHint, border: InputBorder.none),
+                decoration: InputDecoration(
+                  hintText: l10n.autofillPresetSearchHint,
+                  border: InputBorder.none,
+                ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
             : Text(l10n.autofillPresetScreenTitle),
@@ -84,63 +87,92 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-      body: SafeArea(child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              children: [
-                FilterChip(
-                  label: Text(l10n.homeFavoritesOnly),
-                  selected: _showFavoritesOnly,
-                  onSelected: (v) => setState(() => _showFavoritesOnly = v),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: filtered.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 88, height: 88,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primaryContainer,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(Icons.palette_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(_showFavoritesOnly ? l10n.autofillPresetEmptyFavorites : l10n.autofillPresetEmpty,
-                            style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon', color: Theme.of(context).colorScheme.onSurface)),
-                        const SizedBox(height: 8),
-                        Text(l10n.autofillPresetEmptyHint,
-                            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                      ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Row(
+                children: [
+                  FilterChip(
+                    label: Text(
+                      l10n.homeFavoritesOnly,
+                      style: const TextStyle(fontFamily: 'Kuramubon'),
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final preset = filtered[index];
-                      return _PresetCard(
-                        preset: preset,
-                        onToggleFavorite: () => context
-                            .read<AutofillPresetService>()
-                            .updatePreset(preset.copyWith(isFavorite: !preset.isFavorite)),
-                        onEdit: () => _showEditDialog(preset),
-                        onDelete: () => _confirmDelete(preset),
-                        onSetThumbnail: () => _showThumbnailDialog(preset),
-                        onTap: () => _showPresetDetail(preset),
-                      );
-                    },
+                    selected: _showFavoritesOnly,
+                    onSelected: (v) => setState(() => _showFavoritesOnly = v),
                   ),
-          ),
-        ],
-      )),
+                ],
+              ),
+            ),
+            Expanded(
+              child: filtered.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 88,
+                            height: 88,
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.palette_outlined,
+                              size: 40,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            _showFavoritesOnly
+                                ? l10n.autofillPresetEmptyFavorites
+                                : l10n.autofillPresetEmpty,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Kuramubon',
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.autofillPresetEmptyHint,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final preset = filtered[index];
+                        return _PresetCard(
+                          preset: preset,
+                          onToggleFavorite: () => context
+                              .read<AutofillPresetService>()
+                              .updatePreset(
+                                preset.copyWith(isFavorite: !preset.isFavorite),
+                              ),
+                          onEdit: () => _showEditDialog(preset),
+                          onDelete: () => _confirmDelete(preset),
+                          onSetThumbnail: () => _showThumbnailDialog(preset),
+                          onTap: () => _showPresetDetail(preset),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add),
@@ -158,18 +190,26 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
-          decoration: InputDecoration(labelText: l10n.autofillPresetNameLabel, border: const OutlineInputBorder()),
+          decoration: InputDecoration(
+            labelText: l10n.autofillPresetNameLabel,
+            border: const OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                context.read<AutofillPresetService>().addPreset(AutofillPreset(
-                  id: 'p_${DateTime.now().microsecondsSinceEpoch}',
-                  name: nameCtrl.text,
-                  parts: [],
-                ));
+                context.read<AutofillPresetService>().addPreset(
+                  AutofillPreset(
+                    id: 'p_${DateTime.now().microsecondsSinceEpoch}',
+                    name: nameCtrl.text,
+                    parts: [],
+                  ),
+                );
               }
               Navigator.pop(ctx);
             },
@@ -177,7 +217,11 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
+    ).then(
+      (_) => WidgetsBinding.instance.addPostFrameCallback(
+        (_) => nameCtrl.dispose(),
+      ),
+    );
   }
 
   void _showEditDialog(AutofillPreset preset) {
@@ -193,11 +237,16 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                context.read<AutofillPresetService>().updatePreset(preset.copyWith(name: nameCtrl.text));
+                context.read<AutofillPresetService>().updatePreset(
+                  preset.copyWith(name: nameCtrl.text),
+                );
               }
               Navigator.pop(ctx);
             },
@@ -205,15 +254,20 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
+    ).then(
+      (_) => WidgetsBinding.instance.addPostFrameCallback(
+        (_) => nameCtrl.dispose(),
+      ),
+    );
   }
 
   void _confirmDelete(AutofillPreset preset) {
     final l10n = AppLocalizations.of(context)!;
     // お気に入り登録中は削除できない。
     if (preset.isFavorite) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
     showDialog(
@@ -221,7 +275,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
       builder: (ctx) => AlertDialog(
         title: Text(l10n.autofillPresetDeleteConfirmTitle(preset.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -256,7 +313,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             // 現在設定されているサムネイルをそのまま表示し、変更・削除の判断を
             // つけやすくする（未設定の場合はパレットアイコンを表示）。
             Container(
-              width: 88, height: 88,
+              width: 88,
+              height: 88,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
@@ -266,7 +324,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                   ? Image.file(
                       File(path),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 32),
+                      errorBuilder: (_, _, _) =>
+                          const Icon(Icons.broken_image, size: 32),
                     )
                   : const Icon(Icons.palette, size: 32),
             ),
@@ -282,7 +341,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             if (path != null)
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: Text(l10n.autofillThumbnailDeleteButton, style: const TextStyle(color: Colors.red)),
+                title: Text(
+                  l10n.autofillThumbnailDeleteButton,
+                  style: const TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _confirmRemoveThumbnail(preset);
@@ -291,7 +353,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonClose),
+          ),
         ],
       ),
     );
@@ -301,7 +366,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final l10n = AppLocalizations.of(context)!;
     // withData: trueでバイト列も取得しておく。Web版はdart:ioのFileが
     // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ渡す。
-    final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
     if (result == null || result.files.isEmpty) return;
     final picked = result.files.first;
     if (picked.path == null && picked.bytes == null) return;
@@ -318,8 +386,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final service = context.read<AutofillPresetService>();
     await service.setPresetThumbnailBytes(preset.id, cropped);
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.autofillThumbnailSetSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.autofillThumbnailSetSnackbar)));
   }
 
   void _confirmRemoveThumbnail(AutofillPreset preset) {
@@ -330,11 +399,16 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         title: Text(l10n.autofillThumbnailDeleteConfirmTitle),
         content: Text(l10n.autofillThumbnailDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              context.read<AutofillPresetService>().clearPresetThumbnail(preset.id);
+              context.read<AutofillPresetService>().clearPresetThumbnail(
+                preset.id,
+              );
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonDelete),
@@ -389,7 +463,8 @@ class _PresetCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: Container(
-          width: 48, height: 48,
+          width: 48,
+          height: 48,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -402,33 +477,46 @@ class _PresetCard extends StatelessWidget {
               ? Image.file(
                   File(preset.thumbnailPath!),
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 24),
+                  errorBuilder: (_, _, _) =>
+                      const Icon(Icons.broken_image, size: 24),
                 )
               : preset.parts.isEmpty
-                  ? const Icon(Icons.palette, size: 24)
-                  : GridView.count(
-                      crossAxisCount: 2,
-                      padding: const EdgeInsets.all(4),
-                      mainAxisSpacing: 2,
-                      crossAxisSpacing: 2,
-                      children: preset.parts.take(4).map((p) => Container(
-                        decoration: BoxDecoration(
-                          color: Color(p.color),
-                          borderRadius: BorderRadius.circular(2),
+              ? const Icon(Icons.palette, size: 24)
+              : GridView.count(
+                  crossAxisCount: 2,
+                  padding: const EdgeInsets.all(4),
+                  mainAxisSpacing: 2,
+                  crossAxisSpacing: 2,
+                  children: preset.parts
+                      .take(4)
+                      .map(
+                        (p) => Container(
+                          decoration: BoxDecoration(
+                            color: Color(p.color),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
-                      )).toList(),
-                    ),
+                      )
+                      .toList(),
+                ),
         ),
         title: Text(preset.name),
-        subtitle: Text(l10n.autofillPresetPartsCount(preset.parts.length), style: const TextStyle(fontSize: 11)),
+        subtitle: Text(
+          l10n.autofillPresetPartsCount(preset.parts.length),
+          style: const TextStyle(fontSize: 11),
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(preset.isFavorite ? Icons.star : Icons.star_border,
-                  color: preset.isFavorite ? Colors.amber : null),
+              icon: Icon(
+                preset.isFavorite ? Icons.star : Icons.star_border,
+                color: preset.isFavorite ? Colors.amber : null,
+              ),
               onPressed: onToggleFavorite,
-              tooltip: preset.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd,
+              tooltip: preset.isFavorite
+                  ? l10n.colorPickerFavoriteRemove
+                  : l10n.colorPickerFavoriteAdd,
             ),
             PopupMenuButton<String>(
               onSelected: (v) {
@@ -438,8 +526,17 @@ class _PresetCard extends StatelessWidget {
               },
               itemBuilder: (_) => [
                 PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
-                PopupMenuItem(value: 'thumbnail', child: Text(l10n.autofillThumbnailMenuItem)),
-                PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
+                PopupMenuItem(
+                  value: 'thumbnail',
+                  child: Text(l10n.autofillThumbnailMenuItem),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(
+                    l10n.commonDelete,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
               ],
             ),
           ],
@@ -450,7 +547,8 @@ class _PresetCard extends StatelessWidget {
   }
 }
 
-typedef _PresetUpdateCallback = void Function(AutofillPreset updated, {String? changedPartId});
+typedef _PresetUpdateCallback =
+    void Function(AutofillPreset updated, {String? changedPartId});
 
 class _PresetDetailScreen extends StatefulWidget {
   final AutofillPreset preset;
@@ -484,7 +582,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     for (final path in _scratchImagePaths) {
       final file = File(path);
       if (file.existsSync()) {
-        try { file.deleteSync(); } catch (_) {}
+        try {
+          file.deleteSync();
+        } catch (_) {}
       }
     }
     super.dispose();
@@ -501,15 +601,21 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     // withData: trueでバイト列も取得しておく。Web版はdart:ioのFileが
     // 使えずpathも常にnullになるため、その場合はバイト列を直接ダイアログへ渡す。
-    final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
     if (result == null || result.files.isEmpty) return;
     final picked = result.files.first;
     if (picked.path == null && picked.bytes == null) {
       // ファイルは選ばれたのにpath・bytesとも取得できなかった異常系。
       // 無言で戻ると原因が分からないため、スナックバーで明示する。
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.autofillEyedropperImageLoadFailedSnackbar)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.autofillEyedropperImageLoadFailedSnackbar),
+          ),
+        );
       }
       return;
     }
@@ -524,7 +630,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       if (!dir.existsSync()) dir.createSync(recursive: true);
       final sourcePath = picked.path!;
       final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'png';
-      final scratchPath = '${dir.path}/scratch_${DateTime.now().microsecondsSinceEpoch}.$ext';
+      final scratchPath =
+          '${dir.path}/scratch_${DateTime.now().microsecondsSinceEpoch}.$ext';
       await File(sourcePath).copy(scratchPath);
       _scratchImagePaths.add(scratchPath);
       if (!mounted) return;
@@ -564,48 +671,58 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         _showUnconfiguredBlockDialog(unconfigured);
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: _isSearchingParts
-            ? TextField(
-                autofocus: true,
-                decoration: InputDecoration(hintText: l10n.autofillPartSearchHint, border: InputBorder.none),
-                onChanged: (v) => setState(() => _partSearchQuery = v),
-              )
-            : Text(_preset.name),
-        actions: [
-          // 検索・並び替え・お気に入り登録に対応
-          IconButton(
-            icon: Icon(_isSearchingParts ? Icons.close : Icons.search),
-            tooltip: _isSearchingParts ? l10n.commonClose : l10n.commonSearch,
-            onPressed: () => setState(() {
-              _isSearchingParts = !_isSearchingParts;
-              if (!_isSearchingParts) _partSearchQuery = '';
-            }),
-          ),
-        ],
-      ),
-      body: SafeArea(child: Column(
-        children: [
-          // 未設定パーツがある場合の警告バナー（赤文字で不足している
-          // パーツ名と設定内容を表示）
-          if (unconfigured.isNotEmpty)
-            Container(
-              width: double.infinity,
-              color: Colors.red.withValues(alpha: 0.12),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Text(
-                l10n.autofillPartUnconfiguredBanner(
-                    unconfigured.length, unconfigured.map((p) => p.name).join('・')),
-                style: const TextStyle(color: Colors.red, fontSize: 11),
-              ),
+        appBar: AppBar(
+          title: _isSearchingParts
+              ? TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: l10n.autofillPartSearchHint,
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (v) => setState(() => _partSearchQuery = v),
+                )
+              : Text(_preset.name),
+          actions: [
+            // 検索・並び替え・お気に入り登録に対応
+            IconButton(
+              icon: Icon(_isSearchingParts ? Icons.close : Icons.search),
+              tooltip: _isSearchingParts ? l10n.commonClose : l10n.commonSearch,
+              onPressed: () => setState(() {
+                _isSearchingParts = !_isSearchingParts;
+                if (!_isSearchingParts) _partSearchQuery = '';
+              }),
             ),
-          Expanded(child: _partListBody()),
-        ],
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddPartDialog,
-        child: const Icon(Icons.add),
-      ),
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // 未設定パーツがある場合の警告バナー（赤文字で不足している
+              // パーツ名と設定内容を表示）
+              if (unconfigured.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  color: Colors.red.withValues(alpha: 0.12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    l10n.autofillPartUnconfiguredBanner(
+                      unconfigured.length,
+                      unconfigured.map((p) => p.name).join('・'),
+                    ),
+                    style: const TextStyle(color: Colors.red, fontSize: 11),
+                  ),
+                ),
+              Expanded(child: _partListBody()),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showAddPartDialog,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -623,12 +740,17 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             Text(l10n.autofillPartUnconfiguredDialogBody),
             const SizedBox(height: 8),
             for (final p in unconfigured)
-              Text(l10n.autofillPartUnconfiguredItem(p.name),
-                  style: const TextStyle(color: Colors.red, fontSize: 13)),
+              Text(
+                l10n.autofillPartUnconfiguredItem(p.name),
+                style: const TextStyle(color: Colors.red, fontSize: 13),
+              ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.autofillPartUnconfiguredBackButton)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.autofillPartUnconfiguredBackButton),
+          ),
         ],
       ),
     );
@@ -637,33 +759,38 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   Widget _partListBody() {
     final l10n = AppLocalizations.of(context)!;
     return _preset.parts.isEmpty
-          ? Center(
-              child: Text(l10n.autofillPartEmpty,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            )
-          // 検索中は並び替え無効の通常リスト、非検索時のみドラッグ並び替え可能な
-          // ReorderableListViewを使う（フィルタ中はインデックスが元リストとずれるため）
-          : _partSearchQuery.isNotEmpty
-              ? ListView.builder(
-                  itemCount: _filteredParts.length,
-                  itemBuilder: (context, index) => _partTile(_filteredParts[index]),
-                )
-              : ReorderableListView.builder(
-                  // ドラッグハンドルを行末に明示アイコンとして置くため、
-                  // 既定のドラッグハンドル（行全体の長押しで開始・ハンドル
-                  // アイコンなし）は無効化する。他の並べ替え可能な一覧
-                  // （ブラシ・トーン・スタンプ・テーマ等）と操作方法を揃える。
-                  buildDefaultDragHandles: false,
-                  itemCount: _preset.parts.length,
-                  onReorder: (oldIdx, newIdx) {
-                    final parts = List<AutofillPart>.from(_preset.parts);
-                    final item = parts.removeAt(oldIdx);
-                    parts.insert(newIdx > oldIdx ? newIdx - 1 : newIdx, item);
-                    _save(_preset.copyWith(parts: parts));
-                  },
-                  itemBuilder: (context, index) => _partTile(_preset.parts[index], dragIndex: index),
-                );
+        ? Center(
+            child: Text(
+              l10n.autofillPartEmpty,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          )
+        // 検索中は並び替え無効の通常リスト、非検索時のみドラッグ並び替え可能な
+        // ReorderableListViewを使う（フィルタ中はインデックスが元リストとずれるため）
+        : _partSearchQuery.isNotEmpty
+        ? ListView.builder(
+            itemCount: _filteredParts.length,
+            itemBuilder: (context, index) => _partTile(_filteredParts[index]),
+          )
+        : ReorderableListView.builder(
+            // ドラッグハンドルを行末に明示アイコンとして置くため、
+            // 既定のドラッグハンドル（行全体の長押しで開始・ハンドル
+            // アイコンなし）は無効化する。他の並べ替え可能な一覧
+            // （ブラシ・トーン・スタンプ・テーマ等）と操作方法を揃える。
+            buildDefaultDragHandles: false,
+            itemCount: _preset.parts.length,
+            onReorder: (oldIdx, newIdx) {
+              final parts = List<AutofillPart>.from(_preset.parts);
+              final item = parts.removeAt(oldIdx);
+              parts.insert(newIdx > oldIdx ? newIdx - 1 : newIdx, item);
+              _save(_preset.copyWith(parts: parts));
+            },
+            itemBuilder: (context, index) =>
+                _partTile(_preset.parts[index], dragIndex: index),
+          );
   }
 
   /// パーツ一覧の1行（[サムネイル] パーツ名 [色チップ] ✓設定完了マーク）。
@@ -673,11 +800,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     Widget thumb;
     if (part.useTone && part.toneId != null) {
-      final tone = context.watch<ToneService>().tones.where((t) => t.id == part.toneId).firstOrNull;
+      final tone = context
+          .watch<ToneService>()
+          .tones
+          .where((t) => t.id == part.toneId)
+          .firstOrNull;
       thumb = TonePreviewThumb(tone: tone, color: Color(part.color), size: 32);
     } else {
       thumb = Container(
-        width: 32, height: 32,
+        width: 32,
+        height: 32,
         decoration: BoxDecoration(
           color: part.gradient == null ? Color(part.color) : null,
           gradient: part.gradient == null
@@ -687,75 +819,85 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   stops: part.gradient!.stops,
                 ),
           shape: BoxShape.circle,
-          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
         ),
       );
     }
     return ListTile(
-                  key: ValueKey(part.id),
-                  leading: GestureDetector(
-                    onTap: () => _showPartDetailDialog(part),
-                    // 右下の小さな輪＝線画色プレビュー（塗り色だけでなく線画色も
-                    // プレビューする）。
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        thumb,
-                        Positioned(
-                          right: -2, bottom: -2,
-                          child: Container(
-                            width: 14, height: 14,
-                            decoration: BoxDecoration(
-                              color: _lineColorFor(part),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+      key: ValueKey(part.id),
+      leading: GestureDetector(
+        onTap: () => _showPartDetailDialog(part),
+        // 右下の小さな輪＝線画色プレビュー（塗り色だけでなく線画色も
+        // プレビューする）。
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            thumb,
+            Positioned(
+              right: -2,
+              bottom: -2,
+              child: Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: _lineColorFor(part),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surface,
+                    width: 2,
                   ),
-                  title: Text(part.name),
-                  // ✓設定完了マーク（保存チェック用）
-                  subtitle: part.isConfigured
-                      ? null
-                      : Text(l10n.autofillPartToneUnselected, style: const TextStyle(fontSize: 10, color: Colors.red)),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        part.isConfigured ? Icons.check_circle : Icons.error_outline,
-                        size: 16,
-                        color: part.isConfigured ? Colors.green : Colors.red,
-                      ),
-                      // パーツ単位のお気に入りは不要（プリセット一覧側の
-                      // お気に入り機能に一本化したため削除）。
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 18),
-                        tooltip: l10n.commonEdit,
-                        onPressed: () => _showEditPartDialog(part),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                        tooltip: l10n.commonDelete,
-                        onPressed: () async {
-                          if (!await confirmDelete(context, itemName: part.name)) return;
-                          final parts = List<AutofillPart>.from(_preset.parts)
-                            ..removeWhere((p) => p.id == part.id);
-                          _save(_preset.copyWith(parts: parts), changedPartId: part.id);
-                        },
-                      ),
-                      if (dragIndex != null)
-                        ReorderableDragStartListener(
-                          index: dragIndex,
-                          child: const Padding(
-                            padding: EdgeInsets.only(left: 4),
-                            child: Icon(Icons.drag_handle, size: 18),
-                          ),
-                        ),
-                    ],
-                  ),
-                );
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      title: Text(part.name),
+      // ✓設定完了マーク（保存チェック用）
+      subtitle: part.isConfigured
+          ? null
+          : Text(
+              l10n.autofillPartToneUnselected,
+              style: const TextStyle(fontSize: 10, color: Colors.red),
+            ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            part.isConfigured ? Icons.check_circle : Icons.error_outline,
+            size: 16,
+            color: part.isConfigured ? Colors.green : Colors.red,
+          ),
+          // パーツ単位のお気に入りは不要（プリセット一覧側の
+          // お気に入り機能に一本化したため削除）。
+          IconButton(
+            icon: const Icon(Icons.edit, size: 18),
+            tooltip: l10n.commonEdit,
+            onPressed: () => _showEditPartDialog(part),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+            tooltip: l10n.commonDelete,
+            onPressed: () async {
+              if (!await confirmDelete(context, itemName: part.name)) return;
+              final parts = List<AutofillPart>.from(_preset.parts)
+                ..removeWhere((p) => p.id == part.id);
+              _save(_preset.copyWith(parts: parts), changedPartId: part.id);
+            },
+          ),
+          if (dragIndex != null)
+            ReorderableDragStartListener(
+              index: dragIndex,
+              child: const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Icon(Icons.drag_handle, size: 18),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   void _showAddPartDialog() {
@@ -768,19 +910,27 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
-          decoration: InputDecoration(labelText: l10n.autofillPartNameLabel, border: const OutlineInputBorder()),
+          decoration: InputDecoration(
+            labelText: l10n.autofillPartNameLabel,
+            border: const OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
                 final parts = List<AutofillPart>.from(_preset.parts)
-                  ..add(AutofillPart(
-                    id: 'part_${DateTime.now().microsecondsSinceEpoch}',
-                    name: nameCtrl.text,
-                    color: 0xFFCCCCCC,
-                  ));
+                  ..add(
+                    AutofillPart(
+                      id: 'part_${DateTime.now().microsecondsSinceEpoch}',
+                      name: nameCtrl.text,
+                      color: 0xFFCCCCCC,
+                    ),
+                  );
                 _save(_preset.copyWith(parts: parts));
               }
               Navigator.pop(ctx);
@@ -789,7 +939,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
         ],
       ),
-    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
+    ).then(
+      (_) => WidgetsBinding.instance.addPostFrameCallback(
+        (_) => nameCtrl.dispose(),
+      ),
+    );
   }
 
   void _showEditPartDialog(AutofillPart part) {
@@ -805,13 +959,19 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                final parts = _preset.parts.map((p) =>
-                  p.id == part.id ? p.copyWith(name: nameCtrl.text) : p
-                ).toList();
+                final parts = _preset.parts
+                    .map(
+                      (p) =>
+                          p.id == part.id ? p.copyWith(name: nameCtrl.text) : p,
+                    )
+                    .toList();
                 _save(_preset.copyWith(parts: parts), changedPartId: part.id);
               }
               Navigator.pop(ctx);
@@ -820,10 +980,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
         ],
       ),
-    ).then((_) => WidgetsBinding.instance.addPostFrameCallback((_) => nameCtrl.dispose()));
+    ).then(
+      (_) => WidgetsBinding.instance.addPostFrameCallback(
+        (_) => nameCtrl.dispose(),
+      ),
+    );
   }
 
-  Map<AutofillLineColorMode, String> _lineColorModeLabels(AppLocalizations l10n) => {
+  Map<AutofillLineColorMode, String> _lineColorModeLabels(
+    AppLocalizations l10n,
+  ) => {
     AutofillLineColorMode.specified: l10n.autofillLineColorModeSpecified,
     AutofillLineColorMode.sameAsFill: l10n.autofillLineColorModeSameAsFill,
     AutofillLineColorMode.traceAdjust: l10n.autofillLineColorModeTraceAdjust,
@@ -878,33 +1044,55 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     // どちらの設定に対応するプレビューかが一目でわかる。
                     _fillPreview(current, height: 40),
                     const SizedBox(height: 12),
-                    Text(l10n.autofillPartFillColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
+                    Text(
+                      l10n.autofillPartFillColorLabel,
+                      style: Theme.of(ctx).textTheme.titleSmall,
+                    ),
                     const SizedBox(height: 4),
                     OutlinedButton.icon(
                       onPressed: () => _showColorPickerFor(
                         context,
                         Color(current.color),
-                        (c) => setS(() => current = current.copyWith(color: c.toARGB32(), gradient: null)),
+                        (c) => setS(
+                          () => current = current.copyWith(
+                            color: c.toARGB32(),
+                            gradient: null,
+                          ),
+                        ),
                       ),
                       icon: Container(
-                        width: 18, height: 18,
+                        width: 18,
+                        height: 18,
                         decoration: BoxDecoration(
                           color: Color(current.color),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
                         ),
                       ),
-                      label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
+                      label: Text(
+                        l10n.autofillPartSelectColorButton,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                     const SizedBox(height: 6),
                     // 画像を都度読み込んでスポイトで色を拾う（カラー
                     // ピッカーだけでなく、任意の画像から直接色を取得できる）。
                     OutlinedButton.icon(
                       onPressed: () => _pickColorFromNewImage(
-                        (c) => setS(() => current = current.copyWith(color: c.toARGB32(), gradient: null)),
+                        (c) => setS(
+                          () => current = current.copyWith(
+                            color: c.toARGB32(),
+                            gradient: null,
+                          ),
+                        ),
                       ),
                       icon: const Icon(Icons.colorize, size: 16),
-                      label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                      label: Text(
+                        l10n.autofillEyedropperFromThumbnailButton,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                     TextButton.icon(
                       onPressed: () async {
@@ -912,20 +1100,32 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         if (updated != null) setS(() => current = updated);
                       },
                       icon: const Icon(Icons.gradient, size: 16),
-                      label: Text(current.gradient == null ? l10n.autofillPartGradientSetButton : l10n.autofillPartGradientEditButton,
-                          style: const TextStyle(fontSize: 12)),
+                      label: Text(
+                        current.gradient == null
+                            ? l10n.autofillPartGradientSetButton
+                            : l10n.autofillPartGradientEditButton,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                     EditableSliderValue(
                       text: l10n.autofillPartFillOpacityLabel(current.opacity),
                       style: const TextStyle(fontSize: 12),
-                      value: current.opacity, min: 0, max: 100,
+                      value: current.opacity,
+                      min: 0,
+                      max: 100,
                       title: l10n.autofillPartFillOpacityLabel(current.opacity),
-                      onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
+                      onChanged: (v) => setS(
+                        () => current = current.copyWith(opacity: v.round()),
+                      ),
                     ),
                     SteppedSlider(
                       value: current.opacity.toDouble(),
-                      min: 0, max: 100, divisions: 100,
-                      onChanged: (v) => setS(() => current = current.copyWith(opacity: v.round())),
+                      min: 0,
+                      max: 100,
+                      divisions: 100,
+                      onChanged: (v) => setS(
+                        () => current = current.copyWith(opacity: v.round()),
+                      ),
                     ),
                     const Divider(),
                     // 線画色のリアルタイムプレビュー。塗り色プレビューと同じく、
@@ -936,7 +1136,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
                       ),
                       child: Stack(
                         fit: StackFit.expand,
@@ -950,35 +1152,61 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(l10n.autofillPartLineColorLabel, style: Theme.of(ctx).textTheme.titleSmall),
-                    ...AutofillLineColorMode.values.map((m) => RadioListTile<AutofillLineColorMode>(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(lineColorModeLabels[m]!, style: const TextStyle(fontSize: 13)),
-                          secondary: m == AutofillLineColorMode.traceAdjust
-                              ? InfoIconTooltip(message: l10n.autofillLineColorModeTraceAdjustInfo)
-                              : null,
-                          value: m,
-                          groupValue: current.lineColorMode,
-                          onChanged: (v) => setS(() => current = current.copyWith(lineColorMode: v)),
-                        )),
-                    if (current.lineColorMode == AutofillLineColorMode.specified) ...[
+                    Text(
+                      l10n.autofillPartLineColorLabel,
+                      style: Theme.of(ctx).textTheme.titleSmall,
+                    ),
+                    ...AutofillLineColorMode.values.map(
+                      (m) => RadioListTile<AutofillLineColorMode>(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          lineColorModeLabels[m]!,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        secondary: m == AutofillLineColorMode.traceAdjust
+                            ? InfoIconTooltip(
+                                message:
+                                    l10n.autofillLineColorModeTraceAdjustInfo,
+                              )
+                            : null,
+                        value: m,
+                        groupValue: current.lineColorMode,
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(lineColorMode: v),
+                        ),
+                      ),
+                    ),
+                    if (current.lineColorMode ==
+                        AutofillLineColorMode.specified) ...[
                       const SizedBox(height: 4),
                       OutlinedButton.icon(
                         onPressed: () => _showColorPickerFor(
                           context,
                           Color(current.lineColor),
-                          (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
+                          (c) => setS(
+                            () => current = current.copyWith(
+                              lineColor: c.toARGB32(),
+                            ),
+                          ),
                         ),
                         icon: Container(
-                          width: 18, height: 18,
+                          width: 18,
+                          height: 18,
                           decoration: BoxDecoration(
                             color: Color(current.lineColor),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                            ),
                           ),
                         ),
-                        label: Text(l10n.autofillPartSelectColorButton, style: const TextStyle(fontSize: 12)),
+                        label: Text(
+                          l10n.autofillPartSelectColorButton,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                       const SizedBox(height: 6),
                       // 指定色は「何が既定か」という基準が無く、ユーザーが自由に
@@ -987,78 +1215,151 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       // 補正値へ戻す意味のあるボタンとして下に用意している）。
                       OutlinedButton.icon(
                         onPressed: () => _pickColorFromNewImage(
-                          (c) => setS(() => current = current.copyWith(lineColor: c.toARGB32())),
+                          (c) => setS(
+                            () => current = current.copyWith(
+                              lineColor: c.toARGB32(),
+                            ),
+                          ),
                         ),
                         icon: const Icon(Icons.colorize, size: 16),
-                        label: Text(l10n.autofillEyedropperFromThumbnailButton, style: const TextStyle(fontSize: 12)),
+                        label: Text(
+                          l10n.autofillEyedropperFromThumbnailButton,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                     ],
-                    if (current.lineColorMode == AutofillLineColorMode.traceAdjust) ...[
+                    if (current.lineColorMode ==
+                        AutofillLineColorMode.traceAdjust) ...[
                       EditableSliderValue(
-                        text: l10n.autofillPartTraceHueLabel(current.traceHue.round()),
+                        text: l10n.autofillPartTraceHueLabel(
+                          current.traceHue.round(),
+                        ),
                         style: const TextStyle(fontSize: 11),
-                        value: current.traceHue, min: -180, max: 180, isInt: false,
-                        onChanged: (v) => setS(() => current = current.copyWith(traceHue: v.toDouble())),
+                        value: current.traceHue,
+                        min: -180,
+                        max: 180,
+                        isInt: false,
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(
+                            traceHue: v.toDouble(),
+                          ),
+                        ),
                       ),
                       SteppedSlider(
-                        value: current.traceHue, min: -180, max: 180,
-                        onChanged: (v) => setS(() => current = current.copyWith(traceHue: v)),
+                        value: current.traceHue,
+                        min: -180,
+                        max: 180,
+                        onChanged: (v) =>
+                            setS(() => current = current.copyWith(traceHue: v)),
                       ),
                       EditableSliderValue(
-                        text: l10n.autofillPartTraceSaturationLabel(current.traceSaturation.round()),
+                        text: l10n.autofillPartTraceSaturationLabel(
+                          current.traceSaturation.round(),
+                        ),
                         style: const TextStyle(fontSize: 11),
-                        value: current.traceSaturation, min: -100, max: 100, isInt: false,
-                        onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v.toDouble())),
+                        value: current.traceSaturation,
+                        min: -100,
+                        max: 100,
+                        isInt: false,
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(
+                            traceSaturation: v.toDouble(),
+                          ),
+                        ),
                       ),
                       SteppedSlider(
-                        value: current.traceSaturation, min: -100, max: 100,
-                        onChanged: (v) => setS(() => current = current.copyWith(traceSaturation: v)),
+                        value: current.traceSaturation,
+                        min: -100,
+                        max: 100,
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(traceSaturation: v),
+                        ),
                       ),
                       EditableSliderValue(
-                        text: l10n.autofillPartTraceLightnessLabel(current.traceLightness.round()),
+                        text: l10n.autofillPartTraceLightnessLabel(
+                          current.traceLightness.round(),
+                        ),
                         style: const TextStyle(fontSize: 11),
-                        value: current.traceLightness, min: -100, max: 100, isInt: false,
-                        onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v.toDouble())),
+                        value: current.traceLightness,
+                        min: -100,
+                        max: 100,
+                        isInt: false,
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(
+                            traceLightness: v.toDouble(),
+                          ),
+                        ),
                       ),
                       SteppedSlider(
-                        value: current.traceLightness, min: -100, max: 100,
-                        onChanged: (v) => setS(() => current = current.copyWith(traceLightness: v)),
+                        value: current.traceLightness,
+                        min: -100,
+                        max: 100,
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(traceLightness: v),
+                        ),
                       ),
                       // 色トレス・線画馴染ませの3項目をまとめて既定値へ戻す。
                       Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton.icon(
-                          onPressed: (current.traceHue == -10 &&
+                          onPressed:
+                              (current.traceHue == -10 &&
                                   current.traceSaturation == 60 &&
                                   current.traceLightness == -50)
                               ? null
-                              : () => setS(() => current = current.copyWith(
-                                    traceHue: -10, traceSaturation: 60, traceLightness: -50,
-                                  )),
+                              : () => setS(
+                                  () => current = current.copyWith(
+                                    traceHue: -10,
+                                    traceSaturation: 60,
+                                    traceLightness: -50,
+                                  ),
+                                ),
                           icon: const Icon(Icons.restart_alt, size: 16),
-                          label: Text(l10n.autofillPartResetTraceButton, style: const TextStyle(fontSize: 12)),
+                          label: Text(
+                            l10n.autofillPartResetTraceButton,
+                            style: const TextStyle(fontSize: 12),
+                          ),
                         ),
                       ),
                     ],
                     EditableSliderValue(
-                      text: l10n.autofillPartLineOpacityLabel(current.lineOpacity),
+                      text: l10n.autofillPartLineOpacityLabel(
+                        current.lineOpacity,
+                      ),
                       style: const TextStyle(fontSize: 12),
-                      value: current.lineOpacity, min: 0, max: 100,
-                      onChanged: (v) => setS(() => current = current.copyWith(lineOpacity: v.round())),
+                      value: current.lineOpacity,
+                      min: 0,
+                      max: 100,
+                      onChanged: (v) => setS(
+                        () =>
+                            current = current.copyWith(lineOpacity: v.round()),
+                      ),
                     ),
                     SteppedSlider(
                       value: current.lineOpacity.toDouble(),
-                      min: 0, max: 100, divisions: 100,
-                      onChanged: (v) => setS(() => current = current.copyWith(lineOpacity: v.round())),
+                      min: 0,
+                      max: 100,
+                      divisions: 100,
+                      onChanged: (v) => setS(
+                        () =>
+                            current = current.copyWith(lineOpacity: v.round()),
+                      ),
                     ),
                     const Divider(),
-                    Text(l10n.autofillPartToneLabel, style: Theme.of(ctx).textTheme.titleSmall),
+                    Text(
+                      l10n.autofillPartToneLabel,
+                      style: Theme.of(ctx).textTheme.titleSmall,
+                    ),
                     CheckboxListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      title: Text(l10n.autofillPartUseToneCheckbox, style: const TextStyle(fontSize: 13)),
+                      title: Text(
+                        l10n.autofillPartUseToneCheckbox,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                       value: current.useTone,
-                      onChanged: (v) => setS(() => current = current.copyWith(useTone: v)),
+                      onChanged: (v) =>
+                          setS(() => current = current.copyWith(useTone: v)),
                     ),
                     // トーンはブラシと同様にユーザーが自作・追加したり配布物を
                     // 読み込んだりできるため、種類が増えるとチップ一覧では
@@ -1071,46 +1372,73 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: TonePreviewThumb(
-                          tone: tones.where((t) => t.id == current.toneId).firstOrNull,
+                          tone: tones
+                              .where((t) => t.id == current.toneId)
+                              .firstOrNull,
                           color: Color(current.color),
                           size: 32,
                           shape: BoxShape.rectangle,
                         ),
                         title: Text(
-                          tones.where((t) => t.id == current.toneId).firstOrNull?.name ??
+                          tones
+                                  .where((t) => t.id == current.toneId)
+                                  .firstOrNull
+                                  ?.name ??
                               l10n.autofillPartToneUnselected,
                           style: const TextStyle(fontSize: 13),
                         ),
                         trailing: const Icon(Icons.chevron_right, size: 18),
                         onTap: () async {
-                          final selected =
-                              await _showTonePickerSheet(current.toneId, Color(current.color));
-                          if (selected != null) setS(() => current = current.copyWith(toneId: selected));
+                          final selected = await _showTonePickerSheet(
+                            current.toneId,
+                            Color(current.color),
+                          );
+                          if (selected != null) {
+                            setS(
+                              () =>
+                                  current = current.copyWith(toneId: selected),
+                            );
+                          }
                         },
                       ),
                     ],
                     const Divider(),
-                    Text(l10n.autofillPartBlendModeLabel, style: Theme.of(ctx).textTheme.titleSmall),
+                    Text(
+                      l10n.autofillPartBlendModeLabel,
+                      style: Theme.of(ctx).textTheme.titleSmall,
+                    ),
                     DropdownButtonFormField<LayerBlendMode>(
                       initialValue: current.blendMode,
                       isExpanded: true,
                       decoration: const InputDecoration(isDense: true),
                       items: LayerBlendMode.values
-                          .map((m) => DropdownMenuItem(
-                              value: m, child: Text(blendModeLabels[m]!, style: const TextStyle(fontSize: 13))))
+                          .map(
+                            (m) => DropdownMenuItem(
+                              value: m,
+                              child: Text(
+                                blendModeLabels[m]!,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                          )
                           .toList(),
-                      onChanged: (v) => setS(() => current = current.copyWith(blendMode: v)),
+                      onChanged: (v) =>
+                          setS(() => current = current.copyWith(blendMode: v)),
                     ),
                   ],
                 ),
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
               FilledButton(
                 onPressed: () {
-                  final parts =
-                      _preset.parts.map((p) => p.id == part.id ? current : p).toList();
+                  final parts = _preset.parts
+                      .map((p) => p.id == part.id ? current : p)
+                      .toList();
                   _save(_preset.copyWith(parts: parts), changedPartId: part.id);
                   Navigator.pop(ctx);
                 },
@@ -1144,21 +1472,37 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Text(l10n.autofillPartToneLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                    child: Text(
+                      l10n.autofillPartToneLabel,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                      ),
+                    ),
                   ),
                   const Divider(height: 1),
                   Expanded(
                     child: tones.isEmpty
-                        ? Center(child: Text(l10n.toneEmpty,
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)))
+                        ? Center(
+                            child: Text(
+                              l10n.toneEmpty,
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontSize: 12,
+                              ),
+                            ),
+                          )
                         : GridView.builder(
                             padding: const EdgeInsets.all(8),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                              childAspectRatio: 0.8,
-                            ),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 4,
+                                  crossAxisSpacing: 8,
+                                  mainAxisSpacing: 8,
+                                  childAspectRatio: 0.8,
+                                ),
                             itemCount: tones.length,
                             itemBuilder: (context, index) {
                               final tone = tones[index];
@@ -1173,22 +1517,32 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                           color: isSelected
-                                              ? Theme.of(context).colorScheme.primary
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
                                               : Colors.transparent,
                                           width: 2,
                                         ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: TonePreviewThumb(
-                                        tone: tone, color: color, size: 56, shape: BoxShape.rectangle,
+                                        tone: tone,
+                                        color: color,
+                                        size: 56,
+                                        shape: BoxShape.rectangle,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(tone.name,
-                                        style: const TextStyle(fontSize: 10, fontFamily: 'Kuramubon'),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis),
+                                    Text(
+                                      tone.name,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontFamily: 'Kuramubon',
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ],
                                 ),
                               );
@@ -1209,7 +1563,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// 中心位置（放射時、既定は中央）・色（2〜5色）を編集する簡略実装。
   Future<AutofillPart?> _showGradientEditor(AutofillPart part) {
     final l10n = AppLocalizations.of(context)!;
-    var gradient = part.gradient ?? AutofillGradient.defaultTwoColor(part.color, 0xFFFFFFFF);
+    var gradient =
+        part.gradient ??
+        AutofillGradient.defaultTwoColor(part.color, 0xFFFFFFFF);
     // 放射グラデーションで中心（t=0）から始まるドラッグは、重なって表示
     // されている左右2つの分身ハンドルのどちらをつまんだか区別できない
     // （常に見た目上の一番上＝右分身側だけがジェスチャーを受け取る）。
@@ -1244,9 +1600,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           // ハンドルは実際に見えている位置（中心からの距離）で操作できるよう、
           // 見た目の距離⇔stopsの相互変換を行う。
           bool isRadial = gradient.type != AutofillGradientType.linear;
-          bool isOutCenter = gradient.type == AutofillGradientType.radialOutCenter;
-          double geomT(int i) => isOutCenter ? 1 - gradient.stops[i] : gradient.stops[i];
-          void setGeomT(int i, double t) => setStopAt(i, isOutCenter ? 1 - t : t);
+          bool isOutCenter =
+              gradient.type == AutofillGradientType.radialOutCenter;
+          double geomT(int i) =>
+              isOutCenter ? 1 - gradient.stops[i] : gradient.stops[i];
+          void setGeomT(int i, double t) =>
+              setStopAt(i, isOutCenter ? 1 - t : t);
 
           return AlertDialog(
             title: Text(l10n.autofillPartGradientDialogTitle(part.name)),
@@ -1265,13 +1624,19 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
                       ),
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
                           CustomPaint(painter: const _CheckerboardPainter()),
-                          DecoratedBox(decoration: BoxDecoration(gradient: _previewGradient(gradient))),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: _previewGradient(gradient),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1283,7 +1648,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           final maxWidth = constraints.maxWidth;
-                          Widget handle(int i, double left, {required bool mirrorDrag}) {
+                          Widget handle(
+                            int i,
+                            double left, {
+                            required bool mirrorDrag,
+                          }) {
                             return Positioned(
                               left: left - 7,
                               top: 0,
@@ -1300,25 +1669,38 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                   }
                                 },
                                 onHorizontalDragUpdate: (d) {
-                                  final halfWidth = isRadial ? maxWidth / 2 : maxWidth;
+                                  final halfWidth = isRadial
+                                      ? maxWidth / 2
+                                      : maxWidth;
                                   if (isRadial) {
                                     final locked = centerDragSign[i];
                                     if (locked == 0 && d.delta.dx != 0) {
-                                      centerDragSign[i] = d.delta.dx > 0 ? 1 : -1;
+                                      centerDragSign[i] = d.delta.dx > 0
+                                          ? 1
+                                          : -1;
                                     }
                                     final sign = centerDragSign[i];
                                     final dt = (sign != null && sign != 0)
                                         ? d.delta.dx / halfWidth * sign
-                                        : d.delta.dx / halfWidth * (mirrorDrag ? -1 : 1);
+                                        : d.delta.dx /
+                                              halfWidth *
+                                              (mirrorDrag ? -1 : 1);
                                     setGeomT(i, geomT(i) + dt);
                                   } else {
-                                    setStopAt(i, gradient.stops[i] + d.delta.dx / halfWidth);
+                                    setStopAt(
+                                      i,
+                                      gradient.stops[i] +
+                                          d.delta.dx / halfWidth,
+                                    );
                                   }
                                 },
-                                onHorizontalDragEnd: (_) => centerDragSign.remove(i),
+                                onHorizontalDragEnd: (_) =>
+                                    centerDragSign.remove(i),
                                 child: CustomPaint(
                                   size: const Size(14, 12),
-                                  painter: _StopHandlePainter(color: Color(gradient.colors[i])),
+                                  painter: _StopHandlePainter(
+                                    color: Color(gradient.colors[i]),
+                                  ),
                                 ),
                               ),
                             );
@@ -1329,7 +1711,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               clipBehavior: Clip.none,
                               children: [
                                 for (int i = 0; i < gradient.stops.length; i++)
-                                  handle(i, gradient.stops[i] * maxWidth, mirrorDrag: false),
+                                  handle(
+                                    i,
+                                    gradient.stops[i] * maxWidth,
+                                    mirrorDrag: false,
+                                  ),
                               ],
                             );
                           }
@@ -1341,47 +1727,89 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           return Stack(
                             clipBehavior: Clip.none,
                             children: [
-                              for (int i = 0; i < gradient.stops.length; i++) ...[
-                                handle(i, center + geomT(i) * center, mirrorDrag: false),
-                                handle(i, center - geomT(i) * center, mirrorDrag: true),
+                              for (
+                                int i = 0;
+                                i < gradient.stops.length;
+                                i++
+                              ) ...[
+                                handle(
+                                  i,
+                                  center + geomT(i) * center,
+                                  mirrorDrag: false,
+                                ),
+                                handle(
+                                  i,
+                                  center - geomT(i) * center,
+                                  mirrorDrag: true,
+                                ),
                               ],
                             ],
                           );
                         },
                       ),
                     ),
-                    Text(l10n.autofillPartGradientStopDragHint,
-                        style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                    Text(
+                      l10n.autofillPartGradientStopDragHint,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Text(l10n.autofillPartGradientTypeLabel, style: const TextStyle(fontSize: 12)),
+                        Text(
+                          l10n.autofillPartGradientTypeLabel,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                         const SizedBox(width: 4),
-                        InfoIconTooltip(message: l10n.autofillPartGradientTypeInfo),
+                        InfoIconTooltip(
+                          message: l10n.autofillPartGradientTypeInfo,
+                        ),
                       ],
                     ),
                     Wrap(
                       spacing: 6,
-                      children: AutofillGradientType.values.map((t) => ChoiceChip(
-                        label: Text(_gradientTypeLabel(l10n, t), style: const TextStyle(fontSize: 11)),
-                        selected: gradient.type == t,
-                        onSelected: (selected) {
-                          if (selected) setS(() => gradient = gradient.copyWith(type: t));
-                        },
-                      )).toList(),
+                      children: AutofillGradientType.values
+                          .map(
+                            (t) => ChoiceChip(
+                              label: Text(
+                                _gradientTypeLabel(l10n, t),
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                              selected: gradient.type == t,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setS(
+                                    () => gradient = gradient.copyWith(type: t),
+                                  );
+                                }
+                              },
+                            ),
+                          )
+                          .toList(),
                     ),
                     if (gradient.type == AutofillGradientType.linear) ...[
                       const SizedBox(height: 8),
                       EditableSliderValue(
-                        text: l10n.autofillPartGradientAngleLabel(gradient.angle.round()),
+                        text: l10n.autofillPartGradientAngleLabel(
+                          gradient.angle.round(),
+                        ),
                         style: const TextStyle(fontSize: 12),
-                        value: gradient.angle, min: 0, max: 359,
-                        onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v.toDouble())),
+                        value: gradient.angle,
+                        min: 0,
+                        max: 359,
+                        onChanged: (v) => setS(
+                          () =>
+                              gradient = gradient.copyWith(angle: v.toDouble()),
+                        ),
                       ),
                       SteppedSlider(
                         value: gradient.angle,
-                        min: 0, max: 359,
-                        onChanged: (v) => setS(() => gradient = gradient.copyWith(angle: v)),
+                        min: 0,
+                        max: 359,
+                        onChanged: (v) =>
+                            setS(() => gradient = gradient.copyWith(angle: v)),
                       ),
                     ],
                     const SizedBox(height: 8),
@@ -1391,40 +1819,71 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       children: [
                         Expanded(
                           child: EditableSliderValue(
-                            text: l10n.autofillPartGradientFeatherLabel((gradient.feather * 100).round()),
+                            text: l10n.autofillPartGradientFeatherLabel(
+                              (gradient.feather * 100).round(),
+                            ),
                             style: const TextStyle(fontSize: 12),
-                            value: (gradient.feather * 100).round(), min: 0, max: 100,
-                            onChanged: (v) => setS(() => gradient = gradient.copyWith(feather: v / 100)),
+                            value: (gradient.feather * 100).round(),
+                            min: 0,
+                            max: 100,
+                            onChanged: (v) => setS(
+                              () => gradient = gradient.copyWith(
+                                feather: v / 100,
+                              ),
+                            ),
                           ),
                         ),
-                        InfoIconTooltip(message: l10n.autofillPartGradientFeatherInfo),
+                        InfoIconTooltip(
+                          message: l10n.autofillPartGradientFeatherInfo,
+                        ),
                       ],
                     ),
                     SteppedSlider(
                       value: gradient.feather,
-                      min: 0, max: 1, step: 0.01,
-                      onChanged: (v) => setS(() => gradient = gradient.copyWith(feather: v)),
+                      min: 0,
+                      max: 1,
+                      step: 0.01,
+                      onChanged: (v) =>
+                          setS(() => gradient = gradient.copyWith(feather: v)),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Text(l10n.autofillPartGradientColorLabel, style: const TextStyle(fontSize: 12)),
+                        Text(
+                          l10n.autofillPartGradientColorLabel,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                         const Spacer(),
                         TextButton.icon(
-                          onPressed: gradient.colors.length >= 10 ? null : () {
-                            final colors = [...gradient.colors, 0xFFFFFFFF];
-                            setS(() => gradient = gradient.copyWith(
-                                  colors: colors,
-                                  stops: _evenStops(colors.length),
-                                ));
-                          },
+                          onPressed: gradient.colors.length >= 10
+                              ? null
+                              : () {
+                                  final colors = [
+                                    ...gradient.colors,
+                                    0xFFFFFFFF,
+                                  ];
+                                  setS(
+                                    () => gradient = gradient.copyWith(
+                                      colors: colors,
+                                      stops: _evenStops(colors.length),
+                                    ),
+                                  );
+                                },
                           icon: const Icon(Icons.add, size: 16),
-                          label: Text(l10n.autofillPartGradientAddColorButton, style: const TextStyle(fontSize: 11)),
+                          label: Text(
+                            l10n.autofillPartGradientAddColorButton,
+                            style: const TextStyle(fontSize: 11),
+                          ),
                         ),
                       ],
                     ),
-                    Text(l10n.autofillPartGradientDragHint,
-                        style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                    Text(
+                      l10n.autofillPartGradientDragHint,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     // 色一覧：ドラッグで順番入れ替え、各色ごとにタップで色（不透明度
                     // 含む）変更・画像からスポイト・切り替え位置の調整・削除ができる。
@@ -1443,10 +1902,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         colors.insert(newIndex, item);
                         // 位置（stops）は見た目の並び基準を保つため、色の並び替えに
                         // 合わせて均等配置へ振り直す。
-                        setS(() => gradient = gradient.copyWith(
-                              colors: colors,
-                              stops: _evenStops(colors.length),
-                            ));
+                        setS(
+                          () => gradient = gradient.copyWith(
+                            colors: colors,
+                            stops: _evenStops(colors.length),
+                          ),
+                        );
                       },
                       itemBuilder: (context, i) {
                         final color = Color(gradient.colors[i]);
@@ -1456,14 +1917,22 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           child: Row(
                             children: [
                               GestureDetector(
-                                onTap: () =>
-                                    _showGradientColorPicker(context, color, (c) => setColorAt(i, c.toARGB32())),
+                                onTap: () => _showGradientColorPicker(
+                                  context,
+                                  color,
+                                  (c) => setColorAt(i, c.toARGB32()),
+                                ),
                                 child: Container(
-                                  width: 32, height: 32,
+                                  width: 32,
+                                  height: 32,
                                   decoration: BoxDecoration(
                                     color: color,
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1472,28 +1941,43 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               // でもカラーピッカーだけでなく画像からスポイトできる）。
                               IconButton(
                                 icon: const Icon(Icons.colorize, size: 16),
-                                tooltip: l10n.autofillEyedropperFromThumbnailButton,
-                                onPressed: () => _pickColorFromNewImage((c) => setColorAt(i, c.toARGB32())),
+                                tooltip:
+                                    l10n.autofillEyedropperFromThumbnailButton,
+                                onPressed: () => _pickColorFromNewImage(
+                                  (c) => setColorAt(i, c.toARGB32()),
+                                ),
                               ),
                               // 切り替え位置はプレビュー直下の三角形ハンドルを直接
                               // ドラッグして調整する方が直感的なため、ここでは現在値の
                               // 参考表示のみ行う。
                               Expanded(
                                 child: Text(
-                                  l10n.autofillPartGradientStopLabel((gradient.stops[i] * 100).round()),
+                                  l10n.autofillPartGradientStopLabel(
+                                    (gradient.stops[i] * 100).round(),
+                                  ),
                                   style: const TextStyle(fontSize: 10),
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                  color: Colors.red,
+                                ),
                                 tooltip: l10n.commonDelete,
-                                onPressed: gradient.colors.length <= 2 ? null : () {
-                                  final colors = List<int>.from(gradient.colors)..removeAt(i);
-                                  setS(() => gradient = gradient.copyWith(
-                                        colors: colors,
-                                        stops: _evenStops(colors.length),
-                                      ));
-                                },
+                                onPressed: gradient.colors.length <= 2
+                                    ? null
+                                    : () {
+                                        final colors = List<int>.from(
+                                          gradient.colors,
+                                        )..removeAt(i);
+                                        setS(
+                                          () => gradient = gradient.copyWith(
+                                            colors: colors,
+                                            stops: _evenStops(colors.length),
+                                          ),
+                                        );
+                                      },
                               ),
                               ReorderableDragStartListener(
                                 index: i,
@@ -1513,12 +1997,17 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: null)),
+                onPressed: () =>
+                    Navigator.pop(ctx, part.copyWith(gradient: null)),
                 child: Text(l10n.autofillPartGradientRemoveButton),
               ),
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
               FilledButton(
-                onPressed: () => Navigator.pop(ctx, part.copyWith(gradient: gradient)),
+                onPressed: () =>
+                    Navigator.pop(ctx, part.copyWith(gradient: gradient)),
                 child: Text(l10n.autofillPartApplyButton),
               ),
             ],
@@ -1548,14 +2037,24 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       case AutofillLineColorMode.specified:
         return Color(p.lineColor);
       case AutofillLineColorMode.sameAsFill:
-        return p.gradient != null ? Color(p.gradient!.colors.first) : Color(p.color);
+        return p.gradient != null
+            ? Color(p.gradient!.colors.first)
+            : Color(p.color);
       case AutofillLineColorMode.traceAdjust:
-        final base = p.gradient != null ? Color(p.gradient!.colors.first) : Color(p.color);
+        final base = p.gradient != null
+            ? Color(p.gradient!.colors.first)
+            : Color(p.color);
         final hsl = HSLColor.fromColor(base);
         var newHue = (hsl.hue + p.traceHue) % 360;
         if (newHue < 0) newHue += 360;
-        final newSat = (hsl.saturation + p.traceSaturation / 100).clamp(0.0, 1.0);
-        final newLight = (hsl.lightness + p.traceLightness / 100).clamp(0.0, 1.0);
+        final newSat = (hsl.saturation + p.traceSaturation / 100).clamp(
+          0.0,
+          1.0,
+        );
+        final newLight = (hsl.lightness + p.traceLightness / 100).clamp(
+          0.0,
+          1.0,
+        );
         return HSLColor.fromAHSL(1.0, newHue, newSat, newLight).toColor();
     }
   }
@@ -1576,7 +2075,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             opacity: p.opacity / 100,
             child: p.gradient == null
                 ? ColoredBox(color: Color(p.color))
-                : DecoratedBox(decoration: BoxDecoration(gradient: _previewGradient(p.gradient!))),
+                : DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: _previewGradient(p.gradient!),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -1634,7 +2137,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// （autofill_engine.dartの_sampleGradientと同じアルゴリズムを、
   /// Flutter Gradientが扱える離散stops列へ展開したもの）。
   ({List<Color> colors, List<double> stops}) _expandForFeather(
-      List<int> colorsInt, List<double> stopsIn, double feather) {
+    List<int> colorsInt,
+    List<double> stopsIn,
+    double feather,
+  ) {
     if (colorsInt.length < 2) {
       return (colors: colorsInt.map(Color.new).toList(), stops: stopsIn);
     }
@@ -1647,7 +2153,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     final outColors = <Color>[];
     final outStops = <double>[];
     void addPoint(double stop, Color color) {
-      if (outStops.isNotEmpty && stop <= outStops.last) stop = outStops.last + 0.0001;
+      if (outStops.isNotEmpty && stop <= outStops.last) {
+        stop = outStops.last + 0.0001;
+      }
       outStops.add(stop.clamp(0.0, 1.0));
       outColors.add(color);
     }
@@ -1667,7 +2175,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// パーツの塗り色・線画色・グラデーション色の選択に共通利用するカラー
   /// ピッカー。アプリ全体と同じHSVホイール／RGB／HEX／最近使った色／
   /// ユーザーパレットを備えたColorPickerPanelを使う。
-  void _showColorPickerFor(BuildContext context, Color initial, ValueChanged<Color> onChanged) {
+  void _showColorPickerFor(
+    BuildContext context,
+    Color initial,
+    ValueChanged<Color> onChanged,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -1688,7 +2200,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// グラデーション設定本体と同じ「キャンセル・適用」ボタンを下部に
   /// 常設する。調整中はプレビューだけ更新し、キャンセルなら破棄・
   /// 適用を押して初めて[onApply]（グラデーションの当該色）へ反映する。
-  void _showGradientColorPicker(BuildContext context, Color initial, ValueChanged<Color> onApply) {
+  void _showGradientColorPicker(
+    BuildContext context,
+    Color initial,
+    ValueChanged<Color> onApply,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     var working = initial;
     showDialog(
@@ -1708,11 +2224,17 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             const SizedBox(height: 8),
             Card(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(l10n.commonCancel),
+                    ),
                     const SizedBox(width: 8),
                     FilledButton(
                       onPressed: () {
@@ -1731,10 +2253,13 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
-  String _gradientTypeLabel(AppLocalizations l10n, AutofillGradientType t) => switch (t) {
+  String _gradientTypeLabel(AppLocalizations l10n, AutofillGradientType t) =>
+      switch (t) {
         AutofillGradientType.linear => l10n.autofillGradientTypeLinear,
-        AutofillGradientType.radialCenterOut => l10n.autofillGradientTypeRadialCenterOut,
-        AutofillGradientType.radialOutCenter => l10n.autofillGradientTypeRadialOutCenter,
+        AutofillGradientType.radialCenterOut =>
+          l10n.autofillGradientTypeRadialCenterOut,
+        AutofillGradientType.radialOutCenter =>
+          l10n.autofillGradientTypeRadialOutCenter,
       };
 }
 
@@ -1777,12 +2302,16 @@ class _StopHandlePainter extends CustomPainter {
       ..lineTo(0, size.height)
       ..close();
     canvas.drawPath(path, Paint()..color = color);
-    canvas.drawPath(path, Paint()
-      ..color = Colors.black54
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = Colors.black54
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant _StopHandlePainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(covariant _StopHandlePainter oldDelegate) =>
+      oldDelegate.color != color;
 }

@@ -618,7 +618,6 @@
   "fontSettingsTabSearch": "찾아서 다운로드",
   "fontSettingsTabImport": "불러오기",
   "fontDownloadedSearchHint": "폰트 이름으로 검색...",
-  "fontFavoritesOnly": "★만",
   "fontPixelModeTooltip": "픽셀 모드(도트 폰트용. 안티에일리어싱 없이 선명하게 표시)",
   "fontEmptyTitle": "폰트가 없습니다",
   "fontEmptyHint": "「찾아서 다운로드」또는「불러오기」탭에서 추가할 수 있습니다",

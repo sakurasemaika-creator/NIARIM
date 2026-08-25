@@ -37,11 +37,7 @@ class FontSettingsScreen extends StatelessWidget {
           ),
         ),
         body: const TabBarView(
-          children: [
-            _DownloadedFontsTab(),
-            FontCatalogTab(),
-            _ImportFontTab(),
-          ],
+          children: [_DownloadedFontsTab(), FontCatalogTab(), _ImportFontTab()],
         ),
       ),
     );
@@ -58,7 +54,8 @@ class _DownloadedFontsTab extends StatefulWidget {
   State<_DownloadedFontsTab> createState() => _DownloadedFontsTabState();
 }
 
-class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with AutomaticKeepAliveClientMixin {
+class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
+    with AutomaticKeepAliveClientMixin {
   String _query = '';
   bool _favoritesOnly = false;
 
@@ -73,9 +70,12 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
     final scheme = Theme.of(context).colorScheme;
     var fonts = service.fonts;
     if (_favoritesOnly) fonts = fonts.where((f) => f.isFavorite).toList();
-    if (_query.isNotEmpty) fonts = fonts.where((f) => f.displayName.contains(_query)).toList();
+    if (_query.isNotEmpty) {
+      fonts = fonts.where((f) => f.displayName.contains(_query)).toList();
+    }
     // お気に入りを先頭に表示
-    final sorted = [...fonts]..sort((a, b) {
+    final sorted = [...fonts]
+      ..sort((a, b) {
         if (a.isFavorite != b.isFavorite) return a.isFavorite ? -1 : 1;
         return a.displayName.compareTo(b.displayName);
       });
@@ -93,14 +93,19 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
                     isDense: true,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                   ),
                   onChanged: (v) => setState(() => _query = v),
                 ),
               ),
               const SizedBox(width: 8),
               FilterChip(
-                label: Text(l10n.fontFavoritesOnly),
+                label: Text(
+                  l10n.homeFavoritesOnly,
+                  style: const TextStyle(fontFamily: 'Kuramubon'),
+                ),
                 selected: _favoritesOnly,
                 onSelected: (v) => setState(() => _favoritesOnly = v),
               ),
@@ -116,15 +121,34 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 88, height: 88,
-                          decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
-                          child: Icon(Icons.font_download_outlined, size: 40, color: scheme.primary),
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            color: scheme.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.font_download_outlined,
+                            size: 40,
+                            color: scheme.primary,
+                          ),
                         ),
                         const SizedBox(height: 16),
-                        Text(l10n.fontEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                        Text(
+                          l10n.fontEmptyTitle,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Kuramubon',
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(l10n.fontEmptyHint,
-                            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
+                        Text(
+                          l10n.fontEmptyHint,
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   )
@@ -136,17 +160,37 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                       return Card(
                         elevation: 1,
                         shadowColor: Colors.black.withValues(alpha: 0.15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        color: Theme.of(context).colorScheme.surfaceContainerLow,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: scheme.primaryContainer,
-                            child: Text(f.extension.substring(0, 1),
-                                style: TextStyle(fontSize: 11, color: scheme.primary, fontWeight: FontWeight.bold)),
+                            child: Text(
+                              f.extension.substring(0, 1),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: scheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          title: Text(f.displayName, style: TextStyle(fontFamily: service.familyNameOf(f))),
-                          subtitle: Text('${f.extension} ・ ${_formatSize(f.sizeBytes)}',
-                              style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                          title: Text(
+                            f.displayName,
+                            style: TextStyle(
+                              fontFamily: service.familyNameOf(f),
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${f.extension} ・ ${_formatSize(f.sizeBytes)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -154,14 +198,20 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                               // このフォントで追加するテキストのアンチエイリアスを
                               // 除去する（ドットフォントをにじませずくっきり表示）。
                               IconButton(
-                                icon: Icon(f.pixelMode ? Icons.grid_on : Icons.grid_off,
-                                    size: 18, color: f.pixelMode ? scheme.primary : null),
+                                icon: Icon(
+                                  f.pixelMode ? Icons.grid_on : Icons.grid_off,
+                                  size: 18,
+                                  color: f.pixelMode ? scheme.primary : null,
+                                ),
                                 tooltip: l10n.fontPixelModeTooltip,
                                 onPressed: () => service.togglePixelMode(f.id),
                               ),
                               IconButton(
-                                icon: Icon(f.isFavorite ? Icons.star : Icons.star_border,
-                                    size: 18, color: f.isFavorite ? Colors.amber : null),
+                                icon: Icon(
+                                  f.isFavorite ? Icons.star : Icons.star_border,
+                                  size: 18,
+                                  color: f.isFavorite ? Colors.amber : null,
+                                ),
                                 tooltip: l10n.commonFavoriteToggle,
                                 onPressed: () => service.toggleFavorite(f.id),
                               ),
@@ -171,7 +221,11 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
                                 onPressed: () => _showRenameDialog(context, f),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                  color: Colors.red,
+                                ),
                                 tooltip: l10n.commonDelete,
                                 onPressed: () => _confirmDelete(context, f),
                               ),
@@ -202,11 +256,17 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
         title: Text(l10n.fontRenameDialogTitle),
         content: TextField(controller: controller, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                context.read<FontService>().renameFont(font.id, controller.text);
+                context.read<FontService>().renameFont(
+                  font.id,
+                  controller.text,
+                );
               }
               Navigator.pop(ctx);
             },
@@ -221,8 +281,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
     final l10n = AppLocalizations.of(context)!;
     // お気に入り登録中は削除できない。
     if (font.isFavorite) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
     showDialog(
@@ -230,7 +291,10 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab> with Automatic
       builder: (ctx) => AlertDialog(
         title: Text(l10n.fontDeleteConfirmTitle(font.displayName)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -263,15 +327,31 @@ class _ImportFontTab extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 88, height: 88,
-                decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
-                child: Icon(Icons.upload_file_outlined, size: 40, color: scheme.primary),
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.upload_file_outlined,
+                  size: 40,
+                  color: scheme.primary,
+                ),
               ),
               const SizedBox(height: 16),
-              Text(l10n.fontImportTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              Text(
+                l10n.fontImportTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(l10n.fontImportFormats,
-                  style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
+              Text(
+                l10n.fontImportFormats,
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
+              ),
               const SizedBox(height: 24),
               FilledButton.icon(
                 icon: const Icon(Icons.add),
@@ -291,7 +371,11 @@ class _ImportFontTab extends StatelessWidget {
       type: FileType.custom,
       allowedExtensions: const ['ttf', 'otf'],
     );
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (result == null ||
+        result.files.isEmpty ||
+        result.files.first.path == null) {
+      return;
+    }
     final path = result.files.first.path!;
     final name = result.files.first.name.replaceAll(RegExp(r'\.[^.]+$'), '');
     if (!context.mounted) return;
@@ -299,19 +383,19 @@ class _ImportFontTab extends StatelessWidget {
       final asset = await context.read<FontService>().addFont(path, name);
       if (!context.mounted) return;
       if (asset == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.fontUnsupportedSnackbar)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.fontUnsupportedSnackbar)));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.fontAddedSnackbar(name))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.fontAddedSnackbar(name))));
       }
     } on FontCorruptedException {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.fontCorruptedSnackbar)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.fontCorruptedSnackbar)));
     }
   }
 }

@@ -618,7 +618,6 @@
   "fontSettingsTabSearch": "Rechercher et télécharger",
   "fontSettingsTabImport": "Importer",
   "fontDownloadedSearchHint": "Rechercher par nom de police...",
-  "fontFavoritesOnly": "★ uniquement",
   "fontPixelModeTooltip": "Mode pixel (pour polices en points. Affichage net sans anticrénelage)",
   "fontEmptyTitle": "Aucune police",
   "fontEmptyHint": "Ajoutez des polices depuis les onglets « Rechercher et télécharger » ou « Importer »",

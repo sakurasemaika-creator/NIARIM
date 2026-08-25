@@ -618,7 +618,6 @@
   "fontSettingsTabSearch": "搜索下载",
   "fontSettingsTabImport": "导入",
   "fontDownloadedSearchHint": "按字体名称搜索...",
-  "fontFavoritesOnly": "仅★",
   "fontPixelModeTooltip": "像素模式（适用于点阵字体，无抗锯齿清晰显示）",
   "fontEmptyTitle": "没有字体",
   "fontEmptyHint": "可从「搜索下载」或「导入」标签页添加",
