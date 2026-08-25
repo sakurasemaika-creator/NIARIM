@@ -422,6 +422,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   String? _currentLayerId;
   bool _autosaveAttached = false;
+  // dispose()内でcontext.read<T>()を呼ぶと、画面が他のウィジェットツリーの
+  // 一括破棄に巻き込まれた際（例：GoRouterのgo()によるスタック置き換えで
+  // 前の画面がまとめて破棄されるケース）に「破棄済みウィジェットの祖先を
+  // 参照できない」例外になることがある。didChangeDependencies内（要素が
+  // まだ確実にアクティブ）で取得して保持しておき、dispose()ではこちらを
+  // 使う。
+  AutosaveService? _autosaveService;
+  ProjectService? _projectServiceForDispose;
   // フレーム一覧の折りたたみ状態（描画領域を広げるため
   // 任意のタイミングで開閉できるようにする）。
   bool _showFrameStrip = true;
@@ -484,6 +492,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         CanvasDockPanel.canvasPreview,
       );
     }
+    _projectServiceForDispose = context.read<ProjectService>();
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
     final newPerf = context.read<PerformanceService>();
     if (newPerf != _perf) {
@@ -496,6 +505,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (!_autosaveAttached) {
       _autosaveAttached = true;
       final autosave = context.read<AutosaveService>();
+      _autosaveService = autosave;
       autosave.attach(
         context.read<ProjectService>(),
         widget.projectId,
@@ -525,12 +535,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
   void dispose() {
     ImmersiveMode.exitWorkspace();
     _perf?.removeListener(_onPerfChanged);
-    if (_autosaveAttached) context.read<AutosaveService>().detach();
-    if (_workTrackingStarted) context.read<ProjectService>().endWorkTracking();
+    if (_autosaveAttached) _autosaveService?.detach();
+    final projectService = _projectServiceForDispose;
+    if (_workTrackingStarted) projectService?.endWorkTracking();
     // プロジェクトカードのサムネイルを編集終了時に更新する。
     // 非同期処理だがdispose()自体は同期のままfire-and-forgetで発火する
     // （ProjectService内部状態のみを参照するため、Widget破棄後も安全）。
-    context.read<ProjectService>().generateAndSaveThumbnail(widget.projectId);
+    projectService?.generateAndSaveThumbnail(widget.projectId);
     super.dispose();
   }
 

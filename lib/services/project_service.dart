@@ -781,10 +781,18 @@ class ProjectService extends ChangeNotifier {
     final index = layers.indexWhere((l) => l.id == layerId);
     if (index < 0) return null;
     final source = layers[index];
+    // TileManagerの実際のキーは「シーンID#フレーム番号#レイヤーID」の
+    // 合成キー（表示範囲レイヤーはホーム位置基準）であり、レイヤーIDを
+    // そのままキーにすることはできない。
+    final sourceKey = tileKeyFor(projectId, sceneId, frameIndex, layerId);
     final newId = _nextLayerId(projectId);
     final copy = source.copyWith(id: newId, name: nameOverride ?? source.name);
     _applyLayerInsert(projectId, sceneId, frameIndex, copy, index);
-    tileManagerOf(projectId).copyLayer(layerId, newId);
+    // 表示範囲レイヤー（common・timelineImage・timelineVideo・watermark）は
+    // ホーム位置の登録も必要（addLayer/addTextLayerと同様）。
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
+    final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
+    tileManagerOf(projectId).copyLayer(sourceKey, targetKey);
 
     _undoManager?.push(
       LayerAddUndoAction(
@@ -1177,14 +1185,41 @@ class ProjectService extends ChangeNotifier {
   /// （common・timelineImage・timelineVideo・watermark）はホームが別フレームに
   /// 存在する参照であり、フレーム単位の複製対象ではないため除外する。
   void duplicateFrame(String projectId, String sceneId, int frameIndex) {
+    insertDuplicatedFrame(
+      projectId: projectId,
+      sourceSceneId: sceneId,
+      sourceFrameIndex: frameIndex,
+      targetSceneId: sceneId,
+      insertAt: frameIndex + 1,
+    );
+  }
+
+  /// [sourceSceneId]の[sourceFrameIndex]番目のフレームを、[targetSceneId]の
+  /// [insertAt]位置へ複製して挿入する（シーンをまたいだフレームの
+  /// コピー＆ペースト・複製に使う共通処理）。レイヤー構成・描画データ
+  /// （タイル）の両方を複製する。表示範囲レイヤー（common・
+  /// timelineImage・timelineVideo・watermark）はホームが別フレームに
+  /// 存在する参照であり、フレーム単位の複製対象ではないため除外する。
+  void insertDuplicatedFrame({
+    required String projectId,
+    required String sourceSceneId,
+    required int sourceFrameIndex,
+    required String targetSceneId,
+    required int insertAt,
+  }) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
-    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
-    if (sceneIdx < 0) return;
-    final scene = scenes[sceneIdx];
-    if (frameIndex < 0 || frameIndex >= scene.frames.length) return;
-    final source = scene.frames[frameIndex];
-    final insertAt = frameIndex + 1;
+    final sourceSceneIdx = scenes.indexWhere((s) => s.id == sourceSceneId);
+    if (sourceSceneIdx < 0) return;
+    final sourceScene = scenes[sourceSceneIdx];
+    if (sourceFrameIndex < 0 || sourceFrameIndex >= sourceScene.frames.length) {
+      return;
+    }
+    final source = sourceScene.frames[sourceFrameIndex];
+    final targetSceneIdx = scenes.indexWhere((s) => s.id == targetSceneId);
+    if (targetSceneIdx < 0) return;
+    final targetScene = scenes[targetSceneIdx];
+    final clampedInsertAt = insertAt.clamp(0, targetScene.frames.length);
 
     // 挿入位置以降のフレームはindexが1つずつ後ろへずれる。描画データは
     // frameLayerKey(sceneId, frameIndex, layerId)でTileManagerに保存されている
@@ -1192,11 +1227,11 @@ class ProjectService extends ChangeNotifier {
     // 上書きを避ける。
     final tm = _tileManagers[projectId];
     if (tm != null) {
-      for (int i = scene.frames.length - 1; i >= insertAt; i--) {
-        for (final layer in scene.frames[i].layers) {
+      for (int i = targetScene.frames.length - 1; i >= clampedInsertAt; i--) {
+        for (final layer in targetScene.frames[i].layers) {
           tm.renameKey(
-            frameLayerKey(sceneId, i, layer.id),
-            frameLayerKey(sceneId, i + 1, layer.id),
+            frameLayerKey(targetSceneId, i, layer.id),
+            frameLayerKey(targetSceneId, i + 1, layer.id),
           );
         }
       }
@@ -1220,25 +1255,25 @@ class ProjectService extends ChangeNotifier {
       for (final layer in sourceLayers) {
         final newId = idMap[layer.id]!;
         tm.copyLayer(
-          frameLayerKey(sceneId, frameIndex, layer.id),
-          frameLayerKey(sceneId, insertAt, newId),
+          frameLayerKey(sourceSceneId, sourceFrameIndex, layer.id),
+          frameLayerKey(targetSceneId, clampedInsertAt, newId),
         );
       }
     }
 
     final newFrame = Frame(
-      index: insertAt,
+      index: clampedInsertAt,
       layers: newLayers,
       hold: source.hold,
     );
-    final newFrames = List<Frame>.from(scene.frames)
-      ..insert(insertAt, newFrame);
+    final newFrames = List<Frame>.from(targetScene.frames)
+      ..insert(clampedInsertAt, newFrame);
     final reindexed = newFrames
         .asMap()
         .entries
         .map((e) => e.value.copyWith(index: e.key))
         .toList();
-    scenes[sceneIdx] = scene.copyWith(frames: reindexed);
+    scenes[targetSceneIdx] = targetScene.copyWith(frames: reindexed);
 
     // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する（挿入位置
     // 以降がホームだったレイヤーは1つ後ろへ詰める）。
@@ -1246,7 +1281,7 @@ class ProjectService extends ChangeNotifier {
     if (homes != null) {
       final toShift = <String>[];
       homes.forEach((layerId, home) {
-        if (home.sceneId == sceneId && home.frameIndex >= insertAt) {
+        if (home.sceneId == targetSceneId && home.frameIndex >= clampedInsertAt) {
           toShift.add(layerId);
         }
       });

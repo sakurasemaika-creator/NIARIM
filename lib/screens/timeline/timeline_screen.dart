@@ -117,6 +117,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _currentFrame = 0;
   String? _selectedSceneId;
   bool _isPlaying = false;
+  // dispose()内でcontext.read<ProjectService>()を呼ぶと、画面が他の
+  // ウィジェットツリーの一括破棄に巻き込まれた際（例：GoRouterの
+  // go()によるスタック置き換えで前の画面がまとめて破棄されるケース）に
+  // 「破棄済みウィジェットの祖先を参照できない」例外になることがある。
+  // initState時点（要素がまだ確実にアクティブ）で取得して保持しておき、
+  // dispose()ではこちらを使う。
+  late final ProjectService _projectService;
   Timer? _playTimer;
   // プレビュー全画面化：確認・仕上がりチェックに
   // 集中できるよう、プレビューのみ＋再生コントロールだけを全画面表示する。
@@ -351,7 +358,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
 
     // 制作時間カウント（タイムラインモードのみカウント）
-    context.read<ProjectService>().beginWorkTracking(widget.projectId);
+    _projectService = context.read<ProjectService>();
+    _projectService.beginWorkTracking(widget.projectId);
   }
 
   List<ScrollController> get _trackScrollCtrls => [
@@ -393,7 +401,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       v.dispose();
     }
     _moveThumbnail?.dispose();
-    context.read<ProjectService>().endWorkTracking();
+    _projectService.endWorkTracking();
     super.dispose();
   }
 
