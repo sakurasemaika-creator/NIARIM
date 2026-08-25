@@ -272,6 +272,78 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+            _sectionLabel(context, l10n.workspaceTimelineSection),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l10n.workspaceTimelineHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Card(
+              elevation: 1,
+              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.workspaceTimelineTrackHeightLabel,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontFamily: 'Kuramubon',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // 実物大プレビュー：数字だけでは実際の見え方が
+                    // 分かりにくいため、実際のクリップと同じ見た目・
+                    // 高さの見本を1:1スケールで表示する。
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        width: 160,
+                        height: SettingsService.trackHeightForLevel(
+                          settings.timelineTrackHeightLevel,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[700],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          l10n.workspaceTimelinePreviewLabel,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.white,
+                            fontFamily: 'Kuramubon',
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    Slider(
+                      value: settings.timelineTrackHeightLevel.toDouble(),
+                      min: 1,
+                      max: 5,
+                      divisions: 4,
+                      label: '${settings.timelineTrackHeightLevel}',
+                      onChanged: (v) =>
+                          settings.setTimelineTrackHeightLevel(v.round()),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             _sectionLabel(context, l10n.workspaceEndCardSection),
             Padding(
               padding: const EdgeInsets.only(bottom: 8),

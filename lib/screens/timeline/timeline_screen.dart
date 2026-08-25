@@ -169,10 +169,59 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _endCardManuallyDeleted = false;
 
   // フレーム幅（px）。フレーム同士は隙間なく詰めて表示するため
-  // 左右マージンは0にしている。
-  static const double _frameW = 36.0;
+  // 左右マージンは0にしている。ピンチイン・ピンチアウトで
+  // _frameWidthScaleが変化し、フレーム一覧・各トラックが連動して
+  // 拡大縮小される（保存はせずセッション中のみ有効）。
+  static const double _frameWBase = 36.0;
+  double _frameWidthScale = 1.0;
+  double get _frameW => _frameWBase * _frameWidthScale;
   static const double _frameMargin = 0.0;
-  static const double _cellW = _frameW + _frameMargin * 2;
+  double get _cellW => _frameW + _frameMargin * 2;
+
+  // ピンチズーム用：現在タイムライン上に乗っているポインター位置。
+  final Map<int, Offset> _timelinePinchPointers = {};
+  double? _timelinePinchStartDistance;
+  double? _timelinePinchStartScale;
+
+  void _onTimelinePinchPointerDown(PointerDownEvent e) {
+    _timelinePinchPointers[e.pointer] = e.position;
+    if (_timelinePinchPointers.length == 2) {
+      final pts = _timelinePinchPointers.values.toList();
+      _timelinePinchStartDistance = (pts[0] - pts[1]).distance;
+      _timelinePinchStartScale = _frameWidthScale;
+    }
+  }
+
+  void _onTimelinePinchPointerMove(PointerMoveEvent e) {
+    if (!_timelinePinchPointers.containsKey(e.pointer)) return;
+    _timelinePinchPointers[e.pointer] = e.position;
+    if (_timelinePinchPointers.length != 2) return;
+    final startDistance = _timelinePinchStartDistance;
+    final startScale = _timelinePinchStartScale;
+    if (startDistance == null || startDistance <= 0 || startScale == null) {
+      return;
+    }
+    final pts = _timelinePinchPointers.values.toList();
+    final distance = (pts[0] - pts[1]).distance;
+    final newScale = (startScale * distance / startDistance).clamp(0.6, 2.5);
+    if ((newScale - _frameWidthScale).abs() > 0.01) {
+      setState(() => _frameWidthScale = newScale);
+    }
+  }
+
+  void _onTimelinePinchPointerUp(PointerEvent e) {
+    _timelinePinchPointers.remove(e.pointer);
+    if (_timelinePinchPointers.length < 2) {
+      _timelinePinchStartDistance = null;
+      _timelinePinchStartScale = null;
+    }
+  }
+
+  /// 動画・音源トラック1行の高さ（px）。ワークスペース設定の
+  /// 「タイムライン表示」（1〜5段階）から決まる。
+  double get _materialTrackHeight => SettingsService.trackHeightForLevel(
+    context.watch<SettingsService>().timelineTrackHeightLevel,
+  );
 
   // 横スクロール連動
   late final ScrollController _frameScrollCtrl;
@@ -595,7 +644,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   _buildPlaybackControls(),
                   _buildToolbar(),
                   _buildSceneTabs(),
-                  _buildFrameList(),
+                  // ピンチイン・ピンチアウトでフレーム幅（拡大縮小）を
+                  // 変更できるよう、フレーム一覧から各トラックまでを
+                  // Listenerで包み2本指の距離変化を監視する。子孫の
+                  // 横スクロールを妨げないようtranslucentで通過させる。
+                  Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: _onTimelinePinchPointerDown,
+                    onPointerMove: _onTimelinePinchPointerMove,
+                    onPointerUp: _onTimelinePinchPointerUp,
+                    onPointerCancel: _onTimelinePinchPointerUp,
+                    child: _buildFrameList(),
+                  ),
                   // 各種タイムライン行：デフォルトではプレビュー・
                   // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
                   // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
@@ -607,34 +667,41 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
                   // スクロールで広く見られるようにExpanded+スクロールにしている。
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          _buildCommonLayerTrack(),
-                          // シーン・フレームの複数選択モード中の一括操作バー
-                          // （小さいボタンではなく素材タイムラインの上に大きな
-                          // 3分割ボタンで表示）
-                          _buildMultiSelectActionBar(),
-                          _buildMaterialTrackGroup(
-                            type: MaterialType.video,
-                            icon: Icons.videocam,
-                            defaultLabel: l10n.projectListMaterialVideo,
-                            allClips: _videoClips,
-                            addColor: Colors.blue[700]!,
-                          ),
-                          _buildMaterialTrackGroup(
-                            type: MaterialType.audio,
-                            icon: Icons.audiotrack,
-                            defaultLabel: l10n.projectListMaterialAudio,
-                            allClips: _audioClips,
-                            addColor: Colors.orange[700]!,
-                          ),
-                          _buildCameraTrack(),
-                          _buildMarkerTrack(),
-                          _buildEffectFilterTrack(),
-                          _buildEndCardTrack(),
-                          if (adService.shouldShowAds) const AdBannerWidget(),
-                        ],
+                    child: Listener(
+                      behavior: HitTestBehavior.translucent,
+                      onPointerDown: _onTimelinePinchPointerDown,
+                      onPointerMove: _onTimelinePinchPointerMove,
+                      onPointerUp: _onTimelinePinchPointerUp,
+                      onPointerCancel: _onTimelinePinchPointerUp,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _buildCommonLayerTrack(),
+                            // シーン・フレームの複数選択モード中の一括操作バー
+                            // （小さいボタンではなく素材タイムラインの上に大きな
+                            // 3分割ボタンで表示）
+                            _buildMultiSelectActionBar(),
+                            _buildMaterialTrackGroup(
+                              type: MaterialType.video,
+                              icon: Icons.videocam,
+                              defaultLabel: l10n.projectListMaterialVideo,
+                              allClips: _videoClips,
+                              addColor: Colors.blue[700]!,
+                            ),
+                            _buildMaterialTrackGroup(
+                              type: MaterialType.audio,
+                              icon: Icons.audiotrack,
+                              defaultLabel: l10n.projectListMaterialAudio,
+                              allClips: _audioClips,
+                              addColor: Colors.orange[700]!,
+                            ),
+                            _buildCameraTrack(),
+                            _buildMarkerTrack(),
+                            _buildEffectFilterTrack(),
+                            _buildEndCardTrack(),
+                            if (adService.shouldShowAds) const AdBannerWidget(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -2607,7 +2674,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }) {
     final total = _totalFrames;
     return Container(
-      height: 32,
+      height: _materialTrackHeight,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Row(
         children: [
@@ -2739,11 +2806,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
           return const SizedBox.shrink();
         }
         const handleW = 8.0;
+        const rowPadding = 3.0;
         return Positioned(
           left: left.clamp(0.0, double.infinity),
-          top: 3,
+          top: rowPadding,
           width: width.clamp(handleW * 2 + 4, double.infinity),
-          height: 26,
+          height: _materialTrackHeight - rowPadding * 2,
           child: GestureDetector(
             onTap: () => _showEditClipDialog(clip),
             // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する

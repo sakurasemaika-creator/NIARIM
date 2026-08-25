@@ -124,6 +124,30 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ─── タイムラインモードの各素材トラックの高さ ─────────────────────────
+  // 動画・音源などのタイムライントラック1行の高さを1〜5の5段階で
+  // 調整する（ワークスペース設定「タイムライン表示」）。既定は見やすさを
+  // 優先して大きめの4段階目にしている。
+  int _timelineTrackHeightLevel = 4;
+
+  int get timelineTrackHeightLevel => _timelineTrackHeightLevel;
+
+  /// レベル（1〜5）を実際のトラック高さ（px）へ変換する。
+  static double trackHeightForLevel(int level) {
+    const heights = {1: 28.0, 2: 36.0, 3: 44.0, 4: 52.0, 5: 60.0};
+    return heights[level.clamp(1, 5)]!;
+  }
+
+  Future<void> setTimelineTrackHeightLevel(int value) async {
+    _timelineTrackHeightLevel = value.clamp(1, 5);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      'timeline_track_height_level',
+      _timelineTrackHeightLevel,
+    );
+    notifyListeners();
+  }
+
   // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
   // プレビュー）の横幅。ドラッグハンドルで変更でき、アプリ全体で
   // 共通の設定として保存される。
@@ -483,6 +507,8 @@ class SettingsService extends ChangeNotifier {
     _holdEyedropperSeconds = prefs.getDouble('hold_eyedropper_seconds') ?? 0.5;
     _timelinePreviewHeightFraction =
         prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
+    _timelineTrackHeightLevel =
+        prefs.getInt('timeline_track_height_level') ?? 4;
     _desktopPanelWidth = prefs.getDouble('desktop_panel_width') ?? 280.0;
     _desktopToolPanelWidth =
         prefs.getDouble('desktop_tool_panel_width') ?? 280.0;
