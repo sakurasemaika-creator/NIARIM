@@ -85,7 +85,6 @@ const _folderSentinel = Object();
 class ProjectService extends ChangeNotifier {
   final List<Project> _projects = [];
   final List<Project> _trash = [];
-  final List<Project> _shared = [];
   final List<ProjectFolder> _folders = [];
   // ID採番用カウンター。DateTime.now().millisecondsSinceEpoch単独だと、
   // 同一ミリ秒内に連続生成した場合にIDが衝突しうるため併用する。
@@ -147,7 +146,13 @@ class ProjectService extends ChangeNotifier {
 
   List<Project> get projects => List.unmodifiable(_projects);
   List<Project> get trash => List.unmodifiable(_trash);
-  List<Project> get shared => List.unmodifiable(_shared);
+  // 「共有」タブ：_projects内の.niashareインポート由来プロジェクトのみを
+  // 絞り込んだビュー（独立リストではなく_projectsが唯一のデータソース。
+  // こうすることでキャンバス・タイムライン・書き出し等の既存のID検索
+  // （projects.where((p) => p.id == ...)）がそのまま共有プロジェクトにも
+  // 効く）。
+  List<Project> get shared =>
+      List.unmodifiable(_projects.where((p) => p.isSharedImport));
   List<ProjectFolder> get folders => List.unmodifiable(_folders);
   List<Project> get favorites => _projects.where((p) => p.isFavorite).toList();
 
@@ -901,6 +906,7 @@ class ProjectService extends ChangeNotifier {
       id: newId,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
+      isSharedImport: true,
     );
     _projects.add(project);
     _scenes[newId] = data.scenes;
@@ -2617,9 +2623,11 @@ class ProjectService extends ChangeNotifier {
   /// （プロジェクト一覧タブのdeleteFolder()と同じ考え方）。
   Future<void> deleteSharedFolder(String folderId) async {
     _sharedFolders.removeWhere((f) => f.id == folderId);
-    for (int i = 0; i < _shared.length; i++) {
-      if (_shared[i].sharedFolderId == folderId) {
-        _shared[i] = _shared[i].copyWith(sharedFolderId: null);
+    for (int i = 0; i < _projects.length; i++) {
+      if (_projects[i].isSharedImport &&
+          _projects[i].sharedFolderId == folderId) {
+        _projects[i] = _projects[i].copyWith(sharedFolderId: null);
+        _saveAsync(_projects[i].id);
       }
     }
     await _persistSharedFolders();
@@ -2627,19 +2635,12 @@ class ProjectService extends ChangeNotifier {
   }
 
   Future<void> moveToSharedFolder(String projectId, String? folderId) async {
-    final idx = _shared.indexWhere((p) => p.id == projectId);
+    final idx = _projects.indexWhere(
+      (p) => p.id == projectId && p.isSharedImport,
+    );
     if (idx < 0) return;
-    _shared[idx] = _shared[idx].copyWith(sharedFolderId: folderId);
-    // _projectsにも同じプロジェクトが存在する場合（プロジェクト一覧・共有
-    // 両方に同じProjectオブジェクトが載るケース）はそちらも同期し、
-    // .niaproへの保存（_saveAsync）もそちら経由で行う。
-    final mainIdx = _projects.indexWhere((p) => p.id == projectId);
-    if (mainIdx >= 0) {
-      _projects[mainIdx] = _projects[mainIdx].copyWith(
-        sharedFolderId: folderId,
-      );
-      _saveAsync(projectId);
-    }
+    _projects[idx] = _projects[idx].copyWith(sharedFolderId: folderId);
+    _saveAsync(projectId);
     notifyListeners();
   }
 

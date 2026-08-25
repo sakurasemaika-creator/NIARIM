@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/models/project.dart';
 import 'package:niarim/services/project_service.dart';
 
 /// 仕様書19：プロジェクト管理仕様「フォルダ管理」を検証する。
@@ -85,5 +87,75 @@ void main() {
     expect(restoredRoot.color, 0xFFFF5C7A);
     expect(restoredRoot.isFavorite, isTrue);
     expect(restarted.folders.firstWhere((f) => f.id == child.id).parentFolderId, root.id);
+  });
+
+  // .niashareインポート（importSharedProject）で追加したプロジェクトが
+  // 「共有」タブ（ProjectService.shared）に現れ、プロジェクト一覧タブ側
+  // では絞り込んで除外できることを検証する。
+  test('.niashareインポートしたプロジェクトは共有タブに入り、通常一覧からは絞り込める', () async {
+    final service = ProjectService();
+    await service.init();
+    final own = await service.createProject(
+      name: '自作作品', fps: 12, durationSeconds: 5, backgroundColor: 0xFFFFFFFF,
+    );
+
+    final incoming = Project(
+      id: 'ignored', // importSharedProjectが新規IDを採番するため無視される
+      name: '受け取った作品',
+      fps: 24,
+      durationSeconds: 3,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+      totalWorkSeconds: 0,
+    );
+    final imported = await service.importSharedProject(
+      NiaproData(project: incoming, scenes: const [], tileData: const {}),
+    );
+
+    expect(imported.isSharedImport, isTrue);
+    expect(service.shared.map((p) => p.id), contains(imported.id));
+    expect(service.projects.map((p) => p.id), contains(imported.id));
+    // 「共有」タブと「プロジェクト」タブは同じ_projectsから絞り込むため、
+    // 自作プロジェクトは共有タブに現れず、逆に共有インポート分はプロジェクト
+    // タブ側のフィルタ（!isSharedImport）で除外できる。
+    expect(service.shared.map((p) => p.id), isNot(contains(own.id)));
+    final projectsTabList = service.projects.where((p) => !p.isSharedImport);
+    expect(projectsTabList.map((p) => p.id), isNot(contains(imported.id)));
+    expect(projectsTabList.map((p) => p.id), contains(own.id));
+  });
+
+  test('共有タブ専用フォルダへの移動・削除は共有インポート分にのみ作用する', () async {
+    final service = ProjectService();
+    await service.init();
+    final own = await service.createProject(
+      name: '自作作品2', fps: 12, durationSeconds: 5, backgroundColor: 0xFFFFFFFF,
+    );
+    final incoming = Project(
+      id: 'ignored',
+      name: '受け取った作品2',
+      fps: 24,
+      durationSeconds: 3,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+      totalWorkSeconds: 0,
+    );
+    final imported = await service.importSharedProject(
+      NiaproData(project: incoming, scenes: const [], tileData: const {}),
+    );
+    final folder = await service.createSharedFolder('もらった動画');
+
+    // 通常プロジェクト（isSharedImport=false）はプロジェクト一覧タブ専用の
+    // フォルダしか対象にできないため、共有タブ用フォルダへの移動は無視される。
+    await service.moveToSharedFolder(own.id, folder.id);
+    expect(service.projects.firstWhere((p) => p.id == own.id).sharedFolderId, isNull);
+
+    await service.moveToSharedFolder(imported.id, folder.id);
+    expect(service.shared.firstWhere((p) => p.id == imported.id).sharedFolderId, folder.id);
+
+    await service.deleteSharedFolder(folder.id);
+    expect(service.sharedFolders.any((f) => f.id == folder.id), isFalse);
+    expect(service.shared.firstWhere((p) => p.id == imported.id).sharedFolderId, isNull);
   });
 }

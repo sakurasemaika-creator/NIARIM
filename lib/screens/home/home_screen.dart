@@ -433,6 +433,13 @@ class _HomeScreenState extends State<HomeScreen>
                         if (_searchQuery.trim().isEmpty) _buildBreadcrumb(),
                         Expanded(
                           child: ProjectListWidget(
+                            // 「共有」タブ（.niashareインポート由来）は別枠の
+                            // 一覧のため、プロジェクトタブには表示しない。
+                            projects: context
+                                .watch<ProjectService>()
+                                .projects
+                                .where((p) => !p.isSharedImport)
+                                .toList(),
                             viewMode: _viewMode,
                             sortMode: _sortMode,
                             isSelectionMode: _isSelectionMode,

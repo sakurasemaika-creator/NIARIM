@@ -21,6 +21,10 @@ class Project {
   // 独立した、共有タブ専用のフォルダ階層。仕様：ホーム画面「共有」タブへの
   // フォルダ新規追加機能）。
   final String? sharedFolderId;
+  // .niashareの受信・インポートで追加されたプロジェクトかどうか。
+  // ホーム画面「共有」タブ（プロジェクト一覧タブとは別枠の一覧）の
+  // 絞り込み条件として使う。
+  final bool isSharedImport;
   final bool isFavorite;
   final String? thumbnailPath;
   final int sizeBytes;
@@ -50,6 +54,7 @@ class Project {
     required this.totalWorkSeconds,
     this.folderId,
     this.sharedFolderId,
+    this.isSharedImport = false,
     this.isFavorite = false,
     this.thumbnailPath,
     this.sizeBytes = 0,
@@ -78,6 +83,7 @@ class Project {
     int? totalWorkSeconds,
     Object? folderId = _projectSentinel,
     Object? sharedFolderId = _projectSentinel,
+    bool? isSharedImport,
     bool? isFavorite,
     Object? thumbnailPath = _projectSentinel,
     int? sizeBytes,
@@ -98,6 +104,7 @@ class Project {
       totalWorkSeconds: totalWorkSeconds ?? this.totalWorkSeconds,
       folderId: folderId == _projectSentinel ? this.folderId : folderId as String?,
       sharedFolderId: sharedFolderId == _projectSentinel ? this.sharedFolderId : sharedFolderId as String?,
+      isSharedImport: isSharedImport ?? this.isSharedImport,
       isFavorite: isFavorite ?? this.isFavorite,
       thumbnailPath: thumbnailPath == _projectSentinel ? this.thumbnailPath : thumbnailPath as String?,
       sizeBytes: sizeBytes ?? this.sizeBytes,
