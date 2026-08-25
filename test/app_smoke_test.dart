@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
+import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/project_service.dart';
 
 /// アプリを実際に起動し、主要画面を人手を介さず自動で巡回して、
@@ -288,5 +290,129 @@ void main() {
       );
     },
     timeout: const Timeout(Duration(seconds: 90)),
+  );
+
+  // ここから先は、独立したルートを持たずNavigator.push（MaterialPageRoute）
+  // で開く画面（対象UIのタップ操作が別途必要な画面）を巡回する。
+
+  testWidgets(
+    '起動→自動塗りプリセット作成→詳細画面（別ルート）を例外なく表示できる',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      // ホーム画面にも同じ+アイコンのFABがあるため、pushではなくgoで
+      // スタックごと置き換えて、FAB検索が2件ヒットしないようにする。
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).go('/autofill-presets');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      // FABはScaffoldのデフォルトHeroアニメーションの対象になるため、
+      // 遷移アニメーションが完全に収まってからタップする必要がある。
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '自動塗りプリセット画面への遷移で例外');
+
+      // FAB→「新規作成」を選び、プリセットを1件作成する。ホーム画面にも
+      // 同じ+アイコンのFABが（画面遷移アニメーション中などに）同時に
+      // 存在し得るため、AutofillPresetScreen配下のFABに絞って探す。
+      final fabFinder = find.descendant(
+        of: find.byType(AutofillPresetScreen),
+        matching: find.byType(FloatingActionButton),
+      );
+      expect(fabFinder, findsOneWidget);
+      await tester.tap(fabFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '新規作成/読み込み選択シート表示で例外');
+
+      final newPresetOptionFinder = find.text('新規作成');
+      expect(newPresetOptionFinder, findsWidgets);
+      await tester.tap(newPresetOptionFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '新規作成ダイアログ表示で例外');
+
+      const presetName = 'スモークテスト用';
+      await tester.enterText(find.byType(TextField), presetName);
+      await tester.pump(const Duration(milliseconds: 100));
+      final createPresetFinder = find.text('作成');
+      expect(createPresetFinder, findsWidgets);
+      await tester.tap(createPresetFinder.last);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'プリセット作成で例外');
+
+      // 一覧に追加されたカードをタップして詳細画面（MaterialPageRoute）を開く。
+      final presetCardFinder = find.text(presetName);
+      expect(presetCardFinder, findsWidgets);
+      await tester.tap(presetCardFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'プリセット詳細画面への遷移で例外');
+      expect(find.byType(Scaffold), findsWidgets);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    '起動→ホーム→設定→ワークスペース設定→PCレイアウト詳細設定画面'
+    '（別ルート）を例外なく表示できる',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).push('/settings/workspace');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'ワークスペース設定画面への遷移で例外');
+
+      final pcLayoutButtonFinder = find.byIcon(
+        Icons.dashboard_customize_outlined,
+      );
+      expect(pcLayoutButtonFinder, findsOneWidget);
+      await tester.tap(pcLayoutButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'PCレイアウト詳細設定画面への遷移で例外');
+      expect(find.byType(Scaffold), findsWidgets);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    '起動画面→コミュニティ画面→作品詳細→投稿者別作品一覧画面'
+    '（別ルート）を例外なく表示できる',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: '起動画面の描画で例外');
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      expect(communityButtonFinder, findsOneWidget);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+
+      // 作品カードをタップして詳細ボトムシートを開く。
+      final workCardFinder = find.byType(CommunityWorkCard);
+      expect(workCardFinder, findsWidgets);
+      await tester.tap(workCardFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '作品詳細シート表示で例外');
+
+      // シート内の投稿者アイコン（CircleAvatar、一覧カード側には無い）を
+      // タップして投稿者別作品一覧画面（MaterialPageRoute）を開く。
+      final authorAvatarFinder = find.byType(CircleAvatar);
+      expect(authorAvatarFinder, findsWidgets);
+      await tester.tap(authorAvatarFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '投稿者別作品一覧画面への遷移で例外');
+      expect(find.byType(Scaffold), findsWidgets);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
   );
 }
