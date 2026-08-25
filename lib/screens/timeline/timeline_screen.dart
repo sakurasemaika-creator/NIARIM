@@ -166,6 +166,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _clipDragStartFrame = 0;
   int _clipDragStartLength = 0;
 
+  // 素材クリップ（動画・音声）の複数選択モード。クリップの長押しは
+  // 既に移動ドラッグに使っているため、専用の「選択」ボタンで切り替える。
+  bool _isClipMultiSelect = false;
+  final Set<String> _selectedClipIds = {};
+  // クリップのクリップボード。貼り付け先は常に選択中シーンの現在地
+  // （赤枠がついている_currentFrameの位置）で、コピー元シーンが選択中の
+  // シーンと異なる場合は貼り付けを行わない（クリップ一覧はシーンごとに
+  // 読み込まれるため）。
+  ({String sourceSceneId, List<_TrackClip> clips, bool isCut})? _clipClipboard;
+
   // カメラキーフレームマーカーの長押し不要ドラッグ用の一時状態。持ち方は
   // クリップドラッグと同じアンカー方式だが、ProjectServiceへの反映は
   // ドラッグ終了時の1回のみに留める（ドラッグ中に毎回notifyListeners()
@@ -524,14 +534,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// シーン複数選択モード中は選択中のシーンを、フレーム複数選択モード中は
-  /// 選択中のフレームをクリップボードへコピーする（Ctrl+C）。シーンの
-  /// クリップボードとフレームのクリップボードは排他（片方をコピーすると
-  /// もう片方は破棄される）。
+  /// 選択中のフレームを、クリップ複数選択モード中は選択中のクリップを
+  /// クリップボードへコピーする（Ctrl+C）。3種類のクリップボードは互いに
+  /// 排他（いずれか1つをコピーすると他は破棄される）。
   void _copySelectionToClipboard() {
     if (_isSceneMultiSelect && _selectedSceneIds.isNotEmpty) {
       setState(() {
         _sceneClipboard = (ids: _selectedSceneIds.toList(), isCut: false);
         _frameClipboard = null;
+        _clipClipboard = null;
       });
     } else if (_isFrameMultiSelect && _selectedFrameIndices.isNotEmpty) {
       final sceneId = _selectedSceneId;
@@ -543,18 +554,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
           isCut: false,
         );
         _sceneClipboard = null;
+        _clipClipboard = null;
+      });
+    } else if (_isClipMultiSelect && _selectedClipIds.isNotEmpty) {
+      _copySelectedClips();
+      setState(() {
+        _sceneClipboard = null;
+        _frameClipboard = null;
       });
     }
   }
 
   /// コピーと同様にクリップボードへ記録するが、貼り付け確定時に元の
-  /// シーン・フレームを削除する「切り取り」として記録する（Ctrl+X）。
-  /// 貼り付け前にキャンセルした場合は何も削除されない。
+  /// シーン・フレーム・クリップを削除する「切り取り」として記録する
+  /// （Ctrl+X）。貼り付け前にキャンセルした場合は何も削除されない。
   void _cutSelectionToClipboard() {
     if (_isSceneMultiSelect && _selectedSceneIds.isNotEmpty) {
       setState(() {
         _sceneClipboard = (ids: _selectedSceneIds.toList(), isCut: true);
         _frameClipboard = null;
+        _clipClipboard = null;
       });
     } else if (_isFrameMultiSelect && _selectedFrameIndices.isNotEmpty) {
       final sceneId = _selectedSceneId;
@@ -566,18 +585,28 @@ class _TimelineScreenState extends State<TimelineScreen> {
           isCut: true,
         );
         _sceneClipboard = null;
+        _clipClipboard = null;
+      });
+    } else if (_isClipMultiSelect && _selectedClipIds.isNotEmpty) {
+      _cutSelectedClips();
+      setState(() {
+        _sceneClipboard = null;
+        _frameClipboard = null;
       });
     }
   }
 
   /// クリップボードの内容に応じてシーン貼り付けモード・フレーム貼り付け
-  /// モードのいずれかを開始する（Ctrl+V）。貼り付け先の指定には既存の
-  /// 移動モードと同じカーソル固定UIを再利用する。
+  /// モード・クリップの貼り付けのいずれかを行う（Ctrl+V）。シーン・
+  /// フレームは既存の移動モードと同じカーソル固定UIで貼り付け先を選ぶが、
+  /// クリップは常に現在地（_currentFrame）へ即座に貼り付ける。
   void _pasteFromClipboard() {
     if (_sceneClipboard != null) {
       _startScenePasteMode();
     } else if (_frameClipboard != null) {
       _startFramePasteMode();
+    } else if (_clipClipboard != null) {
+      _pasteClipsAtCurrentFrame();
     }
   }
 
@@ -837,6 +866,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 // （小さいボタンではなく素材タイムラインの上に大きな
                                 // 3分割ボタンで表示）
                                 _buildMultiSelectActionBar(),
+                                _buildClipToolbar(),
                                 _buildMaterialTrackGroup(
                                   type: MaterialType.video,
                                   icon: Icons.videocam,
@@ -3155,21 +3185,39 @@ class _TimelineScreenState extends State<TimelineScreen> {
         }
         const handleW = 8.0;
         const rowPadding = 3.0;
+        final isSelected = _selectedClipIds.contains(clip.id);
         return Positioned(
           left: left.clamp(0.0, double.infinity),
           top: rowPadding,
           width: width.clamp(handleW * 2 + 4, double.infinity),
           height: _materialTrackHeight - rowPadding * 2,
           child: GestureDetector(
-            onTap: () => _showEditClipDialog(clip),
+            onTap: () {
+              if (_isClipMultiSelect) {
+                setState(() {
+                  if (isSelected) {
+                    _selectedClipIds.remove(clip.id);
+                  } else {
+                    _selectedClipIds.add(clip.id);
+                  }
+                });
+              } else {
+                _showEditClipDialog(clip);
+              }
+            },
             // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
             // （「開始フレーム変更：タイムライン上で表示開始
-            // 位置を変更」）。
-            onLongPressStart: (d) =>
-                _beginClipDrag(clip, _ClipDragMode.move, d.globalPosition.dx),
-            onLongPressMoveUpdate: (d) =>
-                _updateClipDrag(clip, d.globalPosition.dx),
-            onLongPressEnd: (_) => _endClipDrag(clip),
+            // 位置を変更」）。複数選択モード中は選択操作と競合するため無効化する。
+            onLongPressStart: _isClipMultiSelect
+                ? null
+                : (d) =>
+                      _beginClipDrag(clip, _ClipDragMode.move, d.globalPosition.dx),
+            onLongPressMoveUpdate: _isClipMultiSelect
+                ? null
+                : (d) => _updateClipDrag(clip, d.globalPosition.dx),
+            onLongPressEnd: _isClipMultiSelect
+                ? null
+                : (_) => _endClipDrag(clip),
             child: Stack(
               children: [
                 Positioned.fill(
@@ -3181,7 +3229,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       borderRadius: BorderRadius.circular(4),
                       border: isDragging
                           ? Border.all(color: Colors.white, width: 1.5)
-                          : null,
+                          : (isSelected
+                                ? Border.all(color: Colors.white, width: 1.5)
+                                : null),
                       boxShadow: isDragging
                           ? null
                           : [
@@ -3205,11 +3255,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
                   ),
                 ),
+                if (_isClipMultiSelect)
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: Icon(
+                      isSelected
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
                 // 左右端のドラッグハンドル：表示範囲（長さ）を変更する
                 // （「使用範囲変更：タイムライン上でドラッグ
-                // ハンドルにより変更」）。
-                _buildClipResizeHandle(clip, handleW, isLeft: true),
-                _buildClipResizeHandle(clip, handleW, isLeft: false),
+                // ハンドルにより変更」）。複数選択モード中は選択操作と
+                // 競合するため表示しない。
+                if (!_isClipMultiSelect) ...[
+                  _buildClipResizeHandle(clip, handleW, isLeft: true),
+                  _buildClipResizeHandle(clip, handleW, isLeft: false),
+                ],
               ],
             ),
           ),
@@ -3437,6 +3502,76 @@ class _TimelineScreenState extends State<TimelineScreen> {
               bigButton(l10n.layerPanelSelectAll, onSelectAll),
               bigButton(l10n.layerPanelDeselectAll, onDeselectAll),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 素材クリップ（動画・音声）の複数選択・コピー・切り取り・貼り付け
+  /// ツールバー。クリップの長押しは移動ドラッグに使っているため、
+  /// 複数選択への切り替えはこの専用ボタンから行う。貼り付けは複数選択に
+  /// 入っていなくてもクリップボードに内容がある間はいつでも行える
+  /// （貼り付け先は常に現在地=_currentFrame）。
+  Widget _buildClipToolbar() {
+    if (_videoClips.isEmpty &&
+        _audioClips.isEmpty &&
+        _clipClipboard == null) {
+      return const SizedBox.shrink();
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final canPaste =
+        _clipClipboard != null &&
+        _clipClipboard!.sourceSceneId == _selectedSceneId;
+
+    Widget smallButton(String label, VoidCallback? onTap, {Color? color}) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: OutlinedButton(
+          onPressed: onTap,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: color,
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          child: Text(label, style: const TextStyle(fontSize: 11)),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (_isClipMultiSelect) ...[
+            smallButton(l10n.layerPanelSelectAll, _selectAllClips),
+            smallButton(l10n.layerPanelDeselectAll, _deselectAllClips),
+            smallButton(
+              l10n.commonCopy,
+              _selectedClipIds.isNotEmpty ? _copySelectedClips : null,
+            ),
+            smallButton(
+              l10n.commonCut,
+              _selectedClipIds.isNotEmpty ? _cutSelectedClips : null,
+            ),
+            smallButton(
+              l10n.commonDelete,
+              _selectedClipIds.isNotEmpty ? _deleteSelectedClips : null,
+              color: Colors.red,
+            ),
+          ],
+          smallButton(
+            l10n.commonPaste,
+            canPaste ? _pasteClipsAtCurrentFrame : null,
+          ),
+          smallButton(
+            _isClipMultiSelect
+                ? l10n.timelineClipSelectDoneButton
+                : l10n.toolbarItemSelect,
+            _toggleClipMultiSelect,
           ),
         ],
       ),
@@ -4905,14 +5040,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// 素材クリップ（画像・動画・音声）を複製し、元クリップの直後へ配置する。
-  /// 音声はAudioClipとして、画像・動画は元レイヤーのピクセルデータを
-  /// 新規レイヤーへコピーした上で表示範囲を複製先の位置へずらして追加する。
   Future<void> _duplicateClip(_TrackClip clip) async {
+    final maxStart = (_totalFrames - clip.lengthFrames).clamp(0, 1 << 30);
+    final newStart = (clip.startFrame + clip.lengthFrames).clamp(0, maxStart);
+    await _duplicateClipAt(clip, newStart);
+  }
+
+  /// 素材クリップ（画像・動画・音声）を複製し、指定の開始フレーム
+  /// （・任意で行番号）へ配置する。複製ボタン（元クリップの直後へ配置）と
+  /// クリップの貼り付け（コピー元との相対位置・任意の行を指定）の
+  /// 両方から使う共通処理。音声はAudioClipとして、画像・動画は元レイヤーの
+  /// ピクセルデータを新規レイヤーへコピーした上で表示範囲を複製先の位置へ
+  /// ずらして追加する。
+  Future<void> _duplicateClipAt(
+    _TrackClip clip,
+    int newStart, {
+    int? overrideTrackRow,
+  }) async {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
     final projectService = context.read<ProjectService>();
-    final maxStart = (_totalFrames - clip.lengthFrames).clamp(0, 1 << 30);
-    final newStart = (clip.startFrame + clip.lengthFrames).clamp(0, maxStart);
+    final targetRow = overrideTrackRow ?? clip.trackRow;
 
     if (clip.trackType == _ClipTrackType.audio) {
       final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
@@ -4928,7 +5076,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           volume: clip.volume,
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
-          trackRow: clip.trackRow,
+          trackRow: targetRow,
         ),
       );
       if (mounted) {
@@ -4947,7 +5095,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               fadeIn: clip.fadeIn,
               fadeOut: clip.fadeOut,
               useEnd: clip.lengthFrames - 1,
-              trackRow: clip.trackRow,
+              trackRow: targetRow,
             ),
           ),
         );
@@ -5018,7 +5166,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       useStart: clip.useStart,
       useEnd: clip.useEnd,
       videoOpacity: clip.videoOpacity,
-      trackRow: clip.trackRow,
+      trackRow: targetRow,
     );
     setState(() {
       if (clip.trackType == _ClipTrackType.video) {
@@ -5027,6 +5175,250 @@ class _TimelineScreenState extends State<TimelineScreen> {
         _imageClips.add(newClip);
       }
     });
+  }
+
+  // ─── クリップの複数選択・コピー・切り取り・貼り付け ─────────
+
+  void _toggleClipMultiSelect() {
+    setState(() {
+      _isClipMultiSelect = !_isClipMultiSelect;
+      _selectedClipIds.clear();
+    });
+  }
+
+  void _selectAllClips() {
+    setState(() {
+      _selectedClipIds
+        ..clear()
+        ..addAll(_videoClips.map((c) => c.id))
+        ..addAll(_audioClips.map((c) => c.id));
+    });
+  }
+
+  void _deselectAllClips() {
+    setState(() {
+      _selectedClipIds.clear();
+      _isClipMultiSelect = false;
+    });
+  }
+
+  /// 現在の値をそのままコピーした新しい_TrackClipインスタンスを返す
+  /// （クリップボードへ保存する時点のスナップショットとして使う。以後の
+  /// ドラッグ操作等で元のインスタンスが変化してもクリップボードの内容は
+  /// 変わらない）。
+  _TrackClip _snapshotClip(_TrackClip c) => _TrackClip(
+    id: c.id,
+    label: c.label,
+    startFrame: c.startFrame,
+    lengthFrames: c.lengthFrames,
+    color: c.color,
+    trackType: c.trackType,
+    filePath: c.filePath,
+    materialId: c.materialId,
+    volume: c.volume,
+    fadeIn: c.fadeIn,
+    fadeOut: c.fadeOut,
+    useStart: c.useStart,
+    useEnd: c.useEnd,
+    videoOpacity: c.videoOpacity,
+    trackRow: c.trackRow,
+  );
+
+  void _copySelectedClips() {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null || _selectedClipIds.isEmpty) return;
+    final selected = [..._videoClips, ..._audioClips]
+        .where((c) => _selectedClipIds.contains(c.id))
+        .map(_snapshotClip)
+        .toList();
+    if (selected.isEmpty) return;
+    setState(() {
+      _clipClipboard = (
+        sourceSceneId: sceneId,
+        clips: selected,
+        isCut: false,
+      );
+    });
+  }
+
+  void _cutSelectedClips() {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null || _selectedClipIds.isEmpty) return;
+    final selected = [..._videoClips, ..._audioClips]
+        .where((c) => _selectedClipIds.contains(c.id))
+        .map(_snapshotClip)
+        .toList();
+    if (selected.isEmpty) return;
+    setState(() {
+      _clipClipboard = (sourceSceneId: sceneId, clips: selected, isCut: true);
+    });
+  }
+
+  void _deleteSelectedClips() {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null || _selectedClipIds.isEmpty) return;
+    final targets = [..._videoClips, ..._audioClips]
+        .where((c) => _selectedClipIds.contains(c.id))
+        .toList();
+    for (final clip in targets) {
+      setState(() {
+        _videoClips.remove(clip);
+        _audioClips.remove(clip);
+      });
+      _deletePersistedClip(clip, sceneId);
+    }
+    setState(() {
+      _selectedClipIds.clear();
+      _isClipMultiSelect = false;
+    });
+  }
+
+  /// クリップボードの内容を、選択中シーンの現在地（_currentFrame）へ
+  /// 貼り付ける。複数クリップをまとめてコピーしていた場合はコピー時の
+  /// 相対位置関係を保ったまま貼り付ける。貼り付け先が既存の他のクリップと
+  /// 重なる場合は、前に配置・後ろに配置・重ねて配置（行を1つ増やす）の
+  /// 3択をユーザーへ確認する。
+  Future<void> _pasteClipsAtCurrentFrame() async {
+    final clipboard = _clipClipboard;
+    final sceneId = _selectedSceneId;
+    if (clipboard == null || sceneId == null) return;
+    // クリップの一覧はシーンごとにロードされるため、コピー元と異なる
+    // シーンを見ている間は貼り付けを行わない（ボタン側でも無効化する）。
+    if (clipboard.sourceSceneId != sceneId) return;
+
+    final anchor = clipboard.clips
+        .map((c) => c.startFrame)
+        .reduce((a, b) => a < b ? a : b);
+    final targets = <String, int>{
+      for (final c in clipboard.clips)
+        c.id: (_currentFrame + (c.startFrame - anchor)).clamp(0, 1 << 30),
+    };
+
+    // 貼り付け先が既存クリップと重なっていないか判定する。切り取りの
+    // 場合は貼り付け後に削除される元クリップ自身との重なりは無視する。
+    final excludeIds = clipboard.isCut
+        ? clipboard.clips.map((c) => c.id).toSet()
+        : <String>{};
+    final conflicts = <({int start, int end})>[];
+    final conflictingClipIds = <String>{};
+    for (final c in clipboard.clips) {
+      final existingOfType = c.trackType == _ClipTrackType.audio
+          ? _audioClips
+          : _videoClips;
+      final start = targets[c.id]!;
+      final end = start + c.lengthFrames;
+      for (final other in existingOfType) {
+        if (excludeIds.contains(other.id)) continue;
+        if (other.trackRow != c.trackRow) continue;
+        final oStart = other.startFrame;
+        final oEnd = other.startFrame + other.lengthFrames;
+        if (start < oEnd && oStart < end) {
+          conflicts.add((start: oStart, end: oEnd));
+          conflictingClipIds.add(c.id);
+        }
+      }
+    }
+
+    String strategy = 'keep';
+    if (conflicts.isNotEmpty) {
+      final chosen = await _showClipOverlapDialog();
+      if (chosen == null || !mounted) return; // キャンセル
+      strategy = chosen;
+    }
+
+    int? beforeShift, afterShift;
+    final newRowForType = <_ClipTrackType, int>{};
+    if (strategy == 'before') {
+      final earliestConflictStart = conflicts
+          .map((c) => c.start)
+          .reduce((a, b) => a < b ? a : b);
+      final batchMaxEnd = clipboard.clips
+          .map((c) => targets[c.id]! + c.lengthFrames)
+          .reduce((a, b) => a > b ? a : b);
+      beforeShift = earliestConflictStart - batchMaxEnd;
+    } else if (strategy == 'after') {
+      final latestConflictEnd = conflicts
+          .map((c) => c.end)
+          .reduce((a, b) => a > b ? a : b);
+      final batchMinStart = clipboard.clips
+          .map((c) => targets[c.id]!)
+          .reduce((a, b) => a < b ? a : b);
+      afterShift = latestConflictEnd - batchMinStart;
+    } else if (strategy == 'newRow') {
+      final ps = context.read<ProjectService>();
+      final conflictingTypes = clipboard.clips
+          .where((c) => conflictingClipIds.contains(c.id))
+          .map((c) => c.trackType)
+          .toSet();
+      for (final type in conflictingTypes) {
+        final materialType = type == _ClipTrackType.audio
+            ? MaterialType.audio
+            : MaterialType.video;
+        ps.addTrackRow(widget.projectId, sceneId, materialType);
+        newRowForType[type] =
+            ps.rowNamesOf(widget.projectId, sceneId, materialType).length - 1;
+      }
+    }
+
+    for (final c in clipboard.clips) {
+      var start = targets[c.id]!;
+      int? overrideRow;
+      if (strategy == 'before' && beforeShift != null) {
+        start = (start + beforeShift).clamp(0, 1 << 30);
+      } else if (strategy == 'after' && afterShift != null) {
+        start = (start + afterShift).clamp(0, 1 << 30);
+      } else if (strategy == 'newRow' && conflictingClipIds.contains(c.id)) {
+        overrideRow = newRowForType[c.trackType];
+      }
+      await _duplicateClipAt(c, start, overrideTrackRow: overrideRow);
+      if (!mounted) return;
+    }
+
+    if (clipboard.isCut) {
+      for (final c in clipboard.clips) {
+        setState(() {
+          _videoClips.removeWhere((x) => x.id == c.id);
+          _audioClips.removeWhere((x) => x.id == c.id);
+        });
+        _deletePersistedClip(c, sceneId);
+      }
+      setState(() => _clipClipboard = null);
+    }
+    setState(() {
+      _isClipMultiSelect = false;
+      _selectedClipIds.clear();
+    });
+  }
+
+  /// 貼り付け先が既存クリップと重なる場合の3択ダイアログ。
+  /// 選んだ結果を'before'/'after'/'newRow'のいずれかで返す（キャンセルはnull）。
+  Future<String?> _showClipOverlapDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineClipOverlapDialogTitle),
+        content: Text(l10n.timelineClipOverlapDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'before'),
+            child: Text(l10n.timelineClipOverlapPlaceBefore),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'after'),
+            child: Text(l10n.timelineClipOverlapPlaceAfter),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'newRow'),
+            child: Text(l10n.timelineClipOverlapPlaceNewRow),
+          ),
+        ],
+      ),
+    );
   }
 
   /// クリップ詳細シートを閉じた時点で、編集内容（音量・フェード・不透明度・
