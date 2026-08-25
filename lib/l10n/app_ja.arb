@@ -2529,6 +2529,58 @@
   },
   "splashViewCommunityButton": "みんなの\n作品をみる",
   "splashCreateButton": "作品をつくる",
-  "communityComingSoonTitle": "準備中",
-  "communityComingSoonBody": "みんなのアニメを見る機能は現在準備中です。今後のアップデートをお楽しみに。"
+  "communityScreenTitle": "みんなの作品",
+  "communityTabNew": "新着",
+  "communityTabRanking": "ランキング",
+  "communityPostButton": "投稿する",
+  "communityPostComingSoonTitle": "投稿機能は準備中です",
+  "communityPostComingSoonBody": "動画投稿機能は現在準備中です。今後のアップデートをお楽しみに。",
+  "communityRankingPeriodAllTime": "累計",
+  "communityRankingPeriodYearly": "年間",
+  "communityRankingPeriodMonthly": "月間",
+  "communityRankingPeriodWeekly": "週間",
+  "communityRankingPeriodDaily": "デイリー",
+  "communityRankingSortViews": "再生数",
+  "communityRankingSortBookmarks": "ブックマーク数",
+  "communityWorkDetailPostedLabel": "{date}に投稿",
+  "@communityWorkDetailPostedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "communityWorkDetailViewOnYoutube": "YouTubeで見る",
+  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube連携機能は準備中です",
+  "communityWorkDetailBookmarkAdd": "ブックマーク",
+  "communityWorkDetailBookmarkRemove": "ブックマーク済み",
+  "communityWorkDetailReportButton": "通報",
+  "communityWorkDetailBlockButton": "ブロック",
+  "communityReportDialogTitle": "作品を通報",
+  "communityReportDialogBody": "通報理由を選択してください。",
+  "communityReportReasonInappropriate": "不適切な内容",
+  "communityReportReasonCopyright": "著作権侵害の疑い",
+  "communityReportReasonSpam": "スパム・繰り返し投稿",
+  "communityReportReasonOther": "その他",
+  "communityReportSubmitButton": "通報する",
+  "communityReportComingSoonSnackbar": "通報機能は準備中です。実際には送信されません。",
+  "communityBlockConfirmTitle": "「{name}」をブロックしますか？",
+  "@communityBlockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBlockConfirmBody": "ブロックすると、この作者の作品が一覧に表示されなくなります。",
+  "communityBlockComingSoonSnackbar": "ブロック機能は準備中です。実際には反映されません。",
+  "communityAuthorWorksCount": "{count}作品",
+  "@communityAuthorWorksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityNoWorksMessage": "作品がありません"
 }

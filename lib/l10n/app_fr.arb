@@ -2279,6 +2279,58 @@
   },
   "splashViewCommunityButton": "Voir les animations de tous",
   "splashCreateButton": "Créer une animation",
-  "communityComingSoonTitle": "Bientôt disponible",
-  "communityComingSoonBody": "La fonctionnalité « Voir les animations de tous » est actuellement en cours de développement. Restez à l'écoute des prochaines mises à jour."
+  "communityScreenTitle": "Œuvres de tous",
+  "communityTabNew": "Nouveautés",
+  "communityTabRanking": "Classement",
+  "communityPostButton": "Publier",
+  "communityPostComingSoonTitle": "La publication arrive bientôt",
+  "communityPostComingSoonBody": "La fonctionnalité de publication de vidéos est encore en cours de développement. Restez à l'écoute des prochaines mises à jour.",
+  "communityRankingPeriodAllTime": "Total",
+  "communityRankingPeriodYearly": "Annuel",
+  "communityRankingPeriodMonthly": "Mensuel",
+  "communityRankingPeriodWeekly": "Hebdomadaire",
+  "communityRankingPeriodDaily": "Quotidien",
+  "communityRankingSortViews": "Vues",
+  "communityRankingSortBookmarks": "Favoris",
+  "communityWorkDetailPostedLabel": "Publié le {date}",
+  "@communityWorkDetailPostedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "communityWorkDetailViewOnYoutube": "Voir sur YouTube",
+  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "L'intégration YouTube arrive bientôt",
+  "communityWorkDetailBookmarkAdd": "Ajouter aux favoris",
+  "communityWorkDetailBookmarkRemove": "Dans les favoris",
+  "communityWorkDetailReportButton": "Signaler",
+  "communityWorkDetailBlockButton": "Bloquer",
+  "communityReportDialogTitle": "Signaler cette œuvre",
+  "communityReportDialogBody": "Veuillez choisir un motif de signalement.",
+  "communityReportReasonInappropriate": "Contenu inapproprié",
+  "communityReportReasonCopyright": "Suspicion d'atteinte aux droits d'auteur",
+  "communityReportReasonSpam": "Spam ou publications répétées",
+  "communityReportReasonOther": "Autre",
+  "communityReportSubmitButton": "Envoyer le signalement",
+  "communityReportComingSoonSnackbar": "Le signalement arrive bientôt. Rien n'a réellement été envoyé.",
+  "communityBlockConfirmTitle": "Bloquer « {name} » ?",
+  "@communityBlockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBlockConfirmBody": "Le blocage masque les œuvres de ce créateur dans vos listes.",
+  "communityBlockComingSoonSnackbar": "Le blocage arrive bientôt. Rien n'a réellement été appliqué.",
+  "communityAuthorWorksCount": "{count} œuvres",
+  "@communityAuthorWorksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityNoWorksMessage": "Aucune œuvre"
 }

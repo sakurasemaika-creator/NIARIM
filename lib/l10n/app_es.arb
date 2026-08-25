@@ -2279,6 +2279,58 @@
   },
   "splashViewCommunityButton": "Ver las animaciones de todos",
   "splashCreateButton": "Crear una animación",
-  "communityComingSoonTitle": "Próximamente",
-  "communityComingSoonBody": "La función \"Ver las animaciones de todos\" está actualmente en desarrollo. Estate atento a futuras actualizaciones."
+  "communityScreenTitle": "Obras de todos",
+  "communityTabNew": "Novedades",
+  "communityTabRanking": "Ranking",
+  "communityPostButton": "Publicar",
+  "communityPostComingSoonTitle": "La publicación estará disponible próximamente",
+  "communityPostComingSoonBody": "La función de publicación de vídeos todavía está en desarrollo. Estate atento a futuras actualizaciones.",
+  "communityRankingPeriodAllTime": "Total",
+  "communityRankingPeriodYearly": "Anual",
+  "communityRankingPeriodMonthly": "Mensual",
+  "communityRankingPeriodWeekly": "Semanal",
+  "communityRankingPeriodDaily": "Diario",
+  "communityRankingSortViews": "Reproducciones",
+  "communityRankingSortBookmarks": "Marcadores",
+  "communityWorkDetailPostedLabel": "Publicado el {date}",
+  "@communityWorkDetailPostedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "communityWorkDetailViewOnYoutube": "Ver en YouTube",
+  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "La integración con YouTube estará disponible próximamente",
+  "communityWorkDetailBookmarkAdd": "Marcar",
+  "communityWorkDetailBookmarkRemove": "Marcado",
+  "communityWorkDetailReportButton": "Denunciar",
+  "communityWorkDetailBlockButton": "Bloquear",
+  "communityReportDialogTitle": "Denunciar esta obra",
+  "communityReportDialogBody": "Selecciona un motivo para la denuncia.",
+  "communityReportReasonInappropriate": "Contenido inapropiado",
+  "communityReportReasonCopyright": "Posible infracción de derechos de autor",
+  "communityReportReasonSpam": "Spam o publicaciones repetidas",
+  "communityReportReasonOther": "Otro",
+  "communityReportSubmitButton": "Enviar denuncia",
+  "communityReportComingSoonSnackbar": "La función de denuncia estará disponible próximamente. No se ha enviado nada.",
+  "communityBlockConfirmTitle": "¿Bloquear a «{name}»?",
+  "@communityBlockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBlockConfirmBody": "Al bloquear, las obras de este creador dejarán de aparecer en tus listas.",
+  "communityBlockComingSoonSnackbar": "La función de bloqueo estará disponible próximamente. No se ha aplicado nada.",
+  "communityAuthorWorksCount": "{count} obras",
+  "@communityAuthorWorksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityNoWorksMessage": "No hay obras"
 }

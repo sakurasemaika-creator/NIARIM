@@ -154,7 +154,7 @@ void main() {
     timeout: const Timeout(Duration(seconds: 60)),
   );
 
-  testWidgets('起動画面→コミュニティ準備中画面まで例外なく遷移できる', (WidgetTester tester) async {
+  testWidgets('起動画面→コミュニティ画面まで例外なく遷移できる', (WidgetTester tester) async {
     setPhoneViewSize(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
@@ -168,7 +168,7 @@ void main() {
     await tester.tap(communityButtonFinder);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'コミュニティ準備中画面への遷移で例外');
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→ホーム→ドロワー→有料会員画面まで例外なく遷移できる', (WidgetTester tester) async {

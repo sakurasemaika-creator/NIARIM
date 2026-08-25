@@ -2279,6 +2279,58 @@
   },
   "splashViewCommunityButton": "See Everyone's Animations",
   "splashCreateButton": "Create an Animation",
-  "communityComingSoonTitle": "Coming Soon",
-  "communityComingSoonBody": "The \"See Everyone's Animations\" feature is currently under development. Stay tuned for future updates."
+  "communityScreenTitle": "Everyone's Works",
+  "communityTabNew": "New",
+  "communityTabRanking": "Ranking",
+  "communityPostButton": "Post",
+  "communityPostComingSoonTitle": "Posting is coming soon",
+  "communityPostComingSoonBody": "Video posting is still under development. Stay tuned for future updates.",
+  "communityRankingPeriodAllTime": "All-time",
+  "communityRankingPeriodYearly": "Yearly",
+  "communityRankingPeriodMonthly": "Monthly",
+  "communityRankingPeriodWeekly": "Weekly",
+  "communityRankingPeriodDaily": "Daily",
+  "communityRankingSortViews": "Views",
+  "communityRankingSortBookmarks": "Bookmarks",
+  "communityWorkDetailPostedLabel": "Posted {date}",
+  "@communityWorkDetailPostedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "communityWorkDetailViewOnYoutube": "Watch on YouTube",
+  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube integration is coming soon",
+  "communityWorkDetailBookmarkAdd": "Bookmark",
+  "communityWorkDetailBookmarkRemove": "Bookmarked",
+  "communityWorkDetailReportButton": "Report",
+  "communityWorkDetailBlockButton": "Block",
+  "communityReportDialogTitle": "Report this work",
+  "communityReportDialogBody": "Please choose a reason for reporting.",
+  "communityReportReasonInappropriate": "Inappropriate content",
+  "communityReportReasonCopyright": "Suspected copyright infringement",
+  "communityReportReasonSpam": "Spam or repeated posting",
+  "communityReportReasonOther": "Other",
+  "communityReportSubmitButton": "Submit report",
+  "communityReportComingSoonSnackbar": "Reporting is coming soon. Nothing was actually sent.",
+  "communityBlockConfirmTitle": "Block \"{name}\"?",
+  "@communityBlockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBlockConfirmBody": "Blocking hides this creator's works from your lists.",
+  "communityBlockComingSoonSnackbar": "Blocking is coming soon. Nothing was actually applied.",
+  "communityAuthorWorksCount": "{count} works",
+  "@communityAuthorWorksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityNoWorksMessage": "No works"
 }

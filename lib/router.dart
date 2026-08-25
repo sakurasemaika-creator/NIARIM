@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'screens/splash/splash_screen.dart';
-import 'screens/community/community_coming_soon_screen.dart';
+import 'screens/community/community_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/project/new_project_screen.dart';
 import 'screens/project/project_detail_screen.dart';
@@ -35,8 +35,8 @@ final appRouter = GoRouter(
     GoRoute(path: '/shared', builder: (context, state) => const SharedScreen()),
     GoRoute(path: '/trash', builder: (context, state) => const TrashScreen()),
     GoRoute(
-      path: '/community-coming-soon',
-      builder: (context, state) => const CommunityComingSoonScreen(),
+      path: '/community',
+      builder: (context, state) => const CommunityScreen(),
     ),
     GoRoute(
       path: '/new-project',

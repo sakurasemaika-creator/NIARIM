@@ -74,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // を直接反映する。tertiaryはColorScheme.fromSeedによる自動算出値のため、
       // ユーザーが選んだ色との対応が分かりにくくなるのを避ける。
       colors: [scheme.secondary, scheme.secondaryContainer],
-      onTap: () => context.push('/community-coming-soon'),
+      onTap: () => context.push('/community'),
     );
     final createButton = _SplashActionButton(
       icon: Icons.brush_outlined,

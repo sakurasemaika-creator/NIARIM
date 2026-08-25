@@ -2279,6 +2279,58 @@
   },
   "splashViewCommunityButton": "查看大家的动画",
   "splashCreateButton": "制作动画",
-  "communityComingSoonTitle": "敬请期待",
-  "communityComingSoonBody": "“查看大家的动画”功能正在开发中，敬请期待后续更新。"
+  "communityScreenTitle": "大家的作品",
+  "communityTabNew": "最新",
+  "communityTabRanking": "排行榜",
+  "communityPostButton": "发布",
+  "communityPostComingSoonTitle": "发布功能正在开发中",
+  "communityPostComingSoonBody": "视频发布功能目前仍在开发中，敬请期待后续更新。",
+  "communityRankingPeriodAllTime": "累计",
+  "communityRankingPeriodYearly": "年度",
+  "communityRankingPeriodMonthly": "月度",
+  "communityRankingPeriodWeekly": "每周",
+  "communityRankingPeriodDaily": "每日",
+  "communityRankingSortViews": "播放量",
+  "communityRankingSortBookmarks": "收藏数",
+  "communityWorkDetailPostedLabel": "发布于{date}",
+  "@communityWorkDetailPostedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "communityWorkDetailViewOnYoutube": "在YouTube上观看",
+  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube联动功能正在开发中",
+  "communityWorkDetailBookmarkAdd": "收藏",
+  "communityWorkDetailBookmarkRemove": "已收藏",
+  "communityWorkDetailReportButton": "举报",
+  "communityWorkDetailBlockButton": "屏蔽",
+  "communityReportDialogTitle": "举报此作品",
+  "communityReportDialogBody": "请选择举报原因。",
+  "communityReportReasonInappropriate": "内容不当",
+  "communityReportReasonCopyright": "疑似侵犯版权",
+  "communityReportReasonSpam": "垃圾内容・重复发布",
+  "communityReportReasonOther": "其他",
+  "communityReportSubmitButton": "提交举报",
+  "communityReportComingSoonSnackbar": "举报功能正在开发中，实际上不会发送。",
+  "communityBlockConfirmTitle": "要屏蔽“{name}”吗？",
+  "@communityBlockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBlockConfirmBody": "屏蔽后，该作者的作品将不会出现在你的列表中。",
+  "communityBlockComingSoonSnackbar": "屏蔽功能正在开发中，实际上不会生效。",
+  "communityAuthorWorksCount": "{count}件作品",
+  "@communityAuthorWorksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityNoWorksMessage": "暂无作品"
 }
