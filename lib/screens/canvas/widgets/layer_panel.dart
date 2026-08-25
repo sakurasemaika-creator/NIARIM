@@ -6,10 +6,12 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
+import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/layer.dart' as model;
+import '../../../models/layer_keyframe.dart';
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/tone_service.dart';
@@ -1106,6 +1108,32 @@ class _LayerPanelState extends State<LayerPanel> {
     }
   }
 
+  /// [frameIndex]時点のキーフレーム値（拡大縮小・回転）を書き換えた
+  /// キーフレーム一覧を返す。キーフレームが1つも無い、または1つだけの
+  /// 状態であれば、単一のキーフレーム値がすべてのフレームへクランプ
+  /// 適用される（[LayerKeyframeEngine.valueAt]）ため、この操作は事実上
+  /// レイヤー（素材）全体への一括適用になる。既にアニメーション用の
+  /// 複数キーフレームが打たれている場合は、現在フレーム位置の値だけを
+  /// 書き換える（既存のキーフレーム編集シートと同じ挙動）。
+  List<LayerKeyframe> _updateKeyframeAtCurrentFrame(
+    List<LayerKeyframe> keyframes,
+    int frameIndex,
+    LayerKeyframe Function(LayerKeyframe base) modifier,
+  ) {
+    final base = LayerKeyframeEngine()
+        .valueAt(keyframes, frameIndex)
+        .copyWith(frameIndex: frameIndex);
+    final updated = modifier(base);
+    final list = [...keyframes];
+    final idx = list.indexWhere((k) => k.frameIndex == frameIndex);
+    if (idx >= 0) {
+      list[idx] = updated;
+    } else {
+      list.add(updated);
+    }
+    return list;
+  }
+
   /// レイヤー詳細設定（不透明度・ブレンドモード・ロック・クリッピング等）。
   /// パネル下部の共通ボタン（`_selectedIndex`使用）と、各レイヤー行の
   /// 三点メニュー（[layer]を直接指定）の両方から呼び出せる。
@@ -1155,6 +1183,74 @@ class _LayerPanelState extends State<LayerPanel> {
                       style: const TextStyle(fontSize: 12),
                       value: layer.opacity, min: 0, max: 100,
                       onChanged: (v) => update((l) => l.copyWith(opacity: v.round())),
+                    ),
+                  ],
+                ),
+              ),
+              // 拡大縮小・回転スライダー：不透明度と同様、レイヤー
+              // （素材）全体へ一気に適用する操作として直接編集できる
+              // ようにする（アニメーション用のキーフレームを個別に
+              // 打ちたい場合は引き続きキーフレーム設定シートを使う）。
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Row(
+                  children: [
+                    Text(l10n.layerKeyframeScaleLabel, style: const TextStyle(fontSize: 13)),
+                    Expanded(
+                      child: StatefulBuilder(
+                        builder: (ctx, setS) {
+                          final current = LayerKeyframeEngine()
+                              .valueAt(layer.keyframes, widget.frameIndex)
+                              .scale;
+                          return SteppedSlider(
+                            value: current,
+                            min: 0.1, max: 3.0, divisions: 29,
+                            label: current.toStringAsFixed(2),
+                            onChanged: (v) {
+                              setS(() {});
+                              update((l) => l.copyWith(
+                                    keyframes: _updateKeyframeAtCurrentFrame(
+                                      l.keyframes,
+                                      widget.frameIndex,
+                                      (base) => base.copyWith(scale: v),
+                                    ),
+                                  ));
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Row(
+                  children: [
+                    Text(l10n.layerKeyframeRotationLabel, style: const TextStyle(fontSize: 13)),
+                    Expanded(
+                      child: StatefulBuilder(
+                        builder: (ctx, setS) {
+                          final current = LayerKeyframeEngine()
+                              .valueAt(layer.keyframes, widget.frameIndex)
+                              .rotation;
+                          return SteppedSlider(
+                            value: current,
+                            min: -180, max: 180, divisions: 360,
+                            label: '${current.round()}°',
+                            onChanged: (v) {
+                              setS(() {});
+                              update((l) => l.copyWith(
+                                    keyframes: _updateKeyframeAtCurrentFrame(
+                                      l.keyframes,
+                                      widget.frameIndex,
+                                      (base) => base.copyWith(rotation: v),
+                                    ),
+                                  ));
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
