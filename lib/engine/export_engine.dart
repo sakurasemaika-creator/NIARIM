@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import '../engine/camera_engine.dart';
@@ -159,9 +160,12 @@ class ExportEngine {
     return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
   }
 
-  /// 無料版のエンドカード（NIARIMロゴ、約5秒）のフレーム画像をPNGとして
-  /// 生成する。FFmpegのdrawtextフィルターに依存せず、
-  /// 他のテキスト描画と同じdart:uiのParagraphBuilderで焼き込む。
+  /// 無料版のエンドカード（中央にアプリロゴ、下に「NIARIM」の文字、
+  /// 約5秒）のフレーム画像をPNGとして生成する。テキストは他の描画と
+  /// 同じdart:uiのParagraphBuilderで焼き込む。ロゴはSVGモノグラムを
+  /// vector_graphicsで直接ui.Pictureへデコードし、Canvas上へ合成する
+  /// （ウィジェットツリー外からの描画のため、SvgPictureウィジェットは
+  /// 使わずvg.loadPictureを直接呼ぶ）。
   Future<Uint8List> _renderEndCardPng({required int width, required int height}) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -170,15 +174,42 @@ class ExportEngine {
       ui.Paint()..color = const ui.Color(0xFF000000),
     );
 
+    // ロゴ：短辺の40%を目安にした正方形で中央よりやや上に配置する。
+    final logoInfo = await vg.loadPicture(
+      const SvgAssetLoader('assets/logo/app_logo.svg'),
+      null,
+    );
+    final logoSize = width < height ? width * 0.4 : height * 0.4;
+    final logoScale = logoSize / logoInfo.size.width;
+    final logoLeft = (width - logoSize) / 2;
+    final logoTop = height / 2 - logoSize * 0.65;
+    canvas.save();
+    // ロゴは単色SVGのため、黒背景で視認できるよう白へ着色する
+    // （saveLayerでピクチャ全体をColorFilter.mode(白, srcIn)越しに描画）。
+    canvas.saveLayer(
+      ui.Rect.fromLTWH(logoLeft, logoTop, logoSize, logoSize),
+      ui.Paint()
+        ..colorFilter = const ui.ColorFilter.mode(
+          ui.Color(0xFFFFFFFF),
+          ui.BlendMode.srcIn,
+        ),
+    );
+    canvas.translate(logoLeft, logoTop);
+    canvas.scale(logoScale, logoScale);
+    canvas.drawPicture(logoInfo.picture);
+    canvas.restore();
+    canvas.restore();
+    logoInfo.picture.dispose();
+
     final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
       ..pushStyle(ui.TextStyle(
         color: const ui.Color(0xFFFFFFFF),
-        fontSize: width * 0.08,
+        fontSize: width * 0.05,
         fontWeight: ui.FontWeight.bold,
       ))
       ..addText('NIARIM');
     final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: width.toDouble()));
-    canvas.drawParagraph(paragraph, ui.Offset(0, (height - paragraph.height) / 2));
+    canvas.drawParagraph(paragraph, ui.Offset(0, logoTop + logoSize + height * 0.04));
 
     final picture = recorder.endRecording();
     final uiImage = await picture.toImage(width, height);
