@@ -255,6 +255,42 @@
   "quickToolEyedropper": "Cuentagotas",
   "quickToolBucket": "Cubo de pintura",
   "quickToolSizeDialogTitle": "Tamaño de {brushName}",
+  "settingsShortcutTitle": "Atajos",
+  "settingsShortcutSubtitle": "Asigna herramientas y acciones al teclado o dispositivo de mano izquierda",
+  "shortcutSettingsTitle": "Atajos",
+  "shortcutSettingsHint": "Asigna teclas del teclado o de un dispositivo de mano izquierda a herramientas (hasta un pincel y tamaño concretos) o a acciones como Deshacer/Rehacer. Funciona tanto en el modo Lienzo como en el modo Línea de tiempo.",
+  "shortcutEmpty": "No hay atajos registrados",
+  "shortcutCaptureTitle": "Pulsa una tecla",
+  "shortcutCaptureHint": "Pulsa la combinación de teclas que quieras asignar (puedes mantener Ctrl/Shift/Alt, etc. a la vez). Pulsa Esc para cancelar.",
+  "shortcutChooseActionTitle": "¿Qué debe hacer {combo}?",
+  "@shortcutChooseActionTitle": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutActionTypeTool": "Elegir una herramienta",
+  "shortcutActionTypeCommand": "Acción principal",
+  "shortcutCommandUndo": "Deshacer",
+  "shortcutCommandRedo": "Rehacer",
+  "shortcutCommandToggleLayerPanel": "Alternar panel de capas (Lienzo)",
+  "shortcutCommandPlayPause": "Reproducir/Pausar (Línea de tiempo)",
+  "shortcutCommandPreviousFrame": "Fotograma anterior (Línea de tiempo)",
+  "shortcutCommandNextFrame": "Fotograma siguiente (Línea de tiempo)",
+  "shortcutConflictTitle": "Ya está asignado",
+  "shortcutConflictBody": "{combo} ya está asignado a \"{existingLabel}\". ¿Deseas sobrescribirlo?",
+  "@shortcutConflictBody": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      },
+      "existingLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutConflictOverwrite": "Sobrescribir",
   "materialListTitle": "Gestión de materiales",
   "materialRemoveUnused": "Eliminar no usados ({count})",
   "materialEmptyTitle": "No hay materiales",

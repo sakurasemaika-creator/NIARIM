@@ -255,6 +255,42 @@
   "quickToolEyedropper": "Eyedropper",
   "quickToolBucket": "Bucket",
   "quickToolSizeDialogTitle": "{brushName} Size",
+  "settingsShortcutTitle": "Shortcuts",
+  "settingsShortcutSubtitle": "Assign tools and actions to keyboard/left-hand devices",
+  "shortcutSettingsTitle": "Shortcuts",
+  "shortcutSettingsHint": "Assign keyboard or left-hand device keys to tools (down to a specific brush and size) or actions like Undo/Redo. Works in both Canvas and Timeline mode.",
+  "shortcutEmpty": "No shortcuts registered",
+  "shortcutCaptureTitle": "Press a key",
+  "shortcutCaptureHint": "Press the key combination you want to assign (you can hold Ctrl/Shift/Alt etc. at the same time). Press Esc to cancel.",
+  "shortcutChooseActionTitle": "What should {combo} do?",
+  "@shortcutChooseActionTitle": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutActionTypeTool": "Select a tool",
+  "shortcutActionTypeCommand": "Main action",
+  "shortcutCommandUndo": "Undo",
+  "shortcutCommandRedo": "Redo",
+  "shortcutCommandToggleLayerPanel": "Toggle layer panel (Canvas)",
+  "shortcutCommandPlayPause": "Play/Pause (Timeline)",
+  "shortcutCommandPreviousFrame": "Previous frame (Timeline)",
+  "shortcutCommandNextFrame": "Next frame (Timeline)",
+  "shortcutConflictTitle": "Already assigned",
+  "shortcutConflictBody": "{combo} is already assigned to \"{existingLabel}\". Overwrite it?",
+  "@shortcutConflictBody": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      },
+      "existingLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutConflictOverwrite": "Overwrite",
   "materialListTitle": "Materials",
   "materialRemoveUnused": "Remove Unused ({count})",
   "materialEmptyTitle": "No materials",

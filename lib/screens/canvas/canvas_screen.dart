@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../services/advertising_service.dart';
@@ -11,6 +10,8 @@ import '../../services/material_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
+import '../../services/shortcut_service.dart';
+import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
@@ -631,21 +632,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = context.watch<SettingsService>().isLeftHanded;
 
-    // DeXモード・マウス/キーボード入力：Ctrl+Z/Ctrl+Y/Ctrl+Shift+Zで
-    // Undo/Redoを行えるようにする。
+    // DeXモード・マウス/キーボード入力・左手デバイス：設定画面
+    // 「ショートカット設定」で割り当てたキーで、ツール切替やUndo/Redo
+    // などの主要操作を行えるようにする。
     return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyZ, control: true): () =>
-            context.read<UndoManager>().undo(),
-        const SingleActivator(LogicalKeyboardKey.keyY, control: true): () =>
-            context.read<UndoManager>().redo(),
-        const SingleActivator(
-          LogicalKeyboardKey.keyZ,
-          control: true,
-          shift: true,
-        ): () =>
-            context.read<UndoManager>().redo(),
-      },
+      bindings: _buildShortcutBindings(context),
       child: Focus(
         autofocus: true,
         child: Scaffold(
@@ -1400,16 +1391,71 @@ class _CanvasScreenState extends State<CanvasScreen> {
   void _applyNextQuickTool() {
     final entry = context.read<QuickToolService>().next();
     if (entry == null) return;
-    setState(() => _currentTool = DrawingTool.values.byName(entry.toolKey));
-    final brushId = entry.brushId;
+    _activateToolSelection(
+      toolKey: entry.toolKey,
+      brushId: entry.brushId,
+      sizeOverride: entry.sizeOverride,
+    );
+  }
+
+  /// ツール＋ブラシ＋太さを一括で切り替える。早替えツール・ショートカット
+  /// （キーボード・左手デバイス）のどちらから起動しても同じ挙動になるよう
+  /// 共通化している。
+  void _activateToolSelection({
+    required String toolKey,
+    String? brushId,
+    double? sizeOverride,
+  }) {
+    setState(() => _currentTool = DrawingTool.values.byName(toolKey));
     if (brushId != null) {
       context.read<BrushService>().selectBrush(brushId);
     }
-    final size = entry.sizeOverride;
-    if (size != null) {
-      context.read<BrushService>().updateCurrentBrushSize(size);
-      setState(() => _brushSize = size);
+    if (sizeOverride != null) {
+      context.read<BrushService>().updateCurrentBrushSize(sizeOverride);
+      setState(() => _brushSize = sizeOverride);
     }
+  }
+
+  void _toggleLayerPanel() => setState(() {
+    final next = !_showLayerPanel;
+    _closeAllOverlayPanels();
+    _showLayerPanel = next;
+  });
+
+  /// 設定画面「ショートカット設定」の割り当て一覧から、キャンバスモードで
+  /// 有効なキー割り当てのマップを組み立てる。ツール選択の割り当ては
+  /// [_activateToolSelection]、主要操作は対応する処理へ振り分ける
+  /// （タイムライン専用の操作はキャンバスモードでは無視する）。
+  Map<ShortcutActivator, VoidCallback> _buildShortcutBindings(
+    BuildContext context,
+  ) {
+    final bindings = context.watch<ShortcutService>().bindings;
+    final result = <ShortcutActivator, VoidCallback>{};
+    for (final b in bindings) {
+      if (b.isToolAction) {
+        result[b.activator] = () => _activateToolSelection(
+          toolKey: b.toolKey!,
+          brushId: b.brushId,
+          sizeOverride: b.sizeOverride,
+        );
+        continue;
+      }
+      switch (b.command) {
+        case ShortcutCommand.undo:
+          result[b.activator] = () => context.read<UndoManager>().undo();
+        case ShortcutCommand.redo:
+          result[b.activator] = () => context.read<UndoManager>().redo();
+        case ShortcutCommand.toggleLayerPanel:
+          result[b.activator] = _toggleLayerPanel;
+        case ShortcutCommand.playPause:
+        case ShortcutCommand.previousFrame:
+        case ShortcutCommand.nextFrame:
+        case null:
+          // タイムライン専用の操作、または未割り当て。
+          break;
+      }
+    }
+    return result;
   }
 
   /// ジェスチャー／ペンボタンからのトグル切替（消しゴム切替・ブラシ切替・

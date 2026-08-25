@@ -18,6 +18,7 @@ import 'services/save_tree_service.dart';
 import 'services/autofill_preset_service.dart';
 import 'services/material_service.dart';
 import 'services/quick_tool_service.dart';
+import 'services/shortcut_service.dart';
 import 'services/workspace_preset_service.dart';
 import 'services/watermark_service.dart';
 import 'services/share_intent_service.dart';
@@ -49,7 +50,8 @@ void main() async {
   // 自動的にOFFへリセットする（無料会員に戻ってもこっそり非表示のまま
   // にはならないようにする）。
   premiumService.addListener(() {
-    if (!premiumService.isPremium && settingsService.endCardDefaultHiddenForPremium) {
+    if (!premiumService.isPremium &&
+        settingsService.endCardDefaultHiddenForPremium) {
       settingsService.setEndCardDefaultHiddenForPremium(false);
     }
   });
@@ -61,12 +63,14 @@ void main() async {
   // 端末性能判定に応じて、TileManagerの合成キャッシュ上限を絞る。見た目・
   // 機能は変わらず、低スペック端末でのメモリ使用量のみを抑える（init()より
   // 前に設定し、起動時読み込み分のTileManagerにも反映させる）。
-  projectService.configureTileCacheBudget(switch (performanceService.qualityLevel) {
-    QualityLevel.low => 6, // 最大概算約48MB程度
-    QualityLevel.medium => 10, // 最大概算約80MB程度
-    QualityLevel.high => 16, // 従来通り（最大概算約130MB程度）
-    QualityLevel.custom => 10,
-  });
+  projectService.configureTileCacheBudget(
+    switch (performanceService.qualityLevel) {
+      QualityLevel.low => 6, // 最大概算約48MB程度
+      QualityLevel.medium => 10, // 最大概算約80MB程度
+      QualityLevel.high => 16, // 従来通り（最大概算約130MB程度）
+      QualityLevel.custom => 10,
+    },
+  );
   await projectService.init();
   // ゴミ箱の自動削除設定（設定画面：OFF/30日/60日/90日）に基づき、
   // 保持期限を過ぎたプロジェクトを起動時に完全削除する
@@ -95,6 +99,8 @@ void main() async {
   final materialService = MaterialService();
   final quickToolService = QuickToolService();
   await quickToolService.init();
+  final shortcutService = ShortcutService();
+  await shortcutService.init();
 
   final workspacePresetService = WorkspacePresetService();
   await workspacePresetService.init();
@@ -144,6 +150,7 @@ void main() async {
         ChangeNotifierProvider.value(value: autofillPresetService),
         ChangeNotifierProvider.value(value: materialService),
         ChangeNotifierProvider.value(value: quickToolService),
+        ChangeNotifierProvider.value(value: shortcutService),
         ChangeNotifierProvider.value(value: workspacePresetService),
         ChangeNotifierProvider.value(value: watermarkService),
         ChangeNotifierProvider.value(value: fontService),

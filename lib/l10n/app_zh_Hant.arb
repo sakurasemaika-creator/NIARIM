@@ -255,6 +255,42 @@
   "quickToolEyedropper": "滴管",
   "quickToolBucket": "油漆桶",
   "quickToolSizeDialogTitle": "{brushName}的大小",
+  "settingsShortcutTitle": "快捷鍵設定",
+  "settingsShortcutSubtitle": "為鍵盤・左手裝置分配工具與操作",
+  "shortcutSettingsTitle": "快捷鍵設定",
+  "shortcutSettingsHint": "可以為鍵盤或左手裝置的按鍵分配工具（可細到具體畫筆和粗細）或復原/取消復原等操作。畫布模式、時間軸模式皆可使用。",
+  "shortcutEmpty": "尚未註冊任何快捷鍵",
+  "shortcutCaptureTitle": "請按下按鍵",
+  "shortcutCaptureHint": "請按下想要設定的按鍵組合（可同時按住Ctrl・Shift・Alt等輔助鍵）。按Esc取消。",
+  "shortcutChooseActionTitle": "要為{combo}分配什麼？",
+  "@shortcutChooseActionTitle": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutActionTypeTool": "選擇工具",
+  "shortcutActionTypeCommand": "主要操作",
+  "shortcutCommandUndo": "復原",
+  "shortcutCommandRedo": "取消復原",
+  "shortcutCommandToggleLayerPanel": "切換圖層面板（畫布）",
+  "shortcutCommandPlayPause": "播放/暫停（時間軸）",
+  "shortcutCommandPreviousFrame": "後退1畫格（時間軸）",
+  "shortcutCommandNextFrame": "前進1畫格（時間軸）",
+  "shortcutConflictTitle": "該按鍵已被分配",
+  "shortcutConflictBody": "{combo}已經分配給了「{existingLabel}」。要覆蓋嗎？",
+  "@shortcutConflictBody": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      },
+      "existingLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutConflictOverwrite": "覆蓋",
   "materialListTitle": "素材管理",
   "materialRemoveUnused": "刪除未使用素材（{count}）",
   "materialEmptyTitle": "沒有素材",

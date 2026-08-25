@@ -11,6 +11,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../../utils/immersive_mode.dart';
+import '../../services/shortcut_service.dart';
+import '../../models/shortcut_binding.dart';
 import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
@@ -473,6 +475,44 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
+  void _stepFramePrevious() {
+    if (_currentFrame > 0) setState(() => _currentFrame--);
+  }
+
+  void _stepFrameNext() {
+    if (_currentFrame < _totalFrames - 1) setState(() => _currentFrame++);
+  }
+
+  /// 設定画面「ショートカット設定」の割り当て一覧から、タイムライン
+  /// モードで有効なキー割り当てのマップを組み立てる。ツール選択の
+  /// 割り当てはキャンバスモード専用の概念のためここでは無視する。
+  Map<ShortcutActivator, VoidCallback> _buildShortcutBindings(
+    BuildContext context,
+  ) {
+    final bindings = context.watch<ShortcutService>().bindings;
+    final result = <ShortcutActivator, VoidCallback>{};
+    for (final b in bindings) {
+      if (b.isToolAction) continue;
+      switch (b.command) {
+        case ShortcutCommand.undo:
+          result[b.activator] = () => context.read<UndoManager>().undo();
+        case ShortcutCommand.redo:
+          result[b.activator] = () => context.read<UndoManager>().redo();
+        case ShortcutCommand.playPause:
+          result[b.activator] = _togglePlay;
+        case ShortcutCommand.previousFrame:
+          result[b.activator] = _stepFramePrevious;
+        case ShortcutCommand.nextFrame:
+          result[b.activator] = _stepFrameNext;
+        case ShortcutCommand.toggleLayerPanel:
+        case null:
+          // キャンバス専用の操作、または未割り当て。
+          break;
+      }
+    }
+    return result;
+  }
+
   void _pauseAllMedia() {
     for (final p in _audioPlayers.values) {
       p.pause();
@@ -629,85 +669,96 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
 
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      body: Listener(
-        // 制作時間カウント：操作のたびに無操作タイマーをリセットする
-        onPointerDown: (_) => context.read<ProjectService>().pingWorkActivity(),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, outerConstraints) {
-              return Column(
-                children: [
-                  _buildTopBar(),
-                  _buildPreviewWithHandle(outerConstraints.maxHeight),
-                  _buildSeekBar(),
-                  _buildPlaybackControls(),
-                  _buildToolbar(),
-                  _buildSceneTabs(),
-                  // ピンチイン・ピンチアウトでフレーム幅（拡大縮小）を
-                  // 変更できるよう、フレーム一覧から各トラックまでを
-                  // Listenerで包み2本指の距離変化を監視する。子孫の
-                  // 横スクロールを妨げないようtranslucentで通過させる。
-                  Listener(
-                    behavior: HitTestBehavior.translucent,
-                    onPointerDown: _onTimelinePinchPointerDown,
-                    onPointerMove: _onTimelinePinchPointerMove,
-                    onPointerUp: _onTimelinePinchPointerUp,
-                    onPointerCancel: _onTimelinePinchPointerUp,
-                    child: _buildFrameList(),
-                  ),
-                  // 各種タイムライン行：デフォルトではプレビュー・
-                  // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
-                  // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
-                  // 1つでも追加された行だけを表示する。最後の1件を削除すれば、
-                  // その行だけ最初と同じく非表示に戻る（画像素材は共通レイヤー
-                  // 機能とキャンバスモードの画像読み込みで代替できるため廃止）。
-                  // 表示順：フレーム・シーン・共通レイヤー・動画・音源・カメラ・
-                  // タイムスタンプ・演出フィルター・エンドカードの順。
-                  // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
-                  // スクロールで広く見られるようにExpanded+スクロールにしている。
-                  Expanded(
-                    child: Listener(
-                      behavior: HitTestBehavior.translucent,
-                      onPointerDown: _onTimelinePinchPointerDown,
-                      onPointerMove: _onTimelinePinchPointerMove,
-                      onPointerUp: _onTimelinePinchPointerUp,
-                      onPointerCancel: _onTimelinePinchPointerUp,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            _buildCommonLayerTrack(),
-                            // シーン・フレームの複数選択モード中の一括操作バー
-                            // （小さいボタンではなく素材タイムラインの上に大きな
-                            // 3分割ボタンで表示）
-                            _buildMultiSelectActionBar(),
-                            _buildMaterialTrackGroup(
-                              type: MaterialType.video,
-                              icon: Icons.videocam,
-                              defaultLabel: l10n.projectListMaterialVideo,
-                              allClips: _videoClips,
-                              addColor: Colors.blue[700]!,
+    // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
+    // で割り当てたキーで、Undo/Redo・再生/一時停止・フレーム送りなどの
+    // 操作を行えるようにする。
+    return CallbackShortcuts(
+      bindings: _buildShortcutBindings(context),
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          body: Listener(
+            // 制作時間カウント：操作のたびに無操作タイマーをリセットする
+            onPointerDown: (_) =>
+                context.read<ProjectService>().pingWorkActivity(),
+            child: SafeArea(
+              child: LayoutBuilder(
+                builder: (context, outerConstraints) {
+                  return Column(
+                    children: [
+                      _buildTopBar(),
+                      _buildPreviewWithHandle(outerConstraints.maxHeight),
+                      _buildSeekBar(),
+                      _buildPlaybackControls(),
+                      _buildToolbar(),
+                      _buildSceneTabs(),
+                      // ピンチイン・ピンチアウトでフレーム幅（拡大縮小）を
+                      // 変更できるよう、フレーム一覧から各トラックまでを
+                      // Listenerで包み2本指の距離変化を監視する。子孫の
+                      // 横スクロールを妨げないようtranslucentで通過させる。
+                      Listener(
+                        behavior: HitTestBehavior.translucent,
+                        onPointerDown: _onTimelinePinchPointerDown,
+                        onPointerMove: _onTimelinePinchPointerMove,
+                        onPointerUp: _onTimelinePinchPointerUp,
+                        onPointerCancel: _onTimelinePinchPointerUp,
+                        child: _buildFrameList(),
+                      ),
+                      // 各種タイムライン行：デフォルトではプレビュー・
+                      // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
+                      // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
+                      // 1つでも追加された行だけを表示する。最後の1件を削除すれば、
+                      // その行だけ最初と同じく非表示に戻る（画像素材は共通レイヤー
+                      // 機能とキャンバスモードの画像読み込みで代替できるため廃止）。
+                      // 表示順：フレーム・シーン・共通レイヤー・動画・音源・カメラ・
+                      // タイムスタンプ・演出フィルター・エンドカードの順。
+                      // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
+                      // スクロールで広く見られるようにExpanded+スクロールにしている。
+                      Expanded(
+                        child: Listener(
+                          behavior: HitTestBehavior.translucent,
+                          onPointerDown: _onTimelinePinchPointerDown,
+                          onPointerMove: _onTimelinePinchPointerMove,
+                          onPointerUp: _onTimelinePinchPointerUp,
+                          onPointerCancel: _onTimelinePinchPointerUp,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                _buildCommonLayerTrack(),
+                                // シーン・フレームの複数選択モード中の一括操作バー
+                                // （小さいボタンではなく素材タイムラインの上に大きな
+                                // 3分割ボタンで表示）
+                                _buildMultiSelectActionBar(),
+                                _buildMaterialTrackGroup(
+                                  type: MaterialType.video,
+                                  icon: Icons.videocam,
+                                  defaultLabel: l10n.projectListMaterialVideo,
+                                  allClips: _videoClips,
+                                  addColor: Colors.blue[700]!,
+                                ),
+                                _buildMaterialTrackGroup(
+                                  type: MaterialType.audio,
+                                  icon: Icons.audiotrack,
+                                  defaultLabel: l10n.projectListMaterialAudio,
+                                  allClips: _audioClips,
+                                  addColor: Colors.orange[700]!,
+                                ),
+                                _buildCameraTrack(),
+                                _buildMarkerTrack(),
+                                _buildEffectFilterTrack(),
+                                _buildEndCardTrack(),
+                                if (adService.shouldShowAds)
+                                  const AdBannerWidget(),
+                              ],
                             ),
-                            _buildMaterialTrackGroup(
-                              type: MaterialType.audio,
-                              icon: Icons.audiotrack,
-                              defaultLabel: l10n.projectListMaterialAudio,
-                              allClips: _audioClips,
-                              addColor: Colors.orange[700]!,
-                            ),
-                            _buildCameraTrack(),
-                            _buildMarkerTrack(),
-                            _buildEffectFilterTrack(),
-                            _buildEndCardTrack(),
-                            if (adService.shouldShowAds) const AdBannerWidget(),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),
@@ -1051,9 +1102,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           IconButton(
             icon: const Icon(Icons.fast_rewind),
             tooltip: l10n.timelineStepBack,
-            onPressed: () {
-              if (_currentFrame > 0) setState(() => _currentFrame--);
-            },
+            onPressed: _stepFramePrevious,
           ),
           IconButton(
             icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
@@ -1063,11 +1112,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           IconButton(
             icon: const Icon(Icons.fast_forward),
             tooltip: l10n.timelineStepForward,
-            onPressed: () {
-              if (_currentFrame < _totalFrames - 1) {
-                setState(() => _currentFrame++);
-              }
-            },
+            onPressed: _stepFrameNext,
           ),
           IconButton(
             icon: const Icon(Icons.skip_next),

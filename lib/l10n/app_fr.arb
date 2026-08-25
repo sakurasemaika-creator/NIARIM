@@ -255,6 +255,42 @@
   "quickToolEyedropper": "Pipette",
   "quickToolBucket": "Pot de peinture",
   "quickToolSizeDialogTitle": "Taille de {brushName}",
+  "settingsShortcutTitle": "Raccourcis",
+  "settingsShortcutSubtitle": "Assignez des outils et actions au clavier ou à un périphérique main gauche",
+  "shortcutSettingsTitle": "Raccourcis",
+  "shortcutSettingsHint": "Assignez des touches du clavier ou d'un périphérique main gauche à des outils (jusqu'à un pinceau et une taille précis) ou à des actions comme Annuler/Rétablir. Fonctionne en mode Canevas et en mode Chronologie.",
+  "shortcutEmpty": "Aucun raccourci enregistré",
+  "shortcutCaptureTitle": "Appuyez sur une touche",
+  "shortcutCaptureHint": "Appuyez sur la combinaison de touches à assigner (vous pouvez maintenir Ctrl/Maj/Alt, etc. en même temps). Appuyez sur Échap pour annuler.",
+  "shortcutChooseActionTitle": "Que doit faire {combo} ?",
+  "@shortcutChooseActionTitle": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutActionTypeTool": "Choisir un outil",
+  "shortcutActionTypeCommand": "Action principale",
+  "shortcutCommandUndo": "Annuler",
+  "shortcutCommandRedo": "Rétablir",
+  "shortcutCommandToggleLayerPanel": "Basculer le panneau des calques (Canevas)",
+  "shortcutCommandPlayPause": "Lecture/Pause (Chronologie)",
+  "shortcutCommandPreviousFrame": "Image précédente (Chronologie)",
+  "shortcutCommandNextFrame": "Image suivante (Chronologie)",
+  "shortcutConflictTitle": "Déjà assigné",
+  "shortcutConflictBody": "{combo} est déjà assigné à « {existingLabel} ». Voulez-vous l'écraser ?",
+  "@shortcutConflictBody": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      },
+      "existingLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutConflictOverwrite": "Écraser",
   "materialListTitle": "Gestion des matériaux",
   "materialRemoveUnused": "Supprimer les inutilisés ({count})",
   "materialEmptyTitle": "Aucun matériau",

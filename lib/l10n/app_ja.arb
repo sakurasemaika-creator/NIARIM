@@ -345,6 +345,42 @@
       }
     }
   },
+  "settingsShortcutTitle": "ショートカット設定",
+  "settingsShortcutSubtitle": "キーボード・左手デバイスにツールや操作を割り当て",
+  "shortcutSettingsTitle": "ショートカット設定",
+  "shortcutSettingsHint": "キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）やUndo/Redoなどの操作を割り当てられます。キャンバス・タイムラインの両方で使えます。",
+  "shortcutEmpty": "登録されたショートカットがありません",
+  "shortcutCaptureTitle": "キーを押してください",
+  "shortcutCaptureHint": "設定したいキーの組み合わせを押してください（Ctrl・Shift・Altなどの修飾キーも同時に押せます）。Escで取り消します。",
+  "shortcutChooseActionTitle": "{combo} に何を割り当てますか？",
+  "@shortcutChooseActionTitle": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutActionTypeTool": "ツール選択",
+  "shortcutActionTypeCommand": "主要操作",
+  "shortcutCommandUndo": "取り消し（Undo）",
+  "shortcutCommandRedo": "やり直し（Redo）",
+  "shortcutCommandToggleLayerPanel": "レイヤーパネル切替（キャンバス）",
+  "shortcutCommandPlayPause": "再生／一時停止（タイムライン）",
+  "shortcutCommandPreviousFrame": "1フレーム戻る（タイムライン）",
+  "shortcutCommandNextFrame": "1フレーム進む（タイムライン）",
+  "shortcutConflictTitle": "すでに割り当てられています",
+  "shortcutConflictBody": "{combo} には既に「{existingLabel}」が割り当てられています。上書きしますか？",
+  "@shortcutConflictBody": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      },
+      "existingLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutConflictOverwrite": "上書き",
   "materialListTitle": "素材管理",
   "materialRemoveUnused": "未使用素材を削除 ({count})",
   "@materialRemoveUnused": {

@@ -8,6 +8,7 @@ import 'screens/canvas/canvas_screen.dart';
 import 'screens/timeline/timeline_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/settings/gesture_settings_screen.dart';
+import 'screens/settings/shortcut_settings_screen.dart';
 import 'screens/settings/performance_settings_screen.dart';
 import 'screens/settings/pen_settings_screen.dart';
 import 'screens/settings/bucket_fill_settings_screen.dart';
@@ -68,6 +69,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings/gestures',
       builder: (context, state) => const GestureSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/shortcuts',
+      builder: (context, state) => const ShortcutSettingsScreen(),
     ),
     GoRoute(
       path: '/settings/performance',
