@@ -21,7 +21,13 @@ class PremiumService extends ChangeNotifier {
   static const String yearlyProductId = 'niarim_premium_yearly';
   static const Set<String> _productIds = {monthlyProductId, yearlyProductId};
 
-  final InAppPurchase _iap = InAppPurchase.instance;
+  // 課金一時停止期間中（isMonetizationEnabled==false）はアプリ起動時に
+  // このサービスが生成されるだけでストアへ接続してはならない。
+  // InAppPurchase.instanceは参照した時点で内部でBilling Clientへの
+  // 接続を（awaitされない形で）開始してしまうため、フィールド初期化子で
+  // 即座に取得せず、実際に購入操作を行う経路でのみ遅延生成する。
+  InAppPurchase? _iapInstance;
+  InAppPurchase get _iap => _iapInstance ??= InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   bool _isPremium = false;
@@ -56,7 +62,8 @@ class PremiumService extends ChangeNotifier {
   /// 同じ日（月額）を維持したまま、現在時刻以降で最も近い日を年・月単位で
   /// ずらして求める。暦計算のため、日数の単純な加算と違って月の日数差に
   /// よる誤差が生じない）。
-  DateTime? get nextRenewalDate => _verifiedExpiryDate ?? nextRenewalDateEstimate;
+  DateTime? get nextRenewalDate =>
+      _verifiedExpiryDate ?? nextRenewalDateEstimate;
 
   DateTime? get nextRenewalDateEstimate {
     final start = _purchaseDate;
@@ -64,17 +71,37 @@ class PremiumService extends ChangeNotifier {
     final isYearly = _purchasedProductId == yearlyProductId;
     final now = DateTime.now();
     if (isYearly) {
-      var next = DateTime(now.year, start.month, start.day, start.hour, start.minute);
-      if (!next.isAfter(now)) next = DateTime(now.year + 1, start.month, start.day, start.hour, start.minute);
+      var next = DateTime(
+        now.year,
+        start.month,
+        start.day,
+        start.hour,
+        start.minute,
+      );
+      if (!next.isAfter(now)) {
+        next = DateTime(
+          now.year + 1,
+          start.month,
+          start.day,
+          start.hour,
+          start.minute,
+        );
+      }
       return next;
     } else {
       // 購入日からの経過月数を求め、そこから1か月ずつ進めて現在時刻を
       // 超える月を探す（DateTime(year, month, day)は月の日数を超える
       // dayを渡すと自動的に翌月へ繰り上がるため、31日始まりの月をまたいでも
       // 破綻しない）。
-      var monthsElapsed = (now.year - start.year) * 12 + (now.month - start.month);
-      DateTime candidate() =>
-          DateTime(start.year, start.month + monthsElapsed, start.day, start.hour, start.minute);
+      var monthsElapsed =
+          (now.year - start.year) * 12 + (now.month - start.month);
+      DateTime candidate() => DateTime(
+        start.year,
+        start.month + monthsElapsed,
+        start.day,
+        start.hour,
+        start.minute,
+      );
       var next = candidate();
       if (!next.isAfter(now)) {
         monthsElapsed++;
@@ -198,10 +225,16 @@ class PremiumService extends ChangeNotifier {
           if (rawDate != null) {
             final ms = int.tryParse(rawDate);
             if (ms != null) {
-              parsedDate = DateTime.fromMillisecondsSinceEpoch(ms.toString().length > 11 ? ms : ms * 1000);
+              parsedDate = DateTime.fromMillisecondsSinceEpoch(
+                ms.toString().length > 11 ? ms : ms * 1000,
+              );
             }
           }
-          await setPremium(true, purchaseDate: parsedDate ?? DateTime.now(), productId: purchase.productID);
+          await setPremium(
+            true,
+            purchaseDate: parsedDate ?? DateTime.now(),
+            productId: purchase.productID,
+          );
           // サーバー側レシート検証はまだバックエンドが無いため未接続。
           // 将来Google Play Developer API等の検証エンドポイントが用意でき
           // 次第、以下のコメントアウトを外せば確定した有効期限が
@@ -225,15 +258,24 @@ class PremiumService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setPremium(bool value, {DateTime? purchaseDate, String? productId}) async {
+  Future<void> setPremium(
+    bool value, {
+    DateTime? purchaseDate,
+    String? productId,
+  }) async {
     _isPremium = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_premium', value);
     if (value && purchaseDate != null) {
       _purchaseDate = purchaseDate;
       _purchasedProductId = productId;
-      await prefs.setInt('premium_purchase_date', purchaseDate.millisecondsSinceEpoch);
-      if (productId != null) await prefs.setString('premium_purchase_product_id', productId);
+      await prefs.setInt(
+        'premium_purchase_date',
+        purchaseDate.millisecondsSinceEpoch,
+      );
+      if (productId != null) {
+        await prefs.setString('premium_purchase_product_id', productId);
+      }
     } else if (!value) {
       _purchaseDate = null;
       _purchasedProductId = null;
@@ -280,5 +322,9 @@ class PremiumService extends ChangeNotifier {
 }
 
 enum PremiumFeature {
-  endCardEdit, watermark, toneCurve, levelAdjustment, unlimitedDuration,
+  endCardEdit,
+  watermark,
+  toneCurve,
+  levelAdjustment,
+  unlimitedDuration,
 }
