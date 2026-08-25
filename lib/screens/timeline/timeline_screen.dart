@@ -139,6 +139,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 先頭のサムネイルのみ実画像を表示する）。シーン移動・フレーム移動で共用する。
   ui.Image? _moveThumbnail;
 
+  // シーンのコピー・切り取り・貼り付け。クリップボードに内容がある間は
+  // シーン一覧の三点メニューやCtrl+Vからいつでも貼り付けを開始できる。
+  // 貼り付けは既存の移動モードと同じカーソル固定UIを再利用するため、
+  // 専用のカーソル位置は持たず_moveCursorPosを共用する。
+  ({List<String> ids, bool isCut})? _sceneClipboard;
+  bool _isScenePasteMode = false;
+  // シーンのカーソルUI（移動または貼り付け）が表示中かどうか。
+  bool get _isSceneCursorActive => _isMoveMode || _isScenePasteMode;
+
   // トラッククリップ
   final List<_TrackClip> _audioClips = [];
   final List<_TrackClip> _videoClips = [];
@@ -279,6 +288,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _isFrameMoveMode = false;
   int _frameMoveCursorPos = 0;
 
+  // フレームのコピー・切り取り・貼り付け。シーンをまたいだ貼り付けに
+  // 対応するため、貼り付け先とは別にコピー元のシーンIDを保持する。
+  // 貼り付けは既存の移動モードと同じカーソル固定UIを再利用するため、
+  // 専用のカーソル位置は持たず_frameMoveCursorPosを共用する。
+  ({String sceneId, List<int> indices, bool isCut})? _frameClipboard;
+  bool _isFramePasteMode = false;
+  // フレームのカーソルUI（移動または貼り付け）が表示中かどうか。
+  bool get _isFrameCursorActive => _isFrameMoveMode || _isFramePasteMode;
+
   // フレーム一覧も画面中央に固定で赤枠を表示し、現在位置のフレームがそこへ
   // 来るよう一覧側をスクロールさせる（キャンバスモードのフレーム一覧と
   // 同じ挙動）。_frameScrollCtrlは他トラックと同期済みのため、
@@ -286,7 +304,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int? _lastCenteredFrame;
 
   void _maybeCenterCurrentFrame() {
-    if (_isFrameMoveMode) return; // 移動モード中はレイアウトが異なるため対象外
+    if (_isFrameCursorActive) return; // 移動・貼り付けモード中はレイアウトが異なるため対象外
     if (_lastCenteredFrame == _currentFrame) return;
     final hadPrevious = _lastCenteredFrame != null;
     _lastCenteredFrame = _currentFrame;
@@ -320,7 +338,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 同じ挙動）。
   bool _handleFrameListScrollEnd(ScrollEndNotification notification) {
     if (notification.dragDetails == null) return false;
-    if (_isFrameMoveMode || _isFrameMultiSelect) return false;
+    if (_isFrameCursorActive || _isFrameMultiSelect) return false;
     final total = _totalFrames;
     if (total <= 0 || !_frameScrollCtrl.hasClients) return false;
     final nearest = (_frameScrollCtrl.offset / _cellW).round().clamp(
@@ -505,6 +523,64 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
+  /// シーン複数選択モード中は選択中のシーンを、フレーム複数選択モード中は
+  /// 選択中のフレームをクリップボードへコピーする（Ctrl+C）。シーンの
+  /// クリップボードとフレームのクリップボードは排他（片方をコピーすると
+  /// もう片方は破棄される）。
+  void _copySelectionToClipboard() {
+    if (_isSceneMultiSelect && _selectedSceneIds.isNotEmpty) {
+      setState(() {
+        _sceneClipboard = (ids: _selectedSceneIds.toList(), isCut: false);
+        _frameClipboard = null;
+      });
+    } else if (_isFrameMultiSelect && _selectedFrameIndices.isNotEmpty) {
+      final sceneId = _selectedSceneId;
+      if (sceneId == null) return;
+      setState(() {
+        _frameClipboard = (
+          sceneId: sceneId,
+          indices: _selectedFrameIndices.toList()..sort(),
+          isCut: false,
+        );
+        _sceneClipboard = null;
+      });
+    }
+  }
+
+  /// コピーと同様にクリップボードへ記録するが、貼り付け確定時に元の
+  /// シーン・フレームを削除する「切り取り」として記録する（Ctrl+X）。
+  /// 貼り付け前にキャンセルした場合は何も削除されない。
+  void _cutSelectionToClipboard() {
+    if (_isSceneMultiSelect && _selectedSceneIds.isNotEmpty) {
+      setState(() {
+        _sceneClipboard = (ids: _selectedSceneIds.toList(), isCut: true);
+        _frameClipboard = null;
+      });
+    } else if (_isFrameMultiSelect && _selectedFrameIndices.isNotEmpty) {
+      final sceneId = _selectedSceneId;
+      if (sceneId == null) return;
+      setState(() {
+        _frameClipboard = (
+          sceneId: sceneId,
+          indices: _selectedFrameIndices.toList()..sort(),
+          isCut: true,
+        );
+        _sceneClipboard = null;
+      });
+    }
+  }
+
+  /// クリップボードの内容に応じてシーン貼り付けモード・フレーム貼り付け
+  /// モードのいずれかを開始する（Ctrl+V）。貼り付け先の指定には既存の
+  /// 移動モードと同じカーソル固定UIを再利用する。
+  void _pasteFromClipboard() {
+    if (_sceneClipboard != null) {
+      _startScenePasteMode();
+    } else if (_frameClipboard != null) {
+      _startFramePasteMode();
+    }
+  }
+
   /// 設定画面「ショートカット設定」の割り当て一覧から、タイムライン
   /// モードで有効なキー割り当てのマップを組み立てる。ツール選択の
   /// 割り当てはキャンバスモード専用の概念のためここでは無視する。
@@ -528,14 +604,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
           result[b.activator] = _stepFrameNext;
         case ShortcutCommand.selectAll:
           result[b.activator] = _selectAllFramesOrScenes;
-        case ShortcutCommand.toggleLayerPanel:
         case ShortcutCommand.copy:
+          result[b.activator] = _copySelectionToClipboard;
         case ShortcutCommand.cut:
+          result[b.activator] = _cutSelectionToClipboard;
         case ShortcutCommand.paste:
+          result[b.activator] = _pasteFromClipboard;
+        case ShortcutCommand.toggleLayerPanel:
         case null:
-          // コピー・切り取り・貼り付けは、素材クリップ側のクリップボード
-          // 設計が未確定のため、タイムラインモードでは未割り当てのまま。
-          // キャンバス専用の操作、または未割り当ても同様。
+          // 素材クリップ（動画・画像・音声）のコピー・切り取り・貼り付けは
+          // タイムラインモードでは未対応。キャンバス専用の操作、または
+          // 未割り当ても同様にここでは無視する。
           break;
       }
     }
@@ -1576,11 +1655,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return rasterizeTextObject(textObject, w, h);
   }
 
-  // 移動モード中の吹き出しプレビュー
+  // 移動・貼り付けモード中の吹き出しプレビュー
   // 先頭サムネイル＋白カード最大3枚、右上に枚数バッジ
   Widget _buildCursorBubble() {
-    // 移動は複数選択モードからのみ起動するため常に_selectedSceneIds.lengthを使用
-    final count = _selectedSceneIds.length;
+    // 移動モードは_selectedSceneIds、貼り付けモードはクリップボードの件数を使う
+    final count = _isScenePasteMode
+        ? (_sceneClipboard?.ids.length ?? 0)
+        : _selectedSceneIds.length;
     final cardCount = count.clamp(1, 3);
     return Positioned(
       // シーンタブの上に表示
@@ -1658,7 +1739,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final projectService = context.watch<ProjectService>();
     final scenes = projectService.scenesOf(widget.projectId);
     return SizedBox(
-      height: _isMoveMode ? 92 : 36,
+      height: _isSceneCursorActive ? 92 : 36,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -1669,12 +1750,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
             height: 36,
             child: Row(
               children: [
-                // 移動モード中：「決定」ボタン。通常時：「選択」ボタン。複数選択モード中の
-                // 移動・複製・削除・全選択・全解除は、素材タイムラインの上に大きな専用
-                // ボタンとして表示する（_buildMultiSelectActionBar参照）。
-                if (_isMoveMode)
+                // 移動・貼り付けモード中：「決定」ボタン。通常時：「選択」ボタン。
+                // 複数選択モード中の移動・複製・削除・全選択・全解除は、素材
+                // タイムラインの上に大きな専用ボタンとして表示する
+                // （_buildMultiSelectActionBar参照）。
+                if (_isSceneCursorActive)
                   TextButton(
-                    onPressed: () => _confirmMove(scenes),
+                    onPressed: _isScenePasteMode
+                        ? _confirmScenePaste
+                        : () => _confirmMove(scenes),
                     child: Text(
                       l10n.timelineConfirmButton,
                       style: const TextStyle(fontSize: 11),
@@ -1692,13 +1776,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    // 移動モード：カーソル位置(n+1) + シーンチップ(n) = 2n+1
+                    // 移動・貼り付けモード：カーソル位置(n+1) + シーンチップ(n) = 2n+1
                     // 通常モード：シーンチップ(n) + ＋ボタン(1) = n+1
-                    itemCount: _isMoveMode
+                    itemCount: _isSceneCursorActive
                         ? scenes.length * 2 + 1
                         : scenes.length + 1,
                     itemBuilder: (context, index) {
-                      if (_isMoveMode) {
+                      if (_isSceneCursorActive) {
                         if (index.isEven) {
                           final cursorPos = index ~/ 2;
                           final isActive = _moveCursorPos == cursorPos;
@@ -1720,7 +1804,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         } else {
                           final sceneIndex = index ~/ 2;
                           final scene = scenes[sceneIndex];
-                          final isMoving = _selectedSceneIds.contains(scene.id);
+                          // 貼り付けモード中はコピー元シーンをこのカーソル一覧上で
+                          // ハイライトする対象がないため常にfalseとする。
+                          final isMoving =
+                              !_isScenePasteMode &&
+                              _selectedSceneIds.contains(scene.id);
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
                             child: Chip(
@@ -1871,10 +1959,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     },
                   ),
                 ),
-                // 移動モード中：キャンセルボタン
-                if (_isMoveMode)
+                // 移動・貼り付けモード中：キャンセルボタン
+                if (_isSceneCursorActive)
                   TextButton(
-                    onPressed: () => setState(() => _isMoveMode = false),
+                    onPressed: () => setState(() {
+                      _isMoveMode = false;
+                      _isScenePasteMode = false;
+                    }),
                     child: Text(
                       l10n.commonCancel,
                       style: const TextStyle(fontSize: 11),
@@ -1883,8 +1974,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ],
             ),
           ),
-          // 移動モード中：吹き出しプレビューをタブの上に表示
-          if (_isMoveMode) _buildCursorBubble(),
+          // 移動・貼り付けモード中：吹き出しプレビューをタブの上に表示
+          if (_isSceneCursorActive) _buildCursorBubble(),
         ],
       ),
     );
@@ -1959,6 +2050,64 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
+  // シーン貼り付けモード開始（クリップボードにシーンがある場合のみ起動）
+  void _startScenePasteMode() {
+    final clip = _sceneClipboard;
+    if (clip == null) return;
+    final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
+    setState(() {
+      _isScenePasteMode = true;
+      _moveCursorPos = scenes.length;
+    });
+    final first = scenes.where((s) => clip.ids.contains(s.id)).firstOrNull;
+    if (first != null) _loadMoveThumbnail(first.id);
+  }
+
+  // カーソル固定方式のシーン貼り付け確定。複製元シーンをカーソル位置の
+  // 直前まで順番に複製したうえで、一度のreorderScenesByIdsで最終的な
+  // 並び順を確定する（duplicateSceneは常に複製元の直後へ挿入するため、
+  // 挿入位置の計算を個別に追う必要がない）。
+  void _confirmScenePaste() {
+    final clip = _sceneClipboard;
+    if (clip == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final scenesBefore = ps.scenesOf(widget.projectId);
+    final sourceScenes = scenesBefore
+        .where((s) => clip.ids.contains(s.id))
+        .toList();
+    if (sourceScenes.isEmpty) {
+      setState(() {
+        _isScenePasteMode = false;
+        _sceneClipboard = null;
+      });
+      return;
+    }
+    final originalOrderIds = scenesBefore.map((s) => s.id).toList();
+    final insertPos = _moveCursorPos.clamp(0, originalOrderIds.length);
+    final newIds = <String>[];
+    for (final scene in sourceScenes) {
+      final duplicated = ps.duplicateScene(
+        widget.projectId,
+        scene.id,
+        name: l10n.layerPanelCopySuffix(scene.displayName),
+      );
+      if (duplicated != null) newIds.add(duplicated.id);
+    }
+    final finalOrder = List<String>.from(originalOrderIds)
+      ..insertAll(insertPos, newIds);
+    ps.reorderScenesByIds(widget.projectId, finalOrder);
+    if (clip.isCut) {
+      ps.removeScenes(widget.projectId, clip.ids);
+    }
+    setState(() {
+      _isScenePasteMode = false;
+      _sceneClipboard = null;
+      _isSceneMultiSelect = false;
+      _selectedSceneIds.clear();
+    });
+  }
+
   // 三点メニュー（シーン名変更・複製・削除）
   void _showSceneMenu(Scene scene, List<Scene> scenes) {
     final l10n = AppLocalizations.of(context)!;
@@ -1988,6 +2137,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.content_copy),
+              title: Text(l10n.commonCopy),
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  _sceneClipboard = (ids: [scene.id], isCut: false);
+                  _frameClipboard = null;
+                });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.content_cut),
+              title: Text(l10n.commonCut),
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  _sceneClipboard = (ids: [scene.id], isCut: true);
+                  _frameClipboard = null;
+                });
+              },
+            ),
+            if (_sceneClipboard != null)
+              ListTile(
+                leading: const Icon(Icons.content_paste),
+                title: Text(l10n.commonPaste),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _startScenePasteMode();
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
               title: Text(
@@ -2132,7 +2312,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final frameListSceneId = _selectedSceneId;
     _maybeCenterCurrentFrame();
     return SizedBox(
-      height: _isFrameMoveMode ? 92 : 50,
+      height: _isFrameCursorActive ? 92 : 50,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -2155,12 +2335,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     Icons.movie_filter,
                     l10n.timelineFrameTrackLabel,
                   ),
-                  // 移動モード中：「決定」。通常時：「選択」。複数選択モード中の移動・複製・
-                  // 削除・全選択・全解除は素材タイムラインの上の大きなボタンへ移動した
-                  // （_buildMultiSelectActionBar参照）。
-                  if (_isFrameMoveMode)
+                  // 移動・貼り付けモード中：「決定」。通常時：「選択」。複数選択モード中の
+                  // 移動・複製・削除・全選択・全解除は素材タイムラインの上の大きな
+                  // ボタンへ移動した（_buildMultiSelectActionBar参照）。
+                  if (_isFrameCursorActive)
                     TextButton(
-                      onPressed: _confirmFrameMove,
+                      onPressed: _isFramePasteMode
+                          ? _confirmFramePaste
+                          : _confirmFrameMove,
                       child: Text(
                         l10n.timelineConfirmButton,
                         style: const TextStyle(fontSize: 11),
@@ -2174,6 +2356,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         l10n.toolbarItemSelect,
                         style: const TextStyle(fontSize: 11),
                       ),
+                    ),
+                  // フレームのクリップボードに内容がある間は、複数選択に
+                  // 入らなくてもいつでも貼り付けを開始できるようにする。
+                  if (!_isFrameCursorActive &&
+                      !_isFrameMultiSelect &&
+                      _frameClipboard != null)
+                    IconButton(
+                      iconSize: 16,
+                      visualDensity: VisualDensity.compact,
+                      tooltip: l10n.commonPaste,
+                      onPressed: _startFramePasteMode,
+                      icon: const Icon(Icons.content_paste),
                     ),
                   Expanded(
                     child: LayoutBuilder(
@@ -2197,13 +2391,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   vertical: 4,
                                   horizontal: sidePadding,
                                 ),
-                                // 移動モード：カーソル位置(n+1) + フレームチップ(n) = 2n+1
+                                // 移動・貼り付けモード：カーソル位置(n+1) + フレームチップ(n) = 2n+1
                                 // 通常モード：フレームチップ(n) + ＋ボタン(1) = n+1
-                                itemCount: _isFrameMoveMode
+                                itemCount: _isFrameCursorActive
                                     ? total * 2 + 1
                                     : total + 1,
                                 itemBuilder: (context, index) {
-                                  if (_isFrameMoveMode) {
+                                  if (_isFrameCursorActive) {
                                     if (index.isEven) {
                                       final cursorPos = index ~/ 2;
                                       final isActive =
@@ -2230,8 +2424,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       );
                                     } else {
                                       final frameIndex = index ~/ 2;
-                                      final isMoving = _selectedFrameIndices
-                                          .contains(frameIndex);
+                                      // 貼り付けモード中はコピー元フレームをこの
+                                      // カーソル一覧上でハイライトする対象がないため
+                                      // 常にfalseとする。
+                                      final isMoving =
+                                          !_isFramePasteMode &&
+                                          _selectedFrameIndices.contains(
+                                            frameIndex,
+                                          );
                                       return Container(
                                         width: _frameW,
                                         margin: const EdgeInsets.symmetric(
@@ -2454,10 +2654,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       },
                     ),
                   ),
-                  // 移動モード中：キャンセルボタン
-                  if (_isFrameMoveMode)
+                  // 移動・貼り付けモード中：キャンセルボタン
+                  if (_isFrameCursorActive)
                     TextButton(
-                      onPressed: () => setState(() => _isFrameMoveMode = false),
+                      onPressed: () => setState(() {
+                        _isFrameMoveMode = false;
+                        _isFramePasteMode = false;
+                      }),
                       child: Text(
                         l10n.commonCancel,
                         style: const TextStyle(fontSize: 11),
@@ -2467,15 +2670,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
             ),
           ),
-          // 移動モード中：吹き出しプレビューをフレーム一覧の上に表示
-          if (_isFrameMoveMode) _buildFrameCursorBubble(),
+          // 移動・貼り付けモード中：吹き出しプレビューをフレーム一覧の上に表示
+          if (_isFrameCursorActive) _buildFrameCursorBubble(),
         ],
       ),
     );
   }
 
   Widget _buildFrameCursorBubble() {
-    final count = _selectedFrameIndices.length;
+    // 移動モードは_selectedFrameIndices、貼り付けモードはクリップボードの件数を使う
+    final count = _isFramePasteMode
+        ? (_frameClipboard?.indices.length ?? 0)
+        : _selectedFrameIndices.length;
     final cardCount = count.clamp(1, 3);
     return Positioned(
       bottom: 50,
@@ -2654,6 +2860,74 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     setState(() {
       _isFrameMoveMode = false;
+      _isFrameMultiSelect = false;
+      _selectedFrameIndices.clear();
+      _currentFrame = _currentFrame.clamp(0, _totalFrames - 1);
+    });
+  }
+
+  // フレーム貼り付けモード開始（クリップボードにフレームがある場合のみ
+  // 起動）。貼り付け先は現在表示中のシーン（コピー元と異なっていてよい）。
+  void _startFramePasteMode() {
+    final clip = _frameClipboard;
+    if (clip == null) return;
+    setState(() {
+      _isFramePasteMode = true;
+      _frameMoveCursorPos = _totalFrames;
+    });
+    _loadMoveThumbnail(clip.sceneId, frameIndex: clip.indices.first);
+  }
+
+  // カーソル固定方式のフレーム貼り付け確定。同一シーン内への貼り付けで
+  // カーソル位置が複製元より後ろにある場合、挿入するたびに複製元の
+  // インデックスがずれていくため、挿入済み件数を加味した実効インデックスを
+  // 都度計算しながら1件ずつinsertDuplicatedFrameを呼ぶ。
+  void _confirmFramePaste() {
+    final clip = _frameClipboard;
+    if (clip == null) return;
+    final targetSceneId = _selectedSceneId;
+    if (targetSceneId == null) return;
+    final sortedSourceIndices = List<int>.from(clip.indices)..sort();
+    if (!_canAddFrames(sortedSourceIndices.length)) return;
+    final ps = context.read<ProjectService>();
+    final insertAt = _frameMoveCursorPos.clamp(0, _totalFrames);
+    var insertedSoFar = 0;
+    for (final originalIdx in sortedSourceIndices) {
+      final sameScene = clip.sceneId == targetSceneId;
+      final effectiveSrcIdx = (sameScene && originalIdx >= insertAt)
+          ? originalIdx + insertedSoFar
+          : originalIdx;
+      ps.insertDuplicatedFrame(
+        projectId: widget.projectId,
+        sourceSceneId: clip.sceneId,
+        sourceFrameIndex: effectiveSrcIdx,
+        targetSceneId: targetSceneId,
+        insertAt: insertAt + insertedSoFar,
+      );
+      insertedSoFar++;
+    }
+    if (clip.isCut) {
+      // 貼り付けによって挿入された分だけ、切り取り元より後ろにあった
+      // 元フレームのインデックスが後ろへずれているため、削除前に
+      // 実際の位置へ補正し、降順に削除する。
+      final sameScene = clip.sceneId == targetSceneId;
+      final m = sortedSourceIndices.length;
+      final currentPositions =
+          sortedSourceIndices
+              .map(
+                (originalIdx) => (sameScene && originalIdx >= insertAt)
+                    ? originalIdx + m
+                    : originalIdx,
+              )
+              .toList()
+            ..sort();
+      for (final idx in currentPositions.reversed) {
+        ps.removeFrame(widget.projectId, clip.sceneId, idx);
+      }
+    }
+    setState(() {
+      _isFramePasteMode = false;
+      _frameClipboard = null;
       _isFrameMultiSelect = false;
       _selectedFrameIndices.clear();
       _currentFrame = _currentFrame.clamp(0, _totalFrames - 1);
@@ -3050,7 +3324,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!_isSceneMultiSelect && !_isFrameMultiSelect) {
       return const SizedBox.shrink();
     }
-    if (_isMoveMode || _isFrameMoveMode) return const SizedBox.shrink();
+    if (_isSceneCursorActive || _isFrameCursorActive) {
+      return const SizedBox.shrink();
+    }
     final l10n = AppLocalizations.of(context)!;
     final isScene = _isSceneMultiSelect;
     final projectService = context.watch<ProjectService>();
@@ -3071,6 +3347,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         isScene ? _duplicateSelectedScenes(scenes) : _duplicateSelectedFrames();
     void onDelete() =>
         isScene ? _showMultiDeleteConfirm() : _deleteSelectedFrames();
+    final canPaste = isScene
+        ? _sceneClipboard != null
+        : _frameClipboard != null;
     void onSelectAll() => setState(() {
       if (isScene) {
         _selectedSceneIds.addAll(scenes.map((s) => s.id));
@@ -3136,6 +3415,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 canDelete ? onDelete : null,
                 color: Colors.red,
               ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              bigButton(
+                l10n.commonCopy,
+                selectedCount > 0 ? _copySelectionToClipboard : null,
+              ),
+              bigButton(
+                l10n.commonCut,
+                selectedCount > 0 ? _cutSelectionToClipboard : null,
+              ),
+              bigButton(l10n.commonPaste, canPaste ? _pasteFromClipboard : null),
             ],
           ),
           const SizedBox(height: 4),
