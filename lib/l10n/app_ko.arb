@@ -622,7 +622,6 @@
   "fontEmptyTitle": "폰트가 없습니다",
   "fontEmptyHint": "「찾아서 다운로드」또는「불러오기」탭에서 추가할 수 있습니다",
   "fontRenameDialogTitle": "폰트 이름 변경",
-  "fontDeleteConfirmTitle": "{name}을(를) 삭제하시겠습니까?",
   "fontImportTitle": "기기에 저장된 폰트 불러오기",
   "fontImportFormats": "지원 형식: TTF / OTF",
   "fontSelectFileButton": "파일 선택",

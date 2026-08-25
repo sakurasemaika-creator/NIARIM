@@ -18,6 +18,7 @@ import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/work_folder_service.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
@@ -987,22 +988,11 @@ class _SharedTab extends StatelessWidget {
       shared = shared.where((p) => p.isFavorite).toList();
     }
     shared = _sortProjects(shared, sortMode);
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final l10n = AppLocalizations.of(context)!;
     if (shared.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.share_outlined,
-              size: 64,
-              color: muted.withValues(alpha: 0.6),
-            ),
-            const SizedBox(height: 16),
-            Text(l10n.homeSharedEmpty, style: TextStyle(color: muted)),
-          ],
-        ),
+      return EmptyStatePlaceholder(
+        icon: Icons.share_outlined,
+        title: l10n.homeSharedEmpty,
       );
     }
     return _FolderableList<Project>(
@@ -1330,22 +1320,11 @@ class _TrashTab extends StatelessWidget {
       context.watch<ProjectService>().trash,
       sortMode,
     );
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final l10n = AppLocalizations.of(context)!;
     if (trash.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.delete_outline,
-              size: 64,
-              color: muted.withValues(alpha: 0.6),
-            ),
-            const SizedBox(height: 16),
-            Text(l10n.homeTrashEmpty, style: TextStyle(color: muted)),
-          ],
-        ),
+      return EmptyStatePlaceholder(
+        icon: Icons.delete_outline,
+        title: l10n.homeTrashEmpty,
       );
     }
     return ListView.builder(
@@ -1504,7 +1483,6 @@ class _WorksTabState extends State<_WorksTab> {
 
   @override
   Widget build(BuildContext context) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<List<File>>(
       future: _future,
@@ -1520,28 +1498,10 @@ class _WorksTabState extends State<_WorksTab> {
               children: [
                 SizedBox(
                   height: 400,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.video_library_outlined,
-                          size: 64,
-                          color: muted.withValues(alpha: 0.6),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.homeWorksEmpty,
-                          style: TextStyle(color: muted),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.homeWorksEmptyHint,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: muted, fontSize: 12),
-                        ),
-                      ],
-                    ),
+                  child: EmptyStatePlaceholder(
+                    icon: Icons.video_library_outlined,
+                    title: l10n.homeWorksEmpty,
+                    hint: l10n.homeWorksEmptyHint,
                   ),
                 ),
               ],

@@ -622,7 +622,6 @@
   "fontEmptyTitle": "没有字体",
   "fontEmptyHint": "可从「搜索下载」或「导入」标签页添加",
   "fontRenameDialogTitle": "更改字体名称",
-  "fontDeleteConfirmTitle": "要删除{name}吗？",
   "fontImportTitle": "导入设备中已保存的字体",
   "fontImportFormats": "支持格式：TTF / OTF",
   "fontSelectFileButton": "选择文件",

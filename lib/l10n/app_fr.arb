@@ -622,7 +622,6 @@
   "fontEmptyTitle": "Aucune police",
   "fontEmptyHint": "Ajoutez des polices depuis les onglets « Rechercher et télécharger » ou « Importer »",
   "fontRenameDialogTitle": "Renommer la police",
-  "fontDeleteConfirmTitle": "Supprimer {name} ?",
   "fontImportTitle": "Importer une police enregistrée sur cet appareil",
   "fontImportFormats": "Formats pris en charge : TTF / OTF",
   "fontSelectFileButton": "Sélectionner un fichier",

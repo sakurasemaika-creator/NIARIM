@@ -622,7 +622,6 @@
   "fontEmptyTitle": "No fonts",
   "fontEmptyHint": "Add fonts from the \"Find & Download\" or \"Import\" tabs",
   "fontRenameDialogTitle": "Rename Font",
-  "fontDeleteConfirmTitle": "Delete {name}?",
   "fontImportTitle": "Import a font saved on this device",
   "fontImportFormats": "Supported formats: TTF / OTF",
   "fontSelectFileButton": "Select File",

@@ -622,7 +622,6 @@
   "fontEmptyTitle": "No hay fuentes",
   "fontEmptyHint": "Añade fuentes desde las pestañas \"Buscar y descargar\" o \"Importar\"",
   "fontRenameDialogTitle": "Renombrar fuente",
-  "fontDeleteConfirmTitle": "¿Eliminar {name}?",
   "fontImportTitle": "Importar una fuente guardada en este dispositivo",
   "fontImportFormats": "Formatos compatibles: TTF / OTF",
   "fontSelectFileButton": "Seleccionar archivo",

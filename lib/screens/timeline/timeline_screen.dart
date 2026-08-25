@@ -1939,6 +1939,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         title: Text(l10n.timelineSceneRenameTitle),
         content: TextField(
           controller: controller,
+          autofocus: true,
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [

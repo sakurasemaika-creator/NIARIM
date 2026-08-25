@@ -622,7 +622,6 @@
   "fontEmptyTitle": "沒有字型",
   "fontEmptyHint": "可從「搜尋下載」或「匯入」分頁新增",
   "fontRenameDialogTitle": "變更字型名稱",
-  "fontDeleteConfirmTitle": "要刪除{name}嗎？",
   "fontImportTitle": "匯入裝置中已儲存的字型",
   "fontImportFormats": "支援格式：TTF / OTF",
   "fontSelectFileButton": "選擇檔案",

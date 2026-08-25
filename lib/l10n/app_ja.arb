@@ -733,14 +733,6 @@
   "fontEmptyTitle": "フォントがありません",
   "fontEmptyHint": "「探してDL」または「読み込み」タブから追加できます",
   "fontRenameDialogTitle": "フォント名を変更",
-  "fontDeleteConfirmTitle": "{name}を削除しますか？",
-  "@fontDeleteConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "fontImportTitle": "端末に保存済みのフォントを読み込む",
   "fontImportFormats": "対応形式：TTF / OTF",
   "fontSelectFileButton": "ファイルを選択",

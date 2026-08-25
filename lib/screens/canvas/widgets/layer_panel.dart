@@ -251,6 +251,11 @@ class _LayerPanelState extends State<LayerPanel> {
                     }),
                     child: Text(l10n.layerPanelDeselectAll, style: const TextStyle(fontSize: 12)),
                   ),
+                  const Spacer(),
+                  Text(
+                    l10n.homeSelectionCount(_selectedIds.length),
+                    style: const TextStyle(fontSize: 12),
+                  ),
                 ],
               ),
             ),

@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/confirm_delete.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
 
@@ -92,9 +93,11 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                     hintText: l10n.fontDownloadedSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
                     isDense: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
                     ),
                   ),
                   onChanged: (v) => setState(() => _query = v),
@@ -277,7 +280,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
     ).then((_) => controller.dispose());
   }
 
-  void _confirmDelete(BuildContext context, FontAsset font) {
+  Future<void> _confirmDelete(BuildContext context, FontAsset font) async {
     final l10n = AppLocalizations.of(context)!;
     // お気に入り登録中は削除できない。
     if (font.isFavorite) {
@@ -286,26 +289,10 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.fontDeleteConfirmTitle(font.displayName)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              context.read<FontService>().removeFont(font.id);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
+    final confirmed = await confirmDelete(context, itemName: font.displayName);
+    if (!confirmed) return;
+    if (!context.mounted) return;
+    context.read<FontService>().removeFont(font.id);
   }
 }
 

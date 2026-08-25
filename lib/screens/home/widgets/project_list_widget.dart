@@ -459,7 +459,7 @@ class ProjectListWidget extends StatelessWidget {
         PopupMenuItem(value: 'share', child: Text(l10n.projectListCreateShareAction)),
         PopupMenuItem(
           value: 'favorite',
-          child: Text(project.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.homeFavoritesOnly),
+          child: Text(project.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd),
         ),
         PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
         PopupMenuItem(
@@ -480,7 +480,7 @@ class ProjectListWidget extends StatelessWidget {
         PopupMenuItem(value: 'edit', child: Text(l10n.projectListEditFolderAction)),
         PopupMenuItem(
           value: 'favorite',
-          child: Text(folder.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.homeFavoritesOnly),
+          child: Text(folder.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd),
         ),
         PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
         PopupMenuItem(
@@ -747,15 +747,6 @@ class ProjectListWidget extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              onPressed: () {
-                Navigator.pop(ctx);
-                _confirmDeleteFolder(context, folder);
-              },
-              child: Text(l10n.commonDelete),
-            ),
-            const Spacer(),
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () {
