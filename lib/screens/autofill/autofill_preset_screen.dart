@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -5,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
@@ -34,6 +36,14 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   bool _isSearching = false;
   // お気に入りのみ絞り込み。プリセット単位のお気に入り登録・絞り込みに使う。
   bool _showFavoritesOnly = false;
+
+  // 複数選択モード（他画面と同じく長押しでON、全選択／全解除ボタンあり）。
+  bool _isSelectionMode = false;
+  final Set<String> _selectedIds = {};
+  // 「複製」で作られたコピーをこのセッション内のクリップボードにも
+  // 保持しておき、「貼り付け」で選択なしにいつでも再度貼り付けられる
+  // ようにする（アプリを離れると保持しない、画面内のみのUI状態）。
+  final List<AutofillPreset> _presetClipboard = [];
 
   // このファイルの各ダイアログが使うTextEditingControllerは、
   // showDialog(...).then((_) => WidgetsBinding.instance.
@@ -90,6 +100,52 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            if (_isSelectionMode)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => setState(
+                        () => _selectedIds.addAll(filtered.map((p) => p.id)),
+                      ),
+                      child: Text(l10n.homeSelectionAllSelect),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _selectedIds.clear();
+                        _isSelectionMode = false;
+                      }),
+                      child: Text(l10n.homeSelectionAllDeselect),
+                    ),
+                    const Spacer(),
+                    Text(l10n.homeSelectionCount(_selectedIds.length)),
+                    if (_selectedIds.isNotEmpty) ...[
+                      IconButton(
+                        icon: const Icon(Icons.content_copy),
+                        onPressed: () => _bulkDuplicate(filtered),
+                        tooltip: l10n.commonDuplicate,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.content_paste),
+                        onPressed: _presetClipboard.isEmpty ? null : _bulkPaste,
+                        tooltip: l10n.commonPaste,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.ios_share),
+                        onPressed: () => _bulkExport(filtered),
+                        tooltip: l10n.autofillPresetExportMenuItem,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _bulkDelete(filtered),
+                        tooltip: l10n.commonDelete,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Row(
@@ -157,6 +213,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                         final preset = filtered[index];
                         return _PresetCard(
                           preset: preset,
+                          isSelectionMode: _isSelectionMode,
+                          isSelected: _selectedIds.contains(preset.id),
                           onToggleFavorite: () => context
                               .read<AutofillPresetService>()
                               .updatePreset(
@@ -165,7 +223,23 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                           onEdit: () => _showEditDialog(preset),
                           onDelete: () => _confirmDelete(preset),
                           onSetThumbnail: () => _showThumbnailDialog(preset),
-                          onTap: () => _showPresetDetail(preset),
+                          onExport: () => _exportPresets([preset]),
+                          onLongPress: () => setState(() {
+                            _isSelectionMode = true;
+                            _selectedIds.add(preset.id);
+                          }),
+                          onTap: () {
+                            if (_isSelectionMode) {
+                              setState(() {
+                                if (!_selectedIds.remove(preset.id)) {
+                                  _selectedIds.add(preset.id);
+                                }
+                                if (_selectedIds.isEmpty) _isSelectionMode = false;
+                              });
+                            } else {
+                              _showPresetDetail(preset);
+                            }
+                          },
                         );
                       },
                     ),
@@ -174,10 +248,196 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDialog,
+        onPressed: _showAddOrImportChoice,
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  /// ＋ボタン：以前はタップで即座に新規作成ダイアログへ入っていたが、
+  /// 「新規作成」か「読み込み」かを選べるボトムシートを挟む。
+  void _showAddOrImportChoice() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: Text(l10n.autofillPresetNewDialogTitle),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showAddDialog();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.file_upload_outlined),
+              title: Text(l10n.autofillFabImportOption),
+              onTap: () {
+                Navigator.pop(ctx);
+                _importPresets();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 選択中のプリセットを複製する（一覧へ即座に追加し、いつでも再度
+  /// 貼り付けられるようクリップボードにも保持する）。
+  void _bulkDuplicate(List<AutofillPreset> filtered) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<AutofillPresetService>();
+    final selected =
+        filtered.where((p) => _selectedIds.contains(p.id)).toList();
+    final copies = selected
+        .map(
+          (p) => p.copyWith(
+            id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
+            name: l10n.autofillPresetDuplicateName(p.name),
+            isFavorite: false,
+          ),
+        )
+        .toList();
+    for (final copy in copies) {
+      service.addPreset(copy);
+    }
+    setState(() {
+      _presetClipboard
+        ..clear()
+        ..addAll(copies);
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  /// クリップボードの内容を新しいIDで貼り付ける（何度でも繰り返せる）。
+  void _bulkPaste() {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<AutofillPresetService>();
+    for (final p in _presetClipboard) {
+      service.addPreset(
+        p.copyWith(
+          id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
+          name: l10n.autofillPresetDuplicateName(p.name),
+        ),
+      );
+    }
+    setState(() {
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  /// 選択中のプリセットを一括削除する（お気に入り登録中のものは除外し、
+  /// 1件でも除外があった場合はスナックバーで知らせる）。
+  Future<void> _bulkDelete(List<AutofillPreset> filtered) async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected =
+        filtered.where((p) => _selectedIds.contains(p.id)).toList();
+    final deletable = selected.where((p) => !p.isFavorite).toList();
+    if (!await confirmDelete(context)) return;
+    if (!mounted) return;
+    final projectService = context.read<ProjectService>();
+    final service = context.read<AutofillPresetService>();
+    for (final preset in deletable) {
+      for (final part in preset.parts) {
+        projectService.markAutofillUpdateForPartId(part.id);
+      }
+      service.removePreset(preset.id);
+    }
+    if (deletable.length < selected.length) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+      );
+    }
+    setState(() {
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  /// 選択中のプリセットをまとめて.niafillファイルへ書き出し、1回の共有で
+  /// まとめて渡す。
+  Future<void> _bulkExport(List<AutofillPreset> filtered) async {
+    final selected =
+        filtered.where((p) => _selectedIds.contains(p.id)).toList();
+    await _exportPresets(selected);
+    if (!mounted) return;
+    setState(() {
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  /// [presets]をそれぞれ独立した.niafillファイルへ書き出し、1回の共有操作で
+  /// まとめて渡す（プリセット単体の書き出しもこれを1件呼び出すだけで済む）。
+  Future<void> _exportPresets(List<AutofillPreset> presets) async {
+    if (presets.isEmpty) return;
+    try {
+      final dir = await getTemporaryDirectory();
+      final files = <XFile>[];
+      for (final preset in presets) {
+        final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+        final file = File('${dir.path}/$safeName.niafill');
+        await file.writeAsString(jsonEncode(preset.toJson()));
+        files.add(XFile(file.path));
+      }
+      if (!mounted) return;
+      await SharePlus.instance.share(ShareParams(files: files));
+    } catch (e) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.autofillPresetExportFailedSnackbar(e.toString()))),
+      );
+    }
+  }
+
+  /// .niafillファイルを複数選択して一括で読み込む。
+  Future<void> _importPresets() async {
+    final l10n = AppLocalizations.of(context)!;
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['niafill'],
+      allowMultiple: true,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+    if (!mounted) return;
+    final service = context.read<AutofillPresetService>();
+    var imported = 0;
+    String? lastError;
+    for (final picked in result.files) {
+      try {
+        final content = picked.bytes != null
+            ? utf8.decode(picked.bytes!)
+            : await File(picked.path!).readAsString();
+        final json = jsonDecode(content) as Map<String, dynamic>;
+        final preset = AutofillPreset.fromJson(json).copyWith(
+          id: 'p_${DateTime.now().microsecondsSinceEpoch}_$imported',
+          isFavorite: false,
+        );
+        await service.addPreset(preset);
+        imported++;
+      } catch (e) {
+        lastError = e.toString();
+      }
+    }
+    if (!mounted) return;
+    if (imported > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.autofillPresetImportSuccessSnackbar(imported))),
+      );
+    }
+    if (lastError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.autofillPresetImportFailedSnackbar(lastError))),
+      );
+    }
   }
 
   void _showAddDialog() {
@@ -441,18 +701,26 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
 class _PresetCard extends StatelessWidget {
   final AutofillPreset preset;
+  final bool isSelectionMode;
+  final bool isSelected;
   final VoidCallback onToggleFavorite;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onSetThumbnail;
+  final VoidCallback onExport;
+  final VoidCallback onLongPress;
   final VoidCallback onTap;
 
   const _PresetCard({
     required this.preset,
+    required this.isSelectionMode,
+    required this.isSelected,
     required this.onToggleFavorite,
     required this.onEdit,
     required this.onDelete,
     required this.onSetThumbnail,
+    required this.onExport,
+    required this.onLongPress,
     required this.onTap,
   });
 
@@ -461,86 +729,102 @@ class _PresetCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: isSelected
+          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
+          : null,
       child: ListTile(
-        leading: Container(
-          width: 48,
-          height: 48,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          // サムネイル画像が設定されている場合はそれを優先表示し、未設定の
-          // 場合のみパーツの色（最大4色）をグリッド表示する
-          // （サムネイル画像削除時は既定の色表示へ戻る）。
-          child: preset.thumbnailPath != null
-              ? Image.file(
-                  File(preset.thumbnailPath!),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
-                      const Icon(Icons.broken_image, size: 24),
-                )
-              : preset.parts.isEmpty
-              ? const Icon(Icons.palette, size: 24)
-              : GridView.count(
-                  crossAxisCount: 2,
-                  padding: const EdgeInsets.all(4),
-                  mainAxisSpacing: 2,
-                  crossAxisSpacing: 2,
-                  children: preset.parts
-                      .take(4)
-                      .map(
-                        (p) => Container(
-                          decoration: BoxDecoration(
-                            color: Color(p.color),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      )
-                      .toList(),
+        onLongPress: onLongPress,
+        leading: isSelectionMode
+            ? Icon(
+                isSelected ? Icons.check_circle : Icons.circle_outlined,
+                color: isSelected ? Theme.of(context).colorScheme.primary : null,
+              )
+            : Container(
+                width: 48,
+                height: 48,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-        ),
+                // サムネイル画像が設定されている場合はそれを優先表示し、未設定の
+                // 場合のみパーツの色（最大4色）をグリッド表示する
+                // （サムネイル画像削除時は既定の色表示へ戻る）。
+                child: preset.thumbnailPath != null
+                    ? Image.file(
+                        File(preset.thumbnailPath!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            const Icon(Icons.broken_image, size: 24),
+                      )
+                    : preset.parts.isEmpty
+                    ? const Icon(Icons.palette, size: 24)
+                    : GridView.count(
+                        crossAxisCount: 2,
+                        padding: const EdgeInsets.all(4),
+                        mainAxisSpacing: 2,
+                        crossAxisSpacing: 2,
+                        children: preset.parts
+                            .take(4)
+                            .map(
+                              (p) => Container(
+                                decoration: BoxDecoration(
+                                  color: Color(p.color),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+              ),
         title: Text(preset.name),
         subtitle: Text(
           l10n.autofillPresetPartsCount(preset.parts.length),
           style: const TextStyle(fontSize: 11),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(
-                preset.isFavorite ? Icons.star : Icons.star_border,
-                color: preset.isFavorite ? Colors.amber : null,
-              ),
-              onPressed: onToggleFavorite,
-              tooltip: preset.isFavorite
-                  ? l10n.colorPickerFavoriteRemove
-                  : l10n.colorPickerFavoriteAdd,
-            ),
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'edit') onEdit();
-                if (v == 'thumbnail') onSetThumbnail();
-                if (v == 'delete') onDelete();
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
-                PopupMenuItem(
-                  value: 'thumbnail',
-                  child: Text(l10n.autofillThumbnailMenuItem),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(
-                    l10n.commonDelete,
-                    style: const TextStyle(color: Colors.red),
+        trailing: isSelectionMode
+            ? null
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      preset.isFavorite ? Icons.star : Icons.star_border,
+                      color: preset.isFavorite ? Colors.amber : null,
+                    ),
+                    onPressed: onToggleFavorite,
+                    tooltip: preset.isFavorite
+                        ? l10n.colorPickerFavoriteRemove
+                        : l10n.colorPickerFavoriteAdd,
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                  PopupMenuButton<String>(
+                    onSelected: (v) {
+                      if (v == 'edit') onEdit();
+                      if (v == 'thumbnail') onSetThumbnail();
+                      if (v == 'export') onExport();
+                      if (v == 'delete') onDelete();
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
+                      PopupMenuItem(
+                        value: 'thumbnail',
+                        child: Text(l10n.autofillThumbnailMenuItem),
+                      ),
+                      PopupMenuItem(
+                        value: 'export',
+                        child: Text(l10n.autofillPresetExportMenuItem),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(
+                          l10n.commonDelete,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
         onTap: onTap,
       ),
     );
@@ -1128,6 +1412,83 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       ),
                     ),
                     const Divider(),
+                    // 指定色で縁取り：塗り範囲の一番外側（線画に接する部分）へ、
+                    // 指定色・指定太さのラインを重ねる。チェックボックスと
+                    // 設定項目の間にプレビューを挟み、どんな色・太さになるか
+                    // その場で確認できるようにする。
+                    CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(l10n.autofillPartOutlineLabel),
+                      value: current.outlineEnabled,
+                      onChanged: (v) => setS(
+                        () => current = current.copyWith(outlineEnabled: v ?? false),
+                      ),
+                    ),
+                    if (current.outlineEnabled) ...[
+                      const SizedBox(height: 4),
+                      _outlinePreview(current),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: () => _showColorPickerFor(
+                          context,
+                          Color(current.outlineColor),
+                          (c) => setS(
+                            () => current =
+                                current.copyWith(outlineColor: c.toARGB32()),
+                          ),
+                        ),
+                        icon: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: Color(current.outlineColor),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outlineVariant,
+                            ),
+                          ),
+                        ),
+                        label: Text(
+                          l10n.autofillPartSelectColorButton,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: EditableSliderValue(
+                              text: l10n.autofillPartOutlineWidthLabel(
+                                current.outlineWidth.round(),
+                              ),
+                              style: const TextStyle(fontSize: 12),
+                              value: current.outlineWidth,
+                              min: 1,
+                              max: 100,
+                              title: l10n.autofillPartOutlineWidthLabel(
+                                current.outlineWidth.round(),
+                              ),
+                              onChanged: (v) => setS(
+                                () => current = current.copyWith(
+                                  outlineWidth: v.toDouble(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SteppedSlider(
+                        value: current.outlineWidth,
+                        min: 1,
+                        max: 100,
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(outlineWidth: v),
+                        ),
+                      ),
+                    ],
+                    const Divider(),
                     // 線画色のリアルタイムプレビュー。塗り色プレビューと同じく、
                     // 線画色設定のすぐ上に置く（色トレス・線画馴染ませ選択時は
                     // 塗り色からのオフセット適用後の色をプレビューする）。
@@ -1558,6 +1919,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
+  // グラデーション編集ダイアログのプレビュー円の直径。ダイアログの
+  // content幅（320）に収まり、かつ左右のハンドルがはみ出さない余白を
+  // 残せる大きさにしている。
+  static const double _gradientPreviewDiameter = 180;
+
   /// グラデーション編集ダイアログ（塗り色設定・グラデーション）。
   /// 自由な色比率編集の代わりに均等配置とし、種類・角度（直線時）・
   /// 中心位置（放射時、既定は中央）・色（2〜5色）を編集する簡略実装。
@@ -1616,138 +1982,171 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 実際の種類・角度・放射方向・ぼかしを反映した正確なプレビュー
-                    // （角度の違うグラデーションや放射状のグラデーションなど
-                    // 対応したプレビューを表示する）。
-                    Container(
-                      height: 48,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                        ),
-                      ),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          CustomPaint(painter: const _CheckerboardPainter()),
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: _previewGradient(gradient),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // プレビュー直下に各色の切り替え位置（stops）に対応する三角形の
-                    // ハンドルを表示し、直接ドラッグして位置を調整できるようにする
-                    // （個別スライダーより直感的）。
-                    SizedBox(
-                      height: 14,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final maxWidth = constraints.maxWidth;
-                          Widget handle(
-                            int i,
-                            double left, {
-                            required bool mirrorDrag,
-                          }) {
-                            return Positioned(
-                              left: left - 7,
-                              top: 0,
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onHorizontalDragStart: (_) {
-                                  // 中心ぴったりから始まる場合だけ「未確定」の
-                                  // 印として0を入れる（それ以外の通常ドラッグは
-                                  // 記録を残さず、常にmirrorDragの向きで動く）。
-                                  if (isRadial && geomT(i) <= 0.001) {
-                                    centerDragSign[i] = 0;
-                                  } else {
-                                    centerDragSign.remove(i);
-                                  }
-                                },
-                                onHorizontalDragUpdate: (d) {
-                                  final halfWidth = isRadial
-                                      ? maxWidth / 2
-                                      : maxWidth;
-                                  if (isRadial) {
-                                    final locked = centerDragSign[i];
-                                    if (locked == 0 && d.delta.dx != 0) {
-                                      centerDragSign[i] = d.delta.dx > 0
-                                          ? 1
-                                          : -1;
-                                    }
-                                    final sign = centerDragSign[i];
-                                    final dt = (sign != null && sign != 0)
-                                        ? d.delta.dx / halfWidth * sign
-                                        : d.delta.dx /
-                                              halfWidth *
-                                              (mirrorDrag ? -1 : 1);
-                                    setGeomT(i, geomT(i) + dt);
-                                  } else {
-                                    setStopAt(
-                                      i,
-                                      gradient.stops[i] +
-                                          d.delta.dx / halfWidth,
-                                    );
-                                  }
-                                },
-                                onHorizontalDragEnd: (_) =>
-                                    centerDragSign.remove(i),
-                                child: CustomPaint(
-                                  size: const Size(14, 12),
-                                  painter: _StopHandlePainter(
-                                    color: Color(gradient.colors[i]),
-                                  ),
+                    // 実際の種類・角度・放射方向・ぼかしを反映した正確なプレビュー。
+                    // 他の画面のグラデーションプレビュー（長方形）と違い、自動塗りの
+                    // 塗り範囲は正方形とは限らない任意の形のため、角度の傾きを
+                    // 直感的に確認できるよう真円で表示する。色の切り替え位置を
+                    // 示す三角形ハンドルも円の外周へ直接重ねて表示し、直線
+                    // グラデーションの角度を変えるとハンドルの並ぶ直径の向きも
+                    // 連動して円の周りを回転する。
+                    Center(
+                      child: SizedBox(
+                        width: _gradientPreviewDiameter,
+                        height: _gradientPreviewDiameter,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              clipBehavior: Clip.antiAlias,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.outlineVariant,
                                 ),
                               ),
-                            );
-                          }
-
-                          if (!isRadial) {
-                            return Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                for (int i = 0; i < gradient.stops.length; i++)
-                                  handle(
-                                    i,
-                                    gradient.stops[i] * maxWidth,
-                                    mirrorDrag: false,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  CustomPaint(painter: const _CheckerboardPainter()),
+                                  DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      gradient: _previewGradient(
+                                        gradient,
+                                        _gradientPreviewDiameter,
+                                        _gradientPreviewDiameter,
+                                      ),
+                                    ),
                                   ),
-                              ],
-                            );
-                          }
-                          // 放射グラデーション：中心（画面中央）を軸に左右対称のハンドルを
-                          // 2つずつ配置し、片方を動かすと反対側も連動する。t=0
-                          // （中心そのもの）でも常に2つ重ねて表示することで、
-                          // どちらの方向へドラッグしても意図通り分割できるようにする。
-                          final center = maxWidth / 2;
-                          return Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              for (
-                                int i = 0;
-                                i < gradient.stops.length;
-                                i++
-                              ) ...[
-                                handle(
-                                  i,
-                                  center + geomT(i) * center,
-                                  mirrorDrag: false,
-                                ),
-                                handle(
-                                  i,
-                                  center - geomT(i) * center,
-                                  mirrorDrag: true,
-                                ),
-                              ],
-                            ],
-                          );
-                        },
+                                ],
+                              ),
+                            ),
+                            Builder(
+                              builder: (context) {
+                                final diameter = _gradientPreviewDiameter;
+                                final radius = diameter / 2;
+                                final center = Offset(radius, radius);
+                                // 直線グラデーションはgradient.angleの向きに、
+                                // 放射グラデーションは角度の概念がないため
+                                // 水平（右）を基準の向きとして固定する。
+                                final rad = isRadial
+                                    ? 0.0
+                                    : gradient.angle * math.pi / 180;
+                                final dir = Offset(math.cos(rad), math.sin(rad));
+
+                                Widget handle(
+                                  int i,
+                                  Offset pos, {
+                                  required bool mirrorDrag,
+                                }) {
+                                  return Positioned(
+                                    left: pos.dx - 7,
+                                    top: pos.dy - 6,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onPanStart: (_) {
+                                        // 中心ぴったりから始まる場合だけ「未確定」の
+                                        // 印として0を入れる（それ以外の通常ドラッグは
+                                        // 記録を残さず、常にmirrorDragの向きで動く）。
+                                        if (isRadial && geomT(i) <= 0.001) {
+                                          centerDragSign[i] = 0;
+                                        } else {
+                                          centerDragSign.remove(i);
+                                        }
+                                      },
+                                      onPanUpdate: (d) {
+                                        // ドラッグ量（画面上のdx・dy）を、ハンドルが
+                                        // 実際に動く方向（directionForHandles）へ
+                                        // 射影し、その方向にどれだけ動かしたかを
+                                        // 求める（円周上のどこにハンドルがあっても、
+                                        // 直径の向きに沿ってドラッグした分だけ
+                                        // 動くようにするため）。
+                                        final proj = d.delta.dx * dir.dx +
+                                            d.delta.dy * dir.dy;
+                                        if (isRadial) {
+                                          final halfWidth = radius;
+                                          final locked = centerDragSign[i];
+                                          if (locked == 0 && proj != 0) {
+                                            centerDragSign[i] =
+                                                proj > 0 ? 1 : -1;
+                                          }
+                                          final sign = centerDragSign[i];
+                                          final dt = (sign != null && sign != 0)
+                                              ? proj / halfWidth * sign
+                                              : proj /
+                                                    halfWidth *
+                                                    (mirrorDrag ? -1 : 1);
+                                          setGeomT(i, geomT(i) + dt);
+                                        } else {
+                                          setStopAt(
+                                            i,
+                                            gradient.stops[i] + proj / diameter,
+                                          );
+                                        }
+                                      },
+                                      onPanEnd: (_) => centerDragSign.remove(i),
+                                      child: CustomPaint(
+                                        size: const Size(14, 12),
+                                        painter: _StopHandlePainter(
+                                          color: Color(gradient.colors[i]),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                if (!isRadial) {
+                                  return Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      for (
+                                        int i = 0;
+                                        i < gradient.stops.length;
+                                        i++
+                                      )
+                                        handle(
+                                          i,
+                                          center +
+                                              dir *
+                                                  ((gradient.stops[i] - 0.5) *
+                                                      diameter),
+                                          mirrorDrag: false,
+                                        ),
+                                    ],
+                                  );
+                                }
+                                // 放射グラデーション：中心を軸に左右対称のハンドルを
+                                // 2つずつ配置し、片方を動かすと反対側も連動する。
+                                // t=0（中心そのもの）でも常に2つ重ねて表示する
+                                // ことで、どちらの方向へドラッグしても意図通り
+                                // 分割できるようにする。
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    for (
+                                      int i = 0;
+                                      i < gradient.stops.length;
+                                      i++
+                                    ) ...[
+                                      handle(
+                                        i,
+                                        center + dir * (geomT(i) * radius),
+                                        mirrorDrag: false,
+                                      ),
+                                      handle(
+                                        i,
+                                        center - dir * (geomT(i) * radius),
+                                        mirrorDrag: true,
+                                      ),
+                                    ],
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 8),
                     Text(
                       l10n.autofillPartGradientStopDragHint,
                       style: TextStyle(
@@ -2075,11 +2474,58 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             opacity: p.opacity / 100,
             child: p.gradient == null
                 ? ColoredBox(color: Color(p.color))
-                : DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: _previewGradient(p.gradient!),
+                // プレビュー枠の実際の縦横比（LayoutBuilderで取得）を
+                // _previewGradient()へ渡し、角度の見た目を実際の塗り結果と
+                // 一致させる（枠の縦横比を考慮しないと、正方形でない枠では
+                // 角度が実際より歪んで見えてしまうため）。
+                : LayoutBuilder(
+                    builder: (context, constraints) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: _previewGradient(
+                          p.gradient!,
+                          constraints.maxWidth,
+                          height,
+                        ),
+                      ),
                     ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 縁取り設定のプレビュー：塗り色の丸みを帯びた見本図形へ、現在の
+  /// 縁取り色・太さを縁として重ねて表示する（自動塗りエンジン本体の
+  /// 計算とは独立した簡易表示）。極端に太い値を指定してもプレビュー枠に
+  /// 収まるよう、表示上の太さのみ上限を設けている（実際の縁取り太さは
+  /// 上限なくそのまま反映される）。
+  Widget _outlinePreview(AutofillPart p) {
+    final displayWidth = p.outlineWidth.clamp(1, 16).toDouble();
+    return Container(
+      height: 48,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomPaint(painter: const _CheckerboardPainter()),
+          Center(
+            child: Container(
+              width: 72,
+              height: 28,
+              decoration: BoxDecoration(
+                color: Color(p.color),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Color(p.outlineColor),
+                  width: displayWidth,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -2090,17 +2536,28 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// Flutter用Gradientへ変換する（角度の違うグラデーションや
   /// 放射状のグラデーションなど対応したプレビューを表示する）。
   /// autofill_engine.dartの実際の塗り計算式（_gradientColorAt/_sampleGradient）
-  /// と挙動を合わせている。
-  Gradient _previewGradient(AutofillGradient g) {
+  /// と挙動を合わせている。[w]・[h]はプレビュー枠の実際の幅・高さ
+  /// （直線グラデーションの角度計算で、枠の縦横比に依存せず指定した
+  /// 角度どおりの傾きになるよう補正するために使う）。
+  Gradient _previewGradient(AutofillGradient g, double w, double h) {
     switch (g.type) {
       case AutofillGradientType.linear:
         final expanded = _expandForFeather(g.colors, g.stops, g.feather);
         final rad = g.angle * math.pi / 180;
         final dx = math.cos(rad);
         final dy = math.sin(rad);
+        // Alignmentはx・yをそれぞれ枠の幅・高さの半分を基準に正規化する
+        // ため、dx・dyをそのまま使うと正方形でない枠では見た目の傾きが
+        // 指定角度からズレる（autofill_engine.dart側の同じ不具合と対応する
+        // 修正）。ピクセル単位の対角線長を幅・高さそれぞれで割ることで、
+        // 枠の縦横比によらず実際のピクセル空間で指定角度どおりに見える
+        // Alignmentへ変換する。
+        final diag = math.sqrt(w * w + h * h);
+        final ax = w > 0 ? diag * dx / w : dx;
+        final ay = h > 0 ? diag * dy / h : dy;
         return LinearGradient(
-          begin: Alignment(-dx, -dy),
-          end: Alignment(dx, dy),
+          begin: Alignment(-ax, -ay),
+          end: Alignment(ax, ay),
           colors: expanded.colors,
           stops: expanded.stops,
         );
@@ -2212,42 +2669,50 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ColorPickerPanel(
-              currentColor: initial,
-              showCloseBar: false,
-              onColorChanged: (c) => working = c,
-              onClose: () {},
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(l10n.commonCancel),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: () {
-                        onApply(working);
-                        Navigator.pop(ctx);
-                      },
-                      child: Text(l10n.autofillPartApplyButton),
-                    ),
-                  ],
+        // ColorPickerPanel自体は最大680px・内部スクロール済みだが、下に
+        // 「キャンセル・適用」ボタンのCardを追加した分だけ通常のカラー
+        // ピッカーより全体が縦に長くなり、画面の低い端末（横画面や
+        // 小型端末）では画面外へはみ出してボトムオーバーフローになって
+        // いた。全体をSingleChildScrollViewで包み、画面に収まらない
+        // 場合は縦スクロールできるようにして防ぐ。
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ColorPickerPanel(
+                currentColor: initial,
+                showCloseBar: false,
+                onColorChanged: (c) => working = c,
+                onClose: () {},
+              ),
+              const SizedBox(height: 8),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(l10n.commonCancel),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () {
+                          onApply(working);
+                          Navigator.pop(ctx);
+                        },
+                        child: Text(l10n.autofillPartApplyButton),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -93,6 +93,13 @@ class AutofillPart {
   final double traceSaturation; // -100〜100、既定 +60（塗り色からのオフセット）
   final double traceLightness; // -100〜100、既定 -50
 
+  // 指定色で縁取り：塗り範囲の一番外側（線画に接する部分）へ、指定色・
+  // 指定太さのラインを重ねる。フィルターの縁取り（FilterDef.outlineColor/
+  // outlineWidth）と同じARGB32・px単位の考え方を踏襲する。
+  final bool outlineEnabled;
+  final int outlineColor; // ARGB32
+  final double outlineWidth; // px、既定6
+
   final bool isFavorite;
 
   const AutofillPart({
@@ -110,6 +117,9 @@ class AutofillPart {
     this.traceHue = -10,
     this.traceSaturation = 60,
     this.traceLightness = -50,
+    this.outlineEnabled = false,
+    this.outlineColor = 0xFF000000,
+    this.outlineWidth = 6,
     this.isFavorite = false,
   });
 
@@ -128,6 +138,9 @@ class AutofillPart {
     double? traceHue,
     double? traceSaturation,
     double? traceLightness,
+    bool? outlineEnabled,
+    int? outlineColor,
+    double? outlineWidth,
     bool? isFavorite,
   }) {
     return AutofillPart(
@@ -145,6 +158,9 @@ class AutofillPart {
       traceHue: traceHue ?? this.traceHue,
       traceSaturation: traceSaturation ?? this.traceSaturation,
       traceLightness: traceLightness ?? this.traceLightness,
+      outlineEnabled: outlineEnabled ?? this.outlineEnabled,
+      outlineColor: outlineColor ?? this.outlineColor,
+      outlineWidth: outlineWidth ?? this.outlineWidth,
       isFavorite: isFavorite ?? this.isFavorite,
     );
   }
@@ -169,6 +185,9 @@ class AutofillPart {
         'traceHue': traceHue,
         'traceSaturation': traceSaturation,
         'traceLightness': traceLightness,
+        'outlineEnabled': outlineEnabled,
+        'outlineColor': outlineColor,
+        'outlineWidth': outlineWidth,
         'isFavorite': isFavorite,
       };
 
@@ -191,6 +210,9 @@ class AutofillPart {
         traceHue: (j['traceHue'] as num?)?.toDouble() ?? -10,
         traceSaturation: (j['traceSaturation'] as num?)?.toDouble() ?? 60,
         traceLightness: (j['traceLightness'] as num?)?.toDouble() ?? -50,
+        outlineEnabled: j['outlineEnabled'] as bool? ?? false,
+        outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
+        outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
         isFavorite: j['isFavorite'] as bool? ?? false,
       );
 }

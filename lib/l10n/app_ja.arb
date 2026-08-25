@@ -175,6 +175,7 @@
   "commonCopy": "コピー",
   "commonCut": "切り取り",
   "commonPaste": "貼り付け",
+  "commonDuplicate": "複製",
   "homePasteTooltip": "{count}件を貼り付け",
   "@homePasteTooltip": {
     "placeholders": {
@@ -631,7 +632,7 @@
   "helpTransformSelectionTitle": "選択範囲の変形",
   "helpTransformSelectionDesc": "選択ツールで囲んだ範囲は、変形ツールで移動・回転・拡大縮小できます。誤って描いた部分の位置調整や、一部だけを拡大して強調したい時などに使います。 レイヤー全体を対象にしたい場合は、範囲選択を使わない「自由変形・メッシュ変形」（編集メニューから開く）を使うと、格子点を個別にドラッグしてより自由な変形ができます。",
   "helpGradientAutofillTitle": "グラデーション塗り（自動塗り設定）",
-  "helpGradientAutofillDesc": "自動塗り設定の各パーツには単色だけでなくグラデーションも設定できます。ドラッグで移動できる対称ハンドルにより、直感的にグラデーションの範囲・角度を調整できます。",
+  "helpGradientAutofillDesc": "自動塗り設定の各パーツには単色だけでなくグラデーションも設定できます。ドラッグで移動できる対称ハンドルにより、直感的にグラデーションの範囲・角度を調整できます。 各パーツには「指定色で縁取り」も設定できます。チェックを入れると、塗り範囲の一番外側（線画に接する部分）に指定した色・太さのラインが引かれます。縁取り色はカラーピッカーで自由に選べ、太さはスライダー・±ボタン・数値タップでの直接入力のいずれでも調整できます。設定項目のすぐ上にプレビューが表示されるため、実際に自動塗りを実行する前に色と太さを確認できます。",
   "helpColorPickerTitle": "カラーピッカー",
   "helpColorPickerDesc": "HSVとRGBを1つの画面で切り替えながら色を選べるカラーピッカーです。パレット機能で使用中のカラーセットを保存・呼び出しできます。",
   "helpUndoSettingsTitle": "Undo（元に戻す）回数設定",
@@ -699,6 +700,8 @@
   "tipsRulerOnionDesc": "パース定規で背景の奥行きを決めておき、オニオンスキンで前後フレームを透かして見ながらキャラクターだけを動かすと、背景を毎フレーム描き直さずに済みます。",
   "tipsGradientTraceTitle": "グラデーション自動塗り×色トレスで馴染ませる",
   "tipsGradientTraceDesc": "自動塗り設定でグラデーションを使う際、線画色設定を色トレス（線画馴染ませ）にしておくと、グラデーションの微妙な色の変化に合わせて線画の色も馴染み、境界が浮きにくくなります。",
+  "tipsGradientOutlineHairTitle": "グラデーション×指定色縁取りで前髪に透明感を出す",
+  "tipsGradientOutlineHairDesc": "自動塗り設定で前髪パーツを作り、塗り色をグラデーションにして髪色と透明色の2色を選びます。角度を90度に変更し、ぼかしの強さと色の切り替え位置をお好みに調整したら、「指定色で縁取り」をチェックして縁取り色を「最近使った色」から先ほどの前髪の色と同じものを選びます。前髪の下塗りパーツだけでなく影色パーツにも同じ手順を繰り返すと、毛先が透けるような透明感のある髪の毛になります。",
   "tipsRainNoiseTitle": "雨フィルター×動くノイズでしっとりした空気感",
   "tipsRainNoiseDesc": "雨フィルターに弱めの動くノイズフィルターを重ねると、雨粒だけでなく空気中の粒子感も加わり、しっとりとした雨の日らしい質感を演出できます。",
   "tipsPartKeyframeGroupTitle": "パーツキーフレーム×グループ化でキャラを弾ませる",
@@ -1510,6 +1513,40 @@
       }
     }
   },
+  "autofillFabImportOption": "読み込み",
+  "autofillPresetExportMenuItem": "書き出し (.niafill)",
+  "autofillPresetImportSuccessSnackbar": "{count}件のプリセットを読み込みました",
+  "@autofillPresetImportSuccessSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPresetImportFailedSnackbar": "読み込みに失敗しました: {error}",
+  "@autofillPresetImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillPresetExportFailedSnackbar": "書き出しに失敗しました: {error}",
+  "@autofillPresetExportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillPresetDuplicateName": "{name} (コピー)",
+  "@autofillPresetDuplicateName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "autofillPartSearchHint": "パーツ名で検索",
   "autofillPartUnconfiguredBanner": "未設定のパーツが{count}件あります：{names}（トーン未選択）\nすべて設定するまでこの画面を閉じられません。",
   "@autofillPartUnconfiguredBanner": {
@@ -1549,6 +1586,15 @@
   },
   "autofillPartFillColorLabel": "塗り色",
   "autofillPartSelectColorButton": "色を選択",
+  "autofillPartOutlineLabel": "指定色で縁取り",
+  "autofillPartOutlineWidthLabel": "縁取り太さ: {value}px",
+  "@autofillPartOutlineWidthLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
   "autofillPartResetLineColorButton": "デフォルトに戻す",
   "autofillThumbnailHint": "サムネイル画像（参照イラスト等）を設定すると、そこからスポイトで色を拾えます。",
   "autofillThumbnailSetButton": "画像を追加",

@@ -176,6 +176,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
                 l10n.tipsRulerOnionTitle, l10n.tipsRulerOnionDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.gradient, iconB: Icons.colorize),
                 l10n.tipsGradientTraceTitle, l10n.tipsGradientTraceDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.gradient, iconB: Icons.border_color),
+                l10n.tipsGradientOutlineHairTitle, l10n.tipsGradientOutlineHairDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.brush, iconB: Icons.opacity),
                 l10n.tipsStrokeDecayFadeTitle, l10n.tipsStrokeDecayFadeDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.palette, iconB: Icons.opacity),

@@ -89,8 +89,18 @@ class AutofillEngine {
     int toneHeight = 64,
   }) {
     final result = Uint8List(width * height * 4);
-    _floodFillRegion(lineartData, result, width, height, part,
+    final regionMask = _floodFillRegion(lineartData, result, width, height, part,
         toneTexture: toneTexture, toneWidth: toneWidth, toneHeight: toneHeight);
+    if (part.outlineEnabled) {
+      // 縁取りは塗り範囲そのもの（regionMask、線画で囲まれた領域全体）の
+      // 外周のみを対象にする。トーンONの場合resultのアルファはトーン柄で
+      // 穴だらけになるため、resultの透明部分をそのまま縁取り対象にすると
+      // トーンの穴1つ1つにも縁取りが付いてしまう。regionMask（トーンの
+      // 影響を受けない、線画で区切られた領域そのもの）を使うことで、
+      // 塗り範囲の本当の外周（線画に接する部分）だけに縁取りを描く。
+      _addOutlineRing(result, regionMask, width, height,
+          color: part.outlineColor, widthPx: part.outlineWidth);
+    }
     return result;
   }
 
@@ -107,6 +117,17 @@ class AutofillEngine {
     final result = Uint8List.fromList(existingData);
     final gradient = part.gradient;
     final useTone = part.useTone && toneTexture != null;
+    // 縁取りが有効な場合、既存の不透明範囲（塗り本体＋縁取りリング）の
+    // うち「既存データの時点で境界（線画側の外周）に近いピクセル」を
+    // 縁取り色として塗り直す。形状（不透明範囲）自体は色更新の定義どおり
+    // 一切広げない（縁取りが太くなる変更は「塗りなおし」でのみ反映される）。
+    // repaint()側（_addOutlineRing）と異なり、色更新は塗り直し前の
+    // Uint8List（トーンの穴あき込みの見た目）しか持たないため、トーンと
+    // 縁取りを併用しているパーツでは、トーンの穴の縁にも縁取り色が
+    // わずかににじむ近似計算になる（正確な結果が欲しい場合は
+    // 「塗りなおし」を使う。repaint()は線画で区切られた領域そのもの
+    // ＝トーンの影響を受けないregionMaskを使うため常に正確）。
+    final outlineRadius = part.outlineEnabled ? part.outlineWidth.round().clamp(1, 100) : 0;
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         final i = (y * width + x) * 4;
@@ -120,15 +141,88 @@ class AutofillEngine {
             continue;
           }
         }
-        final argb = gradient != null
-            ? _gradientColorAt(gradient, x, y, width, height)
-            : part.color;
+        final isOutlinePixel = outlineRadius > 0 &&
+            _isNearEdge(existingData, width, height, x, y, outlineRadius);
+        final argb = isOutlinePixel
+            ? part.outlineColor
+            : gradient != null
+                ? _gradientColorAt(gradient, x, y, width, height)
+                : part.color;
         result[i]     = (argb >> 16) & 0xFF;
         result[i + 1] = (argb >> 8) & 0xFF;
         result[i + 2] = argb & 0xFF;
       }
     }
     return result;
+  }
+
+  /// [regionMask]（線画で区切られた塗り範囲そのもの。トーンの穴あきの
+  /// 影響を受けない）の外周から[widthPx]px以内の、塗り範囲の外側の
+  /// ピクセルへ[color]を描画し、指定色・指定太さの縁取りリングを重ねる
+  /// （[data]の元々の不透明ピクセルは変更しない）。[regionMask]を使う
+  /// ことで、トーン柄の穴1つ1つに縁取りが付いてしまうのを防いでいる。
+  void _addOutlineRing(Uint8List data, List<bool> regionMask, int width, int height, {
+    required int color,
+    required double widthPx,
+  }) {
+    final radius = widthPx.round().clamp(1, 100);
+    final ca = (color >> 24) & 0xFF;
+    final cr = (color >> 16) & 0xFF;
+    final cg = (color >> 8) & 0xFF;
+    final cb = color & 0xFF;
+    final r2 = radius * radius;
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        final i = y * width + x;
+        if (regionMask[i]) continue; // 塗り範囲そのものは保持（トーンの穴を含む）
+        bool hit = false;
+        for (int dy = -radius; dy <= radius && !hit; dy++) {
+          final ny = y + dy;
+          if (ny < 0 || ny >= height) continue;
+          final dxMax2 = r2 - dy * dy;
+          if (dxMax2 < 0) continue;
+          final dxMax = math.sqrt(dxMax2).floor();
+          final rowBase = ny * width;
+          for (int dx = -dxMax; dx <= dxMax; dx++) {
+            final nx = x + dx;
+            if (nx < 0 || nx >= width) continue;
+            if (regionMask[rowBase + nx]) {
+              hit = true;
+              break;
+            }
+          }
+        }
+        if (hit) {
+          final idx = i * 4;
+          data[idx] = cr;
+          data[idx + 1] = cg;
+          data[idx + 2] = cb;
+          data[idx + 3] = ca;
+        }
+      }
+    }
+  }
+
+  /// (x, y)の不透明ピクセルが、[radius]px以内に透明ピクセル（または画面外）を
+  /// 持つか＝塗り範囲の外周付近（縁取りリングとして塗るべき範囲）かどうかを
+  /// 判定する（[_addOutlineRing]の外側への拡張＝膨張と対になる、内側からの
+  /// 侵食判定）。
+  bool _isNearEdge(Uint8List data, int width, int height, int x, int y, int radius) {
+    final r2 = radius * radius;
+    for (int dy = -radius; dy <= radius; dy++) {
+      final ny = y + dy;
+      if (ny < 0 || ny >= height) return true;
+      final dxMax2 = r2 - dy * dy;
+      if (dxMax2 < 0) continue;
+      final dxMax = math.sqrt(dxMax2).floor();
+      final rowBase = ny * width;
+      for (int dx = -dxMax; dx <= dxMax; dx++) {
+        final nx = x + dx;
+        if (nx < 0 || nx >= width) return true;
+        if (data[(rowBase + nx) * 4 + 3] == 0) return true;
+      }
+    }
+    return false;
   }
 
   /// 4パターン処理の統合エントリポイント
@@ -200,7 +294,9 @@ class AutofillEngine {
     return result;
   }
 
-  void _floodFillRegion(
+  /// 線画で区切られた塗り範囲（トーンの穴あきの影響を受けない、領域全体の
+  /// 形状マスク）を返す。縁取りリングの外周判定（[_addOutlineRing]）に使う。
+  List<bool> _floodFillRegion(
     Uint8List lineartData,
     Uint8List outputData,
     int width,
@@ -293,6 +389,7 @@ class AutofillEngine {
         }
       }
     }
+    return visited;
   }
 
   bool isUpToDate({
@@ -312,12 +409,19 @@ class AutofillEngine {
         final rad = g.angle * math.pi / 180;
         final dx = math.cos(rad);
         final dy = math.sin(rad);
-        // 中心を原点とした正規化座標を方向ベクトルへ投影し、対角成分で0〜1へ正規化する
-        final nx = (x / width) - 0.5;
-        final ny = (y / height) - 0.5;
-        final proj = nx * dx + ny * dy;
-        const halfDiagonal = 0.70710678; // sqrt(0.5^2 + 0.5^2)
-        t = (proj + halfDiagonal) / (halfDiagonal * 2);
+        // 中心を原点としたピクセル単位の実座標を方向ベクトルへ投影する。
+        // 以前はx・yをそれぞれ幅・高さで個別に0〜1正規化してから射影して
+        // いたが、この方式だと正方形でない塗り範囲では指定した角度と
+        // 実際に画面上で見える傾きがズレてしまう（例：横長の範囲では
+        // 45度がほぼ水平寄りに見える）。塗り範囲の縦横比が変わるたびに
+        // 同じ角度でも見た目の傾きが変わって見える不具合の原因だった。
+        // ピクセル単位のまま（幅・高さを個別に正規化せず）射影することで、
+        // 縦横比によらず指定した角度どおりの向きになるようにする。
+        final px = x - width / 2.0;
+        final py = y - height / 2.0;
+        final proj = px * dx + py * dy;
+        final halfDiagonal = math.sqrt(width * width + height * height) / 2.0;
+        t = halfDiagonal > 0 ? (proj + halfDiagonal) / (halfDiagonal * 2) : 0.5;
       case AutofillGradientType.radialCenterOut:
       case AutofillGradientType.radialOutCenter:
         final cx = g.centerX * width;

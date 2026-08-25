@@ -4989,17 +4989,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     if (choice == null || !mounted) return;
     if (choice == 'save') {
-      // 保存に失敗した場合は一覧へ戻らず、その場でエラーを知らせる
-      // （セーブされていないデータが気づかれないまま消えるのを防ぐ）。
-      try {
-        await context.read<ProjectService>().saveProject(widget.projectId);
-      } catch (e) {
-        debugPrint(
-          'timeline: saveProject failed before returning to project list: $e',
-        );
-        if (mounted) await _showSaveFailedDialog();
-        return;
-      }
+      // 「保存して戻る」は生データの自動保存ではなく、キャンバス画面の
+      // 「保存」ボタンと同じ手動セーブ（セーブツリー）画面を経由させる。
+      // 以前はここでProjectService.saveProject()を直接呼ぶだけだったため、
+      // セーブノードを作る手動セーブ画面が一切表示されないまま
+      // プロジェクト一覧へ戻ってしまっていた。タイムライン内の他の
+      // 「保存」導線（三点メニュー等）と同じentry=timelineを指定し、
+      // セーブツリー画面から戻ってきたタイミングで、続けてプロジェクト
+      // 一覧へ遷移する。
+      await context.push('/save-tree/${widget.projectId}?entry=timeline');
+      if (!mounted) return;
     }
     if (mounted) context.go('/home');
   }
