@@ -10,6 +10,7 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import '../../utils/immersive_mode.dart';
 import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
@@ -279,6 +280,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   @override
   void initState() {
     super.initState();
+    // タイムライン編集に作業領域を広く使えるよう、既定でAndroid標準の
+    // ナビゲーションバーを最小化する。
+    ImmersiveMode.enterWorkspace();
     // _selectedSceneIdはbuild()内で実データ（ProjectService.scenesOf）が
     // 取得でき次第、先頭シーンへ同期する。
 
@@ -326,6 +330,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   @override
   void dispose() {
+    ImmersiveMode.exitWorkspace();
     _playTimer?.cancel();
     for (final ctrl in _trackScrollCtrls) {
       ctrl.dispose();

@@ -16,6 +16,7 @@ import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/first_use_tooltip.dart';
 import '../../widgets/stepped_slider.dart';
+import '../../utils/immersive_mode.dart';
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
@@ -428,6 +429,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _autoOpenedDesktopPanels = false;
 
   @override
+  void initState() {
+    super.initState();
+    // 描画に作業領域を広く使えるよう、既定でAndroid標準の
+    // ナビゲーションバーを最小化する。
+    ImmersiveMode.enterWorkspace();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // BrushServiceの現在ブラシ設定をローカル状態に同期（初回のみ有効）
@@ -507,6 +516,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   void dispose() {
+    ImmersiveMode.exitWorkspace();
     _perf?.removeListener(_onPerfChanged);
     if (_autosaveAttached) context.read<AutosaveService>().detach();
     if (_workTrackingStarted) context.read<ProjectService>().endWorkTracking();
