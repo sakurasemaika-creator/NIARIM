@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -40,6 +40,10 @@ class LayerPanel extends StatefulWidget {
   // 除く）。呼び出し元でこの値を`_currentLayerId`へ反映することで、
   // 以降のペンストロークが選択したレイヤーへ書き込まれるようにする。
   final void Function(String layerId)? onLayerSelected;
+  // ショートカット（Ctrl+A）からレイヤー全選択を起動するためのトークン。
+  // 値が変化するたびに全選択を実行する（メッシュ変形の確定/キャンセル
+  // トークンと同じ「値の変化そのものをイベントとして使う」方式）。
+  final int selectAllToken;
 
   const LayerPanel({
     super.key,
@@ -51,6 +55,7 @@ class LayerPanel extends StatefulWidget {
     this.onEditTextLayer,
     this.currentLayerId,
     this.onLayerSelected,
+    this.selectAllToken = 0,
   });
 
   @override
@@ -86,6 +91,26 @@ class _LayerPanelState extends State<LayerPanel> {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(LayerPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectAllToken != oldWidget.selectAllToken) {
+      final allLayers = context.read<ProjectService>().layersOf(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+      );
+      final layers = _visibleLayers(allLayers);
+      setState(() {
+        _isSelectionMode = true;
+        _selectionBaseType = null;
+        _selectedIds
+          ..clear()
+          ..addAll(layers.map((l) => l.id));
+      });
+    }
+  }
+
   List<model.Layer> _visibleLayers(List<model.Layer> layers) {
     // 選択レイヤー（LayerType.selection）は以前は「内部専用・パネル非表示」
     // だったが、眼鏡断層フィルター等のマスク編集用にユーザーへ常設表示・
@@ -93,7 +118,9 @@ class _LayerPanelState extends State<LayerPanel> {
     // ここでの除外はしない（通常合成からの除外はlayer_compositor.dartの
     // pixelLayerTypes側で引き続き行う）。
     final base = layers.toList();
-    final visible = base.where((l) => !_isHiddenByCollapsedFolder(l, base)).toList();
+    final visible = base
+        .where((l) => !_isHiddenByCollapsedFolder(l, base))
+        .toList();
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return visible;
     // 検索中は名前が一致するレイヤーと、その祖先フォルダ（階層表示を保つため）のみ表示する。
@@ -109,8 +136,11 @@ class _LayerPanelState extends State<LayerPanel> {
         return false;
       });
     }
+
     return visible
-        .where((l) => l.name.toLowerCase().contains(query) || isAncestorOfMatch(l))
+        .where(
+          (l) => l.name.toLowerCase().contains(query) || isAncestorOfMatch(l),
+        )
         .toList();
   }
 
@@ -144,7 +174,10 @@ class _LayerPanelState extends State<LayerPanel> {
     final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
     final allLayers = projectService.layersOf(
-        widget.projectId, widget.sceneId, widget.frameIndex);
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
     final layers = _visibleLayers(allLayers);
 
     // パネル初回表示時、実際にペンストロークが書き込まれる対象
@@ -185,7 +218,13 @@ class _LayerPanelState extends State<LayerPanel> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                Text(l10n.layerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                Text(
+                  l10n.layerPanelTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                  ),
+                ),
                 const Spacer(),
                 // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
                 // 使わずに済む一括操作の一つ）。
@@ -200,7 +239,10 @@ class _LayerPanelState extends State<LayerPanel> {
                   tooltip: l10n.layerPanelHelpTooltip,
                 ),
                 IconButton(
-                  icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 18),
+                  icon: Icon(
+                    _showSearch ? Icons.search_off : Icons.search,
+                    size: 18,
+                  ),
                   onPressed: () => setState(() {
                     _showSearch = !_showSearch;
                     if (!_showSearch) {
@@ -243,7 +285,10 @@ class _LayerPanelState extends State<LayerPanel> {
                         layers.where((l) => l.type == base).map((l) => l.id),
                       );
                     }),
-                    child: Text(l10n.layerPanelSelectAll, style: const TextStyle(fontSize: 12)),
+                    child: Text(
+                      l10n.layerPanelSelectAll,
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
                   TextButton(
                     onPressed: () => setState(() {
@@ -251,7 +296,10 @@ class _LayerPanelState extends State<LayerPanel> {
                       _isSelectionMode = false;
                       _selectionBaseType = null;
                     }),
-                    child: Text(l10n.layerPanelDeselectAll, style: const TextStyle(fontSize: 12)),
+                    child: Text(
+                      l10n.layerPanelDeselectAll,
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
                   const Spacer(),
                   Text(
@@ -270,17 +318,29 @@ class _LayerPanelState extends State<LayerPanel> {
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.add, size: 14),
-                    label: Text(l10n.layerPanelNewLayerButton, style: const TextStyle(fontSize: 11)),
-                    onPressed: () => _addLayer(context, model.LayerType.normal,
-                        (n) => l10n.layerPanelDefaultLayerName(n)),
+                    label: Text(
+                      l10n.layerPanelNewLayerButton,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    onPressed: () => _addLayer(
+                      context,
+                      model.LayerType.normal,
+                      (n) => l10n.layerPanelDefaultLayerName(n),
+                    ),
                   ),
                 ),
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.folder, size: 14),
-                    label: Text(l10n.layerPanelNewFolderButton, style: const TextStyle(fontSize: 11)),
-                    onPressed: () => _addLayer(context, model.LayerType.folder,
-                        (n) => l10n.layerPanelDefaultFolderName(n)),
+                    label: Text(
+                      l10n.layerPanelNewFolderButton,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    onPressed: () => _addLayer(
+                      context,
+                      model.LayerType.folder,
+                      (n) => l10n.layerPanelDefaultFolderName(n),
+                    ),
                   ),
                 ),
                 // 「追加」ボタン（共通レイヤー・自動塗り線画・自動塗りレイヤー等の
@@ -289,14 +349,20 @@ class _LayerPanelState extends State<LayerPanel> {
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.library_add, size: 14),
-                    label: Text(l10n.layerPanelAddTooltip, style: const TextStyle(fontSize: 11)),
+                    label: Text(
+                      l10n.layerPanelAddTooltip,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                     onPressed: () => _showAddLayerMenu(context),
                   ),
                 ),
                 Expanded(
                   child: TextButton.icon(
                     icon: const Icon(Icons.photo, size: 14),
-                    label: Text(l10n.layerPanelImportImageButton, style: const TextStyle(fontSize: 11)),
+                    label: Text(
+                      l10n.layerPanelImportImageButton,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                     onPressed: () => _importImage(context),
                   ),
                 ),
@@ -313,7 +379,9 @@ class _LayerPanelState extends State<LayerPanel> {
               buildDefaultDragHandles: false,
               itemCount: layers.length,
               onReorder: (oldIdx, newIdx) {
-                if (_searchQuery.trim().isNotEmpty) return; // 検索中はフィルタ表示のため並び替え不可
+                if (_searchQuery.trim().isNotEmpty) {
+                  return; // 検索中はフィルタ表示のため並び替え不可
+                }
                 context.read<ProjectService>().reorderLayer(
                   projectId: widget.projectId,
                   sceneId: widget.sceneId,
@@ -337,14 +405,19 @@ class _LayerPanelState extends State<LayerPanel> {
                       if (depth > 0) SizedBox(width: depth * 12.0),
                       if (layer.type == model.LayerType.folder)
                         GestureDetector(
-                          onTap: () => context.read<ProjectService>().updateLayer(
-                            projectId: widget.projectId,
-                            sceneId: widget.sceneId,
-                            frameIndex: widget.frameIndex,
-                            layer: layer.copyWith(isExpanded: !layer.isExpanded),
-                          ),
+                          onTap: () =>
+                              context.read<ProjectService>().updateLayer(
+                                projectId: widget.projectId,
+                                sceneId: widget.sceneId,
+                                frameIndex: widget.frameIndex,
+                                layer: layer.copyWith(
+                                  isExpanded: !layer.isExpanded,
+                                ),
+                              ),
                           child: Icon(
-                            layer.isExpanded ? Icons.expand_more : Icons.chevron_right,
+                            layer.isExpanded
+                                ? Icons.expand_more
+                                : Icons.chevron_right,
                             size: 16,
                           ),
                         )
@@ -369,14 +442,19 @@ class _LayerPanelState extends State<LayerPanel> {
                         )
                       else
                         GestureDetector(
-                          onTap: () => context.read<ProjectService>().updateLayer(
-                            projectId: widget.projectId,
-                            sceneId: widget.sceneId,
-                            frameIndex: widget.frameIndex,
-                            layer: layer.copyWith(isVisible: !layer.isVisible),
-                          ),
+                          onTap: () =>
+                              context.read<ProjectService>().updateLayer(
+                                projectId: widget.projectId,
+                                sceneId: widget.sceneId,
+                                frameIndex: widget.frameIndex,
+                                layer: layer.copyWith(
+                                  isVisible: !layer.isVisible,
+                                ),
+                              ),
                           child: Icon(
-                            layer.isVisible ? Icons.visibility : Icons.visibility_off,
+                            layer.isVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                             size: 16,
                           ),
                         ),
@@ -384,7 +462,9 @@ class _LayerPanelState extends State<LayerPanel> {
                       _layerTypeIcon(context, layer.type),
                       const SizedBox(width: 4),
                       _LayerThumbnail(
-                        key: ValueKey('${layer.id}-${_thumbRevision[layer.id] ?? 0}'),
+                        key: ValueKey(
+                          '${layer.id}-${_thumbRevision[layer.id] ?? 0}',
+                        ),
                         projectId: widget.projectId,
                         sceneId: widget.sceneId,
                         frameIndex: widget.frameIndex,
@@ -392,13 +472,30 @@ class _LayerPanelState extends State<LayerPanel> {
                       ),
                     ],
                   ),
-                  title: Text(layer.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon')),
+                  title: Text(
+                    layer.name,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'Kuramubon',
+                    ),
+                  ),
                   subtitle: layer.type == model.LayerType.common
-                      ? Text(_rangeSummary(l10n, layer), style: const TextStyle(fontSize: 9, color: Colors.blue))
+                      ? Text(
+                          _rangeSummary(l10n, layer),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.blue,
+                          ),
+                        )
                       : layer.hasClipping
-                          ? Text(l10n.layerPanelClippingBadge,
-                              style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.primary))
-                          : null,
+                      ? Text(
+                          l10n.layerPanelClippingBadge,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      : null,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -410,17 +507,25 @@ class _LayerPanelState extends State<LayerPanel> {
                           child: GestureDetector(
                             onTap: () => _showAutofillDialog(context, layer),
                             onLongPress: () => _showAutofillUpdateHelp(context),
-                            child: const Icon(Icons.error, color: Colors.orange, size: 14),
+                            child: const Icon(
+                              Icons.error,
+                              color: Colors.orange,
+                              size: 14,
+                            ),
                           ),
                         ),
                       if (layer.opacityLocked)
-                        Icon(Icons.opacity, size: 14, color: Theme.of(context).colorScheme.primary),
-                      if (layer.isLocked)
-                        const Icon(Icons.lock, size: 14),
+                        Icon(
+                          Icons.opacity,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      if (layer.isLocked) const Icon(Icons.lock, size: 14),
                       // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
                       // （対象レイヤーが常に明確になり、選択状態に依存しない）。
                       GestureDetector(
-                        onTap: () => _isTimelineMaterial(layer.type) ||
+                        onTap: () =>
+                            _isTimelineMaterial(layer.type) ||
                                 layer.type == model.LayerType.common ||
                                 layer.type == model.LayerType.autoFillLineart
                             ? _showTimelineLayerMenu(context, layer)
@@ -490,7 +595,8 @@ class _LayerPanelState extends State<LayerPanel> {
                     // フォルダ行は描画対象になり得ないため、実際の描画先
                     // レイヤーの切り替え通知からは除外する（グループ化用の
                     // 見出し行としての選択ハイライトのみ）。
-                    if (!_isSelectionMode && layer.type != model.LayerType.folder) {
+                    if (!_isSelectionMode &&
+                        layer.type != model.LayerType.folder) {
                       widget.onLayerSelected?.call(layer.id);
                     }
                   },
@@ -519,7 +625,9 @@ class _LayerPanelState extends State<LayerPanel> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.workspaces_outline, size: 18),
-                    onPressed: _selectedIds.length >= 2 ? () => _showCreateGroupDialog(context) : null,
+                    onPressed: _selectedIds.length >= 2
+                        ? () => _showCreateGroupDialog(context)
+                        : null,
                     tooltip: l10n.layerPanelGroupTooltip,
                   ),
                 ],
@@ -533,18 +641,53 @@ class _LayerPanelState extends State<LayerPanel> {
 
   Widget _layerTypeIcon(BuildContext context, model.LayerType type) {
     return switch (type) {
-      model.LayerType.autoFillLineart => const Icon(Icons.edit, size: 12, color: Colors.orange),
-      model.LayerType.autoFill        => const Icon(Icons.palette, size: 12, color: Colors.green),
-      model.LayerType.common          => const Icon(Icons.link, size: 12, color: Colors.blue),
-      model.LayerType.folder          => const Icon(Icons.folder, size: 12, color: Colors.amber),
-      model.LayerType.text            => const Icon(Icons.text_fields, size: 12, color: Colors.purple),
-      model.LayerType.timelineImage   => const Icon(Icons.image, size: 12, color: Colors.teal),
-      model.LayerType.timelineVideo   => const Icon(Icons.videocam, size: 12, color: Colors.indigo),
-      model.LayerType.watermark       => const Icon(Icons.branding_watermark, size: 12, color: Colors.pink),
+      model.LayerType.autoFillLineart => const Icon(
+        Icons.edit,
+        size: 12,
+        color: Colors.orange,
+      ),
+      model.LayerType.autoFill => const Icon(
+        Icons.palette,
+        size: 12,
+        color: Colors.green,
+      ),
+      model.LayerType.common => const Icon(
+        Icons.link,
+        size: 12,
+        color: Colors.blue,
+      ),
+      model.LayerType.folder => const Icon(
+        Icons.folder,
+        size: 12,
+        color: Colors.amber,
+      ),
+      model.LayerType.text => const Icon(
+        Icons.text_fields,
+        size: 12,
+        color: Colors.purple,
+      ),
+      model.LayerType.timelineImage => const Icon(
+        Icons.image,
+        size: 12,
+        color: Colors.teal,
+      ),
+      model.LayerType.timelineVideo => const Icon(
+        Icons.videocam,
+        size: 12,
+        color: Colors.indigo,
+      ),
+      model.LayerType.watermark => const Icon(
+        Icons.branding_watermark,
+        size: 12,
+        color: Colors.pink,
+      ),
       // 選択レイヤーは他の種別と異なり、固定の意味色ではなく、ユーザーが
       // カスタマイズできるテーマの選択色を使う。
-      model.LayerType.selection       =>
-        Icon(Icons.highlight_alt, size: 12, color: Theme.of(context).colorScheme.secondary),
+      model.LayerType.selection => Icon(
+        Icons.highlight_alt,
+        size: 12,
+        color: Theme.of(context).colorScheme.secondary,
+      ),
       _ => const SizedBox(width: 12),
     };
   }
@@ -569,32 +712,40 @@ class _LayerPanelState extends State<LayerPanel> {
 
   /// このレイヤーとすぐ下のレイヤーをワンタップで結合する。
   Future<void> _mergeWithLayerBelow(
-      BuildContext context, model.Layer layer, List<model.Layer> layers) async {
+    BuildContext context,
+    model.Layer layer,
+    List<model.Layer> layers,
+  ) async {
     final below = _layerBelow(layer, layers);
     if (below == null) return;
     await context.read<ProjectService>().mergeLayers(
-          projectId: widget.projectId,
-          sceneId: widget.sceneId,
-          frameIndex: widget.frameIndex,
-          layerIds: [layer.id, below.id],
-        );
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layerIds: [layer.id, below.id],
+    );
     if (!mounted) return;
     setState(() => _selectedIndex = 0);
   }
 
   /// 表示中（isVisible）の結合可能なレイヤーを全てワンタップで結合する。
-  Future<void> _mergeAllVisibleLayers(BuildContext context, List<model.Layer> layers) async {
+  Future<void> _mergeAllVisibleLayers(
+    BuildContext context,
+    List<model.Layer> layers,
+  ) async {
     final ids = layers
-        .where((l) => l.isVisible && _mergeableLayerTypesForPanel.contains(l.type))
+        .where(
+          (l) => l.isVisible && _mergeableLayerTypesForPanel.contains(l.type),
+        )
         .map((l) => l.id)
         .toList();
     if (ids.length < 2) return;
     await context.read<ProjectService>().mergeLayers(
-          projectId: widget.projectId,
-          sceneId: widget.sceneId,
-          frameIndex: widget.frameIndex,
-          layerIds: ids,
-        );
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layerIds: ids,
+    );
     if (!mounted) return;
     setState(() => _selectedIndex = 0);
   }
@@ -604,37 +755,60 @@ class _LayerPanelState extends State<LayerPanel> {
   /// シートを開き、そのまま動きを設定できるようにする。
   void _showCreateGroupDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController(text: l10n.layerPanelGroupDefaultName);
+    final nameCtrl = TextEditingController(
+      text: l10n.layerPanelGroupDefaultName,
+    );
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.layerPanelGroupTooltip),
         content: TextField(controller: nameCtrl, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               final ids = _selectedIds.toList();
-              final name = nameCtrl.text.trim().isEmpty ? l10n.layerPanelGroupDefaultName : nameCtrl.text.trim();
-              final group = context.read<ProjectService>().addLayerGroup(widget.projectId, widget.sceneId, name, ids);
+              final name = nameCtrl.text.trim().isEmpty
+                  ? l10n.layerPanelGroupDefaultName
+                  : nameCtrl.text.trim();
+              final group = context.read<ProjectService>().addLayerGroup(
+                widget.projectId,
+                widget.sceneId,
+                name,
+                ids,
+              );
               Navigator.pop(ctx);
               setState(() {
                 _selectedIds.clear();
                 _isSelectionMode = false;
                 _selectionBaseType = null;
               });
-              final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
+              final tm = context.read<ProjectService>().tileManagerOf(
+                widget.projectId,
+              );
               showLayerGroupKeyframeSheet(
                 context,
                 groupName: group.name,
                 initialKeyframes: group.keyframes,
                 currentFrame: widget.frameIndex,
-                totalFrames: context.read<ProjectService>().sceneOf(widget.projectId, widget.sceneId)?.frames.length ?? 1,
+                totalFrames:
+                    context
+                        .read<ProjectService>()
+                        .sceneOf(widget.projectId, widget.sceneId)
+                        ?.frames
+                        .length ??
+                    1,
                 canvasWidth: tm.canvasWidth,
                 canvasHeight: tm.canvasHeight,
-                onChanged: (kfs) => context
-                    .read<ProjectService>()
-                    .updateLayerGroup(widget.projectId, widget.sceneId, group.copyWith(keyframes: kfs)),
+                onChanged: (kfs) =>
+                    context.read<ProjectService>().updateLayerGroup(
+                      widget.projectId,
+                      widget.sceneId,
+                      group.copyWith(keyframes: kfs),
+                    ),
               );
             },
             child: Text(l10n.commonAdd),
@@ -661,7 +835,11 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 各レイヤー行のゴミ箱アイコンからの単体削除（三点メニュー・
   /// ゴミ箱は各レイヤーの右側に配置）。タイムライン素材は既存通り確認ダイアログ
   /// を経由し、それ以外は即時削除する。
-  Future<void> _deleteLayerRow(BuildContext context, model.Layer layer, List<model.Layer> layers) async {
+  Future<void> _deleteLayerRow(
+    BuildContext context,
+    model.Layer layer,
+    List<model.Layer> layers,
+  ) async {
     if (_isTimelineMaterial(layer.type)) {
       _showTimelineDeleteConfirm(context, layer);
       return;
@@ -675,7 +853,9 @@ class _LayerPanelState extends State<LayerPanel> {
       layerId: layer.id,
     );
     setState(() {
-      if (_selectedIndex >= layers.length - 1) _selectedIndex = layers.length - 2;
+      if (_selectedIndex >= layers.length - 1) {
+        _selectedIndex = layers.length - 2;
+      }
       if (_selectedIndex < 0) _selectedIndex = 0;
     });
   }
@@ -688,7 +868,10 @@ class _LayerPanelState extends State<LayerPanel> {
         title: Text(l10n.layerPanelDeleteConfirmTitle(layer.name)),
         content: Text(l10n.layerPanelDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -716,10 +899,18 @@ class _LayerPanelState extends State<LayerPanel> {
       case model.LayerRangeMode.currentScene:
         return l10n.layerPanelRangeCurrentScene;
       case model.LayerRangeMode.sceneRange:
-        if (layer.rangeSceneId == null) return l10n.layerPanelRangeSceneSpecified;
-        final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
-        final scene = scenes.where((s) => s.id == layer.rangeSceneId).firstOrNull;
-        return scene != null ? scene.displayName : l10n.layerPanelRangeSceneSpecified;
+        if (layer.rangeSceneId == null) {
+          return l10n.layerPanelRangeSceneSpecified;
+        }
+        final scenes = context.read<ProjectService>().scenesOf(
+          widget.projectId,
+        );
+        final scene = scenes
+            .where((s) => s.id == layer.rangeSceneId)
+            .firstOrNull;
+        return scene != null
+            ? scene.displayName
+            : l10n.layerPanelRangeSceneSpecified;
       case model.LayerRangeMode.frameRange:
         final s = layer.rangeStart ?? 1;
         final e = layer.rangeEnd ?? s;
@@ -734,7 +925,10 @@ class _LayerPanelState extends State<LayerPanel> {
     // 対応する線画レイヤーを持たない自動塗りレイヤー（線画レイヤーを
     // 削除した後に残った状態）かどうかを判定する。
     final allLayers = context.read<ProjectService>().layersOf(
-        widget.projectId, widget.sceneId, widget.frameIndex);
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
     final isOrphanedAutofill = isOrphanedAutofillLayer(allLayers, layer);
     showModalBottomSheet(
       context: context,
@@ -744,12 +938,22 @@ class _LayerPanelState extends State<LayerPanel> {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Text(layer.name, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              child: Text(
+                layer.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
             ),
             if (!isLineart)
               ListTile(
                 leading: const Icon(Icons.tune),
-                title: Text(isCommon ? l10n.layerPanelMenuFrameRangeChange : l10n.layerPanelMenuRangeChange),
+                title: Text(
+                  isCommon
+                      ? l10n.layerPanelMenuFrameRangeChange
+                      : l10n.layerPanelMenuRangeChange,
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showRangeChangeDialog(context, layer);
@@ -779,7 +983,10 @@ class _LayerPanelState extends State<LayerPanel> {
               ListTile(
                 leading: const Icon(Icons.format_color_fill),
                 title: Text(l10n.layerPanelMenuOrphanFill),
-                subtitle: Text(l10n.layerPanelMenuOrphanFillSubtitle, style: const TextStyle(fontSize: 11)),
+                subtitle: Text(
+                  l10n.layerPanelMenuOrphanFillSubtitle,
+                  style: const TextStyle(fontSize: 11),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _runOrphanedAutofill(context, layer);
@@ -820,7 +1027,10 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
+              title: Text(
+                l10n.commonDelete,
+                style: const TextStyle(color: Colors.red),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _showTimelineDeleteConfirm(context, layer);
@@ -839,9 +1049,16 @@ class _LayerPanelState extends State<LayerPanel> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.commonRename),
-        content: TextField(controller: nameCtrl, autofocus: true, decoration: const InputDecoration(border: OutlineInputBorder())),
+        content: TextField(
+          controller: nameCtrl,
+          autofocus: true,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
@@ -869,7 +1086,13 @@ class _LayerPanelState extends State<LayerPanel> {
     model.Layer layer, {
     String? title,
     String? confirmLabel,
-    void Function(model.LayerRangeMode mode, int start, int end, String? rangeSceneId)? onConfirm,
+    void Function(
+      model.LayerRangeMode mode,
+      int start,
+      int end,
+      String? rangeSceneId,
+    )?
+    onConfirm,
   }) {
     final l10n = AppLocalizations.of(context)!;
     final resolvedConfirmLabel = confirmLabel ?? l10n.commonOk;
@@ -877,9 +1100,11 @@ class _LayerPanelState extends State<LayerPanel> {
     final totalFrames = ps.frameCount(widget.projectId, widget.sceneId);
     final scenes = ps.scenesOf(widget.projectId);
     final startCtrl = TextEditingController(
-        text: (layer.rangeStart ?? 1).toString());
+      text: (layer.rangeStart ?? 1).toString(),
+    );
     final endCtrl = TextEditingController(
-        text: (layer.rangeEnd ?? (totalFrames > 0 ? totalFrames : 1)).toString());
+      text: (layer.rangeEnd ?? (totalFrames > 0 ? totalFrames : 1)).toString(),
+    );
     model.LayerRangeMode mode = layer.rangeMode;
     String? sceneId = layer.rangeSceneId ?? widget.sceneId;
     showDialog(
@@ -898,15 +1123,24 @@ class _LayerPanelState extends State<LayerPanel> {
                       child: TextField(
                         controller: startCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(labelText: l10n.layerPanelRangeStartFrameLabel, border: const OutlineInputBorder()),
+                        decoration: InputDecoration(
+                          labelText: l10n.layerPanelRangeStartFrameLabel,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
-                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(l10n.layerPanelRangeTilde)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(l10n.layerPanelRangeTilde),
+                    ),
                     Expanded(
                       child: TextField(
                         controller: endCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(labelText: l10n.layerPanelRangeEndFrameLabel, border: const OutlineInputBorder()),
+                        decoration: InputDecoration(
+                          labelText: l10n.layerPanelRangeEndFrameLabel,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ],
@@ -914,7 +1148,9 @@ class _LayerPanelState extends State<LayerPanel> {
                 TextButton(
                   onPressed: () => setS(() {
                     startCtrl.text = '1';
-                    endCtrl.text = totalFrames > 0 ? totalFrames.toString() : '1';
+                    endCtrl.text = totalFrames > 0
+                        ? totalFrames.toString()
+                        : '1';
                   }),
                   child: Text(l10n.layerPanelRangeUseCurrentButton),
                 ),
@@ -942,13 +1178,27 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
                 if (mode == model.LayerRangeMode.sceneRange)
                   Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 8,
+                      bottom: 8,
+                    ),
                     child: DropdownButtonFormField<String>(
-                      initialValue: scenes.any((s) => s.id == sceneId) ? sceneId : scenes.firstOrNull?.id,
+                      initialValue: scenes.any((s) => s.id == sceneId)
+                          ? sceneId
+                          : scenes.firstOrNull?.id,
                       isExpanded: true,
-                      decoration: InputDecoration(labelText: l10n.layerPanelRangeTargetSceneLabel, isDense: true),
+                      decoration: InputDecoration(
+                        labelText: l10n.layerPanelRangeTargetSceneLabel,
+                        isDense: true,
+                      ),
                       items: scenes
-                          .map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName)))
+                          .map(
+                            (s) => DropdownMenuItem(
+                              value: s.id,
+                              child: Text(s.displayName),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) => setS(() => sceneId = v),
                     ),
@@ -964,12 +1214,17 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
                 final start = int.tryParse(startCtrl.text) ?? 1;
                 final end = int.tryParse(endCtrl.text) ?? start;
-                final resolvedSceneId = mode == model.LayerRangeMode.sceneRange ? sceneId : null;
+                final resolvedSceneId = mode == model.LayerRangeMode.sceneRange
+                    ? sceneId
+                    : null;
                 if (onConfirm != null) {
                   onConfirm(mode, start, end, resolvedSceneId);
                 } else {
@@ -1009,41 +1264,77 @@ class _LayerPanelState extends State<LayerPanel> {
             ListTile(
               leading: const Icon(Icons.layers),
               title: Text(l10n.layerPanelMenuNormalLayer),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.normal,
-                  (n) => l10n.layerPanelDefaultLayerName(n)); },
+              onTap: () {
+                Navigator.pop(ctx);
+                _addLayer(
+                  context,
+                  model.LayerType.normal,
+                  (n) => l10n.layerPanelDefaultLayerName(n),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.link, color: Colors.blue),
               title: Text(l10n.layerPanelMenuCommonLayer),
-              onTap: () { Navigator.pop(ctx); _addCommonLayer(context); },
+              onTap: () {
+                Navigator.pop(ctx);
+                _addCommonLayer(context);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.folder),
               title: Text(l10n.creativePanelFolderButton),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.folder,
-                  (n) => l10n.layerPanelDefaultFolderName(n)); },
+              onTap: () {
+                Navigator.pop(ctx);
+                _addLayer(
+                  context,
+                  model.LayerType.folder,
+                  (n) => l10n.layerPanelDefaultFolderName(n),
+                );
+              },
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.edit, color: Colors.orange),
               title: Text(l10n.layerPanelMenuLineartLayer),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.autoFillLineart,
-                  (n) => l10n.layerPanelDefaultLineartName(n)); },
+              onTap: () {
+                Navigator.pop(ctx);
+                _addLayer(
+                  context,
+                  model.LayerType.autoFillLineart,
+                  (n) => l10n.layerPanelDefaultLineartName(n),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.palette, color: Colors.green),
               title: Text(l10n.layerPanelMenuAutofillLayer),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.autoFill,
-                  (n) => l10n.layerPanelDefaultAutofillName(n)); },
+              onTap: () {
+                Navigator.pop(ctx);
+                _addLayer(
+                  context,
+                  model.LayerType.autoFill,
+                  (n) => l10n.layerPanelDefaultAutofillName(n),
+                );
+              },
             ),
             // 選択レイヤー（眼鏡断層フィルター等、範囲を指定してかけるフィルター用の
             // マスク専用レイヤー）。通常合成には含まれず、テーマの選択色で
             // 半透明タイントしてキャンバス上に重ねて表示する。
             ListTile(
-              leading: Icon(Icons.highlight_alt, color: Theme.of(context).colorScheme.secondary),
+              leading: Icon(
+                Icons.highlight_alt,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
               title: Text(l10n.layerPanelMenuSelectionLayer),
-              onTap: () { Navigator.pop(ctx); _addLayer(context, model.LayerType.selection,
-                  (n) => l10n.layerPanelDefaultSelectionName(n)); },
+              onTap: () {
+                Navigator.pop(ctx);
+                _addLayer(
+                  context,
+                  model.LayerType.selection,
+                  (n) => l10n.layerPanelDefaultSelectionName(n),
+                );
+              },
             ),
             // テキストレイヤーはテキストツールからキャンバスタップで自動生成するため追加しない
           ],
@@ -1057,10 +1348,15 @@ class _LayerPanelState extends State<LayerPanel> {
   void _addCommonLayer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final layers = context.read<ProjectService>().layersOf(
-        widget.projectId, widget.sceneId, widget.frameIndex);
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
     final visible = _visibleLayers(layers);
     final placeholder = model.Layer(
-      id: '', name: '', type: model.LayerType.common,
+      id: '',
+      name: '',
+      type: model.LayerType.common,
     );
     _showRangeChangeDialog(
       context,
@@ -1081,7 +1377,11 @@ class _LayerPanelState extends State<LayerPanel> {
           sceneId: widget.sceneId,
           frameIndex: widget.frameIndex,
           layer: created.copyWith(
-            rangeMode: mode, rangeStart: start, rangeEnd: end, rangeSceneId: rangeSceneId),
+            rangeMode: mode,
+            rangeStart: start,
+            rangeEnd: end,
+            rangeSceneId: rangeSceneId,
+          ),
         );
         setState(() => _selectedIndex = 0);
         widget.onLayerSelected?.call(created.id);
@@ -1089,9 +1389,16 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  void _addLayer(BuildContext context, model.LayerType type, String Function(int n) nameBuilder) {
+  void _addLayer(
+    BuildContext context,
+    model.LayerType type,
+    String Function(int n) nameBuilder,
+  ) {
     final layers = context.read<ProjectService>().layersOf(
-        widget.projectId, widget.sceneId, widget.frameIndex);
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
     final visible = _visibleLayers(layers);
     final created = context.read<ProjectService>().addLayer(
       projectId: widget.projectId,
@@ -1147,6 +1454,7 @@ class _LayerPanelState extends State<LayerPanel> {
         layer: updater(layer),
       );
     }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1157,19 +1465,33 @@ class _LayerPanelState extends State<LayerPanel> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: Text(layer.name, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                child: Text(
+                  layer.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                  ),
+                ),
               ),
               // 不透明度スライダー
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
-                    Text(l10n.layerPanelOpacityLabel, style: const TextStyle(fontSize: 13)),
+                    Text(
+                      l10n.layerPanelOpacityLabel,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     Expanded(
                       child: StatefulBuilder(
                         builder: (ctx, setS) => SteppedSlider(
                           value: layer.opacity.toDouble(),
-                          min: 0, max: 100, divisions: 100,
+                          min: 0,
+                          max: 100,
+                          divisions: 100,
                           label: '${layer.opacity}%',
                           onChanged: (v) {
                             setS(() {});
@@ -1181,8 +1503,11 @@ class _LayerPanelState extends State<LayerPanel> {
                     EditableSliderValue(
                       text: '${layer.opacity}%',
                       style: const TextStyle(fontSize: 12),
-                      value: layer.opacity, min: 0, max: 100,
-                      onChanged: (v) => update((l) => l.copyWith(opacity: v.round())),
+                      value: layer.opacity,
+                      min: 0,
+                      max: 100,
+                      onChanged: (v) =>
+                          update((l) => l.copyWith(opacity: v.round())),
                     ),
                   ],
                 ),
@@ -1192,10 +1517,16 @@ class _LayerPanelState extends State<LayerPanel> {
               // ようにする（アニメーション用のキーフレームを個別に
               // 打ちたい場合は引き続きキーフレーム設定シートを使う）。
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
-                    Text(l10n.layerKeyframeScaleLabel, style: const TextStyle(fontSize: 13)),
+                    Text(
+                      l10n.layerKeyframeScaleLabel,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     Expanded(
                       child: StatefulBuilder(
                         builder: (ctx, setS) {
@@ -1204,17 +1535,21 @@ class _LayerPanelState extends State<LayerPanel> {
                               .scale;
                           return SteppedSlider(
                             value: current,
-                            min: 0.1, max: 3.0, divisions: 29,
+                            min: 0.1,
+                            max: 3.0,
+                            divisions: 29,
                             label: current.toStringAsFixed(2),
                             onChanged: (v) {
                               setS(() {});
-                              update((l) => l.copyWith(
-                                    keyframes: _updateKeyframeAtCurrentFrame(
-                                      l.keyframes,
-                                      widget.frameIndex,
-                                      (base) => base.copyWith(scale: v),
-                                    ),
-                                  ));
+                              update(
+                                (l) => l.copyWith(
+                                  keyframes: _updateKeyframeAtCurrentFrame(
+                                    l.keyframes,
+                                    widget.frameIndex,
+                                    (base) => base.copyWith(scale: v),
+                                  ),
+                                ),
+                              );
                             },
                           );
                         },
@@ -1224,10 +1559,16 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
-                    Text(l10n.layerKeyframeRotationLabel, style: const TextStyle(fontSize: 13)),
+                    Text(
+                      l10n.layerKeyframeRotationLabel,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     Expanded(
                       child: StatefulBuilder(
                         builder: (ctx, setS) {
@@ -1236,17 +1577,21 @@ class _LayerPanelState extends State<LayerPanel> {
                               .rotation;
                           return SteppedSlider(
                             value: current,
-                            min: -180, max: 180, divisions: 360,
+                            min: -180,
+                            max: 180,
+                            divisions: 360,
                             label: '${current.round()}°',
                             onChanged: (v) {
                               setS(() {});
-                              update((l) => l.copyWith(
-                                    keyframes: _updateKeyframeAtCurrentFrame(
-                                      l.keyframes,
-                                      widget.frameIndex,
-                                      (base) => base.copyWith(rotation: v),
-                                    ),
-                                  ));
+                              update(
+                                (l) => l.copyWith(
+                                  keyframes: _updateKeyframeAtCurrentFrame(
+                                    l.keyframes,
+                                    widget.frameIndex,
+                                    (base) => base.copyWith(rotation: v),
+                                  ),
+                                ),
+                              );
                             },
                           );
                         },
@@ -1258,13 +1603,22 @@ class _LayerPanelState extends State<LayerPanel> {
               // ブレンドモード
               ListTile(
                 title: Text(l10n.autofillPartBlendModeLabel),
-                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(
-                    _blendModeName(l10n, layer.blendMode),
-                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary),
-                  ),
-                  Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.primary),
-                ]),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _blendModeName(l10n, layer.blendMode),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showBlendModeDialog(context, layer, update);
@@ -1273,33 +1627,52 @@ class _LayerPanelState extends State<LayerPanel> {
               SwitchListTile(
                 title: Text(l10n.layerPanelLockLabel),
                 value: layer.isLocked,
-                onChanged: (v) { update((l) => l.copyWith(isLocked: v)); Navigator.pop(ctx); },
+                onChanged: (v) {
+                  update((l) => l.copyWith(isLocked: v));
+                  Navigator.pop(ctx);
+                },
               ),
               SwitchListTile(
                 title: Text(l10n.layerPanelOpacityLockLabel),
                 value: layer.opacityLocked,
-                onChanged: (v) { update((l) => l.copyWith(opacityLocked: v)); Navigator.pop(ctx); },
+                onChanged: (v) {
+                  update((l) => l.copyWith(opacityLocked: v));
+                  Navigator.pop(ctx);
+                },
               ),
               SwitchListTile(
                 title: Text(l10n.layerPanelClippingBadge),
-                subtitle: Text(l10n.layerPanelClippingDescription, style: const TextStyle(fontSize: 11)),
+                subtitle: Text(
+                  l10n.layerPanelClippingDescription,
+                  style: const TextStyle(fontSize: 11),
+                ),
                 value: layer.hasClipping,
-                onChanged: (v) { update((l) => l.copyWith(hasClipping: v)); Navigator.pop(ctx); },
+                onChanged: (v) {
+                  update((l) => l.copyWith(hasClipping: v));
+                  Navigator.pop(ctx);
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.animation_outlined),
                 title: Text(l10n.layerPanelKeyframeLabel),
                 trailing: layer.keyframes.isEmpty
                     ? null
-                    : Icon(Icons.diamond, size: 14, color: Theme.of(context).colorScheme.primary),
+                    : Icon(
+                        Icons.diamond,
+                        size: 14,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 onTap: () {
                   Navigator.pop(ctx);
-                  final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
+                  final tm = context.read<ProjectService>().tileManagerOf(
+                    widget.projectId,
+                  );
                   showLayerKeyframeSheet(
                     context,
                     layer: layer,
                     currentFrame: widget.frameIndex,
-                    totalFrames: context
+                    totalFrames:
+                        context
                             .read<ProjectService>()
                             .sceneOf(widget.projectId, widget.sceneId)
                             ?.frames
@@ -1307,52 +1680,79 @@ class _LayerPanelState extends State<LayerPanel> {
                         1,
                     canvasWidth: tm.canvasWidth,
                     canvasHeight: tm.canvasHeight,
-                    onChanged: (kfs) => update((l) => l.copyWith(keyframes: kfs)),
+                    onChanged: (kfs) =>
+                        update((l) => l.copyWith(keyframes: kfs)),
                   );
                 },
               ),
-              Builder(builder: (context) {
-                final group = context.read<ProjectService>().groupContainingLayer(widget.projectId, widget.sceneId, layer.id);
-                if (group == null) return const SizedBox.shrink();
-                return ListTile(
-                  leading: const Icon(Icons.workspaces_outline),
-                  title: Text(l10n.layerPanelGroupMembershipLabel(group.name)),
-                  trailing: TextButton(
-                    onPressed: () {
-                      final ps = context.read<ProjectService>();
-                      final remaining = group.memberLayerIds.where((id) => id != layer.id).toList();
-                      if (remaining.isEmpty) {
-                        ps.removeLayerGroup(widget.projectId, widget.sceneId, group.id);
-                      } else {
-                        ps.updateLayerGroup(widget.projectId, widget.sceneId, group.copyWith(memberLayerIds: remaining));
-                      }
+              Builder(
+                builder: (context) {
+                  final group = context
+                      .read<ProjectService>()
+                      .groupContainingLayer(
+                        widget.projectId,
+                        widget.sceneId,
+                        layer.id,
+                      );
+                  if (group == null) return const SizedBox.shrink();
+                  return ListTile(
+                    leading: const Icon(Icons.workspaces_outline),
+                    title: Text(
+                      l10n.layerPanelGroupMembershipLabel(group.name),
+                    ),
+                    trailing: TextButton(
+                      onPressed: () {
+                        final ps = context.read<ProjectService>();
+                        final remaining = group.memberLayerIds
+                            .where((id) => id != layer.id)
+                            .toList();
+                        if (remaining.isEmpty) {
+                          ps.removeLayerGroup(
+                            widget.projectId,
+                            widget.sceneId,
+                            group.id,
+                          );
+                        } else {
+                          ps.updateLayerGroup(
+                            widget.projectId,
+                            widget.sceneId,
+                            group.copyWith(memberLayerIds: remaining),
+                          );
+                        }
+                        Navigator.pop(ctx);
+                      },
+                      child: Text(l10n.layerPanelGroupLeaveAction),
+                    ),
+                    onTap: () {
                       Navigator.pop(ctx);
+                      final tm = context.read<ProjectService>().tileManagerOf(
+                        widget.projectId,
+                      );
+                      showLayerGroupKeyframeSheet(
+                        context,
+                        groupName: group.name,
+                        initialKeyframes: group.keyframes,
+                        currentFrame: widget.frameIndex,
+                        totalFrames:
+                            context
+                                .read<ProjectService>()
+                                .sceneOf(widget.projectId, widget.sceneId)
+                                ?.frames
+                                .length ??
+                            1,
+                        canvasWidth: tm.canvasWidth,
+                        canvasHeight: tm.canvasHeight,
+                        onChanged: (kfs) =>
+                            context.read<ProjectService>().updateLayerGroup(
+                              widget.projectId,
+                              widget.sceneId,
+                              group.copyWith(keyframes: kfs),
+                            ),
+                      );
                     },
-                    child: Text(l10n.layerPanelGroupLeaveAction),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
-                    showLayerGroupKeyframeSheet(
-                      context,
-                      groupName: group.name,
-                      initialKeyframes: group.keyframes,
-                      currentFrame: widget.frameIndex,
-                      totalFrames: context
-                              .read<ProjectService>()
-                              .sceneOf(widget.projectId, widget.sceneId)
-                              ?.frames
-                              .length ??
-                          1,
-                      canvasWidth: tm.canvasWidth,
-                      canvasHeight: tm.canvasHeight,
-                      onChanged: (kfs) => context
-                          .read<ProjectService>()
-                          .updateLayerGroup(widget.projectId, widget.sceneId, group.copyWith(keyframes: kfs)),
-                    );
-                  },
-                );
-              }),
+                  );
+                },
+              ),
               if (layer.type == model.LayerType.normal)
                 ListTile(
                   leading: const Icon(Icons.link, color: Colors.blue),
@@ -1372,21 +1772,34 @@ class _LayerPanelState extends State<LayerPanel> {
                 ListTile(
                   leading: const Icon(Icons.opacity),
                   title: Text(l10n.layerPanelBrightnessToAlphaLabel),
-                  subtitle: Text(l10n.layerPanelBrightnessToAlphaHint, style: const TextStyle(fontSize: 11)),
+                  subtitle: Text(
+                    l10n.layerPanelBrightnessToAlphaHint,
+                    style: const TextStyle(fontSize: 11),
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextButton(
                         onPressed: () {
                           Navigator.pop(ctx);
-                          _applyBrightnessToAlpha(context, layer, grayMode: false);
+                          _applyBrightnessToAlpha(
+                            context,
+                            layer,
+                            grayMode: false,
+                          );
                         },
-                        child: Text(l10n.layerPanelBrightnessToAlphaColorButton),
+                        child: Text(
+                          l10n.layerPanelBrightnessToAlphaColorButton,
+                        ),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(ctx);
-                          _applyBrightnessToAlpha(context, layer, grayMode: true);
+                          _applyBrightnessToAlpha(
+                            context,
+                            layer,
+                            grayMode: true,
+                          );
                         },
                         child: Text(l10n.layerPanelBrightnessToAlphaGrayButton),
                       ),
@@ -1401,7 +1814,11 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   /// 「明度で透過」を実行し、サムネイル・プレビューを更新する。
-  Future<void> _applyBrightnessToAlpha(BuildContext context, model.Layer layer, {required bool grayMode}) async {
+  Future<void> _applyBrightnessToAlpha(
+    BuildContext context,
+    model.Layer layer, {
+    required bool grayMode,
+  }) async {
     final projectService = context.read<ProjectService>();
     final tileManager = projectService.tileManagerOf(widget.projectId);
     await tileManager.applyBrightnessToAlpha(
@@ -1409,7 +1826,9 @@ class _LayerPanelState extends State<LayerPanel> {
       grayMode: grayMode,
     );
     if (!mounted) return;
-    setState(() => _thumbRevision[layer.id] = (_thumbRevision[layer.id] ?? 0) + 1);
+    setState(
+      () => _thumbRevision[layer.id] = (_thumbRevision[layer.id] ?? 0) + 1,
+    );
   }
 
   /// 共通レイヤー化ダイアログ。「現在レイヤーを共通化」／
@@ -1427,14 +1846,20 @@ class _LayerPanelState extends State<LayerPanel> {
             children: [
               RadioListTile<int>(
                 title: Text(l10n.layerPanelConvertOption1Title),
-                subtitle: Text(l10n.layerPanelConvertOption1Subtitle, style: const TextStyle(fontSize: 11)),
+                subtitle: Text(
+                  l10n.layerPanelConvertOption1Subtitle,
+                  style: const TextStyle(fontSize: 11),
+                ),
                 value: 0,
                 groupValue: selected,
                 onChanged: (v) => setS(() => selected = v!),
               ),
               RadioListTile<int>(
                 title: Text(l10n.layerPanelConvertOption2Title),
-                subtitle: Text(l10n.layerPanelConvertOption2Subtitle, style: const TextStyle(fontSize: 11)),
+                subtitle: Text(
+                  l10n.layerPanelConvertOption2Subtitle,
+                  style: const TextStyle(fontSize: 11),
+                ),
                 value: 1,
                 groupValue: selected,
                 onChanged: (v) => setS(() => selected = v!),
@@ -1442,11 +1867,18 @@ class _LayerPanelState extends State<LayerPanel> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                final placeholder = model.Layer(id: '', name: '', type: model.LayerType.common);
+                final placeholder = model.Layer(
+                  id: '',
+                  name: '',
+                  type: model.LayerType.common,
+                );
                 _showRangeChangeDialog(
                   context,
                   placeholder,
@@ -1488,8 +1920,11 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  void _showBlendModeDialog(BuildContext context, model.Layer layer,
-      void Function(model.Layer Function(model.Layer)) update) {
+  void _showBlendModeDialog(
+    BuildContext context,
+    model.Layer layer,
+    void Function(model.Layer Function(model.Layer)) update,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     const modes = model.LayerBlendMode.values;
     showDialog(
@@ -1503,7 +1938,10 @@ class _LayerPanelState extends State<LayerPanel> {
             itemCount: modes.length,
             itemBuilder: (ctx, i) => ListTile(
               dense: true,
-              title: Text(_blendModeName(l10n, modes[i]), style: const TextStyle(fontSize: 13)),
+              title: Text(
+                _blendModeName(l10n, modes[i]),
+                style: const TextStyle(fontSize: 13),
+              ),
               selected: layer.blendMode == modes[i],
               onTap: () {
                 update((l) => l.copyWith(blendMode: modes[i]));
@@ -1513,31 +1951,35 @@ class _LayerPanelState extends State<LayerPanel> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonClose),
+          ),
         ],
       ),
     );
   }
 
-  String _blendModeName(AppLocalizations l10n, model.LayerBlendMode mode) => switch (mode) {
-    model.LayerBlendMode.normal      => l10n.blendModeNormal,
-    model.LayerBlendMode.multiply    => l10n.blendModeMultiply,
-    model.LayerBlendMode.screen      => l10n.blendModeScreen,
-    model.LayerBlendMode.overlay     => l10n.blendModeOverlay,
-    model.LayerBlendMode.addition    => l10n.blendModeAddition,
-    model.LayerBlendMode.subtract    => l10n.blendModeSubtract,
-    model.LayerBlendMode.darken      => l10n.blendModeDarken,
-    model.LayerBlendMode.lighten     => l10n.blendModeLighten,
-    model.LayerBlendMode.colorBurn   => l10n.blendModeColorBurn,
-    model.LayerBlendMode.colorDodge  => l10n.blendModeColorDodge,
-    model.LayerBlendMode.hardLight   => l10n.blendModeHardLight,
-    model.LayerBlendMode.softLight   => l10n.blendModeSoftLight,
-    model.LayerBlendMode.difference  => l10n.blendModeDifference,
-    model.LayerBlendMode.hue         => l10n.blendModeHue,
-    model.LayerBlendMode.saturation  => l10n.blendModeSaturation,
-    model.LayerBlendMode.color       => l10n.blendModeColor,
-    model.LayerBlendMode.luminosity  => l10n.blendModeLuminosity,
-  };
+  String _blendModeName(AppLocalizations l10n, model.LayerBlendMode mode) =>
+      switch (mode) {
+        model.LayerBlendMode.normal => l10n.blendModeNormal,
+        model.LayerBlendMode.multiply => l10n.blendModeMultiply,
+        model.LayerBlendMode.screen => l10n.blendModeScreen,
+        model.LayerBlendMode.overlay => l10n.blendModeOverlay,
+        model.LayerBlendMode.addition => l10n.blendModeAddition,
+        model.LayerBlendMode.subtract => l10n.blendModeSubtract,
+        model.LayerBlendMode.darken => l10n.blendModeDarken,
+        model.LayerBlendMode.lighten => l10n.blendModeLighten,
+        model.LayerBlendMode.colorBurn => l10n.blendModeColorBurn,
+        model.LayerBlendMode.colorDodge => l10n.blendModeColorDodge,
+        model.LayerBlendMode.hardLight => l10n.blendModeHardLight,
+        model.LayerBlendMode.softLight => l10n.blendModeSoftLight,
+        model.LayerBlendMode.difference => l10n.blendModeDifference,
+        model.LayerBlendMode.hue => l10n.blendModeHue,
+        model.LayerBlendMode.saturation => l10n.blendModeSaturation,
+        model.LayerBlendMode.color => l10n.blendModeColor,
+        model.LayerBlendMode.luminosity => l10n.blendModeLuminosity,
+      };
 
   void _showHelp(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1550,19 +1992,40 @@ class _LayerPanelState extends State<LayerPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(l10n.autofillPartBlendModeLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              Text(
+                l10n.autofillPartBlendModeLabel,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
               Text(l10n.layerPanelHelpBlendModeBody),
               const SizedBox(height: 8),
-              Text(l10n.layerPanelClippingBadge, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              Text(
+                l10n.layerPanelClippingBadge,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
               Text(l10n.layerPanelHelpClippingBody),
               const SizedBox(height: 8),
-              Text(l10n.layerPanelCommonLayerLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              Text(
+                l10n.layerPanelCommonLayerLabel,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
               Text(l10n.layerPanelHelpCommonLayerBody),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonClose),
+          ),
         ],
       ),
     );
@@ -1571,16 +2034,25 @@ class _LayerPanelState extends State<LayerPanel> {
   /// [layer] は❗マークが表示された自動塗りレイヤー、または三点メニューから起動した場合は
   /// 自動塗り用線画レイヤー（[isLineartLayer]=true）。実行対象の線画レイヤーを特定してから
   /// ダイアログを表示する。
-  void _showAutofillDialog(BuildContext context, model.Layer layer, {bool isLineartLayer = false}) {
+  void _showAutofillDialog(
+    BuildContext context,
+    model.Layer layer, {
+    bool isLineartLayer = false,
+  }) {
     final l10n = AppLocalizations.of(context)!;
     final projectService = context.read<ProjectService>();
-    final allLayers = projectService.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
+    final allLayers = projectService.layersOf(
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
     model.Layer? lineartLayer;
     if (isLineartLayer) {
       lineartLayer = layer;
     } else {
       final idx = allLayers.indexWhere((l) => l.id == layer.id);
-      if (idx > 0 && allLayers[idx - 1].type == model.LayerType.autoFillLineart) {
+      if (idx > 0 &&
+          allLayers[idx - 1].type == model.LayerType.autoFillLineart) {
         lineartLayer = allLayers[idx - 1];
       }
     }
@@ -1608,22 +2080,39 @@ class _LayerPanelState extends State<LayerPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.layerPanelAutofillNote1,
-                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+              Text(
+                l10n.layerPanelAutofillNote1,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(l10n.layerPanelAutofillNote2,
-                  style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+              Text(
+                l10n.layerPanelAutofillNote2,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 12),
               RadioListTile<int>(
                 title: Text(l10n.layerPanelAutofillRepaintTitle),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.layerPanelAutofillRepaintHint, style: const TextStyle(fontSize: 11)),
-                    Text(l10n.layerPanelAutofillRepaintNote, style: const TextStyle(fontSize: 11)),
+                    Text(
+                      l10n.layerPanelAutofillRepaintHint,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    Text(
+                      l10n.layerPanelAutofillRepaintNote,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ],
                 ),
-                value: 0, groupValue: selected,
+                value: 0,
+                groupValue: selected,
                 onChanged: (v) => setS(() => selected = v!),
                 dense: true,
               ),
@@ -1632,25 +2121,37 @@ class _LayerPanelState extends State<LayerPanel> {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.layerPanelAutofillColorUpdateHint, style: const TextStyle(fontSize: 11)),
-                    Text(l10n.layerPanelAutofillColorUpdateNote, style: const TextStyle(fontSize: 11)),
+                    Text(
+                      l10n.layerPanelAutofillColorUpdateHint,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    Text(
+                      l10n.layerPanelAutofillColorUpdateNote,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ],
                 ),
-                value: 1, groupValue: selected,
+                value: 1,
+                groupValue: selected,
                 onChanged: (v) => setS(() => selected = v!),
                 dense: true,
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 _executeAutofill(
                   context,
                   resolvedLineart,
-                  selected == 0 ? autofill.AutofillMode.repaint : autofill.AutofillMode.colorUpdate,
+                  selected == 0
+                      ? autofill.AutofillMode.repaint
+                      : autofill.AutofillMode.colorUpdate,
                 );
               },
               child: Text(l10n.layerPanelExecuteButton),
@@ -1665,7 +2166,10 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 本処理自体はautofill_batch_runner.dart（タイムラインの
   /// 一括実行とも共通）に集約し、ここではUI固有のエラー案内のみ行う。
   Future<void> _executeAutofill(
-      BuildContext context, model.Layer lineartLayer, autofill.AutofillMode mode) async {
+    BuildContext context,
+    model.Layer lineartLayer,
+    autofill.AutofillMode mode,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     if (lineartLayer.partId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1673,7 +2177,8 @@ class _LayerPanelState extends State<LayerPanel> {
       );
       return;
     }
-    if (context.read<AutofillPresetService>().findPart(lineartLayer.partId!) == null) {
+    if (context.read<AutofillPresetService>().findPart(lineartLayer.partId!) ==
+        null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.layerPanelAutofillPresetMissingSnackbar)),
       );
@@ -1697,7 +2202,10 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 「線画レイヤーなし・塗りレイヤーあり」の行。参照する線画が無いため
   /// 領域の再判定はできず、不透明度ロック＋最新色での塗りつぶしのみを行う
   /// （モード選択の余地がないため確認ダイアログは出さず直接実行する）。
-  Future<void> _runOrphanedAutofill(BuildContext context, model.Layer autofillLayer) async {
+  Future<void> _runOrphanedAutofill(
+    BuildContext context,
+    model.Layer autofillLayer,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final projectService = context.read<ProjectService>();
     final presetService = context.read<AutofillPresetService>();
@@ -1711,10 +2219,15 @@ class _LayerPanelState extends State<LayerPanel> {
     );
     if (!context.mounted) return;
     setState(() {});
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
-        result == AutofillBatchResult.applied
-            ? l10n.layerPanelOrphanFillSuccessSnackbar
-            : l10n.layerPanelOrphanFillFailSnackbar)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result == AutofillBatchResult.applied
+              ? l10n.layerPanelOrphanFillSuccessSnackbar
+              : l10n.layerPanelOrphanFillFailSnackbar,
+        ),
+      ),
+    );
   }
 
   /// 自動塗り用線画レイヤーへプリセットパーツを割り当てるダイアログ（パーツID管理）。
@@ -1725,8 +2238,11 @@ class _LayerPanelState extends State<LayerPanel> {
     // プリセットのみを表示する（プリセットが増えるほど
     // パーツ割り当て時の一覧が長くなるため）。未設定（null）の場合は従来
     // 通りすべて表示する。
-    final project = context.read<ProjectService>().projects
-        .where((p) => p.id == widget.projectId).firstOrNull;
+    final project = context
+        .read<ProjectService>()
+        .projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     final enabledIds = project?.enabledAutofillPresetIds;
     final presets = enabledIds == null
         ? allPresets
@@ -1744,13 +2260,20 @@ class _LayerPanelState extends State<LayerPanel> {
                     for (final preset in presets) ...[
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                        child: Text(preset.name, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                        child: Text(
+                          preset.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Kuramubon',
+                          ),
+                        ),
                       ),
                       for (final part in preset.parts)
                         ListTile(
                           dense: true,
                           leading: Container(
-                            width: 24, height: 24,
+                            width: 24,
+                            height: 24,
                             decoration: BoxDecoration(
                               color: Color(part.color),
                               shape: BoxShape.circle,
@@ -1787,7 +2310,10 @@ class _LayerPanelState extends State<LayerPanel> {
         title: Text(l10n.layerPanelAutofillUpdateHelpTitle),
         content: Text(l10n.layerPanelAutofillUpdateHelpBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonClose),
+          ),
         ],
       ),
     );
@@ -1839,12 +2365,19 @@ class _LayerPanelState extends State<LayerPanel> {
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
     image.dispose();
-    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await rendered.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     rendered.dispose();
     if (byteData == null || !context.mounted) return;
 
     tileManager.replaceLayerPixels(
-      projectService.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, layer.id),
+      projectService.tileKeyFor(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+        layer.id,
+      ),
       byteData.buffer.asUint8List(),
     );
     projectService.updateLayer(
@@ -1855,7 +2388,11 @@ class _LayerPanelState extends State<LayerPanel> {
     );
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.layerPanelReplaceMaterialSuccessSnackbar(layer.name))),
+      SnackBar(
+        content: Text(
+          l10n.layerPanelReplaceMaterialSuccessSnackbar(layer.name),
+        ),
+      ),
     );
   }
 
@@ -1902,7 +2439,9 @@ class _LayerPanelState extends State<LayerPanel> {
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
     image.dispose();
-    final byteData = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await rendered.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     rendered.dispose();
     if (byteData == null || !context.mounted) return;
 
@@ -1974,7 +2513,12 @@ class _LayerThumbnailState extends State<_LayerThumbnail> {
   Future<void> _generate() async {
     final ps = context.read<ProjectService>();
     final tileManager = ps.tileManagerOf(widget.projectId);
-    final key = ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, widget.layerId);
+    final key = ps.tileKeyFor(
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+      widget.layerId,
+    );
     final full = await tileManager.compositeLayerToImage(key);
 
     const size = 48; // 24論理px表示・高DPI考慮で2倍解像度

@@ -68,6 +68,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Color _currentColor = Colors.black;
   int _currentFrame = 0;
   bool _showLayerPanel = false;
+  // ショートカット（Ctrl+A）からレイヤーパネルの全選択を起動するための
+  // トークン。値を増やすたびにLayerPanel側で全選択が実行される。
+  int _layerSelectAllToken = 0;
+  // ショートカット（Ctrl+C/Ctrl+V）で現在アクティブなレイヤーを
+  // コピー＆ペーストするための、セッション内のみのクリップボード。
+  String? _copiedLayerId;
   // 資料ウィンドウ（三面図・参考画像を常に表示）。他のツールオプション系
   // パネルとは独立して開閉する（ツール切り替えやパネル外タップでは
   // 閉じない）ため、_closeAllOverlayPanels/_anyToolPanelOpenの対象には
@@ -942,6 +948,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       currentLayerId: _currentLayerId,
                       onLayerSelected: (id) =>
                           setState(() => _currentLayerId = id),
+                      selectAllToken: _layerSelectAllToken,
                     ),
                   ),
                 if (_showColorPicker && !isDesktop)
@@ -1192,6 +1199,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onEditTextLayer: _onEditTextLayerTapped,
             currentLayerId: _currentLayerId,
             onLayerSelected: (id) => setState(() => _currentLayerId = id),
+            selectAllToken: _layerSelectAllToken,
           ),
         ),
     };
@@ -1416,6 +1424,37 @@ class _CanvasScreenState extends State<CanvasScreen> {
     }
   }
 
+  /// レイヤーパネルを開いた上でレイヤー全選択を起動する（Ctrl+A）。
+  /// パネルが既に開いている場合はその場で全選択される。閉じていた場合は
+  /// このタップで開くのみで、全選択はもう一度Ctrl+Aを押した時点で働く
+  /// （LayerPanel初回表示時点ではdidUpdateWidgetが発火しないため）。
+  void _selectAllLayers() => setState(() {
+    _showLayerPanel = true;
+    _layerSelectAllToken++;
+  });
+
+  /// 現在アクティブなレイヤーをコピー（Ctrl+C）。
+  void _copyActiveLayer() {
+    if (_currentLayerId == null) return;
+    setState(() => _copiedLayerId = _currentLayerId);
+  }
+
+  /// コピー済みのレイヤーを複製して貼り付ける（Ctrl+V）。ピクセル内容も
+  /// 含めて元レイヤーのすぐ上に複製し、複製後のレイヤーをアクティブにする。
+  void _pasteCopiedLayer() {
+    final sourceId = _copiedLayerId;
+    if (sourceId == null) return;
+    final copy = context.read<ProjectService>().duplicateLayer(
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      frameIndex: _currentFrame,
+      layerId: sourceId,
+      nameOverride: null,
+    );
+    if (copy == null) return;
+    setState(() => _currentLayerId = copy.id);
+  }
+
   void _toggleLayerPanel() => setState(() {
     final next = !_showLayerPanel;
     _closeAllOverlayPanels();
@@ -1447,11 +1486,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
           result[b.activator] = () => context.read<UndoManager>().redo();
         case ShortcutCommand.toggleLayerPanel:
           result[b.activator] = _toggleLayerPanel;
+        case ShortcutCommand.selectAll:
+          result[b.activator] = _selectAllLayers;
+        case ShortcutCommand.copy:
+          result[b.activator] = _copyActiveLayer;
+        case ShortcutCommand.paste:
+          result[b.activator] = _pasteCopiedLayer;
+        case ShortcutCommand.cut:
         case ShortcutCommand.playPause:
         case ShortcutCommand.previousFrame:
         case ShortcutCommand.nextFrame:
         case null:
-          // タイムライン専用の操作、または未割り当て。
+          // 切り取りは対応する貼り付け先（別フレーム等）の設計が
+          // 未確定のため、キャンバスモードでは未割り当てのままにする。
+          // タイムライン専用の操作、または未割り当ても同様。
           break;
       }
     }

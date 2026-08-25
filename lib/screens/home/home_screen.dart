@@ -16,7 +16,9 @@ import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
+import '../../services/shortcut_service.dart';
 import '../../services/work_folder_service.dart';
+import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
@@ -235,260 +237,263 @@ class _HomeScreenState extends State<HomeScreen>
     final adService = context.watch<AdvertisingService>();
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: l10n.homeSearchHint,
-                  border: InputBorder.none,
-                ),
-                onChanged: (v) => setState(() => _searchQuery = v),
-              )
-            // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
-            // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
-            // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
-            // ための変更。
-            : SortModeControl(
-                sortByName: _sortByName,
-                sortAscending: _sortAscending,
-                onSortByNameChanged: _setSortByName,
-                onToggleDirection: _toggleSortDirection,
-              ),
-        actions: [
-          // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
-          // トップ画面右上からは重複表示を削除した。
-          if (_isSearching)
-            IconButton(
-              icon: const Icon(Icons.close),
-              tooltip: l10n.commonClose,
-              onPressed: () => setState(() {
-                _isSearching = false;
-                _searchQuery = '';
-                _searchController.clear();
-              }),
-            )
-          else ...[
-            if (_hasClipboard)
-              IconButton(
-                icon: const Icon(Icons.content_paste),
-                tooltip: l10n.homePasteTooltip(
-                  _clipboardProjectIds.length + _clipboardFolderIds.length,
-                ),
-                onPressed: _pasteClipboard,
-              ),
-            PopupMenuButton<ProjectViewMode>(
-              icon: const Icon(Icons.view_module),
-              onSelected: (mode) => setState(() => _viewMode = mode),
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: ProjectViewMode.large,
-                  child: Text(l10n.homeViewModeLarge),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.medium,
-                  child: Text(l10n.homeViewModeMedium),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.small,
-                  child: Text(l10n.homeViewModeSmall),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.detail,
-                  child: Text(l10n.homeViewModeDetail),
-                ),
-              ],
-            ),
-            IconButton(
-              icon: const Icon(Icons.search),
-              tooltip: l10n.commonSearch,
-              onPressed: () => setState(() => _isSearching = true),
-            ),
-          ],
-        ],
-        // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
-        // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
-        // 同じ幅しか確保できず、文字が見切れてしまっていた。各項目名の
-        // 実際の描画幅を計測し、その比率でタブ幅を配分する独自実装へ
-        // 差し替える（TabControllerは共通のまま、TabBarViewとの
-        // スワイプ連動はそのまま維持される）。
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(46),
-          child: _HomeTabBar(
-            controller: _tabController,
-            currentIndex: _currentTabIndex,
-            labels: [
-              l10n.homeTabProjects,
-              l10n.homeTabWorks,
-              l10n.homeTabBookmarked,
-            ],
-          ),
-        ),
-      ),
-      drawer: const HomeDrawer(),
-      body: Column(
-        children: [
-          if (_isSelectionMode)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: Row(
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      // 現在開いているフォルダ直下のプロジェクト・フォルダを両方選択する。
-                      final service = context.read<ProjectService>();
-                      final projectIds = service.projects
-                          .where((p) => p.folderId == _currentFolderId)
-                          .map((p) => p.id);
-                      final folderIds = service.folders
-                          .where((f) => f.parentFolderId == _currentFolderId)
-                          .map((f) => f.id);
-                      setState(
-                        () => _selectedIds
-                          ..addAll(projectIds)
-                          ..addAll(folderIds),
-                      );
-                    },
-                    child: Text(l10n.homeSelectionAllSelect),
+    // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
+    // で割り当てたキーで、全選択・コピー・切り取り・貼り付けを
+    // 行えるようにする。
+    return CallbackShortcuts(
+      bindings: _buildShortcutBindings(context),
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          appBar: AppBar(
+            title: _isSearching
+                ? TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: l10n.homeSearchHint,
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                  )
+                // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
+                // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
+                // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
+                // ための変更。
+                : SortModeControl(
+                    sortByName: _sortByName,
+                    sortAscending: _sortAscending,
+                    onSortByNameChanged: _setSortByName,
+                    onToggleDirection: _toggleSortDirection,
                   ),
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _selectedIds.clear();
-                      _isSelectionMode = false;
-                    }),
-                    child: Text(l10n.homeSelectionAllDeselect),
+            actions: [
+              // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
+              // トップ画面右上からは重複表示を削除した。
+              if (_isSearching)
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: l10n.commonClose,
+                  onPressed: () => setState(() {
+                    _isSearching = false;
+                    _searchQuery = '';
+                    _searchController.clear();
+                  }),
+                )
+              else ...[
+                if (_hasClipboard)
+                  IconButton(
+                    icon: const Icon(Icons.content_paste),
+                    tooltip: l10n.homePasteTooltip(
+                      _clipboardProjectIds.length + _clipboardFolderIds.length,
+                    ),
+                    onPressed: _pasteClipboard,
                   ),
-                  const Spacer(),
-                  Text(l10n.homeSelectionCount(_selectedIds.length)),
-                  if (_selectedIds.isNotEmpty) ...[
-                    IconButton(
-                      icon: const Icon(Icons.star, color: Colors.amber),
-                      onPressed: () => _bulkSetFavorite(true),
-                      tooltip: l10n.homeSelectionAddFavorite,
+                PopupMenuButton<ProjectViewMode>(
+                  icon: const Icon(Icons.view_module),
+                  onSelected: (mode) => setState(() => _viewMode = mode),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: ProjectViewMode.large,
+                      child: Text(l10n.homeViewModeLarge),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.star_border),
-                      onPressed: () => _bulkSetFavorite(false),
-                      tooltip: l10n.homeSelectionRemoveFavorite,
+                    PopupMenuItem(
+                      value: ProjectViewMode.medium,
+                      child: Text(l10n.homeViewModeMedium),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.content_cut),
-                      onPressed: _cutSelected,
-                      tooltip: l10n.commonCut,
+                    PopupMenuItem(
+                      value: ProjectViewMode.small,
+                      child: Text(l10n.homeViewModeSmall),
                     ),
-                    // フォルダの複製は未対応のため、選択にフォルダが1つでも
-                    // 含まれる場合はコピー操作自体を無効化する。
-                    IconButton(
-                      icon: const Icon(Icons.content_copy),
-                      onPressed:
-                          _selectedIds.every(
-                            (id) => context.read<ProjectService>().projects.any(
-                              (p) => p.id == id,
-                            ),
-                          )
-                          ? _copySelected
-                          : null,
-                      tooltip: l10n.commonCopy,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: _deleteSelected,
-                      tooltip: l10n.homeMoveToTrash,
+                    PopupMenuItem(
+                      value: ProjectViewMode.detail,
+                      child: Text(l10n.homeViewModeDetail),
                     ),
                   ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  tooltip: l10n.commonSearch,
+                  onPressed: () => setState(() => _isSearching = true),
+                ),
+              ],
+            ],
+            // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
+            // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
+            // 同じ幅しか確保できず、文字が見切れてしまっていた。各項目名の
+            // 実際の描画幅を計測し、その比率でタブ幅を配分する独自実装へ
+            // 差し替える（TabControllerは共通のまま、TabBarViewとの
+            // スワイプ連動はそのまま維持される）。
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(46),
+              child: _HomeTabBar(
+                controller: _tabController,
+                currentIndex: _currentTabIndex,
+                labels: [
+                  l10n.homeTabProjects,
+                  l10n.homeTabWorks,
+                  l10n.homeTabBookmarked,
                 ],
               ),
             ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                Column(
+          ),
+          drawer: const HomeDrawer(),
+          body: Column(
+            children: [
+              if (_isSelectionMode)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: Row(
+                    children: [
+                      TextButton(
+                        onPressed: _selectAllInCurrentFolder,
+                        child: Text(l10n.homeSelectionAllSelect),
+                      ),
+                      TextButton(
+                        onPressed: () => setState(() {
+                          _selectedIds.clear();
+                          _isSelectionMode = false;
+                        }),
+                        child: Text(l10n.homeSelectionAllDeselect),
+                      ),
+                      const Spacer(),
+                      Text(l10n.homeSelectionCount(_selectedIds.length)),
+                      if (_selectedIds.isNotEmpty) ...[
+                        IconButton(
+                          icon: const Icon(Icons.star, color: Colors.amber),
+                          onPressed: () => _bulkSetFavorite(true),
+                          tooltip: l10n.homeSelectionAddFavorite,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.star_border),
+                          onPressed: () => _bulkSetFavorite(false),
+                          tooltip: l10n.homeSelectionRemoveFavorite,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.content_cut),
+                          onPressed: _cutSelected,
+                          tooltip: l10n.commonCut,
+                        ),
+                        // フォルダの複製は未対応のため、選択にフォルダが1つでも
+                        // 含まれる場合はコピー操作自体を無効化する。
+                        IconButton(
+                          icon: const Icon(Icons.content_copy),
+                          onPressed:
+                              _selectedIds.every(
+                                (id) => context
+                                    .read<ProjectService>()
+                                    .projects
+                                    .any((p) => p.id == id),
+                              )
+                              ? _copySelected
+                              : null,
+                          tooltip: l10n.commonCopy,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: _deleteSelected,
+                          tooltip: l10n.homeMoveToTrash,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      child: Row(
-                        children: [
-                          FilterChip(
-                            label: Text(
-                              l10n.homeFavoritesOnly,
-                              style: const TextStyle(fontFamily: 'Kuramubon'),
-                            ),
-                            selected: _showFavoritesOnly,
-                            onSelected: (v) =>
-                                setState(() => _showFavoritesOnly = v),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
                           ),
-                        ],
-                      ),
+                          child: Row(
+                            children: [
+                              FilterChip(
+                                label: Text(
+                                  l10n.homeFavoritesOnly,
+                                  style: const TextStyle(
+                                    fontFamily: 'Kuramubon',
+                                  ),
+                                ),
+                                selected: _showFavoritesOnly,
+                                onSelected: (v) =>
+                                    setState(() => _showFavoritesOnly = v),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // フォルダ内移動時のパンくずリスト。検索中は
+                        // 全体から検索するため非表示にする。
+                        if (_searchQuery.trim().isEmpty) _buildBreadcrumb(),
+                        Expanded(
+                          child: ProjectListWidget(
+                            viewMode: _viewMode,
+                            sortMode: _sortMode,
+                            isSelectionMode: _isSelectionMode,
+                            selectedIds: _selectedIds,
+                            // 長押しモードへ入ると同時に、長押しした項目自体も
+                            // 選択状態にする（複数選択モードに入っただけで
+                            // 何も選ばれていない状態を避ける）。
+                            onLongPress: (id) => setState(() {
+                              _isSelectionMode = true;
+                              _selectedIds.add(id);
+                            }),
+                            onSelectionChanged: (id) => setState(() {
+                              if (_selectedIds.contains(id)) {
+                                _selectedIds.remove(id);
+                              } else {
+                                _selectedIds.add(id);
+                              }
+                              // 手動でのタップ操作によって選択が0件になった場合も、
+                              // 「全解除」ボタンを押した時と同様に複数選択モードを
+                              // 自動終了する。
+                              if (_selectedIds.isEmpty) {
+                                _isSelectionMode = false;
+                              }
+                            }),
+                            showFavoritesOnly: _showFavoritesOnly,
+                            searchQuery: _searchQuery,
+                            currentFolderId: _currentFolderId,
+                            onOpenFolder: (id) =>
+                                setState(() => _currentFolderId = id),
+                          ),
+                        ),
+                      ],
                     ),
-                    // フォルダ内移動時のパンくずリスト。検索中は
-                    // 全体から検索するため非表示にする。
-                    if (_searchQuery.trim().isEmpty) _buildBreadcrumb(),
-                    Expanded(
-                      child: ProjectListWidget(
-                        viewMode: _viewMode,
-                        sortMode: _sortMode,
-                        isSelectionMode: _isSelectionMode,
-                        selectedIds: _selectedIds,
-                        // 長押しモードへ入ると同時に、長押しした項目自体も
-                        // 選択状態にする（複数選択モードに入っただけで
-                        // 何も選ばれていない状態を避ける）。
-                        onLongPress: (id) => setState(() {
-                          _isSelectionMode = true;
-                          _selectedIds.add(id);
-                        }),
-                        onSelectionChanged: (id) => setState(() {
-                          if (_selectedIds.contains(id)) {
-                            _selectedIds.remove(id);
-                          } else {
-                            _selectedIds.add(id);
-                          }
-                          // 手動でのタップ操作によって選択が0件になった場合も、
-                          // 「全解除」ボタンを押した時と同様に複数選択モードを
-                          // 自動終了する。
-                          if (_selectedIds.isEmpty) _isSelectionMode = false;
-                        }),
-                        showFavoritesOnly: _showFavoritesOnly,
-                        searchQuery: _searchQuery,
-                        currentFolderId: _currentFolderId,
-                        onOpenFolder: (id) =>
-                            setState(() => _currentFolderId = id),
-                      ),
-                    ),
+                    const _WorksTab(),
+                    const _BookmarkedTab(),
                   ],
                 ),
-                const _WorksTab(),
-                const _BookmarkedTab(),
-              ],
+              ),
+              if (adService.shouldShowAds) const AdBannerWidget(),
+            ],
+          ),
+          // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
+          // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
+          // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
+          floatingActionButton: switch (_currentTabIndex) {
+            0 => FloatingActionButton(
+              onPressed: () => _showAddChoiceSheet(context),
+              child: const Icon(Icons.add),
             ),
-          ),
-          if (adService.shouldShowAds) const AdBannerWidget(),
-        ],
+            1 => FloatingActionButton(
+              tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
+              onPressed: () => showCreateFolderNameDialog(
+                context,
+                (name) => context.read<WorkFolderService>().createFolder(name),
+              ),
+              child: const Icon(Icons.create_new_folder_outlined),
+            ),
+            _ => null,
+          },
+        ),
       ),
-      // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
-      // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
-      // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
-      floatingActionButton: switch (_currentTabIndex) {
-        0 => FloatingActionButton(
-          onPressed: () => _showAddChoiceSheet(context),
-          child: const Icon(Icons.add),
-        ),
-        1 => FloatingActionButton(
-          tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
-          onPressed: () => showCreateFolderNameDialog(
-            context,
-            (name) => context.read<WorkFolderService>().createFolder(name),
-          ),
-          child: const Icon(Icons.create_new_folder_outlined),
-        ),
-        _ => null,
-      },
     );
   }
 
@@ -583,6 +588,64 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
     );
+  }
+
+  /// 現在開いているフォルダ直下のプロジェクト・フォルダを両方選択する
+  /// （選択モードでなければ自動的に選択モードへ入る）。手動の「全選択」
+  /// ボタンとCtrl+Aショートカットの両方から使う共通処理。
+  void _selectAllInCurrentFolder() {
+    final service = context.read<ProjectService>();
+    final projectIds = service.projects
+        .where((p) => p.folderId == _currentFolderId)
+        .map((p) => p.id);
+    final folderIds = service.folders
+        .where((f) => f.parentFolderId == _currentFolderId)
+        .map((f) => f.id);
+    setState(() {
+      _isSelectionMode = true;
+      _selectedIds
+        ..addAll(projectIds)
+        ..addAll(folderIds);
+    });
+  }
+
+  /// 設定画面「ショートカット設定」の割り当て一覧から、ホーム画面で
+  /// 有効なキー割り当てのマップを組み立てる。ツール選択の割り当ては
+  /// キャンバスモード専用の概念のためここでは無視する。
+  Map<ShortcutActivator, VoidCallback> _buildShortcutBindings(
+    BuildContext context,
+  ) {
+    final bindings = context.watch<ShortcutService>().bindings;
+    final result = <ShortcutActivator, VoidCallback>{};
+    for (final b in bindings) {
+      if (b.isToolAction) continue;
+      switch (b.command) {
+        case ShortcutCommand.selectAll:
+          result[b.activator] = _selectAllInCurrentFolder;
+        case ShortcutCommand.copy:
+          result[b.activator] = () {
+            if (_selectedIds.isNotEmpty) _copySelected();
+          };
+        case ShortcutCommand.cut:
+          result[b.activator] = () {
+            if (_selectedIds.isNotEmpty) _cutSelected();
+          };
+        case ShortcutCommand.paste:
+          result[b.activator] = () {
+            if (_hasClipboard) _pasteClipboard();
+          };
+        case ShortcutCommand.undo:
+        case ShortcutCommand.redo:
+        case ShortcutCommand.toggleLayerPanel:
+        case ShortcutCommand.playPause:
+        case ShortcutCommand.previousFrame:
+        case ShortcutCommand.nextFrame:
+        case null:
+          // キャンバス・タイムライン専用の操作、または未割り当て。
+          break;
+      }
+    }
+    return result;
   }
 
   /// 選択中のプロジェクト・フォルダを切り取り、内部クリップボードへ保持する。

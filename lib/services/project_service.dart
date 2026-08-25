@@ -766,6 +766,40 @@ class ProjectService extends ChangeNotifier {
     return layer;
   }
 
+  /// レイヤーを複製する（メタデータ・キーフレーム等の設定に加えて
+  /// ピクセル内容もTileManager.copyLayerでコピーオンライト複製する）。
+  /// 複製先は元レイヤーのすぐ上に挿入する。レイヤーのコピー＆ペースト
+  /// （Ctrl+C/Ctrl+V）から使う。対象レイヤーが見つからない場合はnull。
+  Layer? duplicateLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    String? nameOverride,
+  }) {
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final index = layers.indexWhere((l) => l.id == layerId);
+    if (index < 0) return null;
+    final source = layers[index];
+    final newId = _nextLayerId(projectId);
+    final copy = source.copyWith(id: newId, name: nameOverride ?? source.name);
+    _applyLayerInsert(projectId, sceneId, frameIndex, copy, index);
+    tileManagerOf(projectId).copyLayer(layerId, newId);
+
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: newId,
+        insertIndex: index,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
+    return copy;
+  }
+
   /// レイヤーを削除し、Undoスタックに積む。表示範囲レイヤー（現在フレームに
   /// 他フレームから合成表示されているもの）の場合は、実データのあるホーム
   /// 位置を対象に削除する。

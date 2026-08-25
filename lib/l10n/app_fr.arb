@@ -278,6 +278,10 @@
   "shortcutCommandPlayPause": "Lecture/Pause (Chronologie)",
   "shortcutCommandPreviousFrame": "Image précédente (Chronologie)",
   "shortcutCommandNextFrame": "Image suivante (Chronologie)",
+  "shortcutCommandSelectAll": "Tout sélectionner",
+  "shortcutCommandCopy": "Copier",
+  "shortcutCommandCut": "Couper",
+  "shortcutCommandPaste": "Coller",
   "shortcutConflictTitle": "Déjà assigné",
   "shortcutConflictBody": "{combo} est déjà assigné à « {existingLabel} ». Voulez-vous l'écraser ?",
   "@shortcutConflictBody": {

@@ -368,6 +368,10 @@
   "shortcutCommandPlayPause": "再生／一時停止（タイムライン）",
   "shortcutCommandPreviousFrame": "1フレーム戻る（タイムライン）",
   "shortcutCommandNextFrame": "1フレーム進む（タイムライン）",
+  "shortcutCommandSelectAll": "全選択",
+  "shortcutCommandCopy": "コピー",
+  "shortcutCommandCut": "切り取り",
+  "shortcutCommandPaste": "貼り付け",
   "shortcutConflictTitle": "すでに割り当てられています",
   "shortcutConflictBody": "{combo} には既に「{existingLabel}」が割り当てられています。上書きしますか？",
   "@shortcutConflictBody": {

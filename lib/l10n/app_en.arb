@@ -278,6 +278,10 @@
   "shortcutCommandPlayPause": "Play/Pause (Timeline)",
   "shortcutCommandPreviousFrame": "Previous frame (Timeline)",
   "shortcutCommandNextFrame": "Next frame (Timeline)",
+  "shortcutCommandSelectAll": "Select All",
+  "shortcutCommandCopy": "Copy",
+  "shortcutCommandCut": "Cut",
+  "shortcutCommandPaste": "Paste",
   "shortcutConflictTitle": "Already assigned",
   "shortcutConflictBody": "{combo} is already assigned to \"{existingLabel}\". Overwrite it?",
   "@shortcutConflictBody": {

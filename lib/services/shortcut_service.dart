@@ -45,6 +45,7 @@ class ShortcutService extends ChangeNotifier {
           shift: true,
           command: ShortcutCommand.redo,
         ),
+        ..._defaultClipboardBindings,
       ]);
       await _persist();
     } else {
@@ -54,8 +55,50 @@ class ShortcutService extends ChangeNotifier {
               ShortcutBinding.fromJson(jsonDecode(s) as Map<String, dynamic>),
         ),
       );
+      // 既に保存済みの環境（Ctrl+A/C/X/Vが既定値に無かった旧バージョン）
+      // でも、キーの組み合わせが未使用であれば追加の既定値として補う。
+      var added = false;
+      for (final candidate in _defaultClipboardBindings) {
+        if (findConflict(candidate) == null &&
+            !_bindings.any((b) => b.id == candidate.id)) {
+          _bindings.add(candidate);
+          added = true;
+        }
+      }
+      if (added) await _persist();
     }
   }
+
+  static final List<ShortcutBinding> _defaultClipboardBindings = [
+    ShortcutBinding(
+      id: 'default_select_all',
+      label: 'Select All',
+      keyId: LogicalKeyboardKey.keyA.keyId,
+      control: true,
+      command: ShortcutCommand.selectAll,
+    ),
+    ShortcutBinding(
+      id: 'default_copy',
+      label: 'Copy',
+      keyId: LogicalKeyboardKey.keyC.keyId,
+      control: true,
+      command: ShortcutCommand.copy,
+    ),
+    ShortcutBinding(
+      id: 'default_cut',
+      label: 'Cut',
+      keyId: LogicalKeyboardKey.keyX.keyId,
+      control: true,
+      command: ShortcutCommand.cut,
+    ),
+    ShortcutBinding(
+      id: 'default_paste',
+      label: 'Paste',
+      keyId: LogicalKeyboardKey.keyV.keyId,
+      control: true,
+      command: ShortcutCommand.paste,
+    ),
+  ];
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();

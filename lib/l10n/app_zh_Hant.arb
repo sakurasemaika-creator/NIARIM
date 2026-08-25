@@ -278,6 +278,10 @@
   "shortcutCommandPlayPause": "播放/暫停（時間軸）",
   "shortcutCommandPreviousFrame": "後退1畫格（時間軸）",
   "shortcutCommandNextFrame": "前進1畫格（時間軸）",
+  "shortcutCommandSelectAll": "全選",
+  "shortcutCommandCopy": "複製",
+  "shortcutCommandCut": "剪下",
+  "shortcutCommandPaste": "貼上",
   "shortcutConflictTitle": "該按鍵已被分配",
   "shortcutConflictBody": "{combo}已經分配給了「{existingLabel}」。要覆蓋嗎？",
   "@shortcutConflictBody": {

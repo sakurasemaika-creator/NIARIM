@@ -278,6 +278,10 @@
   "shortcutCommandPlayPause": "播放/暂停（时间轴）",
   "shortcutCommandPreviousFrame": "后退1帧（时间轴）",
   "shortcutCommandNextFrame": "前进1帧（时间轴）",
+  "shortcutCommandSelectAll": "全选",
+  "shortcutCommandCopy": "复制",
+  "shortcutCommandCut": "剪切",
+  "shortcutCommandPaste": "粘贴",
   "shortcutConflictTitle": "该按键已被分配",
   "shortcutConflictBody": "{combo}已经分配给了「{existingLabel}」。要覆盖吗？",
   "@shortcutConflictBody": {

@@ -483,6 +483,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_currentFrame < _totalFrames - 1) setState(() => _currentFrame++);
   }
 
+  /// シーン複数選択モード中はシーンを全選択、そうでなければフレーム
+  /// 複数選択モードへ入りフレームを全選択する（Ctrl+A）。
+  void _selectAllFramesOrScenes() {
+    if (_isSceneMultiSelect) {
+      final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
+      setState(() => _selectedSceneIds.addAll(scenes.map((s) => s.id)));
+    } else {
+      setState(() {
+        _isFrameMultiSelect = true;
+        _selectedFrameIndices.addAll(List.generate(_totalFrames, (i) => i));
+      });
+    }
+  }
+
   /// 設定画面「ショートカット設定」の割り当て一覧から、タイムライン
   /// モードで有効なキー割り当てのマップを組み立てる。ツール選択の
   /// 割り当てはキャンバスモード専用の概念のためここでは無視する。
@@ -504,9 +518,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
           result[b.activator] = _stepFramePrevious;
         case ShortcutCommand.nextFrame:
           result[b.activator] = _stepFrameNext;
+        case ShortcutCommand.selectAll:
+          result[b.activator] = _selectAllFramesOrScenes;
         case ShortcutCommand.toggleLayerPanel:
+        case ShortcutCommand.copy:
+        case ShortcutCommand.cut:
+        case ShortcutCommand.paste:
         case null:
-          // キャンバス専用の操作、または未割り当て。
+          // コピー・切り取り・貼り付けは、素材クリップ側のクリップボード
+          // 設計が未確定のため、タイムラインモードでは未割り当てのまま。
+          // キャンバス専用の操作、または未割り当ても同様。
           break;
       }
     }

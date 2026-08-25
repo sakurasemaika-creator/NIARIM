@@ -278,6 +278,10 @@
   "shortcutCommandPlayPause": "Reproducir/Pausar (Línea de tiempo)",
   "shortcutCommandPreviousFrame": "Fotograma anterior (Línea de tiempo)",
   "shortcutCommandNextFrame": "Fotograma siguiente (Línea de tiempo)",
+  "shortcutCommandSelectAll": "Seleccionar todo",
+  "shortcutCommandCopy": "Copiar",
+  "shortcutCommandCut": "Cortar",
+  "shortcutCommandPaste": "Pegar",
   "shortcutConflictTitle": "Ya está asignado",
   "shortcutConflictBody": "{combo} ya está asignado a \"{existingLabel}\". ¿Deseas sobrescribirlo?",
   "@shortcutConflictBody": {

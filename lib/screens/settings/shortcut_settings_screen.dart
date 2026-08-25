@@ -328,6 +328,10 @@ class ShortcutSettingsScreen extends StatelessWidget {
       ShortcutCommand.playPause: l10n.shortcutCommandPlayPause,
       ShortcutCommand.previousFrame: l10n.shortcutCommandPreviousFrame,
       ShortcutCommand.nextFrame: l10n.shortcutCommandNextFrame,
+      ShortcutCommand.selectAll: l10n.shortcutCommandSelectAll,
+      ShortcutCommand.copy: l10n.shortcutCommandCopy,
+      ShortcutCommand.cut: l10n.shortcutCommandCut,
+      ShortcutCommand.paste: l10n.shortcutCommandPaste,
     };
     showModalBottomSheet(
       context: context,

@@ -278,6 +278,10 @@
   "shortcutCommandPlayPause": "재생/일시정지（타임라인）",
   "shortcutCommandPreviousFrame": "1프레임 뒤로（타임라인）",
   "shortcutCommandNextFrame": "1프레임 앞으로（타임라인）",
+  "shortcutCommandSelectAll": "전체 선택",
+  "shortcutCommandCopy": "복사",
+  "shortcutCommandCut": "잘라내기",
+  "shortcutCommandPaste": "붙여넣기",
   "shortcutConflictTitle": "이미 할당되어 있습니다",
   "shortcutConflictBody": "{combo}에는 이미 「{existingLabel}」이(가) 할당되어 있습니다. 덮어쓰시겠습니까?",
   "@shortcutConflictBody": {

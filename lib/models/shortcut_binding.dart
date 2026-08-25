@@ -10,6 +10,10 @@ enum ShortcutCommand {
   playPause,
   previousFrame,
   nextFrame,
+  selectAll,
+  copy,
+  cut,
+  paste,
 }
 
 /// キーボード・左手デバイス用ショートカットの1件分の割り当て。
