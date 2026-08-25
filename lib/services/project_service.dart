@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:image/image.dart' as img;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/layer_range_resolver.dart';
@@ -2238,12 +2239,17 @@ class ProjectService extends ChangeNotifier {
   /// 部分は破棄し、元画像より広い範囲を指定した部分は透明で埋める）。
   /// exportWidth・exportHeightは、描画領域倍率（drawingAreaScale）を
   /// 保ったまま逆算して更新する。
+  /// [angleDegrees]が0以外の場合、各レイヤーの合成画像を先に回転（外接矩形
+  /// まで自動拡張、はみ出しなし）してから、[cropX]・[cropY]・[newWidth]・
+  /// [newHeight]による切り出し／余白追加を行う。回転後の座標系では(0,0)は
+  /// 回転後の外接矩形の左上を表す。
   Future<void> resizeCanvas(
     String projectId, {
     required int newWidth,
     required int newHeight,
     required int cropX,
     required int cropY,
+    double angleDegrees = 0,
   }) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
@@ -2257,8 +2263,8 @@ class ProjectService extends ChangeNotifier {
       compositeCacheMax: _tileCacheBudget,
     );
 
-    final oldWidth = sourceTm.canvasWidth;
-    final oldHeight = sourceTm.canvasHeight;
+    final origWidth = sourceTm.canvasWidth;
+    final origHeight = sourceTm.canvasHeight;
     for (final key in sourceTm.exportAll().keys.toList()) {
       final image = await sourceTm.compositeLayerToImage(key);
       final byteData = await image.toByteData(
@@ -2266,7 +2272,25 @@ class ProjectService extends ChangeNotifier {
       );
       image.dispose();
       if (byteData == null) continue;
-      final oldBytes = byteData.buffer.asUint8List();
+      Uint8List oldBytes = byteData.buffer.asUint8List();
+      int oldWidth = origWidth;
+      int oldHeight = origHeight;
+      if (angleDegrees != 0) {
+        final rotated = img.copyRotate(
+          img.Image.fromBytes(
+            width: origWidth,
+            height: origHeight,
+            bytes: oldBytes.buffer,
+            numChannels: 4,
+            order: img.ChannelOrder.rgba,
+          ),
+          angle: angleDegrees,
+          interpolation: img.Interpolation.cubic,
+        );
+        oldWidth = rotated.width;
+        oldHeight = rotated.height;
+        oldBytes = rotated.getBytes(order: img.ChannelOrder.rgba);
+      }
       final newBytes = Uint8List(newWidth * newHeight * 4);
       for (int y = 0; y < newHeight; y++) {
         final srcY = y + cropY;

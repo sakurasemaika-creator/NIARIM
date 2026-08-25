@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:audioplayers/audioplayers.dart' as ap;
@@ -4988,169 +4989,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
-  /// キャンバスサイズ変更ダイアログ（タイムライン三点メニュー）。現在の
-  /// フレームのプレビュー上に、新しいキャンバスサイズに対応する矩形を
-  /// 重ねて表示し、指でドラッグして切り出し位置を直感的に調整できる
-  /// ようにする（幅・高さ自体は下のスライダー・数値入力で指定する）。
+  /// キャンバスサイズ変更ダイアログ（タイムライン三点メニュー）。
   void _showCanvasSizeChangeDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    final ps = context.read<ProjectService>();
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    final ps = context.read<ProjectService>();
     final project = ps.projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
     if (project == null) return;
-    final oldW = project.drawingWidth;
-    final oldH = project.drawingHeight;
-    int newW = oldW;
-    int newH = oldH;
-    // 既定は中央寄せ（サイズを変えなければcropX/Y=0で全域そのまま）。
-    int cropX = 0;
-    int cropY = 0;
-    const maxEdge = 4096;
-    const previewBoxSize = 260.0;
-
-    void clampCrop() {
-      cropX = cropX.clamp(0, (oldW - newW).clamp(0, 1 << 30));
-      cropY = cropY.clamp(0, (oldH - newH).clamp(0, 1 << 30));
-    }
-
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) {
-          final scale = previewBoxSize / (oldW > oldH ? oldW : oldH);
-          final boxW = oldW * scale;
-          final boxH = oldH * scale;
-          return AlertDialog(
-            title: Text(l10n.timelineCanvasSizeChangeMenuItem),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.timelineCanvasSizeDragHint,
-                    style: const TextStyle(fontSize: 11),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  // プレビュー：実際のフレーム内容の上に、新サイズの範囲を
-                  // 示す枠を重ねてドラッグで移動できるようにする。
-                  SizedBox(
-                    width: boxW,
-                    height: boxH,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: _TimelinePreview(
-                            tileManager: ps.tileManagerOf(widget.projectId),
-                            layers: ps.layersOf(
-                              widget.projectId,
-                              sceneId,
-                              _currentFrame,
-                            ),
-                            sceneId: sceneId,
-                            frameIndex: _currentFrame,
-                            cameraKeyframes: ps.cameraKeyframesOf(
-                              widget.projectId,
-                              sceneId,
-                            ),
-                            effectFilters: ps.effectFiltersOf(
-                              widget.projectId,
-                              sceneId,
-                            ),
-                            layerHomes: ps.layerHomesOf(widget.projectId),
-                            groups: ps.layerGroupsOf(widget.projectId, sceneId),
-                          ),
-                        ),
-                        Positioned(
-                          left: cropX * scale,
-                          top: cropY * scale,
-                          width: newW * scale,
-                          height: newH * scale,
-                          child: GestureDetector(
-                            onPanUpdate: (d) => setS(() {
-                              cropX += (d.delta.dx / scale).round();
-                              cropY += (d.delta.dy / scale).round();
-                              clampCrop();
-                            }),
-                            child: Builder(
-                              builder: (context) {
-                                // 色固定にせず、更新マーク（❗）やフレーム現在地の
-                                // 赤枠と同じ「目立たせる」役割の色（テーマの
-                                // updateMarkColor）に揃える。
-                                final markColor = context
-                                    .watch<ThemeService>()
-                                    .current
-                                    .updateMarkColor;
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: markColor,
-                                      width: 2,
-                                    ),
-                                    color: markColor.withValues(alpha: 0.15),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(l10n.newProjectWidthShort),
-                  SteppedSlider(
-                    min: 64,
-                    max: maxEdge.toDouble(),
-                    value: newW.clamp(64, maxEdge).toDouble(),
-                    label: '${newW}px',
-                    onChanged: (v) => setS(() {
-                      newW = v.round();
-                      clampCrop();
-                    }),
-                  ),
-                  Text(l10n.newProjectHeightShort),
-                  SteppedSlider(
-                    min: 64,
-                    max: maxEdge.toDouble(),
-                    value: newH.clamp(64, maxEdge).toDouble(),
-                    label: '${newH}px',
-                    onChanged: (v) => setS(() {
-                      newH = v.round();
-                      clampCrop();
-                    }),
-                  ),
-                  Text(
-                    '$newW × $newH px',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  await ps.resizeCanvas(
-                    widget.projectId,
-                    newWidth: newW,
-                    newHeight: newH,
-                    cropX: cropX,
-                    cropY: cropY,
-                  );
-                },
-                child: Text(l10n.commonOk),
-              ),
-            ],
-          );
-        },
+      builder: (_) => _CanvasSizeChangeDialog(
+        projectId: widget.projectId,
+        sceneId: sceneId,
+        frameIndex: _currentFrame,
+        oldWidth: project.drawingWidth,
+        oldHeight: project.drawingHeight,
       ),
     );
   }
@@ -5402,6 +5257,333 @@ class _TimelineScreenState extends State<TimelineScreen> {
 }
 
 enum _AutofillScope { currentFrame, currentScene, allScenes }
+
+// ─── キャンバスサイズ変更ダイアログ ───────────────────────────────────────
+
+enum _CropCorner { topLeft, topRight, bottomLeft, bottomRight }
+
+/// キャンバスサイズ変更ダイアログの本体。現在のフレームのプレビュー上に、
+/// 新しいキャンバスサイズに対応する矩形を重ねて表示する。矩形の内側を
+/// ドラッグすると位置を、四隅のハンドルをドラッグするとサイズを変更でき、
+/// 元のサイズ付近ではスナップする。幅・高さ・角度はスライダーでも指定
+/// できる（角度を指定すると、まず画像全体をその角度で回転してから、
+/// 幅・高さ・位置で指定した範囲を切り出す）。
+class _CanvasSizeChangeDialog extends StatefulWidget {
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final int oldWidth;
+  final int oldHeight;
+
+  const _CanvasSizeChangeDialog({
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.oldWidth,
+    required this.oldHeight,
+  });
+
+  @override
+  State<_CanvasSizeChangeDialog> createState() =>
+      _CanvasSizeChangeDialogState();
+}
+
+class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
+  static const int _minEdge = 64;
+  // 新規プロジェクト作成画面のカスタムサイズ上限（Full HD相当）に揃える。
+  static const int _maxEdge = 1920;
+  static const double _previewBoxSize = 260.0;
+  static const double _handleSize = 22.0;
+  // ドラッグでのサイズ・位置変更が、変更前の値からこの範囲内に収まったら
+  // ぴったり元の値へスナップする（キャンバス座標単位）。
+  static const int _snapPx = 12;
+
+  late int newW = widget.oldWidth;
+  late int newH = widget.oldHeight;
+  int cropX = 0;
+  int cropY = 0;
+  double angle = 0;
+
+  /// 回転を適用する場合の外接矩形サイズ（回転なしなら元のキャンバス
+  /// サイズそのもの）。切り出し座標（cropX/cropY）はこの矩形の左上を
+  /// 基準にする。
+  (double, double) get _refSize {
+    if (angle == 0) {
+      return (widget.oldWidth.toDouble(), widget.oldHeight.toDouble());
+    }
+    final rad = angle * math.pi / 180;
+    final ca = math.cos(rad).abs();
+    final sa = math.sin(rad).abs();
+    final w = widget.oldWidth * ca + widget.oldHeight * sa;
+    final h = widget.oldWidth * sa + widget.oldHeight * ca;
+    return (w, h);
+  }
+
+  void _dragMove(Offset deltaCanvas) {
+    setState(() {
+      cropX += deltaCanvas.dx.round();
+      cropY += deltaCanvas.dy.round();
+      if (cropX.abs() <= _snapPx) cropX = 0;
+      if (cropY.abs() <= _snapPx) cropY = 0;
+    });
+  }
+
+  void _dragCorner(_CropCorner corner, Offset deltaCanvas) {
+    final dx = deltaCanvas.dx.round();
+    final dy = deltaCanvas.dy.round();
+    setState(() {
+      switch (corner) {
+        case _CropCorner.topLeft:
+          final fixedRight = cropX + newW;
+          final fixedBottom = cropY + newH;
+          var w = fixedRight - (cropX + dx);
+          var h = fixedBottom - (cropY + dy);
+          if ((w - widget.oldWidth).abs() <= _snapPx) w = widget.oldWidth;
+          if ((h - widget.oldHeight).abs() <= _snapPx) h = widget.oldHeight;
+          newW = w.clamp(_minEdge, _maxEdge);
+          newH = h.clamp(_minEdge, _maxEdge);
+          cropX = fixedRight - newW;
+          cropY = fixedBottom - newH;
+        case _CropCorner.topRight:
+          final fixedBottom = cropY + newH;
+          var w = newW + dx;
+          var h = fixedBottom - (cropY + dy);
+          if ((w - widget.oldWidth).abs() <= _snapPx) w = widget.oldWidth;
+          if ((h - widget.oldHeight).abs() <= _snapPx) h = widget.oldHeight;
+          newW = w.clamp(_minEdge, _maxEdge);
+          newH = h.clamp(_minEdge, _maxEdge);
+          cropY = fixedBottom - newH;
+        case _CropCorner.bottomLeft:
+          final fixedRight = cropX + newW;
+          var w = fixedRight - (cropX + dx);
+          var h = newH + dy;
+          if ((w - widget.oldWidth).abs() <= _snapPx) w = widget.oldWidth;
+          if ((h - widget.oldHeight).abs() <= _snapPx) h = widget.oldHeight;
+          newW = w.clamp(_minEdge, _maxEdge);
+          newH = h.clamp(_minEdge, _maxEdge);
+          cropX = fixedRight - newW;
+        case _CropCorner.bottomRight:
+          var w = newW + dx;
+          var h = newH + dy;
+          if ((w - widget.oldWidth).abs() <= _snapPx) w = widget.oldWidth;
+          if ((h - widget.oldHeight).abs() <= _snapPx) h = widget.oldHeight;
+          newW = w.clamp(_minEdge, _maxEdge);
+          newH = h.clamp(_minEdge, _maxEdge);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.watch<ProjectService>();
+    final markColor = context.watch<ThemeService>().current.updateMarkColor;
+    final scheme = Theme.of(context).colorScheme;
+
+    final (refW, refH) = _refSize;
+    // プレビュー全体は「元のキャンバス（回転適用後の外接矩形）」と
+    // 「新サイズの枠」の両方を含む範囲を基準にスケールする。これにより
+    // 枠を元のキャンバスより外へ広げても、プレビュー内に収まって見える。
+    final unionLeft = math.min(0.0, cropX.toDouble());
+    final unionTop = math.min(0.0, cropY.toDouble());
+    final unionRight = math.max(refW, cropX + newW.toDouble());
+    final unionBottom = math.max(refH, cropY + newH.toDouble());
+    final unionW = unionRight - unionLeft;
+    final unionH = unionBottom - unionTop;
+    final scale = _previewBoxSize / math.max(unionW, unionH);
+    final boxW = unionW * scale;
+    final boxH = unionH * scale;
+
+    final refLeft = (0 - unionLeft) * scale;
+    final refTop = (0 - unionTop) * scale;
+    final refBoxW = refW * scale;
+    final refBoxH = refH * scale;
+    final artworkW = widget.oldWidth * scale;
+    final artworkH = widget.oldHeight * scale;
+    final artworkLeft = refLeft + refBoxW / 2 - artworkW / 2;
+    final artworkTop = refTop + refBoxH / 2 - artworkH / 2;
+
+    final cropLeft = (cropX - unionLeft) * scale;
+    final cropTop = (cropY - unionTop) * scale;
+    final cropW = newW * scale;
+    final cropH = newH * scale;
+
+    Widget cornerHandle(_CropCorner corner, double left, double top) =>
+        Positioned(
+          left: left - _handleSize / 2,
+          top: top - _handleSize / 2,
+          width: _handleSize,
+          height: _handleSize,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanUpdate: (d) => _dragCorner(corner, d.delta / scale),
+            child: Container(
+              decoration: BoxDecoration(
+                color: markColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+        );
+
+    return AlertDialog(
+      title: Text(l10n.timelineCanvasSizeChangeMenuItem),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.timelineCanvasSizeDragHint,
+              style: const TextStyle(fontSize: 11),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: boxW,
+              height: boxH,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // 回転前のキャンバスの外接矩形（回転時のみ薄く表示する参考枠）。
+                  if (angle != 0)
+                    Positioned(
+                      left: refLeft,
+                      top: refTop,
+                      width: refBoxW,
+                      height: refBoxH,
+                      child: IgnorePointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: scheme.outline.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    left: artworkLeft,
+                    top: artworkTop,
+                    width: artworkW,
+                    height: artworkH,
+                    child: IgnorePointer(
+                      child: Transform.rotate(
+                        angle: angle * math.pi / 180,
+                        child: _TimelinePreview(
+                          tileManager: ps.tileManagerOf(widget.projectId),
+                          layers: ps.layersOf(
+                            widget.projectId,
+                            widget.sceneId,
+                            widget.frameIndex,
+                          ),
+                          sceneId: widget.sceneId,
+                          frameIndex: widget.frameIndex,
+                          cameraKeyframes: ps.cameraKeyframesOf(
+                            widget.projectId,
+                            widget.sceneId,
+                          ),
+                          effectFilters: ps.effectFiltersOf(
+                            widget.projectId,
+                            widget.sceneId,
+                          ),
+                          layerHomes: ps.layerHomesOf(widget.projectId),
+                          groups: ps.layerGroupsOf(
+                            widget.projectId,
+                            widget.sceneId,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 新キャンバスサイズの範囲を示す枠。枠内をドラッグすると位置
+                  // （cropX/cropY）を、四隅のハンドルをドラッグするとサイズ
+                  // （newW/newH）を変更できる。
+                  Positioned(
+                    left: cropLeft,
+                    top: cropTop,
+                    width: cropW,
+                    height: cropH,
+                    child: GestureDetector(
+                      onPanUpdate: (d) => _dragMove(d.delta / scale),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: markColor, width: 2),
+                          color: markColor.withValues(alpha: 0.15),
+                        ),
+                      ),
+                    ),
+                  ),
+                  cornerHandle(_CropCorner.topLeft, cropLeft, cropTop),
+                  cornerHandle(_CropCorner.topRight, cropLeft + cropW, cropTop),
+                  cornerHandle(
+                    _CropCorner.bottomLeft,
+                    cropLeft,
+                    cropTop + cropH,
+                  ),
+                  cornerHandle(
+                    _CropCorner.bottomRight,
+                    cropLeft + cropW,
+                    cropTop + cropH,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(l10n.newProjectWidthShort),
+            SteppedSlider(
+              min: _minEdge.toDouble(),
+              max: _maxEdge.toDouble(),
+              value: newW.clamp(_minEdge, _maxEdge).toDouble(),
+              label: '${newW}px',
+              onChanged: (v) => setState(() => newW = v.round()),
+            ),
+            Text(l10n.newProjectHeightShort),
+            SteppedSlider(
+              min: _minEdge.toDouble(),
+              max: _maxEdge.toDouble(),
+              value: newH.clamp(_minEdge, _maxEdge).toDouble(),
+              label: '${newH}px',
+              onChanged: (v) => setState(() => newH = v.round()),
+            ),
+            Text(l10n.timelineCanvasSizeAngleLabel),
+            SteppedSlider(
+              min: -180,
+              max: 180,
+              value: angle,
+              label: '${angle.round()}°',
+              onChanged: (v) => setState(() => angle = v.abs() <= 2 ? 0 : v),
+            ),
+            Text(
+              '$newW × $newH px',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            await context.read<ProjectService>().resizeCanvas(
+              widget.projectId,
+              newWidth: newW,
+              newHeight: newH,
+              cropX: cropX,
+              cropY: cropY,
+              angleDegrees: angle,
+            );
+          },
+          child: Text(l10n.commonOk),
+        ),
+      ],
+    );
+  }
+}
 
 // ─── タイムラインプレビューウィジェット ───────────────────────────────────
 
