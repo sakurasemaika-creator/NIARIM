@@ -84,8 +84,8 @@ class _SplashScreenState extends State<SplashScreen> {
     );
     final logo = SvgPicture.asset(
       'assets/logo/app_logo.svg',
-      width: 160,
-      height: 160,
+      width: 110,
+      height: 110,
     );
 
     // 縦画面はロゴを挟んで上下にボタンを積む構成、横画面は画面の縦幅が
@@ -96,9 +96,9 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               communityButton,
-              const SizedBox(width: 64),
+              const SizedBox(width: 40),
               logo,
-              const SizedBox(width: 64),
+              const SizedBox(width: 40),
               createButton,
             ],
           )
@@ -106,19 +106,25 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               communityButton,
-              const SizedBox(height: 72),
+              const SizedBox(height: 40),
               logo,
-              const SizedBox(height: 72),
+              const SizedBox(height: 40),
               createButton,
             ],
           );
+
+    // Android標準のナビゲーションバー（戻る・ホーム・タブ一覧）の高さぶん、
+    // SafeAreaの余白に加えてさらに下部の余白を確保する。端末・OSバージョン
+    // によってはSafeAreaだけではジェスチャーナビゲーションバーの領域を
+    // 十分に避けきれない場合があるための保険。
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),
             child: content,
           ),
         ),
@@ -154,11 +160,11 @@ class _SplashActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         onTap: onTap,
         child: Container(
-          width: 200,
-          height: 200,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          width: 150,
+          height: 150,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
               colors: colors,
               begin: Alignment.topLeft,
@@ -168,14 +174,14 @@ class _SplashActionButton extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 84),
-              const SizedBox(height: 16),
+              Icon(icon, color: Colors.white, size: 60),
+              const SizedBox(height: 12),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
                 ),
