@@ -131,6 +131,7 @@ class _ExportScreenState extends State<ExportScreen> {
                 RadioListTile(title: Text(l10n.exportFormatMp4), subtitle: Text(l10n.exportFormatMp4Subtitle), value: ExportFormat.mp4),
                 RadioListTile(title: Text(l10n.exportFormatGif), subtitle: Text(l10n.exportFormatGifSubtitle), value: ExportFormat.gif),
                 RadioListTile(title: Text(l10n.helpTransparentWebmTitle), subtitle: Text(l10n.exportFormatWebmSubtitle), value: ExportFormat.webm),
+                RadioListTile(title: Text(l10n.exportFormatAvi), subtitle: Text(l10n.exportFormatAviSubtitle), value: ExportFormat.avi),
               ],
             ),
           ),
@@ -194,7 +195,9 @@ class _ExportScreenState extends State<ExportScreen> {
       // 自動追加する。mp4/webmとも、動画の結合ではなく
       // フレーム生成の段階で末尾へ焼き込む（endcard_frame参照）。
       final shouldAppendEndCard = !premiumService.isPremium &&
-          (_format == ExportFormat.mp4 || _format == ExportFormat.webm);
+          (_format == ExportFormat.mp4 ||
+              _format == ExportFormat.webm ||
+              _format == ExportFormat.avi);
 
       String outputPath;
       switch (_format) {
@@ -227,6 +230,20 @@ class _ExportScreenState extends State<ExportScreen> {
           );
         case ExportFormat.webm:
           outputPath = await engine.exportWebm(
+            scenes: scenes,
+            tileManager: tileManager,
+            fps: _fps,
+            drawingWidth: project.drawingWidth,
+            drawingHeight: project.drawingHeight,
+            width: project.exportWidth,
+            height: project.exportHeight,
+            backgroundColor: project.backgroundColor,
+            appendEndCard: shouldAppendEndCard,
+            onProgress: onProgress,
+            cancelToken: cancelToken,
+          );
+        case ExportFormat.avi:
+          outputPath = await engine.exportAvi(
             scenes: scenes,
             tileManager: tileManager,
             fps: _fps,
@@ -384,5 +401,5 @@ class _ExportScreenState extends State<ExportScreen> {
   }
 }
 
-enum ExportFormat { mp4, gif, webm }
+enum ExportFormat { mp4, gif, webm, avi }
 enum ExportPreset { standard, highQuality, custom }

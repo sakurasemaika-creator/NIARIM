@@ -593,7 +593,7 @@
   "helpTransferTitle": "引き継ぎ（.niatra）",
   "helpTransferDesc": "設定・素材・ブラシ・自動塗り設定・テーマなど、アプリ全体の環境を別の端末へまとめて引き継ぐための機能です。引き継ぐ項目はチェックボックスで個別に選べます。個別のプロジェクトを渡したい場合は「共有（.niashare）」を使います。",
   "helpVideoExportTitle": "動画書き出し（MP4・WebM・GIF）",
-  "helpVideoExportDesc": "作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。",
+  "helpVideoExportDesc": "作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。特許・ライセンス面で安全なコーデックを採用していますが、アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。",
   "helpTransparentWebmTitle": "透過WebM",
   "helpWatermarkEntryTitle": "ウォーターマーク",
   "helpWatermarkEntryDesc": "書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。",
@@ -797,7 +797,7 @@
   "licenseSectionOss": "オープンソースソフトウェアライセンス",
   "licenseOssListTitle": "使用ライブラリのライセンス一覧",
   "licenseOssListSubtitle": "本アプリが使用するOSSパッケージのライセンスを表示します",
-  "licenseFfmpegNote": "WebM書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、FFmpegは使用していません。",
+  "licenseFfmpegNote": "WebM・AVI書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、FFmpegは使用していません。",
   "licenseFontCreditMeta": "作者：{author}　ライセンス：{license}",
   "@licenseFontCreditMeta": {
     "placeholders": {
@@ -955,6 +955,8 @@
   "exportFormatGif": "GIF",
   "exportFormatGifSubtitle": "アニメーションGIF",
   "exportFormatWebmSubtitle": "透明背景動画",
+  "exportFormatAvi": "AVI",
+  "exportFormatAviSubtitle": "互換性重視の動画形式（透過非対応）",
   "exportStartButton": "書き出し開始",
   "exportProjectNotFoundError": "プロジェクトが見つかりません",
   "exportFailedError": "書き出し失敗: {error}",

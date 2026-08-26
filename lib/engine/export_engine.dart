@@ -446,4 +446,92 @@ class ExportEngine {
     framesDir.deleteSync(recursive: true);
     return outputPath;
   }
+
+  /// AVI書き出し（Motion JPEG）。コーデックにはFFmpeg本体が内蔵する
+  /// mjpegエンコーダーを使う（外部GPLライブラリへのリンクを必要とせず、
+  /// `ffmpeg_kit_flutter_new_video`のLGPL版に標準で含まれる）。AVIで
+  /// 一般的なMPEG-4 Part 2（`mpeg4`コーデック）はMPEG LAの特許プールの
+  /// 対象になり得るため避け、古くから広く使われロイヤリティに関する
+  /// 訴訟実務上の懸念が実質的に生じていないMotion JPEGを選んだ
+  /// （MP4のH.264を避けた際と同じ考え方）。MJPEGは各フレームを独立した
+  /// JPEG画像として符号化するためアルファチャンネルは保持できない
+  /// （透過が必要な場合は透過WebMを使う）。[appendEndCard]の扱いはMP4と
+  /// 同様（無料版のみ、フレーム生成の段階で末尾へ焼き込む）。
+  Future<String> exportAvi({
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    required int fps,
+    required int drawingWidth,
+    required int drawingHeight,
+    required int width,
+    required int height,
+    required int backgroundColor,
+    bool appendEndCard = false,
+    ExportProgressCallback? onProgress,
+    ExportCancelToken? cancelToken,
+  }) async {
+    final tmpDir = await getTemporaryDirectory();
+    final framesDir = Directory('${tmpDir.path}/export_avi_frames');
+    if (framesDir.existsSync()) framesDir.deleteSync(recursive: true);
+    framesDir.createSync();
+
+    int globalIndex = 0;
+    int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+    final layerHomes = buildLayerHomeIndex(scenes);
+
+    for (final scene in scenes) {
+      for (final frame in scene.frames) {
+        if (cancelToken?.isCancelled == true) {
+          framesDir.deleteSync(recursive: true);
+          throw const ExportCancelledException();
+        }
+        final rgba = await renderFrame(
+          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
+          tileManager: tileManager,
+          sceneId: scene.id,
+          frameIndex: frame.index,
+          drawingWidth: drawingWidth,
+          drawingHeight: drawingHeight,
+          width: width,
+          height: height,
+          backgroundColor: backgroundColor,
+          cameraKeyframes: scene.cameraKeyframes,
+          effectFilters: scene.effectFilters,
+          layerHomes: layerHomes,
+          groups: scene.groups,
+        );
+        final pngBytes = img.encodePng(
+          img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
+        );
+        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
+        await file.writeAsBytes(pngBytes);
+        onProgress?.call(globalIndex + 1, totalFrames);
+        globalIndex++;
+      }
+    }
+
+    if (appendEndCard) {
+      final endCardBytes = await _renderEndCardPng(width: width, height: height);
+      for (int i = 0; i < fps * 5; i++) {
+        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
+        await file.writeAsBytes(endCardBytes);
+        globalIndex++;
+      }
+    }
+
+    final exportsDir = await ExportEngine.exportsDir();
+    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.avi';
+    // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
+    // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
+    final session = await FFmpegKit.execute(
+      '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
+      '-c:v mjpeg -pix_fmt yuvj420p -q:v 3 "$outputPath"',
+    );
+    final rc = await session.getReturnCode();
+    if (!ReturnCode.isSuccess(rc)) {
+      throw Exception('FFmpeg failed: ${await session.getOutput()}');
+    }
+    framesDir.deleteSync(recursive: true);
+    return outputPath;
+  }
 }
