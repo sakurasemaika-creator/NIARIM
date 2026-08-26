@@ -576,6 +576,52 @@ void main() {
     timeout: const Timeout(Duration(seconds: 60)),
   );
 
+  testWidgets(
+    '起動→新規プロジェクト作成→キャンバス→タイムラインの各種パネルを'
+    '例外なく操作できる',
+    (WidgetTester tester) async {
+      // キャンバス・タイムライン画面本体は、実際の描画入力（onPointerDown等の
+      // 生のPointerイベント）を独自Listenerで受けているため、probeAllControls
+      // の対象型（ボタン・ListTile・onTapを持つGestureDetector等）には
+      // そもそも一致せず、誤って「描画」してしまう心配は無い。ドラッグ専用の
+      // ハンドル（定規操作・メッシュ変形・パネル区切り線等）もonTapを
+      // 持たないためisDisabledControlで除外される。ただし念のため、この
+      // シナリオは既存の主要遷移テストとは独立させ、万一不安定になっても
+      // 他のテストへ影響しないようにしている。
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      await probeAllControls(tester, maxSteps: 40);
+
+      final projectId = tester
+          .element(find.byType(Scaffold).first)
+          .read<ProjectService>()
+          .projects
+          .first
+          .id;
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).go('/timeline/$projectId');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+
+      await probeAllControls(tester, maxSteps: 40);
+    },
+    timeout: const Timeout(Duration(seconds: 120)),
+  );
+
   testWidgets('起動画面→コミュニティ画面まで例外なく遷移できる', (WidgetTester tester) async {
     setPhoneViewSize(tester);
     final providers = await tester.runAsync(buildAppProviders);

@@ -128,7 +128,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 心配がない）。自由変形/メッシュ変形パネルのみキャンバス上の格子点
   /// 操作と直接絡むため、画面サイズによらず引き続き排他のままにする。
   void _closeAllOverlayPanels() {
-    if (!isWideScreen(context)) {
+    // イベントハンドラ（onPressed経由）から呼ばれるため、build外での
+    // watch()回避のためlisten:falseを渡す。
+    if (!isWideScreen(context, listen: false)) {
       _showLayerPanel = false;
       _showColorPicker = false;
       _showBrushPanel = false;

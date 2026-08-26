@@ -8,8 +8,12 @@ import '../services/settings_service.dart';
 /// デバイス接続を検知している（SettingsService.hasNonTouchPointer、
 /// app.dartのListenerがポインターイベントのkindを渡して更新する）ときの
 /// みPCモードとし、それ以外は常にスマホモードとする。
-bool isWideScreen(BuildContext context) {
-  final settings = context.watch<SettingsService>();
+/// [listen]は既定でtrue（build時の使用を想定し、設定変更時に再ビルド
+/// される）。イベントハンドラ（onPressed等）から呼ぶ場合はfalseを渡す
+/// こと（build外でwatch()すると例外になる）。
+bool isWideScreen(BuildContext context, {bool listen = true}) {
+  final settings =
+      listen ? context.watch<SettingsService>() : context.read<SettingsService>();
   final forced = settings.forcePcMode;
   if (forced != null) return forced;
   final size = MediaQuery.sizeOf(context);
@@ -23,8 +27,12 @@ bool isWideScreen(BuildContext context) {
 /// その時点の画面が横向き（幅>高さ）のときのみ表示する。これにより、
 /// 普段スマホ（縦画面）で使っているユーザーが、液タブへ接続してDeX
 /// モード等で横画面になった際に自動でツールが現れるようにする。
-bool canShowPanTool(BuildContext context) {
-  final forced = context.watch<SettingsService>().forcePcMode;
+/// [listen]は既定でtrue。isWideScreen同様、イベントハンドラから呼ぶ
+/// 場合はfalseを渡すこと。
+bool canShowPanTool(BuildContext context, {bool listen = true}) {
+  final settings =
+      listen ? context.watch<SettingsService>() : context.read<SettingsService>();
+  final forced = settings.forcePcMode;
   if (forced == false) return false;
   final size = MediaQuery.sizeOf(context);
   return size.width > size.height;
