@@ -2286,6 +2286,16 @@
   "communityScreenTitle": "Everyone's Works",
   "communityTabNew": "New",
   "communityTabRanking": "Ranking",
+  "communitySearchHint": "Search by title or username",
+  "communityEmptyState": "No works to show",
+  "communitySearchNoResults": "No works matched \"{query}\"",
+  "@communitySearchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "communityPostButton": "Post",
   "communityPostComingSoonTitle": "Posting is coming soon",
   "communityPostComingSoonBody": "Video posting is still under development. Stay tuned for future updates.",

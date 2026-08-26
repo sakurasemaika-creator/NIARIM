@@ -31,6 +31,14 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   final Set<String> _bookmarkedIds = {};
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.views;
+  // 作品タイトル・投稿者名のいずれかに一致する作品へ絞り込む検索。
+  // バックエンド未実装のため、現状はこの画面が保持するダミーデータへの
+  // クライアント側フィルタとして実装している（実データ接続時は
+  // 29_動画投稿・ランキング機能仕様.mdの一覧系エンドポイントへ検索
+  // クエリパラメータを追加する形になる想定）。
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -42,11 +50,24 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  List<CommunityWork> get _newArrivals =>
-      [..._allWorks]..sort((a, b) => b.postedAt.compareTo(a.postedAt));
+  /// タイトル・投稿者名のいずれかに検索語を含む作品のみへ絞り込む
+  /// （大小文字を区別しない部分一致）。検索語が空のときは全件通す。
+  List<CommunityWork> _applySearch(List<CommunityWork> works) {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return works;
+    return works
+        .where((w) =>
+            w.title.toLowerCase().contains(query) ||
+            w.authorName.toLowerCase().contains(query))
+        .toList();
+  }
+
+  List<CommunityWork> get _newArrivals => _applySearch(
+      [..._allWorks]..sort((a, b) => b.postedAt.compareTo(a.postedAt)));
 
   /// 期間フィルターに応じたダミーの対象作品を絞り込む。実データでは
   /// バックエンド側で期間別の再生数を集計するが、ここでは投稿日時のみで
@@ -66,9 +87,10 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
       case _RankingPeriod.daily:
         window = const Duration(days: 1);
     }
-    final filtered = window == null
-        ? [..._allWorks]
-        : _allWorks.where((w) => now.difference(w.postedAt) <= window!).toList();
+    final windowed = window == null
+        ? _allWorks
+        : _allWorks.where((w) => now.difference(w.postedAt) <= window!);
+    final filtered = _applySearch(windowed.toList());
     filtered.sort((a, b) => _sort == _RankingSort.views
         ? b.viewCount.compareTo(a.viewCount)
         : b.bookmarkCount.compareTo(a.bookmarkCount));
@@ -348,7 +370,35 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.communityScreenTitle),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.communitySearchHint,
+                  border: InputBorder.none,
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
+              )
+            : Text(l10n.communityScreenTitle),
+        actions: [
+          if (_isSearching)
+            IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: l10n.commonClose,
+              onPressed: () => setState(() {
+                _isSearching = false;
+                _searchQuery = '';
+                _searchController.clear();
+              }),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.search),
+              tooltip: l10n.commonSearch,
+              onPressed: () => setState(() => _isSearching = true),
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -367,15 +417,19 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         TabBarView(
           controller: _tabController,
           children: [
-            SingleChildScrollView(
-              child: CommunityWorkGrid(
-                works: _newArrivals,
-                bookmarkedIds: _bookmarkedIds,
-                onTapWork: _openWorkDetail,
-                onToggleBookmark: _toggleBookmark,
-                onTapAuthor: _openAuthorWorks,
-              ),
-            ),
+            Builder(builder: (context) {
+              final works = _newArrivals;
+              if (works.isEmpty) return _buildSearchEmptyState(l10n);
+              return SingleChildScrollView(
+                child: CommunityWorkGrid(
+                  works: works,
+                  bookmarkedIds: _bookmarkedIds,
+                  onTapWork: _openWorkDetail,
+                  onToggleBookmark: _toggleBookmark,
+                  onTapAuthor: _openAuthorWorks,
+                ),
+              );
+            }),
             SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -417,6 +471,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                   ),
                   Builder(builder: (context) {
                     final ranked = _rankingWorks;
+                    if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
                     final rankNumbers = {
                       for (int i = 0; i < ranked.length; i++) ranked[i].id: i + 1,
                     };
@@ -431,6 +486,30 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                   }),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 検索・期間絞り込みの結果、表示する作品が0件になった場合のプレース
+  /// ホルダー。検索語が入力されている場合は「該当なし」の案内を、
+  /// それ以外（期間フィルターのみで0件等）は汎用の空表示を出す。
+  Widget _buildSearchEmptyState(AppLocalizations l10n) {
+    final query = _searchQuery.trim();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_off, size: 40, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            const SizedBox(height: 12),
+            Text(
+              query.isEmpty ? l10n.communityEmptyState : l10n.communitySearchNoResults(query),
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ],
         ),

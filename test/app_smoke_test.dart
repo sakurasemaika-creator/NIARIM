@@ -718,6 +718,64 @@ void main() {
     await probeAllControls(tester);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
+  testWidgets(
+    'コミュニティ画面：作品タイトル・投稿者名のいずれでも検索絞り込みできる',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      expect(communityButtonFinder, findsOneWidget);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+
+      // 絞り込み前は複数件のカードが表示されている（ダミーデータは24件）。
+      final cardCountBefore = find.byType(CommunityWorkCard).evaluate().length;
+
+      // 検索を開いて、ダミーデータの投稿者名の一部（'sakura_draws'）で
+      // 検索する。作品タイトルでは一致しない語のため、投稿者名検索が
+      // 機能していることの確認になる。
+      final searchIconFinder = find.byIcon(Icons.search);
+      expect(searchIconFinder, findsOneWidget);
+      await tester.tap(searchIconFinder);
+      await tester.pump();
+
+      final searchFieldFinder = find.byType(TextField);
+      expect(searchFieldFinder, findsOneWidget);
+      await tester.enterText(searchFieldFinder, 'sakura_draws');
+      await tester.pump();
+      expect(tester.takeException(), isNull, reason: '投稿者名検索の絞り込みで例外');
+
+      // 絞り込み後は全件表示より少なくなっているはず（該当作者の作品のみ）。
+      final cardCountAfter = find.byType(CommunityWorkCard).evaluate().length;
+      expect(cardCountAfter, lessThan(cardCountBefore));
+      expect(cardCountAfter, greaterThan(0));
+
+      // 存在しない語で検索すると「該当なし」の空状態表示になる
+      // （クラッシュせず、CommunityWorkCard＝作品カードが0件になること）。
+      await tester.enterText(searchFieldFinder, 'このキーワードには絶対一致しない__zzz');
+      await tester.pump();
+      expect(tester.takeException(), isNull, reason: '該当なし検索の表示で例外');
+      expect(find.byIcon(Icons.search_off), findsOneWidget);
+
+      // 検索を閉じると全件表示に戻る。
+      final closeIconFinder = find.byIcon(Icons.close);
+      expect(closeIconFinder, findsOneWidget);
+      await tester.tap(closeIconFinder);
+      await tester.pump();
+      expect(tester.takeException(), isNull, reason: '検索クローズで例外');
+      final cardCountRestored = find.byType(CommunityWorkCard).evaluate().length;
+      expect(cardCountRestored, cardCountBefore);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
   testWidgets('起動→ホーム→ドロワー→有料会員画面まで例外なく遷移できる', (WidgetTester tester) async {
     await bootToHome(tester);
 

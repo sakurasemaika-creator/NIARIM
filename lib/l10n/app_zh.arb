@@ -2286,6 +2286,16 @@
   "communityScreenTitle": "大家的作品",
   "communityTabNew": "最新",
   "communityTabRanking": "排行榜",
+  "communitySearchHint": "按作品标题、投稿者名搜索",
+  "communityEmptyState": "暂无作品",
+  "communitySearchNoResults": "未找到与「{query}」匹配的作品",
+  "@communitySearchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "communityPostButton": "发布",
   "communityPostComingSoonTitle": "发布功能正在开发中",
   "communityPostComingSoonBody": "视频发布功能目前仍在开发中，敬请期待后续更新。",

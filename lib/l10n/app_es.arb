@@ -2286,6 +2286,16 @@
   "communityScreenTitle": "Obras de todos",
   "communityTabNew": "Novedades",
   "communityTabRanking": "Ranking",
+  "communitySearchHint": "Buscar por título o nombre de usuario",
+  "communityEmptyState": "No hay obras para mostrar",
+  "communitySearchNoResults": "No se encontraron obras que coincidan con «{query}»",
+  "@communitySearchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "communityPostButton": "Publicar",
   "communityPostComingSoonTitle": "La publicación estará disponible próximamente",
   "communityPostComingSoonBody": "La función de publicación de vídeos todavía está en desarrollo. Estate atento a futuras actualizaciones.",

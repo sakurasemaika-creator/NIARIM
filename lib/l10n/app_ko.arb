@@ -2286,6 +2286,16 @@
   "communityScreenTitle": "모두의 작품",
   "communityTabNew": "신착",
   "communityTabRanking": "랭킹",
+  "communitySearchHint": "작품 제목・투고자 이름으로 검색",
+  "communityEmptyState": "표시할 작품이 없습니다",
+  "communitySearchNoResults": "「{query}」에 해당하는 작품을 찾을 수 없습니다",
+  "@communitySearchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "communityPostButton": "게시하기",
   "communityPostComingSoonTitle": "게시 기능은 준비 중입니다",
   "communityPostComingSoonBody": "동영상 게시 기능은 아직 개발 중입니다. 다음 업데이트를 기대해 주세요.",
