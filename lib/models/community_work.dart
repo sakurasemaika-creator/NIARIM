@@ -1,5 +1,12 @@
 import 'dart:math';
 
+/// この画面には実際のログイン・ユーザー識別基盤（バックエンド未実装、
+/// `29_動画投稿・ランキング機能仕様.md`4章のNIARIM User ID）が無いため、
+/// 「投稿者のみタグをロックできる」という挙動をUI上で確認するための
+/// 仮の自分自身の投稿者IDとして扱う。実際のログイン機能実装後は、
+/// 認証済みのNIARIM User IDと`work.authorId`を比較する形に置き換える。
+const String kDummySelfAuthorId = 'author_01';
+
 /// みんなの作品画面で表示する投稿作品1件分のデータ。
 /// バックエンド（29_動画投稿・ランキング機能仕様.md）が未実装のため、
 /// 現段階ではUI・デザイン確認用のダミーデータのみを保持するモデル。
@@ -16,6 +23,11 @@ class CommunityWork {
   // サムネイル画像の代わりに表示するプレースホルダーの配色を選ぶための
   // インデックス（実際のサムネイル取得はバックエンド実装後に対応）。
   final int thumbnailColorIndex;
+  // ユーザーが自由に追加・削除できるタグ（誰でも編集可能）。
+  final List<String> tags;
+  // tagsのうち、投稿者がロックして他ユーザーが削除できないようにした
+  // タグの集合（tagsの部分集合）。
+  final Set<String> lockedTags;
 
   const CommunityWork({
     required this.id,
@@ -28,7 +40,26 @@ class CommunityWork {
     required this.postedAt,
     required this.durationSeconds,
     required this.thumbnailColorIndex,
+    this.tags = const [],
+    this.lockedTags = const {},
   });
+
+  CommunityWork copyWith({List<String>? tags, Set<String>? lockedTags}) {
+    return CommunityWork(
+      id: id,
+      title: title,
+      authorId: authorId,
+      authorName: authorName,
+      viewCount: viewCount,
+      likeCount: likeCount,
+      bookmarkCount: bookmarkCount,
+      postedAt: postedAt,
+      durationSeconds: durationSeconds,
+      thumbnailColorIndex: thumbnailColorIndex,
+      tags: tags ?? this.tags,
+      lockedTags: lockedTags ?? this.lockedTags,
+    );
+  }
 }
 
 /// 表示確認用のダミー作品一覧を生成する（バックエンド未実装のため）。
@@ -45,11 +76,21 @@ List<CommunityWork> buildDummyCommunityWorks() {
   ];
   final titleParts1 = ['夜明けの', '小さな', '静かな', '走れ', '約束の', '君だけの', '雨上がりの', '最後の'];
   final titleParts2 = ['冒険', '手紙', '約束', '街', '夏休み', 'メロディ', '記憶', '交差点'];
+  final tagPool = ['オリジナル', '手描き', 'コマ撮り風', 'ループ', 'BGMあり', '実験的', '風景', 'キャラクター'];
 
   return List.generate(24, (i) {
     final author = authors[i % authors.length];
     final title = '${titleParts1[i % titleParts1.length]}${titleParts2[(i * 3) % titleParts2.length]}';
     final views = 50 + random.nextInt(200000);
+    // 各作品に2〜3個のタグを割り当て、そのうち1個をロック状態にする
+    // （投稿者ロックの見た目上の挙動を確認できるようにするため）。
+    final tagCount = 2 + random.nextInt(2);
+    final tags = <String>{};
+    while (tags.length < tagCount) {
+      tags.add(tagPool[random.nextInt(tagPool.length)]);
+    }
+    final tagList = tags.toList();
+    final lockedTags = {tagList[random.nextInt(tagList.length)]};
     return CommunityWork(
       id: 'work_${i.toString().padLeft(3, '0')}',
       title: title,
@@ -61,6 +102,8 @@ List<CommunityWork> buildDummyCommunityWorks() {
       postedAt: DateTime.now().subtract(Duration(days: random.nextInt(400), hours: random.nextInt(24))),
       durationSeconds: 15 + random.nextInt(105),
       thumbnailColorIndex: i % 6,
+      tags: tagList,
+      lockedTags: lockedTags,
     );
   });
 }

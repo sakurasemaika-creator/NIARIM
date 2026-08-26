@@ -2296,6 +2296,15 @@
       }
     }
   },
+  "communityTagSearchHint": "依標籤搜尋",
+  "communityTagSearchModeOnTooltip": "標籤搜尋：開啟（點一下可恢復標題・投稿者名稱搜尋）",
+  "communityTagSearchModeOffTooltip": "切換為標籤搜尋",
+  "communityAddTagButton": "新增標籤",
+  "communityAddTagDialogTitle": "新增標籤",
+  "communityAddTagDialogHint": "請輸入標籤名稱",
+  "communityTagLockTooltip": "鎖定此標籤（僅限投稿者）",
+  "communityTagUnlockTooltip": "解除此標籤鎖定（僅限投稿者）",
+  "communityRemoveTagTooltip": "刪除此標籤",
   "communityPostButton": "發佈",
   "communityPostComingSoonTitle": "發佈功能正在開發中",
   "communityPostComingSoonBody": "影片發佈功能目前仍在開發中，敬請期待後續更新。",

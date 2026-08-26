@@ -2296,6 +2296,15 @@
       }
     }
   },
+  "communityTagSearchHint": "Buscar por etiqueta",
+  "communityTagSearchModeOnTooltip": "Búsqueda por etiqueta: ACTIVADA (toca para volver a buscar por título/usuario)",
+  "communityTagSearchModeOffTooltip": "Cambiar a búsqueda por etiqueta",
+  "communityAddTagButton": "Añadir etiqueta",
+  "communityAddTagDialogTitle": "Añadir etiqueta",
+  "communityAddTagDialogHint": "Introduce un nombre de etiqueta",
+  "communityTagLockTooltip": "Bloquear esta etiqueta (solo el autor)",
+  "communityTagUnlockTooltip": "Desbloquear esta etiqueta (solo el autor)",
+  "communityRemoveTagTooltip": "Eliminar esta etiqueta",
   "communityPostButton": "Publicar",
   "communityPostComingSoonTitle": "La publicación estará disponible próximamente",
   "communityPostComingSoonBody": "La función de publicación de vídeos todavía está en desarrollo. Estate atento a futuras actualizaciones.",

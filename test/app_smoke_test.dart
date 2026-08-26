@@ -776,6 +776,144 @@ void main() {
     timeout: const Timeout(Duration(seconds: 60)),
   );
 
+  testWidgets(
+    'コミュニティ画面：タグの追加・タップでの絞り込み・削除ができる',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // 最初の作品カードをタップして詳細シートを開く。
+      final workCardFinder = find.byType(CommunityWorkCard);
+      expect(workCardFinder, findsWidgets);
+      await tester.tap(workCardFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '作品詳細シート表示で例外');
+
+      // 「タグを追加」→ダイアログでタグ名を入力→OK。
+      const newTag = 'テスト用タグ__probe';
+      final addTagChipFinder = find.text('タグを追加');
+      expect(addTagChipFinder, findsOneWidget);
+      await tester.tap(addTagChipFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      final tagInputFinder = find.byType(TextField).last;
+      await tester.enterText(tagInputFinder, newTag);
+      await tester.tap(find.text('OK'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'タグ追加で例外');
+      expect(find.text(newTag), findsOneWidget, reason: '追加したタグがシートに表示されていない');
+
+      // 追加したタグ（一意な文字列のため該当作品は1件のみのはず）をタップし、
+      // タグ検索モードでの絞り込みへ遷移することを確認する。
+      await tester.tap(find.text(newTag));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'タグタップでの絞り込みで例外');
+      expect(find.byIcon(Icons.sell), findsOneWidget, reason: 'タグ検索モードに切り替わっていない');
+      expect(find.byType(CommunityWorkCard), findsOneWidget, reason: '一意なタグでの絞り込み件数が想定と異なる');
+
+      // 絞り込まれた唯一の作品カードを開き、追加したタグを削除できることを
+      // 確認する（新規タグなのでロックされておらず、削除ボタンが必ず出る）。
+      await tester.tap(find.byType(CommunityWorkCard).first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      // 検索中はAppBarの検索欄にも同じタグ文字列が入力されたままなので
+      // （EditableTextもテキストの一致対象になる）、find.text(newTag)は
+      // 単体では一意にならない。シート本体のSingleChildScrollView配下に
+      // 絞り込むことで、シート内のタグチップのTextだけを特定する。
+      final sheetScope = find.byType(SingleChildScrollView).last;
+      final tagTextInSheet = find.descendant(of: sheetScope, matching: find.text(newTag));
+      expect(tagTextInSheet, findsOneWidget, reason: '追加したタグがシートに表示されていない');
+      // タグチップ内部ではラベルのTextと削除ボタンが同じRowの直接の子と
+      // なっているため、最も近いRow祖先へ絞り込むことで、他のタグ
+      // （同じ作品に元から付いているダミータグ）の削除ボタンと混同せずに
+      // このタグ専用の削除ボタンだけを特定できる。
+      final removeButtonFinder = find.descendant(
+        of: find.ancestor(of: tagTextInSheet, matching: find.byType(Row)).first,
+        matching: find.byIcon(Icons.close),
+      );
+      expect(removeButtonFinder, findsOneWidget, reason: 'タグ削除ボタンが見つからない');
+      await tester.tap(removeButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'タグ削除で例外');
+      // AppBarの検索欄には削除後もタグ文字列のクエリが残ったままなので
+      // （find.text(newTag)単体では引き続きヒットする）、シート側だけを
+      // 見て削除できたことを確認する。
+      expect(
+        find.descendant(of: sheetScope, matching: find.text(newTag)),
+        findsNothing,
+        reason: '削除したはずのタグがまだシートに表示されている',
+      );
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    'コミュニティ画面：タグのロックは投稿者本人にのみ操作可能',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // kDummySelfAuthorId（'author_01'）に対応する投稿者名'あにめ工房ミラ'
+      // の作品を開く。この投稿者の作品にのみロック切り替えボタン
+      // （Icons.lock_open／ロック中タグのIcons.lock）が表示されるはず。
+      final selfAuthorCardFinder = find.widgetWithText(CommunityWorkCard, 'あにめ工房ミラ');
+      expect(selfAuthorCardFinder, findsWidgets);
+      await tester.tap(selfAuthorCardFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '投稿者本人の作品詳細シート表示で例外');
+
+      // ダミーデータは各作品に必ず1個ロック済みタグがあるため、
+      // ロック解除ボタン（Icons.lock_open）が最低1個は表示されるはず。
+      final unlockButtonFinder = find.byIcon(Icons.lock_open);
+      expect(unlockButtonFinder, findsWidgets, reason: '投稿者本人にロック切り替えボタンが表示されていない');
+      final unlockCountBefore = unlockButtonFinder.evaluate().length;
+
+      // 未ロックのタグを1つロックする。
+      await tester.tap(unlockButtonFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'タグロックの切り替えで例外');
+      final unlockCountAfter = find.byIcon(Icons.lock_open).evaluate().length;
+      expect(unlockCountAfter, unlockCountBefore - 1, reason: 'ロック後も解除ボタンの数が減っていない');
+
+      // シートを閉じる（シート外側＝モーダルバリアをタップ）。
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // 投稿者本人ではない作品（'あにめ工房ミラ'以外）にはロック切り替え
+      // ボタンが一切表示されないことを確認する。
+      final otherAuthorCardFinder = find.byWidgetPredicate(
+        (w) => w is CommunityWorkCard && w.work.authorName != 'あにめ工房ミラ',
+      );
+      expect(otherAuthorCardFinder, findsWidgets);
+      await tester.tap(otherAuthorCardFinder.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '他ユーザー作品詳細シート表示で例外');
+      expect(find.byIcon(Icons.lock_open), findsNothing, reason: '投稿者本人以外にロック解除ボタンが表示されている');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
   testWidgets('起動→ホーム→ドロワー→有料会員画面まで例外なく遷移できる', (WidgetTester tester) async {
     await bootToHome(tester);
 

@@ -2296,6 +2296,15 @@
       }
     }
   },
+  "communityTagSearchHint": "Search by tag",
+  "communityTagSearchModeOnTooltip": "Tag search: ON (tap to search by title/username again)",
+  "communityTagSearchModeOffTooltip": "Switch to tag search",
+  "communityAddTagButton": "Add tag",
+  "communityAddTagDialogTitle": "Add tag",
+  "communityAddTagDialogHint": "Enter a tag name",
+  "communityTagLockTooltip": "Lock this tag (author only)",
+  "communityTagUnlockTooltip": "Unlock this tag (author only)",
+  "communityRemoveTagTooltip": "Remove this tag",
   "communityPostButton": "Post",
   "communityPostComingSoonTitle": "Posting is coming soon",
   "communityPostComingSoonBody": "Video posting is still under development. Stay tuned for future updates.",

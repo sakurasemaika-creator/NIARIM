@@ -2296,6 +2296,15 @@
       }
     }
   },
+  "communityTagSearchHint": "Rechercher par tag",
+  "communityTagSearchModeOnTooltip": "Recherche par tag : ACTIVÉE (touchez pour revenir à la recherche par titre/nom d'utilisateur)",
+  "communityTagSearchModeOffTooltip": "Passer à la recherche par tag",
+  "communityAddTagButton": "Ajouter un tag",
+  "communityAddTagDialogTitle": "Ajouter un tag",
+  "communityAddTagDialogHint": "Saisissez un nom de tag",
+  "communityTagLockTooltip": "Verrouiller ce tag (auteur uniquement)",
+  "communityTagUnlockTooltip": "Déverrouiller ce tag (auteur uniquement)",
+  "communityRemoveTagTooltip": "Supprimer ce tag",
   "communityPostButton": "Publier",
   "communityPostComingSoonTitle": "La publication arrive bientôt",
   "communityPostComingSoonBody": "La fonctionnalité de publication de vidéos est encore en cours de développement. Restez à l'écoute des prochaines mises à jour.",

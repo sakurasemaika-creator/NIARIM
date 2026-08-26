@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
 import 'widgets/community_work_card.dart';
@@ -15,9 +16,11 @@ enum _RankingSort { views, bookmarks }
 /// DynamoDB・ランキング集計）は未実装のため、この画面は表示確認用の
 /// ダミーデータのみで動作するUI・デザインの作り込みに限定している。
 /// 実際の動画埋め込み・投稿・通報送信・ブロック反映は行わず、該当操作を
-/// タップすると「準備中」である旨を案内する。ブックマークのトグルのみ、
-/// 画面内の一時的な状態として見た目上反映する（アプリ再起動やこの画面を
-/// 離れると元に戻る）。
+/// タップすると「準備中」である旨を案内する。ブックマーク・タグの追加／
+/// 削除／投稿者ロックの切り替えのみ、画面内の一時的な状態として見た目上
+/// 反映する（アプリ再起動やこの画面を離れると元に戻る）。タグは誰でも
+/// 追加・削除できるが、投稿者がロックしたタグは他ユーザーが削除できない
+/// （`CommunityWork.kDummySelfAuthorId`を参照）。
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
 
@@ -39,6 +42,10 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   bool _isSearching = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  // trueのときは検索語をタグの完全一致・部分一致として扱う
+  // （「検索ボックスをタグ検索モードに切り替える」機能）。タグチップを
+  // 直接タップした場合もこのモードへ切り替えて絞り込む。
+  bool _tagSearchMode = false;
 
   @override
   void initState() {
@@ -56,14 +63,79 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
 
   /// タイトル・投稿者名のいずれかに検索語を含む作品のみへ絞り込む
   /// （大小文字を区別しない部分一致）。検索語が空のときは全件通す。
+  /// タグ検索モード時はタイトル・投稿者名の代わりにタグへの部分一致で
+  /// 絞り込む。
   List<CommunityWork> _applySearch(List<CommunityWork> works) {
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return works;
+    if (_tagSearchMode) {
+      return works
+          .where((w) => w.tags.any((t) => t.toLowerCase().contains(query)))
+          .toList();
+    }
     return works
         .where((w) =>
             w.title.toLowerCase().contains(query) ||
             w.authorName.toLowerCase().contains(query))
         .toList();
+  }
+
+  /// タグチップのタップから呼ばれる。検索をそのタグのタグ検索モードへ
+  /// 切り替えて絞り込む。
+  void _filterByTag(String tag) {
+    setState(() {
+      _isSearching = true;
+      _tagSearchMode = true;
+      _searchQuery = tag;
+      _searchController.text = tag;
+    });
+  }
+
+  int _indexOfWork(String workId) => _allWorks.indexWhere((w) => w.id == workId);
+
+  /// タグを追加する（誰でも可能）。同名タグが既にある場合は何もしない。
+  void _addTag(CommunityWork work, String tag, void Function(void Function()) setSheetState) {
+    final trimmed = tag.trim();
+    if (trimmed.isEmpty) return;
+    final index = _indexOfWork(work.id);
+    if (index == -1) return;
+    final current = _allWorks[index];
+    if (current.tags.contains(trimmed)) return;
+    final updated = current.copyWith(tags: [...current.tags, trimmed]);
+    setState(() => _allWorks[index] = updated);
+    setSheetState(() {});
+  }
+
+  /// タグを削除する。ロックされているタグは削除できない
+  /// （呼び出し元でロック中のタグに対しては削除ボタン自体を表示しない）。
+  void _removeTag(CommunityWork work, String tag, void Function(void Function()) setSheetState) {
+    final index = _indexOfWork(work.id);
+    if (index == -1) return;
+    final current = _allWorks[index];
+    if (current.lockedTags.contains(tag)) return;
+    final updated = current.copyWith(
+      tags: current.tags.where((t) => t != tag).toList(),
+      lockedTags: current.lockedTags.where((t) => t != tag).toSet(),
+    );
+    setState(() => _allWorks[index] = updated);
+    setSheetState(() {});
+  }
+
+  /// タグのロック状態を切り替える（投稿者本人のみ呼び出し可能。
+  /// UI側で`work.authorId == kDummySelfAuthorId`のときのみボタンを表示する）。
+  void _toggleTagLock(CommunityWork work, String tag, void Function(void Function()) setSheetState) {
+    final index = _indexOfWork(work.id);
+    if (index == -1) return;
+    final current = _allWorks[index];
+    final lockedTags = {...current.lockedTags};
+    if (lockedTags.contains(tag)) {
+      lockedTags.remove(tag);
+    } else {
+      lockedTags.add(tag);
+    }
+    final updated = current.copyWith(lockedTags: lockedTags);
+    setState(() => _allWorks[index] = updated);
+    setSheetState(() {});
   }
 
   List<CommunityWork> get _newArrivals => _applySearch(
@@ -137,7 +209,11 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (sheetContext, setSheetState) {
-            final isBookmarked = _bookmarkedIds.contains(work.id);
+            // タグの追加・削除・ロック切り替え後もシート内の表示へ反映
+            // できるよう、_allWorksから最新の状態を都度読み直す。
+            final currentWork = _allWorks[_indexOfWork(work.id)];
+            final isBookmarked = _bookmarkedIds.contains(currentWork.id);
+            final isAuthorSelf = currentWork.authorId == kDummySelfAuthorId;
             final scheme = Theme.of(sheetContext).colorScheme;
             return SafeArea(
               child: SingleChildScrollView(
@@ -220,6 +296,38 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                       l10n.communityWorkDetailPostedLabel(_formatDate(work.postedAt)),
                       style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
                     ),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        for (final tag in currentWork.tags)
+                          _TagChip(
+                            label: tag,
+                            isLocked: currentWork.lockedTags.contains(tag),
+                            // ロックの鍵アイコン自体は投稿者本人のみ操作可能
+                            // （ロック中/解除中の切り替え）。それ以外の
+                            // ユーザーには鍵アイコンのみ表示し操作はさせない。
+                            onToggleLock: isAuthorSelf
+                                ? () => _toggleTagLock(currentWork, tag, setSheetState)
+                                : null,
+                            // ロックされていないタグのみ誰でも削除できる。
+                            onRemove: currentWork.lockedTags.contains(tag)
+                                ? null
+                                : () => _removeTag(currentWork, tag, setSheetState),
+                            onTap: () {
+                              Navigator.pop(sheetContext);
+                              _filterByTag(tag);
+                            },
+                          ),
+                        ActionChip(
+                          avatar: const Icon(Icons.add, size: 16),
+                          label: Text(l10n.communityAddTagButton),
+                          onPressed: () => _showAddTagDialog(currentWork, setSheetState),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 18),
                     Row(
                       children: [
@@ -274,6 +382,39 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
           },
         );
       },
+    );
+  }
+
+  void _showAddTagDialog(CommunityWork work, void Function(void Function()) setSheetState) {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.communityAddTagDialogTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(hintText: l10n.communityAddTagDialogHint),
+            onSubmitted: (v) {
+              Navigator.pop(ctx);
+              _addTag(work, v, setSheetState);
+            },
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _addTag(work, controller.text, setSheetState);
+              },
+              child: Text(l10n.commonOk),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -375,24 +516,40 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                 controller: _searchController,
                 autofocus: true,
                 decoration: InputDecoration(
-                  hintText: l10n.communitySearchHint,
+                  hintText: _tagSearchMode
+                      ? l10n.communityTagSearchHint
+                      : l10n.communitySearchHint,
                   border: InputBorder.none,
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
             : Text(l10n.communityScreenTitle),
         actions: [
-          if (_isSearching)
+          if (_isSearching) ...[
+            // 通常のタイトル・投稿者名検索と、タグ検索の切り替えボタン。
+            // タグをタップした場合もこのモードに切り替わる。
+            IconButton(
+              icon: Icon(_tagSearchMode ? Icons.sell : Icons.sell_outlined),
+              tooltip: _tagSearchMode
+                  ? l10n.communityTagSearchModeOnTooltip
+                  : l10n.communityTagSearchModeOffTooltip,
+              onPressed: () => setState(() {
+                _tagSearchMode = !_tagSearchMode;
+                _searchQuery = '';
+                _searchController.clear();
+              }),
+            ),
             IconButton(
               icon: const Icon(Icons.close),
               tooltip: l10n.commonClose,
               onPressed: () => setState(() {
                 _isSearching = false;
+                _tagSearchMode = false;
                 _searchQuery = '';
                 _searchController.clear();
               }),
-            )
-          else
+            ),
+          ] else
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: l10n.commonSearch,
@@ -525,5 +682,69 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
       _RankingPeriod.weekly => l10n.communityRankingPeriodWeekly,
       _RankingPeriod.daily => l10n.communityRankingPeriodDaily,
     };
+  }
+}
+
+/// 作品詳細シートで使うタグ表示チップ。タップでそのタグによる絞り込みへ
+/// 遷移し、ロックされていないタグには削除ボタン（誰でも操作可）、
+/// 投稿者本人が見ている場合のみロック/解除の切り替えボタンを追加で表示する。
+class _TagChip extends StatelessWidget {
+  final String label;
+  final bool isLocked;
+  final VoidCallback? onToggleLock;
+  final VoidCallback? onRemove;
+  final VoidCallback onTap;
+
+  const _TagChip({
+    required this.label,
+    required this.isLocked,
+    required this.onToggleLock,
+    required this.onRemove,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerHighest,
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12, top: 2, bottom: 2, right: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isLocked) ...[
+                Icon(Icons.lock, size: 13, color: scheme.onSurfaceVariant),
+                const SizedBox(width: 4),
+              ],
+              Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+              if (onToggleLock != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 15,
+                  tooltip: isLocked
+                      ? l10n.communityTagUnlockTooltip
+                      : l10n.communityTagLockTooltip,
+                  icon: Icon(isLocked ? Icons.lock : Icons.lock_open),
+                  onPressed: onToggleLock,
+                ),
+              if (onRemove != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 15,
+                  tooltip: l10n.communityRemoveTagTooltip,
+                  icon: const Icon(Icons.close),
+                  onPressed: onRemove,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

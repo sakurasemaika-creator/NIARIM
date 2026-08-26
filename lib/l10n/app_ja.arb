@@ -2546,6 +2546,15 @@
       }
     }
   },
+  "communityTagSearchHint": "タグ名で検索",
+  "communityTagSearchModeOnTooltip": "タグ検索：ON（タップでタイトル・投稿者名検索に戻す）",
+  "communityTagSearchModeOffTooltip": "タグ検索に切り替える",
+  "communityAddTagButton": "タグを追加",
+  "communityAddTagDialogTitle": "タグを追加",
+  "communityAddTagDialogHint": "タグ名を入力",
+  "communityTagLockTooltip": "タグをロック（投稿者のみ）",
+  "communityTagUnlockTooltip": "タグのロックを解除（投稿者のみ）",
+  "communityRemoveTagTooltip": "タグを削除",
   "communityPostButton": "投稿する",
   "communityPostComingSoonTitle": "投稿機能は準備中です",
   "communityPostComingSoonBody": "動画投稿機能は現在準備中です。今後のアップデートをお楽しみに。",
