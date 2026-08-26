@@ -791,13 +791,20 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      // 最初の作品カードをタップして詳細シートを開く。
+      // 最初の作品カードをタップするとフローティング動画プレビュー
+      // ウィンドウが開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ
+      // 遷移する。
       final workCardFinder = find.byType(CommunityWorkCard);
       expect(workCardFinder, findsWidgets);
       await tester.tap(workCardFinder.first);
       await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'フローティングプレビュー表示で例外');
+      final detailButtonFinder = find.text('詳細へ');
+      expect(detailButtonFinder, findsOneWidget, reason: 'フローティングプレビューの「詳細へ」ボタンが見つからない');
+      await tester.tap(detailButtonFinder);
       await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '作品詳細シート表示で例外');
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
 
       // 「タグを追加」→ダイアログでタグ名を入力→OK。
       const newTag = 'テスト用タグ__probe';
@@ -821,15 +828,19 @@ void main() {
       expect(find.byIcon(Icons.sell), findsOneWidget, reason: 'タグ検索モードに切り替わっていない');
       expect(find.byType(CommunityWorkCard), findsOneWidget, reason: '一意なタグでの絞り込み件数が想定と異なる');
 
-      // 絞り込まれた唯一の作品カードを開き、追加したタグを削除できることを
-      // 確認する（新規タグなのでロックされておらず、削除ボタンが必ず出る）。
+      // 絞り込まれた唯一の作品カードを開き（フローティングプレビュー→
+      // 「詳細へ」）、追加したタグを削除できることを確認する
+      // （新規タグなのでロックされておらず、削除ボタンが必ず出る）。
       await tester.tap(find.byType(CommunityWorkCard).first);
       await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('詳細へ'));
       await tester.pump(const Duration(milliseconds: 300));
-      // 検索中はAppBarの検索欄にも同じタグ文字列が入力されたままなので
-      // （EditableTextもテキストの一致対象になる）、find.text(newTag)は
-      // 単体では一意にならない。シート本体のSingleChildScrollView配下に
-      // 絞り込むことで、シート内のタグチップのTextだけを特定する。
+      await tester.pump(const Duration(milliseconds: 300));
+      // 検索中の（下に隠れている）コミュニティ画面のAppBar検索欄にも
+      // 同じタグ文字列が残ったままなので（EditableTextもテキストの
+      // 一致対象になる）、find.text(newTag)は単体では一意にならない。
+      // 作品詳細画面本体のSingleChildScrollView配下に絞り込むことで、
+      // 詳細画面側のタグチップのTextだけを特定する。
       final sheetScope = find.byType(SingleChildScrollView).last;
       final tagTextInSheet = find.descendant(of: sheetScope, matching: find.text(newTag));
       expect(tagTextInSheet, findsOneWidget, reason: '追加したタグがシートに表示されていない');
@@ -873,14 +884,17 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       // kDummySelfAuthorId（'author_01'）に対応する投稿者名'あにめ工房ミラ'
-      // の作品を開く。この投稿者の作品にのみロック切り替えボタン
-      // （Icons.lock_open／ロック中タグのIcons.lock）が表示されるはず。
+      // の作品を開く（フローティングプレビュー→「詳細へ」）。この投稿者の
+      // 作品にのみロック切り替えボタン（Icons.lock_open／ロック中タグの
+      // Icons.lock）が表示されるはず。
       final selfAuthorCardFinder = find.widgetWithText(CommunityWorkCard, 'あにめ工房ミラ');
       expect(selfAuthorCardFinder, findsWidgets);
       await tester.tap(selfAuthorCardFinder.first);
       await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('詳細へ'));
       await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '投稿者本人の作品詳細シート表示で例外');
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '投稿者本人の作品詳細画面表示で例外');
 
       // ダミーデータは各作品に必ず1個ロック済みタグがあるため、
       // ロック解除ボタン（Icons.lock_open）が最低1個は表示されるはず。
@@ -895,8 +909,9 @@ void main() {
       final unlockCountAfter = find.byIcon(Icons.lock_open).evaluate().length;
       expect(unlockCountAfter, unlockCountBefore - 1, reason: 'ロック後も解除ボタンの数が減っていない');
 
-      // シートを閉じる（シート外側＝モーダルバリアをタップ）。
-      await tester.tapAt(const Offset(20, 20));
+      // 詳細画面を閉じてコミュニティ画面へ戻る。
+      Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
       // 投稿者本人ではない作品（'あにめ工房ミラ'以外）にはロック切り替え
@@ -907,9 +922,76 @@ void main() {
       expect(otherAuthorCardFinder, findsWidgets);
       await tester.tap(otherAuthorCardFinder.first);
       await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('詳細へ'));
       await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '他ユーザー作品詳細シート表示で例外');
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '他ユーザー作品詳細画面表示で例外');
       expect(find.byIcon(Icons.lock_open), findsNothing, reason: '投稿者本人以外にロック解除ボタンが表示されている');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    'コミュニティでブックマークした作品がホームの「ブクマ済み」タブに表示される',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      expect(communityButtonFinder, findsOneWidget);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+
+      // 先頭の作品カードのタイトルを記録し、そのカードのブックマーク
+      // ボタン（サムネイル右上）をタップしてブックマークする。
+      final firstCard = tester.widget<CommunityWorkCard>(find.byType(CommunityWorkCard).first);
+      final bookmarkedTitle = firstCard.work.title;
+      final bookmarkButtonFinder = find.byIcon(Icons.bookmark_border).first;
+      await tester.tap(bookmarkButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'ブックマーク操作で例外');
+      expect(find.byIcon(Icons.bookmark).first, findsOneWidget, reason: 'ブックマーク済み表示に切り替わっていない');
+
+      // コミュニティ画面を閉じてスプラッシュへ戻り、通常のホーム画面遷移
+      // 経路で「作品をつくる」からホームへ入る。
+      Navigator.of(tester.element(find.byType(Scaffold).first)).pop();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createButtonFinder = find.byIcon(Icons.brush_outlined);
+      expect(createButtonFinder, findsOneWidget);
+      await tester.tap(createButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
+
+      final firstLaunchDialogButton = find.text('はじめる');
+      if (firstLaunchDialogButton.evaluate().isNotEmpty) {
+        await tester.tap(firstLaunchDialogButton);
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+
+      // 「ブクマ済み」タブへ切り替え、先ほどブックマークした作品が
+      // 表示されることを確認する（CommunityServiceがアプリ全体で共有の
+      // Providerであることの確認でもある）。
+      final bookmarkedTabFinder = find.text('ブクマ済み');
+      expect(bookmarkedTabFinder, findsOneWidget);
+      await tester.tap(bookmarkedTabFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'ブクマ済みタブ表示で例外');
+      expect(
+        find.widgetWithText(CommunityWorkCard, bookmarkedTitle),
+        findsOneWidget,
+        reason: 'ブックマークした作品がブクマ済みタブに表示されていない',
+      );
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
@@ -1115,15 +1197,18 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      // 作品カードをタップして詳細ボトムシートを開く。
+      // 作品カードをタップするとフローティング動画プレビューウィンドウが
+      // 開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ遷移する。
       final workCardFinder = find.byType(CommunityWorkCard);
       expect(workCardFinder, findsWidgets);
       await tester.tap(workCardFinder.first);
       await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('詳細へ'));
       await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '作品詳細シート表示で例外');
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
 
-      // シート内の投稿者アイコン（CircleAvatar、一覧カード側には無い）を
+      // 詳細画面内の投稿者アイコン（CircleAvatar、一覧カード側には無い）を
       // タップして投稿者別作品一覧画面（MaterialPageRoute）を開く。
       final authorAvatarFinder = find.byType(CircleAvatar);
       expect(authorAvatarFinder, findsWidgets);

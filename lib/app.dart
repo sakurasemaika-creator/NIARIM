@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'router.dart';
+import 'screens/community/widgets/community_floating_preview.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
 
@@ -47,13 +48,22 @@ class NiarimApp extends StatelessWidget {
       ],
       // 画面全体を覆う一番外側でポインターイベントの種類を監視し、
       // マウス・スタイラス（ペンタブ等）の接続をSettingsServiceへ伝える。
+      // CommunityFloatingPreview（コミュニティのフローティング動画
+      // プレビュー）は、ルーティングされる画面（child）の外側・
+      // 画面遷移をまたいで常に生き続ける層にStackでかぶせることで、
+      // 「他の画面を見ながら再生し続けられる」という要件を満たしている。
       builder: (context, child) => Listener(
         onPointerDown: (e) =>
             context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
         onPointerHover: (e) =>
             context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
         behavior: HitTestBehavior.translucent,
-        child: child!,
+        child: Stack(
+          children: [
+            child!,
+            const CommunityFloatingPreview(),
+          ],
+        ),
       ),
     );
   }

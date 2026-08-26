@@ -11,6 +11,8 @@ import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../services/advertising_service.dart';
+import '../../services/community_preview_service.dart';
+import '../../services/community_service.dart';
 import '../../services/font_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
@@ -18,6 +20,7 @@ import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../services/work_folder_service.dart';
+import '../community/widgets/community_work_card.dart';
 import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
@@ -1484,10 +1487,11 @@ class _TrashTab extends StatelessWidget {
 /// タップでアプリ内プレビュー、共有ボタンでOSの共有シートから写真アプリ等へ
 /// 「開く」ことができる（share_plusは書き出し完了ダイアログで既に使用している
 /// 実績のある仕組みのため、新規ネイティブ依存を追加せずに実現できる）。
-/// 「ブクマ済みの作品」タブ。他ユーザーが公開した作品をブックマークして
-/// 一覧表示する機能の器のみを先行して用意した状態で、実際のブックマーク
-/// データ・一覧表示は「みんなのアニメを見る」機能の実装に合わせて後から
-/// つなぎ込む（現時点では常に準備中の案内のみを表示する）。
+/// 「ブクマ済みの作品」タブ。「みんなの作品をみる」画面
+/// （`CommunityService`）でブックマークした他ユーザーの公開作品を一覧
+/// 表示する。ダウンロードはせず、あくまで一覧表示のみ（バックエンド
+/// 未実装のため現状はダミーデータ上のブックマーク状態を参照する）。
+/// 1件もブックマークしていない場合は従来どおりの案内表示のままにする。
 class _BookmarkedTab extends StatelessWidget {
   const _BookmarkedTab();
 
@@ -1495,34 +1499,50 @@ class _BookmarkedTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.bookmark_border,
-              size: 64,
-              color: scheme.primary.withValues(alpha: 0.6),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.homeBookmarkedComingSoonTitle,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
+    final communityService = context.watch<CommunityService>();
+    final bookmarkedWorks = communityService.works
+        .where((w) => communityService.isBookmarked(w.id))
+        .toList();
+
+    if (bookmarkedWorks.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.bookmark_border,
+                size: 64,
+                color: scheme.primary.withValues(alpha: 0.6),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.homeBookmarkedComingSoonBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: scheme.onSurfaceVariant),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                l10n.homeBookmarkedComingSoonTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.homeBookmarkedComingSoonBody,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
         ),
+      );
+    }
+
+    return SingleChildScrollView(
+      child: CommunityWorkGrid(
+        works: bookmarkedWorks,
+        bookmarkedIds: communityService.bookmarkedIds,
+        onTapWork: (work) => context.read<CommunityPreviewService>().show(work),
+        onToggleBookmark: (work) => communityService.toggleBookmark(work.id),
       ),
     );
   }
