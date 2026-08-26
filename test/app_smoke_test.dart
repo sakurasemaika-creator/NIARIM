@@ -151,115 +151,6 @@ void main() {
     }
   }
 
-  testWidgets('起動→ホーム→設定→ショートカット設定まで例外なく遷移できる', (WidgetTester tester) async {
-    await bootToHome(tester);
-
-    // ドロワーを開いて設定画面へ遷移する。
-    final scaffoldState = tester.state<ScaffoldState>(
-      find.byType(Scaffold).first,
-    );
-    scaffoldState.openDrawer();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'ドロワー表示で例外');
-
-    final settingsTileFinder = find.byIcon(Icons.settings_outlined);
-    expect(settingsTileFinder, findsOneWidget);
-    await tester.tap(settingsTileFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: '設定画面への遷移で例外');
-
-    // 設定一覧から、ショートカット設定画面まで開いてみる。
-    final shortcutEntryFinder = find.byIcon(Icons.keyboard);
-    if (shortcutEntryFinder.evaluate().isNotEmpty) {
-      await tester.tap(shortcutEntryFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'ショートカット設定画面への遷移で例外');
-    }
-  }, timeout: const Timeout(Duration(seconds: 60)));
-
-  testWidgets(
-    '起動→ホーム→新規プロジェクト作成→キャンバス→タイムラインまで例外なく遷移できる',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
-
-      // 「＋」FAB→「新規プロジェクト」のボトムシート操作は、テスト環境の
-      // 描画領域サイズに応じてヒットテストが不安定になりやすいため、
-      // 実際に到達する先のルートへ直接遷移する（遷移経路自体の妥当性より、
-      // 各画面が例外なく描画できるかの確認を優先する）。
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
-
-      // 既定値のまま「作成」を押すとキャンバスモードへ遷移する。
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-
-      // 作成されたプロジェクトのIDでタイムラインモードへ直接遷移する
-      // （フレーム帯の切り替えUIはジェスチャーが複雑なため、経路の妥当性
-      // より画面自体が例外なく描画できるかの確認を優先する）。
-      final projectId = tester
-          .element(find.byType(Scaffold).first)
-          .read<ProjectService>()
-          .projects
-          .first
-          .id;
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).go('/timeline/$projectId');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
-
-  testWidgets('起動画面→コミュニティ画面まで例外なく遷移できる', (WidgetTester tester) async {
-    setPhoneViewSize(tester);
-    final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(
-      MultiProvider(providers: providers!, child: const NiarimApp()),
-    );
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(tester.takeException(), isNull, reason: '起動画面の描画で例外');
-
-    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-    expect(communityButtonFinder, findsOneWidget);
-    await tester.tap(communityButtonFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
-  }, timeout: const Timeout(Duration(seconds: 60)));
-
-  testWidgets('起動→ホーム→ドロワー→有料会員画面まで例外なく遷移できる', (WidgetTester tester) async {
-    await bootToHome(tester);
-
-    final scaffoldState = tester.state<ScaffoldState>(
-      find.byType(Scaffold).first,
-    );
-    scaffoldState.openDrawer();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'ドロワー表示で例外');
-
-    final premiumTileFinder = find.byIcon(Icons.workspace_premium_outlined);
-    expect(premiumTileFinder, findsOneWidget);
-    await tester.tap(premiumTileFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: '有料会員画面への遷移で例外');
-  }, timeout: const Timeout(Duration(seconds: 60)));
-
   // ─── 画面内の操作可能な要素を自動で一通り試す汎用プローブ ──────────────
   //
   // 「画面が例外なく描画できるか」だけでなく、「その画面に見えている
@@ -439,9 +330,10 @@ void main() {
       return found;
     }
 
-    for (var step = 0; step < maxSteps; step++) {
-      Element? targetElement;
-      String targetLabel = '';
+    // まだ試していない候補を、今アクティブなルート上から1件探す
+    // （見つからなければnull）。呼び出し側でスクロール後に再度呼び、
+    // スクロールしないと見えない要素も拾えるようにする。
+    ({Element element, String label})? scanForCandidate() {
       var index = 0;
       for (final e in tester.allElements) {
         final w = e.widget;
@@ -461,12 +353,58 @@ void main() {
         final id = '${w.runtimeType}:${label.isNotEmpty ? label : '#$index'}';
         index++;
         if (!skip && tried.add(id)) {
-          targetElement = e;
-          targetLabel = label.isNotEmpty ? label : w.runtimeType.toString();
-          break;
+          return (element: e, label: label.isNotEmpty ? label : w.runtimeType.toString());
         }
       }
-      if (targetElement == null) break;
+      return null;
+    }
+
+    // 今アクティブなルート上にあるScrollableを下方向へドラッグする。
+    // 実際にスクロール位置が動いたかどうかを返す（既に最下部などで
+    // 動かなければfalse）。複数のScrollableがある場合、最初に見つかった
+    // ものだけを対象にする単純な実装（ネストしたリストの内側だけが動く
+    // ケースはあるが、それでも隠れた要素を見つけられる分には有用）。
+    Future<bool> tryScrollDown() async {
+      for (final e in tester.allElements) {
+        if (e.widget is! Scrollable) continue;
+        final route = ModalRoute.of(e);
+        if (route == null || !route.isCurrent) continue;
+        final finder = find.byElementPredicate((el) => el == e);
+        ScrollableState state;
+        try {
+          state = tester.state<ScrollableState>(finder);
+        } catch (_) {
+          continue;
+        }
+        final before = state.position.pixels;
+        if (before >= state.position.maxScrollExtent) continue;
+        try {
+          await tester.drag(finder, const Offset(0, -300), warnIfMissed: false);
+        } catch (_) {
+          continue;
+        }
+        await tester.pump(const Duration(milliseconds: 200));
+        return state.position.pixels != before;
+      }
+      return false;
+    }
+
+    for (var step = 0; step < maxSteps; step++) {
+      var candidate = scanForCandidate();
+      if (candidate == null) {
+        // 見えている範囲に新しい候補が無ければ、スクロールして隠れている
+        // 要素が無いか確認する（最大8回。無限スクロールコンテンツ等での
+        // 無限ループを避けるため上限を設ける）。
+        for (var scrollAttempt = 0; scrollAttempt < 8; scrollAttempt++) {
+          final moved = await tryScrollDown();
+          if (!moved) break;
+          candidate = scanForCandidate();
+          if (candidate != null) break;
+        }
+      }
+      if (candidate == null) break;
+      final targetElement = candidate.element;
+      final targetLabel = candidate.label;
 
       final finder = find.byElementPredicate((el) => el == targetElement);
       try {
@@ -558,6 +496,123 @@ void main() {
       expect(tester.takeException(), isNull, reason: '$route から戻る際に例外');
     }
   }
+
+  testWidgets('起動→ホーム→設定→ショートカット設定まで例外なく遷移できる', (WidgetTester tester) async {
+    await bootToHome(tester);
+
+    // ドロワーを開いて設定画面へ遷移する。
+    final scaffoldState = tester.state<ScaffoldState>(
+      find.byType(Scaffold).first,
+    );
+    scaffoldState.openDrawer();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'ドロワー表示で例外');
+
+    final settingsTileFinder = find.byIcon(Icons.settings_outlined);
+    expect(settingsTileFinder, findsOneWidget);
+    await tester.tap(settingsTileFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '設定画面への遷移で例外');
+
+    // 設定一覧画面自体（各設定項目への入口一覧）も一通り操作してみる。
+    await probeAllControls(tester);
+
+    // 設定一覧から、ショートカット設定画面まで開いてみる。
+    final shortcutEntryFinder = find.byIcon(Icons.keyboard);
+    if (shortcutEntryFinder.evaluate().isNotEmpty) {
+      // 直前のprobeAllControlsが設定一覧を一通り操作した後のため、Hero
+      // アニメーション等の影響で厳密なヒットテスト判定が不安定になりうる。
+      await tester.tap(shortcutEntryFinder.first, warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'ショートカット設定画面への遷移で例外');
+      await probeAllControls(tester);
+    }
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets(
+    '起動→ホーム→新規プロジェクト作成→キャンバス→タイムラインまで例外なく遷移できる',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      // 「＋」FAB→「新規プロジェクト」のボトムシート操作は、テスト環境の
+      // 描画領域サイズに応じてヒットテストが不安定になりやすいため、
+      // 実際に到達する先のルートへ直接遷移する（遷移経路自体の妥当性より、
+      // 各画面が例外なく描画できるかの確認を優先する）。
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+
+      // 既定値のまま「作成」を押すとキャンバスモードへ遷移する。
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+      expect(find.byType(Scaffold), findsWidgets);
+
+      // 作成されたプロジェクトのIDでタイムラインモードへ直接遷移する
+      // （フレーム帯の切り替えUIはジェスチャーが複雑なため、経路の妥当性
+      // より画面自体が例外なく描画できるかの確認を優先する）。
+      final projectId = tester
+          .element(find.byType(Scaffold).first)
+          .read<ProjectService>()
+          .projects
+          .first
+          .id;
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).go('/timeline/$projectId');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+      expect(find.byType(Scaffold), findsWidgets);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets('起動画面→コミュニティ画面まで例外なく遷移できる', (WidgetTester tester) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: '起動画面の描画で例外');
+
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    expect(communityButtonFinder, findsOneWidget);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets('起動→ホーム→ドロワー→有料会員画面まで例外なく遷移できる', (WidgetTester tester) async {
+    await bootToHome(tester);
+
+    final scaffoldState = tester.state<ScaffoldState>(
+      find.byType(Scaffold).first,
+    );
+    scaffoldState.openDrawer();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'ドロワー表示で例外');
+
+    final premiumTileFinder = find.byIcon(Icons.workspace_premium_outlined);
+    expect(premiumTileFinder, findsOneWidget);
+    await tester.tap(premiumTileFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '有料会員画面への遷移で例外');
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets(
     '起動→ホーム→各種設定画面（ショートカット以外）を例外なく巡回できる',
@@ -690,6 +745,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'プリセット詳細画面への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
+      await probeAllControls(tester);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
@@ -715,6 +771,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'PCレイアウト詳細設定画面への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
+      await probeAllControls(tester);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
@@ -755,6 +812,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: '投稿者別作品一覧画面への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
+      await probeAllControls(tester);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
@@ -782,6 +840,7 @@ void main() {
         reason: 'キャンバスサイズプリセット管理画面への遷移で例外',
       );
       expect(find.byType(Scaffold), findsWidgets);
+      await probeAllControls(tester);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
@@ -848,6 +907,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'フォルダ内画面への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
+      await probeAllControls(tester);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
@@ -915,6 +975,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: '保存データ変更画面への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
+      await probeAllControls(tester);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
