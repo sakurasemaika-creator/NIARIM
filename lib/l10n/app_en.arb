@@ -249,6 +249,8 @@
   "timelineStepBack": "Step back one frame",
   "timelineStepForward": "Step forward one frame",
   "timelineSkipToEnd": "Skip to last frame",
+  "timelineLoopOnTooltip": "Loop playback: ON (tap to turn off)",
+  "timelineLoopOffTooltip": "Loop playback: OFF (tap to turn on)",
   "quickToolPanelTitle": "Quick Tool Settings",
   "quickToolEmpty": "No tools added yet",
   "quickToolAddCurrentBrush": "Add Current Brush",

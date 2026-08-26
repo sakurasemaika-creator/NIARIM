@@ -249,6 +249,8 @@
   "timelineStepBack": "Reculer d'une image",
   "timelineStepForward": "Avancer d'une image",
   "timelineSkipToEnd": "Aller à la dernière image",
+  "timelineLoopOnTooltip": "Lecture en boucle : ACTIVÉE (touchez pour désactiver)",
+  "timelineLoopOffTooltip": "Lecture en boucle : DÉSACTIVÉE (touchez pour activer)",
   "quickToolPanelTitle": "Réglages des outils rapides",
   "quickToolEmpty": "Aucun outil enregistré",
   "quickToolAddCurrentBrush": "Ajouter le pinceau actuel",

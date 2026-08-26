@@ -118,6 +118,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _currentFrame = 0;
   String? _selectedSceneId;
   bool _isPlaying = false;
+  // プレビュー再生をループさせるかどうか。既定はON（従来どおり最終フレーム
+  // から先頭へ戻って再生し続ける）。OFFの場合は最終フレームで自動停止する。
+  bool _loopEnabled = true;
   // dispose()内でcontext.read<ProjectService>()を呼ぶと、画面が他の
   // ウィジェットツリーの一括破棄に巻き込まれた際（例：GoRouterの
   // go()によるスタック置き換えで前の画面がまとめて破棄されるケース）に
@@ -499,8 +502,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
       final fps = project?.fps ?? 24;
       _playTimer = Timer.periodic(
         Duration(milliseconds: (1000 / fps).round()),
-        (_) {
+        (timer) {
           final total = _totalFrames;
+          if (!_loopEnabled && _currentFrame >= total - 1) {
+            // ループOFF：最終フレームに到達したらそこで自動停止する。
+            timer.cancel();
+            setState(() => _isPlaying = false);
+            _pauseAllMedia();
+            return;
+          }
           setState(() {
             _currentFrame = (_currentFrame + 1) % total;
           });
@@ -1257,6 +1267,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
             icon: const Icon(Icons.skip_next),
             tooltip: l10n.timelineSkipToEnd,
             onPressed: () => setState(() => _currentFrame = _totalFrames - 1),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.repeat,
+              color: _loopEnabled
+                  ? Theme.of(context).colorScheme.primary
+                  : null,
+            ),
+            tooltip: _loopEnabled
+                ? l10n.timelineLoopOnTooltip
+                : l10n.timelineLoopOffTooltip,
+            onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
           ),
         ],
       ),

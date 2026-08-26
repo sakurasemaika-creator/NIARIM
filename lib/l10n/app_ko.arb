@@ -249,6 +249,8 @@
   "timelineStepBack": "한 프레임 뒤로",
   "timelineStepForward": "한 프레임 앞으로",
   "timelineSkipToEnd": "마지막 프레임으로 이동",
+  "timelineLoopOnTooltip": "반복 재생: 켜짐 (탭하면 끄기)",
+  "timelineLoopOffTooltip": "반복 재생: 꺼짐 (탭하면 켜기)",
   "quickToolPanelTitle": "빠른 도구 설정",
   "quickToolEmpty": "등록된 도구가 없습니다",
   "quickToolAddCurrentBrush": "현재 브러시 추가",

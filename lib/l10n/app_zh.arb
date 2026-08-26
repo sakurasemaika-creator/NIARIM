@@ -249,6 +249,8 @@
   "timelineStepBack": "后退一帧",
   "timelineStepForward": "前进一帧",
   "timelineSkipToEnd": "跳到最后一帧",
+  "timelineLoopOnTooltip": "循环播放：开启（点击关闭）",
+  "timelineLoopOffTooltip": "循环播放：关闭（点击开启）",
   "quickToolPanelTitle": "快捷工具设置",
   "quickToolEmpty": "暂无已添加的工具",
   "quickToolAddCurrentBrush": "添加当前画笔",

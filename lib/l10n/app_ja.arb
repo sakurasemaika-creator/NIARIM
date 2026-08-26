@@ -332,6 +332,8 @@
   "timelineStepBack": "1フレーム戻る",
   "timelineStepForward": "1フレーム進む",
   "timelineSkipToEnd": "最終フレームへ",
+  "timelineLoopOnTooltip": "ループ再生：ON（タップでOFFに）",
+  "timelineLoopOffTooltip": "ループ再生：OFF（タップでONに）",
   "quickToolPanelTitle": "早替えツール設定",
   "quickToolEmpty": "登録されたツールがありません",
   "quickToolAddCurrentBrush": "現在のブラシを追加",

@@ -622,6 +622,84 @@ void main() {
     timeout: const Timeout(Duration(seconds: 120)),
   );
 
+  testWidgets(
+    '起動→新規プロジェクト作成→タイムライン再生：ループOFFなら最終フレームで自動停止する',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      final ps = tester
+          .element(find.byType(Scaffold).first)
+          .read<ProjectService>();
+      final projectId = ps.projects.first.id;
+
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).go('/timeline/$projectId');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+
+      // 新規プロジェクトは既定で百数十フレームあるため、まず最終フレーム
+      // 付近まで一気に移動しておく（最初から全フレーム分再生し続けると
+      // テストが長時間化する）。「最終フレームへ」→「1つ前へ戻る」で
+      // 最終フレームの手前（total-2）に位置させ、そこから再生することで
+      // 「途中から最終フレームに到達して自動停止する」経路を検証する。
+      final skipToEndButton = find.byIcon(Icons.skip_next);
+      expect(skipToEndButton, findsOneWidget);
+      await tester.tap(skipToEndButton);
+      await tester.pump();
+      final stepBackButton = find.byIcon(Icons.fast_rewind);
+      expect(stepBackButton, findsOneWidget);
+      await tester.tap(stepBackButton);
+      await tester.pump();
+
+      // ループトグルをOFFにする（既定はON）。
+      final loopButton = find.byIcon(Icons.repeat);
+      expect(loopButton, findsOneWidget, reason: 'ループトグルボタンが見つからない');
+      await tester.tap(loopButton);
+      await tester.pump();
+
+      // 再生開始。
+      final playButton = find.byIcon(Icons.play_arrow);
+      expect(playButton, findsOneWidget);
+      await tester.tap(playButton);
+      await tester.pump();
+      expect(
+        find.byIcon(Icons.pause),
+        findsOneWidget,
+        reason: '再生中はpauseアイコンに切り替わるはず',
+      );
+
+      // 最終フレームに到達するまで十分な時間を進める（開始位置は
+      // 最終フレームの1つ手前なので、既定fps=12でも300msあれば
+      // 「最終フレームへ進む」「最終フレームで停止判定」の2回分の
+      // Timer.periodicが確実に発火する）。
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // ループOFFのため、最終フレームで自動停止してplay_arrowアイコンへ
+      // 戻っているはず（ループONなら先頭へ戻ってpauseのまま再生継続する）。
+      expect(
+        find.byIcon(Icons.play_arrow),
+        findsOneWidget,
+        reason: 'ループOFFなら最終フレームで自動停止するはず',
+      );
+      expect(find.byIcon(Icons.pause), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
   testWidgets('起動画面→コミュニティ画面まで例外なく遷移できる', (WidgetTester tester) async {
     setPhoneViewSize(tester);
     final providers = await tester.runAsync(buildAppProviders);

@@ -249,6 +249,8 @@
   "timelineStepBack": "後退一幀",
   "timelineStepForward": "前進一幀",
   "timelineSkipToEnd": "跳到最後一幀",
+  "timelineLoopOnTooltip": "循環播放：開啟（點一下關閉）",
+  "timelineLoopOffTooltip": "循環播放：關閉（點一下開啟）",
   "quickToolPanelTitle": "快速切換工具設定",
   "quickToolEmpty": "尚未登錄任何工具",
   "quickToolAddCurrentBrush": "新增目前的筆刷",

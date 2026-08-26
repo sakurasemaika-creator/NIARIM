@@ -249,6 +249,8 @@
   "timelineStepBack": "Retroceder un fotograma",
   "timelineStepForward": "Avanzar un fotograma",
   "timelineSkipToEnd": "Ir al último fotograma",
+  "timelineLoopOnTooltip": "Reproducción en bucle: ACTIVADA (toca para desactivar)",
+  "timelineLoopOffTooltip": "Reproducción en bucle: DESACTIVADA (toca para activar)",
   "quickToolPanelTitle": "Ajustes de herramientas rápidas",
   "quickToolEmpty": "No hay herramientas registradas",
   "quickToolAddCurrentBrush": "Añadir pincel actual",
