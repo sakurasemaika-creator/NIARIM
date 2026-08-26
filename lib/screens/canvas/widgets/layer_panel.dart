@@ -16,6 +16,7 @@ import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../widgets/confirm_delete.dart';
+import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/stepped_slider.dart';
@@ -760,62 +761,65 @@ class _LayerPanelState extends State<LayerPanel> {
     );
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.layerPanelGroupTooltip),
-        content: TextField(controller: nameCtrl, autofocus: true),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final ids = _selectedIds.toList();
-              final name = nameCtrl.text.trim().isEmpty
-                  ? l10n.layerPanelGroupDefaultName
-                  : nameCtrl.text.trim();
-              final group = context.read<ProjectService>().addLayerGroup(
-                widget.projectId,
-                widget.sceneId,
-                name,
-                ids,
-              );
-              Navigator.pop(ctx);
-              setState(() {
-                _selectedIds.clear();
-                _isSelectionMode = false;
-                _selectionBaseType = null;
-              });
-              final tm = context.read<ProjectService>().tileManagerOf(
-                widget.projectId,
-              );
-              showLayerGroupKeyframeSheet(
-                context,
-                groupName: group.name,
-                initialKeyframes: group.keyframes,
-                currentFrame: widget.frameIndex,
-                totalFrames:
-                    context
-                        .read<ProjectService>()
-                        .sceneOf(widget.projectId, widget.sceneId)
-                        ?.frames
-                        .length ??
-                    1,
-                canvasWidth: tm.canvasWidth,
-                canvasHeight: tm.canvasHeight,
-                onChanged: (kfs) =>
-                    context.read<ProjectService>().updateLayerGroup(
-                      widget.projectId,
-                      widget.sceneId,
-                      group.copyWith(keyframes: kfs),
-                    ),
-              );
-            },
-            child: Text(l10n.commonAdd),
-          ),
-        ],
+      builder: (ctx) => DisposeOnUnmount(
+        controller: nameCtrl,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.layerPanelGroupTooltip),
+          content: TextField(controller: nameCtrl, autofocus: true),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final ids = _selectedIds.toList();
+                final name = nameCtrl.text.trim().isEmpty
+                    ? l10n.layerPanelGroupDefaultName
+                    : nameCtrl.text.trim();
+                final group = context.read<ProjectService>().addLayerGroup(
+                  widget.projectId,
+                  widget.sceneId,
+                  name,
+                  ids,
+                );
+                Navigator.pop(ctx);
+                setState(() {
+                  _selectedIds.clear();
+                  _isSelectionMode = false;
+                  _selectionBaseType = null;
+                });
+                final tm = context.read<ProjectService>().tileManagerOf(
+                  widget.projectId,
+                );
+                showLayerGroupKeyframeSheet(
+                  context,
+                  groupName: group.name,
+                  initialKeyframes: group.keyframes,
+                  currentFrame: widget.frameIndex,
+                  totalFrames:
+                      context
+                          .read<ProjectService>()
+                          .sceneOf(widget.projectId, widget.sceneId)
+                          ?.frames
+                          .length ??
+                      1,
+                  canvasWidth: tm.canvasWidth,
+                  canvasHeight: tm.canvasHeight,
+                  onChanged: (kfs) =>
+                      context.read<ProjectService>().updateLayerGroup(
+                        widget.projectId,
+                        widget.sceneId,
+                        group.copyWith(keyframes: kfs),
+                      ),
+                );
+              },
+              child: Text(l10n.commonAdd),
+            ),
+          ],
+        ),
       ),
-    ).then((_) => nameCtrl.dispose());
+    );
   }
 
   bool _isTimelineMaterial(model.LayerType type) =>
@@ -1047,35 +1051,38 @@ class _LayerPanelState extends State<LayerPanel> {
     final nameCtrl = TextEditingController(text: layer.name);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.commonRename),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: nameCtrl,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.commonRename),
+          content: TextField(
+            controller: nameCtrl,
+            autofocus: true,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (nameCtrl.text.isNotEmpty) {
+                  context.read<ProjectService>().updateLayer(
+                    projectId: widget.projectId,
+                    sceneId: widget.sceneId,
+                    frameIndex: widget.frameIndex,
+                    layer: layer.copyWith(name: nameCtrl.text),
+                  );
+                }
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonChange),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                context.read<ProjectService>().updateLayer(
-                  projectId: widget.projectId,
-                  sceneId: widget.sceneId,
-                  frameIndex: widget.frameIndex,
-                  layer: layer.copyWith(name: nameCtrl.text),
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
       ),
-    ).then((_) => nameCtrl.dispose());
+    );
   }
 
   /// 表示範囲設定ダイアログ（共通レイヤー・タイムライン素材レイヤー）。

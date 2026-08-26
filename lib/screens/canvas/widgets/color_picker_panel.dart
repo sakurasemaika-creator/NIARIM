@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
 import '../../../widgets/confirm_delete.dart';
+import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'hsv_color_wheel.dart';
@@ -392,25 +393,28 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     final ctrl = TextEditingController();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.colorPickerNewPaletteTooltip),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          decoration: InputDecoration(labelText: l10n.colorPickerPaletteNameLabel, border: const OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-          FilledButton(
-            onPressed: () {
-              if (ctrl.text.isNotEmpty) paletteService.createPalette(ctrl.text);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonCreate),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: ctrl,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.colorPickerNewPaletteTooltip),
+          content: TextField(
+            controller: ctrl,
+            autofocus: true,
+            decoration: InputDecoration(labelText: l10n.colorPickerPaletteNameLabel, border: const OutlineInputBorder()),
           ),
-        ],
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            FilledButton(
+              onPressed: () {
+                if (ctrl.text.isNotEmpty) paletteService.createPalette(ctrl.text);
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonCreate),
+            ),
+          ],
+        ),
       ),
-    ).then((_) => ctrl.dispose());
+    );
   }
 
   void _showPaletteMenu(BuildContext context, AppLocalizations l10n, PaletteService paletteService, ColorPalette palette) {
@@ -433,22 +437,25 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 final ctrl = TextEditingController(text: palette.name);
                 showDialog(
                   context: context,
-                  builder: (dctx) => AlertDialog(
-                    title: Text(l10n.commonRename),
-                    content: TextField(controller: ctrl, autofocus: true,
-                        decoration: const InputDecoration(border: OutlineInputBorder())),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
-                      FilledButton(
-                        onPressed: () {
-                          if (ctrl.text.isNotEmpty) paletteService.renamePalette(palette.id, ctrl.text);
-                          Navigator.pop(dctx);
-                        },
-                        child: Text(l10n.commonChange),
-                      ),
-                    ],
+                  builder: (dctx) => DisposeOnUnmount(
+                    controller: ctrl,
+                    builder: (dctx) => AlertDialog(
+                      title: Text(l10n.commonRename),
+                      content: TextField(controller: ctrl, autofocus: true,
+                          decoration: const InputDecoration(border: OutlineInputBorder())),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
+                        FilledButton(
+                          onPressed: () {
+                            if (ctrl.text.isNotEmpty) paletteService.renamePalette(palette.id, ctrl.text);
+                            Navigator.pop(dctx);
+                          },
+                          child: Text(l10n.commonChange),
+                        ),
+                      ],
+                    ),
                   ),
-                ).then((_) => ctrl.dispose());
+                );
               },
             ),
             ListTile(

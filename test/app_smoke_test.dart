@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +15,35 @@ import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
+
+/// file_pickerは実機のプラットフォーム実装（PlatformInterfaceの
+/// singletonインスタンス）を必要とするプラグインで、flutter test環境には
+/// 何も登録されていない。未登録のまま`FilePicker.platform`へアクセスすると
+/// LateInitializationErrorになり、しかもそれはボタンのonPressedのような
+/// fire-and-forgetな非同期コールバック内で投げられるためtester側の
+/// 例外捕捉（takeException）を経由せずテスト全体を落としてしまう
+/// （path_providerと同じ「テスト環境側の制約」だが、こちらは
+/// 捕捉不能なので事前にモックしておく必要がある）。「ファイルが
+/// 選択されなかった（キャンセル）」と同じnullを返すことで、実際の
+/// ファイル選択ダイアログを介さずに以降の分岐（何もしない）を検証できる。
+class _FakeFilePicker extends FilePicker {
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    @Deprecated('unused') bool allowCompression = false,
+    int compressionQuality = 0,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+  }) async =>
+      null;
+}
 
 /// アプリを実際に起動し、主要画面を人手を介さず自動で巡回して、
 /// 例外が発生しないことを確認するスモークテスト群。
@@ -37,6 +67,19 @@ import 'package:niarim/services/save_tree_service.dart';
 ///
 /// テストケースごとにアプリを起動し直す（1テスト1起動）ことで、
 /// 前のケースの状態が次のケースへ漏れないようにしている。
+///
+/// 各画面へ到達した後は`probeAllControls`（下記）により、その画面上に
+/// 見えている操作可能な要素（ボタン・アイコンボタン・リストタイル・
+/// チェックボックス・スイッチ・チップ・カード等のInkWell/GestureDetector）
+/// を実際に自動で1つずつ操作し、その都度例外が起きないことまで確認する。
+/// 単に画面が描画できるかだけでなく、そこにある操作を実際に一通り試す
+/// ところまでを自動化することで、この仕組み自体が本セッション中に実際の
+/// 不具合（ダイアログを閉じた直後にTextEditingControllerを破棄する処理が
+/// 閉じるアニメーション中の再ビルドと競合してクラッシュする不具合、複数
+/// 画面に存在）を発見・修正するきっかけになった。ただし、画面に見えている
+/// 操作を1段階分自動で試す仕組みであり、起こりうる操作の組み合わせを
+/// すべて網羅する状態空間探索ではない点に留意（詳細は`probeAllControls`の
+/// ドキュメントコメントを参照）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -46,6 +89,7 @@ void main() {
     // 遷移した先のルートが残ったままになる。各テストを必ず起動画面から
     // 始められるよう、テストごとに明示的にリセットする。
     appRouter.go('/');
+    FilePicker.platform = _FakeFilePicker();
   });
 
   /// path_providerのメソッドチャンネルをモックし、実際のファイル
@@ -216,12 +260,270 @@ void main() {
     expect(tester.takeException(), isNull, reason: '有料会員画面への遷移で例外');
   }, timeout: const Timeout(Duration(seconds: 60)));
 
+  // ─── 画面内の操作可能な要素を自動で一通り試す汎用プローブ ──────────────
+  //
+  // 「画面が例外なく描画できるか」だけでなく、「その画面に見えている
+  // 操作可能な要素（ボタン・アイコンボタン・リストタイル・チェックボックス・
+  // スイッチ・チップ等）を実際に1回ずつ操作しても例外・レンダリング
+  // エラーが起きないか」まで自動で確認するためのヘルパー群。
+  //
+  // 完全な状態空間の網羅（発生しうる全ての操作の組み合わせを試す）を
+  // 保証するものではない点に注意：あくまで「今その瞬間に画面上へ見えて
+  // いる操作可能要素」を、見つかった順に1段階だけ自動操作する（操作した
+  // 結果ダイアログ等が開けば、それも対象に含めて続けて操作する）。
+  // スクロールしないと出てこない要素や、テキスト入力・ドラッグ操作を
+  // 要するもの（TextField・Slider等）は対象外。
+
+  /// 要素の部分木から最初に見つかったTextウィジェットの文字列を返す
+  /// （ボタン・リストタイル等の「見た目のラベル」を汎用的に拾うため）。
+  String? firstDescendantText(Element root) {
+    String? found;
+    void visit(Element e) {
+      if (found != null) return;
+      final w = e.widget;
+      if (w is Text && (w.data?.isNotEmpty ?? false)) {
+        found = w.data;
+        return;
+      }
+      e.visitChildren(visit);
+    }
+    root.visitChildren(visit);
+    return found;
+  }
+
+  /// テキストラベルが無いアイコンのみのボタン（IconButton等）向けに、
+  /// 最初に見つかったIconウィジェットのコードポイントをラベル代わりに使う。
+  String? firstDescendantIconLabel(Element root) {
+    String? found;
+    void visit(Element e) {
+      if (found != null) return;
+      final w = e.widget;
+      if (w is Icon && w.icon != null) {
+        found = 'icon${w.icon!.codePoint}';
+        return;
+      }
+      e.visitChildren(visit);
+    }
+    root.visitChildren(visit);
+    return found;
+  }
+
+  bool isDisabledControl(Widget w) {
+    if (w is ElevatedButton) return w.onPressed == null;
+    if (w is OutlinedButton) return w.onPressed == null;
+    if (w is TextButton) return w.onPressed == null;
+    if (w is IconButton) return w.onPressed == null;
+    if (w is FloatingActionButton) return w.onPressed == null;
+    if (w is ListTile) return w.onTap == null;
+    if (w is CheckboxListTile) return w.onChanged == null;
+    if (w is SwitchListTile) return w.onChanged == null;
+    if (w is RadioListTile) return w.onChanged == null;
+    if (w is ActionChip) return w.onPressed == null;
+    if (w is FilterChip) return w.onSelected == null;
+    if (w is ChoiceChip) return w.onSelected == null;
+    if (w is InputChip) return w.onPressed == null && w.onSelected == null;
+    if (w is Checkbox) return w.onChanged == null;
+    if (w is Switch) return w.onChanged == null;
+    if (w is InkWell) return w.onTap == null;
+    if (w is GestureDetector) return w.onTap == null;
+    return false;
+  }
+
+  const tapCandidateTypes = <Type>{
+    ElevatedButton,
+    OutlinedButton,
+    TextButton,
+    IconButton,
+    FloatingActionButton,
+    ListTile,
+    CheckboxListTile,
+    SwitchListTile,
+    RadioListTile,
+    ActionChip,
+    FilterChip,
+    ChoiceChip,
+    InputChip,
+    Checkbox,
+    Switch,
+    // カード等、独自にInkWell/GestureDetectorでタップ領域を作っている
+    // 箇所（プロジェクトカード等）も対象に含める。上記の標準ボタン類は
+    // いずれも内部実装にInkWellを持つため、判定時に「候補型の祖先を
+    // 持つ要素は除外する」ことで、同じ見た目の操作を二重にタップして
+    // しまわないようにしている。
+    InkWell,
+    GestureDetector,
+  };
+
+  // メニュー・ドロップダウンは開いた後に選択肢を選ぶ追加操作が必要で
+  // 汎用プローブの単純な「タップ→戻る」だけでは扱えないため対象外とする。
+  // 課金・退会・完全削除等の破壊的/プラットフォーム依存操作は、通常時は
+  // onPressed:nullで無効化されている設計（例：ストア未接続時の購入ボタン）
+  // だが、常時有効なもの（完全削除の確認ボタン等）もラベルで明示的に除外し、
+  // テストデータの意図しない破棄や未モックのプラットフォームチャンネル
+  // 呼び出しによる誤検知を避ける。
+  const defaultSkipLabelSubstrings = <String>{
+    '完全削除',
+    '完全に削除',
+    'ゴミ箱を空',
+    '購入',
+    'ログアウト',
+    '退会',
+  };
+
+  /// file_picker等、実機のプラットフォーム実装（PlatformInterfaceの
+  /// singletonインスタンス登録）を必要とするプラグインは、flutter test
+  /// 環境には登録されていない。呼び出すとMissingPluginExceptionか
+  /// （PlatformInterfaceパッケージ経由の実装では）「_instance...has not
+  /// been initialized」というLateInitializationErrorになる。いずれも
+  /// アプリの不具合ではなくテスト環境側の制約のため区別する。
+  bool isPlatformUnavailableInTestEnv(Object? exception) {
+    if (exception == null) return false;
+    if (exception is MissingPluginException) return true;
+    if (exception is Error) {
+      final s = exception.toString();
+      if (s.contains('LateInitializationError') && s.contains('_instance')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// 画面上（ツリー全体）から、まだ試していない操作可能な要素を1つ探して
+  /// タップし、例外が起きないことを確認する処理を、新しい要素が見つから
+  /// なくなるかmaxStepsに達するまで繰り返す。
+  ///
+  /// タップの結果ダイアログ・ボトムシート・新しい画面が開いた場合は、
+  /// Scaffold数の増加・Dialog/BottomSheetウィジェットの出現を目印に
+  /// 自動でNavigator.pop()して元の状態へ戻してから次の要素を試す
+  /// （最大5回までしか戻らないため、想定外に深く遷移した場合はそこで
+  /// 打ち切り、以降のプローブはスキップする＝以降の巡回テストの安定性を
+  /// 優先する）。
+  Future<void> probeAllControls(
+    WidgetTester tester, {
+    int maxSteps = 20,
+    Set<String> extraSkipLabelSubstrings = const {},
+  }) async {
+    final skipLabels = {...defaultSkipLabelSubstrings, ...extraSkipLabelSubstrings};
+    final tried = <String>{};
+
+    // 現在アクティブな（ModalRoute.isCurrentがtrueの）ルートを取得する。
+    // ダイアログ・ボトムシートを開いた直後はそれ自身のルートが返る。
+    Route<dynamic>? currentRoute() {
+      for (final e in tester.allElements) {
+        if (e.widget is Scaffold || e.widget is Dialog || e.widget is BottomSheet) {
+          final r = ModalRoute.of(e);
+          if (r != null && r.isCurrent) return r;
+        }
+      }
+      return null;
+    }
+
+    final baseRoute = currentRoute();
+    // ダイアログ等が開いて別ルートへ移った状態かどうかを、Scaffold数の
+    // 増減という間接的な指標ではなく「元居たルートが今もisCurrentか」で
+    // 直接判定する。前者はダイアログの閉じるアニメーションが完全に収まる
+    // 前に判定すると、閉じかけのダイアログをまだ「開いている」と誤認して
+    // 余分にpop()してしまい、画面自体まで戻しすぎることがあった。
+    bool isElevated() => baseRoute != null && currentRoute() != baseRoute;
+
+    // 候補型の祖先を持つ要素（＝標準ボタン内部のInkWell等）を除外する。
+    bool hasCandidateAncestor(Element e) {
+      var found = false;
+      e.visitAncestorElements((ancestor) {
+        if (tapCandidateTypes.contains(ancestor.widget.runtimeType)) {
+          found = true;
+          return false;
+        }
+        return true;
+      });
+      return found;
+    }
+
+    for (var step = 0; step < maxSteps; step++) {
+      Element? targetElement;
+      String targetLabel = '';
+      var index = 0;
+      for (final e in tester.allElements) {
+        final w = e.widget;
+        if (!tapCandidateTypes.contains(w.runtimeType)) continue;
+        if (isDisabledControl(w)) continue;
+        if (hasCandidateAncestor(e)) continue;
+        // GoRouterのpush等で前の画面がツリーに残ったままになっている場合、
+        // find.byElementPredicateはその隠れた要素も見つけてしまう。
+        // ModalRoute.isCurrentで「今アクティブな画面に属する要素か」を
+        // 確認し、そうでなければ対象外にする（隠れた前画面を誤って
+        // 操作しないようにするため）。
+        final route = ModalRoute.of(e);
+        if (route == null || !route.isCurrent) continue;
+
+        final label = firstDescendantText(e) ?? firstDescendantIconLabel(e) ?? '';
+        final skip = skipLabels.any((s) => s.isNotEmpty && label.contains(s));
+        final id = '${w.runtimeType}:${label.isNotEmpty ? label : '#$index'}';
+        index++;
+        if (!skip && tried.add(id)) {
+          targetElement = e;
+          targetLabel = label.isNotEmpty ? label : w.runtimeType.toString();
+          break;
+        }
+      }
+      if (targetElement == null) break;
+
+      final finder = find.byElementPredicate((el) => el == targetElement);
+      try {
+        await tester.tap(finder, warnIfMissed: false);
+      } catch (_) {
+        // 別要素の裏に隠れている等でヒットテストに失敗した場合は、
+        // 「操作不可能だった」として次の候補へ進む（クラッシュ扱いしない）。
+        continue;
+      }
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final exception = tester.takeException();
+      if (isPlatformUnavailableInTestEnv(exception)) {
+        // file_picker等、実機のプラットフォーム実装が必要なプラグインは
+        // flutter test環境には登録されておらず、呼び出すと
+        // LateInitializationError/MissingPluginExceptionになる
+        // （path_providerと同種の、テスト環境側の制約でありアプリの
+        // 不具合ではない）。アプリ側の不具合を隠さないよう、既知の
+        // シグネチャに一致する場合のみ許容し、それ以外は通常どおり
+        // テスト失敗として扱う。
+        continue;
+      }
+      expect(exception, isNull, reason: '"$targetLabel" を操作した際に例外: $exception');
+
+      if (isElevated()) {
+        var guard = 0;
+        while (isElevated() && guard < 5) {
+          NavigatorState navigator;
+          try {
+            navigator = Navigator.of(tester.element(find.byType(Scaffold).first));
+          } catch (_) {
+            break;
+          }
+          if (!navigator.canPop()) break;
+          navigator.pop();
+          await tester.pump(const Duration(milliseconds: 200));
+          await tester.pump(const Duration(milliseconds: 200));
+          tester.takeException(); // 戻る操作自体の例外はここでは対象外
+          guard++;
+        }
+        if (isElevated()) {
+          // 想定した範囲では元の状態へ戻せなかった。それ以上の操作は
+          // 予期しない画面遷移を積み重ねるだけになるため打ち切る。
+          break;
+        }
+      }
+    }
+  }
+
   /// 指定したルートへ順番に遷移して戻ってくることを繰り返し、途中で
   /// 例外が発生しないかを確認する。プロジェクトIDを必要としない設定・
   /// ヘルプ系の画面など、UIタップより直接遷移の方が経路が安定する
   /// 画面のために使う共通処理（新規プロジェクト作成テストで既に
   /// 使っている「経路の妥当性よりも画面自体の描画確認を優先する」方針を
-  /// 複数画面へ拡張したもの）。
+  /// 複数画面へ拡張したもの）。到達した画面ではprobeAllControlsで
+  /// 見えている操作可能要素も一通り試す。
   Future<void> visitRoutesAndPop(
     WidgetTester tester,
     List<String> routes, {
@@ -234,8 +536,25 @@ void main() {
       await tester.pump(settleDelay);
       expect(tester.takeException(), isNull, reason: '$route への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
-      GoRouter.of(routerContext).pop();
-      await tester.pump(const Duration(milliseconds: 300));
+
+      await probeAllControls(tester);
+
+      // probeAllControls内の自動リカバリで想定外に遷移してしまっている
+      // 可能性があるため、routerContextを使い回さず、その時点で実際に
+      // 画面上にあるScaffoldから改めてGoRouterを取得して戻る。想定外の
+      // 画面（スタック丸ごと置き換え等）に着地して戻れない場合でも、
+      // これ自体はprobeAllControls側で既に例外なしを確認済みのため、
+      // 以降のルート巡回を継続できるよう例外を握りつぶす。
+      if (find.byType(Scaffold).evaluate().isNotEmpty) {
+        try {
+          final popContext = tester.element(find.byType(Scaffold).first);
+          GoRouter.of(popContext).pop();
+          await tester.pump(const Duration(milliseconds: 300));
+        } catch (_) {
+          // 戻れない状態になっていた場合は、次のルートは改めてホームから
+          // 遷移し直す形になる（GoRouter.pushは現在地に関わらず機能する）。
+        }
+      }
       expect(tester.takeException(), isNull, reason: '$route から戻る際に例外');
     }
   }

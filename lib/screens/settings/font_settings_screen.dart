@@ -6,6 +6,7 @@ import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
 
@@ -255,29 +256,32 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
     final controller = TextEditingController(text: font.displayName);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.fontRenameDialogTitle),
-        content: TextField(controller: controller, autofocus: true),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                context.read<FontService>().renameFont(
-                  font.id,
-                  controller.text,
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.fontRenameDialogTitle),
+          content: TextField(controller: controller, autofocus: true),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  context.read<FontService>().renameFont(
+                    font.id,
+                    controller.text,
+                  );
+                }
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonChange),
+            ),
+          ],
+        ),
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 
   Future<void> _confirmDelete(BuildContext context, FontAsset font) async {

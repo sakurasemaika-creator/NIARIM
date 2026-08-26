@@ -56,35 +56,87 @@ class EditableSliderValue extends StatelessWidget {
   }
 
   Future<void> _showInputDialog(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final ctrl = TextEditingController(
-        text: isInt ? value.round().toString() : _trimZeros(value.toDouble()));
     final result = await showDialog<num>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: title != null ? Text(title!) : null,
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: TextInputType.numberWithOptions(decimal: !isInt, signed: min < 0),
-          onSubmitted: (v) => Navigator.pop(ctx, _parse(v)),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, _parse(ctrl.text)), child: Text(l10n.commonOk)),
-        ],
+      builder: (ctx) => _NumberInputDialog(
+        title: title,
+        initialValue: value,
+        isInt: isInt,
+        signed: min < 0,
       ),
     );
-    ctrl.dispose();
     if (result != null) onChanged(result.clamp(min, max));
   }
+}
 
-  num? _parse(String s) => isInt ? int.tryParse(s) : double.tryParse(s);
+/// 入力欄のTextEditingControllerを自身のStateで管理するダイアログ本体。
+/// ダイアログの呼び出し元（EditableSliderValue._showInputDialog）で
+/// controllerを生成してshowDialog完了直後にdispose()すると、閉じる
+/// トランジションアニメーション中にまだTextFieldがcontrollerを参照して
+/// おり「TextEditingController was used after being disposed」になる
+/// （アニメーション完了はshowDialogのFuture解決より後）。Stateのdispose()
+/// はウィジェットが実際にツリーから外れるタイミング（アニメーション完了後）
+/// まで呼ばれないため、ここへ持たせることでこの競合を避けられる。
+class _NumberInputDialog extends StatefulWidget {
+  final String? title;
+  final num initialValue;
+  final bool isInt;
+  final bool signed;
+
+  const _NumberInputDialog({
+    required this.title,
+    required this.initialValue,
+    required this.isInt,
+    required this.signed,
+  });
+
+  @override
+  State<_NumberInputDialog> createState() => _NumberInputDialogState();
+}
+
+class _NumberInputDialogState extends State<_NumberInputDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.isInt
+          ? widget.initialValue.round().toString()
+          : _trimZeros(widget.initialValue.toDouble()),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  num? _parse(String s) => widget.isInt ? int.tryParse(s) : double.tryParse(s);
 
   String _trimZeros(double v) {
     var s = v.toStringAsFixed(2);
     s = s.replaceFirst(RegExp(r'0+$'), '');
     s = s.replaceFirst(RegExp(r'\.$'), '');
     return s;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: widget.title != null ? Text(widget.title!) : null,
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: TextInputType.numberWithOptions(decimal: !widget.isInt, signed: widget.signed),
+        onSubmitted: (v) => Navigator.pop(context, _parse(v)),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+        FilledButton(onPressed: () => Navigator.pop(context, _parse(_controller.text)), child: Text(l10n.commonOk)),
+      ],
+    );
   }
 }

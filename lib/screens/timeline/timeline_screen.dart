@@ -48,6 +48,7 @@ import '../../services/watermark_service.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/first_use_tooltip.dart';
@@ -2286,34 +2287,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final controller = TextEditingController(text: scene.displayName);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.timelineSceneRenameTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.timelineSceneRenameTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  context.read<ProjectService>().renameScene(
+                    widget.projectId,
+                    scene.id,
+                    controller.text,
+                  );
+                }
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonChange),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                context.read<ProjectService>().renameScene(
-                  widget.projectId,
-                  scene.id,
-                  controller.text,
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 
   // タイムライン側❗マークのヘルプ（レイヤーパネル側と同一文言）
@@ -4405,33 +4409,36 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ctrl = TextEditingController();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.timelineMarkerAddDialogTitle(_currentFrame + 1)),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l10n.timelineMarkerCommentHint),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: ctrl,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.timelineMarkerAddDialogTitle(_currentFrame + 1)),
+          content: TextField(
+            controller: ctrl,
+            autofocus: true,
+            decoration: InputDecoration(hintText: l10n.timelineMarkerCommentHint),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                context.read<ProjectService>().addTimelineMarker(
+                  widget.projectId,
+                  sceneId,
+                  _currentFrame,
+                  ctrl.text,
+                );
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonAdd),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              context.read<ProjectService>().addTimelineMarker(
-                widget.projectId,
-                sceneId,
-                _currentFrame,
-                ctrl.text,
-              );
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonAdd),
-          ),
-        ],
       ),
-    ).then((_) => ctrl.dispose());
+    );
   }
 
   void _showEditMarkerDialog(TimelineMarker m) {
@@ -4441,47 +4448,50 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ctrl = TextEditingController(text: m.comment);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.timelineMarkerEditDialogTitle(m.frameIndex + 1)),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l10n.timelineMarkerCommentHint),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: ctrl,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.timelineMarkerEditDialogTitle(m.frameIndex + 1)),
+          content: TextField(
+            controller: ctrl,
+            autofocus: true,
+            decoration: InputDecoration(hintText: l10n.timelineMarkerCommentHint),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              tooltip: l10n.commonDelete,
+              onPressed: () async {
+                if (!await confirmDelete(context)) return;
+                if (!mounted) return;
+                context.read<ProjectService>().removeTimelineMarker(
+                  widget.projectId,
+                  sceneId,
+                  m.id,
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+            ),
+            const Spacer(),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                context.read<ProjectService>().updateTimelineMarker(
+                  widget.projectId,
+                  sceneId,
+                  m.copyWith(comment: ctrl.text),
+                );
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonSave),
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            tooltip: l10n.commonDelete,
-            onPressed: () async {
-              if (!await confirmDelete(context)) return;
-              if (!mounted) return;
-              context.read<ProjectService>().removeTimelineMarker(
-                widget.projectId,
-                sceneId,
-                m.id,
-              );
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-          ),
-          const Spacer(),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              context.read<ProjectService>().updateTimelineMarker(
-                widget.projectId,
-                sceneId,
-                m.copyWith(comment: ctrl.text),
-              );
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
       ),
-    ).then((_) => ctrl.dispose());
+    );
   }
 
   /// 演出フィルタートラック。適用中のフィルターが1件も
@@ -4734,7 +4744,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     int length = 12;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
+      builder: (ctx) => DisposeOnUnmount(
+        controller: labelCtrl,
+        builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.timelineAddClipDialogTitle(trackName)),
           content: Column(
@@ -4832,8 +4844,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ],
         ),
+        ),
       ),
-    ).then((_) => labelCtrl.dispose());
+    );
   }
 
   // ─── タイムライン素材クリップの永続化 ───────────────

@@ -14,6 +14,7 @@ import '../../services/workspace_preset_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/premium_lock_widget.dart';
 import 'pc_workspace_layout_settings_screen.dart';
 
@@ -692,33 +693,36 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     final controller = TextEditingController(text: preset.name);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.commonRename),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.workspaceSaveDialogLabel,
-            border: const OutlineInputBorder(),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.commonRename),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: l10n.workspaceSaveDialogLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isEmpty) return;
+                presetService.rename(preset.id, name);
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonSave),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isEmpty) return;
-              presetService.rename(preset.id, name);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 }
 

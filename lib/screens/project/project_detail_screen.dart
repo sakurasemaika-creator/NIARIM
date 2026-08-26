@@ -16,6 +16,7 @@ import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/theme_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
@@ -492,7 +493,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           title: Text(l10n.projectDetailTagsQuickAction),
           content: SizedBox(
@@ -540,8 +543,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             ),
           ],
         ),
+        ),
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 
   /// .niashare（共有用ファイル）を作成し、共有シートを表示する。
@@ -605,20 +609,23 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final controller = TextEditingController(text: currentName);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.commonRename),
-        content: TextField(controller: controller, autofocus: true, decoration: const InputDecoration(border: OutlineInputBorder())),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-          FilledButton(
-            onPressed: () {
-              context.read<ProjectService>().renameProject(widget.projectId, controller.text);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.commonRename),
+          content: TextField(controller: controller, autofocus: true, decoration: const InputDecoration(border: OutlineInputBorder())),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            FilledButton(
+              onPressed: () {
+                context.read<ProjectService>().renameProject(widget.projectId, controller.text);
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonChange),
+            ),
+          ],
+        ),
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 }

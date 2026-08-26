@@ -13,6 +13,7 @@ import '../../models/save_node.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/dispose_on_unmount.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -157,60 +158,63 @@ void _showTreeSaveDialog(BuildContext context, String projectId,
   final commentController = TextEditingController();
   showDialog(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(l10n.commonSave),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              parentId != null ? l10n.saveTreeSaveAsChildHint : l10n.saveTreeSaveAsRootHint,
-              style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+    builder: (ctx) => DisposeOnUnmount(
+      controller: commentController,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.commonSave),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                parentId != null ? l10n.saveTreeSaveAsChildHint : l10n.saveTreeSaveAsRootHint,
+                style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+              ),
             ),
-          ),
-          TextField(
-            controller: commentController,
-            decoration: InputDecoration(
-              labelText: l10n.saveTreeCommentLabel,
-              hintText: l10n.saveTreeCommentHint,
+            TextField(
+              controller: commentController,
+              decoration: InputDecoration(
+                labelText: l10n.saveTreeCommentLabel,
+                hintText: l10n.saveTreeCommentHint,
+              ),
             ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel)),
+          FilledButton(
+            onPressed: () async {
+              final ps = context.read<ProjectService>();
+              final project =
+                  ps.projects.where((p) => p.id == projectId).firstOrNull;
+              if (project == null) {
+                Navigator.pop(ctx);
+                return;
+              }
+              final thumb = await _generateSaveNodeThumbnail(ps, projectId);
+              await service.saveAsChild(
+                projectId: projectId,
+                project: project,
+                scenes: ps.scenesOf(projectId),
+                tileManager: ps.tileManagerOf(projectId),
+                parentId: parentId,
+                comment: commentController.text.isEmpty
+                    ? null
+                    : commentController.text,
+                thumbnailPngBytes: thumb,
+              );
+              if (ctx.mounted) Navigator.pop(ctx);
+              await _warnIfSaveTreeSizeLarge(context, projectId);
+            },
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel)),
-        FilledButton(
-          onPressed: () async {
-            final ps = context.read<ProjectService>();
-            final project =
-                ps.projects.where((p) => p.id == projectId).firstOrNull;
-            if (project == null) {
-              Navigator.pop(ctx);
-              return;
-            }
-            final thumb = await _generateSaveNodeThumbnail(ps, projectId);
-            await service.saveAsChild(
-              projectId: projectId,
-              project: project,
-              scenes: ps.scenesOf(projectId),
-              tileManager: ps.tileManagerOf(projectId),
-              parentId: parentId,
-              comment: commentController.text.isEmpty
-                  ? null
-                  : commentController.text,
-              thumbnailPngBytes: thumb,
-            );
-            if (ctx.mounted) Navigator.pop(ctx);
-            await _warnIfSaveTreeSizeLarge(context, projectId);
-          },
-          child: Text(l10n.commonSave),
-        ),
-      ],
     ),
-  ).then((_) => commentController.dispose());
+  );
 }
 
 /// セーブツリーの合計容量が閾値を超えている場合に通知する
@@ -369,60 +373,63 @@ class _SlotView extends StatelessWidget {
         TextEditingController(text: existing?.comment ?? '');
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (existing != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  l10n.saveTreeSlotOverwriteWarning(_formatDate(existing.savedAt)),
-                  style: const TextStyle(fontSize: 12, color: Colors.orange),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: commentController,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (existing != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    l10n.saveTreeSlotOverwriteWarning(_formatDate(existing.savedAt)),
+                    style: const TextStyle(fontSize: 12, color: Colors.orange),
+                  ),
+                ),
+              TextField(
+                controller: commentController,
+                decoration: InputDecoration(
+                  labelText: l10n.saveTreeCommentLabel,
+                  hintText: l10n.saveTreeCommentHint,
                 ),
               ),
-            TextField(
-              controller: commentController,
-              decoration: InputDecoration(
-                labelText: l10n.saveTreeCommentLabel,
-                hintText: l10n.saveTreeCommentHint,
-              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel)),
+            FilledButton(
+              onPressed: () async {
+                final ps = context.read<ProjectService>();
+                final project =
+                    ps.projects.where((p) => p.id == projectId).firstOrNull;
+                if (project == null) {
+                  Navigator.pop(ctx);
+                  return;
+                }
+                final thumb = await _generateSaveNodeThumbnail(ps, projectId);
+                await saveService.saveToSlot(
+                  projectId: projectId,
+                  slotIndex: slotIndex,
+                  project: project,
+                  scenes: ps.scenesOf(projectId),
+                  tileManager: ps.tileManagerOf(projectId),
+                  comment: commentController.text.isEmpty
+                      ? null
+                      : commentController.text,
+                  thumbnailPngBytes: thumb,
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonSave),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel)),
-          FilledButton(
-            onPressed: () async {
-              final ps = context.read<ProjectService>();
-              final project =
-                  ps.projects.where((p) => p.id == projectId).firstOrNull;
-              if (project == null) {
-                Navigator.pop(ctx);
-                return;
-              }
-              final thumb = await _generateSaveNodeThumbnail(ps, projectId);
-              await saveService.saveToSlot(
-                projectId: projectId,
-                slotIndex: slotIndex,
-                project: project,
-                scenes: ps.scenesOf(projectId),
-                tileManager: ps.tileManagerOf(projectId),
-                comment: commentController.text.isEmpty
-                    ? null
-                    : commentController.text,
-                thumbnailPngBytes: thumb,
-              );
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
       ),
-    ).then((_) => commentController.dispose());
+    );
   }
 
   Future<void> _restore(BuildContext context, SaveNode node) async {

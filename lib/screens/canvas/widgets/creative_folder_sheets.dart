@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_delete.dart';
+import '../../../widgets/dispose_on_unmount.dart';
 
 /// ブラシ・トーン・スタンプで共通のフォルダ管理UI。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
@@ -133,19 +134,22 @@ Future<String?> _promptFolderName(BuildContext context, {required String title, 
   final l10n = AppLocalizations.of(context)!;
   return showDialog<String>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(title),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
+    builder: (ctx) => DisposeOnUnmount(
+      controller: controller,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('OK')),
+        ],
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-        FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('OK')),
-      ],
     ),
-  ).then((v) { controller.dispose(); return v; });
+  );
 }
 
 /// 素材を指定フォルダへ移動するシート（「フォルダなし」も選択可能）。
@@ -195,17 +199,20 @@ Future<String?> promptCreativeAssetName(BuildContext context, {required String t
   final l10n = AppLocalizations.of(context)!;
   return showDialog<String>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(title),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
+    builder: (ctx) => DisposeOnUnmount(
+      controller: controller,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: Text(l10n.commonCreate)),
+        ],
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-        FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: Text(l10n.commonCreate)),
-      ],
     ),
-  ).then((v) { controller.dispose(); return v; });
+  );
 }

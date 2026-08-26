@@ -13,6 +13,7 @@ import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/first_use_tooltip.dart';
@@ -1814,7 +1815,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(
             existingLayerId == null
@@ -2215,8 +2218,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
           ],
         ),
+        ),
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 
   /// 組版・ルビに関する説明（半角英数字の回転・縦中横・ルビ）。

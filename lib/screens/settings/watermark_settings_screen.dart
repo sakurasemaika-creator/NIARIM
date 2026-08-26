@@ -10,6 +10,7 @@ import '../../services/watermark_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
@@ -139,7 +140,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
     final shadow = _ShadowOutlineState.from(existing);
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(existing == null ? l10n.watermarkTextDialogTitle : l10n.commonEdit),
           content: SingleChildScrollView(
@@ -240,8 +243,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
             ),
           ],
         ),
+        ),
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 
   /// 画像ウォーターマークの編集ダイアログ。画像そのものの
@@ -253,7 +257,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
     final shadow = _ShadowOutlineState.from(existing);
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
+      builder: (ctx) => DisposeOnUnmount(
+        controller: nameController,
+        builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.commonEdit),
           content: SingleChildScrollView(
@@ -288,8 +294,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
             ),
           ],
         ),
+        ),
       ),
-    ).then((_) => nameController.dispose());
+    );
   }
 
   /// ドロップシャドウ・縁取りの設定UI（新規作成・編集の両ダイアログで共用）。
