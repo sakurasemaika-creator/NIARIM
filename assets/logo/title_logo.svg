@@ -42,37 +42,47 @@
       <path d="M 2591.32 267 H 2807.68"/>
     </g>
 
-    <!-- filled quadrilaterals: uniformly reduced to 90%, preserving shape ratios and angles -->
+    <!-- filled quadrilaterals -->
     <g id="filledFrameSpaces"
        fill="#4A4636"
        transform="scale(1,-0.82)">
 
-      <!-- N-I: 90% of original rectangle -->
-      <rect x="535.15" y="95.5" width="182.7" height="99"/>
+      <!-- N-I: uniformly reduced to 85%, centered -->
+      <g transform="translate(626.5 145) scale(0.85) translate(-626.5 -145)">
+        <rect x="525" y="90" width="203" height="110"/>
+      </g>
 
-      <!-- I-A: 90% uniformly scaled about its center; angles and proportions preserved -->
-      <path d="M 945.378 194.5
-               H 1114.182
-               L 1092.62485 95.5
-               H 938.59485
-               Z"/>
+      <!-- I-A: uniformly reduced to 85%, centered; proportions and angles preserved -->
+      <g transform="translate(1029.80325 145) scale(0.85) translate(-1029.80325 -145)">
+        <path d="M 936 200
+                 H 1123.56
+                 L 1099.6065 90
+                 H 937.0465
+                 Z"/>
+      </g>
 
-      <!-- A-R: 90% uniformly scaled about its center; upper edge remains longer than bottom edge -->
-      <path d="M 1546.514 194.5
-               H 1725.686
-               V 95.5
-               H 1569.014
-               Z"/>
+      <!-- A-R: uniformly reduced to 85%, centered; proportions and angles preserved -->
+      <g transform="translate(1636.1 145) scale(0.85) translate(-1636.1 -145)">
+        <path d="M 1536.56 200
+                 H 1735.64
+                 V 90
+                 H 1561.56
+                 Z"/>
+      </g>
 
-      <!-- R-I: 90% uniformly scaled about its center; upper edge remains longer than bottom edge -->
-      <path d="M 2156.574 194.5
-               H 2371.386
-               V 95.5
-               H 2183.574
-               Z"/>
+      <!-- R-I: uniformly reduced to 85%, centered; proportions and angles preserved -->
+      <g transform="translate(2263.98 145) scale(0.85) translate(-2263.98 -145)">
+        <path d="M 2144.64 200
+                 H 2383.32
+                 V 90
+                 H 2174.64
+                 Z"/>
+      </g>
 
-      <!-- I-M: 90% of original rectangle -->
-      <rect x="2602.138" y="95.5" width="194.724" height="99"/>
+      <!-- I-M: uniformly reduced to 85%, centered -->
+      <g transform="translate(2699.5 145) scale(0.85) translate(-2699.5 -145)">
+        <rect x="2591.32" y="90" width="216.36" height="110"/>
+      </g>
 
     </g>
 
