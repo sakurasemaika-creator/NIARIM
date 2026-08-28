@@ -45,10 +45,18 @@ import 'pixel_color_mode.dart';
 /// [pixelExplicitColors]へ複製され、以後はexplicitと同じ扱いになる
 /// スナップショット方式のため、[PixelColorMode.palette]自体が永続化される
 /// ことはない）。
+/// backgroundBlend（背景馴染ませ、Task#162）：選択レイヤーのシルエット
+/// 輪郭に沿って、片側に光・反対側（連動して常に180°反対方向）に影を
+/// 乗せ、周囲のレイヤーに自然に馴染んで見えるようにする。馴染ませ色は
+/// 既定で「選択レイヤー以外の全ての表示中レイヤーからの最頻色」を自動
+/// 検出するが（[bgBlendColor]が-1の間）、カラーチップをタップすると
+/// 手動で固定できる。[bgBlendDirection]（向き、度）・[bgBlendLength]
+/// （長さ、px）・[bgBlendBlur]（ぼかし具合、px）はそれぞれ独立した
+/// スライダーで調整する。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
   retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration, lensDistortion,
-  pixelate, auroraHologram,
+  pixelate, auroraHologram, backgroundBlend,
 }
 
 /// トーンカーブのプリセット形状。
@@ -126,6 +134,21 @@ class FilterDef {
   final double hologramBrightness;
   final double hologramSaturation;
   final AuroraHologramPreset hologramPreset;
+  // 背景馴染ませ（backgroundBlendのみ使用、Task#162）：
+  // [bgBlendColor]は馴染ませ色（ARGB32のint）。既定値-1は「自動」を表す
+  // 特別値で、選択レイヤー以外の全ての表示中レイヤーから最頻色を都度
+  // 自動検出して使う（FilterEngine.mostFrequentOpaqueColor）。カラー
+  // チップで手動指定するとその具体的な色（0以上の通常のARGB32値）が
+  // 入り、以後は自動検出を使わずその色で固定される。
+  // （FilterDef自体はcopyWithの性質上nullへ戻せないプリミティブ型のみの
+  // 構成のため、null判定ではなく-1を「自動」の番兵値として使う）。
+  // [bgBlendDirection]は影と光（連動）の向き（度、0〜360）。
+  // [bgBlendLength]は影と光の長さ（px）。[bgBlendBlur]はぼかし具合
+  // （アルファ輪郭のボックスブラー半径、px）。
+  final int bgBlendColor;
+  final double bgBlendDirection;
+  final double bgBlendLength;
+  final double bgBlendBlur;
 
   const FilterDef({
     required this.id,
@@ -155,6 +178,10 @@ class FilterDef {
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
     this.hologramPreset = AuroraHologramPreset.aurora,
+    this.bgBlendColor = -1,
+    this.bgBlendDirection = 315,
+    this.bgBlendLength = 20,
+    this.bgBlendBlur = 6,
   });
 
   FilterDef copyWith({
@@ -185,6 +212,10 @@ class FilterDef {
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
+    int? bgBlendColor,
+    double? bgBlendDirection,
+    double? bgBlendLength,
+    double? bgBlendBlur,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -214,6 +245,10 @@ class FilterDef {
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
       hologramPreset: hologramPreset ?? this.hologramPreset,
+      bgBlendColor: bgBlendColor ?? this.bgBlendColor,
+      bgBlendDirection: bgBlendDirection ?? this.bgBlendDirection,
+      bgBlendLength: bgBlendLength ?? this.bgBlendLength,
+      bgBlendBlur: bgBlendBlur ?? this.bgBlendBlur,
     );
   }
 
@@ -245,6 +280,10 @@ class FilterDef {
         'hologramBrightness': hologramBrightness,
         'hologramSaturation': hologramSaturation,
         'hologramPreset': hologramPreset.name,
+        'bgBlendColor': bgBlendColor,
+        'bgBlendDirection': bgBlendDirection,
+        'bgBlendLength': bgBlendLength,
+        'bgBlendBlur': bgBlendBlur,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -284,5 +323,9 @@ class FilterDef {
         hologramPreset: AuroraHologramPreset.values.firstWhere(
             (e) => e.name == j['hologramPreset'],
             orElse: () => AuroraHologramPreset.aurora),
+        bgBlendColor: j['bgBlendColor'] as int? ?? -1,
+        bgBlendDirection: (j['bgBlendDirection'] as num?)?.toDouble() ?? 315,
+        bgBlendLength: (j['bgBlendLength'] as num?)?.toDouble() ?? 20,
+        bgBlendBlur: (j['bgBlendBlur'] as num?)?.toDouble() ?? 6,
       );
 }

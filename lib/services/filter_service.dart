@@ -53,6 +53,7 @@ class FilterService extends ChangeNotifier {
         FilterDef(id: 'Filter0017', name: '眼鏡断層', kind: FilterKind.lensDistortion, strength: 50),
         FilterDef(id: 'Filter0018', name: 'ドット絵', kind: FilterKind.pixelate, strength: 8, colorLevels: 8),
         FilterDef(id: 'Filter0019', name: 'オーロラホログラム', kind: FilterKind.auroraHologram, strength: 60),
+        FilterDef(id: 'Filter0020', name: '背景馴染ませ', kind: FilterKind.backgroundBlend),
       ];
 
   Future<void> init() async {
@@ -111,6 +112,10 @@ class FilterService extends ChangeNotifier {
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
+    int? bgBlendColor,
+    double? bgBlendDirection,
+    double? bgBlendLength,
+    double? bgBlendBlur,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -138,6 +143,10 @@ class FilterService extends ChangeNotifier {
       hologramBrightness: hologramBrightness,
       hologramSaturation: hologramSaturation,
       hologramPreset: hologramPreset,
+      bgBlendColor: bgBlendColor,
+      bgBlendDirection: bgBlendDirection,
+      bgBlendLength: bgBlendLength,
+      bgBlendBlur: bgBlendBlur,
     );
     notifyListeners();
     _persist();

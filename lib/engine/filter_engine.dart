@@ -79,6 +79,15 @@ Uint8List applyDrawFilterInIsolate(
         saturation: filter.hologramSaturation,
         preset: filter.hologramPreset,
       ),
+    // 背景馴染ませ：呼び出し側（filter_panel.dart）がこの呼び出し前に
+    // bgBlendColorを常に確定済みの具体色へ解決してから渡す
+    // （-1＝自動のままここへ来ることは無い想定だが、念のため
+    // フォールバック色を用意しておく）。
+    FilterKind.backgroundBlend => engine.applyBackgroundBlend(
+        data, width, height,
+        filter.bgBlendColor == -1 ? 0xFF808080 : filter.bgBlendColor,
+        filter.bgBlendDirection, filter.bgBlendLength, filter.bgBlendBlur,
+      ),
   };
 }
 
@@ -973,6 +982,169 @@ class FilterEngine {
       result[i + 2] = (b + (mapped.$3 - b) * amount).round().clamp(0, 255);
     }
     return result;
+  }
+
+  /// 背景馴染ませフィルター（Task#162）。選択レイヤー以外の全ての表示中
+  /// レイヤーから自動検出した色（[colorArgb]。呼び出し側＝filter_panel.dart
+  /// が事前にmostFrequentOpaqueColor()で検出するか、ユーザーがカラー
+  /// チップで手動指定した値をそのまま渡す。このメソッド自身は他レイヤーの
+  /// データを扱わない）を使い、選択レイヤーのシルエット輪郭に沿って
+  /// 片側を光、反対側（180°反対方向）を影として色付けする（「影と光は
+  /// 連動する＝常に反対方向」という依頼どおり、1つの[directionDegrees]で
+  /// 両方を制御する）。
+  ///
+  /// 実装：まず元画像のアルファチャンネルだけを[blurPx]半径のボックス
+  /// ブラーでぼかし、判定をなだらかにする（[blurPx]＝「ぼかし具合」）。
+  /// 次に不透明な各画素について、[directionDegrees]方向へ[lengthPx]
+  /// （＝「長さ」）進んだ位置の（ぼかし済み）アルファ値が低いほど「光が
+  /// 当たる側の端に近い」とみなして[colorArgb]を明るくした色を、逆方向へ
+  /// 進んだ位置のアルファ値が低いほど「影になる側の端に近い」とみなして
+  /// [colorArgb]を暗くした色を、それぞれの強さで元の色へブレンドする。
+  /// 全域が不透明な画素（サンプル先も含めて輪郭から十分離れている）は
+  /// 変化しない。
+  Uint8List applyBackgroundBlend(
+    Uint8List data,
+    int width,
+    int height,
+    int colorArgb,
+    double directionDegrees,
+    double lengthPx,
+    double blurPx,
+  ) {
+    final length = lengthPx.round().clamp(1, 200);
+    final blurredAlpha = _boxBlurAlpha(data, width, height, blurPx.round().clamp(0, 60));
+
+    final baseR = (colorArgb >> 16) & 0xFF;
+    final baseG = (colorArgb >> 8) & 0xFF;
+    final baseB = colorArgb & 0xFF;
+    final (lr, lg, lb) =
+        _adjustHsl(baseR, baseG, baseB, saturationDelta: 0, lightnessDelta: 0.25);
+    final (sr, sg, sb) =
+        _adjustHsl(baseR, baseG, baseB, saturationDelta: 0, lightnessDelta: -0.25);
+
+    final rad = directionDegrees * math.pi / 180.0;
+    final dx = math.cos(rad);
+    final dy = math.sin(rad);
+
+    final result = Uint8List.fromList(data);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        final idx = (y * width + x) * 4;
+        if (data[idx + 3] == 0) continue;
+        final farAlpha = _sampleAlpha(
+            blurredAlpha, width, height, x + dx * length, y + dy * length);
+        final nearOppositeAlpha = _sampleAlpha(
+            blurredAlpha, width, height, x - dx * length, y - dy * length);
+        final lightAmount = (1.0 - farAlpha / 255.0).clamp(0.0, 1.0);
+        final shadowAmount = (1.0 - nearOppositeAlpha / 255.0).clamp(0.0, 1.0);
+        if (lightAmount <= 0 && shadowAmount <= 0) continue;
+        int r = data[idx], g = data[idx + 1], b = data[idx + 2];
+        if (lightAmount > 0) {
+          r = (r + (lr - r) * lightAmount).round().clamp(0, 255);
+          g = (g + (lg - g) * lightAmount).round().clamp(0, 255);
+          b = (b + (lb - b) * lightAmount).round().clamp(0, 255);
+        }
+        if (shadowAmount > 0) {
+          r = (r + (sr - r) * shadowAmount).round().clamp(0, 255);
+          g = (g + (sg - g) * shadowAmount).round().clamp(0, 255);
+          b = (b + (sb - b) * shadowAmount).round().clamp(0, 255);
+        }
+        result[idx] = r;
+        result[idx + 1] = g;
+        result[idx + 2] = b;
+      }
+    }
+    return result;
+  }
+
+  /// [data]（RGBA）のアルファチャンネルだけを抽出し、半径[radius]px（0で
+  /// 無変化）のボックスブラー（横→縦の2パス分離、既存のガウスぼかしと
+  /// 同じ分離畳み込みの考え方だが、RGBを含む4チャンネル全部ではなく
+  /// アルファ1チャンネルのみを扱うぶん軽量）でぼかした結果を返す。
+  /// applyBackgroundBlendの「ぼかし具合」用。
+  Uint8List _boxBlurAlpha(Uint8List data, int width, int height, int radius) {
+    final alpha = Uint8List(width * height);
+    for (int i = 0; i < alpha.length; i++) {
+      alpha[i] = data[i * 4 + 3];
+    }
+    if (radius <= 0) return alpha;
+    final h = Uint8List(width * height);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        int sum = 0, count = 0;
+        for (int dx = -radius; dx <= radius; dx++) {
+          final nx = x + dx;
+          if (nx < 0 || nx >= width) continue;
+          sum += alpha[y * width + nx];
+          count++;
+        }
+        h[y * width + x] = count > 0 ? (sum / count).round() : 0;
+      }
+    }
+    final v = Uint8List(width * height);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        int sum = 0, count = 0;
+        for (int dy = -radius; dy <= radius; dy++) {
+          final ny = y + dy;
+          if (ny < 0 || ny >= height) continue;
+          sum += h[ny * width + x];
+          count++;
+        }
+        v[y * width + x] = count > 0 ? (sum / count).round() : 0;
+      }
+    }
+    return v;
+  }
+
+  /// ぼかし済みアルファ平面[alpha]（[width]×[height]、1チャンネル）から
+  /// 最近傍サンプリングでアルファ値を取得する。範囲外は0（＝不透明形状の
+  /// 外側と同じ扱い）として返す。
+  int _sampleAlpha(Uint8List alpha, int width, int height, double x, double y) {
+    final ix = x.round();
+    final iy = y.round();
+    if (ix < 0 || iy < 0 || ix >= width || iy >= height) return 0;
+    return alpha[iy * width + ix];
+  }
+
+  /// [data]（RGBA）の不透明画素（アルファ>0）の中から最も頻度の高い色を
+  /// 推定する。背景馴染ませフィルター（Task#162）の自動色検出で使う：
+  /// 「選択レイヤー以外の全ての表示中レイヤーからもっとも頻度が高い色を
+  /// 取得する」という依頼を、呼び出し側（filter_panel.dart）が選択レイヤー
+  /// 以外を合成した画像に対してこの関数を呼ぶ形で実現する。
+  /// 1画素単位の完全一致だとアンチエイリアス等の微妙な色ブレで結果が
+  /// 割れてしまうため、各チャンネルを5bit（32段階）へ量子化したバケツ
+  /// 単位で頻度を数え、最頻バケツに属する画素の平均色を結果として返す。
+  /// 不透明画素が1つも無い場合はnullを返す（呼び出し側で既定色にフォール
+  /// バックする）。
+  static int? mostFrequentOpaqueColor(Uint8List data) {
+    final counts = <int, int>{};
+    final sumR = <int, int>{};
+    final sumG = <int, int>{};
+    final sumB = <int, int>{};
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      final r = data[i], g = data[i + 1], b = data[i + 2];
+      final bucket = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+      counts[bucket] = (counts[bucket] ?? 0) + 1;
+      sumR[bucket] = (sumR[bucket] ?? 0) + r;
+      sumG[bucket] = (sumG[bucket] ?? 0) + g;
+      sumB[bucket] = (sumB[bucket] ?? 0) + b;
+    }
+    if (counts.isEmpty) return null;
+    int bestBucket = counts.keys.first;
+    int bestCount = -1;
+    for (final entry in counts.entries) {
+      if (entry.value > bestCount) {
+        bestCount = entry.value;
+        bestBucket = entry.key;
+      }
+    }
+    final n = counts[bestBucket]!;
+    final r = (sumR[bestBucket]! / n).round().clamp(0, 255);
+    final g = (sumG[bestBucket]! / n).round().clamp(0, 255);
+    final b = (sumB[bestBucket]! / n).round().clamp(0, 255);
+    return 0xFF000000 | (r << 16) | (g << 8) | b;
   }
 
   /// [stops]（明度0.0〜1.0の位置とRGB色のペア。位置は昇順）を[t]（0.0〜1.0）

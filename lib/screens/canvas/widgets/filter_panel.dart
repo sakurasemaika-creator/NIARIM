@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/filter_engine.dart';
+import '../../../engine/layer_compositor.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/filter_def.dart';
@@ -64,6 +65,12 @@ class _FilterPanelState extends State<FilterPanel> {
   // （LayerType.selection）を単体合成しプレビュー解像度へ縮小したもの。
   // 選択レイヤーが存在しない場合はnull（=対象範囲なし、フィルター無効）。
   Uint8List? _previewMask;
+  // 背景馴染ませフィルター（backgroundBlend、Task#162）専用：選択レイヤー
+  // 以外の全ての表示中レイヤーをプレビュー解像度へ合成したもの。
+  // FilterEngine.mostFrequentOpaqueColorへ渡し、自動検出した馴染ませ色を
+  // _autoBlendColorArgbへ保持する（ユーザーがカラーチップで手動指定
+  // していない間、プレビュー・本適用の両方でこの色を使う）。
+  int? _autoBlendColorArgb;
 
   @override
   void initState() {
@@ -133,12 +140,29 @@ class _FilterPanelState extends State<FilterPanel> {
       if (!mounted) return;
     }
 
+    // 背景馴染ませフィルター用：選択レイヤー以外の全ての表示中レイヤーを
+    // プレビュー解像度へ合成し、最頻色を自動検出しておく（選択・眼鏡断層
+    // フィルターのマスクと同じく、選択中のフィルター種別によらず常に
+    // 読み込んでおく方式に揃えている）。レイヤー一覧自体は絞り込まず
+    // shouldRenderで選択レイヤーだけ描画をスキップする方式にし、他レイヤーの
+    // クリッピング元として選択レイヤーが参照され続けられるようにする
+    // （LayerCompositor.compositeのドキュメントコメント参照）。
+    final allLayers = ps.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
+    final otherImg = await LayerCompositor.composite(
+        tm, allLayers, (l) => ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, l.id),
+        w, h,
+        shouldRender: (l, i) => l.id != layerId);
+    final otherBytes = await _downscaleToBytes(otherImg, w, h, pw, ph);
+    if (!mounted) return;
+
     if (bytes == null || !mounted) return;
     _previewScale = scale;
     _previewMask = maskBytes;
     _previewBase = bytes;
     _previewW = pw;
     _previewH = ph;
+    _autoBlendColorArgb =
+        otherBytes == null ? null : FilterEngine.mostFrequentOpaqueColor(otherBytes);
     await _updatePreview();
   }
 
@@ -727,6 +751,71 @@ class _FilterPanelState extends State<FilterPanel> {
                             decimals: 2,
                           ),
                         ],
+                        if (current.kind == FilterKind.backgroundBlend) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Text(l10n.filterBackgroundBlendColorLabel, style: const TextStyle(fontSize: 11)),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () => _pickBgBlendColor(filterService, current),
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: Color(_resolvedBgBlendColor(current)),
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (current.bgBlendColor != -1)
+                                  TextButton(
+                                    onPressed: () {
+                                      filterService.updateFilterParams(current.id, bgBlendColor: -1);
+                                      _updatePreview();
+                                    },
+                                    child: Text(l10n.filterBackgroundBlendAutoReset,
+                                        style: const TextStyle(fontSize: 11)),
+                                  )
+                                else
+                                  Expanded(
+                                    child: Text(
+                                      l10n.filterBackgroundBlendAutoLabel,
+                                      style: TextStyle(
+                                          fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterBackgroundBlendDirection,
+                            current.bgBlendDirection,
+                            0,
+                            360,
+                            (v) => filterService.updateFilterParams(current.id, bgBlendDirection: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterBackgroundBlendLength,
+                            current.bgBlendLength,
+                            1,
+                            80,
+                            (v) => filterService.updateFilterParams(current.id, bgBlendLength: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterBackgroundBlendBlur,
+                            current.bgBlendBlur,
+                            0,
+                            40,
+                            (v) => filterService.updateFilterParams(current.id, bgBlendBlur: v),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -816,6 +905,28 @@ class _FilterPanelState extends State<FilterPanel> {
           currentColor: Color(current.monochromeColor),
           onColorChanged: (c) {
             filterService.updateFilterParams(current.id, monochromeColor: c.toARGB32());
+            _updatePreview();
+          },
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
+  /// 背景馴染ませの馴染ませ色を選ぶ（縁取り・周辺減光・単色化と同じく
+  /// アプリ標準のColorPickerPanelを流用）。表示中の色は自動検出中なら
+  /// その検出結果、既に手動指定済みならその色（_resolvedBgBlendColor）。
+  /// ここでピッカーから色を選ぶと自動検出をやめてその色に固定される
+  /// （-1以外の具体的なARGB値がbgBlendColorへ入る）。
+  void _pickBgBlendColor(FilterService filterService, FilterDef current) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ColorPickerPanel(
+          currentColor: Color(_resolvedBgBlendColor(current)),
+          onColorChanged: (c) {
+            filterService.updateFilterParams(current.id, bgBlendColor: c.toARGB32());
             _updatePreview();
           },
           onClose: () => Navigator.of(ctx).pop(),
@@ -950,6 +1061,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.lensDistortion => l10n.filterNameLensDistortion,
         FilterKind.pixelate => l10n.filterNamePixelate,
         FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
+        FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -1041,7 +1153,27 @@ class _FilterPanelState extends State<FilterPanel> {
           saturation: filter.hologramSaturation,
           preset: filter.hologramPreset,
         );
+      case FilterKind.backgroundBlend:
+        // lensDistortionのlensCenterOffsetと同じ理由で、長さ・ぼかし半径
+        // （いずれもフル解像度px単位で保存）を_previewScaleで縮小プレビュー用に
+        // 換算する（向きは角度なので換算不要）。
+        return _engine.applyBackgroundBlend(
+          data, width, height,
+          _resolvedBgBlendColor(filter),
+          filter.bgBlendDirection,
+          filter.bgBlendLength * _previewScale,
+          filter.bgBlendBlur * _previewScale,
+        );
     }
+  }
+
+  /// backgroundBlendの馴染ませ色を解決する：ユーザーが手動指定していれば
+  /// その色（[FilterDef.bgBlendColor]が-1以外）、そうでなければ
+  /// _loadPreviewBaseで自動検出した色（_autoBlendColorArgb）、それも
+  /// 無ければ（不透明画素が1つも無い等）中間グレーへフォールバックする。
+  int _resolvedBgBlendColor(FilterDef filter) {
+    if (filter.bgBlendColor != -1) return filter.bgBlendColor;
+    return _autoBlendColorArgb ?? 0xFF808080;
   }
 
   IconData _iconFor(FilterKind kind) {
@@ -1086,6 +1218,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.grid_view;
       case FilterKind.auroraHologram:
         return Icons.auto_awesome_mosaic;
+      case FilterKind.backgroundBlend:
+        return Icons.wb_twilight;
     }
   }
 
@@ -1162,11 +1296,32 @@ class _FilterPanelState extends State<FilterPanel> {
         maskData = maskByteData?.buffer.asUint8List();
       }
     }
+    // 背景馴染ませフィルター用：このフレームの選択レイヤー以外を全てフル
+    // 解像度で合成し、最頻色を自動検出する（ユーザーが手動指定していない
+    // 場合のみ使う）。大量処理（複数フレーム一括適用）ではフレームごとに
+    // 周囲のレイヤー内容が変わり得るため、プレビュー時の自動検出結果
+    // （_autoBlendColorArgb）を使い回さず、フレームごとに都度検出し直す。
+    // isolateへ渡すFilterDefのbgBlendColorへ解決済みの具体色を書き込んで
+    // おくことで、applyDrawFilterInIsolate側は常に確定済みの色だけを
+    // 扱えばよくなる（-1＝自動、を意識する必要がない）。
+    var effectiveFilter = filter;
+    if (filter.kind == FilterKind.backgroundBlend && filter.bgBlendColor == -1) {
+      final allLayers = ps.layersOf(widget.projectId, widget.sceneId, frameIndex);
+      final otherImg = await LayerCompositor.composite(
+          tm, allLayers, (l) => ps.tileKeyFor(widget.projectId, widget.sceneId, frameIndex, l.id),
+          tm.canvasWidth, tm.canvasHeight,
+          shouldRender: (l, i) => l.id != layerId);
+      final otherByteData = await otherImg.toByteData(format: ui.ImageByteFormat.rawRgba);
+      otherImg.dispose();
+      final otherBytes = otherByteData?.buffer.asUint8List();
+      final autoColor = otherBytes == null ? null : FilterEngine.mostFrequentOpaqueColor(otherBytes);
+      effectiveFilter = filter.copyWith(bgBlendColor: autoColor ?? 0xFF808080);
+    }
     // 低スペック端末でのUIスレッドブロックを避けるため、本適用（フル解像度）は
     // バックグラウンドisolateで実行する。プレビュー（縮小画像）は_runFilterのまま
     // メインisolateで即時処理する（isolate起動コストの方が高くつくため）。
-    final result = await compute(
-        applyDrawFilterInIsolate, (data, tm.canvasWidth, tm.canvasHeight, filter, maskData));
+    final result = await compute(applyDrawFilterInIsolate,
+        (data, tm.canvasWidth, tm.canvasHeight, effectiveFilter, maskData));
 
     if (filter.kind == FilterKind.outline) {
       return _applyOutlineToNewLayer(
