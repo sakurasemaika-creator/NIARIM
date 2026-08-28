@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/color_palette.dart';
 
@@ -60,5 +62,33 @@ class PixelArtPaletteService extends ChangeNotifier {
     _palettes.removeWhere((p) => p.id == id);
     notifyListeners();
     await _persist();
+  }
+
+  // ─── 共有（.niapixelpalette）：バイナリ資産を持たない単純なJSON設定
+  // のため、zip化はせずJSONそのまま書き出す（palette_service.dartの
+  // .niapaletteと同じ方針）。 ────────────────────────────────────────
+
+  Future<File> exportPalette(String id) async {
+    final palette = _palettes.firstWhere((p) => p.id == id);
+    final base = await getApplicationDocumentsDirectory();
+    final safeName = palette.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final file = File('${base.path}/$safeName.niapixelpalette');
+    await file.writeAsString(jsonEncode(palette.toJson()));
+    return file;
+  }
+
+  Future<ColorPalette> importPaletteFile(String filePath) async {
+    final content = await File(filePath).readAsString();
+    return importPaletteJson(content);
+  }
+
+  /// JSON文字列（`exportPalette`が書き出す形式と同じ）からパレットを取り込む。
+  /// QRコード共有で読み取ったテキストの取り込みにも使う。
+  Future<ColorPalette> importPaletteJson(String json) async {
+    final decoded = jsonDecode(json) as Map<String, dynamic>;
+    return addPalette(
+      (decoded['name'] as String?) ?? '',
+      ((decoded['colors'] as List<dynamic>?) ?? const []).map((e) => e as int).toList(),
+    );
   }
 }

@@ -2436,5 +2436,36 @@
   "storageEraseAllDoneSnackbar": "모든 데이터를 삭제했습니다. 앱을 다시 시작해 주세요.",
   "homeDrawerStorage": "용량 확보",
   "helpStorageTitle": "용량 확보",
-  "helpStorageDesc": "기기에서 NIARIM이 사용하는 용량과, NIARIM 내부(프로젝트, 소재, 내보낸 파일, 커스텀 브러시/톤/스탬프/폰트, 캐시, 휴지통)의 세부 내역을 원 그래프로 확인할 수 있습니다. 캐시 삭제, 모든 프로젝트의 미사용 소재 일괄 삭제, 휴지통 비우기, 프로젝트 정리, 모든 데이터 삭제(초기화)를 수행할 수 있습니다."
+  "helpStorageDesc": "기기에서 NIARIM이 사용하는 용량과, NIARIM 내부(프로젝트, 소재, 내보낸 파일, 커스텀 브러시/톤/스탬프/폰트, 캐시, 휴지통)의 세부 내역을 원 그래프로 확인할 수 있습니다. 캐시 삭제, 모든 프로젝트의 미사용 소재 일괄 삭제, 휴지통 비우기, 프로젝트 정리, 모든 데이터 삭제(초기화)를 수행할 수 있습니다.",
+  "colorPickerImportPaletteTooltip": "팔레트 가져오기",
+  "colorPickerSharePaletteTooltip": "공유",
+  "colorPickerShareViaFile": "파일로 공유",
+  "colorPickerShareFailedSnackbar": "공유에 실패했습니다: {error}",
+  "@colorPickerShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerShareViaQr": "QR 코드로 공유",
+  "qrShareTooLargeHint": "색상이 너무 많아 QR 코드로 공유할 수 없습니다(파일 공유를 이용해 주세요)",
+  "colorPickerImportViaFile": "파일에서 선택",
+  "colorPickerImportFailedSnackbar": "가져오기에 실패했습니다: {error}",
+  "@colorPickerImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerImportViaQr": "QR 코드 텍스트 붙여넣기",
+  "qrImportFailedError": "가져오기에 실패했습니다. 텍스트가 올바른지 확인해 주세요.",
+  "qrImportHint": "상대방 기기에 표시된 QR 코드를 기본 카메라 앱 등으로 스캔한 후, 복사한 텍스트를 여기에 붙여넣어 주세요.",
+  "qrImportFieldHint": "스캔한 텍스트를 붙여넣기",
+  "qrImportPasteButton": "클립보드에서 붙여넣기",
+  "qrImportSubmitButton": "가져오기",
+  "qrShareHint": "기본 카메라 앱 등으로 이 QR 코드를 스캔하면 텍스트를 복사할 수 있습니다. 상대방 기기에서 \"가져오기\"로 복사한 텍스트를 붙여넣어 주세요.",
+  "qrShareCopiedSnackbar": "텍스트를 복사했습니다",
+  "qrShareCopyButton": "텍스트 복사"
 }

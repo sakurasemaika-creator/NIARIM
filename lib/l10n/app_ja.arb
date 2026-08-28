@@ -2686,5 +2686,36 @@
   "storageEraseAllDoneSnackbar": "全データを削除しました。アプリを再起動してください",
   "homeDrawerStorage": "容量削減",
   "helpStorageTitle": "容量削減",
-  "helpStorageDesc": "端末容量に対するNIARIMの使用量と、NIARIM内部（プロジェクト・素材・書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・キャッシュ・ゴミ箱）の内訳を円グラフで確認できます。キャッシュの削除・未使用素材の一括削除（全プロジェクト）・ゴミ箱を空にする・プロジェクトの整理・全データ削除（初期化）が行えます。"
+  "helpStorageDesc": "端末容量に対するNIARIMの使用量と、NIARIM内部（プロジェクト・素材・書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・キャッシュ・ゴミ箱）の内訳を円グラフで確認できます。キャッシュの削除・未使用素材の一括削除（全プロジェクト）・ゴミ箱を空にする・プロジェクトの整理・全データ削除（初期化）が行えます。",
+  "colorPickerImportPaletteTooltip": "パレットを取り込む",
+  "colorPickerSharePaletteTooltip": "共有する",
+  "colorPickerShareViaFile": "ファイルで共有",
+  "colorPickerShareFailedSnackbar": "共有に失敗しました: {error}",
+  "@colorPickerShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerShareViaQr": "QRコードで共有",
+  "qrShareTooLargeHint": "色数が多いためQRコードでは共有できません（ファイル共有をご利用ください）",
+  "colorPickerImportViaFile": "ファイルから選択",
+  "colorPickerImportFailedSnackbar": "読み込みに失敗しました: {error}",
+  "@colorPickerImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerImportViaQr": "QRコードのテキストを貼り付け",
+  "qrImportFailedError": "読み込みに失敗しました。テキストが正しいか確認してください",
+  "qrImportHint": "相手の端末で表示されたQRコードを標準カメラアプリ等で読み取り、コピーした文字列をここに貼り付けてください",
+  "qrImportFieldHint": "読み取った文字列を貼り付け",
+  "qrImportPasteButton": "クリップボードから貼り付け",
+  "qrImportSubmitButton": "読み込む",
+  "qrShareHint": "標準カメラアプリ等でこのQRコードを読み取ると、テキストをコピーできます。相手の端末で「取り込む」からQRコードのテキストを貼り付けてください。",
+  "qrShareCopiedSnackbar": "テキストをコピーしました",
+  "qrShareCopyButton": "テキストをコピー"
 }

@@ -2436,5 +2436,36 @@
   "storageEraseAllDoneSnackbar": "已删除全部数据，请重启应用。",
   "homeDrawerStorage": "释放空间",
   "helpStorageTitle": "释放空间",
-  "helpStorageDesc": "以饼图查看NIARIM在设备上占用的容量，以及NIARIM内部（项目、素材、已导出文件、自制画笔/网点/图章/字体、缓存、回收站）的详细占比。可以清除缓存、批量删除所有项目中的未使用素材、清空回收站、整理项目，或删除全部数据（初始化）。"
+  "helpStorageDesc": "以饼图查看NIARIM在设备上占用的容量，以及NIARIM内部（项目、素材、已导出文件、自制画笔/网点/图章/字体、缓存、回收站）的详细占比。可以清除缓存、批量删除所有项目中的未使用素材、清空回收站、整理项目，或删除全部数据（初始化）。",
+  "colorPickerImportPaletteTooltip": "导入调色板",
+  "colorPickerSharePaletteTooltip": "分享",
+  "colorPickerShareViaFile": "以文件分享",
+  "colorPickerShareFailedSnackbar": "分享失败：{error}",
+  "@colorPickerShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerShareViaQr": "以二维码分享",
+  "qrShareTooLargeHint": "颜色过多，无法以二维码分享（请使用文件分享）",
+  "colorPickerImportViaFile": "从文件选择",
+  "colorPickerImportFailedSnackbar": "导入失败：{error}",
+  "@colorPickerImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerImportViaQr": "粘贴二维码文本",
+  "qrImportFailedError": "导入失败，请确认文本是否正确。",
+  "qrImportHint": "请用标准相机应用扫描对方设备上显示的二维码，然后将复制的文本粘贴到此处。",
+  "qrImportFieldHint": "粘贴扫描到的文本",
+  "qrImportPasteButton": "从剪贴板粘贴",
+  "qrImportSubmitButton": "导入",
+  "qrShareHint": "用标准相机应用扫描此二维码即可复制文本。请在对方设备上使用“导入”粘贴复制的文本。",
+  "qrShareCopiedSnackbar": "已复制文本",
+  "qrShareCopyButton": "复制文本"
 }

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/color_palette.dart';
 
@@ -75,6 +77,49 @@ class PaletteService extends ChangeNotifier {
     _activePaletteId = palette.id;
     await _persistPalettes();
     notifyListeners();
+  }
+
+  /// 他ユーザーから共有された（引き継ぎファイル・QRコード等）パレットを
+  /// 新規パレットとして取り込む。IDは衝突を避けるため新規採番し直す
+  /// （niatra_serializer.dartの他アイテムのimport方式と同じ）。
+  Future<ColorPalette> importPalette(ColorPalette palette) async {
+    final withNewId = ColorPalette(
+      id: 'palette_${DateTime.now().microsecondsSinceEpoch}',
+      name: palette.name,
+      colors: palette.colors,
+    );
+    _palettes.add(withNewId);
+    await _persistPalettes();
+    notifyListeners();
+    return withNewId;
+  }
+
+  // ─── 共有（.niapalette）：ワークスペース設定（.niaworkspace）と同じく
+  // バイナリ資産を持たない単純なJSON設定のため、zip化はせずJSONそのまま
+  // 書き出す。ファイル共有・QRコード共有（テキストのやり取り）の両方で
+  // 同じJSON文字列を使い回せるようにするため。 ──────────────────────
+
+  String _exportJson(ColorPalette palette) => jsonEncode(palette.toJson());
+
+  Future<File> exportPalette(String id) async {
+    final palette = _palettes.firstWhere((p) => p.id == id);
+    final base = await getApplicationDocumentsDirectory();
+    final safeName = palette.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final file = File('${base.path}/$safeName.niapalette');
+    await file.writeAsString(_exportJson(palette));
+    return file;
+  }
+
+  Future<ColorPalette> importPaletteFile(String filePath) async {
+    final content = await File(filePath).readAsString();
+    return importPaletteJson(content);
+  }
+
+  /// JSON文字列（`exportPalette`が書き出す形式と同じ）からパレットを取り込む。
+  /// QRコード共有で読み取ったテキストの取り込みにも使う。
+  Future<ColorPalette> importPaletteJson(String json) async {
+    final decoded = jsonDecode(json) as Map<String, dynamic>;
+    return importPalette(ColorPalette.fromJson(decoded));
   }
 
   Future<void> renamePalette(String id, String name) async {

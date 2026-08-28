@@ -77,6 +77,10 @@ dependencies:
   ffmpeg_kit_flutter_new_video: ^2.5.2
   font_awesome_flutter: ^11.0.0
   flutter_svg: ^2.3.0
+  # QRコード共有（設定共有画面：パレット・ドット絵専用パレット等、バイナリ
+  # 資産を持たない小さなJSON設定のみを対象とする。詳細は12章の変更履歴・
+  # settings_share_screen.dartのコメント参照）。
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

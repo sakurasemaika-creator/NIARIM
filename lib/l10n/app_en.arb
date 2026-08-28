@@ -2436,5 +2436,36 @@
   "storageEraseAllDoneSnackbar": "All data erased. Please restart the app.",
   "homeDrawerStorage": "Free up space",
   "helpStorageTitle": "Free up space",
-  "helpStorageDesc": "See how much storage NIARIM is using on your device, and a breakdown of what's inside NIARIM (projects, materials, exported files, custom brushes/tones/stamps/fonts, cache, and trash) as pie charts. Clear the cache, bulk-remove unused materials across all projects, empty the trash, organize projects, or erase all data (reset)."
+  "helpStorageDesc": "See how much storage NIARIM is using on your device, and a breakdown of what's inside NIARIM (projects, materials, exported files, custom brushes/tones/stamps/fonts, cache, and trash) as pie charts. Clear the cache, bulk-remove unused materials across all projects, empty the trash, organize projects, or erase all data (reset).",
+  "colorPickerImportPaletteTooltip": "Import palette",
+  "colorPickerSharePaletteTooltip": "Share",
+  "colorPickerShareViaFile": "Share as file",
+  "colorPickerShareFailedSnackbar": "Failed to share: {error}",
+  "@colorPickerShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerShareViaQr": "Share as QR code",
+  "qrShareTooLargeHint": "Too many colors to share as a QR code (use file sharing instead)",
+  "colorPickerImportViaFile": "Choose a file",
+  "colorPickerImportFailedSnackbar": "Failed to import: {error}",
+  "@colorPickerImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerImportViaQr": "Paste QR code text",
+  "qrImportFailedError": "Failed to import. Please check that the text is correct.",
+  "qrImportHint": "Scan the QR code shown on the other device with a standard camera app, then paste the copied text here.",
+  "qrImportFieldHint": "Paste the scanned text",
+  "qrImportPasteButton": "Paste from clipboard",
+  "qrImportSubmitButton": "Import",
+  "qrShareHint": "Scan this QR code with a standard camera app to copy the text. On the other device, use \"Import\" to paste the copied text.",
+  "qrShareCopiedSnackbar": "Text copied",
+  "qrShareCopyButton": "Copy text"
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,8 @@ import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/qr_import_dialog.dart';
+import '../../widgets/qr_share_dialog.dart';
 import 'pc_workspace_layout_settings_screen.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
@@ -512,27 +515,53 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               ),
             ),
             for (final preset in presetService.presets)
-              ListTile(
-                leading: const Icon(Icons.dashboard_customize),
-                title: Text(preset.name),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  try {
-                    final file = await presetService.exportPreset(preset.id);
-                    if (!context.mounted) return;
-                    await SharePlus.instance.share(
-                      ShareParams(files: [XFile(file.path)]),
-                    );
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          l10n.workspaceShareFailedSnackbar(e.toString()),
-                        ),
-                      ),
-                    );
-                  }
+              Builder(
+                builder: (context) {
+                  final payload = jsonEncode(preset.toJson());
+                  final qrAvailable = payload.length <= kQrShareSafeCharLimit;
+                  return ListTile(
+                    leading: const Icon(Icons.dashboard_customize),
+                    title: Text(preset.name),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.qr_code_2),
+                      tooltip: qrAvailable
+                          ? l10n.colorPickerShareViaQr
+                          : l10n.qrShareTooLargeHint,
+                      onPressed: qrAvailable
+                          ? () {
+                              Navigator.pop(ctx);
+                              showDialog(
+                                context: context,
+                                builder: (_) => QrShareDialog(
+                                  title: preset.name,
+                                  payload: payload,
+                                ),
+                              );
+                            }
+                          : null,
+                    ),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      try {
+                        final file = await presetService.exportPreset(
+                          preset.id,
+                        );
+                        if (!context.mounted) return;
+                        await SharePlus.instance.share(
+                          ShareParams(files: [XFile(file.path)]),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              l10n.workspaceShareFailedSnackbar(e.toString()),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               ),
           ],
@@ -634,6 +663,23 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(ctx);
                 importFromFile();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: Text(l10n.colorPickerImportViaQr),
+              onTap: () {
+                Navigator.pop(ctx);
+                showDialog(
+                  context: context,
+                  builder: (_) => QrImportDialog(
+                    title: l10n.colorPickerImportViaQr,
+                    onImport: (text) async {
+                      await presetService.importPresetJson(text);
+                      return true;
+                    },
+                  ),
+                );
               },
             ),
             if (presetService.presets.isNotEmpty) const Divider(height: 1),

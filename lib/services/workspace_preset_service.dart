@@ -153,6 +153,12 @@ class WorkspacePresetService extends ChangeNotifier {
 
   Future<WorkspacePreset> importPresetFile(String filePath) async {
     final content = await File(filePath).readAsString();
+    return importPresetJson(content);
+  }
+
+  /// JSON文字列（`exportPreset`が書き出す形式と同じ）からワークスペース
+  /// 設定を取り込む。QRコード共有で読み取ったテキストの取り込みにも使う。
+  Future<WorkspacePreset> importPresetJson(String content) async {
     final json = jsonDecode(content) as Map<String, dynamic>;
     final imported = WorkspacePreset.fromJson(json);
     // IDは取り込み先で既存プリセットと衝突しないよう振り直す。

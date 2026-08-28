@@ -1,12 +1,17 @@
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/qr_import_dialog.dart';
+import '../../../widgets/qr_share_dialog.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'hsv_color_wheel.dart';
 import 'panel_close_bar.dart';
@@ -316,6 +321,11 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               onPressed: () => _showCreatePaletteDialog(context, l10n, paletteService),
             ),
             IconButton(
+              icon: const Icon(Icons.download_outlined, size: 16),
+              tooltip: l10n.colorPickerImportPaletteTooltip,
+              onPressed: () => _showImportPaletteSheet(context, l10n, paletteService),
+            ),
+            IconButton(
               icon: const Icon(Icons.more_horiz, size: 16),
               tooltip: l10n.colorPickerManagePaletteTooltip,
               onPressed: active == null ? null : () => _showPaletteMenu(context, l10n, paletteService, active),
@@ -459,6 +469,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: Text(l10n.colorPickerSharePaletteTooltip),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showSharePaletteSheet(context, l10n, palette);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
               title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
               // お気に入り登録中は削除できない。
@@ -474,6 +492,109 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       paletteService.deletePalette(palette.id);
                     }
                   : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// パレットの共有方法選択（ファイル共有／QRコード共有）。
+  /// QRコードは、パレットは基本的にバイナリ資産を持たない小さな
+  /// JSON設定であるため候補として提示するが、色数が多くQRの安全な
+  /// 文字数上限（[kQrShareSafeCharLimit]）を超える場合は非活性にし、
+  /// ファイル共有のみを案内する。
+  void _showSharePaletteSheet(BuildContext context, AppLocalizations l10n, ColorPalette palette) {
+    final paletteService = context.read<PaletteService>();
+    final payload = jsonEncode(palette.toJson());
+    final qrAvailable = payload.length <= kQrShareSafeCharLimit;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.ios_share),
+              title: Text(l10n.colorPickerShareViaFile),
+              onTap: () async {
+                Navigator.pop(ctx);
+                try {
+                  final file = await paletteService.exportPalette(palette.id);
+                  if (!context.mounted) return;
+                  await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerShareFailedSnackbar(e.toString()))));
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: Text(l10n.colorPickerShareViaQr),
+              subtitle: qrAvailable ? null : Text(l10n.qrShareTooLargeHint),
+              onTap: qrAvailable
+                  ? () {
+                      Navigator.pop(ctx);
+                      showDialog(
+                        context: context,
+                        builder: (_) => QrShareDialog(title: palette.name, payload: payload),
+                      );
+                    }
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// パレットの取り込み方法選択（ファイルから選択／QRコードの読み取り
+  /// テキストを貼り付け）。
+  void _showImportPaletteSheet(BuildContext context, AppLocalizations l10n, PaletteService paletteService) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.folder_open_outlined),
+              title: Text(l10n.colorPickerImportViaFile),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['niapalette'],
+                );
+                final path = result?.files.firstOrNull?.path;
+                if (path == null) return;
+                try {
+                  await paletteService.importPaletteFile(path);
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerImportFailedSnackbar(e.toString()))));
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: Text(l10n.colorPickerImportViaQr),
+              onTap: () {
+                Navigator.pop(ctx);
+                showDialog(
+                  context: context,
+                  builder: (_) => QrImportDialog(
+                    title: l10n.colorPickerImportViaQr,
+                    onImport: (text) async {
+                      await paletteService.importPaletteJson(text);
+                      return true;
+                    },
+                  ),
+                );
+              },
             ),
           ],
         ),

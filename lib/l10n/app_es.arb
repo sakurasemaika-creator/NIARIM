@@ -2436,5 +2436,36 @@
   "storageEraseAllDoneSnackbar": "Se borraron todos los datos. Reinicia la app.",
   "homeDrawerStorage": "Liberar espacio",
   "helpStorageTitle": "Liberar espacio",
-  "helpStorageDesc": "Consulta cuánto espacio usa NIARIM en tu dispositivo y un desglose de su contenido interno (proyectos, materiales, archivos exportados, pinceles/tonos/sellos/fuentes personalizados, caché y papelera) en gráficos circulares. Puedes borrar la caché, eliminar materiales sin usar en todos los proyectos, vaciar la papelera, organizar proyectos o borrar todos los datos (restablecer)."
+  "helpStorageDesc": "Consulta cuánto espacio usa NIARIM en tu dispositivo y un desglose de su contenido interno (proyectos, materiales, archivos exportados, pinceles/tonos/sellos/fuentes personalizados, caché y papelera) en gráficos circulares. Puedes borrar la caché, eliminar materiales sin usar en todos los proyectos, vaciar la papelera, organizar proyectos o borrar todos los datos (restablecer).",
+  "colorPickerImportPaletteTooltip": "Importar paleta",
+  "colorPickerSharePaletteTooltip": "Compartir",
+  "colorPickerShareViaFile": "Compartir como archivo",
+  "colorPickerShareFailedSnackbar": "Error al compartir: {error}",
+  "@colorPickerShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerShareViaQr": "Compartir como código QR",
+  "qrShareTooLargeHint": "Demasiados colores para compartir como código QR (usa el archivo compartido)",
+  "colorPickerImportViaFile": "Elegir un archivo",
+  "colorPickerImportFailedSnackbar": "Error al importar: {error}",
+  "@colorPickerImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerImportViaQr": "Pegar texto de código QR",
+  "qrImportFailedError": "No se pudo importar. Comprueba que el texto sea correcto.",
+  "qrImportHint": "Escanea el código QR mostrado en el otro dispositivo con una app de cámara estándar y pega aquí el texto copiado.",
+  "qrImportFieldHint": "Pega el texto escaneado",
+  "qrImportPasteButton": "Pegar desde el portapapeles",
+  "qrImportSubmitButton": "Importar",
+  "qrShareHint": "Escanea este código QR con una app de cámara estándar para copiar el texto. En el otro dispositivo, usa «Importar» para pegar el texto copiado.",
+  "qrShareCopiedSnackbar": "Texto copiado",
+  "qrShareCopyButton": "Copiar texto"
 }

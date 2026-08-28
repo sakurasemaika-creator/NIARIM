@@ -1,10 +1,15 @@
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../l10n/app_localizations.dart';
 import '../models/color_palette.dart';
 import '../services/pixel_art_palette_service.dart';
 import '../widgets/confirm_delete.dart';
 import 'pixel_art_palette_edit_dialog.dart';
+import 'qr_import_dialog.dart';
+import 'qr_share_dialog.dart';
 
 /// 「パレットから選ぶ」のポップアップ。保存済みのドット絵専用パレット一覧
 /// （[PixelArtPaletteService]）から1つタップして選択し、「適用」を押すと
@@ -35,6 +40,105 @@ class _PixelArtPalettePickerDialogState extends State<PixelArtPalettePickerDialo
     if (!ok || !mounted) return;
     await context.read<PixelArtPaletteService>().deletePalette(palette.id);
     if (_selectedId == palette.id) setState(() => _selectedId = null);
+  }
+
+  void _showShareSheet(ColorPalette palette) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<PixelArtPaletteService>();
+    final payload = jsonEncode(palette.toJson());
+    final qrAvailable = payload.length <= kQrShareSafeCharLimit;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.ios_share),
+              title: Text(l10n.colorPickerShareViaFile),
+              onTap: () async {
+                Navigator.pop(ctx);
+                try {
+                  final file = await service.exportPalette(palette.id);
+                  if (!mounted) return;
+                  await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerShareFailedSnackbar(e.toString()))));
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: Text(l10n.colorPickerShareViaQr),
+              subtitle: qrAvailable ? null : Text(l10n.qrShareTooLargeHint),
+              onTap: qrAvailable
+                  ? () {
+                      Navigator.pop(ctx);
+                      showDialog(
+                        context: context,
+                        builder: (_) => QrShareDialog(title: palette.name, payload: payload),
+                      );
+                    }
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImportSheet() {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<PixelArtPaletteService>();
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.folder_open_outlined),
+              title: Text(l10n.colorPickerImportViaFile),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['niapixelpalette'],
+                );
+                final path = result?.files.firstOrNull?.path;
+                if (path == null) return;
+                try {
+                  await service.importPaletteFile(path);
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerImportFailedSnackbar(e.toString()))));
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: Text(l10n.colorPickerImportViaQr),
+              onTap: () {
+                Navigator.pop(ctx);
+                showDialog(
+                  context: context,
+                  builder: (_) => QrImportDialog(
+                    title: l10n.colorPickerImportViaQr,
+                    onImport: (text) async {
+                      await service.importPaletteJson(text);
+                      return true;
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -74,6 +178,11 @@ class _PixelArtPalettePickerDialogState extends State<PixelArtPalettePickerDialo
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
+                            icon: const Icon(Icons.share_outlined, size: 20),
+                            tooltip: l10n.colorPickerSharePaletteTooltip,
+                            onPressed: () => _showShareSheet(p),
+                          ),
+                          IconButton(
                             icon: const Icon(Icons.edit_outlined, size: 20),
                             tooltip: l10n.commonEdit,
                             onPressed: () => _openEditor(existing: p),
@@ -92,10 +201,20 @@ class _PixelArtPalettePickerDialogState extends State<PixelArtPalettePickerDialo
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        TextButton.icon(
-          onPressed: () => _openEditor(),
-          icon: const Icon(Icons.add),
-          label: Text(l10n.commonAdd),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton.icon(
+              onPressed: () => _openEditor(),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.commonAdd),
+            ),
+            IconButton(
+              icon: const Icon(Icons.download_outlined),
+              tooltip: l10n.colorPickerImportPaletteTooltip,
+              onPressed: _showImportSheet,
+            ),
+          ],
         ),
         Row(
           mainAxisSize: MainAxisSize.min,

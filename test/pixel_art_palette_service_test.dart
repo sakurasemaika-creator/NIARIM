@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/pixel_art_palette_service.dart';
@@ -51,5 +52,17 @@ void main() {
     expect(second.palettes, hasLength(1));
     expect(second.palettes.first.name, '保存テスト');
     expect(second.palettes.first.colors, [0xFF123456]);
+  });
+
+  test('importPaletteJsonはexportPaletteと同じJSON形式から復元できる（Task#142）', () async {
+    final service = PixelArtPaletteService();
+    await service.init();
+    final json = jsonEncode({'id': 'x', 'name': 'QR共有パレット', 'colors': [0xFF000000, 0xFFFFFFFF]});
+
+    final imported = await service.importPaletteJson(json);
+
+    expect(imported.name, 'QR共有パレット');
+    expect(imported.colors, [0xFF000000, 0xFFFFFFFF]);
+    expect(service.palettes, hasLength(1));
   });
 }
