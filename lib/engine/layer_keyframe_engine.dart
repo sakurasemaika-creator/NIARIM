@@ -21,10 +21,48 @@ class LayerKeyframeEngine {
       if (frame >= a.frameIndex && frame <= b.frameIndex) {
         final span = b.frameIndex - a.frameIndex;
         final t = span == 0 ? 0.0 : (frame - a.frameIndex) / span;
-        return LayerKeyframe.lerp(a, b, t);
+        // イージングは区間の開始側（a）のキーフレームが「次のキーフレームへ
+        // どうつながるか」を決める（layer_keyframe.dartのLayerKeyframeEasing
+        // ドキュメントコメント参照）。tを歪めてから線形補間することで、
+        // 補間対象の値（x/y/scale/rotation）を問わず同じカーブを適用できる。
+        return LayerKeyframe.lerp(a, b, _ease(a.easing, t));
       }
     }
     return sorted.last;
+  }
+
+  /// イージングカーブに沿って[t]（0〜1、区間内の等速の進み具合）を歪める。
+  /// 戻り値は必ずしも0〜1に収まらない（bounceOutは終端付近で1を僅かに
+  /// 超えるオーバーシュートを含む）。
+  double _ease(LayerKeyframeEasing easing, double t) {
+    final clamped = t.clamp(0.0, 1.0);
+    return switch (easing) {
+      LayerKeyframeEasing.linear => clamped,
+      LayerKeyframeEasing.easeIn => clamped * clamped,
+      LayerKeyframeEasing.easeOut => 1 - (1 - clamped) * (1 - clamped),
+      LayerKeyframeEasing.easeInOut => clamped < 0.5
+          ? 2 * clamped * clamped
+          : 1 - math.pow(-2 * clamped + 2, 2) / 2,
+      LayerKeyframeEasing.bounceOut => _bounceOut(clamped),
+    };
+  }
+
+  /// 標準的な"bounce out"イージング（終端で2回弾んでから収まる）。
+  double _bounceOut(double t) {
+    const n1 = 7.5625;
+    const d1 = 2.75;
+    if (t < 1 / d1) {
+      return n1 * t * t;
+    } else if (t < 2 / d1) {
+      final t2 = t - 1.5 / d1;
+      return n1 * t2 * t2 + 0.75;
+    } else if (t < 2.5 / d1) {
+      final t2 = t - 2.25 / d1;
+      return n1 * t2 * t2 + 0.9375;
+    } else {
+      final t2 = t - 2.625 / d1;
+      return n1 * t2 * t2 + 0.984375;
+    }
   }
 
   /// キーフレームが実質的に無変形（誰も動かしていない）かどうか。呼び出し側が

@@ -6,6 +6,15 @@ import '../../../models/layer_keyframe.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
 
+/// イージング種別の表示名（一覧の行・編集シートの選択チップの両方で使う）。
+String layerKeyframeEasingLabel(AppLocalizations l10n, LayerKeyframeEasing easing) => switch (easing) {
+      LayerKeyframeEasing.linear => l10n.layerKeyframeEasingLinear,
+      LayerKeyframeEasing.easeIn => l10n.layerKeyframeEasingEaseIn,
+      LayerKeyframeEasing.easeOut => l10n.layerKeyframeEasingEaseOut,
+      LayerKeyframeEasing.easeInOut => l10n.layerKeyframeEasingEaseInOut,
+      LayerKeyframeEasing.bounceOut => l10n.layerKeyframeEasingBounceOut,
+    };
+
 /// レイヤー単位の位置・拡大縮小・回転キーフレーム（パーツ単位アニメーション）を
 /// 一覧・追加・編集・削除するシート。カメラキーフレームと違い専用のタイムライン
 /// トラックは持たせず、レイヤーパネルの「詳細設定」から開く一覧形式にすることで、
@@ -191,7 +200,8 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
                         subtitle: Text(
                           'X:${kf.x.round()} Y:${kf.y.round()} '
                           '${l10n.layerKeyframeScaleShort}:${kf.scale.toStringAsFixed(2)} '
-                          '${l10n.layerKeyframeRotationShort}:${kf.rotation.round()}°',
+                          '${l10n.layerKeyframeRotationShort}:${kf.rotation.round()}° '
+                          '${layerKeyframeEasingLabel(l10n, kf.easing)}',
                           style: const TextStyle(fontSize: 11),
                         ),
                         onTap: () => _editKeyframe(kf, isNew: false),
@@ -284,6 +294,20 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
                     (v) => setState(() => _kf = _kf.copyWith(scale: v)), '${(_kf.scale * 100).round()}%', isInt: false, step: 0.05),
                 _row(l10n.layerKeyframeRotationLabel, _kf.rotation, -180, 180, 0,
                     (v) => setState(() => _kf = _kf.copyWith(rotation: v)), '${_kf.rotation.round()}°'),
+                const SizedBox(height: 8),
+                Text(l10n.layerKeyframeEasingLabel, style: const TextStyle(fontSize: 12)),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: LayerKeyframeEasing.values.map((easing) {
+                    return ChoiceChip(
+                      label: Text(layerKeyframeEasingLabel(l10n, easing), style: const TextStyle(fontSize: 11)),
+                      selected: _kf.easing == easing,
+                      onSelected: (_) => setState(() => _kf = _kf.copyWith(easing: easing)),
+                    );
+                  }).toList(),
+                ),
               ],
             ),
           ),
