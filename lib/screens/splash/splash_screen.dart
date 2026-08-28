@@ -8,9 +8,11 @@ import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
 
-/// 起動画面。ロゴを中央に表示し、その上に「みんなのアニメを見る」、下に
-/// 「アニメを作る」の2つの大きな導線ボタンを配置する。どちらかをタップする
-/// まで自動遷移はしない。
+/// 起動画面。ロゴを中央に表示し、その上に「NIARIM作品広場でみんなの
+/// 作品をみる」（コミュニティ画面への導線。1行目に大きく「NIARIM作品
+/// 広場」、2行目にやや小さく「でみんなの作品をみる」と表示する2行構成）、
+/// 下に「アニメを作る」の2つの大きな導線ボタンを配置する。どちらかを
+/// タップするまで自動遷移はしない。
 ///
 /// 表示している間に、ホーム画面の各タブが必要とするデータの先読みを
 /// 裏で進めておく（[_preloadHomeData]）。これにより、「アニメを作る」を
@@ -70,7 +72,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
     final communityButton = _SplashActionButton(
       icon: Icons.movie_filter_outlined,
-      label: l10n.splashViewCommunityButton,
+      label: l10n.splashCommunityButtonTitle,
+      subLabel: l10n.splashCommunityButtonSubtitle,
       // secondaryはテーマ・外観設定の「選択色」（AppThemePreset.selectionColor）
       // を直接反映する。tertiaryはColorScheme.fromSeedによる自動算出値のため、
       // ユーザーが選んだ色との対応が分かりにくくなるのを避ける。
@@ -155,15 +158,22 @@ class _SplashScreenState extends State<SplashScreen> {
 /// 起動画面の大きな導線ボタン。単なるテキストボタンではなく、グラデーション
 /// 背景・角丸・影を持つ正方形に近いタイル状のボタンにして存在感を出す
 /// （中央に大きめのアイコンを図として配置し、下にラベルを添える構成）。
+///
+/// [subLabel]を指定すると、[label]を1行目に大きく・太字で、[subLabel]を
+/// 2行目にやや小さく添える2行構成になる（例：「NIARIM作品広場」
+/// 「でみんなの作品をみる」）。省略時は[label]のみの1行構成（[createButton]
+/// が使う従来通りの表示）。
 class _SplashActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String? subLabel;
   final List<Color> colors;
   final VoidCallback onTap;
 
   const _SplashActionButton({
     required this.icon,
     required this.label,
+    this.subLabel,
     required this.colors,
     required this.onTap,
   });
@@ -204,9 +214,22 @@ class _SplashActionButton extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
                 ),
-                maxLines: 2,
+                maxLines: subLabel == null ? 2 : 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (subLabel != null)
+                Text(
+                  subLabel!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.normal,
+                    fontFamily: 'Kuramubon',
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
             ],
           ),
         ),

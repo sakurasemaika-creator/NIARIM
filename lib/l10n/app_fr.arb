@@ -2305,7 +2305,8 @@
       }
     }
   },
-  "splashViewCommunityButton": "Voir les animations de tous",
+  "splashCommunityButtonTitle": "Galerie NIARIM",
+  "splashCommunityButtonSubtitle": "Voir les œuvres de tous",
   "splashCreateButton": "Créer une animation",
   "communityScreenTitle": "Œuvres de tous",
   "communityTabNew": "Nouveautés",

@@ -2555,7 +2555,8 @@
       }
     }
   },
-  "splashViewCommunityButton": "みんなの\n作品をみる",
+  "splashCommunityButtonTitle": "NIARIM作品広場",
+  "splashCommunityButtonSubtitle": "でみんなの作品をみる",
   "splashCreateButton": "作品をつくる",
   "communityScreenTitle": "みんなの作品",
   "communityTabNew": "新着",

@@ -2305,7 +2305,8 @@
       }
     }
   },
-  "splashViewCommunityButton": "查看大家的動畫",
+  "splashCommunityButtonTitle": "NIARIM 作品廣場",
+  "splashCommunityButtonSubtitle": "看看大家的作品",
   "splashCreateButton": "製作動畫",
   "communityScreenTitle": "大家的作品",
   "communityTabNew": "最新",

@@ -2305,7 +2305,8 @@
       }
     }
   },
-  "splashViewCommunityButton": "See Everyone's Animations",
+  "splashCommunityButtonTitle": "NIARIM Gallery",
+  "splashCommunityButtonSubtitle": "See everyone's works",
   "splashCreateButton": "Create an Animation",
   "communityScreenTitle": "Everyone's Works",
   "communityTabNew": "New",

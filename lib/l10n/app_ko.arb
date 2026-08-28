@@ -2305,7 +2305,8 @@
       }
     }
   },
-  "splashViewCommunityButton": "모두의 애니메이션 보기",
+  "splashCommunityButtonTitle": "NIARIM 갤러리",
+  "splashCommunityButtonSubtitle": "에서 모두의 작품 보기",
   "splashCreateButton": "애니메이션 만들기",
   "communityScreenTitle": "모두의 작품",
   "communityTabNew": "신착",
