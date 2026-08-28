@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-label="NIARIM monogram"> 
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-label="NIARIM monogram">
+<g transform="translate(-48.0000 -48.0000) scale(1.080000)">
+  <g transform="translate(600 600) scale(1.85) translate(-600 -600)">
   <g fill="#4A4636" fill-rule="evenodd"> 
  
     <defs> 
@@ -167,4 +169,7 @@
     /> 
  
   </g> 
+
+  </g>
+</g>
 </svg>
