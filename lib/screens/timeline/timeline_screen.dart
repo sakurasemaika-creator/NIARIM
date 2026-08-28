@@ -13,6 +13,7 @@ import 'package:video_player/video_player.dart';
 import '../../utils/immersive_mode.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
+import '../../engine/audio_waveform_service.dart';
 import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
@@ -104,6 +105,59 @@ class _TrackClip {
     this.videoOpacity = 1.0,
     this.trackRow = 0,
   });
+}
+
+/// 音声クリップの帯に薄く重ねる波形サムネイル。[AudioWaveformService]で
+/// 生成・キャッシュされたPNGを非同期に読み込んで表示する。生成が未完了の
+/// 間・失敗した場合は何も表示しない（プレーンな色帯のままフォールバック）。
+class _AudioWaveformThumb extends StatefulWidget {
+  final String filePath;
+  final String? cacheKey;
+
+  const _AudioWaveformThumb({super.key, required this.filePath, this.cacheKey});
+
+  @override
+  State<_AudioWaveformThumb> createState() => _AudioWaveformThumbState();
+}
+
+class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
+  late Future<Uint8List?> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = AudioWaveformService.getWaveform(
+      filePath: widget.filePath,
+      cacheKey: widget.cacheKey,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _AudioWaveformThumb oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.filePath != widget.filePath ||
+        oldWidget.cacheKey != widget.cacheKey) {
+      _future = AudioWaveformService.getWaveform(
+        filePath: widget.filePath,
+        cacheKey: widget.cacheKey,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List?>(
+      future: _future,
+      builder: (context, snapshot) {
+        final bytes = snapshot.data;
+        if (bytes == null) return const SizedBox.shrink();
+        return Opacity(
+          opacity: 0.5,
+          child: Image.memory(bytes, fit: BoxFit.fill, gaplessPlayback: true),
+        );
+      },
+    );
+  }
 }
 
 class TimelineScreen extends StatefulWidget {
@@ -3268,16 +3322,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               ),
                             ],
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      clip.label,
-                      style: const TextStyle(
-                        fontSize: 9,
-                        color: Colors.white,
-                        fontFamily: 'Kuramubon',
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (clip.trackType == _ClipTrackType.audio &&
+                            clip.filePath != null)
+                          _AudioWaveformThumb(
+                            key: ValueKey('wf_${clip.id}'),
+                            filePath: clip.filePath!,
+                            cacheKey: clip.materialId,
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              clip.label,
+                              style: const TextStyle(
+                                fontSize: 9,
+                                color: Colors.white,
+                                fontFamily: 'Kuramubon',
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
