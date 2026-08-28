@@ -12,6 +12,7 @@ import '../../../widgets/help_button.dart';
 import '../../../widgets/responsive.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart';
+import 'canvas_area.dart' show kCanvasOutsideColor;
 import 'canvas_icon_button.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
@@ -296,6 +297,17 @@ class ToolbarWidget extends StatelessWidget {
     ];
     // verticalの場合は縦並びのツールレール、falseの場合は画面下部の
     // 横並びバーとして表示する。
+    //
+    // 【背景色の不一致修正】ツールバー自体（CanvasIconButton）は元々
+    // 背景を一切持たず、テーマ連動の縁取りだけでどんな色の上でも
+    // 視認できるよう作られている。しかしこのContainerはCanvasArea・
+    // その背景（kCanvasOutsideColor）を敷いたStackの「外側」（canvas_
+    // screen.dartのColumn内の別行）に配置されているため、
+    // color: Colors.transparentのままだとScaffold本来の背景色
+    // （キャンバスの外周色kCanvasOutsideColorとは別の色）が透けて見え、
+    // 「ツールバーだけ別パネルの背景を持っているように見える」という
+    // 不具合になっていた。ここをkCanvasOutsideColorに合わせることで、
+    // レイアウト構造は変えずに、キャンバス外周と地続きの見た目にする。
     return Container(
       height: vertical ? null : 40,
       width: vertical ? 40 : null,
@@ -303,7 +315,7 @@ class ToolbarWidget extends StatelessWidget {
         horizontal: vertical ? 0 : 4,
         vertical: vertical ? 4 : 0,
       ),
-      color: Colors.transparent,
+      color: kCanvasOutsideColor,
       child: SingleChildScrollView(
         scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
         child: vertical ? Column(children: items) : Row(children: items),

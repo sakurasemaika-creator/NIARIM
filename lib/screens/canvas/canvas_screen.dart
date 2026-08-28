@@ -896,6 +896,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // ツールバーの折りたたみ用ハンドル（フレーム一覧と
                     // 同様に、任意のタイミングで開閉できるようにし描画領域を広げる）。
                     // デスクトップでは常設の縦レール表示に切り替わるため対象外。
+                    //
+                    // 【背景色の不一致修正】このハンドルは直下のツールバー
+                    // （kCanvasOutsideColorに統一済み）と地続きに見えるよう、
+                    // ここもkCanvasOutsideColorへ合わせる。アイコン色も
+                    // onSurface（テーマによっては暗色で暗いkCanvasOutsideColor
+                    // に沈んで見えなくなる）から、常に明るいColors.white70へ
+                    // 固定する（キャンバス外周の暗い背景色は固定値のため、
+                    // アイコン側もテーマに関わらず視認できる固定色でよい）。
                     if (!isDesktop)
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
@@ -904,17 +912,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         child: Container(
                           height: 16,
                           alignment: Alignment.center,
-                          color: Colors.transparent,
+                          color: kCanvasOutsideColor,
                           child: Icon(
                             _showToolbar
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
                             size: 16,
-                            // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
-                            // ToolbarWidgetの色連動と同じ方針）。
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: Colors.white70,
                           ),
                         ),
                       ),
