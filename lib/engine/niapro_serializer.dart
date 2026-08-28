@@ -11,6 +11,7 @@ import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/layer_group.dart';
 import '../models/layer_keyframe.dart';
+import '../models/pixel_color_mode.dart';
 import '../models/project.dart';
 import '../models/timeline_marker.dart';
 import '../models/scene.dart';
@@ -612,6 +613,8 @@ class NiaproSerializer {
                   'param3': e.param3,
                   'param4': e.param4,
                   'fadeColor': e.fadeColor.toARGB32(),
+                  'pixelColorMode': e.pixelColorMode.name,
+                  'pixelExplicitColors': e.pixelExplicitColors,
                 })
             .toList(),
         'audioClips': scene.audioClips
@@ -750,6 +753,12 @@ class NiaproSerializer {
           param3: (m['param3'] as num?)?.toDouble() ?? 2.0,
           param4: (m['param4'] as num?)?.toDouble() ?? 0.0,
           fadeColor: Color(m['fadeColor'] as int? ?? 0xFF000000),
+          pixelColorMode: PixelColorMode.values.firstWhere(
+              (e) => e.name == m['pixelColorMode'], orElse: () => PixelColorMode.count),
+          pixelExplicitColors: (m['pixelExplicitColors'] as List<dynamic>?)
+                  ?.map((e) => e as int)
+                  .toList() ??
+              const [0xFF000000],
         );
       }).toList();
       final audioJson = decoded['audioClips'] as List<dynamic>? ?? const [];

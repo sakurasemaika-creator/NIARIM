@@ -2382,5 +2382,27 @@
       }
     }
   },
-  "communityNoWorksMessage": "No hay obras"
+  "communityNoWorksMessage": "No hay obras",
+  "pixelColorModeLabel": "Modo de color",
+  "pixelColorModeNone": "No limitar colores",
+  "pixelColorModePalette": "Elegir de una paleta",
+  "pixelColorModeExplicit": "Especificar colores",
+  "pixelColorModeCount": "Especificar número de colores",
+  "pixelColorLevelsLabel": "Colores: {count}",
+  "@pixelColorLevelsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pixelColorChipDeleteTooltip": "Eliminar este color",
+  "pixelColorChipAddButton": "Añadir color",
+  "pixelArtPaletteNameRequiredError": "Introduce un nombre de paleta",
+  "pixelArtPaletteEditTitle": "Editar paleta",
+  "pixelArtPaletteAddTitle": "Añadir paleta",
+  "pixelArtPaletteNameLabel": "Nombre de la paleta",
+  "pixelArtPalettePickerTitle": "Elegir paleta",
+  "pixelArtPalettePickerEmpty": "Aún no hay paletas guardadas. Toca «Añadir» para crear una.",
+  "pixelArtPalettePickerApplyButton": "Aplicar"
 }

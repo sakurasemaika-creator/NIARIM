@@ -53,6 +53,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/first_use_tooltip.dart';
+import '../../widgets/pixel_color_mode_selector.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
@@ -6848,6 +6849,8 @@ class _EffectFilterSheet extends StatelessWidget {
       param3: e.param3,
       param4: e.param4,
       fadeColor: e.fadeColor,
+      pixelColorMode: e.pixelColorMode,
+      pixelExplicitColors: e.pixelExplicitColors,
     );
     service.addEffectFilter(projectId, sceneId, copy);
     final index = effects.indexWhere((f) => f.id == e.id);
@@ -7333,7 +7336,9 @@ class _EffectFilterSheet extends StatelessWidget {
     ];
   }
 
-  /// ドット絵：param1=モザイクブロックサイズ（1〜64px）、param2=色数（2〜32）。
+  /// ドット絵：param1=モザイクブロックサイズ（1〜64px）、param2=色数の指定
+  /// （countモード時のみ使用、1〜256）。配色方式自体は
+  /// pixelColorMode/pixelExplicitColors（PixelColorModeSelector参照）。
   List<Widget> _pixelateParams(
     BuildContext context,
     AppLocalizations l10n,
@@ -7348,13 +7353,13 @@ class _EffectFilterSheet extends StatelessWidget {
         63,
         (v) => _update(context, e.copyWith(param1: v)),
       ),
-      _paramRow(
-        l10n.filterColorLevels,
-        e.param2,
-        2,
-        32,
-        30,
-        (v) => _update(context, e.copyWith(param2: v)),
+      PixelColorModeSelector(
+        mode: e.pixelColorMode,
+        colorLevels: e.param2.round(),
+        explicitColors: e.pixelExplicitColors,
+        onModeChanged: (m) => _update(context, e.copyWith(pixelColorMode: m)),
+        onColorLevelsChanged: (v) => _update(context, e.copyWith(param2: v.toDouble())),
+        onExplicitColorsChanged: (c) => _update(context, e.copyWith(pixelExplicitColors: c)),
       ),
     ];
   }

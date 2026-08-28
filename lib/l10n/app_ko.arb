@@ -2382,5 +2382,27 @@
       }
     }
   },
-  "communityNoWorksMessage": "작품이 없습니다"
+  "communityNoWorksMessage": "작품이 없습니다",
+  "pixelColorModeLabel": "배색 방식",
+  "pixelColorModeNone": "색상 제한 없음",
+  "pixelColorModePalette": "팔레트에서 선택",
+  "pixelColorModeExplicit": "색상 지정",
+  "pixelColorModeCount": "색상 수 지정",
+  "pixelColorLevelsLabel": "색상 수: {count}",
+  "@pixelColorLevelsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pixelColorChipDeleteTooltip": "이 색상 삭제",
+  "pixelColorChipAddButton": "색상 추가",
+  "pixelArtPaletteNameRequiredError": "팔레트 이름을 입력하세요",
+  "pixelArtPaletteEditTitle": "팔레트 편집",
+  "pixelArtPaletteAddTitle": "팔레트 추가",
+  "pixelArtPaletteNameLabel": "팔레트 이름",
+  "pixelArtPalettePickerTitle": "팔레트 선택",
+  "pixelArtPalettePickerEmpty": "저장된 팔레트가 없습니다. \\\"추가\\\"를 눌러 만들어 보세요.",
+  "pixelArtPalettePickerApplyButton": "적용"
 }

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/effect_filter_instance.dart';
 import '../models/filter_def.dart';
+import '../models/pixel_color_mode.dart';
 
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
@@ -67,7 +68,9 @@ Uint8List applyDrawFilterInIsolate(
     FilterKind.pixelate => engine.applyPixelate(
         data, width, height,
         mosaicSize: filter.strength.round().clamp(1, 64),
+        colorMode: filter.pixelColorMode,
         colorLevels: filter.colorLevels,
+        paletteColors: filter.pixelExplicitColors,
       ),
   };
 }
@@ -85,6 +88,79 @@ List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
       const [ui.Offset(0, 0.15), ui.Offset(0.5, 0.5), ui.Offset(1, 0.85)],
     ToneCurvePreset.invert => const [ui.Offset(0, 1), ui.Offset(1, 0)],
   };
+}
+
+/// 画素の色を指定方式で減色する（モザイク化は行わない、色のみの処理）。
+/// ドット絵フィルター（[FilterEngine.applyPixelate]がモザイク化と組み合わせて
+/// 使う）と、ブラシのピクセルモード（ストローク確定直後、タッチした範囲
+/// だけに適用する。canvas_area.dart参照）の両方から共用する、トップレベル
+/// の純粋関数。
+///
+/// - [PixelColorMode.none]：何もしない（元の色をそのまま返す）。
+/// - [PixelColorMode.count]：チャンネルごとに[colorLevels]段階へ均等割り
+///   （ポスタライズ）する。厳密に「使用する色の数」がN色になるとは限らない
+///   簡易実装だが、既存のドット絵フィルターと同じ挙動を保つ。
+/// - [PixelColorMode.explicit] / [PixelColorMode.palette]：[paletteColors]
+///   （ARGB int）のうち最も近い色（RGB二乗距離）へ各画素をスナップする。
+///   パレット選択（palette）は選んだ瞬間にexplicitへ解決されるため
+///   （UI層でパレットの色をpaletteColorsとして渡す）、本関数の時点では
+///   両者を区別せず同じロジックで扱う。[paletteColors]が空の場合は何もしない。
+/// 透明画素（alpha=0）は常にスキップする（トーン等と同様、地の色を
+/// 荒らさないため）。
+Uint8List quantizeColors(
+  Uint8List data, {
+  required PixelColorMode colorMode,
+  int colorLevels = 6,
+  List<int> paletteColors = const [],
+}) {
+  switch (colorMode) {
+    case PixelColorMode.none:
+      return Uint8List.fromList(data);
+    case PixelColorMode.count:
+      final step = (256 / colorLevels.clamp(1, 256)).round().clamp(1, 256);
+      final result = Uint8List.fromList(data);
+      for (int i = 0; i < result.length; i += 4) {
+        if (result[i + 3] == 0) continue;
+        result[i] = ((result[i] / step).round() * step).clamp(0, 255);
+        result[i + 1] = ((result[i + 1] / step).round() * step).clamp(0, 255);
+        result[i + 2] = ((result[i + 2] / step).round() * step).clamp(0, 255);
+      }
+      return result;
+    case PixelColorMode.explicit:
+    case PixelColorMode.palette:
+      if (paletteColors.isEmpty) return Uint8List.fromList(data);
+      final pr = <int>[];
+      final pg = <int>[];
+      final pb = <int>[];
+      for (final c in paletteColors) {
+        pr.add((c >> 16) & 0xFF);
+        pg.add((c >> 8) & 0xFF);
+        pb.add(c & 0xFF);
+      }
+      final result = Uint8List.fromList(data);
+      for (int i = 0; i < result.length; i += 4) {
+        if (result[i + 3] == 0) continue;
+        final r = result[i];
+        final g = result[i + 1];
+        final b = result[i + 2];
+        int bestIdx = 0;
+        int bestDist = 1 << 30;
+        for (int k = 0; k < pr.length; k++) {
+          final dr = r - pr[k];
+          final dg = g - pg[k];
+          final db = b - pb[k];
+          final dist = dr * dr + dg * dg + db * db;
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestIdx = k;
+          }
+        }
+        result[i] = pr[bestIdx];
+        result[i + 1] = pg[bestIdx];
+        result[i + 2] = pb[bestIdx];
+      }
+      return result;
+  }
 }
 
 class FilterEngine {
@@ -156,7 +232,9 @@ class FilterEngine {
         EffectFilterType.pixelate => applyPixelate(
             result, width, height,
             mosaicSize: e.param1.round().clamp(1, 64),
-            colorLevels: e.param2.round().clamp(2, 32),
+            colorMode: e.pixelColorMode,
+            colorLevels: e.param2.round().clamp(1, 256),
+            paletteColors: e.pixelExplicitColors,
           ),
       };
     }
@@ -893,19 +971,23 @@ class FilterEngine {
     return result;
   }
 
+  /// モザイク化（[mosaicSize]）＋配色処理（[colorMode]）を組み合わせた
+  /// ドット絵化。配色の実際の処理は[quantizeColors]（モザイク化と分離した
+  /// 純粋な減色関数。ブラシのピクセルモードのストローク確定直後の色スナップ
+  /// でも共用する）に委譲する。
   Uint8List applyPixelate(Uint8List data, int width, int height, {
     int mosaicSize = 8,
+    PixelColorMode colorMode = PixelColorMode.count,
     int colorLevels = 6,
+    List<int> paletteColors = const [],
   }) {
     final mosaic = applyMosaic(data, width, height, mosaicSize);
-    final step = (256 / colorLevels.clamp(2, 32)).round();
-    final result = Uint8List.fromList(mosaic);
-    for (int i = 0; i < result.length; i += 4) {
-      result[i] = ((result[i] / step).round() * step).clamp(0, 255);
-      result[i + 1] = ((result[i + 1] / step).round() * step).clamp(0, 255);
-      result[i + 2] = ((result[i + 2] / step).round() * step).clamp(0, 255);
-    }
-    return result;
+    return quantizeColors(
+      mosaic,
+      colorMode: colorMode,
+      colorLevels: colorLevels,
+      paletteColors: paletteColors,
+    );
   }
 
   Uint8List applyFade(Uint8List data, int width, int height, ui.Color fadeColor, double progress) {

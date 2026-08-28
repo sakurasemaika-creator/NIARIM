@@ -2382,5 +2382,27 @@
       }
     }
   },
-  "communityNoWorksMessage": "暂无作品"
+  "communityNoWorksMessage": "暂无作品",
+  "pixelColorModeLabel": "配色方式",
+  "pixelColorModeNone": "不限制颜色",
+  "pixelColorModePalette": "从调色板选择",
+  "pixelColorModeExplicit": "指定颜色",
+  "pixelColorModeCount": "指定颜色数",
+  "pixelColorLevelsLabel": "颜色数：{count}",
+  "@pixelColorLevelsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pixelColorChipDeleteTooltip": "删除该颜色",
+  "pixelColorChipAddButton": "添加颜色",
+  "pixelArtPaletteNameRequiredError": "请输入调色板名称",
+  "pixelArtPaletteEditTitle": "编辑调色板",
+  "pixelArtPaletteAddTitle": "添加调色板",
+  "pixelArtPaletteNameLabel": "调色板名称",
+  "pixelArtPalettePickerTitle": "选择调色板",
+  "pixelArtPalettePickerEmpty": "还没有已保存的调色板。点击“添加”创建一个。",
+  "pixelArtPalettePickerApplyButton": "应用"
 }

@@ -14,6 +14,7 @@ import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
 import '../../../widgets/stepped_slider.dart';
@@ -389,13 +390,22 @@ class _FilterPanelState extends State<FilterPanel> {
                             64,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
-                          _paramSlider(
-                            filterService,
-                            l10n.filterColorLevels,
-                            current.colorLevels.toDouble(),
-                            2,
-                            32,
-                            (v) => filterService.updateFilterParams(current.id, colorLevels: v.round()),
+                          PixelColorModeSelector(
+                            mode: current.pixelColorMode,
+                            colorLevels: current.colorLevels,
+                            explicitColors: current.pixelExplicitColors,
+                            onModeChanged: (m) {
+                              filterService.updateFilterParams(current.id, pixelColorMode: m);
+                              _updatePreview();
+                            },
+                            onColorLevelsChanged: (v) {
+                              filterService.updateFilterParams(current.id, colorLevels: v);
+                              _updatePreview();
+                            },
+                            onExplicitColorsChanged: (c) {
+                              filterService.updateFilterParams(current.id, pixelExplicitColors: c);
+                              _updatePreview();
+                            },
                           ),
                         ],
                         if (current.kind == FilterKind.animeStyle) ...[
@@ -967,7 +977,9 @@ class _FilterPanelState extends State<FilterPanel> {
         return _engine.applyPixelate(
           data, width, height,
           mosaicSize: filter.strength.round().clamp(1, 64),
+          colorMode: filter.pixelColorMode,
           colorLevels: filter.colorLevels,
+          paletteColors: filter.pixelExplicitColors,
         );
     }
   }

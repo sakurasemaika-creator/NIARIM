@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
@@ -386,6 +387,20 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             value: _brush.pixelMode,
             onChanged: (v) => setState(() => _brush = _brush.copyWith(pixelMode: v)),
           ),
+          if (_brush.pixelMode)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: PixelColorModeSelector(
+                mode: _brush.pixelColorMode,
+                colorLevels: _brush.pixelColorLevels,
+                explicitColors: _brush.pixelExplicitColors,
+                onModeChanged: (m) => setState(() => _brush = _brush.copyWith(pixelColorMode: m)),
+                onColorLevelsChanged: (v) =>
+                    setState(() => _brush = _brush.copyWith(pixelColorLevels: v)),
+                onExplicitColorsChanged: (c) =>
+                    setState(() => _brush = _brush.copyWith(pixelExplicitColors: c)),
+              ),
+            ),
           const Divider(),
           // 筆圧設定
           Text(l10n.brushSettingsPressureModeTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/filter_def.dart';
+import '../models/pixel_color_mode.dart';
 
 /// 描画フィルターサービス。
 /// フィルター一覧・現在選択中フィルター・お気に入り・検索を管理する。
@@ -104,6 +105,8 @@ class FilterService extends ChangeNotifier {
     double? thresholdValue,
     double? lensCenterOffsetX,
     double? lensCenterOffsetY,
+    PixelColorMode? pixelColorMode,
+    List<int>? pixelExplicitColors,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -126,6 +129,8 @@ class FilterService extends ChangeNotifier {
       thresholdValue: thresholdValue,
       lensCenterOffsetX: lensCenterOffsetX,
       lensCenterOffsetY: lensCenterOffsetY,
+      pixelColorMode: pixelColorMode,
+      pixelExplicitColors: pixelExplicitColors,
     );
     notifyListeners();
     _persist();

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
+import '../../../engine/filter_engine.dart' show quantizeColors;
 import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
 import '../../../engine/layer_compositor.dart';
@@ -23,6 +24,7 @@ import '../../../engine/undo_manager.dart' as app_undo;
 import '../../../models/layer.dart';
 import '../../../models/layer_keyframe.dart';
 import '../../../models/onion_skin_settings.dart';
+import '../../../models/pixel_color_mode.dart';
 import '../../../models/project.dart';
 import '../../../models/ruler.dart';
 import '../../../services/brush_service.dart';
@@ -1042,6 +1044,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     _disarmHoldEyedropper(event.pointer);
     _drawingEngine.endStroke();
+    _quantizeStrokeIfNeeded();
     _inputHandler.onStylusUp();
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
@@ -1066,6 +1069,40 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _beginTileUndo() {
     _undoRecordingLayerKey = _tileKeyFor(_layerId);
     _tileManager.beginUndoRecording(_undoRecordingLayerKey!);
+  }
+
+  /// ブラシのピクセルモードで配色方式（[Brush.pixelColorMode]）が
+  /// none以外の場合、ストローク確定直後・Undo記録終了前に今回変更された
+  /// タイルだけへ色の後処理を適用する。ブラシは既に1px単位（アンチ
+  /// エイリアス無し）で描画済みのため、ドット絵フィルターと異なり
+  /// モザイク化は行わず、色の減色・パレットスナップのみを行う
+  /// （quantizeColors参照）。この後にendUndoRecording()を呼ぶことで、
+  /// 後処理後の状態がそのままUndoの「変更後」として記録される。
+  void _quantizeStrokeIfNeeded() {
+    final brush = _drawingEngine.currentBrush;
+    if (brush == null ||
+        !brush.pixelMode ||
+        brush.pixelColorMode == PixelColorMode.none) {
+      return;
+    }
+    final touched = _tileManager.recordingTouchedTiles;
+    if (touched == null) return;
+    for (final key in touched.tileKeys) {
+      final parts = key.split(',');
+      if (parts.length != 2) continue;
+      final tx = int.tryParse(parts[0]);
+      final ty = int.tryParse(parts[1]);
+      if (tx == null || ty == null) continue;
+      final tile = _tileManager.getTile(touched.layerId, tx, ty);
+      if (tile == null) continue;
+      final quantized = quantizeColors(
+        tile,
+        colorMode: brush.pixelColorMode,
+        colorLevels: brush.pixelColorLevels,
+        paletteColors: brush.pixelExplicitColors,
+      );
+      tile.setAll(0, quantized);
+    }
   }
 
   /// 記録を終了し、実際に変更があった場合のみUndoManagerへ登録する。
@@ -1411,6 +1448,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         _tileKeyFor(_layerId),
         closeLoop: closeLoop,
       );
+      _quantizeStrokeIfNeeded();
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
       _finishTileUndo();

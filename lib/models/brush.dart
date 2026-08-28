@@ -1,3 +1,5 @@
+import 'pixel_color_mode.dart';
+
 class Brush {
   final String id;
   final String name;
@@ -24,6 +26,13 @@ class Brush {
   // スタンプする（進行方向によって線の太さが変わるカリグラフィー特有の
   // 見た目を、傾き検知非対応の端末でも一定の見た目で再現するため）。
   final double? calligraphyAngle;
+  // ピクセルモード時の配色方式。既定はnone（従来通り、描画色をそのまま
+  // 使い色数の制限を行わない）。ストローク確定直後にタッチした範囲だけへ
+  // 適用される（drawing_engine.dart・canvas_area.dartの
+  // _quantizeStrokeIfNeeded参照）。
+  final PixelColorMode pixelColorMode;
+  final int pixelColorLevels;
+  final List<int> pixelExplicitColors;
 
   const Brush({
     required this.id,
@@ -46,6 +55,9 @@ class Brush {
     this.folderId,
     this.customImagePath,
     this.calligraphyAngle,
+    this.pixelColorMode = PixelColorMode.none,
+    this.pixelColorLevels = 8,
+    this.pixelExplicitColors = const [0xFF000000],
   });
 
   Brush copyWith({
@@ -69,6 +81,9 @@ class Brush {
     String? folderId,
     String? customImagePath,
     double? calligraphyAngle,
+    PixelColorMode? pixelColorMode,
+    int? pixelColorLevels,
+    List<int>? pixelExplicitColors,
   }) {
     return Brush(
       id: id ?? this.id,
@@ -91,6 +106,9 @@ class Brush {
       folderId: folderId ?? this.folderId,
       customImagePath: customImagePath ?? this.customImagePath,
       calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
+      pixelColorMode: pixelColorMode ?? this.pixelColorMode,
+      pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
+      pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
     );
   }
 
@@ -121,6 +139,9 @@ class Brush {
         'folderId': folderId,
         'customImagePath': customImagePath,
         'calligraphyAngle': calligraphyAngle,
+        'pixelColorMode': pixelColorMode.name,
+        'pixelColorLevels': pixelColorLevels,
+        'pixelExplicitColors': pixelExplicitColors,
       };
 
   factory Brush.fromJson(Map<String, dynamic> j) => Brush(
@@ -160,6 +181,13 @@ class Brush {
         folderId: j['folderId'] as String?,
         customImagePath: j['customImagePath'] as String?,
         calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
+        pixelColorMode: PixelColorMode.values.firstWhere(
+            (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.none),
+        pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
+        pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)
+                ?.map((e) => e as int)
+                .toList() ??
+            const [0xFF000000],
       );
 }
 

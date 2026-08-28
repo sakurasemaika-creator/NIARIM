@@ -2382,5 +2382,27 @@
       }
     }
   },
-  "communityNoWorksMessage": "尚無作品"
+  "communityNoWorksMessage": "尚無作品",
+  "pixelColorModeLabel": "配色方式",
+  "pixelColorModeNone": "不限制顏色",
+  "pixelColorModePalette": "從調色盤選擇",
+  "pixelColorModeExplicit": "指定顏色",
+  "pixelColorModeCount": "指定顏色數",
+  "pixelColorLevelsLabel": "顏色數：{count}",
+  "@pixelColorLevelsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pixelColorChipDeleteTooltip": "刪除此顏色",
+  "pixelColorChipAddButton": "新增顏色",
+  "pixelArtPaletteNameRequiredError": "請輸入調色盤名稱",
+  "pixelArtPaletteEditTitle": "編輯調色盤",
+  "pixelArtPaletteAddTitle": "新增調色盤",
+  "pixelArtPaletteNameLabel": "調色盤名稱",
+  "pixelArtPalettePickerTitle": "選擇調色盤",
+  "pixelArtPalettePickerEmpty": "尚無已儲存的調色盤，點擊「新增」建立一個。",
+  "pixelArtPalettePickerApplyButton": "套用"
 }

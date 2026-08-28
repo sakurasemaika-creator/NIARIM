@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' show Color;
 import '../engine/filter_engine.dart' show EffectFilterType;
+import 'pixel_color_mode.dart';
 
 /// タイムラインへ適用する演出フィルターの1インスタンス。
 /// シーンごとに保持し、指定した開始〜終了フレームの範囲でのみ・非破壊で適用される。
@@ -18,6 +19,11 @@ class EffectFilterInstance {
   final double param3;
   final double param4;
   final Color fadeColor;
+  // ドット絵演出フィルター（pixelate）の配色方式。countの場合はparam2
+  // （色数）を、explicit（パレットから選んだ直後もこれになる。
+  // PixelColorMode参照）の場合はpixelExplicitColorsを使う。
+  final PixelColorMode pixelColorMode;
+  final List<int> pixelExplicitColors;
 
   const EffectFilterInstance({
     required this.id,
@@ -30,6 +36,8 @@ class EffectFilterInstance {
     this.param3 = 2.0,
     this.param4 = 0.0,
     this.fadeColor = const Color(0xFF000000),
+    this.pixelColorMode = PixelColorMode.count,
+    this.pixelExplicitColors = const [0xFF000000],
   });
 
   EffectFilterInstance copyWith({
@@ -42,6 +50,8 @@ class EffectFilterInstance {
     double? param3,
     double? param4,
     Color? fadeColor,
+    PixelColorMode? pixelColorMode,
+    List<int>? pixelExplicitColors,
   }) {
     return EffectFilterInstance(
       id: id,
@@ -54,6 +64,8 @@ class EffectFilterInstance {
       param3: param3 ?? this.param3,
       param4: param4 ?? this.param4,
       fadeColor: fadeColor ?? this.fadeColor,
+      pixelColorMode: pixelColorMode ?? this.pixelColorMode,
+      pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
     );
   }
 }

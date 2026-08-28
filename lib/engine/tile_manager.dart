@@ -481,6 +481,18 @@ class TileManager {
     _undoBefore.clear();
   }
 
+  /// 現在Undo記録中の対象レイヤーIDと、既に変更が記録された（＝今回の
+  /// 操作で実際に触れられた）タイルキー（"tx,ty"形式）の集合を返す。
+  /// 記録中でなければnullを返す。ブラシのピクセルモード配色（ストローク
+  /// 確定直後の色スナップ）のように、endUndoRecording()でUndo登録を
+  /// 確定させる前に「今回変更された範囲だけ」へ後処理を行いたい場合に使う
+  /// （canvas_area.dart参照）。
+  ({String layerId, Set<String> tileKeys})? get recordingTouchedTiles {
+    final layerId = _recordingLayerId;
+    if (!_recordingUndo || layerId == null) return null;
+    return (layerId: layerId, tileKeys: _undoBefore.keys.toSet());
+  }
+
   /// 記録中であれば、指定タイルの変更前状態を（操作中の初回のみ）記録する。
   /// 未記録のタイルが対象の場合、存在しなければnullを記録する（Undo時は
   /// 「未描画状態」への復元を意味する）。

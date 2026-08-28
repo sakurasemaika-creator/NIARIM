@@ -1,3 +1,5 @@
+import 'pixel_color_mode.dart';
+
 /// 描画フィルターの種別。
 /// 実際のピクセル処理はlib/engine/filter_engine.dartのFilterEngineが行う。
 /// toneCurve・levelsはプレミアム限定。
@@ -35,9 +37,14 @@
 /// threshold（二値化）：輝度が[thresholdValue]以上の画素を白、未満を黒へ
 /// 分ける。色調調整・単色化・「明度で透過」と組み合わせると線画抽出に使える。
 /// pixelate（ドット絵）：モザイク化（[strength]をブロックサイズpxとして使う）＋
-/// 色数減色（[colorLevels]）を組み合わせる。スタンプのピクセルモード
+/// 配色処理（[pixelColorMode]）を組み合わせる。スタンプのピクセルモード
 /// （procedural_texture.dartのStamp.pixelMode）と同じFilterEngine.applyPixelateを
 /// 使い、レイヤー全体・演出フィルター（時間範囲指定）としても使えるようにしたもの。
+/// 配色方式は[PixelColorMode]参照（色を指定しない／色数のみ指定／色を
+/// 個別指定／保存済みパレットから選択の4通り。パレット選択は選んだ瞬間に
+/// [pixelExplicitColors]へ複製され、以後はexplicitと同じ扱いになる
+/// スナップショット方式のため、[PixelColorMode.palette]自体が永続化される
+/// ことはない）。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
   retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration, lensDistortion,
@@ -101,6 +108,11 @@ class FilterDef {
   // 各連結成分の自動重心からのpx単位のずれ、既定0（自動重心そのまま）。
   final double lensCenterOffsetX;
   final double lensCenterOffsetY;
+  // ドット絵フィルターの配色方式（pixelateのみ使用）。countの場合は
+  // colorLevelsを、explicit（パレットから選んだ直後もこれになる。
+  // PixelColorMode参照）の場合はpixelExplicitColorsを使う。
+  final PixelColorMode pixelColorMode;
+  final List<int> pixelExplicitColors;
 
   const FilterDef({
     required this.id,
@@ -125,6 +137,8 @@ class FilterDef {
     this.thresholdValue = 128,
     this.lensCenterOffsetX = 0,
     this.lensCenterOffsetY = 0,
+    this.pixelColorMode = PixelColorMode.count,
+    this.pixelExplicitColors = const [0xFF000000],
   });
 
   FilterDef copyWith({
@@ -150,6 +164,8 @@ class FilterDef {
     double? thresholdValue,
     double? lensCenterOffsetX,
     double? lensCenterOffsetY,
+    PixelColorMode? pixelColorMode,
+    List<int>? pixelExplicitColors,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -174,6 +190,8 @@ class FilterDef {
       thresholdValue: thresholdValue ?? this.thresholdValue,
       lensCenterOffsetX: lensCenterOffsetX ?? this.lensCenterOffsetX,
       lensCenterOffsetY: lensCenterOffsetY ?? this.lensCenterOffsetY,
+      pixelColorMode: pixelColorMode ?? this.pixelColorMode,
+      pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
     );
   }
 
@@ -200,6 +218,8 @@ class FilterDef {
         'thresholdValue': thresholdValue,
         'lensCenterOffsetX': lensCenterOffsetX,
         'lensCenterOffsetY': lensCenterOffsetY,
+        'pixelColorMode': pixelColorMode.name,
+        'pixelExplicitColors': pixelExplicitColors,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -228,5 +248,11 @@ class FilterDef {
         thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
         lensCenterOffsetX: (j['lensCenterOffsetX'] as num?)?.toDouble() ?? 0,
         lensCenterOffsetY: (j['lensCenterOffsetY'] as num?)?.toDouble() ?? 0,
+        pixelColorMode: PixelColorMode.values.firstWhere(
+            (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.count),
+        pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)
+                ?.map((e) => e as int)
+                .toList() ??
+            const [0xFF000000],
       );
 }

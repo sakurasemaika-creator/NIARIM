@@ -183,6 +183,31 @@ void main() {
     imgAfter.dispose();
   });
 
+  test('recordingTouchedTilesはUndo記録中に変更されたタイルキー集合を返す'
+      '（Task#151：ブラシのピクセルモード配色がストローク確定直後・'
+      'endUndoRecording前に「今回変更された範囲だけ」を特定するために使う）',
+      () {
+    final tm = TileManager(canvasWidth: 4, canvasHeight: 4);
+    expect(tm.recordingTouchedTiles, isNull);
+
+    tm.beginUndoRecording('layerA');
+    expect(tm.recordingTouchedTiles?.layerId, 'layerA');
+    expect(tm.recordingTouchedTiles?.tileKeys, isEmpty);
+
+    final tile = tm.getOrCreateTile('layerA', 0, 0);
+    tm.blendPixel(tile, 0, 0, 255, 0, 0, 255);
+    expect(tm.recordingTouchedTiles?.tileKeys, {'0,0'});
+
+    // 別タイルにも描くと集合が増える。
+    final tile2 = tm.getOrCreateTile('layerA', 1, 0);
+    tm.blendPixel(tile2, 0, 0, 0, 255, 0, 255);
+    expect(tm.recordingTouchedTiles?.tileKeys, {'0,0', '1,0'});
+
+    tm.endUndoRecording();
+    // 記録終了後はnullに戻る。
+    expect(tm.recordingTouchedTiles, isNull);
+  });
+
   test('importAllは全キャッシュを無効化する', () async {
     final tm = TileManager(canvasWidth: 4, canvasHeight: 4);
     final tile = tm.getOrCreateTile('layerA', 0, 0);

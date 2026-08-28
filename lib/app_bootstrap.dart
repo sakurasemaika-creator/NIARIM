@@ -23,6 +23,7 @@ import 'services/share_intent_service.dart';
 import 'services/font_service.dart';
 import 'services/first_use_tooltip_service.dart';
 import 'services/palette_service.dart';
+import 'services/pixel_art_palette_service.dart';
 import 'services/work_folder_service.dart';
 import 'services/community_service.dart';
 import 'services/community_preview_service.dart';
@@ -113,6 +114,9 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
   final paletteService = PaletteService();
   await paletteService.init();
 
+  final pixelArtPaletteService = PixelArtPaletteService();
+  await pixelArtPaletteService.init();
+
   final workFolderService = WorkFolderService();
   await workFolderService.init();
 
@@ -156,6 +160,7 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
     ChangeNotifierProvider.value(value: fontService),
     ChangeNotifierProvider.value(value: firstUseTooltipService),
     ChangeNotifierProvider.value(value: paletteService),
+    ChangeNotifierProvider.value(value: pixelArtPaletteService),
     ChangeNotifierProvider.value(value: workFolderService),
     ChangeNotifierProvider.value(value: communityService),
     ChangeNotifierProvider.value(value: communityPreviewService),

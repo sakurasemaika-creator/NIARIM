@@ -6,6 +6,7 @@ import 'package:archive/archive.dart';
 import '../models/app_theme_preset.dart';
 import '../models/autofill_preset.dart';
 import '../models/brush.dart';
+import '../models/pixel_color_mode.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
 import '../services/autofill_preset_service.dart';
@@ -158,6 +159,9 @@ class NiatraSerializer {
         'strokeDecay': b.strokeDecay, 'mixingMode': b.mixingMode.name,
         'mixingRate': b.mixingRate, 'isFavorite': b.isFavorite,
         'calligraphyAngle': b.calligraphyAngle,
+        'pixelColorMode': b.pixelColorMode.name,
+        'pixelColorLevels': b.pixelColorLevels,
+        'pixelExplicitColors': b.pixelExplicitColors,
       };
 
   static Brush _deserializeBrush(Map<String, dynamic> j) => Brush(
@@ -183,6 +187,13 @@ class NiatraSerializer {
         mixingRate: j['mixingRate'] as int,
         isFavorite: j['isFavorite'] as bool? ?? false,
         calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
+        pixelColorMode: PixelColorMode.values.firstWhere(
+            (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.none),
+        pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
+        pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)
+                ?.map((e) => e as int)
+                .toList() ??
+            const [0xFF000000],
       );
 
   // ─── Tone / Stamp ─────────────────────────────────────────────────────

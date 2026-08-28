@@ -2632,5 +2632,27 @@
       }
     }
   },
-  "communityNoWorksMessage": "作品がありません"
+  "communityNoWorksMessage": "作品がありません",
+  "pixelColorModeLabel": "配色方式",
+  "pixelColorModeNone": "色を指定しない",
+  "pixelColorModePalette": "パレットから選ぶ",
+  "pixelColorModeExplicit": "色を指定する",
+  "pixelColorModeCount": "色数を指定する",
+  "pixelColorLevelsLabel": "色数: {count}",
+  "@pixelColorLevelsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pixelColorChipDeleteTooltip": "この色を削除",
+  "pixelColorChipAddButton": "色を追加",
+  "pixelArtPaletteNameRequiredError": "パレット名を入力してください",
+  "pixelArtPaletteEditTitle": "パレットを編集",
+  "pixelArtPaletteAddTitle": "パレットを追加",
+  "pixelArtPaletteNameLabel": "パレット名",
+  "pixelArtPalettePickerTitle": "パレットから選ぶ",
+  "pixelArtPalettePickerEmpty": "保存済みのパレットがありません。「追加」から作成してください",
+  "pixelArtPalettePickerApplyButton": "適用"
 }
