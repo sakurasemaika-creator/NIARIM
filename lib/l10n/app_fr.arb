@@ -2066,6 +2066,8 @@
   "layerKeyframeScaleLabel": "Échelle",
   "layerKeyframeRotationLabel": "Rotation",
   "layerPanelGroupTooltip": "Grouper",
+  "layerPanelShowSelectedTooltip": "Afficher tous les calques sélectionnés",
+  "layerPanelHideSelectedTooltip": "Masquer tous les calques sélectionnés",
   "layerPanelGroupDefaultName": "Nouveau groupe",
   "layerPanelGroupMembershipLabel": "Groupe : {name}",
   "@layerPanelGroupMembershipLabel": {

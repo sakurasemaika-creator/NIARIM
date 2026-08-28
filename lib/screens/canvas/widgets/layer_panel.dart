@@ -625,6 +625,28 @@ class _LayerPanelState extends State<LayerPanel> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
+                    icon: const Icon(Icons.visibility, size: 18),
+                    onPressed: _selectedIds.isEmpty
+                        ? null
+                        : () => _setVisibilityForSelected(
+                            context,
+                            layers,
+                            true,
+                          ),
+                    tooltip: l10n.layerPanelShowSelectedTooltip,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.visibility_off, size: 18),
+                    onPressed: _selectedIds.isEmpty
+                        ? null
+                        : () => _setVisibilityForSelected(
+                            context,
+                            layers,
+                            false,
+                          ),
+                    tooltip: l10n.layerPanelHideSelectedTooltip,
+                  ),
+                  IconButton(
                     icon: const Icon(Icons.workspaces_outline, size: 18),
                     onPressed: _selectedIds.length >= 2
                         ? () => _showCreateGroupDialog(context)
@@ -727,6 +749,27 @@ class _LayerPanelState extends State<LayerPanel> {
     );
     if (!mounted) return;
     setState(() => _selectedIndex = 0);
+  }
+
+  /// 複数選択モードで選択中のレイヤーを一括で表示・非表示にする
+  /// （タスク#147：複数選択時の全表示・全非表示ボタン）。
+  void _setVisibilityForSelected(
+    BuildContext context,
+    List<model.Layer> layers,
+    bool visible,
+  ) {
+    final projectService = context.read<ProjectService>();
+    for (final layer in layers) {
+      if (!_selectedIds.contains(layer.id) || layer.isVisible == visible) {
+        continue;
+      }
+      projectService.updateLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        layer: layer.copyWith(isVisible: visible),
+      );
+    }
   }
 
   /// 表示中（isVisible）の結合可能なレイヤーを全てワンタップで結合する。

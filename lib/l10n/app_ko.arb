@@ -2066,6 +2066,8 @@
   "layerKeyframeScaleLabel": "확대축소",
   "layerKeyframeRotationLabel": "회전",
   "layerPanelGroupTooltip": "그룹화",
+  "layerPanelShowSelectedTooltip": "선택한 레이어를 모두 표시",
+  "layerPanelHideSelectedTooltip": "선택한 레이어를 모두 숨기기",
   "layerPanelGroupDefaultName": "새 그룹",
   "layerPanelGroupMembershipLabel": "그룹: {name}",
   "@layerPanelGroupMembershipLabel": {

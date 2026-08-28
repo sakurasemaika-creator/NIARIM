@@ -2066,6 +2066,8 @@
   "layerKeyframeScaleLabel": "缩放",
   "layerKeyframeRotationLabel": "旋转",
   "layerPanelGroupTooltip": "分组",
+  "layerPanelShowSelectedTooltip": "显示所有选中的图层",
+  "layerPanelHideSelectedTooltip": "隐藏所有选中的图层",
   "layerPanelGroupDefaultName": "新建分组",
   "layerPanelGroupMembershipLabel": "分组：{name}",
   "@layerPanelGroupMembershipLabel": {

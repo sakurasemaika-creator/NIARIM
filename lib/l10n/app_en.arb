@@ -2066,6 +2066,8 @@
   "layerKeyframeScaleLabel": "Scale",
   "layerKeyframeRotationLabel": "Rotation",
   "layerPanelGroupTooltip": "Group",
+  "layerPanelShowSelectedTooltip": "Show all selected layers",
+  "layerPanelHideSelectedTooltip": "Hide all selected layers",
   "layerPanelGroupDefaultName": "New Group",
   "layerPanelGroupMembershipLabel": "Group: {name}",
   "@layerPanelGroupMembershipLabel": {

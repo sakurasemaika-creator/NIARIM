@@ -2066,6 +2066,8 @@
   "layerKeyframeScaleLabel": "縮放",
   "layerKeyframeRotationLabel": "旋轉",
   "layerPanelGroupTooltip": "群組化",
+  "layerPanelShowSelectedTooltip": "顯示所有選取的圖層",
+  "layerPanelHideSelectedTooltip": "隱藏所有選取的圖層",
   "layerPanelGroupDefaultName": "新增群組",
   "layerPanelGroupMembershipLabel": "群組：{name}",
   "@layerPanelGroupMembershipLabel": {
