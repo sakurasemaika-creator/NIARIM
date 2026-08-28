@@ -1614,6 +1614,7 @@
   "meshTransformScaleLabel": "缩放",
   "meshTransformApplyButton": "应用",
   "canvasLassoEnclosedLabel": "填充封闭区域",
+  "canvasInvertSelectionTooltip": "反转选区",
   "canvasTapToEnterTextLabel": "点击画布输入文字",
   "canvasRulerFirstUseTip": "使用尺子可以画出笔直的线条和整齐的图形。",
   "canvasRulerTooltip": "尺子",

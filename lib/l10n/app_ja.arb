@@ -1864,6 +1864,7 @@
   "meshTransformScaleLabel": "拡大縮小",
   "meshTransformApplyButton": "適用",
   "canvasLassoEnclosedLabel": "囲って塗る",
+  "canvasInvertSelectionTooltip": "選択範囲を反転",
   "canvasTapToEnterTextLabel": "キャンバスをタップしてテキストを入力",
   "canvasRulerFirstUseTip": "定規を使うとまっすぐな線や綺麗な図形が描けます。",
   "canvasRulerTooltip": "定規",

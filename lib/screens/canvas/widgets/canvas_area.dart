@@ -122,6 +122,13 @@ class CanvasArea extends StatefulWidget {
   final VoidCallback? onNextFrame;
   final VoidCallback? onPreviousFrame;
 
+  // ─── 選択範囲の反転（canvas_screen.dart側の上部バーに「選択範囲を
+  // 反転」ボタンを表示するため、選択中かどうかをこのコールバックで
+  // 通知する。反転自体はmeshCommitToken等と同じトークン方式で駆動する
+  // （主導権はcanvas_screen.dart側、実処理はCanvasArea側）。 ───────────
+  final int invertSelectionToken;
+  final ValueChanged<bool>? onSelectionActiveChanged;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -150,6 +157,8 @@ class CanvasArea extends StatefulWidget {
     this.meshCancelToken = 0,
     this.onNextFrame,
     this.onPreviousFrame,
+    this.invertSelectionToken = 0,
+    this.onSelectionActiveChanged,
   });
 
   @override
@@ -429,6 +438,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (leftMeshTransform) {
       _cancelMeshTransform();
     }
+
+    if (old.invertSelectionToken != widget.invertSelectionToken) {
+      _invertSelectionMask();
+    }
   }
 
   @override
@@ -455,6 +468,22 @@ class _CanvasAreaState extends State<CanvasArea> {
     _selectionOverlayImage?.dispose();
     _selectionOverlayImage = null;
     setState(() => _selectionMask = null);
+    widget.onSelectionActiveChanged?.call(false);
+  }
+
+  /// 選択範囲を反転する（選択されていた部分と外側を入れ替える）。
+  /// canvas_screen.dart側の「選択範囲を反転」ボタンから、invertSelectionToken
+  /// の増加を通じて呼ばれる。選択範囲が無い場合は何もしない。
+  void _invertSelectionMask() {
+    final current = _selectionMask;
+    if (current == null) return;
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final inverted = Uint8List(current.length);
+    for (int i = 0; i < current.length; i++) {
+      inverted[i] = current[i] == 0 ? 1 : 0;
+    }
+    _setSelectionMask(inverted, w, h);
   }
 
   Uint8List _rectSelectionMask(Offset a, Offset b, int w, int h) {
@@ -530,6 +559,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _selectionOverlayImage = null;
     _selectionMask = mask;
     setState(() {});
+    widget.onSelectionActiveChanged?.call(true);
     final rgba = Uint8List(w * h * 4);
     for (int i = 0; i < w * h; i++) {
       if (mask[i] == 0) continue;

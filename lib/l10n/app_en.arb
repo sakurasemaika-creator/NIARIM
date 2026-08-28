@@ -1614,6 +1614,7 @@
   "meshTransformScaleLabel": "Scale",
   "meshTransformApplyButton": "Apply",
   "canvasLassoEnclosedLabel": "Fill enclosed area",
+  "canvasInvertSelectionTooltip": "Invert selection",
   "canvasTapToEnterTextLabel": "Tap the canvas to enter text",
   "canvasRulerFirstUseTip": "Use the ruler to draw straight lines and clean shapes.",
   "canvasRulerTooltip": "Ruler",

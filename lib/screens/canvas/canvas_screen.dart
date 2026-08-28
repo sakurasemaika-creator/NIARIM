@@ -106,6 +106,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _meshCommitToken = 0;
   int _meshCancelToken = 0;
 
+  // ─── 選択範囲の反転（範囲選択中にのみ使える機能） ────────────────
+  // CanvasArea側が選択範囲の有無をonSelectionActiveChangedで通知し、
+  // それに応じて上部バーの「選択範囲を反転」ボタンの表示を切り替える。
+  // 反転自体はinvertSelectionTokenを増やすことでCanvasArea側へ指示する
+  // （meshCommitToken等と同じトークン方式）。
+  bool _hasActiveSelection = false;
+  int _invertSelectionToken = 0;
+
+  bool get _isSelectionToolActive =>
+      _currentTool == DrawingTool.selectRect ||
+      _currentTool == DrawingTool.selectLasso ||
+      _currentTool == DrawingTool.selectMagicWand;
+
   // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
   // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
   // 時点でSettingsServiceへ確定値を保存する。
@@ -768,6 +781,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   meshCancelToken: _meshCancelToken,
                                   onNextFrame: _goToNextFrame,
                                   onPreviousFrame: _goToPreviousFrame,
+                                  invertSelectionToken: _invertSelectionToken,
+                                  onSelectionActiveChanged: (v) {
+                                    if (_hasActiveSelection == v) return;
+                                    setState(() => _hasActiveSelection = v);
+                                  },
                                 ),
                                 // ツールオプション系フローティングパネル（ブラシ・トーン・
                                 // スタンプ・ペンサブツール・オニオンスキン・定規・
@@ -1599,6 +1617,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
             Switch(
               value: _lassoFillEnclosedMode,
               onChanged: (v) => setState(() => _lassoFillEnclosedMode = v),
+            ),
+          ],
+          // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
+          if (_isSelectionToolActive && _hasActiveSelection) ...[
+            const SizedBox(width: 8),
+            _topBarIconButton(
+              context,
+              Icons.invert_colors_outlined,
+              onPressed: () => setState(() => _invertSelectionToken++),
+              tooltip: l10n.canvasInvertSelectionTooltip,
             ),
           ],
           // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
