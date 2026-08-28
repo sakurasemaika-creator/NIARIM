@@ -408,6 +408,48 @@ class _FilterPanelState extends State<FilterPanel> {
                             },
                           ),
                         ],
+                        if (current.kind == FilterKind.auroraHologram) ...[
+                          _paramSlider(
+                            filterService,
+                            l10n.filterAuroraHologramStrength,
+                            current.strength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterAuroraHologramBrightness,
+                            current.hologramBrightness,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, hologramBrightness: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterAuroraHologramSaturation,
+                            current.hologramSaturation,
+                            -100,
+                            100,
+                            (v) => filterService.updateFilterParams(current.id, hologramSaturation: v),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: AuroraHologramPreset.values.map((p) => ChoiceChip(
+                                label: Text(_auroraHologramPresetLabel(l10n, p), style: const TextStyle(fontSize: 10)),
+                                selected: current.hologramPreset == p,
+                                onSelected: (selected) {
+                                  if (!selected) return;
+                                  filterService.updateFilterParams(current.id, hologramPreset: p);
+                                  _updatePreview();
+                                },
+                              )).toList(),
+                            ),
+                          ),
+                        ],
                         if (current.kind == FilterKind.animeStyle) ...[
                           _paramSlider(
                             filterService,
@@ -836,6 +878,15 @@ class _FilterPanelState extends State<FilterPanel> {
         ToneCurvePreset.invert => l10n.filterToneCurveInvert,
       };
 
+  String _auroraHologramPresetLabel(AppLocalizations l10n, AuroraHologramPreset p) => switch (p) {
+        AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
+        AuroraHologramPreset.soapBubble => l10n.filterAuroraHologramPresetSoapBubble,
+        AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
+        AuroraHologramPreset.pastelDream => l10n.filterAuroraHologramPresetPastelDream,
+        AuroraHologramPreset.sunsetGold => l10n.filterAuroraHologramPresetSunsetGold,
+        AuroraHologramPreset.silverFoil => l10n.filterAuroraHologramPresetSilverFoil,
+      };
+
   Widget _paramSlider(FilterService service, String label, double value, double min, double max,
       ValueChanged<double> onChanged, {int decimals = 0}) {
     final valueLabel = decimals > 0 ? value.toStringAsFixed(decimals) : value.round().toString();
@@ -898,6 +949,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
         FilterKind.lensDistortion => l10n.filterNameLensDistortion,
         FilterKind.pixelate => l10n.filterNamePixelate,
+        FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -981,6 +1033,14 @@ class _FilterPanelState extends State<FilterPanel> {
           colorLevels: filter.colorLevels,
           paletteColors: filter.pixelExplicitColors,
         );
+      case FilterKind.auroraHologram:
+        return _engine.applyAuroraHologram(
+          data, width, height,
+          strength: filter.strength,
+          brightness: filter.hologramBrightness,
+          saturation: filter.hologramSaturation,
+          preset: filter.hologramPreset,
+        );
     }
   }
 
@@ -1024,6 +1084,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.remove_red_eye;
       case FilterKind.pixelate:
         return Icons.grid_view;
+      case FilterKind.auroraHologram:
+        return Icons.auto_awesome_mosaic;
     }
   }
 

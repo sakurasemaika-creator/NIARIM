@@ -72,6 +72,13 @@ Uint8List applyDrawFilterInIsolate(
         colorLevels: filter.colorLevels,
         paletteColors: filter.pixelExplicitColors,
       ),
+    FilterKind.auroraHologram => engine.applyAuroraHologram(
+        data, width, height,
+        strength: filter.strength,
+        brightness: filter.hologramBrightness,
+        saturation: filter.hologramSaturation,
+        preset: filter.hologramPreset,
+      ),
   };
 }
 
@@ -87,6 +94,60 @@ List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
     ToneCurvePreset.lowContrast =>
       const [ui.Offset(0, 0.15), ui.Offset(0.5, 0.5), ui.Offset(1, 0.85)],
     ToneCurvePreset.invert => const [ui.Offset(0, 1), ui.Offset(1, 0)],
+  };
+}
+
+/// オーロラホログラムフィルターの配色プリセット（グラデーションマップの
+/// カラーストップ）。各要素は(明度0.0〜1.0の位置, R, G, B)で、位置は
+/// 昇順に並べる。プレビュー・本適用の両方から共通利用する。
+/// 各プリセットの配色意図：
+/// - aurora（オーロラ）：夜空を思わせる藍色から、オーロラらしい緑〜水色〜
+///   薄紫へ抜ける配色。
+/// - soapBubble（シャボン玉）：石鹸膜・オイルスリックのような、ピンク→
+///   紫→水色→緑→黄と巡る虹色。
+/// - cyberNeon（サイバーネオン）：濃紺からマゼンタ・シアンへ抜ける、
+///   高彩度でくっきりした配色。
+/// - pastelDream（パステルドリーム）：ラベンダー→ミント→ピーチと、
+///   全体的に明るく淡い配色。
+/// - sunsetGold（サンセットゴールド）：紫がかった夕焼けからピンク・
+///   ゴールドへ抜ける暖色寄りの配色。
+/// - silverFoil（シルバーホイル）：スレートグレー→白→薄紫グレーと、
+///   彩度を抑えたホログラム箔紙のような配色。
+List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
+  return switch (preset) {
+    AuroraHologramPreset.aurora => const [
+        (0.0, 40, 20, 80),
+        (0.33, 30, 200, 150),
+        (0.66, 60, 220, 255),
+        (1.0, 200, 180, 255),
+      ],
+    AuroraHologramPreset.soapBubble => const [
+        (0.0, 255, 120, 180),
+        (0.25, 170, 120, 255),
+        (0.5, 100, 180, 255),
+        (0.75, 120, 255, 190),
+        (1.0, 255, 240, 150),
+      ],
+    AuroraHologramPreset.cyberNeon => const [
+        (0.0, 20, 20, 80),
+        (0.5, 255, 50, 200),
+        (1.0, 50, 255, 240),
+      ],
+    AuroraHologramPreset.pastelDream => const [
+        (0.0, 220, 200, 255),
+        (0.5, 200, 255, 230),
+        (1.0, 255, 220, 200),
+      ],
+    AuroraHologramPreset.sunsetGold => const [
+        (0.0, 90, 30, 90),
+        (0.5, 255, 120, 150),
+        (1.0, 255, 220, 120),
+      ],
+    AuroraHologramPreset.silverFoil => const [
+        (0.0, 90, 100, 130),
+        (0.5, 255, 255, 255),
+        (1.0, 180, 170, 210),
+      ],
   };
 }
 
@@ -235,6 +296,17 @@ class FilterEngine {
             colorMode: e.pixelColorMode,
             colorLevels: e.param2.round().clamp(1, 256),
             paletteColors: e.pixelExplicitColors,
+          ),
+        // オーロラホログラム：param1=フィルター強度（0〜100）、
+        // param2=明度、param3=彩度（いずれも-100〜100）、
+        // param4=配色プリセットのインデックス（AuroraHologramPreset.values）。
+        EffectFilterType.auroraHologram => applyAuroraHologram(
+            result, width, height,
+            strength: e.param1,
+            brightness: e.param2,
+            saturation: e.param3,
+            preset: AuroraHologramPreset.values[
+                e.param4.round().clamp(0, AuroraHologramPreset.values.length - 1)],
           ),
       };
     }
@@ -862,6 +934,122 @@ class FilterEngine {
     return result;
   }
 
+  /// オーロラホログラムフィルター：画素の明度をもとにグラデーションマップ
+  /// （[preset]のカラーストップ、[auroraHologramStops]参照）で色を割り当て、
+  /// 元の色とブレンドすることでホログラム箔・オーロラのような虹色の光沢を
+  /// 表現する（イラストでホログラムを描く定番テクニックの応用）。
+  /// [strength]（0〜100、ブレンド比率）・[brightness]・[saturation]
+  /// （いずれも-100〜100、グラデーションマップ結果へのHSL調整量）は独立に
+  /// 効く。配色パターン自体はプリセットのみ選択可能（ユーザー個別指定不可）。
+  Uint8List applyAuroraHologram(
+    Uint8List data,
+    int width,
+    int height, {
+    required double strength,
+    required double brightness,
+    required double saturation,
+    required AuroraHologramPreset preset,
+  }) {
+    final amount = (strength / 100).clamp(0.0, 1.0);
+    if (amount <= 0) return Uint8List.fromList(data);
+    final stops = auroraHologramStops(preset);
+    final result = Uint8List.fromList(data);
+    // 同じ明度の画素は同じ結果になるため、256階調ぶんだけ事前計算して
+    // キャッシュする（フルHD相当の画素数でも1画素ずつHSL変換し直すより
+    // 大幅に軽い）。
+    final cache = List<(int, int, int)?>.filled(256, null);
+    for (int i = 0; i < data.length; i += 4) {
+      if (data[i + 3] == 0) continue;
+      final r = data[i], g = data[i + 1], b = data[i + 2];
+      final luminanceIdx = ((r * 0.299 + g * 0.587 + b * 0.114)).round().clamp(0, 255);
+      var mapped = cache[luminanceIdx];
+      if (mapped == null) {
+        final (mr, mg, mb) = _sampleGradient(stops, luminanceIdx / 255.0);
+        mapped = _adjustHsl(mr, mg, mb, saturationDelta: saturation / 100, lightnessDelta: brightness / 100);
+        cache[luminanceIdx] = mapped;
+      }
+      result[i] = (r + (mapped.$1 - r) * amount).round().clamp(0, 255);
+      result[i + 1] = (g + (mapped.$2 - g) * amount).round().clamp(0, 255);
+      result[i + 2] = (b + (mapped.$3 - b) * amount).round().clamp(0, 255);
+    }
+    return result;
+  }
+
+  /// [stops]（明度0.0〜1.0の位置とRGB色のペア。位置は昇順）を[t]（0.0〜1.0）
+  /// で線形補間する。
+  (int, int, int) _sampleGradient(List<(double, int, int, int)> stops, double t) {
+    final clamped = t.clamp(0.0, 1.0);
+    for (int i = 0; i < stops.length - 1; i++) {
+      final (pos0, r0, g0, b0) = stops[i];
+      final (pos1, r1, g1, b1) = stops[i + 1];
+      if (clamped <= pos1 || i == stops.length - 2) {
+        final span = pos1 - pos0;
+        final localT = span <= 0 ? 0.0 : ((clamped - pos0) / span).clamp(0.0, 1.0);
+        return (
+          (r0 + (r1 - r0) * localT).round(),
+          (g0 + (g1 - g0) * localT).round(),
+          (b0 + (b1 - b0) * localT).round(),
+        );
+      }
+    }
+    final (_, r, g, b) = stops.last;
+    return (r, g, b);
+  }
+
+  /// RGB色をHSLへ変換し、彩度・明度へそれぞれ[saturationDelta]・
+  /// [lightnessDelta]（-1.0〜1.0）を加算してRGBへ戻す。
+  (int, int, int) _adjustHsl(
+    int r, int g, int b, {
+    required double saturationDelta,
+    required double lightnessDelta,
+  }) {
+    final (h, s, l) = _rgbToHsl(r / 255.0, g / 255.0, b / 255.0);
+    final newS = (s + saturationDelta).clamp(0.0, 1.0);
+    final newL = (l + lightnessDelta).clamp(0.0, 1.0);
+    final (nr, ng, nb) = _hslToRgb(h, newS, newL);
+    return (
+      (nr * 255).round().clamp(0, 255),
+      (ng * 255).round().clamp(0, 255),
+      (nb * 255).round().clamp(0, 255),
+    );
+  }
+
+  (double, double, double) _rgbToHsl(double r, double g, double b) {
+    final maxV = math.max(r, math.max(g, b));
+    final minV = math.min(r, math.min(g, b));
+    final l = (maxV + minV) / 2;
+    if (maxV == minV) return (0, 0, l);
+    final d = maxV - minV;
+    final s = l > 0.5 ? d / (2 - maxV - minV) : d / (maxV + minV);
+    double h;
+    if (maxV == r) {
+      h = ((g - b) / d) % 6;
+    } else if (maxV == g) {
+      h = (b - r) / d + 2;
+    } else {
+      h = (r - g) / d + 4;
+    }
+    h *= 60;
+    if (h < 0) h += 360;
+    return (h, s, l);
+  }
+
+  (double, double, double) _hslToRgb(double h, double s, double l) {
+    if (s == 0) return (l, l, l);
+    final q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    final p = 2 * l - q;
+    final hk = h / 360;
+    double hue2rgb(double t) {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    }
+    return (hue2rgb(hk + 1 / 3), hue2rgb(hk), hue2rgb(hk - 1 / 3));
+  }
+
   /// 二値化：輝度が[threshold]（0〜255）以上の画素を白、未満を黒に分ける。
   /// アルファはそのまま維持する。色調調整・単色化・「明度で透過」と組み合わせて
   /// 線画抽出に使うことを想定している。
@@ -1162,6 +1350,7 @@ enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
   animeStyle, retroAnime, crt,
   animatedNoise, rain, monochrome, colorAdjust, threshold, fisheye, pixelate,
+  auroraHologram,
 }
 
 enum DrawFilterType {

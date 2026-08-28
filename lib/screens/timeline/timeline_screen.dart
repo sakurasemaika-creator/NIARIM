@@ -28,6 +28,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/effect_filter_instance.dart';
+import '../../models/filter_def.dart' show AuroraHologramPreset;
 import '../../models/layer.dart';
 import '../../models/layer_group.dart';
 import '../../models/layer_keyframe.dart';
@@ -6720,6 +6721,7 @@ class _EffectFilterSheet extends StatelessWidget {
         EffectFilterType.threshold => l10n.filterNameThreshold,
         EffectFilterType.fisheye => l10n.filterNameFisheye,
         EffectFilterType.pixelate => l10n.filterNamePixelate,
+        EffectFilterType.auroraHologram => l10n.filterNameAuroraHologram,
       };
 
   static const _typeIcons = {
@@ -6740,6 +6742,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.threshold: Icons.contrast,
     EffectFilterType.fisheye: Icons.panorama_fish_eye,
     EffectFilterType.pixelate: Icons.grid_view,
+    EffectFilterType.auroraHologram: Icons.auto_awesome_mosaic,
   };
 
   @override
@@ -6973,6 +6976,8 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._thresholdParams(context, l10n, e)
                 else if (e.type == EffectFilterType.pixelate)
                   ..._pixelateParams(context, l10n, e)
+                else if (e.type == EffectFilterType.auroraHologram)
+                  ..._auroraHologramParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -7364,6 +7369,66 @@ class _EffectFilterSheet extends StatelessWidget {
     ];
   }
 
+  /// オーロラホログラム：param1=フィルター強度（0〜100）、param2=明度・
+  /// param3=彩度（いずれも-100〜100）、param4=配色プリセットのインデックス。
+  /// 配色パターンはプリセットのみ選択可能（ユーザー個別指定不可）。
+  List<Widget> _auroraHologramParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    final presetIndex =
+        e.param4.round().clamp(0, AuroraHologramPreset.values.length - 1);
+    return [
+      _paramRow(
+        l10n.filterAuroraHologramStrength,
+        e.param1,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
+      _paramRow(
+        l10n.filterAuroraHologramBrightness,
+        e.param2,
+        -100,
+        100,
+        200,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+      _paramRow(
+        l10n.filterAuroraHologramSaturation,
+        e.param3,
+        -100,
+        100,
+        200,
+        (v) => _update(context, e.copyWith(param3: v)),
+      ),
+      const SizedBox(height: 4),
+      Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: AuroraHologramPreset.values.map((p) => ChoiceChip(
+              label: Text(_auroraHologramPresetLabel(l10n, p), style: const TextStyle(fontSize: 10)),
+              selected: AuroraHologramPreset.values[presetIndex] == p,
+              onSelected: (selected) {
+                if (!selected) return;
+                _update(context, e.copyWith(param4: AuroraHologramPreset.values.indexOf(p).toDouble()));
+              },
+            )).toList(),
+      ),
+    ];
+  }
+
+  String _auroraHologramPresetLabel(AppLocalizations l10n, AuroraHologramPreset p) => switch (p) {
+        AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
+        AuroraHologramPreset.soapBubble => l10n.filterAuroraHologramPresetSoapBubble,
+        AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
+        AuroraHologramPreset.pastelDream => l10n.filterAuroraHologramPresetPastelDream,
+        AuroraHologramPreset.sunsetGold => l10n.filterAuroraHologramPresetSunsetGold,
+        AuroraHologramPreset.silverFoil => l10n.filterAuroraHologramPresetSilverFoil,
+      };
+
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -7439,17 +7504,27 @@ class _EffectFilterSheet extends StatelessWidget {
                             EffectFilterType.colorAdjust => 0.0,
                             EffectFilterType.threshold => 128.0,
                             EffectFilterType.pixelate => 8.0,
+                            // オーロラホログラムのparam1はフィルター強度
+                            // （0〜100）なので、効果がはっきり見える60から始める。
+                            EffectFilterType.auroraHologram => 60.0,
                             _ => 5.0,
                           },
                           // ドット絵のparam2は色数（2〜32）なので既定8から始める。
+                          // オーロラホログラムのparam2は明度（-100〜100）なので
+                          // 既定0（変化なし）から始める。
                           param2: type == EffectFilterType.rain
                               ? 10.0
                               : type == EffectFilterType.colorAdjust
                               ? 0.0
                               : type == EffectFilterType.pixelate
                               ? 8.0
+                              : type == EffectFilterType.auroraHologram
+                              ? 0.0
                               : 50.0,
-                          param3: type == EffectFilterType.colorAdjust
+                          // オーロラホログラムのparam3は彩度（-100〜100）なので
+                          // 既定0（変化なし）から始める。
+                          param3: type == EffectFilterType.colorAdjust ||
+                                  type == EffectFilterType.auroraHologram
                               ? 0.0
                               : 2.0,
                           // 単色化の色（fadeColorスロットを流用）：既定は白＝通常の

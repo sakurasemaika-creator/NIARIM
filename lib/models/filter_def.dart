@@ -48,12 +48,18 @@ import 'pixel_color_mode.dart';
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
   retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration, lensDistortion,
-  pixelate,
+  pixelate, auroraHologram,
 }
 
 /// トーンカーブのプリセット形状。
 /// 本格的な自由曲線編集の代わりに、よく使う形状をプリセットとして提供する。
 enum ToneCurvePreset { linear, brighten, darken, highContrast, lowContrast, invert }
+
+/// オーロラホログラムフィルターの配色パターン（プリセットのみ・
+/// ユーザーによる個別色指定は不可）。グラデーションマップ方式（画素の
+/// 明度に応じて色を割り当てる）で使う色の並びは
+/// [FilterEngine.auroraHologramStops]参照。
+enum AuroraHologramPreset { aurora, soapBubble, cyberNeon, pastelDream, sunsetGold, silverFoil }
 
 /// フィルター定義＋現在のパラメータ値。
 ///
@@ -113,6 +119,13 @@ class FilterDef {
   // PixelColorMode参照）の場合はpixelExplicitColorsを使う。
   final PixelColorMode pixelColorMode;
   final List<int> pixelExplicitColors;
+  // オーロラホログラム（auroraHologramのみ使用）：strengthをフィルター
+  // 強度（元の色とグラデーションマップ結果とのブレンド比率、0〜100）として
+  // 流用し、明度・彩度は専用フィールドで独立に持つ（いずれも-100〜100、
+  // 0で変化なし）。配色パターンはプリセットのみ（ユーザー個別指定不可）。
+  final double hologramBrightness;
+  final double hologramSaturation;
+  final AuroraHologramPreset hologramPreset;
 
   const FilterDef({
     required this.id,
@@ -139,6 +152,9 @@ class FilterDef {
     this.lensCenterOffsetY = 0,
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
+    this.hologramBrightness = 0,
+    this.hologramSaturation = 0,
+    this.hologramPreset = AuroraHologramPreset.aurora,
   });
 
   FilterDef copyWith({
@@ -166,6 +182,9 @@ class FilterDef {
     double? lensCenterOffsetY,
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
+    double? hologramBrightness,
+    double? hologramSaturation,
+    AuroraHologramPreset? hologramPreset,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -192,6 +211,9 @@ class FilterDef {
       lensCenterOffsetY: lensCenterOffsetY ?? this.lensCenterOffsetY,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
+      hologramBrightness: hologramBrightness ?? this.hologramBrightness,
+      hologramSaturation: hologramSaturation ?? this.hologramSaturation,
+      hologramPreset: hologramPreset ?? this.hologramPreset,
     );
   }
 
@@ -220,6 +242,9 @@ class FilterDef {
         'lensCenterOffsetY': lensCenterOffsetY,
         'pixelColorMode': pixelColorMode.name,
         'pixelExplicitColors': pixelExplicitColors,
+        'hologramBrightness': hologramBrightness,
+        'hologramSaturation': hologramSaturation,
+        'hologramPreset': hologramPreset.name,
       };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -254,5 +279,10 @@ class FilterDef {
                 ?.map((e) => e as int)
                 .toList() ??
             const [0xFF000000],
+        hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
+        hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
+        hologramPreset: AuroraHologramPreset.values.firstWhere(
+            (e) => e.name == j['hologramPreset'],
+            orElse: () => AuroraHologramPreset.aurora),
       );
 }
