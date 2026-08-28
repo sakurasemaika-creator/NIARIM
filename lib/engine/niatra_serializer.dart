@@ -6,11 +6,14 @@ import 'package:archive/archive.dart';
 import '../models/app_theme_preset.dart';
 import '../models/autofill_preset.dart';
 import '../models/brush.dart';
+import '../models/color_palette.dart';
 import '../models/pixel_color_mode.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
 import '../services/autofill_preset_service.dart';
 import '../services/brush_service.dart';
+import '../services/palette_service.dart';
+import '../services/pixel_art_palette_service.dart';
 import '../services/settings_service.dart';
 import '../services/stamp_service.dart';
 import '../services/theme_service.dart';
@@ -35,6 +38,8 @@ class NiatraSerializer {
     required StampService stamp,
     required AutofillPresetService autofillPresets,
     required ThemeService theme,
+    required PaletteService palette,
+    required PixelArtPaletteService pixelArtPalette,
   }) async {
     final data = <String, dynamic>{'appVersion': '1.0.0'};
 
@@ -69,6 +74,12 @@ class NiatraSerializer {
       data['currentThemeId'] = theme.current.id;
     }
 
+    if (selectedItems['パレット'] ?? false) {
+      data['palettes'] = palette.palettes.map((p) => p.toJson()).toList();
+      data['pixelArtPalettes'] =
+          pixelArtPalette.palettes.map((p) => p.toJson()).toList();
+    }
+
     final jsonBytes = utf8.encode(jsonEncode(data));
     final archive = Archive()..addFile(ArchiveFile(_dataFile, jsonBytes.length, jsonBytes));
     final zipBytes = ZipEncoder().encode(archive);
@@ -101,6 +112,8 @@ class NiatraSerializer {
     required StampService stamp,
     required AutofillPresetService autofillPresets,
     required ThemeService theme,
+    required PaletteService palette,
+    required PixelArtPaletteService pixelArtPalette,
   }) {
     final j = data.raw;
 
@@ -144,6 +157,25 @@ class NiatraSerializer {
     if (themePresetsJson != null) {
       for (final tpj in themePresetsJson) {
         theme.savePreset(_deserializeThemePreset(tpj as Map<String, dynamic>));
+      }
+    }
+
+    // パレット・ドット絵専用パレットはIDが取り込み先の既存データと衝突
+    // しないよう、それぞれのimportPalette()/addPalette()内で振り直される
+    // （他カテゴリと異なり戻り値がFutureだが、他の追加系メソッドの
+    // 内部永続化と同様、呼び出し元は完了を待たずfire-and-forgetでよい）。
+    final palettesJson = j['palettes'] as List<dynamic>?;
+    if (palettesJson != null) {
+      for (final pj in palettesJson) {
+        palette.importPalette(ColorPalette.fromJson(pj as Map<String, dynamic>));
+      }
+    }
+
+    final pixelArtPalettesJson = j['pixelArtPalettes'] as List<dynamic>?;
+    if (pixelArtPalettesJson != null) {
+      for (final pj in pixelArtPalettesJson) {
+        final p = ColorPalette.fromJson(pj as Map<String, dynamic>);
+        pixelArtPalette.addPalette(p.name, p.colors);
       }
     }
   }

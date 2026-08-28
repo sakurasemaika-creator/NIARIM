@@ -6,6 +6,8 @@ import '../../engine/niatra_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/brush_service.dart';
+import '../../services/palette_service.dart';
+import '../../services/pixel_art_palette_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/stamp_service.dart';
 import '../../services/theme_service.dart';
@@ -31,6 +33,7 @@ class _TransferScreenState extends State<TransferScreen> {
     'ブラシ': true,
     'プリセット': true,
     'UIテーマ': true,
+    'パレット': true,
   };
   bool _isBusy = false;
 
@@ -40,6 +43,7 @@ class _TransferScreenState extends State<TransferScreen> {
         'ブラシ' => l10n.transferItemBrush,
         'プリセット' => l10n.transferItemPresets,
         'UIテーマ' => l10n.transferItemTheme,
+        'パレット' => l10n.transferItemPalette,
         _ => key,
       };
 
@@ -131,6 +135,8 @@ class _TransferScreenState extends State<TransferScreen> {
         stamp: context.read<StampService>(),
         autofillPresets: context.read<AutofillPresetService>(),
         theme: context.read<ThemeService>(),
+        palette: context.read<PaletteService>(),
+        pixelArtPalette: context.read<PixelArtPaletteService>(),
       );
       if (!mounted) return;
       final fileName = 'niarim_${DateTime.now().millisecondsSinceEpoch}.niatra';
@@ -179,6 +185,8 @@ class _TransferScreenState extends State<TransferScreen> {
         stamp: context.read<StampService>(),
         autofillPresets: context.read<AutofillPresetService>(),
         theme: context.read<ThemeService>(),
+        palette: context.read<PaletteService>(),
+        pixelArtPalette: context.read<PixelArtPaletteService>(),
       );
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
