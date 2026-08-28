@@ -1767,6 +1767,17 @@
     }
   },
   "layerPanelMultiDeleteConfirmBody": "Les matériaux de la timeline seront supprimés de toutes les images de leur plage d'affichage.",
+  "layerPanelCommonDeleteMidDialogTitle": "Modifier la plage d'affichage de {name} ?",
+  "@layerPanelCommonDeleteMidDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelCommonDeleteMidDialogBody": "La plage d'affichage d'un calque partagé ne peut être qu'une seule plage continue, elle ne peut donc pas être supprimée depuis une image au milieu de cette plage. Choisissez plutôt de conserver la partie avant ou après cette image.",
+  "layerPanelCommonDeleteKeepBeforeButton": "Conserver avant cette image",
+  "layerPanelCommonDeleteKeepAfterButton": "Conserver après cette image",
   "layerPanelRangeDialogTitle": "Plage d'affichage",
   "layerPanelRangeStartFrameLabel": "Image de début",
   "layerPanelRangeEndFrameLabel": "Image de fin",

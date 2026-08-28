@@ -1767,6 +1767,17 @@
     }
   },
   "layerPanelMultiDeleteConfirmBody": "將從時間軸素材顯示範圍內的所有影格中刪除。",
+  "layerPanelCommonDeleteMidDialogTitle": "要變更「{name}」的顯示範圍嗎？",
+  "@layerPanelCommonDeleteMidDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelCommonDeleteMidDialogBody": "共用圖層的顯示範圍只能設定為一個連續區間，因此無法在範圍中間的某一影格刪除。請選擇要保留此影格之前還是之後的部分。",
+  "layerPanelCommonDeleteKeepBeforeButton": "保留此影格之前",
+  "layerPanelCommonDeleteKeepAfterButton": "保留此影格之後",
   "layerPanelRangeDialogTitle": "顯示範圍",
   "layerPanelRangeStartFrameLabel": "起始影格",
   "layerPanelRangeEndFrameLabel": "結束影格",

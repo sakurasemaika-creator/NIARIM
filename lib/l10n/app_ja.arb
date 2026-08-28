@@ -2017,6 +2017,17 @@
     }
   },
   "layerPanelMultiDeleteConfirmBody": "タイムライン素材の表示範囲内のすべてのフレームから削除されます。",
+  "layerPanelCommonDeleteMidDialogTitle": "{name}の表示範囲を変更しますか？",
+  "@layerPanelCommonDeleteMidDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelCommonDeleteMidDialogBody": "共通レイヤーの表示範囲は連続した1区間でしか設定できないため、範囲の途中のフレームでは削除できません。代わりに、このフレームより前と後のどちらを残すか選んでください。",
+  "layerPanelCommonDeleteKeepBeforeButton": "これより前を残す",
+  "layerPanelCommonDeleteKeepAfterButton": "これより後を残す",
   "layerPanelRangeDialogTitle": "表示範囲",
   "layerPanelRangeStartFrameLabel": "開始フレーム",
   "layerPanelRangeEndFrameLabel": "終了フレーム",

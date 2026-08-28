@@ -1767,6 +1767,17 @@
     }
   },
   "layerPanelMultiDeleteConfirmBody": "Los materiales de la línea de tiempo se eliminarán de todos los fotogramas dentro de su rango de visualización.",
+  "layerPanelCommonDeleteMidDialogTitle": "¿Cambiar el rango de visualización de {name}?",
+  "@layerPanelCommonDeleteMidDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelCommonDeleteMidDialogBody": "El rango de visualización de una capa compartida solo puede ser un único intervalo continuo, por lo que no se puede eliminar desde un fotograma intermedio de ese rango. Elige si quieres conservar la parte anterior o posterior a este fotograma.",
+  "layerPanelCommonDeleteKeepBeforeButton": "Conservar lo anterior",
+  "layerPanelCommonDeleteKeepAfterButton": "Conservar lo posterior",
   "layerPanelRangeDialogTitle": "Rango de visualización",
   "layerPanelRangeStartFrameLabel": "Fotograma inicial",
   "layerPanelRangeEndFrameLabel": "Fotograma final",

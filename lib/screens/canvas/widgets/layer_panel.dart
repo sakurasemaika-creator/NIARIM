@@ -881,7 +881,8 @@ class _LayerPanelState extends State<LayerPanel> {
 
   /// 各レイヤー行のゴミ箱アイコンからの単体削除（三点メニュー・
   /// ゴミ箱は各レイヤーの右側に配置）。タイムライン素材は既存通り確認ダイアログ
-  /// を経由し、それ以外は即時削除する。
+  /// を経由し、共通レイヤーは表示範囲のトリミング（タスク#148）、
+  /// それ以外は即時削除する。
   Future<void> _deleteLayerRow(
     BuildContext context,
     model.Layer layer,
@@ -889,6 +890,10 @@ class _LayerPanelState extends State<LayerPanel> {
   ) async {
     if (_isTimelineMaterial(layer.type)) {
       _showTimelineDeleteConfirm(context, layer);
+      return;
+    }
+    if (layer.type == model.LayerType.common) {
+      await _deleteCommonLayerAtCurrentFrame(context, layer);
       return;
     }
     if (!await confirmDelete(context, itemName: layer.name)) return;
@@ -905,6 +910,103 @@ class _LayerPanelState extends State<LayerPanel> {
       }
       if (_selectedIndex < 0) _selectedIndex = 0;
     });
+  }
+
+  /// 共通レイヤーの「このフレームだけ削除」（タスク#148）。共通レイヤーは
+  /// 単一の連続した表示範囲（rangeStart〜rangeEnd）でしか表せないため、
+  /// 現在表示中のフレームが範囲の端（先頭・末尾）ならその1フレーム分だけ
+  /// 範囲を狭め、範囲が1フレームしかなければ通常通りレイヤー自体を削除する。
+  /// 範囲の途中のフレームでは、連続区間を保てなくなるため「ここより前を
+  /// 残す」「ここより後を残す」をユーザーに選ばせる。
+  Future<void> _deleteCommonLayerAtCurrentFrame(
+    BuildContext context,
+    model.Layer layer,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final range = _effectiveCommonRange(layer);
+    final current = widget.frameIndex;
+    final projectService = context.read<ProjectService>();
+
+    void applyRange(({int start, int end}) r) {
+      projectService.updateLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        layer: layer.copyWith(
+          rangeMode: model.LayerRangeMode.frameRange,
+          rangeStart: r.start + 1,
+          rangeEnd: r.end + 1,
+          rangeSceneId: null,
+        ),
+      );
+    }
+
+    Future<void> deleteEntirely() async {
+      if (!await confirmDelete(context, itemName: layer.name)) return;
+      if (!context.mounted) return;
+      projectService.removeLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        layerId: layer.id,
+      );
+    }
+
+    // このフレームが範囲外（通常はここへ来ないはずだが念のため）の場合も、
+    // レイヤー自体を通常削除する。
+    if (current < range.start || current > range.end) {
+      await deleteEntirely();
+      return;
+    }
+
+    final trimmed = model.trimCommonLayerRange(
+      start: range.start,
+      end: range.end,
+      frameIndex: current,
+    );
+    // 範囲が1フレームのみ（trimCommonLayerRangeがnullを返す境界ケース）。
+    if (range.start >= range.end) {
+      await deleteEntirely();
+      return;
+    }
+    if (trimmed != null) {
+      // 先頭または末尾フレーム：一意に範囲が縮む。
+      if (!await confirmDelete(context, itemName: layer.name)) return;
+      if (!context.mounted) return;
+      applyRange(trimmed);
+      return;
+    }
+
+    // 範囲の途中：連続区間を保てないため、どちらを残すか選ばせる。
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.layerPanelCommonDeleteMidDialogTitle(layer.name)),
+        content: Text(l10n.layerPanelCommonDeleteMidDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'keepBefore'),
+            child: Text(l10n.layerPanelCommonDeleteKeepBeforeButton),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'keepAfter'),
+            child: Text(l10n.layerPanelCommonDeleteKeepAfterButton),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !context.mounted) return;
+    final resolved = model.trimCommonLayerRange(
+      start: range.start,
+      end: range.end,
+      frameIndex: current,
+      keepBefore: choice == 'keepBefore',
+    );
+    if (resolved != null) applyRange(resolved);
   }
 
   void _showTimelineDeleteConfirm(BuildContext context, model.Layer layer) {
@@ -936,6 +1038,27 @@ class _LayerPanelState extends State<LayerPanel> {
         ],
       ),
     );
+  }
+
+  /// 共通レイヤーの実際の表示範囲（現在のシーン内、0始まり）を計算する。
+  /// timeline_screen.dartの_buildCommonLayerTrackと同じロジック
+  /// （タスク#148：フレーム内削除での長さ変更のために、フレームパネル側
+  /// でも同じ計算が必要になったため複製）。
+  ({int start, int end}) _effectiveCommonRange(model.Layer layer) {
+    final total = context.read<ProjectService>().frameCount(
+      widget.projectId,
+      widget.sceneId,
+    );
+    switch (layer.rangeMode) {
+      case model.LayerRangeMode.allFrames:
+      case model.LayerRangeMode.currentScene:
+      case model.LayerRangeMode.sceneRange:
+        return (start: 0, end: (total - 1).clamp(0, total - 1));
+      case model.LayerRangeMode.frameRange:
+        final start = ((layer.rangeStart ?? 1) - 1).clamp(0, total - 1);
+        final end = ((layer.rangeEnd ?? start + 1) - 1).clamp(start, total - 1);
+        return (start: start, end: end);
+    }
   }
 
   /// 共通レイヤーの表示範囲を「🔗 名前（開始〜終了）」の形式で要約する

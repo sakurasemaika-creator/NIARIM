@@ -172,6 +172,31 @@ bool isRangeLayerType(LayerType type) =>
     type == LayerType.timelineVideo ||
     type == LayerType.watermark;
 
+/// タスク#148：共通レイヤーの「このフレームだけ削除」で使う、
+/// 表示範囲（0始まりのstart/end）からframeIndexを含む1フレーム分を
+/// 除いた後の新しい範囲を計算する純粋関数（layer_panel.dartのUI操作から
+/// 分離してユニットテストできるようにしている）。
+///
+/// - 範囲が1フレームのみの場合はnullを返す（=レイヤー自体を削除すべき）。
+/// - frameIndexが範囲の先頭・末尾なら、その1フレーム分だけ縮めた範囲を
+///   一意に返す。
+/// - frameIndexが範囲の途中の場合、連続区間を保てないため[keepBefore]で
+///   どちらを残すか指定する必要がある（nullのまま呼ぶとnullを返す＝
+///   呼び出し側でユーザーに選ばせる必要があることを示す）。
+({int start, int end})? trimCommonLayerRange({
+  required int start,
+  required int end,
+  required int frameIndex,
+  bool? keepBefore,
+}) {
+  if (start >= end) return null;
+  if (frameIndex <= start) return (start: start + 1, end: end);
+  if (frameIndex >= end) return (start: start, end: end - 1);
+  if (keepBefore == true) return (start: start, end: frameIndex - 1);
+  if (keepBefore == false) return (start: frameIndex + 1, end: end);
+  return null;
+}
+
 enum LayerBlendMode {
   normal, multiply, screen, overlay, addition, subtract,
   darken, lighten, colorBurn, colorDodge, hardLight, softLight,

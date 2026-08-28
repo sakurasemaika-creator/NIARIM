@@ -1767,6 +1767,17 @@
     }
   },
   "layerPanelMultiDeleteConfirmBody": "The timeline materials will be removed from every frame within their display range.",
+  "layerPanelCommonDeleteMidDialogTitle": "Change the display range of {name}?",
+  "@layerPanelCommonDeleteMidDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelCommonDeleteMidDialogBody": "A shared layer's display range can only be a single continuous span, so it can't be deleted from a frame in the middle of that range. Choose whether to keep the part before or after this frame instead.",
+  "layerPanelCommonDeleteKeepBeforeButton": "Keep before this frame",
+  "layerPanelCommonDeleteKeepAfterButton": "Keep after this frame",
   "layerPanelRangeDialogTitle": "Display range",
   "layerPanelRangeStartFrameLabel": "Start frame",
   "layerPanelRangeEndFrameLabel": "End frame",
