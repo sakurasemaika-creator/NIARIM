@@ -900,13 +900,19 @@ class ProjectService extends ChangeNotifier {
 
   /// .niashare を複製して通常プロジェクトとして追加する（共有フロー）。
   /// 新規プロジェクトIDを採番し、共有元ファイル自体は変更しない。
-  Future<Project> importSharedProject(NiaproData data) async {
+  ///
+  /// [isSharedImport]はホーム画面の「共有」タブへ振り分けるかどうかのフラグ。
+  /// 他人から受け取った.niashareの取り込みではtrue（デフォルト）のままだが、
+  /// .niatra（引き継ぎ）経由で自分自身の別端末プロジェクトを復元する場合は
+  /// falseを渡し、通常プロジェクト一覧へそのまま追加する
+  /// （NiatraSerializer.restoreProjects()が使用）。
+  Future<Project> importSharedProject(NiaproData data, {bool isSharedImport = true}) async {
     final newId = _nextId('proj');
     final project = data.project.copyWith(
       id: newId,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
-      isSharedImport: true,
+      isSharedImport: isSharedImport,
     );
     _projects.add(project);
     _scenes[newId] = data.scenes;

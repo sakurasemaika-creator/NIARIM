@@ -158,4 +158,31 @@ void main() {
     expect(service.sharedFolders.any((f) => f.id == folder.id), isFalse);
     expect(service.shared.firstWhere((p) => p.id == imported.id).sharedFolderId, isNull);
   });
+
+  // Task#158：.niatra（引き継ぎ）経由でのプロジェクト復元は、他人から受け取った
+  // .niashareとは異なり「共有」タブへ振り分けず、通常のプロジェクト一覧へ
+  // そのまま追加する（isSharedImport: falseを明示的に渡す）。
+  test('isSharedImport:falseを渡すと通常プロジェクトとして追加され、共有タブに入らない', () async {
+    final service = ProjectService();
+    await service.init();
+    final incoming = Project(
+      id: 'ignored',
+      name: '別端末から引き継いだ作品',
+      fps: 24,
+      durationSeconds: 3,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+      totalWorkSeconds: 0,
+    );
+    final imported = await service.importSharedProject(
+      NiaproData(project: incoming, scenes: const [], tileData: const {}),
+      isSharedImport: false,
+    );
+
+    expect(imported.isSharedImport, isFalse);
+    expect(service.shared.map((p) => p.id), isNot(contains(imported.id)));
+    final projectsTabList = service.projects.where((p) => !p.isSharedImport);
+    expect(projectsTabList.map((p) => p.id), contains(imported.id));
+  });
 }

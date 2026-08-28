@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/engine/niatra_serializer.dart';
@@ -148,5 +150,56 @@ void main() {
     );
 
     expect(dst.pixelArtPalette.palettes, isEmpty);
+  });
+
+  // Task#158：制作中プロジェクトを.niatraへ選択式で埋め込める機能。
+  // NiaproSerializer.saveShare()自体はpath_provider（実ファイルI/O）に
+  // 依存するため、他の単体テスト（Task#142のpalette_service_test.dart等）
+  // と同じ方針で、ここでは実際の.niashareファイルI/Oを介さず、疑似的な
+  // バイト列を「埋め込み対象」として渡すことでexport()側のZIP構造・
+  // data.json記録の正しさのみを検証する（実際の.niashare内容の妥当性は
+  // niapro_serializer側の既存テストで担保される）。
+  test('projectFilesに渡したプロジェクトがProjects/以下へ埋め込まれ、data.jsonへ記録される（Task#158）', () async {
+    final src = await _buildServices();
+    final fakeNiashareBytes = Uint8List.fromList(utf8.encode('dummy niashare content'));
+
+    final bytes = await NiatraSerializer.export(
+      selectedItems: const {},
+      settings: src.settings,
+      brush: src.brush,
+      tone: src.tone,
+      stamp: src.stamp,
+      autofillPresets: src.autofillPresets,
+      theme: src.theme,
+      palette: src.palette,
+      pixelArtPalette: src.pixelArtPalette,
+      projectFiles: {'proj1.niashare': fakeNiashareBytes},
+    );
+    final data = NiatraSerializer.loadFromBytes(bytes);
+
+    expect(data.raw['projectFiles'], ['proj1.niashare']);
+    final entry = data.archive.findFile('Projects/proj1.niashare');
+    expect(entry, isNotNull);
+    expect(utf8.decode(entry!.content as List<int>), 'dummy niashare content');
+  });
+
+  test('projectFilesを渡さない場合はdata.jsonにprojectFilesキーが含まれない（Task#158）', () async {
+    final src = await _buildServices();
+
+    final bytes = await NiatraSerializer.export(
+      selectedItems: const {'設定': true},
+      settings: src.settings,
+      brush: src.brush,
+      tone: src.tone,
+      stamp: src.stamp,
+      autofillPresets: src.autofillPresets,
+      theme: src.theme,
+      palette: src.palette,
+      pixelArtPalette: src.pixelArtPalette,
+    );
+    final data = NiatraSerializer.loadFromBytes(bytes);
+
+    expect(data.raw.containsKey('projectFiles'), isFalse);
+    expect(data.archive.findFile('Projects/proj1.niashare'), isNull);
   });
 }
