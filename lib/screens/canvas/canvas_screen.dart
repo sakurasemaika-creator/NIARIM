@@ -714,15 +714,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           Expanded(
                             child: Stack(
                               children: [
-                                // 【重大バグ修正】CanvasAreaの背後を、キャンバスの
-                                // 「枠外」と同じ色（kCanvasOutsideColor）で固定で
-                                // 塗っておく。CanvasArea内部はTransformで
-                                // ピンチズーム・パンを描画時に適用しているため、
-                                // ズームアウトするとキャンバス内容（枠外の暗い
-                                // 塗りつぶしを含む）ごと縮小して見える。この
-                                // Containerが無いと、縮小分の周囲にScaffoldの
-                                // テーマ背景色（クリーム系など）がそのまま透けて
-                                // 見えてしまっていた。
+                                // 【重大バグ修正】背景は1枚だけ：CanvasArea自体は
+                                // 「枠外」を塗らず、実際の描画内容（drawingRect）
+                                // だけを描く透明なレイヤーになっており、この
+                                // Containerがキャンバス全域の唯一の背景として
+                                // 常に固定サイズ・固定色で存在する（=キャンバスは
+                                // この背景の中央に乗っているだけ、という単純な
+                                // 構成）。CanvasArea内部はTransformでピンチズーム・
+                                // パンを描画時に適用しているため、ズームアウトで
+                                // 描画内容だけが縮小されても、この背景自体は
+                                // 動かずに全域を覆い続ける（以前はCanvasArea側にも
+                                // 同じ色の「枠外」塗りを重ねて二重に背景を持たせて
+                                // いたため、縮小時に背景まで一緒に縮んで見た目が
+                                // ちぐはぐになる不具合があった）。
                                 Container(color: kCanvasOutsideColor),
                                 CanvasArea(
                                   onTapForText: _currentTool == DrawingTool.text

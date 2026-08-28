@@ -2910,8 +2910,12 @@ class _CanvasPainter extends CustomPainter {
     // （_CanvasAreaState._widgetLocalToCanvasPixel）と同じ計算元を使う。
     final drawingRect = canvasDrawingRectFor(size, project);
 
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height),
-        Paint()..color = kCanvasOutsideColor);
+    // 「枠外」の塗りつぶしは、この描画全体を包む親側（canvas_screen.dart）が
+    // 固定背景（kCanvasOutsideColor）として1枚だけ敷いている。ここで
+    // 重ねて塗ると背景が二重になり、ピンチズームでキャンバス内容ごと
+    // 縮小されるこの塗りの方だけが一緒に縮んで見た目がちぐはぐになるため、
+    // ここでは描画内容（drawingRect）だけを塗り、枠外は透明のままにして
+    // 親の固定背景をそのまま透過させる。
     _paintBackground(canvas, drawingRect);
 
     // 現在レイヤーより奥（背面）のレイヤー群
