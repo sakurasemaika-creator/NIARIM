@@ -2583,6 +2583,7 @@
   "communityScreenTitle": "みんなの作品",
   "communityTabNew": "新着",
   "communityTabRanking": "ランキング",
+  "communityTabFavoriteAuthors": "お気に入り",
   "communitySearchHint": "作品タイトル・投稿者名で検索",
   "communityEmptyState": "作品がありません",
   "communitySearchNoResults": "「{query}」に一致する作品が見つかりませんでした",
@@ -2661,6 +2662,10 @@
     }
   },
   "communityNoWorksMessage": "作品がありません",
+  "communityFavoriteAuthorFollow": "フォロー",
+  "communityFavoriteAuthorFollowing": "フォロー中",
+  "communityFavoriteAuthorsEmptyTitle": "お気に入り作者がいません",
+  "communityFavoriteAuthorsEmptyBody": "気に入った投稿者のページで「フォロー」すると、ここにその人の新着作品が並びます。",
   "communityShortsBadge": "ショート",
   "communityShortsModeTooltip": "ショートモードで見る",
   "communityShortsModeEmptySnackbar": "ショート動画がありません",

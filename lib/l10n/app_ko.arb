@@ -2333,6 +2333,7 @@
   "communityScreenTitle": "모두의 작품",
   "communityTabNew": "신착",
   "communityTabRanking": "랭킹",
+  "communityTabFavoriteAuthors": "팔로잉",
   "communitySearchHint": "작품 제목・투고자 이름으로 검색",
   "communityEmptyState": "표시할 작품이 없습니다",
   "communitySearchNoResults": "「{query}」에 해당하는 작품을 찾을 수 없습니다",
@@ -2411,6 +2412,10 @@
     }
   },
   "communityNoWorksMessage": "작품이 없습니다",
+  "communityFavoriteAuthorFollow": "팔로우",
+  "communityFavoriteAuthorFollowing": "팔로잉",
+  "communityFavoriteAuthorsEmptyTitle": "팔로우한 작가가 없습니다",
+  "communityFavoriteAuthorsEmptyBody": "마음에 드는 작가의 페이지에서 「팔로우」하면 이곳에 그 사람의 신작이 표시됩니다.",
   "communityShortsBadge": "쇼츠",
   "communityShortsModeTooltip": "쇼츠 모드로 보기",
   "communityShortsModeEmptySnackbar": "쇼츠 동영상이 없습니다",

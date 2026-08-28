@@ -59,7 +59,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
       _isSearching = true;
@@ -152,13 +152,17 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     );
   }
 
-  /// ショートモードを開く：現在アクティブなタブ（新着/ランキング）の
-  /// 一覧をisShortで絞り込み、全画面縦スクロールビューアへ切り替える。
-  /// ショート動画が1件も無い場合は、区別できないなら横動画も交えて
-  /// スクロールできて良いという依頼どおり、まず絞り込まずそのまま
+  /// ショートモードを開く：現在アクティブなタブ（新着/ランキング/お気に入り
+  /// 作者）の一覧をisShortで絞り込み、全画面縦スクロールビューアへ
+  /// 切り替える。ショート動画が1件も無い場合は、区別できないなら横動画も
+  /// 交えてスクロールできて良いという依頼どおり、まず絞り込まずそのまま
   /// 全件を渡す（=横動画も混在してよい）。
   void _openShortsMode(List<CommunityWork> allWorks) {
-    final base = _tabController.index == 0 ? _newArrivals(allWorks) : _rankingWorks(allWorks);
+    final base = switch (_tabController.index) {
+      0 => _newArrivals(allWorks),
+      1 => _rankingWorks(allWorks),
+      _ => _applySearch(context.read<CommunityService>().favoriteAuthorWorks),
+    };
     if (base.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -262,6 +266,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
           tabs: [
             Tab(text: l10n.communityTabNew),
             Tab(text: l10n.communityTabRanking),
+            Tab(text: l10n.communityTabFavoriteAuthors),
           ],
         ),
       ),
@@ -344,6 +349,54 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                   }),
                 ],
               ),
+            ),
+            Builder(builder: (context) {
+              // お気に入り作者（フォロー、Task#144）の新着一覧。
+              // favoriteAuthorWorksは既にNIARIM側非公開作品を除外し
+              // 新着順に並んでいるため、検索絞り込みのみ追加で適用する。
+              final works = _applySearch(communityService.favoriteAuthorWorks);
+              if (communityService.favoriteAuthorIds.isEmpty) {
+                return _buildNoFavoriteAuthorsState(l10n);
+              }
+              if (works.isEmpty) return _buildSearchEmptyState(l10n);
+              return SingleChildScrollView(
+                child: CommunityWorkGrid(
+                  works: works,
+                  bookmarkedIds: bookmarkedIds,
+                  onTapWork: _openFloatingPreview,
+                  onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
+                  onTapAuthor: _openAuthorWorks,
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 「お気に入り作者」タブ：1人もフォローしていない場合の案内表示
+  /// （ホーム画面の「ブクマ済み」タブが1件もブックマークが無い場合の
+  /// 案内表示と同じ構成に揃えている）。
+  Widget _buildNoFavoriteAuthorsState(AppLocalizations l10n) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.person_add_alt_1, size: 64, color: scheme.primary.withValues(alpha: 0.6)),
+            const SizedBox(height: 16),
+            Text(
+              l10n.communityFavoriteAuthorsEmptyTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.communityFavoriteAuthorsEmptyBody,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: scheme.onSurfaceVariant),
             ),
           ],
         ),

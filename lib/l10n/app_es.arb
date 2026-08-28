@@ -2333,6 +2333,7 @@
   "communityScreenTitle": "Obras de todos",
   "communityTabNew": "Novedades",
   "communityTabRanking": "Ranking",
+  "communityTabFavoriteAuthors": "Siguiendo",
   "communitySearchHint": "Buscar por título o nombre de usuario",
   "communityEmptyState": "No hay obras para mostrar",
   "communitySearchNoResults": "No se encontraron obras que coincidan con «{query}»",
@@ -2411,6 +2412,10 @@
     }
   },
   "communityNoWorksMessage": "No hay obras",
+  "communityFavoriteAuthorFollow": "Seguir",
+  "communityFavoriteAuthorFollowing": "Siguiendo",
+  "communityFavoriteAuthorsEmptyTitle": "Aún no sigues a ningún autor",
+  "communityFavoriteAuthorsEmptyBody": "Sigue a un creador desde su página para ver aquí sus últimas obras.",
   "communityShortsBadge": "Short",
   "communityShortsModeTooltip": "Ver en modo Shorts",
   "communityShortsModeEmptySnackbar": "No hay vídeos cortos disponibles",

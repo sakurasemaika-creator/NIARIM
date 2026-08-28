@@ -239,25 +239,51 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               Text(work.title,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
               const SizedBox(height: 8),
-              InkWell(
-                onTap: () => _openAuthorWorks(communityService, work),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 投稿者アイコン（あれば表示。ダミーデータには
-                    // アイコン画像が無いため、常に頭文字アバターに
-                    // フォールバックする）。
-                    CircleAvatar(
-                      radius: 14,
-                      backgroundColor: scheme.primaryContainer,
-                      child: Text(work.authorName.substring(0, 1),
-                          style: TextStyle(fontSize: 13, color: scheme.onPrimaryContainer)),
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _openAuthorWorks(communityService, work),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 投稿者アイコン（あれば表示。ダミーデータには
+                          // アイコン画像が無いため、常に頭文字アバターに
+                          // フォールバックする）。
+                          CircleAvatar(
+                            radius: 14,
+                            backgroundColor: scheme.primaryContainer,
+                            child: Text(work.authorName.substring(0, 1),
+                                style: TextStyle(fontSize: 13, color: scheme.onPrimaryContainer)),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(work.authorName,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 14, color: scheme.primary, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(work.authorName,
-                        style: TextStyle(fontSize: 14, color: scheme.primary, fontWeight: FontWeight.w600)),
-                  ],
-                ),
+                  ),
+                  // お気に入り作者（フォロー、Task#144）。自分自身の作品では表示しない。
+                  if (!isAuthorSelf)
+                    IconButton(
+                      onPressed: () => communityService.toggleFavoriteAuthor(work.authorId),
+                      icon: Icon(
+                        communityService.isFavoriteAuthor(work.authorId)
+                            ? Icons.person_remove_alt_1
+                            : Icons.person_add_alt_1,
+                        color: communityService.isFavoriteAuthor(work.authorId)
+                            ? scheme.onSurfaceVariant
+                            : scheme.primary,
+                      ),
+                      tooltip: communityService.isFavoriteAuthor(work.authorId)
+                          ? l10n.communityFavoriteAuthorFollowing
+                          : l10n.communityFavoriteAuthorFollow,
+                    ),
+                ],
               ),
               const SizedBox(height: 14),
               Row(

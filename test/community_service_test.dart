@@ -83,4 +83,52 @@ void main() {
       expect(w.durationSeconds, lessThanOrEqualTo(60));
     }
   });
+
+  // Task#144：お気に入り作者（フォロー）機能。
+  group('お気に入り作者（フォロー）', () {
+    test('toggleFavoriteAuthorで登録・解除がトグルされる', () {
+      final service = CommunityService();
+      final authorId = service.works.first.authorId;
+
+      expect(service.isFavoriteAuthor(authorId), isFalse);
+
+      service.toggleFavoriteAuthor(authorId);
+      expect(service.isFavoriteAuthor(authorId), isTrue);
+      expect(service.favoriteAuthorIds, contains(authorId));
+
+      service.toggleFavoriteAuthor(authorId);
+      expect(service.isFavoriteAuthor(authorId), isFalse);
+      expect(service.favoriteAuthorIds, isNot(contains(authorId)));
+    });
+
+    test('favoriteAuthorWorksはお気に入り登録した作者の作品のみを新着順で返す', () {
+      final service = CommunityService();
+      final authorId = service.works.first.authorId;
+      service.toggleFavoriteAuthor(authorId);
+
+      final works = service.favoriteAuthorWorks;
+      expect(works, isNotEmpty);
+      expect(works.every((w) => w.authorId == authorId), isTrue);
+
+      for (var i = 0; i < works.length - 1; i++) {
+        expect(
+          works[i].postedAt.isAfter(works[i + 1].postedAt) ||
+              works[i].postedAt.isAtSameMomentAs(works[i + 1].postedAt),
+          isTrue,
+          reason: '新着順（postedAt降順）になっているはず',
+        );
+      }
+    });
+
+    test('favoriteAuthorWorksはNIARIM非公開にした作品を除外する（discoverableWorksと同じ扱い）', () {
+      final service = CommunityService();
+      final authorId = service.works.first.authorId;
+      service.toggleFavoriteAuthor(authorId);
+
+      final target = service.favoriteAuthorWorks.first;
+      service.toggleNiarimVisibility(target.id);
+
+      expect(service.favoriteAuthorWorks.map((w) => w.id), isNot(contains(target.id)));
+    });
+  });
 }

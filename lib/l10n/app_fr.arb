@@ -2333,6 +2333,7 @@
   "communityScreenTitle": "Œuvres de tous",
   "communityTabNew": "Nouveautés",
   "communityTabRanking": "Classement",
+  "communityTabFavoriteAuthors": "Abonnements",
   "communitySearchHint": "Rechercher par titre ou nom d'utilisateur",
   "communityEmptyState": "Aucune œuvre à afficher",
   "communitySearchNoResults": "Aucune œuvre ne correspond à « {query} »",
@@ -2411,6 +2412,10 @@
     }
   },
   "communityNoWorksMessage": "Aucune œuvre",
+  "communityFavoriteAuthorFollow": "Suivre",
+  "communityFavoriteAuthorFollowing": "Abonné(e)",
+  "communityFavoriteAuthorsEmptyTitle": "Aucun auteur suivi",
+  "communityFavoriteAuthorsEmptyBody": "Suivez un créateur depuis sa page pour voir ses dernières œuvres ici.",
   "communityShortsBadge": "Short",
   "communityShortsModeTooltip": "Regarder en mode Shorts",
   "communityShortsModeEmptySnackbar": "Aucune vidéo courte disponible",

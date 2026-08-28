@@ -13,9 +13,14 @@ import '../models/community_work.dart';
 class CommunityService extends ChangeNotifier {
   late final List<CommunityWork> _works = buildDummyCommunityWorks();
   final Set<String> _bookmarkedIds = {};
+  // お気に入り作者（フォロー、Task#144）のNIARIM User ID集合。
+  // ブックマークと同じくバックエンド未実装のためアプリ内一時状態のみ
+  // （SharedPreferences等への永続化は行わない）。
+  final Set<String> _favoriteAuthorIds = {};
 
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
+  Set<String> get favoriteAuthorIds => Set.unmodifiable(_favoriteAuthorIds);
 
   /// 新着・ランキングなど「発見」用の一覧に出す作品（NIARIM側で非公開に
   /// した作品を除外する。13章：YouTube側が非公開・削除の場合も表示を
@@ -101,5 +106,32 @@ class CommunityService extends ChangeNotifier {
     final current = _works[index];
     _works[index] = current.copyWith(isNiarimPublished: !current.isNiarimPublished);
     notifyListeners();
+  }
+
+  // ─── お気に入り作者（フォロー、Task#144） ──────────────────────────
+  // 29_動画投稿・ランキング機能仕様.md 13章「フォロワー限定公開（見送り）」
+  // が前提としていた「フォロー関係の保存・判定」の実体。閲覧ログイン不要
+  // という設計原則を保つため、バックエンド実装時もフォロー関係の判定は
+  // 「フォロワー限定作品の絞り込み」のような一覧取得の必須条件にはせず、
+  // あくまで閲覧者側の任意の個人設定（お気に入り作者の新着を見やすくする
+  // ためのクライアント側フィルタ）として位置づける想定。
+
+  bool isFavoriteAuthor(String authorId) => _favoriteAuthorIds.contains(authorId);
+
+  void toggleFavoriteAuthor(String authorId) {
+    if (_favoriteAuthorIds.contains(authorId)) {
+      _favoriteAuthorIds.remove(authorId);
+    } else {
+      _favoriteAuthorIds.add(authorId);
+    }
+    notifyListeners();
+  }
+
+  /// お気に入り登録した作者の投稿作品一覧（新着順）。NIARIM側で非公開に
+  /// した作品は除外する（discoverableWorksと同じ扱い）。
+  List<CommunityWork> get favoriteAuthorWorks {
+    final list = discoverableWorks.where((w) => _favoriteAuthorIds.contains(w.authorId)).toList();
+    list.sort((a, b) => b.postedAt.compareTo(a.postedAt));
+    return list;
   }
 }

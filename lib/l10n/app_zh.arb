@@ -2333,6 +2333,7 @@
   "communityScreenTitle": "大家的作品",
   "communityTabNew": "最新",
   "communityTabRanking": "排行榜",
+  "communityTabFavoriteAuthors": "关注",
   "communitySearchHint": "按作品标题、投稿者名搜索",
   "communityEmptyState": "暂无作品",
   "communitySearchNoResults": "未找到与「{query}」匹配的作品",
@@ -2411,6 +2412,10 @@
     }
   },
   "communityNoWorksMessage": "暂无作品",
+  "communityFavoriteAuthorFollow": "关注",
+  "communityFavoriteAuthorFollowing": "已关注",
+  "communityFavoriteAuthorsEmptyTitle": "暂无关注的作者",
+  "communityFavoriteAuthorsEmptyBody": "在喜欢的作者页面点击「关注」，即可在此查看该作者的最新作品。",
   "communityShortsBadge": "短视频",
   "communityShortsModeTooltip": "以短视频模式观看",
   "communityShortsModeEmptySnackbar": "没有短视频",

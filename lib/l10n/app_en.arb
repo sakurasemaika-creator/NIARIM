@@ -2333,6 +2333,7 @@
   "communityScreenTitle": "Everyone's Works",
   "communityTabNew": "New",
   "communityTabRanking": "Ranking",
+  "communityTabFavoriteAuthors": "Following",
   "communitySearchHint": "Search by title or username",
   "communityEmptyState": "No works to show",
   "communitySearchNoResults": "No works matched \"{query}\"",
@@ -2411,6 +2412,10 @@
     }
   },
   "communityNoWorksMessage": "No works",
+  "communityFavoriteAuthorFollow": "Follow",
+  "communityFavoriteAuthorFollowing": "Following",
+  "communityFavoriteAuthorsEmptyTitle": "No favorite authors yet",
+  "communityFavoriteAuthorsEmptyBody": "Follow a creator from their page to see their latest works here.",
   "communityShortsBadge": "Short",
   "communityShortsModeTooltip": "Watch in Shorts mode",
   "communityShortsModeEmptySnackbar": "No short videos available",

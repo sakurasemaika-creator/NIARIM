@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
+import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
@@ -60,6 +62,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final communityService = context.watch<CommunityService>();
+    final isSelf = widget.authorId == kDummySelfAuthorId;
+    final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.authorName),
@@ -100,6 +105,19 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         ],
                       ),
                     ),
+                    // 自分自身の投稿者ページではフォローボタンを表示しない
+                    // （Task#144：お気に入り作者機能）。
+                    if (!isSelf)
+                      OutlinedButton.icon(
+                        onPressed: () => communityService.toggleFavoriteAuthor(widget.authorId),
+                        icon: Icon(isFavorite ? Icons.person_remove_alt_1 : Icons.person_add_alt_1, size: 18),
+                        label: Text(isFavorite
+                            ? l10n.communityFavoriteAuthorFollowing
+                            : l10n.communityFavoriteAuthorFollow),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isFavorite ? scheme.onSurfaceVariant : scheme.primary,
+                        ),
+                      ),
                   ],
                 ),
               ),
