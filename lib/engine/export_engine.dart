@@ -160,12 +160,13 @@ class ExportEngine {
     return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
   }
 
-  /// 無料版のエンドカード（中央にアプリロゴ、下に「NIARIM」の文字、
-  /// 約5秒）のフレーム画像をPNGとして生成する。テキストは他の描画と
-  /// 同じdart:uiのParagraphBuilderで焼き込む。ロゴはSVGモノグラムを
-  /// vector_graphicsで直接ui.Pictureへデコードし、Canvas上へ合成する
+  /// 無料版のエンドカード（中央にアプリロゴ、下にアプリタイトルロゴ、
+  /// 約5秒）のフレーム画像をPNGとして生成する。ロゴ・タイトルロゴとも
+  /// SVGをvector_graphicsで直接ui.Pictureへデコードし、Canvas上へ合成する
   /// （ウィジェットツリー外からの描画のため、SvgPictureウィジェットは
-  /// 使わずvg.loadPictureを直接呼ぶ）。
+  /// 使わずvg.loadPictureを直接呼ぶ）。タイトルロゴは以前まで
+  /// ParagraphBuilderで「NIARIM」の文字を仮描画していたが、完成した
+  /// アプリタイトルロゴ（assets/logo/title_logo.svg）に差し替えた。
   Future<Uint8List> _renderEndCardPng({required int width, required int height}) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -201,15 +202,34 @@ class ExportEngine {
     canvas.restore();
     logoInfo.picture.dispose();
 
-    final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
-      ..pushStyle(ui.TextStyle(
-        color: const ui.Color(0xFFFFFFFF),
-        fontSize: width * 0.05,
-        fontWeight: ui.FontWeight.bold,
-      ))
-      ..addText('NIARIM');
-    final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: width.toDouble()));
-    canvas.drawParagraph(paragraph, ui.Offset(0, logoTop + logoSize + height * 0.04));
+    // タイトルロゴ（アプリ名の書き文字）：モノグラムの下に、横幅の55%を
+    // 目安にした幅で中央揃えに配置する。SVGの元アスペクト比（幅3470×
+    // 高さ690相当）を保つ。
+    final titleInfo = await vg.loadPicture(
+      const SvgAssetLoader('assets/logo/title_logo.svg'),
+      null,
+    );
+    final titleWidth = width * 0.55;
+    final titleScale = titleWidth / titleInfo.size.width;
+    final titleHeight = titleInfo.size.height * titleScale;
+    final titleLeft = (width - titleWidth) / 2;
+    final titleTop = logoTop + logoSize + height * 0.04;
+    canvas.save();
+    // モノグラムと同じく単色SVGのため、黒背景で視認できるよう白へ着色する。
+    canvas.saveLayer(
+      ui.Rect.fromLTWH(titleLeft, titleTop, titleWidth, titleHeight),
+      ui.Paint()
+        ..colorFilter = const ui.ColorFilter.mode(
+          ui.Color(0xFFFFFFFF),
+          ui.BlendMode.srcIn,
+        ),
+    );
+    canvas.translate(titleLeft, titleTop);
+    canvas.scale(titleScale, titleScale);
+    canvas.drawPicture(titleInfo.picture);
+    canvas.restore();
+    canvas.restore();
+    titleInfo.picture.dispose();
 
     final picture = recorder.endRecording();
     final uiImage = await picture.toImage(width, height);

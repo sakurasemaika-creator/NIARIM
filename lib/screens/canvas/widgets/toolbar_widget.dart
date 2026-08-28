@@ -8,6 +8,7 @@ import '../../../services/theme_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
+import '../../../widgets/help_button.dart';
 import '../../../widgets/responsive.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart';
@@ -32,6 +33,9 @@ class ToolbarWidget extends StatelessWidget {
   // 選べるようにするための導線。投げ縄で囲った範囲を塗りつぶす点で
   // バケツ塗りに近い性質を持つため）。
   final VoidCallback onLassoFillSelected;
+  // 定規ボタン：定規パネルの開閉と定規ツールへの切替（キャンバス上部
+  // バーから移設し、他のツールと同じくツールバーの中に常設する）。
+  final VoidCallback onRulerTap;
   // スタンプ選択中かどうか（色アイコンに🚫重ね表示・タップで専用トースト）
   final bool isStampSelected;
   // trueの場合、画面下部の横並びバーではなく左側（左利きモードでは右側）に
@@ -53,6 +57,7 @@ class ToolbarWidget extends StatelessWidget {
     required this.onQuickToolLongPress,
     required this.onSaveTap,
     required this.onLassoFillSelected,
+    required this.onRulerTap,
     this.isStampSelected = false,
     this.vertical = false,
   });
@@ -272,6 +277,22 @@ class ToolbarWidget extends StatelessWidget {
         onPressed: onSaveTap,
         tooltip: l10n.toolbarSaveTooltip,
       ),
+      // 定規ボタン：キャンバス上部バーの常設ボタンから、他のツールと
+      // 同じくツールバー内へ移設した（右上はプロジェクト一覧へ戻る
+      // ホームボタンに置き換えたため）。
+      FirstUseTooltip(
+        tooltipKey: 'ruler_tool',
+        message: l10n.canvasRulerFirstUseTip,
+        child: _borderedIconButton(
+          context,
+          Icons.straighten,
+          onPressed: onRulerTap,
+          tooltip: l10n.canvasRulerTooltip,
+          selected: currentTool == DrawingTool.ruler,
+        ),
+      ),
+      // ヘルプボタンもキャンバス上部バーから移設。
+      const HelpButton(),
     ];
     // verticalの場合は縦並びのツールレール、falseの場合は画面下部の
     // 横並びバーとして表示する。

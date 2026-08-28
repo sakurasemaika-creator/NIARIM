@@ -15,8 +15,6 @@ import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
-import '../../widgets/help_button.dart';
-import '../../widgets/first_use_tooltip.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../utils/immersive_mode.dart';
 import '../../engine/text_render.dart';
@@ -716,6 +714,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           Expanded(
                             child: Stack(
                               children: [
+                                // 【重大バグ修正】CanvasAreaの背後を、キャンバスの
+                                // 「枠外」と同じ色（kCanvasOutsideColor）で固定で
+                                // 塗っておく。CanvasArea内部はTransformで
+                                // ピンチズーム・パンを描画時に適用しているため、
+                                // ズームアウトするとキャンバス内容（枠外の暗い
+                                // 塗りつぶしを含む）ごと縮小して見える。この
+                                // Containerが無いと、縮小分の周囲にScaffoldの
+                                // テーマ背景色（クリーム系など）がそのまま透けて
+                                // 見えてしまっていた。
+                                Container(color: kCanvasOutsideColor),
                                 CanvasArea(
                                   onTapForText: _currentTool == DrawingTool.text
                                       ? onCanvasTapForText
@@ -1171,6 +1179,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _currentSubTool = PenSubTool.lassoFill;
       _currentTool = DrawingTool.lasso;
     }),
+    // 定規ボタン（キャンバス上部バーからツールバー内へ移設）。
+    onRulerTap: _toggleRuler,
   );
 
   /// カラーピッカー・レイヤーパネル・キャンバスプレビューを、設定された
@@ -1600,18 +1610,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
-          // 定規ボタン（下部ツールバーから昇格した常設ボタン）
-          FirstUseTooltip(
-            tooltipKey: 'ruler_tool',
-            message: l10n.canvasRulerFirstUseTip,
-            child: _topBarIconButton(
-              context,
-              Icons.straighten,
-              onPressed: _toggleRuler,
-              tooltip: l10n.canvasRulerTooltip,
-              selected: _currentTool == DrawingTool.ruler,
-            ),
-          ),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
           _topBarIconButton(
@@ -1620,10 +1618,55 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => _showEditMenu(context),
             tooltip: l10n.canvasSettingsMenuTooltip,
           ),
-          const HelpButton(),
+          // 定規・ヘルプはツールバー内へ移設したため、この右上には
+          // プロジェクト一覧へ戻るホームボタンを設置する
+          // （タイムライン画面の同ボタンと同じ挙動：保存して戻る／
+          // 保存せず戻るを選べる確認ダイアログを経由する）。
+          _topBarIconButton(
+            context,
+            Icons.home_outlined,
+            onPressed: _confirmBackToProjectList,
+            tooltip: l10n.timelineBackToProjectListTooltip,
+          ),
         ],
       ),
     );
+  }
+
+  /// プロジェクト一覧へ戻るボタン：タップ時に「保存して戻る」か
+  /// 「保存せず戻る」かをポップアップで選べるようにする
+  /// （timeline_screen.dartの同名メソッドと同じ挙動）。
+  Future<void> _confirmBackToProjectList() async {
+    final l10n = AppLocalizations.of(context)!;
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineBackToProjectListDialogTitle),
+        content: Text(l10n.timelineBackToProjectListDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'discard'),
+            child: Text(l10n.timelineBackToProjectListDiscardButton),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'save'),
+            child: Text(l10n.timelineBackToProjectListSaveButton),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !mounted) return;
+    if (choice == 'save') {
+      // 「保存して戻る」は、キャンバス画面の「保存」ボタンと同じ
+      // セーブツリー画面（手動セーブ）を経由させる。
+      await context.push('/save-tree/${widget.projectId}');
+      if (!mounted) return;
+    }
+    if (mounted) context.go('/home');
   }
 
   /// フレーム複数選択モード時のアクションバー（大量処理実行時の

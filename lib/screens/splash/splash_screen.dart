@@ -17,7 +17,8 @@ import '../../services/project_service.dart';
 /// タップしてホーム画面へ遷移した瞬間には大半の読み込みが完了済みか
 /// 完了間近の状態になる。
 ///
-/// ロゴはSVG形式（assets/logo/app_logo.svg）で保持し、flutter_svgで
+/// ロゴはSVG形式（assets/logo/app_logo.svg：モノグラム、
+/// assets/logo/title_logo.svg：アプリタイトルロゴ）で保持し、flutter_svgで
 /// 描画する。画面中央に、上下の導線ボタンに挟まれる形で配置される。
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -82,14 +83,28 @@ class _SplashScreenState extends State<SplashScreen> {
       colors: [scheme.primary, scheme.primaryContainer],
       onTap: () => context.go('/home'),
     );
-    // ロゴは単色のモノグラムSVGのため、テーマ・外観設定の「アクセント色」
-    // （AppThemePreset.accentColor → colorScheme.primary）で着色する。
-    // 固定色にしてしまうと、ユーザーが選んだテーマ配色から浮いて見える。
-    final logo = SvgPicture.asset(
-      'assets/logo/app_logo.svg',
-      width: 110,
-      height: 110,
-      colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+    // ロゴ・タイトルロゴとも単色のSVGのため、テーマ・外観設定の
+    // 「アクセント色」（AppThemePreset.accentColor → colorScheme.primary）
+    // で着色する。固定色にしてしまうと、ユーザーが選んだテーマ配色から
+    // 浮いて見える。タイトルロゴ（アプリ名の書き文字）はモノグラムの下に、
+    // 元のSVGアスペクト比（幅3470×高さ690相当）を保った横長サイズで添える。
+    final logo = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SvgPicture.asset(
+          'assets/logo/app_logo.svg',
+          width: 110,
+          height: 110,
+          colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+        ),
+        const SizedBox(height: 10),
+        SvgPicture.asset(
+          'assets/logo/title_logo.svg',
+          width: 220,
+          height: 220 * 690 / 3470,
+          colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+        ),
+      ],
     );
 
     // 縦画面はロゴを挟んで上下にボタンを積む構成、横画面は画面の縦幅が
