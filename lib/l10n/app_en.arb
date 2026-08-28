@@ -2235,6 +2235,8 @@
   "filterNameLensDistortion": "Lens Distortion Filter",
   "filterLensDistortionStrength": "Lens power (negative = concave, positive = convex)",
   "filterLensDistortionOffsetX": "Center fine-tune (horizontal)",
+  "filterNamePixelate": "Pixelate Filter",
+  "filterPixelateBlockSize": "Block size",
   "filterLensDistortionOffsetY": "Center fine-tune (vertical)",
   "filterLensDistortionNoMaskHint": "Only applies to areas painted on a Selection layer. First add a \"Selection layer\" in the layer list and paint the area you want to turn into a lens (e.g. the lenses of a pair of glasses).",
   "tipsStockingDenierTitle": "Stocking/tights tones vary in mesh fineness by denier",

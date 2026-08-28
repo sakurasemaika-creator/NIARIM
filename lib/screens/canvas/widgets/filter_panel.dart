@@ -380,6 +380,24 @@ class _FilterPanelState extends State<FilterPanel> {
                             20,
                             (v) => filterService.updateFilterParams(current.id, strength: v),
                           ),
+                        if (current.kind == FilterKind.pixelate) ...[
+                          _paramSlider(
+                            filterService,
+                            l10n.filterPixelateBlockSize,
+                            current.strength,
+                            1,
+                            64,
+                            (v) => filterService.updateFilterParams(current.id, strength: v),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            l10n.filterColorLevels,
+                            current.colorLevels.toDouble(),
+                            2,
+                            32,
+                            (v) => filterService.updateFilterParams(current.id, colorLevels: v.round()),
+                          ),
+                        ],
                         if (current.kind == FilterKind.animeStyle) ...[
                           _paramSlider(
                             filterService,
@@ -869,6 +887,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.fisheye => l10n.filterNameFisheye,
         FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
         FilterKind.lensDistortion => l10n.filterNameLensDistortion,
+        FilterKind.pixelate => l10n.filterNamePixelate,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -944,6 +963,12 @@ class _FilterPanelState extends State<FilterPanel> {
           centerOffsetX: filter.lensCenterOffsetX * _previewScale,
           centerOffsetY: filter.lensCenterOffsetY * _previewScale,
         );
+      case FilterKind.pixelate:
+        return _engine.applyPixelate(
+          data, width, height,
+          mosaicSize: filter.strength.round().clamp(1, 64),
+          colorLevels: filter.colorLevels,
+        );
     }
   }
 
@@ -985,6 +1010,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.color_lens;
       case FilterKind.lensDistortion:
         return Icons.remove_red_eye;
+      case FilterKind.pixelate:
+        return Icons.grid_view;
     }
   }
 

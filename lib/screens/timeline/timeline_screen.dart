@@ -6647,6 +6647,7 @@ class _EffectFilterSheet extends StatelessWidget {
         EffectFilterType.colorAdjust => l10n.filterNameColorAdjust,
         EffectFilterType.threshold => l10n.filterNameThreshold,
         EffectFilterType.fisheye => l10n.filterNameFisheye,
+        EffectFilterType.pixelate => l10n.filterNamePixelate,
       };
 
   static const _typeIcons = {
@@ -6666,6 +6667,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.colorAdjust: Icons.tune,
     EffectFilterType.threshold: Icons.contrast,
     EffectFilterType.fisheye: Icons.panorama_fish_eye,
+    EffectFilterType.pixelate: Icons.grid_view,
   };
 
   @override
@@ -6895,6 +6897,8 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._monochromeParams(context, l10n, e)
                 else if (e.type == EffectFilterType.threshold)
                   ..._thresholdParams(context, l10n, e)
+                else if (e.type == EffectFilterType.pixelate)
+                  ..._pixelateParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -7258,6 +7262,32 @@ class _EffectFilterSheet extends StatelessWidget {
     ];
   }
 
+  /// ドット絵：param1=モザイクブロックサイズ（1〜64px）、param2=色数（2〜32）。
+  List<Widget> _pixelateParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    return [
+      _paramRow(
+        l10n.filterPixelateBlockSize,
+        e.param1,
+        1,
+        64,
+        63,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
+      _paramRow(
+        l10n.filterColorLevels,
+        e.param2,
+        2,
+        32,
+        30,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+    ];
+  }
+
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -7327,16 +7357,21 @@ class _EffectFilterSheet extends StatelessWidget {
                           // 色調調整は彩度・明度・コントラストとも既定値0（変化なし）から
                           // 始める（他のフィルターと違い既定値5.0/50.0のままだと追加直後に
                           // 見た目が変わってしまうため）。二値化のparam1は閾値（0〜255）
-                          // なので既定128（中間）から始める。
+                          // なので既定128（中間）から始める。ドット絵のparam1は
+                          // モザイクブロックサイズ（px）なので既定8から始める。
                           param1: switch (type) {
                             EffectFilterType.colorAdjust => 0.0,
                             EffectFilterType.threshold => 128.0,
+                            EffectFilterType.pixelate => 8.0,
                             _ => 5.0,
                           },
+                          // ドット絵のparam2は色数（2〜32）なので既定8から始める。
                           param2: type == EffectFilterType.rain
                               ? 10.0
                               : type == EffectFilterType.colorAdjust
                               ? 0.0
+                              : type == EffectFilterType.pixelate
+                              ? 8.0
                               : 50.0,
                           param3: type == EffectFilterType.colorAdjust
                               ? 0.0

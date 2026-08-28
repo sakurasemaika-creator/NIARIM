@@ -2235,6 +2235,8 @@
   "filterNameLensDistortion": "眼镜断层滤镜",
   "filterLensDistortionStrength": "镜片度数（负值为凹透镜，正值为凸透镜）",
   "filterLensDistortionOffsetX": "中心位置微调（左右）",
+  "filterNamePixelate": "像素画滤镜",
+  "filterPixelateBlockSize": "色块大小",
   "filterLensDistortionOffsetY": "中心位置微调（上下）",
   "filterLensDistortionNoMaskHint": "仅应用于在选择图层上涂抹的范围。请先在图层列表中添加「选择图层」，并涂抹想要变成镜片的范围（如眼镜镜片部分）。",
   "tipsStockingDenierTitle": "丝袜・连裤袜的网眼粗细会随旦数变化",

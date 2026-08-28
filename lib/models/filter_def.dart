@@ -34,9 +34,14 @@
 /// セピア調・任意の単色トーンなど好きな色で単色化できる。
 /// threshold（二値化）：輝度が[thresholdValue]以上の画素を白、未満を黒へ
 /// 分ける。色調調整・単色化・「明度で透過」と組み合わせると線画抽出に使える。
+/// pixelate（ドット絵）：モザイク化（[strength]をブロックサイズpxとして使う）＋
+/// 色数減色（[colorLevels]）を組み合わせる。スタンプのピクセルモード
+/// （procedural_texture.dartのStamp.pixelMode）と同じFilterEngine.applyPixelateを
+/// 使い、レイヤー全体・演出フィルター（時間範囲指定）としても使えるようにしたもの。
 enum FilterKind {
   gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
   retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration, lensDistortion,
+  pixelate,
 }
 
 /// トーンカーブのプリセット形状。

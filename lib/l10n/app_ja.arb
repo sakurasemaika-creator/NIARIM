@@ -2485,6 +2485,8 @@
   "filterNameLensDistortion": "眼鏡断層フィルター",
   "filterLensDistortionStrength": "レンズの度数（負で凹レンズ、正で凸レンズ）",
   "filterLensDistortionOffsetX": "中心位置の微調整（左右）",
+  "filterNamePixelate": "ドット絵フィルター",
+  "filterPixelateBlockSize": "ブロックサイズ",
   "filterLensDistortionOffsetY": "中心位置の微調整（上下）",
   "filterLensDistortionNoMaskHint": "選択レイヤーで塗った範囲にのみ適用されます。先にレイヤー一覧で「選択レイヤー」を追加し、レンズにしたい範囲（眼鏡のレンズ部分等）を塗ってください。",
   "tipsStockingDenierTitle": "ストッキング・タイツはデニール数でトーンの目の細かさが変わる",

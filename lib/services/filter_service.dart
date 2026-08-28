@@ -50,6 +50,7 @@ class FilterService extends ChangeNotifier {
         FilterDef(id: 'Filter0015', name: '魚眼レンズ', kind: FilterKind.fisheye, strength: 50),
         FilterDef(id: 'Filter0016', name: '色収差', kind: FilterKind.chromaticAberration, strength: 8),
         FilterDef(id: 'Filter0017', name: '眼鏡断層', kind: FilterKind.lensDistortion, strength: 50),
+        FilterDef(id: 'Filter0018', name: 'ドット絵', kind: FilterKind.pixelate, strength: 8, colorLevels: 8),
       ];
 
   Future<void> init() async {

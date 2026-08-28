@@ -2235,6 +2235,8 @@
   "filterNameLensDistortion": "Filtro de distorsión de lente",
   "filterLensDistortionStrength": "Potencia de la lente (negativo = cóncava, positivo = convexa)",
   "filterLensDistortionOffsetX": "Ajuste fino del centro (horizontal)",
+  "filterNamePixelate": "Filtro de pixelado",
+  "filterPixelateBlockSize": "Tamaño de bloque",
   "filterLensDistortionOffsetY": "Ajuste fino del centro (vertical)",
   "filterLensDistortionNoMaskHint": "Solo se aplica a las áreas pintadas en una capa de selección. Primero añada una «Capa de selección» en la lista de capas y pinte el área que desea convertir en lente (por ejemplo, los cristales de unas gafas).",
   "tipsStockingDenierTitle": "Las medias y pantis varían en finura de malla según el denier",

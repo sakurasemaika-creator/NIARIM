@@ -64,6 +64,11 @@ Uint8List applyDrawFilterInIsolate(
     FilterKind.lensDistortion => engine.applyLensDistortion(
         data, width, height, filter.strength, maskData,
         centerOffsetX: filter.lensCenterOffsetX, centerOffsetY: filter.lensCenterOffsetY),
+    FilterKind.pixelate => engine.applyPixelate(
+        data, width, height,
+        mosaicSize: filter.strength.round().clamp(1, 64),
+        colorLevels: filter.colorLevels,
+      ),
   };
 }
 
@@ -145,6 +150,14 @@ class FilterEngine {
           ),
         EffectFilterType.fisheye =>
           applyFisheye(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
+        // ドット絵：param1=モザイクブロックサイズ（1〜64px）、
+        // param2=色数（2〜32）。スタンプのピクセルモードと同じ
+        // applyPixelateを使う。
+        EffectFilterType.pixelate => applyPixelate(
+            result, width, height,
+            mosaicSize: e.param1.round().clamp(1, 64),
+            colorLevels: e.param2.round().clamp(2, 32),
+          ),
       };
     }
     return result;
@@ -1066,7 +1079,7 @@ class EffectFilter {
 enum EffectFilterType {
   fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
   animeStyle, retroAnime, crt,
-  animatedNoise, rain, monochrome, colorAdjust, threshold, fisheye,
+  animatedNoise, rain, monochrome, colorAdjust, threshold, fisheye, pixelate,
 }
 
 enum DrawFilterType {

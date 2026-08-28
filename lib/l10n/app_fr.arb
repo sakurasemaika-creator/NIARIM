@@ -2235,6 +2235,8 @@
   "filterNameLensDistortion": "Filtre de distorsion de lentille",
   "filterLensDistortionStrength": "Puissance de la lentille (négatif = concave, positif = convexe)",
   "filterLensDistortionOffsetX": "Ajustement fin du centre (horizontal)",
+  "filterNamePixelate": "Filtre pixellisation",
+  "filterPixelateBlockSize": "Taille des blocs",
   "filterLensDistortionOffsetY": "Ajustement fin du centre (vertical)",
   "filterLensDistortionNoMaskHint": "S'applique uniquement aux zones peintes sur un calque de sélection. Ajoutez d'abord un « Calque de sélection » dans la liste des calques, puis peignez la zone que vous souhaitez transformer en lentille (par exemple les verres de lunettes).",
   "tipsStockingDenierTitle": "La finesse des trames bas/collants varie selon le denier",
