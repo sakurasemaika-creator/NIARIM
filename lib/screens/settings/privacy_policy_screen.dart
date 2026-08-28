@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/advertising_service.dart';
 
 /// プライバシーポリシー画面。
 ///
@@ -52,6 +55,21 @@ import '../../l10n/app_localizations.dart';
 /// 要否を含む）が確定してから別途対応する事項であり、本ポリシー・利用規約
 /// には含めていない（コードでは解決できない対応待ち事項として
 /// `28_継続タスク（未着手一覧）.md`に記載）。
+///
+/// ### 追記（実装とポリシー記載内容の突き合わせで発覚した不足の解消）
+/// 利用規約・プライバシーポリシーの7言語見直し作業の一環で、実際の
+/// コード実装（AdMob・広告ID・Google Play Billing等の第三者サービス
+/// 組み込み状況）とプライバシーポリシーの記載内容を突き合わせた結果、
+/// 「EEA（欧州経済領域）・英国・スイスのユーザーへ広告を配信するには
+/// IAB TCF準拠の同意管理プラットフォーム（CMP）の導入がGoogleの
+/// ポリシー上必須（2024年1月16日以降）」であるにもかかわらず、
+/// `AdvertisingService`にその導入が無いという不足を発見した。
+/// `google_mobile_ads`パッケージに同梱されているUMP（User Messaging
+/// Platform）SDKを使い、広告SDKの初期化前に必ず同意フローを済ませる形へ
+/// `AdvertisingService`を修正した（追加のパッケージ依存は不要。詳細は
+/// `advertising_service.dart`参照）。本画面下部の「広告の同意設定を
+/// 変更」ボタンは、CMP対象地域のユーザーにのみ表示される、Googleの
+/// ポリシー上必須の「いつでも同意設定を変更できる」導線。
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
@@ -65,9 +83,40 @@ class PrivacyPolicyScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
-          children: const [_PolicyBody()],
+          children: const [_PolicyBody(), SizedBox(height: 16), _PrivacyOptionsButton()],
         ),
       ),
+    );
+  }
+}
+
+/// EEA・英国・スイス等、同意管理プラットフォーム（CMP）の対象地域の
+/// ユーザーにのみ表示される「広告の同意設定を変更」ボタン。
+/// `AdvertisingService.privacyOptionsRequirementStatus()`
+/// （UMP SDKの`getPrivacyOptionsRequirementStatus()`）がrequiredを
+/// 返した場合のみ表示する（Googleの同意管理ポリシー上、CMP導入時は
+/// ユーザーがいつでも同意設定を変更できる導線を提供する必要がある）。
+/// 対象外地域のユーザーやAdMob自体が無効な期間（`isMonetizationEnabled`
+/// がfalseの間）は何も表示しない。
+class _PrivacyOptionsButton extends StatelessWidget {
+  const _PrivacyOptionsButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final advertisingService = context.watch<AdvertisingService>();
+    return FutureBuilder<PrivacyOptionsRequirementStatus>(
+      future: advertisingService.privacyOptionsRequirementStatus(),
+      builder: (context, snapshot) {
+        if (snapshot.data != PrivacyOptionsRequirementStatus.required) {
+          return const SizedBox.shrink();
+        }
+        return OutlinedButton.icon(
+          onPressed: () => advertisingService.showPrivacyOptionsForm(),
+          icon: const Icon(Icons.tune),
+          label: Text(l10n.privacyPolicyAdConsentButton),
+        );
+      },
     );
   }
 }
