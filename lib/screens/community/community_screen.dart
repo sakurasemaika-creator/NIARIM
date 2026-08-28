@@ -4,6 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
+import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
 import 'widgets/community_work_card.dart';
@@ -207,12 +208,17 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                 _searchController.clear();
               }),
             ),
-          ] else
+          ] else ...[
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: l10n.commonSearch,
               onPressed: () => setState(() => _isSearching = true),
             ),
+            // topic: 'みんなの作品を見る' はhelp_screen.dart側の項目タイトル
+            // （日本語固定の内部検索キー）と一致させる必要があるため、
+            // 翻訳対象から除外している。
+            const HelpButton(topic: 'みんなの作品を見る'),
+          ],
         ],
         bottom: TabBar(
           controller: _tabController,

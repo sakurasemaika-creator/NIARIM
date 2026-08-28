@@ -261,7 +261,7 @@ class PremiumScreen extends StatelessWidget {
           // 視覚的な塊として要点を先に見せる。
           Row(
             children: [
-              Expanded(child: _heroHighlight(context, Icons.all_inclusive, l10n.premiumHeroHighlightDuration)),
+              Expanded(child: _heroHighlight(context, Icons.schedule, l10n.premiumHeroHighlightDuration)),
               const SizedBox(width: 8),
               Expanded(child: _heroHighlight(context, Icons.hide_image_outlined, l10n.premiumHeroHighlightWatermark)),
               const SizedBox(width: 8),
@@ -311,11 +311,15 @@ class PremiumScreen extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final items = [
       (l10n.premiumFeatureDrawing, '○', '○'), (l10n.premiumFeatureTimeline, '○', '○'), (l10n.premiumFeatureExport, '○', '○'),
-      (l10n.premiumFeatureMaxDuration, l10n.premiumValueDuration90Sec, l10n.premiumValueUnlimited),
+      (l10n.premiumFeatureMaxDuration, l10n.premiumValueDuration90Sec, l10n.premiumValueDuration2Hours),
       (l10n.premiumFeatureEndLogo, l10n.premiumValueYes, l10n.premiumValueRemovable),
       (l10n.premiumFeatureWatermark, '×', '○'),
       (l10n.premiumFeatureToneCurve, '×', '○'), (l10n.premiumFeatureLevelCorrection, '×', '○'),
       (l10n.premiumFeatureAds, l10n.premiumValueYes, l10n.premiumValueNo),
+      // みんなの作品への投稿数上限（29_動画投稿・ランキング機能仕様.md
+      // 11章。バックエンド未実装のため実際の投稿処理は無いが、実装予定の
+      // 制限値としてここに明記しておく）。
+      (l10n.premiumFeatureCommunityUpload, l10n.premiumValueUploadFree, l10n.premiumValueUploadPremium),
     ];
 
     return Card(
@@ -328,7 +332,9 @@ class PremiumScreen extends StatelessWidget {
         border: TableBorder(
           horizontalInside: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)),
         ),
-        columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1)},
+        // 「機能」列は説明文が短い単語中心のため狭め、「無料」「プレミアム」の
+        // 2列を広げて値（○×やテキスト）を見やすくする。
+        columnWidths: const {0: FlexColumnWidth(1.2), 1: FlexColumnWidth(1.4), 2: FlexColumnWidth(1.4)},
         children: [
           TableRow(
             decoration: BoxDecoration(color: scheme.surfaceContainerHighest),

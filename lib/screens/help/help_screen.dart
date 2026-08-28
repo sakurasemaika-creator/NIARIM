@@ -61,6 +61,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '自由変形・メッシュ変形', title: l10n.helpMeshTransformTitle, description: l10n.helpMeshTransformDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.topBar, 3)),
         _HelpEntry(topicKey: 'カラーピッカー', title: l10n.helpColorPickerTitle, description: l10n.helpColorPickerDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: 'ブラシのお気に入り', title: l10n.helpBrushFavoriteTitle, description: l10n.helpBrushFavoriteDesc, category: l10n.helpCategoryBrush, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
+        _HelpEntry(topicKey: 'カスタムブラシ', title: l10n.helpCustomBrushTitle, description: l10n.helpCustomBrushDesc, category: l10n.helpCategoryBrush, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
 
         // ── レイヤー ────────────────────────────────────────────
         _HelpEntry(topicKey: 'レイヤー', title: l10n.helpLayerTitle, description: l10n.helpLayerDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0)),
@@ -128,6 +129,9 @@ class _HelpScreenState extends State<HelpScreen> {
         // いるため変更していない（表示タイトルのみ範囲を広げた）。
         _HelpEntry(topicKey: '動画書き出し（MP4）', title: l10n.helpVideoExportTitle, description: l10n.helpVideoExportDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 0)),
         _HelpEntry(topicKey: '書き出し画面', title: l10n.helpExportScreenTitle, description: l10n.helpExportScreenDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 1)),
+
+        // ── コミュニティ ──────────────────────────────────────────
+        _HelpEntry(topicKey: 'みんなの作品を見る', title: l10n.helpCommunityTitle, description: l10n.helpCommunityDesc, category: l10n.helpCategoryCommunity, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1, icon: Icons.people_outline)),
 
         // ── プレミアム ──────────────────────────────────────────
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
