@@ -28,6 +28,12 @@ class CommunityWork {
   // tagsのうち、投稿者がロックして他ユーザーが削除できないようにした
   // タグの集合（tagsの部分集合）。
   final Set<String> lockedTags;
+  // NIARIM作品広場独自の公開/非公開設定（29_動画投稿・ランキング機能
+  // 仕様.md 13章）。YouTube側の公開設定とは独立しており、trueのときのみ
+  // 新着・ランキング・（自分以外から見た）投稿者別作品一覧に表示される。
+  // 投稿者本人は非公開にした作品も自分の投稿者別作品一覧からは引き続き
+  // 確認・再公開できる（CommunityService.worksByAuthorのincludeHidden参照）。
+  final bool isNiarimPublished;
 
   const CommunityWork({
     required this.id,
@@ -42,9 +48,10 @@ class CommunityWork {
     required this.thumbnailColorIndex,
     this.tags = const [],
     this.lockedTags = const {},
+    this.isNiarimPublished = true,
   });
 
-  CommunityWork copyWith({List<String>? tags, Set<String>? lockedTags}) {
+  CommunityWork copyWith({List<String>? tags, Set<String>? lockedTags, bool? isNiarimPublished}) {
     return CommunityWork(
       id: id,
       title: title,
@@ -58,6 +65,7 @@ class CommunityWork {
       thumbnailColorIndex: thumbnailColorIndex,
       tags: tags ?? this.tags,
       lockedTags: lockedTags ?? this.lockedTags,
+      isNiarimPublished: isNiarimPublished ?? this.isNiarimPublished,
     );
   }
 }

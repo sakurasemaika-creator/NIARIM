@@ -39,12 +39,13 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   double _previewHeight = _defaultPreviewHeight;
 
   void _openAuthorWorks(CommunityService communityService, CommunityWork work) {
+    final isSelf = work.authorId == kDummySelfAuthorId;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
           authorId: work.authorId,
           authorName: work.authorName,
-          works: communityService.worksByAuthor(work.authorId),
+          works: communityService.worksByAuthor(work.authorId, includeHidden: isSelf),
           bookmarkedIds: communityService.bookmarkedIds,
           onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
           onOpenWork: (w) => context.read<CommunityPreviewService>().show(w),
@@ -285,6 +286,16 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 l10n.communityWorkDetailPostedLabel(_formatDate(work.postedAt)),
                 style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
               ),
+              if (isAuthorSelf) ...[
+                const SizedBox(height: 12),
+                _NiarimVisibilitySwitch(
+                  isPublished: work.isNiarimPublished,
+                  onChanged: () => communityService.toggleNiarimVisibility(work.id),
+                ),
+              ] else if (!work.isNiarimPublished) ...[
+                const SizedBox(height: 12),
+                _NiarimHiddenNotice(),
+              ],
               const SizedBox(height: 16),
               Wrap(
                 spacing: 6,
@@ -420,6 +431,90 @@ class _TagChip extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// NIARIM作品広場独自の公開/非公開設定を切り替えるカード。投稿者本人
+/// にのみ表示する（29_動画投稿・ランキング機能仕様.md 13章）。YouTube側
+/// の公開設定とは独立した設定であることが伝わるよう、専用の説明文を
+/// 添える。
+class _NiarimVisibilitySwitch extends StatelessWidget {
+  final bool isPublished;
+  final VoidCallback onChanged;
+
+  const _NiarimVisibilitySwitch({required this.isPublished, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onChanged,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                isPublished ? Icons.public : Icons.lock_outline,
+                color: isPublished ? scheme.primary : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.communityVisibilityCardTitle,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                    const SizedBox(height: 2),
+                    Text(
+                      isPublished
+                          ? l10n.communityVisibilityPublishedDesc
+                          : l10n.communityVisibilityHiddenDesc,
+                      style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(value: isPublished, onChanged: (_) => onChanged()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 非公開になっている作品の詳細画面に表示する注意書き（投稿者本人以外が
+/// 何らかの経路でたどり着いた場合の保険。通常は一覧側で除外済みのため
+/// 到達しない想定）。
+class _NiarimHiddenNotice extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lock_outline, size: 16, color: scheme.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(l10n.communityVisibilityHiddenNotice,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          ),
+        ],
       ),
     );
   }

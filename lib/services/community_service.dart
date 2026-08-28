@@ -17,13 +17,25 @@ class CommunityService extends ChangeNotifier {
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
 
+  /// 新着・ランキングなど「発見」用の一覧に出す作品（NIARIM側で非公開に
+  /// した作品を除外する。13章：YouTube側が非公開・削除の場合も表示を
+  /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
+  /// ここではNIARIM側設定のみを対象にする）。
+  List<CommunityWork> get discoverableWorks =>
+      _works.where((w) => w.isNiarimPublished).toList();
+
   CommunityWork? byId(String workId) {
     final index = _indexOf(workId);
     return index == -1 ? null : _works[index];
   }
 
-  List<CommunityWork> worksByAuthor(String authorId) =>
-      _works.where((w) => w.authorId == authorId).toList();
+  /// [authorId]の投稿作品一覧。[includeHidden]がfalse（既定）の場合は
+  /// NIARIM側で非公開にした作品を除外する。投稿者本人が自分の投稿者別
+  /// 作品一覧を開く場合のみ[includeHidden]をtrueにして、非公開中の作品も
+  /// 確認・再公開できるようにする。
+  List<CommunityWork> worksByAuthor(String authorId, {bool includeHidden = false}) => _works
+      .where((w) => w.authorId == authorId && (includeHidden || w.isNiarimPublished))
+      .toList();
 
   int _indexOf(String workId) => _works.indexWhere((w) => w.id == workId);
 
@@ -77,6 +89,17 @@ class CommunityService extends ChangeNotifier {
       lockedTags.add(tag);
     }
     _works[index] = current.copyWith(lockedTags: lockedTags);
+    notifyListeners();
+  }
+
+  /// NIARIM作品広場独自の公開/非公開設定を切り替える（投稿者本人のみ
+  /// 呼び出し可能。UI側で`work.authorId == kDummySelfAuthorId`のときのみ
+  /// 切り替えボタンを表示する。29_動画投稿・ランキング機能仕様.md 13章）。
+  void toggleNiarimVisibility(String workId) {
+    final index = _indexOf(workId);
+    if (index == -1) return;
+    final current = _works[index];
+    _works[index] = current.copyWith(isNiarimPublished: !current.isNiarimPublished);
     notifyListeners();
   }
 }

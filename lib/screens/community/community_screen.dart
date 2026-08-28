@@ -134,12 +134,15 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
 
   void _openAuthorWorks(CommunityWork work) {
     final communityService = context.read<CommunityService>();
+    final isSelf = work.authorId == kDummySelfAuthorId;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
           authorId: work.authorId,
           authorName: work.authorName,
-          works: communityService.worksByAuthor(work.authorId),
+          // 自分自身の投稿者ページを開いた場合のみ、NIARIM側で非公開に
+          // した作品も含めて表示する（再公開の導線を確保するため）。
+          works: communityService.worksByAuthor(work.authorId, includeHidden: isSelf),
           bookmarkedIds: communityService.bookmarkedIds,
           onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
           onOpenWork: _openFloatingPreview,
@@ -166,7 +169,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
-    final allWorks = communityService.works;
+    final allWorks = communityService.discoverableWorks;
     final bookmarkedIds = communityService.bookmarkedIds;
     return Scaffold(
       appBar: AppBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 
 /// サムネイル画像の代わりに使うプレースホルダー配色（実サムネイル取得は
@@ -81,6 +82,30 @@ class CommunityWorkCard extends StatelessWidget {
                         ),
                         child: Text('#$rankNumber',
                             style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  // NIARIM側で非公開にした作品であることを示すバッジ。
+                  // 通常は一覧側の絞り込みで除外されるため、投稿者本人が
+                  // 自分の投稿者別作品一覧を開いた場合にのみ表示される。
+                  if (!work.isNiarimPublished)
+                    Positioned(
+                      left: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.lock_outline, color: Colors.white, size: 11),
+                            const SizedBox(width: 3),
+                            Text(AppLocalizations.of(context)!.communityVisibilityHiddenBadge,
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       ),
                     ),
                   Positioned(
