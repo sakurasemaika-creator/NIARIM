@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,8 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
+import 'package:niarim/engine/undo_manager.dart' as engine;
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/performance_service.dart';
@@ -621,6 +624,150 @@ void main() {
       await probeAllControls(tester, maxSteps: 40);
     },
     timeout: const Timeout(Duration(seconds: 120)),
+  );
+
+  // Task#128：キャンバス・タイムラインの独自ジェスチャーを自律テスト化。
+  // probeAllControlsは標準的なタップ系ウィジェット（ボタン・ListTile等）
+  // しか操作できないため、生のポインターイベント（Listener）やonPanUpdate/
+  // onHorizontalDragUpdate等で自前実装された「独自ジェスチャー」は対象外
+  // （app_smoke_test.dart冒頭のドキュメントコメント参照）。ここではその
+  // うち代表的なもの（ペンストローク描画・2本指ピンチズーム・タイムライン
+  // のカメラキーフレームのドラッグ移動）を実際にドラッグ操作で駆動し、
+  // 例外が出ないことに加え、操作の結果として実際に状態が変化したこと
+  // （Undo履歴に積まれる／変形行列が変わる／キーフレームのフレーム位置が
+  // 動く）まで検証する。バケツ塗り・投げ縄塗り・定規ハンドル・メッシュ
+  // 変形ハンドル等の残りの独自ジェスチャーは今後の継続拡張課題とする。
+  testWidgets(
+    '起動→新規プロジェクト作成→キャンバス：ペンストローク描画・2本指ピンチ'
+    'ズームが独自ジェスチャーとして機能する（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      final canvasFinder = find.byType(CanvasArea);
+      expect(canvasFinder, findsOneWidget);
+
+      // ① ペンストローク：既定ツール（ペン）のまま、キャンバス上を
+      // ドラッグして実際にストロークを描く。onPointerDown/Move/Upという
+      // 生のポインターイベントで実装されている（canvas_area.dartの
+      // Listener）。
+      var undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+      expect(undoManager.canUndo, isFalse, reason: '描画前はUndoできる操作が無いはず');
+      final canvasCenter = tester.getCenter(canvasFinder);
+      await tester.dragFrom(
+        canvasCenter - const Offset(60, 60),
+        const Offset(120, 120),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: 'ペンストロークの描画で例外');
+      undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+      expect(undoManager.canUndo, isTrue, reason: 'ストロークがUndo履歴に積まれるはず');
+
+      // ② 2本指ピンチズーム：Flutter標準のInteractiveViewerを使わず、
+      // 2本指のonPointerDown/Move/Upから独自に拡大率・回転・平行移動を
+      // 計算して_transformControllerへ反映している（canvas_area.dartの
+      // _applyMultiTouchTransform）。CustomPaintを包むTransformウィジェット
+      // の変形行列が実際に変化することを確認する。
+      final transformFinder = find
+          .descendant(of: canvasFinder, matching: find.byType(Transform))
+          .first;
+      final beforeStorage = List<double>.from(
+        tester.widget<Transform>(transformFinder).transform.storage,
+      );
+      final gesture1 = await tester.startGesture(
+        canvasCenter - const Offset(40, 0),
+        kind: PointerDeviceKind.touch,
+      );
+      final gesture2 = await tester.startGesture(
+        canvasCenter + const Offset(40, 0),
+        kind: PointerDeviceKind.touch,
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture1.moveBy(const Offset(-40, 0));
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture2.moveBy(const Offset(40, 0));
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture1.up();
+      await gesture2.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: '2本指ピンチズームで例外');
+      final afterStorage = tester.widget<Transform>(transformFinder).transform.storage;
+      final matrixChanged = List.generate(
+        beforeStorage.length,
+        (i) => (beforeStorage[i] - afterStorage[i]).abs() > 1e-6,
+      ).any((changed) => changed);
+      expect(matrixChanged, isTrue, reason: '2本指ピンチズームでキャンバスの変形行列が変化するはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    '起動→新規プロジェクト作成→タイムライン：カメラキーフレームのドラッグ'
+    '移動が独自ジェスチャーとして機能する（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
+      final projectId = ps.projects.first.id;
+      final sceneId = ps.scenesOf(projectId).first.id;
+
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).go('/timeline/$projectId');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+
+      // 現在フレーム（新規プロジェクトの既定は先頭フレーム＝0）へ
+      // カメラキーフレームを1件追加する。
+      final addCameraKfButton = find.byIcon(Icons.camera);
+      expect(addCameraKfButton, findsOneWidget);
+      await tester.tap(addCameraKfButton);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: 'カメラキーフレーム追加で例外');
+      expect(
+        ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.frameIndex),
+        contains(0),
+        reason: '追加したカメラキーフレームがフレーム0に存在するはず',
+      );
+
+      // 追加したキーフレームのマーカー（timeline_screen.dartでTask#128用に
+      // ValueKeyを付与済み）を横方向にドラッグし、独自実装の
+      // onHorizontalDragStart/Update/End（_beginCameraKfDrag等）で
+      // フレーム位置が変わることを確認する。
+      final markerFinder = find.byKey(const ValueKey('cameraKfMarker_0'));
+      expect(markerFinder, findsOneWidget);
+      await tester.drag(markerFinder, const Offset(200, 0));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: 'カメラキーフレームのドラッグ移動で例外');
+
+      final frames = ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.frameIndex).toList();
+      expect(frames, isNot(contains(0)), reason: 'ドラッグ後は元のフレーム0から移動しているはず');
+      expect(frames.any((f) => f > 0), isTrue, reason: 'ドラッグした分だけ後ろのフレームへ移動しているはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
   );
 
   testWidgets(

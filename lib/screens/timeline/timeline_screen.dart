@@ -4304,6 +4304,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
           left: cx - 7,
           top: 9,
           child: GestureDetector(
+            // 自律テスト（Task#128）が長押し無しでドラッグハンドルを一意に
+            // 特定できるようキーを付与。kf.frameIndexはドラッグ中も
+            // 元の値のまま変わらない（_beginCameraKfDrag等のドキュメント
+            // コメント参照）ため、ドラッグ中にキーが不安定になることはない。
+            key: ValueKey('cameraKfMarker_${kf.frameIndex}'),
             onTap: () => _showEditCameraKfDialog(kf),
             // ドラッグでキーフレーム位置（フレーム）を変更する。
             onHorizontalDragStart: (d) =>

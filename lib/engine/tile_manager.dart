@@ -229,7 +229,16 @@ class TileManager {
     final canvas = ui.Canvas(recorder);
     final layerTiles = _tiles[layerId];
     if (layerTiles != null) {
-      for (final entry in layerTiles.entries) {
+      // 【不具合修正】entriesを直接for-inすると、このループ内のawait
+      // （_tileToImage）で処理が中断している間に、進行中のストローク等が
+      // 同じレイヤーへ新規タイルを書き込んだ場合（描画中にブラシが新しい
+      // タイル領域へ入った等）、マップが変更されてConcurrentModification
+      // Errorになる（Task#128の自律ジェスチャーテストで実際に検出）。
+      // toList()でこの合成呼び出し用のスナップショットを取ってから
+      // 反復することで、ループ中のマップ変更の影響を受けないようにする
+      // （新しく増えたタイルは次回のcompositeLayerToImage呼び出しで
+      // 反映されるため、プレビュー用の非破壊な合成としては問題ない）。
+      for (final entry in layerTiles.entries.toList()) {
         final parts = entry.key.split(',');
         final tx = int.parse(parts[0]);
         final ty = int.parse(parts[1]);
