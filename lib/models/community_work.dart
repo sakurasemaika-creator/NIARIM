@@ -34,6 +34,15 @@ class CommunityWork {
   // 投稿者本人は非公開にした作品も自分の投稿者別作品一覧からは引き続き
   // 確認・再公開できる（CommunityService.worksByAuthorのincludeHidden参照）。
   final bool isNiarimPublished;
+  // ショート動画（縦長・TikTok/Instagramリール/YouTubeショート風）かどうか。
+  // 「横動画とショートをアプリ側で区別できるか」の調査の結論：YouTube Data
+  // APIには「これはShortsである」という直接のフラグは存在しない（YouTube
+  // 自身も動画の長さ・アスペクト比から内部判定している）。一方NIARIM側は
+  // 投稿元となるプロジェクトのキャンバスサイズ（Project.drawingWidth/
+  // drawingHeight）を投稿時点で把握しているため、縦長（高さ>幅）かどうかで
+  // 確実に判定できる。バックエンド未実装の現段階ではこの判定結果を
+  // ダミーデータ側で模擬している（buildDummyCommunityWorks参照）。
+  final bool isShort;
 
   const CommunityWork({
     required this.id,
@@ -49,9 +58,15 @@ class CommunityWork {
     this.tags = const [],
     this.lockedTags = const {},
     this.isNiarimPublished = true,
+    this.isShort = false,
   });
 
-  CommunityWork copyWith({List<String>? tags, Set<String>? lockedTags, bool? isNiarimPublished}) {
+  CommunityWork copyWith({
+    List<String>? tags,
+    Set<String>? lockedTags,
+    bool? isNiarimPublished,
+    bool? isShort,
+  }) {
     return CommunityWork(
       id: id,
       title: title,
@@ -66,6 +81,7 @@ class CommunityWork {
       tags: tags ?? this.tags,
       lockedTags: lockedTags ?? this.lockedTags,
       isNiarimPublished: isNiarimPublished ?? this.isNiarimPublished,
+      isShort: isShort ?? this.isShort,
     );
   }
 }
@@ -99,6 +115,11 @@ List<CommunityWork> buildDummyCommunityWorks() {
     }
     final tagList = tags.toList();
     final lockedTags = {tagList[random.nextInt(tagList.length)]};
+    // ショート動画かどうか（約35%をショートにして横動画と混在させ、
+    // グリッド・ショートモード双方の見た目を確認しやすくする）。実際の
+    // 判定基準はキャンバスの縦横比（isShortの説明コメント参照）だが、
+    // ダミーデータではその判定結果のみを模擬する。
+    final isShort = random.nextDouble() < 0.35;
     return CommunityWork(
       id: 'work_${i.toString().padLeft(3, '0')}',
       title: title,
@@ -108,10 +129,13 @@ List<CommunityWork> buildDummyCommunityWorks() {
       likeCount: (views * (0.02 + random.nextDouble() * 0.08)).round(),
       bookmarkCount: 5 + random.nextInt(3000),
       postedAt: DateTime.now().subtract(Duration(days: random.nextInt(400), hours: random.nextInt(24))),
-      durationSeconds: 15 + random.nextInt(105),
+      // ショート動画は実際のYouTube Shorts同様、短尺（3〜60秒程度）に
+      // 寄せる。横動画は従来どおりの幅を持たせる。
+      durationSeconds: isShort ? 3 + random.nextInt(58) : 15 + random.nextInt(105),
       thumbnailColorIndex: i % 6,
       tags: tagList,
       lockedTags: lockedTags,
+      isShort: isShort,
     );
   });
 }

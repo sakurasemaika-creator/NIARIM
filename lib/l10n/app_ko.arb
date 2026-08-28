@@ -2404,6 +2404,10 @@
     }
   },
   "communityNoWorksMessage": "작품이 없습니다",
+  "communityShortsBadge": "쇼츠",
+  "communityShortsModeTooltip": "쇼츠 모드로 보기",
+  "communityShortsModeEmptySnackbar": "쇼츠 동영상이 없습니다",
+  "communityShortsModeExitTooltip": "쇼츠 모드 종료",
   "pixelColorModeLabel": "배색 방식",
   "pixelColorModeNone": "색상 제한 없음",
   "pixelColorModePalette": "팔레트에서 선택",

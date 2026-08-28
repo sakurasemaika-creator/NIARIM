@@ -65,4 +65,22 @@ void main() {
     expect(updated.tags, contains('テストタグ'));
     expect(updated.isNiarimPublished, isFalse);
   });
+
+  // Task#159：横動画/ショート動画の区別。ダミーデータ生成時点で
+  // isShortを模擬的に付与しており、一覧・ショートモード双方の見た目を
+  // 確認できるよう横動画・ショートの両方が混在することを確認する。
+  // （実装では投稿元プロジェクトのキャンバス縦横比から判定する想定。
+  // community_work.dartのisShortドキュメントコメント参照）。
+  test('ダミー作品には横動画・ショート動画の両方が混在する', () {
+    final service = CommunityService();
+    expect(service.works.any((w) => w.isShort), isTrue, reason: 'ショート動画が1件も無い');
+    expect(service.works.any((w) => !w.isShort), isTrue, reason: '横動画が1件も無い');
+  });
+
+  test('ショート動画は横動画よりも短尺（60秒以内）に寄せてある', () {
+    final service = CommunityService();
+    for (final w in service.works.where((w) => w.isShort)) {
+      expect(w.durationSeconds, lessThanOrEqualTo(60));
+    }
+  });
 }

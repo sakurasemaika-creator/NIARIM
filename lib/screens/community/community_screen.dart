@@ -7,6 +7,7 @@ import '../../services/community_service.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
+import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
@@ -151,6 +152,34 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     );
   }
 
+  /// ショートモードを開く：現在アクティブなタブ（新着/ランキング）の
+  /// 一覧をisShortで絞り込み、全画面縦スクロールビューアへ切り替える。
+  /// ショート動画が1件も無い場合は、区別できないなら横動画も交えて
+  /// スクロールできて良いという依頼どおり、まず絞り込まずそのまま
+  /// 全件を渡す（=横動画も混在してよい）。
+  void _openShortsMode(List<CommunityWork> allWorks) {
+    final base = _tabController.index == 0 ? _newArrivals(allWorks) : _rankingWorks(allWorks);
+    if (base.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.communityShortsModeEmptySnackbar)),
+      );
+      return;
+    }
+    final shorts = base.where((w) => w.isShort).toList();
+    final target = shorts.isNotEmpty ? shorts : base;
+    final communityService = context.read<CommunityService>();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CommunityShortsScreen(
+          works: target,
+          bookmarkedIds: communityService.bookmarkedIds,
+          onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
+        ),
+      ),
+    );
+  }
+
   void _showPostComingSoonDialog() {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -212,6 +241,11 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
               }),
             ),
           ] else ...[
+            IconButton(
+              icon: const Icon(Icons.view_carousel_outlined),
+              tooltip: l10n.communityShortsModeTooltip,
+              onPressed: () => _openShortsMode(allWorks),
+            ),
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: l10n.commonSearch,

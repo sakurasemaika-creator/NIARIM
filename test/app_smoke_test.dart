@@ -11,6 +11,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
+import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/project_service.dart';
@@ -772,6 +773,53 @@ void main() {
       expect(tester.takeException(), isNull, reason: '検索クローズで例外');
       final cardCountRestored = find.byType(CommunityWorkCard).evaluate().length;
       expect(cardCountRestored, cardCountBefore);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    'コミュニティ画面：ショートモードでショート動画のみの全画面ビューアが開く（Task#159）',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // ダミーデータは約35%がショート動画になるよう生成しているため、
+      // 24件中で1件も無いことは考えにくいが、念のためボタン自体は必ず
+      // 存在することを先に確認する。
+      final shortsButtonFinder = find.byIcon(Icons.view_carousel_outlined);
+      expect(shortsButtonFinder, findsOneWidget);
+      await tester.tap(shortsButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'ショートモードを開く際に例外');
+
+      // 全画面ビューア（CommunityShortsScreen）が開き、閉じるボタンが
+      // 表示されていること。背後にはコミュニティ画面のTabBarView
+      // （内部的に横方向PageViewを使う）がまだマウントされたままのため、
+      // ショートモード側の縦方向PageViewのみを絞り込んで確認する。
+      expect(find.byType(CommunityShortsScreen), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+            (w) => w is PageView && w.scrollDirection == Axis.vertical),
+        findsOneWidget,
+      );
+
+      // 閉じるボタンでコミュニティ画面へ戻れる。
+      final closeFinder = find.byIcon(Icons.close);
+      expect(closeFinder, findsOneWidget);
+      await tester.tap(closeFinder);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'ショートモードを閉じる際に例外');
+      expect(find.byType(CommunityShortsScreen), findsNothing);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );

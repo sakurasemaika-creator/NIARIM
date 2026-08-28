@@ -2404,6 +2404,10 @@
     }
   },
   "communityNoWorksMessage": "No works",
+  "communityShortsBadge": "Short",
+  "communityShortsModeTooltip": "Watch in Shorts mode",
+  "communityShortsModeEmptySnackbar": "No short videos available",
+  "communityShortsModeExitTooltip": "Exit Shorts mode",
   "pixelColorModeLabel": "Color mode",
   "pixelColorModeNone": "Don't limit colors",
   "pixelColorModePalette": "Choose from palette",

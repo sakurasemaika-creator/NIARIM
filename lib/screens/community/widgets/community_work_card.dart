@@ -52,6 +52,13 @@ class CommunityWorkCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 一覧のグリッドセルは全カード共通の固定アスペクト比
+            // （CommunityWorkGridのchildAspectRatio）で敷き詰めるため、
+            // ショート動画のサムネイルだけ縦長(9:16)にするとカードの
+            // 高さがセルからはみ出してしまう。一覧上は他カードと同じ
+            // 16:9のまま「ショート」バッジで見分けられるようにし、
+            // 実際の縦長表示はショートモード（全画面縦スクロール
+            // ビューア）側で行う。
             AspectRatio(
               aspectRatio: 16 / 9,
               child: Stack(
@@ -121,6 +128,20 @@ class CommunityWorkCard extends StatelessWidget {
                           style: const TextStyle(color: Colors.white, fontSize: 10)),
                     ),
                   ),
+                  if (work.isShort)
+                    Positioned(
+                      left: 6,
+                      bottom: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(AppLocalizations.of(context)!.communityShortsBadge,
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
                   Positioned(
                     right: 4,
                     top: 4,

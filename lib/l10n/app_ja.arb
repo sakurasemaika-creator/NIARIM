@@ -2654,6 +2654,10 @@
     }
   },
   "communityNoWorksMessage": "作品がありません",
+  "communityShortsBadge": "ショート",
+  "communityShortsModeTooltip": "ショートモードで見る",
+  "communityShortsModeEmptySnackbar": "ショート動画がありません",
+  "communityShortsModeExitTooltip": "ショートモードを終了",
   "pixelColorModeLabel": "配色方式",
   "pixelColorModeNone": "色を指定しない",
   "pixelColorModePalette": "パレットから選ぶ",

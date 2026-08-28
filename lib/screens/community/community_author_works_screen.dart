@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../widgets/responsive.dart';
+import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 
 /// 特定の作者の投稿作品一覧（29_動画投稿・ランキング機能仕様.md 8.4節）。
@@ -34,12 +35,42 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     setState(() => widget.onToggleBookmark(work));
   }
 
+  void _openShortsMode() {
+    if (widget.works.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.communityShortsModeEmptySnackbar)),
+      );
+      return;
+    }
+    final shorts = widget.works.where((w) => w.isShort).toList();
+    final target = shorts.isNotEmpty ? shorts : widget.works;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CommunityShortsScreen(
+          works: target,
+          bookmarkedIds: widget.bookmarkedIds,
+          onToggleBookmark: _toggleBookmark,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.authorName)),
+      appBar: AppBar(
+        title: Text(widget.authorName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.view_carousel_outlined),
+            tooltip: l10n.communityShortsModeTooltip,
+            onPressed: _openShortsMode,
+          ),
+        ],
+      ),
       body: desktopCentered(
         context,
         SingleChildScrollView(

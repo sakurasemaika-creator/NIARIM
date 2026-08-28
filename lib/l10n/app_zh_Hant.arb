@@ -2404,6 +2404,10 @@
     }
   },
   "communityNoWorksMessage": "尚無作品",
+  "communityShortsBadge": "短影音",
+  "communityShortsModeTooltip": "以短影音模式觀看",
+  "communityShortsModeEmptySnackbar": "沒有短影音",
+  "communityShortsModeExitTooltip": "結束短影音模式",
   "pixelColorModeLabel": "配色方式",
   "pixelColorModeNone": "不限制顏色",
   "pixelColorModePalette": "從調色盤選擇",
