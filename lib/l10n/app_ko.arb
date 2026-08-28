@@ -2422,6 +2422,22 @@
   "communityFavoriteAuthorFollowing": "팔로잉",
   "communityFavoriteAuthorsEmptyTitle": "팔로우한 작가가 없습니다",
   "communityFavoriteAuthorsEmptyBody": "마음에 드는 작가의 페이지에서 「팔로우」하면 이곳에 그 사람의 신작이 표시됩니다.",
+  "communityRepostButton": "리포스트",
+  "communityRepostedButton": "리포스트함",
+  "communityRepostedByBadge": "{name}님이 리포스트함",
+  "@communityRepostedByBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityAuthorTabWorks": "작품",
+  "communityAuthorTabBookmarks": "북마크",
+  "communityBookmarksPublicToggleTitle": "북마크 목록 공개하기",
+  "communityBookmarksPublicToggleDesc": "켜면 다른 사용자가 이 페이지에서 회원님의 북마크 목록을 볼 수 있습니다. 기본값은 비공개입니다.",
+  "communityBookmarksPrivateNotice": "이 사용자는 북마크 목록을 비공개로 설정했습니다.",
+  "communityBookmarksEmptyMessage": "북마크한 작품이 없습니다",
   "communityShortsBadge": "쇼츠",
   "communityShortsModeTooltip": "쇼츠 모드로 보기",
   "communityShortsModeEmptySnackbar": "쇼츠 동영상이 없습니다",

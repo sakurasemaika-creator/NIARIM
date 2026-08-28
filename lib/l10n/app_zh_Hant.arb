@@ -2422,6 +2422,22 @@
   "communityFavoriteAuthorFollowing": "追蹤中",
   "communityFavoriteAuthorsEmptyTitle": "尚無追蹤的作者",
   "communityFavoriteAuthorsEmptyBody": "在喜歡的作者頁面點選「追蹤」，即可在此查看該作者的最新作品。",
+  "communityRepostButton": "轉發",
+  "communityRepostedButton": "已轉發",
+  "communityRepostedByBadge": "{name}轉發了",
+  "@communityRepostedByBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityAuthorTabWorks": "作品",
+  "communityAuthorTabBookmarks": "收藏",
+  "communityBookmarksPublicToggleTitle": "公開收藏清單",
+  "communityBookmarksPublicToggleDesc": "開啟後，其他使用者可以在此頁面看到你的收藏清單。預設不公開。",
+  "communityBookmarksPrivateNotice": "該使用者已將收藏清單設為不公開。",
+  "communityBookmarksEmptyMessage": "尚無收藏的作品",
   "communityShortsBadge": "短影音",
   "communityShortsModeTooltip": "以短影音模式觀看",
   "communityShortsModeEmptySnackbar": "沒有短影音",

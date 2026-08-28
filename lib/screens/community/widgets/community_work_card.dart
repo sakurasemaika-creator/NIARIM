@@ -28,6 +28,10 @@ class CommunityWorkCard extends StatelessWidget {
   final VoidCallback onBookmarkToggle;
   final VoidCallback? onAuthorTap;
   final int? rankNumber;
+  // フォロー中の作者タブ（Task#145）で、この作品がフォロー中の作者の
+  // リポストによって一覧に混ざっている場合のリポスト元の作者名。
+  // nullなら通常の投稿として表示する。
+  final String? repostedByAuthorName;
 
   const CommunityWorkCard({
     super.key,
@@ -37,6 +41,7 @@ class CommunityWorkCard extends StatelessWidget {
     required this.onBookmarkToggle,
     this.onAuthorTap,
     this.rankNumber,
+    this.repostedByAuthorName,
   });
 
   @override
@@ -166,6 +171,23 @@ class CommunityWorkCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (repostedByAuthorName != null) ...[
+                    Row(
+                      children: [
+                        Icon(Icons.repeat, size: 12, color: scheme.primary),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)!.communityRepostedByBadge(repostedByAuthorName!),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 10, color: scheme.primary, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                  ],
                   Text(
                     work.title,
                     maxLines: 1,
@@ -215,6 +237,8 @@ class CommunityWorkGrid extends StatelessWidget {
   final void Function(CommunityWork work) onToggleBookmark;
   final void Function(CommunityWork work)? onTapAuthor;
   final Map<String, int>? rankNumbers;
+  // workId→リポスト元の作者名（フォロー中の作者タブでのみ渡す。Task#145）。
+  final Map<String, String>? repostedByNames;
 
   const CommunityWorkGrid({
     super.key,
@@ -224,6 +248,7 @@ class CommunityWorkGrid extends StatelessWidget {
     required this.onToggleBookmark,
     this.onTapAuthor,
     this.rankNumbers,
+    this.repostedByNames,
   });
 
   @override
@@ -251,6 +276,7 @@ class CommunityWorkGrid extends StatelessWidget {
               onBookmarkToggle: () => onToggleBookmark(work),
               onAuthorTap: onTapAuthor == null ? null : () => onTapAuthor!(work),
               rankNumber: rankNumbers?[work.id],
+              repostedByAuthorName: repostedByNames?[work.id],
             );
           },
         );

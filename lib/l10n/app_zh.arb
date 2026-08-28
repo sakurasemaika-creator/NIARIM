@@ -2422,6 +2422,22 @@
   "communityFavoriteAuthorFollowing": "已关注",
   "communityFavoriteAuthorsEmptyTitle": "暂无关注的作者",
   "communityFavoriteAuthorsEmptyBody": "在喜欢的作者页面点击「关注」，即可在此查看该作者的最新作品。",
+  "communityRepostButton": "转发",
+  "communityRepostedButton": "已转发",
+  "communityRepostedByBadge": "{name}转发了",
+  "@communityRepostedByBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityAuthorTabWorks": "作品",
+  "communityAuthorTabBookmarks": "收藏",
+  "communityBookmarksPublicToggleTitle": "公开收藏列表",
+  "communityBookmarksPublicToggleDesc": "开启后，其他用户可以在此页面看到你的收藏列表。默认不公开。",
+  "communityBookmarksPrivateNotice": "该用户已将收藏列表设为不公开。",
+  "communityBookmarksEmptyMessage": "暂无收藏的作品",
   "communityShortsBadge": "短视频",
   "communityShortsModeTooltip": "以短视频模式观看",
   "communityShortsModeEmptySnackbar": "没有短视频",

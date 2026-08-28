@@ -134,19 +134,11 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   }
 
   void _openAuthorWorks(CommunityWork work) {
-    final communityService = context.read<CommunityService>();
-    final isSelf = work.authorId == kDummySelfAuthorId;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
           authorId: work.authorId,
           authorName: work.authorName,
-          // 自分自身の投稿者ページを開いた場合のみ、NIARIM側で非公開に
-          // した作品も含めて表示する（再公開の導線を確保するため）。
-          works: communityService.worksByAuthor(work.authorId, includeHidden: isSelf),
-          bookmarkedIds: communityService.bookmarkedIds,
-          onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
-          onOpenWork: _openFloatingPreview,
         ),
       ),
     );
@@ -352,9 +344,16 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
             ),
             Builder(builder: (context) {
               // お気に入り作者（フォロー、Task#144）の新着一覧。
-              // favoriteAuthorWorksは既にNIARIM側非公開作品を除外し
-              // 新着順に並んでいるため、検索絞り込みのみ追加で適用する。
-              final works = _applySearch(communityService.favoriteAuthorWorks);
+              // favoriteAuthorFeedは既にNIARIM側非公開作品を除外し新着順
+              // （フォロー中の作者本人の投稿日時、またはフォロー中の作者に
+              // よるリポストがより新しい場合はその日時）に並んでいるため、
+              // 検索絞り込みのみ追加で適用する（Task#145：リポスト機能）。
+              final feed = communityService.favoriteAuthorFeed;
+              final works = _applySearch(feed.map((e) => e.work).toList());
+              final repostedByNames = {
+                for (final e in feed)
+                  if (e.repostedByAuthorName != null) e.work.id: e.repostedByAuthorName!,
+              };
               if (communityService.favoriteAuthorIds.isEmpty) {
                 return _buildNoFavoriteAuthorsState(l10n);
               }
@@ -366,6 +365,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                   onTapWork: _openFloatingPreview,
                   onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
                   onTapAuthor: _openAuthorWorks,
+                  repostedByNames: repostedByNames,
                 ),
               );
             }),

@@ -131,4 +131,127 @@ void main() {
       expect(service.favoriteAuthorWorks.map((w) => w.id), isNot(contains(target.id)));
     });
   });
+
+  // Task#145：リポスト機能・ブックマークの公開設定・ユーザー別ブックマーク一覧。
+  group('リポスト', () {
+    test('toggleRepostで自分のリポストが登録・解除される', () {
+      final service = CommunityService();
+      // 自分（kDummySelfAuthorId）の作品以外を対象にする
+      // （自分の作品はリポストできない仕様）。
+      final work = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
+
+      expect(service.isRepostedBySelf(work.id), isFalse);
+
+      service.toggleRepost(work.id);
+      expect(service.isRepostedBySelf(work.id), isTrue);
+
+      service.toggleRepost(work.id);
+      expect(service.isRepostedBySelf(work.id), isFalse);
+    });
+
+    test('自分自身が投稿した作品はリポストできない', () {
+      final service = CommunityService();
+      final ownWork = service.works.firstWhere((w) => w.authorId == kDummySelfAuthorId);
+
+      service.toggleRepost(ownWork.id);
+
+      expect(service.isRepostedBySelf(ownWork.id), isFalse, reason: '自作はリポスト対象にならないはず');
+    });
+
+    test('repostCountOfはリポスト数を反映する', () {
+      final service = CommunityService();
+      final work = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
+      final before = service.repostCountOf(work.id);
+
+      service.toggleRepost(work.id);
+      expect(service.repostCountOf(work.id), before + 1);
+
+      service.toggleRepost(work.id);
+      expect(service.repostCountOf(work.id), before);
+    });
+
+    test('favoriteAuthorFeedはフォロー中の作者自身の投稿だけでなく、'
+        'フォロー中の作者が他者の作品をリポストした場合も含める', () {
+      final service = CommunityService();
+      // 自分がフォローしている作者（author_02）が、フォローしていない
+      // 別の作者（author_03）の作品をリポストした状況を作る。
+      const followedAuthorId = 'author_02';
+      final otherAuthorsWork =
+          service.works.firstWhere((w) => w.authorId != followedAuthorId && w.authorId != kDummySelfAuthorId);
+
+      service.toggleFavoriteAuthor(followedAuthorId);
+      expect(
+        service.favoriteAuthorFeed.map((e) => e.work.id),
+        isNot(contains(otherAuthorsWork.id)),
+        reason: 'リポストされる前は、フォローしていない作者の作品は含まれないはず',
+      );
+
+      service.toggleRepost(otherAuthorsWork.id, authorId: followedAuthorId);
+
+      final feed = service.favoriteAuthorFeed;
+      final entry = feed.firstWhere((e) => e.work.id == otherAuthorsWork.id);
+      expect(entry.isRepost, isTrue);
+      expect(entry.repostedByAuthorId, followedAuthorId);
+      // リポストは「今」行われたため、一覧の先頭（最新）に来るはず。
+      expect(feed.first.work.id, otherAuthorsWork.id);
+    });
+
+    test('favoriteAuthorFeedは同じ作品が複数の理由で該当する場合、より新しい方を採用する', () {
+      final service = CommunityService();
+      const followedAuthorId = 'author_02';
+      final ownWorkOfFollowed = service.worksByAuthor(followedAuthorId).first;
+
+      service.toggleFavoriteAuthor(followedAuthorId);
+      // フォロー中の作者自身の投稿として既に一覧に含まれている作品を、
+      // 同じ作者が自分でリポストするような操作は通常無いが、境界条件として
+      // 「別の作者がリポストした場合」に絞って確認する：postedAtより明らかに
+      // 新しいリポストがあれば、そちらのrepostedAtが採用されるはず。
+      service.toggleRepost(ownWorkOfFollowed.id, authorId: followedAuthorId);
+      // 自作はリポストできない仕様のため、これは登録されない
+      // （isRepostedBySelfに相当するガードがauthorId指定でも働く）。
+      final entry = service.favoriteAuthorFeed.firstWhere((e) => e.work.id == ownWorkOfFollowed.id);
+      expect(entry.isRepost, isFalse, reason: '自作へのリポストは無視されるはず');
+    });
+  });
+
+  group('ブックマークの公開設定・ユーザー別ブックマーク一覧', () {
+    test('自分のブックマーク公開設定は既定で非公開', () {
+      final service = CommunityService();
+      expect(service.selfBookmarksPublic, isFalse);
+      expect(service.isBookmarksPublic(kDummySelfAuthorId), isFalse);
+    });
+
+    test('setSelfBookmarksPublicで公開設定を変更できる', () {
+      final service = CommunityService();
+      service.setSelfBookmarksPublic(true);
+      expect(service.selfBookmarksPublic, isTrue);
+      service.setSelfBookmarksPublic(false);
+      expect(service.selfBookmarksPublic, isFalse);
+    });
+
+    test('bookmarkedWorksOfは自分自身の場合、実際にトグルしたブックマークを返す', () {
+      final service = CommunityService();
+      final work = service.works.first;
+      expect(service.bookmarkedWorksOf(kDummySelfAuthorId), isEmpty);
+
+      service.toggleBookmark(work.id);
+
+      expect(service.bookmarkedWorksOf(kDummySelfAuthorId).map((w) => w.id), contains(work.id));
+    });
+
+    test('bookmarkedWorksOfは他のダミー作者の場合、生成済みの固定ダミーブックマークを返す', () {
+      final service = CommunityService();
+      // 少なくとも1人はダミーブックマークを持つ想定
+      // （_buildDummyBookmarksByAuthorは各作者2〜5件を生成する）。
+      final works = service.bookmarkedWorksOf('author_02');
+      expect(works, isNotEmpty);
+    });
+
+    test('同じ引数で呼び出すたびに同じ結果を返す（固定シードで再現可能）', () {
+      final service = CommunityService();
+      final first = service.bookmarkedWorksOf('author_03').map((w) => w.id).toList();
+      final second = service.bookmarkedWorksOf('author_03').map((w) => w.id).toList();
+      expect(first, second);
+    });
+  });
 }

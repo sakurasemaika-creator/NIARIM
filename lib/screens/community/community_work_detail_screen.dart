@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../router.dart';
-import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/responsive.dart';
@@ -38,17 +37,12 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   // タイムラインモードのプレビューのドラッグハンドルと同じ操作感）。
   double _previewHeight = _defaultPreviewHeight;
 
-  void _openAuthorWorks(CommunityService communityService, CommunityWork work) {
-    final isSelf = work.authorId == kDummySelfAuthorId;
+  void _openAuthorWorks(CommunityWork work) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
           authorId: work.authorId,
           authorName: work.authorName,
-          works: communityService.worksByAuthor(work.authorId, includeHidden: isSelf),
-          bookmarkedIds: communityService.bookmarkedIds,
-          onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
-          onOpenWork: (w) => context.read<CommunityPreviewService>().show(w),
         ),
       ),
     );
@@ -179,6 +173,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final scheme = Theme.of(context).colorScheme;
     final isBookmarked = communityService.isBookmarked(work.id);
     final isAuthorSelf = work.authorId == kDummySelfAuthorId;
+    final isReposted = communityService.isRepostedBySelf(work.id);
     final maxPreviewHeight =
         (MediaQuery.sizeOf(context).height * 0.55).clamp(_minPreviewHeight, 500.0);
     final previewHeight = _previewHeight.clamp(_minPreviewHeight, maxPreviewHeight);
@@ -243,7 +238,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: () => _openAuthorWorks(communityService, work),
+                      onTap: () => _openAuthorWorks(work),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -305,6 +300,13 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   Icon(Icons.bookmark, size: 16, color: scheme.onSurfaceVariant),
                   const SizedBox(width: 3),
                   Text(formatCompactCount(work.bookmarkCount), style: TextStyle(color: scheme.onSurfaceVariant)),
+                  const SizedBox(width: 14),
+                  // リポスト数（Task#145）。ブックマーク同様NIARIM独自の
+                  // カウントで、YouTube側の統計とは無関係。
+                  Icon(Icons.repeat, size: 16, color: scheme.onSurfaceVariant),
+                  const SizedBox(width: 3),
+                  Text(formatCompactCount(communityService.repostCountOf(work.id)),
+                      style: TextStyle(color: scheme.onSurfaceVariant)),
                 ],
               ),
               const SizedBox(height: 6),
@@ -371,6 +373,26 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ),
                 ],
               ),
+              // リポスト（Task#145）：自分自身が投稿した作品はリポスト
+              // できないため、フォローボタンと同様に投稿者本人には表示
+              // しない。
+              if (!isAuthorSelf) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => communityService.toggleRepost(work.id),
+                    icon: Icon(Icons.repeat, color: isReposted ? scheme.primary : null),
+                    label: Text(
+                      isReposted ? l10n.communityRepostedButton : l10n.communityRepostButton,
+                      style: TextStyle(color: isReposted ? scheme.primary : null),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: isReposted ? BorderSide(color: scheme.primary) : null,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 8),
               Row(
                 children: [

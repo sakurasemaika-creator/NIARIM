@@ -2422,6 +2422,22 @@
   "communityFavoriteAuthorFollowing": "Siguiendo",
   "communityFavoriteAuthorsEmptyTitle": "Aún no sigues a ningún autor",
   "communityFavoriteAuthorsEmptyBody": "Sigue a un creador desde su página para ver aquí sus últimas obras.",
+  "communityRepostButton": "Republicar",
+  "communityRepostedButton": "Republicado",
+  "communityRepostedByBadge": "Republicado por {name}",
+  "@communityRepostedByBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityAuthorTabWorks": "Obras",
+  "communityAuthorTabBookmarks": "Marcadores",
+  "communityBookmarksPublicToggleTitle": "Hacer pública la lista de marcadores",
+  "communityBookmarksPublicToggleDesc": "Si está activado, otros usuarios podrán ver su lista de marcadores desde esta página. Es privada de forma predeterminada.",
+  "communityBookmarksPrivateNotice": "Este usuario ha configurado su lista de marcadores como privada.",
+  "communityBookmarksEmptyMessage": "No hay obras marcadas",
   "communityShortsBadge": "Short",
   "communityShortsModeTooltip": "Ver en modo Shorts",
   "communityShortsModeEmptySnackbar": "No hay vídeos cortos disponibles",

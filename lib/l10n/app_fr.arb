@@ -2422,6 +2422,22 @@
   "communityFavoriteAuthorFollowing": "Abonné(e)",
   "communityFavoriteAuthorsEmptyTitle": "Aucun auteur suivi",
   "communityFavoriteAuthorsEmptyBody": "Suivez un créateur depuis sa page pour voir ses dernières œuvres ici.",
+  "communityRepostButton": "Repartager",
+  "communityRepostedButton": "Repartagé",
+  "communityRepostedByBadge": "Repartagé par {name}",
+  "@communityRepostedByBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityAuthorTabWorks": "Œuvres",
+  "communityAuthorTabBookmarks": "Favoris",
+  "communityBookmarksPublicToggleTitle": "Rendre la liste de favoris publique",
+  "communityBookmarksPublicToggleDesc": "Si activé, les autres utilisateurs pourront voir votre liste de favoris depuis cette page. Privée par défaut.",
+  "communityBookmarksPrivateNotice": "Cet utilisateur a défini sa liste de favoris comme privée.",
+  "communityBookmarksEmptyMessage": "Aucune œuvre en favoris",
   "communityShortsBadge": "Short",
   "communityShortsModeTooltip": "Regarder en mode Shorts",
   "communityShortsModeEmptySnackbar": "Aucune vidéo courte disponible",

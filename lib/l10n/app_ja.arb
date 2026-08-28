@@ -2672,6 +2672,22 @@
   "communityFavoriteAuthorFollowing": "フォロー中",
   "communityFavoriteAuthorsEmptyTitle": "お気に入り作者がいません",
   "communityFavoriteAuthorsEmptyBody": "気に入った投稿者のページで「フォロー」すると、ここにその人の新着作品が並びます。",
+  "communityRepostButton": "リポスト",
+  "communityRepostedButton": "リポスト済み",
+  "communityRepostedByBadge": "{name}さんがリポスト",
+  "@communityRepostedByBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityAuthorTabWorks": "作品",
+  "communityAuthorTabBookmarks": "ブックマーク",
+  "communityBookmarksPublicToggleTitle": "ブックマーク一覧を公開する",
+  "communityBookmarksPublicToggleDesc": "オンにすると、他のユーザーがこのページからあなたのブックマーク一覧を見られるようになります。既定は非公開です。",
+  "communityBookmarksPrivateNotice": "このユーザーはブックマーク一覧を非公開にしています。",
+  "communityBookmarksEmptyMessage": "ブックマークした作品がありません",
   "communityShortsBadge": "ショート",
   "communityShortsModeTooltip": "ショートモードで見る",
   "communityShortsModeEmptySnackbar": "ショート動画がありません",

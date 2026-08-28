@@ -13,9 +13,11 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/engine/undo_manager.dart' as engine;
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
+import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
@@ -1187,6 +1189,52 @@ void main() {
         findsOneWidget,
         reason: 'ブックマークした作品がブクマ済みタブに表示されていない',
       );
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    'コミュニティ作品詳細画面：リポストボタンでトグルできる（Task#145）',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      expect(communityButtonFinder, findsOneWidget);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+
+      final communityService =
+          tester.element(find.byType(Scaffold).first).read<CommunityService>();
+      // 自分の作品はリポストできない仕様のため、自分以外の作者の作品を選ぶ。
+      final work = communityService.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
+      expect(communityService.isRepostedBySelf(work.id), isFalse);
+
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).push('/community/work/${work.id}');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '作品詳細画面への遷移で例外');
+
+      final repostButtonFinder = find.widgetWithText(OutlinedButton, 'リポスト');
+      expect(repostButtonFinder, findsOneWidget, reason: 'リポストボタンが見つからない');
+      await tester.tap(repostButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'リポスト操作で例外');
+      expect(communityService.isRepostedBySelf(work.id), isTrue);
+      expect(find.widgetWithText(OutlinedButton, 'リポスト済み'), findsOneWidget);
+
+      // もう一度タップして取り消せることも確認する。
+      await tester.tap(find.widgetWithText(OutlinedButton, 'リポスト済み'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'リポスト取り消しで例外');
+      expect(communityService.isRepostedBySelf(work.id), isFalse);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
