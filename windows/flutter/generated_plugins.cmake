@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
+  disk_space_2
   ffmpeg_kit_flutter_new_video
   permission_handler_windows
   share_plus

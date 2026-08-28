@@ -2404,5 +2404,37 @@
   "pixelArtPaletteNameLabel": "Palette name",
   "pixelArtPalettePickerTitle": "Choose a palette",
   "pixelArtPalettePickerEmpty": "No saved palettes yet. Tap \\\"Add\\\" to create one.",
-  "pixelArtPalettePickerApplyButton": "Apply"
+  "pixelArtPalettePickerApplyButton": "Apply",
+  "storageScreenTitle": "Free up space",
+  "storageDeviceChartTitle": "Device storage",
+  "storageBreakdownChartTitle": "NIARIM breakdown",
+  "storageActionsTitle": "Clean up",
+  "storageCategoryNiarimTotal": "NIARIM",
+  "storageCategoryOtherApps": "Other",
+  "storageCategoryFree": "Free space",
+  "storageCategoryMaterials": "Materials",
+  "storageCategoryProjectData": "Project data",
+  "storageCategoryExports": "Exported files",
+  "storageCategoryCustomAssets": "Custom brushes/tones/stamps/fonts",
+  "storageCategoryCache": "Cache",
+  "storageCategoryTrash": "Trash",
+  "storageClearCacheButton": "Clear cache",
+  "storageRemoveUnusedMaterialsButton": "Remove unused materials (all projects)",
+  "storageEmptyTrashButton": "Empty trash",
+  "storageOrganizeProjectsButton": "Organize projects",
+  "storageEraseAllButton": "Erase all data (reset)",
+  "storageClearCacheDoneSnackbar": "Cleared {size} of cache",
+  "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "storageEraseAllConfirmTitle": "Erase all data?",
+  "storageEraseAllConfirmBody": "This permanently deletes all NIARIM data — projects, materials, exported files, custom brushes/tones/stamps/fonts, and settings. This cannot be undone. Restart the app afterward.",
+  "storageEraseAllDoneSnackbar": "All data erased. Please restart the app.",
+  "homeDrawerStorage": "Free up space",
+  "helpStorageTitle": "Free up space",
+  "helpStorageDesc": "See how much storage NIARIM is using on your device, and a breakdown of what's inside NIARIM (projects, materials, exported files, custom brushes/tones/stamps/fonts, cache, and trash) as pie charts. Clear the cache, bulk-remove unused materials across all projects, empty the trash, organize projects, or erase all data (reset)."
 }

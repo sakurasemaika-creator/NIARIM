@@ -1032,6 +1032,7 @@ void main() {
         '/settings/fonts',
         '/settings/license',
         '/settings/privacy-policy',
+        '/storage',
       ]);
     },
     timeout: const Timeout(Duration(seconds: 90)),

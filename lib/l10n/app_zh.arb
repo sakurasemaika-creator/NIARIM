@@ -2404,5 +2404,37 @@
   "pixelArtPaletteNameLabel": "调色板名称",
   "pixelArtPalettePickerTitle": "选择调色板",
   "pixelArtPalettePickerEmpty": "还没有已保存的调色板。点击“添加”创建一个。",
-  "pixelArtPalettePickerApplyButton": "应用"
+  "pixelArtPalettePickerApplyButton": "应用",
+  "storageScreenTitle": "释放空间",
+  "storageDeviceChartTitle": "设备存储空间",
+  "storageBreakdownChartTitle": "NIARIM 明细",
+  "storageActionsTitle": "整理",
+  "storageCategoryNiarimTotal": "NIARIM",
+  "storageCategoryOtherApps": "其他",
+  "storageCategoryFree": "剩余空间",
+  "storageCategoryMaterials": "素材",
+  "storageCategoryProjectData": "项目数据",
+  "storageCategoryExports": "已导出文件",
+  "storageCategoryCustomAssets": "自制画笔/网点/图章/字体",
+  "storageCategoryCache": "缓存",
+  "storageCategoryTrash": "回收站",
+  "storageClearCacheButton": "清除缓存",
+  "storageRemoveUnusedMaterialsButton": "批量删除未使用素材（所有项目）",
+  "storageEmptyTrashButton": "清空回收站",
+  "storageOrganizeProjectsButton": "整理项目",
+  "storageEraseAllButton": "删除全部数据（初始化）",
+  "storageClearCacheDoneSnackbar": "已清除 {size} 缓存",
+  "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "storageEraseAllConfirmTitle": "要删除全部数据吗？",
+  "storageEraseAllConfirmBody": "这将永久删除NIARIM的全部数据——项目、素材、已导出文件、自制画笔/网点/图章/字体及设置。此操作无法撤销。删除后请重启应用。",
+  "storageEraseAllDoneSnackbar": "已删除全部数据，请重启应用。",
+  "homeDrawerStorage": "释放空间",
+  "helpStorageTitle": "释放空间",
+  "helpStorageDesc": "以饼图查看NIARIM在设备上占用的容量，以及NIARIM内部（项目、素材、已导出文件、自制画笔/网点/图章/字体、缓存、回收站）的详细占比。可以清除缓存、批量删除所有项目中的未使用素材、清空回收站、整理项目，或删除全部数据（初始化）。"
 }

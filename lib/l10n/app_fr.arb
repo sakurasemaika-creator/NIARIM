@@ -2404,5 +2404,37 @@
   "pixelArtPaletteNameLabel": "Nom de la palette",
   "pixelArtPalettePickerTitle": "Choisir une palette",
   "pixelArtPalettePickerEmpty": "Aucune palette enregistrée. Appuyez sur « Ajouter » pour en créer une.",
-  "pixelArtPalettePickerApplyButton": "Appliquer"
+  "pixelArtPalettePickerApplyButton": "Appliquer",
+  "storageScreenTitle": "Libérer de l'espace",
+  "storageDeviceChartTitle": "Stockage de l'appareil",
+  "storageBreakdownChartTitle": "Répartition NIARIM",
+  "storageActionsTitle": "Organiser",
+  "storageCategoryNiarimTotal": "NIARIM",
+  "storageCategoryOtherApps": "Autres",
+  "storageCategoryFree": "Espace libre",
+  "storageCategoryMaterials": "Matériaux",
+  "storageCategoryProjectData": "Données du projet",
+  "storageCategoryExports": "Fichiers exportés",
+  "storageCategoryCustomAssets": "Brosses/tons/tampons/polices personnalisés",
+  "storageCategoryCache": "Cache",
+  "storageCategoryTrash": "Corbeille",
+  "storageClearCacheButton": "Vider le cache",
+  "storageRemoveUnusedMaterialsButton": "Supprimer les matériaux inutilisés (tous les projets)",
+  "storageEmptyTrashButton": "Vider la corbeille",
+  "storageOrganizeProjectsButton": "Organiser les projets",
+  "storageEraseAllButton": "Effacer toutes les données (réinitialiser)",
+  "storageClearCacheDoneSnackbar": "{size} de cache libérés",
+  "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "storageEraseAllConfirmTitle": "Effacer toutes les données ?",
+  "storageEraseAllConfirmBody": "Ceci supprime définitivement toutes les données de NIARIM : projets, matériaux, fichiers exportés, brosses/tons/tampons/polices personnalisés et paramètres. Action irréversible. Redémarrez l'application ensuite.",
+  "storageEraseAllDoneSnackbar": "Toutes les données ont été effacées. Veuillez redémarrer l'application.",
+  "homeDrawerStorage": "Libérer de l'espace",
+  "helpStorageTitle": "Libérer de l'espace",
+  "helpStorageDesc": "Consultez l'espace utilisé par NIARIM sur votre appareil, ainsi qu'une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/tons/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (réinitialiser)."
 }

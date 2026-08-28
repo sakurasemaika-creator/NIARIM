@@ -153,6 +153,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'バケツ塗り詳細設定', title: l10n.helpBucketDetailSettingsTitle, description: l10n.helpBucketDetailSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: 'Undo回数設定', title: l10n.helpUndoSettingsTitle, description: l10n.helpUndoSettingsDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: 'フォントの読み込み', title: l10n.helpFontImportTitle, description: l10n.helpFontImportDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
+        _HelpEntry(topicKey: '容量削減', title: l10n.helpStorageTitle, description: l10n.helpStorageDesc, category: l10n.helpCategorySettings, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0, icon: Icons.cleaning_services_outlined)),
       ];
 
   @override

@@ -2404,5 +2404,37 @@
   "pixelArtPaletteNameLabel": "Nombre de la paleta",
   "pixelArtPalettePickerTitle": "Elegir paleta",
   "pixelArtPalettePickerEmpty": "Aún no hay paletas guardadas. Toca «Añadir» para crear una.",
-  "pixelArtPalettePickerApplyButton": "Aplicar"
+  "pixelArtPalettePickerApplyButton": "Aplicar",
+  "storageScreenTitle": "Liberar espacio",
+  "storageDeviceChartTitle": "Almacenamiento del dispositivo",
+  "storageBreakdownChartTitle": "Desglose de NIARIM",
+  "storageActionsTitle": "Organizar",
+  "storageCategoryNiarimTotal": "NIARIM",
+  "storageCategoryOtherApps": "Otros",
+  "storageCategoryFree": "Espacio libre",
+  "storageCategoryMaterials": "Materiales",
+  "storageCategoryProjectData": "Datos del proyecto",
+  "storageCategoryExports": "Archivos exportados",
+  "storageCategoryCustomAssets": "Pinceles/tonos/sellos/fuentes personalizados",
+  "storageCategoryCache": "Caché",
+  "storageCategoryTrash": "Papelera",
+  "storageClearCacheButton": "Borrar caché",
+  "storageRemoveUnusedMaterialsButton": "Eliminar materiales sin usar (todos los proyectos)",
+  "storageEmptyTrashButton": "Vaciar papelera",
+  "storageOrganizeProjectsButton": "Organizar proyectos",
+  "storageEraseAllButton": "Borrar todos los datos (restablecer)",
+  "storageClearCacheDoneSnackbar": "Se liberaron {size} de caché",
+  "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "storageEraseAllConfirmTitle": "¿Borrar todos los datos?",
+  "storageEraseAllConfirmBody": "Esto elimina permanentemente todos los datos de NIARIM: proyectos, materiales, archivos exportados, pinceles/tonos/sellos/fuentes personalizados y ajustes. No se puede deshacer. Reinicia la app después.",
+  "storageEraseAllDoneSnackbar": "Se borraron todos los datos. Reinicia la app.",
+  "homeDrawerStorage": "Liberar espacio",
+  "helpStorageTitle": "Liberar espacio",
+  "helpStorageDesc": "Consulta cuánto espacio usa NIARIM en tu dispositivo y un desglose de su contenido interno (proyectos, materiales, archivos exportados, pinceles/tonos/sellos/fuentes personalizados, caché y papelera) en gráficos circulares. Puedes borrar la caché, eliminar materiales sin usar en todos los proyectos, vaciar la papelera, organizar proyectos o borrar todos los datos (restablecer)."
 }

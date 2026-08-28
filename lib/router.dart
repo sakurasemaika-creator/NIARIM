@@ -27,6 +27,7 @@ import 'screens/materials/material_list_screen.dart';
 import 'screens/settings/font_settings_screen.dart';
 import 'screens/settings/license_screen.dart';
 import 'screens/settings/privacy_policy_screen.dart';
+import 'screens/settings/storage_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -146,6 +147,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings/privacy-policy',
       builder: (context, state) => const PrivacyPolicyScreen(),
+    ),
+    GoRoute(
+      path: '/storage',
+      builder: (context, state) => const StorageScreen(),
     ),
   ],
 );

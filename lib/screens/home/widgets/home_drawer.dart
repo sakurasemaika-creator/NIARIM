@@ -104,6 +104,17 @@ class HomeDrawer extends StatelessWidget {
               context.push('/autofill-presets');
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.cleaning_services_outlined),
+            title: Text(
+              l10n.homeDrawerStorage,
+              style: const TextStyle(fontFamily: 'Kuramubon'),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              context.push('/storage');
+            },
+          ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.settings_outlined),

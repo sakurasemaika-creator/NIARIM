@@ -2654,5 +2654,37 @@
   "pixelArtPaletteNameLabel": "パレット名",
   "pixelArtPalettePickerTitle": "パレットから選ぶ",
   "pixelArtPalettePickerEmpty": "保存済みのパレットがありません。「追加」から作成してください",
-  "pixelArtPalettePickerApplyButton": "適用"
+  "pixelArtPalettePickerApplyButton": "適用",
+  "storageScreenTitle": "容量削減",
+  "storageDeviceChartTitle": "端末の容量",
+  "storageBreakdownChartTitle": "NIARIMの内訳",
+  "storageActionsTitle": "整理する",
+  "storageCategoryNiarimTotal": "NIARIM",
+  "storageCategoryOtherApps": "その他",
+  "storageCategoryFree": "空き容量",
+  "storageCategoryMaterials": "素材",
+  "storageCategoryProjectData": "プロジェクトデータ",
+  "storageCategoryExports": "書き出し済みファイル",
+  "storageCategoryCustomAssets": "自作ブラシ・トーン・スタンプ・フォント",
+  "storageCategoryCache": "キャッシュ",
+  "storageCategoryTrash": "ゴミ箱",
+  "storageClearCacheButton": "キャッシュを削除",
+  "storageRemoveUnusedMaterialsButton": "未使用素材を一括削除（全プロジェクト）",
+  "storageEmptyTrashButton": "ゴミ箱を空にする",
+  "storageOrganizeProjectsButton": "プロジェクトを整理する",
+  "storageEraseAllButton": "全データを削除（初期化）",
+  "storageClearCacheDoneSnackbar": "{size}のキャッシュを削除しました",
+  "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "storageEraseAllConfirmTitle": "全データを削除しますか？",
+  "storageEraseAllConfirmBody": "プロジェクト・素材・書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・設定など、NIARIMの全データを完全に削除します。この操作は元に戻せません。削除後はアプリを再起動してください。",
+  "storageEraseAllDoneSnackbar": "全データを削除しました。アプリを再起動してください",
+  "homeDrawerStorage": "容量削減",
+  "helpStorageTitle": "容量削減",
+  "helpStorageDesc": "端末容量に対するNIARIMの使用量と、NIARIM内部（プロジェクト・素材・書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・キャッシュ・ゴミ箱）の内訳を円グラフで確認できます。キャッシュの削除・未使用素材の一括削除（全プロジェクト）・ゴミ箱を空にする・プロジェクトの整理・全データ削除（初期化）が行えます。"
 }
