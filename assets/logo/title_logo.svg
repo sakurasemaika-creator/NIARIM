@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-35.0 -650.0 3470.0 690.0" role="img" aria-label="NIARIM in HakkouMincho">
+  <g fill="#4A4636" fill-rule="nonzero">
+
+    <!-- original lower connectors: DO NOT MODIFY -->
+    <g id="interLetterConnectors"
+       fill="none"
+       stroke="#4A4636"
+       stroke-width="32"
+       stroke-linecap="butt"
+       stroke-linejoin="miter"
+       transform="scale(1,-0.82)">
+      <path d="M 430 16 H 728"/>
+      <path d="M 936 16 H 1098.56"/>
+      <path d="M 1561.56 16 H 1735.64"/>
+      <path d="M 2174.64 16 H 2383.32"/>
+      <path d="M 2591.32 16 H 2807.68"/>
+    </g>
+
+    <!-- raised connectors -->
+    <g id="raisedConnectors"
+       fill="none"
+       stroke="#4A4636"
+       stroke-width="32"
+       stroke-linecap="butt"
+       stroke-linejoin="miter"
+       transform="scale(1,-0.82)">
+
+      <!-- N-I -->
+      <path d="M 525 267 H 728"/>
+
+      <!-- I-A: restored to reference length -->
+      <path d="M 936 267 H 1123.56"/>
+
+      <!-- A-R: restored to reference length -->
+      <path d="M 1536.56 267 H 1735.64"/>
+
+      <!-- R-I: R-side extended to 2144.64; I-side fixed -->
+      <path d="M 2144.64 267 H 2383.32"/>
+
+      <!-- I-M -->
+      <path d="M 2591.32 267 H 2807.68"/>
+    </g>
+
+    <!-- filled quadrilaterals -->
+    <g id="filledFrameSpaces"
+       fill="#4A4636"
+       transform="scale(1,-0.82)">
+
+      <!-- N-I: uniformly reduced to 85%, centered -->
+      <g transform="translate(626.5 145) scale(0.85) translate(-626.5 -145)">
+        <rect x="525" y="90" width="203" height="110"/>
+      </g>
+
+      <!-- I-A: uniformly reduced to 85%, centered; proportions and angles preserved -->
+      <g transform="translate(1029.80325 145) scale(0.85) translate(-1029.80325 -145)">
+        <path d="M 936 200
+                 H 1123.56
+                 L 1099.6065 90
+                 H 937.0465
+                 Z"/>
+      </g>
+
+      <!-- A-R: uniformly reduced to 85%, centered; proportions and angles preserved -->
+      <g transform="translate(1636.1 145) scale(0.85) translate(-1636.1 -145)">
+        <path d="M 1536.56 200
+                 H 1735.64
+                 V 90
+                 H 1561.56
+                 Z"/>
+      </g>
+
+      <!-- R-I: uniformly reduced to 85%, centered; proportions and angles preserved -->
+      <g transform="translate(2263.98 145) scale(0.85) translate(-2263.98 -145)">
+        <path d="M 2144.64 200
+                 H 2383.32
+                 V 90
+                 H 2174.64
+                 Z"/>
+      </g>
+
+      <!-- I-M: uniformly reduced to 85%, centered -->
+      <g transform="translate(2699.5 145) scale(0.85) translate(-2699.5 -145)">
+        <rect x="2591.32" y="90" width="216.36" height="110"/>
+      </g>
+
+    </g>
+
+    <path id="glyph-N"
+      d="M25 0V32L88 44V690L85 697L26 704V735H158L411 163L410 427V692L328 704V735H499V704L436 692V0H397L113 631L117 285V44L197 32V0Z"
+      transform="translate(0.00,0) scale(1,-0.82)"
+      fill="#4A4636"/>
+
+    <path id="glyph-I"
+      d="M32 0V32L127 45H143L240 32V0ZM95 0Q97 85 97.0 170.5Q97 256 97 342V393Q97 479 97.0 564.5Q97 650 95 735H176Q175 651 175.0 565.0Q175 479 175 393V343Q175 257 175.0 171.5Q175 86 176 0ZM32 704V735H240V704L143 691H127Z"
+      transform="translate(696.00,0) scale(1,-0.82)"
+      fill="#4A4636"/>
+
+    <path id="glyph-A"
+      d="M7 0V32L62 42L111 267V273H112L214 740H262L416 40L470 32V0H268V32L337 42L300 219Q285 222 266 222Q239 220 220.0 209.5Q201 199 184 175Q174 159 169 149L159 128L149 131L158 152Q163 161 167 179Q172 196 172 206Q172 234 142 250L136 253L93 43L154 32V0ZM297 232 213 631 139 271H151Q178 272 195.5 282.0Q213 292 231 317Q243 333 246 340L257 363L266 360L255 338Q251 329 246 313Q243 300 243 288Q243 259 273 242Q281 237 297 232Z"
+      transform="translate(1091.56,0) scale(1,-0.82)"
+      fill="#4A4636"/>
+
+    <path id="glyph-R"
+      d="M20 0V32L115 45H132L228 32V0ZM83 0Q85 85 85.0 170.5Q85 256 85 342V393Q85 479 85.0 564.5Q85 650 83 735H163Q162 651 161.5 563.5Q161 476 161 373V350Q161 259 161.5 172.5Q162 86 163 0ZM315 71 288 229Q281 271 272.0 296.5Q263 322 247.0 334.0Q231 346 203 346H124V379H217Q254 379 278.0 401.5Q302 424 314.0 461.5Q326 499 326 546Q326 619 299.0 659.5Q272 700 216 700H124V735H232Q313 735 356.5 686.0Q400 637 400 547Q400 499 383.5 458.0Q367 417 331.5 389.5Q296 362 240 357V367Q285 364 310.0 346.5Q335 329 347.5 297.0Q360 265 368 216L402 14L365 41L459 32V0Q445 -1 430.5 -1.5Q416 -2 395 -2Q358 -2 339.0 7.0Q320 16 315 71ZM20 704V735H124V691H115Z"
+      transform="translate(1715.64,0) scale(1,-0.82)"
+      fill="#4A4636"/>
+
+    <path id="glyph-I"
+      d="M32 0V32L127 45H143L240 32V0ZM95 0Q97 85 97.0 170.5Q97 256 97 342V393Q97 479 97.0 564.5Q97 650 95 735H176Q175 651 175.0 565.0Q175 479 175 393V343Q175 257 175.0 171.5Q175 86 176 0ZM32 704V735H240V704L143 691H127Z"
+      transform="translate(2351.32,0) scale(1,-0.82)"
+      fill="#4A4636"/>
+
+    <path id="glyph-M"
+      d="M26 0V32L102 45H116L192 32V0ZM31 704V735H126V691H118ZM94 0 95 735H118L122 371V0ZM287 0 106 697H102V735H176L332 124H316L321 139L472 735H502V697H488L481 668L313 0ZM410 0V32L505 45H520L617 32V0ZM472 0Q474 86 474.0 169.5Q474 253 474 326L477 735H553Q552 651 551.5 565.0Q551 479 551 393V342Q551 256 551.5 170.5Q552 85 553 0ZM513 691V735H615V704L521 691Z"
+      transform="translate(2781.68,0) scale(1,-0.82)"
+      fill="#4A4636"/>
+
+  </g>
+</svg>
