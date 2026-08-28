@@ -25,6 +25,15 @@ Future<Uint8List> _solidColorPng(int size, ui.Color color) async {
   return byteData!.buffer.asUint8List();
 }
 
+/// テクスチャ内でインクあり（alpha=255）と判定された画素数を数える。
+int _countInk(Uint8List texture) {
+  int count = 0;
+  for (int i = 3; i < texture.length; i += 4) {
+    if (texture[i] == 255) count++;
+  }
+  return count;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -90,6 +99,48 @@ void main() {
       for (int i = 3; i < texture.length; i += 4) {
         expect(texture[i], 0);
       }
+    });
+  });
+
+  group('generateBuiltInToneTexture（ピクセルディザ：Bayerオーダードディザ）', () {
+    // Task#136：トーンのディザリングプリセット追加の回帰テスト。
+    test('4×4ディザ50%は16画素中ちょうど8画素（半分）がインクになる', () {
+      const tone = Tone(id: 't3', name: 'ピクセルディザ 50%（4×4）');
+      final texture = generateBuiltInToneTexture(tone, size: 32);
+      final totalPixels = texture.length ~/ 4;
+      expect(_countInk(texture), totalPixels * 8 ~/ 16);
+    });
+
+    test('4×4ディザは%が高いほどインク画素が増える', () {
+      final t12 = generateBuiltInToneTexture(
+        const Tone(id: 'a', name: 'ピクセルディザ 12%（4×4）'),
+        size: 32,
+      );
+      final t87 = generateBuiltInToneTexture(
+        const Tone(id: 'b', name: 'ピクセルディザ 87%（4×4）'),
+        size: 32,
+      );
+      expect(_countInk(t87), greaterThan(_countInk(t12)));
+    });
+
+    test('(粗)2×2ディザ50%は4画素中ちょうど2画素（半分）がインクになる', () {
+      const tone = Tone(id: 't4', name: 'ピクセルディザ(粗) 50%（2×2）');
+      final texture = generateBuiltInToneTexture(tone, size: 32);
+      final totalPixels = texture.length ~/ 4;
+      expect(_countInk(texture), totalPixels * 2 ~/ 4);
+    });
+
+    test('4×4と2×2は行列サイズが異なりインク画素数の刻みも異なる', () {
+      final fine = generateBuiltInToneTexture(
+        const Tone(id: 'c', name: 'ピクセルディザ 75%（4×4）'),
+        size: 32,
+      );
+      final coarse = generateBuiltInToneTexture(
+        const Tone(id: 'd', name: 'ピクセルディザ(粗) 25%（2×2）'),
+        size: 32,
+      );
+      expect(fine, isNot(equals(coarse)));
+      expect(_countInk(fine), isNot(equals(_countInk(coarse))));
     });
   });
 

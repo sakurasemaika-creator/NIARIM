@@ -95,6 +95,24 @@ class ToneService extends ChangeNotifier {
         const Tone(id: 'Tone0013', name: 'タイツ 40デニール'),
         const Tone(id: 'Tone0014', name: 'タイツ 60デニール'),
         const Tone(id: 'Tone0015', name: 'タイツ 80デニール'),
+        // ディザリングプリセット：Bayerオーダードディザ行列による、ドット絵・
+        // レトロゲーム風の規則的な階調表現（procedural_texture.dartの
+        // generateBuiltInToneTextureが名前の「ピクセルディザ」と「%」数値・
+        // 「(粗)」の有無で判定する）。網点（円が段々大きくなる連続的な
+        // 階調表現）とは異なり、行列内の固定パターンで塗るか塗らないかを
+        // 決めるため、ピクセルモードでの塗り分けに向く。4×4行列（16段階の
+        // うち代表的な7段階）と、より粗く単位が大きい2×2行列（4段階の
+        // うち代表的な3段階）の2系統を用意する。
+        const Tone(id: 'Tone0016', name: 'ピクセルディザ 12%（4×4）'),
+        const Tone(id: 'Tone0017', name: 'ピクセルディザ 25%（4×4）'),
+        const Tone(id: 'Tone0018', name: 'ピクセルディザ 37%（4×4）'),
+        const Tone(id: 'Tone0019', name: 'ピクセルディザ 50%（4×4）'),
+        const Tone(id: 'Tone0020', name: 'ピクセルディザ 62%（4×4）'),
+        const Tone(id: 'Tone0021', name: 'ピクセルディザ 75%（4×4）'),
+        const Tone(id: 'Tone0022', name: 'ピクセルディザ 87%（4×4）'),
+        const Tone(id: 'Tone0023', name: 'ピクセルディザ(粗) 25%（2×2）'),
+        const Tone(id: 'Tone0024', name: 'ピクセルディザ(粗) 50%（2×2）'),
+        const Tone(id: 'Tone0025', name: 'ピクセルディザ(粗) 75%（2×2）'),
       ];
 
   Future<void> init() async {

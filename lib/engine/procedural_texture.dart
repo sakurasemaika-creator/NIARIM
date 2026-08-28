@@ -90,6 +90,10 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
     // 市松（斜めに隣接）・格子（縦横の線がつながる）とは異なり、
     // どの点も上下左右の隣接ピクセルとは接しない。
     _fillPixelScatteredDotPattern(data, size);
+  } else if (name.contains('ピクセルディザ')) {
+    final percent =
+        int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '50') ?? 50;
+    _fillPixelDitherPattern(data, size, percent / 100.0, coarse: name.contains('粗'));
   } else if (name.contains('ストッキング') || name.contains('タイツ')) {
     final denier =
         int.tryParse(RegExp(r'(\d+)デニール').firstMatch(name)?.group(1) ?? '20') ?? 20;
@@ -125,6 +129,47 @@ void _fillPixelScatteredDotPattern(Uint8List data, int size) {
   for (int y = 0; y < size; y += 2) {
     for (int x = 0; x < size; x += 2) {
       data[(y * size + x) * 4 + 3] = 255;
+    }
+  }
+}
+
+/// 4×4 Bayerオーダードディザ行列（値0〜15の16段階）。標準的なオーダード
+/// ディザリングで使われる配置で、市松・格子のような固定密度の模様とは
+/// 異なり、閾値を変えるだけで疎〜密の様々な段階を規則的なパターンで
+/// 表現できる（網点のように円が段々大きくなる連続的な階調ではなく、
+/// ピクセル単位で塗る/塗らないが決まるドット絵・レトロゲーム風の見た目
+/// になる）。
+const List<List<int>> _bayerMatrix4x4 = [
+  [0, 8, 2, 10],
+  [12, 4, 14, 6],
+  [3, 11, 1, 9],
+  [15, 7, 13, 5],
+];
+
+/// 2×2 Bayerオーダードディザ行列（値0〜3の4段階）。4×4より繰り返し単位が
+/// 大きく粗いため、よりピクセル感・レトロ感の強い見た目になる。
+const List<List<int>> _bayerMatrix2x2 = [
+  [0, 2],
+  [3, 1],
+];
+
+/// オーダードディザ（Bayer行列）によるトーンパターン。[coarse]がtrueの
+/// 場合は2×2行列（4段階）、falseの場合は4×4行列（16段階）を使い、
+/// [density]（0.0〜1.0）に応じた閾値で塗る画素を決める。
+void _fillPixelDitherPattern(
+  Uint8List data,
+  int size,
+  double density, {
+  bool coarse = false,
+}) {
+  final matrix = coarse ? _bayerMatrix2x2 : _bayerMatrix4x4;
+  final n = matrix.length;
+  final threshold = (density.clamp(0.0, 1.0) * (n * n)).round();
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      if (matrix[y % n][x % n] < threshold) {
+        data[(y * size + x) * 4 + 3] = 255;
+      }
     }
   }
 }
