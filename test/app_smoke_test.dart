@@ -924,6 +924,151 @@ void main() {
   );
 
   testWidgets(
+    '起動→新規プロジェクト作成→キャンバス：定規ツールの回転ハンドル'
+    'ドラッグが独自ジェスチャーとして機能する（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      final rulerToolFinder = find.byTooltip('定規');
+      expect(rulerToolFinder, findsOneWidget);
+      await tester.tap(rulerToolFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final lineRulerFinder = find.text('直線定規');
+      expect(lineRulerFinder, findsOneWidget);
+      await tester.tap(lineRulerFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '直線定規の新規作成で例外');
+
+      final canvasFinder = find.byType(CanvasArea);
+      expect(canvasFinder, findsOneWidget);
+      final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+      expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+
+      // 直線定規の「rotate」ハンドルは、既定の回転角0（rad）のとき
+      // position（キャンバス中央）からX軸正方向へ220（キャンバス
+      // ピクセル単位）進んだ点になる（_rulerHandlePositions参照：
+      // position + Offset.fromDirection(rotation, 220)）。moveハンドル
+      // のテストと同じくcanvasDrawingRectForで実際の描画矩形の
+      // 拡大縮小率を求め、220をその比率でスクリーン座標へ変換する。
+      final project = tester
+          .element(canvasFinder)
+          .read<ProjectService>()
+          .projects
+          .first;
+      final canvasWidgetRect = tester.getRect(canvasFinder);
+      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+      final exportW = project.exportWidth.toDouble();
+      final fitScale = drawingRect.width / exportW;
+      final rotateHandleScreenPos =
+          canvasWidgetRect.topLeft + drawingRect.center + Offset(220 * fitScale, 0);
+
+      final rulerGesture = await tester.startGesture(rotateHandleScreenPos);
+      await tester.pump(const Duration(milliseconds: 50));
+      // 下方向へドラッグして回転角を変える
+      // （_rulerWithHandleAtのhandleId=='rotate'は
+      // (canvasPos - r.position).directionをそのまま新しいrotationにする）。
+      await rulerGesture.moveBy(const Offset(0, 60));
+      await tester.pump(const Duration(milliseconds: 50));
+      await rulerGesture.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: '定規の回転ハンドルドラッグで例外');
+
+      expect(undoManager.canUndo, isTrue, reason: '回転ハンドルドラッグがUndo履歴に積まれるはず');
+      undoManager.undo();
+      expect(tester.takeException(), isNull, reason: '回転の巻き戻しで例外');
+      undoManager.undo();
+      expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
+      expect(undoManager.canUndo, isFalse, reason: '回転と新規作成の2件のみ積まれていたはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    '起動→新規プロジェクト作成→キャンバス：定規ツール（楕円定規）の'
+    'サイズ変更ハンドルドラッグが独自ジェスチャーとして機能する'
+    '（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      final rulerToolFinder = find.byTooltip('定規');
+      expect(rulerToolFinder, findsOneWidget);
+      await tester.tap(rulerToolFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final ellipseRulerFinder = find.text('楕円定規');
+      expect(ellipseRulerFinder, findsOneWidget);
+      await tester.tap(ellipseRulerFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '楕円定規の新規作成で例外');
+
+      final canvasFinder = find.byType(CanvasArea);
+      expect(canvasFinder, findsOneWidget);
+      final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+      expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+
+      // 楕円定規の「resizeX」ハンドルは、既定の回転角0（rad）のとき
+      // position（キャンバス中央）からX軸正方向へradiusX（既定200×
+      // キャンバス幅/1920のスケール）進んだ点になる
+      // （_rulerHandlePositions参照：
+      // position + _rotatePoint(Offset(rx, 0), rotation)）。
+      final project = tester
+          .element(canvasFinder)
+          .read<ProjectService>()
+          .projects
+          .first;
+      final canvasWidgetRect = tester.getRect(canvasFinder);
+      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+      final exportW = project.exportWidth.toDouble();
+      final fitScale = drawingRect.width / exportW;
+      final radiusX = 200.0 * (exportW / 1920.0);
+      final resizeXHandleScreenPos = canvasWidgetRect.topLeft +
+          drawingRect.center +
+          Offset(radiusX * fitScale, 0);
+
+      final rulerGesture = await tester.startGesture(resizeXHandleScreenPos);
+      await tester.pump(const Duration(milliseconds: 50));
+      await rulerGesture.moveBy(const Offset(30, 0));
+      await tester.pump(const Duration(milliseconds: 50));
+      await rulerGesture.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: '楕円定規のサイズ変更ハンドルドラッグで例外');
+
+      expect(undoManager.canUndo, isTrue, reason: 'サイズ変更ハンドルドラッグがUndo履歴に積まれるはず');
+      undoManager.undo();
+      expect(tester.takeException(), isNull, reason: 'サイズ変更の巻き戻しで例外');
+      undoManager.undo();
+      expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
+      expect(undoManager.canUndo, isFalse, reason: 'サイズ変更と新規作成の2件のみ積まれていたはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
     '起動→新規プロジェクト作成→キャンバス（PC/DeXモード）：ドッキング'
     'パネルのリサイズハンドルドラッグが独自ジェスチャーとして機能する'
     '（Task#128）',
