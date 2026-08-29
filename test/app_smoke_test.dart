@@ -14,6 +14,9 @@ import 'package:niarim/engine/undo_manager.dart' as engine;
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
 import 'package:niarim/models/community_work.dart';
+import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/material_asset.dart' as material_asset;
+import 'package:niarim/services/material_service.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
@@ -33,6 +36,18 @@ import 'package:niarim/services/settings_service.dart';
 /// 捕捉不能なので事前にモックしておく必要がある）。「ファイルが
 /// 選択されなかった（キャンセル）」と同じnullを返すことで、実際の
 /// ファイル選択ダイアログを介さずに以降の分岐（何もしない）を検証できる。
+///
+/// 【Task#128調査メモ】素材追加ボタン（file_picker経由）のonPressedは
+/// MaterialService.addMaterialの実ファイルI/O（readAsBytes/writeAsBytes）
+/// を伴うが、tester.tap()経由でトリガーされたウィジェットのonPressed内で
+/// 開始された本物のdart:io I/Oは、tester.runAsync()でtap自体を包んでも
+/// テスト関数の実行中には完了しない（本物のI/O完了がテスト関数return
+/// "後"にしか届かない）ことを実際に確認した。そのためタイムラインの
+/// クリップ移動・トリムハンドルのテストでは、file_picker経由のUI操作
+/// 自体は検証対象に含めず、ProjectService/MaterialServiceへテスト
+/// コードから直接（tester.runAsync経由で）クリップ相当のレイヤーを
+/// 登録する方式にした（テストコードから直接awaitする通常の非同期
+/// 呼び出しは、上記の制約とは無関係に問題なく完了する）。
 class _FakeFilePicker extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
@@ -1197,6 +1212,169 @@ void main() {
       final frames = ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.frameIndex).toList();
       expect(frames, isNot(contains(0)), reason: 'ドラッグ後は元のフレーム0から移動しているはず');
       expect(frames.any((f) => f > 0), isTrue, reason: 'ドラッグした分だけ後ろのフレームへ移動しているはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    '起動→新規プロジェクト作成→タイムライン：動画クリップの長押し'
+    'ドラッグ移動・トリムハンドルが独自ジェスチャーとして機能する'
+    '（Task#128）',
+    (WidgetTester tester) async {
+      // MaterialService.addMaterialが素材保存先を解決するのに
+      // path_providerを使うため必要（mockPathProvider参照）。
+      mockPathProvider(tester);
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
+      final ms = tester.element(find.byType(Scaffold).first).read<MaterialService>();
+      final projectId = ps.projects.first.id;
+      final sceneId = ps.scenesOf(projectId).first.id;
+
+      // タイムライン画面を開く前に、動画クリップを1件、直接
+      // ProjectService/MaterialServiceへ登録しておく。実際の「＋動画」
+      // ボタンはFilePicker→MaterialService.addMaterialという実ファイル
+      // I/O（readAsBytes/writeAsBytes）をボタンのonPressed内で行うが、
+      // flutter_testの仮想時計（fake async zone）はTimer/Future.delayed
+      // は制御できてもボタンのonPressed内で開始された本物のdart:io I/O
+      // の完了までは（tester.runAsyncでtap自体を包んでも）テスト本体の
+      // 実行中に driveできない、というテストハーネス側の制約に
+      // 実際に突き当たった（本物のI/O完了はテスト関数がreturnした
+      // "後"にしか届かなかった）。そのためこのテストでは「＋動画」
+      // ボタンのUI操作自体は検証対象に含めず、その代わりに
+      // 移動・トリムハンドルという独自ジェスチャー自体の検証に
+      // 専念する（ProjectService/MaterialServiceへの直接呼び出しは
+      // テストコードから直接awaitする通常の非同期呼び出しであり、
+      // 上記の制約とは無関係にtester.runAsyncで問題なく完了する）。
+      // _TimelineScreenState._loadClipsFromProjectはシーンの
+      // LayerType.timelineVideo/timelineImageレイヤーから_videoClips
+      // 等を再構築する仕組みのため、ここで登録したレイヤーは実際の
+      // 「＋動画」ボタン経由の追加と同じ形でタイムライン画面に表示される。
+      final dummyDir = await tester.runAsync(
+        () => Directory.systemTemp.createTemp('niarim_test_video_'),
+      );
+      addTearDown(() => dummyDir!.delete(recursive: true));
+      final dummyFile = File('${dummyDir!.path}/dummy_video.mp4');
+      await tester.runAsync(() => dummyFile.writeAsBytes(const [0, 1, 2, 3]));
+
+      final asset = await tester.runAsync(
+        () => ms.addMaterial(
+          projectId: projectId,
+          sourcePath: dummyFile.path,
+          type: material_asset.MaterialType.video,
+        ),
+      );
+      final layer = ps.addLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: 0,
+        type: LayerType.timelineVideo,
+        name: 'テスト動画',
+      );
+      ps.updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: 0,
+        layer: layer.copyWith(
+          rangeMode: LayerRangeMode.frameRange,
+          rangeStart: 1,
+          rangeEnd: 12,
+          materialId: asset!.id,
+          sourceTrimStart: 0,
+          sourceTrimEnd: 11,
+        ),
+      );
+
+      final routerContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext).go('/timeline/$projectId');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+
+      Layer videoLayerOf(ProjectService s) => s
+          .layersOf(projectId, sceneId, 0)
+          .firstWhere((l) => l.type == LayerType.timelineVideo);
+      final layerBeforeMove = videoLayerOf(ps);
+      final rangeStartBeforeMove = layerBeforeMove.rangeStart;
+      final rangeEndBeforeMove = layerBeforeMove.rangeEnd;
+
+      // クリップ本体（長押しドラッグで移動するGestureDetector。
+      // onLongPressStartを持つのはタイムライン画面内でこれだけ）を
+      // 取得する。トリムハンドル（onHorizontalDragUpdate）もこの
+      // GestureDetectorのchild Stack内の兄弟要素として存在するため、
+      // 後段でdescendantとして絞り込める。
+      final clipMoveFinder = find.byWidgetPredicate(
+        (w) => w is GestureDetector && w.onLongPressStart != null,
+      );
+      expect(clipMoveFinder, findsOneWidget, reason: '追加した動画クリップが見つからない');
+
+      // ① 長押しドラッグで移動：kLongPressTimeout（500ms）以上ホールド
+      // してから水平方向へ動かす。_beginClipDrag/_updateClipDrag/
+      // _endClipDragという、キャンバスのペンストローク等と同じ
+      // 生のジェスチャーコールバック実装。
+      final clipCenter = tester.getCenter(clipMoveFinder);
+      final moveGesture = await tester.startGesture(clipCenter);
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+      await moveGesture.moveBy(const Offset(80, 0));
+      await tester.pump(const Duration(milliseconds: 50));
+      await moveGesture.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: '動画クリップの長押しドラッグ移動で例外');
+
+      final layerAfterMove = videoLayerOf(ps);
+      expect(
+        layerAfterMove.rangeStart,
+        isNot(rangeStartBeforeMove),
+        reason: '長押しドラッグ移動でrangeStartが変わるはず',
+      );
+
+      // ② トリムハンドル（右端）を横方向へドラッグして長さを変える。
+      // クリップが移動した分、GestureDetectorは再構築されているため
+      // 改めて取得し直す。
+      final clipMoveFinderAfterMove = find.byWidgetPredicate(
+        (w) => w is GestureDetector && w.onLongPressStart != null,
+      );
+      expect(clipMoveFinderAfterMove, findsOneWidget);
+      final resizeHandleFinders = find.descendant(
+        of: clipMoveFinderAfterMove,
+        matching: find.byWidgetPredicate(
+          (w) => w is GestureDetector && w.onHorizontalDragUpdate != null,
+        ),
+      );
+      expect(resizeHandleFinders, findsNWidgets(2), reason: '左右2つのトリムハンドルが見つからない');
+
+      final rightHandleCenter = tester.getCenter(resizeHandleFinders.last);
+      final resizeGesture = await tester.startGesture(rightHandleCenter);
+      await tester.pump(const Duration(milliseconds: 50));
+      await resizeGesture.moveBy(const Offset(40, 0));
+      await tester.pump(const Duration(milliseconds: 50));
+      await resizeGesture.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: '動画クリップのトリムハンドルドラッグで例外');
+
+      final layerAfterResize = videoLayerOf(ps);
+      expect(
+        layerAfterResize.rangeStart,
+        layerAfterMove.rangeStart,
+        reason: '右端のトリムハンドルはrangeStartを変えないはず',
+      );
+      expect(
+        layerAfterResize.rangeEnd,
+        isNot(rangeEndBeforeMove),
+        reason: '右端のトリムハンドルドラッグでrangeEndが変わるはず',
+      );
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
