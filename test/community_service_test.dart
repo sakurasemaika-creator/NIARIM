@@ -311,4 +311,42 @@ void main() {
       expect(first, second);
     });
   });
+
+  // Task#134継続：フォロー通知（「フォローされたら通知が来るように
+  // してほしい」という要望を受けた実装）。
+  group('フォロー通知', () {
+    test('followNotificationsは自分のフォロワー（ダミー）と件数が一致する', () {
+      final service = CommunityService();
+      expect(service.followNotifications.length, service.followerCountOf(kDummySelfAuthorId));
+    });
+
+    test('followNotificationsの通知元は自分のフォロワー一覧と一致する', () {
+      final service = CommunityService();
+      final notifiedIds = service.followNotifications.map((n) => n.followerId).toSet();
+      expect(notifiedIds, service.followerIdsOf(kDummySelfAuthorId).toSet());
+    });
+
+    test('初期状態では未読数が通知件数と一致し、markAllFollowNotificationsReadで0になる', () {
+      final service = CommunityService();
+      final total = service.followNotifications.length;
+      expect(total, greaterThan(0), reason: 'ダミーデータ上、少なくとも1件はフォロワーがいる想定');
+      expect(service.unreadFollowNotificationCount, total);
+
+      service.markAllFollowNotificationsRead();
+      expect(service.unreadFollowNotificationCount, 0);
+      expect(service.followNotifications.every((n) => n.isRead), isTrue);
+    });
+
+    test('followNotificationsは新着順（followedAt降順）で返す', () {
+      final service = CommunityService();
+      final list = service.followNotifications;
+      for (var i = 0; i < list.length - 1; i++) {
+        expect(
+          list[i].followedAt.isAfter(list[i + 1].followedAt) ||
+              list[i].followedAt.isAtSameMomentAs(list[i + 1].followedAt),
+          isTrue,
+        );
+      }
+    });
+  });
 }

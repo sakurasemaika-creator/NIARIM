@@ -2443,6 +2443,17 @@
   },
   "communityFollowingListTitle": "Following",
   "communityFollowingListEmpty": "Not following anyone yet",
+  "communityFollowNotificationsTooltip": "Notifications",
+  "communityFollowNotificationsTitle": "Follow notifications",
+  "communityFollowNotificationsEmpty": "No notifications",
+  "communityFollowNotificationBody": "{name} followed you",
+  "@communityFollowNotificationBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "communityNoWorksMessage": "No works",
   "communityFavoriteAuthorFollow": "Follow",
   "communityFavoriteAuthorFollowing": "Following",

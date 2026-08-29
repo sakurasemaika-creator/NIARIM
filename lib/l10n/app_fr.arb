@@ -2443,6 +2443,17 @@
   },
   "communityFollowingListTitle": "Abonnements",
   "communityFollowingListEmpty": "Ne suit personne pour le moment",
+  "communityFollowNotificationsTooltip": "Notifications",
+  "communityFollowNotificationsTitle": "Notifications d'abonnement",
+  "communityFollowNotificationsEmpty": "Aucune notification",
+  "communityFollowNotificationBody": "{name} vous suit désormais",
+  "@communityFollowNotificationBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "communityNoWorksMessage": "Aucune œuvre",
   "communityFavoriteAuthorFollow": "Suivre",
   "communityFavoriteAuthorFollowing": "Abonné(e)",

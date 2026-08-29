@@ -2443,6 +2443,17 @@
   },
   "communityFollowingListTitle": "팔로잉",
   "communityFollowingListEmpty": "팔로우한 사람이 없습니다",
+  "communityFollowNotificationsTooltip": "알림",
+  "communityFollowNotificationsTitle": "팔로우 알림",
+  "communityFollowNotificationsEmpty": "알림이 없습니다",
+  "communityFollowNotificationBody": "{name}님이 회원님을 팔로우했습니다",
+  "@communityFollowNotificationBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "communityNoWorksMessage": "작품이 없습니다",
   "communityFavoriteAuthorFollow": "팔로우",
   "communityFavoriteAuthorFollowing": "팔로잉",

@@ -2443,6 +2443,17 @@
   },
   "communityFollowingListTitle": "追蹤中",
   "communityFollowingListEmpty": "尚未追蹤任何人",
+  "communityFollowNotificationsTooltip": "通知",
+  "communityFollowNotificationsTitle": "追蹤通知",
+  "communityFollowNotificationsEmpty": "尚無通知",
+  "communityFollowNotificationBody": "{name}追蹤了你",
+  "@communityFollowNotificationBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "communityNoWorksMessage": "尚無作品",
   "communityFavoriteAuthorFollow": "追蹤",
   "communityFavoriteAuthorFollowing": "追蹤中",

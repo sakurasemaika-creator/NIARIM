@@ -2693,6 +2693,17 @@
   },
   "communityFollowingListTitle": "フォロー中",
   "communityFollowingListEmpty": "誰もフォローしていません",
+  "communityFollowNotificationsTooltip": "通知",
+  "communityFollowNotificationsTitle": "フォロー通知",
+  "communityFollowNotificationsEmpty": "通知はありません",
+  "communityFollowNotificationBody": "{name}さんにフォローされました",
+  "@communityFollowNotificationBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "communityNoWorksMessage": "作品がありません",
   "communityFavoriteAuthorFollow": "フォロー",
   "communityFavoriteAuthorFollowing": "フォロー中",

@@ -1849,6 +1849,52 @@ void main() {
   );
 
   testWidgets(
+    'コミュニティ画面：フォロー通知ベルのバッジと通知一覧画面が動作する'
+    '（Task#134継続）',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      expect(communityButtonFinder, findsOneWidget);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+
+      final communityService =
+          tester.element(find.byType(Scaffold).first).read<CommunityService>();
+      final initialUnread = communityService.unreadFollowNotificationCount;
+      expect(initialUnread, greaterThan(0), reason: 'ダミーデータ上、未読通知が最初からある想定');
+
+      // 通知ベルのバッジに未読数が表示されているはず。
+      expect(find.text('$initialUnread'), findsOneWidget);
+
+      final bellFinder = find.byIcon(Icons.notifications_outlined);
+      expect(bellFinder, findsOneWidget);
+      await tester.tap(bellFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'フォロー通知一覧画面への遷移で例外');
+
+      // 画面を開いた時点で全て既読になり、リストにも通知本文が表示される。
+      expect(communityService.unreadFollowNotificationCount, 0);
+      expect(find.textContaining('さんにフォローされました'), findsWidgets);
+
+      Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '通知一覧画面から戻る操作で例外');
+      // 戻った後はバッジが消えているはず（既読になったため）。
+      expect(find.text('$initialUnread'), findsNothing);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
     '投稿者別作品一覧画面：フォロー中/フォロワー一覧の公開設定トグルと'
     '一覧表示ダイアログが動作する（Task#134継続）',
     (WidgetTester tester) async {

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import '../models/community_follow_notification.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';
 
@@ -69,6 +70,14 @@ class CommunityService extends ChangeNotifier {
   // 既定は非公開、他のダミー作者は公開/非公開どちらの見た目も確認できる
   // よう交互に割り当てている。
   final Map<String, bool> _followersPublicByAuthor = _buildDummyPublicVisibility();
+  // フォロー通知（Task#134継続：「フォローされたら通知が来るようにして
+  // ほしい」という要望を受けた実装）。バックエンド未実装かつ実際の
+  // マルチユーザー環境が無いため、新しいフォローをリアルタイムに検知
+  // することはできない（他のダミー作者は自律的に行動しない）。ここでは
+  // 「自分（kDummySelfAuthorId）を既にフォローしているダミー作者」を
+  // 過去に届いた通知として初期化時に生成し、アプリ内通知一覧
+  // （21.3節で推奨された方式）として表示する。詳細は22.6節参照。
+  late final List<CommunityFollowNotification> _followNotifications = _buildFollowNotifications();
 
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
@@ -241,6 +250,41 @@ class CommunityService extends ChangeNotifier {
   void setSelfFollowersPublic(bool value) {
     _followersPublicByAuthor[kDummySelfAuthorId] = value;
     notifyListeners();
+  }
+
+  // ─── フォロー通知（Task#134継続） ────────────────────────────────
+
+  /// 自分（kDummySelfAuthorId）宛てのフォロー通知一覧（新着順）。
+  List<CommunityFollowNotification> get followNotifications {
+    final list = [..._followNotifications]..sort((a, b) => b.followedAt.compareTo(a.followedAt));
+    return List.unmodifiable(list);
+  }
+
+  /// 未読のフォロー通知数（コミュニティ画面の通知ベルのバッジに使う）。
+  int get unreadFollowNotificationCount => _followNotifications.where((n) => !n.isRead).length;
+
+  /// フォロー通知を全て既読にする（通知一覧画面を開いたタイミングで
+  /// 呼ぶ想定）。
+  void markAllFollowNotificationsRead() {
+    if (_followNotifications.every((n) => n.isRead)) return;
+    for (var i = 0; i < _followNotifications.length; i++) {
+      _followNotifications[i] = _followNotifications[i].copyWith(isRead: true);
+    }
+    notifyListeners();
+  }
+
+  List<CommunityFollowNotification> _buildFollowNotifications() {
+    final random = Random(31);
+    final followerIds = (_dummyFollowersByAuthor[kDummySelfAuthorId] ?? const <String>{}).toList()..sort();
+    return [
+      for (final id in followerIds)
+        CommunityFollowNotification(
+          id: 'follow_$id',
+          followerId: id,
+          followerName: authorNameOf(id) ?? id,
+          followedAt: DateTime.now().subtract(Duration(hours: random.nextInt(240))),
+        ),
+    ];
   }
 
   /// フォロー中の作者タブに表示する一覧（新着順）。フォロー中の作者本人が

@@ -7,6 +7,7 @@ import '../../services/community_service.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
+import 'community_follow_notifications_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 
@@ -237,6 +238,19 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
               }),
             ),
           ] else ...[
+            // フォロー通知（Task#134継続）。バッジは未読数、タップで
+            // 一覧画面（開いた時点で既読になる）を開く。
+            IconButton(
+              icon: Badge(
+                label: Text('${communityService.unreadFollowNotificationCount}'),
+                isLabelVisible: communityService.unreadFollowNotificationCount > 0,
+                child: const Icon(Icons.notifications_outlined),
+              ),
+              tooltip: l10n.communityFollowNotificationsTooltip,
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => const CommunityFollowNotificationsScreen(),
+              )),
+            ),
             IconButton(
               icon: const Icon(Icons.view_carousel_outlined),
               tooltip: l10n.communityShortsModeTooltip,
