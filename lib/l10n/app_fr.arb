@@ -2429,10 +2429,20 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "Rendre la liste d'abonnés publique",
-  "communityFollowersPublicToggleDesc": "Si activé, les autres utilisateurs pourront voir votre liste d'abonnés depuis cette page. Privée par défaut.",
+  "communityFollowersPublicToggleTitle": "Rendre les listes d'abonnements/abonnés publiques",
+  "communityFollowersPublicToggleDesc": "Si activé, les autres utilisateurs pourront voir vos listes d'abonnements et d'abonnés depuis cette page. Privées par défaut.",
   "communityFollowersListTitle": "Abonnés",
   "communityFollowersListEmpty": "Aucun abonné pour le moment",
+  "communityAuthorFollowingCount": "{count} abonnements",
+  "@communityAuthorFollowingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityFollowingListTitle": "Abonnements",
+  "communityFollowingListEmpty": "Ne suit personne pour le moment",
   "communityNoWorksMessage": "Aucune œuvre",
   "communityFavoriteAuthorFollow": "Suivre",
   "communityFavoriteAuthorFollowing": "Abonné(e)",

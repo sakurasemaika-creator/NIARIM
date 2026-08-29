@@ -166,6 +166,27 @@ void main() {
       service.setSelfFollowersPublic(false);
       expect(service.selfFollowersPublic, isFalse);
     });
+
+    test('followingIdsOfは自分の場合favoriteAuthorIdsと一致し、フォローすると増える', () {
+      final service = CommunityService();
+      expect(service.followingIdsOf(kDummySelfAuthorId), isEmpty);
+
+      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      service.toggleFavoriteAuthor(authorId);
+      expect(service.followingIdsOf(kDummySelfAuthorId), [authorId]);
+      expect(service.followingCountOf(kDummySelfAuthorId), 1);
+      expect(service.followingNamesOf(kDummySelfAuthorId), [service.authorNameOf(authorId)]);
+    });
+
+    test('followingIdsOfはfollowerIdsOfの逆引きとして整合する（他のダミー作者同士）', () {
+      final service = CommunityService();
+      for (final authorId in service.works.map((w) => w.authorId).toSet()) {
+        for (final followingId in service.followingIdsOf(authorId)) {
+          expect(service.followerIdsOf(followingId), contains(authorId),
+              reason: '$authorIdが$followingIdをフォロー中なら、$followingIdのフォロワーに$authorIdが含まれるはず');
+        }
+      }
+    });
   });
 
   // Task#145：リポスト機能・ブックマークの公開設定・ユーザー別ブックマーク一覧。

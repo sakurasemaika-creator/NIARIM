@@ -1849,8 +1849,8 @@ void main() {
   );
 
   testWidgets(
-    '投稿者別作品一覧画面：フォロワー一覧の公開設定トグルと一覧表示ダイアログが動作する'
-    '（Task#134継続）',
+    '投稿者別作品一覧画面：フォロー中/フォロワー一覧の公開設定トグルと'
+    '一覧表示ダイアログが動作する（Task#134継続）',
     (WidgetTester tester) async {
       setPhoneViewSize(tester);
       final providers = await tester.runAsync(buildAppProviders);
@@ -1881,17 +1881,19 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: '自分の投稿者別作品一覧画面への遷移で例外');
 
-      // 本人ページでは、非公開のうちはフォロワー数がタップできない
-      // （下線が付かない＝InkWellのonTapがnull）。
+      // 本人ページでは、非公開のうちはフォロー中/フォロワー数がタップ
+      // できない（下線が付かない＝InkWellのonTapがnull）。
       final followerTapFinder = find.byKey(const Key('communityAuthorFollowerCountTap'));
+      final followingTapFinder = find.byKey(const Key('communityAuthorFollowingCountTap'));
       expect(followerTapFinder, findsOneWidget);
+      expect(followingTapFinder, findsOneWidget);
 
       // 公開設定トグルをオンにする。
       final toggleSwitchFinder = find.byType(Switch);
-      expect(toggleSwitchFinder, findsOneWidget, reason: 'フォロワー一覧公開トグルが見つからない');
+      expect(toggleSwitchFinder, findsOneWidget, reason: 'フォロー中/フォロワー一覧公開トグルが見つからない');
       await tester.tap(toggleSwitchFinder);
       await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォロワー一覧公開トグル操作で例外');
+      expect(tester.takeException(), isNull, reason: 'フォロー中/フォロワー一覧公開トグル操作で例外');
       expect(communityService.selfFollowersPublic, isTrue);
 
       // フォロワー数をタップすると一覧ダイアログが開く。
@@ -1904,6 +1906,17 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, '閉じる'));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログを閉じる操作で例外');
+      expect(find.byType(AlertDialog), findsNothing);
+
+      // フォロー中の数をタップすると一覧ダイアログが開く。
+      await tester.tap(followingTapFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログ表示で例外');
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログを閉じる操作で例外');
       expect(find.byType(AlertDialog), findsNothing);
     },
     timeout: const Timeout(Duration(seconds: 60)),

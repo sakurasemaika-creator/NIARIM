@@ -2429,10 +2429,20 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "Make follower list public",
-  "communityFollowersPublicToggleDesc": "When on, other users can see your follower list from this page. Private by default.",
+  "communityFollowersPublicToggleTitle": "Make following/follower lists public",
+  "communityFollowersPublicToggleDesc": "When on, other users can see your following and follower lists from this page. Private by default.",
   "communityFollowersListTitle": "Followers",
   "communityFollowersListEmpty": "No followers yet",
+  "communityAuthorFollowingCount": "{count} following",
+  "@communityAuthorFollowingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityFollowingListTitle": "Following",
+  "communityFollowingListEmpty": "Not following anyone yet",
   "communityNoWorksMessage": "No works",
   "communityFavoriteAuthorFollow": "Follow",
   "communityFavoriteAuthorFollowing": "Following",

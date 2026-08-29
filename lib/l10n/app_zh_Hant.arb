@@ -2429,10 +2429,20 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "公開粉絲清單",
-  "communityFollowersPublicToggleDesc": "開啟後，其他使用者可以在此頁面看到你的粉絲清單。預設不公開。",
+  "communityFollowersPublicToggleTitle": "公開追蹤中/粉絲清單",
+  "communityFollowersPublicToggleDesc": "開啟後，其他使用者可以在此頁面看到你的追蹤中清單和粉絲清單。預設不公開。",
   "communityFollowersListTitle": "粉絲",
   "communityFollowersListEmpty": "尚無粉絲",
+  "communityAuthorFollowingCount": "追蹤中{count}人",
+  "@communityAuthorFollowingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityFollowingListTitle": "追蹤中",
+  "communityFollowingListEmpty": "尚未追蹤任何人",
   "communityNoWorksMessage": "尚無作品",
   "communityFavoriteAuthorFollow": "追蹤",
   "communityFavoriteAuthorFollowing": "追蹤中",

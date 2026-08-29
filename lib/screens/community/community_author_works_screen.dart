@@ -69,20 +69,19 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     );
   }
 
-  /// フォロワー一覧を表示するダイアログ（Task#134継続：22.5節の本人選択制
-  /// 公開）。呼び出し元で[canView]がtrueのときだけ呼ぶこと。
-  void _showFollowerListDialog(List<String> names) {
-    final l10n = AppLocalizations.of(context)!;
+  /// フォロー中/フォロワー一覧を表示するダイアログ（Task#134継続：22.5節の
+  /// 本人選択制公開）。呼び出し元で公開可否を確認してから呼ぶこと。
+  void _showNameListDialog(String title, String emptyMessage, List<String> names) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.communityFollowersListTitle),
+        title: Text(title),
         content: SizedBox(
           width: double.maxFinite,
           child: names.isEmpty
               ? Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text(l10n.communityFollowersListEmpty,
+                  child: Text(emptyMessage,
                       style: TextStyle(color: Theme.of(dialogContext).colorScheme.onSurfaceVariant)),
                 )
               : ListView.builder(
@@ -98,7 +97,10 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text(l10n.commonClose)),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(AppLocalizations.of(dialogContext)!.commonClose),
+          ),
         ],
       ),
     );
@@ -113,8 +115,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
     final works = communityService.worksByAuthor(widget.authorId, includeHidden: isSelf);
     final followerCount = communityService.followerCountOf(widget.authorId);
-    // 一覧（誰がフォローしているか）は本人選択制の公開設定に従う。数字
-    // 自体は常に公開だが、一覧を開けるのは本人自身か、本人が公開設定に
+    final followingCount = communityService.followingCountOf(widget.authorId);
+    // 一覧（誰がフォロー中／フォロワーか）は本人選択制の公開設定に従う。
+    // 数字自体は常に公開だが、一覧を開けるのは本人自身か、本人が公開設定に
     // した場合のみ（29_動画投稿・ランキング機能仕様.md 22.5節）。
     final followersPublic = communityService.isFollowersPublic(widget.authorId);
     final canViewFollowerList = isSelf || followersPublic;
@@ -170,21 +173,42 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         Text(widget.authorName,
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                         const SizedBox(height: 4),
-                        Row(
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 2,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Text(l10n.communityAuthorWorksCount(works.length),
                                 style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-                            const SizedBox(width: 8),
-                            // フォロワー一覧（誰がフォローしているか）は本人
-                            // 選択制の公開設定に従う。数字自体は特定個人を
-                            // 識別できずUGCリスクが小さいため常に表示する
-                            // が、一覧を開けるのは本人か、本人が公開設定
-                            // にした場合のみ（29_動画投稿・ランキング機能
+                            // フォロー中／フォロワー一覧（誰が誰をフォローして
+                            // いるか）は本人選択制の公開設定に従う。数字自体は
+                            // 特定個人を識別できずUGCリスクが小さいため常に
+                            // 表示するが、一覧を開けるのは本人か、本人が公開
+                            // 設定にした場合のみ（29_動画投稿・ランキング機能
                             // 仕様.md 22.4節・22.5節）。
+                            InkWell(
+                              key: const Key('communityAuthorFollowingCountTap'),
+                              onTap: canViewFollowerList
+                                  ? () => _showNameListDialog(
+                                      l10n.communityFollowingListTitle,
+                                      l10n.communityFollowingListEmpty,
+                                      communityService.followingNamesOf(widget.authorId))
+                                  : null,
+                              child: Text(
+                                l10n.communityAuthorFollowingCount(followingCount),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                  decoration: canViewFollowerList ? TextDecoration.underline : null,
+                                ),
+                              ),
+                            ),
                             InkWell(
                               key: const Key('communityAuthorFollowerCountTap'),
                               onTap: canViewFollowerList
-                                  ? () => _showFollowerListDialog(
+                                  ? () => _showNameListDialog(
+                                      l10n.communityFollowersListTitle,
+                                      l10n.communityFollowersListEmpty,
                                       communityService.followerNamesOf(widget.authorId))
                                   : null,
                               child: Text(

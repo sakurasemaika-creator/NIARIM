@@ -2429,10 +2429,20 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "公开粉丝列表",
-  "communityFollowersPublicToggleDesc": "开启后，其他用户可以在此页面看到你的粉丝列表。默认不公开。",
+  "communityFollowersPublicToggleTitle": "公开关注/粉丝列表",
+  "communityFollowersPublicToggleDesc": "开启后，其他用户可以在此页面看到你的关注列表和粉丝列表。默认不公开。",
   "communityFollowersListTitle": "粉丝",
   "communityFollowersListEmpty": "暂无粉丝",
+  "communityAuthorFollowingCount": "关注{count}人",
+  "@communityAuthorFollowingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityFollowingListTitle": "关注中",
+  "communityFollowingListEmpty": "暂未关注任何人",
   "communityNoWorksMessage": "暂无作品",
   "communityFavoriteAuthorFollow": "关注",
   "communityFavoriteAuthorFollowing": "已关注",

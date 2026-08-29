@@ -195,6 +195,28 @@ class CommunityService extends ChangeNotifier {
   List<String> followerNamesOf(String authorId) =>
       followerIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
 
+  /// [authorId]が誰をフォロー中かのID一覧。自分（kDummySelfAuthorId）に
+  /// ついては実際にトグル操作した[_favoriteAuthorIds]をそのまま返す。
+  /// 他のダミー作者については、フォロワー関係のダミーデータ
+  /// （[_dummyFollowersByAuthor]、「誰が誰のフォロワーか」）を逆引きする
+  /// ことで、フォロワー一覧と矛盾しない「その作者は誰のフォロワーか」を
+  /// 導出する（新たなダミーデータを別途持つ必要が無い）。
+  List<String> followingIdsOf(String authorId) {
+    if (authorId == kDummySelfAuthorId) return _favoriteAuthorIds.toList();
+    return _dummyFollowersByAuthor.entries
+        .where((e) => e.value.contains(authorId))
+        .map((e) => e.key)
+        .toList();
+  }
+
+  /// [authorId]がフォロー中の相手の名前一覧。
+  List<String> followingNamesOf(String authorId) =>
+      followingIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
+
+  /// [authorId]のフォロー中人数（数字のみ）。フォロワー数と同様、常に
+  /// 公開情報として扱う（29_動画投稿・ランキング機能仕様.md 22.5節）。
+  int followingCountOf(String authorId) => followingIdsOf(authorId).length;
+
   /// 作者IDから表示名を引く（見つからなければnull）。
   String? authorNameOf(String authorId) =>
       _works.where((w) => w.authorId == authorId).map((w) => w.authorName).firstOrNull;
