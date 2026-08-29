@@ -840,6 +840,89 @@ void main() {
   );
 
   testWidgets(
+    '起動→新規プロジェクト作成→キャンバス：定規ツールの移動ハンドル'
+    'ドラッグが独自ジェスチャーとして機能する（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      // ツールバーの「定規」ボタン→定規パネルの「直線定規」で
+      // 定規ツールへ切り替え、アクティブな定規を新規作成する。
+      final rulerToolFinder = find.byTooltip('定規');
+      expect(rulerToolFinder, findsOneWidget);
+      await tester.tap(rulerToolFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '定規パネル表示で例外');
+
+      final lineRulerFinder = find.text('直線定規');
+      expect(lineRulerFinder, findsOneWidget);
+      await tester.tap(lineRulerFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '直線定規の新規作成で例外');
+
+      final canvasFinder = find.byType(CanvasArea);
+      expect(canvasFinder, findsOneWidget);
+
+      // 直線定規の新規作成自体が1件のUndoActionとして登録される
+      // （RulerPanelからの選択・削除はcanvas_screen.dartの
+      // _setActiveRulerWithUndoが担当）。
+      final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+      expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+
+      // 直線定規の「move」ハンドルは定規のposition（既定でキャンバス
+      // 中央）と一致する（_rulerHandlePositions参照）。キャンバス中央は
+      // canvasDrawingRectFor（canvas_area.dartが実際の座標変換にも
+      // 使う計算元）が返す描画矩形の中心と一致するため、そこから
+      // ドラッグする（生のポインターイベント：_handleRulerDown→
+      // _handleRulerMoveという、ペンストローク・自由変形と同じ
+      // Listenerベースの独自ジェスチャー実装）。
+      final project = tester
+          .element(canvasFinder)
+          .read<ProjectService>()
+          .projects
+          .first;
+      final canvasWidgetRect = tester.getRect(canvasFinder);
+      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+      final moveHandleScreenPos = canvasWidgetRect.topLeft + drawingRect.center;
+
+      final rulerGesture = await tester.startGesture(moveHandleScreenPos);
+      await tester.pump(const Duration(milliseconds: 50));
+      await rulerGesture.moveBy(const Offset(30, 30));
+      await tester.pump(const Duration(milliseconds: 50));
+      await rulerGesture.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: '定規の移動ハンドルドラッグで例外');
+
+      // ハンドルドラッグ確定時（_handleRulerUp）にもう1件UndoActionが
+      // 積まれるはず。undo()を2回呼んで「ドラッグ操作の巻き戻し」
+      // 「定規新規作成の巻き戻し」の両方が例外なく完了し、最終的に
+      // Undo履歴が空になることを確認することで、ドラッグが実際に
+      // 1件のUndoActionとして機能したことを検証する
+      // （単なる例外の有無だけでなく、Undo履歴の件数という実際の
+      // 効果を確認する）。
+      expect(undoManager.canUndo, isTrue, reason: 'ハンドルドラッグがUndo履歴に積まれるはず');
+      undoManager.undo();
+      expect(tester.takeException(), isNull, reason: 'ドラッグの巻き戻しで例外');
+      expect(undoManager.canUndo, isTrue, reason: '定規新規作成の分がまだ残っているはず');
+      undoManager.undo();
+      expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
+      expect(undoManager.canUndo, isFalse, reason: 'ドラッグと新規作成の2件のみ積まれていたはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
     '起動→新規プロジェクト作成→タイムライン：カメラキーフレームのドラッグ'
     '移動が独自ジェスチャーとして機能する（Task#128）',
     (WidgetTester tester) async {
