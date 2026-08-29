@@ -18,6 +18,7 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/material_asset.dart' as material_asset;
 import 'package:niarim/services/material_service.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/community_service.dart';
@@ -1819,7 +1820,8 @@ void main() {
 
       final communityService =
           tester.element(find.byType(Scaffold).first).read<CommunityService>();
-      // 自分の作品はリポストできない仕様のため、自分以外の作者の作品を選ぶ。
+      // 自作リポストも許可されているが（Task#134継続）、フォロー中作者
+      // タブとの兼ね合いをテストしやすいよう自分以外の作者の作品を選ぶ。
       final work = communityService.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
       expect(communityService.isRepostedBySelf(work.id), isFalse);
 
@@ -1842,6 +1844,67 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'リポスト取り消しで例外');
       expect(communityService.isRepostedBySelf(work.id), isFalse);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    '投稿者別作品一覧画面：フォロワー一覧の公開設定トグルと一覧表示ダイアログが動作する'
+    '（Task#134継続）',
+    (WidgetTester tester) async {
+      setPhoneViewSize(tester);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+      expect(communityButtonFinder, findsOneWidget);
+      await tester.tap(communityButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+
+      final scaffoldContext = tester.element(find.byType(Scaffold).first);
+      final communityService = scaffoldContext.read<CommunityService>();
+      // 自分自身のフォロワー一覧の公開設定は既定で非公開のはず。
+      expect(communityService.selfFollowersPublic, isFalse);
+
+      Navigator.of(scaffoldContext).push(MaterialPageRoute<void>(
+        builder: (_) => CommunityAuthorWorksScreen(
+          authorId: kDummySelfAuthorId,
+          authorName: communityService.authorNameOf(kDummySelfAuthorId)!,
+        ),
+      ));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '自分の投稿者別作品一覧画面への遷移で例外');
+
+      // 本人ページでは、非公開のうちはフォロワー数がタップできない
+      // （下線が付かない＝InkWellのonTapがnull）。
+      final followerTapFinder = find.byKey(const Key('communityAuthorFollowerCountTap'));
+      expect(followerTapFinder, findsOneWidget);
+
+      // 公開設定トグルをオンにする。
+      final toggleSwitchFinder = find.byType(Switch);
+      expect(toggleSwitchFinder, findsOneWidget, reason: 'フォロワー一覧公開トグルが見つからない');
+      await tester.tap(toggleSwitchFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'フォロワー一覧公開トグル操作で例外');
+      expect(communityService.selfFollowersPublic, isTrue);
+
+      // フォロワー数をタップすると一覧ダイアログが開く。
+      await tester.tap(followerTapFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログ表示で例外');
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      // ダイアログを閉じる。
+      await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログを閉じる操作で例外');
+      expect(find.byType(AlertDialog), findsNothing);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );

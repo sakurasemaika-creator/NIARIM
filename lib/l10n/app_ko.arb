@@ -2429,6 +2429,10 @@
       }
     }
   },
+  "communityFollowersPublicToggleTitle": "팔로워 목록 공개하기",
+  "communityFollowersPublicToggleDesc": "켜면 다른 사용자가 이 페이지에서 회원님의 팔로워 목록을 볼 수 있습니다. 기본값은 비공개입니다.",
+  "communityFollowersListTitle": "팔로워",
+  "communityFollowersListEmpty": "팔로워가 없습니다",
   "communityNoWorksMessage": "작품이 없습니다",
   "communityFavoriteAuthorFollow": "팔로우",
   "communityFavoriteAuthorFollowing": "팔로잉",

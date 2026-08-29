@@ -2429,6 +2429,10 @@
       }
     }
   },
+  "communityFollowersPublicToggleTitle": "公开粉丝列表",
+  "communityFollowersPublicToggleDesc": "开启后，其他用户可以在此页面看到你的粉丝列表。默认不公开。",
+  "communityFollowersListTitle": "粉丝",
+  "communityFollowersListEmpty": "暂无粉丝",
   "communityNoWorksMessage": "暂无作品",
   "communityFavoriteAuthorFollow": "关注",
   "communityFavoriteAuthorFollowing": "已关注",

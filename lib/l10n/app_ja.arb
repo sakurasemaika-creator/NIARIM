@@ -2679,6 +2679,10 @@
       }
     }
   },
+  "communityFollowersPublicToggleTitle": "フォロワー一覧を公開する",
+  "communityFollowersPublicToggleDesc": "オンにすると、他のユーザーがこのページからあなたのフォロワー一覧を見られるようになります。既定は非公開です。",
+  "communityFollowersListTitle": "フォロワー",
+  "communityFollowersListEmpty": "フォロワーがいません",
   "communityNoWorksMessage": "作品がありません",
   "communityFavoriteAuthorFollow": "フォロー",
   "communityFavoriteAuthorFollowing": "フォロー中",

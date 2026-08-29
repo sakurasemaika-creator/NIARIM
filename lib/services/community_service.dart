@@ -52,21 +52,23 @@ class CommunityService extends ChangeNotifier {
   // ランキング機能仕様.md 21.2節）でプライバシー面から既定非公開を推奨
   // したため、自分（kDummySelfAuthorId）は既定false。他のダミー作者は
   // 公開/非公開どちらの見た目も確認できるよう交互に割り当てている。
-  final Map<String, bool> _bookmarksPublicByAuthor = _buildDummyBookmarkVisibility();
+  final Map<String, bool> _bookmarksPublicByAuthor = _buildDummyPublicVisibility();
   // 他のダミー作者（自分以外）が何をブックマークしているかの表示確認用
   // ダミーデータ。実際のマルチユーザーバックエンドが無いため、自分の
   // ブックマーク（_bookmarkedIds、実際にトグル可能）とは別に固定シードの
   // 乱数で生成する。
   late final Map<String, Set<String>> _dummyBookmarksByOtherAuthor =
       _buildDummyBookmarksByAuthor(_works);
-  // フォロワー数（Task#134継続：フォロー中/フォロワーの一覧は非公開の
-  // ままだが、UGCリスクの小さい「数字のみ」の表示は行う設計）。実際の
-  // 他ユーザーの識別情報は一切含まない、単なる集計値の表示確認用ダミー
-  // データ。自分（kDummySelfAuthorId）以外の各authorIdについて、
-  // 「他の誰かがフォローしている人数」を固定シードの乱数で生成しておき、
-  // 表示時はここへ「自分がフォローしていれば+1」を加算する
-  // （followerCountOf参照）。
-  late final Map<String, int> _dummyFollowerBaseCounts = _buildDummyFollowerBaseCounts(_works);
+  // フォロワー一覧（Task#134継続：本人選択制で公開できる妥協案。22.5節）。
+  // 他のダミー作者同士が誰をフォローしているかの表示確認用ダミーデータ
+  // （固定シードの乱数で生成）。表示時はここへ「自分がフォローして
+  // いれば自分自身のID」を加算する（followerIdsOf参照）。
+  late final Map<String, Set<String>> _dummyFollowersByAuthor = _buildDummyFollowersByAuthor(_works);
+  // 各authorIdの「自分のフォロワー一覧を他ユーザーに公開するか」設定。
+  // ブックマーク一覧の公開設定（_bookmarksPublicByAuthor）と同じパターン。
+  // 既定は非公開、他のダミー作者は公開/非公開どちらの見た目も確認できる
+  // よう交互に割り当てている。
+  final Map<String, bool> _followersPublicByAuthor = _buildDummyPublicVisibility();
 
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
@@ -177,13 +179,47 @@ class CommunityService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [authorId]のフォロワーID一覧。ダミーの固定フォロワー（他の作者同士の
+  /// 関係を表示確認用に生成したもの）に加え、自分がこの作者をフォロー中
+  /// なら自分自身のIDも即座に反映する。
+  List<String> followerIdsOf(String authorId) {
+    final dummy = _dummyFollowersByAuthor[authorId] ?? const <String>{};
+    if (authorId != kDummySelfAuthorId && isFavoriteAuthor(authorId)) {
+      return [...dummy, kDummySelfAuthorId];
+    }
+    return dummy.toList();
+  }
+
+  /// [authorId]のフォロワー名一覧（新着順ではなく作者ID順。実際の
+  /// マルチユーザーバックエンドが無いため並び順に意味は無い）。
+  List<String> followerNamesOf(String authorId) =>
+      followerIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
+
+  /// 作者IDから表示名を引く（見つからなければnull）。
+  String? authorNameOf(String authorId) =>
+      _works.where((w) => w.authorId == authorId).map((w) => w.authorName).firstOrNull;
+
   /// [authorId]のフォロワー数（数字のみ）。「誰がフォローしているか」の
-  /// 一覧は29_動画投稿・ランキング機能仕様.md 22.4節のとおり非公開のまま
-  /// 維持するが、集計値の表示だけであれば特定個人を識別できずUGCリスクが
-  /// 小さいため、こちらは公開情報として扱う。自分がこの作者をフォロー中
-  /// なら、ダミーの基準値へ+1して即座に反映する。
-  int followerCountOf(String authorId) =>
-      (_dummyFollowerBaseCounts[authorId] ?? 0) + (isFavoriteAuthor(authorId) ? 1 : 0);
+  /// 一覧は既定で非公開のまま（[isFollowersPublic]がfalseの間は数字のみ
+  /// 表示し、一覧は表示しない設計をUI側で徹底する。29_動画投稿・
+  /// ランキング機能仕様.md 22.4節・22.5節）。集計値の表示だけであれば
+  /// 特定個人を識別できずUGCリスクが小さいため、こちらは常に公開情報
+  /// として扱う。
+  int followerCountOf(String authorId) => followerIdsOf(authorId).length;
+
+  /// [authorId]が自分のフォロワー一覧を他ユーザーに公開しているか。
+  /// 既定は非公開（Task#134継続：本人選択制で一覧を公開できる妥協案。
+  /// 22.5節参照）。
+  bool isFollowersPublic(String authorId) => _followersPublicByAuthor[authorId] ?? false;
+
+  /// 自分のフォロワー一覧の公開設定（ユーザー設定）。
+  bool get selfFollowersPublic => isFollowersPublic(kDummySelfAuthorId);
+
+  /// 自分のフォロワー一覧を公開するかどうかを変更する。
+  void setSelfFollowersPublic(bool value) {
+    _followersPublicByAuthor[kDummySelfAuthorId] = value;
+    notifyListeners();
+  }
 
   /// フォロー中の作者タブに表示する一覧（新着順）。フォロー中の作者本人が
   /// 投稿した作品に加え、フォロー中の作者が他者の作品をリポストした場合も
@@ -313,20 +349,34 @@ class CommunityService extends ChangeNotifier {
     return list;
   }
 
-  static Map<String, int> _buildDummyFollowerBaseCounts(List<CommunityWork> works) {
+  /// 他のダミー作者同士の「誰が誰をフォローしているか」の表示確認用
+  /// ダミーデータ。実際のマルチユーザーバックエンドが無いため、ダミー
+  /// 作者6人（author_01〜06、自分含む）の中で固定シードの乱数により
+  /// 互いのフォロー関係を割り当てる。自分（kDummySelfAuthorId）は
+  /// 実際にフォローボタンで操作した分だけがfollowerIdsOfで加算される
+  /// ため、ここでは自分を他作者のフォロワーとしては登録しない。
+  static Map<String, Set<String>> _buildDummyFollowersByAuthor(List<CommunityWork> works) {
     final random = Random(21);
     final authorIds = works.map((w) => w.authorId).toSet().toList()..sort();
-    final result = <String, int>{};
-    for (final id in authorIds) {
-      result[id] = random.nextInt(500);
+    final result = <String, Set<String>>{for (final id in authorIds) id: {}};
+    for (final followerId in authorIds) {
+      if (followerId == kDummySelfAuthorId) continue;
+      for (final targetId in authorIds) {
+        if (targetId == followerId) continue;
+        if (random.nextDouble() < 0.4) {
+          result[targetId]!.add(followerId);
+        }
+      }
     }
     return result;
   }
 
-  static Map<String, bool> _buildDummyBookmarkVisibility() {
+  /// 「自分の関係性データ（ブックマーク一覧・フォロワー一覧）を他ユーザーに
+  /// 公開するか」の設定用ダミーデータ。両機能で同じ交互パターンを流用する
+  /// （author_02, 04, 06を公開、author_03, 05を非公開にして、一覧側で
+  /// 公開・非公開どちらの見た目も確認できるようにする）。
+  static Map<String, bool> _buildDummyPublicVisibility() {
     final map = <String, bool>{kDummySelfAuthorId: false};
-    // author_02, 04, 06を公開、author_03, 05を非公開にして、一覧側で
-    // 公開・非公開どちらの見た目も確認できるようにする。
     const others = ['author_02', 'author_03', 'author_04', 'author_05', 'author_06'];
     for (var i = 0; i < others.length; i++) {
       map[others[i]] = i.isEven;

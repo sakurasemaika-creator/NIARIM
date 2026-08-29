@@ -2429,6 +2429,10 @@
       }
     }
   },
+  "communityFollowersPublicToggleTitle": "Hacer pública la lista de seguidores",
+  "communityFollowersPublicToggleDesc": "Si está activado, otros usuarios podrán ver su lista de seguidores desde esta página. Es privada de forma predeterminada.",
+  "communityFollowersListTitle": "Seguidores",
+  "communityFollowersListEmpty": "Todavía no hay seguidores",
   "communityNoWorksMessage": "No hay obras",
   "communityFavoriteAuthorFollow": "Seguir",
   "communityFavoriteAuthorFollowing": "Siguiendo",

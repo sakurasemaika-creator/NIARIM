@@ -69,6 +69,41 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     );
   }
 
+  /// フォロワー一覧を表示するダイアログ（Task#134継続：22.5節の本人選択制
+  /// 公開）。呼び出し元で[canView]がtrueのときだけ呼ぶこと。
+  void _showFollowerListDialog(List<String> names) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.communityFollowersListTitle),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: names.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.communityFollowersListEmpty,
+                      style: TextStyle(color: Theme.of(dialogContext).colorScheme.onSurfaceVariant)),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: names.length,
+                  itemBuilder: (_, i) => ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
+                      child: Text(names[i].substring(0, 1)),
+                    ),
+                    title: Text(names[i]),
+                  ),
+                ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text(l10n.commonClose)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -78,6 +113,11 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
     final works = communityService.worksByAuthor(widget.authorId, includeHidden: isSelf);
     final followerCount = communityService.followerCountOf(widget.authorId);
+    // 一覧（誰がフォローしているか）は本人選択制の公開設定に従う。数字
+    // 自体は常に公開だが、一覧を開けるのは本人自身か、本人が公開設定に
+    // した場合のみ（29_動画投稿・ランキング機能仕様.md 22.5節）。
+    final followersPublic = communityService.isFollowersPublic(widget.authorId);
+    final canViewFollowerList = isSelf || followersPublic;
     final bookmarkedIds = communityService.bookmarkedIds;
     final bookmarksPublic = communityService.isBookmarksPublic(widget.authorId);
     final bookmarkedWorks = (isSelf || bookmarksPublic)
@@ -130,14 +170,33 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         Text(widget.authorName,
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                         const SizedBox(height: 4),
-                        Text(
-                          // フォロワー一覧（誰がフォローしているか）は非公開の
-                          // ままだが、数字のみの表示は特定個人を識別できず
-                          // UGCリスクが小さいため、作品数と並べて表示する
-                          // （29_動画投稿・ランキング機能仕様.md 22.4節）。
-                          '${l10n.communityAuthorWorksCount(works.length)}　'
-                          '${l10n.communityAuthorFollowerCount(followerCount)}',
-                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                        Row(
+                          children: [
+                            Text(l10n.communityAuthorWorksCount(works.length),
+                                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                            const SizedBox(width: 8),
+                            // フォロワー一覧（誰がフォローしているか）は本人
+                            // 選択制の公開設定に従う。数字自体は特定個人を
+                            // 識別できずUGCリスクが小さいため常に表示する
+                            // が、一覧を開けるのは本人か、本人が公開設定
+                            // にした場合のみ（29_動画投稿・ランキング機能
+                            // 仕様.md 22.4節・22.5節）。
+                            InkWell(
+                              key: const Key('communityAuthorFollowerCountTap'),
+                              onTap: canViewFollowerList
+                                  ? () => _showFollowerListDialog(
+                                      communityService.followerNamesOf(widget.authorId))
+                                  : null,
+                              child: Text(
+                                l10n.communityAuthorFollowerCount(followerCount),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                  decoration: canViewFollowerList ? TextDecoration.underline : null,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -158,6 +217,18 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 ],
               ),
             ),
+            // 自分自身のフォロワー一覧を公開するかどうかの設定
+            // （Task#134継続：本人選択制の公開。22.5節）。
+            if (isSelf)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: _PublicVisibilityToggle(
+                  value: communityService.selfFollowersPublic,
+                  onChanged: communityService.setSelfFollowersPublic,
+                  title: l10n.communityFollowersPublicToggleTitle,
+                  description: l10n.communityFollowersPublicToggleDesc,
+                ),
+              ),
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -187,9 +258,11 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         if (isSelf)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                            child: _BookmarksPublicToggle(
+                            child: _PublicVisibilityToggle(
                               value: communityService.selfBookmarksPublic,
                               onChanged: communityService.setSelfBookmarksPublic,
+                              title: l10n.communityBookmarksPublicToggleTitle,
+                              description: l10n.communityBookmarksPublicToggleDesc,
                             ),
                           ),
                         if (!isSelf && !bookmarksPublic)
@@ -239,15 +312,25 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
 /// 自分のブックマーク一覧タブに表示する公開設定スイッチ（ユーザー設定）。
 /// Task#145の調査で推奨した「既定非公開」を、オンにすることで他ユーザーが
 /// この画面から閲覧できるようになる。
-class _BookmarksPublicToggle extends StatelessWidget {
+/// ブックマーク一覧・フォロワー一覧など、「自分の関係性データを他ユーザーに
+/// 公開するか」の設定で共通して使う汎用トグル（Task#134継続：フォロワー
+/// 一覧の本人選択制公開に合わせて、ブックマーク専用だったウィジェットを
+/// 汎用化した）。
+class _PublicVisibilityToggle extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
+  final String title;
+  final String description;
 
-  const _BookmarksPublicToggle({required this.value, required this.onChanged});
+  const _PublicVisibilityToggle({
+    required this.value,
+    required this.onChanged,
+    required this.title,
+    required this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return Material(
       color: scheme.surfaceContainerLow,
@@ -267,11 +350,10 @@ class _BookmarksPublicToggle extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.communityBookmarksPublicToggleTitle,
+                    Text(title,
                         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                     const SizedBox(height: 2),
-                    Text(l10n.communityBookmarksPublicToggleDesc,
-                        style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                    Text(description, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                   ],
                 ),
               ),

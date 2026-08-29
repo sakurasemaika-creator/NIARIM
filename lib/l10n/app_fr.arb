@@ -2429,6 +2429,10 @@
       }
     }
   },
+  "communityFollowersPublicToggleTitle": "Rendre la liste d'abonnés publique",
+  "communityFollowersPublicToggleDesc": "Si activé, les autres utilisateurs pourront voir votre liste d'abonnés depuis cette page. Privée par défaut.",
+  "communityFollowersListTitle": "Abonnés",
+  "communityFollowersListEmpty": "Aucun abonné pour le moment",
   "communityNoWorksMessage": "Aucune œuvre",
   "communityFavoriteAuthorFollow": "Suivre",
   "communityFavoriteAuthorFollowing": "Abonné(e)",
