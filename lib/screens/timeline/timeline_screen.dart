@@ -6360,6 +6360,9 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
           width: _handleSize,
           height: _handleSize,
           child: GestureDetector(
+            // 自律テスト（Task#128）がハンドルを一意に特定できるようキーを
+            // 付与。
+            key: ValueKey('canvasSizeCorner_${corner.name}'),
             behavior: HitTestBehavior.opaque,
             onPanUpdate: (d) => _dragCorner(corner, d.delta / scale),
             child: Container(
@@ -6501,6 +6504,9 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
             ),
             Text(
               '$newW × $newH px',
+              // 自律テスト（Task#128）がドラッグ後のサイズ変化を読み取れる
+              // ようキーを付与。
+              key: const ValueKey('canvasSizeDimensionsText'),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],

@@ -715,6 +715,55 @@ void main() {
   );
 
   testWidgets(
+    '起動→新規プロジェクト作成→キャンバス：バケツ塗りが独自ジェスチャーとして'
+    '機能する（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      // バケツツールへ切り替える（バケツ塗りはonPointerDown/Up内の
+      // _handleBucketDown/_handleBucketUpという独自実装で、
+      // _flattenVisibleLayers()等の非同期処理を挟むため、down直後に
+      // すぐupを送るtester.tap()ではなく、間にpumpを挟んで非同期処理が
+      // 進む猶予を与える必要がある）。
+      // Icons.format_color_fillは他のUI（カラーピッカー等）にも使われて
+      // 複数ヒットするため、ツールバーのバケツボタンにだけ設定されている
+      // ツールチップ文言で一意に特定する。
+      final bucketToolFinder = find.byTooltip('バケツ（長押しでベタ/トーン切替）');
+      expect(bucketToolFinder, findsOneWidget);
+      await tester.tap(bucketToolFinder);
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final canvasFinder = find.byType(CanvasArea);
+      expect(canvasFinder, findsOneWidget);
+      final undoManagerBefore = tester.element(canvasFinder).read<engine.UndoManager>();
+      expect(undoManagerBefore.canUndo, isFalse, reason: '塗る前はUndoできる操作が無いはず');
+
+      final bucketGesture = await tester.startGesture(tester.getCenter(canvasFinder));
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 100));
+      await bucketGesture.up();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: 'バケツ塗りで例外');
+
+      final undoManagerAfter = tester.element(canvasFinder).read<engine.UndoManager>();
+      expect(undoManagerAfter.canUndo, isTrue, reason: '新規キャンバス全体への塗りがUndo履歴に積まれるはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
     '起動→新規プロジェクト作成→タイムライン：カメラキーフレームのドラッグ'
     '移動が独自ジェスチャーとして機能する（Task#128）',
     (WidgetTester tester) async {
