@@ -77,6 +77,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final isSelf = widget.authorId == kDummySelfAuthorId;
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
     final works = communityService.worksByAuthor(widget.authorId, includeHidden: isSelf);
+    final followerCount = communityService.followerCountOf(widget.authorId);
     final bookmarkedIds = communityService.bookmarkedIds;
     final bookmarksPublic = communityService.isBookmarksPublic(widget.authorId);
     final bookmarkedWorks = (isSelf || bookmarksPublic)
@@ -129,8 +130,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         Text(widget.authorName,
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
                         const SizedBox(height: 4),
-                        Text(l10n.communityAuthorWorksCount(works.length),
-                            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                        Text(
+                          // フォロワー一覧（誰がフォローしているか）は非公開の
+                          // ままだが、数字のみの表示は特定個人を識別できず
+                          // UGCリスクが小さいため、作品数と並べて表示する
+                          // （29_動画投稿・ランキング機能仕様.md 22.4節）。
+                          '${l10n.communityAuthorWorksCount(works.length)}　'
+                          '${l10n.communityAuthorFollowerCount(followerCount)}',
+                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                        ),
                       ],
                     ),
                   ),

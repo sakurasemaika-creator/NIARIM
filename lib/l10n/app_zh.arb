@@ -2421,6 +2421,14 @@
       }
     }
   },
+  "communityAuthorFollowerCount": "{count}位粉丝",
+  "@communityAuthorFollowerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityNoWorksMessage": "暂无作品",
   "communityFavoriteAuthorFollow": "关注",
   "communityFavoriteAuthorFollowing": "已关注",

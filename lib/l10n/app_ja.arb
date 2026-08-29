@@ -2671,6 +2671,14 @@
       }
     }
   },
+  "communityAuthorFollowerCount": "フォロワー{count}人",
+  "@communityAuthorFollowerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityNoWorksMessage": "作品がありません",
   "communityFavoriteAuthorFollow": "フォロー",
   "communityFavoriteAuthorFollowing": "フォロー中",

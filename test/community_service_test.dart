@@ -130,6 +130,18 @@ void main() {
 
       expect(service.favoriteAuthorWorks.map((w) => w.id), isNot(contains(target.id)));
     });
+
+    test('followerCountOfは自分がフォローすると+1され、解除すると元に戻る', () {
+      final service = CommunityService();
+      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      final before = service.followerCountOf(authorId);
+
+      service.toggleFavoriteAuthor(authorId);
+      expect(service.followerCountOf(authorId), before + 1);
+
+      service.toggleFavoriteAuthor(authorId);
+      expect(service.followerCountOf(authorId), before);
+    });
   });
 
   // Task#145：リポスト機能・ブックマークの公開設定・ユーザー別ブックマーク一覧。

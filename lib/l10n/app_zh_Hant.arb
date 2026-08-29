@@ -2421,6 +2421,14 @@
       }
     }
   },
+  "communityAuthorFollowerCount": "{count}位粉絲",
+  "@communityAuthorFollowerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityNoWorksMessage": "尚無作品",
   "communityFavoriteAuthorFollow": "追蹤",
   "communityFavoriteAuthorFollowing": "追蹤中",

@@ -2421,6 +2421,14 @@
       }
     }
   },
+  "communityAuthorFollowerCount": "팔로워 {count}명",
+  "@communityAuthorFollowerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityNoWorksMessage": "작품이 없습니다",
   "communityFavoriteAuthorFollow": "팔로우",
   "communityFavoriteAuthorFollowing": "팔로잉",

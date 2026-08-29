@@ -2421,6 +2421,14 @@
       }
     }
   },
+  "communityAuthorFollowerCount": "{count} followers",
+  "@communityAuthorFollowerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityNoWorksMessage": "No works",
   "communityFavoriteAuthorFollow": "Follow",
   "communityFavoriteAuthorFollowing": "Following",

@@ -2421,6 +2421,14 @@
       }
     }
   },
+  "communityAuthorFollowerCount": "{count} seguidores",
+  "@communityAuthorFollowerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityNoWorksMessage": "No hay obras",
   "communityFavoriteAuthorFollow": "Seguir",
   "communityFavoriteAuthorFollowing": "Siguiendo",

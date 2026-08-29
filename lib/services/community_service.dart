@@ -59,6 +59,14 @@ class CommunityService extends ChangeNotifier {
   // 乱数で生成する。
   late final Map<String, Set<String>> _dummyBookmarksByOtherAuthor =
       _buildDummyBookmarksByAuthor(_works);
+  // フォロワー数（Task#134継続：フォロー中/フォロワーの一覧は非公開の
+  // ままだが、UGCリスクの小さい「数字のみ」の表示は行う設計）。実際の
+  // 他ユーザーの識別情報は一切含まない、単なる集計値の表示確認用ダミー
+  // データ。自分（kDummySelfAuthorId）以外の各authorIdについて、
+  // 「他の誰かがフォローしている人数」を固定シードの乱数で生成しておき、
+  // 表示時はここへ「自分がフォローしていれば+1」を加算する
+  // （followerCountOf参照）。
+  late final Map<String, int> _dummyFollowerBaseCounts = _buildDummyFollowerBaseCounts(_works);
 
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
@@ -168,6 +176,14 @@ class CommunityService extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// [authorId]のフォロワー数（数字のみ）。「誰がフォローしているか」の
+  /// 一覧は29_動画投稿・ランキング機能仕様.md 22.4節のとおり非公開のまま
+  /// 維持するが、集計値の表示だけであれば特定個人を識別できずUGCリスクが
+  /// 小さいため、こちらは公開情報として扱う。自分がこの作者をフォロー中
+  /// なら、ダミーの基準値へ+1して即座に反映する。
+  int followerCountOf(String authorId) =>
+      (_dummyFollowerBaseCounts[authorId] ?? 0) + (isFavoriteAuthor(authorId) ? 1 : 0);
 
   /// フォロー中の作者タブに表示する一覧（新着順）。フォロー中の作者本人が
   /// 投稿した作品に加え、フォロー中の作者が他者の作品をリポストした場合も
@@ -295,6 +311,16 @@ class CommunityService extends ChangeNotifier {
     final list = source.where((w) => ids.contains(w.id)).toList();
     list.sort((a, b) => b.postedAt.compareTo(a.postedAt));
     return list;
+  }
+
+  static Map<String, int> _buildDummyFollowerBaseCounts(List<CommunityWork> works) {
+    final random = Random(21);
+    final authorIds = works.map((w) => w.authorId).toSet().toList()..sort();
+    final result = <String, int>{};
+    for (final id in authorIds) {
+      result[id] = random.nextInt(500);
+    }
+    return result;
   }
 
   static Map<String, bool> _buildDummyBookmarkVisibility() {
