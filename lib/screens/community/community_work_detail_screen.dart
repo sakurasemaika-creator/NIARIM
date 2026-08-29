@@ -373,26 +373,24 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ),
                 ],
               ),
-              // リポスト（Task#145）：自分自身が投稿した作品はリポスト
-              // できないため、フォローボタンと同様に投稿者本人には表示
-              // しない。
-              if (!isAuthorSelf) ...[
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => communityService.toggleRepost(work.id),
-                    icon: Icon(Icons.repeat, color: isReposted ? scheme.primary : null),
-                    label: Text(
-                      isReposted ? l10n.communityRepostedButton : l10n.communityRepostButton,
-                      style: TextStyle(color: isReposted ? scheme.primary : null),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: isReposted ? BorderSide(color: scheme.primary) : null,
-                    ),
+              // リポスト（Task#145）：投稿者本人も含め誰でもリポストできる
+              // （フォロワーへ改めて周知する用途を想定し、フォローボタンとは
+              // 異なり投稿者本人にも制限しない）。
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => communityService.toggleRepost(work.id),
+                  icon: Icon(Icons.repeat, color: isReposted ? scheme.primary : null),
+                  label: Text(
+                    isReposted ? l10n.communityRepostedButton : l10n.communityRepostButton,
+                    style: TextStyle(color: isReposted ? scheme.primary : null),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: isReposted ? BorderSide(color: scheme.primary) : null,
                   ),
                 ),
-              ],
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [

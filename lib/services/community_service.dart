@@ -220,11 +220,12 @@ class CommunityService extends ChangeNotifier {
   int repostCountOf(String workId) => _reposts.where((r) => r.workId == workId).length;
 
   /// リポストの追加・取り消しを切り替える。[authorId]を省略すると自分
-  /// （kDummySelfAuthorId）としてリポストする。自分自身が投稿した作品は
-  /// リポストできない（UI側でも投稿者本人にはボタンを表示しない）。
+  /// （kDummySelfAuthorId）としてリポストする。自分自身が投稿した作品も
+  /// リポスト可能（Xの「引用リポスト」のようにフォロワーへ改めて周知する
+  /// 用途を想定し、投稿者本人にも制限しない）。
   void toggleRepost(String workId, {String authorId = kDummySelfAuthorId}) {
     final work = byId(workId);
-    if (work == null || work.authorId == authorId) return;
+    if (work == null) return;
     final existingIndex =
         _reposts.indexWhere((r) => r.workId == workId && r.reposterId == authorId);
     if (existingIndex != -1) {

@@ -136,8 +136,6 @@ void main() {
   group('リポスト', () {
     test('toggleRepostで自分のリポストが登録・解除される', () {
       final service = CommunityService();
-      // 自分（kDummySelfAuthorId）の作品以外を対象にする
-      // （自分の作品はリポストできない仕様）。
       final work = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
 
       expect(service.isRepostedBySelf(work.id), isFalse);
@@ -149,13 +147,15 @@ void main() {
       expect(service.isRepostedBySelf(work.id), isFalse);
     });
 
-    test('自分自身が投稿した作品はリポストできない', () {
+    test('自分自身が投稿した作品もリポストできる', () {
       final service = CommunityService();
       final ownWork = service.works.firstWhere((w) => w.authorId == kDummySelfAuthorId);
 
       service.toggleRepost(ownWork.id);
+      expect(service.isRepostedBySelf(ownWork.id), isTrue, reason: '自作もフォロワーへ改めて周知する用途でリポストできるはず');
 
-      expect(service.isRepostedBySelf(ownWork.id), isFalse, reason: '自作はリポスト対象にならないはず');
+      service.toggleRepost(ownWork.id);
+      expect(service.isRepostedBySelf(ownWork.id), isFalse);
     });
 
     test('repostCountOfはリポスト数を反映する', () {
@@ -203,14 +203,14 @@ void main() {
 
       service.toggleFavoriteAuthor(followedAuthorId);
       // フォロー中の作者自身の投稿として既に一覧に含まれている作品を、
-      // 同じ作者が自分でリポストするような操作は通常無いが、境界条件として
-      // 「別の作者がリポストした場合」に絞って確認する：postedAtより明らかに
-      // 新しいリポストがあれば、そちらのrepostedAtが採用されるはず。
+      // 同じ作者が自分の作品として改めてリポストするケース（自作リポストも
+      // 許可した設計。フォロワーへ改めて周知する用途を想定）。
+      // postedAtより明らかに新しいリポストのため、そちらのrepostedAtが
+      // 採用されるはず。
       service.toggleRepost(ownWorkOfFollowed.id, authorId: followedAuthorId);
-      // 自作はリポストできない仕様のため、これは登録されない
-      // （isRepostedBySelfに相当するガードがauthorId指定でも働く）。
       final entry = service.favoriteAuthorFeed.firstWhere((e) => e.work.id == ownWorkOfFollowed.id);
-      expect(entry.isRepost, isFalse, reason: '自作へのリポストは無視されるはず');
+      expect(entry.isRepost, isTrue, reason: '自作リポストの方が新しければそちらが採用されるはず');
+      expect(entry.repostedByAuthorId, followedAuthorId);
     });
   });
 
