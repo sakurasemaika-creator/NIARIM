@@ -71,30 +71,46 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
 
   /// フォロー中/フォロワー一覧を表示するダイアログ（Task#134継続：22.5節の
   /// 本人選択制公開）。呼び出し元で公開可否を確認してから呼ぶこと。
-  void _showNameListDialog(String title, String emptyMessage, List<String> names) {
+  /// [footerNote]は、フォロワー一覧で本人非公開設定のため除外した人数が
+  /// あるときの補足表示に使う（22.7節）。
+  void _showNameListDialog(String title, String emptyMessage, List<String> names,
+      {String? footerNote}) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(title),
         content: SizedBox(
           width: double.maxFinite,
-          child: names.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(emptyMessage,
-                      style: TextStyle(color: Theme.of(dialogContext).colorScheme.onSurfaceVariant)),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: names.length,
-                  itemBuilder: (_, i) => ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
-                      child: Text(names[i].substring(0, 1)),
-                    ),
-                    title: Text(names[i]),
-                  ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: names.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(emptyMessage,
+                            style: TextStyle(color: Theme.of(dialogContext).colorScheme.onSurfaceVariant)),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: names.length,
+                        itemBuilder: (_, i) => ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
+                            child: Text(names[i].substring(0, 1)),
+                          ),
+                          title: Text(names[i]),
+                        ),
+                      ),
+              ),
+              if (footerNote != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Text(footerNote,
+                      style: TextStyle(fontSize: 12, color: Theme.of(dialogContext).colorScheme.onSurfaceVariant)),
                 ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -206,10 +222,24 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                             InkWell(
                               key: const Key('communityAuthorFollowerCountTap'),
                               onTap: canViewFollowerList
-                                  ? () => _showNameListDialog(
-                                      l10n.communityFollowersListTitle,
-                                      l10n.communityFollowersListEmpty,
-                                      communityService.followerNamesOf(widget.authorId))
+                                  ? () {
+                                      // フォロワー自身がフォロー中/フォロワー
+                                      // 一覧を非公開にしている場合は、この
+                                      // authorId側が公開設定でもその人物
+                                      // だけは表示しない（Task#134継続：
+                                      // 22.7節）。
+                                      final visibleNames =
+                                          communityService.visibleFollowerNamesOf(widget.authorId);
+                                      final hiddenCount = followerCount - visibleNames.length;
+                                      _showNameListDialog(
+                                        l10n.communityFollowersListTitle,
+                                        l10n.communityFollowersListEmpty,
+                                        visibleNames,
+                                        footerNote: hiddenCount > 0
+                                            ? l10n.communityFollowersListHiddenNote(hiddenCount)
+                                            : null,
+                                      );
+                                    }
                                   : null,
                               child: Text(
                                 l10n.communityAuthorFollowerCount(followerCount),

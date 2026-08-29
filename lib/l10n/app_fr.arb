@@ -2433,6 +2433,14 @@
   "communityFollowersPublicToggleDesc": "Si activé, les autres utilisateurs pourront voir vos listes d'abonnements et d'abonnés depuis cette page. Privées par défaut.",
   "communityFollowersListTitle": "Abonnés",
   "communityFollowersListEmpty": "Aucun abonné pour le moment",
+  "communityFollowersListHiddenNote": "{count} de plus non affichés, masqués par leurs propres paramètres de confidentialité",
+  "@communityFollowersListHiddenNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityAuthorFollowingCount": "{count} abonnements",
   "@communityAuthorFollowingCount": {
     "placeholders": {

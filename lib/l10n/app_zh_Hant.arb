@@ -2433,6 +2433,14 @@
   "communityFollowersPublicToggleDesc": "開啟後，其他使用者可以在此頁面看到你的追蹤中清單和粉絲清單。預設不公開。",
   "communityFollowersListTitle": "粉絲",
   "communityFollowersListEmpty": "尚無粉絲",
+  "communityFollowersListHiddenNote": "另有{count}人因本人隱私設定未顯示",
+  "@communityFollowersListHiddenNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityAuthorFollowingCount": "追蹤中{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {

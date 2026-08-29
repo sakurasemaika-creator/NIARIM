@@ -2683,6 +2683,14 @@
   "communityFollowersPublicToggleDesc": "オンにすると、他のユーザーがこのページからあなたのフォロー中/フォロワー一覧を見られるようになります。既定は非公開です。",
   "communityFollowersListTitle": "フォロワー",
   "communityFollowersListEmpty": "フォロワーがいません",
+  "communityFollowersListHiddenNote": "他に{count}人いますが、本人の設定により非表示です",
+  "@communityFollowersListHiddenNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityAuthorFollowingCount": "フォロー中{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {

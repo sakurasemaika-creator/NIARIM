@@ -2433,6 +2433,14 @@
   "communityFollowersPublicToggleDesc": "When on, other users can see your following and follower lists from this page. Private by default.",
   "communityFollowersListTitle": "Followers",
   "communityFollowersListEmpty": "No followers yet",
+  "communityFollowersListHiddenNote": "{count} more not shown, hidden by their own privacy setting",
+  "@communityFollowersListHiddenNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityAuthorFollowingCount": "{count} following",
   "@communityAuthorFollowingCount": {
     "placeholders": {

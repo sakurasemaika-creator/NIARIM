@@ -204,6 +204,19 @@ class CommunityService extends ChangeNotifier {
   List<String> followerNamesOf(String authorId) =>
       followerIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
 
+  /// [authorId]のフォロワー一覧のうち、実際に画面へ表示してよい分だけを
+  /// 絞り込んだID一覧（Task#134継続：22.7節）。フォロワー自身が自分の
+  /// フォロー中/フォロワー一覧を非公開にしている場合、[authorId]側の
+  /// 一覧が公開設定であっても、その人物だけは表示しない（フォロワー
+  /// 本人の意思を優先する）。[followerCountOf]自体は非公開のフォロワーも
+  /// 含めた実数のまま変えない（「集計」と「表示」を分離する設計）。
+  List<String> visibleFollowerIdsOf(String authorId) =>
+      followerIdsOf(authorId).where(isFollowersPublic).toList();
+
+  /// [authorId]の表示可能なフォロワー名一覧（[visibleFollowerIdsOf]参照）。
+  List<String> visibleFollowerNamesOf(String authorId) =>
+      visibleFollowerIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
+
   /// [authorId]が誰をフォロー中かのID一覧。自分（kDummySelfAuthorId）に
   /// ついては実際にトグル操作した[_favoriteAuthorIds]をそのまま返す。
   /// 他のダミー作者については、フォロワー関係のダミーデータ

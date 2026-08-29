@@ -2433,6 +2433,14 @@
   "communityFollowersPublicToggleDesc": "开启后，其他用户可以在此页面看到你的关注列表和粉丝列表。默认不公开。",
   "communityFollowersListTitle": "粉丝",
   "communityFollowersListEmpty": "暂无粉丝",
+  "communityFollowersListHiddenNote": "另有{count}人因本人隐私设置未显示",
+  "@communityFollowersListHiddenNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityAuthorFollowingCount": "关注{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {

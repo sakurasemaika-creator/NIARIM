@@ -2433,6 +2433,14 @@
   "communityFollowersPublicToggleDesc": "Si está activado, otros usuarios podrán ver sus listas de seguidos y seguidores desde esta página. Son privadas de forma predeterminada.",
   "communityFollowersListTitle": "Seguidores",
   "communityFollowersListEmpty": "Todavía no hay seguidores",
+  "communityFollowersListHiddenNote": "{count} más no se muestran, ocultos por su propia configuración de privacidad",
+  "@communityFollowersListHiddenNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityAuthorFollowingCount": "Siguiendo a {count}",
   "@communityAuthorFollowingCount": {
     "placeholders": {

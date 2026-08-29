@@ -187,6 +187,41 @@ void main() {
         }
       }
     });
+
+    test('visibleFollowerIdsOfは各フォロワー自身の公開設定がfalseの人物を除外する', () {
+      final service = CommunityService();
+      for (final authorId in service.works.map((w) => w.authorId).toSet()) {
+        final raw = service.followerIdsOf(authorId);
+        final visible = service.visibleFollowerIdsOf(authorId);
+        expect(visible.toSet(), raw.where(service.isFollowersPublic).toSet());
+      }
+    });
+
+    test('visibleFollowerIdsOfは自分の公開設定に従って自分自身の表示・非表示が切り替わる', () {
+      final service = CommunityService();
+      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      service.toggleFavoriteAuthor(authorId);
+
+      // 既定では自分のフォロー中/フォロワー一覧の公開はfalseなので、
+      // 実際のフォロワーとしては数えられるが一覧には現れない。
+      expect(service.followerIdsOf(authorId), contains(kDummySelfAuthorId));
+      expect(service.visibleFollowerIdsOf(authorId), isNot(contains(kDummySelfAuthorId)));
+
+      service.setSelfFollowersPublic(true);
+      expect(service.visibleFollowerIdsOf(authorId), contains(kDummySelfAuthorId));
+    });
+
+    test('followerCountOfは非公開のフォロワーも含めた実数のまま変わらない', () {
+      final service = CommunityService();
+      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      final before = service.followerCountOf(authorId);
+
+      service.toggleFavoriteAuthor(authorId);
+      // 自分の公開設定は既定でfalseのままでも、実数のfollowerCountOfには
+      // カウントされる（「集計」と「表示」を分離する設計）。
+      expect(service.followerCountOf(authorId), before + 1);
+      expect(service.visibleFollowerIdsOf(authorId), isNot(contains(kDummySelfAuthorId)));
+    });
   });
 
   // Task#145：リポスト機能・ブックマークの公開設定・ユーザー別ブックマーク一覧。
