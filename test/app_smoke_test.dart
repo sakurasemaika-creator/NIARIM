@@ -21,6 +21,7 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
+import 'package:niarim/services/settings_service.dart';
 
 /// file_pickerは実機のプラットフォーム実装（PlatformInterfaceの
 /// singletonインスタンス）を必要とするプラグインで、flutter test環境には
@@ -918,6 +919,81 @@ void main() {
       undoManager.undo();
       expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
       expect(undoManager.canUndo, isFalse, reason: 'ドラッグと新規作成の2件のみ積まれていたはず');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
+    '起動→新規プロジェクト作成→キャンバス（PC/DeXモード）：ドッキング'
+    'パネルのリサイズハンドルドラッグが独自ジェスチャーとして機能する'
+    '（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      // isWideScreen()はワークスペース設定のforcePcMode（手動指定）を
+      // 画面の向きより優先するため、実機のようにポインティングデバイスを
+      // 検知させたり画面を横向きにしたりしなくても、これだけでPC/DeX
+      // モードのドッキングパネルレイアウトを再現できる。ただし
+      // bootToHome()が設定するスマホ縦長サイズ（1080×2280）の横幅の
+      // ままだと、実機のPC/DeXモードでは通常あり得ない極端に狭い横幅で
+      // 複数のドッキングパネル＋キャンバスを並べることになりRenderFlex
+      // がわずかに収まらないため、横幅だけ実機のPC/DeXモードを想定した
+      // 広さへ明示的に広げ直す（高さは新規プロジェクト作成フォームが
+      // 縦スクロールなしで収まる元の高さのまま維持する）。
+      tester.view.physicalSize = const Size(1920, 2280);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final settingsContext = tester.element(find.byType(Scaffold).first);
+      final settingsService = settingsContext.read<SettingsService>();
+      await tester.runAsync(() => settingsService.setForcePcMode(true));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: 'PCモード強制切替で例外');
+      expect(settingsService.desktopToolPanelWidth, 280.0, reason: '既定幅の前提');
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモード（PC/DeX）への遷移で例外');
+
+      // 既定のドッキングパネル（ブラシ・カラーピッカー・レイヤー）が
+      // 自動で開くため、_ResizeHandle（canvas_screen.dart内のprivateな
+      // クラスで、ドッキング領域とキャンバスの境界に置かれる横方向
+      // ドラッグ専用のGestureDetector。onHorizontalDragUpdateを持つ
+      // ウィジェットはこの画面内に他に存在しない）が複数出現する。
+      // 最初の1つ（ツールオプション系ドッキング領域＝ブラシパネルの
+      // 右端）をドラッグする。
+      final resizeHandleFinder = find.byWidgetPredicate(
+        (w) => w is GestureDetector && w.onHorizontalDragUpdate != null,
+      );
+      expect(resizeHandleFinder, findsWidgets, reason: 'PC/DeXモードのリサイズハンドルが見つからない');
+
+      final handleCenter = tester.getCenter(resizeHandleFinder.first);
+      final resizeGesture = await tester.startGesture(handleCenter);
+      await tester.pump(const Duration(milliseconds: 50));
+      await resizeGesture.moveBy(const Offset(50, 0));
+      await tester.pump(const Duration(milliseconds: 50));
+      await resizeGesture.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: 'リサイズハンドルドラッグで例外');
+
+      // ドラッグ確定（onDragEnd）でSettingsServiceへ実際に永続化される
+      // ため、既定値280.0から実際に変化したことまで検証する
+      // （単なる例外の有無だけでなく実際の効果を確認する）。
+      expect(
+        settingsService.desktopToolPanelWidth,
+        greaterThan(280.0),
+        reason: 'リサイズハンドルドラッグでツールパネル幅が広がるはず',
+      );
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );

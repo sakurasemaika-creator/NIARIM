@@ -95,25 +95,35 @@ class _BrushPanelState extends State<BrushPanel> {
                   ),
                 ],
               ),
-              // フォルダ管理・自作ブラシ・読み込み
-              Row(
-                children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
-                    onPressed: () => _openFolderManagement(context, brushService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
-                    onPressed: () => _createFromImage(context, brushService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
-                    onPressed: () => _importBrush(context, brushService),
-                  ),
-                ],
+              // フォルダ管理・自作ブラシ・読み込み。
+              // 【不具合修正】PC/DeXモードのドッキングパネルは既定幅
+              // 280px（パディング差引後240px）まで狭められるため、
+              // 3ボタンの自然幅がわずかに収まらずRenderFlexが
+              // オーバーフローしていた（PC/DeXモードのドッキングパネルを
+              // 実際に自律テストで開くまで気付かれていなかった）。
+              // 横スクロール可能にして、狭い幅でも常に例外なく描画・
+              // 全ボタンへアクセスできるようにする。
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    TextButton.icon(
+                      icon: const Icon(Icons.folder_outlined, size: 15),
+                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      onPressed: () => _openFolderManagement(context, brushService),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
+                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      onPressed: () => _createFromImage(context, brushService),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.file_upload_outlined, size: 15),
+                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      onPressed: () => _importBrush(context, brushService),
+                    ),
+                  ],
+                ),
               ),
               if (folders.isNotEmpty)
                 Padding(

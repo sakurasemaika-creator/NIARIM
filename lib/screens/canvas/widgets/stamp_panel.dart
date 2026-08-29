@@ -88,24 +88,30 @@ class _StampPanelState extends State<StampPanel> {
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
-                    onPressed: () => _openFolderManagement(context, stampService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                    label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
-                    onPressed: () => _createFromImage(context, stampService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
-                    onPressed: () => _importStamp(context, stampService),
-                  ),
-                ],
+              // 【不具合修正】brush_panel.dartと同じ理由（PC/DeXモードの
+              // ドッキングパネル既定幅ではボタン3つの自然幅が収まらず
+              // RenderFlexがオーバーフローしていた）で横スクロール化。
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    TextButton.icon(
+                      icon: const Icon(Icons.folder_outlined, size: 15),
+                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      onPressed: () => _openFolderManagement(context, stampService),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
+                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      onPressed: () => _createFromImage(context, stampService),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.file_upload_outlined, size: 15),
+                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      onPressed: () => _importStamp(context, stampService),
+                    ),
+                  ],
+                ),
               ),
               if (folders.isNotEmpty)
                 Padding(
