@@ -764,6 +764,82 @@ void main() {
   );
 
   testWidgets(
+    '起動→新規プロジェクト作成→キャンバス：自由変形/メッシュ変形の格子点'
+    'ドラッグが独自ジェスチャーとして機能する（Task#128）',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      final routerContext1 = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(routerContext1).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final createFinder = find.text('作成');
+      expect(createFinder, findsOneWidget);
+      await tester.tap(createFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+      // 「設定/編集」メニュー→「自由変形・メッシュ変形」で変形モードへ入る。
+      final settingsMenuFinder = find.byTooltip('設定/編集');
+      expect(settingsMenuFinder, findsOneWidget);
+      await tester.tap(settingsMenuFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '設定/編集メニュー表示で例外');
+
+      final meshMenuItemFinder = find.text('自由変形・メッシュ変形');
+      expect(meshMenuItemFinder, findsOneWidget);
+      // メニューは項目数が多くスクロール可能なため、画面外にある項目を
+      // スクロールして表示させてからタップする。
+      await tester.ensureVisible(meshMenuItemFinder);
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.tap(meshMenuItemFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '自由変形・メッシュ変形パネル表示で例外');
+
+      final canvasFinder = find.byType(CanvasArea);
+      expect(canvasFinder, findsOneWidget);
+
+      // 既定の分割数（density=1）は4隅のみの格子点（＝自由変形）になり、
+      // 左上の格子点はキャンバスピクセル座標(0,0)と一致する
+      // （MeshWarpEngine.regularGrid参照）。canvasDrawingRectFor
+      // （canvas_area.dartが実際の座標変換にも使う計算元）でキャンバス
+      // ウィジェット内の実際の描画矩形を求め、その左上を狙ってドラッグ
+      // する（生のポインターイベント：_hitTestMeshPoint→
+      // _meshPointerToIndexという、ペンストローク・ピンチズームと同じ
+      // Listenerベースの独自ジェスチャー実装）。
+      final project = tester
+          .element(canvasFinder)
+          .read<ProjectService>()
+          .projects
+          .first;
+      final canvasWidgetRect = tester.getRect(canvasFinder);
+      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+      final topLeftHandleScreenPos =
+          canvasWidgetRect.topLeft + drawingRect.topLeft + const Offset(6, 6);
+
+      final meshGesture = await tester.startGesture(topLeftHandleScreenPos);
+      await tester.pump(const Duration(milliseconds: 50));
+      await meshGesture.moveBy(const Offset(40, 40));
+      await tester.pump(const Duration(milliseconds: 50));
+      await meshGesture.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull, reason: '自由変形の格子点ドラッグで例外');
+
+      // 変形モードを抜ける（キャンセルで確定はしない。ワープ確定
+      // 処理自体はcompute()でのisolate実行を伴うため、ここでは
+      // 「ドラッグ操作自体が例外なく機能するか」の検証に留める）。
+      final cancelButtonFinder = find.text('キャンセル');
+      expect(cancelButtonFinder, findsOneWidget);
+      await tester.tap(cancelButtonFinder);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull, reason: '自由変形のキャンセルで例外');
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
     '起動→新規プロジェクト作成→タイムライン：カメラキーフレームのドラッグ'
     '移動が独自ジェスチャーとして機能する（Task#128）',
     (WidgetTester tester) async {
