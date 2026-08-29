@@ -57,7 +57,7 @@ import '../../l10n/app_localizations.dart';
 /// `monthlyProductId`・`yearlyProductId`によるサブスクリプション2種）と
 /// 一致していることを確認済み。
 ///
-/// 多言語対応について：利用規約12条の本文を含め、画面
+/// 多言語対応について：利用規約13条の本文を含め、画面
 /// 全体を7言語対応している（本文も翻訳対象）。
 /// 各言語の本文は、確定済みの日本語原文をAI翻訳・逆翻訳照合の上で
 /// 反映したものであり、専門家（弁護士・専門翻訳者等）による正式な
@@ -65,6 +65,21 @@ import '../../l10n/app_localizations.dart';
 /// 専門家に確認いただくことが引き続き望ましい。使用フォントのクレジット
 /// （作者名・ライセンス名などの固有名詞情報）は、表記の正確性を優先し
 /// 翻訳対象外のままとしている。
+///
+/// ### 追記（第12条「NIARIM作品広場：コミュニティ投稿機能」を新設）
+/// `29_動画投稿・ランキング機能仕様.md`18章が指摘していた「規約側に
+/// 未反映のUGC対応・投稿上限・削除連動の利用条件」を反映するため、
+/// 新しい第12条を追加した（旧第12条「準拠法・裁判管轄」は第13条へ
+/// 繰り下げ。条文中に他条番号への相互参照は無いことを確認済みのため、
+/// 繰り下げによる既存条文の不整合は無い）。あわせて第4条2項に、
+/// 「NIARIM作品広場を利用して投稿する場合の取扱いは第12条による」旨の
+/// 相互参照を追記し、「本アプリはサーバーへ送受信しない」という
+/// 従来の記載と矛盾しないようにした。第12条の内容は、通報・ブロックの
+/// 実バックエンドやYouTube連携（OAuth審査含む）が未実装の現時点でも
+/// 記載自体は矛盾しない（同機能を実際に有効化する前の利用条件の
+/// 明文化として先行して整備した）。他の条文と同様、AI生成の草稿であり
+/// 専門家による正式な法的確認は未了のため、本機能の実運用開始前に
+/// 確認を受けることが引き続き望ましい。
 class LicenseScreen extends StatelessWidget {
   const LicenseScreen({super.key});
 
@@ -185,6 +200,7 @@ class _TermsBody extends StatelessWidget {
       (l10n.licenseTermsArt10Title, l10n.licenseTermsArt10Body),
       (l10n.licenseTermsArt11Title, l10n.licenseTermsArt11Body),
       (l10n.licenseTermsArt12Title, l10n.licenseTermsArt12Body),
+      (l10n.licenseTermsArt13Title, l10n.licenseTermsArt13Body),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

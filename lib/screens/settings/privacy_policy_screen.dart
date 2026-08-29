@@ -70,6 +70,20 @@ import '../../services/advertising_service.dart';
 /// `advertising_service.dart`参照）。本画面下部の「広告の同意設定を
 /// 変更」ボタンは、CMP対象地域のユーザーにのみ表示される、Googleの
 /// ポリシー上必須の「いつでも同意設定を変更できる」導線。
+///
+/// ### 追記（第7条「NIARIM作品広場：コミュニティ投稿機能における
+/// 情報の取扱い」を新設）
+/// `29_動画投稿・ランキング機能仕様.md`18章が指摘していた、規約側
+/// （利用規約第12条、license_screen.dart）と対になるプライバシー
+/// ポリシー側の反映として追加した（旧第7条「本ポリシーの変更」・
+/// 旧第8条「お問い合わせ」はそれぞれ第8条・第9条へ繰り下げ。条文中の
+/// 相互参照は「第3条」を指すもの2件のみで、第7条以降を参照する記述は
+/// 無いことを確認済みのため、繰り下げによる既存条文の不整合は無い）。
+/// あわせて第2条に、「NIARIM作品広場を利用して投稿する場合の情報の
+/// 取扱いは第7条による」旨の相互参照を追記し、「本アプリはサーバーへ
+/// 送受信しない」という従来の記載と矛盾しないようにした。本機能の
+/// 実バックエンド（通報・ブロック・YouTube連携含む）は未実装だが、
+/// 実際に有効化する前の情報取扱いの明文化として先行して整備した。
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
@@ -136,6 +150,7 @@ class _PolicyBody extends StatelessWidget {
       (l10n.privacyPolicyArt6Title, l10n.privacyPolicyArt6Body),
       (l10n.privacyPolicyArt7Title, l10n.privacyPolicyArt7Body),
       (l10n.privacyPolicyArt8Title, l10n.privacyPolicyArt8Body),
+      (l10n.privacyPolicyArt9Title, l10n.privacyPolicyArt9Body),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
