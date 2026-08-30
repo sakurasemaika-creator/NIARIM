@@ -161,15 +161,18 @@ class _HelpDiagramPainter extends CustomPainter {
 
   /// キャンバス下部ツールバーの実アイコン（toolbar_widget.dartの
   /// _buildToolItemと同じ並び・同じアイコン：ペン・消しゴム・バケツ・
-  /// スポイト・選択・指ツール・図形）。
+  /// スポイト・選択・指ツール・図形）。バケツ・図形はMaterial Icons標準の
+  /// 汎用アイコン（塗り・三角形）ではなく、実装がFont Awesomeへ変更した
+  /// ペンキ缶（fillDrip）・複数図形（shapes）を使う（models/toolbar_item.dart
+  /// のToolbarItemIcon._iconData参照）。
   static final List<IconData> _toolbarIcons = [
     Icons.brush,
     FontAwesomeIcons.eraser.data,
-    Icons.format_color_fill,
+    FontAwesomeIcons.fillDrip.data,
     Icons.colorize,
     Icons.highlight_alt,
     Icons.pan_tool_alt,
-    Icons.category,
+    FontAwesomeIcons.shapes.data,
   ];
 
   /// canvas_icon_button.dartと同じ「アイコンの形にぴったり沿う半透明の

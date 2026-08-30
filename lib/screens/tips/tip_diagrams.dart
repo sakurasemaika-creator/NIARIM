@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Tipsページの図解。実際の画面のスクリーンショット（ラスタ画像）を
 /// 埋め込むと、多言語×複数ページ分の画像アセットでアプリの容量が
@@ -298,14 +299,16 @@ class _TipDiagramPainter extends CustomPainter {
   }
 
   /// 小さい矩形→大きい矩形への矢印（ズーム）。カメラキーフレームによる
-  /// ズームブラー演出専用。
+  /// ズームブラー演出専用。バッジには timeline_screen.dart
+  /// _buildTrackLabel(Icons.camera_alt, ...) が実際にカメラトラックの
+  /// ラベルへ使う実アイコンを使う。
   void _paintCameraKeyframe(Canvas canvas, Size size) {
     final small = Rect.fromCenter(center: Offset(size.width * 0.24, size.height * 0.5), width: 26, height: 20);
     final large = Rect.fromCenter(center: Offset(size.width * 0.76, size.height * 0.5), width: 46, height: 36);
     canvas.drawRRect(RRect.fromRectAndRadius(small, const Radius.circular(3)), _strokeOutline);
     canvas.drawRRect(RRect.fromRectAndRadius(large, const Radius.circular(4)), _strokePrimary);
     _arrow(canvas, Offset(small.right + 6, size.height * 0.5), Offset(large.left - 6, size.height * 0.5), _strokeOutline);
-    _drawIcon(canvas, Icons.videocam_outlined, large.center, size: 16, color: scheme.primary);
+    _drawIcon(canvas, Icons.camera_alt, large.center, size: 16, color: scheme.primary);
   }
 
   /// 3つの書き出し形式チップ（透過＝市松模様・動画＝塗り＋再生アイコン・GIF＝丸枠）。
@@ -474,7 +477,11 @@ class _TipDiagramPainter extends CustomPainter {
   }
 
   /// フォルダアイコンの中に、複数プロジェクトへ共有される共通レイヤー
-  /// （重なった四角）を示す。
+  /// （重なった四角）を示す。共通レイヤーのバッジには
+  /// layer_panel.dart _layerTypeIcon()が実際に使うIcons.link（レイヤー
+  /// パネルの行で共通レイヤーに表示される実アイコン）を使う
+  /// （実画面ではColors.blue固定だが、この図解はテーマの配色に自動追従
+  /// させるためscheme.primary系の色で描く）。
   void _paintLayerFolder(Canvas canvas, Size size) {
     _drawIcon(canvas, Icons.folder, Offset(size.width * 0.28, size.height * 0.5), size: 40, color: scheme.tertiary);
     final stack = [0, 1, 2];
@@ -485,8 +492,7 @@ class _TipDiagramPainter extends CustomPainter {
           i == 0 ? _fillPrimary : (Paint()..color = scheme.primary.withValues(alpha: 0.4 - i * 0.1)));
       canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(3)), _strokeOutline);
     }
-    _drawIcon(canvas, Icons.groups_outlined, Offset(size.width * 0.72, size.height * 0.5), size: 14,
-        color: scheme.onPrimary);
+    _drawIcon(canvas, Icons.link, Offset(size.width * 0.72, size.height * 0.5), size: 14, color: scheme.onPrimary);
   }
 
   /// 手動セーブ（ピン留めされた保存アイコン、複数残る）と自動保存
@@ -568,13 +574,22 @@ class _TipDiagramPainter extends CustomPainter {
     _drawIcon(canvas, Icons.sync_alt, fileCenter, size: 16, color: scheme.primary);
   }
 
-  /// ツールバーの並び（実アイコン）のうち1つを上へずらして「並び替え中」を
-  /// 示し、もう1つを薄く消して「非表示」を示す。
+  /// ツールバーの並び（models/toolbar_item.dartの実アイコン・実順序の
+  /// 先頭5項目：ペン→消しゴム→バケツ→スポイト→選択）のうち1つを上へ
+  /// ずらして「並び替え中」を示し、もう1つを薄く消して「非表示」を示す。
+  /// バケツはMaterial Icons標準の汎用アイコンではなく、実装がFont Awesomeへ
+  /// 変更したペンキ缶（fillDrip）を使う（ToolbarItemIcon._iconData参照）。
   void _paintToolbarCustomize(Canvas canvas, Size size) {
     final y = size.height * 0.6;
     final barRect = Rect.fromLTWH(4, y - 18, size.width - 8, 36);
     canvas.drawRRect(RRect.fromRectAndRadius(barRect, const Radius.circular(6)), _fillPrimaryFaint);
-    const icons = [Icons.brush, Icons.auto_fix_high, Icons.colorize, Icons.highlight_alt, Icons.category];
+    final icons = <IconData>[
+      Icons.brush,
+      FontAwesomeIcons.eraser.data,
+      FontAwesomeIcons.fillDrip.data,
+      Icons.colorize,
+      Icons.highlight_alt,
+    ];
     final w = barRect.width / icons.length;
     for (int i = 0; i < icons.length; i++) {
       final cx = barRect.left + w * (i + 0.5);
