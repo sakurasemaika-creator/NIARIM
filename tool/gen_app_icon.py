@@ -122,14 +122,19 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     glyph = render_white_glyph_via_chromium()
 
-    # フルブリード正方形：グリフはキャンバスの約58%を占める。
-    full = compose(glyph, CANVAS, 0.58, transparent_bg=False)
+    # フルブリード正方形：グリフはキャンバスの約74%を占める（背景に対して
+    # もっと大きく、という要望を受けて0.58から拡大。丸角マスキングで
+    # 削れる四隅のごく近くまでは寄せず、多少の余白は残している）。
+    full = compose(glyph, CANVAS, 0.74, transparent_bg=False)
     full.convert("RGB").save(os.path.join(OUT_DIR, "app_icon.png"))
 
     # Android adaptive icon前景：Androidのセーフゾーン仕様（108dp中央
-    # 66dp＝約61%の円内に収める）に合わせ、フルブリード版よりやや
-    # 小さめの約46%に抑える。
-    fg = compose(glyph, CANVAS, 0.46, transparent_bg=True)
+    # 66dp＝約61%の円内に収める）があるため、フルブリード版ほどは
+    # 拡大できない。本グリフ（ペンが対角に伸びる非正方形の輪郭）は
+    # 0.46時点でバウンディングボックスの対角先端がセーフゾーン円の
+    # 半径に対して約8.9%の余白を残していたため、その余白を使い切る
+    # 手前の0.50までに留めている（0.58同様に丸めるとクロップされる）。
+    fg = compose(glyph, CANVAS, 0.50, transparent_bg=True)
     fg.save(os.path.join(OUT_DIR, "app_icon_foreground.png"))
 
     print(f"generated: {OUT_DIR}/app_icon.png, {OUT_DIR}/app_icon_foreground.png")

@@ -160,7 +160,7 @@ class ExportEngine {
     return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
   }
 
-  /// 無料版のエンドカード（中央にアプリロゴ、下にアプリタイトルロゴ、
+  /// 無料版のエンドカード（中央にアプリアイコン、下にアプリタイトルロゴ、
   /// 約5秒）のフレーム画像をPNGとして生成する。ロゴ・タイトルロゴとも
   /// SVGをvector_graphicsで直接ui.Pictureへデコードし、Canvas上へ合成する
   /// （ウィジェットツリー外からの描画のため、SvgPictureウィジェットは
@@ -175,28 +175,50 @@ class ExportEngine {
       ui.Paint()..color = const ui.Color(0xFF000000),
     );
 
-    // ロゴ：短辺の40%を目安にした正方形で中央よりやや上に配置する。
+    // アイコンバッジ：短辺の40%を目安にした正方形で中央よりやや上に
+    // 配置する。以前は単色SVGを白抜きにしただけで背景を持たなかったが、
+    // アプリランチャーアイコン・起動画面（tool/gen_app_icon.py・
+    // splash_screen.dart）と同じ「テーマ色の角丸正方形の背景＋白抜き
+    // モノグラム」の意匠に揃えた。ExportEngineはウィジェットツリー外の
+    // 純粋な描画エンジンでTheme/BuildContextへアクセスできないため、
+    // 既定テーマ（レッド・ライト）のアクセントカラーを直接使う。既定
+    // テーマの配色を変更した場合は、tool/gen_app_icon.py・pubspec.yamlの
+    // adaptive_icon_backgroundと合わせてこの値も更新すること。
+    const badgeColor = ui.Color(0xFFFF5C7A);
     final logoInfo = await vg.loadPicture(
       const SvgAssetLoader('assets/logo/app_logo.svg'),
       null,
     );
     final logoSize = width < height ? width * 0.4 : height * 0.4;
-    final logoScale = logoSize / logoInfo.size.width;
     final logoLeft = (width - logoSize) / 2;
     final logoTop = height / 2 - logoSize * 0.65;
+    canvas.drawRRect(
+      ui.RRect.fromRectAndRadius(
+        ui.Rect.fromLTWH(logoLeft, logoTop, logoSize, logoSize),
+        ui.Radius.circular(logoSize * 0.22),
+      ),
+      ui.Paint()..color = badgeColor,
+    );
+    // モノグラムはバッジの内側へ21%相当の余白を空けて配置する
+    // （splash_screen.dartのlogoSize*0.21と同じ比率）。
+    final glyphInset = logoSize * 0.21;
+    final glyphSize = logoSize - glyphInset * 2;
+    final glyphScale = glyphSize / logoInfo.size.width;
+    final glyphLeft = logoLeft + glyphInset;
+    final glyphTop = logoTop + glyphInset;
     canvas.save();
-    // ロゴは単色SVGのため、黒背景で視認できるよう白へ着色する
+    // ロゴは単色SVGのため、バッジ背景の上で視認できるよう白へ着色する
     // （saveLayerでピクチャ全体をColorFilter.mode(白, srcIn)越しに描画）。
     canvas.saveLayer(
-      ui.Rect.fromLTWH(logoLeft, logoTop, logoSize, logoSize),
+      ui.Rect.fromLTWH(glyphLeft, glyphTop, glyphSize, glyphSize),
       ui.Paint()
         ..colorFilter = const ui.ColorFilter.mode(
           ui.Color(0xFFFFFFFF),
           ui.BlendMode.srcIn,
         ),
     );
-    canvas.translate(logoLeft, logoTop);
-    canvas.scale(logoScale, logoScale);
+    canvas.translate(glyphLeft, glyphTop);
+    canvas.scale(glyphScale, glyphScale);
     canvas.drawPicture(logoInfo.picture);
     canvas.restore();
     canvas.restore();
