@@ -62,16 +62,20 @@ class BrushService extends ChangeNotifier {
           fadeMode: FadeMode.off, strokeDecay: false,
           mixingMode: BrushMixingMode.simple, mixingRate: 50,
         ),
-        // マーカーペン：太めの半透明ペン先（重ね塗りで色が濃くなる）で、
-        // 実物のマーカーのようにインクが薄くなっていく様子を、ストローク
-        // 減衰機能（strokeDecay）で表現する。フェルトペンは筆圧の影響を
-        // ほぼ受けないため、筆圧反映はOFFにする。
+        // マーカーペン：チゼル（斜め切り）先端の太めの半透明ペン先
+        // （重ね塗りで色が濃くなる）。calligraphyAngle: 0（ペン先の扁平な
+        // 向きを水平に固定）により、横に引くと細く・縦に引くと太くなる
+        // 実物のチゼルマーカー特有の見た目を再現する。あわせて、実物の
+        // マーカーのようにインクがだんだん掠れて薄くなっていく様子を、
+        // ストローク減衰機能（strokeDecay）で表現する。フェルトペンは
+        // 筆圧の影響をほぼ受けないため、筆圧反映はOFFにする。
         const Brush(
           id: 'Brush0005', name: 'マーカーペン', size: 20, opacity: 65, spacing: 5,
           blurRadius: 0, stabilization: false, stabilizationStrength: 0,
           pixelMode: false, pressureMode: PressureMode.off, pressureStrength: 0,
           fadeMode: FadeMode.off, strokeDecay: true,
           mixingMode: BrushMixingMode.off, mixingRate: 0,
+          calligraphyAngle: 0.0,
         ),
         // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
         // （calligraphyAngle）。進行方向によって線の太さが変わる
@@ -100,8 +104,23 @@ class BrushService extends ChangeNotifier {
       // 反映する（既に同じIDのブラシが存在する場合は追加しない）。
       final existingIds = _brushes.map((b) => b.id).toSet();
       final missing = _defaultBrushes().where((b) => !existingIds.contains(b.id));
+      bool needsPersist = false;
       if (missing.isNotEmpty) {
         _brushes.addAll(missing);
+        needsPersist = true;
+      }
+      // 「マーカーペン」（Brush0005）は後からcalligraphyAngle（チゼル先端の
+      // 横太さ変化）を追加した。既にBrush0005を持つ既存ユーザーの端末には
+      // 反映されないため、calligraphyAngle未設定のままなら一度だけ補う
+      // （それ以外のユーザー編集済みパラメータ〔サイズ・不透明度等〕は
+      // 変更しない）。calligraphyAngleはUI上編集不可のプリセット専用項目
+      // のため、上書きしてもユーザーの意図的な設定を壊すことはない。
+      final markerIndex = _brushes.indexWhere((b) => b.id == 'Brush0005');
+      if (markerIndex != -1 && _brushes[markerIndex].calligraphyAngle == null) {
+        _brushes[markerIndex] = _brushes[markerIndex].copyWith(calligraphyAngle: 0.0);
+        needsPersist = true;
+      }
+      if (needsPersist) {
         await _persist();
       }
     }
