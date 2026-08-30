@@ -364,10 +364,19 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final totalPages = _textPages.length;
+    // 図解を「画面をちゃんと再現したミニスクリーン」として見せられる
+    // よう、以前の固定84pxの帯から大きく拡大した。ダイアログ自体の
+    // サイズも画面幅・高さに応じて可変にする（以前は360×420の固定
+    // サイズで、insetPadding分を差し引くと横幅360dp未満の端末では
+    // 既にはみ出していた）。
+    final screenSize = MediaQuery.sizeOf(context);
+    final dialogWidth = (screenSize.width - 32).clamp(280.0, 480.0);
+    final dialogHeight = (screenSize.height - 64).clamp(420.0, 680.0);
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: SizedBox(
-        width: 360,
-        height: 420,
+        width: dialogWidth,
+        height: dialogHeight,
         child: Stack(
           children: [
             Column(
@@ -392,18 +401,25 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                                       fontWeight: FontWeight.w700,
                                       fontFamily: 'Kuramubon',
                                       color: scheme.primary)),
+                              const SizedBox(height: 10),
                               // 図解（中央寄せ。すべてのページで併記する、
-                              // 文章だけのページを作らない）。
+                              // 文章だけのページを作らない）。画面を再現する
+                              // 図解ほど縦横比が意味を持つため、AspectRatioで
+                              // 一定比率を保ちつつダイアログ幅いっぱいに広げる。
                               Expanded(
-                                flex: 4,
+                                flex: 6,
                                 child: Center(
-                                  child: SizedBox(height: 84, child: TipDiagram(widget.tip.diagram)),
+                                  child: AspectRatio(
+                                    aspectRatio: 15 / 11,
+                                    child: TipDiagram(widget.tip.diagram),
+                                  ),
                                 ),
                               ),
+                              const SizedBox(height: 10),
                               // 本文（下寄せ。ページ内に収まらない分量は
                               // スクロールできる）。
                               Expanded(
-                                flex: 5,
+                                flex: 4,
                                 child: Align(
                                   alignment: Alignment.bottomLeft,
                                   child: SingleChildScrollView(

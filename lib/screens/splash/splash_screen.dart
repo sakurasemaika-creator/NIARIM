@@ -86,19 +86,33 @@ class _SplashScreenState extends State<SplashScreen> {
       colors: [scheme.primary, scheme.primaryContainer],
       onTap: () => context.go('/home'),
     );
-    // ロゴ・タイトルロゴとも単色のSVGのため、テーマ・外観設定の
-    // 「アクセント色」（AppThemePreset.accentColor → colorScheme.primary）
-    // で着色する。固定色にしてしまうと、ユーザーが選んだテーマ配色から
-    // 浮いて見える。タイトルロゴ（アプリ名の書き文字）はモノグラムの下に、
-    // 元のSVGアスペクト比（幅3470×高さ690相当）を保った横長サイズで添える。
+    // モノグラムは、アプリランチャーアイコン（tool/gen_app_icon.py）と
+    // 同じ「テーマ色の角丸正方形の背景に、モノグラムを白抜きで重ねる」
+    // 見た目に揃える。以前はSVGを直接テーマ色で塗るだけで背景を持たな
+    // かったが、実際にホーム画面に並ぶアプリアイコンと起動画面の印象が
+    // 揃うよう、同じ意匠にした（生成物はグリフがキャンバスの約58%を
+    // 占めるが、ここではContainerへのpaddingで同じ比率を再現する）。
+    // 背景色は固定のアクセント色ではなくscheme.primary（テーマ・外観
+    // 設定で選んだ色）を使い、ユーザーが選んだテーマ配色から浮いて
+    // 見えないようにする。タイトルロゴ（アプリ名の書き文字）は背景を
+    // 持たない単色SVGのまま、モノグラムの下に元のSVGアスペクト比
+    // （幅3470×高さ690相当）を保った横長サイズで添える。
+    const logoSize = 110.0;
     final logo = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SvgPicture.asset(
-          'assets/logo/app_logo.svg',
-          width: 110,
-          height: 110,
-          colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+        Container(
+          width: logoSize,
+          height: logoSize,
+          decoration: BoxDecoration(
+            color: scheme.primary,
+            borderRadius: BorderRadius.circular(logoSize * 0.22),
+          ),
+          padding: const EdgeInsets.all(logoSize * 0.21),
+          child: SvgPicture.asset(
+            'assets/logo/app_logo.svg',
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          ),
         ),
         const SizedBox(height: 10),
         SvgPicture.asset(
