@@ -90,8 +90,11 @@ class _SplashScreenState extends State<SplashScreen> {
     // 同じ「テーマ色の角丸正方形の背景に、モノグラムを白抜きで重ねる」
     // 見た目に揃える。以前はSVGを直接テーマ色で塗るだけで背景を持たな
     // かったが、実際にホーム画面に並ぶアプリアイコンと起動画面の印象が
-    // 揃うよう、同じ意匠にした（生成物はグリフがキャンバスの約58%を
-    // 占めるが、ここではContainerへのpaddingで同じ比率を再現する）。
+    // 揃うよう、同じ意匠にした（生成物はグリフがキャンバスの約86%を
+    // 占めるが、ここではContainerへのpaddingで同じ比率を再現する。
+    // 「スマホアプリ版Claudeのアイコンくらいのバランス」という要望を
+    // 受けて0.58→0.74→0.86と拡大した経緯があり、export_engine.dartの
+    // _renderEndCardPngの余白比率と必ず同じ値に揃えること）。
     // 背景色は固定のアクセント色ではなくscheme.primary（テーマ・外観
     // 設定で選んだ色）を使い、ユーザーが選んだテーマ配色から浮いて
     // 見えないようにする。タイトルロゴ（アプリ名の書き文字）は背景を
@@ -108,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen> {
             color: scheme.primary,
             borderRadius: BorderRadius.circular(logoSize * 0.22),
           ),
-          padding: const EdgeInsets.all(logoSize * 0.21),
+          padding: const EdgeInsets.all(logoSize * 0.08),
           child: SvgPicture.asset(
             'assets/logo/app_logo.svg',
             colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),

@@ -199,9 +199,10 @@ class ExportEngine {
       ),
       ui.Paint()..color = badgeColor,
     );
-    // モノグラムはバッジの内側へ21%相当の余白を空けて配置する
-    // （splash_screen.dartのlogoSize*0.21と同じ比率）。
-    final glyphInset = logoSize * 0.21;
+    // モノグラムはバッジの内側へ8%相当の余白を空けて配置する
+    // （splash_screen.dartのlogoSize*0.08と同じ比率。「スマホアプリ版
+    // Claudeのアイコンくらいのバランス」という要望を受けて拡大した）。
+    final glyphInset = logoSize * 0.08;
     final glyphSize = logoSize - glyphInset * 2;
     final glyphScale = glyphSize / logoInfo.size.width;
     final glyphLeft = logoLeft + glyphInset;
