@@ -43,8 +43,12 @@ void showPremiumBanner(BuildContext context) {
       onRegister: () {
         Navigator.pop(ctx);
         // Premium画面（実際の購入処理はPremiumService.buyで行う）へ遷移。
-        // ctx ではなく呼び出し元の context を使う（ダイアログ close 後も有効）
-        context.go('/premium');
+        // ctx ではなく呼び出し元の context を使う（ダイアログ close 後も有効）。
+        // go()だとナビゲーション履歴が丸ごと置き換わり、キャンバス編集中
+        // など画面の奥深くから開いた場合に戻る手段が無くなってしまう
+        // （home_drawer.dart側の通常導線はpush()）ため、こちらもpush()に
+        // 揃える。
+        context.push('/premium');
       },
     ),
   );

@@ -86,6 +86,27 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# アプリアイコン生成設定（flutter_launcher_icons）。
+# コーラルピンク（既定テーマのアクセントカラー、0xFFFF5C7A）の正方形
+# 背景にNIARIMモノグラム（ペン+フィルムコマ）を白抜きで重ねたアイコン。
+# 角丸はここでは焼き込まず各OSの自動マスキングに委ねる（iOSは自前で
+# 角丸マスクを適用する仕様のため、あらかじめ角丸を焼き込むと二重
+# マスキングで見た目が崩れる）。素材は`assets/icon/gen_icon.py`
+# （scratchpad、リポジトリ外）で`assets/logo/app_logo.svg`から生成した。
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#FF5C7A"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
 
 flutter:
   generate: true
