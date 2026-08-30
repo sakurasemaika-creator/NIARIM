@@ -13,8 +13,18 @@ assets/logo/app_logo.svg から生成するスクリプト。
   （透明背景＋白抜きモノグラムのみ。背景はpubspec.yamlの
   adaptive_icon_background側でテーマカラーを指定する）
 
+レンダリングにChromium（Playwright経由）を使う理由：
+  当初cairosvgで描画していたが、app_logo.svgが<mask>要素（ペンと
+  フィルムコマの交差部分を斜めに切り欠く「penClearance」、ペン軸の
+  ボタン部分を楕円形にくり抜く「buttonClearance」）を使っており、
+  cairosvgはこの2つのマスクを正しく適用できず、切り欠き・くり抜きが
+  消えた（＝ただの塗りつぶし帯になった）状態でレンダリングしてしまう
+  不具合があった。Chromium（Blinkのsvgレンダラー）は仕様通りに
+  マスクを解釈できるため、アプリ内（flutter_svgで描画）と同じ見た目を
+  再現できる。
+
 使い方：
-  pip install cairosvg pillow
+  pip install playwright pillow
   python3 tool/gen_app_icon.py
   dart run flutter_launcher_icons   # 生成した画像から各OS向けアイコンを書き出す
 
@@ -27,29 +37,66 @@ defaultLight）のaccentColorに合わせている。既定テーマの配色を
 import io
 import os
 
-import cairosvg
 from PIL import Image
+from playwright.sync_api import sync_playwright
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SVG_PATH = os.path.join(REPO_ROOT, "assets/logo/app_logo.svg")
 OUT_DIR = os.path.join(REPO_ROOT, "assets/icon")
 
 CANVAS = 1024
+RENDER_SIZE = 2048  # SVGを白抜きでレンダリングする際の解像度
 ACCENT = (255, 92, 122, 255)  # 0xFFFF5C7A コーラルピンク（既定テーマのアクセントカラー）
 
 
-def render_white_glyph():
+def _find_chromium_executable() -> str | None:
+    """PLAYWRIGHT_BROWSERS_PATH配下から実際にインストール済みのchrome
+    実行ファイルを探す。pipでインストールしたplaywrightパッケージの
+    バージョンと、環境に事前インストール済みのブラウザのリビジョンが
+    一致しないことがあり、その場合`p.chromium.launch()`のデフォルト
+    パス解決は失敗する（headless_shellの別リビジョンを探しに行って
+    しまう）ため、実在するパスを自前で探して明示的に渡す。見つから
+    なければNoneを返し、Playwright側の既定解決に委ねる。
+    """
+    browsers_dir = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers")
+    if not os.path.isdir(browsers_dir):
+        return None
+    candidates = []
+    for name in os.listdir(browsers_dir):
+        if not name.startswith("chromium-"):
+            continue
+        candidate = os.path.join(browsers_dir, name, "chrome-linux", "chrome")
+        if os.path.isfile(candidate):
+            candidates.append(candidate)
+    return sorted(candidates)[-1] if candidates else None
+
+
+def render_white_glyph_via_chromium() -> Image.Image:
     with open(SVG_PATH, encoding="utf-8") as f:
         svg_src = f.read()
     # 元SVGのfill="#4A4636"を白へ置換してレンダリングする。
     svg_white = svg_src.replace('fill="#4A4636"', 'fill="#FFFFFF"')
 
-    render_size = 2048
-    png_bytes = cairosvg.svg2png(
-        bytestring=svg_white.encode("utf-8"),
-        output_width=render_size,
-        output_height=render_size,
-    )
+    html = f"""<!doctype html><html><head><style>
+html,body{{margin:0;padding:0;background:transparent;}}
+svg{{width:{RENDER_SIZE}px;height:{RENDER_SIZE}px;display:block;}}
+</style></head><body>{svg_white}</body></html>"""
+    html_path = os.path.join(OUT_DIR, ".render_tmp.html")
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(executable_path=_find_chromium_executable())
+            page = browser.new_page(
+                viewport={"width": RENDER_SIZE, "height": RENDER_SIZE}, device_scale_factor=1
+            )
+            page.goto("file://" + os.path.abspath(html_path))
+            png_bytes = page.locator("svg").screenshot(omit_background=True)
+            browser.close()
+    finally:
+        os.remove(html_path)
+
     glyph = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
     # 実際に描画されているピクセルのバウンディングボックスで切り出す
     # （viewBox全体に対して図形が余白込みで配置されているため）。
@@ -73,7 +120,7 @@ def compose(glyph_cropped, canvas_size, glyph_target_ratio, transparent_bg):
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    glyph = render_white_glyph()
+    glyph = render_white_glyph_via_chromium()
 
     # フルブリード正方形：グリフはキャンバスの約58%を占める。
     full = compose(glyph, CANVAS, 0.58, transparent_bg=False)
