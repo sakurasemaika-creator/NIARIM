@@ -583,6 +583,8 @@
   "tipsTextCaptionDesc": "Utilisez l'outil texte pour placer des sous-titres ou des commentaires image par image. Passer la police en mode pixel peut aussi donner au texte un rendu rétro façon ancien jeu vidéo.",
   "tipsAutofillPresetTitle": "Enregistrez un réglage de remplissage automatique par partie",
   "tipsAutofillPresetDesc": "Enregistrer un réglage par partie (peau, cheveux, vêtements) avec ses ombres incluses automatise la majeure partie de la mise en couleur, dès que le trait est dessiné. Vous pouvez aussi limiter les réglages utilisés dans chaque projet.",
+  "tipsAutofillBaseCoatTitle": "Le remplissage automatique fonctionne aussi comme une seule couche de base",
+  "tipsAutofillBaseCoatDesc": "Le remplissage automatique sert normalement à colorer partie par partie, mais inutile de tout découper soigneusement : l'utiliser comme une seule couche de base d'une couleur unie sur tout le trait est déjà bien utile en soi. Il remplit tout l'intérieur du trait d'un coup, ce qui évite les oublis de remplissage (les interstices où la couleur du dessous transparaît) fréquents avec le seau manuel. Peignez ensuite vos couleurs à la main par-dessus, et vous profitez du gain sans le travail de découpage par partie.",
   "tipsBrushFavoriteTitle": "Mettez vos pinceaux favoris en favori pour les retrouver sans chercher",
   "tipsBrushFavoriteDesc": "Touchez l'icône étoile des pinceaux que vous utilisez le plus pour les mettre en favori. L'icône étoile en haut de la liste permet de filtrer pour n'afficher que les favoris, réduisant le temps de recherche. Un pinceau en favori ne peut pas être supprimé par erreur.",
   "tipsPressureCurveTitle": "Ajustez la courbe de pression à votre main",

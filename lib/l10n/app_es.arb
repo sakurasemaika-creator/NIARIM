@@ -583,6 +583,8 @@
   "tipsTextCaptionDesc": "Usa la herramienta de texto para colocar subtítulos o comentarios fotograma a fotograma. Cambiar la fuente al modo píxel también puede darle al texto un aire retro de videojuego antiguo.",
   "tipsAutofillPresetTitle": "Registra un ajuste de relleno automático por parte",
   "tipsAutofillPresetDesc": "Registrar un ajuste por parte (piel, pelo, ropa) con sus sombras incluidas automatiza gran parte del coloreado con solo dibujar la línea. También puedes limitar qué ajustes se usan en cada proyecto.",
+  "tipsAutofillBaseCoatTitle": "El relleno automático también sirve como una sola capa de base",
+  "tipsAutofillBaseCoatDesc": "El relleno automático está pensado para colorear parte por parte, pero no hace falta dividirlo todo con cuidado: usarlo como una única capa de base de un solo color sobre toda la línea ya es muy útil por sí solo. Rellena todo el interior de las líneas de una vez, lo que evita los huecos sin pintar (donde se transparenta el color de abajo) que suelen pasar al rellenar a mano con el cubo. Luego pinta los colores a mano encima, y obtienes el beneficio sin el trabajo de separar partes.",
   "tipsBrushFavoriteTitle": "Marca tus pinceles favoritos para cambiarlos sin buscar",
   "tipsBrushFavoriteDesc": "Toca el icono de estrella de los pinceles que más usas para marcarlos como favoritos. El icono de estrella en la parte superior de la lista permite filtrar solo los favoritos, reduciendo el tiempo de búsqueda. Los pinceles favoritos no se pueden eliminar por error.",
   "tipsPressureCurveTitle": "Ajusta la curva de presión a tu propia mano",

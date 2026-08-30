@@ -142,6 +142,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
           icon: Icons.speed_outlined,
           tips: [
             _Tip(TipDiagramSpec(TipDiagramKind.autofillPreset), l10n.tipsAutofillPresetTitle, l10n.tipsAutofillPresetDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.auto_fix_high, iconB: Icons.format_color_fill),
+                l10n.tipsAutofillBaseCoatTitle, l10n.tipsAutofillBaseCoatDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.brushFavorite), l10n.tipsBrushFavoriteTitle, l10n.tipsBrushFavoriteDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.tune, iconB: Icons.history),
                 l10n.tipsBrushTrySaveTreeTitle, l10n.tipsBrushTrySaveTreeDesc),

@@ -583,6 +583,8 @@
   "tipsTextCaptionDesc": "Use the text tool to place captions or comments frame by frame. Switching the font to pixel mode can also give the text a retro, old-game look.",
   "tipsAutofillPresetTitle": "Register an autofill setting for each part",
   "tipsAutofillPresetDesc": "Registering a setting per part — skin, hair, clothes — with shading included lets you automate most of the coloring just by drawing the lineart. You can also narrow down which settings are used in each project.",
+  "tipsAutofillBaseCoatTitle": "Autofill works fine as a single base-coat layer too",
+  "tipsAutofillBaseCoatDesc": "Autofill is meant for coloring part by part, but you don't have to divide everything carefully — using it as a single, one-color base-coat layer over the whole lineart is plenty useful on its own. It fills everything inside the lines in one pass, which prevents the missed spots (gaps where the background shows through) that often happen with manual bucket fill. Paint your colors by hand on top of that, and you get the benefit without the part-splitting work.",
   "tipsBrushFavoriteTitle": "Favorite your go-to brushes to switch without hunting",
   "tipsBrushFavoriteDesc": "Tap the star icon on the brushes you use most to favorite them. The star icon at the top of the list lets you filter down to favorites only, cutting down on how long it takes to find one. Favorited brushes can't be deleted by accident.",
   "tipsPressureCurveTitle": "Tune the pressure curve to match your hand",
