@@ -519,9 +519,16 @@ class ThemeService extends ChangeNotifier {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
+      // AlertDialogのtitleは既定でheadlineSmall（＝白光明朝）を使う仕様の
+      // ため、fontFamilyを明示していないtitle: Text(...)は軒並み明朝体に
+      // なってしまっていた（listTileThemeと同種の問題）。titleTextStyleを
+      // ここで明示することで、アプリ全体のダイアログタイトルを一括で
+      // くらむぼんへ揃える。個別のTextウィジェットが独自styleを指定して
+      // いれば、そちらが優先されるため既存の明示指定箇所への影響はない。
       dialogTheme: DialogThemeData(
         backgroundColor: preset.menuBgColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        titleTextStyle: textTheme.titleLarge?.copyWith(color: preset.textColor),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: preset.menuBgColor,

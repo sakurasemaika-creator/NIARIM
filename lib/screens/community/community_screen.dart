@@ -44,6 +44,8 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.views;
+  // ランキングの並び順。falseで降順（多い順、既定）、trueで昇順（少ない順）。
+  bool _sortAscending = false;
   // 作品タイトル・投稿者名のいずれかに一致する作品へ絞り込む検索。
   // バックエンド未実装のため、現状はこの画面が保持するダミーデータへの
   // クライアント側フィルタとして実装している（実データ接続時は
@@ -67,6 +69,25 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
       _tagSearchMode = true;
       _searchQuery = initialTag;
       _searchController.text = initialTag;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant CommunityScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // タグ検索から別のタグ検索へ連続でナビゲートした場合の保険。
+    // 通常はpush()により毎回新しいStateが作られてinitState()側で
+    // 初期値が適用されるが、go_router側の実装次第でState（この
+    // Widgetインスタンス）が使い回された場合でも、新しいinitialTagFilterを
+    // 取りこぼさないようにする。
+    final newTag = widget.initialTagFilter;
+    if (newTag != null && newTag.isNotEmpty && newTag != oldWidget.initialTagFilter) {
+      setState(() {
+        _isSearching = true;
+        _tagSearchMode = true;
+        _searchQuery = newTag;
+        _searchController.text = newTag;
+      });
     }
   }
 
@@ -99,31 +120,48 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) => _applySearch(
       [...allWorks]..sort((a, b) => b.postedAt.compareTo(a.postedAt)));
 
-  /// 期間フィルターに応じたダミーの対象作品を絞り込む。実データでは
-  /// バックエンド側で期間別の再生数を集計するが、ここでは投稿日時のみで
-  /// 簡易的に絞り込む（表示確認用）。
+  /// 期間別ランキングのスコア算出に使う「期間の長さ」。全期間はnull
+  /// （減衰なし＝累計の再生・ブックマーク数をそのまま使う）。
+  Duration? _periodWindow(_RankingPeriod period) => switch (period) {
+        _RankingPeriod.allTime => null,
+        _RankingPeriod.yearly => const Duration(days: 365),
+        _RankingPeriod.monthly => const Duration(days: 30),
+        _RankingPeriod.weekly => const Duration(days: 7),
+        _RankingPeriod.daily => const Duration(days: 1),
+      };
+
+  /// ランキング対象の作品を並び替える。
+  ///
+  /// 以前は`_period`（年間/月間/週間/デイリー）に応じて「投稿日時が
+  /// その期間内かどうか」で対象を絞り込んでいたが、ダミーデータの投稿日は
+  /// 古いものが多く、月間・週間・デイリーのランキングがほぼ空になって
+  /// しまうバグがあった。またそもそも「投稿日で足切りする」のは要件
+  /// （期間内に再生・ブックマークされた回数で並び替える）とも異なる。
+  ///
+  /// 本来は期間ごとの再生・ブックマーク数の時系列集計が必要（backend側にも
+  /// 未実装、backend/README.mdの「未実装・既知の制約」参照）だが、現段階
+  /// ではその時系列データ自体を持たないため、「累計の再生・ブックマーク数」
+  /// に対して投稿の新しさで重み付けする近似で代用する：期間の範囲内に
+  /// 投稿された作品は満点（重み1.0）、範囲外の作品は古いほど重みが
+  /// なだらかに下がる（0にはならない＝対象から除外されることはない）。
+  /// これにより、期間タブを切り替えても一覧が0件になることはなく、かつ
+  /// 「デイリー」を選べば直近に投稿された作品ほど上位に来やすくなる。
   List<CommunityWork> _rankingWorks(List<CommunityWork> allWorks) {
+    final filtered = _applySearch(allWorks.toList());
+    final window = _periodWindow(_period);
     final now = DateTime.now();
-    Duration? window;
-    switch (_period) {
-      case _RankingPeriod.allTime:
-        window = null;
-      case _RankingPeriod.yearly:
-        window = const Duration(days: 365);
-      case _RankingPeriod.monthly:
-        window = const Duration(days: 30);
-      case _RankingPeriod.weekly:
-        window = const Duration(days: 7);
-      case _RankingPeriod.daily:
-        window = const Duration(days: 1);
+    double scoreOf(CommunityWork w) {
+      final metric = _sort == _RankingSort.views ? w.viewCount : w.bookmarkCount;
+      if (window == null) return metric.toDouble();
+      final age = now.difference(w.postedAt);
+      final windowSeconds = window.inSeconds.toDouble();
+      final ageSeconds = age.inSeconds.toDouble().clamp(windowSeconds, double.infinity);
+      final weight = windowSeconds / ageSeconds; // 範囲内なら1.0、古いほど0へ漸近
+      return metric * weight;
     }
-    final windowed = window == null
-        ? allWorks
-        : allWorks.where((w) => now.difference(w.postedAt) <= window!);
-    final filtered = _applySearch(windowed.toList());
-    filtered.sort((a, b) => _sort == _RankingSort.views
-        ? b.viewCount.compareTo(a.viewCount)
-        : b.bookmarkCount.compareTo(a.bookmarkCount));
+
+    final direction = _sortAscending ? 1 : -1;
+    filtered.sort((a, b) => direction * scoreOf(a).compareTo(scoreOf(b)));
     return filtered.take(50).toList();
   }
 
@@ -280,6 +318,11 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         onPressed: _showPostComingSoonDialog,
         icon: const Icon(Icons.video_call_outlined),
         label: Text(l10n.communityPostButton),
+        // テーマ側のFAB共通形状（CircleBorder、丸型FAB用）を上書きする。
+        // 円形のままだとアイコン+ラベルの横幅を確保できず、ラベル文字が
+        // 円の外へはみ出す／切れてしまうため、拡張FAB本来の横長カプセル
+        // 形状（StadiumBorder）へ戻す。
+        shape: const StadiumBorder(),
       ),
       body: desktopCentered(
         context,
@@ -334,6 +377,17 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                           label: Text(l10n.communityRankingSortBookmarks),
                           selected: _sort == _RankingSort.bookmarks,
                           onSelected: (_) => setState(() => _sort = _RankingSort.bookmarks),
+                        ),
+                        const Spacer(),
+                        // ワンタップで昇順/降順を切り替える矢印ボタン
+                        // （ホーム画面の並び替え矢印＝SortModeControlと
+                        // 同じ操作感に揃えている）。
+                        IconButton(
+                          icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                          tooltip: _sortAscending
+                              ? l10n.communityRankingSortAscendingTooltip
+                              : l10n.communityRankingSortDescendingTooltip,
+                          onPressed: () => setState(() => _sortAscending = !_sortAscending),
                         ),
                       ],
                     ),

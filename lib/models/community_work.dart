@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:intl/intl.dart';
 
 /// この画面には実際のログイン・ユーザー識別基盤（バックエンド未実装、
 /// `29_動画投稿・ランキング機能仕様.md`4章のNIARIM User ID）が無いため、
@@ -140,9 +141,18 @@ List<CommunityWork> buildDummyCommunityWorks() {
   });
 }
 
-/// 数値を「1.2K」「3.4M」のような簡略表記へ変換する（言語非依存の
-/// 汎用表記のため、この画面のダミー統計表示に限りロケール別翻訳は行わない）。
-String formatCompactCount(int value) {
+/// 再生数・ブックマーク数等の統計を表示用に整形する。
+///
+/// 日本語では「1.5k」のようなアルファベット省略表記は馴染みが薄いため、
+/// [languageCode]が'ja'の場合はカンマ区切りの通常表記（例：1,500）へ、
+/// それ以外の言語では従来どおり「1.5K」「3.4M」のような簡略表記へ変換する。
+/// [languageCode]は呼び出し元で`Localizations.localeOf(context)
+/// .languageCode`を渡す想定（この関数自体はモデル層のためBuildContextに
+/// 依存しない）。
+String formatCompactCount(int value, String languageCode) {
+  if (languageCode == 'ja') {
+    return NumberFormat.decimalPattern('ja').format(value);
+  }
   if (value >= 1000000) {
     return '${(value / 1000000).toStringAsFixed(1)}M';
   }

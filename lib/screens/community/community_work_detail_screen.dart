@@ -94,38 +94,70 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
       l10n.communityReportReasonOther,
     ];
     String selected = reasons.first;
+    final detailController = TextEditingController();
+    // 未入力のまま送信しようとした場合のみエラー表示を出す（最初から
+    // 赤字を出して威圧的にならないよう、送信ボタンを一度押すまでは
+    // エラーを表示しない）。
+    bool showDetailError = false;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(l10n.communityReportDialogTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(l10n.communityReportDialogBody),
-              const SizedBox(height: 8),
-              for (final reason in reasons)
-                RadioListTile<String>(
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  title: Text(reason),
-                  value: reason,
-                  groupValue: selected,
-                  onChanged: (v) => setDialogState(() => selected = v!),
-                ),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: detailController,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: Text(l10n.communityReportDialogTitle),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.communityReportDialogBody),
+                  const SizedBox(height: 8),
+                  for (final reason in reasons)
+                    RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: Text(reason),
+                      value: reason,
+                      groupValue: selected,
+                      onChanged: (v) => setDialogState(() => selected = v!),
+                    ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: detailController,
+                    minLines: 3,
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      labelText: l10n.communityReportDetailLabel,
+                      hintText: l10n.communityReportDetailHint,
+                      errorText: showDetailError ? l10n.communityReportDetailRequiredError : null,
+                    ),
+                    onChanged: (_) {
+                      if (showDetailError) setDialogState(() => showDetailError = false);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+              FilledButton(
+                onPressed: () {
+                  if (detailController.text.trim().isEmpty) {
+                    setDialogState(() => showDetailError = true);
+                    return;
+                  }
+                  Navigator.pop(ctx);
+                  _showComingSoonSnackbar(l10n.communityReportComingSoonSnackbar);
+                  // 通報送信後、続けてこの投稿者をブロックするか確認する
+                  // （「通報後はブロック確認ポップアップを表示してほしい」
+                  // という要望への対応）。
+                  _showBlockConfirmDialog(work);
+                },
+                child: Text(l10n.communityReportSubmitButton),
+              ),
             ],
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _showComingSoonSnackbar(l10n.communityReportComingSoonSnackbar);
-              },
-              child: Text(l10n.communityReportSubmitButton),
-            ),
-          ],
         ),
       ),
     );
@@ -171,6 +203,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
       );
     }
     final scheme = Theme.of(context).colorScheme;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final isBookmarked = communityService.isBookmarked(work.id);
     final isAuthorSelf = work.authorId == kDummySelfAuthorId;
     final isReposted = communityService.isRepostedBySelf(work.id);
@@ -285,27 +318,27 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 children: [
                   Icon(Icons.play_arrow_rounded, size: 16, color: scheme.onSurfaceVariant),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(work.viewCount), style: TextStyle(color: scheme.onSurfaceVariant)),
+                  Text(formatCompactCount(work.viewCount, languageCode), style: TextStyle(color: scheme.onSurfaceVariant)),
                   const SizedBox(width: 14),
                   // YouTube側の「いいね」数。APIが返す値をそのまま表示し、
                   // NIARIM側で独自に加算・合算はしない（YouTube API利用規約
                   // の要件）。
                   Icon(Icons.thumb_up_alt_outlined, size: 16, color: scheme.onSurfaceVariant),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(work.likeCount), style: TextStyle(color: scheme.onSurfaceVariant)),
+                  Text(formatCompactCount(work.likeCount, languageCode), style: TextStyle(color: scheme.onSurfaceVariant)),
                   const SizedBox(width: 14),
                   // NIARIM独自のブックマーク数（YouTube側の「いいね」とは
                   // 別のNIARIM内機能。29_動画投稿・ランキング機能仕様.md
                   // 8.5節）。
                   Icon(Icons.bookmark, size: 16, color: scheme.onSurfaceVariant),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(work.bookmarkCount), style: TextStyle(color: scheme.onSurfaceVariant)),
+                  Text(formatCompactCount(work.bookmarkCount, languageCode), style: TextStyle(color: scheme.onSurfaceVariant)),
                   const SizedBox(width: 14),
                   // リポスト数（Task#145）。ブックマーク同様NIARIM独自の
                   // カウントで、YouTube側の統計とは無関係。
                   Icon(Icons.repeat, size: 16, color: scheme.onSurfaceVariant),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(communityService.repostCountOf(work.id)),
+                  Text(formatCompactCount(communityService.repostCountOf(work.id), languageCode),
                       style: TextStyle(color: scheme.onSurfaceVariant)),
                 ],
               ),
@@ -344,7 +377,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       onRemove: work.lockedTags.contains(tag)
                           ? null
                           : () => communityService.removeTag(work.id, tag),
-                      onTap: () => appRouter.go('/community', extra: tag),
+                      // go()（ナビゲーション履歴を丸ごと置き換える）ではなく
+                      // push()を使う。go()だと起動画面まで含めて履歴が消え、
+                      // 作品広場画面左上の「起動画面へ戻る」矢印が消えて
+                      // しまうバグと、同じ`/community`ルートへ連続でナビゲート
+                      // した際にCommunityScreenのStateが使い回されて
+                      // initState()が再実行されず2回目以降のタグ検索が
+                      // 効かないバグの、両方の原因になっていた。
+                      onTap: () => appRouter.push('/community', extra: tag),
                     ),
                   ActionChip(
                     avatar: const Icon(Icons.add, size: 16),

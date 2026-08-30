@@ -209,13 +209,23 @@ class CommunityWorkCard extends StatelessWidget {
                     children: [
                       Icon(Icons.play_arrow_rounded, size: 13, color: scheme.onSurfaceVariant),
                       const SizedBox(width: 2),
-                      Text(formatCompactCount(work.viewCount),
-                          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
-                      const SizedBox(width: 10),
+                      // 日本語ロケールではカンマ区切りの通常表記（例：12,345）を
+                      // 使うため、K/M簡略表記より横幅を取りやすい。カードの
+                      // 横幅が狭い場合に数字が省略記号で切れても崩れないよう
+                      // Flexibleで包む。
+                      Flexible(
+                        child: Text(formatCompactCount(work.viewCount, Localizations.localeOf(context).languageCode),
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                      ),
+                      const SizedBox(width: 8),
                       Icon(Icons.bookmark, size: 13, color: scheme.onSurfaceVariant),
                       const SizedBox(width: 2),
-                      Text(formatCompactCount(work.bookmarkCount),
-                          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                      Flexible(
+                        child: Text(formatCompactCount(work.bookmarkCount, Localizations.localeOf(context).languageCode),
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                      ),
                     ],
                   ),
                 ],

@@ -37,6 +37,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
+  // 作品広場画面と同様に、左上から起動画面へ戻れるようにするための
+  // Scaffoldキー。ホーム画面はhamburgerメニュー（HomeDrawer）を持つため
+  // AppBarのleadingが自動的にメニューアイコンで埋まっており、そのままでは
+  // 戻る矢印を追加できない。そのためleadingを「戻る矢印＋メニュー
+  // アイコン」の2つ並びに差し替え、メニューアイコン側はこのキー経由で
+  // Scaffold.openDrawer()を呼び出す（自動表示に頼らない）。
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
   ProjectViewMode _viewMode = ProjectViewMode.medium;
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
@@ -248,7 +255,29 @@ class _HomeScreenState extends State<HomeScreen>
       child: Focus(
         autofocus: true,
         child: Scaffold(
+          key: _scaffoldKey,
           appBar: AppBar(
+            // 左上に「起動画面へ戻る」矢印と、ハンバーガーメニュー（設定・
+            // ヘルプ等への導線）の2つを並べる。作品広場画面には元々戻る
+            // 矢印がある（プッシュ遷移のため自動表示）のに対し、ホーム画面
+            // はgo()で遷移してくるため戻り先が無く、また既にドロワーで
+            // leadingが埋まっていたため、両方を明示的に並べる形にした。
+            leadingWidth: 96,
+            leading: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: l10n.homeBackToSplashTooltip,
+                  onPressed: () => context.go('/'),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.menu),
+                  tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
+              ],
+            ),
             title: _isSearching
                 ? TextField(
                     controller: _searchController,

@@ -21,7 +21,10 @@ class CommunityPreviewService extends ChangeNotifier {
   Size _size = const Size(220, 160);
   Size get size => _size;
 
-  static const Size minSize = Size(160, 120);
+  // 下部コントロールバー（再生/一時停止・閉じる・詳細への3ボタン）を
+  // 誤タップ防止の間隔込みで収められる最小幅として200へ引き上げた
+  // （旧160のままだと最小サイズ時にボタン列が横幅からはみ出す）。
+  static const Size minSize = Size(200, 140);
   static const Size maxSize = Size(420, 320);
 
   void show(CommunityWork work) {

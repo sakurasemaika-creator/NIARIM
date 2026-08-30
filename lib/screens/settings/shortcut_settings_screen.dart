@@ -93,6 +93,10 @@ class ShortcutSettingsScreen extends StatelessWidget {
         onPressed: () => _startAddFlow(context, service),
         icon: const Icon(Icons.add),
         label: Text(l10n.commonAdd),
+        // テーマ側のFAB共通形状（CircleBorder）を、拡張FAB本来の横長
+        // カプセル形状（StadiumBorder）へ上書きする（community_screen.dart
+        // の投稿ボタンと同じ理由）。
+        shape: const StadiumBorder(),
       ),
     );
   }
