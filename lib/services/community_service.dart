@@ -158,7 +158,7 @@ class CommunityService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// NIARIM作品広場独自の公開/非公開設定を切り替える（投稿者本人のみ
+  /// 作品広場独自の公開/非公開設定を切り替える（投稿者本人のみ
   /// 呼び出し可能。UI側で`work.authorId == kDummySelfAuthorId`のときのみ
   /// 切り替えボタンを表示する。29_動画投稿・ランキング機能仕様.md 13章）。
   void toggleNiarimVisibility(String workId) {
