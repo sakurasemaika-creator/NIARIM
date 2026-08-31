@@ -221,13 +221,20 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     );
   }
 
-  void _showPostComingSoonDialog() {
+  /// 「投稿する」ボタンを押した直後にいきなりYouTubeの画面へ遷移させると、
+  /// 初めて投稿する人が驚く（NIARIMが動画をどこかへアップロードしている
+  /// ように見えてしまう）ため、実際の投稿処理（現状は未実装）の前に必ず
+  /// 一度、tips風の説明カードとして「投稿はYouTube経由で行われること」
+  /// 「NIARIMは動画本体を送受信・保存しないこと」「YouTube側で限定公開に
+  /// すればYouTube上には公開されずNIARIM内だけに投稿できること」を案内する。
+  void _showPostInfoDialog() {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.communityPostComingSoonTitle),
-        content: Text(l10n.communityPostComingSoonBody),
+        icon: const Icon(Icons.info_outline, size: 32),
+        title: Text(l10n.communityPostInfoTitle),
+        content: Text(l10n.communityPostInfoBody),
         actions: [
           FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
         ],
@@ -329,7 +336,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showPostComingSoonDialog,
+        onPressed: _showPostInfoDialog,
         icon: const Icon(Icons.video_call_outlined),
         label: Text(l10n.communityPostButton),
         // テーマ側のFAB共通形状（CircleBorder、丸型FAB用）を上書きする。

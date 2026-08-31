@@ -8,19 +8,20 @@ import '../../../services/theme_service.dart';
 
 /// 資料ウィンドウ（アニメ制作では三面図・キャラクター設定表・背景資料などを
 /// 見ながら作業することがほとんどのため、任意の参考画像を常に表示できる
-/// ウィンドウを用意した）。他のツールオプション系パネルとは独立して
+/// フローティングウィンドウを用意した）。ドラッグで位置移動・右下角の
+/// ハンドルでサイズ変更ができ、閉じるまでキャンバス操作の邪魔をしない
+/// 位置に常駐させておける。他のツールオプション系パネルとは独立して
 /// 動作する（ツールを切り替えても閉じない・パネル外タップでも閉じない）。
 ///
-/// [pinned]がfalse（スマホ表示の既定）の場合はタイトルバーのドラッグで
-/// 自由に位置移動できるフローティングウィンドウになる。[pinned]がtrue
-/// （PC/DeXモード）の場合は、画面右上の固定位置に常駐する「固定表示」
-/// になり、位置ドラッグは行えない（誤操作で行方不明になるのを防ぎ、他の
-/// 常設ドッキングパネルと同じ感覚で扱えるようにする）。どちらの場合も
-/// 右下角のハンドルでのサイズ変更はできる。
+/// 【経緯】PC/DeXモードでは画面右上に固定表示する案を一度試したが、
+/// 右上はキャンバスプレビュー（ナビゲーター）パネルの定位置と重なって
+/// しまうと指摘を受けた。ドッキングパネルと違って右側ドック列は開いている
+/// パネル構成によって高さが変わるため、重ならない固定位置を安全に決め
+/// うちできない。そのため「場所が無ければPC版もフローティングでよい」
+/// という判断のとおり、PC/スマホ問わず常にこのフローティング表示に戻した。
 class ReferenceWindow extends StatefulWidget {
   final VoidCallback onClose;
-  final bool pinned;
-  const ReferenceWindow({super.key, required this.onClose, this.pinned = false});
+  const ReferenceWindow({super.key, required this.onClose});
 
   @override
   State<ReferenceWindow> createState() => _ReferenceWindowState();
@@ -57,13 +58,9 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
     final l10n = AppLocalizations.of(context)!;
     final theme = context.watch<ThemeService>().current;
     final scheme = Theme.of(context).colorScheme;
-    // 固定表示（PC/DeXモード）は画面右上の一定位置に常駐させる
-    // （ツールバー・トップバーと重ならない位置）。フローティング表示
-    // （スマホ）は_positionで管理する自由な位置を使う。
     return Positioned(
-      left: widget.pinned ? null : _position.dx,
-      right: widget.pinned ? 12 : null,
-      top: widget.pinned ? 64 : _position.dy,
+      left: _position.dx,
+      top: _position.dy,
       child: Material(
         elevation: 12,
         borderRadius: BorderRadius.circular(12),
@@ -75,12 +72,10 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
           height: _size.height,
           child: Column(
             children: [
-              // タイトルバー：ドラッグで位置移動（固定表示中は移動不可）。
+              // タイトルバー：ドラッグで位置移動。
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onPanUpdate: widget.pinned
-                    ? null
-                    : (d) => setState(() => _position += d.delta),
+                onPanUpdate: (d) => setState(() => _position += d.delta),
                 child: Container(
                   color: theme.menuBgColor,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),

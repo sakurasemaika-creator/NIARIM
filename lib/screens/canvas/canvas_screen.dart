@@ -1100,13 +1100,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     bottom: null,
                     child: _colorAdjustPanel(),
                   ),
-                // 資料ウィンドウ：PC/DeXモードでは画面右上に固定表示
-                // （他の常設ドッキングパネルと同じ感覚で、位置が動かず
-                // 迷子にならない）。スマホでは従来どおり自由に動かせる
-                // フローティングウィンドウのまま。
+                // 資料ウィンドウ：PC/スマホ問わず常にフローティングで表示する
+                // （PC/DeXモードで右上に固定表示する案も試したが、右上は
+                // キャンバスプレビュー・ナビゲーターパネルの定位置と重なる
+                // ため、reference_window.dart側のコメントのとおり見送った）。
                 if (_showReferenceWindow)
                   ReferenceWindow(
-                    pinned: isDesktop,
                     onClose: () => setState(() => _showReferenceWindow = false),
                   ),
               ],
