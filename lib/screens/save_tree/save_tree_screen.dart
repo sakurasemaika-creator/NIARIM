@@ -733,6 +733,13 @@ class _TreeView extends StatelessWidget {
       return;
     }
     context.read<ProjectService>().restoreFromAutosave(projectId, data);
+    // 「セーブ・ロードした地点から次の枝が伸びる」という設計上、復元した
+    // ノードをそのまま選択状態にする。三点メニューの「復元」は行の
+    // タップ（選択トグル）とは独立した導線のため、これを呼ばないと
+    // 「行を選択せずに三点メニューから直接復元した」場合、次の保存が
+    // 復元前の選択状態（別ノードや未選択）を親にしてしまい、意図しない
+    // 位置に枝分かれするバグがあった。
+    onNodeSelected(node.id);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.saveTreeRestoredSnackbar(node.comment ?? l10n.saveTreeNodeDefaultName))),
