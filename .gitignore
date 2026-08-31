@@ -6,6 +6,7 @@ lib/l10n/app_localizations_*.dart
 # Miscellaneous
 *.class
 *.log
+analyze_out.txt
 *.pyc
 *.swp
 .DS_Store
