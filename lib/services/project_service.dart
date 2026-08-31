@@ -2256,6 +2256,15 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
+  /// プロジェクトの背景色を変更する（キャンバス設定メニューから）。
+  void updateProjectBackgroundColor(String projectId, int color) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    _projects[idx] = _projects[idx].copyWith(backgroundColor: color);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
   /// [useTargetFolder]がtrueの場合、複製先のフォルダを[targetFolderId]
   /// （nullはルート直下）で明示的に上書きする。falseの場合（既定）は
   /// 複製元と同じフォルダのまま複製する。

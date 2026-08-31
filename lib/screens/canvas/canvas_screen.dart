@@ -307,6 +307,28 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   Navigator.pop(ctx);
                 },
               ),
+              // 背景色変更（プロジェクト作成時と同じ選択肢）
+              ListTile(
+                leading: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Color(context.read<ProjectService>()
+                        .projects
+                        .where((p) => p.id == widget.projectId)
+                        .firstOrNull
+                        ?.backgroundColor ?? 0xFFFFFFFF),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Theme.of(context).colorScheme.outline),
+                  ),
+                ),
+                title: Text(l10n.newProjectBackgroundColorLabel),
+                subtitle: const Text('白 / 黒 / 透明 / ベージュ'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showBackgroundColorPicker(context);
+                },
+              ),
               ListTile(
                 leading: const Icon(Icons.layers_outlined),
                 title: Text(l10n.onionSkinTitle),
@@ -910,14 +932,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         onTap: () =>
                             setState(() => _showToolbar = !_showToolbar),
                         child: Container(
-                          height: 16,
+                          height: 24,
                           alignment: Alignment.center,
                           color: kCanvasOutsideColor,
                           child: Icon(
                             _showToolbar
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
-                            size: 16,
+                            size: 18,
                             color: Colors.white70,
                           ),
                         ),
@@ -934,16 +956,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       onTap: () =>
                           setState(() => _showFrameStrip = !_showFrameStrip),
                       child: Container(
-                        height: 16,
+                        height: 24,
                         alignment: Alignment.center,
                         color: Colors.transparent,
                         child: Icon(
                           _showFrameStrip
                               ? Icons.keyboard_arrow_down
                               : Icons.keyboard_arrow_up,
-                          size: 16,
-                          // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
-                          // ToolbarWidgetの色連動と同じ方針）。
+                          size: 18,
                           color: Theme.of(
                             context,
                           ).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -1445,6 +1465,95 @@ class _CanvasScreenState extends State<CanvasScreen> {
       child: child,
     );
   }
+
+  void _showBackgroundColorPicker(BuildContext context) {
+    final ps = context.read<ProjectService>();
+    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    if (project == null) return;
+    final colors = [
+      Colors.white,
+      Colors.black,
+      Colors.transparent,
+      const Color(0xFFF5F5DC),
+    ];
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.newProjectBackgroundColorLabel,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                children: colors.map((color) {
+                  final current = Color(project.backgroundColor);
+                  final isSelected = current.toARGB32() == color.toARGB32();
+                  final isLight = color == Colors.white ||
+                      color == Colors.transparent ||
+                      color == const Color(0xFFF5F5DC);
+                  return GestureDetector(
+                    onTap: () {
+                      ps.updateProjectBackgroundColor(
+                        widget.projectId,
+                        color.toARGB32(),
+                      );
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.outlineVariant,
+                          width: isSelected ? 3 : 1,
+                        ),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (color == Colors.transparent)
+                            CustomPaint(
+                              size: const Size(48, 48),
+                              painter: _CheckerboardPainter(),
+                            )
+                          else
+                            Container(color: color),
+                          if (isSelected)
+                            Icon(
+                              Icons.check,
+                              size: 20,
+                              color: isLight ? Colors.black87 : Colors.white,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// プロジェクト作成画面と同じ市松模様（透明背景スウォッチ用）。
+  // ignore: unused_element
+  static Widget _checkerSwatch() => CustomPaint(
+    size: const Size(48, 48),
+    painter: _CheckerboardPainter(),
+  );
 
   /// ツール早替えボタンタップ時：登録順に次のツールへ切り替える。
   void _applyNextQuickTool() {
@@ -2417,3 +2526,22 @@ enum DrawingTool {
 
 /// 図形ツールの種別（タップでポップアップ表示・OFF/線/四角形/円）
 enum ShapeKind { off, line, rect, circle }
+
+/// 透明背景スウォッチ用の市松模様（new_project_screen.dartと同じ実装）。
+class _CheckerboardPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cell = 8.0;
+    final light = Paint()..color = Colors.grey[300]!;
+    final dark = Paint()..color = Colors.grey[400]!;
+    for (double y = 0; y < size.height; y += cell) {
+      for (double x = 0; x < size.width; x += cell) {
+        final isDark = ((x / cell).round() + (y / cell).round()) % 2 == 0;
+        canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), isDark ? dark : light);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}

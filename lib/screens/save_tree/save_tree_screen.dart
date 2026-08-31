@@ -7,9 +7,11 @@ import 'package:provider/provider.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/advertising_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
+import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
@@ -110,6 +112,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final saveService = context.watch<SaveTreeService>();
+    final adService = context.watch<AdvertisingService>();
     final isTreeMode = saveService.isTreeMode;
 
     return Scaffold(
@@ -127,27 +130,34 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: isTreeMode
-          ? _TreeView(
-              projectId: widget.projectId,
-              nodes: saveService.getNodes(widget.projectId),
-              saveService: saveService,
-              selectedNodeId: _selectedNodeId,
-              onNodeSelected: (id) => setState(() => _selectedNodeId = id),
-              entryMode: widget.entryMode,
-            )
-          : desktopCentered(
-              context,
-              _SlotView(
-                projectId: widget.projectId,
-                saveService: saveService,
-                entryMode: widget.entryMode,
-              ),
-            ),
+      body: Column(
+        children: [
+          Expanded(
+            child: isTreeMode
+                ? _TreeView(
+                    projectId: widget.projectId,
+                    nodes: saveService.getNodes(widget.projectId),
+                    saveService: saveService,
+                    selectedNodeId: _selectedNodeId,
+                    onNodeSelected: (id) => setState(() => _selectedNodeId = id),
+                    entryMode: widget.entryMode,
+                  )
+                : desktopCentered(
+                    context,
+                    _SlotView(
+                      projectId: widget.projectId,
+                      saveService: saveService,
+                      entryMode: widget.entryMode,
+                    ),
+                  ),
+          ),
+          if (adService.shouldShowAds) const AdBannerWidget(),
+        ],
+      ),
     );
   }
-
 }
+
 
 /// ツリー方式での新規保存ダイアログ（トップの「保存」ボタン・ノードの
 /// 「上書きする」選択の両方から呼ぶため、Widgetをまたいで使えるよう
@@ -194,20 +204,23 @@ void _showTreeSaveDialog(BuildContext context, String projectId,
                 Navigator.pop(ctx);
                 return;
               }
+              final comment = commentController.text.isEmpty
+                  ? null
+                  : commentController.text;
+              final scenes = ps.scenesOf(projectId);
+              final tileManager = ps.tileManagerOf(projectId);
               final thumb = await _generateSaveNodeThumbnail(ps, projectId);
               await service.saveAsChild(
                 projectId: projectId,
                 project: project,
-                scenes: ps.scenesOf(projectId),
-                tileManager: ps.tileManagerOf(projectId),
+                scenes: scenes,
+                tileManager: tileManager,
                 parentId: parentId,
-                comment: commentController.text.isEmpty
-                    ? null
-                    : commentController.text,
+                comment: comment,
                 thumbnailPngBytes: thumb,
               );
               if (ctx.mounted) Navigator.pop(ctx);
-              await _warnIfSaveTreeSizeLarge(context, projectId);
+              if (context.mounted) await _warnIfSaveTreeSizeLarge(context, projectId);
             },
             child: Text(l10n.commonSave),
           ),
@@ -410,16 +423,19 @@ class _SlotView extends StatelessWidget {
                   Navigator.pop(ctx);
                   return;
                 }
+                final comment = commentController.text.isEmpty
+                    ? null
+                    : commentController.text;
+                final scenes = ps.scenesOf(projectId);
+                final tileManager = ps.tileManagerOf(projectId);
                 final thumb = await _generateSaveNodeThumbnail(ps, projectId);
                 await saveService.saveToSlot(
                   projectId: projectId,
                   slotIndex: slotIndex,
                   project: project,
-                  scenes: ps.scenesOf(projectId),
-                  tileManager: ps.tileManagerOf(projectId),
-                  comment: commentController.text.isEmpty
-                      ? null
-                      : commentController.text,
+                  scenes: scenes,
+                  tileManager: tileManager,
+                  comment: comment,
                   thumbnailPngBytes: thumb,
                 );
                 if (ctx.mounted) Navigator.pop(ctx);
