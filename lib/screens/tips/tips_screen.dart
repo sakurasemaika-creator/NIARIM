@@ -135,6 +135,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
             _Tip(TipDiagramSpec(TipDiagramKind.flowArrow, iconA: Icons.content_cut, iconB: Icons.repeat),
                 l10n.tipsVideoTrimReuseTitle, l10n.tipsVideoTrimReuseDesc),
             _Tip(TipDiagramSpec(TipDiagramKind.timelineMarker), l10n.tipsTimelineMarkerTitle, l10n.tipsTimelineMarkerDesc),
+            _Tip(TipDiagramSpec(TipDiagramKind.pairCombo, iconA: Icons.movie_filter_outlined, iconB: Icons.info_outline),
+                l10n.tipsCommunityYoutubeTitle, l10n.tipsCommunityYoutubeDesc),
           ],
         ),
         _TipCategory(

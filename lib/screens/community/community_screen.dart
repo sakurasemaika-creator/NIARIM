@@ -221,12 +221,26 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     );
   }
 
-  /// 「投稿する」ボタンを押した直後にいきなりYouTubeの画面へ遷移させると、
-  /// 初めて投稿する人が驚く（NIARIMが動画をどこかへアップロードしている
-  /// ように見えてしまう）ため、実際の投稿処理（現状は未実装）の前に必ず
-  /// 一度、tips風の説明カードとして「投稿はYouTube経由で行われること」
-  /// 「NIARIMは動画本体を送受信・保存しないこと」「YouTube側で限定公開に
-  /// すればYouTube上には公開されずNIARIM内だけに投稿できること」を案内する。
+  /// 「投稿する」ボタンが押されたときの分岐。まだ一度も投稿したことが
+  /// ない人（`worksByAuthor(kDummySelfAuthorId)`が空）に対しては、
+  /// いきなりYouTubeの画面へ遷移させると驚かせてしまう（NIARIMが動画を
+  /// どこかへアップロードしているように見えてしまう）ため、tips風の
+  /// 説明カード（[_showPostInfoDialog]）を毎回必ず案内する。「初回タップ
+  /// かどうか」ではなく「投稿実績があるかどうか」で判定するため、未投稿の
+  /// 間は何度タップしても表示され続ける。既に一度でも投稿したことがある
+  /// 人には、その説明はもう不要なため、単純な準備中案内のみを表示する。
+  void _handlePostTap() {
+    final hasPosted = context
+        .read<CommunityService>()
+        .worksByAuthor(kDummySelfAuthorId, includeHidden: true)
+        .isNotEmpty;
+    if (hasPosted) {
+      _showPostComingSoonDialog();
+    } else {
+      _showPostInfoDialog();
+    }
+  }
+
   void _showPostInfoDialog() {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -235,6 +249,20 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         icon: const Icon(Icons.info_outline, size: 32),
         title: Text(l10n.communityPostInfoTitle),
         content: Text(l10n.communityPostInfoBody),
+        actions: [
+          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
+        ],
+      ),
+    );
+  }
+
+  void _showPostComingSoonDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.communityPostComingSoonTitle),
+        content: Text(l10n.communityPostComingSoonBody),
         actions: [
           FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
         ],
@@ -336,7 +364,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showPostInfoDialog,
+        onPressed: _handlePostTap,
         icon: const Icon(Icons.video_call_outlined),
         label: Text(l10n.communityPostButton),
         // テーマ側のFAB共通形状（CircleBorder、丸型FAB用）を上書きする。
