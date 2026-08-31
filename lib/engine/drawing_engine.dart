@@ -5,6 +5,8 @@ import '../models/brush.dart';
 import 'brush_texture_cache.dart';
 import 'tile_manager.dart';
 
+final _jitterRng = math.Random();
+
 // カリグラフィーブラシのペン先の扁平度（幅:高さ）。値が大きいほど、
 // ペン先の向きに直交する方向へ動かした時の線が太く、平行な方向は細くなる。
 const double kCalligraphyNibAspect = 2.6;
@@ -175,6 +177,7 @@ class DrawingEngine {
     _renderCircleStamp(
       x, y, radius, alphaInt, tilt,
       layerId, brush.pixelMode, brush.blurRadius, customTexture,
+      edgeJitter: brush.edgeJitter,
     );
   }
 
@@ -187,8 +190,9 @@ class DrawingEngine {
     String layerId,
     bool pixelMode,
     int blurRadius,
-    Uint8List? customTexture,
-  ) {
+    Uint8List? customTexture, {
+    bool edgeJitter = false,
+  }) {
     final r = currentColor.r;
     final g = currentColor.g;
     final b = currentColor.b;
@@ -266,7 +270,15 @@ class DrawingEngine {
               }
             } else {
               // 通常ブラシ：アンチエイリアス
-              pixelAlpha = (radius + 0.5 - dist).clamp(0.0, 1.0);
+              // edgeJitter: ふち付近（radius±1.5px）のピクセルに微小な
+              // ランダムオフセットを加え、輪郭をわずかにがたがたさせる。
+              // マーカーのインクが紙の繊維に沿って滲む様子を再現する。
+              if (edgeJitter && dist > radius - 1.5) {
+                final jitter = (_jitterRng.nextDouble() - 0.5) * 1.8;
+                pixelAlpha = (radius + 0.5 - dist + jitter).clamp(0.0, 1.0);
+              } else {
+                pixelAlpha = (radius + 0.5 - dist).clamp(0.0, 1.0);
+              }
             }
 
             if (pixelAlpha <= 0) continue;

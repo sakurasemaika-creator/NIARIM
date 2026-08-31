@@ -74,8 +74,8 @@ class BrushService extends ChangeNotifier {
           blurRadius: 0, stabilization: false, stabilizationStrength: 0,
           pixelMode: false, pressureMode: PressureMode.off, pressureStrength: 0,
           fadeMode: FadeMode.off, strokeDecay: true,
-          mixingMode: BrushMixingMode.off, mixingRate: 0,
-          calligraphyAngle: 0.0,
+          mixingMode: BrushMixingMode.simple, mixingRate: 15,
+          calligraphyAngle: 0.0, edgeJitter: true,
         ),
         // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
         // （calligraphyAngle）。進行方向によって線の太さが変わる
@@ -116,9 +116,23 @@ class BrushService extends ChangeNotifier {
       // 変更しない）。calligraphyAngleはUI上編集不可のプリセット専用項目
       // のため、上書きしてもユーザーの意図的な設定を壊すことはない。
       final markerIndex = _brushes.indexWhere((b) => b.id == 'Brush0005');
-      if (markerIndex != -1 && _brushes[markerIndex].calligraphyAngle == null) {
-        _brushes[markerIndex] = _brushes[markerIndex].copyWith(calligraphyAngle: 0.0);
-        needsPersist = true;
+      if (markerIndex != -1) {
+        var m = _brushes[markerIndex];
+        // calligraphyAngle未設定の旧データを補完
+        if (m.calligraphyAngle == null) {
+          m = m.copyWith(calligraphyAngle: 0.0);
+          needsPersist = true;
+        }
+        // edgeJitter・混色設定未適用の旧データを補完
+        if (!m.edgeJitter || m.mixingMode == BrushMixingMode.off) {
+          m = m.copyWith(
+            edgeJitter: true,
+            mixingMode: BrushMixingMode.simple,
+            mixingRate: m.mixingMode == BrushMixingMode.off ? 15 : m.mixingRate,
+          );
+          needsPersist = true;
+        }
+        _brushes[markerIndex] = m;
       }
       if (needsPersist) {
         await _persist();

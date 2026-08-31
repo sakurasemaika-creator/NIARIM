@@ -12,6 +12,7 @@
 /// 有効化後は本ファイルを削除し、AdvertisingService・PremiumService・
 /// PremiumScreenから参照を外すこと。
 // final DateTime kMonetizationEnabledFrom = DateTime(2027, 1, 1);
+final DateTime kMonetizationEnabledFrom = DateTime(2027, 1, 1);
 
 // bool get isMonetizationEnabled => !DateTime.now().isBefore(kMonetizationEnabledFrom);
 bool get isMonetizationEnabled => true;

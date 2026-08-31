@@ -26,6 +26,10 @@ class Brush {
   // スタンプする（進行方向によって線の太さが変わるカリグラフィー特有の
   // 見た目を、傾き検知非対応の端末でも一定の見た目で再現するため）。
   final double? calligraphyAngle;
+  // ふち滲み：trueのとき、ブラシスタンプのふち付近のピクセルに微小な
+  // ランダムオフセットを加え、輪郭をわずかにがたがたさせる。
+  // マーカーペンのインクが紙の繊維に沿って滲む様子を再現する。
+  final bool edgeJitter;
   // ピクセルモード時の配色方式。既定はnone（従来通り、描画色をそのまま
   // 使い色数の制限を行わない）。ストローク確定直後にタッチした範囲だけへ
   // 適用される（drawing_engine.dart・canvas_area.dartの
@@ -55,6 +59,7 @@ class Brush {
     this.folderId,
     this.customImagePath,
     this.calligraphyAngle,
+    this.edgeJitter = false,
     this.pixelColorMode = PixelColorMode.none,
     this.pixelColorLevels = 8,
     this.pixelExplicitColors = const [0xFF000000],
@@ -81,6 +86,7 @@ class Brush {
     String? folderId,
     String? customImagePath,
     double? calligraphyAngle,
+    bool? edgeJitter,
     PixelColorMode? pixelColorMode,
     int? pixelColorLevels,
     List<int>? pixelExplicitColors,
@@ -106,6 +112,7 @@ class Brush {
       folderId: folderId ?? this.folderId,
       customImagePath: customImagePath ?? this.customImagePath,
       calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
+      edgeJitter: edgeJitter ?? this.edgeJitter,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
@@ -139,6 +146,7 @@ class Brush {
         'folderId': folderId,
         'customImagePath': customImagePath,
         'calligraphyAngle': calligraphyAngle,
+        'edgeJitter': edgeJitter,
         'pixelColorMode': pixelColorMode.name,
         'pixelColorLevels': pixelColorLevels,
         'pixelExplicitColors': pixelExplicitColors,
@@ -181,6 +189,7 @@ class Brush {
         folderId: j['folderId'] as String?,
         customImagePath: j['customImagePath'] as String?,
         calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
+        edgeJitter: j['edgeJitter'] as bool? ?? false,
         pixelColorMode: PixelColorMode.values.firstWhere(
             (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.none),
         pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
