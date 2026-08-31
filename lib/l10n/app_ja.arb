@@ -1724,6 +1724,20 @@
   "saveTreeScreenTitleTree": "セーブツリー",
   "saveTreeScreenTitleSlot": "セーブスロット",
   "timelineExportMenuItem": "書き出し",
+  "timelineExportFrameMenuItem": "フレームを画像で書き出す",
+  "timelineExportFrameDialogTitle": "フレームを画像で書き出す",
+  "timelineExportFrameDialogMessage": "現在表示中のフレーム1枚を静止画として保存します。形式を選んでください。",
+  "timelineExportFramePngOption": "PNGで保存",
+  "timelineExportFrameJpegOption": "JPEGで保存",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "{fileName} として保存しました（作品一覧タブから確認できます）",
+  "timelineExportFrameErrorSnackbar": "フレームの書き出しに失敗しました",
   "timelineDurationChangeMenuItem": "長さ変更",
   "timelineCanvasSizeChangeMenuItem": "キャンバスサイズ変更",
   "timelineDurationFramesLabel": "フレーム数",

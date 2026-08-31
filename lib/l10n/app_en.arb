@@ -1472,6 +1472,20 @@
   },
   "autofillPartGradientStopDragHint": "Drag the ▲ markers left or right to adjust each color's position",
   "timelineExportMenuItem": "Export",
+  "timelineExportFrameMenuItem": "Export frame as image",
+  "timelineExportFrameDialogTitle": "Export frame as image",
+  "timelineExportFrameDialogMessage": "Save the currently displayed frame as a still image. Choose a format.",
+  "timelineExportFramePngOption": "Save as PNG",
+  "timelineExportFrameJpegOption": "Save as JPEG",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "Saved as {fileName} (you can find it in the Exports tab)",
+  "timelineExportFrameErrorSnackbar": "Failed to export the frame",
   "timelineDurationChangeMenuItem": "Change duration",
   "timelineCanvasSizeChangeMenuItem": "Change canvas size",
   "timelineDurationFramesLabel": "Frames",

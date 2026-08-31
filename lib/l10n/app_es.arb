@@ -1474,6 +1474,20 @@
   "saveTreeScreenTitleTree": "Árbol de guardado",
   "saveTreeScreenTitleSlot": "Ranuras de guardado",
   "timelineExportMenuItem": "Exportar",
+  "timelineExportFrameMenuItem": "Exportar fotograma como imagen",
+  "timelineExportFrameDialogTitle": "Exportar fotograma como imagen",
+  "timelineExportFrameDialogMessage": "Guarda el fotograma actualmente mostrado como imagen fija. Elige un formato.",
+  "timelineExportFramePngOption": "Guardar como PNG",
+  "timelineExportFrameJpegOption": "Guardar como JPEG",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "Guardado como {fileName} (disponible en la pestaña de trabajos exportados)",
+  "timelineExportFrameErrorSnackbar": "No se pudo exportar el fotograma",
   "timelineDurationChangeMenuItem": "Cambiar duración",
   "timelineCanvasSizeChangeMenuItem": "Cambiar tamaño de lienzo",
   "timelineDurationFramesLabel": "Fotogramas",

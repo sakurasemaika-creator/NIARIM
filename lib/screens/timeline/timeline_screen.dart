@@ -17,6 +17,7 @@ import '../../engine/audio_waveform_service.dart';
 import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
+import '../../engine/export_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/layer_keyframe_engine.dart';
@@ -1042,6 +1043,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               if (action == 'export') {
                 context.push('/export/${widget.projectId}');
               }
+              if (action == 'export_frame') _exportCurrentFrameImage();
               if (action == 'duration') _showDurationChangeDialog();
               if (action == 'canvas_size') _showCanvasSizeChangeDialog();
             },
@@ -1069,6 +1071,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
               PopupMenuItem(
                 value: 'export',
                 child: Text(l10n.timelineExportMenuItem),
+              ),
+              PopupMenuItem(
+                value: 'export_frame',
+                child: Text(l10n.timelineExportFrameMenuItem),
               ),
             ],
           ),
@@ -5799,6 +5805,69 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (!mounted) return;
     }
     if (mounted) context.go('/home');
+  }
+
+  /// 現在タイムラインに表示中のフレーム1枚を、静止画（PNG/JPEG）として
+  /// exportsフォルダへ書き出す（タイムライン三点メニュー「フレームを
+  /// 画像で書き出す」）。動画としての書き出し（export_screen.dart）とは
+  /// 別に、コマ単体を1枚絵として取り出したい場合向けの簡易機能。
+  Future<void> _exportCurrentFrameImage() async {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+
+    final asJpeg = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineExportFrameDialogTitle),
+        content: Text(l10n.timelineExportFrameDialogMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.timelineExportFramePngOption),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.timelineExportFrameJpegOption),
+          ),
+        ],
+      ),
+    );
+    if (asJpeg == null || !mounted) return;
+
+    final ps = context.read<ProjectService>();
+    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    if (project == null) return;
+    final scenes = ps.scenesOf(widget.projectId);
+    final tileManager = ps.tileManagerOf(widget.projectId);
+
+    try {
+      final path = await ExportEngine().exportFrameImage(
+        scenes: scenes,
+        tileManager: tileManager,
+        sceneId: sceneId,
+        frameIndex: _currentFrame,
+        drawingWidth: project.drawingWidth,
+        drawingHeight: project.drawingHeight,
+        width: project.exportWidth,
+        height: project.exportHeight,
+        backgroundColor: project.backgroundColor,
+        asJpeg: asJpeg,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.timelineExportFrameSuccessSnackbar(path.split('/').last))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.timelineExportFrameErrorSnackbar)),
+      );
+    }
   }
 
   /// 現在のシーンの長さ（フレーム数）を、フレーム数またはそこから換算した

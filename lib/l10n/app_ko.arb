@@ -1474,6 +1474,20 @@
   "saveTreeScreenTitleTree": "세이브 트리",
   "saveTreeScreenTitleSlot": "세이브 슬롯",
   "timelineExportMenuItem": "내보내기",
+  "timelineExportFrameMenuItem": "프레임을 이미지로 내보내기",
+  "timelineExportFrameDialogTitle": "프레임을 이미지로 내보내기",
+  "timelineExportFrameDialogMessage": "현재 표시 중인 프레임 1장을 정지 이미지로 저장합니다. 형식을 선택해 주세요.",
+  "timelineExportFramePngOption": "PNG로 저장",
+  "timelineExportFrameJpegOption": "JPEG로 저장",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "{fileName}(으)로 저장했습니다（작품 목록 탭에서 확인할 수 있습니다）",
+  "timelineExportFrameErrorSnackbar": "프레임 내보내기에 실패했습니다",
   "timelineDurationChangeMenuItem": "길이 변경",
   "timelineCanvasSizeChangeMenuItem": "캔버스 크기 변경",
   "timelineDurationFramesLabel": "프레임 수",

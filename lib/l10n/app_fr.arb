@@ -1474,6 +1474,20 @@
   "saveTreeScreenTitleTree": "Arbre de sauvegarde",
   "saveTreeScreenTitleSlot": "Emplacements de sauvegarde",
   "timelineExportMenuItem": "Exporter",
+  "timelineExportFrameMenuItem": "Exporter l'image en tant qu'image",
+  "timelineExportFrameDialogTitle": "Exporter l'image en tant qu'image",
+  "timelineExportFrameDialogMessage": "Enregistre l'image actuellement affichée en tant qu'image fixe. Choisissez un format.",
+  "timelineExportFramePngOption": "Enregistrer en PNG",
+  "timelineExportFrameJpegOption": "Enregistrer en JPEG",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "Enregistré sous {fileName} (consultable dans l'onglet des créations)",
+  "timelineExportFrameErrorSnackbar": "Échec de l'exportation de l'image",
   "timelineDurationChangeMenuItem": "Modifier la durée",
   "timelineCanvasSizeChangeMenuItem": "Modifier la taille du canevas",
   "timelineDurationFramesLabel": "Images",

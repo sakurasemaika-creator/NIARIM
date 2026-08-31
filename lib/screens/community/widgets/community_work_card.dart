@@ -86,14 +86,21 @@ class CommunityWorkCard extends StatelessWidget {
                     Positioned(
                       left: 6,
                       top: 6,
+                      // 順位バッジの数字は、一覧を流し見しただけでも
+                      // 何位かがすぐ伝わるよう、他のバッジ文字より一回り
+                      // 大きく・見出し用フォント（くらむぼん）で表示する。
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text('#$rankNumber',
-                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Kuramubon')),
                       ),
                     ),
                   // NIARIM側で非公開にした作品であることを示すバッジ。

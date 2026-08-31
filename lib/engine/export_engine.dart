@@ -160,6 +160,50 @@ class ExportEngine {
     return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
   }
 
+  /// タイムラインモードで現在選択中のフレーム1枚だけを静止画（PNG/JPEG）
+  /// として書き出す。動画書き出し（exportMp4等）と異なり、対象シーンの
+  /// うち指定した1フレームだけを合成し、exportsフォルダへ直接保存する
+  /// （中間フォルダへの一時ファイル書き出しは不要）。
+  Future<String> exportFrameImage({
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    required String sceneId,
+    required int frameIndex,
+    required int drawingWidth,
+    required int drawingHeight,
+    required int width,
+    required int height,
+    required int backgroundColor,
+    required bool asJpeg,
+  }) async {
+    final layerHomes = buildLayerHomeIndex(scenes);
+    final scene = scenes.firstWhere((s) => s.id == sceneId);
+    final frame = scene.frames.firstWhere((f) => f.index == frameIndex);
+    final rgba = await renderFrame(
+      layers: resolveFrameLayers(scenes, layerHomes, sceneId, frameIndex, frame.layers),
+      tileManager: tileManager,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      width: width,
+      height: height,
+      backgroundColor: backgroundColor,
+      cameraKeyframes: scene.cameraKeyframes,
+      effectFilters: scene.effectFilters,
+      layerHomes: layerHomes,
+      groups: scene.groups,
+    );
+    final image = img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4);
+    final bytes = asJpeg ? img.encodeJpg(image, quality: 92) : img.encodePng(image);
+    final dir = await ExportEngine.exportsDir();
+    final ext = asJpeg ? 'jpg' : 'png';
+    final outputPath = '${dir.path}/niarim_frame_${DateTime.now().millisecondsSinceEpoch}.$ext';
+    await File(outputPath).writeAsBytes(bytes);
+    _cachedExportedFiles = null;
+    return outputPath;
+  }
+
   /// 無料版のエンドカード（中央にアプリアイコン、下にアプリタイトルロゴ、
   /// 約5秒）のフレーム画像をPNGとして生成する。ロゴ・タイトルロゴとも
   /// SVGをvector_graphicsで直接ui.Pictureへデコードし、Canvas上へ合成する

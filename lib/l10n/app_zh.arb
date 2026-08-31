@@ -1474,6 +1474,20 @@
   "saveTreeScreenTitleTree": "存档树",
   "saveTreeScreenTitleSlot": "存档槽",
   "timelineExportMenuItem": "导出",
+  "timelineExportFrameMenuItem": "将当前帧导出为图片",
+  "timelineExportFrameDialogTitle": "将当前帧导出为图片",
+  "timelineExportFrameDialogMessage": "将当前显示的这一帧保存为静态图片。请选择格式。",
+  "timelineExportFramePngOption": "保存为PNG",
+  "timelineExportFrameJpegOption": "保存为JPEG",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "已保存为{fileName}（可在作品一览标签页中查看）",
+  "timelineExportFrameErrorSnackbar": "帧导出失败",
   "timelineDurationChangeMenuItem": "更改长度",
   "timelineCanvasSizeChangeMenuItem": "更改画布尺寸",
   "timelineDurationFramesLabel": "帧数",

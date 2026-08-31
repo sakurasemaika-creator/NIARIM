@@ -1474,6 +1474,20 @@
   "saveTreeScreenTitleTree": "存檔樹",
   "saveTreeScreenTitleSlot": "存檔槽",
   "timelineExportMenuItem": "匯出",
+  "timelineExportFrameMenuItem": "將目前影格匯出為圖片",
+  "timelineExportFrameDialogTitle": "將目前影格匯出為圖片",
+  "timelineExportFrameDialogMessage": "將目前顯示的這一影格儲存為靜態圖片。請選擇格式。",
+  "timelineExportFramePngOption": "儲存為PNG",
+  "timelineExportFrameJpegOption": "儲存為JPEG",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "已儲存為{fileName}（可於作品一覽分頁中確認）",
+  "timelineExportFrameErrorSnackbar": "影格匯出失敗",
   "timelineDurationChangeMenuItem": "變更長度",
   "timelineCanvasSizeChangeMenuItem": "變更畫布尺寸",
   "timelineDurationFramesLabel": "影格數",
