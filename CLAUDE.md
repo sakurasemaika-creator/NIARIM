@@ -119,17 +119,27 @@
   `tool/gen_app_icon.py`・`pubspec.yaml`の`adaptive_icon_background`と
   合わせて**3箇所を同期**する必要がある。既定テーマの配色を変更したら
   3箇所とも更新すること。
-- **R8（コード圧縮）を疑う前に本当にR8が原因か切り分けること／ドキュメント間の
-  矛盾に注意**：過去に実機起動直後クラッシュの原因をffmpeg関連ライブラリの
-  切替と誤って結び付け一度全面revertしたが、真因はリリースビルドのR8
-  （`isMinifyEnabled`）だったと判明した経緯がある。**`pubspec.yaml`の
-  ffmpeg依存コメントは「R8を無効化した状態を保っている」と書かれているが、
-  これは古い記述で現状と矛盾している**：`android/app/build.gradle.kts`は
-  現在`isMinifyEnabled = true`（`proguard-rules.pro`に
-  `HardwareVideoEncoder`のkeepルールを追加した上で再有効化済み）になって
-  おり、そのコメントには「この修正込みでのR8有効ビルドの実機起動確認は
-  まだ済んでいない」と明記されている。次回セッションで実機確認したら、
-  結果に応じて`pubspec.yaml`側のコメントも実態に合わせて修正すること。
+- **R8（コード圧縮）を疑う前に本当にR8が原因か切り分けること**：過去に
+  実機起動直後クラッシュの原因をffmpeg関連ライブラリの切替と誤って
+  結び付け一度全面revertしたが、真因はリリースビルドのR8
+  （`isMinifyEnabled`）が2つの異なるクラスを誤除去していたことだった
+  （1. 自作の`HardwareVideoEncoder`〔Kotlinの`object`〕のシングルトン
+  インスタンスフィールド、2. `google_mobile_ads`が内部で使う
+  WorkManager/RoomのWorkDatabase実装クラス。後者は
+  `androidx.startup.InitializationProvider`というContentProvider経由で
+  `Application.onCreate()`より前に初期化されるため、通常の未捕捉例外
+  ハンドラーでは原理的に捕捉できないタイミングで落ちており、原因特定に
+  最も時間がかかった）。`android/app/proguard-rules.pro`へのkeepルール
+  追加（自作コード一式・`androidx.work`/`androidx.room`/
+  `androidx.startup`）で両方修正し、**この修正込みのR8有効ビルド
+  （`isMinifyEnabled = true`）をユーザーが実機に再インストールし、
+  起動・書き出しとも正常に動作することを確認済み**（詳細は
+  `docs/AI設計書/12_実装チェックリスト.md`「R8起動時クラッシュの真の
+  原因を実機バグレポートで特定」の節）。この経緯があるため、実機での
+  原因不明のクラッシュ（特に例外ハンドラーでも捕捉できないもの）に
+  遭遇したら、まずR8のusage.txt（GitHub ActionsのArtifactに残る）や
+  ユーザーに取得してもらうAndroidの「バグレポート」機能でのログ確認を
+  早い段階で検討すること。
 - **依存パッケージのバージョン固定には必ず理由がある**：`pubspec.yaml`の
   `file_picker: 10.3.10`・`share_plus: ^12.0.2`・
   `ffmpeg_kit_flutter_new_video`等は、AARメタデータ不整合やAndroidビルド

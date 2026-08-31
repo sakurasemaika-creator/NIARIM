@@ -70,9 +70,13 @@ dependencies:
   #
   # 【重要】この切替とMP4のMediaCodec化は、実機（Android 16）で起動直後に
   # クラッシュする不具合の疑いで一度全面revertされたが、後の調査で
-  # クラッシュの真因はリリースビルドのR8（isMinifyEnabled）であり、この
-  # 切替自体は無関係だったことが判明した（R8無効化で実機起動を確認済み）。
-  # そのためR8を無効化した状態を保ったまま本切替を再適用している。
+  # クラッシュの真因はリリースビルドのR8（isMinifyEnabled）が
+  # WorkManager/Room（google_mobile_ads内部で使用）とHardwareVideoEncoder
+  # の2クラスを誤って除去していたことであり、この切替自体は無関係だった
+  # ことが判明した。proguard-rules.proへのkeepルール追加でR8を有効化した
+  # まま両方修正し、修正込みの実機起動・書き出しを確認済み（このコメントが
+  # 過去に書いていた「R8を無効化した状態を保っている」は古い記述で、現状の
+  # android/app/build.gradle.ktsはR8有効（isMinifyEnabled = true）が正）。
   # 詳細はdocs/AI設計書/12_実装チェックリスト.mdの追記を参照。
   ffmpeg_kit_flutter_new_video: ^2.5.2
   font_awesome_flutter: ^11.0.0

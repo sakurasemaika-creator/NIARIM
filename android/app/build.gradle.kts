@@ -41,13 +41,18 @@ android {
             // アプリの見た目・機能は変わらない。
             //
             // 【経緯】実機（Android 16）で起動直後にクラッシュする不具合の
-            // 原因をusage.txt（R8が実際に除去したクラス一覧）で調査した結果、
-            // com.niarim.niarim.HardwareVideoEncoder（Kotlinのobject）の
-            // シングルトンインスタンスフィールドがR8に除去されていたことが
-            // 判明した。proguard-rules.proに`-keep class
-            // com.niarim.niarim.** { *; }`を追加して修正済み。ただし
-            // この修正込みでのR8有効ビルドの実機起動確認はまだ済んでいない
-            // ため、次のビルドで改めて実機確認が必要。
+            // 原因をusage.txt（R8が実際に除去したクラス一覧）・実機バグ
+            // レポートで段階的に調査し、(1)com.niarim.niarim.HardwareVideoEncoder
+            // （Kotlinのobject）のシングルトンインスタンスフィールド除去、
+            // (2)google_mobile_ads内部が使うWorkManager/RoomのWorkDatabase
+            // 実装クラス破壊（Application.onCreate()より前のContentProvider
+            // 初期化時点で起きるため通常の例外ハンドラーでは捕捉不能だった）、
+            // の2つがそれぞれ原因と判明した。proguard-rules.proへのkeepルール
+            // 追加（自作コード一式・androidx.work/androidx.room/
+            // androidx.startup）で両方修正し、修正込みのR8有効ビルドを
+            // ユーザーが実機に再インストールして起動・書き出しとも正常に
+            // 動作することを確認済み（詳細は12_実装チェックリスト.md
+            // 「R8起動時クラッシュの真の原因を実機バグレポートで特定」の節）。
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
