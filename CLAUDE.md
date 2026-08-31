@@ -157,62 +157,163 @@
 ## 人間の実操作が必要な項目（ストア公開前に必ず確認・最重要）
 
 以下はAIによるコード修正だけでは完結しない、ユーザー本人（事業者）が
-実際に操作・判断しないと進まない項目。詳細は
-`docs/AI設計書/28_継続タスク（未着手一覧）.md`の同名セクション参照。
+実際に操作・判断しないと進まない項目。**使うサービス名・具体的な手順・
+値を貼り戻す先（ファイル・行）まで書いてある**ので、上から順に進めれば
+そのまま実行できるはず。より詳細な一覧・重複しない補足は
+`docs/AI設計書/28_継続タスク（未着手一覧）.md`の同名セクションにもある。
 
-- **収益化タイマーが2027年1月1日で止まっている**：
-  `lib/config/monetization_gate.dart`の`kMonetizationEnabledFrom =
-  DateTime(2027, 1, 1)`により、この日時に達するまで広告SDK（AdMob）・
-  アプリ内課金（in_app_purchase）が一切初期化・接続されず、代わりに
-  全ユーザーへプレミアム機能が無料開放される「リリース記念キャンペーン」
-  状態になっている（税務上の都合によるもの、`PremiumService`・
-  `AdvertisingService`のクラスコメント参照）。**本番公開のタイミングに
-  合わせてこの日付をユーザー自身が判断・変更する必要がある**（同ファイルの
-  コメントには「有効化後は本ファイルを削除し、参照箇所も外すこと」と
-  ある）。
-- **作品広場（コミュニティ機能）のフロントエンドは、バックエンドと
-  一切繋がっていない**：`lib/services/community_service.dart`は全データが
-  ハードコードされたダミーデータで、`package:http`を使うコードは
-  `lib/`全体で`font_service.dart`（フォントダウンロード）以外に存在しない。
-  つまり`backend/`（AWS CDK+Lambda+DynamoDB、コードのみ）を実際にAWSへ
-  デプロイしても（後述のTask#175）、**Flutterアプリ側は自動的には繋がらない**。
-  実際に多人数で使える作品広場にするには、認証（NIARIM User ID発行フロー）・
-  作品CRUD・ランキング/検索・フォロー/ブロック/通報・ブックマーク/リポストの
-  各APIを呼ぶHTTPクライアント層をFlutter側に新規実装し、
-  `community_service.dart`のダミーデータをすべて実データ連携へ差し替える、
-  という大規模な追加実装が丸ごと未着手のまま残っている。「バックエンドさえ
-  デプロイすれば作品広場が動く」わけではない点を必ず引き継ぐこと。
-- **Android署名鍵がデバッグ鍵のまま**：`android/app/build.gradle.kts`の
-  `release`ビルドタイプが`signingConfig = signingConfigs.getByName("debug")`
-  のまま（コード内`TODO: Add your own signing config for the release
-  build.`）。Google Play提出には本番用の署名鍵（keystore）が必須で、
-  秘密鍵の生成・安全な保管はユーザー自身が行う必要がある（AIが代わりに
-  生成・管理すべきではない）。
-- **AdMob・アプリ内課金がすべてテスト用ID**：
-  - `android/app/src/main/AndroidManifest.xml`の
-    `com.google.android.gms.ads.APPLICATION_ID`はGoogle公式の
-    サンプル用テストID（`ca-app-pub-3940256099942544~3347511713`）のまま。
-  - `lib/services/admob_provider.dart`のバナー・スクエア広告ユニットIDも
-    Google公式テストID（`ca-app-pub-3940256099942544/...`）のまま。
-  - ユーザー自身のAdMobコンソールで実際のアプリ・広告ユニットを作成し、
-    発行された本番IDへ差し替える必要がある。
-  - `lib/services/premium_service.dart`のサブスクリプション商品ID
-    （`niarim_premium_monthly`・`niarim_premium_yearly`）は、Google Play
-    Consoleに登録する商品IDと**文字列レベルで完全一致**させる必要がある。
-    ユーザーがPlay Console側でこれらのIDで商品を作成しないと課金テスト
-    自体ができない。また、購入のサーバー側レシート検証（Google Play
-    Developer API等）は未実装で、クライアント側の購入イベントのみを
-    信頼する設計になっている（`PremiumService`のコメント参照）。
-- **プライバシーポリシーの問い合わせ先が全7言語プレースホルダーのまま**
-  （`privacyPolicyArt8Body`）。本アプリ専用の連絡先をユーザーから受け取り
-  次第反映する。
-- **特定商取引法に基づく表示が未対応**。日本向け有料課金を提供する場合、
-  事業者名・電話番号・所在地等の実データが確定するまでコード側の対応
-  （専用画面の追加等）は行わない方針（プレースホルダーの偽情報を実装すると
-  かえって不正確な法的表示を公開することになるため）。
-- **Google Play Consoleのストア掲載情報（アプリ説明・スクリーンショット・
-  アイコン素材の再アップロード等）はこのリポジトリの外側の作業**であり、
-  現状確認できていない。ストア公開前にユーザー側で必ず確認すること。
+1. **収益化タイマーが2027年1月1日で止まっている**（判断のみ、外部サービス
+   不要）：`lib/config/monetization_gate.dart`の`kMonetizationEnabledFrom =
+   DateTime(2027, 1, 1)`により、この日時に達するまで広告SDK（AdMob）・
+   アプリ内課金（in_app_purchase）が一切初期化・接続されず、代わりに
+   全ユーザーへプレミアム機能が無料開放される「リリース記念キャンペーン」
+   状態になっている（税務上の都合、`PremiumService`・`AdvertisingService`
+   のクラスコメント参照）。**本番公開のタイミングに合わせてこの日付を
+   ユーザー自身が判断・変更**すること。恒久的に有効化する場合は、同ファイル
+   のコメントの指示どおり`monetization_gate.dart`自体を削除し、参照箇所
+   （`kMonetizationEnabledFrom`を条件式に使っている箇所。
+   `grep -rn kMonetizationEnabledFrom lib/`で洗い出せる）も外す。
+
+2. **Android署名鍵（keystore）を発行し、リリースビルドに設定する**：
+   - 手順（ローカル端末のターミナルで実行。JDKに同梱の`keytool`コマンドを
+     使う。Android Studioの「Build > Generate Signed Bundle / APK」の
+     ウィザードでも同じことができる）：
+     ```bash
+     keytool -genkeypair -v -keystore niarim-release.keystore \
+       -alias niarim -keyalg RSA -keysize 2048 -validity 10000
+     ```
+     対話式でパスワード（keystore用・key用）と証明書情報（氏名・組織等、
+     適当でよい）を入力する。**生成された`.keystore`ファイルと2つの
+     パスワードは絶対にこのリポジトリにコミットしない**（`.gitignore`で
+     除外されるパスに置くか、リポジトリ外で保管する）。紛失すると同じ
+     `applicationId`（`com.niarim.niarim`）でのアプリ更新が二度とできなく
+     なるため、パスワードマネージャー等での安全な保管が必須。
+   - リポジトリ側の反映：`android/`直下に`key.properties`
+     （**`.gitignore`に追記して除外すること**）を作り、
+     ```properties
+     storeFile=/absolute/path/to/niarim-release.keystore
+     storePassword=<keystore用パスワード>
+     keyAlias=niarim
+     keyPassword=<key用パスワード>
+     ```
+     を書く。`android/app/build.gradle.kts`（現状`signingConfigs`ブロックが
+     無く、33行目付近の`release { signingConfig =
+     signingConfigs.getByName("debug") }`がTODOのまま）に、
+     `key.properties`を読み込む`signingConfigs.create("release")`を追加し、
+     `release`ブロックの`signingConfig`をそれに差し替える（標準的な
+     FlutterプロジェクトのGradle Kotlin DSLでのkeystore設定パターンに
+     従えばよい）。
+
+3. **AdMob（Google公式の広告配信サービス、admob.google.com）で本番広告
+   ユニットを発行する**：
+   - AdMobコンソール（<https://admob.google.com>）にPlay Consoleと同じ
+     Googleアカウントでログイン → 左メニュー「アプリ」→「アプリを追加」で
+     Android／NIARIMを登録（Play Storeにまだ未公開の場合は「いいえ、
+     追加しますか」の手動登録フローで進める）。
+   - 登録後に発行される**App ID**（`ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY`
+     形式）を`android/app/src/main/AndroidManifest.xml`の
+     `com.google.android.gms.ads.APPLICATION_ID`（現状Google公式テストID
+     `ca-app-pub-3940256099942544~3347511713`）に上書きする。
+   - 同アプリ配下で「広告ユニット」→「広告ユニットを追加」→
+     「バナー」を選び、`lib/services/admob_provider.dart`の
+     `_bannerAdUnitId`（Android向け、現状テストID
+     `ca-app-pub-3940256099942544/6300978111`）に対応する**AndroidバナーID**
+     を発行・差し替え。iOS向けにも別途アプリ登録・バナー広告ユニットを
+     作成し、同ファイルの`_bannerAdUnitId`のiOS分岐（現状テストID
+     `ca-app-pub-3940256099942544/2934735716`）を差し替える（iOS版を出す
+     予定が無ければ後回しでよい）。
+   - 正方形（`_squareAdUnitId`）用の広告ユニットも本番では専用に発行する
+     ことが望ましい（同ファイルのコメント参照。現状はテスト用として
+     バナーIDを流用している）。「メディエーション」「レクタングル」等の
+     サイズ指定で追加できる。
+
+4. **Google Play Console（play.google.com/console）でアプリ内課金の
+   サブスクリプション商品を作成する**：
+   - Play Consoleでアプリを開く → 左メニュー「収益化」→
+     「アプリ内アイテム」→「サブスクリプション」→「サブスクリプションを
+     作成」。
+   - **商品IDは`lib/services/premium_service.dart`の
+     `monthlyProductId`（`niarim_premium_monthly`）・`yearlyProductId`
+     （`niarim_premium_yearly`）と文字列レベルで完全一致させる**
+     （Play Console側は登録名を自由に付けられるが、商品ID欄はコード側の
+     この2つの値をそのまま入力すること。一致しないと購入フローが商品を
+     見つけられずテストもできない）。
+   - 価格・課金周期（月次/年次）・利用規約リンク等を設定して「有効化」。
+     Play Consoleの審査・公開ステータスによっては実機でのテスト購入に
+     テイスター（ライセンステスター）登録が必要な場合がある
+     （「設定」→「ライセンステスト」）。
+   - 注意：サーバー側のレシート検証（Google Play Developer APIでの
+     購入確認）は未実装で、クライアント側の購入イベントを直接信頼する
+     設計（`PremiumService`のコメント参照）。不正購入対策を強化したい
+     場合はサーバー検証の追加実装が別途必要（現状は未着手）。
+
+5. **プライバシーポリシーの問い合わせ先を実際の連絡先に差し替える**：
+   本アプリ専用の連絡先（無料Gmailアドレス等でよい）を用意し、
+   `lib/l10n/app_ja.arb`をはじめとする7言語すべての`privacyPolicyArt8Body`
+   キー（`lib/l10n/app_*.arb`、対象言語はja/en/es/fr/ko/zh/zh_Hant）を
+   実際の連絡先を含む文言に更新した上で、`flutter gen-l10n`を実行して
+   生成コードへ反映する（各言語の訳文はCLAUDE.mdの開発ワークフロー節の
+   注意どおり機械的な一括置換を避け、言語ごとに文として自然になるよう
+   手直しすること）。
+
+6. **特定商取引法に基づく表示（日本向け有料課金を提供する場合に必須）**：
+   事業者名・所在地・電話番号・問い合わせ先等の実データがユーザー側で
+   確定してから、専用画面（例：設定画面から遷移する静的ページ）を追加する
+   方針。実データが無いままプレースホルダーで実装すると、かえって不正確な
+   法的表示を公開することになるため、**現時点ではコード側の対応を意図的に
+   保留している**。実データが揃ったら、既存の利用規約・プライバシー
+   ポリシー画面（`lib/screens/`配下の該当画面を参照）と同じ構成で新規画面を
+   追加し、設定画面からの導線を張ること。
+
+7. **Google Play Consoleのストア掲載情報を仕上げる**：
+   Play Console「ストアの掲載情報」から、アプリ説明文・スクリーンショット
+   （最新の画面デザインのもの）・フィーチャーグラフィック・
+   最新アイコン素材（`assets/icon/app_icon.png`を元にした
+   512×512のハイレゾアイコン）を登録する。このリポジトリの外側（Play
+   Console画面上）の作業であり、現状未着手・未確認。「コンテンツの
+   レーティング」「対象年齢」「データセーフティ」の各アンケートも
+   公開前に必須。
+
+8. **YouTube Data API v3のAPIキー、およびGoogleログイン用OAuthクライアント
+   IDをGoogle Cloud Consoleで発行し、バックエンドのデプロイ時に渡す**：
+   バックエンド（`backend/`）の統計更新バッチ（`videos.batchGetStats`）と
+   ログイン認証（Google OAuthのIDトークン検証）が、それぞれ
+   `YOUTUBE_API_KEY`・`GOOGLE_CLIENT_ID`という2つの値を必要とする
+   （`backend/lib/niarim-backend-stack.ts`の129行目・165行目、
+   CDKの`this.node.tryGetContext(...)`で読み込む設計。未設定だと
+   `'REPLACE_ME'`のまま動いてしまう）。
+   - Google Cloud Console（<https://console.cloud.google.com>）で
+     プロジェクトを作成（または既存のものを流用）→「APIとサービス」→
+     「ライブラリ」で「YouTube Data API v3」を有効化。
+   - 「認証情報」→「認証情報を作成」→「APIキー」で**YouTube Data
+     APIキー**を発行し、キーの設定で「YouTube Data API v3」のみに制限
+     しておく（推奨）。
+   - 同じく「認証情報を作成」→「OAuthクライアントID」で**Googleログイン用
+     OAuthクライアントID**を発行（先に「OAuth同意画面」の設定が必要）。
+   - デプロイ時にこの2値を`backend/`ディレクトリで
+     ```bash
+     npx cdk deploy \
+       -c googleClientId=<発行したOAuthクライアントID> \
+       -c youtubeApiKey=<発行したYouTube APIキー>
+     ```
+     のように`-c`オプションで渡す（`backend/README.md`の「デプロイ手順」
+     に同じ内容がある。バックエンドのデプロイ手順全体・前提条件・
+     `youtube.upload`スコープのGoogle審査についてはそちらを参照）。
+
+9. **作品広場（コミュニティ機能）のフロントエンドは、バックエンドと
+   一切繋がっていない**（上記8の後もこれ単独では解決しない、大規模な
+   追加実装項目）：`lib/services/community_service.dart`は全データが
+   ハードコードされたダミーデータで、`package:http`を使うコードは
+   `lib/`全体で`font_service.dart`（フォントダウンロード）以外に存在しない。
+   つまり`backend/`（AWS CDK+Lambda+DynamoDB、コードのみ）を実際にAWSへ
+   デプロイしても、**Flutterアプリ側は自動的には繋がらない**。実際に
+   多人数で使える作品広場にするには、認証（NIARIM User ID発行フロー）・
+   作品CRUD・ランキング/検索・フォロー/ブロック/通報・ブックマーク/リポストの
+   各APIを呼ぶHTTPクライアント層をFlutter側に新規実装し、
+   `community_service.dart`のダミーデータをすべて実データ連携へ差し替える、
+   という大規模な追加実装が丸ごと未着手のまま残っている（人間の判断という
+   より純粋な追加開発work。ユーザー自身の操作が要るのは上記8のAPIキー
+   発行部分のみ）。
 
 ## 現在の未完了事項（その他・概要）
 
