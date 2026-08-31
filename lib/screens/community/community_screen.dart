@@ -10,6 +10,7 @@ import 'community_author_works_screen.dart';
 import 'community_follow_notifications_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
+import 'widgets/video_type_filter.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -58,6 +59,10 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   // （「検索ボックスをタグ検索モードに切り替える」機能）。タグチップを
   // 直接タップした場合もこのモードへ切り替えて絞り込む。
   bool _tagSearchMode = false;
+  // 「総合」「縦画面のみ」「横画面のみ」の絞り込み。新着・ランキング・
+  // お気に入り作者タブすべてで共通に使うタブ横断の状態（AppBar上の
+  // プルダウンで切り替える）。
+  VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
 
   @override
   void initState() {
@@ -103,14 +108,15 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   /// タグ検索モード時はタイトル・投稿者名の代わりにタグへの部分一致で
   /// 絞り込む。
   List<CommunityWork> _applySearch(List<CommunityWork> works) {
+    final typeFiltered = _videoTypeFilter.apply(works);
     final query = _searchQuery.trim().toLowerCase();
-    if (query.isEmpty) return works;
+    if (query.isEmpty) return typeFiltered;
     if (_tagSearchMode) {
-      return works
+      return typeFiltered
           .where((w) => w.tags.any((t) => t.toLowerCase().contains(query)))
           .toList();
     }
-    return works
+    return typeFiltered
         .where((w) =>
             w.title.toLowerCase().contains(query) ||
             w.authorName.toLowerCase().contains(query))
@@ -289,11 +295,19 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                 builder: (_) => const CommunityFollowNotificationsScreen(),
               )),
             ),
-            IconButton(
-              icon: const Icon(Icons.view_carousel_outlined),
-              tooltip: l10n.communityShortsModeTooltip,
-              onPressed: () => _openShortsMode(allWorks),
+            VideoTypeFilterButton(
+              value: _videoTypeFilter,
+              onChanged: (v) => setState(() => _videoTypeFilter = v),
             ),
+            // 縦画面モード（全画面縦スクロールビューア）は、「縦画面のみ」
+            // 絞り込み中でなければ横動画も混在してしまい導線として紛らわしい
+            // ため、「縦画面のみ」選択時にのみ表示する。
+            if (_videoTypeFilter == VideoTypeFilter.shortOnly)
+              IconButton(
+                icon: const Icon(Icons.view_carousel_outlined),
+                tooltip: l10n.communityShortsModeTooltip,
+                onPressed: () => _openShortsMode(allWorks),
+              ),
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: l10n.commonSearch,

@@ -7,6 +7,7 @@ import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
+import 'widgets/video_type_filter.dart';
 
 /// 特定の作者の投稿作品一覧（29_動画投稿・ランキング機能仕様.md 8.4節）＋
 /// その作者のブックマーク一覧（Task#145：ユーザー別ブックマーク一覧の
@@ -41,6 +42,10 @@ class CommunityAuthorWorksScreen extends StatefulWidget {
 class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController = TabController(length: 2, vsync: this);
+  // 「総合」「縦画面のみ」「横画面のみ」の絞り込み（「作品」タブが対象。
+  // ブックマーク一覧は本来の投稿順ではないため、ショートモード同様に
+  // 対象外とする）。
+  VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
 
   @override
   void dispose() {
@@ -130,6 +135,10 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final isSelf = widget.authorId == kDummySelfAuthorId;
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
     final works = communityService.worksByAuthor(widget.authorId, includeHidden: isSelf);
+    // 「作品」タブの一覧・縦画面モードにのみ「総合/縦画面のみ/横画面のみ」
+    // 絞り込みを適用する。投稿数の表示（works.length）は絞り込みの影響を
+    // 受けない総数のままにする。
+    final filteredWorks = _videoTypeFilter.apply(works);
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
     // 一覧（誰がフォロー中／フォロワーか）は本人選択制の公開設定に従う。
@@ -150,13 +159,18 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
       appBar: AppBar(
         title: Text(widget.authorName),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.view_carousel_outlined),
-            tooltip: l10n.communityShortsModeTooltip,
-            // ショートモードは「作品」タブの一覧を対象にする
-            // （ブックマーク一覧は本来の投稿順ではないため対象外）。
-            onPressed: () => _openShortsMode(works, bookmarkedIds),
+          VideoTypeFilterButton(
+            value: _videoTypeFilter,
+            onChanged: (v) => setState(() => _videoTypeFilter = v),
           ),
+          if (_videoTypeFilter == VideoTypeFilter.shortOnly)
+            IconButton(
+              icon: const Icon(Icons.view_carousel_outlined),
+              tooltip: l10n.communityShortsModeTooltip,
+              // ショートモードは「作品」タブの一覧を対象にする
+              // （ブックマーク一覧は本来の投稿順ではないため対象外）。
+              onPressed: () => _openShortsMode(filteredWorks, bookmarkedIds),
+            ),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -289,7 +303,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 children: [
                   // ─── 作品タブ ───────────────────────────────────
                   SingleChildScrollView(
-                    child: works.isEmpty
+                    child: filteredWorks.isEmpty
                         ? Padding(
                             padding: const EdgeInsets.all(32),
                             child: Center(
@@ -298,7 +312,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                             ),
                           )
                         : CommunityWorkGrid(
-                            works: works,
+                            works: filteredWorks,
                             bookmarkedIds: bookmarkedIds,
                             onTapWork: openWork,
                             onToggleBookmark: toggleBookmark,

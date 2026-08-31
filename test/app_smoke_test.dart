@@ -1549,6 +1549,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
+      // 縦画面モードボタンは「縦画面のみ」フィルターを選択したときにのみ
+      // 表示される仕様のため、先に動画種類フィルターを「縦画面のみ」へ
+      // 切り替える。
+      final videoTypeFilterFinder = find.byIcon(Icons.filter_alt_outlined);
+      expect(videoTypeFilterFinder, findsOneWidget);
+      await tester.tap(videoTypeFilterFinder);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('縦画面のみ').last);
+      await tester.pumpAndSettle();
+
       // ダミーデータは約35%がショート動画になるよう生成しているため、
       // 24件中で1件も無いことは考えにくいが、念のためボタン自体は必ず
       // 存在することを先に確認する。
