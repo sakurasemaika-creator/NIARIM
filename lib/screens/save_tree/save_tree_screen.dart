@@ -673,11 +673,15 @@ class _TreeView extends StatelessWidget {
   ) {
     final isSelected = selectedNodeId == node.id;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      // ListViewの子は縦方向が非拘束なのでstretchを指定すると
+      // Rowが無限高さを要求してクラッシュする。接続線側へ有限高を与え、
+      // 行自体は中央揃えにすることでスマホ幅でも安定して描画する。
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (depth > 0)
           SizedBox(
             width: depth * 20.0,
+            height: 72,
             child: CustomPaint(
               painter: _TreeConnectorPainter(
                 continues: continues,
