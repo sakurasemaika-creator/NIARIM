@@ -1,0 +1,46 @@
+name: Visual Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - 'lib/widgets/sort_mode_control.dart'
+      - 'test/visual_smoke_test.dart'
+      - '.github/workflows/visual-smoke.yml'
+
+jobs:
+  visual-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+
+    steps:
+      - name: リポジトリ取得
+        uses: actions/checkout@v6
+
+      - name: Flutter セットアップ
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+
+      - name: 依存関係取得
+        run: flutter pub get
+
+      - name: 既存スモークテスト
+        run: flutter test test/app_smoke_test.dart --reporter expanded
+
+      - name: 狭幅ビジュアルスモークテスト
+        run: flutter test test/visual_smoke_test.dart --reporter expanded
+
+      - name: 操作別スクリーンショットを保存
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-smoke-screenshots
+          path: build/visual-smoke/*.png
+          if-no-files-found: warn
+          retention-days: 3
