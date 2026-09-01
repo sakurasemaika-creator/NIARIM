@@ -29,6 +29,9 @@ jobs:
       - name: 狭幅ビジュアルスモークテスト
         run: flutter test test/visual_smoke_test.dart --reporter expanded
 
+      - name: 作品一覧クリーンスクリーンショット
+        run: flutter test test/visual_smoke_clean_home_test.dart --reporter expanded
+
       - name: 操作別スクリーンショットを保存
         if: always()
         uses: actions/upload-artifact@v6
