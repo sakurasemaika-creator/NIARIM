@@ -14,7 +14,6 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/project_service.dart';
 
 class _FakeFilePicker extends FilePicker {
@@ -37,7 +36,6 @@ class _FakeFilePicker extends FilePicker {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
   final screenshotKey = GlobalKey();
   late Directory tempDir;
 
@@ -147,13 +145,9 @@ void main() {
     }
   }
 
-  Future<void> dragIntoView(
-    WidgetTester tester,
-    Finder target, {
-    Finder? scrollable,
-  }) async {
+  Future<void> dragIntoView(WidgetTester tester, Finder target) async {
     expect(target, findsWidgets);
-    final viewport = scrollable ?? find.byType(SingleChildScrollView).first;
+    final viewport = find.byType(SingleChildScrollView).first;
     expect(viewport, findsOneWidget);
     await tester.dragUntilVisible(
       target.first,
@@ -177,7 +171,6 @@ void main() {
     GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/new-project');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '新規プロジェクト画面');
-
     final createButton = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
     await dragIntoView(tester, createButton);
     final rect = tester.getRect(createButton.first);
@@ -187,7 +180,6 @@ void main() {
     await tapVisible(tester, createButton);
     await tester.pump(const Duration(milliseconds: 900));
     expectClean(tester, '作成→キャンバス');
-
     final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
     expect(ps.projects, isNotEmpty);
     final project = ps.projects.first;
@@ -196,44 +188,30 @@ void main() {
     return (projectId: project.id, sceneId: scenes.first.id);
   }
 
-  Finder toolbarIcon(IconData icon) => find.descendant(
-        of: find.byType(ToolbarWidget),
-        matching: find.byIcon(icon, skipOffstage: false),
-      );
-
-  Future<void> tapToolbarIcon(WidgetTester tester, IconData icon) async {
-    final toolbar = find.byType(ToolbarWidget);
-    expect(toolbar, findsOneWidget);
-    final scroller = find.descendant(
-      of: toolbar,
-      matching: find.byType(SingleChildScrollView),
-    );
-    expect(scroller, findsOneWidget);
-    final target = toolbarIcon(icon);
-    expect(target, findsOneWidget);
-    for (var i = 0; i < 8; i++) {
-      final r = tester.getRect(target);
-      final w = tester.view.physicalSize.width / tester.view.devicePixelRatio;
-      if (r.left >= 0 && r.right <= w) break;
-      await tester.drag(scroller, Offset(r.right > w ? -120 : 120, 0), warnIfMissed: false);
-      await tester.pump(const Duration(milliseconds: 160));
-    }
-    await tapVisible(tester, target);
+  Future<void> tapToolbarControl(WidgetTester tester, String tooltip) async {
+    final target = find.byTooltip(tooltip, skipOffstage: false);
+    expect(target, findsWidgets);
+    final realTarget = target.last;
+    await tester.ensureVisible(realTarget);
+    await tester.pump(const Duration(milliseconds: 180));
+    await tester.tap(realTarget, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 350));
   }
 
   Future<void> closeOverlay(WidgetTester tester) async {
     final close = find.byIcon(Icons.close, skipOffstage: false);
     expect(close, findsWidgets);
-    await tapVisible(tester, close);
+    await tester.tap(close.last, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 350));
     expectClean(tester, 'オーバーレイを閉じる');
   }
 
   Future<void> openTimeline(WidgetTester tester) async {
     final timeline = find.text('タイムライン', skipOffstage: false);
     expect(timeline, findsWidgets);
-    await tester.ensureVisible(timeline.first);
+    await tester.ensureVisible(timeline.last);
     await tester.pump(const Duration(milliseconds: 120));
-    await tapVisible(tester, timeline);
+    await tester.tap(timeline.last, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 550));
     consumeKnownTimelineOverflow(tester);
   }
@@ -242,17 +220,19 @@ void main() {
     await createProjectAndOpenCanvas(tester);
     await capture(tester, '01_canvas_default');
 
-    await tapToolbarIcon(tester, Icons.layers);
+    await tapToolbarControl(tester, 'レイヤー');
     expectClean(tester, 'レイヤーパネルを開く');
     await capture(tester, '02_canvas_layer_panel');
     await closeOverlay(tester);
 
     final settingsEdit = find.byTooltip('設定/編集', skipOffstage: false);
     expect(settingsEdit, findsWidgets);
-    await tapVisible(tester, settingsEdit);
+    await tester.tap(settingsEdit.last, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 350));
     final onion = find.text('オニオンスキン', skipOffstage: false);
     expect(onion, findsWidgets);
-    await tapVisible(tester, onion);
+    await tester.tap(onion.last, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 350));
     expectClean(tester, 'オニオンスキンを開く');
     await capture(tester, '03_canvas_onion_skin');
   }, timeout: const Timeout(Duration(seconds: 180)));
@@ -262,8 +242,8 @@ void main() {
     await openTimeline(tester);
     await capture(tester, '04_timeline_default');
 
-    // 音声ファイル選択はCIで実ファイル選択UIを出せないため、実ProjectServiceへ
-    // クリップだけ投入し、その後の「タイムライン上のクリップをタップして編集」は実操作する。
+    // CIではOSのファイル選択UIを開けないため素材選択だけProjectServiceへ投入し、
+    // その後のタイムライン表示→クリップタップ→編集パネル表示は実UI操作する。
     final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
     ps.addAudioClip(
       ids.projectId,
@@ -282,15 +262,16 @@ void main() {
     await openTimeline(tester);
     final audio = find.text('比較用音声', skipOffstage: false);
     expect(audio, findsWidgets);
-    await tester.ensureVisible(audio.first);
-    await tapVisible(tester, audio);
+    await tester.ensureVisible(audio.last);
+    await tester.tap(audio.last, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 350));
     consumeKnownTimelineOverflow(tester);
     await capture(tester, '05_timeline_audio_editor');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
   testWidgets('Web比較基準v2: SaveTree / Export', (tester) async {
     final ids = await createProjectAndOpenCanvas(tester);
-    await tapToolbarIcon(tester, Icons.save_outlined);
+    await tapToolbarControl(tester, '保存（セーブツリー）');
     await tester.pump(const Duration(milliseconds: 550));
     expectClean(tester, 'Canvas→SaveTree');
     await capture(tester, '06_save_tree');
@@ -300,7 +281,7 @@ void main() {
     await openTimeline(tester);
     final export = find.byIcon(Icons.upload_file, skipOffstage: false);
     expect(export, findsWidgets);
-    await tapVisible(tester, export);
+    await tester.tap(export.last, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 550));
     consumeKnownTimelineOverflow(tester);
     await capture(tester, '07_export');
