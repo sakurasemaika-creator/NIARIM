@@ -23,29 +23,31 @@ jobs:
       contents: write
     steps:
       - name: リポジトリ取得
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: JDK 17 セットアップ
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
-          # Gradle依存関係（~/.gradle/caches・~/.gradle/wrapper）を
-          # android/配下のGradleファイルのハッシュ単位でキャッシュする。
-          # キャッシュが無いと毎回全依存関係をゼロからダウンロードし直し、
-          # ビルドが遅くなる・ネットワーク詰まりでハングしやすくなる原因になる。
-          cache: gradle
+          # GradleキャッシュはAPK生成後の保存時にrunnerのディスクを圧迫し、
+          # tar/zstdがNo space left on deviceで警告になることがあるため無効化。
+          # ビルドの確実性を優先し、毎回必要な依存関係を解決する。
 
       - name: Flutter セットアップ
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          cache: true
+          # Flutter SDK/Pubキャッシュも保存時に数GB規模の一時領域を使い、
+          # APK生成後にrunnerの空き容量を使い切ることがあるため無効化。
+          cache: false
 
       - name: 依存関係取得
         run: flutter pub get
 
       - name: 静的解析
+        # deprecated APIなどinfoレベルの指摘でもflutter analyzeはexit code 1を
+        # 返すため、APKビルド自体は継続する。解析結果はログで確認できる。
         run: flutter analyze
         continue-on-error: true
 
@@ -57,29 +59,22 @@ jobs:
         if: ${{ inputs.build-type == 'release' }}
         run: flutter build apk --release
 
-      # Actions Storage（無料枠0.5GB）の上限に達っていると、このステップ
-      # だけが失敗してジョブ全体が失敗扱いになる（ビルド自体は成功済み）。
-      # そのため下の「GitHub Releaseへ公開」ステップを代替配布経路として
-      # 追加し、こちらは失敗してもジョブを止めないようにした。
+      # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
+      # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
       - name: APKをArtifactsへアップロード
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         continue-on-error: true
         with:
           name: niarim-${{ inputs.build-type }}-apk
           path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
-          # APK本体は1回あたり100〜160MB超と大きく、Actions Storage（無料枠
-          # 0.5GB）をすぐ圧迫する。14日→3日へ短縮した後も、GitHub側の使用量
-          # 再計算が6〜12時間おきにしか走らないため蓄積分が反映されにくく、
-          # 結局ストレージ上限エラーで書き出しに失敗する事態が発生したため、
-          # 1日へさらに短縮した。
+          # APK本体は大きいため保持期間を最短にする。
           retention-days: 1
 
       # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
-      # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存
-      # しておく）。R8有効時（isMinifyEnabled=true）のみ生成される。
+      # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存）。
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
         if: ${{ inputs.build-type == 'release' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         continue-on-error: true
         with:
           name: niarim-release-r8-reports
@@ -91,11 +86,7 @@ jobs:
           if-no-files-found: warn
 
       # Actions Storageの上限とは別枠のGitHub Releaseへapkを添付する代替
-      # 配布経路。実機での動作確認用に、Actions Storageの上限に達っていても
-      # 確実にapkを取得できるようにするための保険。ビルド種別ごとに
-      # 固定タグ（build-debug-latest／build-release-latest）を使い回し、
-      # 実行のたびに前回分を上書きする（Release自体をアーティファクト置き場
-      # 代わりに使う設計のため、古いRelease履歴を積み上げない）。
+      # 配布経路。ビルド種別ごとに固定タグを使い回し、毎回置き換える。
       - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
         env:
           GH_TOKEN: ${{ github.token }}
