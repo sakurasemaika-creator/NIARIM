@@ -181,8 +181,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       expectNoFlutterException(tester, '表示サイズメニュー表示');
       await capture(tester, '07_home_view_mode_menu');
-      await tester.pageBack();
+      // PopupMenuRouteは通常のページではないためtester.pageBack()では閉じられない。
+      // メニュー外をタップし、実機と同じdismiss操作で閉じる。
+      await tester.tapAt(const Offset(8, 220));
       await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '表示サイズメニューを閉じる');
 
       // 4. 検索モード。長い入力でもAppBar内が崩れないことを確認。
       final search = find.byIcon(Icons.search);
@@ -212,8 +215,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expectNoFlutterException(tester, 'ホームドロワー表示');
       await capture(tester, '10_home_drawer');
-      await tester.pageBack();
+      // Drawerもページではないので、画面右端のscrimをタップして閉じる。
+      await tester.tapAt(const Offset(315, 360));
       await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
       // 6. 作品一覧タブ。
       final worksTab = find.text('作品一覧');
