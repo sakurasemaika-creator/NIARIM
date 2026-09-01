@@ -1,7 +1,6 @@
 name: Build APK
 
-# 通常は手動実行。今回の実機確認用ビルドを起動するためdev_branchへの
-# このworkflowファイル自身のpushでもdebugビルドを1回起動できるようにする。
+# 手動実行のみ。GitHubの画面/アプリの「Actions」タブから「Run workflow」で起動する。
 on:
   workflow_dispatch:
     inputs:
@@ -13,17 +12,13 @@ on:
           - debug
           - release
         default: debug
-  push:
-    branches:
-      - dev_branch
-    paths:
-      - '.github/workflows/build-apk.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BUILD_TYPE: ${{ inputs.build-type || 'debug' }}
+    # GitHub Releaseへapkを添付するために書き込み権限が必要
+    # （Actions Storageの上限に達している間の代替配布経路。下記
+    # 「APKをGitHub Releaseへ公開」ステップ参照）。
     permissions:
       contents: write
     steps:
@@ -35,38 +30,50 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          # GradleキャッシュはAPK生成後の保存時にrunnerのディスクを圧迫し、
+          # tar/zstdがNo space left on deviceで警告になることがあるため無効化。
+          # ビルドの確実性を優先し、毎回必要な依存関係を解決する。
 
       - name: Flutter セットアップ
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Flutter SDK/Pubキャッシュも保存時に数GB規模の一時領域を使い、
+          # APK生成後にrunnerの空き容量を使い切ることがあるため無効化。
           cache: false
 
       - name: 依存関係取得
         run: flutter pub get
 
       - name: 静的解析
+        # deprecated APIなどinfoレベルの指摘でもflutter analyzeはexit code 1を
+        # 返すため、APKビルド自体は継続する。解析結果はログで確認できる。
         run: flutter analyze
         continue-on-error: true
 
       - name: APKビルド（debug）
-        if: ${{ env.BUILD_TYPE == 'debug' }}
+        if: ${{ inputs.build-type == 'debug' }}
         run: flutter build apk --debug
 
       - name: APKビルド（release）
-        if: ${{ env.BUILD_TYPE == 'release' }}
+        if: ${{ inputs.build-type == 'release' }}
         run: flutter build apk --release
 
+      # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
+      # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
       - name: APKをArtifactsへアップロード
         uses: actions/upload-artifact@v6
         continue-on-error: true
         with:
-          name: niarim-${{ env.BUILD_TYPE }}-apk
-          path: build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk
+          name: niarim-${{ inputs.build-type }}-apk
+          path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
+          # APK本体は大きいため保持期間を最短にする。
           retention-days: 1
 
+      # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
+      # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存）。
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
-        if: ${{ env.BUILD_TYPE == 'release' }}
+        if: ${{ inputs.build-type == 'release' }}
         uses: actions/upload-artifact@v6
         continue-on-error: true
         with:
@@ -78,14 +85,16 @@ jobs:
           retention-days: 1
           if-no-files-found: warn
 
+      # Actions Storageの上限とは別枠のGitHub Releaseへapkを添付する代替
+      # 配布経路。ビルド種別ごとに固定タグを使い回し、毎回置き換える。
       - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="build-${BUILD_TYPE}-latest"
+          TAG="build-${{ inputs.build-type }}-latest"
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" \
-            "build/app/outputs/flutter-apk/app-${BUILD_TYPE}.apk" \
-            --title "NIARIM ${BUILD_TYPE} 最新ビルド（実機確認用）" \
+            "build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk" \
+            --title "NIARIM ${{ inputs.build-type }} 最新ビルド（実機確認用）" \
             --notes "コミット ${{ github.sha }} からの自動ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。" \
             --prerelease
