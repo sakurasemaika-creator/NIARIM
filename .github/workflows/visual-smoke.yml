@@ -2,6 +2,11 @@ name: Visual Smoke Test
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/visual-smoke.yml'
 
 jobs:
   visual-smoke:
