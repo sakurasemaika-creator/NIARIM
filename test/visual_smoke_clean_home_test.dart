@@ -39,7 +39,7 @@ void main() {
   testWidgets('作品一覧を新しいWidgetツリーから撮影できる', (tester) async {
     SharedPreferences.setMockInitialValues({});
     FilePicker.platform = _FakeFilePicker();
-    appRouter.go('/');
+    appRouter.go('/home');
 
     final tempDir = Directory.systemTemp.createTempSync('niarim_clean_home_');
     const pathProvider = MethodChannel('plugins.flutter.io/path_provider');
@@ -74,11 +74,6 @@ void main() {
         child: MultiProvider(providers: providers!, child: const NiarimApp()),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 500));
-
-    final create = find.byIcon(Icons.brush_outlined);
-    expect(create, findsOneWidget);
-    await tester.tap(create);
     await tester.pump(const Duration(milliseconds: 700));
 
     final firstLaunch = find.text('はじめる');
@@ -93,7 +88,13 @@ void main() {
     await tester.tap(worksTab.first);
     await tester.pump(const Duration(milliseconds: 700));
 
-    expect(find.byType(Drawer), findsNothing);
+    // Drawerは閉じていてもScaffoldの子としてWidgetツリーには存在するため、
+    // Widgetの有無ではなくScaffoldStateの実際の開閉状態を検証する。
+    final drawer = find.byType(Drawer);
+    expect(drawer, findsOneWidget);
+    final homeScaffold = Scaffold.of(tester.element(drawer));
+    expect(homeScaffold.isDrawerOpen, isFalse);
+
     final exception = tester.takeException();
     expect(exception, isNull, reason: '作品一覧表示でFlutter例外/overflow');
 
