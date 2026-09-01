@@ -2,6 +2,13 @@ name: Visual Smoke Test
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - 'lib/screens/project/new_project_screen.dart'
+      - 'test/visual_smoke_test.dart'
+      - '.github/workflows/visual-smoke.yml'
 
 jobs:
   visual-smoke:
