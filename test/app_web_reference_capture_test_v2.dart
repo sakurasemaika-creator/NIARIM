@@ -170,7 +170,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
   }
 
-  Future<(String projectId, String sceneId)> createProjectAndOpenCanvas(
+  Future<({String projectId, String sceneId})> createProjectAndOpenCanvas(
     WidgetTester tester,
   ) async {
     await bootToHome(tester);
@@ -193,7 +193,7 @@ void main() {
     final project = ps.projects.first;
     final scenes = ps.scenesOf(project.id);
     expect(scenes, isNotEmpty);
-    return (project.id, scenes.first.id);
+    return (projectId: project.id, sceneId: scenes.first.id);
   }
 
   Finder toolbarIcon(IconData icon) => find.descendant(
