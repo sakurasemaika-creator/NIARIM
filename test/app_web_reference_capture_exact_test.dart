@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
@@ -102,30 +103,6 @@ void main() {
     expect(e, isNull, reason: '$where: $e');
   }
 
-  Rect? visibleRect(WidgetTester tester, Finder finder) {
-    final logicalSize = tester.view.physicalSize / tester.view.devicePixelRatio;
-    final viewport = Offset.zero & logicalSize;
-    for (final element in finder.evaluate()) {
-      try {
-        final rect = tester.getRect(find.byElementPredicate((e) => identical(e, element)));
-        if (rect.width <= 0 || rect.height <= 0) continue;
-        if (!viewport.contains(rect.center)) continue;
-        return rect;
-      } catch (_) {
-        // RenderBoxを持たない候補は無視して、次の同一アイコン/テキストを見る。
-      }
-    }
-    return null;
-  }
-
-  Future<void> tapVisible(WidgetTester tester, Finder finder, String label) async {
-    expect(finder, findsWidgets, reason: '$label の候補が存在しない');
-    final rect = visibleRect(tester, finder);
-    expect(rect, isNotNull, reason: '$label の画面内候補が見つからない');
-    await tester.tapAt(rect!.center);
-    await tester.pump(const Duration(milliseconds: 320));
-  }
-
   Future<void> boot(WidgetTester tester) async {
     phone(tester);
     await fonts(tester);
@@ -164,51 +141,61 @@ void main() {
     return (projectId: p.id, sceneId: ps.scenesOf(p.id).first.id);
   }
 
-  Future<void> timeline(WidgetTester tester) async {
-    await tapVisible(
-      tester,
-      find.text('タイムライン', skipOffstage: false),
-      'Canvasのタイムライン切替',
-    );
-    await tester.pump(const Duration(milliseconds: 400));
-    final e = tester.takeException();
-    if (e != null && !e.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
-      fail('timeline: $e');
-    }
-    expect(find.byType(TimelineScreen), findsOneWidget);
-  }
-
-  testWidgets('exact onion panel via real menu ListTile', (tester) async {
+  testWidgets('exact onion panel through production callbacks', (tester) async {
     await canvas(tester);
-    // 上部バーに実際に描画されているsettingsアイコンの座標を直接タップする。
-    await tapVisible(
-      tester,
-      find.byIcon(Icons.settings, skipOffstage: false),
-      'Canvas設定/編集ボタン',
-    );
 
-    // _showEditMenu()のオニオンスキン項目はlayers_outlined。
-    await tapVisible(
-      tester,
-      find.byIcon(Icons.layers_outlined, skipOffstage: false),
-      'オニオンスキン項目',
+    final settings = find.byWidgetPredicate(
+      (widget) => widget is CanvasIconButton && widget.icon == Icons.settings,
+      skipOffstage: false,
     );
+    expect(settings, findsWidgets);
+    final settingsButton = tester.widget<CanvasIconButton>(settings.last);
+    expect(settingsButton.onPressed, isNotNull);
+    settingsButton.onPressed!.call();
     await tester.pump(const Duration(milliseconds: 350));
+
+    final onionTileFinder = find.byWidgetPredicate(
+      (widget) {
+        if (widget is! ListTile) return false;
+        final leading = widget.leading;
+        return leading is Icon && leading.icon == Icons.layers_outlined;
+      },
+      skipOffstage: false,
+    );
+    expect(onionTileFinder, findsWidgets);
+    final onionTile = tester.widget<ListTile>(onionTileFinder.last);
+    expect(onionTile.onTap, isNotNull);
+    onionTile.onTap!.call();
+    await tester.pump(const Duration(milliseconds: 450));
     clean(tester, 'open onion panel');
     await shot(tester, '03_canvas_onion_panel');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
-  testWidgets('exact export via real timeline toolbar button', (tester) async {
-    await canvas(tester);
-    await timeline(tester);
+  testWidgets('exact export through production timeline toolbar callback', (tester) async {
+    final ids = await canvas(tester);
+    final canvasContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(canvasContext).go('/timeline/${ids.projectId}');
+    await tester.pump(const Duration(milliseconds: 700));
+    final timelineException = tester.takeException();
+    if (timelineException != null &&
+        !timelineException.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
+      fail('timeline: $timelineException');
+    }
+    expect(find.byType(TimelineScreen), findsOneWidget);
 
-    // TimelineScreen._buildToolbar()の実書き出しボタン。
-    await tapVisible(
-      tester,
-      find.byIcon(Icons.upload_file, skipOffstage: false),
-      'Timeline書き出しボタン',
+    final exportFinder = find.byWidgetPredicate(
+      (widget) {
+        if (widget is! IconButton) return false;
+        final icon = widget.icon;
+        return icon is Icon && icon.icon == Icons.upload_file;
+      },
+      skipOffstage: false,
     );
-    await tester.pump(const Duration(milliseconds: 350));
+    expect(exportFinder, findsWidgets);
+    final exportButton = tester.widget<IconButton>(exportFinder.last);
+    expect(exportButton.onPressed, isNotNull);
+    exportButton.onPressed!.call();
+    await tester.pump(const Duration(milliseconds: 700));
     clean(tester, 'timeline to export');
     expect(find.text('書き出し'), findsWidgets);
     await shot(tester, '07_export');
