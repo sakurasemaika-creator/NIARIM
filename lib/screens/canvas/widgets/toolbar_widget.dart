@@ -12,7 +12,6 @@ import '../../../widgets/help_button.dart';
 import '../../../widgets/responsive.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart';
-import 'canvas_area.dart' show kCanvasOutsideColor;
 import 'canvas_icon_button.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
@@ -28,20 +27,11 @@ class ToolbarWidget extends StatelessWidget {
   final VoidCallback onShapeTap;
   final VoidCallback onQuickToolTap;
   final VoidCallback onQuickToolLongPress;
-  // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
   final VoidCallback onSaveTap;
-  // 投げ縄塗り選択（ペンのサブツールではなく、バケツ長押しメニューから
-  // 選べるようにするための導線。投げ縄で囲った範囲を塗りつぶす点で
-  // バケツ塗りに近い性質を持つため）。
   final VoidCallback onLassoFillSelected;
   final VoidCallback onFingerLongPress;
-  // 定規ボタン：定規パネルの開閉と定規ツールへの切替（キャンバス上部
-  // バーから移設し、他のツールと同じくツールバーの中に常設する）。
   final VoidCallback onRulerTap;
-  // スタンプ選択中かどうか（色アイコンに🚫重ね表示・タップで専用トースト）
   final bool isStampSelected;
-  // trueの場合、画面下部の横並びバーではなく左側（左利きモードでは右側）に
-  // 常設する縦並びのツールレールとして表示する。
   final bool vertical;
 
   const ToolbarWidget({
@@ -65,22 +55,17 @@ class ToolbarWidget extends StatelessWidget {
     this.vertical = false,
   });
 
-  /// ツールバー編集でカスタマイズ可能な項目を、現在の並び順・
-  /// 表示設定に従って構築する。
   Widget _buildToolItem(
     BuildContext context,
     AppLocalizations l10n,
     ToolbarItemId id,
   ) {
     return switch (id) {
-      // ペンボタン：長押しでサブツールパネル表示（初回使用時の吹き出し説明）
       ToolbarItemId.pen => FirstUseTooltip(
         tooltipKey: 'pen_tool',
         message: l10n.toolbarPenFirstUseTip,
         child: GestureDetector(
           onLongPress: onPenLongPress,
-          // 長押しに加えて上スワイプでもサブツールパネルを開けるように
-          // する（早替えツールボタンと同じ操作方法に揃える）。
           onVerticalDragEnd: (details) {
             if ((details.primaryVelocity ?? 0) < -200) onPenLongPress();
           },
@@ -92,9 +77,6 @@ class ToolbarWidget extends StatelessWidget {
           ),
         ),
       ),
-      // 消しゴム用のアイコン。Material Iconsには適切な消しゴムのグリフが
-      // ないため、Font Awesome Free（font_awesome_flutter、CC BY 4.0。
-      // クレジットは設定＞利用規約・ライセンス画面に表示）のeraserアイコンを使う。
       ToolbarItemId.eraser => GestureDetector(
         onDoubleTap: () =>
             _showBriefDescription(context, l10n.toolbarItemEraser),
@@ -106,9 +88,6 @@ class ToolbarWidget extends StatelessWidget {
           selected: currentTool == DrawingTool.eraser,
         ),
       ),
-      // バケツボタン：長押しまたは上スワイプでベタ塗り／トーン切り替え
-      // メニュー表示（他の詳細設定ポップアップと操作方法を
-      // 統一するため、長押しに加えて上スワイプにも対応させている）。
       ToolbarItemId.bucket => FirstUseTooltip(
         tooltipKey: 'bucket_tool',
         message: l10n.toolbarBucketFirstUseTip,
@@ -133,8 +112,6 @@ class ToolbarWidget extends StatelessWidget {
         DrawingTool.eyedropper,
         l10n.toolbarItemEyedropper,
       ),
-      // 指先ツール（歪み）：長押しまたは上スワイプでサブツールメニュー
-      // （歪み／ガウスぼかし／モザイク）を表示。
       ToolbarItemId.finger => GestureDetector(
         onLongPress: onFingerLongPress,
         onVerticalDragEnd: (details) {
@@ -151,9 +128,6 @@ class ToolbarWidget extends StatelessWidget {
               currentTool == DrawingTool.mosaic,
         ),
       ),
-      // 手のひらツール（画面移動専用）：呼び出し側のfor文でcanShowPanTool()
-      // により表示条件（強制スマホモードでは非表示、それ以外は横画面のみ）が
-      // 既に判定済みのため、ここでは単に描画するだけでよい。
       ToolbarItemId.pan => _toolButton(
         context,
         Icons.back_hand,
@@ -167,7 +141,6 @@ class ToolbarWidget extends StatelessWidget {
         DrawingTool.transform,
         l10n.toolbarItemTransform,
       ),
-      // 初回タップ時の吹き出し説明
       ToolbarItemId.text => FirstUseTooltip(
         tooltipKey: 'text_tool',
         message: l10n.toolbarTextFirstUseTip,
@@ -193,26 +166,16 @@ class ToolbarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
-    // 描画領域を可能な限り広げるため、常設ボタン類は背景を持たせず、
-    // どんな色のキャンバス内容の上でも視認できるよう縁取りのみを付ける
-    // （CanvasIconButton参照）。アイコン・縁取りとも白黒に固定せず、
-    // ユーザーが選んだテーマ・外観のアイコン色・メニュー背景色と連動する。
     final outlineColor = context.watch<ThemeService>().current.menuBgColor;
     final spacer = vertical
         ? const SizedBox(height: 4)
         : const SizedBox(width: 4);
     final items = [
-      // ツールバー編集でカスタマイズ可能な項目を並び順・表示設定通りに表示。
-      // 手のひらツールは強制スマホモードでは常に非表示、それ以外
-      // （PCモード固定・自動判定）では横画面のときのみ表示する
-      // （液タブ接続時のDeXモード等を考慮）。
       for (final id in settings.toolbarOrder)
         if (!settings.hiddenToolbarItems.contains(id) &&
             (id != ToolbarItemId.pan || canShowPanTool(context)))
           _buildToolItem(context, l10n, id),
       spacer,
-      // 色インジケーター（スタンプ選択中は色情報を保持しているため
-      // 色変更不可を🚫重ね表示で示し、タップで専用トーストを表示する）
       GestureDetector(
         onTap: isStampSelected
             ? () => ScaffoldMessenger.of(context).showSnackBar(
@@ -256,19 +219,12 @@ class ToolbarWidget extends StatelessWidget {
         onPressed: onLayerTap,
         tooltip: l10n.toolbarLayerTooltip,
       ),
-      // オニオンスキンはここから削除し、
-      // キャンバス上部バーの「設定/編集」メニューへ集約した。
-      // ツール早替えボタン（↺）
-      // ツール早替えボタン：タップで登録順に切替、長押しまたは上スワイプで
-      // 管理ポップアップ（登録・並び替え）を表示
       FirstUseTooltip(
         tooltipKey: 'quick_tool',
         message: l10n.toolbarQuickToolFirstUseTip,
         child: GestureDetector(
           onLongPress: onQuickToolLongPress,
           onVerticalDragEnd: (details) {
-            // 上方向への素早いスワイプで長押しと同じ編集ポップアップを開く
-            // （primaryVelocityは下向き正・上向き負）。
             if ((details.primaryVelocity ?? 0) < -200) {
               onQuickToolLongPress();
             }
@@ -281,19 +237,12 @@ class ToolbarWidget extends StatelessWidget {
           ),
         ),
       ),
-      // タイムラインへの切替ボタンはここから
-      // 削除し、フレーム一覧右下のボタン（frame_strip_widget.dart）
-      // へ統一した（同じ役割のボタンが2箇所にあり冗長だったため）。
-      // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
       _borderedIconButton(
         context,
         Icons.save_outlined,
         onPressed: onSaveTap,
         tooltip: l10n.toolbarSaveTooltip,
       ),
-      // 定規ボタン：キャンバス上部バーの常設ボタンから、他のツールと
-      // 同じくツールバー内へ移設した（右上はプロジェクト一覧へ戻る
-      // ホームボタンに置き換えたため）。
       FirstUseTooltip(
         tooltipKey: 'ruler_tool',
         message: l10n.canvasRulerFirstUseTip,
@@ -305,22 +254,9 @@ class ToolbarWidget extends StatelessWidget {
           selected: currentTool == DrawingTool.ruler,
         ),
       ),
-      // ヘルプボタンもキャンバス上部バーから移設。
       const HelpButton(),
     ];
-    // verticalの場合は縦並びのツールレール、falseの場合は画面下部の
-    // 横並びバーとして表示する。
-    //
-    // 【背景色の不一致修正】ツールバー自体（CanvasIconButton）は元々
-    // 背景を一切持たず、テーマ連動の縁取りだけでどんな色の上でも
-    // 視認できるよう作られている。しかしこのContainerはCanvasArea・
-    // その背景（kCanvasOutsideColor）を敷いたStackの「外側」（canvas_
-    // screen.dartのColumn内の別行）に配置されているため、
-    // color: Colors.transparentのままだとScaffold本来の背景色
-    // （キャンバスの外周色kCanvasOutsideColorとは別の色）が透けて見え、
-    // 「ツールバーだけ別パネルの背景を持っているように見える」という
-    // 不具合になっていた。ここをkCanvasOutsideColorに合わせることで、
-    // レイアウト構造は変えずに、キャンバス外周と地続きの見た目にする。
+
     return Container(
       height: vertical ? null : 40,
       width: vertical ? 40 : null,
@@ -328,7 +264,7 @@ class ToolbarWidget extends StatelessWidget {
         horizontal: vertical ? 0 : 4,
         vertical: vertical ? 4 : 0,
       ),
-      color: kCanvasOutsideColor,
+      color: Colors.transparent,
       child: SingleChildScrollView(
         scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
         child: vertical ? Column(children: items) : Row(children: items),
@@ -336,12 +272,6 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  // ダブルタップで簡易説明・長押しでブラシ/トーン/色変更。長押しは各ツール個別のサブメニュー
-  // （ペンのサブツールパネル・バケツのトーン切替等）に使うため、従来
-  // 長押しで表示していた簡易説明はダブルタップへ移す。ここで
-  // GestureDetectorを重ねてもペン/バケツ/選択ツールの既存の
-  // onLongPress用GestureDetectorとは別のジェスチャー種別（ダブルタップ
-  // vs 長押し）を検出するため、ジェスチャーアリーナで正しく共存する。
   Widget _toolButton(
     BuildContext context,
     IconData icon,
@@ -363,7 +293,6 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  /// ダブルタップ時のツール簡易説明をスナックバーで一瞬表示する。
   static void _showBriefDescription(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -375,10 +304,6 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  /// 常設ボタン共通のスタイル：背景なし・アイコンだけが
-  /// キャンバス上に浮かび、アイコンの形にぴったり沿う半透明の黒い縁取りを
-  /// 持つ（実装はCanvasIconButtonへ集約。canvas_screen.dartの上部バーとも
-  /// 共通のデザインにするため）。
   static Widget _borderedIconButton(
     BuildContext context,
     IconData icon, {
@@ -399,9 +324,6 @@ class ToolbarWidget extends StatelessWidget {
         currentTool == DrawingTool.selectRect ||
         currentTool == DrawingTool.selectLasso ||
         currentTool == DrawingTool.selectMagicWand;
-    // 矩形選択（デフォルト）にはhighlight_alt（角に選択ハンドルが付いた
-    // 矩形）を使う。以前のcrop_square（ただの四角い枠）よりも「範囲選択」
-    // であることが一目で伝わるアイコン。
     final icon = switch (currentTool) {
       DrawingTool.selectLasso => Icons.gesture,
       DrawingTool.selectMagicWand => Icons.auto_awesome,
@@ -411,8 +333,6 @@ class ToolbarWidget extends StatelessWidget {
       onLongPress: () => _showSelectMenu(context, l10n),
       onDoubleTap: () =>
           _showBriefDescription(context, l10n.toolbarSelectTooltip),
-      // 長押しに加えて上スワイプでも選択メニューを開けるようにする
-      // （他の詳細設定ポップアップと操作方法を統一するため）。
       onVerticalDragEnd: (details) {
         if ((details.primaryVelocity ?? 0) < -200) {
           _showSelectMenu(context, l10n);
@@ -428,11 +348,6 @@ class ToolbarWidget extends StatelessWidget {
     );
   }
 
-  /// バケツツールのベタ塗り／トーン切り替えメニュー。
-  /// 詳細設定（許容誤差・拡張px・線の下まで潜るか）も同じシートから
-  /// 調整できる。ここでの変更はSettingsServiceを直接更新するため、
-  /// 設定画面「バケツ塗り」で行った変更と常に連動する（単一の設定値を
-  /// 共有しているだけで、同期処理は不要）。
   void _showBucketToneMenu(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
@@ -466,11 +381,6 @@ class ToolbarWidget extends StatelessWidget {
                         Navigator.pop(ctx);
                       },
                     ),
-                    // 投げ縄塗り：投げ縄で囲った範囲を塗りつぶす点でバケツ塗りに
-                    // 近い性質を持つため、ペンではなくここから選べるようにする。
-                    // 選択後は塗りつぶし方（ベタ塗り／トーン）を選ぶシートを続けて
-                    // 開く。「囲って塗る」モード（閉じた線画の内側だけを塗る）は
-                    // ツール選択後、上部バーのスイッチで切り替えられる。
                     ListTile(
                       dense: true,
                       leading: const Icon(Icons.gesture, size: 18),
@@ -559,8 +469,6 @@ class ToolbarWidget extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                     Theme(
-                      // ExpansionTileの区切り線を消す（前後のDividerと二重に
-                      // ならないようにするため）。
                       data: Theme.of(
                         ctx,
                       ).copyWith(dividerColor: Colors.transparent),
