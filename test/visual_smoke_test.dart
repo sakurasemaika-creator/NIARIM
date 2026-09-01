@@ -203,9 +203,13 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expectNoFlutterException(tester, 'ホームドロワー表示');
       await capture(tester, '10_home_drawer');
-      // 座標タップはDrawer幅やDPRに依存するため、ScaffoldStateから確実に閉じる。
-      final homeScaffold = tester.state<ScaffoldState>(find.byType(Scaffold).first);
-      homeScaffold.closeDrawer();
+      // DrawerはScaffold内部のLocalHistoryEntryとして開くため、Drawer自身の
+      // BuildContextからNavigator.pop()すると実機の戻る操作と同じ経路で
+      // 確実に閉じられる。Scaffold.firstを取る方式は入れ子Scaffoldを誤って
+      // 掴む可能性があり、スクショ上だけDrawerが残ることがあった。
+      final drawer = find.byType(Drawer);
+      expect(drawer, findsOneWidget);
+      Navigator.of(tester.element(drawer)).pop();
       await tester.pump(const Duration(milliseconds: 500));
       expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
