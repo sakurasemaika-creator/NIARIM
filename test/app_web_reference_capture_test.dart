@@ -56,42 +56,41 @@ void main() {
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
-  void useInteractionPhone(WidgetTester tester) {
-    // 操作中は既存Visual Smokeと同じ320x720 logical pxを使い、
-    // フォームやダイアログの操作領域を実機相当で確保する。
+  void useReferencePhone(WidgetTester tester) {
+    // 既存Visual Smokeと同じ「一般的な小型Android端末相当」の基準。
+    // 960/3=320 logical px, 2160/3=720 logical px（4:9）。
     tester.view.physicalSize = const Size(960, 2160);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  Future<void> switchToReferenceRatio(WidgetTester tester) async {
-    // 撮影時だけWeb画面再現図と同じ9:16（320x569 logical px）へ変更。
-    tester.view.physicalSize = const Size(960, 1707);
-    tester.view.devicePixelRatio = 3.0;
-    await tester.pump(const Duration(milliseconds: 250));
-  }
-
-  Future<void> switchToInteractionRatio(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(960, 2160);
-    tester.view.devicePixelRatio = 3.0;
-    await tester.pump(const Duration(milliseconds: 250));
-  }
-
   Future<void> loadFonts(WidgetTester tester) async {
     await tester.runAsync(() async {
-      final hakkou = FontLoader('HakkouMincho')
-        ..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf'));
-      final kuramubon = FontLoader('Kuramubon')
-        ..addFont(rootBundle.load('assets/fonts/Kuramubon.otf'));
-      final noto = FontLoader('NotoSerifJP')
-        ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf'));
-      await Future.wait([hakkou.load(), kuramubon.load(), noto.load()]);
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      final assets = manifest.listAssets();
+
+      Future<void> loadFamily(String family, String needle) async {
+        final matches = assets.where((a) => a.contains(needle)).toList();
+        if (matches.isEmpty) return;
+        final loader = FontLoader(family)..addFont(rootBundle.load(matches.first));
+        await loader.load();
+      }
+
+      await Future.wait([
+        loadFamily('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
+        loadFamily('Kuramubon', 'assets/fonts/Kuramubon.otf'),
+        loadFamily('NotoSerifJP', 'assets/fonts/NotoSerifJP.ttf'),
+        loadFamily('MaterialIcons', 'MaterialIcons-Regular.otf'),
+        loadFamily('FontAwesomeSolid', 'fa-solid-900.ttf'),
+        loadFamily('FontAwesomeRegular', 'fa-regular-400.ttf'),
+        loadFamily('FontAwesomeBrands', 'fa-brands-400.ttf'),
+      ]);
     });
   }
 
   Future<void> capture(WidgetTester tester, String name) async {
-    await switchToReferenceRatio(tester);
+    await tester.pump(const Duration(milliseconds: 180));
     final boundary = screenshotKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
@@ -112,8 +111,17 @@ void main() {
         reason: '$operation でFlutter例外/overflow');
   }
 
+  Future<void> tapReachable(WidgetTester tester, Finder finder) async {
+    expect(finder, findsWidgets);
+    final target = finder.first;
+    await tester.ensureVisible(target);
+    await tester.pump(const Duration(milliseconds: 160));
+    await tester.tap(target);
+    await tester.pump(const Duration(milliseconds: 300));
+  }
+
   Future<void> bootToHome(WidgetTester tester) async {
-    useInteractionPhone(tester);
+    useReferencePhone(tester);
     await loadFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
@@ -148,12 +156,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '新規プロジェクト画面');
 
-    final create = find.text('作成');
-    expect(create, findsOneWidget);
-    await tester.ensureVisible(create);
-    await tester.pump(const Duration(milliseconds: 150));
-    await tester.tap(create);
-    await tester.pump(const Duration(milliseconds: 850));
+    final create = find.text('作成', skipOffstage: false);
+    await tapReachable(tester, create);
+    await tester.pump(const Duration(milliseconds: 550));
     expectClean(tester, '作成→キャンバス');
 
     final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
@@ -163,37 +168,33 @@ void main() {
   }
 
   Future<void> closeOverlayPanel(WidgetTester tester) async {
-    final close = find.byIcon(Icons.close);
-    expect(close, findsWidgets);
-    await tester.tap(close.last);
-    await tester.pump(const Duration(milliseconds: 350));
+    final close = find.byIcon(Icons.close, skipOffstage: false);
+    await tapReachable(tester, close);
     expectClean(tester, 'オーバーレイを閉じる');
+  }
+
+  Future<void> openTimelineFromCanvas(WidgetTester tester) async {
+    final timeline = find.text('タイムライン', skipOffstage: false);
+    await tapReachable(tester, timeline);
+    await tester.pump(const Duration(milliseconds: 550));
+    expectClean(tester, 'Canvas→Timeline');
   }
 
   testWidgets('Web比較基準: Canvas / Layer / OnionSkin を実操作で撮影',
       (tester) async {
     await createProjectAndOpenCanvas(tester);
     await capture(tester, '01_canvas_default');
-    await switchToInteractionRatio(tester);
 
-    final layer = find.byTooltip('レイヤー');
-    expect(layer, findsOneWidget);
-    await tester.tap(layer);
-    await tester.pump(const Duration(milliseconds: 350));
+    final layer = find.byIcon(Icons.layers, skipOffstage: false);
+    await tapReachable(tester, layer);
     expectClean(tester, 'レイヤーパネルを開く');
     await capture(tester, '02_canvas_layer_panel');
-    await switchToInteractionRatio(tester);
     await closeOverlayPanel(tester);
 
-    final editMenu = find.byTooltip('設定/編集');
-    expect(editMenu, findsOneWidget);
-    await tester.tap(editMenu);
-    await tester.pump(const Duration(milliseconds: 250));
-    final onion = find.text('オニオンスキン');
-    expect(onion, findsOneWidget);
-    await tester.ensureVisible(onion);
-    await tester.tap(onion);
-    await tester.pump(const Duration(milliseconds: 350));
+    final editMenu = find.byTooltip('設定/編集', skipOffstage: false);
+    await tapReachable(tester, editMenu);
+    final onion = find.text('オニオンスキン', skipOffstage: false);
+    await tapReachable(tester, onion);
     expectClean(tester, 'オニオンスキンを開く');
     await capture(tester, '03_canvas_onion_skin');
   }, timeout: const Timeout(Duration(seconds: 180)));
@@ -201,14 +202,8 @@ void main() {
   testWidgets('Web比較基準: Timeline / Audio編集を実操作で撮影',
       (tester) async {
     final ids = await createProjectAndOpenCanvas(tester);
-
-    final timelineToggle = find.text('タイムライン');
-    expect(timelineToggle, findsOneWidget);
-    await tester.tap(timelineToggle);
-    await tester.pump(const Duration(milliseconds: 850));
-    expectClean(tester, 'Canvas→Timeline');
+    await openTimelineFromCanvas(tester);
     await capture(tester, '04_timeline_default');
-    await switchToInteractionRatio(tester);
 
     final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
     ps.addAudioClip(
@@ -228,17 +223,10 @@ void main() {
 
     GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
-    final timelineAgain = find.text('タイムライン');
-    expect(timelineAgain, findsOneWidget);
-    await tester.tap(timelineAgain);
-    await tester.pump(const Duration(milliseconds: 850));
-    expectClean(tester, '音声登録後Timelineを再表示');
+    await openTimelineFromCanvas(tester);
 
-    final audioClip = find.text('比較用音声');
-    expect(audioClip, findsOneWidget);
-    await tester.ensureVisible(audioClip);
-    await tester.tap(audioClip);
-    await tester.pump(const Duration(milliseconds: 350));
+    final audioClip = find.text('比較用音声', skipOffstage: false);
+    await tapReachable(tester, audioClip);
     expectClean(tester, '音声クリップ編集を開く');
     await capture(tester, '05_timeline_audio_editor');
   }, timeout: const Timeout(Duration(seconds: 180)));
@@ -247,26 +235,19 @@ void main() {
       (tester) async {
     final ids = await createProjectAndOpenCanvas(tester);
 
-    final save = find.byIcon(Icons.save_outlined);
-    expect(save, findsOneWidget);
-    await tester.tap(save);
-    await tester.pump(const Duration(milliseconds: 800));
+    final save = find.byIcon(Icons.save_outlined, skipOffstage: false);
+    await tapReachable(tester, save);
+    await tester.pump(const Duration(milliseconds: 500));
     expectClean(tester, 'Canvas→SaveTree');
     await capture(tester, '06_save_tree');
-    await switchToInteractionRatio(tester);
 
     GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
-    final timeline = find.text('タイムライン');
-    expect(timeline, findsOneWidget);
-    await tester.tap(timeline);
-    await tester.pump(const Duration(milliseconds: 800));
-    expectClean(tester, 'Canvas→Timeline');
+    await openTimelineFromCanvas(tester);
 
-    final export = find.byIcon(Icons.upload_file);
-    expect(export, findsOneWidget);
-    await tester.tap(export);
-    await tester.pump(const Duration(milliseconds: 800));
+    final export = find.byIcon(Icons.upload_file, skipOffstage: false);
+    await tapReachable(tester, export);
+    await tester.pump(const Duration(milliseconds: 500));
     expectClean(tester, 'Timeline→Export');
     await capture(tester, '07_export');
   }, timeout: const Timeout(Duration(seconds: 180)));
@@ -279,15 +260,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '設定画面');
 
-    final workspace = find.text('ワークスペース');
+    final workspace = find.text('ワークスペース', skipOffstage: false);
     if (workspace.evaluate().isNotEmpty) {
-      await tester.ensureVisible(workspace.first);
-      await tester.tap(workspace.first);
+      await tapReachable(tester, workspace);
     } else {
       GoRouter.of(tester.element(find.byType(Scaffold).first))
           .push('/settings/workspace');
+      await tester.pump(const Duration(milliseconds: 500));
     }
-    await tester.pump(const Duration(milliseconds: 700));
     expectClean(tester, '設定→ワークスペース');
     await capture(tester, '08_workspace');
   }, timeout: const Timeout(Duration(seconds: 180)));
