@@ -13,7 +13,6 @@ class FrameStripWidget extends StatefulWidget {
   final String sceneId;
   final ValueChanged<int> onFrameSelected;
   final VoidCallback onTimelineTap;
-  // フレーム複数選択モード（大量処理実行時のフレーム一括選択）
   final bool multiSelectMode;
   final Set<int> selectedFrames;
   final ValueChanged<int>? onFrameToggle;
@@ -35,16 +34,9 @@ class FrameStripWidget extends StatefulWidget {
 }
 
 class _FrameStripWidgetState extends State<FrameStripWidget> {
-  // フレームごとのサムネイル再生成カウンター。表示中フレームを切り替えた
-  // 直後、直前まで表示していたフレームは描画内容が更新された可能性が
-  // 高いため、そのフレームのサムネイルだけを再生成させる。
   final Map<int, int> _refreshTick = {};
-
-  // フレーム一覧は常に画面中央に固定で赤枠を表示し、現在位置のフレームが
-  // そこに来るよう一覧側をスクロールさせる。タップ・
-  // スワイプでフレームが変わっても赤枠自体は動かない。
   final ScrollController _scrollController = ScrollController();
-  static const double _itemExtent = 48; // 幅48、左右マージンなし（フレーム同士を隙間なく詰める）
+  static const double _itemExtent = 48;
 
   @override
   void initState() {
@@ -70,10 +62,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     }
   }
 
-  // リストの左右にビューポート半分弱の余白（_sidePaddingで算出）を付けて
-  // あるため、先頭・末尾のフレームであっても赤枠（画面中央）まで
-  // スクロールしきれる（「index*_itemExtent」がそのまま中央揃えの
-  // スクロール位置になり、境界のclampが実質的に無害になる）。
   void _scrollToCurrent({required bool animate}) {
     if (!_scrollController.hasClients) return;
     final target = (widget.currentFrame * _itemExtent).clamp(
@@ -91,10 +79,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     }
   }
 
-  /// スワイプ・ドラッグを手放した位置が中途半端でも、赤枠に一番近い
-  /// フレームへ自動的にスナップさせる。dragDetailsが
-  /// nullの場合はこちらの_scrollToCurrent等によるプログラム操作由来の
-  /// スクロールなので無視する（無限ループ防止）。
   bool _handleScrollEnd(ScrollEndNotification notification, int total) {
     if (notification.dragDetails == null) return false;
     if (widget.multiSelectMode || total <= 0) return false;
@@ -117,9 +101,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     super.dispose();
   }
 
-  /// フレーム追加の前に、無料会員の長さ上限（90秒）を超えないかチェックする
-  /// （タイムラインモードのフレーム追加・複製と同じ制限を
-  /// キャンバスモードのフレーム一覧の追加ボタンにも適用する）。
   bool _canAddFrames(BuildContext context, ProjectService service, int count) {
     final isPremium = context.read<PremiumService>().isPremium;
     final maxSeconds = isPremium ? 7200 : 90;
@@ -212,20 +193,12 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
 
     return Container(
       height: 64,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        border: Border(
-          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-        ),
-      ),
+      color: Colors.transparent,
       child: Row(
         children: [
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // 左右に((ビューポート幅-アイテム幅)/2)の余白を入れることで、
-                // 先頭・末尾のフレームも中央の現在フレーム枠まできっちり
-                // スクロールできるようにする。
                 final sidePadding = ((constraints.maxWidth - _itemExtent) / 2)
                     .clamp(0.0, double.infinity);
                 return NotificationListener<ScrollEndNotification>(
@@ -236,7 +209,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                         controller: _scrollController,
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                        itemCount: total + 1, // +1 は追加ボタン
+                        itemCount: total + 1,
                         itemBuilder: (context, index) {
                           if (index == total) {
                             return GestureDetector(
@@ -260,14 +233,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                               ),
                             );
                           }
-                          final isChecked = widget.selectedFrames.contains(
-                            index,
-                          );
-                          // 現在フレームの強調表示は画面中央固定の赤枠が担うため、通常
-                          // モードでは枠色を変えない（多重に強調表示すると煩雑になるため）。
-                          // 複数選択モードのチェック状態のみここで色分けする。
-                          final isSelected =
-                              widget.multiSelectMode && isChecked;
+                          final isChecked = widget.selectedFrames.contains(index);
+                          final isSelected = widget.multiSelectMode && isChecked;
                           final hold = service.frameHold(
                             widget.projectId,
                             widget.sceneId,
@@ -303,9 +270,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    // フレームのサムネイル（赤枠＝書き出し範囲の
-                                    // 内側のみを表示する。描画領域を拡張していても
-                                    // 赤枠外の描画内容はここには映らない）。
                                     _FrameThumbnail(
                                       key: ValueKey(
                                         '$index-${_refreshTick[index] ?? 0}',
@@ -322,17 +286,12 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                             vertical: 1,
                                           ),
                                           decoration: BoxDecoration(
-                                            // サムネイルはどんな絵柄・色にもなり得るため、バッジの背景は
-                                            // テーマのメニュー背景色（半透明）、文字は更新マーク色と同じ
-                                            // 目立つ差し色（テーマの警告・注目色）を使う。
                                             color: context
                                                 .watch<ThemeService>()
                                                 .current
                                                 .menuBgColor
                                                 .withValues(alpha: 0.7),
-                                            borderRadius: BorderRadius.circular(
-                                              3,
-                                            ),
+                                            borderRadius: BorderRadius.circular(3),
                                           ),
                                           child: Text(
                                             '$hold',
@@ -357,9 +316,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                               : Icons.check_box_outline_blank,
                                           size: 14,
                                           color: isChecked
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primary
+                                              ? Theme.of(context).colorScheme.primary
                                               : Colors.grey[400],
                                         ),
                                       ),
@@ -370,11 +327,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                           );
                         },
                       ),
-                      // 画面中央に固定表示する枠。フレーム一覧側が
-                      // スクロールして現在位置のフレームをここへ合わせる。色は
-                      // 赤固定ではなく、テーマの更新マーク色（レイヤーパネルの
-                      // 自動塗り更新マーク❗と同じ、警告・注目を引く差し色）と
-                      // 連動させる。
                       IgnorePointer(
                         child: Center(
                           child: Container(
@@ -399,9 +351,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
               },
             ),
           ),
-          // フレーム一覧・タイムラインの切替。「フレーム一覧」は現在表示中の
-          // この一覧自体を指すため常に選択状態で表示し、「タイムライン」を
-          // 選ぶとonTimelineTapを呼んでタイムライン画面へ遷移する。
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: SegmentedButton<String>(
@@ -426,6 +375,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
               style: const ButtonStyle(
                 visualDensity: VisualDensity.compact,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor: WidgetStatePropertyAll(Colors.transparent),
               ),
               onSelectionChanged: (selected) {
                 if (selected.contains('timeline')) widget.onTimelineTap();
@@ -438,16 +388,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   }
 }
 
-/// フレーム一覧の1コマ分のサムネイル（赤枠固定表示）。
-///
-/// 描画領域全体（描画領域倍率を反映した拡張範囲）を合成した上で、
-/// 中央に配置された書き出し範囲（赤枠）分だけを切り出して縮小表示する。
-/// これは動画書き出し時に実際にレンダリングされる範囲と同じであり、
-/// export_engine.dartの中央配置ロジックと同じ計算式を用いている。
-///
-/// 生成コストを抑えるため、初回表示時に一度だけ生成しキャッシュする
-/// （フレーム切り替え時に親[FrameStripWidget]が直前のフレームのみ
-/// 再生成させる。詳細は[_FrameStripWidgetState.didUpdateWidget]を参照）。
 class _FrameThumbnail extends StatefulWidget {
   final String projectId;
   final String sceneId;
@@ -504,8 +444,6 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
       drawH,
     );
 
-    // 描画領域の中央から書き出しサイズ分だけ切り出す（赤枠＝書き出し範囲。
-    // export_engine.dart renderFrame()と同じ中央配置計算式）。
     final offsetX = (drawW - exportW) / 2;
     final offsetY = (drawH - exportH) / 2;
     const thumbW = 96;
@@ -548,7 +486,6 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
   Widget build(BuildContext context) {
     final image = _image;
     if (image == null) {
-      // 生成中は背景色のみ（従来の見た目のまま）
       return const SizedBox.shrink();
     }
     return RawImage(image: image, fit: BoxFit.contain);
