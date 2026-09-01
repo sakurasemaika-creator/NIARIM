@@ -1044,15 +1044,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toolbarItemFinger => '手指';
 
   @override
-  String get toolbarItemBlur => '高斯模糊';
-
-  @override
-  String get toolbarItemMosaic => '马赛克';
-
-  @override
-  String get toolbarFingerSubtoolWarp => '弯曲';
-
-  @override
   String get toolbarItemPan => '手掌';
 
   @override
@@ -2815,15 +2806,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushSettingsStrokeDecaySubtitle => '持续绘制不透明度会降低';
-
-  @override
-  String get brushSettingsEdgeJitterTitle => '边缘渗漏';
-
-  @override
-  String get brushSettingsEdgeJitterSubtitle => '轻微粗糙化边缘，模拟墨水渗漏效果';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '渗漏强度';
 
   @override
   String get brushSettingsMixingTitle => '混色';
@@ -5844,6 +5826,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get qrShareCopyButton => '复制文本';
+
+  @override
+  String get toolbarItemBlur => '高斯模糊';
+
+  @override
+  String get toolbarItemMosaic => '马赛克';
+
+  @override
+  String get toolbarFingerSubtoolWarp => '弯曲';
+
+  @override
+  String get brushSettingsEdgeJitterTitle => '边缘渗漏';
+
+  @override
+  String get brushSettingsEdgeJitterSubtitle => '轻微粗糙化边缘，模拟墨水渗漏效果';
+
+  @override
+  String get brushSettingsEdgeJitterStrengthLabel => '渗漏强度';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -6884,15 +6884,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get toolbarItemFinger => '手指';
-
-  @override
-  String get toolbarItemBlur => '高斯模糊';
-
-  @override
-  String get toolbarItemMosaic => '馬賽克';
-
-  @override
-  String get toolbarFingerSubtoolWarp => '彎曲';
 
   @override
   String get toolbarItemPan => '手掌';
@@ -8656,15 +8647,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsStrokeDecaySubtitle => '持續繪製不透明度會降低';
-
-  @override
-  String get brushSettingsEdgeJitterTitle => '邊緣漸漫';
-
-  @override
-  String get brushSettingsEdgeJitterSubtitle => '輕微粗糙化邊緣，模擬墨水漸漫效果';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '漸漫強度';
 
   @override
   String get brushSettingsMixingTitle => '混色';
@@ -11685,4 +11667,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get qrShareCopyButton => '複製文字';
+
+  @override
+  String get toolbarItemBlur => '高斯模糊';
+
+  @override
+  String get toolbarItemMosaic => '馬賽克';
+
+  @override
+  String get toolbarFingerSubtoolWarp => '彎曲';
+
+  @override
+  String get brushSettingsEdgeJitterTitle => '邊緣漸漫';
+
+  @override
+  String get brushSettingsEdgeJitterSubtitle => '輕微粗糙化邊緣，模擬墨水漸漫效果';
+
+  @override
+  String get brushSettingsEdgeJitterStrengthLabel => '漸漫強度';
 }

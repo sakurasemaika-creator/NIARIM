@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/monetization_gate.dart';
+import '../utils/runtime_platform.dart';
 
 /// プレミアム加入状態・課金処理を管理する。
 /// 実際の課金はGoogle Play Billing（in_app_purchase）経由で行い、
@@ -147,8 +148,11 @@ class PremiumService extends ChangeNotifier {
     }
     _purchasedProductId = prefs.getString('premium_purchase_product_id');
 
-    if (!isMonetizationEnabled) {
-      // 課金一時停止期間：ストアへは一切接続しない。
+    // in_app_purchaseのストア実装はAndroid/iOS専用。widget testや
+    // デスクトップ、Flutter Webでinstanceへ触れると、isAvailable()の
+    // try/catch外で開始される非同期接続がPlatformExceptionを投げる。
+    if (!isMonetizationEnabled || !supportsMobilePluginRuntime) {
+      // 課金一時停止期間・非対応OSではストアへ一切接続しない。
       _storeAvailable = false;
       return;
     }

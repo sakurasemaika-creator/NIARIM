@@ -1091,15 +1091,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get toolbarItemFinger => 'Dedo';
 
   @override
-  String get toolbarItemBlur => 'Desenfoque gaussiano';
-
-  @override
-  String get toolbarItemMosaic => 'Mosaico';
-
-  @override
-  String get toolbarFingerSubtoolWarp => 'Deformar';
-
-  @override
   String get toolbarItemPan => 'Mano';
 
   @override
@@ -2963,15 +2954,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get brushSettingsStrokeDecaySubtitle =>
       'La opacidad disminuye cuanto más tiempo dibujas';
-
-  @override
-  String get brushSettingsEdgeJitterTitle => 'Sangrado de borde';
-
-  @override
-  String get brushSettingsEdgeJitterSubtitle => 'Rugosidad leve en el borde para imitar el sangrado de tinta';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => 'Intensidad';
 
   @override
   String get brushSettingsMixingTitle => 'Mezcla de color';
@@ -6189,4 +6171,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get qrShareCopyButton => 'Copiar texto';
+
+  @override
+  String get toolbarItemBlur => 'Desenfoque gaussiano';
+
+  @override
+  String get toolbarItemMosaic => 'Mosaico';
+
+  @override
+  String get toolbarFingerSubtoolWarp => 'Deformar';
+
+  @override
+  String get brushSettingsEdgeJitterTitle => 'Sangrado de borde';
+
+  @override
+  String get brushSettingsEdgeJitterSubtitle =>
+      'Rugosidad leve en el borde para imitar el sangrado de tinta';
+
+  @override
+  String get brushSettingsEdgeJitterStrengthLabel => 'Intensidad';
 }

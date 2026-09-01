@@ -145,7 +145,8 @@ class ToolbarWidget extends StatelessWidget {
           Icons.pan_tool_alt,
           DrawingTool.finger,
           l10n.toolbarItemFinger,
-          isSelected: currentTool == DrawingTool.finger ||
+          isSelected:
+              currentTool == DrawingTool.finger ||
               currentTool == DrawingTool.blur ||
               currentTool == DrawingTool.mosaic,
         ),
@@ -568,7 +569,10 @@ class ToolbarWidget extends StatelessWidget {
                         leading: const Icon(Icons.tune, size: 18),
                         title: Text(
                           l10n.bucketSettingsTitle,
-                          style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon'),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Kuramubon',
+                          ),
                         ),
                         childrenPadding: const EdgeInsets.fromLTRB(
                           16,
@@ -656,46 +660,6 @@ class ToolbarWidget extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  void _showFingerSubMenu(BuildContext context, AppLocalizations l10n) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.pan_tool_alt),
-              title: Text(l10n.toolbarFingerSubtoolWarp),
-              selected: currentTool == DrawingTool.finger,
-              onTap: () {
-                onToolSelected(DrawingTool.finger);
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.blur_on),
-              title: Text(l10n.toolbarItemBlur),
-              selected: currentTool == DrawingTool.blur,
-              onTap: () {
-                onToolSelected(DrawingTool.blur);
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.grid_4x4),
-              title: Text(l10n.toolbarItemMosaic),
-              selected: currentTool == DrawingTool.mosaic,
-              onTap: () {
-                onToolSelected(DrawingTool.mosaic);
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 

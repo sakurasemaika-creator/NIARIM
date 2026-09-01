@@ -18,6 +18,7 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/material_asset.dart' as material_asset;
 import 'package:niarim/services/material_service.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
@@ -64,8 +65,7 @@ class _FakeFilePicker extends FilePicker {
     bool withReadStream = false,
     bool lockParentWindow = false,
     bool readSequential = false,
-  }) async =>
-      null;
+  }) async => null;
 }
 
 /// アプリを実際に起動し、主要画面を人手を介さず自動で巡回して、
@@ -201,6 +201,7 @@ void main() {
       }
       e.visitChildren(visit);
     }
+
     root.visitChildren(visit);
     return found;
   }
@@ -218,6 +219,7 @@ void main() {
       }
       e.visitChildren(visit);
     }
+
     root.visitChildren(visit);
     return found;
   }
@@ -317,14 +319,19 @@ void main() {
     int maxSteps = 20,
     Set<String> extraSkipLabelSubstrings = const {},
   }) async {
-    final skipLabels = {...defaultSkipLabelSubstrings, ...extraSkipLabelSubstrings};
+    final skipLabels = {
+      ...defaultSkipLabelSubstrings,
+      ...extraSkipLabelSubstrings,
+    };
     final tried = <String>{};
 
     // 現在アクティブな（ModalRoute.isCurrentがtrueの）ルートを取得する。
     // ダイアログ・ボトムシートを開いた直後はそれ自身のルートが返る。
     Route<dynamic>? currentRoute() {
       for (final e in tester.allElements) {
-        if (e.widget is Scaffold || e.widget is Dialog || e.widget is BottomSheet) {
+        if (e.widget is Scaffold ||
+            e.widget is Dialog ||
+            e.widget is BottomSheet) {
           final r = ModalRoute.of(e);
           if (r != null && r.isCurrent) return r;
         }
@@ -371,12 +378,16 @@ void main() {
         final route = ModalRoute.of(e);
         if (route == null || !route.isCurrent) continue;
 
-        final label = firstDescendantText(e) ?? firstDescendantIconLabel(e) ?? '';
+        final label =
+            firstDescendantText(e) ?? firstDescendantIconLabel(e) ?? '';
         final skip = skipLabels.any((s) => s.isNotEmpty && label.contains(s));
         final id = '${w.runtimeType}:${label.isNotEmpty ? label : '#$index'}';
         index++;
         if (!skip && tried.add(id)) {
-          return (element: e, label: label.isNotEmpty ? label : w.runtimeType.toString());
+          return (
+            element: e,
+            label: label.isNotEmpty ? label : w.runtimeType.toString(),
+          );
         }
       }
       return null;
@@ -458,7 +469,9 @@ void main() {
         while (isElevated() && guard < 5) {
           NavigatorState navigator;
           try {
-            navigator = Navigator.of(tester.element(find.byType(Scaffold).first));
+            navigator = Navigator.of(
+              tester.element(find.byType(Scaffold).first),
+            );
           } catch (_) {
             break;
           }
@@ -599,51 +612,47 @@ void main() {
     timeout: const Timeout(Duration(seconds: 60)),
   );
 
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス→タイムラインの各種パネルを'
-    '例外なく操作できる',
-    (WidgetTester tester) async {
-      // キャンバス・タイムライン画面本体は、実際の描画入力（onPointerDown等の
-      // 生のPointerイベント）を独自Listenerで受けているため、probeAllControls
-      // の対象型（ボタン・ListTile・onTapを持つGestureDetector等）には
-      // そもそも一致せず、誤って「描画」してしまう心配は無い。ドラッグ専用の
-      // ハンドル（定規操作・メッシュ変形・パネル区切り線等）もonTapを
-      // 持たないためisDisabledControlで除外される。ただし念のため、この
-      // シナリオは既存の主要遷移テストとは独立させ、万一不安定になっても
-      // 他のテストへ影響しないようにしている。
-      await bootToHome(tester);
+  testWidgets('起動→新規プロジェクト作成→キャンバス→タイムラインの各種パネルを'
+      '例外なく操作できる', (WidgetTester tester) async {
+    // キャンバス・タイムライン画面本体は、実際の描画入力（onPointerDown等の
+    // 生のPointerイベント）を独自Listenerで受けているため、probeAllControls
+    // の対象型（ボタン・ListTile・onTapを持つGestureDetector等）には
+    // そもそも一致せず、誤って「描画」してしまう心配は無い。ドラッグ専用の
+    // ハンドル（定規操作・メッシュ変形・パネル区切り線等）もonTapを
+    // 持たないためisDisabledControlで除外される。ただし念のため、この
+    // シナリオは既存の主要遷移テストとは独立させ、万一不安定になっても
+    // 他のテストへ影響しないようにしている。
+    await bootToHome(tester);
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      await probeAllControls(tester, maxSteps: 40);
+    await probeAllControls(tester, maxSteps: 40);
 
-      final projectId = tester
-          .element(find.byType(Scaffold).first)
-          .read<ProjectService>()
-          .projects
-          .first
-          .id;
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).go('/timeline/$projectId');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+    final projectId = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>()
+        .projects
+        .first
+        .id;
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).go('/timeline/$projectId');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
 
-      await probeAllControls(tester, maxSteps: 40);
-    },
-    timeout: const Timeout(Duration(seconds: 120)),
-  );
+    await probeAllControls(tester, maxSteps: 40);
+  }, timeout: const Timeout(Duration(seconds: 120)));
 
   // Task#128：キャンバス・タイムラインの独自ジェスチャーを自律テスト化。
   // probeAllControlsは標準的なタップ系ウィジェット（ボタン・ListTile等）
@@ -656,729 +665,756 @@ void main() {
   // （Undo履歴に積まれる／変形行列が変わる／キーフレームのフレーム位置が
   // 動く）まで検証する。バケツ塗り・投げ縄塗り・定規ハンドル・メッシュ
   // 変形ハンドル等の残りの独自ジェスチャーは今後の継続拡張課題とする。
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス：ペンストローク描画・2本指ピンチ'
-    'ズームが独自ジェスチャーとして機能する（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('起動→新規プロジェクト作成→キャンバス：ペン・ぼかし・2本指ピンチ'
+      'ズームが独自ジェスチャーとして機能する（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final canvasFinder = find.byType(CanvasArea);
-      expect(canvasFinder, findsOneWidget);
+    final canvasFinder = find.byType(CanvasArea);
+    expect(canvasFinder, findsOneWidget);
 
-      // ① ペンストローク：既定ツール（ペン）のまま、キャンバス上を
-      // ドラッグして実際にストロークを描く。onPointerDown/Move/Upという
-      // 生のポインターイベントで実装されている（canvas_area.dartの
-      // Listener）。
-      var undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-      expect(undoManager.canUndo, isFalse, reason: '描画前はUndoできる操作が無いはず');
-      final canvasCenter = tester.getCenter(canvasFinder);
-      await tester.dragFrom(
-        canvasCenter - const Offset(60, 60),
-        const Offset(120, 120),
-      );
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: 'ペンストロークの描画で例外');
-      undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-      expect(undoManager.canUndo, isTrue, reason: 'ストロークがUndo履歴に積まれるはず');
+    // ① ペンストローク：既定ツール（ペン）のまま、キャンバス上を
+    // ドラッグして実際にストロークを描く。onPointerDown/Move/Upという
+    // 生のポインターイベントで実装されている（canvas_area.dartの
+    // Listener）。
+    var undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+    expect(undoManager.canUndo, isFalse, reason: '描画前はUndoできる操作が無いはず');
+    final canvasCenter = tester.getCenter(canvasFinder);
+    await tester.dragFrom(
+      canvasCenter - const Offset(60, 60),
+      const Offset(120, 120),
+    );
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: 'ペンストロークの描画で例外');
+    undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+    expect(undoManager.canUndo, isTrue, reason: 'ストロークがUndo履歴に積まれるはず');
 
-      // ② 2本指ピンチズーム：Flutter標準のInteractiveViewerを使わず、
-      // 2本指のonPointerDown/Move/Upから独自に拡大率・回転・平行移動を
-      // 計算して_transformControllerへ反映している（canvas_area.dartの
-      // _applyMultiTouchTransform）。CustomPaintを包むTransformウィジェット
-      // の変形行列が実際に変化することを確認する。
-      final transformFinder = find
-          .descendant(of: canvasFinder, matching: find.byType(Transform))
-          .first;
-      final beforeStorage = List<double>.from(
-        tester.widget<Transform>(transformFinder).transform.storage,
-      );
-      final gesture1 = await tester.startGesture(
-        canvasCenter - const Offset(40, 0),
-        kind: PointerDeviceKind.touch,
-      );
-      final gesture2 = await tester.startGesture(
-        canvasCenter + const Offset(40, 0),
-        kind: PointerDeviceKind.touch,
-      );
-      await tester.pump(const Duration(milliseconds: 50));
-      await gesture1.moveBy(const Offset(-40, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      await gesture2.moveBy(const Offset(40, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      await gesture1.up();
-      await gesture2.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: '2本指ピンチズームで例外');
-      final afterStorage = tester.widget<Transform>(transformFinder).transform.storage;
-      final matrixChanged = List.generate(
-        beforeStorage.length,
-        (i) => (beforeStorage[i] - afterStorage[i]).abs() > 1e-6,
-      ).any((changed) => changed);
-      expect(matrixChanged, isTrue, reason: '2本指ピンチズームでキャンバスの変形行列が変化するはず');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // ② ガウスぼかし：指ツールを長押ししてサブツールを選択し、先ほど
+    // 描いた線をなぞる。PointerUpで操作が確定し、ペンとは別のUndo履歴が
+    // 1件積まれることまで確認する（終了処理の配線漏れに対する回帰テスト）。
+    final fingerTool = find.byTooltip('指');
+    expect(fingerTool, findsOneWidget);
+    tester
+        .widget<ToolbarWidget>(find.byType(ToolbarWidget))
+        .onFingerLongPress();
+    await tester.pumpAndSettle();
+    final blurItem = find.text('ガウスぼかし');
+    expect(blurItem, findsOneWidget);
+    await tester.tap(blurItem);
+    await tester.pumpAndSettle();
+    final undoCountBeforeBlur = undoManager.undoCount;
+    await tester.dragFrom(
+      canvasCenter - const Offset(50, 50),
+      const Offset(100, 100),
+    );
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: 'ガウスぼかし操作で例外');
+    expect(
+      undoManager.undoCount,
+      undoCountBeforeBlur + 1,
+      reason: 'ぼかし操作がPointerUpで確定し、独立したUndo履歴に積まれるはず',
+    );
 
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス：バケツ塗りが独自ジェスチャーとして'
-    '機能する（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+    // ③ 2本指ピンチズーム：Flutter標準のInteractiveViewerを使わず、
+    // 2本指のonPointerDown/Move/Upから独自に拡大率・回転・平行移動を
+    // 計算して_transformControllerへ反映している（canvas_area.dartの
+    // _applyMultiTouchTransform）。CustomPaintを包むTransformウィジェット
+    // の変形行列が実際に変化することを確認する。
+    final transformFinder = find
+        .descendant(of: canvasFinder, matching: find.byType(Transform))
+        .first;
+    final beforeStorage = List<double>.from(
+      tester.widget<Transform>(transformFinder).transform.storage,
+    );
+    final gesture1 = await tester.startGesture(
+      canvasCenter - const Offset(40, 0),
+      kind: PointerDeviceKind.touch,
+    );
+    final gesture2 = await tester.startGesture(
+      canvasCenter + const Offset(40, 0),
+      kind: PointerDeviceKind.touch,
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    await gesture1.moveBy(const Offset(-40, 0));
+    await tester.pump(const Duration(milliseconds: 50));
+    await gesture2.moveBy(const Offset(40, 0));
+    await tester.pump(const Duration(milliseconds: 50));
+    await gesture1.up();
+    await gesture2.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: '2本指ピンチズームで例外');
+    final afterStorage = tester
+        .widget<Transform>(transformFinder)
+        .transform
+        .storage;
+    final matrixChanged = List.generate(
+      beforeStorage.length,
+      (i) => (beforeStorage[i] - afterStorage[i]).abs() > 1e-6,
+    ).any((changed) => changed);
+    expect(matrixChanged, isTrue, reason: '2本指ピンチズームでキャンバスの変形行列が変化するはず');
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+  testWidgets('起動→新規プロジェクト作成→キャンバス：バケツ塗りが独自ジェスチャーとして'
+      '機能する（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // バケツツールへ切り替える（バケツ塗りはonPointerDown/Up内の
-      // _handleBucketDown/_handleBucketUpという独自実装で、
-      // _flattenVisibleLayers()等の非同期処理を挟むため、down直後に
-      // すぐupを送るtester.tap()ではなく、間にpumpを挟んで非同期処理が
-      // 進む猶予を与える必要がある）。
-      // Icons.format_color_fillは他のUI（カラーピッカー等）にも使われて
-      // 複数ヒットするため、ツールバーのバケツボタンにだけ設定されている
-      // ツールチップ文言で一意に特定する。
-      final bucketToolFinder = find.byTooltip('バケツ（長押しでベタ/トーン切替）');
-      expect(bucketToolFinder, findsOneWidget);
-      await tester.tap(bucketToolFinder);
-      await tester.pump(const Duration(milliseconds: 100));
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final canvasFinder = find.byType(CanvasArea);
-      expect(canvasFinder, findsOneWidget);
-      final undoManagerBefore = tester.element(canvasFinder).read<engine.UndoManager>();
-      expect(undoManagerBefore.canUndo, isFalse, reason: '塗る前はUndoできる操作が無いはず');
+    // バケツツールへ切り替える（バケツ塗りはonPointerDown/Up内の
+    // _handleBucketDown/_handleBucketUpという独自実装で、
+    // _flattenVisibleLayers()等の非同期処理を挟むため、down直後に
+    // すぐupを送るtester.tap()ではなく、間にpumpを挟んで非同期処理が
+    // 進む猶予を与える必要がある）。
+    // Icons.format_color_fillは他のUI（カラーピッカー等）にも使われて
+    // 複数ヒットするため、ツールバーのバケツボタンにだけ設定されている
+    // ツールチップ文言で一意に特定する。
+    final bucketToolFinder = find.byTooltip('バケツ（長押しでベタ/トーン切替）');
+    expect(bucketToolFinder, findsOneWidget);
+    await tester.tap(bucketToolFinder);
+    await tester.pump(const Duration(milliseconds: 100));
 
-      final bucketGesture = await tester.startGesture(tester.getCenter(canvasFinder));
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump(const Duration(milliseconds: 100));
-      await bucketGesture.up();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'バケツ塗りで例外');
+    final canvasFinder = find.byType(CanvasArea);
+    expect(canvasFinder, findsOneWidget);
+    final undoManagerBefore = tester
+        .element(canvasFinder)
+        .read<engine.UndoManager>();
+    expect(undoManagerBefore.canUndo, isFalse, reason: '塗る前はUndoできる操作が無いはず');
 
-      final undoManagerAfter = tester.element(canvasFinder).read<engine.UndoManager>();
-      expect(undoManagerAfter.canUndo, isTrue, reason: '新規キャンバス全体への塗りがUndo履歴に積まれるはず');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final bucketGesture = await tester.startGesture(
+      tester.getCenter(canvasFinder),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 100));
+    await bucketGesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'バケツ塗りで例外');
 
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス：自由変形/メッシュ変形の格子点'
-    'ドラッグが独自ジェスチャーとして機能する（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+    final undoManagerAfter = tester
+        .element(canvasFinder)
+        .read<engine.UndoManager>();
+    expect(
+      undoManagerAfter.canUndo,
+      isTrue,
+      reason: '新規キャンバス全体への塗りがUndo履歴に積まれるはず',
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+  testWidgets('起動→新規プロジェクト作成→キャンバス：自由変形/メッシュ変形の格子点'
+      'ドラッグが独自ジェスチャーとして機能する（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // 「設定/編集」メニュー→「自由変形・メッシュ変形」で変形モードへ入る。
-      final settingsMenuFinder = find.byTooltip('設定/編集');
-      expect(settingsMenuFinder, findsOneWidget);
-      await tester.tap(settingsMenuFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '設定/編集メニュー表示で例外');
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final meshMenuItemFinder = find.text('自由変形・メッシュ変形');
-      expect(meshMenuItemFinder, findsOneWidget);
-      // メニューは項目数が多くスクロール可能なため、画面外にある項目を
-      // スクロールして表示させてからタップする。
-      await tester.ensureVisible(meshMenuItemFinder);
-      await tester.pump(const Duration(milliseconds: 200));
-      await tester.tap(meshMenuItemFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '自由変形・メッシュ変形パネル表示で例外');
+    // 「設定/編集」メニュー→「自由変形・メッシュ変形」で変形モードへ入る。
+    final settingsMenuFinder = find.byTooltip('設定/編集');
+    expect(settingsMenuFinder, findsOneWidget);
+    await tester.tap(settingsMenuFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '設定/編集メニュー表示で例外');
 
-      final canvasFinder = find.byType(CanvasArea);
-      expect(canvasFinder, findsOneWidget);
+    final meshMenuItemFinder = find.text('自由変形・メッシュ変形');
+    expect(meshMenuItemFinder, findsOneWidget);
+    // メニューは項目数が多くスクロール可能なため、画面外にある項目を
+    // スクロールして表示させてからタップする。
+    await tester.ensureVisible(meshMenuItemFinder);
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.tap(meshMenuItemFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '自由変形・メッシュ変形パネル表示で例外');
 
-      // 既定の分割数（density=1）は4隅のみの格子点（＝自由変形）になり、
-      // 左上の格子点はキャンバスピクセル座標(0,0)と一致する
-      // （MeshWarpEngine.regularGrid参照）。canvasDrawingRectFor
-      // （canvas_area.dartが実際の座標変換にも使う計算元）でキャンバス
-      // ウィジェット内の実際の描画矩形を求め、その左上を狙ってドラッグ
-      // する（生のポインターイベント：_hitTestMeshPoint→
-      // _meshPointerToIndexという、ペンストローク・ピンチズームと同じ
-      // Listenerベースの独自ジェスチャー実装）。
-      final project = tester
-          .element(canvasFinder)
-          .read<ProjectService>()
-          .projects
-          .first;
-      final canvasWidgetRect = tester.getRect(canvasFinder);
-      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
-      final topLeftHandleScreenPos =
-          canvasWidgetRect.topLeft + drawingRect.topLeft + const Offset(6, 6);
+    final canvasFinder = find.byType(CanvasArea);
+    expect(canvasFinder, findsOneWidget);
 
-      final meshGesture = await tester.startGesture(topLeftHandleScreenPos);
-      await tester.pump(const Duration(milliseconds: 50));
-      await meshGesture.moveBy(const Offset(40, 40));
-      await tester.pump(const Duration(milliseconds: 50));
-      await meshGesture.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: '自由変形の格子点ドラッグで例外');
+    // 既定の分割数（density=1）は4隅のみの格子点（＝自由変形）になり、
+    // 左上の格子点はキャンバスピクセル座標(0,0)と一致する
+    // （MeshWarpEngine.regularGrid参照）。canvasDrawingRectFor
+    // （canvas_area.dartが実際の座標変換にも使う計算元）でキャンバス
+    // ウィジェット内の実際の描画矩形を求め、その左上を狙ってドラッグ
+    // する（生のポインターイベント：_hitTestMeshPoint→
+    // _meshPointerToIndexという、ペンストローク・ピンチズームと同じ
+    // Listenerベースの独自ジェスチャー実装）。
+    final project = tester
+        .element(canvasFinder)
+        .read<ProjectService>()
+        .projects
+        .first;
+    final canvasWidgetRect = tester.getRect(canvasFinder);
+    final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+    final topLeftHandleScreenPos =
+        canvasWidgetRect.topLeft + drawingRect.topLeft + const Offset(6, 6);
 
-      // 変形モードを抜ける（キャンセルで確定はしない。ワープ確定
-      // 処理自体はcompute()でのisolate実行を伴うため、ここでは
-      // 「ドラッグ操作自体が例外なく機能するか」の検証に留める）。
-      final cancelButtonFinder = find.text('キャンセル');
-      expect(cancelButtonFinder, findsOneWidget);
-      await tester.tap(cancelButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '自由変形のキャンセルで例外');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final meshGesture = await tester.startGesture(topLeftHandleScreenPos);
+    await tester.pump(const Duration(milliseconds: 50));
+    await meshGesture.moveBy(const Offset(40, 40));
+    await tester.pump(const Duration(milliseconds: 50));
+    await meshGesture.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: '自由変形の格子点ドラッグで例外');
 
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス：定規ツールの移動ハンドル'
-    'ドラッグが独自ジェスチャーとして機能する（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+    // 変形モードを抜ける（キャンセルで確定はしない。ワープ確定
+    // 処理自体はcompute()でのisolate実行を伴うため、ここでは
+    // 「ドラッグ操作自体が例外なく機能するか」の検証に留める）。
+    final cancelButtonFinder = find.text('キャンセル');
+    expect(cancelButtonFinder, findsOneWidget);
+    await tester.tap(cancelButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '自由変形のキャンセルで例外');
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+  testWidgets('起動→新規プロジェクト作成→キャンバス：定規ツールの移動ハンドル'
+      'ドラッグが独自ジェスチャーとして機能する（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // ツールバーの「定規」ボタン→定規パネルの「直線定規」で
-      // 定規ツールへ切り替え、アクティブな定規を新規作成する。
-      final rulerToolFinder = find.byTooltip('定規');
-      expect(rulerToolFinder, findsOneWidget);
-      await tester.tap(rulerToolFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '定規パネル表示で例外');
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final lineRulerFinder = find.text('直線定規');
-      expect(lineRulerFinder, findsOneWidget);
-      await tester.tap(lineRulerFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '直線定規の新規作成で例外');
+    // ツールバーの「定規」ボタン→定規パネルの「直線定規」で
+    // 定規ツールへ切り替え、アクティブな定規を新規作成する。
+    final rulerToolFinder = find.byTooltip('定規');
+    expect(rulerToolFinder, findsOneWidget);
+    await tester.tap(rulerToolFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '定規パネル表示で例外');
 
-      final canvasFinder = find.byType(CanvasArea);
-      expect(canvasFinder, findsOneWidget);
+    final lineRulerFinder = find.text('直線定規');
+    expect(lineRulerFinder, findsOneWidget);
+    await tester.tap(lineRulerFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '直線定規の新規作成で例外');
 
-      // 直線定規の新規作成自体が1件のUndoActionとして登録される
-      // （RulerPanelからの選択・削除はcanvas_screen.dartの
-      // _setActiveRulerWithUndoが担当）。
-      final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-      expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+    final canvasFinder = find.byType(CanvasArea);
+    expect(canvasFinder, findsOneWidget);
 
-      // 直線定規の「move」ハンドルは定規のposition（既定でキャンバス
-      // 中央）と一致する（_rulerHandlePositions参照）。キャンバス中央は
-      // canvasDrawingRectFor（canvas_area.dartが実際の座標変換にも
-      // 使う計算元）が返す描画矩形の中心と一致するため、そこから
-      // ドラッグする（生のポインターイベント：_handleRulerDown→
-      // _handleRulerMoveという、ペンストローク・自由変形と同じ
-      // Listenerベースの独自ジェスチャー実装）。
-      final project = tester
-          .element(canvasFinder)
-          .read<ProjectService>()
-          .projects
-          .first;
-      final canvasWidgetRect = tester.getRect(canvasFinder);
-      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
-      final moveHandleScreenPos = canvasWidgetRect.topLeft + drawingRect.center;
+    // 直線定規の新規作成自体が1件のUndoActionとして登録される
+    // （RulerPanelからの選択・削除はcanvas_screen.dartの
+    // _setActiveRulerWithUndoが担当）。
+    final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+    expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
 
-      final rulerGesture = await tester.startGesture(moveHandleScreenPos);
-      await tester.pump(const Duration(milliseconds: 50));
-      await rulerGesture.moveBy(const Offset(30, 30));
-      await tester.pump(const Duration(milliseconds: 50));
-      await rulerGesture.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: '定規の移動ハンドルドラッグで例外');
+    // 直線定規の「move」ハンドルは定規のposition（既定でキャンバス
+    // 中央）と一致する（_rulerHandlePositions参照）。キャンバス中央は
+    // canvasDrawingRectFor（canvas_area.dartが実際の座標変換にも
+    // 使う計算元）が返す描画矩形の中心と一致するため、そこから
+    // ドラッグする（生のポインターイベント：_handleRulerDown→
+    // _handleRulerMoveという、ペンストローク・自由変形と同じ
+    // Listenerベースの独自ジェスチャー実装）。
+    final project = tester
+        .element(canvasFinder)
+        .read<ProjectService>()
+        .projects
+        .first;
+    final canvasWidgetRect = tester.getRect(canvasFinder);
+    final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+    final moveHandleScreenPos = canvasWidgetRect.topLeft + drawingRect.center;
 
-      // ハンドルドラッグ確定時（_handleRulerUp）にもう1件UndoActionが
-      // 積まれるはず。undo()を2回呼んで「ドラッグ操作の巻き戻し」
-      // 「定規新規作成の巻き戻し」の両方が例外なく完了し、最終的に
-      // Undo履歴が空になることを確認することで、ドラッグが実際に
-      // 1件のUndoActionとして機能したことを検証する
-      // （単なる例外の有無だけでなく、Undo履歴の件数という実際の
-      // 効果を確認する）。
-      expect(undoManager.canUndo, isTrue, reason: 'ハンドルドラッグがUndo履歴に積まれるはず');
-      undoManager.undo();
-      expect(tester.takeException(), isNull, reason: 'ドラッグの巻き戻しで例外');
-      expect(undoManager.canUndo, isTrue, reason: '定規新規作成の分がまだ残っているはず');
-      undoManager.undo();
-      expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
-      expect(undoManager.canUndo, isFalse, reason: 'ドラッグと新規作成の2件のみ積まれていたはず');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final rulerGesture = await tester.startGesture(moveHandleScreenPos);
+    await tester.pump(const Duration(milliseconds: 50));
+    await rulerGesture.moveBy(const Offset(30, 30));
+    await tester.pump(const Duration(milliseconds: 50));
+    await rulerGesture.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: '定規の移動ハンドルドラッグで例外');
 
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス：定規ツールの回転ハンドル'
-    'ドラッグが独自ジェスチャーとして機能する（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+    // ハンドルドラッグ確定時（_handleRulerUp）にもう1件UndoActionが
+    // 積まれるはず。undo()を2回呼んで「ドラッグ操作の巻き戻し」
+    // 「定規新規作成の巻き戻し」の両方が例外なく完了し、最終的に
+    // Undo履歴が空になることを確認することで、ドラッグが実際に
+    // 1件のUndoActionとして機能したことを検証する
+    // （単なる例外の有無だけでなく、Undo履歴の件数という実際の
+    // 効果を確認する）。
+    expect(undoManager.canUndo, isTrue, reason: 'ハンドルドラッグがUndo履歴に積まれるはず');
+    undoManager.undo();
+    expect(tester.takeException(), isNull, reason: 'ドラッグの巻き戻しで例外');
+    expect(undoManager.canUndo, isTrue, reason: '定規新規作成の分がまだ残っているはず');
+    undoManager.undo();
+    expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
+    expect(undoManager.canUndo, isFalse, reason: 'ドラッグと新規作成の2件のみ積まれていたはず');
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+  testWidgets('起動→新規プロジェクト作成→キャンバス：定規ツールの回転ハンドル'
+      'ドラッグが独自ジェスチャーとして機能する（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      final rulerToolFinder = find.byTooltip('定規');
-      expect(rulerToolFinder, findsOneWidget);
-      await tester.tap(rulerToolFinder);
-      await tester.pump(const Duration(milliseconds: 300));
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final lineRulerFinder = find.text('直線定規');
-      expect(lineRulerFinder, findsOneWidget);
-      await tester.tap(lineRulerFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '直線定規の新規作成で例外');
+    final rulerToolFinder = find.byTooltip('定規');
+    expect(rulerToolFinder, findsOneWidget);
+    await tester.tap(rulerToolFinder);
+    await tester.pump(const Duration(milliseconds: 300));
 
-      final canvasFinder = find.byType(CanvasArea);
-      expect(canvasFinder, findsOneWidget);
-      final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-      expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+    final lineRulerFinder = find.text('直線定規');
+    expect(lineRulerFinder, findsOneWidget);
+    await tester.tap(lineRulerFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '直線定規の新規作成で例外');
 
-      // 直線定規の「rotate」ハンドルは、既定の回転角0（rad）のとき
-      // position（キャンバス中央）からX軸正方向へ220（キャンバス
-      // ピクセル単位）進んだ点になる（_rulerHandlePositions参照：
-      // position + Offset.fromDirection(rotation, 220)）。moveハンドル
-      // のテストと同じくcanvasDrawingRectForで実際の描画矩形の
-      // 拡大縮小率を求め、220をその比率でスクリーン座標へ変換する。
-      final project = tester
-          .element(canvasFinder)
-          .read<ProjectService>()
-          .projects
-          .first;
-      final canvasWidgetRect = tester.getRect(canvasFinder);
-      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
-      final exportW = project.exportWidth.toDouble();
-      final fitScale = drawingRect.width / exportW;
-      final rotateHandleScreenPos =
-          canvasWidgetRect.topLeft + drawingRect.center + Offset(220 * fitScale, 0);
+    final canvasFinder = find.byType(CanvasArea);
+    expect(canvasFinder, findsOneWidget);
+    final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+    expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
 
-      final rulerGesture = await tester.startGesture(rotateHandleScreenPos);
-      await tester.pump(const Duration(milliseconds: 50));
-      // 下方向へドラッグして回転角を変える
-      // （_rulerWithHandleAtのhandleId=='rotate'は
-      // (canvasPos - r.position).directionをそのまま新しいrotationにする）。
-      await rulerGesture.moveBy(const Offset(0, 60));
-      await tester.pump(const Duration(milliseconds: 50));
-      await rulerGesture.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: '定規の回転ハンドルドラッグで例外');
+    // 直線定規の「rotate」ハンドルは、既定の回転角0（rad）のとき
+    // position（キャンバス中央）からX軸正方向へ220（キャンバス
+    // ピクセル単位）進んだ点になる（_rulerHandlePositions参照：
+    // position + Offset.fromDirection(rotation, 220)）。moveハンドル
+    // のテストと同じくcanvasDrawingRectForで実際の描画矩形の
+    // 拡大縮小率を求め、220をその比率でスクリーン座標へ変換する。
+    final project = tester
+        .element(canvasFinder)
+        .read<ProjectService>()
+        .projects
+        .first;
+    final canvasWidgetRect = tester.getRect(canvasFinder);
+    final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+    final exportW = project.exportWidth.toDouble();
+    final fitScale = drawingRect.width / exportW;
+    final rotateHandleScreenPos =
+        canvasWidgetRect.topLeft +
+        drawingRect.center +
+        Offset(220 * fitScale, 0);
 
-      expect(undoManager.canUndo, isTrue, reason: '回転ハンドルドラッグがUndo履歴に積まれるはず');
-      undoManager.undo();
-      expect(tester.takeException(), isNull, reason: '回転の巻き戻しで例外');
-      undoManager.undo();
-      expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
-      expect(undoManager.canUndo, isFalse, reason: '回転と新規作成の2件のみ積まれていたはず');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final rulerGesture = await tester.startGesture(rotateHandleScreenPos);
+    await tester.pump(const Duration(milliseconds: 50));
+    // 下方向へドラッグして回転角を変える
+    // （_rulerWithHandleAtのhandleId=='rotate'は
+    // (canvasPos - r.position).directionをそのまま新しいrotationにする）。
+    await rulerGesture.moveBy(const Offset(0, 60));
+    await tester.pump(const Duration(milliseconds: 50));
+    await rulerGesture.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: '定規の回転ハンドルドラッグで例外');
 
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス：定規ツール（楕円定規）の'
-    'サイズ変更ハンドルドラッグが独自ジェスチャーとして機能する'
-    '（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+    expect(undoManager.canUndo, isTrue, reason: '回転ハンドルドラッグがUndo履歴に積まれるはず');
+    undoManager.undo();
+    expect(tester.takeException(), isNull, reason: '回転の巻き戻しで例外');
+    undoManager.undo();
+    expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
+    expect(undoManager.canUndo, isFalse, reason: '回転と新規作成の2件のみ積まれていたはず');
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+  testWidgets('起動→新規プロジェクト作成→キャンバス：定規ツール（楕円定規）の'
+      'サイズ変更ハンドルドラッグが独自ジェスチャーとして機能する'
+      '（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      final rulerToolFinder = find.byTooltip('定規');
-      expect(rulerToolFinder, findsOneWidget);
-      await tester.tap(rulerToolFinder);
-      await tester.pump(const Duration(milliseconds: 300));
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final ellipseRulerFinder = find.text('楕円定規');
-      expect(ellipseRulerFinder, findsOneWidget);
-      await tester.tap(ellipseRulerFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '楕円定規の新規作成で例外');
+    final rulerToolFinder = find.byTooltip('定規');
+    expect(rulerToolFinder, findsOneWidget);
+    await tester.tap(rulerToolFinder);
+    await tester.pump(const Duration(milliseconds: 300));
 
-      final canvasFinder = find.byType(CanvasArea);
-      expect(canvasFinder, findsOneWidget);
-      final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-      expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+    final ellipseRulerFinder = find.text('楕円定規');
+    expect(ellipseRulerFinder, findsOneWidget);
+    await tester.tap(ellipseRulerFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '楕円定規の新規作成で例外');
 
-      // 楕円定規の「resizeX」ハンドルは、既定の回転角0（rad）のとき
-      // position（キャンバス中央）からX軸正方向へradiusX（既定200×
-      // キャンバス幅/1920のスケール）進んだ点になる
-      // （_rulerHandlePositions参照：
-      // position + _rotatePoint(Offset(rx, 0), rotation)）。
-      final project = tester
-          .element(canvasFinder)
-          .read<ProjectService>()
-          .projects
-          .first;
-      final canvasWidgetRect = tester.getRect(canvasFinder);
-      final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
-      final exportW = project.exportWidth.toDouble();
-      final fitScale = drawingRect.width / exportW;
-      final radiusX = 200.0 * (exportW / 1920.0);
-      final resizeXHandleScreenPos = canvasWidgetRect.topLeft +
-          drawingRect.center +
-          Offset(radiusX * fitScale, 0);
+    final canvasFinder = find.byType(CanvasArea);
+    expect(canvasFinder, findsOneWidget);
+    final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
+    expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
 
-      final rulerGesture = await tester.startGesture(resizeXHandleScreenPos);
-      await tester.pump(const Duration(milliseconds: 50));
-      await rulerGesture.moveBy(const Offset(30, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      await rulerGesture.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: '楕円定規のサイズ変更ハンドルドラッグで例外');
+    // 楕円定規の「resizeX」ハンドルは、既定の回転角0（rad）のとき
+    // position（キャンバス中央）からX軸正方向へradiusX（既定200×
+    // キャンバス幅/1920のスケール）進んだ点になる
+    // （_rulerHandlePositions参照：
+    // position + _rotatePoint(Offset(rx, 0), rotation)）。
+    final project = tester
+        .element(canvasFinder)
+        .read<ProjectService>()
+        .projects
+        .first;
+    final canvasWidgetRect = tester.getRect(canvasFinder);
+    final drawingRect = canvasDrawingRectFor(canvasWidgetRect.size, project);
+    final exportW = project.exportWidth.toDouble();
+    final fitScale = drawingRect.width / exportW;
+    final radiusX = 200.0 * (exportW / 1920.0);
+    final resizeXHandleScreenPos =
+        canvasWidgetRect.topLeft +
+        drawingRect.center +
+        Offset(radiusX * fitScale, 0);
 
-      expect(undoManager.canUndo, isTrue, reason: 'サイズ変更ハンドルドラッグがUndo履歴に積まれるはず');
-      undoManager.undo();
-      expect(tester.takeException(), isNull, reason: 'サイズ変更の巻き戻しで例外');
-      undoManager.undo();
-      expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
-      expect(undoManager.canUndo, isFalse, reason: 'サイズ変更と新規作成の2件のみ積まれていたはず');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final rulerGesture = await tester.startGesture(resizeXHandleScreenPos);
+    await tester.pump(const Duration(milliseconds: 50));
+    await rulerGesture.moveBy(const Offset(30, 0));
+    await tester.pump(const Duration(milliseconds: 50));
+    await rulerGesture.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: '楕円定規のサイズ変更ハンドルドラッグで例外');
 
-  testWidgets(
-    '起動→新規プロジェクト作成→キャンバス（PC/DeXモード）：ドッキング'
-    'パネルのリサイズハンドルドラッグが独自ジェスチャーとして機能する'
-    '（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+    expect(undoManager.canUndo, isTrue, reason: 'サイズ変更ハンドルドラッグがUndo履歴に積まれるはず');
+    undoManager.undo();
+    expect(tester.takeException(), isNull, reason: 'サイズ変更の巻き戻しで例外');
+    undoManager.undo();
+    expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
+    expect(undoManager.canUndo, isFalse, reason: 'サイズ変更と新規作成の2件のみ積まれていたはず');
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-      // isWideScreen()はワークスペース設定のforcePcMode（手動指定）を
-      // 画面の向きより優先するため、実機のようにポインティングデバイスを
-      // 検知させたり画面を横向きにしたりしなくても、これだけでPC/DeX
-      // モードのドッキングパネルレイアウトを再現できる。ただし
-      // bootToHome()が設定するスマホ縦長サイズ（1080×2280）の横幅の
-      // ままだと、実機のPC/DeXモードでは通常あり得ない極端に狭い横幅で
-      // 複数のドッキングパネル＋キャンバスを並べることになりRenderFlex
-      // がわずかに収まらないため、横幅だけ実機のPC/DeXモードを想定した
-      // 広さへ明示的に広げ直す（高さは新規プロジェクト作成フォームが
-      // 縦スクロールなしで収まる元の高さのまま維持する）。
-      tester.view.physicalSize = const Size(1920, 2280);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pump(const Duration(milliseconds: 100));
+  testWidgets('起動→新規プロジェクト作成→キャンバス（PC/DeXモード）：ドッキング'
+      'パネルのリサイズハンドルドラッグが独自ジェスチャーとして機能する'
+      '（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final settingsContext = tester.element(find.byType(Scaffold).first);
-      final settingsService = settingsContext.read<SettingsService>();
-      await tester.runAsync(() => settingsService.setForcePcMode(true));
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: 'PCモード強制切替で例外');
-      expect(settingsService.desktopToolPanelWidth, 280.0, reason: '既定幅の前提');
+    // isWideScreen()はワークスペース設定のforcePcMode（手動指定）を
+    // 画面の向きより優先するため、実機のようにポインティングデバイスを
+    // 検知させたり画面を横向きにしたりしなくても、これだけでPC/DeX
+    // モードのドッキングパネルレイアウトを再現できる。ただし
+    // bootToHome()が設定するスマホ縦長サイズ（1080×2280）の横幅の
+    // ままだと、実機のPC/DeXモードでは通常あり得ない極端に狭い横幅で
+    // 複数のドッキングパネル＋キャンバスを並べることになりRenderFlex
+    // がわずかに収まらないため、横幅だけ実機のPC/DeXモードを想定した
+    // 広さへ明示的に広げ直す（高さは新規プロジェクト作成フォームが
+    // 縦スクロールなしで収まる元の高さのまま維持する）。
+    tester.view.physicalSize = const Size(1920, 2280);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pump(const Duration(milliseconds: 100));
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    final settingsContext = tester.element(find.byType(Scaffold).first);
+    final settingsService = settingsContext.read<SettingsService>();
+    await tester.runAsync(() => settingsService.setForcePcMode(true));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: 'PCモード強制切替で例外');
+    expect(settingsService.desktopToolPanelWidth, 280.0, reason: '既定幅の前提');
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモード（PC/DeX）への遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // 既定のドッキングパネル（ブラシ・カラーピッカー・レイヤー）が
-      // 自動で開くため、_ResizeHandle（canvas_screen.dart内のprivateな
-      // クラスで、ドッキング領域とキャンバスの境界に置かれる横方向
-      // ドラッグ専用のGestureDetector。onHorizontalDragUpdateを持つ
-      // ウィジェットはこの画面内に他に存在しない）が複数出現する。
-      // 最初の1つ（ツールオプション系ドッキング領域＝ブラシパネルの
-      // 右端）をドラッグする。
-      final resizeHandleFinder = find.byWidgetPredicate(
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモード（PC/DeX）への遷移で例外');
+
+    // 既定のドッキングパネル（ブラシ・カラーピッカー・レイヤー）が
+    // 自動で開くため、_ResizeHandle（canvas_screen.dart内のprivateな
+    // クラスで、ドッキング領域とキャンバスの境界に置かれる横方向
+    // ドラッグ専用のGestureDetector。onHorizontalDragUpdateを持つ
+    // ウィジェットはこの画面内に他に存在しない）が複数出現する。
+    // 最初の1つ（ツールオプション系ドッキング領域＝ブラシパネルの
+    // 右端）をドラッグする。
+    final resizeHandleFinder = find.byWidgetPredicate(
+      (w) => w is GestureDetector && w.onHorizontalDragUpdate != null,
+    );
+    expect(
+      resizeHandleFinder,
+      findsWidgets,
+      reason: 'PC/DeXモードのリサイズハンドルが見つからない',
+    );
+
+    final handleCenter = tester.getCenter(resizeHandleFinder.first);
+    final resizeGesture = await tester.startGesture(handleCenter);
+    await tester.pump(const Duration(milliseconds: 50));
+    await resizeGesture.moveBy(const Offset(50, 0));
+    await tester.pump(const Duration(milliseconds: 50));
+    await resizeGesture.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: 'リサイズハンドルドラッグで例外');
+
+    // ドラッグ確定（onDragEnd）でSettingsServiceへ実際に永続化される
+    // ため、既定値280.0から実際に変化したことまで検証する
+    // （単なる例外の有無だけでなく実際の効果を確認する）。
+    expect(
+      settingsService.desktopToolPanelWidth,
+      greaterThan(280.0),
+      reason: 'リサイズハンドルドラッグでツールパネル幅が広がるはず',
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets('起動→新規プロジェクト作成→タイムライン：カメラキーフレームのドラッグ'
+      '移動が独自ジェスチャーとして機能する（Task#128）', (WidgetTester tester) async {
+    await bootToHome(tester);
+
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
+    final projectId = ps.projects.first.id;
+    final sceneId = ps.scenesOf(projectId).first.id;
+
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).go('/timeline/$projectId');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+
+    // 現在フレーム（新規プロジェクトの既定は先頭フレーム＝0）へ
+    // カメラキーフレームを1件追加する。
+    final addCameraKfButton = find.byIcon(Icons.camera);
+    expect(addCameraKfButton, findsOneWidget);
+    await tester.tap(addCameraKfButton);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: 'カメラキーフレーム追加で例外');
+    expect(
+      ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.frameIndex),
+      contains(0),
+      reason: '追加したカメラキーフレームがフレーム0に存在するはず',
+    );
+
+    // 追加したキーフレームのマーカー（timeline_screen.dartでTask#128用に
+    // ValueKeyを付与済み）を横方向にドラッグし、独自実装の
+    // onHorizontalDragStart/Update/End（_beginCameraKfDrag等）で
+    // フレーム位置が変わることを確認する。
+    final markerFinder = find.byKey(const ValueKey('cameraKfMarker_0'));
+    expect(markerFinder, findsOneWidget);
+    await tester.drag(markerFinder, const Offset(200, 0));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: 'カメラキーフレームのドラッグ移動で例外');
+
+    final frames = ps
+        .cameraKeyframesOf(projectId, sceneId)
+        .map((k) => k.frameIndex)
+        .toList();
+    expect(frames, isNot(contains(0)), reason: 'ドラッグ後は元のフレーム0から移動しているはず');
+    expect(
+      frames.any((f) => f > 0),
+      isTrue,
+      reason: 'ドラッグした分だけ後ろのフレームへ移動しているはず',
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets('起動→新規プロジェクト作成→タイムライン：動画クリップの長押し'
+      'ドラッグ移動・トリムハンドルが独自ジェスチャーとして機能する'
+      '（Task#128）', (WidgetTester tester) async {
+    // MaterialService.addMaterialが素材保存先を解決するのに
+    // path_providerを使うため必要（mockPathProvider参照）。
+    mockPathProvider(tester);
+    await bootToHome(tester);
+
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
+    final ms = tester
+        .element(find.byType(Scaffold).first)
+        .read<MaterialService>();
+    final projectId = ps.projects.first.id;
+    final sceneId = ps.scenesOf(projectId).first.id;
+
+    // タイムライン画面を開く前に、動画クリップを1件、直接
+    // ProjectService/MaterialServiceへ登録しておく。実際の「＋動画」
+    // ボタンはFilePicker→MaterialService.addMaterialという実ファイル
+    // I/O（readAsBytes/writeAsBytes）をボタンのonPressed内で行うが、
+    // flutter_testの仮想時計（fake async zone）はTimer/Future.delayed
+    // は制御できてもボタンのonPressed内で開始された本物のdart:io I/O
+    // の完了までは（tester.runAsyncでtap自体を包んでも）テスト本体の
+    // 実行中に driveできない、というテストハーネス側の制約に
+    // 実際に突き当たった（本物のI/O完了はテスト関数がreturnした
+    // "後"にしか届かなかった）。そのためこのテストでは「＋動画」
+    // ボタンのUI操作自体は検証対象に含めず、その代わりに
+    // 移動・トリムハンドルという独自ジェスチャー自体の検証に
+    // 専念する（ProjectService/MaterialServiceへの直接呼び出しは
+    // テストコードから直接awaitする通常の非同期呼び出しであり、
+    // 上記の制約とは無関係にtester.runAsyncで問題なく完了する）。
+    // _TimelineScreenState._loadClipsFromProjectはシーンの
+    // LayerType.timelineVideo/timelineImageレイヤーから_videoClips
+    // 等を再構築する仕組みのため、ここで登録したレイヤーは実際の
+    // 「＋動画」ボタン経由の追加と同じ形でタイムライン画面に表示される。
+    final dummyDir = await tester.runAsync(
+      () => Directory.systemTemp.createTemp('niarim_test_video_'),
+    );
+    addTearDown(() => dummyDir!.delete(recursive: true));
+    final dummyFile = File('${dummyDir!.path}/dummy_video.mp4');
+    await tester.runAsync(() => dummyFile.writeAsBytes(const [0, 1, 2, 3]));
+
+    final asset = await tester.runAsync(
+      () => ms.addMaterial(
+        projectId: projectId,
+        sourcePath: dummyFile.path,
+        type: material_asset.MaterialType.video,
+      ),
+    );
+    final layer = ps.addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: LayerType.timelineVideo,
+      name: 'テスト動画',
+    );
+    ps.updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      layer: layer.copyWith(
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: 1,
+        rangeEnd: 12,
+        materialId: asset!.id,
+        sourceTrimStart: 0,
+        sourceTrimEnd: 11,
+      ),
+    );
+
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).go('/timeline/$projectId');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+
+    Layer videoLayerOf(ProjectService s) => s
+        .layersOf(projectId, sceneId, 0)
+        .firstWhere((l) => l.type == LayerType.timelineVideo);
+    final layerBeforeMove = videoLayerOf(ps);
+    final rangeStartBeforeMove = layerBeforeMove.rangeStart;
+    final rangeEndBeforeMove = layerBeforeMove.rangeEnd;
+
+    // クリップ本体（長押しドラッグで移動するGestureDetector。
+    // onLongPressStartを持つのはタイムライン画面内でこれだけ）を
+    // 取得する。トリムハンドル（onHorizontalDragUpdate）もこの
+    // GestureDetectorのchild Stack内の兄弟要素として存在するため、
+    // 後段でdescendantとして絞り込める。
+    final clipMoveFinder = find.byWidgetPredicate(
+      (w) => w is GestureDetector && w.onLongPressStart != null,
+    );
+    expect(clipMoveFinder, findsOneWidget, reason: '追加した動画クリップが見つからない');
+
+    // ① 長押しドラッグで移動：kLongPressTimeout（500ms）以上ホールド
+    // してから水平方向へ動かす。_beginClipDrag/_updateClipDrag/
+    // _endClipDragという、キャンバスのペンストローク等と同じ
+    // 生のジェスチャーコールバック実装。
+    final clipCenter = tester.getCenter(clipMoveFinder);
+    final moveGesture = await tester.startGesture(clipCenter);
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+    await moveGesture.moveBy(const Offset(80, 0));
+    await tester.pump(const Duration(milliseconds: 50));
+    await moveGesture.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: '動画クリップの長押しドラッグ移動で例外');
+
+    final layerAfterMove = videoLayerOf(ps);
+    expect(
+      layerAfterMove.rangeStart,
+      isNot(rangeStartBeforeMove),
+      reason: '長押しドラッグ移動でrangeStartが変わるはず',
+    );
+
+    // ② トリムハンドル（右端）を横方向へドラッグして長さを変える。
+    // クリップが移動した分、GestureDetectorは再構築されているため
+    // 改めて取得し直す。
+    final clipMoveFinderAfterMove = find.byWidgetPredicate(
+      (w) => w is GestureDetector && w.onLongPressStart != null,
+    );
+    expect(clipMoveFinderAfterMove, findsOneWidget);
+    final resizeHandleFinders = find.descendant(
+      of: clipMoveFinderAfterMove,
+      matching: find.byWidgetPredicate(
         (w) => w is GestureDetector && w.onHorizontalDragUpdate != null,
-      );
-      expect(resizeHandleFinder, findsWidgets, reason: 'PC/DeXモードのリサイズハンドルが見つからない');
+      ),
+    );
+    expect(
+      resizeHandleFinders,
+      findsNWidgets(2),
+      reason: '左右2つのトリムハンドルが見つからない',
+    );
 
-      final handleCenter = tester.getCenter(resizeHandleFinder.first);
-      final resizeGesture = await tester.startGesture(handleCenter);
-      await tester.pump(const Duration(milliseconds: 50));
-      await resizeGesture.moveBy(const Offset(50, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      await resizeGesture.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: 'リサイズハンドルドラッグで例外');
+    final rightHandleCenter = tester.getCenter(resizeHandleFinders.last);
+    final resizeGesture = await tester.startGesture(rightHandleCenter);
+    await tester.pump(const Duration(milliseconds: 50));
+    await resizeGesture.moveBy(const Offset(40, 0));
+    await tester.pump(const Duration(milliseconds: 50));
+    await resizeGesture.up();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull, reason: '動画クリップのトリムハンドルドラッグで例外');
 
-      // ドラッグ確定（onDragEnd）でSettingsServiceへ実際に永続化される
-      // ため、既定値280.0から実際に変化したことまで検証する
-      // （単なる例外の有無だけでなく実際の効果を確認する）。
-      expect(
-        settingsService.desktopToolPanelWidth,
-        greaterThan(280.0),
-        reason: 'リサイズハンドルドラッグでツールパネル幅が広がるはず',
-      );
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
-
-  testWidgets(
-    '起動→新規プロジェクト作成→タイムライン：カメラキーフレームのドラッグ'
-    '移動が独自ジェスチャーとして機能する（Task#128）',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
-
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
-
-      final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
-      final projectId = ps.projects.first.id;
-      final sceneId = ps.scenesOf(projectId).first.id;
-
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).go('/timeline/$projectId');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
-
-      // 現在フレーム（新規プロジェクトの既定は先頭フレーム＝0）へ
-      // カメラキーフレームを1件追加する。
-      final addCameraKfButton = find.byIcon(Icons.camera);
-      expect(addCameraKfButton, findsOneWidget);
-      await tester.tap(addCameraKfButton);
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: 'カメラキーフレーム追加で例外');
-      expect(
-        ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.frameIndex),
-        contains(0),
-        reason: '追加したカメラキーフレームがフレーム0に存在するはず',
-      );
-
-      // 追加したキーフレームのマーカー（timeline_screen.dartでTask#128用に
-      // ValueKeyを付与済み）を横方向にドラッグし、独自実装の
-      // onHorizontalDragStart/Update/End（_beginCameraKfDrag等）で
-      // フレーム位置が変わることを確認する。
-      final markerFinder = find.byKey(const ValueKey('cameraKfMarker_0'));
-      expect(markerFinder, findsOneWidget);
-      await tester.drag(markerFinder, const Offset(200, 0));
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: 'カメラキーフレームのドラッグ移動で例外');
-
-      final frames = ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.frameIndex).toList();
-      expect(frames, isNot(contains(0)), reason: 'ドラッグ後は元のフレーム0から移動しているはず');
-      expect(frames.any((f) => f > 0), isTrue, reason: 'ドラッグした分だけ後ろのフレームへ移動しているはず');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
-
-  testWidgets(
-    '起動→新規プロジェクト作成→タイムライン：動画クリップの長押し'
-    'ドラッグ移動・トリムハンドルが独自ジェスチャーとして機能する'
-    '（Task#128）',
-    (WidgetTester tester) async {
-      // MaterialService.addMaterialが素材保存先を解決するのに
-      // path_providerを使うため必要（mockPathProvider参照）。
-      mockPathProvider(tester);
-      await bootToHome(tester);
-
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
-
-      final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
-      final ms = tester.element(find.byType(Scaffold).first).read<MaterialService>();
-      final projectId = ps.projects.first.id;
-      final sceneId = ps.scenesOf(projectId).first.id;
-
-      // タイムライン画面を開く前に、動画クリップを1件、直接
-      // ProjectService/MaterialServiceへ登録しておく。実際の「＋動画」
-      // ボタンはFilePicker→MaterialService.addMaterialという実ファイル
-      // I/O（readAsBytes/writeAsBytes）をボタンのonPressed内で行うが、
-      // flutter_testの仮想時計（fake async zone）はTimer/Future.delayed
-      // は制御できてもボタンのonPressed内で開始された本物のdart:io I/O
-      // の完了までは（tester.runAsyncでtap自体を包んでも）テスト本体の
-      // 実行中に driveできない、というテストハーネス側の制約に
-      // 実際に突き当たった（本物のI/O完了はテスト関数がreturnした
-      // "後"にしか届かなかった）。そのためこのテストでは「＋動画」
-      // ボタンのUI操作自体は検証対象に含めず、その代わりに
-      // 移動・トリムハンドルという独自ジェスチャー自体の検証に
-      // 専念する（ProjectService/MaterialServiceへの直接呼び出しは
-      // テストコードから直接awaitする通常の非同期呼び出しであり、
-      // 上記の制約とは無関係にtester.runAsyncで問題なく完了する）。
-      // _TimelineScreenState._loadClipsFromProjectはシーンの
-      // LayerType.timelineVideo/timelineImageレイヤーから_videoClips
-      // 等を再構築する仕組みのため、ここで登録したレイヤーは実際の
-      // 「＋動画」ボタン経由の追加と同じ形でタイムライン画面に表示される。
-      final dummyDir = await tester.runAsync(
-        () => Directory.systemTemp.createTemp('niarim_test_video_'),
-      );
-      addTearDown(() => dummyDir!.delete(recursive: true));
-      final dummyFile = File('${dummyDir!.path}/dummy_video.mp4');
-      await tester.runAsync(() => dummyFile.writeAsBytes(const [0, 1, 2, 3]));
-
-      final asset = await tester.runAsync(
-        () => ms.addMaterial(
-          projectId: projectId,
-          sourcePath: dummyFile.path,
-          type: material_asset.MaterialType.video,
-        ),
-      );
-      final layer = ps.addLayer(
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: 0,
-        type: LayerType.timelineVideo,
-        name: 'テスト動画',
-      );
-      ps.updateLayer(
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: 0,
-        layer: layer.copyWith(
-          rangeMode: LayerRangeMode.frameRange,
-          rangeStart: 1,
-          rangeEnd: 12,
-          materialId: asset!.id,
-          sourceTrimStart: 0,
-          sourceTrimEnd: 11,
-        ),
-      );
-
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).go('/timeline/$projectId');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
-
-      Layer videoLayerOf(ProjectService s) => s
-          .layersOf(projectId, sceneId, 0)
-          .firstWhere((l) => l.type == LayerType.timelineVideo);
-      final layerBeforeMove = videoLayerOf(ps);
-      final rangeStartBeforeMove = layerBeforeMove.rangeStart;
-      final rangeEndBeforeMove = layerBeforeMove.rangeEnd;
-
-      // クリップ本体（長押しドラッグで移動するGestureDetector。
-      // onLongPressStartを持つのはタイムライン画面内でこれだけ）を
-      // 取得する。トリムハンドル（onHorizontalDragUpdate）もこの
-      // GestureDetectorのchild Stack内の兄弟要素として存在するため、
-      // 後段でdescendantとして絞り込める。
-      final clipMoveFinder = find.byWidgetPredicate(
-        (w) => w is GestureDetector && w.onLongPressStart != null,
-      );
-      expect(clipMoveFinder, findsOneWidget, reason: '追加した動画クリップが見つからない');
-
-      // ① 長押しドラッグで移動：kLongPressTimeout（500ms）以上ホールド
-      // してから水平方向へ動かす。_beginClipDrag/_updateClipDrag/
-      // _endClipDragという、キャンバスのペンストローク等と同じ
-      // 生のジェスチャーコールバック実装。
-      final clipCenter = tester.getCenter(clipMoveFinder);
-      final moveGesture = await tester.startGesture(clipCenter);
-      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
-      await moveGesture.moveBy(const Offset(80, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      await moveGesture.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: '動画クリップの長押しドラッグ移動で例外');
-
-      final layerAfterMove = videoLayerOf(ps);
-      expect(
-        layerAfterMove.rangeStart,
-        isNot(rangeStartBeforeMove),
-        reason: '長押しドラッグ移動でrangeStartが変わるはず',
-      );
-
-      // ② トリムハンドル（右端）を横方向へドラッグして長さを変える。
-      // クリップが移動した分、GestureDetectorは再構築されているため
-      // 改めて取得し直す。
-      final clipMoveFinderAfterMove = find.byWidgetPredicate(
-        (w) => w is GestureDetector && w.onLongPressStart != null,
-      );
-      expect(clipMoveFinderAfterMove, findsOneWidget);
-      final resizeHandleFinders = find.descendant(
-        of: clipMoveFinderAfterMove,
-        matching: find.byWidgetPredicate(
-          (w) => w is GestureDetector && w.onHorizontalDragUpdate != null,
-        ),
-      );
-      expect(resizeHandleFinders, findsNWidgets(2), reason: '左右2つのトリムハンドルが見つからない');
-
-      final rightHandleCenter = tester.getCenter(resizeHandleFinders.last);
-      final resizeGesture = await tester.startGesture(rightHandleCenter);
-      await tester.pump(const Duration(milliseconds: 50));
-      await resizeGesture.moveBy(const Offset(40, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      await resizeGesture.up();
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(tester.takeException(), isNull, reason: '動画クリップのトリムハンドルドラッグで例外');
-
-      final layerAfterResize = videoLayerOf(ps);
-      expect(
-        layerAfterResize.rangeStart,
-        layerAfterMove.rangeStart,
-        reason: '右端のトリムハンドルはrangeStartを変えないはず',
-      );
-      expect(
-        layerAfterResize.rangeEnd,
-        isNot(rangeEndBeforeMove),
-        reason: '右端のトリムハンドルドラッグでrangeEndが変わるはず',
-      );
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final layerAfterResize = videoLayerOf(ps);
+    expect(
+      layerAfterResize.rangeStart,
+      layerAfterMove.rangeStart,
+      reason: '右端のトリムハンドルはrangeStartを変えないはず',
+    );
+    expect(
+      layerAfterResize.rangeEnd,
+      isNot(rangeEndBeforeMove),
+      reason: '右端のトリムハンドルドラッグでrangeEndが変わるはず',
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets(
     '起動→新規プロジェクト作成→タイムライン再生：ループOFFなら最終フレームで自動停止する',
@@ -1528,7 +1564,10 @@ void main() {
       await tester.tap(closeIconFinder);
       await tester.pump();
       expect(tester.takeException(), isNull, reason: '検索クローズで例外');
-      final cardCountRestored = find.byType(CommunityWorkCard).evaluate().length;
+      final cardCountRestored = find
+          .byType(CommunityWorkCard)
+          .evaluate()
+          .length;
       expect(cardCountRestored, cardCountBefore);
     },
     timeout: const Timeout(Duration(seconds: 60)),
@@ -1576,7 +1615,8 @@ void main() {
       expect(find.byType(CommunityShortsScreen), findsOneWidget);
       expect(
         find.byWidgetPredicate(
-            (w) => w is PageView && w.scrollDirection == Axis.vertical),
+          (w) => w is PageView && w.scrollDirection == Axis.vertical,
+        ),
         findsOneWidget,
       );
 
@@ -1615,7 +1655,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'フローティングプレビュー表示で例外');
       final detailButtonFinder = find.text('詳細へ');
-      expect(detailButtonFinder, findsOneWidget, reason: 'フローティングプレビューの「詳細へ」ボタンが見つからない');
+      expect(
+        detailButtonFinder,
+        findsOneWidget,
+        reason: 'フローティングプレビューの「詳細へ」ボタンが見つからない',
+      );
       await tester.tap(detailButtonFinder);
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
@@ -1640,8 +1684,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'タグタップでの絞り込みで例外');
-      expect(find.byIcon(Icons.sell), findsOneWidget, reason: 'タグ検索モードに切り替わっていない');
-      expect(find.byType(CommunityWorkCard), findsOneWidget, reason: '一意なタグでの絞り込み件数が想定と異なる');
+      expect(
+        find.byIcon(Icons.sell),
+        findsOneWidget,
+        reason: 'タグ検索モードに切り替わっていない',
+      );
+      expect(
+        find.byType(CommunityWorkCard),
+        findsOneWidget,
+        reason: '一意なタグでの絞り込み件数が想定と異なる',
+      );
 
       // 絞り込まれた唯一の作品カードを開き（フローティングプレビュー→
       // 「詳細へ」）、追加したタグを削除できることを確認する
@@ -1657,7 +1709,10 @@ void main() {
       // 作品詳細画面本体のSingleChildScrollView配下に絞り込むことで、
       // 詳細画面側のタグチップのTextだけを特定する。
       final sheetScope = find.byType(SingleChildScrollView).last;
-      final tagTextInSheet = find.descendant(of: sheetScope, matching: find.text(newTag));
+      final tagTextInSheet = find.descendant(
+        of: sheetScope,
+        matching: find.text(newTag),
+      );
       expect(tagTextInSheet, findsOneWidget, reason: '追加したタグがシートに表示されていない');
       // タグチップ内部ではラベルのTextと削除ボタンが同じRowの直接の子と
       // なっているため、最も近いRow祖先へ絞り込むことで、他のタグ
@@ -1683,68 +1738,79 @@ void main() {
     timeout: const Timeout(Duration(seconds: 60)),
   );
 
-  testWidgets(
-    'コミュニティ画面：タグのロックは投稿者本人にのみ操作可能',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('コミュニティ画面：タグのロックは投稿者本人にのみ操作可能', (WidgetTester tester) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // kDummySelfAuthorId（'author_01'）に対応する投稿者名'あにめ工房ミラ'
-      // の作品を開く（フローティングプレビュー→「詳細へ」）。この投稿者の
-      // 作品にのみロック切り替えボタン（Icons.lock_open／ロック中タグの
-      // Icons.lock）が表示されるはず。
-      final selfAuthorCardFinder = find.widgetWithText(CommunityWorkCard, 'あにめ工房ミラ');
-      expect(selfAuthorCardFinder, findsWidgets);
-      await tester.tap(selfAuthorCardFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.text('詳細へ'));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '投稿者本人の作品詳細画面表示で例外');
+    // kDummySelfAuthorId（'author_01'）に対応する投稿者名'あにめ工房ミラ'
+    // の作品を開く（フローティングプレビュー→「詳細へ」）。この投稿者の
+    // 作品にのみロック切り替えボタン（Icons.lock_open／ロック中タグの
+    // Icons.lock）が表示されるはず。
+    final selfAuthorCardFinder = find.widgetWithText(
+      CommunityWorkCard,
+      'あにめ工房ミラ',
+    );
+    expect(selfAuthorCardFinder, findsWidgets);
+    await tester.tap(selfAuthorCardFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('詳細へ'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '投稿者本人の作品詳細画面表示で例外');
 
-      // ダミーデータは各作品に必ず1個ロック済みタグがあるため、
-      // ロック解除ボタン（Icons.lock_open）が最低1個は表示されるはず。
-      final unlockButtonFinder = find.byIcon(Icons.lock_open);
-      expect(unlockButtonFinder, findsWidgets, reason: '投稿者本人にロック切り替えボタンが表示されていない');
-      final unlockCountBefore = unlockButtonFinder.evaluate().length;
+    // ダミーデータは各作品に必ず1個ロック済みタグがあるため、
+    // ロック解除ボタン（Icons.lock_open）が最低1個は表示されるはず。
+    final unlockButtonFinder = find.byIcon(Icons.lock_open);
+    expect(
+      unlockButtonFinder,
+      findsWidgets,
+      reason: '投稿者本人にロック切り替えボタンが表示されていない',
+    );
+    final unlockCountBefore = unlockButtonFinder.evaluate().length;
 
-      // 未ロックのタグを1つロックする。
-      await tester.tap(unlockButtonFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'タグロックの切り替えで例外');
-      final unlockCountAfter = find.byIcon(Icons.lock_open).evaluate().length;
-      expect(unlockCountAfter, unlockCountBefore - 1, reason: 'ロック後も解除ボタンの数が減っていない');
+    // 未ロックのタグを1つロックする。
+    await tester.tap(unlockButtonFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'タグロックの切り替えで例外');
+    final unlockCountAfter = find.byIcon(Icons.lock_open).evaluate().length;
+    expect(
+      unlockCountAfter,
+      unlockCountBefore - 1,
+      reason: 'ロック後も解除ボタンの数が減っていない',
+    );
 
-      // 詳細画面を閉じてコミュニティ画面へ戻る。
-      Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    // 詳細画面を閉じてコミュニティ画面へ戻る。
+    Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // 投稿者本人ではない作品（'あにめ工房ミラ'以外）にはロック切り替え
-      // ボタンが一切表示されないことを確認する。
-      final otherAuthorCardFinder = find.byWidgetPredicate(
-        (w) => w is CommunityWorkCard && w.work.authorName != 'あにめ工房ミラ',
-      );
-      expect(otherAuthorCardFinder, findsWidgets);
-      await tester.tap(otherAuthorCardFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.text('詳細へ'));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '他ユーザー作品詳細画面表示で例外');
-      expect(find.byIcon(Icons.lock_open), findsNothing, reason: '投稿者本人以外にロック解除ボタンが表示されている');
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 投稿者本人ではない作品（'あにめ工房ミラ'以外）にはロック切り替え
+    // ボタンが一切表示されないことを確認する。
+    final otherAuthorCardFinder = find.byWidgetPredicate(
+      (w) => w is CommunityWorkCard && w.work.authorName != 'あにめ工房ミラ',
+    );
+    expect(otherAuthorCardFinder, findsWidgets);
+    await tester.tap(otherAuthorCardFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('詳細へ'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '他ユーザー作品詳細画面表示で例外');
+    expect(
+      find.byIcon(Icons.lock_open),
+      findsNothing,
+      reason: '投稿者本人以外にロック解除ボタンが表示されている',
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets(
     'コミュニティでブックマークした作品がホームの「ブクマ済み」タブに表示される',
@@ -1765,13 +1831,19 @@ void main() {
 
       // 先頭の作品カードのタイトルを記録し、そのカードのブックマーク
       // ボタン（サムネイル右上）をタップしてブックマークする。
-      final firstCard = tester.widget<CommunityWorkCard>(find.byType(CommunityWorkCard).first);
+      final firstCard = tester.widget<CommunityWorkCard>(
+        find.byType(CommunityWorkCard).first,
+      );
       final bookmarkedTitle = firstCard.work.title;
       final bookmarkButtonFinder = find.byIcon(Icons.bookmark_border).first;
       await tester.tap(bookmarkButtonFinder);
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'ブックマーク操作で例外');
-      expect(find.byIcon(Icons.bookmark).first, findsOneWidget, reason: 'ブックマーク済み表示に切り替わっていない');
+      expect(
+        find.byIcon(Icons.bookmark).first,
+        findsOneWidget,
+        reason: 'ブックマーク済み表示に切り替わっていない',
+      );
 
       // コミュニティ画面を閉じてスプラッシュへ戻り、通常のホーム画面遷移
       // 経路で「作品をつくる」からホームへ入る。
@@ -1828,11 +1900,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      final communityService =
-          tester.element(find.byType(Scaffold).first).read<CommunityService>();
+      final communityService = tester
+          .element(find.byType(Scaffold).first)
+          .read<CommunityService>();
       // 自作リポストも許可されているが（Task#134継続）、フォロー中作者
       // タブとの兼ね合いをテストしやすいよう自分以外の作者の作品を選ぶ。
-      final work = communityService.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
+      final work = communityService.works.firstWhere(
+        (w) => w.authorId != kDummySelfAuthorId,
+      );
       expect(communityService.isRepostedBySelf(work.id), isFalse);
 
       final routerContext = tester.element(find.byType(Scaffold).first);
@@ -1858,125 +1933,128 @@ void main() {
     timeout: const Timeout(Duration(seconds: 60)),
   );
 
-  testWidgets(
-    'コミュニティ画面：フォロー通知ベルのバッジと通知一覧画面が動作する'
-    '（Task#134継続）',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('コミュニティ画面：フォロー通知ベルのバッジと通知一覧画面が動作する'
+      '（Task#134継続）', (WidgetTester tester) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      expect(communityButtonFinder, findsOneWidget);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    expect(communityButtonFinder, findsOneWidget);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      final communityService =
-          tester.element(find.byType(Scaffold).first).read<CommunityService>();
-      final initialUnread = communityService.unreadFollowNotificationCount;
-      expect(initialUnread, greaterThan(0), reason: 'ダミーデータ上、未読通知が最初からある想定');
+    final communityService = tester
+        .element(find.byType(Scaffold).first)
+        .read<CommunityService>();
+    final initialUnread = communityService.unreadFollowNotificationCount;
+    expect(initialUnread, greaterThan(0), reason: 'ダミーデータ上、未読通知が最初からある想定');
 
-      // 通知ベルのバッジに未読数が表示されているはず。
-      expect(find.text('$initialUnread'), findsOneWidget);
+    // 通知ベルのバッジに未読数が表示されているはず。
+    expect(find.text('$initialUnread'), findsOneWidget);
 
-      final bellFinder = find.byIcon(Icons.notifications_outlined);
-      expect(bellFinder, findsOneWidget);
-      await tester.tap(bellFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォロー通知一覧画面への遷移で例外');
+    final bellFinder = find.byIcon(Icons.notifications_outlined);
+    expect(bellFinder, findsOneWidget);
+    await tester.tap(bellFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォロー通知一覧画面への遷移で例外');
 
-      // 画面を開いた時点で全て既読になり、リストにも通知本文が表示される。
-      expect(communityService.unreadFollowNotificationCount, 0);
-      expect(find.textContaining('さんにフォローされました'), findsWidgets);
+    // 画面を開いた時点で全て既読になり、リストにも通知本文が表示される。
+    expect(communityService.unreadFollowNotificationCount, 0);
+    expect(find.textContaining('さんにフォローされました'), findsWidgets);
 
-      Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '通知一覧画面から戻る操作で例外');
-      // 戻った後はバッジが消えているはず（既読になったため）。
-      expect(find.text('$initialUnread'), findsNothing);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '通知一覧画面から戻る操作で例外');
+    // 戻った後はバッジが消えているはず（既読になったため）。
+    expect(find.text('$initialUnread'), findsNothing);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '投稿者別作品一覧画面：フォロー中/フォロワー一覧の公開設定トグルと'
-    '一覧表示ダイアログが動作する（Task#134継続）',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('投稿者別作品一覧画面：フォロー中/フォロワー一覧の公開設定トグルと'
+      '一覧表示ダイアログが動作する（Task#134継続）', (WidgetTester tester) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      expect(communityButtonFinder, findsOneWidget);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    expect(communityButtonFinder, findsOneWidget);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      final scaffoldContext = tester.element(find.byType(Scaffold).first);
-      final communityService = scaffoldContext.read<CommunityService>();
-      // 自分自身のフォロワー一覧の公開設定は既定で非公開のはず。
-      expect(communityService.selfFollowersPublic, isFalse);
+    final scaffoldContext = tester.element(find.byType(Scaffold).first);
+    final communityService = scaffoldContext.read<CommunityService>();
+    // 自分自身のフォロワー一覧の公開設定は既定で非公開のはず。
+    expect(communityService.selfFollowersPublic, isFalse);
 
-      Navigator.of(scaffoldContext).push(MaterialPageRoute<void>(
+    Navigator.of(scaffoldContext).push(
+      MaterialPageRoute<void>(
         builder: (_) => CommunityAuthorWorksScreen(
           authorId: kDummySelfAuthorId,
           authorName: communityService.authorNameOf(kDummySelfAuthorId)!,
         ),
-      ));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '自分の投稿者別作品一覧画面への遷移で例外');
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '自分の投稿者別作品一覧画面への遷移で例外');
 
-      // 本人ページでは、非公開のうちはフォロー中/フォロワー数がタップ
-      // できない（下線が付かない＝InkWellのonTapがnull）。
-      final followerTapFinder = find.byKey(const Key('communityAuthorFollowerCountTap'));
-      final followingTapFinder = find.byKey(const Key('communityAuthorFollowingCountTap'));
-      expect(followerTapFinder, findsOneWidget);
-      expect(followingTapFinder, findsOneWidget);
+    // 本人ページでは、非公開のうちはフォロー中/フォロワー数がタップ
+    // できない（下線が付かない＝InkWellのonTapがnull）。
+    final followerTapFinder = find.byKey(
+      const Key('communityAuthorFollowerCountTap'),
+    );
+    final followingTapFinder = find.byKey(
+      const Key('communityAuthorFollowingCountTap'),
+    );
+    expect(followerTapFinder, findsOneWidget);
+    expect(followingTapFinder, findsOneWidget);
 
-      // 公開設定トグルをオンにする。
-      final toggleSwitchFinder = find.byType(Switch);
-      expect(toggleSwitchFinder, findsOneWidget, reason: 'フォロー中/フォロワー一覧公開トグルが見つからない');
-      await tester.tap(toggleSwitchFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォロー中/フォロワー一覧公開トグル操作で例外');
-      expect(communityService.selfFollowersPublic, isTrue);
+    // 公開設定トグルをオンにする。
+    final toggleSwitchFinder = find.byType(Switch);
+    expect(
+      toggleSwitchFinder,
+      findsOneWidget,
+      reason: 'フォロー中/フォロワー一覧公開トグルが見つからない',
+    );
+    await tester.tap(toggleSwitchFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォロー中/フォロワー一覧公開トグル操作で例外');
+    expect(communityService.selfFollowersPublic, isTrue);
 
-      // フォロワー数をタップすると一覧ダイアログが開く。
-      await tester.tap(followerTapFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログ表示で例外');
-      expect(find.byType(AlertDialog), findsOneWidget);
+    // フォロワー数をタップすると一覧ダイアログが開く。
+    await tester.tap(followerTapFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログ表示で例外');
+    expect(find.byType(AlertDialog), findsOneWidget);
 
-      // ダイアログを閉じる。
-      await tester.tap(find.widgetWithText(TextButton, '閉じる'));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログを閉じる操作で例外');
-      expect(find.byType(AlertDialog), findsNothing);
+    // ダイアログを閉じる。
+    await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログを閉じる操作で例外');
+    expect(find.byType(AlertDialog), findsNothing);
 
-      // フォロー中の数をタップすると一覧ダイアログが開く。
-      await tester.tap(followingTapFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログ表示で例外');
-      expect(find.byType(AlertDialog), findsOneWidget);
+    // フォロー中の数をタップすると一覧ダイアログが開く。
+    await tester.tap(followingTapFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログ表示で例外');
+    expect(find.byType(AlertDialog), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(TextButton, '閉じる'));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログを閉じる操作で例外');
-      expect(find.byType(AlertDialog), findsNothing);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログを閉じる操作で例外');
+    expect(find.byType(AlertDialog), findsNothing);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→ホーム→ドロワー→有料会員画面まで例外なく遷移できる', (WidgetTester tester) async {
     await bootToHome(tester);
@@ -2022,11 +2100,10 @@ void main() {
 
   testWidgets('起動→ホーム→ヘルプ・ヒント画面を例外なく表示できる', (WidgetTester tester) async {
     await bootToHome(tester);
-    await visitRoutesAndPop(
-      tester,
-      const ['/help', '/tips'],
-      settleDelay: const Duration(milliseconds: 500),
-    );
+    await visitRoutesAndPop(tester, const [
+      '/help',
+      '/tips',
+    ], settleDelay: const Duration(milliseconds: 500));
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→ホーム→共有・ゴミ箱画面を例外なく表示できる', (WidgetTester tester) async {
@@ -2034,46 +2111,38 @@ void main() {
     await visitRoutesAndPop(tester, const ['/shared', '/trash']);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動→新規プロジェクト作成→詳細・素材管理・書き出し・自動塗りプリセット・'
-    'セーブツリー画面を例外なく表示できる',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('起動→新規プロジェクト作成→詳細・素材管理・書き出し・自動塗りプリセット・'
+      'セーブツリー画面を例外なく表示できる', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final projectId = tester
-          .element(find.byType(Scaffold).first)
-          .read<ProjectService>()
-          .projects
-          .first
-          .id;
+    final projectId = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>()
+        .projects
+        .first
+        .id;
 
-      await visitRoutesAndPop(
-        tester,
-        [
-          '/project/$projectId',
-          '/materials/$projectId',
-          '/export/$projectId',
-          '/autofill-presets',
-          '/save-tree/$projectId',
-        ],
-        settleDelay: const Duration(milliseconds: 500),
-      );
-    },
-    timeout: const Timeout(Duration(seconds: 90)),
-  );
+    await visitRoutesAndPop(tester, [
+      '/project/$projectId',
+      '/materials/$projectId',
+      '/export/$projectId',
+      '/autofill-presets',
+      '/save-tree/$projectId',
+    ], settleDelay: const Duration(milliseconds: 500));
+  }, timeout: const Timeout(Duration(seconds: 90)));
 
   // ここから先は、独立したルートを持たずNavigator.push（MaterialPageRoute）
   // で開く画面（対象UIのタップ操作が別途必要な画面）を巡回する。
@@ -2135,170 +2204,150 @@ void main() {
     timeout: const Timeout(Duration(seconds: 60)),
   );
 
-  testWidgets(
-    '起動→ホーム→設定→ワークスペース設定→PCレイアウト詳細設定画面'
-    '（別ルート）を例外なく表示できる',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('起動→ホーム→設定→ワークスペース設定→PCレイアウト詳細設定画面'
+      '（別ルート）を例外なく表示できる', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).push('/settings/workspace');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'ワークスペース設定画面への遷移で例外');
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).push('/settings/workspace');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'ワークスペース設定画面への遷移で例外');
 
-      final pcLayoutButtonFinder = find.byIcon(
-        Icons.dashboard_customize_outlined,
-      );
-      expect(pcLayoutButtonFinder, findsOneWidget);
-      await tester.tap(pcLayoutButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'PCレイアウト詳細設定画面への遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-      await probeAllControls(tester);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final pcLayoutButtonFinder = find.byIcon(
+      Icons.dashboard_customize_outlined,
+    );
+    expect(pcLayoutButtonFinder, findsOneWidget);
+    await tester.tap(pcLayoutButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'PCレイアウト詳細設定画面への遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動画面→コミュニティ画面→作品詳細→投稿者別作品一覧画面'
-    '（別ルート）を例外なく表示できる',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: '起動画面の描画で例外');
+  testWidgets('起動画面→コミュニティ画面→作品詳細→投稿者別作品一覧画面'
+      '（別ルート）を例外なく表示できる', (WidgetTester tester) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: '起動画面の描画で例外');
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      expect(communityButtonFinder, findsOneWidget);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    expect(communityButtonFinder, findsOneWidget);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      // 作品カードをタップするとフローティング動画プレビューウィンドウが
-      // 開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ遷移する。
-      final workCardFinder = find.byType(CommunityWorkCard);
-      expect(workCardFinder, findsWidgets);
-      await tester.tap(workCardFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.text('詳細へ'));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
+    // 作品カードをタップするとフローティング動画プレビューウィンドウが
+    // 開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ遷移する。
+    final workCardFinder = find.byType(CommunityWorkCard);
+    expect(workCardFinder, findsWidgets);
+    await tester.tap(workCardFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('詳細へ'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
 
-      // 詳細画面内の投稿者アイコン（CircleAvatar、一覧カード側には無い）を
-      // タップして投稿者別作品一覧画面（MaterialPageRoute）を開く。
-      final authorAvatarFinder = find.byType(CircleAvatar);
-      expect(authorAvatarFinder, findsWidgets);
-      await tester.tap(authorAvatarFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '投稿者別作品一覧画面への遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-      await probeAllControls(tester);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 詳細画面内の投稿者アイコン（CircleAvatar、一覧カード側には無い）を
+    // タップして投稿者別作品一覧画面（MaterialPageRoute）を開く。
+    final authorAvatarFinder = find.byType(CircleAvatar);
+    expect(authorAvatarFinder, findsWidgets);
+    await tester.tap(authorAvatarFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '投稿者別作品一覧画面への遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動→ホーム→新規プロジェクト画面→キャンバスサイズプリセット管理画面'
-    '（別ルート）を例外なく表示できる',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('起動→ホーム→新規プロジェクト画面→キャンバスサイズプリセット管理画面'
+      '（別ルート）を例外なく表示できる', (WidgetTester tester) async {
+    await bootToHome(tester);
 
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
 
-      final presetManageButtonFinder = find.byIcon(Icons.tune);
-      expect(presetManageButtonFinder, findsOneWidget);
-      await tester.tap(presetManageButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(
-        tester.takeException(),
-        isNull,
-        reason: 'キャンバスサイズプリセット管理画面への遷移で例外',
-      );
-      expect(find.byType(Scaffold), findsWidgets);
-      await probeAllControls(tester);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final presetManageButtonFinder = find.byIcon(Icons.tune);
+    expect(presetManageButtonFinder, findsOneWidget);
+    await tester.tap(presetManageButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'キャンバスサイズプリセット管理画面への遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動→ホーム→作品一覧タブ→フォルダ作成→フォルダ内画面（別ルート）を'
-    '例外なく表示できる',
-    (WidgetTester tester) async {
-      mockPathProvider(tester);
-      await bootToHome(tester);
+  testWidgets('起動→ホーム→作品一覧タブ→フォルダ作成→フォルダ内画面（別ルート）を'
+      '例外なく表示できる', (WidgetTester tester) async {
+    mockPathProvider(tester);
+    await bootToHome(tester);
 
-      // フォルダ一覧の表示条件（書き出し済みファイルが1件以上ある）を
-      // 満たすため、exportsフォルダへダミーファイルを1件書き込む。実際の
-      // 動画データではないため、一覧に表示される際のプレビュー生成は
-      // 失敗するが、その失敗はVideoPlayerControllerのcatchErrorで
-      // 捕捉される想定（アプリ側の設計）。
-      final exportsDir = await tester.runAsync(ExportEngine.exportsDir);
-      await tester.runAsync(
-        () => File(
-          '${exportsDir!.path}/smoke_test_dummy.mp4',
-        ).writeAsBytes(const [0]),
-      );
-      // ExportEngine.listExportedFilesは結果を静的にキャッシュしており、
-      // 起動画面のプリフェッチ（他のテストケースも含め、アプリを起動する
-      // たびに走る）で既に空リストがキャッシュされている。作品一覧タブは
-      // forceRefresh:falseで読むため、ここで明示的に強制更新しておかないと
-      // 上で書き込んだダミーファイルが反映されない。
-      await tester.runAsync(
-        () => ExportEngine.listExportedFiles(forceRefresh: true),
-      );
+    // フォルダ一覧の表示条件（書き出し済みファイルが1件以上ある）を
+    // 満たすため、exportsフォルダへダミーファイルを1件書き込む。実際の
+    // 動画データではないため、一覧に表示される際のプレビュー生成は
+    // 失敗するが、その失敗はVideoPlayerControllerのcatchErrorで
+    // 捕捉される想定（アプリ側の設計）。
+    final exportsDir = await tester.runAsync(ExportEngine.exportsDir);
+    await tester.runAsync(
+      () => File(
+        '${exportsDir!.path}/smoke_test_dummy.mp4',
+      ).writeAsBytes(const [0]),
+    );
+    // ExportEngine.listExportedFilesは結果を静的にキャッシュしており、
+    // 起動画面のプリフェッチ（他のテストケースも含め、アプリを起動する
+    // たびに走る）で既に空リストがキャッシュされている。作品一覧タブは
+    // forceRefresh:falseで読むため、ここで明示的に強制更新しておかないと
+    // 上で書き込んだダミーファイルが反映されない。
+    await tester.runAsync(
+      () => ExportEngine.listExportedFiles(forceRefresh: true),
+    );
 
-      final worksTabFinder = find.text('作品一覧');
-      expect(worksTabFinder, findsWidgets);
-      await tester.tap(worksTabFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      // 書き出し済みファイル一覧の非同期読み込み待ち。
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '作品一覧タブへの切り替えで例外');
+    final worksTabFinder = find.text('作品一覧');
+    expect(worksTabFinder, findsWidgets);
+    await tester.tap(worksTabFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    // 書き出し済みファイル一覧の非同期読み込み待ち。
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '作品一覧タブへの切り替えで例外');
 
-      final fabFinder = find.byIcon(Icons.create_new_folder_outlined);
-      expect(fabFinder, findsOneWidget);
-      await tester.tap(fabFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォルダ作成ダイアログ表示で例外');
+    final fabFinder = find.byIcon(Icons.create_new_folder_outlined);
+    expect(fabFinder, findsOneWidget);
+    await tester.tap(fabFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォルダ作成ダイアログ表示で例外');
 
-      const folderName = 'スモークテスト用フォルダ';
-      await tester.enterText(find.byType(TextField), folderName);
-      await tester.pump(const Duration(milliseconds: 100));
-      final createFolderFinder = find.text('作成');
-      expect(createFolderFinder, findsWidgets);
-      await tester.tap(createFolderFinder.last);
-      await tester.pump(const Duration(milliseconds: 300));
-      // ダイアログの閉じるアニメーションが終わるまで待つ（入力欄の
-      // EditableTextがまだ残っていると、find.text()が同じ文字列を持つ
-      // 入力欄自体にもマッチしてしまい、意図しない場所をタップしうる）。
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォルダ作成で例外');
+    const folderName = 'スモークテスト用フォルダ';
+    await tester.enterText(find.byType(TextField), folderName);
+    await tester.pump(const Duration(milliseconds: 100));
+    final createFolderFinder = find.text('作成');
+    expect(createFolderFinder, findsWidgets);
+    await tester.tap(createFolderFinder.last);
+    await tester.pump(const Duration(milliseconds: 300));
+    // ダイアログの閉じるアニメーションが終わるまで待つ（入力欄の
+    // EditableTextがまだ残っていると、find.text()が同じ文字列を持つ
+    // 入力欄自体にもマッチしてしまい、意図しない場所をタップしうる）。
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォルダ作成で例外');
 
-      final folderTileFinder = find.text(folderName);
-      expect(folderTileFinder, findsWidgets);
-      await tester.tap(folderTileFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フォルダ内画面への遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-      await probeAllControls(tester);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final folderTileFinder = find.text(folderName);
+    expect(folderTileFinder, findsWidgets);
+    await tester.tap(folderTileFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フォルダ内画面への遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets(
     '起動→保存データ超過状態→保存方式変更（別ルート）を例外なく表示できる',

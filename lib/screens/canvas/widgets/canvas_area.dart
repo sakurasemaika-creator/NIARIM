@@ -166,7 +166,8 @@ class CanvasArea extends StatefulWidget {
 }
 
 class _CanvasAreaState extends State<CanvasArea> {
-  final TransformationController _transformController = TransformationController();
+  final TransformationController _transformController =
+      TransformationController();
   final InputHandler _inputHandler = InputHandler();
   final OnionSkinEngine _onionSkinEngine = OnionSkinEngine();
   final RulerEngine _rulerEngine = RulerEngine();
@@ -386,7 +387,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     // フレーム・シーン・現在レイヤーが変わった場合は現在レイヤー画像も
     // 合成し直す（他のレイヤー変更検知は_recomposeSurroundings内で行う）。
-    final frameChanged = old.currentFrame != widget.currentFrame ||
+    final frameChanged =
+        old.currentFrame != widget.currentFrame ||
         old.sceneId != widget.sceneId ||
         old.currentLayerId != widget.currentLayerId;
     if (frameChanged) {
@@ -408,9 +410,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     _recomposeSurroundings(force: frameChanged);
 
     // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ──────────────────
-    final enteredMeshTransform = old.currentTool != DrawingTool.meshTransform &&
+    final enteredMeshTransform =
+        old.currentTool != DrawingTool.meshTransform &&
         widget.currentTool == DrawingTool.meshTransform;
-    final leftMeshTransform = old.currentTool == DrawingTool.meshTransform &&
+    final leftMeshTransform =
+        old.currentTool == DrawingTool.meshTransform &&
         widget.currentTool != DrawingTool.meshTransform;
     if (enteredMeshTransform) {
       _beginMeshTransform();
@@ -422,7 +426,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (old.meshRotateDeg != widget.meshRotateDeg) {
       _applyMeshRotateDelta(widget.meshRotateDeg - old.meshRotateDeg);
     }
-    if (old.meshScaleValue != widget.meshScaleValue && old.meshScaleValue != 0) {
+    if (old.meshScaleValue != widget.meshScaleValue &&
+        old.meshScaleValue != 0) {
       _applyMeshScaleDelta(widget.meshScaleValue / old.meshScaleValue);
     }
     if (old.meshCommitToken != widget.meshCommitToken) {
@@ -593,9 +598,17 @@ class _CanvasAreaState extends State<CanvasArea> {
     final project = widget.project;
     if (project != null) {
       return context.read<ProjectService>().tileKeyFor(
-            project.id, widget.sceneId, frameIndex ?? widget.currentFrame, layerId);
+        project.id,
+        widget.sceneId,
+        frameIndex ?? widget.currentFrame,
+        layerId,
+      );
     }
-    return frameLayerKey(widget.sceneId, frameIndex ?? widget.currentFrame, layerId);
+    return frameLayerKey(
+      widget.sceneId,
+      frameIndex ?? widget.currentFrame,
+      layerId,
+    );
   }
 
   void _syncBrushAndColor() {
@@ -615,11 +628,18 @@ class _CanvasAreaState extends State<CanvasArea> {
   StrokePoint _rawToStrokePoint(PointerEvent event) {
     final settings = context.read<SettingsService>();
     final tiltEnabled = context.read<PerformanceService>().tiltEnabled;
-    final raw = _inputHandler.toStrokePoint(event, pressureCurve: settings.applyPressureCurve);
+    final raw = _inputHandler.toStrokePoint(
+      event,
+      pressureCurve: settings.applyPressureCurve,
+    );
     if (tiltEnabled) return raw;
     return StrokePoint(
-      x: raw.x, y: raw.y, pressure: raw.pressure,
-      tiltX: 0, tiltY: 0, inputType: raw.inputType,
+      x: raw.x,
+      y: raw.y,
+      pressure: raw.pressure,
+      tiltX: 0,
+      tiltY: 0,
+      inputType: raw.inputType,
     );
   }
 
@@ -641,7 +661,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _handleEdgeZoneTap(bool isRight) {
     final now = DateTime.now();
     final last = _lastEdgeTapTime;
-    final matched = last != null &&
+    final matched =
+        last != null &&
         _lastEdgeTapWasRight == isRight &&
         now.difference(last) <= _edgeDoubleTapWindow;
     if (matched) {
@@ -679,8 +700,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// ままの相似変換として計算する（アンカーは動かないため、その指の下の
   /// コンテンツが画面上でずれない）。3本指以上の場合も先頭2本のみを使う。
   void _applyMultiTouchTransform(int movedPointer, Offset newPos) {
-    final anchorId =
-        _activeTouchPositions.keys.firstWhere((id) => id != movedPointer, orElse: () => -1);
+    final anchorId = _activeTouchPositions.keys.firstWhere(
+      (id) => id != movedPointer,
+      orElse: () => -1,
+    );
     if (anchorId == -1) return;
     final anchorPos = _activeTouchPositions[anchorId];
     final oldPos = _activeTouchPositions[movedPointer];
@@ -695,7 +718,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     final scaleFactor = afterDist / beforeDist;
     final rotationDelta = afterVec.direction - beforeVec.direction;
-    final transform = Matrix4.translationValues(anchorPos.dx, anchorPos.dy, 0) *
+    final transform =
+        Matrix4.translationValues(anchorPos.dx, anchorPos.dy, 0) *
         Matrix4.rotationZ(rotationDelta) *
         Matrix4.diagonal3Values(scaleFactor, scaleFactor, 1) *
         Matrix4.translationValues(-anchorPos.dx, -anchorPos.dy, 0);
@@ -731,7 +755,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     // 中クリックドラッグ：現在のツールに関係なくキャンバスを平行移動する
     // （Galaxy DeXモード・マウス入力）。
-    if (event.kind == PointerDeviceKind.mouse && event.buttons & kMiddleMouseButton != 0) {
+    if (event.kind == PointerDeviceKind.mouse &&
+        event.buttons & kMiddleMouseButton != 0) {
       _middleClickPanning = true;
       _middleClickLastScreenPos = event.localPosition;
       return;
@@ -752,7 +777,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       _pickColor(canvasPos);
       return;
     }
-    if (_isSelectionTool && _selectionMask != null && _beginSelectionTransformIfHit(canvasPos)) {
+    if (_isSelectionTool &&
+        _selectionMask != null &&
+        _beginSelectionTransformIfHit(canvasPos)) {
       // 既存の選択範囲の中・またはハンドルをタップ＝新規選択ではなく
       // 移動・拡大縮小・回転操作として扱う。
       return;
@@ -767,7 +794,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
       _clearSelectionMask();
-      setState(() { _lassoPoints = [canvasPos]; });
+      setState(() {
+        _lassoPoints = [canvasPos];
+      });
       return;
     }
     if (widget.currentTool == DrawingTool.selectMagicWand) {
@@ -775,7 +804,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       _magicWandSelectAt(canvasPos);
       return;
     }
-    if (widget.currentTool == DrawingTool.shape && widget.shapeKind != ShapeKind.off) {
+    if (widget.currentTool == DrawingTool.shape &&
+        widget.shapeKind != ShapeKind.off) {
       setState(() {
         _shapeStart = canvasPos;
         _shapeEnd = canvasPos;
@@ -822,7 +852,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
       if (type == InputType.touch && _inputHandler.isStylusActive) return;
-      setState(() { _lassoPoints = [canvasPos]; });
+      setState(() {
+        _lassoPoints = [canvasPos];
+      });
       return;
     }
     if (widget.currentTool == DrawingTool.pen &&
@@ -832,7 +864,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
       if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _syncBrushAndColor();
-      setState(() { _subToolStrokePoints = [canvasPos]; });
+      setState(() {
+        _subToolStrokePoints = [canvasPos];
+      });
       return;
     }
     if (widget.currentTool == DrawingTool.finger) {
@@ -866,9 +900,12 @@ class _CanvasAreaState extends State<CanvasArea> {
       final last = _middleClickLastScreenPos;
       if (last != null) {
         final delta = event.localPosition - last;
-        setState(() => _transformController.value =
-            (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
-                _transformController.value);
+        setState(
+          () => _transformController.value =
+              (Matrix4.identity()
+                ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+              _transformController.value,
+        );
       }
       _middleClickLastScreenPos = event.localPosition;
       return;
@@ -880,9 +917,12 @@ class _CanvasAreaState extends State<CanvasArea> {
       final last = _panToolLastScreenPos;
       if (last != null) {
         final delta = event.localPosition - last;
-        setState(() => _transformController.value =
-            (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
-                _transformController.value);
+        setState(
+          () => _transformController.value =
+              (Matrix4.identity()
+                ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+              _transformController.value,
+        );
       }
       _panToolLastScreenPos = event.localPosition;
       return;
@@ -891,7 +931,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       _updateSelectionTransform(canvasPos);
       return;
     }
-    if (widget.currentTool == DrawingTool.selectRect && _selectionStart != null) {
+    if (widget.currentTool == DrawingTool.selectRect &&
+        _selectionStart != null) {
       setState(() => _selectionEnd = canvasPos);
       return;
     }
@@ -900,14 +941,21 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.shape && _shapeStart != null) {
-      setState(() => _shapeEnd = _snapShapeEnd(_shapeStart!, canvasPos, widget.shapeKind));
+      setState(
+        () => _shapeEnd = _snapShapeEnd(
+          _shapeStart!,
+          canvasPos,
+          widget.shapeKind,
+        ),
+      );
       return;
     }
     if (widget.currentTool == DrawingTool.move && _moveStart != null) {
       setState(() => _moveDelta = canvasPos - _moveStart!);
       return;
     }
-    if (widget.currentTool == DrawingTool.transform && _transformStart != null) {
+    if (widget.currentTool == DrawingTool.transform &&
+        _transformStart != null) {
       _updateTransform(canvasPos);
       return;
     }
@@ -1051,7 +1099,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       _inputHandler.onStylusUp();
       return;
     }
-    if (widget.currentTool == DrawingTool.pen && widget.currentSubTool == PenSubTool.tone) {
+    if (widget.currentTool == DrawingTool.pen &&
+        widget.currentSubTool == PenSubTool.tone) {
       _commitToneStroke();
       setState(() => _subToolStrokePoints = []);
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
@@ -1059,7 +1108,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       _inputHandler.onStylusUp();
       return;
     }
-    if (widget.currentTool == DrawingTool.pen && widget.currentSubTool == PenSubTool.stamp) {
+    if (widget.currentTool == DrawingTool.pen &&
+        widget.currentSubTool == PenSubTool.stamp) {
       _commitStampStroke();
       setState(() => _subToolStrokePoints = []);
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
@@ -1071,6 +1121,15 @@ class _CanvasAreaState extends State<CanvasArea> {
       _handleFingerUp();
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
+      _inputHandler.onStylusUp();
+      return;
+    }
+    if (widget.currentTool == DrawingTool.blur ||
+        widget.currentTool == DrawingTool.mosaic) {
+      // Down/Moveで開始したタイルUndoを、ポインターを離した時点で確定する。
+      // ここを通さないと記録中のUndoが残り続け、ぼかし・モザイク操作を
+      // Undoできないだけでなく、次の描画操作と同じ履歴へ混ざってしまう。
+      _handleBlurMosaicUp();
       _inputHandler.onStylusUp();
       return;
     }
@@ -1099,7 +1158,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final project = widget.project;
     if (project == null) return;
     context.read<ProjectService>().markLineartDirty(
-        project.id, widget.sceneId, widget.currentFrame, _layerId);
+      project.id,
+      widget.sceneId,
+      widget.currentFrame,
+      _layerId,
+    );
   }
 
   // ─── Undo/Redo ─────────────────────────────────────────────────────────
@@ -1153,15 +1216,17 @@ class _CanvasAreaState extends State<CanvasArea> {
     final layerKey = _undoRecordingLayerKey;
     _undoRecordingLayerKey = null;
     if (snapshot.before.isEmpty || layerKey == null) return;
-    context.read<app_undo.UndoManager>().push(app_undo.TileUndoAction(
-      tileManager: _tileManager,
-      layerId: layerKey,
-      before: snapshot.before,
-      after: snapshot.after,
-      onApply: () {
-        if (mounted) _scheduleComposite();
-      },
-    ));
+    context.read<app_undo.UndoManager>().push(
+      app_undo.TileUndoAction(
+        tileManager: _tileManager,
+        layerId: layerKey,
+        before: snapshot.before,
+        after: snapshot.after,
+        onApply: () {
+          if (mounted) _scheduleComposite();
+        },
+      ),
+    );
   }
 
   // ─── 投げ縄塗り（ペンサブツール） ─────────────────────────────
@@ -1248,7 +1313,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       (c.g * 255).round().clamp(0, 255),
       (c.b * 255).round().clamp(0, 255),
     );
-    final points = _subToolStrokePoints.map((p) => ui.Offset(p.dx, p.dy)).toList();
+    final points = _subToolStrokePoints
+        .map((p) => ui.Offset(p.dx, p.dy))
+        .toList();
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
     // 描画処理はバックグラウンドisolateで実行する。
     final result = await compute(runToneStrokeInIsolate, (
@@ -1304,7 +1371,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       }
     }
     if (sampled.isEmpty) {
-      sampled.add(ui.Offset(_subToolStrokePoints.first.dx, _subToolStrokePoints.first.dy));
+      sampled.add(
+        ui.Offset(_subToolStrokePoints.first.dx, _subToolStrokePoints.first.dy),
+      );
     }
 
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
@@ -1340,8 +1409,14 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (!mounted) return;
     final idx = (py * w + px) * 4;
     if (idx + 3 >= buffer.length) return;
-    widget.onEyedropper?.call(Color.fromARGB(
-        buffer[idx + 3], buffer[idx], buffer[idx + 1], buffer[idx + 2]));
+    widget.onEyedropper?.call(
+      Color.fromARGB(
+        buffer[idx + 3],
+        buffer[idx],
+        buffer[idx + 1],
+        buffer[idx + 2],
+      ),
+    );
   }
 
   // ─── 長押しスポイト（設定画面「ジェスチャー」で調整可能） ─────────────────
@@ -1356,7 +1431,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     _holdEyedropperPointerId = null;
     final settings = context.read<SettingsService>();
     if (!settings.holdEyedropperEnabled) return;
-    final eligible = widget.currentTool == DrawingTool.eraser ||
+    final eligible =
+        widget.currentTool == DrawingTool.eraser ||
         (widget.currentTool == DrawingTool.pen &&
             widget.currentSubTool != PenSubTool.tone &&
             widget.currentSubTool != PenSubTool.stamp);
@@ -1365,8 +1441,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     _holdEyedropperDownScreenPos = event.localPosition;
     _holdEyedropperLastCanvasPos = canvasPos;
     final ms = (settings.holdEyedropperSeconds * 1000).round().clamp(200, 3000);
-    _holdEyedropperTimer =
-        Timer(Duration(milliseconds: ms), () => _triggerHoldEyedropper(event.pointer));
+    _holdEyedropperTimer = Timer(
+      Duration(milliseconds: ms),
+      () => _triggerHoldEyedropper(event.pointer),
+    );
   }
 
   /// 保留中のポインターが指定px以上動いたら、通常のストロークとして継続
@@ -1375,7 +1453,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (_holdEyedropperPointerId != event.pointer) return;
     _holdEyedropperLastCanvasPos = canvasPos;
     final down = _holdEyedropperDownScreenPos;
-    if (down != null && (event.localPosition - down).distance > _holdEyedropperMoveSlop) {
+    if (down != null &&
+        (event.localPosition - down).distance > _holdEyedropperMoveSlop) {
       _disarmHoldEyedropper(event.pointer);
     }
   }
@@ -1456,7 +1535,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       _shapeStart = null;
       _shapeEnd = null;
     });
-    if (start == null || end == null || widget.shapeKind == ShapeKind.off) return;
+    if (start == null || end == null || widget.shapeKind == ShapeKind.off) {
+      return;
+    }
     if (start == end) return;
     _syncBrushAndColor();
     _beginTileUndo();
@@ -1500,7 +1581,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 図形をトーンで塗る（ブラシ・トーンどちらでも描画可能）。
   /// トーン自由描画（_commitToneStroke）と同じ仕組みで、図形の輪郭線上に
   /// 一定間隔で補間した密な点列をトーンストロークとして描画する。
-  Future<void> _commitShapeWithTone(List<Offset> pathPoints, bool closeLoop) async {
+  Future<void> _commitShapeWithTone(
+    List<Offset> pathPoints,
+    bool closeLoop,
+  ) async {
     final toneService = context.read<ToneService>();
     final tone = toneService.currentTone;
     if (tone == null) {
@@ -1534,7 +1618,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       (c.g * 255).round().clamp(0, 255),
       (c.b * 255).round().clamp(0, 255),
     );
-    final densePoints = _densifyPath(pathPoints, closeLoop, math.max(1.0, brushSize / 3));
+    final densePoints = _densifyPath(
+      pathPoints,
+      closeLoop,
+      math.max(1.0, brushSize / 3),
+    );
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
     // 描画処理はバックグラウンドisolateで実行する。
     final result = await compute(runToneStrokeInIsolate, (
@@ -1560,7 +1648,11 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// パス（[points]、[closeLoop]なら終点→始点も繋ぐ）を[spacing]間隔で
   /// 補間した密な点列に変換する（トーンストロークは点ごとにスタンプするため、
   /// 図形の頂点間を塗りつぶさずに済むよう補間が必要）。
-  List<ui.Offset> _densifyPath(List<Offset> points, bool closeLoop, double spacing) {
+  List<ui.Offset> _densifyPath(
+    List<Offset> points,
+    bool closeLoop,
+    double spacing,
+  ) {
     if (points.isEmpty) return const [];
     final segments = <Offset>[...points];
     if (closeLoop) segments.add(points.first);
@@ -1572,7 +1664,12 @@ class _CanvasAreaState extends State<CanvasArea> {
       final steps = math.max(1, (dist / spacing).ceil());
       for (int s = 1; s <= steps; s++) {
         final t = s / steps;
-        result.add(ui.Offset(from.dx + (to.dx - from.dx) * t, from.dy + (to.dy - from.dy) * t));
+        result.add(
+          ui.Offset(
+            from.dx + (to.dx - from.dx) * t,
+            from.dy + (to.dy - from.dy) * t,
+          ),
+        );
       }
     }
     return result;
@@ -1590,12 +1687,14 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (start == null) return;
     if (delta.dx.abs() < 0.5 && delta.dy.abs() < 0.5) return;
     _beginTileUndo();
-    _tileManager.translateLayer(_tileKeyFor(_layerId), delta.dx, delta.dy).then((_) {
-      if (!mounted) return;
-      _scheduleComposite();
-      _markLineartDirtyIfNeeded();
-      _finishTileUndo();
-    });
+    _tileManager.translateLayer(_tileKeyFor(_layerId), delta.dx, delta.dy).then(
+      (_) {
+        if (!mounted) return;
+        _scheduleComposite();
+        _markLineartDirtyIfNeeded();
+        _finishTileUndo();
+      },
+    );
   }
 
   // ─── 変形ツール ───────────────────────────────────────────────────────
@@ -1627,13 +1726,24 @@ class _CanvasAreaState extends State<CanvasArea> {
     final start = _transformStart;
     final center = _transformCenter;
     if (start == null || center == null) return;
-    setState(() => _transformLive = _computeTransformMatrix(_transformMode, start, canvasPos, center));
+    setState(
+      () => _transformLive = _computeTransformMatrix(
+        _transformMode,
+        start,
+        canvasPos,
+        center,
+      ),
+    );
   }
 
   /// 移動・拡大縮小・回転の行列を計算する（変形ツール・選択ツールの
   /// 変形操作で共通利用）。
   static Matrix4 _computeTransformMatrix(
-      _TransformMode mode, Offset start, Offset current, Offset center) {
+    _TransformMode mode,
+    Offset start,
+    Offset current,
+    Offset center,
+  ) {
     switch (mode) {
       case _TransformMode.translate:
         final d = current - start;
@@ -1663,7 +1773,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     });
     if (matrix == null || matrix.isIdentity()) return;
     _beginTileUndo();
-    _tileManager.transformLayer(_tileKeyFor(_layerId), matrix.storage).then((_) {
+    _tileManager.transformLayer(_tileKeyFor(_layerId), matrix.storage).then((
+      _,
+    ) {
       if (!mounted) return;
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
@@ -1690,7 +1802,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     final rows = widget.meshDensity.clamp(1, 10);
     final bounds = Rect.fromLTWH(
-        0, 0, _tileManager.canvasWidth.toDouble(), _tileManager.canvasHeight.toDouble());
+      0,
+      0,
+      _tileManager.canvasWidth.toDouble(),
+      _tileManager.canvasHeight.toDouble(),
+    );
     setState(() {
       meshSourceImage?.dispose();
       meshRows = rows;
@@ -1708,7 +1824,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (meshSourceImage == null) return;
     final rows = density.clamp(1, 10);
     final bounds = Rect.fromLTWH(
-        0, 0, _tileManager.canvasWidth.toDouble(), _tileManager.canvasHeight.toDouble());
+      0,
+      0,
+      _tileManager.canvasWidth.toDouble(),
+      _tileManager.canvasHeight.toDouble(),
+    );
     setState(() {
       meshRows = rows;
       meshCols = rows;
@@ -1738,7 +1858,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     final sinA = math.sin(rad);
     final rotated = points.map((p) {
       final d = p - center;
-      return Offset(d.dx * cosA - d.dy * sinA, d.dx * sinA + d.dy * cosA) + center;
+      return Offset(d.dx * cosA - d.dy * sinA, d.dx * sinA + d.dy * cosA) +
+          center;
     }).toList();
     setState(() => meshControlPoints = rotated);
   }
@@ -1786,7 +1907,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     _meshCommitInFlight = true;
     _beginTileUndo();
     try {
-      await _tileManager.meshTransformLayer(_tileKeyFor(_layerId), rows, cols, points);
+      await _tileManager.meshTransformLayer(
+        _tileKeyFor(_layerId),
+        rows,
+        cols,
+        points,
+      );
     } finally {
       _meshCommitInFlight = false;
     }
@@ -1844,7 +1970,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (maxX < minX || maxY < minY) return null;
     return Rect.fromLTRB(
-        minX.toDouble(), minY.toDouble(), (maxX + 1).toDouble(), (maxY + 1).toDouble());
+      minX.toDouble(),
+      minY.toDouble(),
+      (maxX + 1).toDouble(),
+      (maxY + 1).toDouble(),
+    );
   }
 
   bool _selectionMaskContains(Offset canvasPos) {
@@ -1863,7 +1993,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   bool _beginSelectionTransformIfHit(Offset canvasPos) {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return false;
-    final threshold = math.min(_tileManager.canvasWidth, _tileManager.canvasHeight) * 0.05;
+    final threshold =
+        math.min(_tileManager.canvasWidth, _tileManager.canvasHeight) * 0.05;
     final scaleHandle = bounds.bottomRight;
     final rotateHandle = Offset(bounds.center.dx, bounds.top - 40);
     _TransformMode mode;
@@ -1880,7 +2011,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     return true;
   }
 
-  void _beginSelectionTransform(Offset canvasPos, _TransformMode mode, Rect bounds) {
+  void _beginSelectionTransform(
+    Offset canvasPos,
+    _TransformMode mode,
+    Rect bounds,
+  ) {
     final mask = _selectionMask;
     if (mask == null) return;
     setState(() {
@@ -1896,9 +2031,13 @@ class _CanvasAreaState extends State<CanvasArea> {
     final h = _tileManager.canvasHeight;
     final key = _tileKeyFor(_layerId);
     _tileManager.compositeLayerToImage(key).then((composite) async {
-      final byteData = await composite.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await composite.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       composite.dispose();
-      if (!mounted || byteData == null || !identical(_selectionMask, mask)) return;
+      if (!mounted || byteData == null || !identical(_selectionMask, mask)) {
+        return;
+      }
       final src = byteData.buffer.asUint8List();
       // 選択範囲内のピクセルを切り取った浮動画像を作る（範囲外は透明）。
       final floating = Uint8List(w * h * 4);
@@ -1944,8 +2083,14 @@ class _CanvasAreaState extends State<CanvasArea> {
     final start = _selectionTransformStart;
     final center = _selectionTransformCenter;
     if (start == null || center == null) return;
-    setState(() => _selectionTransformLive =
-        _computeTransformMatrix(_selectionTransformMode, start, canvasPos, center));
+    setState(
+      () => _selectionTransformLive = _computeTransformMatrix(
+        _selectionTransformMode,
+        start,
+        canvasPos,
+        center,
+      ),
+    );
   }
 
   void _commitSelectionTransform() {
@@ -1981,7 +2126,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       final picture = recorder.endRecording();
       final merged = await picture.toImage(w, h);
       picture.dispose();
-      final byteData = await merged.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await merged.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       merged.dispose();
       if (!mounted) return;
       if (byteData != null) {
@@ -2010,7 +2157,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       maskRgba[idx + 2] = 255;
       maskRgba[idx + 3] = 255;
     }
-    ui.decodeImageFromPixels(maskRgba, w, h, ui.PixelFormat.rgba8888, (maskImage) async {
+    ui.decodeImageFromPixels(maskRgba, w, h, ui.PixelFormat.rgba8888, (
+      maskImage,
+    ) async {
       final recorder = ui.PictureRecorder();
       final canvas = ui.Canvas(recorder);
       canvas.transform(matrix.storage);
@@ -2019,7 +2168,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       final picture = recorder.endRecording();
       final transformed = await picture.toImage(w, h);
       picture.dispose();
-      final byteData = await transformed.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await transformed.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       transformed.dispose();
       if (!mounted || byteData == null) return;
       final bytes = byteData.buffer.asUint8List();
@@ -2040,9 +2191,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final h = _tileManager.canvasHeight;
     final project = widget.project;
     if (project == null) return Uint8List(w * h * 4);
-    final layers = context
-        .read<ProjectService>()
-        .layersOf(project.id, widget.sceneId, widget.currentFrame);
+    final layers = context.read<ProjectService>().layersOf(
+      project.id,
+      widget.sceneId,
+      widget.currentFrame,
+    );
     final image = await LayerCompositor.composite(
       _tileManager,
       layers,
@@ -2063,8 +2216,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     // バケツ塗り中（_bucketFillAt）はポインタ移動のたびに同期呼び出しされる
     // ため、トーン画像は開始時点で事前読み込みしてキャッシュへ入れておく。
     final toneService = context.read<ToneService>();
-    final tone =
-        toneService.bucketUseTone ? (toneService.lastBucketTone ?? toneService.currentTone) : null;
+    final tone = toneService.bucketUseTone
+        ? (toneService.lastBucketTone ?? toneService.currentTone)
+        : null;
     if (tone != null) {
       await ensureToneTextureLoaded(tone, size: 64);
       if (!mounted) return;
@@ -2160,7 +2314,14 @@ class _CanvasAreaState extends State<CanvasArea> {
           final lx = px % TileManager.tileSize;
           final ly = py % TileManager.tileSize;
           _tileManager.blendPixel(
-              tile, lx, ly, result[idx], result[idx + 1], result[idx + 2], result[idx + 3]);
+            tile,
+            lx,
+            ly,
+            result[idx],
+            result[idx + 1],
+            result[idx + 2],
+            result[idx + 3],
+          );
           _tileManager.markDirty(key, tx, ty);
           changed = true;
         }
@@ -2178,8 +2339,12 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _handleFingerDown(Offset canvasPos) {
     _beginTileUndo();
     _warpLastPos = canvasPos;
-    _tileManager.compositeLayerToImage(_tileKeyFor(_layerId)).then((image) async {
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    _tileManager.compositeLayerToImage(_tileKeyFor(_layerId)).then((
+      image,
+    ) async {
+      final byteData = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       image.dispose();
       if (!mounted) return;
       _warpBuffer = byteData?.buffer.asUint8List();
@@ -2251,7 +2416,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 対象範囲のピクセルをタイルから読み出す
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
-        final dist = math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble());
+        final dist = math.sqrt(
+          (x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble(),
+        );
         if (dist > radius) continue;
         final tx = x ~/ TileManager.tileSize;
         final ty = y ~/ TileManager.tileSize;
@@ -2260,20 +2427,29 @@ class _CanvasAreaState extends State<CanvasArea> {
         final ly = y % TileManager.tileSize;
         final ti = (ly * TileManager.tileSize + lx) * 4;
         final ri = ((y - minY) * regionW + (x - minX)) * 4;
-        region[ri] = tile[ti]; region[ri + 1] = tile[ti + 1];
-        region[ri + 2] = tile[ti + 2]; region[ri + 3] = tile[ti + 3];
+        region[ri] = tile[ti];
+        region[ri + 1] = tile[ti + 1];
+        region[ri + 2] = tile[ti + 2];
+        region[ri + 3] = tile[ti + 3];
       }
     }
     // フィルター適用
     final strength = (brushSize / 10).clamp(1.0, 8.0);
     final processed = isMosaic
-        ? _filterEngine.applyMosaic(region, regionW, regionH, strength.round().clamp(2, 16))
+        ? _filterEngine.applyMosaic(
+            region,
+            regionW,
+            regionH,
+            strength.round().clamp(2, 16),
+          )
         : _filterEngine.applyGaussianBlur(region, regionW, regionH, strength);
     // 結果を書き戻す（円形マスク内のみ）
     bool changed = false;
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
-        final dist = math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble());
+        final dist = math.sqrt(
+          (x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble(),
+        );
         if (dist > radius) continue;
         final tx = x ~/ TileManager.tileSize;
         final ty = y ~/ TileManager.tileSize;
@@ -2282,8 +2458,10 @@ class _CanvasAreaState extends State<CanvasArea> {
         final ly = y % TileManager.tileSize;
         final ti = (ly * TileManager.tileSize + lx) * 4;
         final ri = ((y - minY) * regionW + (x - minX)) * 4;
-        tile[ti] = processed[ri]; tile[ti + 1] = processed[ri + 1];
-        tile[ti + 2] = processed[ri + 2]; tile[ti + 3] = processed[ri + 3];
+        tile[ti] = processed[ri];
+        tile[ti + 1] = processed[ri + 1];
+        tile[ti + 2] = processed[ri + 2];
+        tile[ti + 3] = processed[ri + 3];
         _tileManager.markDirty(key, tx, ty);
         changed = true;
       }
@@ -2315,7 +2493,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         final dist = math.sqrt(
-            (x - center.dx) * (x - center.dx) + (y - center.dy) * (y - center.dy));
+          (x - center.dx) * (x - center.dx) + (y - center.dy) * (y - center.dy),
+        );
         if (dist > radius) continue;
         final t = 1.0 - (dist / radius);
         final falloff = t * t * (3.0 - 2.0 * t); // smoothstep
@@ -2334,7 +2513,15 @@ class _CanvasAreaState extends State<CanvasArea> {
         final tile = _tileManager.getOrCreateTile(key, tx, ty);
         final lx = x % TileManager.tileSize;
         final ly = y % TileManager.tileSize;
-        _tileManager.setPixel(tile, lx, ly, sampled[0], sampled[1], sampled[2], sampled[3]);
+        _tileManager.setPixel(
+          tile,
+          lx,
+          ly,
+          sampled[0],
+          sampled[1],
+          sampled[2],
+          sampled[3],
+        );
         _tileManager.markDirty(key, tx, ty);
         changed = true;
       }
@@ -2344,7 +2531,13 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// (x, y)地点（実数座標）のRGBAをバイリニア補間でサンプリングする。
   /// 範囲外は透明を返す。
-  List<int> _sampleBilinear(Uint8List buffer, int w, int h, double x, double y) {
+  List<int> _sampleBilinear(
+    Uint8List buffer,
+    int w,
+    int h,
+    double x,
+    double y,
+  ) {
     if (x < 0 || y < 0 || x >= w - 1 || y >= h - 1) {
       final ix = x.round().clamp(0, w - 1);
       final iy = y.round().clamp(0, h - 1);
@@ -2362,6 +2555,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       final idx = (py * w + px) * 4;
       return [buffer[idx], buffer[idx + 1], buffer[idx + 2], buffer[idx + 3]];
     }
+
     final c00 = at(x0, y0);
     final c10 = at(x1, y0);
     final c01 = at(x0, y1);
@@ -2379,9 +2573,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.activeRuler == null) return sp;
     final snapped = _rulerEngine.snapToRuler(Offset(sp.x, sp.y));
     return StrokePoint(
-      x: snapped.dx, y: snapped.dy,
+      x: snapped.dx,
+      y: snapped.dy,
       pressure: sp.pressure,
-      tiltX: sp.tiltX, tiltY: sp.tiltY,
+      tiltX: sp.tiltX,
+      tiltY: sp.tiltY,
       inputType: sp.inputType,
     );
   }
@@ -2493,13 +2689,21 @@ class _CanvasAreaState extends State<CanvasArea> {
             newRx = newRy;
           }
         }
-        return r.copyWith(settings: r.settings.copyWith(radiusX: newRx, radiusY: newRy));
+        return r.copyWith(
+          settings: r.settings.copyWith(radiusX: newRx, radiusY: newRy),
+        );
       case 'vp1':
-        return r.copyWith(settings: r.settings.copyWith(vanishingPoint1: canvasPos));
+        return r.copyWith(
+          settings: r.settings.copyWith(vanishingPoint1: canvasPos),
+        );
       case 'vp2':
-        return r.copyWith(settings: r.settings.copyWith(vanishingPoint2: canvasPos));
+        return r.copyWith(
+          settings: r.settings.copyWith(vanishingPoint2: canvasPos),
+        );
       case 'vp3':
-        return r.copyWith(settings: r.settings.copyWith(vanishingPoint3: canvasPos));
+        return r.copyWith(
+          settings: r.settings.copyWith(vanishingPoint3: canvasPos),
+        );
       default:
         return r;
     }
@@ -2542,11 +2746,13 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (handleId == null || before == null) return;
     final after = widget.activeRuler;
     if (after == null || identical(before, after)) return;
-    context.read<app_undo.UndoManager>().push(app_undo.RulerUndoAction(
-      before: before,
-      after: after,
-      onApply: (ruler) => widget.onRulerChanged?.call(ruler),
-    ));
+    context.read<app_undo.UndoManager>().push(
+      app_undo.RulerUndoAction(
+        before: before,
+        after: after,
+        onApply: (ruler) => widget.onRulerChanged?.call(ruler),
+      ),
+    );
   }
 
   // ─── 座標変換 ─────────────────────────────────────────────────────────
@@ -2580,9 +2786,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final local = MatrixUtils.transformPoint(inv, Offset(screen.x, screen.y));
     final canvasPos = _widgetLocalToCanvasPixel(local);
     return StrokePoint(
-      x: canvasPos.dx, y: canvasPos.dy,
+      x: canvasPos.dx,
+      y: canvasPos.dy,
       pressure: screen.pressure,
-      tiltX: screen.tiltX, tiltY: screen.tiltY,
+      tiltX: screen.tiltX,
+      tiltY: screen.tiltY,
       inputType: screen.inputType,
     );
   }
@@ -2605,7 +2813,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (idx < 0 || !_layers[idx].hasClipping) return raw;
     final clipSourceId = findClipSourceLayerId(_layers, idx);
     if (clipSourceId == null) return raw;
-    final clipImg = await _tileManager.compositeLayerToImage(_tileKeyFor(clipSourceId));
+    final clipImg = await _tileManager.compositeLayerToImage(
+      _tileKeyFor(clipSourceId),
+    );
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
     final recorder = ui.PictureRecorder();
@@ -2613,7 +2823,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final rect = ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble());
     canvas.saveLayer(rect, ui.Paint());
     canvas.drawImage(clipImg, ui.Offset.zero, ui.Paint());
-    canvas.drawImage(raw, ui.Offset.zero, ui.Paint()..blendMode = ui.BlendMode.srcIn);
+    canvas.drawImage(
+      raw,
+      ui.Offset.zero,
+      ui.Paint()..blendMode = ui.BlendMode.srcIn,
+    );
     canvas.restore();
     clipImg.dispose();
     raw.dispose();
@@ -2652,7 +2866,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 自体がレイヤーごとにキャッシュされているため、対象レイヤーの内容が
   /// 変わっていなければ再デコードは発生しない。
   Future<void> _refreshSelectionLayerOverlay() async {
-    final selectionLayer = _layers.where((l) => l.type == LayerType.selection).firstOrNull;
+    final selectionLayer = _layers
+        .where((l) => l.type == LayerType.selection)
+        .firstOrNull;
     if (selectionLayer == null) {
       if (_selectionLayerOverlayImage != null) {
         final old = _selectionLayerOverlayImage;
@@ -2663,7 +2879,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (_isRefreshingSelectionLayerOverlay) return;
     _isRefreshingSelectionLayerOverlay = true;
-    final img = await _tileManager.compositeLayerToImage(_tileKeyFor(selectionLayer.id));
+    final img = await _tileManager.compositeLayerToImage(
+      _tileKeyFor(selectionLayer.id),
+    );
     _isRefreshingSelectionLayerOverlay = false;
     if (!mounted) {
       img.dispose();
@@ -2701,22 +2919,38 @@ class _CanvasAreaState extends State<CanvasArea> {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
     LayerKeyframe? groupKf(Layer layer) {
-      final group = ps.groupContainingLayer(project.id, widget.sceneId, layer.id);
+      final group = ps.groupContainingLayer(
+        project.id,
+        widget.sceneId,
+        layer.id,
+      );
       if (group == null || group.keyframes.isEmpty) return null;
       return _layerKeyframeEngine.valueAt(group.keyframes, widget.currentFrame);
     }
 
     final belowImg = await LayerCompositor.composite(
-        _tileManager, below, (l) => _tileKeyFor(l.id), w, h,
-        keyframeOf: _keyframeOf, groupKeyframeOf: groupKf);
+      _tileManager,
+      below,
+      (l) => _tileKeyFor(l.id),
+      w,
+      h,
+      keyframeOf: _keyframeOf,
+      groupKeyframeOf: groupKf,
+    );
     if (!mounted) {
       belowImg.dispose();
       _isComposingSurroundings = false;
       return;
     }
     final aboveImg = await LayerCompositor.composite(
-        _tileManager, above, (l) => _tileKeyFor(l.id), w, h,
-        keyframeOf: _keyframeOf, groupKeyframeOf: groupKf);
+      _tileManager,
+      above,
+      (l) => _tileKeyFor(l.id),
+      w,
+      h,
+      keyframeOf: _keyframeOf,
+      groupKeyframeOf: groupKf,
+    );
     if (!mounted) {
       belowImg.dispose();
       aboveImg.dispose();
@@ -2740,7 +2974,12 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// レイヤーキーフレーム（パーツ単位アニメーション）を現在フレームで補間する。
   LayerKeyframe? _keyframeOf(Layer layer, [int? frameIndex]) =>
-      layer.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(layer.keyframes, frameIndex ?? widget.currentFrame);
+      layer.keyframes.isEmpty
+      ? null
+      : _layerKeyframeEngine.valueAt(
+          layer.keyframes,
+          frameIndex ?? widget.currentFrame,
+        );
 
   bool _sameLayerList(List<Layer> a, List<Layer> b) {
     if (a.length != b.length) return false;
@@ -2767,7 +3006,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     final project = widget.project;
     if (project == null) return;
-    final offsets = _onionSkinEngine.getVisibleFrameOffsets(widget.onionSkinSettings);
+    final offsets = _onionSkinEngine.getVisibleFrameOffsets(
+      widget.onionSkinSettings,
+    );
     final ps = context.read<ProjectService>();
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -2784,10 +3025,15 @@ class _CanvasAreaState extends State<CanvasArea> {
         w,
         h,
         shouldRender: (layer, _) =>
-            layer.type == LayerType.normal || layer.type == LayerType.autoFillLineart,
+            layer.type == LayerType.normal ||
+            layer.type == LayerType.autoFillLineart,
         keyframeOf: (layer) => _keyframeOf(layer, frameIdx),
         groupKeyframeOf: (layer) {
-          final group = ps.groupContainingLayer(project.id, widget.sceneId, layer.id);
+          final group = ps.groupContainingLayer(
+            project.id,
+            widget.sceneId,
+            layer.id,
+          );
           if (group == null || group.keyframes.isEmpty) return null;
           return _layerKeyframeEngine.valueAt(group.keyframes, frameIdx);
         },
@@ -2820,7 +3066,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       onSecondaryTap: () => _handleGesture(context, settings.twoFingerTap),
       child: Listener(
         onPointerDown: (e) {
-          if (e.kind == PointerDeviceKind.touch || e.kind == PointerDeviceKind.stylus) {
+          if (e.kind == PointerDeviceKind.touch ||
+              e.kind == PointerDeviceKind.stylus) {
             final edgeSide = _edgeDoubleTapSide(e.localPosition.dx);
             if (edgeSide != null) {
               _handleEdgeZoneTap(edgeSide);
@@ -2830,8 +3077,12 @@ class _CanvasAreaState extends State<CanvasArea> {
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount++;
             _activeTouchPositions[e.pointer] = e.localPosition;
-            if (_touchCount == 2) _handleGesture(context, settings.twoFingerTap);
-            if (_touchCount == 3) _handleGesture(context, settings.threeFingerTap);
+            if (_touchCount == 2) {
+              _handleGesture(context, settings.twoFingerTap);
+            }
+            if (_touchCount == 3) {
+              _handleGesture(context, settings.threeFingerTap);
+            }
             if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
               _touchTransformActive = true;
               // 2本指目が触れた時点で、既存の1本指用の長押しスポイト保留は
@@ -2846,7 +3097,8 @@ class _CanvasAreaState extends State<CanvasArea> {
           _onPointerDown(e);
         },
         onPointerMove: (e) {
-          if (e.kind == PointerDeviceKind.touch && _activeTouchPositions.containsKey(e.pointer)) {
+          if (e.kind == PointerDeviceKind.touch &&
+              _activeTouchPositions.containsKey(e.pointer)) {
             if (_touchTransformActive) {
               if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
                 _applyMultiTouchTransform(e.pointer, e.localPosition);
@@ -2900,8 +3152,16 @@ class _CanvasAreaState extends State<CanvasArea> {
                   belowImage: _belowImage,
                   aboveImage: _aboveImage,
                   currentLayerOpacity:
-                      _layers.where((l) => l.id == _layerId).firstOrNull?.opacity ?? 100,
-                  currentLayerBlendMode: _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
+                      _layers
+                          .where((l) => l.id == _layerId)
+                          .firstOrNull
+                          ?.opacity ??
+                      100,
+                  currentLayerBlendMode:
+                      _layers
+                          .where((l) => l.id == _layerId)
+                          .firstOrNull
+                          ?.blendMode ??
                       LayerBlendMode.normal,
                   onionImages: Map.unmodifiable(_onionImages),
                   onionSettings: widget.onionSkinSettings,
@@ -2910,7 +3170,9 @@ class _CanvasAreaState extends State<CanvasArea> {
                   selectionEnd: _selectionEnd,
                   // 変形操作中は移動前の位置のハイライトが紛らわしいため非表示にする
                   // （ハンドル・浮動画像プレビューの方で現在の状態を示す）。
-                  selectionOverlayImage: _selectionTransformActive ? null : _selectionOverlayImage,
+                  selectionOverlayImage: _selectionTransformActive
+                      ? null
+                      : _selectionOverlayImage,
                   selectionLayerOverlayImage: _selectionLayerOverlayImage,
                   lassoPoints: _lassoPoints,
                   subToolStrokePoints: _subToolStrokePoints,
@@ -2918,9 +3180,14 @@ class _CanvasAreaState extends State<CanvasArea> {
                   shapeKind: widget.shapeKind,
                   shapeStart: _shapeStart,
                   shapeEnd: _shapeEnd,
-                  moveDelta: widget.currentTool == DrawingTool.move ? _moveDelta : null,
-                  transformLive: widget.currentTool == DrawingTool.transform ? _transformLive : null,
-                  showTransformHandles: widget.currentTool == DrawingTool.transform,
+                  moveDelta: widget.currentTool == DrawingTool.move
+                      ? _moveDelta
+                      : null,
+                  transformLive: widget.currentTool == DrawingTool.transform
+                      ? _transformLive
+                      : null,
+                  showTransformHandles:
+                      widget.currentTool == DrawingTool.transform,
                   floatingSelectionImage: _floatingSelectionImage,
                   selectionTransformLive: _selectionTransformLive,
                   selectionTransformBounds: _selectionTransformBounds,
@@ -2928,7 +3195,8 @@ class _CanvasAreaState extends State<CanvasArea> {
                   meshCols: meshCols,
                   meshControlPoints: meshControlPoints,
                   meshSourceImage: meshSourceImage,
-                  showMeshHandles: widget.currentTool == DrawingTool.meshTransform,
+                  showMeshHandles:
+                      widget.currentTool == DrawingTool.meshTransform,
                   handleColor: theme.selectionColor,
                   handleOutlineColor: theme.menuBgColor,
                   extendedAreaWarningColor: theme.updateMarkColor,
@@ -3096,7 +3364,11 @@ class _CanvasPainter extends CustomPainter {
       // ui.Vertices（三角形メッシュ・テクスチャ座標付き）で描画する。
       final meshCurrentPaint = Paint()
         ..color = Color.fromARGB(
-            (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(), 255, 255, 255)
+          (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(),
+          255,
+          255,
+          255,
+        )
         ..blendMode = mapLayerBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / meshSourceImage!.width;
       final sy = drawingRect.height / meshSourceImage!.height;
@@ -3109,14 +3381,23 @@ class _CanvasPainter extends CustomPainter {
         cols: meshCols,
         controlPoints: meshControlPoints!,
       );
-      meshCurrentPaint.shader = ui.ImageShader(meshSourceImage!, ui.TileMode.clamp,
-          ui.TileMode.clamp, MeshWarpEngine.identityMatrix4, filterQuality: ui.FilterQuality.low);
+      meshCurrentPaint.shader = ui.ImageShader(
+        meshSourceImage!,
+        ui.TileMode.clamp,
+        ui.TileMode.clamp,
+        MeshWarpEngine.identityMatrix4,
+        filterQuality: ui.FilterQuality.low,
+      );
       canvas.drawVertices(vertices, BlendMode.srcOver, meshCurrentPaint);
       canvas.restore();
     } else if (compositeImage != null) {
       final currentPaint = Paint()
         ..color = Color.fromARGB(
-            (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(), 255, 255, 255)
+          (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(),
+          255,
+          255,
+          255,
+        )
         ..blendMode = mapLayerBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / compositeImage!.width;
       final sy = drawingRect.height / compositeImage!.height;
@@ -3134,8 +3415,12 @@ class _CanvasPainter extends CustomPainter {
         canvas.drawImage(compositeImage!, Offset.zero, currentPaint);
         canvas.restore();
       } else {
-        final src = Rect.fromLTWH(0, 0,
-            compositeImage!.width.toDouble(), compositeImage!.height.toDouble());
+        final src = Rect.fromLTWH(
+          0,
+          0,
+          compositeImage!.width.toDouble(),
+          compositeImage!.height.toDouble(),
+        );
         canvas.drawImageRect(compositeImage!, src, drawingRect, currentPaint);
       }
     }
@@ -3171,8 +3456,16 @@ class _CanvasPainter extends CustomPainter {
     // はそのまま、色だけをタイント色（透明度50%）へ置き換える）。
     if (selectionLayerOverlayImage != null) {
       final tintPaint = Paint()
-        ..colorFilter = ColorFilter.mode(handleColor.withValues(alpha: 0.5), BlendMode.srcIn);
-      _drawFrameImage(canvas, drawingRect, selectionLayerOverlayImage, tintPaint);
+        ..colorFilter = ColorFilter.mode(
+          handleColor.withValues(alpha: 0.5),
+          BlendMode.srcIn,
+        );
+      _drawFrameImage(
+        canvas,
+        drawingRect,
+        selectionLayerOverlayImage,
+        tintPaint,
+      );
     }
 
     // 確定済み選択範囲（矩形選択・投げ縄選択・自動選択で共通）
@@ -3191,10 +3484,13 @@ class _CanvasPainter extends CustomPainter {
             Offset(selectionEnd!.dx * sx, selectionEnd!.dy * sy),
       );
       canvas.drawRect(r, Paint()..color = handleColor.withValues(alpha: 0.2));
-      canvas.drawRect(r, Paint()
-        ..color = handleColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0);
+      canvas.drawRect(
+        r,
+        Paint()
+          ..color = handleColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
     }
 
     // 投げ縄選択プレビュー
@@ -3209,10 +3505,13 @@ class _CanvasPainter extends CustomPainter {
       for (final p in lassoPoints.skip(1)) {
         path.lineTo(drawingRect.left + p.dx * sx, drawingRect.top + p.dy * sy);
       }
-      canvas.drawPath(path, Paint()
-        ..color = handleColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0);
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = handleColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
     }
 
     // トーン自由描画・スタンプのストロークプレビュー（確定は指を離した時点）
@@ -3227,18 +3526,20 @@ class _CanvasPainter extends CustomPainter {
       for (final p in subToolStrokePoints.skip(1)) {
         path.lineTo(drawingRect.left + p.dx * sx, drawingRect.top + p.dy * sy);
       }
-      canvas.drawPath(path, Paint()
-        ..color = Colors.orange
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0);
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = Colors.orange
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0,
+      );
     }
 
     // 図形ツール：ゴムバンドプレビュー（指を離すまで確定しない）
     if (shapeStart != null && shapeEnd != null && shapeKind != ShapeKind.off) {
       final sx = drawingRect.width / (project?.exportWidth ?? 1920);
       final sy = drawingRect.height / (project?.exportHeight ?? 1080);
-      Offset ts(Offset p) =>
-          drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+      Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final shapePaint = Paint()
         ..color = Colors.black87
         ..style = PaintingStyle.stroke
@@ -3247,9 +3548,15 @@ class _CanvasPainter extends CustomPainter {
         case ShapeKind.line:
           canvas.drawLine(ts(shapeStart!), ts(shapeEnd!), shapePaint);
         case ShapeKind.rect:
-          canvas.drawRect(Rect.fromPoints(ts(shapeStart!), ts(shapeEnd!)), shapePaint);
+          canvas.drawRect(
+            Rect.fromPoints(ts(shapeStart!), ts(shapeEnd!)),
+            shapePaint,
+          );
         case ShapeKind.circle:
-          canvas.drawOval(Rect.fromPoints(ts(shapeStart!), ts(shapeEnd!)), shapePaint);
+          canvas.drawOval(
+            Rect.fromPoints(ts(shapeStart!), ts(shapeEnd!)),
+            shapePaint,
+          );
         case ShapeKind.off:
           break;
       }
@@ -3259,29 +3566,46 @@ class _CanvasPainter extends CustomPainter {
     if (showTransformHandles) {
       final sx = drawingRect.width / (project?.exportWidth ?? 1920);
       final sy = drawingRect.height / (project?.exportHeight ?? 1080);
-      Offset ts(Offset p) =>
-          drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+      Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final w = (project?.exportWidth ?? 1920).toDouble();
       final h = (project?.exportHeight ?? 1080).toDouble();
       final boxPaint = Paint()
         ..color = handleColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
-      canvas.drawRect(Rect.fromPoints(ts(Offset.zero), ts(Offset(w, h))), boxPaint);
+      canvas.drawRect(
+        Rect.fromPoints(ts(Offset.zero), ts(Offset(w, h))),
+        boxPaint,
+      );
       void handle(Offset p) {
-        canvas.drawCircle(p, 8, Paint()..color = handleColor.withValues(alpha: 0.85));
-        canvas.drawCircle(p, 8, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
+        canvas.drawCircle(
+          p,
+          8,
+          Paint()..color = handleColor.withValues(alpha: 0.85),
+        );
+        canvas.drawCircle(
+          p,
+          8,
+          Paint()
+            ..color = handleOutlineColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5,
+        );
       }
+
       handle(ts(Offset(w, h))); // 拡縮ハンドル
       handle(ts(Offset(w / 2, -40))); // 回転ハンドル
     }
 
     // レイヤー全体の自由変形・メッシュ変形：格子線・各格子点のドラッグハンドル
-    if (showMeshHandles && meshControlPoints != null && meshSourceImage != null) {
+    if (showMeshHandles &&
+        meshControlPoints != null &&
+        meshSourceImage != null) {
       final points = meshControlPoints!;
       final gsx = drawingRect.width / meshSourceImage!.width;
       final gsy = drawingRect.height / meshSourceImage!.height;
-      Offset gts(Offset p) => drawingRect.topLeft + Offset(p.dx * gsx, p.dy * gsy);
+      Offset gts(Offset p) =>
+          drawingRect.topLeft + Offset(p.dx * gsx, p.dy * gsy);
       final gridPaint = Paint()
         ..color = handleColor.withValues(alpha: 0.85)
         ..style = PaintingStyle.stroke
@@ -3300,9 +3624,19 @@ class _CanvasPainter extends CustomPainter {
       }
       for (final p in points) {
         final hp = gts(p);
-        canvas.drawCircle(hp, 8, Paint()..color = handleColor.withValues(alpha: 0.85));
         canvas.drawCircle(
-            hp, 8, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
+          hp,
+          8,
+          Paint()..color = handleColor.withValues(alpha: 0.85),
+        );
+        canvas.drawCircle(
+          hp,
+          8,
+          Paint()
+            ..color = handleOutlineColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5,
+        );
       }
     }
 
@@ -3317,11 +3651,26 @@ class _CanvasPainter extends CustomPainter {
         ..color = handleColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
-      canvas.drawRect(Rect.fromPoints(ts(bounds.topLeft), ts(bounds.bottomRight)), boxPaint);
+      canvas.drawRect(
+        Rect.fromPoints(ts(bounds.topLeft), ts(bounds.bottomRight)),
+        boxPaint,
+      );
       void handle(Offset p) {
-        canvas.drawCircle(p, 8, Paint()..color = handleColor.withValues(alpha: 0.85));
-        canvas.drawCircle(p, 8, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
+        canvas.drawCircle(
+          p,
+          8,
+          Paint()..color = handleColor.withValues(alpha: 0.85),
+        );
+        canvas.drawCircle(
+          p,
+          8,
+          Paint()
+            ..color = handleOutlineColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5,
+        );
       }
+
       handle(ts(bounds.bottomRight)); // 拡縮ハンドル
       handle(ts(Offset(bounds.center.dx, bounds.top - 40))); // 回転ハンドル
     }
@@ -3333,10 +3682,13 @@ class _CanvasPainter extends CustomPainter {
         size,
         project?.copyWith(drawingAreaScale: 1.0),
       );
-      canvas.drawRect(exportRect, Paint()
-        ..color = extendedAreaWarningColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5);
+      canvas.drawRect(
+        exportRect,
+        Paint()
+          ..color = extendedAreaWarningColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
     }
 
     // 定規オーバーレイ
@@ -3356,9 +3708,21 @@ class _CanvasPainter extends CustomPainter {
     final sy = drawingRect.height / ch;
     Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
     void handle(Offset p) {
-      canvas.drawCircle(p, 6, Paint()..color = handleColor.withValues(alpha: 0.8));
-      canvas.drawCircle(p, 6, Paint()..color = handleOutlineColor..style = PaintingStyle.stroke..strokeWidth = 1.5);
+      canvas.drawCircle(
+        p,
+        6,
+        Paint()..color = handleColor.withValues(alpha: 0.8),
+      );
+      canvas.drawCircle(
+        p,
+        6,
+        Paint()
+          ..color = handleOutlineColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
     }
+
     switch (r.type) {
       case RulerType.line:
         final c = ts(r.position);
@@ -3374,7 +3738,10 @@ class _CanvasPainter extends CustomPainter {
         canvas.save();
         canvas.translate(c.dx, c.dy);
         canvas.rotate(r.rotation);
-        canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: rx * 2, height: ry * 2), paint);
+        canvas.drawOval(
+          Rect.fromCenter(center: Offset.zero, width: rx * 2, height: ry * 2),
+          paint,
+        );
         canvas.restore();
         handle(c);
         handle(c + _rotateOffset(Offset(rx, 0), r.rotation));
@@ -3394,7 +3761,11 @@ class _CanvasPainter extends CustomPainter {
         final vp = ts(r.settings.vanishingPoint1 ?? r.position);
         for (int i = 0; i <= 8; i++) {
           final t = i / 8.0;
-          canvas.drawLine(vp, Offset(size.width * t, i.isEven ? 0 : size.height), paint);
+          canvas.drawLine(
+            vp,
+            Offset(size.width * t, i.isEven ? 0 : size.height),
+            paint,
+          );
         }
         handle(vp);
       case RulerType.twoPointPerspective:
@@ -3404,7 +3775,11 @@ class _CanvasPainter extends CustomPainter {
         ]) {
           final vp = ts(vpp);
           for (int i = 0; i <= 6; i++) {
-            canvas.drawLine(vp, Offset(size.width * (i / 6.0), i.isEven ? 0 : size.height), paint);
+            canvas.drawLine(
+              vp,
+              Offset(size.width * (i / 6.0), i.isEven ? 0 : size.height),
+              paint,
+            );
           }
           handle(vp);
         }
@@ -3416,7 +3791,11 @@ class _CanvasPainter extends CustomPainter {
         ]) {
           final vp = ts(vpp);
           for (int i = 0; i <= 4; i++) {
-            canvas.drawLine(vp, Offset(size.width * (i / 4.0), i.isEven ? 0 : size.height), paint);
+            canvas.drawLine(
+              vp,
+              Offset(size.width * (i / 4.0), i.isEven ? 0 : size.height),
+              paint,
+            );
           }
           handle(vp);
         }
@@ -3434,25 +3813,46 @@ class _CanvasPainter extends CustomPainter {
   /// belowImage/aboveImage（フレーム全体サイズの合成済み画像）を描画領域へ
   /// スケールして描画する。不透明度・ブレンドモードは合成時に既に各レイヤーへ
   /// 適用済みのため、ここではスケーリングのみ行う。
-  void _drawFrameImage(Canvas canvas, Rect drawingRect, ui.Image? image, Paint paint) {
+  void _drawFrameImage(
+    Canvas canvas,
+    Rect drawingRect,
+    ui.Image? image,
+    Paint paint,
+  ) {
     if (image == null) return;
-    final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+    final src = Rect.fromLTWH(
+      0,
+      0,
+      image.width.toDouble(),
+      image.height.toDouble(),
+    );
     canvas.drawImageRect(image, src, drawingRect, paint);
   }
 
   void _drawOnionFrame(
-      Canvas canvas, Rect drawingRect, ui.Image img, int offset) {
+    Canvas canvas,
+    Rect drawingRect,
+    ui.Image img,
+    int offset,
+  ) {
     final opacity = onionEngine.getOpacityForFrame(onionSettings, offset);
     final color = onionEngine.getColorForFrame(onionSettings, offset);
-    final src =
-        Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
+    final src = Rect.fromLTWH(
+      0,
+      0,
+      img.width.toDouble(),
+      img.height.toDouble(),
+    );
     canvas.drawImageRect(
-        img,
-        src,
-        drawingRect,
-        Paint()
-          ..colorFilter = ui.ColorFilter.mode(
-              color.withValues(alpha: opacity), BlendMode.srcATop));
+      img,
+      src,
+      drawingRect,
+      Paint()
+        ..colorFilter = ui.ColorFilter.mode(
+          color.withValues(alpha: opacity),
+          BlendMode.srcATop,
+        ),
+    );
   }
 
   void _paintBackground(Canvas canvas, Rect rect) {
@@ -3461,7 +3861,9 @@ class _CanvasPainter extends CustomPainter {
       // をキャンバス表示にも反映する（export_screen.dartの書き出し処理も
       // 同じくproject.backgroundColorを参照しており、表示・書き出しの
       // 両方で設定が一致する）。
-      final color = project != null ? Color(project!.backgroundColor) : Colors.white;
+      final color = project != null
+          ? Color(project!.backgroundColor)
+          : Colors.white;
       canvas.drawRect(rect, Paint()..color = color);
     } else {
       _paintChecker(canvas, rect);
@@ -3488,8 +3890,12 @@ class _CanvasPainter extends CustomPainter {
     for (int row = 0; row < rows; row++) {
       for (int col = 0; col < cols; col++) {
         canvas.drawRect(
-          Rect.fromLTWH(startX + col * _checkerSize,
-              startY + row * _checkerSize, _checkerSize, _checkerSize),
+          Rect.fromLTWH(
+            startX + col * _checkerSize,
+            startY + row * _checkerSize,
+            _checkerSize,
+            _checkerSize,
+          ),
           Paint()
             ..color = ((gridRow0 + row) + (gridCol0 + col)).isEven
                 ? const Color.fromARGB(255, 242, 242, 242)

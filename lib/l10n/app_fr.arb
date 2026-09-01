@@ -2603,5 +2603,11 @@
   "qrImportSubmitButton": "Importer",
   "qrShareHint": "Scannez ce code QR avec une application caméra standard pour copier le texte. Sur l'autre appareil, utilisez « Importer » pour coller le texte copié.",
   "qrShareCopiedSnackbar": "Texte copié",
-  "qrShareCopyButton": "Copier le texte"
+  "qrShareCopyButton": "Copier le texte",
+  "toolbarItemBlur": "Flou gaussien",
+  "toolbarItemMosaic": "Mosaïque",
+  "toolbarFingerSubtoolWarp": "Déformer",
+  "brushSettingsEdgeJitterTitle": "Bavure de bord",
+  "brushSettingsEdgeJitterSubtitle": "Rend le bord légèrement irrégulier pour imiter le bavage de l'encre",
+  "brushSettingsEdgeJitterStrengthLabel": "Intensité"
 }

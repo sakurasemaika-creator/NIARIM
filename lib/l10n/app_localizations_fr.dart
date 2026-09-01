@@ -1088,15 +1088,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get toolbarItemFinger => 'Doigt';
 
   @override
-  String get toolbarItemBlur => 'Flou gaussien';
-
-  @override
-  String get toolbarItemMosaic => 'Mosaïque';
-
-  @override
-  String get toolbarFingerSubtoolWarp => 'Déformer';
-
-  @override
   String get toolbarItemPan => 'Main';
 
   @override
@@ -2962,15 +2953,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get brushSettingsStrokeDecaySubtitle =>
       'L\'opacité diminue plus vous dessinez longtemps';
-
-  @override
-  String get brushSettingsEdgeJitterTitle => 'Bavure de bord';
-
-  @override
-  String get brushSettingsEdgeJitterSubtitle => 'Rend le bord légèrement irrégulier pour imiter le bavage de l\'encre';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => 'Intensité';
 
   @override
   String get brushSettingsMixingTitle => 'Mélange des couleurs';
@@ -6198,4 +6180,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get qrShareCopyButton => 'Copier le texte';
+
+  @override
+  String get toolbarItemBlur => 'Flou gaussien';
+
+  @override
+  String get toolbarItemMosaic => 'Mosaïque';
+
+  @override
+  String get toolbarFingerSubtoolWarp => 'Déformer';
+
+  @override
+  String get brushSettingsEdgeJitterTitle => 'Bavure de bord';
+
+  @override
+  String get brushSettingsEdgeJitterSubtitle =>
+      'Rend le bord légèrement irrégulier pour imiter le bavage de l\'encre';
+
+  @override
+  String get brushSettingsEdgeJitterStrengthLabel => 'Intensité';
 }

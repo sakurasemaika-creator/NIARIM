@@ -1050,15 +1050,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get toolbarItemFinger => '指';
 
   @override
-  String get toolbarItemBlur => 'ガウスぼかし';
-
-  @override
-  String get toolbarItemMosaic => 'モザイク';
-
-  @override
-  String get toolbarFingerSubtoolWarp => '歪み';
-
-  @override
   String get toolbarItemPan => '手のひら';
 
   @override
@@ -2826,15 +2817,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushSettingsStrokeDecaySubtitle => '描き続けるほど不透明度が下がる';
-
-  @override
-  String get brushSettingsEdgeJitterTitle => 'ふち滲み';
-
-  @override
-  String get brushSettingsEdgeJitterSubtitle => 'ふちをわずかにがたがたさせてインクの滲みを再現する';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '滲み強度';
 
   @override
   String get brushSettingsMixingTitle => '混色';
@@ -5883,4 +5865,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get qrShareCopyButton => 'テキストをコピー';
+
+  @override
+  String get toolbarItemBlur => 'ガウスぼかし';
+
+  @override
+  String get toolbarItemMosaic => 'モザイク';
+
+  @override
+  String get toolbarFingerSubtoolWarp => '歪み';
+
+  @override
+  String get brushSettingsEdgeJitterTitle => 'ふち滲み';
+
+  @override
+  String get brushSettingsEdgeJitterSubtitle => 'ふちをわずかにがたがたさせてインクの滲みを再現する';
+
+  @override
+  String get brushSettingsEdgeJitterStrengthLabel => '滲み強度';
 }

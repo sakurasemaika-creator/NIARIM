@@ -2603,5 +2603,11 @@
   "qrImportSubmitButton": "가져오기",
   "qrShareHint": "기본 카메라 앱 등으로 이 QR 코드를 스캔하면 텍스트를 복사할 수 있습니다. 상대방 기기에서 \"가져오기\"로 복사한 텍스트를 붙여넣어 주세요.",
   "qrShareCopiedSnackbar": "텍스트를 복사했습니다",
-  "qrShareCopyButton": "텍스트 복사"
+  "qrShareCopyButton": "텍스트 복사",
+  "toolbarItemBlur": "가우시안 흐리기",
+  "toolbarItemMosaic": "모자이크",
+  "toolbarFingerSubtoolWarp": "우그리기",
+  "brushSettingsEdgeJitterTitle": "가장자리 번짐",
+  "brushSettingsEdgeJitterSubtitle": "가장자리를 약간 거칠게 하여 잉크 번짐을 재현",
+  "brushSettingsEdgeJitterStrengthLabel": "번짐 강도"
 }

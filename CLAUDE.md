@@ -31,7 +31,7 @@
 
 1. `export PATH="$PATH:/opt/flutter-sdk/bin"`（このリモート実行環境では
    flutterがデフォルトPATHに無い。`/opt/flutter-sdk/bin`に入っている）
-2. コード変更後は必ず`flutter analyze`（ベースライン：73 issues、0 errors。
+2. コード変更後は必ず`flutter analyze`（ベースライン：72 issues、0 errors。
    全て既存のdeprecated_member_use / use_build_context_synchronousのinfoで
    増減が無いことを確認する）
 3. `flutter test`（ベースライン：232 tests、全成功。うち大半は

@@ -1053,15 +1053,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get toolbarItemFinger => '손가락';
 
   @override
-  String get toolbarItemBlur => '가우시안 흐리기';
-
-  @override
-  String get toolbarItemMosaic => '모자이크';
-
-  @override
-  String get toolbarFingerSubtoolWarp => '우그리기';
-
-  @override
   String get toolbarItemPan => '손바닥';
 
   @override
@@ -2837,15 +2828,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushSettingsStrokeDecaySubtitle => '계속 그릴수록 불투명도가 낮아집니다';
-
-  @override
-  String get brushSettingsEdgeJitterTitle => '가장자리 번짐';
-
-  @override
-  String get brushSettingsEdgeJitterSubtitle => '가장자리를 약간 거칠게 하여 잉크 번짐을 재현';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '번짐 강도';
 
   @override
   String get brushSettingsMixingTitle => '혼색';
@@ -5912,4 +5894,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get qrShareCopyButton => '텍스트 복사';
+
+  @override
+  String get toolbarItemBlur => '가우시안 흐리기';
+
+  @override
+  String get toolbarItemMosaic => '모자이크';
+
+  @override
+  String get toolbarFingerSubtoolWarp => '우그리기';
+
+  @override
+  String get brushSettingsEdgeJitterTitle => '가장자리 번짐';
+
+  @override
+  String get brushSettingsEdgeJitterSubtitle => '가장자리를 약간 거칠게 하여 잉크 번짐을 재현';
+
+  @override
+  String get brushSettingsEdgeJitterStrengthLabel => '번짐 강도';
 }

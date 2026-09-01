@@ -2853,5 +2853,11 @@
   "qrImportSubmitButton": "読み込む",
   "qrShareHint": "標準カメラアプリ等でこのQRコードを読み取ると、テキストをコピーできます。相手の端末で「取り込む」からQRコードのテキストを貼り付けてください。",
   "qrShareCopiedSnackbar": "テキストをコピーしました",
-  "qrShareCopyButton": "テキストをコピー"
+  "qrShareCopyButton": "テキストをコピー",
+  "toolbarItemBlur": "ガウスぼかし",
+  "toolbarItemMosaic": "モザイク",
+  "toolbarFingerSubtoolWarp": "歪み",
+  "brushSettingsEdgeJitterTitle": "ふち滲み",
+  "brushSettingsEdgeJitterSubtitle": "ふちをわずかにがたがたさせてインクの滲みを再現する",
+  "brushSettingsEdgeJitterStrengthLabel": "滲み強度"
 }

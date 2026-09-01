@@ -1070,15 +1070,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolbarItemFinger => 'Finger';
 
   @override
-  String get toolbarItemBlur => 'Gaussian blur';
-
-  @override
-  String get toolbarItemMosaic => 'Mosaic';
-
-  @override
-  String get toolbarFingerSubtoolWarp => 'Warp';
-
-  @override
   String get toolbarItemPan => 'Hand';
 
   @override
@@ -2925,15 +2916,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get brushSettingsStrokeDecaySubtitle =>
       'Opacity decreases the longer you keep drawing';
-
-  @override
-  String get brushSettingsEdgeJitterTitle => 'Edge jitter';
-
-  @override
-  String get brushSettingsEdgeJitterSubtitle => 'Slightly roughens the edge to mimic ink bleeding';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => 'Jitter strength';
 
   @override
   String get brushSettingsMixingTitle => 'Color mixing';
@@ -6082,4 +6064,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qrShareCopyButton => 'Copy text';
+
+  @override
+  String get toolbarItemBlur => 'Gaussian blur';
+
+  @override
+  String get toolbarItemMosaic => 'Mosaic';
+
+  @override
+  String get toolbarFingerSubtoolWarp => 'Warp';
+
+  @override
+  String get brushSettingsEdgeJitterTitle => 'Edge jitter';
+
+  @override
+  String get brushSettingsEdgeJitterSubtitle =>
+      'Slightly roughens the edge to mimic ink bleeding';
+
+  @override
+  String get brushSettingsEdgeJitterStrengthLabel => 'Jitter strength';
 }

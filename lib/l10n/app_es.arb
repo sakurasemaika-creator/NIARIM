@@ -2603,5 +2603,11 @@
   "qrImportSubmitButton": "Importar",
   "qrShareHint": "Escanea este código QR con una app de cámara estándar para copiar el texto. En el otro dispositivo, usa «Importar» para pegar el texto copiado.",
   "qrShareCopiedSnackbar": "Texto copiado",
-  "qrShareCopyButton": "Copiar texto"
+  "qrShareCopyButton": "Copiar texto",
+  "toolbarItemBlur": "Desenfoque gaussiano",
+  "toolbarItemMosaic": "Mosaico",
+  "toolbarFingerSubtoolWarp": "Deformar",
+  "brushSettingsEdgeJitterTitle": "Sangrado de borde",
+  "brushSettingsEdgeJitterSubtitle": "Rugosidad leve en el borde para imitar el sangrado de tinta",
+  "brushSettingsEdgeJitterStrengthLabel": "Intensidad"
 }

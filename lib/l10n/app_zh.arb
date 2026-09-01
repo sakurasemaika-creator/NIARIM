@@ -2603,5 +2603,11 @@
   "qrImportSubmitButton": "导入",
   "qrShareHint": "用标准相机应用扫描此二维码即可复制文本。请在对方设备上使用“导入”粘贴复制的文本。",
   "qrShareCopiedSnackbar": "已复制文本",
-  "qrShareCopyButton": "复制文本"
+  "qrShareCopyButton": "复制文本",
+  "toolbarItemBlur": "高斯模糊",
+  "toolbarItemMosaic": "马赛克",
+  "toolbarFingerSubtoolWarp": "弯曲",
+  "brushSettingsEdgeJitterTitle": "边缘渗漏",
+  "brushSettingsEdgeJitterSubtitle": "轻微粗糙化边缘，模拟墨水渗漏效果",
+  "brushSettingsEdgeJitterStrengthLabel": "渗漏强度"
 }

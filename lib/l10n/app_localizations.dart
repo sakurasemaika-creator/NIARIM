@@ -2069,15 +2069,6 @@ abstract class AppLocalizations {
   /// **'指'**
   String get toolbarItemFinger;
 
-  /// No description provided for @toolbarItemBlur.
-  String get toolbarItemBlur;
-
-  /// No description provided for @toolbarItemMosaic.
-  String get toolbarItemMosaic;
-
-  /// No description provided for @toolbarFingerSubtoolWarp.
-  String get toolbarFingerSubtoolWarp;
-
   /// No description provided for @toolbarItemPan.
   ///
   /// In ja, this message translates to:
@@ -5233,15 +5224,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'描き続けるほど不透明度が下がる'**
   String get brushSettingsStrokeDecaySubtitle;
-
-  /// No description provided for @brushSettingsEdgeJitterTitle.
-  String get brushSettingsEdgeJitterTitle;
-
-  /// No description provided for @brushSettingsEdgeJitterSubtitle.
-  String get brushSettingsEdgeJitterSubtitle;
-
-  /// No description provided for @brushSettingsEdgeJitterStrengthLabel.
-  String get brushSettingsEdgeJitterStrengthLabel;
 
   /// No description provided for @brushSettingsMixingTitle.
   ///
@@ -10774,6 +10756,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'テキストをコピー'**
   String get qrShareCopyButton;
+
+  /// No description provided for @toolbarItemBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ガウスぼかし'**
+  String get toolbarItemBlur;
+
+  /// No description provided for @toolbarItemMosaic.
+  ///
+  /// In ja, this message translates to:
+  /// **'モザイク'**
+  String get toolbarItemMosaic;
+
+  /// No description provided for @toolbarFingerSubtoolWarp.
+  ///
+  /// In ja, this message translates to:
+  /// **'歪み'**
+  String get toolbarFingerSubtoolWarp;
+
+  /// No description provided for @brushSettingsEdgeJitterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ふち滲み'**
+  String get brushSettingsEdgeJitterTitle;
+
+  /// No description provided for @brushSettingsEdgeJitterSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ふちをわずかにがたがたさせてインクの滲みを再現する'**
+  String get brushSettingsEdgeJitterSubtitle;
+
+  /// No description provided for @brushSettingsEdgeJitterStrengthLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'滲み強度'**
+  String get brushSettingsEdgeJitterStrengthLabel;
 }
 
 class _AppLocalizationsDelegate

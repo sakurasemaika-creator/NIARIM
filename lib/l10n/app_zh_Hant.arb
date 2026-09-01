@@ -2603,5 +2603,11 @@
   "qrImportSubmitButton": "匯入",
   "qrShareHint": "用標準相機應用程式掃描此QR碼即可複製文字。請在對方裝置上使用「匯入」貼上複製的文字。",
   "qrShareCopiedSnackbar": "已複製文字",
-  "qrShareCopyButton": "複製文字"
+  "qrShareCopyButton": "複製文字",
+  "toolbarItemBlur": "高斯模糊",
+  "toolbarItemMosaic": "馬賽克",
+  "toolbarFingerSubtoolWarp": "彎曲",
+  "brushSettingsEdgeJitterTitle": "邊緣漸漫",
+  "brushSettingsEdgeJitterSubtitle": "輕微粗糙化邊緣，模擬墨水漸漫效果",
+  "brushSettingsEdgeJitterStrengthLabel": "漸漫強度"
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../config/monetization_gate.dart';
+import '../utils/runtime_platform.dart';
 import 'premium_service.dart';
 import 'ad_provider.dart';
 import 'admob_provider.dart';
@@ -31,7 +32,12 @@ class AdvertisingService extends ChangeNotifier {
 
   Future<void> init() async {
     _provider = AdMobProvider(onAdEvent: notifyListeners);
-    if (isMonetizationEnabled) {
+    // google_mobile_adsのUMPはAndroid/iOS専用。Windows上のwidget testや
+    // Flutter WebでMethodChannelを呼ぶとMissingPluginExceptionが非同期に
+    // 投げられ、アプリの起動自体が完了しなくなるため、対応OSでのみ実行する。
+    // defaultTargetPlatformはwidget testでもAndroidを返すため、条件付き
+    // import先で実際の実行OSを判定する（Webではdart:ioを読み込まない）。
+    if (isMonetizationEnabled && supportsMobilePluginRuntime) {
       await _requestConsentThenInitialize();
     }
     premiumService.addListener(_onPremiumChanged);
