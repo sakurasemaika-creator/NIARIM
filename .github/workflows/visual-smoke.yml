@@ -6,7 +6,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - test/app_web_reference_capture_test.dart
+      - test/app_web_reference_capture_test_v2.dart
       - .github/workflows/visual-smoke.yml
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
 
       # Web比較用キャプチャは先に実行し、比較経路の問題を最短で検出する。
       - name: Web比較用の実アプリ基準スクリーンショット
-        run: flutter test test/app_web_reference_capture_test.dart --reporter expanded
+        run: flutter test test/app_web_reference_capture_test_v2.dart --reporter expanded
 
       - name: 既存スモークテスト
         run: flutter test test/app_smoke_test.dart --reporter expanded
