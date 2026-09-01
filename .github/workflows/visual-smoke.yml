@@ -24,19 +24,20 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          cache: false
+          cache: true
 
       - name: 依存関係取得
         run: flutter pub get
+
+      # Web比較用キャプチャは先に実行し、比較経路の問題を最短で検出する。
+      - name: Web比較用の実アプリ基準スクリーンショット
+        run: flutter test test/app_web_reference_capture_test.dart --reporter expanded
 
       - name: 既存スモークテスト
         run: flutter test test/app_smoke_test.dart --reporter expanded
 
       - name: 狭幅ビジュアルスモークテスト
         run: flutter test test/visual_smoke_test.dart --reporter expanded
-
-      - name: Web比較用の実アプリ基準スクリーンショット
-        run: flutter test test/app_web_reference_capture_test.dart --reporter expanded
 
       # Drawerを一度も開いていない新規Widgetツリーで、実際に押せる作品一覧タブを再撮影する。
       - name: 作品一覧クリーンスクリーンショット
