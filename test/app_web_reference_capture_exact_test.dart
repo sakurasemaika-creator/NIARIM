@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 
@@ -140,51 +141,46 @@ void main() {
   }
 
   Future<void> timeline(WidgetTester tester) async {
-    final label = find.text('タイムライン', skipOffstage: false);
-    await tester.ensureVisible(label.last);
-    await tester.tap(label.last, warnIfMissed: false);
+    final label = find.text('タイムライン', skipOffstage: false).hitTestable();
+    expect(label, findsOneWidget);
+    await tester.tap(label);
     await tester.pump(const Duration(milliseconds: 650));
     final e = tester.takeException();
     if (e != null && !e.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
       fail('timeline: $e');
     }
+    expect(find.byType(TimelineScreen), findsOneWidget);
   }
 
   testWidgets('exact onion panel via real menu ListTile', (tester) async {
     await canvas(tester);
-    final settings = find.byTooltip('設定/編集', skipOffstage: false);
-    expect(settings, findsWidgets);
-    await tester.tap(settings.last, warnIfMissed: false);
+    // CanvasScreenの上部バーに実際に表示されている設定ボタンだけを選ぶ。
+    final settings = find.byTooltip('設定/編集', skipOffstage: false).hitTestable();
+    expect(settings, findsOneWidget);
+    await tester.tap(settings);
     await tester.pump(const Duration(milliseconds: 300));
 
-    // 表示文言ではなく、CanvasScreen._showEditMenu() がオニオンスキン項目へ
-    // 実際に割り当てている layers_outlined アイコンを基準にListTileを選ぶ。
-    final onionIcon = find.byIcon(Icons.layers_outlined, skipOffstage: false);
-    expect(onionIcon, findsWidgets);
-    final onionTile = find.ancestor(of: onionIcon.last, matching: find.byType(ListTile));
-    expect(onionTile, findsWidgets);
-    await tester.ensureVisible(onionTile.last);
-    await tester.tap(onionTile.last, warnIfMissed: false);
+    // _showEditMenu()のオニオンスキン項目はlayers_outlined。
+    // モーダル内で実際にヒットテスト可能な個体だけをタップする。
+    final onionIcon = find.byIcon(Icons.layers_outlined, skipOffstage: false).hitTestable();
+    expect(onionIcon, findsOneWidget);
+    final onionTile = find.ancestor(of: onionIcon, matching: find.byType(ListTile)).hitTestable();
+    expect(onionTile, findsOneWidget);
+    await tester.tap(onionTile);
     await tester.pump(const Duration(milliseconds: 450));
     clean(tester, 'open onion panel');
     await shot(tester, '03_canvas_onion_panel');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
-  testWidgets('exact export via real timeline overflow menu', (tester) async {
+  testWidgets('exact export via real timeline toolbar button', (tester) async {
     await canvas(tester);
     await timeline(tester);
 
-    // TimelineScreenでは書き出しは独立ボタンではなく右上の三点メニュー内。
-    final more = find.byIcon(Icons.more_vert, skipOffstage: false);
-    expect(more, findsWidgets);
-    await tester.tap(more.last, warnIfMissed: false);
-    await tester.pump(const Duration(milliseconds: 250));
-
-    // メニュー内には「書き出し」と「現在フレームを書き出し」があるため、
-    // 完全一致の「書き出し」を選ぶ。
-    final exportItem = find.text('書き出し', findRichText: true, skipOffstage: false);
-    expect(exportItem, findsWidgets);
-    await tester.tap(exportItem.first, warnIfMissed: false);
+    // TimelineScreen._buildToolbar()の実書き出しボタンはIcons.upload_file。
+    // 既知の320px TopBar overflowに影響されない下段ツールバーから遷移する。
+    final export = find.byIcon(Icons.upload_file, skipOffstage: false).hitTestable();
+    expect(export, findsOneWidget);
+    await tester.tap(export);
     await tester.pump(const Duration(milliseconds: 650));
     clean(tester, 'timeline to export');
     expect(find.text('書き出し'), findsWidgets);
