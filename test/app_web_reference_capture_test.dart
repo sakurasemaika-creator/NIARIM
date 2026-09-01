@@ -56,13 +56,26 @@ void main() {
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
-  void useReferencePhone(WidgetTester tester) {
-    // Webの画面再現図と同じ9:16基準。320 x 568.888... logical px。
-    // 物理解像度は960x1707相当、DPR 3で小型Androidの密度も再現する。
-    tester.view.physicalSize = const Size(960, 1707);
+  void useInteractionPhone(WidgetTester tester) {
+    // 操作中は既存Visual Smokeと同じ320x720 logical pxを使い、
+    // フォームやダイアログの操作領域を実機相当で確保する。
+    tester.view.physicalSize = const Size(960, 2160);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+  }
+
+  Future<void> switchToReferenceRatio(WidgetTester tester) async {
+    // 撮影時だけWeb画面再現図と同じ9:16（320x569 logical px）へ変更。
+    tester.view.physicalSize = const Size(960, 1707);
+    tester.view.devicePixelRatio = 3.0;
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+
+  Future<void> switchToInteractionRatio(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(960, 2160);
+    tester.view.devicePixelRatio = 3.0;
+    await tester.pump(const Duration(milliseconds: 250));
   }
 
   Future<void> loadFonts(WidgetTester tester) async {
@@ -78,7 +91,7 @@ void main() {
   }
 
   Future<void> capture(WidgetTester tester, String name) async {
-    await tester.pump(const Duration(milliseconds: 180));
+    await switchToReferenceRatio(tester);
     final boundary = screenshotKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
@@ -100,7 +113,7 @@ void main() {
   }
 
   Future<void> bootToHome(WidgetTester tester) async {
-    useReferencePhone(tester);
+    useInteractionPhone(tester);
     await loadFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
@@ -137,6 +150,8 @@ void main() {
 
     final create = find.text('作成');
     expect(create, findsOneWidget);
+    await tester.ensureVisible(create);
+    await tester.pump(const Duration(milliseconds: 150));
     await tester.tap(create);
     await tester.pump(const Duration(milliseconds: 850));
     expectClean(tester, '作成→キャンバス');
@@ -159,6 +174,7 @@ void main() {
       (tester) async {
     await createProjectAndOpenCanvas(tester);
     await capture(tester, '01_canvas_default');
+    await switchToInteractionRatio(tester);
 
     final layer = find.byTooltip('レイヤー');
     expect(layer, findsOneWidget);
@@ -166,6 +182,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     expectClean(tester, 'レイヤーパネルを開く');
     await capture(tester, '02_canvas_layer_panel');
+    await switchToInteractionRatio(tester);
     await closeOverlayPanel(tester);
 
     final editMenu = find.byTooltip('設定/編集');
@@ -191,10 +208,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 850));
     expectClean(tester, 'Canvas→Timeline');
     await capture(tester, '04_timeline_default');
+    await switchToInteractionRatio(tester);
 
-    // file_pickerはflutter_testでは実OSダイアログを開けないため、既存の
-    // app_smoke_test.dartと同じ方針で実ProjectServiceへ音声クリップを登録。
-    // その後の「クリップをタップして編集シートを開く」操作は実UIで行う。
     final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
     ps.addAudioClip(
       ids.$1,
@@ -211,14 +226,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 250));
 
-    // TimelineScreenは初期表示時にクリップ一覧をStateへ取り込むため、
-    // Canvasへ一度戻って実際のTimeline切替操作でもう一度開き直す。
-    final backToCanvas = find.byIcon(Icons.brush);
-    if (backToCanvas.evaluate().isNotEmpty) {
-      await tester.tap(backToCanvas.first);
-    } else {
-      GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.$1}');
-    }
+    GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
     final timelineAgain = find.text('タイムライン');
     expect(timelineAgain, findsOneWidget);
@@ -228,6 +236,7 @@ void main() {
 
     final audioClip = find.text('比較用音声');
     expect(audioClip, findsOneWidget);
+    await tester.ensureVisible(audioClip);
     await tester.tap(audioClip);
     await tester.pump(const Duration(milliseconds: 350));
     expectClean(tester, '音声クリップ編集を開く');
@@ -244,6 +253,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     expectClean(tester, 'Canvas→SaveTree');
     await capture(tester, '06_save_tree');
+    await switchToInteractionRatio(tester);
 
     GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
