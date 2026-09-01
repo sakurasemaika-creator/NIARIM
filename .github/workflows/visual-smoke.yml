@@ -2,11 +2,17 @@ name: Visual Smoke Test
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - test/app_web_reference_capture_test.dart
+      - .github/workflows/visual-smoke.yml
 
 jobs:
   visual-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     permissions:
       contents: read
 
@@ -28,6 +34,9 @@ jobs:
 
       - name: 狭幅ビジュアルスモークテスト
         run: flutter test test/visual_smoke_test.dart --reporter expanded
+
+      - name: Web比較用の実アプリ基準スクリーンショット
+        run: flutter test test/app_web_reference_capture_test.dart --reporter expanded
 
       # Drawerを一度も開いていない新規Widgetツリーで、実際に押せる作品一覧タブを再撮影する。
       - name: 作品一覧クリーンスクリーンショット
