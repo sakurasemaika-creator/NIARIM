@@ -22,7 +22,7 @@ import 'screens/help/help_screen.dart';
 import 'screens/tips/tips_screen.dart';
 import 'screens/premium/premium_screen.dart';
 import 'screens/autofill/autofill_preset_screen.dart';
-import 'screens/save_tree/save_tree_screen.dart';
+import 'screens/save_tree/save_management_screen.dart';
 import 'screens/materials/material_list_screen.dart';
 import 'screens/settings/font_settings_screen.dart';
 import 'screens/settings/license_screen.dart';
@@ -126,7 +126,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/save-tree/:id',
-      builder: (context, state) => SaveTreeScreen(
+      builder: (context, state) => SaveManagementScreen(
         projectId: state.pathParameters['id']!,
         entryMode: parseSaveTreeEntryMode(state.uri.queryParameters['entry']),
       ),
