@@ -203,14 +203,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expectNoFlutterException(tester, 'ホームドロワー表示');
       await capture(tester, '10_home_drawer');
-      // DrawerはScaffold内部のLocalHistoryEntryとして開くため、Drawer自身の
-      // BuildContextからNavigator.pop()すると実機の戻る操作と同じ経路で
-      // 確実に閉じられる。Scaffold.firstを取る方式は入れ子Scaffoldを誤って
-      // 掴む可能性があり、スクショ上だけDrawerが残ることがあった。
+      // Drawer自身のBuildContextから親Scaffoldを取得する。画面内の
+      // Scaffold.firstを使うとDrawer内部などの入れ子Scaffoldを掴む余地が
+      // あるため、HomeScreenのScaffoldを一意に特定できる経路を使う。
       final drawer = find.byType(Drawer);
       expect(drawer, findsOneWidget);
-      Navigator.of(tester.element(drawer)).pop();
+      final homeScaffold = Scaffold.of(tester.element(drawer));
+      expect(homeScaffold.isDrawerOpen, isTrue);
+      homeScaffold.closeDrawer();
       await tester.pump(const Duration(milliseconds: 500));
+      expect(homeScaffold.isDrawerOpen, isFalse);
       expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
       final worksTab = find.text('作品一覧');
