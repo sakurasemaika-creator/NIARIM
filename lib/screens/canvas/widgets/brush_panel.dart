@@ -463,6 +463,21 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             onChanged: (v) => setState(() => _brush = _brush.copyWith(strokeDecay: v)),
           ),
           const Divider(),
+          // ふち滲み
+          SwitchListTile(
+            title: Text(l10n.brushSettingsEdgeJitterTitle),
+            subtitle: Text(l10n.brushSettingsEdgeJitterSubtitle, style: const TextStyle(fontSize: 11)),
+            value: _brush.edgeJitter,
+            onChanged: (v) => setState(() => _brush = _brush.copyWith(edgeJitter: v)),
+          ),
+          if (_brush.edgeJitter)
+            _sliderRow(
+              l10n.brushSettingsEdgeJitterStrengthLabel,
+              _brush.edgeJitterStrength.toDouble(),
+              0, 100,
+              (v) => setState(() => _brush = _brush.copyWith(edgeJitterStrength: v.round())),
+            ),
+          const Divider(),
           // 混色
           Text(l10n.brushSettingsMixingTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
           ...BrushMixingMode.values.map((mode) => RadioListTile<BrushMixingMode>(

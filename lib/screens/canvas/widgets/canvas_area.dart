@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
-import '../../../engine/filter_engine.dart' show quantizeColors;
+import '../../../engine/filter_engine.dart' show FilterEngine, quantizeColors;
 import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
 import '../../../engine/layer_compositor.dart';
@@ -841,6 +841,12 @@ class _CanvasAreaState extends State<CanvasArea> {
       _handleFingerDown(canvasPos);
       return;
     }
+    if (widget.currentTool == DrawingTool.blur ||
+        widget.currentTool == DrawingTool.mosaic) {
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
+      _handleBlurMosaicDown(canvasPos);
+      return;
+    }
 
     if (type == InputType.touch && _inputHandler.isStylusActive) return;
     _syncBrushAndColor();
@@ -948,6 +954,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.finger) {
       if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _handleFingerMove(canvasPos);
+      return;
+    }
+    if (widget.currentTool == DrawingTool.blur ||
+        widget.currentTool == DrawingTool.mosaic) {
+      if (type == InputType.touch && _inputHandler.isStylusActive) return;
+      _handleBlurMosaicMove(canvasPos);
       return;
     }
     if (type == InputType.touch && _inputHandler.isStylusActive) return;
@@ -2195,6 +2207,88 @@ class _CanvasAreaState extends State<CanvasArea> {
       _markLineartDirtyIfNeeded();
       _finishTileUndo();
     }
+  }
+
+  // ガウスぼかし・モザイクツール：指でなぞるように円形範囲にフィルターを連続適用する。
+  final FilterEngine _filterEngine = FilterEngine();
+
+  void _handleBlurMosaicDown(Offset canvasPos) {
+    _beginTileUndo();
+    _warpLastPos = canvasPos;
+    _applyBlurMosaic(canvasPos);
+  }
+
+  void _handleBlurMosaicMove(Offset canvasPos) {
+    _warpLastPos = canvasPos;
+    _applyBlurMosaic(canvasPos);
+  }
+
+  void _handleBlurMosaicUp() {
+    _warpLastPos = null;
+    if (_undoRecordingLayerKey != null) {
+      _markLineartDirtyIfNeeded();
+      _finishTileUndo();
+    }
+  }
+
+  void _applyBlurMosaic(Offset center) {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final brushSize = context.read<BrushService>().currentBrush?.size ?? 20;
+    final radius = (brushSize * 1.5).round().clamp(4, 300);
+    final isMosaic = widget.currentTool == DrawingTool.mosaic;
+    final cx = center.dx.round();
+    final cy = center.dy.round();
+    final minX = (cx - radius).clamp(0, w - 1);
+    final maxX = (cx + radius).clamp(0, w - 1);
+    final minY = (cy - radius).clamp(0, h - 1);
+    final maxY = (cy + radius).clamp(0, h - 1);
+    if (minX >= maxX || minY >= maxY) return;
+    final regionW = maxX - minX + 1;
+    final regionH = maxY - minY + 1;
+    final region = Uint8List(regionW * regionH * 4);
+    final key = _tileKeyFor(_layerId);
+    // 対象範囲のピクセルをタイルから読み出す
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        final dist = math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble());
+        if (dist > radius) continue;
+        final tx = x ~/ TileManager.tileSize;
+        final ty = y ~/ TileManager.tileSize;
+        final tile = _tileManager.getOrCreateTile(key, tx, ty);
+        final lx = x % TileManager.tileSize;
+        final ly = y % TileManager.tileSize;
+        final ti = (ly * TileManager.tileSize + lx) * 4;
+        final ri = ((y - minY) * regionW + (x - minX)) * 4;
+        region[ri] = tile[ti]; region[ri + 1] = tile[ti + 1];
+        region[ri + 2] = tile[ti + 2]; region[ri + 3] = tile[ti + 3];
+      }
+    }
+    // フィルター適用
+    final strength = (brushSize / 10).clamp(1.0, 8.0);
+    final processed = isMosaic
+        ? _filterEngine.applyMosaic(region, regionW, regionH, strength.round().clamp(2, 16))
+        : _filterEngine.applyGaussianBlur(region, regionW, regionH, strength);
+    // 結果を書き戻す（円形マスク内のみ）
+    bool changed = false;
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        final dist = math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble());
+        if (dist > radius) continue;
+        final tx = x ~/ TileManager.tileSize;
+        final ty = y ~/ TileManager.tileSize;
+        final tile = _tileManager.getOrCreateTile(key, tx, ty);
+        final lx = x % TileManager.tileSize;
+        final ly = y % TileManager.tileSize;
+        final ti = (ly * TileManager.tileSize + lx) * 4;
+        final ri = ((y - minY) * regionW + (x - minX)) * 4;
+        tile[ti] = processed[ri]; tile[ti + 1] = processed[ri + 1];
+        tile[ti + 2] = processed[ri + 2]; tile[ti + 3] = processed[ri + 3];
+        _tileManager.markDirty(key, tx, ty);
+        changed = true;
+      }
+    }
+    if (changed) _scheduleComposite();
   }
 
   /// [center]を中心とした円形範囲内のピクセルを、[delta]方向へ押し流す。

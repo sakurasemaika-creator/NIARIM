@@ -34,6 +34,7 @@ class ToolbarWidget extends StatelessWidget {
   // 選べるようにするための導線。投げ縄で囲った範囲を塗りつぶす点で
   // バケツ塗りに近い性質を持つため）。
   final VoidCallback onLassoFillSelected;
+  final VoidCallback onFingerLongPress;
   // 定規ボタン：定規パネルの開閉と定規ツールへの切替（キャンバス上部
   // バーから移設し、他のツールと同じくツールバーの中に常設する）。
   final VoidCallback onRulerTap;
@@ -52,6 +53,7 @@ class ToolbarWidget extends StatelessWidget {
     required this.onBrushTap,
     required this.onLayerTap,
     required this.onPenLongPress,
+    required this.onFingerLongPress,
     required this.onTextTap,
     required this.onShapeTap,
     required this.onQuickToolTap,
@@ -131,12 +133,22 @@ class ToolbarWidget extends StatelessWidget {
         DrawingTool.eyedropper,
         l10n.toolbarItemEyedropper,
       ),
-      // 指先ツール（歪み）：スマホ・PC両モードで使用可能。
-      ToolbarItemId.finger => _toolButton(
-        context,
-        Icons.pan_tool_alt,
-        DrawingTool.finger,
-        l10n.toolbarItemFinger,
+      // 指先ツール（歪み）：長押しまたは上スワイプでサブツールメニュー
+      // （歪み／ガウスぼかし／モザイク）を表示。
+      ToolbarItemId.finger => GestureDetector(
+        onLongPress: onFingerLongPress,
+        onVerticalDragEnd: (details) {
+          if ((details.primaryVelocity ?? 0) < -200) onFingerLongPress();
+        },
+        child: _toolButton(
+          context,
+          Icons.pan_tool_alt,
+          DrawingTool.finger,
+          l10n.toolbarItemFinger,
+          isSelected: currentTool == DrawingTool.finger ||
+              currentTool == DrawingTool.blur ||
+              currentTool == DrawingTool.mosaic,
+        ),
       ),
       // 手のひらツール（画面移動専用）：呼び出し側のfor文でcanShowPanTool()
       // により表示条件（強制スマホモードでは非表示、それ以外は横画面のみ）が
@@ -335,8 +347,9 @@ class ToolbarWidget extends StatelessWidget {
     DrawingTool tool,
     String tooltip, {
     VoidCallback? onTap,
+    bool? isSelected,
   }) {
-    final isSelected = currentTool == tool;
+    final selected = isSelected ?? (currentTool == tool);
     return GestureDetector(
       onDoubleTap: () => _showBriefDescription(context, tooltip),
       child: _borderedIconButton(
@@ -344,7 +357,7 @@ class ToolbarWidget extends StatelessWidget {
         icon,
         onPressed: onTap ?? () => onToolSelected(tool),
         tooltip: tooltip,
-        selected: isSelected,
+        selected: selected,
       ),
     );
   }
@@ -643,6 +656,46 @@ class ToolbarWidget extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showFingerSubMenu(BuildContext context, AppLocalizations l10n) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.pan_tool_alt),
+              title: Text(l10n.toolbarFingerSubtoolWarp),
+              selected: currentTool == DrawingTool.finger,
+              onTap: () {
+                onToolSelected(DrawingTool.finger);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.blur_on),
+              title: Text(l10n.toolbarItemBlur),
+              selected: currentTool == DrawingTool.blur,
+              onTap: () {
+                onToolSelected(DrawingTool.blur);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.grid_4x4),
+              title: Text(l10n.toolbarItemMosaic),
+              selected: currentTool == DrawingTool.mosaic,
+              onTap: () {
+                onToolSelected(DrawingTool.mosaic);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -202,6 +202,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     DrawingTool.eraser ||
     DrawingTool.lasso ||
     DrawingTool.finger ||
+    DrawingTool.blur ||
+    DrawingTool.mosaic ||
     DrawingTool.ruler => true,
     _ => false,
   };
@@ -1209,6 +1211,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _closeAllOverlayPanels();
       _showPenSubToolPanel = next;
     }),
+    onFingerLongPress: () => _showFingerSubMenu(context),
     onTextTap: () => setState(() => _currentTool = DrawingTool.text),
     onShapeTap: () => _showShapeMenu(context),
     onQuickToolTap: _applyNextQuickTool,
@@ -1879,6 +1882,48 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
+  /// 指ツール長押し時のサブツールメニュー（歪み／ガウスぼかし／モザイク）
+  void _showFingerSubMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.pan_tool_alt),
+              title: Text(l10n.toolbarFingerSubtoolWarp),
+              selected: _currentTool == DrawingTool.finger,
+              onTap: () {
+                setState(() => _currentTool = DrawingTool.finger);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.blur_on),
+              title: Text(l10n.toolbarItemBlur),
+              selected: _currentTool == DrawingTool.blur,
+              onTap: () {
+                setState(() => _currentTool = DrawingTool.blur);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.grid_4x4),
+              title: Text(l10n.toolbarItemMosaic),
+              selected: _currentTool == DrawingTool.mosaic,
+              onTap: () {
+                setState(() => _currentTool = DrawingTool.mosaic);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 図形ツールタップ時のポップアップ（OFF/線/四角形/円）
   void _showShapeMenu(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -2505,6 +2550,10 @@ enum DrawingTool {
   lasso,
   eyedropper,
   finger,
+  // 指ツールのサブツール：ガウスぼかし・モザイク。
+  // 指ツールボタンの長押しメニューから切り替える。
+  blur,
+  mosaic,
   selectRect,
   selectLasso,
   selectMagicWand,

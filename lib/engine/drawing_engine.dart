@@ -178,6 +178,7 @@ class DrawingEngine {
       x, y, radius, alphaInt, tilt,
       layerId, brush.pixelMode, brush.blurRadius, customTexture,
       edgeJitter: brush.edgeJitter,
+      edgeJitterStrength: brush.edgeJitterStrength,
     );
   }
 
@@ -192,6 +193,7 @@ class DrawingEngine {
     int blurRadius,
     Uint8List? customTexture, {
     bool edgeJitter = false,
+    int edgeJitterStrength = 50,
   }) {
     final r = currentColor.r;
     final g = currentColor.g;
@@ -274,7 +276,8 @@ class DrawingEngine {
               // ランダムオフセットを加え、輪郭をわずかにがたがたさせる。
               // マーカーのインクが紙の繊維に沿って滲む様子を再現する。
               if (edgeJitter && dist > radius - 1.5) {
-                final jitter = (_jitterRng.nextDouble() - 0.5) * 1.8;
+                final maxJitter = edgeJitterStrength / 100.0 * 2.5;
+                final jitter = (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
                 pixelAlpha = (radius + 0.5 - dist + jitter).clamp(0.0, 1.0);
               } else {
                 pixelAlpha = (radius + 0.5 - dist).clamp(0.0, 1.0);
