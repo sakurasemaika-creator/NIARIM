@@ -34,7 +34,7 @@ jobs:
       - name: 狭幅ビジュアルスモークテスト
         run: flutter test test/visual_smoke_test.dart --reporter expanded
 
-      # Drawerを一度も開いていない新規Widgetツリーで作品一覧だけ再撮影する。
+      # Drawerを一度も開いていない新規Widgetツリーで、実際に押せる作品一覧タブを再撮影する。
       - name: 作品一覧クリーンスクリーンショット
         run: flutter test test/visual_smoke_clean_home_test.dart --reporter expanded
 
