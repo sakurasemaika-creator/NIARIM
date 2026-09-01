@@ -84,10 +84,6 @@ void main() {
   }
 
   Future<void> capture(WidgetTester tester, String name) async {
-    // RenderRepaintBoundary.toImage()/Image.toByteDataは実Rasterizerの非同期処理を
-    // 待つため、fake-async支配下のtestWidgets本体で直接awaitすると、画面の
-    // 状態によってはFutureが進まずタイムアウトする。runAsyncで実時間ゾーンへ
-    // 逃がし、操作ごとの画像取得が確実に完了するようにする。
     await tester.pump(const Duration(milliseconds: 120));
     final renderObject =
         screenshotKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
@@ -100,7 +96,6 @@ void main() {
     final dir = Directory('build/visual-smoke');
     dir.createSync(recursive: true);
     File('${dir.path}/$name.png').writeAsBytesSync(bytes!);
-    // CIログから、どの操作まで画像化できたかを即座に特定できるようにする。
     // ignore: avoid_print
     print('visual-smoke captured: $name');
   }
@@ -150,7 +145,6 @@ void main() {
       await boot(tester);
       await goHome(tester);
 
-      // 1. 昇順/降順切り替え。今回報告されたoverflowの直接再現ポイント。
       final down = find.byIcon(Icons.arrow_downward);
       expect(down, findsOneWidget);
       await tester.tap(down);
@@ -159,7 +153,6 @@ void main() {
       expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
       await capture(tester, '04_home_sort_ascending');
 
-      // 2. 並び替え基準メニューを開く。
       final sortPopup = find.byType(PopupMenuButton<bool>);
       expect(sortPopup, findsWidgets);
       await tester.tap(sortPopup.first);
@@ -174,20 +167,16 @@ void main() {
       expectNoFlutterException(tester, '名前順へ変更');
       await capture(tester, '06_home_sort_by_name');
 
-      // 3. 表示サイズメニュー。
       final viewMode = find.byIcon(Icons.view_module);
       expect(viewMode, findsOneWidget);
       await tester.tap(viewMode);
       await tester.pump(const Duration(milliseconds: 250));
       expectNoFlutterException(tester, '表示サイズメニュー表示');
       await capture(tester, '07_home_view_mode_menu');
-      // PopupMenuRouteは通常のページではないためtester.pageBack()では閉じられない。
-      // メニュー外をタップし、実機と同じdismiss操作で閉じる。
       await tester.tapAt(const Offset(8, 220));
       await tester.pump(const Duration(milliseconds: 250));
       expectNoFlutterException(tester, '表示サイズメニューを閉じる');
 
-      // 4. 検索モード。長い入力でもAppBar内が崩れないことを確認。
       final search = find.byIcon(Icons.search);
       expect(search, findsOneWidget);
       await tester.tap(search);
@@ -208,29 +197,26 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       expectNoFlutterException(tester, '検索モード終了');
 
-      // 5. ドロワー。
       final menu = find.byIcon(Icons.menu);
       expect(menu, findsOneWidget);
       await tester.tap(menu);
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
       expectNoFlutterException(tester, 'ホームドロワー表示');
       await capture(tester, '10_home_drawer');
-      // Drawerもページではないので、画面右端のscrimをタップして閉じる。
-      await tester.tapAt(const Offset(315, 360));
-      await tester.pump(const Duration(milliseconds: 250));
+      // 座標タップはDrawer幅やDPRに依存するため、ScaffoldStateから確実に閉じる。
+      final homeScaffold = tester.state<ScaffoldState>(find.byType(Scaffold).first);
+      homeScaffold.closeDrawer();
+      await tester.pump(const Duration(milliseconds: 500));
       expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
-      // 6. 作品一覧タブ。
       final worksTab = find.text('作品一覧');
-      if (worksTab.evaluate().isNotEmpty) {
-        await tester.tap(worksTab.first);
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.pump(const Duration(milliseconds: 300));
-        expectNoFlutterException(tester, '作品一覧タブ切り替え');
-        await capture(tester, '11_home_works_tab');
-      }
+      expect(worksTab, findsWidgets);
+      await tester.tap(worksTab.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expectNoFlutterException(tester, '作品一覧タブ切り替え');
+      await capture(tester, '11_home_works_tab');
 
-      // 7. 新規プロジェクト画面。
       final scaffoldContext = tester.element(find.byType(Scaffold).first);
       GoRouter.of(scaffoldContext).push('/new-project');
       await tester.pump(const Duration(milliseconds: 350));
@@ -238,7 +224,6 @@ void main() {
       expectNoFlutterException(tester, '新規プロジェクト画面表示');
       await capture(tester, '12_new_project');
 
-      // 8. 設定一覧画面。
       final currentScaffold = tester.element(find.byType(Scaffold).first);
       GoRouter.of(currentScaffold).go('/settings');
       await tester.pump(const Duration(milliseconds: 350));
