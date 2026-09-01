@@ -71,28 +71,48 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
+  Future<void> loadAppFonts(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      final hakkou = FontLoader('HakkouMincho')
+        ..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf'));
+      final kuramubon = FontLoader('Kuramubon')
+        ..addFont(rootBundle.load('assets/fonts/Kuramubon.otf'));
+      final noto = FontLoader('NotoSerifJP')
+        ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf'));
+      await Future.wait([hakkou.load(), kuramubon.load(), noto.load()]);
+    });
+  }
+
   Future<void> capture(WidgetTester tester, String name) async {
+    // RenderRepaintBoundary.toImage()/Image.toByteDataは実Rasterizerの非同期処理を
+    // 待つため、fake-async支配下のtestWidgets本体で直接awaitすると、画面の
+    // 状態によってはFutureが進まずタイムアウトする。runAsyncで実時間ゾーンへ
+    // 逃がし、操作ごとの画像取得が確実に完了するようにする。
     await tester.pump(const Duration(milliseconds: 120));
     final renderObject =
         screenshotKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    final image = await renderObject.toImage(pixelRatio: 1.0);
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
+    final bytes = await tester.runAsync(() async {
+      final image = await renderObject.toImage(pixelRatio: 1.0);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    });
     final dir = Directory('build/visual-smoke');
     dir.createSync(recursive: true);
-    File('${dir.path}/$name.png').writeAsBytesSync(data!.buffer.asUint8List());
+    File('${dir.path}/$name.png').writeAsBytesSync(bytes!);
+    // CIログから、どの操作まで画像化できたかを即座に特定できるようにする。
+    // ignore: avoid_print
+    print('visual-smoke captured: $name');
   }
 
-  Future<void> expectNoFlutterException(
-    WidgetTester tester,
-    String operation,
-  ) async {
+  void expectNoFlutterException(WidgetTester tester, String operation) {
     final exception = tester.takeException();
     expect(exception, isNull, reason: '$operation でFlutter例外/overflow');
   }
 
   Future<void> boot(WidgetTester tester) async {
     useCompactPhoneSize(tester);
+    await loadAppFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
       RepaintBoundary(
@@ -101,7 +121,7 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 500));
-    await expectNoFlutterException(tester, '起動画面表示');
+    expectNoFlutterException(tester, '起動画面表示');
     await capture(tester, '01_splash');
   }
 
@@ -111,7 +131,7 @@ void main() {
     await tester.tap(create);
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pump(const Duration(milliseconds: 350));
-    await expectNoFlutterException(tester, '作品をつくる→ホーム');
+    expectNoFlutterException(tester, '作品をつくる→ホーム');
 
     final firstLaunch = find.text('はじめる');
     if (firstLaunch.evaluate().isNotEmpty) {
@@ -119,7 +139,7 @@ void main() {
       await tester.tap(firstLaunch);
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pump(const Duration(milliseconds: 350));
-      await expectNoFlutterException(tester, '初回案内を閉じる');
+      expectNoFlutterException(tester, '初回案内を閉じる');
     }
     await capture(tester, '03_home_default');
   }
@@ -135,7 +155,7 @@ void main() {
       expect(down, findsOneWidget);
       await tester.tap(down);
       await tester.pump(const Duration(milliseconds: 250));
-      await expectNoFlutterException(tester, '昇順/降順切り替え');
+      expectNoFlutterException(tester, '昇順/降順切り替え');
       expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
       await capture(tester, '04_home_sort_ascending');
 
@@ -144,14 +164,14 @@ void main() {
       expect(sortPopup, findsWidgets);
       await tester.tap(sortPopup.first);
       await tester.pump(const Duration(milliseconds: 250));
-      await expectNoFlutterException(tester, '並び替え基準メニュー表示');
+      expectNoFlutterException(tester, '並び替え基準メニュー表示');
       await capture(tester, '05_home_sort_menu_open');
 
       final nameItem = find.text('名前');
       expect(nameItem, findsWidgets);
       await tester.tap(nameItem.last);
       await tester.pump(const Duration(milliseconds: 250));
-      await expectNoFlutterException(tester, '名前順へ変更');
+      expectNoFlutterException(tester, '名前順へ変更');
       await capture(tester, '06_home_sort_by_name');
 
       // 3. 表示サイズメニュー。
@@ -159,7 +179,7 @@ void main() {
       expect(viewMode, findsOneWidget);
       await tester.tap(viewMode);
       await tester.pump(const Duration(milliseconds: 250));
-      await expectNoFlutterException(tester, '表示サイズメニュー表示');
+      expectNoFlutterException(tester, '表示サイズメニュー表示');
       await capture(tester, '07_home_view_mode_menu');
       await tester.pageBack();
       await tester.pump(const Duration(milliseconds: 250));
@@ -169,28 +189,28 @@ void main() {
       expect(search, findsOneWidget);
       await tester.tap(search);
       await tester.pump(const Duration(milliseconds: 250));
-      await expectNoFlutterException(tester, '検索モード開始');
+      expectNoFlutterException(tester, '検索モード開始');
       await capture(tester, '08_home_search_empty');
       await tester.enterText(
         find.byType(TextField).first,
         '非常に長い検索キーワードを入力してもレイアウトが壊れない確認用テキスト',
       );
       await tester.pump(const Duration(milliseconds: 250));
-      await expectNoFlutterException(tester, '検索文字入力');
+      expectNoFlutterException(tester, '検索文字入力');
       await capture(tester, '09_home_search_long_text');
 
       final closeSearch = find.byIcon(Icons.close);
       expect(closeSearch, findsOneWidget);
       await tester.tap(closeSearch);
       await tester.pump(const Duration(milliseconds: 250));
-      await expectNoFlutterException(tester, '検索モード終了');
+      expectNoFlutterException(tester, '検索モード終了');
 
       // 5. ドロワー。
       final menu = find.byIcon(Icons.menu);
       expect(menu, findsOneWidget);
       await tester.tap(menu);
       await tester.pump(const Duration(milliseconds: 300));
-      await expectNoFlutterException(tester, 'ホームドロワー表示');
+      expectNoFlutterException(tester, 'ホームドロワー表示');
       await capture(tester, '10_home_drawer');
       await tester.pageBack();
       await tester.pump(const Duration(milliseconds: 250));
@@ -201,7 +221,7 @@ void main() {
         await tester.tap(worksTab.first);
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
-        await expectNoFlutterException(tester, '作品一覧タブ切り替え');
+        expectNoFlutterException(tester, '作品一覧タブ切り替え');
         await capture(tester, '11_home_works_tab');
       }
 
@@ -210,7 +230,7 @@ void main() {
       GoRouter.of(scaffoldContext).push('/new-project');
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pump(const Duration(milliseconds: 350));
-      await expectNoFlutterException(tester, '新規プロジェクト画面表示');
+      expectNoFlutterException(tester, '新規プロジェクト画面表示');
       await capture(tester, '12_new_project');
 
       // 8. 設定一覧画面。
@@ -218,9 +238,9 @@ void main() {
       GoRouter.of(currentScaffold).go('/settings');
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pump(const Duration(milliseconds: 350));
-      await expectNoFlutterException(tester, '設定一覧画面表示');
+      expectNoFlutterException(tester, '設定一覧画面表示');
       await capture(tester, '13_settings');
     },
-    timeout: const Timeout(Duration(seconds: 90)),
+    timeout: const Timeout(Duration(seconds: 180)),
   );
 }
