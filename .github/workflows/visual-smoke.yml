@@ -8,6 +8,7 @@ on:
     paths:
       - test/app_web_reference_capture_test_v2.dart
       - test/app_web_reference_capture_exact_test.dart
+      - lib/screens/save_tree/save_tree_screen.dart
       - .github/workflows/visual-smoke.yml
 
 jobs:
