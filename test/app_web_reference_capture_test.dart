@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
@@ -13,6 +14,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/project_service.dart';
 
 class _FakeFilePicker extends FilePicker {
@@ -77,14 +79,28 @@ void main() {
         await loader.load();
       }
 
+      Future<void> loadSdkMaterialIcons() async {
+        final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+        if (flutterRoot == null) return;
+        final file = File(
+          '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+        );
+        if (!file.existsSync()) return;
+        final bytes = await file.readAsBytes();
+        final data = ByteData.sublistView(Uint8List.fromList(bytes));
+        final loader = FontLoader('MaterialIcons')
+          ..addFont(Future<ByteData>.value(data));
+        await loader.load();
+      }
+
       await Future.wait([
         loadFamily('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
         loadFamily('Kuramubon', 'assets/fonts/Kuramubon.otf'),
         loadFamily('NotoSerifJP', 'assets/fonts/NotoSerifJP.ttf'),
-        loadFamily('MaterialIcons', 'MaterialIcons-Regular.otf'),
         loadFamily('FontAwesomeSolid', 'fa-solid-900.ttf'),
         loadFamily('FontAwesomeRegular', 'fa-regular-400.ttf'),
         loadFamily('FontAwesomeBrands', 'fa-brands-400.ttf'),
+        loadSdkMaterialIcons(),
       ]);
     });
   }
@@ -107,8 +123,16 @@ void main() {
   }
 
   void expectClean(WidgetTester tester, String operation) {
-    expect(tester.takeException(), isNull,
-        reason: '$operation でFlutter例外/overflow');
+    final exception = tester.takeException();
+    if (exception != null) {
+      // ignore: avoid_print
+      print('WEBREF EXCEPTION [$operation]: $exception');
+      if (exception is FlutterError) {
+        // ignore: avoid_print
+        print(exception.toStringDeep());
+      }
+    }
+    expect(exception, isNull, reason: '$operation でFlutter例外/overflow');
   }
 
   Future<void> tapReachable(WidgetTester tester, Finder finder) async {
@@ -118,6 +142,41 @@ void main() {
     await tester.pump(const Duration(milliseconds: 160));
     await tester.tap(target);
     await tester.pump(const Duration(milliseconds: 300));
+  }
+
+  Future<void> scrollCanvasToolbarToIcon(
+    WidgetTester tester,
+    IconData icon,
+  ) async {
+    final toolbar = find.byType(ToolbarWidget);
+    expect(toolbar, findsOneWidget);
+    final scroll = find.descendant(
+      of: toolbar,
+      matching: find.byType(SingleChildScrollView),
+    );
+    expect(scroll, findsOneWidget);
+    final target = find.byIcon(icon, skipOffstage: false);
+    expect(target, findsWidgets);
+
+    for (var i = 0; i < 4; i++) {
+      final rect = tester.getRect(target.first);
+      final viewWidth = tester.view.physicalSize.width / tester.view.devicePixelRatio;
+      if (rect.left >= 0 && rect.right <= viewWidth) return;
+      final dx = rect.right > viewWidth ? -180.0 : 180.0;
+      await tester.drag(scroll, Offset(dx, 0), warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 220));
+    }
+  }
+
+  Future<void> tapCanvasToolbarIcon(
+    WidgetTester tester,
+    IconData icon,
+  ) async {
+    await scrollCanvasToolbarToIcon(tester, icon);
+    final target = find.byIcon(icon, skipOffstage: false);
+    expect(target, findsWidgets);
+    await tester.tap(target.first);
+    await tester.pump(const Duration(milliseconds: 350));
   }
 
   Future<void> bootToHome(WidgetTester tester) async {
@@ -185,8 +244,7 @@ void main() {
     await createProjectAndOpenCanvas(tester);
     await capture(tester, '01_canvas_default');
 
-    final layer = find.byIcon(Icons.layers, skipOffstage: false);
-    await tapReachable(tester, layer);
+    await tapCanvasToolbarIcon(tester, Icons.layers);
     expectClean(tester, 'レイヤーパネルを開く');
     await capture(tester, '02_canvas_layer_panel');
     await closeOverlayPanel(tester);
@@ -235,8 +293,7 @@ void main() {
       (tester) async {
     final ids = await createProjectAndOpenCanvas(tester);
 
-    final save = find.byIcon(Icons.save_outlined, skipOffstage: false);
-    await tapReachable(tester, save);
+    await tapCanvasToolbarIcon(tester, Icons.save_outlined);
     await tester.pump(const Duration(milliseconds: 500));
     expectClean(tester, 'Canvas→SaveTree');
     await capture(tester, '06_save_tree');
