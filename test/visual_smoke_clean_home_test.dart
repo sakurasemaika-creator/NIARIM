@@ -82,18 +82,15 @@ void main() {
       await tester.pump(const Duration(milliseconds: 700));
     }
 
-    // このテストでは一度もDrawerを開かない。作品一覧を直接選択する。
-    final worksTab = find.text('作品一覧');
-    expect(worksTab, findsWidgets);
-    await tester.tap(worksTab.first);
+    // 同じ文言がOffstage側にも存在し得るため、実際にhit test可能なタブだけを押す。
+    final worksTab = find.text('作品一覧').hitTestable();
+    expect(worksTab, findsOneWidget);
+    await tester.tap(worksTab);
     await tester.pump(const Duration(milliseconds: 700));
 
-    // Drawerは閉じていてもScaffoldの子としてWidgetツリーには存在するため、
-    // Widgetの有無ではなくScaffoldStateの実際の開閉状態を検証する。
-    final drawer = find.byType(Drawer);
-    expect(drawer, findsOneWidget);
-    final homeScaffold = Scaffold.of(tester.element(drawer));
-    expect(homeScaffold.isDrawerOpen, isFalse);
+    // この独立テストではDrawerを一度も開いていないため、Drawerの描画要素が
+    // 現在のWidgetツリーに存在しないことを確認してから画像化する。
+    expect(find.byType(Drawer), findsNothing);
 
     final exception = tester.takeException();
     expect(exception, isNull, reason: '作品一覧表示でFlutter例外/overflow');
