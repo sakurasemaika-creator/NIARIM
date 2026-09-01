@@ -157,23 +157,34 @@ void main() {
     await tester.tap(settings.last, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 300));
 
-    final onionText = find.text('オニオンスキン', skipOffstage: false);
-    expect(onionText, findsWidgets);
-    final onionTile = find.ancestor(of: onionText.last, matching: find.byType(ListTile));
+    // 表示文言ではなく、CanvasScreen._showEditMenu() がオニオンスキン項目へ
+    // 実際に割り当てている layers_outlined アイコンを基準にListTileを選ぶ。
+    final onionIcon = find.byIcon(Icons.layers_outlined, skipOffstage: false);
+    expect(onionIcon, findsWidgets);
+    final onionTile = find.ancestor(of: onionIcon.last, matching: find.byType(ListTile));
     expect(onionTile, findsWidgets);
+    await tester.ensureVisible(onionTile.last);
     await tester.tap(onionTile.last, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 450));
     clean(tester, 'open onion panel');
     await shot(tester, '03_canvas_onion_panel');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
-  testWidgets('exact export via real timeline tooltip button', (tester) async {
+  testWidgets('exact export via real timeline overflow menu', (tester) async {
     await canvas(tester);
     await timeline(tester);
-    final export = find.byTooltip('書き出し', skipOffstage: false);
-    expect(export, findsWidgets);
-    await tester.ensureVisible(export.last);
-    await tester.tap(export.last, warnIfMissed: false);
+
+    // TimelineScreenでは書き出しは独立ボタンではなく右上の三点メニュー内。
+    final more = find.byIcon(Icons.more_vert, skipOffstage: false);
+    expect(more, findsWidgets);
+    await tester.tap(more.last, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 250));
+
+    // メニュー内には「書き出し」と「現在フレームを書き出し」があるため、
+    // 完全一致の「書き出し」を選ぶ。
+    final exportItem = find.text('書き出し', findRichText: true, skipOffstage: false);
+    expect(exportItem, findsWidgets);
+    await tester.tap(exportItem.first, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 650));
     clean(tester, 'timeline to export');
     expect(find.text('書き出し'), findsWidgets);
