@@ -22,31 +22,57 @@ class SortModeControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        PopupMenuButton<bool>(
+    final fieldLabel =
+        sortByName ? l10n.homeSortFieldName : l10n.homeSortFieldUpdated;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // AppBarは端末幅・文字サイズ・左右のaction数によってタイトル領域が
+        // かなり狭くなる。従来は「項目名 + ▼ + 48px IconButton」を常に
+        // 横並びにしていたため、狭い端末でRenderFlexがほんの僅かにはみ出し
+        // 「OVERFLOWED BY 0.00 PIXELS」が表示されることがあった。
+        // 幅が狭い場合は並び替え基準を意味するアイコン表示へ自動的に縮約し、
+        // 通常幅では従来どおり文字ラベルを表示する。
+        final compact =
+            constraints.hasBoundedWidth && constraints.maxWidth < 132;
+
+        final fieldControl = PopupMenuButton<bool>(
+          tooltip: fieldLabel,
           onSelected: onSortByNameChanged,
           itemBuilder: (_) => [
             PopupMenuItem(value: true, child: Text(l10n.homeSortFieldName)),
             PopupMenuItem(value: false, child: Text(l10n.homeSortFieldUpdated)),
           ],
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                sortByName ? l10n.homeSortFieldName : l10n.homeSortFieldUpdated,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Kuramubon',
+          child: compact
+              ? SizedBox(
+                  width: 32,
+                  height: 40,
+                  child: Center(
+                    child: Icon(
+                      sortByName ? Icons.sort_by_alpha : Icons.update,
+                      size: 20,
+                    ),
+                  ),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      fieldLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Kuramubon',
+                      ),
+                    ),
+                    const Icon(Icons.arrow_drop_down),
+                  ],
                 ),
-              ),
-              const Icon(Icons.arrow_drop_down),
-            ],
-          ),
-        ),
-        IconButton(
+        );
+
+        final directionControl = IconButton(
           icon: Icon(
             sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
             size: 20,
@@ -55,8 +81,19 @@ class SortModeControl extends StatelessWidget {
               ? l10n.homeSortDirectionAscTooltip
               : l10n.homeSortDirectionDescTooltip,
           onPressed: onToggleDirection,
-        ),
-      ],
+          padding: EdgeInsets.zero,
+          visualDensity: VisualDensity.compact,
+          constraints: BoxConstraints.tightFor(
+            width: compact ? 32 : 40,
+            height: 40,
+          ),
+        );
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [fieldControl, directionControl],
+        );
+      },
     );
   }
 }
