@@ -102,6 +102,30 @@ void main() {
     expect(e, isNull, reason: '$where: $e');
   }
 
+  Rect? visibleRect(WidgetTester tester, Finder finder) {
+    final logicalSize = tester.view.physicalSize / tester.view.devicePixelRatio;
+    final viewport = Offset.zero & logicalSize;
+    for (final element in finder.evaluate()) {
+      try {
+        final rect = tester.getRect(find.byElementPredicate((e) => identical(e, element)));
+        if (rect.width <= 0 || rect.height <= 0) continue;
+        if (!viewport.contains(rect.center)) continue;
+        return rect;
+      } catch (_) {
+        // RenderBoxを持たない候補は無視して、次の同一アイコン/テキストを見る。
+      }
+    }
+    return null;
+  }
+
+  Future<void> tapVisible(WidgetTester tester, Finder finder, String label) async {
+    expect(finder, findsWidgets, reason: '$label の候補が存在しない');
+    final rect = visibleRect(tester, finder);
+    expect(rect, isNotNull, reason: '$label の画面内候補が見つからない');
+    await tester.tapAt(rect!.center);
+    await tester.pump(const Duration(milliseconds: 320));
+  }
+
   Future<void> boot(WidgetTester tester) async {
     phone(tester);
     await fonts(tester);
@@ -141,10 +165,12 @@ void main() {
   }
 
   Future<void> timeline(WidgetTester tester) async {
-    final label = find.text('タイムライン', skipOffstage: false).hitTestable();
-    expect(label, findsOneWidget);
-    await tester.tap(label);
-    await tester.pump(const Duration(milliseconds: 650));
+    await tapVisible(
+      tester,
+      find.text('タイムライン', skipOffstage: false),
+      'Canvasのタイムライン切替',
+    );
+    await tester.pump(const Duration(milliseconds: 400));
     final e = tester.takeException();
     if (e != null && !e.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
       fail('timeline: $e');
@@ -154,20 +180,20 @@ void main() {
 
   testWidgets('exact onion panel via real menu ListTile', (tester) async {
     await canvas(tester);
-    // CanvasScreenの上部バーに実際に表示されている設定ボタンだけを選ぶ。
-    final settings = find.byTooltip('設定/編集', skipOffstage: false).hitTestable();
-    expect(settings, findsOneWidget);
-    await tester.tap(settings);
-    await tester.pump(const Duration(milliseconds: 300));
+    // 上部バーに実際に描画されているsettingsアイコンの座標を直接タップする。
+    await tapVisible(
+      tester,
+      find.byIcon(Icons.settings, skipOffstage: false),
+      'Canvas設定/編集ボタン',
+    );
 
     // _showEditMenu()のオニオンスキン項目はlayers_outlined。
-    // モーダル内で実際にヒットテスト可能な個体だけをタップする。
-    final onionIcon = find.byIcon(Icons.layers_outlined, skipOffstage: false).hitTestable();
-    expect(onionIcon, findsOneWidget);
-    final onionTile = find.ancestor(of: onionIcon, matching: find.byType(ListTile)).hitTestable();
-    expect(onionTile, findsOneWidget);
-    await tester.tap(onionTile);
-    await tester.pump(const Duration(milliseconds: 450));
+    await tapVisible(
+      tester,
+      find.byIcon(Icons.layers_outlined, skipOffstage: false),
+      'オニオンスキン項目',
+    );
+    await tester.pump(const Duration(milliseconds: 350));
     clean(tester, 'open onion panel');
     await shot(tester, '03_canvas_onion_panel');
   }, timeout: const Timeout(Duration(seconds: 180)));
@@ -176,12 +202,13 @@ void main() {
     await canvas(tester);
     await timeline(tester);
 
-    // TimelineScreen._buildToolbar()の実書き出しボタンはIcons.upload_file。
-    // 既知の320px TopBar overflowに影響されない下段ツールバーから遷移する。
-    final export = find.byIcon(Icons.upload_file, skipOffstage: false).hitTestable();
-    expect(export, findsOneWidget);
-    await tester.tap(export);
-    await tester.pump(const Duration(milliseconds: 650));
+    // TimelineScreen._buildToolbar()の実書き出しボタン。
+    await tapVisible(
+      tester,
+      find.byIcon(Icons.upload_file, skipOffstage: false),
+      'Timeline書き出しボタン',
+    );
+    await tester.pump(const Duration(milliseconds: 350));
     clean(tester, 'timeline to export');
     expect(find.text('書き出し'), findsWidgets);
     await shot(tester, '07_export');
