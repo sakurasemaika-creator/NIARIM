@@ -303,46 +303,74 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ),
               const SizedBox(height: 8),
               Consumer<SettingsService>(
-                builder: (context, settings, _) => Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    ...sizePresets.map((preset) {
-                      final (w, h, _) = preset;
-                      final label = _presetLabel(l10n, w, h);
-                      final selected =
-                          !_customSize &&
-                          _exportWidth == w &&
-                          _exportHeight == h;
-                      return ChoiceChip(
-                        label: Text('$label ($w×$h)'),
-                        selected: selected,
-                        onSelected: (s) {
-                          if (s) _selectPreset(w, h);
-                        },
-                      );
-                    }),
-                    ...settings.customSizePresets.map((preset) {
-                      final selected =
-                          !_customSize &&
-                          _exportWidth == preset.width &&
-                          _exportHeight == preset.height;
-                      return ChoiceChip(
-                        label: Text(
-                          '${preset.name} (${preset.width}×${preset.height})',
+                builder: (context, settings, _) => LayoutBuilder(
+                  builder: (context, constraints) {
+                    // ChoiceChipはWrap内で自身の自然幅を要求するため、長い
+                    // ローカライズ文言（特に9:16縦型）が狭いスマホ幅より長いと
+                    // 例外を出さず画面端で文字だけ不自然に切れる。各チップを
+                    // 親幅以下へ制約し、最大2行+ellipsisで情報を保ちながら収める。
+                    final maxChipWidth = constraints.maxWidth;
+
+                    Widget sizeChip({
+                      required String text,
+                      required bool selected,
+                      required VoidCallback onSelected,
+                    }) {
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: maxChipWidth),
+                        child: ChoiceChip(
+                          label: Text(
+                            text,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                          selected: selected,
+                          onSelected: (s) {
+                            if (s) onSelected();
+                          },
                         ),
-                        selected: selected,
-                        onSelected: (s) {
-                          if (s) _selectPreset(preset.width, preset.height);
-                        },
                       );
-                    }),
-                    ChoiceChip(
-                      label: Text(l10n.newProjectCustomSize),
-                      selected: _customSize,
-                      onSelected: (s) => setState(() => _customSize = s),
-                    ),
-                  ],
+                    }
+
+                    return Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ...sizePresets.map((preset) {
+                          final (w, h, _) = preset;
+                          final label = _presetLabel(l10n, w, h);
+                          final selected =
+                              !_customSize &&
+                              _exportWidth == w &&
+                              _exportHeight == h;
+                          return sizeChip(
+                            text: '$label ($w×$h)',
+                            selected: selected,
+                            onSelected: () => _selectPreset(w, h),
+                          );
+                        }),
+                        ...settings.customSizePresets.map((preset) {
+                          final selected =
+                              !_customSize &&
+                              _exportWidth == preset.width &&
+                              _exportHeight == preset.height;
+                          return sizeChip(
+                            text:
+                                '${preset.name} (${preset.width}×${preset.height})',
+                            selected: selected,
+                            onSelected: () =>
+                                _selectPreset(preset.width, preset.height),
+                          );
+                        }),
+                        ChoiceChip(
+                          label: Text(l10n.newProjectCustomSize),
+                          selected: _customSize,
+                          onSelected: (s) => setState(() => _customSize = s),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
               if (_customSize) ...[
