@@ -174,6 +174,16 @@
   遭遇したら、まずR8のusage.txt（GitHub ActionsのArtifactに残る）や
   ユーザーに取得してもらうAndroidの「バグレポート」機能でのログ確認を
   早い段階で検討すること。
+- **`backend/`のDynamoDB容量はAlways Free枠25 RCU/25 WCUちょうど**：
+  `lib/niarim-backend-stack.ts`の`CAPACITY_PLAN`はテーブル本体15＋GSI 7本
+  合計10＝25で上限いっぱい。GSIを足すときは必ずどこかを減らすこと。
+  超過するとProvisioned Throughputの課金が発生する。合成時に総和を検証する
+  `assertCapacityWithinFreeTier()`を入れてあるので、はみ出せば
+  `cdk synth`（＝CIの`backend-ci.yml`）の段階で落ちる。
+  なお**GSIを4本足すような機能（期間別ランキング等）は枠に入らない**ため、
+  「バッチが事前計算した結果を1アイテムへ書き出し、GetItem 1回で読む」
+  方式を採っている（`src/lib/ranking.ts`の設計メモ参照）。同種の機能を
+  足すときも、まずGSIを使わずに済ませられないか検討すること。
 - **依存パッケージのバージョン固定には必ず理由がある**：`pubspec.yaml`の
   `file_picker: 10.3.10`・`share_plus: ^12.0.2`・
   `ffmpeg_kit_flutter_new_video`等は、AARメタデータ不整合やAndroidビルド
@@ -190,6 +200,34 @@
   Wrapを使うこと。`test/text_scale_layout_test.dart`が1.3倍・2.0倍で
   全ルートを巡回して監視しているので、レイアウトを触ったらこのテストが
   通ることを確認する。
+- **キャンバス周りの実描画テストは`tester.runAsync`が要る（最重要）**：
+  `flutter_test`は既定でFakeAsync（偽装時間）の下で走るため、次のような
+  **本物の非同期処理は`tester.pump(Duration)`を何回回しても完了しない**。
+  - `picture.toImage()` / `compositeLayerToImage()` / `toByteData()`
+  - `ui.decodeImageFromPixels()`のコールバック
+  - `ImageDescriptor`→`instantiateCodec`→`getNextFrame`（PNGエンコード）
+  - `File`の読み書き
+  症状は「何も起きない」か「10分のタイムアウトでハング」で、原因が
+  分かりにくい。実際に`functional_audit_batch20_test.dart`が
+  **追加以来一度も通っていなかった**（PNG保存でハング＋選択範囲の切り取りが
+  完了しない）。待つ側は`await tester.runAsync(() => Future.delayed(d));`
+  してから`await tester.pump();`する形にすること。ジェスチャー自体は
+  runAsyncの外で駆動する（runAsyncはネストできない）。
+- **`CanvasArea`をテストへ直接載せるときは、Providerを6つ揃える**：
+  `ProjectService`・`UndoManager`に加えて`SettingsService`・`ThemeService`・
+  `BrushService`・`ToneService`・`StampService`・`PerformanceService`を
+  `context.read/watch`する。1つでも欠けると
+  `ProviderNotFoundException`でビルドに失敗する。`app_bootstrap.dart`の
+  `buildAppProviders()`を使うのが早い（非同期なので`tester.runAsync`で呼ぶ）。
+- **キャンバス左右端32pxは「画面端ダブルタップ（前/次フレーム）」専用ゾーン**：
+  touch/stylusのポインターは、このゾーンだと`_onPointerDown`へ渡らず
+  描画・選択が始まらない。ゾーンは**幅が32*3 = 96px未満のときだけ**無効化
+  される（96ちょうどは有効）ので、幅96pxのキャンバスでは左右32pxずつ＝
+  **幅の3分の2が描画不能**になる。実端末の全画面ではまず起きないが、
+  PC/DeXでドッキングパネルを極端に狭くした場合と、テストで小さい
+  `SizedBox`にCanvasAreaを載せた場合に踏む。テストではキャンバスを
+  十分広く（例：エクスポート幅の3倍）取るか、`PointerDeviceKind.mouse`を
+  使ってこの分岐を回避する。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。
