@@ -16,6 +16,7 @@ import 'package:niarim/screens/canvas/widgets/mesh_transform_panel.dart';
 import 'package:niarim/screens/canvas/widgets/onion_skin_panel.dart';
 import 'package:niarim/screens/canvas/widgets/quick_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/ruler_panel.dart';
+import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +28,6 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('実CanvasScreenの主要オーバーレイパネルを実操作で開いてPNG保存する', (tester) async {
-    // 320 x 720 logical px: compact phone portrait.
     tester.view.physicalSize = const Size(960, 2160);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
@@ -91,7 +91,6 @@ void main() {
       await _capture(rootKey, '${out.path}/$file.png');
     }
 
-    // Color swatch is the only Stack in ToolbarWidget containing the circular color chip.
     final colorStack = find.descendant(
       of: find.byType(ToolbarWidget),
       matching: find.byType(Stack),
@@ -103,7 +102,6 @@ void main() {
     expect(find.byType(ColorPickerPanel), findsOneWidget);
     await _capture(rootKey, '${out.path}/01_color_picker.png');
 
-    // Opening another overlay must close the prior one on mobile.
     await tapPanel(
       control: find.byIcon(Icons.tune),
       panelType: BrushPanel,
@@ -130,14 +128,12 @@ void main() {
       longPress: true,
     );
 
-    // Settings/edit bottom sheet itself is a visual state and must be reviewed.
     await tester.tap(find.byIcon(Icons.settings).first);
     await tester.pump(const Duration(milliseconds: 400));
     _expectNoException(tester, 'settings_edit_sheet');
     expect(find.byType(BottomSheet), findsWidgets);
     await _capture(rootKey, '${out.path}/06_settings_edit_sheet.png');
 
-    // Onion skin entry uses the unique layers_outlined icon in this sheet.
     await tester.tap(find.byIcon(Icons.layers_outlined).last);
     await tester.pump(const Duration(milliseconds: 500));
     _expectNoException(tester, 'onion_skin_panel');
