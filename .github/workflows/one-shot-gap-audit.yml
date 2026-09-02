@@ -27,6 +27,8 @@ jobs:
           flutter test test/functional_audit_batch31_test.dart --reporter expanded
           flutter test test/functional_audit_batch32_test.dart --reporter expanded
           flutter test test/functional_audit_batch33_test.dart --reporter expanded
+          flutter test test/functional_audit_batch34_test.dart --reporter expanded
+          flutter test test/functional_audit_batch35_test.dart --reporter expanded
       - name: Selection regressions
         run: |
           flutter test test/functional_audit_batch20_test.dart --reporter expanded
