@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 
 import '../models/brush.dart';
@@ -118,7 +119,7 @@ class NiatraAssetBundle {
     required ToneService tone,
     required StampService stamp,
   }) async {
-    if (data.raw[_versionKey] != _version) return;
+    if (data.raw[_versionKey] != _version || kIsWeb) return;
 
     final base = await getApplicationDocumentsDirectory();
     final importNonce = DateTime.now().microsecondsSinceEpoch;
