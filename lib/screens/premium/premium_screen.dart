@@ -445,8 +445,15 @@ class PremiumScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.star_rounded, size: 13, color: Colors.black),
                             const SizedBox(width: 3),
-                            Text(l10n.premiumPlanRecommendedBadge,
-                                style: const TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon')),
+                            // OSの文字サイズ設定（textScaler）を大きくすると
+                            // バッジのラベルがカード幅を超えてRenderFlex
+                            // オーバーフローになるため、可変にして省略する。
+                            Flexible(
+                              child: Text(l10n.premiumPlanRecommendedBadge,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon')),
+                            ),
                           ],
                         ),
                       ),
@@ -468,18 +475,27 @@ class PremiumScreen extends StatelessWidget {
               if (busy)
                 const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
               else
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (originalPrice != null)
-                      Text(originalPrice,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
-                            decoration: TextDecoration.lineThrough,
-                          )),
-                    Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
+                // OSの文字サイズ設定（textScaler）を大きくすると価格表示が
+                // 伸び、左側のプラン名（Expanded）と合わせてカード幅を
+                // 超えてRenderFlexオーバーフローになるため、こちらも
+                // Flexibleにして折り返せるようにする。
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (originalPrice != null)
+                        Text(originalPrice,
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                              decoration: TextDecoration.lineThrough,
+                            )),
+                      Text(price,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
             ],
           ),

@@ -49,8 +49,6 @@ void main() {
               orElse: () => 'レイアウト例外');
       problems.add('${where?.group(1) ?? "場所不明"}: $what');
     };
-    addTearDown(() => FlutterError.onError = original);
-
     // 一般的なスマホ相当（360×760dp）。狭い端末ほど文字拡大の影響が出る。
     tester.view.physicalSize = const Size(1080, 2280);
     tester.view.devicePixelRatio = 3.0;
@@ -109,6 +107,11 @@ void main() {
     // 後続テストへ影響しないようホームへ戻す。
     appRouter.go('/home');
     await tester.pump(const Duration(milliseconds: 300));
+    // expect()を呼ぶ前に必ずハンドラーを元へ戻す。戻さないまま
+    // expect()が失敗すると、flutter_test側が
+    // 「A test overrode FlutterError.onError but ... failed to return it
+    // to its original state」で停止してしまい、本来の失敗内容が読めなくなる。
+    FlutterError.onError = original;
     return problems;
   }
 
