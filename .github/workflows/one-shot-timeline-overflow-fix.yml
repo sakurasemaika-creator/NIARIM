@@ -1,0 +1,58 @@
+name: One-shot Timeline Overflow Fix
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-timeline-overflow-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Patch timeline top bar
+        run: python3 .github/scripts/fix_timeline_topbar_overflow.py
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: dart format lib/screens/timeline/timeline_screen.dart test/app_web_reference_capture_test.dart test/app_web_reference_capture_exact_test.dart test/timeline_no_overflow_test.dart
+      - name: Verify timeline and repaired web-reference audits
+        shell: bash
+        run: |
+          set +e
+          for attempt in 1 2; do
+            timeout 900s flutter test \
+              test/timeline_no_overflow_test.dart \
+              test/app_web_reference_capture_test.dart \
+              test/app_web_reference_capture_exact_test.dart \
+              test/functional_audit_batch37_test.dart \
+              --reporter expanded
+            rc=$?
+            if [ $rc -eq 0 ]; then exit 0; fi
+            echo "timeline/web-reference verification attempt $attempt failed rc=$rc"
+            sleep 10
+          done
+          exit 1
+      - name: Commit verified timeline fix
+        shell: bash
+        run: |
+          if git diff --quiet -- lib/screens/timeline/timeline_screen.dart; then
+            echo 'No timeline source diff to commit'
+            exit 0
+          fi
+          git config user.name 'NIARIM Audit Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add lib/screens/timeline/timeline_screen.dart
+          git commit -m 'fix: prevent timeline top-bar overflow on phones'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
