@@ -1,0 +1,119 @@
+# NIARIM作品広場バックエンド（backend/）のCI/CD。
+#
+# ## 何をするか
+#
+# - `ci`ジョブ：backend/配下が変わったPush/PRで、型チェック・テスト・
+#   `cdk synth`（CloudFormationテンプレートの合成）まで通ることを確認する。
+#   synthまで回すのは、CDKスタックのTypeScript型が通っても
+#   `assertCapacityWithinFreeTier()`のような合成時の検証で落ちる場合が
+#   あるため（DynamoDB Always Free枠の超過を、デプロイ前のこの段階で
+#   止める狙い）。AWS認証情報は不要。
+# - `deploy`ジョブ：**手動実行のみ**（workflow_dispatch）。AWSへ実際に
+#   デプロイする。
+#
+# ## deployを使うために必要な事前準備（未実施）
+#
+# デプロイにはAWSの認証情報が要る。長期のアクセスキーをSecretsへ置くのは
+# 避け、GitHub ActionsのOIDCでIAMロールを引き受ける方式にしてある。
+# 使う前に、ユーザー側で以下を用意すること：
+#
+# 1. AWSアカウントでGitHub ActionsをOIDCプロバイダーとして登録する
+#    （IAM → ID プロバイダ → プロバイダを追加 → OpenID Connect、
+#    プロバイダのURL `https://token.actions.githubusercontent.com`、
+#    対象者 `sts.amazonaws.com`）。
+# 2. このリポジトリからのみ引き受けられるIAMロールを作り、CDKデプロイに
+#    必要な権限（CloudFormation・IAM・Lambda・DynamoDB・EventBridge・
+#    Logs等）を付ける。信頼ポリシーの`sub`は
+#    `repo:sakurasemaika-creator/MIRANIMA:*` に絞ること。
+# 3. そのロールのARNを、リポジトリのSecretsへ `AWS_DEPLOY_ROLE_ARN`
+#    として登録する。
+# 4. 同じくSecretsへ `GOOGLE_CLIENT_ID`・`YOUTUBE_API_KEY` を登録する
+#    （未登録ならCDK側の既定値`REPLACE_ME`のままデプロイされ、認証と
+#    統計更新バッチが動かない）。プッシュ通知を使う場合は
+#    `FCM_SERVICE_ACCOUNT_JSON` も登録する（任意。未設定ならプッシュは
+#    送らずアプリ内通知だけが動く）。
+# 5. 初回のみ、ローカルから `npx cdk bootstrap` を1度実行しておく。
+#
+# 上記が未設定のうちは`deploy`ジョブは失敗する。`ci`ジョブは認証情報
+# 不要なので、準備前からそのまま機能する。
+
+name: Backend CI
+
+on:
+  push:
+    branches: [dev_branch, main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'AWSへデプロイする（事前にSecrets・OIDCロールの設定が必要）'
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  ci:
+    name: 型チェック・テスト・cdk synth
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: 型チェック
+        run: npm run build
+      - name: テスト
+        run: npm test
+      - name: cdk synth（Always Free枠の容量検証もここで走る）
+        # 合成のみで認証情報は要らない。実在しないダミー値を渡して、
+        # コンテキスト未設定による分岐差が出ないようにする。
+        run: npx cdk synth --quiet -c googleClientId=ci-dummy -c youtubeApiKey=ci-dummy
+
+  deploy:
+    name: AWSへデプロイ
+    needs: ci
+    # 手動実行でdeploy=trueを選んだときだけ動く。Push/PRでは走らない。
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDCでIAMロールを引き受けるために必要
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: AWS認証（OIDC）
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-1
+      - name: cdk deploy
+        run: |
+          npx cdk deploy --require-approval never \
+            -c googleClientId="$GOOGLE_CLIENT_ID" \
+            -c youtubeApiKey="$YOUTUBE_API_KEY" \
+            -c fcmServiceAccountJson="$FCM_SERVICE_ACCOUNT_JSON"
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}

@@ -25,6 +25,8 @@
  *   おり、GSIを使わずどちらの向きのクエリもO(1)のPK/SK Queryで済む。
  */
 
+import type { RankingSnapshotEntry, StatsWindows } from './ranking';
+
 export const TABLE_ITEM_TYPE = {
   Work: 'WORK',
   User: 'USER',
@@ -37,6 +39,9 @@ export const TABLE_ITEM_TYPE = {
   Block: 'BLOCK',
   FollowNotification: 'FOLLOW_NOTIFICATION',
   DailyCounter: 'DAILY_COUNTER',
+  ReportCounter: 'REPORT_COUNTER',
+  DeviceToken: 'DEVICE_TOKEN',
+  RankingSnapshot: 'RANKING_SNAPSHOT',
   BatchState: 'BATCH_STATE',
 } as const;
 
@@ -108,6 +113,11 @@ export interface WorkItem {
   lockedTags: string[];
 
   createdAt: string; // ISO8601
+
+  // 8.2節：期間別ランキング用の「期間開始時点の統計」スナップショット。
+  // 期間ごとに1点だけ持ち、窓が切り替わったタイミングで統計更新バッチが
+  // 取り直す（ranking.tsのrollStatsWindows参照）。差分＝その期間の伸び。
+  statsWindows?: StatsWindows;
 
   // --- GSI attributes（可視のときのみ存在させる） ---
   gsi1pk?: string; // "RANKING#ALL"
@@ -296,4 +306,54 @@ export interface BatchStateItem {
   sk: string;
   lastCompletedAt?: string; // 8.1節の「最終更新完了日時」
   inProgress: boolean;
+}
+
+/**
+ * 通報レート制限のカウンター（20章）。通報者×時間窓ごとに1件。
+ * TTLで自動失効するため掃除は不要。
+ * PK = `REPORTCOUNTER#{reporterId}#{windowId}` / SK = `META`
+ */
+export interface ReportCounterItem {
+  itemType: typeof TABLE_ITEM_TYPE.ReportCounter;
+  pk: string;
+  sk: string;
+  reporterId: string;
+  windowId: string;
+  count: number;
+  ttl: number;
+}
+
+/**
+ * プッシュ通知の宛先端末（22.7節）。1ユーザーに複数端末がぶら下がる。
+ * SKにはトークン本体ではなくSHA-256ハッシュを入れる（テーブルを読める
+ * 立場の人間にそのまま送信可能なトークンを晒さないため。送信に使う
+ * 実体はtoken属性に持つが、キーに出さないだけでも取り違え事故は減る）。
+ * FCMから「無効なトークン」と返された時点で削除する。
+ * PK = `USER#{niarimUserId}` / SK = `DEVICE#{tokenHash}`
+ */
+export interface DeviceTokenItem {
+  itemType: typeof TABLE_ITEM_TYPE.DeviceToken;
+  pk: string;
+  sk: string;
+  niarimUserId: string;
+  token: string;
+  platform: 'android' | 'ios';
+  updatedAt: string;
+  ttl: number; // 長期間更新されない端末は自動失効させる（180日）
+}
+
+/**
+ * 期間別ランキングの事前計算結果（8.2節）。統計更新バッチが全作品を
+ * 走査した最後に書き出す。読み出しはGetItem 1回で済み、期間別GSIを
+ * 持たずにランキングを出せる（ranking.tsの設計メモ参照）。
+ * PK = `RANKINGSNAPSHOT#{PERIOD}` / SK = `META`
+ */
+export interface RankingSnapshotItem {
+  itemType: typeof TABLE_ITEM_TYPE.RankingSnapshot;
+  pk: string;
+  sk: string;
+  period: string;
+  windowId: string;
+  entries: RankingSnapshotEntry[];
+  computedAt: string; // ISO8601
 }

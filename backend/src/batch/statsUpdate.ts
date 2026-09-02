@@ -1,9 +1,20 @@
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-import { ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, tableName, Keys } from '../lib/dynamo';
 import { batchGetVideoStats } from '../lib/youtube';
-import { computeRankingScore } from '../lib/ranking';
-import type { WorkItem } from '../lib/types';
+import {
+  computePeriodScore,
+  computeRankingScore,
+  currentWindowId,
+  insertIntoTopList,
+  rollStatsWindows,
+  DELTA_RANKING_PERIODS,
+  RANKING_TOP_LIMIT,
+  type DeltaRankingPeriod,
+  type RankingSnapshotEntry,
+} from '../lib/ranking';
+import type { RankingSnapshotItem, WorkItem } from '../lib/types';
+import { TABLE_ITEM_TYPE } from '../lib/types';
 
 /**
  * 統計更新バッチ（8.1節）。EventBridge Schedulerが更新サイクルの開始
@@ -26,9 +37,23 @@ const PAGE_SIZE = 25;
  */
 const MAX_PAGES = 25_000;
 
+/** 期間別ランキングの集計途中経過（ページ間で持ち回る）。 */
+type TopLists = Record<DeltaRankingPeriod, RankingSnapshotEntry[]>;
+
 interface BatchPayload {
   lastEvaluatedKey?: Record<string, unknown>;
   pageIndex?: number;
+  /**
+   * 8.2節：期間別ランキングの途中集計。ページごとの自己再帰呼び出しに
+   * 載せて持ち回る。4期間×50件×{workId(11文字), score}なのでJSONでも
+   * 10KB未満に収まり、Lambdaの非同期ペイロード上限（256KB）に対して
+   * 十分小さい。
+   */
+  topLists?: TopLists;
+}
+
+function emptyTopLists(): TopLists {
+  return { yearly: [], monthly: [], weekly: [], daily: [] };
 }
 
 export async function handler(event: BatchPayload = {}): Promise<void> {
@@ -51,15 +76,20 @@ export async function handler(event: BatchPayload = {}): Promise<void> {
   );
 
   const works = (scanResult.Items ?? []) as WorkItem[];
-  await processPage(works, apiKey);
+  const topLists = event.topLists ?? emptyTopLists();
+  await processPage(works, apiKey, topLists);
 
   if (scanResult.LastEvaluatedKey) {
     await invokeSelfAsync({
       lastEvaluatedKey: scanResult.LastEvaluatedKey,
       pageIndex: pageIndex + 1,
+      topLists,
     });
     return;
   }
+
+  // 全作品を見終わったので、期間別ランキングを確定して書き出す（8.2節）。
+  await writeRankingSnapshots(topLists);
 
   // 全ページの処理が完了：「最終更新完了日時」を記録する（8.1節）。
   // 表示側（GSI Query）は更新途中の中途半端な状態を参照しないよう、
@@ -80,7 +110,7 @@ export async function handler(event: BatchPayload = {}): Promise<void> {
   );
 }
 
-async function processPage(works: WorkItem[], apiKey: string): Promise<void> {
+async function processPage(works: WorkItem[], apiKey: string, topLists: TopLists): Promise<void> {
   if (works.length === 0) return;
 
   // videos.batchGetStatsの1回あたり件数上限は【要確認】（youtube.ts参照）。
@@ -91,15 +121,19 @@ async function processPage(works: WorkItem[], apiKey: string): Promise<void> {
       workChunk.map((w) => w.youtubeVideoId),
       apiKey,
     );
-    await Promise.all(workChunk.map((work) => updateWorkStats(work, stats.get(work.youtubeVideoId))));
+    await Promise.all(
+      workChunk.map((work) => updateWorkStats(work, stats.get(work.youtubeVideoId), topLists)),
+    );
   }
 }
 
 async function updateWorkStats(
   work: WorkItem,
   stats: { viewCount: number; likeCount: number; commentCount: number; privacyStatus: 'public' | 'unlisted' | 'private' } | undefined,
+  topLists: TopLists,
 ): Promise<void> {
-  const now = new Date().toISOString();
+  const nowDate = new Date();
+  const now = nowDate.toISOString();
 
   // videos.batchGetStatsで取得できなかった動画はYouTube側で削除済みと
   // みなす（13章の状態表）。
@@ -129,6 +163,25 @@ async function updateWorkStats(
     ':status': youtubePrivacyStatus,
   };
   const removes: string[] = [];
+
+  // 8.2節：期間別ランキング用スナップショットを現在の窓へ進める。
+  // 窓が変わっていなければ基準点は据え置かれ、期間中スコアが積み上がる。
+  const current = { viewCount, likeCount, commentCount };
+  const statsWindows = rollStatsWindows(work.statsWindows, current, nowDate);
+  setParts.push('statsWindows = :windows');
+  values[':windows'] = statsWindows;
+
+  // 非表示の作品は期間別ランキングにも載せない（累計と同じ扱い）。
+  if (isVisible) {
+    for (const period of DELTA_RANKING_PERIODS) {
+      const score = computePeriodScore(current, statsWindows[period]);
+      topLists[period] = insertIntoTopList(
+        topLists[period],
+        { workId: work.workId, score },
+        RANKING_TOP_LIMIT,
+      );
+    }
+  }
 
   if (isVisible) {
     setParts.push(
@@ -163,6 +216,29 @@ async function updateWorkStats(
       Key: Keys.work(work.workId),
       UpdateExpression: updateExpression,
       ExpressionAttributeValues: values,
+    }),
+  );
+}
+
+/**
+ * 期間別ランキングを`RANKINGSNAPSHOT#{PERIOD}`へ書き出す（8.2節）。
+ * 期間ごとに1アイテムなので書き込みは4回だけで、GSIも増えない。
+ * 途中でバッチが失敗した場合は前回のスナップショットが残るため、
+ * 「順位が古いまま」にはなっても壊れた順位は表示されない。
+ */
+async function writeRankingSnapshots(topLists: TopLists): Promise<void> {
+  const now = new Date();
+  await Promise.all(
+    DELTA_RANKING_PERIODS.map((period) => {
+      const item: RankingSnapshotItem = {
+        itemType: TABLE_ITEM_TYPE.RankingSnapshot,
+        ...Keys.rankingSnapshot(period),
+        period,
+        windowId: currentWindowId(period, now),
+        entries: topLists[period],
+        computedAt: now.toISOString(),
+      };
+      return ddb.send(new PutCommand({ TableName: tableName(), Item: item }));
     }),
   );
 }

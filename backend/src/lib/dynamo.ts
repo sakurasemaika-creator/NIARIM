@@ -57,6 +57,24 @@ export const Keys = {
     sk: 'META',
   }),
   batchState: () => ({ pk: 'BATCHSTATE#STATS_UPDATE', sk: 'META' }),
+  /**
+   * 通報レート制限用の窓カウンター（20章）。窓ごとに別アイテムへ分けて
+   * おり、ADDによる原子的インクリメント＋TTLで自動失効させる。
+   */
+  reportCounter: (reporterId: string, windowId: string) => ({
+    pk: `REPORTCOUNTER#${reporterId}#${windowId}`,
+    sk: 'META',
+  }),
+  /** 22.7節：プッシュ通知の端末トークン。1ユーザーに複数端末ぶら下がる。 */
+  deviceToken: (niarimUserId: string, tokenHash: string) => ({
+    pk: `USER#${niarimUserId}`,
+    sk: `DEVICE#${tokenHash}`,
+  }),
+  /** 8.2節：期間別ランキングの事前計算結果（期間ごとに1アイテム）。 */
+  rankingSnapshot: (period: string) => ({
+    pk: `RANKINGSNAPSHOT#${period.toUpperCase()}`,
+    sk: 'META',
+  }),
 } as const;
 
 /** 全体投稿カウンター専用のNIARIM User ID（12章：全体上限も同じ形で扱う）。 */

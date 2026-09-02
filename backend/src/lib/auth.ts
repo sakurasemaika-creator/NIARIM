@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { OAuth2Client } from 'google-auth-library';
-import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { TransactionCanceledException } from '@aws-sdk/client-dynamodb';
+import { GetCommand, TransactWriteCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, tableName, Keys } from './dynamo';
 import type { GoogleSubLookupItem, MembershipTier, UserItem } from './types';
 import { TABLE_ITEM_TYPE } from './types';
@@ -93,14 +94,60 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
     niarimUserId,
   };
 
-  // 同時に2件PutするだけなのでTransactWriteItemsまでは不要。ただし
-  // 同一subからの同時初回リクエスト（レアケース）で二重発行され得る
-  // 点は許容する（後続リクエストは新しいlookupを見つけて上書きされる
-  // ため実害は小さい。気になる場合はlookup側にConditionExpression
-  // attribute_not_exists(pk)を付けて片方を失敗させる運用にする）。
-  await ddb.send(new PutCommand({ TableName: tableName(), Item: newLookup }));
-  await ddb.send(new PutCommand({ TableName: tableName(), Item: newUser }));
+  // 同一subからの初回リクエストが同時に複数届くと、どちらも「lookupが
+  // 無い」と判断してUser IDを2つ発行してしまう（4章のUser IDは1人1つが
+  // 前提で、二重発行されるとブックマーク・フォロー・投稿履歴が2つの
+  // IDへ分裂する）。これを防ぐため、lookupの作成に
+  // attribute_not_exists(pk) を付けたTransactWriteItemsで2件を同時に
+  // 書き込む。競合した側はTransactionCanceledExceptionで失敗するので、
+  // 勝った側が書いたlookupを読み直して同じUser IDへ合流させる。
+  try {
+    await ddb.send(
+      new TransactWriteCommand({
+        TransactItems: [
+          {
+            Put: {
+              TableName: tableName(),
+              Item: newLookup,
+              ConditionExpression: 'attribute_not_exists(pk)',
+            },
+          },
+          { Put: { TableName: tableName(), Item: newUser } },
+        ],
+      }),
+    );
+  } catch (err) {
+    if (!(err instanceof TransactionCanceledException)) throw err;
+    const winner = await resolveExistingUser(sub);
+    if (winner) return winner;
+    // lookupは在るのにUserItemが無い（前回の障害等）ケース。ここまで
+    // 来たら競合ではないので、条件なしで作り直して整合させる。
+    await ddb.send(
+      new TransactWriteCommand({
+        TransactItems: [
+          { Put: { TableName: tableName(), Item: newLookup } },
+          { Put: { TableName: tableName(), Item: newUser } },
+        ],
+      }),
+    );
+  }
   return newUser;
+}
+
+/**
+ * 競合に負けた側が、勝った側の発行したNIARIM User IDへ合流するための
+ * 読み直し。lookupが読めない・UserItemが無い場合はnullを返す。
+ */
+async function resolveExistingUser(sub: string): Promise<UserItem | undefined> {
+  const lookup = await ddb.send(
+    new GetCommand({ TableName: tableName(), Key: Keys.googleSubLookup(sub) }),
+  );
+  if (!lookup.Item) return undefined;
+  const niarimUserId = (lookup.Item as GoogleSubLookupItem).niarimUserId;
+  const userResult = await ddb.send(
+    new GetCommand({ TableName: tableName(), Key: Keys.user(niarimUserId) }),
+  );
+  return userResult.Item as UserItem | undefined;
 }
 
 function generateNiarimUserId(): string {

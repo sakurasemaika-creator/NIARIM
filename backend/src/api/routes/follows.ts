@@ -6,6 +6,7 @@ import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate, tryAuthenticate, getUser } from '../../lib/auth';
 import { badRequest, forbidden, ok } from '../../lib/response';
 import { parseJsonObject } from '../../lib/request';
+import { sendPushToUser } from '../../lib/push';
 import type { FollowerRecordItem, FollowingRecordItem, FollowNotificationItem, UserItem } from '../../lib/types';
 import { TABLE_ITEM_TYPE } from '../../lib/types';
 
@@ -110,6 +111,16 @@ export async function toggleFollow(event: APIGatewayProxyEventV2, targetId: stri
           ],
         }),
       );
+
+      // 22.7節：アプリ内通知に加えて、実際のプッシュも送る。送信は
+      // best-effortで、失敗してもフォロー操作自体は成功扱いにする
+      // （push.ts側で例外を握り潰している）。FCMの鍵が未設定の環境では
+      // 何もしないため、鍵が揃うまでこのままデプロイできる。
+      await sendPushToUser(targetId, {
+        title: 'NIARIM作品広場',
+        body: `${notification.fromUserName}さんにフォローされました`,
+        data: { type: 'follow', fromUserId: auth.niarimUserId },
+      });
     }
   } catch (err) {
     if (err instanceof TransactionCanceledException) {

@@ -159,3 +159,62 @@ export async function updateBookmarksVisibility(event: APIGatewayProxyEventV2, t
   );
   return ok({ bookmarksPublic: body.public });
 }
+
+/**
+ * `GET /works/{id}/bookmarkers`（21.1節：被ブックマーク一覧）。
+ *
+ * BookmarkItemに張ってあるGSI5（`WORKBOOKMARKS#{workId}`）を引き、その
+ * 作品をブックマークしたユーザーを新しい順に返す。これまでGSI5は
+ * 書き込むだけで誰も読んでいなかったため、CDKスタック側にもインデックス
+ * 自体が作られていなかった（今回追加した）。
+ *
+ * プライバシーの扱い：ブックマーク一覧を非公開にしているユーザー
+ * （`bookmarksPublic = false`、既定値）は、その人が誰を/何をブックマーク
+ * したかを他人に見せない設定なので、この一覧からも除外する。除外しても
+ * 総数（`totalCount`）には数えるため、作者は「何人にブックマークされたか」
+ * は分かる。呼び出し本人は公開設定に関わらず自分自身を見られる。
+ */
+export async function getWorkBookmarkers(event: APIGatewayProxyEventV2, workId: string) {
+  const caller = await tryAuthenticate(event.headers['authorization'] ?? event.headers['Authorization']);
+
+  const workResult = await ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }));
+  const work = workResult.Item as WorkItem | undefined;
+  if (!work) notFound('作品が見つかりません');
+
+  const result = await ddb.send(
+    new QueryCommand({
+      TableName: tableName(),
+      IndexName: 'GSI5',
+      KeyConditionExpression: 'gsi5pk = :pk',
+      ExpressionAttributeValues: { ':pk': `WORKBOOKMARKS#${workId}` },
+      ScanIndexForward: false, // 新しい順
+      Limit: BOOKMARKERS_PAGE_LIMIT,
+    }),
+  );
+  const bookmarks = (result.Items ?? []) as BookmarkItem[];
+
+  const users = await Promise.all(bookmarks.map((b) => getUser(b.niarimUserId)));
+  const visible = bookmarks
+    .map((bookmark, i) => ({ bookmark, user: users[i] }))
+    .filter(({ bookmark, user }) => {
+      if (caller?.niarimUserId === bookmark.niarimUserId) return true;
+      return user?.bookmarksPublic ?? bookmarksVisibilityDefault;
+    })
+    .map(({ bookmark, user }) => ({
+      userId: bookmark.niarimUserId,
+      channelName: user?.channelName ?? null,
+      channelAvatarUrl: user?.channelAvatarUrl ?? null,
+      bookmarkedAt: bookmark.bookmarkedAt,
+    }));
+
+  return ok({
+    workId,
+    // 作品側が持つ集計値。非公開設定のユーザーぶんも含んだ総数。
+    totalCount: work.bookmarkCount,
+    // 公開設定にしているユーザーだけを並べたもの。totalCountより少なくなり得る。
+    users: visible,
+  });
+}
+
+/** 被ブックマーク一覧の1ページ件数。 */
+const BOOKMARKERS_PAGE_LIMIT = 100;

@@ -26,9 +26,16 @@ import * as path from 'path';
 
 /**
  * DynamoDBの容量配分（Always Free枠 25 RCU / 25 WCU に収める）。
- * テーブル本体15 + GSI 6本合計10 = 25で上限ちょうど。将来GSIを追加する
- * 場合は、いずれかの値を減らして総和を25以内に保つこと（超過分は
+ * テーブル本体15 + GSI 7本合計10 = 25で上限ちょうど。GSIを増減する場合は
+ * 必ず`assertCapacityWithinFreeTier()`が通る範囲に収めること（超過分は
  * Provisioned Throughputの課金対象になる）。
+ *
+ * GSI5（被ブックマーク一覧、21.1節）は今回追加した。追加前の合計は24で
+ * 1単位空いていたため（旧コメントは「GSI 6本合計10」としていたが実際は
+ * 9だった）、テーブル本体を削らずにGSI5へ1 RCU/1 WCUを割り当てられた。
+ * GSI5は「作品詳細で誰がブックマークしたかを開いたときだけ」引かれる
+ * 低頻度アクセスなのでこの配分で足りるという判断。実運用でスロットリングが
+ * 出たら、CloudWatchの`ThrottledRequests`を見て配分を調整すること。
  */
 const CAPACITY_PLAN = {
   table: { read: 15, write: 15 },
@@ -37,12 +44,35 @@ const CAPACITY_PLAN = {
   gsi3AuthorWorksIndex: { read: 1, write: 1 },
   gsi3AllAuthorWorksIndex: { read: 1, write: 1 },
   gsi4LatestIndex: { read: 2, write: 2 },
+  gsi5WorkBookmarksIndex: { read: 1, write: 1 },
   gsi7ReportStatusIndex: { read: 1, write: 1 },
 } as const;
+
+/** DynamoDB Always Free枠の上限（アカウント単位・永続）。 */
+const FREE_TIER_CAPACITY = 25;
+
+/**
+ * 容量配分がAlways Free枠を超えていないことを合成時に検証する。
+ * GSIを足したときにうっかり課金が発生するのを、デプロイ前（`cdk synth`）
+ * の段階で止めるためのガード。
+ */
+function assertCapacityWithinFreeTier(): void {
+  const entries = Object.values(CAPACITY_PLAN);
+  const read = entries.reduce((sum, e) => sum + e.read, 0);
+  const write = entries.reduce((sum, e) => sum + e.write, 0);
+  if (read > FREE_TIER_CAPACITY || write > FREE_TIER_CAPACITY) {
+    throw new Error(
+      `CAPACITY_PLANの合計がDynamoDB Always Free枠（${FREE_TIER_CAPACITY}）を超えています：` +
+        `read=${read} / write=${write}。GSIを追加した場合は他の割り当てを減らしてください。`,
+    );
+  }
+}
 
 export class NiarimBackendStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    assertCapacityWithinFreeTier();
 
     const table = new dynamodb.Table(this, 'NiarimTable', {
       tableName: 'niarim-table',
@@ -116,17 +146,35 @@ export class NiarimBackendStack extends Stack {
       writeCapacity: CAPACITY_PLAN.gsi7ReportStatusIndex.write,
     });
 
-    // 注記：GSI5（被ブックマーク一覧、21.1節）は現状どのAPIエンドポイントも
-    // クエリしていない（bookmarks.tsは書き込み時にgsi5pk/gsi5skを付与する
-    // だけで、対応する読み取りAPIは未実装）ため、Always Free枠（25 RCU/
-    // 25 WCU）を消費しないようここでは作成していない。実装時は上記の
-    // いずれかのGSIの割り当てを減らして総和を25以内に保つこと。
+    // GSI5：被ブックマーク一覧（21.1節）。`GET /works/{id}/bookmarkers`が
+    // `WORKBOOKMARKS#{workId}`をブックマーク日時の降順で引く。
+    table.addGlobalSecondaryIndex({
+      indexName: 'GSI5',
+      partitionKey: { name: 'gsi5pk', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'gsi5sk', type: dynamodb.AttributeType.STRING },
+      // 一覧に必要なのはブックマークしたユーザーIDと日時だけ。ALLだと
+      // BookmarkItem全体が複製されてストレージと書き込み容量を余計に
+      // 使うため、KEYS_ONLYに近い最小構成にする（niarimUserIdは
+      // pkから復元できるが、明示的に持たせた方が読み側が簡潔になる）。
+      projectionType: dynamodb.ProjectionType.INCLUDE,
+      nonKeyAttributes: ['niarimUserId', 'workId', 'bookmarkedAt', 'itemType'],
+      readCapacity: CAPACITY_PLAN.gsi5WorkBookmarksIndex.read,
+      writeCapacity: CAPACITY_PLAN.gsi5WorkBookmarksIndex.write,
+    });
 
     const commonEnvironment = {
       TABLE_NAME: table.tableName,
       // 【要設定】15章のOAuth審査で確定するOAuthクライアントID。
       // cdk.context.jsonまたは `-c googleClientId=...` で上書きする。
       GOOGLE_CLIENT_ID: this.node.tryGetContext('googleClientId') ?? 'REPLACE_ME',
+      // 【要設定】22.7節のプッシュ通知（FCM HTTP v1）用。Firebaseコンソール
+      // で発行したサービスアカウントJSONをそのまま渡す。
+      // `-c fcmServiceAccountJson="$(cat service-account.json)"` の形。
+      // 未設定（REPLACE_ME）ならプッシュ送信は行わず、アプリ内通知一覧
+      // （方式A）だけが動く（src/lib/push.ts参照）。
+      FCM_SERVICE_ACCOUNT_JSON: this.node.tryGetContext('fcmServiceAccountJson') ?? 'REPLACE_ME',
+      // サービスアカウントJSONのproject_idと異なる場合のみ指定する。
+      FCM_PROJECT_ID: this.node.tryGetContext('fcmProjectId') ?? '',
     };
 
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {

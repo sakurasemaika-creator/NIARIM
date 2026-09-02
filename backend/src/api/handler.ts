@@ -9,7 +9,12 @@ import { deleteWork } from './routes/worksDelete';
 import { updateTags } from './routes/tags';
 import { createReport } from './routes/reports';
 import { createBlock } from './routes/blocks';
-import { toggleBookmark, getUserBookmarks, updateBookmarksVisibility } from './routes/bookmarks';
+import {
+  toggleBookmark,
+  getUserBookmarks,
+  getWorkBookmarkers,
+  updateBookmarksVisibility,
+} from './routes/bookmarks';
 import { toggleRepost } from './routes/reposts';
 import {
   toggleFollow,
@@ -17,7 +22,7 @@ import {
   getFollowing,
   updateFollowVisibility,
 } from './routes/follows';
-import { getNotifications, markNotificationsRead } from './routes/notifications';
+import { getNotifications, markNotificationsRead, putPushToken } from './routes/notifications';
 
 /**
  * 16章「1つのLambda内にAPIルーター（method + pathで振り分け）」。
@@ -65,6 +70,7 @@ const routes: Route[] = [
   route('GET', '/ranking/{period}', (e, p) => getRanking(e, p.period)),
   route('GET', '/works/latest', (e) => getLatestWorks(e)),
   route('GET', '/users/{id}/works', (e, p) => getAuthorWorks(e, p.id)),
+  route('GET', '/works/{id}/bookmarkers', (e, p) => getWorkBookmarkers(e, p.id)),
   route('GET', '/users/{id}/bookmarks', (e, p) => getUserBookmarks(e, p.id)),
   route('GET', '/users/{id}/followers', (e, p) => getFollowers(e, p.id)),
   route('GET', '/users/{id}/following', (e, p) => getFollowing(e, p.id)),
@@ -83,6 +89,7 @@ const routes: Route[] = [
   route('PATCH', '/users/{id}/follow-visibility', (e, p) => updateFollowVisibility(e, p.id)),
   route('GET', '/users/{id}/notifications', (e, p) => getNotifications(e, p.id)),
   route('POST', '/users/{id}/notifications/mark-read', (e, p) => markNotificationsRead(e, p.id)),
+  route('PUT', '/users/{id}/push-token', (e, p) => putPushToken(e, p.id)),
 ];
 
 export async function handler(
