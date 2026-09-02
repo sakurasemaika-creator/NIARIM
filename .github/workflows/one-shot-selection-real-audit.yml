@@ -56,4 +56,5 @@ jobs:
           git add test/functional_audit_batch20_test.dart
           git diff --cached --quiet && exit 0
           git commit -m "test: verify real selection transform flow"
+          git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
