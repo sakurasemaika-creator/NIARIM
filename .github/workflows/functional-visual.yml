@@ -2,6 +2,11 @@ name: Functional Visual Audit
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/functional-visual.yml'
 
 jobs:
   functional-render:
@@ -50,6 +55,7 @@ jobs:
           flutter test test/functional_audit_batch23_test.dart --reporter expanded
           flutter test test/functional_audit_batch24_test.dart --reporter expanded
           flutter test test/functional_audit_batch25_test.dart --reporter expanded
+          flutter test test/functional_audit_batch26_test.dart --reporter expanded
 
       - name: 機能別レンダリング画像を保存
         if: always()
