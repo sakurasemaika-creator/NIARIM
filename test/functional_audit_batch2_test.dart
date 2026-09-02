@@ -66,13 +66,11 @@ void main() {
       final image = await _image(result);
       await _save(image, '${out.path}/draw_filter_${kind.name}.png');
       image.dispose();
-
       for (var i = 3; i < result.length; i += 4) {
         expect(result[i], inInclusiveRange(0, 255), reason: '${kind.name} alpha range');
       }
     }
 
-    // 代表的なフィルターは見た目だけでなく意味も数値検証する。
     final linear = applyDrawFilterInIsolate((
       input, w, h,
       const FilterDef(id: 'linear', name: 'linear', kind: FilterKind.toneCurve, toneCurvePreset: ToneCurvePreset.linear),
@@ -119,7 +117,6 @@ void main() {
   test('演出フィルター全種：範囲・enabled・実出力を確認', () async {
     final engine = FilterEngine();
     final input = _testPattern();
-
     for (final type in EffectFilterType.values) {
       final effect = EffectFilterInstance(
         id: type.name,
@@ -132,15 +129,12 @@ void main() {
         param4: 25,
         fadeColor: const Color(0xFF203060),
       );
-
       final before = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect], 2);
       expect(before, equals(input), reason: '${type.name}: before range must be no-op');
       final after = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect], 8);
       expect(after, equals(input), reason: '${type.name}: after range must be no-op');
-      final disabled = engine.applyEffectFilters(
-        Uint8List.fromList(input), w, h, [effect.copyWith(enabled: false)], 5);
+      final disabled = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect.copyWith(enabled: false)], 5);
       expect(disabled, equals(input), reason: '${type.name}: disabled must be no-op');
-
       final active = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect], 5);
       expect(active.length, input.length);
       final image = await _image(active);
@@ -162,15 +156,12 @@ void main() {
     expect(mid.rotation, closeTo(45, 1e-9));
     expect(engine.valueAt(keys, -10).x, 0);
     expect(engine.valueAt(keys, 99).x, 20);
-
     for (final frame in [0, 5, 10]) {
       final kf = engine.valueAt(keys, frame);
       final image = await _renderCamera(engine, kf);
       await _save(image, '${out.path}/camera_frame_$frame.png');
       image.dispose();
     }
-
-    // カメラXを正に動かすと、同じ世界座標の物体は画面上では左へ動く。
     final noMove = await _renderCamera(engine, const CameraKeyframe(frameIndex: 0));
     final moveX = await _renderCamera(engine, const CameraKeyframe(frameIndex: 0, x: 15));
     final a = await _rgba(noMove);
@@ -213,8 +204,7 @@ void main() {
         LayerKeyframe(frameIndex: 0, x: 0, y: 0, scale: 1, rotation: 0),
         LayerKeyframe(frameIndex: 10, x: 35, y: -10, scale: 1.5, rotation: 45),
       ], frame);
-      final image = await LayerCompositor.composite(
-        tm, const [layer], (l) => l.id, w, h, keyframeOf: (_) => kf);
+      final image = await LayerCompositor.composite(tm, const [layer], (l) => l.id, w, h, keyframeOf: (_) => kf);
       await _save(image, '${out.path}/layer_keyframe_$frame.png');
       image.dispose();
     }
@@ -352,7 +342,7 @@ double _luma(List<int> p) => p[0] * 0.2126 + p[1] * 0.7152 + p[2] * 0.0722;
 Future<ui.Image> _renderCamera(CameraEngine engine, CameraKeyframe kf) async {
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
-  canvas.drawRect(const ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()), ui.Paint()..color = const ui.Color(0xFFFFFFFF));
+  canvas.drawRect(ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()), ui.Paint()..color = const ui.Color(0xFFFFFFFF));
   canvas.save();
   engine.apply(canvas, kf, w.toDouble(), h.toDouble());
   canvas.drawRect(const ui.Rect.fromLTWH(58, 38, 16, 20), ui.Paint()..color = const ui.Color(0xFFEF4030));
@@ -433,7 +423,6 @@ List<double> _clipColor(List<double> c) {
   var r = c[0], g = c[1], b = c[2];
   final l = _lum([r, g, b]);
   final n = math.min(r, math.min(g, b));
-  final x = math.max(r, math.max(g, b));
   if (n < 0) {
     r = l + ((r - l) * l) / (l - n);
     g = l + ((g - l) * l) / (l - n);
