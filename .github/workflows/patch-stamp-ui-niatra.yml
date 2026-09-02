@@ -32,7 +32,6 @@ jobs:
                   raise SystemExit(f'{path}: expected exactly one match, got {count}')
               p.write_text(text.replace(old, new, 1), encoding='utf-8', newline='\n')
 
-          # 1) Quick stamp tab must not pretend built-in stamps are editable.
           replace_once(
               'lib/screens/canvas/widgets/pen_sub_tool_panel.dart',
               """        final stamp = stamps[index];\n        final isSelected = current?.id == stamp.id;\n        return GestureDetector(\n""",
@@ -43,8 +42,6 @@ jobs:
               """          // 長押しでスタンプ設定（回転・密度・散布）を編集\n          onLongPress: () => _showStampSettingsDialog(context, stampService, stamp),\n""",
               """          // 組み込みスタンプはStampService側で編集不可なので、\n          // 保存できたように見える偽の編集経路を出さない。複製後は編集可能。\n          onLongPress: builtIn\n              ? null\n              : () => _showStampSettingsDialog(context, stampService, stamp),\n""",
           )
-
-          # 2) Quick stamp settings use the same ranges/meaning as the full settings panel.
           replace_once(
               'lib/screens/canvas/widgets/pen_sub_tool_panel.dart',
               """    bool rotation = stamp.rotation;\n    double density = stamp.density;\n    double scatter = stamp.scatter;\n""",
@@ -60,8 +57,6 @@ jobs:
               """                service.updateStamp(stamp.copyWith(\n                    rotation: rotation, density: density, scatter: scatter));\n""",
               """                service.updateStamp(stamp.copyWith(\n                  rotation: rotation,\n                  opacity: opacity,\n                  density: density,\n                  scatter: scatter,\n                ));\n""",
           )
-
-          # 3) Niatra numeric stamp transfer must preserve opacity too.
           replace_once(
               'lib/engine/niatra_serializer.dart',
               """        'rotation': s.rotation, 'density': s.density, 'scatter': s.scatter,\n        'pixelMode': s.pixelMode,\n""",
@@ -72,8 +67,6 @@ jobs:
               """        rotation: j['rotation'] as bool? ?? false,\n        density: (j['density'] as num?)?.toDouble() ?? 1.0,\n        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,\n        pixelMode: j['pixelMode'] as bool? ?? false,\n""",
               """        rotation: j['rotation'] as bool? ?? false,\n        density: (j['density'] as num?)?.toDouble() ?? 1.0,\n        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,\n        opacity: (j['opacity'] as int?) ?? 100,\n        pixelMode: j['pixelMode'] as bool? ?? false,\n""",
           )
-
-          # 4) Document the fixed-phase tone semantics explicitly.
           replace_once(
               'docs/AI設計書/17_ブラシ仕様.md',
               """- テクスチャは一定サイズでループ表示\n- 回転なし・密度なし・散布なし\n- 不透明度変更可能\n""",
@@ -81,9 +74,8 @@ jobs:
           )
           PY
 
-      - name: Format and verify
+      - name: Verify changed files
         run: |
-          dart format lib/screens/canvas/widgets/pen_sub_tool_panel.dart lib/engine/niatra_serializer.dart
           git diff --check
           git diff --stat
 
