@@ -157,11 +157,14 @@ class DrawingEngine {
         break;
     }
 
-    // フェード
+    // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
+    // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
     if (brush.fadeMode != FadeMode.off) {
-      opacity *= _calculateFade(brush, _currentStrokeLength());
+      final fade = _calculateFade(brush, _currentStrokeLength());
+      opacity *= fade;
+      size *= fade;
     }
-    // ストローク減衰
+    // ストローク減衰はインク切れ表現なので、不透明度だけを減らして太さは維持する。
     if (brush.strokeDecay) {
       opacity *= _calculateDecay(_currentStrokeLength());
     }
@@ -174,9 +177,7 @@ class DrawingEngine {
     if (alphaInt == 0) return;
 
     // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
-    // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う
-    // （傾き検知非対応の端末でも一定の見た目でカリグラフィー特有の
-    // 「進行方向によって線の太さが変わる」表現を再現するため）。
+    // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う。
     final tilt = brush.calligraphyAngle != null
         ? (
             scaleX: kCalligraphyNibAspect,
@@ -184,6 +185,9 @@ class DrawingEngine {
             angle: brush.calligraphyAngle! * math.pi / 180,
           )
         : calcTiltTransform(tiltX, tiltY);
+    final stylusTiltMagnitude = brush.calligraphyAngle == null
+        ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
+        : 0.0;
 
     // 自作ブラシ（ブラシ画像からのブラシ作成）が選択され、
     // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
@@ -193,6 +197,7 @@ class DrawingEngine {
     _renderCircleStamp(
       x, y, radius, alphaInt, tilt,
       layerId, brush.pixelMode, brush.blurRadius, customTexture,
+      stylusTiltMagnitude: stylusTiltMagnitude,
       edgeJitter: brush.edgeJitter,
       edgeJitterStrength: brush.edgeJitterStrength,
     );
@@ -208,6 +213,7 @@ class DrawingEngine {
     bool pixelMode,
     int blurRadius,
     Uint8List? customTexture, {
+    double stylusTiltMagnitude = 0.0,
     bool edgeJitter = false,
     int edgeJitterStrength = 50,
   }) {
@@ -265,7 +271,6 @@ class DrawingEngine {
             double pixelAlpha;
             if (customTexture != null) {
               // 自作ブラシ画像：楕円内をテクスチャのアルファでサンプリング
-              // （ピクセルモード・ぼかし半径は画像自体の形状に委ねるため未適用）。
               if (dist > radius) {
                 pixelAlpha = 0.0;
               } else {
@@ -293,9 +298,6 @@ class DrawingEngine {
               }
             } else {
               // 通常ブラシ：アンチエイリアス
-              // edgeJitter: ふち付近（radius±1.5px）のピクセルに微小な
-              // ランダムオフセットを加え、輪郭をわずかにがたがたさせる。
-              // マーカーのインクが紙の繊維に沿って滲む様子を再現する。
               if (edgeJitter && dist > radius - 1.5) {
                 final maxJitter = edgeJitterStrength / 100.0 * 2.5;
                 final jitter = (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
@@ -306,13 +308,23 @@ class DrawingEngine {
             }
 
             if (pixelAlpha <= 0) continue;
+
+            // スタイラスを寝かせた場合は、傾き方向（+rdx）をペン先側として濃く、
+            // 反対側を薄くする。形状の引き伸ばしだけで一様濃度にならないよう、
+            // 元の円座標ux/radiusに沿って緩やかな線形濃度勾配を掛ける。
+            // カリグラフィー固定角度ではスタイラス傾きではないため適用しない。
+            if (stylusTiltMagnitude > 0.0001 && radius > 0) {
+              final alongTilt = (ux / radius).clamp(-1.0, 1.0);
+              final shadeStrength = 0.40 * stylusTiltMagnitude;
+              final shade = (1.0 + alongTilt * shadeStrength).clamp(0.45, 1.0);
+              pixelAlpha *= shade;
+            }
+
             final desiredAlpha = (alpha * pixelAlpha).round().clamp(0, 255);
             if (desiredAlpha <= 0) continue;
 
             // 同一ストローク内では、同じ画素へのスタンプ重複を加算せず
             // 「そのストロークがこの画素をどこまで覆ったか」の最大値だけを採用する。
-            // 既にoldCoverageだけsource-over済みなので、desiredCoverageまで上げるための
-            // 増分alpha = (new-old)/(1-old) を求めて追加合成する。
             final coveragePos = py * TileManager.tileSize + px;
             final oldCoverage = coverage[coveragePos];
             if (desiredAlpha <= oldCoverage) continue;
