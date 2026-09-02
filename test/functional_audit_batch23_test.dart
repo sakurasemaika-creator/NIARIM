@@ -64,18 +64,35 @@ void main() {
     final tile = tm.getOrCreateTile(copiedKey, 0, 0);
     tm.setPixel(tile, 0, 0, 250, 200, 10, 255);
     expect(_framePixel(ps, p.id, sceneId, 2), [250, 200, 10, 255]);
-    expect(_framePixel(ps, p.id, sceneId, 1), colors[1],
-        reason: '複製先編集が元フレームへ逆流しないこと');
+    expect(
+      _framePixel(ps, p.id, sceneId, 1),
+      colors[1],
+      reason: '複製先編集が元フレームへ逆流しないこと',
+    );
 
     // 比較しやすいよう複製先の先頭画素を緑へ戻してから、元F1を削除。
-    tm.setPixel(tile, 0, 0, ...colors[1]);
+    tm.setPixel(
+      tile,
+      0,
+      0,
+      colors[1][0],
+      colors[1][1],
+      colors[1][2],
+      colors[1][3],
+    );
     ps.removeFrame(p.id, sceneId, 1);
     expect(ps.frameCount(p.id, sceneId), 3);
     expect(_framePixel(ps, p.id, sceneId, 0), colors[0]);
-    expect(_framePixel(ps, p.id, sceneId, 1), colors[1],
-        reason: '旧F2（複製）がindex1へ正しく前詰めされること');
-    expect(_framePixel(ps, p.id, sceneId, 2), colors[2],
-        reason: '旧F3（青）がindex2へ正しく前詰めされること');
+    expect(
+      _framePixel(ps, p.id, sceneId, 1),
+      colors[1],
+      reason: '旧F2（複製）がindex1へ正しく前詰めされること',
+    );
+    expect(
+      _framePixel(ps, p.id, sceneId, 2),
+      colors[2],
+      reason: '旧F3（青）がindex2へ正しく前詰めされること',
+    );
   });
 }
 
