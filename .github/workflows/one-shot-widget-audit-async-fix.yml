@@ -1,0 +1,87 @@
+name: One-shot Widget Audit Async Fix
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-widget-audit-async-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Patch widget audits to use real async for codecs and persistence init
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p=Path('test/functional_audit_batch33_test.dart')
+          s=p.read_text(encoding='utf-8')
+          old="await _save(r.after, 96, 80, '${out.path}/canvas_blur_real.png');"
+          new="await tester.runAsync(() => _save(r.after, 96, 80, '${out.path}/canvas_blur_real.png'));"
+          if s.count(old)!=1: raise SystemExit('batch33 blur save anchor mismatch')
+          s=s.replace(old,new)
+          old="await _save(r.after, 96, 80, '${out.path}/canvas_mosaic_real.png');"
+          new="await tester.runAsync(() => _save(r.after, 96, 80, '${out.path}/canvas_mosaic_real.png'));"
+          if s.count(old)!=1: raise SystemExit('batch33 mosaic save anchor mismatch')
+          s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+          p=Path('test/functional_audit_batch37_test.dart')
+          s=p.read_text(encoding='utf-8')
+          old="""    final ps = ProjectService();\n    await ps.init();\n"""
+          new="""    final ps = ProjectService();\n    await tester.runAsync(() => ps.init());\n"""
+          if s.count(old)!=1: raise SystemExit('batch37 project init anchor mismatch')
+          s=s.replace(old,new)
+          old="final off = await _capture(boundaryKey);"
+          new="final off = (await tester.runAsync(() => _capture(boundaryKey)))!;"
+          if s.count(old)!=1: raise SystemExit('batch37 off capture anchor mismatch')
+          s=s.replace(old,new)
+          old="final on = await _capture(boundaryKey);"
+          new="final on = (await tester.runAsync(() => _capture(boundaryKey)))!;"
+          if s.count(old)!=1: raise SystemExit('batch37 on capture anchor mismatch')
+          s=s.replace(old,new)
+          old="await File('${out.path}/onion_canvas_real.png').writeAsBytes(on.png);"
+          new="await tester.runAsync(() => File('${out.path}/onion_canvas_real.png').writeAsBytes(on.png));"
+          if s.count(old)!=1: raise SystemExit('batch37 png write anchor mismatch')
+          s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: dart format test/functional_audit_batch33_test.dart test/functional_audit_batch37_test.dart
+
+      - name: Verify blur and mosaic real CanvasArea + PNG + Undo Redo
+        run: timeout 75s flutter test test/functional_audit_batch33_test.dart --reporter expanded
+      - name: Verify onion skin real CanvasArea rendering + PNG
+        run: timeout 75s flutter test test/functional_audit_batch37_test.dart --reporter expanded
+
+      - name: Save verification screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: widget-audit-async-screenshots
+          path: build/functional-visual/*.png
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Commit verified audit corrections
+        run: |
+          git config user.name "sakurasemaika-creator"
+          git config user.email "sakurasemaika@gmail.com"
+          git add test/functional_audit_batch33_test.dart test/functional_audit_batch37_test.dart
+          git commit -m "test: run widget audit codecs and persistence in real async" || exit 0
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
