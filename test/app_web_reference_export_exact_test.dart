@@ -130,10 +130,18 @@ void main() {
     await tester.tap(create.first, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 900));
 
-    final timeline = find.text('タイムライン', skipOffstage: false);
-    expect(timeline, findsWidgets);
-    await tester.ensureVisible(timeline.last);
-    await tester.tap(timeline.last, warnIfMissed: false);
+    // FrameStripWidgetの本番SegmentedButton callbackを直接呼ぶ。
+    final modeSwitch = find.byWidgetPredicate(
+      (widget) {
+        if (widget is! SegmentedButton<String>) return false;
+        return widget.segments.any((segment) => segment.value == 'timeline');
+      },
+      skipOffstage: false,
+    );
+    expect(modeSwitch, findsWidgets);
+    final switchWidget = tester.widget<SegmentedButton<String>>(modeSwitch.last);
+    expect(switchWidget.onSelectionChanged, isNotNull);
+    switchWidget.onSelectionChanged!.call({'timeline'});
     await tester.pump(const Duration(milliseconds: 700));
     final timelineException = tester.takeException();
     if (timelineException != null &&
@@ -141,8 +149,7 @@ void main() {
       fail('timeline: $timelineException');
     }
 
-    // 型Finderではなく、遷移後にしか存在しない実Timelineの三点メニューを
-    // 本番画面到達の判定にする。これによりGoRouter/Widget testの型探索差異を排除する。
+    // Timeline本体の三点メニューcallbackを実行する。
     final menuFinder = find.byWidgetPredicate(
       (widget) => widget is PopupMenuButton<String>,
       skipOffstage: false,
