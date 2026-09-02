@@ -1,0 +1,44 @@
+name: One-shot Ruler Post Stabilization Fix V4
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-ruler-post-stabilization-fix-v4.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Apply production patch
+        run: python3 .github/scripts/ruler_post_stabilization_patch.py
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: dart format lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart test/functional_audit_batch36_test.dart
+      - name: Brush engine regressions
+        run: flutter test test/brush_rotation_density_scatter_test.dart test/custom_texture_loading_test.dart test/pixel_color_mode_test.dart --reporter expanded
+      - name: Ruler engine regressions
+        run: flutter test test/ruler_engine_test.dart --reporter expanded
+      - name: Real CanvasArea line ruler
+        run: flutter test test/functional_audit_batch32_test.dart --reporter expanded
+      - name: All seven rulers
+        run: flutter test test/functional_audit_batch36_test.dart --reporter expanded
+      - name: Commit verified source fix
+        run: |
+          git config user.name sakurasemaika-creator
+          git config user.email sakurasemaika@gmail.com
+          git add lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart test/functional_audit_batch36_test.dart
+          git commit -m "fix: constrain ruler strokes after stabilization" || true
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
