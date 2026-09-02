@@ -17,6 +17,7 @@ void main() {
     expect(text, contains('HakkouMincho'));
     expect(text, contains('Kuramubon.otf'));
     expect(text, contains('NotoSerifJP.ttf'));
+    expect(text, contains('DelaGothicOne-Regular.ttf'));
     expect(text, contains('The Dela Gothic Project Authors'));
     expect(text, contains('Adobe'));
     // OFL本文（全文）が含まれていること。
@@ -31,12 +32,13 @@ void main() {
       final text =
           await rootBundle.loadString('assets/licenses/FONT_LICENSES.txt');
       yield LicenseEntryWithLineBreaks(
-        const ['HakkouMincho', 'Kuramubon', 'Noto Serif JP'],
+        const ['HakkouMincho', 'Kuramubon', 'Noto Serif JP', 'Dela Gothic One'],
         text,
       );
     });
     final entries = await LicenseRegistry.licenses.toList();
     final packages = entries.expand((e) => e.packages).toSet();
-    expect(packages, containsAll(['HakkouMincho', 'Kuramubon', 'Noto Serif JP']));
+    expect(packages,
+        containsAll(['HakkouMincho', 'Kuramubon', 'Noto Serif JP', 'Dela Gothic One']));
   });
 }

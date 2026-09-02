@@ -144,3 +144,12 @@ flutter:
     - family: NotoSerifJP
       fonts:
         - asset: assets/fonts/NotoSerifJP.ttf
+    # くらむぼんのフォールバック用（くらむぼんの改変元であるDela Gothic One。
+    # SIL Open Font License 1.1）。くらむぼんは8,262文字しか収録しておらず、
+    # 未収録の文字は豆腐（□）になってしまう。改変元のDela Gothic Oneは
+    # 9,030文字を収録しており、くらむぼんに無い1,456文字を見た目の近い
+    # 字形で補える。それでも足りない分はNotoSerifJPが受け持つ
+    # （lib/config/font_fallback.dart参照）。
+    - family: DelaGothicOne
+      fonts:
+        - asset: assets/fonts/DelaGothicOne-Regular.ttf

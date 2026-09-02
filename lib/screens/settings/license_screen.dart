@@ -110,6 +110,12 @@ class LicenseScreen extends StatelessWidget {
             license: 'Apache License 2.0 / SIL Open Font License',
           ),
           const _FontCredit(
+            usage: 'くらむぼんに無い文字の代替表示',
+            name: 'Dela Gothic One',
+            author: 'The Dela Gothic Project Authors',
+            license: 'SIL Open Font License 1.1',
+          ),
+          const _FontCredit(
             usage: 'テキストツール同梱フォント',
             name: 'Noto Serif JP',
             author: 'Google Fonts',

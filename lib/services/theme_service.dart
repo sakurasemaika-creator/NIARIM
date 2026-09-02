@@ -1,3 +1,4 @@
+import '../config/font_fallback.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -423,7 +424,7 @@ class ThemeService extends ChangeNotifier {
         bodyColor: preset.textColor,
         displayColor: preset.textColor,
       ),
-      const ['NotoSerifJP'],
+      kAppFontFallback,
     ));
     // フォントの使い分け：項目名・見出しなど文字サイズが
     // 大きく目立たせたい箇所（display/headline/title）はくらむぼん、
@@ -602,8 +603,13 @@ class ThemeService extends ChangeNotifier {
   /// [fontFamily]（くらむぼん）へ差し替え、body/label（説明文・通常サイズの
   /// 文字）はそのまま（白光明朝）にする（フォントの使い分けルール）。
   TextTheme _applyHeadingFont(TextTheme textTheme, String fontFamily) {
-    TextStyle? heading(TextStyle? style) =>
-        style?.copyWith(fontFamily: fontFamily, fontFamilyFallback: null);
+    // 見出し用フォント（くらむぼん）は本文用より収録文字が少ないため、
+    // 代替フォント列は消さずに引き継ぐ（以前はnullで消しており、
+    // くらむぼんに無い文字が豆腐（□）になっていた）。
+    TextStyle? heading(TextStyle? style) => style?.copyWith(
+          fontFamily: fontFamily,
+          fontFamilyFallback: kAppFontFallback,
+        );
     return textTheme.copyWith(
       displayLarge: heading(textTheme.displayLarge),
       displayMedium: heading(textTheme.displayMedium),

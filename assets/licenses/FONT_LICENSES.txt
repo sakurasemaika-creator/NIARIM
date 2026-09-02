@@ -25,10 +25,21 @@ Copyright   : Copyright 2020 The Dela Gothic Project Authors
 License     : SIL Open Font License 1.1
               ※このファイルの name テーブル nameID 13 には OFL の記載が無く、
                 フォント編集ソフトが書き込んだと思われる管理用の文字列
-                （Cr:... Mo:...）が入っている。配布元の表記に基づき OFL 1.1
-                として扱っているが、公開前に配布元同梱の OFL.txt を入手して
-                本ファイルへ差し替えること（要確認事項）。
+                （Cr:... Mo:...）が入っている。ただし著作権表示（nameID 0）は
+                改変元である Dela Gothic One と同一であり、その Dela Gothic One
+                側には OFL 1.1 の記載が正しく入っている（下記参照）。
+                そのため OFL 1.1 として扱う。
 License URL : https://openfontlicense.org
+
+
+--- assets/fonts/DelaGothicOne-Regular.ttf（Dela Gothic One / くらむぼんの
+    未収録文字を補う代替フォント）---
+Copyright   : Copyright 2020 The Dela Gothic Project Authors
+              (https://github.com/syakuzen/DelaGothic)
+License     : This Font Software is licensed under the SIL Open Font License,
+              Version 1.1. This license is available with a FAQ at:
+              https://scripts.sil.org/OFL
+License URL : https://scripts.sil.org/OFL
 
 
 --- assets/fonts/NotoSerifJP.ttf（Noto Serif JP / テキストツール同梱フォント）---
