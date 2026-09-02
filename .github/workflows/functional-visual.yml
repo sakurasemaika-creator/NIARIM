@@ -6,7 +6,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - 'test/functional_audit_batch4_test.dart'
+      - 'test/functional_audit_batch5_test.dart'
 
 jobs:
   functional-render:
@@ -34,6 +34,7 @@ jobs:
           flutter test test/functional_audit_batch2_test.dart --reporter expanded
           flutter test test/functional_audit_batch3_test.dart --reporter expanded
           flutter test test/functional_audit_batch4_test.dart --reporter expanded
+          flutter test test/functional_audit_batch5_test.dart --reporter expanded
 
       - name: 機能別レンダリング画像を保存
         if: always()
