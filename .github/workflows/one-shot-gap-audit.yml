@@ -10,7 +10,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -18,35 +18,63 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get
+
       - name: Batch27 selection scale + Undo/Redo
+        id: b27
+        continue-on-error: true
         run: flutter test test/functional_audit_batch27_test.dart --reporter expanded
       - name: Batch28 all built-in brushes render + PNG
+        id: b28
+        continue-on-error: true
         run: flutter test test/functional_audit_batch28_test.dart --reporter expanded
       - name: Batch29 selection rotate + Undo/Redo
+        id: b29
+        continue-on-error: true
         run: flutter test test/functional_audit_batch29_test.dart --reporter expanded
       - name: Batch30 lasso selection move
+        id: b30
+        continue-on-error: true
         run: flutter test test/functional_audit_batch30_test.dart --reporter expanded
       - name: Batch31 magic wand real selection
+        id: b31
+        continue-on-error: true
         run: flutter test test/functional_audit_batch31_test.dart --reporter expanded
       - name: Batch32 real CanvasArea line ruler
+        id: b32
+        continue-on-error: true
         run: flutter test test/functional_audit_batch32_test.dart --reporter expanded
       - name: Batch33 blur and mosaic real operation + PNG
+        id: b33
+        continue-on-error: true
         run: flutter test test/functional_audit_batch33_test.dart --reporter expanded
       - name: Batch34 all 25 built-in tones render + PNG
+        id: b34
+        continue-on-error: true
         run: flutter test test/functional_audit_batch34_test.dart --reporter expanded
       - name: Batch35 all 7 built-in stamps render + PNG
+        id: b35
+        continue-on-error: true
         run: flutter test test/functional_audit_batch35_test.dart --reporter expanded
       - name: Batch36 all 7 rulers engine render + PNG
+        id: b36
+        continue-on-error: true
         run: flutter test test/functional_audit_batch36_test.dart --reporter expanded
       - name: Batch37 onion skin actual CanvasArea render
+        id: b37
+        continue-on-error: true
         run: flutter test test/functional_audit_batch37_test.dart --reporter expanded
       - name: Batch38 whole-layer transform + Undo/Redo
+        id: b38
+        continue-on-error: true
         run: flutter test test/functional_audit_batch38_test.dart --reporter expanded
       - name: Selection regressions
+        id: selection
+        continue-on-error: true
         run: |
           flutter test test/functional_audit_batch20_test.dart --reporter expanded
           flutter test test/functional_audit_batch19_test.dart --reporter expanded
           flutter test test/functional_audit_batch18_test.dart --reporter expanded
+
       - name: Save screenshots
         if: always()
         uses: actions/upload-artifact@v6
@@ -55,3 +83,33 @@ jobs:
           path: build/functional-visual/*.png
           if-no-files-found: warn
           retention-days: 3
+
+      - name: Fail if any audit failed
+        if: always()
+        shell: bash
+        run: |
+          echo "batch27=${{ steps.b27.outcome }}"
+          echo "batch28=${{ steps.b28.outcome }}"
+          echo "batch29=${{ steps.b29.outcome }}"
+          echo "batch30=${{ steps.b30.outcome }}"
+          echo "batch31=${{ steps.b31.outcome }}"
+          echo "batch32=${{ steps.b32.outcome }}"
+          echo "batch33=${{ steps.b33.outcome }}"
+          echo "batch34=${{ steps.b34.outcome }}"
+          echo "batch35=${{ steps.b35.outcome }}"
+          echo "batch36=${{ steps.b36.outcome }}"
+          echo "batch37=${{ steps.b37.outcome }}"
+          echo "batch38=${{ steps.b38.outcome }}"
+          echo "selection=${{ steps.selection.outcome }}"
+          failed=0
+          for value in \
+            "${{ steps.b27.outcome }}" "${{ steps.b28.outcome }}" \
+            "${{ steps.b29.outcome }}" "${{ steps.b30.outcome }}" \
+            "${{ steps.b31.outcome }}" "${{ steps.b32.outcome }}" \
+            "${{ steps.b33.outcome }}" "${{ steps.b34.outcome }}" \
+            "${{ steps.b35.outcome }}" "${{ steps.b36.outcome }}" \
+            "${{ steps.b37.outcome }}" "${{ steps.b38.outcome }}" \
+            "${{ steps.selection.outcome }}"; do
+            if [ "$value" != "success" ]; then failed=1; fi
+          done
+          exit "$failed"
