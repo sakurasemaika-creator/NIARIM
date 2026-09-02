@@ -54,38 +54,31 @@ def replace_all_checked(path: str, old: str, new: str, allowed_counts: set[int])
 # ---------------------------------------------------------------------------
 STAMP = "lib/engine/stamp_engine.dart"
 text = read(STAMP)
-
-# Named record passed through compute().
 old = """      double scatter,\n      double density,\n    }) args) {"""
 new = """      double scatter,\n      double density,\n      int opacity,\n    }) args) {"""
 if text.count(old) != 1:
     raise RuntimeError(f"{STAMP}: isolate record shape changed")
 text = text.replace(old, new, 1)
-
 old = """    scatter: args.scatter,\n    density: args.density,\n  );"""
 new = """    scatter: args.scatter,\n    density: args.density,\n    opacity: args.opacity,\n  );"""
 if text.count(old) != 1:
     raise RuntimeError(f"{STAMP}: isolate forwarding shape changed")
 text = text.replace(old, new, 1)
-
 old = """    double density = 1.0,\n    int seed = 0,"""
 new = """    double density = 1.0,\n    int opacity = 100,\n    int seed = 0,"""
 if text.count(old) != 1:
     raise RuntimeError(f"{STAMP}: stampAlongPath signature changed")
 text = text.replace(old, new, 1)
-
 old = """        stampSize,\n        stampAngle,\n      );"""
 new = """        stampSize,\n        stampAngle,\n        opacity,\n      );"""
 if text.count(old) != 1:
     raise RuntimeError(f"{STAMP}: _blitStamp call changed")
 text = text.replace(old, new, 1)
-
 old = """    double size,\n    double angle,\n  ) {"""
 new = """    double size,\n    double angle,\n    int opacity,\n  ) {"""
 if text.count(old) != 1:
     raise RuntimeError(f"{STAMP}: _blitStamp signature changed")
 text = text.replace(old, new, 1)
-
 old = """        final ta = tex[tIdx + 3];\n        if (ta == 0) continue;"""
 new = """        final ta = (tex[tIdx + 3] * opacity.clamp(1, 100) / 100.0)\n            .round()\n            .clamp(0, 255);\n        if (ta == 0) continue;"""
 if text.count(old) != 1:
@@ -94,8 +87,6 @@ text = text.replace(old, new, 1)
 write(STAMP, text)
 print(f"patched {STAMP}")
 
-# Canvas -> isolate wiring. Some historical revisions contained the commit path
-# twice; patch every real stamp call but fail for any other count.
 replace_all_checked(
     "lib/screens/canvas/widgets/canvas_area.dart",
     """      density: stamp.density,\n    ));""",
@@ -104,8 +95,7 @@ replace_all_checked(
 )
 
 # ---------------------------------------------------------------------------
-# Brush settings UI: Model + Engine are already implemented/tested, expose the
-# three settings so the user can actually configure them.
+# Brush settings UI.
 # ---------------------------------------------------------------------------
 PANEL = "lib/screens/canvas/widgets/brush_panel.dart"
 replace_once(
@@ -113,35 +103,27 @@ replace_once(
     """          // ぼかし半径（0〜100・デフォルト0）\n          _sliderRow(l10n.brushSettingsBlurRadiusLabel, _brush.blurRadius.toDouble(), 0, 100,\n              (v) => setState(() => _brush = _brush.copyWith(blurRadius: v.round()))),\n          const Divider(),\n          // 手ブレ補正""",
     """          // ぼかし半径（0〜100・デフォルト0）\n          _sliderRow(l10n.brushSettingsBlurRadiusLabel, _brush.blurRadius.toDouble(), 0, 100,\n              (v) => setState(() => _brush = _brush.copyWith(blurRadius: v.round()))),\n          const Divider(),\n          // 回転・密度・散布（スタンプと同じ意味／範囲）\n          SwitchListTile(\n            title: Text(l10n.stampRotationLabel),\n            value: _brush.rotation,\n            onChanged: (v) => setState(() => _brush = _brush.copyWith(rotation: v)),\n          ),\n          _decimalSliderRow(\n            l10n.stampDensityLabel,\n            _brush.density,\n            0.1,\n            5.0,\n            0.1,\n            (v) => setState(() => _brush = _brush.copyWith(density: v)),\n          ),\n          _decimalSliderRow(\n            l10n.stampScatterLabel,\n            _brush.scatter,\n            0.0,\n            1.0,\n            0.01,\n            (v) => setState(() => _brush = _brush.copyWith(scatter: v)),\n          ),\n          const Divider(),\n          // 手ブレ補正""",
 )
-
 replace_once(
     PANEL,
     """  String _pressureLabel(AppLocalizations l10n, PressureMode mode) => switch (mode) {""",
     """  Widget _decimalSliderRow(\n    String label,\n    double value,\n    double min,\n    double max,\n    double step,\n    ValueChanged<double> onChanged,\n  ) {\n    return Row(\n      children: [\n        SizedBox(width: 80, child: Text(label, style: const TextStyle(fontSize: 12))),\n        Expanded(\n          child: SteppedSlider(\n            min: min,\n            max: max,\n            value: value.clamp(min, max),\n            step: step,\n            onChanged: onChanged,\n          ),\n        ),\n        SizedBox(\n          width: 40,\n          child: EditableSliderValue(\n            text: value.toStringAsFixed(step < 0.1 ? 2 : 1),\n            style: const TextStyle(fontSize: 12),\n            value: value,\n            min: min,\n            max: max,\n            isInt: false,\n            onChanged: (v) => onChanged(v.toDouble()),\n          ),\n        ),\n      ],\n    );\n  }\n\n  String _pressureLabel(AppLocalizations l10n, PressureMode mode) => switch (mode) {""",
 )
 
-# ---------------------------------------------------------------------------
-# .niabrush import: do not reconstruct a subset of Brush fields. Rehydrate the
-# complete model JSON, while replacing only device-specific id/folder/image path.
-# ---------------------------------------------------------------------------
+# .niabrush import must preserve all model settings.
 regex_once(
     "lib/services/brush_service.dart",
     r"    // customImagePathは元端末のパスをそのまま引き継げないため、copyWith[\s\S]*?    addBrush\(brush\);",
     """    // 元端末固有のID・フォルダ・画像パスだけ差し替え、それ以外の\n    // rotation/density/scatter/fade/edgeJitter/pixelColor等は全て保持する。\n    final restoredJson = Map<String, dynamic>.from(imported.toJson())\n      ..['id'] = id\n      ..['folderId'] = null\n      ..['customImagePath'] = newImagePath;\n    final brush = Brush.fromJson(restoredJson);\n    addBrush(brush);""",
 )
 
-# ---------------------------------------------------------------------------
-# Base .niatra serializer: the main transfer screen now adds binary assets via
-# NiatraAssetBundle, but direct/legacy serializer use must not lose new fields.
-# Use each model's JSON contract instead of maintaining partial parallel schemas.
-# ---------------------------------------------------------------------------
+# Base .niatra serializer also preserves complete model JSON.
 NIATRA = "lib/engine/niatra_serializer.dart"
+replace_once(NIATRA, "import '../models/pixel_color_mode.dart';\n", "")
 regex_once(
     NIATRA,
     r"  static Map<String, dynamic> _serializeBrush\(Brush b\) => \{[\s\S]*?\n      \);\n\n  // ─── Tone / Stamp",
     """  static Map<String, dynamic> _serializeBrush(Brush b) => b.toJson();\n\n  static Brush _deserializeBrush(Map<String, dynamic> j) {\n    final json = Map<String, dynamic>.from(j)\n      ..['id'] = 'Brush${DateTime.now().microsecondsSinceEpoch}_${j['id']}'\n      ..['folderId'] = null;\n    return Brush.fromJson(json);\n  }\n\n  // ─── Tone / Stamp""",
 )
-
 regex_once(
     NIATRA,
     r"  static Map<String, dynamic> _serializeTone\(Tone t\) =>[\s\S]*?\n      \);\n\n  // ─── AutofillPreset",
