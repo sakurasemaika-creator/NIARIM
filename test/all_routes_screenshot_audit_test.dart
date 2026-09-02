@@ -124,6 +124,7 @@ void main() {
           name: 'all-route-audit',
           fps: 12,
           durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
           exportWidth: 320,
           exportHeight: 180,
         ),
