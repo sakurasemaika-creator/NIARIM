@@ -1,0 +1,40 @@
+name: One-shot Onion Diagnostic
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-onion-diagnostic.yml'
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Run robust onion canvas audit with retry
+        shell: bash
+        run: |
+          set +e
+          for attempt in 1 2; do
+            timeout 300s flutter test test/onion_skin_canvas_diagnostic_test.dart --reporter expanded
+            rc=$?
+            if [ $rc -eq 0 ]; then exit 0; fi
+            echo "onion diagnostic attempt $attempt failed rc=$rc"
+            sleep 10
+          done
+          exit 1
+      - name: Upload diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onion-diagnostic
+          path: build/functional-visual
+          if-no-files-found: warn
+          retention-days: 7
