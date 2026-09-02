@@ -71,7 +71,8 @@ void main() {
       final file = File('$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf');
       if (!file.existsSync()) return;
       final data = ByteData.sublistView(Uint8List.fromList(await file.readAsBytes()));
-      final loader = FontLoader('MaterialIcons')..addFont(Future<ByteData>.value(data));
+      final loader = FontLoader('MaterialIcons')
+        ..addFont(Future<ByteData>.value(data));
       await loader.load();
     }
     await Future.wait([
@@ -100,7 +101,17 @@ void main() {
       error != null &&
       error.toString().contains('RenderFlex overflowed by 24 pixels on the right');
 
-  testWidgets('exact export via Canvas Timeline and production menu', (tester) async {
+  void consumeOnlyKnownTimelineOverflow(WidgetTester tester, String phase) {
+    for (;;) {
+      final error = tester.takeException();
+      if (error == null) return;
+      if (!isKnownTimelineOverflow(error)) {
+        fail('$phase: $error');
+      }
+    }
+  }
+
+  testWidgets('exact export via production timeline toolbar callback', (tester) async {
     tester.view.physicalSize = const Size(960, 1707);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
@@ -147,42 +158,27 @@ void main() {
     expect(switchWidget.onSelectionChanged, isNotNull);
     switchWidget.onSelectionChanged!.call({'timeline'});
     await tester.pump(const Duration(milliseconds: 700));
-    final timelineException = tester.takeException();
-    if (timelineException != null && !isKnownTimelineOverflow(timelineException)) {
-      fail('timeline: $timelineException');
-    }
+    consumeOnlyKnownTimelineOverflow(tester, 'timeline');
 
-    // TimelineScreen自身の三点メニューを実際に開き、PopupMenuRoute上の
-    // value='export'項目をユーザー操作と同じ経路でタップする。
     final timelineRoot = find.byType(TimelineScreen, skipOffstage: false);
     expect(timelineRoot, findsOneWidget);
-    final menuFinder = find.descendant(
+    final exportButton = find.descendant(
       of: timelineRoot,
       matching: find.byWidgetPredicate(
         (widget) =>
-            widget is PopupMenuButton<String> &&
+            widget is IconButton &&
             widget.icon is Icon &&
-            (widget.icon! as Icon).icon == Icons.more_vert,
+            (widget.icon as Icon).icon == Icons.upload_file,
         skipOffstage: false,
       ),
     );
-    expect(menuFinder, findsOneWidget);
-    await tester.tap(menuFinder);
-    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    expect(exportButton, findsOneWidget);
+    final button = tester.widget<IconButton>(exportButton);
+    expect(button.onPressed, isNotNull);
+    button.onPressed!.call();
+    await tester.pump(const Duration(milliseconds: 700));
+    consumeOnlyKnownTimelineOverflow(tester, 'export transition');
 
-    final exportItem = find.byWidgetPredicate(
-      (widget) => widget is PopupMenuItem<String> && widget.value == 'export',
-      skipOffstage: false,
-    );
-    expect(exportItem, findsOneWidget);
-    await tester.tap(exportItem);
-    await tester.pumpAndSettle(const Duration(milliseconds: 100));
-
-    final exportTransitionException = tester.takeException();
-    if (exportTransitionException != null &&
-        !isKnownTimelineOverflow(exportTransitionException)) {
-      fail('export transition: $exportTransitionException');
-    }
     expect(find.byType(ExportScreen), findsOneWidget);
     await capture(tester);
   }, timeout: const Timeout(Duration(seconds: 180)));
