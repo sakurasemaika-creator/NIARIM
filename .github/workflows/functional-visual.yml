@@ -2,11 +2,6 @@ name: Functional Visual Audit
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - dev_branch
-    paths:
-      - '.github/workflows/functional-visual.yml'
 
 jobs:
   functional-render:
