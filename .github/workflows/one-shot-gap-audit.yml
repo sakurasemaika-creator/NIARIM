@@ -1,0 +1,39 @@
+name: One-shot Functional Gap Audit
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-gap-audit.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: New real-operation audits
+        run: |
+          flutter test test/functional_audit_batch27_test.dart --reporter expanded
+          flutter test test/functional_audit_batch28_test.dart --reporter expanded
+          flutter test test/functional_audit_batch29_test.dart --reporter expanded
+          flutter test test/functional_audit_batch30_test.dart --reporter expanded
+      - name: Selection regressions
+        run: |
+          flutter test test/functional_audit_batch20_test.dart --reporter expanded
+          flutter test test/functional_audit_batch19_test.dart --reporter expanded
+          flutter test test/functional_audit_batch18_test.dart --reporter expanded
+      - name: Save screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: gap-audit-screenshots
+          path: build/functional-visual/*.png
+          if-no-files-found: warn
+          retention-days: 3
