@@ -1,0 +1,34 @@
+name: One-shot Direct Engine Coverage
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-direct-engine-coverage.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Run direct engine coverage batches with retry
+        shell: bash
+        run: |
+          set +e
+          for attempt in 1 2; do
+            timeout 1200s flutter test \
+              test/direct_engine_coverage_batch11_test.dart \
+              --reporter expanded
+            rc=$?
+            if [ $rc -eq 0 ]; then exit 0; fi
+            echo "direct engine coverage attempt $attempt failed rc=$rc"
+            sleep 10
+          done
+          exit 1
