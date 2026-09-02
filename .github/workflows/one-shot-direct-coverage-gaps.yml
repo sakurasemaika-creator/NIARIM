@@ -1,0 +1,65 @@
+name: One-shot Direct Coverage Gaps
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-direct-coverage-gaps.yml'
+
+jobs:
+  gaps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Find public methods and enum values never mentioned by tests
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          tests='\n'.join(p.read_text(encoding='utf-8',errors='ignore') for p in Path('test').rglob('*.dart'))
+          report=['# Direct test-reference gaps','']
+          pat=re.compile(r'^\s{2}(?:Future<[^>]+>|Future<void>|FutureOr<[^>]+>|void|bool|int|double|String|Uint8List|List<[^>]+>|Set<[^>]+>|Map<[^>]+>|[A-Z]\w*(?:\?)?)\s+([a-zA-Z]\w*)\s*\(',re.M)
+          gaps=[]
+          for root in [Path('lib/services'),Path('lib/engine')]:
+            for p in sorted(root.rglob('*.dart')):
+              s=p.read_text(encoding='utf-8',errors='ignore')
+              for name in sorted(set(pat.findall(s))):
+                if name.startswith('_') or name in {'dispose','toString','copyWith','toJson'}: continue
+                if re.search(r'\b'+re.escape(name)+r'\b',tests) is None:
+                  gaps.append((str(p),name))
+          report += ['## Public service/engine methods with no direct test reference']
+          report += [f'- `{p}` :: `{n}`' for p,n in gaps]
+
+          enum_gaps=[]
+          for p in sorted(Path('lib').rglob('*.dart')):
+            s=p.read_text(encoding='utf-8',errors='ignore')
+            for m in re.finditer(r'enum\s+(\w+)\s*\{([^}]*)\}',s,re.S):
+              enum=m.group(1)
+              for raw in m.group(2).split(','):
+                v=re.sub(r'//.*','',raw).strip().split('(')[0].strip()
+                if not re.fullmatch(r'[A-Za-z_]\w*',v): continue
+                token=f'{enum}.{v}'
+                if token not in tests:
+                  enum_gaps.append((str(p),token))
+          report += ['', '## Enum values with no direct test reference']
+          report += [f'- `{p}` :: `{n}`' for p,n in enum_gaps]
+
+          routes=set()
+          for p in Path('lib').rglob('*.dart'):
+            s=p.read_text(encoding='utf-8',errors='ignore')
+            routes.update(re.findall(r"path:\s*['\"]([^'\"]+)['\"]",s))
+          report += ['', '## Route literals with no direct test reference']
+          for r in sorted(routes):
+            if r not in tests: report.append(f'- `{r}`')
+
+          Path('build').mkdir(exist_ok=True)
+          Path('build/direct_coverage_gaps.md').write_text('\n'.join(report),encoding='utf-8')
+          print('\n'.join(report))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: direct-coverage-gaps
+          path: build/direct_coverage_gaps.md
+          retention-days: 7
