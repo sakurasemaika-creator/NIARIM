@@ -56,6 +56,7 @@ jobs:
           run_case onion_skin test/functional_audit_batch37_test.dart
           run_case whole_layer_transform test/functional_audit_batch38_test.dart
           run_case all_filters test/visual_reaudit_filters_test.dart
+          run_case export_camera test/visual_reaudit_export_camera_test.dart
 
           echo "visual reaudit failures=$failures"
           exit $failures
