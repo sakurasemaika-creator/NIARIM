@@ -1,0 +1,44 @@
+name: One-shot real selection audit
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-selection-real-audit.yml'
+      - 'scripts/one_shot_selection_real_audit.py'
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - name: Patch test imports
+        run: python3 scripts/one_shot_selection_real_audit.py
+      - name: Format
+        run: dart format test/functional_audit_batch20_test.dart
+      - name: Dependencies
+        run: flutter pub get
+      - name: Real selection functional test
+        run: flutter test test/functional_audit_batch20_test.dart --reporter expanded
+      - name: Analyze test scope
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings test/functional_audit_batch20_test.dart
+      - name: Commit verified test
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test/functional_audit_batch20_test.dart
+          git diff --cached --quiet && exit 0
+          git commit -m "test: verify real selection transform workflow"
+          git push origin HEAD:dev_branch
