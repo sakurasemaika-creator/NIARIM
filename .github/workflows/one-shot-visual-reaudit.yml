@@ -1,0 +1,69 @@
+name: One-shot Screenshot-first Visual Reaudit
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-visual-reaudit.yml'
+
+jobs:
+  visual-reaudit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+
+      - name: Reaudit past visual passes with real PNG output
+        shell: bash
+        run: |
+          set +e
+          failures=0
+          run_case() {
+            name="$1"; shift
+            echo "===== VISUAL REAUDIT: $name ====="
+            passed=0
+            for attempt in 1 2; do
+              timeout 600s flutter test "$@" --reporter expanded
+              rc=$?
+              if [ $rc -eq 0 ]; then
+                passed=1
+                break
+              fi
+              echo "$name attempt $attempt failed rc=$rc; retrying in 10s"
+              sleep 10
+            done
+            if [ $passed -ne 1 ]; then
+              failures=$((failures+1))
+              echo "FAILED: $name"
+            fi
+          }
+
+          run_case all_routes test/all_routes_screenshot_audit_test.dart
+          run_case builtin_brushes test/functional_audit_batch28_test.dart
+          run_case blur_mosaic test/functional_audit_batch33_test.dart
+          run_case all_tones test/functional_audit_batch34_test.dart
+          run_case all_stamps test/functional_audit_batch35_test.dart
+          run_case all_rulers test/functional_audit_batch36_test.dart
+          run_case onion_skin test/functional_audit_batch37_test.dart
+          run_case all_filters test/visual_reaudit_filters_test.dart
+
+          echo "visual reaudit failures=$failures"
+          exit $failures
+
+      - name: Upload screenshot-first visual audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-first-visual-reaudit
+          path: |
+            build/all-route-screenshots
+            build/functional-visual
+            build/visual-reaudit
+          if-no-files-found: warn
+          retention-days: 7
