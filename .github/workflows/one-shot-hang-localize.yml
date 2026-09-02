@@ -1,0 +1,85 @@
+name: One-shot Hang Localization
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-hang-localize.yml'
+
+jobs:
+  localize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+
+      - name: Instrument audit checkpoints in working tree
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('test/functional_audit_batch33_test.dart')
+          s = p.read_text(encoding='utf-8')
+          reps = [
+            ("final r = await _operate(tester, DrawingTool.blur, brushSize: 20);", "print('B33 blur: before operate');\n    final r = await _operate(tester, DrawingTool.blur, brushSize: 20);\n    print('B33 blur: after operate');"),
+            ("await _save(r.after, 96, 80, '${out.path}/canvas_blur_real.png');", "print('B33 blur: before save');\n    await _save(r.after, 96, 80, '${out.path}/canvas_blur_real.png');\n    print('B33 blur: after save');"),
+            ("r.undo.undo(); await tester.pump(const Duration(milliseconds:100));", "print('B33: before undo');\n    r.undo.undo(); print('B33: after undo call'); await tester.pump(const Duration(milliseconds:100)); print('B33: after undo pump');"),
+            ("r.undo.redo(); await tester.pump(const Duration(milliseconds:100));", "print('B33: before redo');\n    r.undo.redo(); print('B33: after redo call'); await tester.pump(const Duration(milliseconds:100)); print('B33: after redo pump');"),
+            ("final r = await _operate(tester, DrawingTool.mosaic, brushSize: 20);", "print('B33 mosaic: before operate');\n    final r = await _operate(tester, DrawingTool.mosaic, brushSize: 20);\n    print('B33 mosaic: after operate');"),
+            ("await tester.pumpWidget(MultiProvider", "print('B33 operate: before pumpWidget');\n  await tester.pumpWidget(MultiProvider"),
+            ("await tester.pump(const Duration(milliseconds:200));", "print('B33 operate: after pumpWidget, before 200ms pump');\n  await tester.pump(const Duration(milliseconds:200));\n  print('B33 operate: after 200ms pump');"),
+            ("final g=await tester.startGesture(pos,kind:PointerDeviceKind.touch); await tester.pump(); await g.up(); await tester.pump();", "print('B33 operate: before startGesture');\n  final g=await tester.startGesture(pos,kind:PointerDeviceKind.touch); print('B33 operate: after startGesture'); await tester.pump(); print('B33 operate: after down pump'); await g.up(); print('B33 operate: after up'); await tester.pump(); print('B33 operate: after up pump');"),
+            ("expect(undo.undoCount,1); final after=_read", "print('B33 operate: undoCount=${undo.undoCount}');\n  expect(undo.undoCount,1); final after=_read"),
+          ]
+          for old,new in reps:
+            if old not in s:
+              raise SystemExit(f'b33 anchor missing: {old[:60]}')
+            s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+          p = Path('test/functional_audit_batch37_test.dart')
+          s = p.read_text(encoding='utf-8')
+          reps = [
+            ("final ps = ProjectService();\n    await ps.init();", "print('B37: before ProjectService init');\n    final ps = ProjectService();\n    await ps.init();\n    print('B37: after ProjectService init');"),
+            ("await tester.pumpWidget(MultiProvider(", "print('B37: before pumpWidget');\n    await tester.pumpWidget(MultiProvider("),
+            ("await tester.pump(const Duration(milliseconds: 250));", "print('B37: after pumpWidget before initial pump');\n    await tester.pump(const Duration(milliseconds: 250));\n    print('B37: after initial pump');"),
+            ("final off = await _capture(boundaryKey);", "print('B37: before off capture');\n    final off = await _capture(boundaryKey);\n    print('B37: after off capture');"),
+            ("hostSetState!(() {", "print('B37: before enable onion');\n    hostSetState!(() {"),
+            ("await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 250)));", "print('B37: before onion wait');\n    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 250)));\n    print('B37: after onion wait');"),
+            ("final on = await _capture(boundaryKey);", "print('B37: before on capture');\n    final on = await _capture(boundaryKey);\n    print('B37: after on capture');"),
+            ("await File('${out.path}/onion_canvas_real.png').writeAsBytes(on.png);", "print('B37: before png write');\n    await File('${out.path}/onion_canvas_real.png').writeAsBytes(on.png);\n    print('B37: after png write / test end');"),
+          ]
+          for old,new in reps:
+            if old not in s:
+              raise SystemExit(f'b37 anchor missing: {old[:60]}')
+            s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+      - name: Run instrumented Batch33
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p build/hang-localize
+          set -o pipefail
+          timeout 45s flutter test test/functional_audit_batch33_test.dart --reporter expanded 2>&1 | tee build/hang-localize/batch33-debug.log
+
+      - name: Run instrumented Batch37
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 45s flutter test test/functional_audit_batch37_test.dart --reporter expanded 2>&1 | tee build/hang-localize/batch37-debug.log
+
+      - name: Save localization logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: hang-localization
+          path: build/hang-localize/*.log
+          retention-days: 3
