@@ -304,7 +304,7 @@ class NiatraSerializer {
   static Map<String, dynamic> _serializeStamp(Stamp s) => {
         'id': s.id, 'name': s.name, 'imagePath': s.imagePath, 'isFavorite': s.isFavorite,
         'rotation': s.rotation, 'density': s.density, 'scatter': s.scatter,
-        'pixelMode': s.pixelMode,
+        'opacity': s.opacity, 'pixelMode': s.pixelMode,
       };
 
   static Stamp _deserializeStamp(Map<String, dynamic> j) => Stamp(
@@ -315,6 +315,7 @@ class NiatraSerializer {
         rotation: j['rotation'] as bool? ?? false,
         density: (j['density'] as num?)?.toDouble() ?? 1.0,
         scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+        opacity: (j['opacity'] as int?) ?? 100,
         pixelMode: j['pixelMode'] as bool? ?? false,
       );
 

@@ -259,13 +259,17 @@ class _StampTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final stamp = stamps[index];
         final isSelected = current?.id == stamp.id;
+        final builtIn = stampService.isBuiltIn(stamp.id);
         return GestureDetector(
           onTap: () {
             stampService.selectStamp(stamp.id);
             onClose();
           },
-          // 長押しでスタンプ設定（回転・密度・散布）を編集
-          onLongPress: () => _showStampSettingsDialog(context, stampService, stamp),
+          // 組み込みスタンプはStampService側で編集不可なので、
+          // 保存できたように見える偽の編集経路を出さない。複製後は編集可能。
+          onLongPress: builtIn
+              ? null
+              : () => _showStampSettingsDialog(context, stampService, stamp),
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -294,6 +298,7 @@ class _StampTab extends StatelessWidget {
   void _showStampSettingsDialog(BuildContext context, StampService service, Stamp stamp) {
     final l10n = AppLocalizations.of(context)!;
     bool rotation = stamp.rotation;
+    int opacity = stamp.opacity;
     double density = stamp.density;
     double scatter = stamp.scatter;
     showDialog(
@@ -314,19 +319,37 @@ class _StampTab extends StatelessWidget {
               ),
               Row(
                 children: [
+                  Text(l10n.brushSettingsOpacityLabel, style: const TextStyle(fontSize: 12)),
+                  Expanded(
+                    child: SteppedSlider(
+                      value: opacity.toDouble(), min: 1, max: 100, step: 1,
+                      label: '$opacity%',
+                      onChanged: (v) => setS(() => opacity = v.round()),
+                    ),
+                  ),
+                  EditableSliderValue(
+                    text: '$opacity%',
+                    style: const TextStyle(fontSize: 12),
+                    value: opacity.toDouble(), min: 1, max: 100, isInt: true,
+                    onChanged: (v) => setS(() => opacity = v.round()),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
                   Text(l10n.stampDensityLabel, style: const TextStyle(fontSize: 12)),
                   Expanded(
                     child: SteppedSlider(
-                      value: density, min: 0.1, max: 1.0, step: 0.01,
-                      label: '${(density * 100).round()}%',
+                      value: density.clamp(0.1, 5.0), min: 0.1, max: 5.0, step: 0.1,
+                      label: density.toStringAsFixed(1),
                       onChanged: (v) => setS(() => density = v),
                     ),
                   ),
                   EditableSliderValue(
-                    text: '${(density * 100).round()}%',
+                    text: density.toStringAsFixed(1),
                     style: const TextStyle(fontSize: 12),
-                    value: (density * 100).round(), min: 10, max: 100,
-                    onChanged: (v) => setS(() => density = v / 100.0),
+                    value: density, min: 0.1, max: 5.0,
+                    onChanged: (v) => setS(() => density = v.toDouble()),
                   ),
                 ],
               ),
@@ -355,7 +378,11 @@ class _StampTab extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 service.updateStamp(stamp.copyWith(
-                    rotation: rotation, density: density, scatter: scatter));
+                  rotation: rotation,
+                  opacity: opacity,
+                  density: density,
+                  scatter: scatter,
+                ));
                 Navigator.pop(ctx);
               },
               child: Text(l10n.commonOk),
