@@ -96,9 +96,15 @@ class StampEngine {
 
   /// 入力イベントの分割数に依存しないよう、折れ線全体の累積距離に沿って
   /// [spacing]間隔で点を置き直す。各セグメントの先頭で間隔をリセットしない。
+  ///
+  /// 同一直線を2点で受け取った場合と多数のmoveイベントで受け取った場合で、
+  /// 浮動小数点の丸め誤差だけを理由にスタンプのラスタ境界が1px変わらないよう、
+  /// 再サンプリング後の座標を1e-6px精度へ正規化する。
   List<ui.Offset> _resamplePath(List<ui.Offset> points, double spacing) {
-    if (points.length <= 1) return List<ui.Offset>.of(points);
-    final result = <ui.Offset>[points.first];
+    if (points.length <= 1) {
+      return points.map(_stableOffset).toList(growable: false);
+    }
+    final result = <ui.Offset>[_stableOffset(points.first)];
     var distanceSinceStamp = 0.0;
 
     for (int i = 1; i < points.length; i++) {
@@ -110,17 +116,26 @@ class StampEngine {
       if (segmentLength <= 1e-9) continue;
 
       var consumed = 0.0;
-      while (distanceSinceStamp + (segmentLength - consumed) >= spacing) {
-        final needed = spacing - distanceSinceStamp;
+      while (distanceSinceStamp + (segmentLength - consumed) >= spacing - 1e-9) {
+        final needed = math.max(0.0, spacing - distanceSinceStamp);
         consumed += needed;
         final t = (consumed / segmentLength).clamp(0.0, 1.0);
-        result.add(ui.Offset(a.dx + dx * t, a.dy + dy * t));
+        result.add(_stableOffset(ui.Offset(
+          a.dx + dx * t,
+          a.dy + dy * t,
+        )));
         distanceSinceStamp = 0.0;
       }
       distanceSinceStamp += segmentLength - consumed;
+      if (distanceSinceStamp.abs() < 1e-9) distanceSinceStamp = 0.0;
     }
     return result;
   }
+
+  ui.Offset _stableOffset(ui.Offset p) => ui.Offset(
+        (p.dx * 1000000).round() / 1000000,
+        (p.dy * 1000000).round() / 1000000,
+      );
 
   /// 端点も含めてすべてのスタンプがストローク方向へ追従するよう、先頭では
   /// 次点、末尾では前点、中間では前後点を使って接線方向を求める。
