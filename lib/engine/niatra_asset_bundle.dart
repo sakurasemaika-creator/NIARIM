@@ -19,7 +19,7 @@ import 'niatra_serializer.dart';
 /// 画像本体も同梱するための補助レイヤー。
 ///
 /// 旧 `.niatra` は [NiatraSerializer] がそのまま読めるよう一切変更せず、
-/// このクラスが付与する [creativeAssetsVersion] が存在する新形式だけを
+/// このクラスが付与する `creativeAssetsVersion` が存在する新形式だけを
 /// フルモデル＋埋め込み画像として復元する。
 class NiatraAssetBundle {
   static const _dataFile = 'data.json';
@@ -113,15 +113,18 @@ class NiatraAssetBundle {
   /// 後続のNiatraSerializer.applyTo()による二重追加を防ぐ。
   ///
   /// 旧形式（creativeAssetsVersionなし）は何もせず、従来のapplyTo()へ委ねる。
+  /// Webでは永続ファイルパスを作れないため画像だけ未復元になるが、完全な
+  /// モデルJSON自体は同じ経路で復元し、旧Serializerによる項目欠落を防ぐ。
   static Future<void> restoreEmbeddedAssets(
     NiatraData data, {
     required BrushService brush,
     required ToneService tone,
     required StampService stamp,
   }) async {
-    if (data.raw[_versionKey] != _version || kIsWeb) return;
+    if (data.raw[_versionKey] != _version) return;
 
-    final base = await getApplicationDocumentsDirectory();
+    final String? basePath =
+        kIsWeb ? null : (await getApplicationDocumentsDirectory()).path;
     final importNonce = DateTime.now().microsecondsSinceEpoch;
 
     final brushesJson = data.raw['brushes'] as List<dynamic>?;
@@ -134,7 +137,7 @@ class NiatraAssetBundle {
         json['customImagePath'] = await _restoreImage(
           data,
           json,
-          basePath: base.path,
+          basePath: basePath,
           category: 'Brushes',
           id: id,
           pathKey: 'customImagePath',
@@ -154,7 +157,7 @@ class NiatraAssetBundle {
         json['texturePath'] = await _restoreImage(
           data,
           json,
-          basePath: base.path,
+          basePath: basePath,
           category: 'Tones',
           id: id,
           pathKey: 'texturePath',
@@ -174,7 +177,7 @@ class NiatraAssetBundle {
         json['imagePath'] = await _restoreImage(
           data,
           json,
-          basePath: base.path,
+          basePath: basePath,
           category: 'Stamps',
           id: id,
           pathKey: 'imagePath',
@@ -214,13 +217,14 @@ class NiatraAssetBundle {
   static Future<String?> _restoreImage(
     NiatraData data,
     Map<String, dynamic> json, {
-    required String basePath,
+    required String? basePath,
     required String category,
     required String id,
     required String pathKey,
   }) async {
     final embeddedPath = json[_embeddedImageKey] as String?;
     if (embeddedPath != null) {
+      if (basePath == null) return null;
       final entry = data.archive.findFile(embeddedPath);
       if (entry == null) return null;
       final ext = _safeExtension(embeddedPath);
@@ -233,6 +237,7 @@ class NiatraAssetBundle {
 
     // 新形式なのに画像が埋め込まれていない場合でも、同一端末内で元パスが
     // まだ有効なら利用できる。別端末で存在しない絶対パスはnullへ落とす。
+    if (basePath == null) return null;
     final legacyPath = json[pathKey] as String?;
     if (legacyPath == null || legacyPath.isEmpty) return null;
     try {
