@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 class RulerPanel extends StatelessWidget {
   final Ruler? activeRuler;
@@ -41,7 +42,8 @@ class RulerPanel extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  Text(l10n.rulerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
+                  Text(l10n.rulerPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                   const Spacer(),
                   if (activeRuler != null)
                     TextButton(
@@ -117,7 +119,8 @@ class RulerPanel extends StatelessWidget {
     return ListTile(
       dense: true,
       leading: Icon(icon, size: 18, color: isActive ? primary : null),
-      title: Text(label, style: TextStyle(fontSize: 12, fontFamily: 'Kuramubon', color: isActive ? primary : null)),
+      title: Text(label, style: TextStyle(fontSize: 12, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, color: isActive ? primary : null)),
       selected: isActive,
       selectedTileColor: primary.withValues(alpha: 0.1),
       onTap: () {

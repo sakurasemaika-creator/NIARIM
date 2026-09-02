@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import 'help_diagrams.dart';
+import '../../config/font_fallback.dart';
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
@@ -231,7 +232,8 @@ class _HelpScreenState extends State<HelpScreen> {
                         child: Icon(Icons.help_outline, color: scheme.primary, size: 18),
                       ),
                       // 項目名用フォント（くらむぼん）。
-                      title: Text(entry.title, style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w700, fontSize: 14)),
+                      title: Text(entry.title, style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, fontWeight: FontWeight.w700, fontSize: 14)),
                       subtitle: Text(entry.category, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                       children: [
                         // 実画面の簡易図解は用いず、文章での説明のみとする。

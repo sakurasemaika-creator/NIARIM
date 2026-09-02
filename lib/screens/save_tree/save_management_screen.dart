@@ -20,6 +20,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
+import '../../config/font_fallback.dart';
 
 export 'save_tree_screen.dart' show SaveTreeEntryMode, parseSaveTreeEntryMode;
 
@@ -406,6 +407,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       const SizedBox(height: 4),

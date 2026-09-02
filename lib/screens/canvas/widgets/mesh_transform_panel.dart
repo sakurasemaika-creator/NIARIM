@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 /// レイヤー全体の自由変形・メッシュ変形のコントロールパネル。
 /// 実際の格子点ドラッグ・ワーププレビューはCanvasArea側
@@ -49,7 +50,8 @@ class MeshTransformPanel extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Text(l10n.meshTransformPanelTitle,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),

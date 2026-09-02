@@ -7,6 +7,7 @@ import '../../../models/tone.dart';
 import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 /// トーンの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -68,7 +69,8 @@ class _TonePanelState extends State<TonePanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.toneTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                  Text(l10n.toneTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                   const Spacer(),
                   IconButton(
                     icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
@@ -95,17 +97,20 @@ class _TonePanelState extends State<TonePanel> {
                   children: [
                     TextButton.icon(
                       icon: const Icon(Icons.folder_outlined, size: 15),
-                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       onPressed: () => _openFolderManagement(context, toneService),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       onPressed: () => _createFromImage(context, toneService),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.file_upload_outlined, size: 15),
-                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       onPressed: () => _importTone(context, toneService),
                     ),
                   ],
@@ -166,7 +171,8 @@ class _TonePanelState extends State<TonePanel> {
                             selected: isSelected,
                             leading: Icon(Icons.texture, size: 16,
                                 color: isSelected ? Theme.of(context).colorScheme.primary : null),
-                            title: Text(tone.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
+                            title: Text(tone.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -213,7 +219,8 @@ class _TonePanelState extends State<TonePanel> {
   Widget _folderChip(String label, bool selected, VoidCallback onTap) => Padding(
         padding: const EdgeInsets.only(right: 4),
         child: ChoiceChip(
-          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           selected: selected,
           onSelected: (_) => onTap(),
           visualDensity: VisualDensity.compact,
@@ -339,7 +346,8 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.toneEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+            Text(l10n.toneEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             const SizedBox(height: 12),
             TextField(
               controller: _nameController,

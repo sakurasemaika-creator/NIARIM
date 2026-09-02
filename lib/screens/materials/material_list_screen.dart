@@ -7,6 +7,7 @@ import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
 
 /// 素材一覧画面。
 /// サムネイル・種類アイコン・ファイル名・容量等を一覧表示し、
@@ -72,7 +73,8 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                       child: Icon(Icons.perm_media_outlined, size: 40, color: scheme.primary),
                     ),
                     const SizedBox(height: 16),
-                    Text(l10n.materialEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                    Text(l10n.materialEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     const SizedBox(height: 4),
                     Text(l10n.materialEmptyHint,
                         textAlign: TextAlign.center,

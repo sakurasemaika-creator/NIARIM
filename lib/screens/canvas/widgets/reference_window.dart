@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/theme_service.dart';
+import '../../../config/font_fallback.dart';
 
 /// 資料ウィンドウ（アニメ制作では三面図・キャラクター設定表・背景資料などを
 /// 見ながら作業することがほとんどのため、任意の参考画像を常に表示できる
@@ -85,7 +86,8 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(l10n.referenceWindowTitle,
-                            style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon'),
+                            style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                             overflow: TextOverflow.ellipsis),
                       ),
                       InkWell(

@@ -4,6 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/canvas_size_preset.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../config/font_fallback.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -44,6 +45,7 @@ class CanvasSizePresetManageScreen extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
@@ -96,7 +98,8 @@ class _PresetTile extends StatelessWidget {
         leading: const Icon(Icons.aspect_ratio),
         title: Text(
           preset.name,
-          style: const TextStyle(fontFamily: 'Kuramubon'),
+          style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
         ),
         subtitle: Text('${preset.width}×${preset.height}'),
         trailing: Row(

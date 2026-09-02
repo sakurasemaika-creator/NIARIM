@@ -9,6 +9,7 @@ import '../../widgets/stepped_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -286,6 +287,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -358,6 +360,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -460,6 +463,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 const SizedBox(height: 4),

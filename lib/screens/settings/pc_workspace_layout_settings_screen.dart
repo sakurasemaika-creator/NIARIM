@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../services/settings_service.dart';
+import '../../config/font_fallback.dart';
 
 /// PC専用ワークスペースUIのドッキングパネルの並び順・幅を調整する設定画面。
 class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
@@ -130,6 +131,7 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w700,
           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),

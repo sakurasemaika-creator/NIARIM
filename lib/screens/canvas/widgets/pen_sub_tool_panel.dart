@@ -9,6 +9,7 @@ import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
+import '../../../config/font_fallback.dart';
 
 /// ペンツール長押し・上スワイプで表示されるサブツールタブUI
 /// ブラシ / トーン / スタンプ
@@ -164,7 +165,8 @@ class _BrushTab extends StatelessWidget {
           selected: isSelected,
           leading: Icon(Icons.brush, size: 16,
               color: isSelected ? Theme.of(context).colorScheme.primary : null),
-          title: Text(brush.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon')),
+          title: Text(brush.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           subtitle: Text(l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
               style: const TextStyle(fontSize: 10)),
           trailing: GestureDetector(
@@ -226,7 +228,8 @@ class _ToneTab extends StatelessWidget {
               children: [
                 const Icon(Icons.grid_on, size: 20),
                 const SizedBox(height: 2),
-                Text(tone.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon'),
+                Text(tone.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                     textAlign: TextAlign.center, maxLines: 2),
               ],
             ),
@@ -284,7 +287,8 @@ class _StampTab extends StatelessWidget {
               children: [
                 const Icon(Icons.star, size: 20),
                 const SizedBox(height: 2),
-                Text(stamp.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon'),
+                Text(stamp.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                     textAlign: TextAlign.center, maxLines: 2),
               ],
             ),
@@ -461,7 +465,8 @@ class LassoFillToneSheet extends StatelessWidget {
                     children: [
                       const Icon(Icons.grid_on, size: 16),
                       const SizedBox(height: 2),
-                      Text(tone.name, style: const TextStyle(fontSize: 7, fontFamily: 'Kuramubon'),
+                      Text(tone.name, style: const TextStyle(fontSize: 7, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                           textAlign: TextAlign.center, maxLines: 2),
                     ],
                   ),

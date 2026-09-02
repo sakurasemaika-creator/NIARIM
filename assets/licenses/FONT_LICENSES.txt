@@ -51,6 +51,38 @@ License     : This Font Software is licensed under the SIL Open Font License,
 License URL : https://openfontlicense.org
 
 
+--- assets/fonts/NotoSerifKRSubset.ttf / NotoSerifSCSubset.ttf
+    （韓国語・簡体字の本文用。Noto Serif KR / Noto Serif SC のサブセット）---
+--- assets/fonts/NotoSansKRBlackSubset.ttf / NotoSansSCBlackSubset.ttf
+    （韓国語・簡体字の見出し用。Noto Sans KR / Noto Sans SC の Black(900) の
+      サブセット）---
+
+これら4つは、Google Fonts で配布されている下記の可変フォントを、
+(1) 目的の太さで固定し、(2) 本アプリのUIに実際に出る文字だけを残す、
+という加工をした**改変版**です。原本は4つで75MBあり、そのまま同梱すると
+APKが肥大化するため。加工手順は tool/build_fallback_fonts.py にあります。
+
+  Noto Serif KR : https://github.com/google/fonts/tree/main/ofl/notoserifkr
+  Noto Serif SC : https://github.com/google/fonts/tree/main/ofl/notoserifsc
+  Noto Sans KR  : https://github.com/google/fonts/tree/main/ofl/notosanskr
+  Noto Sans SC  : https://github.com/google/fonts/tree/main/ofl/notosanssc
+
+Copyright（Noto Serif KR / SC。フォントファイル内の記載のまま）:
+  (c) 2017-2024 Adobe (http://www.adobe.com/).
+
+Copyright（Noto Sans KR / SC。フォントファイル内の記載のまま）:
+  (c) 2014-2021 Adobe (http://www.adobe.com/),
+  with Reserved Font Name 'Source'.
+
+License     : SIL Open Font License 1.1（本文は下記）
+License URL : https://scripts.sil.org/OFL
+
+※ SIL OFL 第3条は、改変版に Reserved Font Name を使うことを禁じています。
+   上記のとおり予約名は 'Source' であり、本アプリが付けているファミリー名
+   （NotoSerifKRSubset / NotoSerifSCSubset / NotoSansKRBlackSubset /
+   NotoSansSCBlackSubset）はこれを含みません。
+
+
 以下は SIL Open Font License 1.1 の本文（全文）です。
 ========================================================
 

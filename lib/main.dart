@@ -41,7 +41,14 @@ void _registerBundledFontLicenses() {
   LicenseRegistry.addLicense(() async* {
     final text = await rootBundle.loadString('assets/licenses/FONT_LICENSES.txt');
     yield LicenseEntryWithLineBreaks(
-      const ['HakkouMincho', 'Kuramubon', 'Noto Serif JP', 'Dela Gothic One'],
+      const [
+        'HakkouMincho',
+        'Kuramubon',
+        'Noto Serif JP',
+        'Dela Gothic One',
+        'Noto Serif KR / SC',
+        'Noto Sans KR / SC',
+      ],
       text,
     );
   });

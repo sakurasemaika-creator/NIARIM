@@ -6,6 +6,7 @@ import '../../../services/performance_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 class OnionSkinPanel extends StatefulWidget {
   final OnionSkinSettings settings;
@@ -91,7 +92,8 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
               Row(
                 children: [
                   Text(l10n.onionSkinTitle,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                   const Spacer(),
                   Switch(
                     value: _settings.enabled,
@@ -265,7 +267,8 @@ class _OnionSideSection extends StatelessWidget {
           children: [
             Text(label,
                 style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                    fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             const Spacer(),
             if (isCustom)
               Switch(

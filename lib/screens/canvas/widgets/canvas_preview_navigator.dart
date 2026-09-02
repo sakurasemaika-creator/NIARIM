@@ -6,6 +6,7 @@ import '../../../engine/layer_compositor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
+import '../../../config/font_fallback.dart';
 
 /// キャンバスプレビュー（ナビゲーター）：拡大表示中でも作品全体を縮小した
 /// 状態で常に確認できる、プロ向けペイントソフトのナビゲーターパネルに
@@ -118,7 +119,8 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(l10n.canvasPreviewNavigatorTitle,
-                      style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon'),
+                      style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                       overflow: TextOverflow.ellipsis),
                 ),
                 InkWell(onTap: widget.onClose, child: Icon(Icons.close, size: 16, color: theme.textColor)),

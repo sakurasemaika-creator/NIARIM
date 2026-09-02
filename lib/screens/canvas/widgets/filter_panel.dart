@@ -21,6 +21,7 @@ import '../../../widgets/progress_dialog.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 /// 描画フィルターパネル。
 /// フィルターの選択・パラメータ調整・プレビュー・適用を行う。
@@ -223,7 +224,8 @@ class _FilterPanelState extends State<FilterPanel> {
                 children: [
                   Text(
                     bulk != null ? l10n.filterPanelTitleBulk(bulk.length) : l10n.filterPanelTitle,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon'),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                   ),
                   const Spacer(),
                   IconButton(

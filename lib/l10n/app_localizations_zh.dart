@@ -4822,7 +4822,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get privacyPolicyArt3Body =>
-      '本应用内置以下第三方服务，各服务提供商可能在提供各自服务所需的范围内获取信息。本应用的开发者未实现独立获取或保存这些信息的功能（各服务所获取信息的管理，依照该服务提供商各自的隐私政策办理）。\n\n【广告投放（Google AdMob）】\n免费版通过Google AdMob投放广告。出于广告投放、效果测量、防止不正当行为等目的，Google或其关联公司可能会获取并使用广告标识符（Advertising ID）等设备信息。有关获取及使用的详情，请参阅Google隐私政策（https://policies.google.com/privacy）。用户可通过设备设置（如Android设置应用中的「隐私」等）重置广告标识符或停用个性化广告。若您位于欧洲经济区（EEA）、英国或瑞士，可在启动时显示的同意表单中选择广告个性化相关的同意设置，并可随时通过本画面下方的「变更广告同意设置」按钮进行修改。\n\n【应用内购买（Google Play Billing）】\n高级功能的购买通过Google Play的结算系统进行。开发者不会直接获取或保存信用卡号等结算信息。结算相关信息的处理依照Google Play的规定。\n\n【崩溃分析・使用情况分析】\n本应用目前未内置以崩溃分析、使用情况分析为目的的SDK。今后如引入此类服务，将更新本政策并在本应用内进行公告。';
+      '本应用内置以下第三方服务，各服务提供商可能在提供各自服务所需的范围内获取信息。本应用的开发者未实现独立获取或保存这些信息的功能（各服务所获取信息的管理，依照该服务提供商各自的隐私政策办理）。\n\n【广告投放（Google AdMob）】\n免费版通过Google AdMob投放广告。出于广告投放、效果测量、防止不正当行为等目的，Google或其关联公司可能会获取并使用广告标识符（Advertising ID）等设备信息。有关获取及使用的详情，请参阅Google隐私政策（https://policies.google.com/privacy）。用户可通过设备设置（如Android设置应用中的「隐私」等）重置广告标识符或停用个性化广告。若您位于欧洲经济区（EEA）、英国或瑞士，可在启动时显示的同意表单中选择广告个性化相关的同意设置，并可随时通过本画面下方的「变更广告同意设置」按钮进行修改。\n\n【应用内购买（Google Play Billing）】\n高级功能的购买通过Google Play的结算系统进行。开发者不会直接获取或保存信用卡号等结算信息。结算相关信息的处理依照Google Play的规定。\n\n【下载附加字体（GitHub）】\n仅当您在设置界面的「字体管理」中选择下载附加字体时，才会与字体文件的分发方 GitHub（GitHub, Inc.）的服务器进行通信。该通信仅在您选择下载时发生，应用启动时或正常使用过程中不会发生。发送的仅为通信所必需的信息（IP 地址、所请求的字体文件等），不会发送作品数据或可识别您身份的信息。所获取信息的处理遵循 GitHub 的隐私声明（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）。\n\n【崩溃分析・使用情况分析】\n本应用目前未内置以崩溃分析、使用情况分析为目的的SDK。今后如引入此类服务，将更新本政策并在本应用内进行公告。';
 
   @override
   String get privacyPolicyArt4Title => '第4条（关于Cookie等跟踪技术）';
@@ -10671,7 +10671,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get privacyPolicyArt3Body =>
-      '本應用程式內建下列第三方服務，各服務提供者得於提供各自服務所需之範圍內取得資訊。本應用程式之開發者並未實作獨立取得或保存此等資訊之功能（各服務所取得資訊之管理，依各該服務提供者之隱私權政策辦理）。\n\n【廣告投放（Google AdMob）】\n免費版透過Google AdMob投放廣告。基於廣告投放、成效衡量、防止不當行為等目的，Google或其關係企業可能取得並使用廣告識別碼（Advertising ID）等裝置資訊。關於取得及使用之詳情，請參閱Google隱私權政策（https://policies.google.com/privacy）。使用者可透過裝置設定（如Android設定應用程式之「隱私權」等）重設廣告識別碼或停用個人化廣告。若您位於歐洲經濟區（EEA）、英國或瑞士，可於啟動時顯示之同意表單中選擇廣告個人化相關之同意設定，亦可隨時透過本畫面下方之「變更廣告同意設定」按鈕進行修改。\n\n【應用程式內購買（Google Play Billing）】\n進階功能之購買透過Google Play之付款系統進行。開發者不會直接取得或保存信用卡卡號等付款資訊。付款相關資訊之處理依Google Play之規定辦理。\n\n【當機分析・使用狀況分析】\n本應用程式目前未內建以當機分析、使用狀況分析為目的之SDK。日後如導入此類服務，將更新本政策並於本應用程式內公告。';
+      '本應用程式內建下列第三方服務，各服務提供者得於提供各自服務所需之範圍內取得資訊。本應用程式之開發者並未實作獨立取得或保存此等資訊之功能（各服務所取得資訊之管理，依各該服務提供者之隱私權政策辦理）。\n\n【廣告投放（Google AdMob）】\n免費版透過Google AdMob投放廣告。基於廣告投放、成效衡量、防止不當行為等目的，Google或其關係企業可能取得並使用廣告識別碼（Advertising ID）等裝置資訊。關於取得及使用之詳情，請參閱Google隱私權政策（https://policies.google.com/privacy）。使用者可透過裝置設定（如Android設定應用程式之「隱私權」等）重設廣告識別碼或停用個人化廣告。若您位於歐洲經濟區（EEA）、英國或瑞士，可於啟動時顯示之同意表單中選擇廣告個人化相關之同意設定，亦可隨時透過本畫面下方之「變更廣告同意設定」按鈕進行修改。\n\n【應用程式內購買（Google Play Billing）】\n進階功能之購買透過Google Play之付款系統進行。開發者不會直接取得或保存信用卡卡號等付款資訊。付款相關資訊之處理依Google Play之規定辦理。\n\n【下載附加字型（GitHub）】\n僅當您在設定畫面的「字型管理」中選擇下載附加字型時，才會與字型檔案的散布方 GitHub（GitHub, Inc.）的伺服器進行通訊。該通訊僅在您選擇下載時發生，應用程式啟動時或正常使用過程中不會發生。傳送的僅為通訊所必需的資訊（IP 位址、所請求的字型檔案等），不會傳送作品資料或可識別您身分的資訊。所取得資訊的處理遵循 GitHub 的隱私權聲明（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）。\n\n【當機分析・使用狀況分析】\n本應用程式目前未內建以當機分析、使用狀況分析為目的之SDK。日後如導入此類服務，將更新本政策並於本應用程式內公告。';
 
   @override
   String get privacyPolicyArt4Title => '第4條（關於Cookie等追蹤技術）';

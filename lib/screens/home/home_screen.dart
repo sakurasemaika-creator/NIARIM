@@ -27,6 +27,7 @@ import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
+import '../../config/font_fallback.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -451,6 +452,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   l10n.homeFavoritesOnly,
                                   style: const TextStyle(
                                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                                   ),
                                 ),
                                 selected: _showFavoritesOnly,
@@ -800,6 +802,7 @@ class _HomeScreenState extends State<HomeScreen>
                     style: const TextStyle(
                       fontSize: 13,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                 ),
@@ -835,6 +838,7 @@ class _HomeTabBar extends StatelessWidget {
       fontSize: 14,
       fontWeight: FontWeight.w600,
       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
     );
     // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
     final naturalWidths = labels.map((label) {
@@ -972,7 +976,8 @@ class _SharedScreenState extends State<SharedScreen> {
                 FilterChip(
                   label: Text(
                     l10n.homeFavoritesOnly,
-                    style: const TextStyle(fontFamily: 'Kuramubon'),
+                    style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                   ),
                   selected: _showFavoritesOnly,
                   onSelected: (v) => setState(() => _showFavoritesOnly = v),
@@ -1130,7 +1135,8 @@ class _SharedTab extends StatelessWidget {
           ),
           title: Text(
             project.name,
-            style: const TextStyle(fontFamily: 'Kuramubon'),
+            style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
           ),
           subtitle: Text(
             l10n.homeProjectMeta(project.fps, project.durationSeconds),
@@ -1223,7 +1229,8 @@ class _SharedFolderScreen extends StatelessWidget {
                     ),
                     title: Text(
                       project.name,
-                      style: const TextStyle(fontFamily: 'Kuramubon'),
+                      style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                     ),
                     subtitle: Text(
                       l10n.homeProjectMeta(
@@ -1458,7 +1465,8 @@ class _TrashTab extends StatelessWidget {
             ),
             title: Text(
               project.name,
-              style: const TextStyle(fontFamily: 'Kuramubon'),
+              style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
             ),
             subtitle: Text(
               deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
@@ -1552,6 +1560,7 @@ class _BookmarkedTab extends StatelessWidget {
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 8),
@@ -1779,7 +1788,8 @@ class _WorkListItem extends StatelessWidget {
           file.path.split('/').last,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontFamily: 'Kuramubon'),
+          style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
         ),
         subtitle: Text(
           '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
@@ -2012,6 +2022,7 @@ class _FirstLaunchDialog extends StatelessWidget {
             l10n.homeFirstLaunchStart,
             style: const TextStyle(
               fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
               fontWeight: FontWeight.bold,
             ),
           ),

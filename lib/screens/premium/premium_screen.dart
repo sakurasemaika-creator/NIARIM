@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
 
 /// プレミアム画面（ハンバーガーメニューから開く）。
 ///
@@ -54,7 +55,8 @@ class PremiumScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(l10n.premiumActiveLabel,
                             style: TextStyle(
-                                color: scheme.onPrimary, fontSize: 16, fontFamily: 'Kuramubon', fontWeight: FontWeight.w700)),
+                                color: scheme.onPrimary, fontSize: 16, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, fontWeight: FontWeight.w700)),
                       ]),
                       if (premium.purchaseDate != null) ...[
                         const SizedBox(height: 8),
@@ -77,7 +79,8 @@ class PremiumScreen extends StatelessWidget {
               const SizedBox(height: 24),
             ],
             Text(l10n.premiumVsTitle,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             const SizedBox(height: 16),
             _comparisonTable(context, l10n),
             if (premium.isLaunchCampaignActive) ...[
@@ -88,7 +91,8 @@ class PremiumScreen extends StatelessWidget {
             if (!premium.isLaunchCampaignActive && !premium.hasPurchasedPremium) ...[
               const SizedBox(height: 24),
               Text(l10n.premiumPlanSectionTitle,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
               const SizedBox(height: 16),
               if (!premium.storeAvailable)
                 Padding(
@@ -188,7 +192,8 @@ class PremiumScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(l10n.premiumCampaignBannerTitle,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, fontFamily: 'Kuramubon')),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
               ),
             ]),
             const SizedBox(height: 8),
@@ -247,7 +252,8 @@ class PremiumScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(l10n.premiumHeroTitle,
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     const SizedBox(height: 4),
                     Text(l10n.premiumHeroSubtitle,
                         style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
@@ -287,7 +293,8 @@ class PremiumScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(label,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon', color: scheme.onSurfaceVariant, height: 1.3)),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, color: scheme.onSurfaceVariant, height: 1.3)),
         ],
       ),
     );
@@ -339,8 +346,10 @@ class PremiumScreen extends StatelessWidget {
           TableRow(
             decoration: BoxDecoration(color: scheme.surfaceContainerHighest),
             children: [
-              Padding(padding: const EdgeInsets.all(12), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
-              Padding(padding: const EdgeInsets.all(12), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.onSurfaceVariant))),
+              Padding(padding: const EdgeInsets.all(12), child: Text(l10n.premiumComparisonFeature, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback))),
+              Padding(padding: const EdgeInsets.all(12), child: Text(l10n.premiumComparisonFree, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, color: scheme.onSurfaceVariant))),
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
@@ -349,7 +358,8 @@ class PremiumScreen extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(l10n.premiumComparisonPremium,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.primary)),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, color: scheme.primary)),
                   ],
                 ),
               ),
@@ -452,12 +462,14 @@ class PremiumScreen extends StatelessWidget {
                               child: Text(l10n.premiumPlanRecommendedBadge,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon')),
+                                  style: const TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                             ),
                           ],
                         ),
                       ),
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', fontSize: 15)),
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, fontSize: 15)),
                     if (description.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),

@@ -49,6 +49,7 @@ import 'widgets/canvas_preview_navigator.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
+import '../../config/font_fallback.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
@@ -1507,6 +1508,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 12),
@@ -2459,6 +2461,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.canvasHelpRotationBody),
@@ -2468,6 +2471,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.canvasHelpTatechuyokoBody),
@@ -2477,6 +2481,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.canvasHelpRubyBody('{漢字|かんじ}')),

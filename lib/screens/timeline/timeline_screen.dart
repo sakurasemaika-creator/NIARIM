@@ -60,6 +60,7 @@ import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -1008,6 +1009,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
               ),
             ),
           ),
@@ -1482,6 +1484,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
             ),
@@ -2031,6 +2034,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         style: const TextStyle(
                                           fontSize: 11,
                                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                                         ),
                                       ),
                                       // シーン内に自動塗り未更新のフレームがある場合の❗マーク
@@ -3070,6 +3074,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               style: TextStyle(
                 fontSize: 9,
                 fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               overflow: TextOverflow.ellipsis,
@@ -3351,6 +3356,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 fontSize: 9,
                                 color: Colors.white,
                                 fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -3863,6 +3869,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       fontSize: 9,
                       color: Colors.white,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -6119,6 +6126,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                 ),
@@ -6865,6 +6873,7 @@ class _EffectFilterSheet extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 const Spacer(),
@@ -6975,7 +6984,8 @@ class _EffectFilterSheet extends StatelessWidget {
         leading: Icon(_typeIcons[e.type], size: 20),
         title: Text(
           _typeLabel(l10n, e.type),
-          style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon'),
+          style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
         ),
         subtitle: Text(
           'F${e.startFrame + 1} ～ F${e.endFrame + 1}',
@@ -7697,6 +7707,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                 ),
@@ -7973,6 +7984,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                 ),

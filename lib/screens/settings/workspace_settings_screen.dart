@@ -20,6 +20,7 @@ import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/qr_import_dialog.dart';
 import '../../widgets/qr_share_dialog.dart';
 import 'pc_workspace_layout_settings_screen.dart';
+import '../../config/font_fallback.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -304,6 +305,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 13,
                         fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -329,6 +331,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                             fontSize: 9,
                             color: Colors.white,
                             fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -452,6 +455,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w700,
           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
@@ -511,6 +515,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
             ),
@@ -852,6 +857,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
             ),

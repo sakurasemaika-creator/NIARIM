@@ -153,3 +153,27 @@ flutter:
     - family: DelaGothicOne
       fonts:
         - asset: assets/fonts/DelaGothicOne-Regular.ttf
+    # 韓国語・簡体字の補完用（いずれもSIL Open Font License 1.1）。
+    # 同梱フォントは4つとも日本語系でハングル・簡体字を持たないため、
+    # 補わないと端末のシステムフォント任せになり見た目が揃わない
+    # （ハングルを持たない端末では豆腐になる）。
+    # 本文用は明朝（Noto Serif KR/SC、白光明朝と同じSource Han Serif系で
+    # 骨格・字幅が揃う）、見出し用はゴシックBlack(900)（Noto Sans KR/SC。
+    # くらむぼんの極太に太さを合わせる。明朝で補うと「550엔」のように
+    # 極太の数字と細い明朝のハングルが同じ単語内に並んで浮く）。
+    # 原本は4つで75MBあるため、UIに実際に出る文字だけを抜き出した
+    # サブセットを同梱している（計約3.6MB）。生成手順は
+    # tool/build_fallback_fonts.py、取りこぼし検出は
+    # test/font_coverage_test.dart。
+    - family: NotoSerifKRSubset
+      fonts:
+        - asset: assets/fonts/NotoSerifKRSubset.ttf
+    - family: NotoSerifSCSubset
+      fonts:
+        - asset: assets/fonts/NotoSerifSCSubset.ttf
+    - family: NotoSansKRBlackSubset
+      fonts:
+        - asset: assets/fonts/NotoSansKRBlackSubset.ttf
+    - family: NotoSansSCBlackSubset
+      fonts:
+        - asset: assets/fonts/NotoSansSCBlackSubset.ttf

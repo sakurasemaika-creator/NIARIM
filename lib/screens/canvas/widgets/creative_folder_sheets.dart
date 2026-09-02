@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
+import '../../../config/font_fallback.dart';
 
 /// ブラシ・トーン・スタンプで共通のフォルダ管理UI。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
@@ -35,7 +36,8 @@ void showFolderManagementSheet(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    Text(l10n.folderManagementTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                    Text(l10n.folderManagementTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     const Spacer(),
                     TextButton.icon(
                       icon: const Icon(Icons.create_new_folder, size: 18),
@@ -168,7 +170,8 @@ void showMoveToCreativeFolderSheet(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+            child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           ),
           ListTile(
             leading: const Icon(Icons.folder_open),

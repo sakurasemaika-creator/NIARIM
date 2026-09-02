@@ -8,6 +8,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
 import 'widgets/community_work_card.dart';
+import '../../config/font_fallback.dart';
 
 /// 作品詳細画面（別ルート、`/community/work/:id`）。
 ///
@@ -265,7 +266,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 ),
               ),
               Text(work.title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -557,7 +559,8 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(l10n.communityVisibilityCardTitle,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     const SizedBox(height: 2),
                     Text(
                       isPublished

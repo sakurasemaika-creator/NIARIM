@@ -5,6 +5,7 @@ import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
+import '../../../config/font_fallback.dart';
 
 /// イージング種別の表示名（一覧の行・編集シートの選択チップの両方で使う）。
 String layerKeyframeEasingLabel(AppLocalizations l10n, LayerKeyframeEasing easing) => switch (easing) {
@@ -160,7 +161,8 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
               children: [
                 Expanded(
                   child: Text(l10n.layerKeyframeSheetTitle(widget.layerName),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                 ),
               ],
             ),
@@ -266,7 +268,8 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
             child: Row(
               children: [
                 Expanded(child: Text(l10n.layerKeyframeEditTitle(_kf.frameIndex + 1),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'))),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback))),
                 if (widget.onDelete != null)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),

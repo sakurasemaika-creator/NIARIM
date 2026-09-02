@@ -13,6 +13,7 @@ import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
 
 class ExportScreen extends StatefulWidget {
   final String projectId;
@@ -66,7 +67,8 @@ class _ExportScreenState extends State<ExportScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(_error!, style: const TextStyle(color: Colors.red)),
             ),
-          Text(l10n.exportPresetSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+          Text(l10n.exportPresetSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           const SizedBox(height: 8),
           SegmentedButton<ExportPreset>(
             segments: [
@@ -91,7 +93,8 @@ class _ExportScreenState extends State<ExportScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(l10n.exportAdvancedSettings, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
+                            Text(l10n.exportAdvancedSettings, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -121,7 +124,8 @@ class _ExportScreenState extends State<ExportScreen> {
                   ),
           ),
           const SizedBox(height: 24),
-          Text(l10n.exportFormatSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+          Text(l10n.exportFormatSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           const SizedBox(height: 8),
           RadioGroup<ExportFormat>(
             groupValue: _format,
@@ -375,7 +379,8 @@ class _ExportScreenState extends State<ExportScreen> {
             // ファイルアプリで見つけたい場合は「共有」から保存先を選ぶ
             // 必要があることを明示する。
             Text(l10n.exportSaveLocationLabel(fileName),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             const SizedBox(height: 4),
             Text(l10n.exportSaveLocationHint,
                 style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),

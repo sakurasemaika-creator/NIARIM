@@ -6,6 +6,7 @@ import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
+import '../../config/font_fallback.dart';
 
 /// バケツ塗り詳細設定（許容誤差・拡張px・線の下まで潜る）。
 /// ここでの設定はバケツツール使用時に常に適用される（プロジェクト単位では
@@ -110,6 +111,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(text,
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
               color: Theme.of(context).colorScheme.onSurfaceVariant)),
     );
   }

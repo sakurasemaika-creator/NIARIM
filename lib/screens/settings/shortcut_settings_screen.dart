@@ -10,6 +10,7 @@ import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/stepped_slider.dart';
+import '../../config/font_fallback.dart';
 
 /// キーボード・左手デバイス用ショートカットの設定画面。
 /// ツール選択（早替えツールと同じ粒度：ツール＋ブラシ＋太さ）と、
@@ -66,7 +67,8 @@ class ShortcutSettingsScreen extends StatelessWidget {
                             leading: _keyChip(context, b.comboLabel),
                             title: Text(
                               b.label,
-                              style: const TextStyle(fontFamily: 'Kuramubon'),
+                              style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline),
@@ -165,6 +167,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
             ),
@@ -172,7 +175,8 @@ class ShortcutSettingsScreen extends StatelessWidget {
             ListTile(
               title: Text(
                 l10n.shortcutActionTypeTool,
-                style: const TextStyle(fontFamily: 'Kuramubon'),
+                style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -183,7 +187,8 @@ class ShortcutSettingsScreen extends StatelessWidget {
             ListTile(
               title: Text(
                 l10n.shortcutActionTypeCommand,
-                style: const TextStyle(fontFamily: 'Kuramubon'),
+                style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {

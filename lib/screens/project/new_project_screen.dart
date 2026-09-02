@@ -13,6 +13,7 @@ import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import 'canvas_size_preset_manage_screen.dart';
+import '../../config/font_fallback.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -262,6 +263,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 8),
@@ -287,6 +289,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                   const Spacer(),
@@ -550,6 +553,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -622,6 +626,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 8),
@@ -638,6 +643,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 subtitle: Text(l10n.newProjectDrawingAreaSubtitle),
@@ -653,6 +659,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                     const SizedBox(width: 16),

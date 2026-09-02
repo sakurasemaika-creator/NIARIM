@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
+import '../../../config/font_fallback.dart';
 
 /// サムネイル画像の代わりに使うプレースホルダー配色（実サムネイル取得は
 /// バックエンド実装後に対応）。
@@ -100,7 +101,8 @@ class CommunityWorkCard extends StatelessWidget {
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                fontFamily: 'Kuramubon')),
+                                fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       ),
                     ),
                   // NIARIM側で非公開にした作品であることを示すバッジ。
@@ -199,7 +201,8 @@ class CommunityWorkCard extends StatelessWidget {
                     work.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon'),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                   ),
                   const SizedBox(height: 4),
                   GestureDetector(

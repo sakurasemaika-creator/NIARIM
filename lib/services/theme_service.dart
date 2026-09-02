@@ -424,7 +424,7 @@ class ThemeService extends ChangeNotifier {
         bodyColor: preset.textColor,
         displayColor: preset.textColor,
       ),
-      kAppFontFallback,
+      kBodyFontFallback,
     ));
     // フォントの使い分け：項目名・見出しなど文字サイズが
     // 大きく目立たせたい箇所（display/headline/title）はくらむぼん、
@@ -464,6 +464,7 @@ class ThemeService extends ChangeNotifier {
           fontWeight: FontWeight.w700,
         ) ?? TextStyle(
           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
           color: preset.textColor,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -608,7 +609,7 @@ class ThemeService extends ChangeNotifier {
     // くらむぼんに無い文字が豆腐（□）になっていた）。
     TextStyle? heading(TextStyle? style) => style?.copyWith(
           fontFamily: fontFamily,
-          fontFamilyFallback: kAppFontFallback,
+          fontFamilyFallback: kHeadingFontFallback,
         );
     return textTheme.copyWith(
       displayLarge: heading(textTheme.displayLarge),

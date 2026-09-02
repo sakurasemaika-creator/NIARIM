@@ -10,6 +10,7 @@ import '../../services/storage_info_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
+import '../../config/font_fallback.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニューから遷移）。
 /// 端末容量に対するNIARIMの使用量・NIARIM内部のデータ内訳を2つの円
@@ -72,6 +73,7 @@ class _StorageScreenState extends State<StorageScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -83,6 +85,7 @@ class _StorageScreenState extends State<StorageScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -93,6 +96,7 @@ class _StorageScreenState extends State<StorageScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                     const SizedBox(height: 8),

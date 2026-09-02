@@ -13,6 +13,7 @@ import '../../../services/font_service.dart';
 import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
+import '../../../config/font_fallback.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -159,7 +160,8 @@ class ProjectListWidget extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(l10n.projectListEmptyTitle,
-                style: TextStyle(color: scheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
+                style: TextStyle(color: scheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             const SizedBox(height: 8),
             Text(l10n.projectListEmptyHint,
                 style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
@@ -247,7 +249,8 @@ class ProjectListWidget extends StatelessWidget {
       leading: isSelectionMode
           ? Checkbox(value: isSelected, onChanged: (_) => onSelectionChanged(folder.id))
           : Icon(Icons.folder, color: color, size: 32),
-      title: Text(folder.name, style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
+      title: Text(folder.name, style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -325,7 +328,8 @@ class ProjectListWidget extends StatelessWidget {
                       child: Text(project.name,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600,
-                              fontFamily: 'Kuramubon')),
+                              fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     ),
                     if (project.isFavorite)
                       Positioned(
@@ -438,7 +442,8 @@ class ProjectListWidget extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
               child: Text(folder.name,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             ),
           ],
           ),
@@ -672,7 +677,8 @@ class ProjectListWidget extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),

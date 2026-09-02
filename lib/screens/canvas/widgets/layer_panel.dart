@@ -22,6 +22,7 @@ import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'layer_keyframe_sheet.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 class LayerPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -224,6 +225,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 const Spacer(),
@@ -478,6 +480,7 @@ class _LayerPanelState extends State<LayerPanel> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                   subtitle: layer.type == model.LayerType.common
@@ -1113,6 +1116,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
             ),
@@ -1643,6 +1647,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
               ),
@@ -2170,6 +2175,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.layerPanelHelpBlendModeBody),
@@ -2179,6 +2185,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.layerPanelHelpClippingBody),
@@ -2188,6 +2195,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.layerPanelHelpCommonLayerBody),
@@ -2438,6 +2446,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
                       ),

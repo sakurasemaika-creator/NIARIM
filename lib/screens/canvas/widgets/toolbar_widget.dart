@@ -13,6 +13,7 @@ import '../../../widgets/responsive.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
+import '../../../config/font_fallback.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
 class ToolbarWidget extends StatelessWidget {
@@ -457,6 +458,7 @@ class ToolbarWidget extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 7,
                                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                                   ),
                                   textAlign: TextAlign.center,
                                   maxLines: 2,
@@ -480,6 +482,7 @@ class ToolbarWidget extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 13,
                             fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
                         childrenPadding: const EdgeInsets.fromLTRB(

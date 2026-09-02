@@ -6,6 +6,7 @@ import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
+import '../../config/font_fallback.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
   const GestureSettingsScreen({super.key});
@@ -44,6 +45,7 @@ class GestureSettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(l10n.gestureHoldEyedropperSection,
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           Card(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../config/font_fallback.dart';
 
 /// 「名前／更新日時」の並び替え基準プルダウンと、昇順・降順を切り替える
 /// 矢印ボタンを横に並べた共通コントロール。プロジェクト一覧・共有一覧・
@@ -71,6 +72,7 @@ class SortModeControl extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/autofill_preset.dart';
+import '../config/font_fallback.dart';
 
 /// プロジェクトごとに使用する自動塗りプリセットをチェックボックスで選べる
 /// シート。自動塗りプリセットは使えば使うほど増えていくため、
@@ -38,7 +39,8 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                   children: [
                     Expanded(
                       child: Text(l10n.autofillPresetSelectionTitle,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon')),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     ),
                     TextButton(
                       onPressed: () => setS(() => selected.addAll(allPresets.map((p) => p.id))),

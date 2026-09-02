@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import 'tip_diagrams.dart';
+import '../../config/font_fallback.dart';
 
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
@@ -94,7 +95,8 @@ class _TipsScreenState extends State<TipsScreen> {
                                   Icon(category.icon, size: 18, color: scheme.primary),
                                   const SizedBox(width: 6),
                                   Text(category.title,
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon', color: scheme.primary)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, color: scheme.primary)),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -294,7 +296,8 @@ class _TipListTile extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(tip.title,
-                      style: const TextStyle(fontFamily: 'Kuramubon', fontWeight: FontWeight.w600, fontSize: 13)),
+                      style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, fontWeight: FontWeight.w600, fontSize: 13)),
                 ),
                 Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
               ],
@@ -402,6 +405,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
                                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                                       color: scheme.primary)),
                               const SizedBox(height: 10),
                               // 図解（中央寄せ。すべてのページで併記する、

@@ -23,6 +23,7 @@ import '../../widgets/info_icon_tooltip.dart';
 import '../../widgets/square_image_crop_dialog.dart';
 import '../../widgets/tone_preview_thumb.dart';
 import '../canvas/widgets/color_picker_panel.dart';
+import '../../config/font_fallback.dart';
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -153,7 +154,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                   FilterChip(
                     label: Text(
                       l10n.homeFavoritesOnly,
-                      style: const TextStyle(fontFamily: 'Kuramubon'),
+                      style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                     ),
                     selected: _showFavoritesOnly,
                     onSelected: (v) => setState(() => _showFavoritesOnly = v),
@@ -190,6 +192,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
@@ -1838,6 +1841,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                   ),
@@ -1899,6 +1903,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                       style: const TextStyle(
                                         fontSize: 10,
                                         fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 2,

@@ -12,6 +12,7 @@ import '../../../services/filter_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 /// 色調調整（キャンバス上部バーの設定/編集メニューから開く）。
 /// 彩度・明度・コントラストをライブプレビューしながら調整し、
@@ -172,7 +173,8 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PanelCenterCloseBar(onClose: widget.onClose),
-              Text(l10n.canvasColorAdjustTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon')),
+              Text(l10n.canvasColorAdjustTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
               const Divider(),
               Center(
                 child: Container(

@@ -12,6 +12,7 @@ import 'community_follow_notifications_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
+import '../../config/font_fallback.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -524,7 +525,8 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
             const SizedBox(height: 16),
             Text(
               l10n.communityFavoriteAuthorsEmptyTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
             ),
             const SizedBox(height: 8),
             Text(

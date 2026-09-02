@@ -11,6 +11,7 @@ import '../../models/app_theme_preset.dart';
 import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -31,7 +32,8 @@ class ThemeSettingsScreen extends StatelessWidget {
           // 反映される。
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Text(l10n.themeColorCustomizeSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+            child: Text(l10n.themeColorCustomizeSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           ),
           _ColorCustomizeTile(
             label: l10n.themeColorAccent,
@@ -73,7 +75,8 @@ class ThemeSettingsScreen extends StatelessWidget {
           // テーマ一覧（ドラッグで並び替え可能）
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Text(l10n.themePresetSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+            child: Text(l10n.themePresetSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           ),
           ReorderableListView(
             shrinkWrap: true,
@@ -110,7 +113,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                             const SizedBox(width: 14),
                             Expanded(
                               child: Text(entry.value.name,
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, fontFamily: 'Kuramubon')),
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                             ),
                             if (current.id == entry.value.id)
                               Padding(
@@ -356,7 +360,8 @@ class _ColorCustomizeTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 14),
-                Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, fontFamily: 'Kuramubon'))),
+                Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback))),
                 Icon(Icons.chevron_right, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ],
             ),

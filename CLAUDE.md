@@ -104,6 +104,40 @@
   ラッパー（`State.dispose()`まで破棄を遅延させる）を必ず使うこと。19箇所で
   実際に発生した既知のバグパターンで、新しいダイアログ入力欄を追加する際は
   最初からこのパターンで書くこと。
+- **フォントの代替列（fontFamilyFallback）は本文用と見出し用で別物**：
+  `lib/config/font_fallback.dart`に`kBodyFontFallback`（明朝系）と
+  `kHeadingFontFallback`（ゴシック系）の2本がある。**見出し用には明朝を
+  絶対に入れないこと**。入れると「550엔」のように極太の数字と細い明朝の
+  ハングルが同じ単語内に並んで明確に浮く。この不変条件は
+  `test/font_coverage_test.dart`が機械的に守っている。
+  併せて、コード中で`TextStyle(fontFamily: 'Kuramubon')`と直接指定すると、
+  `TextStyle.merge`の仕様で**祖先の（＝本文用の）**代替列を継承してしまう。
+  見出しフォントを直接指定する新しいコードを書くときは、必ず
+  `fontFamilyFallback: kHeadingFontFallback`も併記すること
+  （既存187箇所は対応済み）。
+- **ARBへ文言を足したらサブセットフォントを作り直す**：韓国語・簡体字は
+  `assets/fonts/Noto*Subset.ttf`（Noto Serif KR/SC・Noto Sans KR/SC Black
+  から、UIに出る文字だけを抜いた改変版。元の約75MB→約3.6MB）で補完して
+  いる。`lib/l10n/app_*.arb`に新しい文言を足すと、増えた文字がサブセットに
+  入っていないためその字だけシステムフォントで表示され、見た目が崩れる。
+  `python3 tool/build_fallback_fonts.py <元フォントのディレクトリ>`で
+  作り直すこと。`test/font_coverage_test.dart`が取りこぼしを検出する
+  （実際に「객」1字の欠落をこれで検出した）。
+  ★フォントのcmapを自前で解析する処理を書く場合、**platformID 1
+  （Macintosh）のサブテーブルは絶対にUnicodeとして数えないこと**。
+  非Unicodeのマルチバイトコードなので、「収録していない字を収録済み」と
+  誤判定する（サイト側でこれにより91字が欠落する不具合を起こした実績が
+  ある）。読んでよいのはplatformID 0（Unicode）と3/1・3/10（Windows）だけ。
+  また、カバー判定は**スタックごとに単独で**行うこと。本文用が持っていても
+  見出し用の字抜けは埋まらない（和集合ではなく積集合で判定する）。
+- **同梱フォントを増やしたらライセンス登録も3箇所必要**：`assets/fonts/`
+  配下は`showLicensePage`に自動収集されない。`assets/licenses/
+  FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart`の
+  クレジット、`main.dart`の`_registerBundledFontLicenses()`の
+  パッケージ名一覧、の3つを揃えること（`test/font_license_test.dart`が
+  監視）。太さ固定やサブセット化はOFL上の「改変版」にあたるので、その旨と
+  取得元も書く。Noto Sans KR/SCは予約フォント名（Reserved Font Name）
+  `Source`を持つため、採用するファミリー名にこの語を含めてはならない。
 - **SVGレンダリングエンジンごとの`<mask>`対応差**：`cairosvg`（Python）は
   `assets/logo/app_logo.svg`が使う`<mask>`要素（ペンとフィルムコマ交差部の
   斜め切り欠き等）を正しく解釈できず、切り欠きが消えて塗りつぶし帯になる

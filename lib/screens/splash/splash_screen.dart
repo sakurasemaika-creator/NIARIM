@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
+import '../../config/font_fallback.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -237,6 +238,7 @@ class _SplashActionButton extends StatelessWidget {
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
                 maxLines: subLabel == null ? 2 : 1,
                 overflow: TextOverflow.ellipsis,
@@ -250,6 +252,7 @@ class _SplashActionButton extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                     fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

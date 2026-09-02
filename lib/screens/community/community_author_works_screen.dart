@@ -8,6 +8,7 @@ import '../../widgets/responsive.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
+import '../../config/font_fallback.dart';
 
 /// 特定の作者の投稿作品一覧（29_動画投稿・ランキング機能仕様.md 8.4節）＋
 /// その作者のブックマーク一覧（Task#145：ユーザー別ブックマーク一覧の
@@ -201,7 +202,8 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(widget.authorName,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                         const SizedBox(height: 4),
                         Wrap(
                           spacing: 8,
@@ -419,7 +421,8 @@ class _PublicVisibilityToggle extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     const SizedBox(height: 2),
                     Text(description, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                   ],

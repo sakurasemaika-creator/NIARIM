@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
+import '../../config/font_fallback.dart';
 
 /// 利用規約・ライセンス画面。
 ///
@@ -110,6 +111,19 @@ class LicenseScreen extends StatelessWidget {
             license: 'Apache License 2.0 / SIL Open Font License',
           ),
           const _FontCredit(
+            usage: '韓国語・簡体字の本文表示（同梱フォントが'
+                'ハングル・簡体字を持たないため）',
+            name: 'Noto Serif KR / Noto Serif SC（サブセット）',
+            author: 'Adobe',
+            license: 'SIL Open Font License 1.1',
+          ),
+          const _FontCredit(
+            usage: '韓国語・簡体字の見出し表示',
+            name: 'Noto Sans KR / Noto Sans SC Black（サブセット）',
+            author: 'Adobe',
+            license: 'SIL Open Font License 1.1',
+          ),
+          const _FontCredit(
             usage: 'くらむぼんに無い文字の代替表示',
             name: 'Dela Gothic One',
             author: 'The Dela Gothic Project Authors',
@@ -176,7 +190,8 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon')),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
     );
   }
 }
@@ -211,7 +226,8 @@ class _TermsBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon')),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                 const SizedBox(height: 2),
                 Text(body, style: const TextStyle(fontSize: 12, height: 1.5)),
               ],
@@ -252,7 +268,8 @@ class _FontCredit extends StatelessWidget {
             // ライセンス・クレジット表示のみを残す形で削除した。
             Text(usage,
                 style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, fontFamily: 'Kuramubon')),
+            Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             Text(l10n.licenseFontCreditMeta(author, license), style: const TextStyle(fontSize: 12)),
           ],
         ),

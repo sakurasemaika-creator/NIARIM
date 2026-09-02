@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../services/premium_service.dart';
+import '../config/font_fallback.dart';
 
 /// Premium限定機能の共通ロックウィジェット。
 /// 無料会員には🔒アイコン付きで表示し、タップで共通Premiumバナーを表示する。
@@ -89,7 +90,8 @@ class _PremiumBannerDialog extends StatelessWidget {
                       children: [
                         Icon(Icons.star, color: Colors.amber, size: 48),
                         SizedBox(height: 8),
-                        Text('NIARIM Premium', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                        Text('NIARIM Premium', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                         SizedBox(height: 4),
                         Text('premium_banner.webp', style: TextStyle(fontSize: 11, color: Colors.grey)),
                       ],

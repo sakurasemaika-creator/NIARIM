@@ -8,6 +8,7 @@ import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 /// 早替えツール設定ポップアップ。
 /// ↺ボタンの長押しで表示する。ドラッグで順番変更・削除・追加ができる。
@@ -47,7 +48,8 @@ class QuickToolPanel extends StatelessWidget {
               PanelCenterCloseBar(onClose: onClose),
               Row(
                 children: [
-                  Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                  Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                   const Spacer(),
                 ],
               ),
@@ -70,7 +72,8 @@ class QuickToolPanel extends StatelessWidget {
                             key: ValueKey(e.id),
                             dense: true,
                             leading: Text('${index + 1}', style: const TextStyle(fontSize: 12)),
-                            title: Text(e.label, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
+                            title: Text(e.label, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [

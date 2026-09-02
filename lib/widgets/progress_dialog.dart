@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/tips/tips_screen.dart' show allTipEntries;
 import '../services/advertising_service.dart';
+import '../config/font_fallback.dart';
 
 /// 処理中ダイアログ（フィルター適用／動画書き出し／GIF生成／
 /// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に正方形広告）。
@@ -93,7 +94,8 @@ class _ProgressDialogState extends State<ProgressDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             const SizedBox(height: 16),
             LinearProgressIndicator(value: widget.progress),
             const SizedBox(height: 8),
@@ -127,11 +129,13 @@ class _ProgressDialogState extends State<ProgressDialog> {
                           Text(l10n.progressDialogTipLabel,
                               style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                                   color: Theme.of(context).colorScheme.primary)),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
+                      Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       const SizedBox(height: 2),
                       Text(tip.$2,
                           style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),

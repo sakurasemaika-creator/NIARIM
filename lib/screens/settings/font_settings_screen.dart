@@ -9,6 +9,7 @@ import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
+import '../../config/font_fallback.dart';
 
 /// フォント管理画面（設定 → フォント管理）。
 /// 3つのタブで構成する。
@@ -108,7 +109,8 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
               FilterChip(
                 label: Text(
                   l10n.homeFavoritesOnly,
-                  style: const TextStyle(fontFamily: 'Kuramubon'),
+                  style: const TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
                 ),
                 selected: _favoritesOnly,
                 onSelected: (v) => setState(() => _favoritesOnly = v),
@@ -143,6 +145,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -336,6 +339,7 @@ class _ImportFontTab extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 4),

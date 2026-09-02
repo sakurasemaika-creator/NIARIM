@@ -11,6 +11,7 @@ import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -78,6 +79,7 @@ class _BrushPanelState extends State<BrushPanel> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                   const Spacer(),
@@ -128,6 +130,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       onPressed: () =>
@@ -143,6 +146,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       onPressed: () => _createFromImage(context, brushService),
@@ -154,6 +158,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       onPressed: () => _importBrush(context, brushService),
@@ -254,6 +259,7 @@ class _BrushPanelState extends State<BrushPanel> {
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                               ),
                             ),
                             subtitle: Text(
@@ -359,7 +365,8 @@ class _BrushPanelState extends State<BrushPanel> {
       child: ChoiceChip(
         label: Text(
           label,
-          style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon'),
+          style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback),
         ),
         selected: selected,
         onSelected: (_) => onTap(),
@@ -518,6 +525,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               fontSize: 18,
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           const SizedBox(height: 16),
@@ -629,6 +637,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           ...PressureMode.values.map(
@@ -648,6 +657,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           ...FadeMode.values.map(
@@ -748,6 +758,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           ...BrushMixingMode.values.map(

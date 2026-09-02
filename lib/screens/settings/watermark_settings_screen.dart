@@ -14,6 +14,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
+import '../../config/font_fallback.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -54,7 +55,8 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(l10n.watermarkEmptyTitle,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                     const SizedBox(height: 8),
                     Text(l10n.watermarkEmptyHint,
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
@@ -486,7 +488,8 @@ class _WatermarkTile extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(asset.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon'), overflow: TextOverflow.ellipsis),
+                  child: Text(asset.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback), overflow: TextOverflow.ellipsis),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, size: 16, color: Colors.red),

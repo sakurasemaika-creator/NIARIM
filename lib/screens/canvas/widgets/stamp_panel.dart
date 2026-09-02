@@ -9,6 +9,7 @@ import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 /// スタンプの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -70,7 +71,8 @@ class _StampPanelState extends State<StampPanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.stampTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                  Text(l10n.stampTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                   const Spacer(),
                   IconButton(
                     icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
@@ -97,17 +99,20 @@ class _StampPanelState extends State<StampPanel> {
                   children: [
                     TextButton.icon(
                       icon: const Icon(Icons.folder_outlined, size: 15),
-                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       onPressed: () => _openFolderManagement(context, stampService),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       onPressed: () => _createFromImage(context, stampService),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.file_upload_outlined, size: 15),
-                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                       onPressed: () => _importStamp(context, stampService),
                     ),
                   ],
@@ -168,7 +173,8 @@ class _StampPanelState extends State<StampPanel> {
                             selected: isSelected,
                             leading: Icon(Icons.star_border_purple500, size: 16,
                                 color: isSelected ? Theme.of(context).colorScheme.primary : null),
-                            title: Text(stamp.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon')),
+                            title: Text(stamp.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -215,7 +221,8 @@ class _StampPanelState extends State<StampPanel> {
   Widget _folderChip(String label, bool selected, VoidCallback onTap) => Padding(
         padding: const EdgeInsets.only(right: 4),
         child: ChoiceChip(
-          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon')),
+          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           selected: selected,
           onSelected: (_) => onTap(),
           visualDensity: VisualDensity.compact,
@@ -345,7 +352,8 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
         controller: controller,
         padding: const EdgeInsets.all(16),
         children: [
-          Text(l10n.stampEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+          Text(l10n.stampEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           const SizedBox(height: 12),
           TextField(
             controller: _nameController,

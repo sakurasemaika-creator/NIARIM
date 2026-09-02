@@ -6,6 +6,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import 'widgets/pressure_curve_graph.dart';
 import 'widgets/pressure_curve_try_draw.dart';
+import '../../config/font_fallback.dart';
 
 /// ペン入力設定。
 /// 筆圧の「無効／サイズ／不透明度／両方」反映モードはブラシ個別設定のため、
@@ -104,6 +105,7 @@ class PenSettingsScreen extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(text,
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
               color: Theme.of(context).colorScheme.onSurfaceVariant)),
     );
   }

@@ -17,6 +17,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
+import '../../config/font_fallback.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -589,7 +590,8 @@ class _SlotTile extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           leading: _SaveNodeThumbnail(node: node),
           title: Text('${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon')),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
           subtitle: node != null
               ? Text(_formatDate(node!.savedAt))
               : Text(l10n.saveTreeNoDataLabel),
@@ -662,7 +664,8 @@ class _TreeView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(l10n.saveTreeEmptyTitle,
-                style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon', color: scheme.onSurface)),
+                style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback, color: scheme.onSurface)),
             const SizedBox(height: 8),
             Text(l10n.saveTreeEmptyHint,
                 style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),

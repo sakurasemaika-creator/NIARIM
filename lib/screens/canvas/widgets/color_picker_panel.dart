@@ -15,6 +15,7 @@ import '../../../widgets/qr_share_dialog.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'hsv_color_wheel.dart';
 import 'panel_close_bar.dart';
+import '../../../config/font_fallback.dart';
 
 /// カラーピッカーパネル。
 /// カラーピッカー（HSV/RGB/HEX）・最近使った色・パレットの3セクション構成。
@@ -147,7 +148,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               if (widget.showCloseBar) PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+                  Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                   const Spacer(),
                   // スポイトボタン（カラーピッカー内のスポイトボタン）
                   if (widget.onEyedropperTap != null)
@@ -344,7 +346,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (p.isFavorite) const Icon(Icons.star, size: 10, color: Colors.amber),
-                    Text(p.name, style: const TextStyle(fontSize: 10, fontFamily: 'Kuramubon')),
+                    Text(p.name, style: const TextStyle(fontSize: 10, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                   ],
                 ),
                 selected: isActive,

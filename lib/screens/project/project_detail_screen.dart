@@ -20,6 +20,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
+import '../../config/font_fallback.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
 
@@ -250,6 +251,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               padding: const EdgeInsets.only(left: 4, bottom: 8),
               child: Text(l10n.projectDetailInfoSectionTitle,
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
                       color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
             Card(
@@ -463,7 +465,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon')),
+              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),

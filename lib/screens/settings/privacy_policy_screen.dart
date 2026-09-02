@@ -3,6 +3,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/advertising_service.dart';
+import '../../config/font_fallback.dart';
 
 /// プライバシーポリシー画面。
 ///
@@ -159,7 +160,8 @@ class _PolicyBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon')),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback)),
                 const SizedBox(height: 2),
                 Text(body, style: const TextStyle(fontSize: 12, height: 1.5)),
               ],

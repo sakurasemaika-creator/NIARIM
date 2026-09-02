@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/font_fallback.dart';
 
 /// 一覧画面が空のときに表示する共通プレースホルダー。円形の色付き
 /// アイコンバッジ・くらむぼんの太字タイトル・淡色の補足文という構成を、
@@ -40,6 +41,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.w600,
               fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           if (hint != null) ...[

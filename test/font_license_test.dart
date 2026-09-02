@@ -18,6 +18,10 @@ void main() {
     expect(text, contains('Kuramubon.otf'));
     expect(text, contains('NotoSerifJP.ttf'));
     expect(text, contains('DelaGothicOne-Regular.ttf'));
+    expect(text, contains('NotoSerifKRSubset.ttf'));
+    expect(text, contains('NotoSansKRBlackSubset.ttf'));
+    // OFL第3条（改変版はReserved Font Nameを使えない）への言及があること
+    expect(text, contains("Reserved Font Name 'Source'"));
     expect(text, contains('The Dela Gothic Project Authors'));
     expect(text, contains('Adobe'));
     // OFL本文（全文）が含まれていること。
@@ -32,13 +36,28 @@ void main() {
       final text =
           await rootBundle.loadString('assets/licenses/FONT_LICENSES.txt');
       yield LicenseEntryWithLineBreaks(
-        const ['HakkouMincho', 'Kuramubon', 'Noto Serif JP', 'Dela Gothic One'],
+        const [
+          'HakkouMincho',
+          'Kuramubon',
+          'Noto Serif JP',
+          'Dela Gothic One',
+          'Noto Serif KR / SC',
+          'Noto Sans KR / SC',
+        ],
         text,
       );
     });
     final entries = await LicenseRegistry.licenses.toList();
     final packages = entries.expand((e) => e.packages).toSet();
-    expect(packages,
-        containsAll(['HakkouMincho', 'Kuramubon', 'Noto Serif JP', 'Dela Gothic One']));
+    expect(
+        packages,
+        containsAll([
+          'HakkouMincho',
+          'Kuramubon',
+          'Noto Serif JP',
+          'Dela Gothic One',
+          'Noto Serif KR / SC',
+          'Noto Sans KR / SC',
+        ]));
   });
 }
