@@ -10,7 +10,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -18,18 +18,30 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get
-      - name: New real-operation audits
-        run: |
-          flutter test test/functional_audit_batch27_test.dart --reporter expanded
-          flutter test test/functional_audit_batch28_test.dart --reporter expanded
-          flutter test test/functional_audit_batch29_test.dart --reporter expanded
-          flutter test test/functional_audit_batch30_test.dart --reporter expanded
-          flutter test test/functional_audit_batch31_test.dart --reporter expanded
-          flutter test test/functional_audit_batch32_test.dart --reporter expanded
-          flutter test test/functional_audit_batch33_test.dart --reporter expanded
-          flutter test test/functional_audit_batch34_test.dart --reporter expanded
-          flutter test test/functional_audit_batch35_test.dart --reporter expanded
-          flutter test test/functional_audit_batch36_test.dart --reporter expanded
+      - name: Batch27 selection scale + Undo/Redo
+        run: flutter test test/functional_audit_batch27_test.dart --reporter expanded
+      - name: Batch28 all built-in brushes render + PNG
+        run: flutter test test/functional_audit_batch28_test.dart --reporter expanded
+      - name: Batch29 selection rotate + Undo/Redo
+        run: flutter test test/functional_audit_batch29_test.dart --reporter expanded
+      - name: Batch30 lasso selection move
+        run: flutter test test/functional_audit_batch30_test.dart --reporter expanded
+      - name: Batch31 magic wand real selection
+        run: flutter test test/functional_audit_batch31_test.dart --reporter expanded
+      - name: Batch32 real CanvasArea line ruler
+        run: flutter test test/functional_audit_batch32_test.dart --reporter expanded
+      - name: Batch33 blur and mosaic real operation + PNG
+        run: flutter test test/functional_audit_batch33_test.dart --reporter expanded
+      - name: Batch34 all 25 built-in tones render + PNG
+        run: flutter test test/functional_audit_batch34_test.dart --reporter expanded
+      - name: Batch35 all 7 built-in stamps render + PNG
+        run: flutter test test/functional_audit_batch35_test.dart --reporter expanded
+      - name: Batch36 all 7 rulers engine render + PNG
+        run: flutter test test/functional_audit_batch36_test.dart --reporter expanded
+      - name: Batch37 onion skin actual CanvasArea render
+        run: flutter test test/functional_audit_batch37_test.dart --reporter expanded
+      - name: Batch38 whole-layer transform + Undo/Redo
+        run: flutter test test/functional_audit_batch38_test.dart --reporter expanded
       - name: Selection regressions
         run: |
           flutter test test/functional_audit_batch20_test.dart --reporter expanded
