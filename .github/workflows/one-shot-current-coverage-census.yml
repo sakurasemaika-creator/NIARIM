@@ -83,3 +83,5 @@ jobs:
             build/current-coverage-census.md
             coverage/lcov.info
           retention-days: 7
+
+# Audit trigger revision 2: rerun after the 425-test clean baseline.
