@@ -51,8 +51,8 @@ void main() {
 
     // 意図的にガイドから22px右の位置をDown/Moveする。正しくスナップされれば
     // 描画は最初の1pxから最後までx=48近傍だけに現れる。
-    final g=await tester.startGesture(at(70,18),kind:PointerDeviceKind.touch);
-    for(final y in [28.0,38,48,58,68]){await g.moveTo(at(70,y));await tester.pump();}
+    final g=await tester.startGesture(at(70.0,18.0),kind:PointerDeviceKind.touch);
+    for(final y in <double>[28.0,38.0,48.0,58.0,68.0]){await g.moveTo(at(70.0,y));await tester.pump();}
     await g.up(); await tester.pump(const Duration(milliseconds:100));
 
     final rgba=_read(tm,key,96,80);
