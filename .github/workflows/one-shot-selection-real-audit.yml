@@ -33,13 +33,7 @@ jobs:
           p = Path('test/functional_audit_batch20_test.dart')
           text = p.read_text(encoding='utf-8')
           marker = "    final move2Gesture = await tester.startGesture(\n"
-          insert = """    // 画素コミット後、選択マスク追従は別のui.Image非同期処理で完了する。
-    // Widget fake-asyncだけではコールバックが進まないため実時間も進める。
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
-"""
+          insert = "    // 画素コミット後、選択マスク追従は別のui.Image非同期処理で完了する。\n    // Widget fake-asyncだけではコールバックが進まないため実時間も進める。\n    await tester.runAsync(\n      () => Future<void>.delayed(const Duration(milliseconds: 150)),\n    );\n    await tester.pump();\n"
           if text.count(marker) != 1:
               raise SystemExit('selection mask wait marker failed')
           p.write_text(text.replace(marker, insert + marker), encoding='utf-8', newline='\n')
