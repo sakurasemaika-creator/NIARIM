@@ -152,9 +152,8 @@ void main() {
       fail('timeline: $timelineException');
     }
 
-    // 画面全体の最後のPopupMenuButtonではなく、TimelineScreen自身の
-    // 三点メニューだけを対象にする。Canvas側など別メニューのcallbackを
-    // 誤って呼ぶとexport遷移が発生しないため、ここを厳密に限定する。
+    // TimelineScreen自身の三点メニューを実際に開き、PopupMenuRoute上の
+    // value='export'項目をユーザー操作と同じ経路でタップする。
     final timelineRoot = find.byType(TimelineScreen, skipOffstage: false);
     expect(timelineRoot, findsOneWidget);
     final menuFinder = find.descendant(
@@ -168,10 +167,16 @@ void main() {
       ),
     );
     expect(menuFinder, findsOneWidget);
-    final menu = tester.widget<PopupMenuButton<String>>(menuFinder);
-    expect(menu.onSelected, isNotNull);
-    menu.onSelected!.call('export');
-    await tester.pump(const Duration(milliseconds: 700));
+    await tester.tap(menuFinder);
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    final exportItem = find.byWidgetPredicate(
+      (widget) => widget is PopupMenuItem<String> && widget.value == 'export',
+      skipOffstage: false,
+    );
+    expect(exportItem, findsOneWidget);
+    await tester.tap(exportItem);
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
     final exportTransitionException = tester.takeException();
     if (exportTransitionException != null &&
