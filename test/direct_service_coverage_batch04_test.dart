@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/models/community_work.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
