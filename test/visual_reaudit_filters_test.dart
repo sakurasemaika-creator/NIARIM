@@ -57,6 +57,29 @@ Uint8List _source() {
   return d;
 }
 
+/// Outline is defined around opaque content. A fully opaque audit canvas has no useful
+/// interior silhouette, so use a transparent layer containing two asymmetric subjects.
+Uint8List _outlineSource() {
+  final d = Uint8List(_w * _h * 4);
+  for (var y = 0; y < _h; y++) {
+    for (var x = 0; x < _w; x++) {
+      final inMain = x >= 72 && x < 214 && y >= 42 && y < 132;
+      final dx = x - 238;
+      final dy = y - 92;
+      final inCircle = dx * dx + dy * dy <= 29 * 29;
+      if (!inMain && !inCircle) continue;
+      final i = (y * _w + x) * 4;
+      if (inMain) {
+        d[i] = 238; d[i + 1] = 126; d[i + 2] = 48;
+      } else {
+        d[i] = 58; d[i + 1] = 184; d[i + 2] = 236;
+      }
+      d[i + 3] = 255;
+    }
+  }
+  return d;
+}
+
 Uint8List _mask() {
   final m = Uint8List(_w * _h * 4);
   final cx = _w / 2;
@@ -144,22 +167,25 @@ void main() {
 
   test('全FilterKindを本番dispatcherで描画し見た目再監査用PNGを保存する', () async {
     final source = _source();
+    final outlineSource = _outlineSource();
     final mask = _mask();
     await _save(source, '${out.path}/00_source.png');
+    await _save(outlineSource, '${out.path}/00_outline_source.png');
 
     final kinds = FilterKind.values;
     for (var i = 0; i < kinds.length; i++) {
       final kind = kinds[i];
-      final rendered = applyDrawFilterInIsolate((source, _w, _h, _def(kind), mask));
-      expect(rendered.length, source.length, reason: '${kind.name}: RGBA size');
+      final input = kind == FilterKind.outline ? outlineSource : source;
+      final rendered = applyDrawFilterInIsolate((input, _w, _h, _def(kind), mask));
+      expect(rendered.length, input.length, reason: '${kind.name}: RGBA size');
 
       // This is only a guard. Visual acceptance is done from the emitted PNG itself.
       var changed = 0;
-      for (var p = 0; p < source.length; p += 4) {
-        if (source[p] != rendered[p] ||
-            source[p + 1] != rendered[p + 1] ||
-            source[p + 2] != rendered[p + 2] ||
-            source[p + 3] != rendered[p + 3]) {
+      for (var p = 0; p < input.length; p += 4) {
+        if (input[p] != rendered[p] ||
+            input[p + 1] != rendered[p + 1] ||
+            input[p + 2] != rendered[p + 2] ||
+            input[p + 3] != rendered[p + 3]) {
           changed++;
         }
       }
