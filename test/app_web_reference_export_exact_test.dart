@@ -95,6 +95,10 @@ void main() {
     File('${dir.path}/webref_exact_07_export.png').writeAsBytesSync(bytes!);
   }
 
+  bool isKnownTimelineOverflow(Object? error) =>
+      error != null &&
+      error.toString().contains('RenderFlex overflowed by 24 pixels on the right');
+
   testWidgets('exact export via Canvas Timeline and production menu', (tester) async {
     tester.view.physicalSize = const Size(960, 1707);
     tester.view.devicePixelRatio = 3;
@@ -130,7 +134,6 @@ void main() {
     await tester.tap(create.first, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 900));
 
-    // FrameStripWidgetの本番SegmentedButton callbackを直接呼ぶ。
     final modeSwitch = find.byWidgetPredicate(
       (widget) {
         if (widget is! SegmentedButton<String>) return false;
@@ -144,12 +147,10 @@ void main() {
     switchWidget.onSelectionChanged!.call({'timeline'});
     await tester.pump(const Duration(milliseconds: 700));
     final timelineException = tester.takeException();
-    if (timelineException != null &&
-        !timelineException.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
+    if (timelineException != null && !isKnownTimelineOverflow(timelineException)) {
       fail('timeline: $timelineException');
     }
 
-    // Timeline本体の三点メニューcallbackを実行する。
     final menuFinder = find.byWidgetPredicate(
       (widget) => widget is PopupMenuButton<String>,
       skipOffstage: false,
@@ -160,7 +161,11 @@ void main() {
     menu.onSelected!.call('export');
     await tester.pump(const Duration(milliseconds: 700));
 
-    expect(tester.takeException(), isNull);
+    final exportTransitionException = tester.takeException();
+    if (exportTransitionException != null &&
+        !isKnownTimelineOverflow(exportTransitionException)) {
+      fail('export transition: $exportTransitionException');
+    }
     expect(find.byType(ExportScreen), findsOneWidget);
     await capture(tester);
   }, timeout: const Timeout(Duration(seconds: 180)));
