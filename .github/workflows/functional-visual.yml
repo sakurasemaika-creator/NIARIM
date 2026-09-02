@@ -44,6 +44,7 @@ jobs:
           flutter test test/functional_audit_batch17_test.dart --reporter expanded
           flutter test test/functional_audit_batch18_test.dart --reporter expanded
           flutter test test/functional_audit_batch19_test.dart --reporter expanded
+          flutter test test/functional_audit_batch20_test.dart --reporter expanded
           flutter test test/functional_audit_batch21_test.dart --reporter expanded
           flutter test test/functional_audit_batch22_test.dart --reporter expanded
           flutter test test/functional_audit_batch23_test.dart --reporter expanded
