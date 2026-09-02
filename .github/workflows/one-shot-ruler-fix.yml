@@ -1,0 +1,57 @@
+name: One-shot Ruler Wiring Fix
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-ruler-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Guarded source patch
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s = p.read_text(encoding='utf-8')
+          old1 = """    _drawingEngine = DrawingEngine(tileManager: _tileManager);\n    _scheduleComposite();\n"""
+          new1 = """    _drawingEngine = DrawingEngine(tileManager: _tileManager);\n    // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに\n    // せずRulerEngineへ同期する。プロジェクト再表示・Widget再生成直後の最初の\n    // ストロークだけ定規が効かない状態を防ぐ。\n    _rulerEngine.setActiveRuler(widget.activeRuler);\n    _scheduleComposite();\n"""
+          old2 = """    _rulerEngine.beginStroke();\n    final snapped = widget.currentTool == DrawingTool.ruler\n        ? _toCanvasPoint(_rawToStrokePoint(event))\n        : _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));\n"""
+          new2 = """    _rulerEngine.beginStroke();\n    // 定規ツール自身も、ハンドル以外をドラッグした場合はガイド沿いに描く。\n    // MoveだけでなくDownの最初の点から同じsnap経路へ通し、ストローク先頭に\n    // 定規外の点が残らないようにする。透視定規はRulerEngine側で最初の点を\n    // anchorとして扱うため、この呼び出しで既存仕様も維持される。\n    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));\n"""
+          if old1 not in s:
+              raise SystemExit('guard failed: _initEngine anchor not found')
+          if old2 not in s:
+              raise SystemExit('guard failed: ruler pointer-down anchor not found')
+          if s.count(old1) != 1 or s.count(old2) != 1:
+              raise SystemExit('guard failed: anchors not unique')
+          s = s.replace(old1, new1).replace(old2, new2)
+          p.write_text(s, encoding='utf-8', newline='\n')
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Verify ruler behavior
+        run: |
+          dart format lib/screens/canvas/widgets/canvas_area.dart
+          flutter test test/functional_audit_batch32_test.dart --reporter expanded
+          flutter test test/ruler_engine_test.dart --reporter expanded
+          flutter test test/functional_audit_batch36_test.dart --reporter expanded
+      - name: Commit verified fix
+        run: |
+          git config user.name "sakurasemaika-creator"
+          git config user.email "sakurasemaika@gmail.com"
+          git add lib/screens/canvas/widgets/canvas_area.dart
+          git commit -m "fix: wire ruler from first pointer point" || exit 0
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
