@@ -84,4 +84,4 @@ jobs:
             coverage/lcov.info
           retention-days: 7
 
-# Audit trigger revision 2: rerun after the 425-test clean baseline.
+# Audit trigger revision 3: rerun after sfnt validation and 458-test clean baseline.
