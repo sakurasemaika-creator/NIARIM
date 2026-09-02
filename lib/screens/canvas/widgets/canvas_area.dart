@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/filter_engine.dart' show FilterEngine, quantizeColors;
@@ -1380,6 +1382,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       rotation: stamp.rotation,
       scatter: stamp.scatter * stampSize,
       density: stamp.density,
+      opacity: stamp.opacity,
     ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);

@@ -47,17 +47,20 @@ void main() {
     expect(a50, lessThan(a100));
   });
 
-  test('two separate 50 percent stamp strokes source-over to about 75 percent', () {
-    final first = _drawStamp(opacity: 50);
-    final second = _drawStamp(opacity: 50, canvas: first);
-    final alpha = _channelAt(second, 3);
+  test(
+    'two separate 50 percent stamp strokes source-over to about 75 percent',
+    () {
+      final first = _drawStamp(opacity: 50);
+      final second = _drawStamp(opacity: 50, canvas: first);
+      final alpha = _channelAt(second, 3);
 
-    expect(alpha, closeTo(192, 1));
-    // The stamp carries its own RGB; opacity changes alpha, not its intrinsic color.
-    expect(_channelAt(second, 0), closeTo(200, 1));
-    expect(_channelAt(second, 1), closeTo(100, 1));
-    expect(_channelAt(second, 2), closeTo(50, 1));
-  });
+      expect(alpha, closeTo(192, 1));
+      // The stamp carries its own RGB; opacity changes alpha, not its intrinsic color.
+      expect(_channelAt(second, 0), closeTo(200, 1));
+      expect(_channelAt(second, 1), closeTo(100, 1));
+      expect(_channelAt(second, 2), closeTo(50, 1));
+    },
+  );
 
   test('stamp setting opacity multiplies the texture intrinsic alpha', () {
     final rendered = _drawStamp(opacity: 50, textureAlpha: 128);

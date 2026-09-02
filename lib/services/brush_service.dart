@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../engine/brush_texture_cache.dart';
 import '../models/brush.dart';
 
@@ -34,61 +36,122 @@ class BrushService extends ChangeNotifier {
   }
 
   static List<Brush> _defaultBrushes() => [
-        const Brush(
-          id: 'Brush0001', name: 'ペン', size: 5, opacity: 100, spacing: 10,
-          blurRadius: 0, stabilization: true, stabilizationStrength: 50,
-          pixelMode: false, pressureMode: PressureMode.size, pressureStrength: 80,
-          fadeMode: FadeMode.off, strokeDecay: false,
-          mixingMode: BrushMixingMode.off, mixingRate: 0,
-        ),
-        const Brush(
-          id: 'Brush0002', name: 'Gペン', size: 3, opacity: 100, spacing: 5,
-          blurRadius: 0, stabilization: true, stabilizationStrength: 60,
-          pixelMode: false, pressureMode: PressureMode.sizeAndOpacity, pressureStrength: 90,
-          fadeMode: FadeMode.weak, strokeDecay: false,
-          mixingMode: BrushMixingMode.off, mixingRate: 0,
-        ),
-        const Brush(
-          id: 'Brush0003', name: 'エアブラシ', size: 30, opacity: 40, spacing: 3,
-          blurRadius: 50, stabilization: false, stabilizationStrength: 0,
-          pixelMode: false, pressureMode: PressureMode.opacity, pressureStrength: 70,
-          fadeMode: FadeMode.off, strokeDecay: false,
-          mixingMode: BrushMixingMode.off, mixingRate: 0,
-        ),
-        const Brush(
-          id: 'Brush0004', name: '混色ブラシ', size: 15, opacity: 80, spacing: 8,
-          blurRadius: 10, stabilization: false, stabilizationStrength: 0,
-          pixelMode: false, pressureMode: PressureMode.size, pressureStrength: 60,
-          fadeMode: FadeMode.off, strokeDecay: false,
-          mixingMode: BrushMixingMode.simple, mixingRate: 50,
-        ),
-        // マーカーペン：チゼル（斜め切り）先端の太めの半透明ペン先
-        // （重ね塗りで色が濃くなる）。calligraphyAngle: 0（ペン先の扁平な
-        // 向きを水平に固定）により、横に引くと細く・縦に引くと太くなる
-        // 実物のチゼルマーカー特有の見た目を再現する。あわせて、実物の
-        // マーカーのようにインクがだんだん掠れて薄くなっていく様子を、
-        // ストローク減衰機能（strokeDecay）で表現する。フェルトペンは
-        // 筆圧の影響をほぼ受けないため、筆圧反映はOFFにする。
-        const Brush(
-          id: 'Brush0005', name: 'マーカーペン', size: 20, opacity: 65, spacing: 5,
-          blurRadius: 0, stabilization: false, stabilizationStrength: 0,
-          pixelMode: false, pressureMode: PressureMode.off, pressureStrength: 0,
-          fadeMode: FadeMode.off, strokeDecay: true,
-          mixingMode: BrushMixingMode.simple, mixingRate: 15,
-          calligraphyAngle: 0.0, edgeJitter: true,
-        ),
-        // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
-        // （calligraphyAngle）。進行方向によって線の太さが変わる
-        // カリグラフィーペン特有の見た目になる。
-        const Brush(
-          id: 'Brush0006', name: 'カリグラフィー', size: 14, opacity: 100, spacing: 4,
-          blurRadius: 0, stabilization: true, stabilizationStrength: 40,
-          pixelMode: false, pressureMode: PressureMode.size, pressureStrength: 50,
-          fadeMode: FadeMode.off, strokeDecay: false,
-          mixingMode: BrushMixingMode.off, mixingRate: 0,
-          calligraphyAngle: 45.0,
-        ),
-      ];
+    const Brush(
+      id: 'Brush0001',
+      name: 'ペン',
+      size: 5,
+      opacity: 100,
+      spacing: 10,
+      blurRadius: 0,
+      stabilization: true,
+      stabilizationStrength: 50,
+      pixelMode: false,
+      pressureMode: PressureMode.size,
+      pressureStrength: 80,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+    ),
+    const Brush(
+      id: 'Brush0002',
+      name: 'Gペン',
+      size: 3,
+      opacity: 100,
+      spacing: 5,
+      blurRadius: 0,
+      stabilization: true,
+      stabilizationStrength: 60,
+      pixelMode: false,
+      pressureMode: PressureMode.sizeAndOpacity,
+      pressureStrength: 90,
+      fadeMode: FadeMode.weak,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+    ),
+    const Brush(
+      id: 'Brush0003',
+      name: 'エアブラシ',
+      size: 30,
+      opacity: 40,
+      spacing: 3,
+      blurRadius: 50,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.opacity,
+      pressureStrength: 70,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+    ),
+    const Brush(
+      id: 'Brush0004',
+      name: '混色ブラシ',
+      size: 15,
+      opacity: 80,
+      spacing: 8,
+      blurRadius: 10,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.size,
+      pressureStrength: 60,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.simple,
+      mixingRate: 50,
+    ),
+    // マーカーペン：チゼル（斜め切り）先端の太めの半透明ペン先
+    // （重ね塗りで色が濃くなる）。calligraphyAngle: 0（ペン先の扁平な
+    // 向きを水平に固定）により、横に引くと細く・縦に引くと太くなる
+    // 実物のチゼルマーカー特有の見た目を再現する。あわせて、実物の
+    // マーカーのようにインクがだんだん掠れて薄くなっていく様子を、
+    // ストローク減衰機能（strokeDecay）で表現する。フェルトペンは
+    // 筆圧の影響をほぼ受けないため、筆圧反映はOFFにする。
+    const Brush(
+      id: 'Brush0005',
+      name: 'マーカーペン',
+      size: 20,
+      opacity: 65,
+      spacing: 5,
+      blurRadius: 0,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.off,
+      pressureStrength: 0,
+      fadeMode: FadeMode.off,
+      strokeDecay: true,
+      mixingMode: BrushMixingMode.simple,
+      mixingRate: 15,
+      calligraphyAngle: 0.0,
+      edgeJitter: true,
+    ),
+    // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
+    // （calligraphyAngle）。進行方向によって線の太さが変わる
+    // カリグラフィーペン特有の見た目になる。
+    const Brush(
+      id: 'Brush0006',
+      name: 'カリグラフィー',
+      size: 14,
+      opacity: 100,
+      spacing: 4,
+      blurRadius: 0,
+      stabilization: true,
+      stabilizationStrength: 40,
+      pixelMode: false,
+      pressureMode: PressureMode.size,
+      pressureStrength: 50,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      calligraphyAngle: 45.0,
+    ),
+  ];
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -99,11 +162,15 @@ class BrushService extends ChangeNotifier {
       _brushes.addAll(_defaultBrushes());
       await _persist();
     } else {
-      _brushes.addAll(raw.map((s) => Brush.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      _brushes.addAll(
+        raw.map((s) => Brush.fromJson(jsonDecode(s) as Map<String, dynamic>)),
+      );
       // 既存ユーザーにも新規追加した初期ブラシ（マーカーペン・カリグラフィー）を
       // 反映する（既に同じIDのブラシが存在する場合は追加しない）。
       final existingIds = _brushes.map((b) => b.id).toSet();
-      final missing = _defaultBrushes().where((b) => !existingIds.contains(b.id));
+      final missing = _defaultBrushes().where(
+        (b) => !existingIds.contains(b.id),
+      );
       bool needsPersist = false;
       if (missing.isNotEmpty) {
         _brushes.addAll(missing);
@@ -142,10 +209,15 @@ class BrushService extends ChangeNotifier {
     _folders.clear();
     if (foldersRaw != null) {
       _folders.addAll(
-          foldersRaw.map((s) => BrushFolder.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+        foldersRaw.map(
+          (s) => BrushFolder.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
     }
     final currentId = prefs.getString(_currentIdKey);
-    _currentBrush = _brushes.where((b) => b.id == currentId).firstOrNull ?? _brushes.firstOrNull;
+    _currentBrush =
+        _brushes.where((b) => b.id == currentId).firstOrNull ??
+        _brushes.firstOrNull;
     _preloadTextureIfNeeded(_currentBrush);
   }
 
@@ -163,12 +235,18 @@ class BrushService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _brushes.map((b) => jsonEncode(b.toJson())).toList());
+    await prefs.setStringList(
+      _prefsKey,
+      _brushes.map((b) => jsonEncode(b.toJson())).toList(),
+    );
   }
 
   Future<void> _persistFolders() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_foldersKey, _folders.map((f) => jsonEncode(f.toJson())).toList());
+    await prefs.setStringList(
+      _foldersKey,
+      _folders.map((f) => jsonEncode(f.toJson())).toList(),
+    );
   }
 
   Future<void> _persistCurrent() async {
@@ -205,7 +283,9 @@ class BrushService extends ChangeNotifier {
   // プリインストールされている初期実装ブラシ（_defaultBrushes()の6件）は
   // 編集・削除の対象外とする（複製したものは対象外の複製元とは別IDになる
   // ため、複製後の編集・削除は可能）。
-  static final Set<String> _builtInIds = _defaultBrushes().map((b) => b.id).toSet();
+  static final Set<String> _builtInIds = _defaultBrushes()
+      .map((b) => b.id)
+      .toSet();
 
   bool isBuiltIn(String id) => _builtInIds.contains(id);
 
@@ -240,7 +320,9 @@ class BrushService extends ChangeNotifier {
   void toggleFavoriteBrush(String id) {
     final idx = _brushes.indexWhere((b) => b.id == id);
     if (idx >= 0) {
-      _brushes[idx] = _brushes[idx].copyWith(isFavorite: !_brushes[idx].isFavorite);
+      _brushes[idx] = _brushes[idx].copyWith(
+        isFavorite: !_brushes[idx].isFavorite,
+      );
       notifyListeners();
       _persist();
     }
@@ -269,7 +351,10 @@ class BrushService extends ChangeNotifier {
   // ─── フォルダ管理 ─────────────────────────────────────────────────────
 
   Future<BrushFolder> createFolder(String name) async {
-    final folder = BrushFolder(id: 'BrushFolder${DateTime.now().millisecondsSinceEpoch}', name: name);
+    final folder = BrushFolder(
+      id: 'BrushFolder${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
+    );
     _folders.add(folder);
     notifyListeners();
     await _persistFolders();
@@ -287,7 +372,9 @@ class BrushService extends ChangeNotifier {
   void toggleFolderFavorite(String id) {
     final idx = _folders.indexWhere((f) => f.id == id);
     if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(isFavorite: !_folders[idx].isFavorite);
+    _folders[idx] = _folders[idx].copyWith(
+      isFavorite: !_folders[idx].isFavorite,
+    );
     notifyListeners();
     _persistFolders();
   }
@@ -340,11 +427,19 @@ class BrushService extends ChangeNotifier {
     final brush = Brush(
       id: id,
       name: name?.trim().isNotEmpty == true ? name!.trim() : '自作ブラシ',
-      size: 10, opacity: 100, spacing: 10, blurRadius: 0,
-      stabilization: false, stabilizationStrength: 0, pixelMode: false,
-      pressureMode: PressureMode.size, pressureStrength: 80,
-      fadeMode: FadeMode.off, strokeDecay: false,
-      mixingMode: BrushMixingMode.off, mixingRate: 0,
+      size: 10,
+      opacity: 100,
+      spacing: 10,
+      blurRadius: 0,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.size,
+      pressureStrength: 80,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
       customImagePath: destPath,
     );
     addBrush(brush);
@@ -365,7 +460,8 @@ class BrushService extends ChangeNotifier {
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(
-        ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(brush.toJson()))));
+      ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(brush.toJson()))),
+    );
     final imagePath = brush.customImagePath;
     if (imagePath != null && File(imagePath).existsSync()) {
       final bytes = await File(imagePath).readAsBytes();
@@ -382,10 +478,14 @@ class BrushService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
+    final json = jsonDecode(
+      utf8.decode(dataFile.content as List<int>),
+    ) as Map<String, dynamic>;
     final imported = Brush.fromJson(json);
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
-    final imageFile = archive.files.where((f) => f.name.startsWith('image.')).firstOrNull;
+    final imageFile = archive.files
+        .where((f) => f.name.startsWith('image.'))
+        .firstOrNull;
     String? newImagePath;
     if (imageFile != null) {
       final ext = imageFile.name.split('.').last;
@@ -393,20 +493,13 @@ class BrushService extends ChangeNotifier {
       newImagePath = '${dir.path}/$id.$ext';
       await File(newImagePath).writeAsBytes(imageFile.content as List<int>);
     }
-    // customImagePathは元端末のパスをそのまま引き継げないため、copyWith
-    // （??でnullを無視する実装）を使わず、常にnewImagePath（なければ未設定）で
-    // 明示的に上書きする。
-    final brush = Brush(
-      id: id,
-      name: imported.name, size: imported.size, opacity: imported.opacity,
-      spacing: imported.spacing, blurRadius: imported.blurRadius,
-      stabilization: imported.stabilization, stabilizationStrength: imported.stabilizationStrength,
-      pixelMode: imported.pixelMode, pressureMode: imported.pressureMode,
-      pressureStrength: imported.pressureStrength, fadeMode: imported.fadeMode,
-      fadeCustom: imported.fadeCustom, strokeDecay: imported.strokeDecay,
-      mixingMode: imported.mixingMode, mixingRate: imported.mixingRate,
-      isFavorite: imported.isFavorite, customImagePath: newImagePath,
-    );
+    // 元端末固有のID・フォルダ・画像パスだけ差し替え、それ以外の
+    // rotation/density/scatter/fade/edgeJitter/pixelColor等は全て保持する。
+    final restoredJson = Map<String, dynamic>.from(imported.toJson())
+      ..['id'] = id
+      ..['folderId'] = null
+      ..['customImagePath'] = newImagePath;
+    final brush = Brush.fromJson(restoredJson);
     addBrush(brush);
     return brush;
   }
@@ -417,23 +510,23 @@ class BrushFolder {
   final String name;
   final bool isFavorite;
 
-  BrushFolder({
-    required this.id,
-    required this.name,
-    this.isFavorite = false,
-  });
+  BrushFolder({required this.id, required this.name, this.isFavorite = false});
 
   BrushFolder copyWith({String? name, bool? isFavorite}) => BrushFolder(
-        id: id,
-        name: name ?? this.name,
-        isFavorite: isFavorite ?? this.isFavorite,
-      );
+    id: id,
+    name: name ?? this.name,
+    isFavorite: isFavorite ?? this.isFavorite,
+  );
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'isFavorite': isFavorite};
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'isFavorite': isFavorite,
+  };
 
   factory BrushFolder.fromJson(Map<String, dynamic> j) => BrushFolder(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+  );
 }

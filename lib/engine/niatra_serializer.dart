@@ -2,13 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' show Color;
+
 import 'package:archive/archive.dart';
 import 'package:path_provider/path_provider.dart';
+
 import '../models/app_theme_preset.dart';
 import '../models/autofill_preset.dart';
 import '../models/brush.dart';
 import '../models/color_palette.dart';
-import '../models/pixel_color_mode.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
 import '../services/autofill_preset_service.dart';
@@ -78,7 +79,9 @@ class NiatraSerializer {
     }
 
     if (selectedItems['プリセット'] ?? false) {
-      data['autofillPresets'] = autofillPresets.presets.map(_serializeAutofillPreset).toList();
+      data['autofillPresets'] = autofillPresets.presets
+          .map(_serializeAutofillPreset)
+          .toList();
     }
 
     if (selectedItems['UIテーマ'] ?? false) {
@@ -88,8 +91,9 @@ class NiatraSerializer {
 
     if (selectedItems['パレット'] ?? false) {
       data['palettes'] = palette.palettes.map((p) => p.toJson()).toList();
-      data['pixelArtPalettes'] =
-          pixelArtPalette.palettes.map((p) => p.toJson()).toList();
+      data['pixelArtPalettes'] = pixelArtPalette.palettes
+          .map((p) => p.toJson())
+          .toList();
     }
 
     final archive = Archive();
@@ -103,7 +107,9 @@ class NiatraSerializer {
     if (projectFiles != null && projectFiles.isNotEmpty) {
       data['projectFiles'] = projectFiles.keys.toList();
       for (final entry in projectFiles.entries) {
-        archive.addFile(ArchiveFile('Projects/${entry.key}', entry.value.length, entry.value));
+        archive.addFile(
+          ArchiveFile('Projects/${entry.key}', entry.value.length, entry.value),
+        );
       }
     }
 
@@ -120,7 +126,9 @@ class NiatraSerializer {
     final archive = ArchiveSecurity.decodeZip(bytes);
     final dataFile = archive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final data = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
+    final data = jsonDecode(
+      utf8.decode(dataFile.content as List<int>),
+    ) as Map<String, dynamic>;
     return NiatraData(data, archive);
   }
 
@@ -148,10 +156,16 @@ class NiatraSerializer {
 
     final settingsJson = j['settings'] as Map<String, dynamic>?;
     if (settingsJson != null) {
-      settings.setDefaultFps(settingsJson['defaultFps'] as int? ?? settings.defaultFps);
-      settings.setUndoLimit(settingsJson['undoLimit'] as int? ?? settings.undoLimit);
+      settings.setDefaultFps(
+        settingsJson['defaultFps'] as int? ?? settings.defaultFps,
+      );
+      settings.setUndoLimit(
+        settingsJson['undoLimit'] as int? ?? settings.undoLimit,
+      );
       settings.setTrashAutoDelete(
-          settingsJson['trashAutoDeleteDays'] as int? ?? settings.trashAutoDeleteDays);
+        settingsJson['trashAutoDeleteDays'] as int? ??
+            settings.trashAutoDeleteDays,
+      );
     }
 
     final brushesJson = j['brushes'] as List<dynamic>?;
@@ -178,7 +192,9 @@ class NiatraSerializer {
     final presetsJson = j['autofillPresets'] as List<dynamic>?;
     if (presetsJson != null) {
       for (final pj in presetsJson) {
-        autofillPresets.addPreset(_deserializeAutofillPreset(pj as Map<String, dynamic>));
+        autofillPresets.addPreset(
+          _deserializeAutofillPreset(pj as Map<String, dynamic>),
+        );
       }
     }
 
@@ -196,7 +212,9 @@ class NiatraSerializer {
     final palettesJson = j['palettes'] as List<dynamic>?;
     if (palettesJson != null) {
       for (final pj in palettesJson) {
-        palette.importPalette(ColorPalette.fromJson(pj as Map<String, dynamic>));
+        palette.importPalette(
+          ColorPalette.fromJson(pj as Map<String, dynamic>),
+        );
       }
     }
 
@@ -218,8 +236,12 @@ class NiatraSerializer {
   /// 一時ファイルの書き出しにpath_providerを使うため、Web版では動作しない
   /// （プロジェクトデータ自体が既にdart:io/path_provider前提の.niapro形式で
   /// あり、この制約はniatra以前から存在する既存の制約に合わせたもの）。
-  static Future<void> restoreProjects(NiatraData data, ProjectService projectService) async {
-    final fileNames = (data.raw['projectFiles'] as List<dynamic>?)?.cast<String>();
+  static Future<void> restoreProjects(
+    NiatraData data,
+    ProjectService projectService,
+  ) async {
+    final fileNames = (data.raw['projectFiles'] as List<dynamic>?)
+        ?.cast<String>();
     if (fileNames == null || fileNames.isEmpty) return;
     final tempDir = await getTemporaryDirectory();
     for (final name in fileNames) {
@@ -234,7 +256,10 @@ class NiatraSerializer {
         // niatra経由の取り込みは自分自身の別端末データを戻しているだけであり、
         // 他人から共有された作品ではないため、ホーム画面の「共有」タブへは
         // 振り分けずisSharedImport: falseで通常プロジェクトとして追加する。
-        await projectService.importSharedProject(niaproData, isSharedImport: false);
+        await projectService.importSharedProject(
+          niaproData,
+          isSharedImport: false,
+        );
       } finally {
         if (await tempFile.exists()) await tempFile.delete();
       }
@@ -243,87 +268,41 @@ class NiatraSerializer {
 
   // ─── Brush ────────────────────────────────────────────────────────────
 
-  static Map<String, dynamic> _serializeBrush(Brush b) => {
-        'id': b.id, 'name': b.name, 'size': b.size, 'opacity': b.opacity,
-        'spacing': b.spacing, 'blurRadius': b.blurRadius,
-        'stabilization': b.stabilization, 'stabilizationStrength': b.stabilizationStrength,
-        'pixelMode': b.pixelMode, 'pressureMode': b.pressureMode.name,
-        'pressureStrength': b.pressureStrength, 'fadeMode': b.fadeMode.name,
-        'strokeDecay': b.strokeDecay, 'mixingMode': b.mixingMode.name,
-        'mixingRate': b.mixingRate, 'isFavorite': b.isFavorite,
-        'calligraphyAngle': b.calligraphyAngle,
-        'pixelColorMode': b.pixelColorMode.name,
-        'pixelColorLevels': b.pixelColorLevels,
-        'pixelExplicitColors': b.pixelExplicitColors,
-      };
+  static Map<String, dynamic> _serializeBrush(Brush b) => b.toJson();
 
-  static Brush _deserializeBrush(Map<String, dynamic> j) => Brush(
-        id: 'Brush${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
-        name: j['name'] as String,
-        size: (j['size'] as num).toDouble(),
-        opacity: j['opacity'] as int,
-        spacing: j['spacing'] as int,
-        blurRadius: j['blurRadius'] as int,
-        stabilization: j['stabilization'] as bool,
-        stabilizationStrength: j['stabilizationStrength'] as int,
-        // pixelModeは旧称dotPenModeからの改称。旧バージョンで書き出された
-        // .niatraファイルも引き続き読み込めるよう旧キーへフォールバックする。
-        pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
-        pressureMode: PressureMode.values.firstWhere((e) => e.name == j['pressureMode'],
-            orElse: () => PressureMode.off),
-        pressureStrength: j['pressureStrength'] as int,
-        fadeMode: FadeMode.values
-            .firstWhere((e) => e.name == j['fadeMode'], orElse: () => FadeMode.off),
-        strokeDecay: j['strokeDecay'] as bool,
-        mixingMode: BrushMixingMode.values.firstWhere((e) => e.name == j['mixingMode'],
-            orElse: () => BrushMixingMode.off),
-        mixingRate: j['mixingRate'] as int,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
-        pixelColorMode: PixelColorMode.values.firstWhere(
-            (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.none),
-        pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
-        pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)
-                ?.map((e) => e as int)
-                .toList() ??
-            const [0xFF000000],
-      );
+  static Brush _deserializeBrush(Map<String, dynamic> j) {
+    final json = Map<String, dynamic>.from(j)
+      ..['id'] = 'Brush${DateTime.now().microsecondsSinceEpoch}_${j['id']}'
+      ..['folderId'] = null;
+    return Brush.fromJson(json);
+  }
 
   // ─── Tone / Stamp ─────────────────────────────────────────────────────
 
-  static Map<String, dynamic> _serializeTone(Tone t) =>
-      {'id': t.id, 'name': t.name, 'texturePath': t.texturePath, 'isFavorite': t.isFavorite};
+  static Map<String, dynamic> _serializeTone(Tone t) => t.toJson();
 
-  static Tone _deserializeTone(Map<String, dynamic> j) => Tone(
-        id: 'Tone${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
-        name: j['name'] as String,
-        texturePath: j['texturePath'] as String?,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-      );
+  static Tone _deserializeTone(Map<String, dynamic> j) {
+    final json = Map<String, dynamic>.from(j)
+      ..['id'] = 'Tone${DateTime.now().microsecondsSinceEpoch}_${j['id']}'
+      ..['folderId'] = null;
+    return Tone.fromJson(json);
+  }
 
-  static Map<String, dynamic> _serializeStamp(Stamp s) => {
-        'id': s.id, 'name': s.name, 'imagePath': s.imagePath, 'isFavorite': s.isFavorite,
-        'rotation': s.rotation, 'density': s.density, 'scatter': s.scatter,
-        'opacity': s.opacity, 'pixelMode': s.pixelMode,
-      };
+  static Map<String, dynamic> _serializeStamp(Stamp s) => s.toJson();
 
-  static Stamp _deserializeStamp(Map<String, dynamic> j) => Stamp(
-        id: 'Stamp${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
-        name: j['name'] as String,
-        imagePath: j['imagePath'] as String?,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        rotation: j['rotation'] as bool? ?? false,
-        density: (j['density'] as num?)?.toDouble() ?? 1.0,
-        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
-        opacity: (j['opacity'] as int?) ?? 100,
-        pixelMode: j['pixelMode'] as bool? ?? false,
-      );
+  static Stamp _deserializeStamp(Map<String, dynamic> j) {
+    final json = Map<String, dynamic>.from(j)
+      ..['id'] = 'Stamp${DateTime.now().microsecondsSinceEpoch}_${j['id']}'
+      ..['folderId'] = null;
+    return Stamp.fromJson(json);
+  }
 
   // ─── AutofillPreset ───────────────────────────────────────────────────
 
   // グラデーション・トーン・線画色・トレス調整など、パーツが持つ設定を
   // 一切欠かさず引き継げるよう、モデル自身のtoJson/fromJsonをそのまま使う。
-  static Map<String, dynamic> _serializeAutofillPreset(AutofillPreset p) => p.toJson();
+  static Map<String, dynamic> _serializeAutofillPreset(AutofillPreset p) =>
+      p.toJson();
 
   static AutofillPreset _deserializeAutofillPreset(Map<String, dynamic> j) {
     final base = AutofillPreset.fromJson(j);
@@ -340,17 +319,22 @@ class NiatraSerializer {
   // ─── ThemePreset ──────────────────────────────────────────────────────
 
   static Map<String, dynamic> _serializeThemePreset(AppThemePreset t) => {
-        'id': t.id, 'name': t.name,
-        'accentColor': t.accentColor.toARGB32(), 'textColor': t.textColor.toARGB32(),
-        'panelBgColor': t.panelBgColor.toARGB32(), 'menuBgColor': t.menuBgColor.toARGB32(),
-        'selectionColor': t.selectionColor.toARGB32(), 'updateMarkColor': t.updateMarkColor.toARGB32(),
-        'isFavorite': t.isFavorite,
-      };
+    'id': t.id,
+    'name': t.name,
+    'accentColor': t.accentColor.toARGB32(),
+    'textColor': t.textColor.toARGB32(),
+    'panelBgColor': t.panelBgColor.toARGB32(),
+    'menuBgColor': t.menuBgColor.toARGB32(),
+    'selectionColor': t.selectionColor.toARGB32(),
+    'updateMarkColor': t.updateMarkColor.toARGB32(),
+    'isFavorite': t.isFavorite,
+  };
 
   // 'baseTheme'キーは廃止済みだが、旧バージョンで書き出された.niatraファイル
   // に含まれている場合があるため、jにあっても単に無視する（読み込みエラー
   // にしない）。
-  static AppThemePreset _deserializeThemePreset(Map<String, dynamic> j) => AppThemePreset(
+  static AppThemePreset _deserializeThemePreset(Map<String, dynamic> j) =>
+      AppThemePreset(
         id: 'theme_${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
         name: j['name'] as String,
         accentColor: Color(j['accentColor'] as int),

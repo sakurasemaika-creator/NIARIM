@@ -5,18 +5,21 @@ import 'dart:ui' as ui;
 /// スタンプ描画の確定処理（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
 Uint8List runStampStrokeInIsolate(
-    ({
-      Uint8List canvasData,
-      int width,
-      int height,
-      Uint8List texture,
-      int texSize,
-      List<ui.Offset> points,
-      double stampSize,
-      bool rotation,
-      double scatter,
-      double density,
-    }) args) {
+  ({
+    Uint8List canvasData,
+    int width,
+    int height,
+    Uint8List texture,
+    int texSize,
+    List<ui.Offset> points,
+    double stampSize,
+    bool rotation,
+    double scatter,
+    double density,
+    int opacity,
+  })
+  args,
+) {
   return StampEngine().stampAlongPath(
     canvasData: args.canvasData,
     width: args.width,
@@ -28,6 +31,7 @@ Uint8List runStampStrokeInIsolate(
     rotation: args.rotation,
     scatter: args.scatter,
     density: args.density,
+    opacity: args.opacity,
   );
 }
 
@@ -54,6 +58,7 @@ class StampEngine {
     bool rotation = false,
     double scatter = 0,
     double density = 1.0,
+    int opacity = 100,
     int seed = 0,
   }) {
     final result = Uint8List.fromList(canvasData);
@@ -89,6 +94,7 @@ class StampEngine {
         oy,
         stampSize,
         stampAngle,
+        opacity,
       );
     }
     return result;
@@ -116,14 +122,12 @@ class StampEngine {
       if (segmentLength <= 1e-9) continue;
 
       var consumed = 0.0;
-      while (distanceSinceStamp + (segmentLength - consumed) >= spacing - 1e-9) {
+      while (distanceSinceStamp + (segmentLength - consumed) >=
+          spacing - 1e-9) {
         final needed = math.max(0.0, spacing - distanceSinceStamp);
         consumed += needed;
         final t = (consumed / segmentLength).clamp(0.0, 1.0);
-        result.add(_stableOffset(ui.Offset(
-          a.dx + dx * t,
-          a.dy + dy * t,
-        )));
+        result.add(_stableOffset(ui.Offset(a.dx + dx * t, a.dy + dy * t)));
         distanceSinceStamp = 0.0;
       }
       distanceSinceStamp += segmentLength - consumed;
@@ -133,9 +137,9 @@ class StampEngine {
   }
 
   ui.Offset _stableOffset(ui.Offset p) => ui.Offset(
-        (p.dx * 1000000).round() / 1000000,
-        (p.dy * 1000000).round() / 1000000,
-      );
+    (p.dx * 1000000).round() / 1000000,
+    (p.dy * 1000000).round() / 1000000,
+  );
 
   /// 端点も含めてすべてのスタンプがストローク方向へ追従するよう、先頭では
   /// 次点、末尾では前点、中間では前後点を使って接線方向を求める。
@@ -166,6 +170,7 @@ class StampEngine {
     double cy,
     double size,
     double angle,
+    int opacity,
   ) {
     if (size <= 0) return;
     final half = size / 2;
@@ -185,7 +190,9 @@ class StampEngine {
         final v = ((ry / size) + 0.5) * texSize;
         if (u < 0 || u >= texSize || v < 0 || v >= texSize) continue;
         final tIdx = (v.floor() * texSize + u.floor()) * 4;
-        final ta = tex[tIdx + 3];
+        final ta = (tex[tIdx + 3] * opacity.clamp(1, 100) / 100.0)
+            .round()
+            .clamp(0, 255);
         if (ta == 0) continue;
         final dIdx = (y * w + x) * 4;
         final srcA = ta / 255.0;
