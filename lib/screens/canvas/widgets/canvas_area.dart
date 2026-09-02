@@ -3084,7 +3084,14 @@ class _CanvasAreaState extends State<CanvasArea> {
           if (e.kind == PointerDeviceKind.touch ||
               e.kind == PointerDeviceKind.stylus) {
             final edgeSide = _edgeDoubleTapSide(e.localPosition.dx);
-            if (edgeSide != null) {
+            // レイヤー全体変形・メッシュ変形では操作ハンドル自体がキャンバス端に
+            // 置かれる。端ダブルタップ専用ゾーンを先に奪うと右下の拡縮ハンドルや
+            // 端のメッシュ点がタッチ不能になるため、この2ツールではツール側へ
+            // ポインターを優先して渡す。フレーム送りは他ツールでは従来通り有効。
+            final transformNeedsEdge =
+                widget.currentTool == DrawingTool.transform ||
+                widget.currentTool == DrawingTool.meshTransform;
+            if (edgeSide != null && !transformNeedsEdge) {
               _handleEdgeZoneTap(edgeSide);
               return;
             }
