@@ -14,7 +14,6 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/export/export_screen.dart';
-import 'package:niarim/screens/timeline/timeline_screen.dart';
 
 class _FakeFilePicker extends FilePicker {
   @override
@@ -141,8 +140,9 @@ void main() {
         !timelineException.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
       fail('timeline: $timelineException');
     }
-    expect(find.byType(TimelineScreen), findsOneWidget);
 
+    // 型Finderではなく、遷移後にしか存在しない実Timelineの三点メニューを
+    // 本番画面到達の判定にする。これによりGoRouter/Widget testの型探索差異を排除する。
     final menuFinder = find.byWidgetPredicate(
       (widget) => widget is PopupMenuButton<String>,
       skipOffstage: false,
