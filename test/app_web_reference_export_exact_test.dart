@@ -14,6 +14,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/export/export_screen.dart';
+import 'package:niarim/screens/timeline/timeline_screen.dart';
 
 class _FakeFilePicker extends FilePicker {
   @override
@@ -151,12 +152,23 @@ void main() {
       fail('timeline: $timelineException');
     }
 
-    final menuFinder = find.byWidgetPredicate(
-      (widget) => widget is PopupMenuButton<String>,
-      skipOffstage: false,
+    // 画面全体の最後のPopupMenuButtonではなく、TimelineScreen自身の
+    // 三点メニューだけを対象にする。Canvas側など別メニューのcallbackを
+    // 誤って呼ぶとexport遷移が発生しないため、ここを厳密に限定する。
+    final timelineRoot = find.byType(TimelineScreen, skipOffstage: false);
+    expect(timelineRoot, findsOneWidget);
+    final menuFinder = find.descendant(
+      of: timelineRoot,
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is PopupMenuButton<String> &&
+            widget.icon is Icon &&
+            (widget.icon! as Icon).icon == Icons.more_vert,
+        skipOffstage: false,
+      ),
     );
-    expect(menuFinder, findsWidgets);
-    final menu = tester.widget<PopupMenuButton<String>>(menuFinder.last);
+    expect(menuFinder, findsOneWidget);
+    final menu = tester.widget<PopupMenuButton<String>>(menuFinder);
     expect(menu.onSelected, isNotNull);
     menu.onSelected!.call('export');
     await tester.pump(const Duration(milliseconds: 700));
