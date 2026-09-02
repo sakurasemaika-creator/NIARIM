@@ -179,13 +179,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 700));
       consumeOnlyKnownTimelineOverflow(tester, 'timeline');
 
-      // 320 logical pxではTimelineの7ボタンtoolbarが既知の24px overflowを
-      // 起こして書き出しボタンが正常にhit-testできない。操作だけ360pxへ
-      // 一時的に広げ、本番の表示中IconButtonを実tapする。Export画面へ
-      // 遷移した直後に320pxへ戻すので、基準PNG自体の比較条件は320pxのまま。
-      tester.view.physicalSize = const Size(1080, 1707);
-      await tester.pump(const Duration(milliseconds: 350));
-      consumeOnlyKnownTimelineOverflow(tester, 'timeline resize');
+      // 320 logical pxでは7個の標準IconButtonが横幅を超える。操作だけ420pxへ
+      // 一時的に広げ、実際に表示されている本番の書き出しボタンをtapする。
+      // Exportへ遷移後は320pxへ戻して撮影する。
+      tester.view.physicalSize = const Size(1260, 1707);
+      await tester.pump(const Duration(milliseconds: 450));
+      for (;;) {
+        final error = tester.takeException();
+        if (error == null) break;
+        if (!isKnownTimelineOverflow(error)) fail('timeline resize: $error');
+      }
 
       final timelineRoot = find.byType(TimelineScreen, skipOffstage: false);
       expect(timelineRoot, findsOneWidget);
@@ -200,9 +203,15 @@ void main() {
         ),
       );
       expect(exportButton, findsOneWidget);
+      final button = tester.widget<IconButton>(exportButton);
+      expect(button.onPressed, isNotNull);
       await tester.tap(exportButton);
-      await tester.pump(const Duration(milliseconds: 900));
-      consumeOnlyKnownTimelineOverflow(tester, 'export transition');
+      await tester.pumpAndSettle(const Duration(milliseconds: 50));
+
+      final postTapError = tester.takeException();
+      if (postTapError != null && !isKnownTimelineOverflow(postTapError)) {
+        fail('export transition: $postTapError');
+      }
       expect(find.byType(ExportScreen), findsOneWidget);
 
       tester.view.physicalSize = const Size(960, 1707);
