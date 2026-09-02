@@ -26,6 +26,30 @@ jobs:
           cache: false
       - name: Patch functional test
         run: python3 scripts/one_shot_selection_real_audit.py
+      - name: Wait for transformed selection mask in real async time
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/functional_audit_batch20_test.dart')
+          text = p.read_text(encoding='utf-8')
+          old = """    await _pumpRealAsyncUntil(tester, () => tm.recordingTouchedTiles == null,
+                timeout: const Duration(seconds: 3));
+            final move2Gesture = await tester.startGesture(
+          """
+          new = """    await _pumpRealAsyncUntil(tester, () => tm.recordingTouchedTiles == null,
+                timeout: const Duration(seconds: 3));
+            // 画素コミット後、選択マスク追従は別のui.Image非同期処理で完了する。
+            // Widget fake-asyncだけではコールバックが進まないため実時間も進める。
+            await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 150)),
+            );
+            await tester.pump();
+            final move2Gesture = await tester.startGesture(
+          """
+          if text.count(old) != 1:
+              raise SystemExit('selection mask wait guard failed')
+          p.write_text(text.replace(old, new), encoding='utf-8', newline='\n')
+          PY
       - name: Format
         run: dart format test/functional_audit_batch20_test.dart
       - name: Dependencies
