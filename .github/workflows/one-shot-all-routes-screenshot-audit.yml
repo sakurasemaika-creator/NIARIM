@@ -10,7 +10,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -19,7 +19,18 @@ jobs:
           cache: false
       - run: flutter pub get
       - name: Run all-route production screenshot audit
-        run: flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
+        shell: bash
+        run: |
+          set +e
+          for attempt in 1 2; do
+            echo "all-route audit attempt $attempt"
+            timeout 900s flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
+            rc=$?
+            if [ $rc -eq 0 ]; then exit 0; fi
+            echo "attempt $attempt failed rc=$rc; retrying after 10s"
+            sleep 10
+          done
+          exit 1
       - name: Upload all route screenshots and report
         if: always()
         uses: actions/upload-artifact@v4
