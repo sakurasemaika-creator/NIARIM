@@ -1,0 +1,40 @@
+name: One-shot Verify 33 37 Current
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-verify-33-37-current.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Patch batch33 real async only
+        run: python3 .github/scripts/fix_functional_audits_33_37.py
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: dart format test/functional_audit_batch33_test.dart test/functional_audit_batch37_test.dart
+      - name: Blur mosaic real CanvasArea
+        run: flutter test test/functional_audit_batch33_test.dart --reporter expanded
+      - name: Onion skin real CanvasArea
+        run: flutter test test/functional_audit_batch37_test.dart --reporter expanded
+      - name: Commit verified batch33 correction
+        run: |
+          git config user.name sakurasemaika-creator
+          git config user.email sakurasemaika@gmail.com
+          git add test/functional_audit_batch33_test.dart test/functional_audit_batch37_test.dart
+          git commit -m "test: finalize real canvas blur mosaic and onion audits" || true
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
