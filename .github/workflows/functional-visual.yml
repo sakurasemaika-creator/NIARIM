@@ -29,7 +29,7 @@ jobs:
         run: flutter pub get
 
       - name: 描画機能テスト
-        run: flutter test test/functional_render_test.dart --reporter expanded
+        run: flutter test test/functional_render_real_async_test.dart --reporter expanded
 
       - name: 機能別レンダリング画像を保存
         if: always()
