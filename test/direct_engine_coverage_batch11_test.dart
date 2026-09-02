@@ -19,7 +19,7 @@ void main() {
 
     final touch = PointerDownEvent(
       kind: PointerDeviceKind.touch,
-      localPosition: const Offset(10, 20),
+      position: const Offset(10, 20),
       pressure: 0.4,
     );
     expect(h.classifyInput(touch), InputType.touch);
@@ -30,7 +30,7 @@ void main() {
 
     final mouse = PointerDownEvent(
       kind: PointerDeviceKind.mouse,
-      localPosition: const Offset(30, 40),
+      position: const Offset(30, 40),
       pressure: 1,
     );
     expect(h.classifyInput(mouse), InputType.mouse);
@@ -39,7 +39,7 @@ void main() {
 
     final stylus = PointerDownEvent(
       kind: PointerDeviceKind.stylus,
-      localPosition: const Offset(50, 60),
+      position: const Offset(50, 60),
       pressure: 0.5,
       tilt: 0.6,
       orientation: math.pi / 3,
@@ -62,7 +62,7 @@ void main() {
 
     final inverted = PointerDownEvent(
       kind: PointerDeviceKind.invertedStylus,
-      localPosition: const Offset(70, 80),
+      position: const Offset(70, 80),
       pressure: 0.8,
     );
     expect(h.classifyInput(inverted), InputType.stylus);
@@ -76,7 +76,7 @@ void main() {
     final h = InputHandler();
     final event = PointerDownEvent(
       kind: PointerDeviceKind.stylus,
-      localPosition: Offset.zero,
+      position: Offset.zero,
       pressure: 2.0,
     );
     h.classifyInput(event);
