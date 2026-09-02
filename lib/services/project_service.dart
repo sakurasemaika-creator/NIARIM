@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:image/image.dart' as img;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../engine/layer_compositor.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/niapro_serializer.dart';
@@ -636,10 +638,11 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     int frameIndex,
     String layerId,
+    int insertIndex,
   ) {
     final layer = _removedLayers[layerId];
     if (layer == null) return;
-    _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
+    _applyLayerInsert(projectId, sceneId, frameIndex, layer, insertIndex);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
   }
 
@@ -906,7 +909,10 @@ class ProjectService extends ChangeNotifier {
   /// .niatra（引き継ぎ）経由で自分自身の別端末プロジェクトを復元する場合は
   /// falseを渡し、通常プロジェクト一覧へそのまま追加する
   /// （NiatraSerializer.restoreProjects()が使用）。
-  Future<Project> importSharedProject(NiaproData data, {bool isSharedImport = true}) async {
+  Future<Project> importSharedProject(
+    NiaproData data, {
+    bool isSharedImport = true,
+  }) async {
     final newId = _nextId('proj');
     final project = data.project.copyWith(
       id: newId,
@@ -1293,7 +1299,8 @@ class ProjectService extends ChangeNotifier {
     if (homes != null) {
       final toShift = <String>[];
       homes.forEach((layerId, home) {
-        if (home.sceneId == targetSceneId && home.frameIndex >= clampedInsertAt) {
+        if (home.sceneId == targetSceneId &&
+            home.frameIndex >= clampedInsertAt) {
           toShift.add(layerId);
         }
       });

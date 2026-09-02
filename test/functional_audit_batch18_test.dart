@@ -41,13 +41,15 @@ void main() {
     expect(_alphaCount(drawn), greaterThan(0));
     await _save(drawn, width, height, '${out.path}/undo_drawn.png');
 
-    undo.push(TileUndoAction(
-      tileManager: tm,
-      layerId: layer,
-      before: firstSnapshot.before,
-      after: firstSnapshot.after,
-      onApply: () {},
-    ));
+    undo.push(
+      TileUndoAction(
+        tileManager: tm,
+        layerId: layer,
+        before: firstSnapshot.before,
+        after: firstSnapshot.after,
+        onApply: () {},
+      ),
+    );
     undo.undo();
     final undone = _canvasBytes(tm, layer, width, height);
     expect(_alphaCount(undone), 0, reason: '描画前が完全透明ならUndo後も完全透明であること');
@@ -55,7 +57,11 @@ void main() {
 
     undo.redo();
     final redone = _canvasBytes(tm, layer, width, height);
-    expect(redone, orderedEquals(drawn), reason: 'Redoは描画後の全RGBAを1byteも変えず復元すること');
+    expect(
+      redone,
+      orderedEquals(drawn),
+      reason: 'Redoは描画後の全RGBAを1byteも変えず復元すること',
+    );
     await _save(redone, width, height, '${out.path}/undo_redone.png');
 
     // 別操作として消しゴムを交差させ、2段階履歴でも正しく戻るか確認する。
@@ -73,19 +79,27 @@ void main() {
     expect(erased, isNot(orderedEquals(drawn)));
     await _save(erased, width, height, '${out.path}/undo_erased.png');
 
-    undo.push(TileUndoAction(
-      tileManager: tm,
-      layerId: layer,
-      before: eraseSnapshot.before,
-      after: eraseSnapshot.after,
-      onApply: () {},
-    ));
+    undo.push(
+      TileUndoAction(
+        tileManager: tm,
+        layerId: layer,
+        before: eraseSnapshot.before,
+        after: eraseSnapshot.after,
+        onApply: () {},
+      ),
+    );
     undo.undo();
-    expect(_canvasBytes(tm, layer, width, height), orderedEquals(drawn),
-        reason: '消しゴムだけUndoすると直前のペン線へ完全一致で戻ること');
+    expect(
+      _canvasBytes(tm, layer, width, height),
+      orderedEquals(drawn),
+      reason: '消しゴムだけUndoすると直前のペン線へ完全一致で戻ること',
+    );
     undo.redo();
-    expect(_canvasBytes(tm, layer, width, height), orderedEquals(erased),
-        reason: '消しゴムRedoで消去後へ完全一致すること');
+    expect(
+      _canvasBytes(tm, layer, width, height),
+      orderedEquals(erased),
+      reason: '消しゴムRedoで消去後へ完全一致すること',
+    );
 
     // Undo後に新規操作を行ったら、分岐前のRedo履歴は破棄される。
     undo.undo();
@@ -99,13 +113,15 @@ void main() {
     engine.continueStroke(const StrokePoint(x: 105, y: 82), layer);
     engine.endStroke();
     final branchSnapshot = tm.endUndoRecording();
-    undo.push(TileUndoAction(
-      tileManager: tm,
-      layerId: layer,
-      before: branchSnapshot.before,
-      after: branchSnapshot.after,
-      onApply: () {},
-    ));
+    undo.push(
+      TileUndoAction(
+        tileManager: tm,
+        layerId: layer,
+        before: branchSnapshot.before,
+        after: branchSnapshot.after,
+        onApply: () {},
+      ),
+    );
     expect(undo.canRedo, isFalse, reason: 'Undo後の新規描画は古いRedo分岐を破棄すること');
   });
 
@@ -148,8 +164,11 @@ void main() {
     );
     expect(_layerIds(service, project.id, scene.id), [b.id, base.id]);
     undo.undo();
-    expect(_layerIds(service, project.id, scene.id), [b.id, a.id, base.id],
-        reason: '中央レイヤー削除のUndoは元indexへ復元すること');
+    expect(_layerIds(service, project.id, scene.id), [
+      b.id,
+      a.id,
+      base.id,
+    ], reason: '中央レイヤー削除のUndoは元indexへ復元すること');
     undo.redo();
     expect(_layerIds(service, project.id, scene.id), [b.id, base.id]);
     undo.undo();
@@ -162,12 +181,21 @@ void main() {
       frameIndex: 0,
       layerId: a.id,
     )!;
-    expect(_layerIds(service, project.id, scene.id), [b.id, copy.id, a.id, base.id]);
+    expect(_layerIds(service, project.id, scene.id), [
+      b.id,
+      copy.id,
+      a.id,
+      base.id,
+    ]);
     undo.undo();
     expect(_layerIds(service, project.id, scene.id), [b.id, a.id, base.id]);
     undo.redo();
-    expect(_layerIds(service, project.id, scene.id), [b.id, copy.id, a.id, base.id],
-        reason: '複製Redoも元の挿入位置へ戻ること');
+    expect(_layerIds(service, project.id, scene.id), [
+      b.id,
+      copy.id,
+      a.id,
+      base.id,
+    ], reason: '複製Redoも元の挿入位置へ戻ること');
   });
 
   test('オニオンスキンは前後・枚数・間隔・濃度・色を設定通り返す', () async {
@@ -188,8 +216,11 @@ void main() {
 
     expect(engine.getVisibleFrameOffsets(settings), [-2, -4, -6, 2, 4]);
     expect(engine.getOpacityForFrame(settings, 0), 0);
-    expect(engine.getOpacityForFrame(settings, -1), 0,
-        reason: '間隔2なら隣接-1フレームは表示対象外');
+    expect(
+      engine.getOpacityForFrame(settings, -1),
+      0,
+      reason: '間隔2なら隣接-1フレームは表示対象外',
+    );
     expect(engine.getOpacityForFrame(settings, 1), 0);
     final p1 = engine.getOpacityForFrame(settings, -2);
     final p2 = engine.getOpacityForFrame(settings, -4);
@@ -248,22 +279,22 @@ void main() {
 }
 
 Brush _brush({int opacity = 100, double size = 8}) => Brush(
-      id: 'audit',
-      name: 'audit',
-      size: size,
-      opacity: opacity,
-      spacing: 10,
-      blurRadius: 0,
-      stabilization: false,
-      stabilizationStrength: 0,
-      pixelMode: false,
-      pressureMode: PressureMode.off,
-      pressureStrength: 0,
-      fadeMode: FadeMode.off,
-      strokeDecay: false,
-      mixingMode: BrushMixingMode.off,
-      mixingRate: 0,
-    );
+  id: 'audit',
+  name: 'audit',
+  size: size,
+  opacity: opacity,
+  spacing: 10,
+  blurRadius: 0,
+  stabilization: false,
+  stabilizationStrength: 0,
+  pixelMode: false,
+  pressureMode: PressureMode.off,
+  pressureStrength: 0,
+  fadeMode: FadeMode.off,
+  strokeDecay: false,
+  mixingMode: BrushMixingMode.off,
+  mixingRate: 0,
+);
 
 List<String> _layerIds(ProjectService s, String projectId, String sceneId) =>
     s.layersOf(projectId, sceneId, 0).map((l) => l.id).toList();

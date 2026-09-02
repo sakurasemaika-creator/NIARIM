@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 import '../models/ruler.dart';
 import 'tile_manager.dart';
 
@@ -103,13 +104,15 @@ class LayerAddUndoAction extends UndoAction {
     int frameIndex,
     String layerId,
     int insertIndex,
-  ) _doAdd;
+  )
+  _doAdd;
   final void Function(
     String projectId,
     String sceneId,
     int frameIndex,
     String layerId,
-  ) _doRemove;
+  )
+  _doRemove;
 
   LayerAddUndoAction({
     required this.projectId,
@@ -123,22 +126,23 @@ class LayerAddUndoAction extends UndoAction {
       int frameIndex,
       String layerId,
       int insertIndex,
-    ) doAdd,
+    )
+    doAdd,
     required void Function(
       String projectId,
       String sceneId,
       int frameIndex,
       String layerId,
-    ) doRemove,
-  })  : _doAdd = doAdd,
-        _doRemove = doRemove;
+    )
+    doRemove,
+  }) : _doAdd = doAdd,
+       _doRemove = doRemove;
 
   @override
   void undo() => _doRemove(projectId, sceneId, frameIndex, layerId);
 
   @override
-  void redo() =>
-      _doAdd(projectId, sceneId, frameIndex, layerId, insertIndex);
+  void redo() => _doAdd(projectId, sceneId, frameIndex, layerId, insertIndex);
 
   @override
   String get description => 'Add layer $layerId';
@@ -158,13 +162,15 @@ class LayerRemoveUndoAction extends UndoAction {
     int frameIndex,
     String layerId,
     int insertIndex,
-  ) _doAdd;
+  )
+  _doAdd;
   final void Function(
     String projectId,
     String sceneId,
     int frameIndex,
     String layerId,
-  ) _doRemove;
+  )
+  _doRemove;
 
   LayerRemoveUndoAction({
     required this.projectId,
@@ -178,19 +184,20 @@ class LayerRemoveUndoAction extends UndoAction {
       int frameIndex,
       String layerId,
       int insertIndex,
-    ) doAdd,
+    )
+    doAdd,
     required void Function(
       String projectId,
       String sceneId,
       int frameIndex,
       String layerId,
-    ) doRemove,
-  })  : _doAdd = doAdd,
-        _doRemove = doRemove;
+    )
+    doRemove,
+  }) : _doAdd = doAdd,
+       _doRemove = doRemove;
 
   @override
-  void undo() =>
-      _doAdd(projectId, sceneId, frameIndex, layerId, removedIndex);
+  void undo() => _doAdd(projectId, sceneId, frameIndex, layerId, removedIndex);
 
   @override
   void redo() => _doRemove(projectId, sceneId, frameIndex, layerId);
