@@ -18,15 +18,15 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get
-      - name: Run robust onion canvas audit with retry
+      - name: Run robust and fixed-point onion canvas audits with retry
         shell: bash
         run: |
           set +e
           for attempt in 1 2; do
-            timeout 300s flutter test test/onion_skin_canvas_diagnostic_test.dart --reporter expanded
+            timeout 300s flutter test test/onion_skin_canvas_diagnostic_test.dart test/functional_audit_batch37_test.dart --reporter expanded
             rc=$?
             if [ $rc -eq 0 ]; then exit 0; fi
-            echo "onion diagnostic attempt $attempt failed rc=$rc"
+            echo "onion audits attempt $attempt failed rc=$rc"
             sleep 10
           done
           exit 1
