@@ -6,7 +6,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
-import 'package:niarim/engine/undo_manager.dart' as app_undo;
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
@@ -42,9 +41,14 @@ void main() {
       await Future.wait(loaders.map((e) => e.load()));
     });
 
-    final ps = ProjectService();
-    final undo = app_undo.UndoManager();
-    ps.setUndoManager(undo);
+    // buildAppProviders() が生成・初期化した ProjectService / UndoManager を
+    // そのまま使う。別インスタンスを MultiProvider の後段で上書きすると、
+    // buildAppProviders 内で配線済みのサービス群が別 ProjectService を参照し、
+    // 実 CanvasScreen 初期化時に null 状態へ到達し得るため。
+    final providers = await tester.runAsync(buildAppProviders);
+    final providerList = providers!;
+    final projectProvider = providerList.whereType<ChangeNotifierProvider<ProjectService>>().single;
+    final ps = projectProvider.value;
     final project = (await tester.runAsync(() => ps.createProject(
       name: 'panel-visual-audit',
       fps: 24,
@@ -54,17 +58,12 @@ void main() {
       exportHeight: 320,
     )))!;
 
-    final providers = await tester.runAsync(buildAppProviders);
     final rootKey = GlobalKey();
     await tester.pumpWidget(
       RepaintBoundary(
         key: rootKey,
         child: MultiProvider(
-          providers: [
-            ...providers!,
-            ChangeNotifierProvider<ProjectService>.value(value: ps),
-            ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
-          ],
+          providers: providerList,
           child: MaterialApp(home: CanvasScreen(projectId: project.id)),
         ),
       ),
@@ -102,31 +101,11 @@ void main() {
     expect(find.byType(ColorPickerPanel), findsOneWidget);
     await _capture(rootKey, '${out.path}/01_color_picker.png');
 
-    await tapPanel(
-      control: find.byIcon(Icons.tune),
-      panelType: BrushPanel,
-      file: '02_brush_panel',
-    );
+    await tapPanel(control: find.byIcon(Icons.tune), panelType: BrushPanel, file: '02_brush_panel');
     expect(find.byType(ColorPickerPanel), findsNothing);
-
-    await tapPanel(
-      control: find.byIcon(Icons.layers),
-      panelType: LayerPanel,
-      file: '03_layer_panel',
-    );
-
-    await tapPanel(
-      control: find.byIcon(Icons.straighten),
-      panelType: RulerPanel,
-      file: '04_ruler_panel',
-    );
-
-    await tapPanel(
-      control: find.byIcon(Icons.loop),
-      panelType: QuickToolPanel,
-      file: '05_quick_tool_panel',
-      longPress: true,
-    );
+    await tapPanel(control: find.byIcon(Icons.layers), panelType: LayerPanel, file: '03_layer_panel');
+    await tapPanel(control: find.byIcon(Icons.straighten), panelType: RulerPanel, file: '04_ruler_panel');
+    await tapPanel(control: find.byIcon(Icons.loop), panelType: QuickToolPanel, file: '05_quick_tool_panel', longPress: true);
 
     await tester.tap(find.byIcon(Icons.settings).first);
     await tester.pump(const Duration(milliseconds: 400));
