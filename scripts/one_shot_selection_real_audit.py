@@ -46,43 +46,43 @@ new_provider = "    final appProviders = await tester.runAsync(buildAppProviders
 if text.count(old_provider) == 1:
     text = text.replace(old_provider, new_provider)
 
-# Give CanvasArea a realistic display size. The app reserves 32 physical pixels
-# at each horizontal edge for frame navigation; a 96px-wide test widget made
-# normal selection coordinates fall inside that reserved edge zone.
-text = text.replace(
-"    tester.view.physicalSize = const Size(320, 240);\n",
-"    tester.view.physicalSize = const Size(480, 360);\n",
-)
-text = text.replace(
-"                width: 96,\n                height: 80,\n",
-"                width: 288,\n                height: 240,\n",
-)
-
-# Convert project-pixel coordinates to the 3x on-screen CanvasArea coordinates.
+# Realistic on-screen size: project canvas 96x80 is displayed at exactly 3x.
+text = text.replace("    tester.view.physicalSize = const Size(320, 240);\n",
+                    "    tester.view.physicalSize = const Size(480, 360);\n")
+text = text.replace("                width: 96,\n                height: 80,\n",
+                    "                width: 288,\n                height: 240,\n")
 anchor = "    final area = find.byType(CanvasArea);\n    final origin = tester.getTopLeft(area);\n"
 replacement = "    final area = find.byType(CanvasArea);\n    final origin = tester.getTopLeft(area);\n    Offset at(Offset canvasPx) =>\n        origin + Offset(canvasPx.dx * 3, canvasPx.dy * 3);\n"
 if text.count(anchor) != 1:
     raise SystemExit('guard failed for screen coordinate mapper')
 text = text.replace(anchor, replacement)
-for pt in ["16, 14", "48, 46", "30, 28", "46, 38", "51, 38"]:
+for pt in ["16, 14", "48, 46", "30, 28"]:
     text = text.replace(f"origin + const Offset({pt})", f"at(const Offset({pt}))")
 
-# Replace transform drags with state-based readiness waits. We do not merely sleep:
-# after pointer-down we wait until the selected source pixel is actually cut from
-# TileManager, proving the floating-selection preparation reached the cut stage.
-old_first = """    await _dragWithWait(\n      tester,\n      at(const Offset(30, 28)),\n      at(const Offset(46, 38)),\n      waitBeforeMove: const Duration(milliseconds: 180),\n    );\n    await tester.pump(const Duration(milliseconds: 250));\n"""
+old_first = """    await _dragWithWait(\n      tester,\n      origin + const Offset(30, 28),\n      origin + const Offset(46, 38),\n      waitBeforeMove: const Duration(milliseconds: 180),\n    );\n    await tester.pump(const Duration(milliseconds: 250));\n"""
+if text.count(old_first) == 0:
+    old_first = """    await _dragWithWait(\n      tester,\n      at(const Offset(30, 28)),\n      origin + const Offset(46, 38),\n      waitBeforeMove: const Duration(milliseconds: 180),\n    );\n    await tester.pump(const Duration(milliseconds: 250));\n"""
 new_first = """    final move1Gesture = await tester.startGesture(\n      at(const Offset(30, 28)),\n      kind: PointerDeviceKind.touch,\n    );\n    await tester.pump();\n    await _waitForPixelAlpha(tester, tm, key, 20, 19, 0);\n    await move1Gesture.moveTo(at(const Offset(46, 38)));\n    await tester.pump(const Duration(milliseconds: 40));\n    await move1Gesture.up();\n    await tester.pump();\n    await _waitForPixelAlpha(tester, tm, key, 36, 29, 255);\n"""
+if text.count(old_first) != 1:
+    # original untouched form
+    old_first = """    await _dragWithWait(\n      tester,\n      at(const Offset(30, 28)),\n      at(const Offset(46, 38)),\n      waitBeforeMove: const Duration(milliseconds: 180),\n    );\n    await tester.pump(const Duration(milliseconds: 250));\n"""
 if text.count(old_first) != 1:
     raise SystemExit('guard failed for first transform drag')
 text = text.replace(old_first, new_first)
 
-old_second = """    await _dragWithWait(\n      tester,\n      at(const Offset(46, 38)),\n      at(const Offset(51, 38)),\n      waitBeforeMove: const Duration(milliseconds: 180),\n    );\n    await tester.pump(const Duration(milliseconds: 250));\n"""
-new_second = """    final move2Gesture = await tester.startGesture(\n      at(const Offset(46, 38)),\n      kind: PointerDeviceKind.touch,\n    );\n    await tester.pump();\n    await _waitForPixelAlpha(tester, tm, key, 36, 29, 0);\n    await move2Gesture.moveTo(at(const Offset(51, 38)));\n    await tester.pump(const Duration(milliseconds: 40));\n    await move2Gesture.up();\n    await tester.pump();\n    await _waitForPixelAlpha(tester, tm, key, 41, 29, 255);\n"""
-if text.count(old_second) != 1:
+# Second grab deliberately uses a point that is OUTSIDE the original selection
+# (x>=48) but INSIDE the translated selection (32<=x<64). This proves that the
+# selection mask itself followed the first transform before the second drag.
+old_second_candidates = [
+"""    await _dragWithWait(\n      tester,\n      origin + const Offset(46, 38),\n      origin + const Offset(51, 38),\n      waitBeforeMove: const Duration(milliseconds: 180),\n    );\n    await tester.pump(const Duration(milliseconds: 250));\n""",
+"""    await _dragWithWait(\n      tester,\n      at(const Offset(46, 38)),\n      at(const Offset(51, 38)),\n      waitBeforeMove: const Duration(milliseconds: 180),\n    );\n    await tester.pump(const Duration(milliseconds: 250));\n""",
+]
+old_second = next((s for s in old_second_candidates if text.count(s) == 1), None)
+if old_second is None:
     raise SystemExit('guard failed for second transform drag')
+new_second = """    // Give the mask rasterization callback an event turn, then require that a\n    // new-only point actually begins a transform by observing the source cut.\n    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));\n    await tester.pump();\n    final move2Gesture = await tester.startGesture(\n      at(const Offset(60, 50)),\n      kind: PointerDeviceKind.touch,\n    );\n    await tester.pump();\n    await _waitForPixelAlpha(tester, tm, key, 36, 29, 0);\n    await move2Gesture.moveTo(at(const Offset(65, 50)));\n    await tester.pump(const Duration(milliseconds: 40));\n    await move2Gesture.up();\n    await tester.pump();\n    await _waitForPixelAlpha(tester, tm, key, 41, 29, 255);\n"""
 text = text.replace(old_second, new_second)
 
-# Add a polling helper that waits on actual TileManager state in real time.
 helper_anchor = "Future<void> _dragWithWait(\n"
 helper = """Future<void> _waitForPixelAlpha(\n  WidgetTester tester,\n  dynamic tm,\n  String layer,\n  int x,\n  int y,\n  int expectedAlpha,\n) async {\n  final ok = await tester.runAsync(() async {\n    final deadline = DateTime.now().add(const Duration(seconds: 3));\n    while (DateTime.now().isBefore(deadline)) {\n      final tile = tm.getTile(layer, x ~/ 256, y ~/ 256) as Uint8List?;\n      final alpha = tile == null\n          ? 0\n          : tile[((y % 256) * 256 + (x % 256)) * 4 + 3];\n      if (alpha == expectedAlpha) return true;\n      await Future<void>.delayed(const Duration(milliseconds: 10));\n    }\n    return false;\n  });\n  expect(ok, isTrue,\n      reason: '選択変形の非同期切り取り/貼り戻しが3秒以内に実画素へ反映されること');\n  await tester.pump();\n}\n\n"""
 if text.count(helper_anchor) != 1:
@@ -90,4 +90,4 @@ if text.count(helper_anchor) != 1:
 text = text.replace(helper_anchor, helper + helper_anchor)
 
 p.write_text(text, encoding='utf-8', newline='\n')
-print('patched Batch20 for realistic screen geometry and state-based async readiness')
+print('patched Batch20 with realistic geometry, state readiness, and non-overlap mask tracking')
