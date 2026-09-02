@@ -57,9 +57,9 @@ class SteppedSlider extends StatelessWidget {
     return Row(
       children: [
         IconButton(
-          icon: const Icon(Icons.remove_circle_outline, size: 18),
+          icon: const Icon(Icons.remove_circle_outline, size: 22),
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
           visualDensity: VisualDensity.compact,
           tooltip: '-$step',
           onPressed: (onChanged == null || clamped <= min)
@@ -72,9 +72,9 @@ class SteppedSlider extends StatelessWidget {
         ),
         Expanded(child: slider),
         IconButton(
-          icon: const Icon(Icons.add_circle_outline, size: 18),
+          icon: const Icon(Icons.add_circle_outline, size: 22),
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
           visualDensity: VisualDensity.compact,
           tooltip: '+$step',
           onPressed: (onChanged == null || clamped >= max)

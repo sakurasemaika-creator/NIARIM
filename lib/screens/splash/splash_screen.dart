@@ -207,7 +207,13 @@ class _SplashActionButton extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: 150,
-          height: 150,
+          // OSの文字サイズ設定（textScaler）を大きくしている端末では、
+          // 中のアイコン＋ラベルが150pxに収まらず縦方向のRenderFlex
+          // オーバーフローになっていた。高さ固定をやめ「最低150px・
+          // 文字が伸びたぶんだけ縦に広がる」形にする（縦画面では
+          // SingleChildScrollView、横画面ではRowの中にあるため、
+          // 縦に伸びてもレイアウトは破綻しない）。
+          constraints: const BoxConstraints(minHeight: 150),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
@@ -218,6 +224,7 @@ class _SplashActionButton extends StatelessWidget {
             ),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, color: Colors.white, size: 60),

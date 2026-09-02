@@ -4699,6 +4699,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get progressDialogAdLoading => '广告加载中…';
 
   @override
+  String get adMockPlaceholderLabel => '广告横幅（用于位置试验的模型）';
+
+  @override
   String get progressDialogTipLabel => '提示';
 
   @override
@@ -10538,6 +10541,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get progressDialogAdLoading => '廣告載入中…';
+
+  @override
+  String get adMockPlaceholderLabel => '廣告橫幅（用於版位試驗的模型）';
 
   @override
   String get progressDialogTipLabel => '提示';

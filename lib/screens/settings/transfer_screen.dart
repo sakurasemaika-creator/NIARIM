@@ -161,13 +161,20 @@ class _TransferScreenState extends State<TransferScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+            // OSの文字サイズ設定（textScaler）を大きくすると、4つの
+            // ボタンが1行に収まらずRenderFlexオーバーフローになっていた
+            // ため、Wrapで折り返せるようにする（Spacerは使えないので、
+            // 「読み込み」とそれ以外の間隔はspacingで表現する）。
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 TextButton(
                   onPressed: _isBusy ? null : _import,
                   child: Text(l10n.transferImport),
                 ),
-                const Spacer(),
                 TextButton(
                   onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => true)),
                   child: Text(l10n.homeSelectionAllSelect),
@@ -176,7 +183,6 @@ class _TransferScreenState extends State<TransferScreen> {
                   onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => false)),
                   child: Text(l10n.homeSelectionAllDeselect),
                 ),
-                const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: (!_isBusy &&
                           (_items.values.any((v) => v) || _selectedProjectIds.isNotEmpty))

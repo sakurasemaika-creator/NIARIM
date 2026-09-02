@@ -4966,6 +4966,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get progressDialogAdLoading => 'Chargement de la publicité…';
 
   @override
+  String get adMockPlaceholderLabel =>
+      'Bannière publicitaire (maquette d\'essai d\'emplacement)';
+
+  @override
   String get progressDialogTipLabel => 'Astuce';
 
   @override

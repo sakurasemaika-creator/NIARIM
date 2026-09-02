@@ -13,6 +13,19 @@ type TagAction =
   | { action: 'unlock'; tag: string };
 
 /**
+ * タグ1件あたりの最大文字数と、1作品あたりの最大タグ数。
+ *
+ * このエンドポイントは「誰でも他人の作品のタグを追加できる」設計
+ * （8.7節）のため、上限が無いと第三者が長大な文字列や大量のタグを
+ * 送り込んで作品アイテムをDynamoDBの1アイテム上限（400KB）付近まで
+ * 肥大化させられる。そうなると以後その作品の更新（統計反映・タグ編集）
+ * が失敗し続けるため、投稿者本人でも復旧できない妨害が成立してしまう。
+ * それを防ぐための上限。
+ */
+const MAX_TAG_LENGTH = 30;
+const MAX_TAGS_PER_WORK = 30;
+
+/**
  * `PATCH /works/{id}/tags`（8.7節）。誰でもタグを追加・削除できるが、
  * ロック中のタグは削除できない。ロック/解除の操作は投稿者本人のみ
  * （書き込み系エンドポイント共通のNIARIM User ID検証、16章）。
@@ -43,7 +56,12 @@ export async function updateTags(event: APIGatewayProxyEventV2, workId: string) 
 
   switch (body.action) {
     case 'add':
-      if (!tags.includes(body.tag)) tags = [...tags, body.tag];
+      if (!tags.includes(body.tag)) {
+        if (tags.length >= MAX_TAGS_PER_WORK) {
+          badRequest(`タグは1作品につき${MAX_TAGS_PER_WORK}件までです`, 'TAG_LIMIT_EXCEEDED');
+        }
+        tags = [...tags, body.tag];
+      }
       break;
     case 'remove':
       tags = tags.filter((t) => t !== body.tag);
@@ -81,6 +99,9 @@ function parseBody(raw: string | undefined): TagAction {
   }
   if (!body.tag || typeof body.tag !== 'string' || !body.tag.trim()) {
     badRequest('tagは必須です');
+  }
+  if (body.tag.trim().length > MAX_TAG_LENGTH) {
+    badRequest(`タグは${MAX_TAG_LENGTH}文字以内にしてください`, 'TAG_TOO_LONG');
   }
   if (!body.action || !['add', 'remove', 'lock', 'unlock'].includes(body.action)) {
     badRequest('actionはadd/remove/lock/unlockのいずれかである必要があります');

@@ -12,7 +12,9 @@ import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/background_color_picker.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
@@ -928,20 +930,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // に沈んで見えなくなる）から、常に明るいColors.white70へ
                     // 固定する（キャンバス外周の暗い背景色は固定値のため、
                     // アイコン側もテーマに関わらず視認できる固定色でよい）。
+                    //
+                    // 【タップしやすさ改善】高さ16→28pxへ拡大（アイコンも
+                    // 16→22pxへ）。フルの48px（Material推奨タップ領域）まで
+                    // 広げると常時表示のバーとして描画領域を圧迫しすぎるため、
+                    // 誤タップしにくくなる範囲での妥協値としている。
                     if (!isDesktop)
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () =>
                             setState(() => _showToolbar = !_showToolbar),
                         child: Container(
-                          height: 24,
+                          height: 28,
                           alignment: Alignment.center,
                           color: kCanvasOutsideColor,
                           child: Icon(
                             _showToolbar
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
-                            size: 18,
+                            size: 22,
                             color: Colors.white70,
                           ),
                         ),
@@ -953,19 +960,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
                     // フレーム一覧の折りたたみ用ハンドル（描画領域を
                     // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
+                    // 高さ16→28px・アイコン16→22pxへ拡大（ツールバー折りたたみ
+                    // ハンドルと同様、タップしやすさ改善のため）。
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () =>
                           setState(() => _showFrameStrip = !_showFrameStrip),
                       child: Container(
-                        height: 24,
+                        height: 28,
                         alignment: Alignment.center,
                         color: Colors.transparent,
                         child: Icon(
                           _showFrameStrip
                               ? Icons.keyboard_arrow_down
                               : Icons.keyboard_arrow_up,
-                          size: 18,
+                          size: 22,
+                          // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
+                          // ToolbarWidgetの色連動と同じ方針）。
                           color: Theme.of(
                             context,
                           ).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -1469,16 +1480,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
+  /// プロジェクトの背景色（Project.backgroundColor。キャンバス表示だけで
+  /// なく書き出し結果にも反映される）を、新規プロジェクト作成画面と
+  /// まったく同じ選択肢から変更する。選択肢とスウォッチの見た目は
+  /// [BackgroundColorSwatchPicker]（新規プロジェクト作成画面と共用）に
+  /// 集約しており、片方だけ選択肢が増減する事故を防いでいる。
+  ///
+  /// なお「背景切替」（_toggleBackground）は表示専用の白⟷透過チェッカー
+  /// 切替であり、こちらとは別物。
   void _showBackgroundColorPicker(BuildContext context) {
     final ps = context.read<ProjectService>();
-    final project = ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final project =
+        ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
     if (project == null) return;
-    final colors = [
-      Colors.white,
-      Colors.black,
-      Colors.transparent,
-      const Color(0xFFF5F5DC),
-    ];
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -1490,59 +1504,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
             children: [
               Text(
                 AppLocalizations.of(context)!.newProjectBackgroundColorLabel,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                ),
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                children: colors.map((color) {
-                  final current = Color(project.backgroundColor);
-                  final isSelected = current.toARGB32() == color.toARGB32();
-                  final isLight = color == Colors.white ||
-                      color == Colors.transparent ||
-                      color == const Color(0xFFF5F5DC);
-                  return GestureDetector(
-                    onTap: () {
-                      ps.updateProjectBackgroundColor(
-                        widget.projectId,
-                        color.toARGB32(),
-                      );
-                      Navigator.pop(ctx);
-                    },
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.outlineVariant,
-                          width: isSelected ? 3 : 1,
-                        ),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (color == Colors.transparent)
-                            CustomPaint(
-                              size: const Size(48, 48),
-                              painter: _CheckerboardPainter(),
-                            )
-                          else
-                            Container(color: color),
-                          if (isSelected)
-                            Icon(
-                              Icons.check,
-                              size: 20,
-                              color: isLight ? Colors.black87 : Colors.white,
-                            ),
-                        ],
-                      ),
-                    ),
+              BackgroundColorSwatchPicker(
+                selectedColor: Color(project.backgroundColor),
+                onChanged: (color) {
+                  ps.updateProjectBackgroundColor(
+                    widget.projectId,
+                    color.toARGB32(),
                   );
-                }).toList(),
+                  Navigator.pop(ctx);
+                },
               ),
             ],
           ),
@@ -1550,13 +1526,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
       ),
     );
   }
-
-  /// プロジェクト作成画面と同じ市松模様（透明背景スウォッチ用）。
-  // ignore: unused_element
-  static Widget _checkerSwatch() => CustomPaint(
-    size: const Size(48, 48),
-    painter: _CheckerboardPainter(),
-  );
 
   /// ツール早替えボタンタップ時：登録順に次のツールへ切り替える。
   void _applyNextQuickTool() {
@@ -1758,6 +1727,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ),
               ),
             ),
+          const Spacer(),
+          // 【試験配置】広告バナーのモック（実際のAdMob広告ではなく、
+          // 実サイズ320×50dpの見た目だけを模したプレースホルダー）。
+          // 左右のUndo/Redo・設定/ホームボタンとは指1本分（48dp）以上
+          // 離し、誤タップを避ける。画面幅が足りない端末では
+          // FittedBoxで縮小し、RenderFlexオーバーフローにしない。
+          const SizedBox(width: 48),
+          const Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: AdBannerMockWidget(),
+            ),
+          ),
+          const SizedBox(width: 48),
           const Spacer(),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
@@ -2575,22 +2558,3 @@ enum DrawingTool {
 
 /// 図形ツールの種別（タップでポップアップ表示・OFF/線/四角形/円）
 enum ShapeKind { off, line, rect, circle }
-
-/// 透明背景スウォッチ用の市松模様（new_project_screen.dartと同じ実装）。
-class _CheckerboardPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    const cell = 8.0;
-    final light = Paint()..color = Colors.grey[300]!;
-    final dark = Paint()..color = Colors.grey[400]!;
-    for (double y = 0; y < size.height; y += cell) {
-      for (double x = 0; x < size.width; x += cell) {
-        final isDark = ((x / cell).round() + (y / cell).round()) % 2 == 0;
-        canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), isDark ? dark : light);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

@@ -101,16 +101,27 @@ class ShortcutSettingsScreen extends StatelessWidget {
     );
   }
 
+  /// ショートカットのキー組み合わせ（例：Ctrl + Shift + Z）を表示する
+  /// 小さなチップ。ListTileのleadingへ渡すため、横幅を必ず制限する。
+  /// 無制限のままだと、OSの文字サイズ設定（textScaler）を大きくした端末で
+  /// チップがタイル幅を丸ごと専有し、ListTileが
+  /// 「Leading widget consumes the entire tile width」アサーションで
+  /// レイアウト自体に失敗する（画面が真っ白になる）。
   Widget _keyChip(BuildContext context, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 120),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

@@ -4753,6 +4753,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get progressDialogAdLoading => '광고 불러오는 중…';
 
   @override
+  String get adMockPlaceholderLabel => '광고 배너(배치 검토용 목업)';
+
+  @override
   String get progressDialogTipLabel => '팁';
 
   @override

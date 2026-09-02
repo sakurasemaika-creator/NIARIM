@@ -140,6 +140,12 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   if (!body.youtubeVideoId || typeof body.youtubeVideoId !== 'string') {
     badRequest('youtubeVideoIdは必須です');
   }
+  // YouTubeの動画IDは11文字の[A-Za-z0-9_-]。この値はDynamoDBのキー
+  // 生成とYouTube APIへのリクエストの両方に使うため、想定外の長さ・
+  // 文字が混ざったまま後続処理へ渡さないよう入口で弾く。
+  if (!/^[A-Za-z0-9_-]{11}$/.test(body.youtubeVideoId)) {
+    badRequest('youtubeVideoIdの形式が不正です');
+  }
   if (!body.youtubeAccessToken || typeof body.youtubeAccessToken !== 'string') {
     badRequest('youtubeAccessTokenは必須です');
   }

@@ -57,14 +57,21 @@ class SortModeControl extends StatelessWidget {
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      fieldLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Kuramubon',
+                    // 縮約しない幅であっても、OSの文字サイズ設定
+                    // （textScaler）を大きくしている端末ではラベルが伸びて
+                    // title枠を超えてしまう（1.3倍以上でRenderFlex
+                    // オーバーフローが発生することを確認済み）。
+                    // Flexibleで可変にし、ellipsisで枠内へ収める。
+                    Flexible(
+                      child: Text(
+                        fieldLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Kuramubon',
+                        ),
                       ),
                     ),
                     const Icon(Icons.arrow_drop_down),
@@ -91,7 +98,9 @@ class SortModeControl extends StatelessWidget {
 
         return Row(
           mainAxisSize: MainAxisSize.min,
-          children: [fieldControl, directionControl],
+          // 文字サイズ拡大時にプルダウン側が縮められるようFlexibleで包む
+          // （矢印ボタンは固定幅のまま残す）。
+          children: [Flexible(child: fieldControl), directionControl],
         );
       },
     );

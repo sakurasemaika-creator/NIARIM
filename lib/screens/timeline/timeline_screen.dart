@@ -4721,11 +4721,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  l10n.timelineEndCardTrackLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                // OSの文字サイズ設定（textScaler）を大きくすると、この
+                // ラベルが高さ32pxの帯の横幅を超えてRenderFlex
+                // オーバーフローになるため、Flexibleで可変にする。
+                Flexible(
+                  child: Text(
+                    l10n.timelineEndCardTrackLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 4),

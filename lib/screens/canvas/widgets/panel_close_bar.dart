@@ -14,13 +14,16 @@ class PanelCenterCloseBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Center(
+      // タップ領域は28×28では小さく押しづらかったため44×44へ広げる
+      // （Materialの推奨48dpにはやや届かないが、パネル最上部の帯を
+      // 太らせすぎず、指で確実に押せる大きさとして44を採る）。
       child: IconButton(
-        icon: const Icon(Icons.close, size: 18),
+        icon: const Icon(Icons.close, size: 22),
         tooltip: l10n.commonClose,
         onPressed: onClose,
         visualDensity: VisualDensity.compact,
         padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
       ),
     );
   }

@@ -20,7 +20,6 @@ dependencies:
   shared_preferences: ^2.2.2
   path_provider: ^2.1.1
   disk_space_2: ^1.0.13
-  uuid: ^4.2.1
   google_mobile_ads: ^7.0.0
   in_app_purchase: ^3.1.13
   video_player: ^2.8.2
@@ -54,7 +53,6 @@ dependencies:
   # Dartチーム公式のHTTPクライアントで、ネイティブ依存を持たない
   # 純Dartパッケージのため他依存のようなAndroidビルド不整合のリスクが低い。
   http: ^1.2.2
-  permission_handler: ^11.1.0
   archive: ^3.4.9
   # ffmpeg_kit_flutter_min_gplは配布元(arthenica/ffmpeg-kit)が2025年に
   # アーカイブされ、Mavenリポジトリから成果物が失われビルド不能になったため、
@@ -119,6 +117,11 @@ flutter:
     - assets/
     - assets/logo/
     - assets/font_catalog/
+    # 同梱フォント（SIL Open Font License 1.1）の著作権表示・ライセンス
+    # 本文。OFL第2条が求める「著作権表示とライセンス本文の同梱」を満たす
+    # ため、アセットとして同梱しmain.dartでLicenseRegistryへ登録する
+    # （設定 → 利用規約・ライセンス → オープンソースライセンス で閲覧できる）。
+    - assets/licenses/
   fonts:
     # アプリ全体の基本フォント（仕様書24。白光明朝：lavsic氏作、SIL Open
     # Font License 1.1、Noto Serif派生）

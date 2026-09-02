@@ -8675,6 +8675,12 @@ abstract class AppLocalizations {
   /// **'広告読み込み中…'**
   String get progressDialogAdLoading;
 
+  /// No description provided for @adMockPlaceholderLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告バナー（配置検討用モック）'**
+  String get adMockPlaceholderLabel;
+
   /// No description provided for @progressDialogTipLabel.
   ///
   /// In ja, this message translates to:

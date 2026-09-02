@@ -7,6 +7,7 @@ import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
+import '../../widgets/background_color_picker.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
@@ -624,60 +625,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 12,
-                children:
-                    [
-                      Colors.white,
-                      Colors.black,
-                      Colors.transparent,
-                      const Color(0xFFF5F5DC),
-                    ].map((color) {
-                      final isSelected = _backgroundColor == color;
-                      final isLight =
-                          color == Colors.white ||
-                          color == Colors.transparent ||
-                          color == const Color(0xFFF5F5DC);
-                      return GestureDetector(
-                        onTap: () => setState(() => _backgroundColor = color),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          clipBehavior: Clip.antiAlias,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(
-                                      context,
-                                    ).colorScheme.outlineVariant,
-                              width: isSelected ? 3 : 1,
-                            ),
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              if (color == Colors.transparent)
-                                CustomPaint(
-                                  size: const Size(40, 40),
-                                  painter: _CheckerboardPainter(),
-                                )
-                              else
-                                Container(color: color),
-                              if (isSelected)
-                                Icon(
-                                  Icons.check,
-                                  size: 18,
-                                  color: isLight
-                                      ? Colors.black87
-                                      : Colors.white,
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
+              BackgroundColorSwatchPicker(
+                selectedColor: _backgroundColor,
+                onChanged: (color) => setState(() => _backgroundColor = color),
               ),
               const SizedBox(height: 24),
               // 描画領域設定
@@ -832,23 +782,4 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     );
     if (mounted) context.go('/canvas/${project.id}');
   }
-}
-
-/// 「透明」背景色スウォッチ用の市松模様を描画する。
-class _CheckerboardPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    const cell = 8.0;
-    final light = Paint()..color = Colors.grey[300]!;
-    final dark = Paint()..color = Colors.grey[400]!;
-    for (double y = 0; y < size.height; y += cell) {
-      for (double x = 0; x < size.width; x += cell) {
-        final isDark = ((x / cell).round() + (y / cell).round()) % 2 == 0;
-        canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), isDark ? dark : light);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -2131,6 +2131,7 @@
   "frameStripFrameListModeLabel": "Frames",
   "frameStripTimelineModeLabel": "Timeline",
   "progressDialogAdLoading": "Loading ad…",
+  "adMockPlaceholderLabel": "Ad banner (placement trial mock)",
   "progressDialogTipLabel": "Tip",
   "premiumBannerRegisterButton": "Upgrade to Premium",
   "licenseTermsArt1Title": "Article 1 (Application)",

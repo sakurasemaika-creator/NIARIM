@@ -4732,6 +4732,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get progressDialogAdLoading => '広告読み込み中…';
 
   @override
+  String get adMockPlaceholderLabel => '広告バナー（配置検討用モック）';
+
+  @override
   String get progressDialogTipLabel => 'ヒント';
 
   @override

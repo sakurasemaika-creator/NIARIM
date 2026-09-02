@@ -34,7 +34,7 @@
 2. コード変更後は必ず`flutter analyze`（ベースライン：72 issues、0 errors。
    全て既存のdeprecated_member_use / use_build_context_synchronousのinfoで
    増減が無いことを確認する）
-3. `flutter test`（ベースライン：232 tests、全成功。うち大半は
+3. `flutter test`（ベースライン：236 tests、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. ARBファイル（`lib/l10n/app_*.arb`）を編集したら`flutter gen-l10n`を
    必ず実行し直す（対応7言語：ja/en/es/fr/ko/zh/zh_Hant、jaがテンプレート）。
@@ -145,6 +145,17 @@
   `ffmpeg_kit_flutter_new_video`等は、AARメタデータ不整合やAndroidビルド
   破壊を避けるために意図的にピン留めされている。コメントを読まずに
   `flutter pub upgrade`等で無条件に上げないこと。
+- **OSの文字サイズ設定（textScaler）を前提に置いていないレイアウト**：
+  Androidの「フォントサイズ」「表示サイズ」を大きくしている端末では、
+  固定幅・固定高のRow/Column/ListTileのleadingが簡単に破綻する。実際に
+  「昇順降順ボタンでflowed byのエラーが出る」というユーザー報告の真因が
+  これで、既定の1.0倍では再現せず1.3倍以上で確実に再現した。さらに
+  ListTileのleadingが幅を専有するケースでは、オーバーフロー警告ではなく
+  レイアウト自体が失敗し**実機では画面が真っ白になる**。新しくRow/Column
+  へ固定サイズのテキストを並べる際は、Flexible＋`overflow: ellipsis`か
+  Wrapを使うこと。`test/text_scale_layout_test.dart`が1.3倍・2.0倍で
+  全ルートを巡回して監視しているので、レイアウトを触ったらこのテストが
+  通ることを確認する。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。
@@ -198,8 +209,9 @@
      除外されるパスに置くか、リポジトリ外で保管する）。紛失すると同じ
      `applicationId`（`com.niarim.niarim`）でのアプリ更新が二度とできなく
      なるため、パスワードマネージャー等での安全な保管が必須。
-   - リポジトリ側の反映：`android/`直下に`key.properties`
-     （**`.gitignore`に追記して除外すること**）を作り、
+   - リポジトリ側の反映：`android/`直下に`key.properties`を作る
+     （`android/.gitignore`に`key.properties`・`**/*.keystore`・
+     `**/*.jks`が既に入っているため、追加の除外設定は不要）。内容は
      ```properties
      storeFile=/absolute/path/to/niarim-release.keystore
      storePassword=<keystore用パスワード>
