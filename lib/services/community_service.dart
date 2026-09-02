@@ -81,6 +81,19 @@ class CommunityService extends ChangeNotifier {
 
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
+
+  /// ブックマークした作品IDを「新しくブックマークした順」で返す。
+  ///
+  /// [_bookmarkedIds]はDartのSetリテラルなのでLinkedHashSet＝追加順を
+  /// 保持している。これを逆順にすることで、直前にブックマークした作品が
+  /// 先頭に来る。解除して付け直した場合も末尾へ追加し直されるため、
+  /// 「付け直した時点が新しい」という自然な順序になる。
+  ///
+  /// バックエンド接続後は、この順序をサーバー側の`bookmarkedAt`
+  /// （21.1節のBookmarkItem）へ置き換えること。現状はアプリ内一時状態
+  /// なので再起動すると消える（ブックマーク自体が消えるので順序だけの
+  /// 問題ではない）。
+  List<String> get bookmarkedIdsNewestFirst => _bookmarkedIds.toList().reversed.toList();
   Set<String> get favoriteAuthorIds => Set.unmodifiable(_favoriteAuthorIds);
 
   /// 新着・ランキングなど「発見」用の一覧に出す作品（NIARIM側で非公開に

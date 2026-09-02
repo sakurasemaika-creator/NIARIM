@@ -1537,9 +1537,14 @@ class _BookmarkedTab extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final communityService = context.watch<CommunityService>();
-    final bookmarkedWorks = communityService.works
-        .where((w) => communityService.isBookmarked(w.id))
-        .toList();
+    // 新しくブックマークした順に並べる。communityService.worksの並び
+    // （ダミーデータの生成順）のままだと、たった今ブックマークした作品が
+    // 一覧のどこに現れるか分からず、操作の結果が確認できない。
+    final byId = {for (final w in communityService.works) w.id: w};
+    final bookmarkedWorks = [
+      for (final id in communityService.bookmarkedIdsNewestFirst)
+        if (byId[id] != null) byId[id]!,
+    ];
 
     if (bookmarkedWorks.isEmpty) {
       return Center(
