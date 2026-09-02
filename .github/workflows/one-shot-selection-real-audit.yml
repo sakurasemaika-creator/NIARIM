@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/one-shot-selection-real-audit.yml'
       - 'scripts/one_shot_selection_real_audit.py'
+      - 'scripts/one_shot_composite_cache_generation_fix.py'
 
 permissions:
   contents: write
@@ -24,21 +25,26 @@ jobs:
         with:
           channel: stable
           cache: false
-      - name: Patch test imports
+      - name: Patch functional test
         run: python3 scripts/one_shot_selection_real_audit.py
+      - name: Patch stale composite cache race
+        run: python3 scripts/one_shot_composite_cache_generation_fix.py
       - name: Format
-        run: dart format test/functional_audit_batch20_test.dart
+        run: dart format lib/engine/tile_manager.dart test/functional_audit_batch20_test.dart
       - name: Dependencies
         run: flutter pub get
       - name: Real selection functional test
-        run: flutter test test/functional_audit_batch20_test.dart --reporter expanded
-      - name: Analyze test scope
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings test/functional_audit_batch20_test.dart
-      - name: Commit verified test
+        run: |
+          flutter test test/functional_audit_batch20_test.dart --reporter expanded
+          flutter test test/functional_audit_batch19_test.dart --reporter expanded
+          flutter test test/functional_audit_batch18_test.dart --reporter expanded
+      - name: Analyze changed scope
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings lib/engine/tile_manager.dart test/functional_audit_batch20_test.dart
+      - name: Commit verified fix and test
         run: |
           git config user.name "NIARIM Audit Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add test/functional_audit_batch20_test.dart
+          git add lib/engine/tile_manager.dart test/functional_audit_batch20_test.dart
           git diff --cached --quiet && exit 0
-          git commit -m "test: verify real selection transform workflow"
+          git commit -m "fix: prevent stale composite cache resurrection"
           git push origin HEAD:dev_branch
