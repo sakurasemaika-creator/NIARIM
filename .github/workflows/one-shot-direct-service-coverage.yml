@@ -32,6 +32,8 @@ jobs:
               test/direct_service_coverage_batch06_test.dart \
               test/direct_service_coverage_batch07_test.dart \
               test/direct_service_coverage_batch08_test.dart \
+              test/direct_service_coverage_batch09_test.dart \
+              test/direct_service_coverage_batch10_test.dart \
               --reporter expanded
             rc=$?
             if [ $rc -eq 0 ]; then exit 0; fi
