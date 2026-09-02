@@ -84,14 +84,15 @@ void main() {
     await _saveRgba(off, w, h, '${out.path}/stamp_rotation_off_vertical_path.png');
     await _saveRgba(on, w, h, '${out.path}/stamp_rotation_on_vertical_path.png');
 
-    // 先頭スタンプ周辺だけを測る。OFFは横長、ONは縦長になること。
-    final offLocal = _alphaBoundsIn(off, w, h, 55, 15, 125, 80);
-    final onLocal = _alphaBoundsIn(on, w, h, 55, 15, 125, 80);
+    // 先頭スタンプ中心y=45の±14pxだけを測る。次のスタンプを混ぜず、
+    // OFFは横長、ONは縦長であることを実画素から判定する。
+    final offLocal = _alphaBoundsIn(off, w, h, 55, 31, 125, 59);
+    final onLocal = _alphaBoundsIn(on, w, h, 55, 31, 125, 59);
     expect(offLocal.width, greaterThan(offLocal.height * 1.8));
     expect(onLocal.height, greaterThan(onLocal.width * 1.8));
   });
 
-  test('疎入力2点と密入力51点で同一直線のスタンプ列がほぼ一致する', () async {
+  test('疎入力2点と密入力51点で同一直線のスタンプ列が画素単位で一致する', () async {
     const w = 320, h = 110;
     final tex = _solidTexture(5, alpha: 90);
     final sparse = StampEngine().stampAlongPath(
@@ -114,28 +115,36 @@ void main() {
     await _saveRgba(dense, w, h, '${out.path}/stamp_dense_input.png');
 
     var differentPixels = 0;
+    var maxChannelDiff = 0;
     for (var i = 0; i < sparse.length; i += 4) {
-      if ((sparse[i] - dense[i]).abs() > 2 ||
-          (sparse[i + 1] - dense[i + 1]).abs() > 2 ||
-          (sparse[i + 2] - dense[i + 2]).abs() > 2 ||
-          (sparse[i + 3] - dense[i + 3]).abs() > 2) {
-        differentPixels++;
-      }
+      final dr = (sparse[i] - dense[i]).abs();
+      final dg = (sparse[i + 1] - dense[i + 1]).abs();
+      final db = (sparse[i + 2] - dense[i + 2]).abs();
+      final da = (sparse[i + 3] - dense[i + 3]).abs();
+      final localMax = math.max(math.max(dr, dg), math.max(db, da));
+      maxChannelDiff = math.max(maxChannelDiff, localMax);
+      if (localMax != 0) differentPixels++;
     }
-    expect(differentPixels, lessThanOrEqualTo(24),
-        reason: 'same geometric path must not depend materially on pointer event count');
+    expect(differentPixels, 0,
+        reason: 'same straight path must rasterize identically regardless of pointer event count');
+    expect(maxChannelDiff, 0);
   });
 
-  test('スタンプ設定はrotation/density/scatterをJSON往復して保持する', () {
+  test('スタンプ設定はrotation/density/scatter/opacityをJSON往復して保持し旧データは100%', () {
     const original = Stamp(
       id: 'audit14', name: 'audit stamp', imagePath: '/tmp/a.png',
-      rotation: true, density: 3.4, scatter: 0.7, pixelMode: true,
+      rotation: true, density: 3.4, scatter: 0.7, opacity: 42, pixelMode: true,
     );
     final restored = Stamp.fromJson(original.toJson());
     expect(restored.rotation, isTrue);
     expect(restored.density, closeTo(3.4, 1e-9));
     expect(restored.scatter, closeTo(0.7, 1e-9));
+    expect(restored.opacity, 42);
     expect(restored.pixelMode, isTrue);
+
+    final legacy = Map<String, dynamic>.from(original.toJson())..remove('opacity');
+    expect(Stamp.fromJson(legacy).opacity, 100,
+        reason: 'stamps saved before opacity existed must keep their old fully-opaque appearance');
   });
 }
 
