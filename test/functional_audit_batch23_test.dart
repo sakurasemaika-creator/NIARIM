@@ -13,7 +13,7 @@ void main() {
     await ps.init();
     final p = await ps.createProject(
       name: 'frame-pixel-audit',
-      fps: 24,
+      fps: 1,
       durationSeconds: 1,
       backgroundColor: 0x00000000,
       exportWidth: 16,
