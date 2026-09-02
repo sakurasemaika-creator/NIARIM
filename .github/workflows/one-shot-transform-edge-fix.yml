@@ -1,0 +1,51 @@
+name: One-shot Transform Edge Fix
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-transform-edge-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Guarded transform edge-zone patch
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s=p.read_text(encoding='utf-8')
+          old="""            final edgeSide = _edgeDoubleTapSide(e.localPosition.dx);\n            if (edgeSide != null) {\n              _handleEdgeZoneTap(edgeSide);\n              return;\n            }\n"""
+          new="""            final edgeSide = _edgeDoubleTapSide(e.localPosition.dx);\n            // レイヤー全体変形・メッシュ変形では操作ハンドル自体がキャンバス端に\n            // 置かれる。端ダブルタップ専用ゾーンを先に奪うと右下の拡縮ハンドルや\n            // 端のメッシュ点がタッチ不能になるため、この2ツールではツール側へ\n            // ポインターを優先して渡す。フレーム送りは他ツールでは従来通り有効。\n            final transformNeedsEdge =\n                widget.currentTool == DrawingTool.transform ||\n                widget.currentTool == DrawingTool.meshTransform;\n            if (edgeSide != null && !transformNeedsEdge) {\n              _handleEdgeZoneTap(edgeSide);\n              return;\n            }\n"""
+          if s.count(old)!=1:
+            raise SystemExit(f'guard failed: edge-zone anchor count={s.count(old)}')
+          p.write_text(s.replace(old,new),encoding='utf-8',newline='\n')
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: dart format lib/screens/canvas/widgets/canvas_area.dart
+
+      - name: Verify real whole-layer transform handle and Undo Redo
+        run: flutter test test/functional_audit_batch38_test.dart --reporter expanded
+
+      - name: Commit verified source fix
+        run: |
+          git config user.name "sakurasemaika-creator"
+          git config user.email "sakurasemaika@gmail.com"
+          git add lib/screens/canvas/widgets/canvas_area.dart
+          git commit -m "fix: let transform handles receive edge touches" || exit 0
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
