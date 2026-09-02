@@ -67,6 +67,32 @@ Future<Uint8List?> _generateSaveNodeThumbnail(
   return byteData?.buffer.asUint8List();
 }
 
+/// スロット番号→そのスロットのノードの対応表。
+Map<int, SaveNode> _nodesBySlot(List<SaveNode> nodes) {
+  final map = <int, SaveNode>{};
+  for (final n in nodes) {
+    if (n.slotIndex >= 0) map[n.slotIndex] = n;
+  }
+  return map;
+}
+
+/// 親ノードID（rootはnull）→子ノード一覧の対応表を1回の走査で作る。
+///
+/// `SaveTreeService.getChildren()`は呼ぶたびに全ノードを走査して新しい
+/// リストを作るため、ツリーを再帰的にたどりながら毎ノードで呼ぶと
+/// ノード数の2乗の走査になる。木の構築前にこの表を1つ作って使い回す。
+/// ツリー表示1行分の位置情報（[continues]は自身を含む各深さで
+/// 「まだ次の兄弟が続くか」）。実際のウィジェットは表示される行だけ作る。
+typedef _TreeRowSpec = ({SaveNode node, int depth, List<bool> continues});
+
+Map<String?, List<SaveNode>> _childrenIndex(List<SaveNode> nodes) {
+  final index = <String?, List<SaveNode>>{};
+  for (final n in nodes) {
+    (index[n.parentId] ??= <SaveNode>[]).add(n);
+  }
+  return index;
+}
+
 /// セーブツリー／セーブスロット画面をどこから開いたか。過去のセーブへの「復元」（現在の内容を破棄する
 /// 操作）を許可するか、許可する場合にどの確認フローを見せるかをこれで
 /// 分岐する。
@@ -392,14 +418,14 @@ class _SlotView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nodes = saveService.getNodes(projectId);
+    // スロット番号からノードを引く表を1回だけ作る。行ごとに
+    // firstWhereで線形探索すると行数×ノード数の走査になり、
+    // castのラッパーも毎行生成されていた。
+    final bySlot = _nodesBySlot(saveService.getNodes(projectId));
     return ListView.builder(
       itemCount: saveService.slotMax,
       itemBuilder: (context, slotIndex) {
-        final node = nodes.cast<SaveNode?>().firstWhere(
-              (n) => n!.slotIndex == slotIndex,
-              orElse: () => null,
-            );
+        final node = bySlot[slotIndex];
         return _SlotTile(
           slotIndex: slotIndex,
           node: node,
@@ -544,6 +570,10 @@ class _SaveNodeThumbnail extends StatelessWidget {
           ? Image.file(
               File(path),
               fit: BoxFit.cover,
+              // 保存されているサムネイルは長辺200pxだが、ここでの表示は
+              // 40〜48px。指定しないと200px相当のまま画像キャッシュに載る
+              // ため、実際に表示する画素数へ落としてデコードする。
+              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
               errorBuilder: (context, error, stackTrace) => _placeholderIcon(context),
             )
           : _placeholderIcon(context),
@@ -650,7 +680,8 @@ class _TreeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final roots = nodes.where((n) => n.parentId == null).toList();
+    final childrenIndex = _childrenIndex(nodes);
+    final roots = childrenIndex[null] ?? const <SaveNode>[];
     if (roots.isEmpty) {
       final scheme = Theme.of(context).colorScheme;
       return Center(
@@ -679,39 +710,48 @@ class _TreeView extends StatelessWidget {
     // 表示することで、rootが画面最下部・深い子孫ほど上に積み上がる形になる。
     // 各行には祖先の分岐が下（reverse後は下方向）へ続くかを示す接続線を
     // 添える（一般的なツリーコマンドの罫線と同じアルゴリズム）。
-    final rows = <Widget>[];
+    // 行そのもの（ListTile・サムネイル・三点メニュー・接続線）はここでは
+    // 作らず、位置情報だけの軽い一覧に畳んでからListView.builderへ渡す。
+    // ListView(children:)だと、実際に描画されるのは画面内の行だけでも、
+    // 行のウィジェットオブジェクト自体は毎回のbuildで全ノードぶん作られて
+    // 捨てられる。
+    final rows = <_TreeRowSpec>[];
     for (int i = 0; i < roots.length; i++) {
-      _flattenTreeRows(context, l10n, roots, i, 0, const [], rows);
+      _flattenTreeRows(childrenIndex, roots, i, 0, const [], rows);
     }
-    return ListView(reverse: true, children: rows);
+    return ListView.builder(
+      reverse: true,
+      itemCount: rows.length,
+      itemBuilder: (context, i) => _buildTreeRow(context, l10n, rows[i]),
+    );
   }
 
   void _flattenTreeRows(
-    BuildContext context,
-    AppLocalizations l10n,
+    Map<String?, List<SaveNode>> childrenIndex,
     List<SaveNode> siblings,
     int index,
     int depth,
     List<bool> ancestorContinues,
-    List<Widget> out,
+    List<_TreeRowSpec> out,
   ) {
     final node = siblings[index];
     final hasNext = index < siblings.length - 1;
     final continues = [...ancestorContinues, hasNext];
-    out.add(_buildTreeRow(context, l10n, node, depth, continues));
-    final children = saveService.getChildren(projectId, node.id);
+    out.add((node: node, depth: depth, continues: continues));
+    final children = childrenIndex[node.id] ?? const <SaveNode>[];
     for (int i = 0; i < children.length; i++) {
-      _flattenTreeRows(context, l10n, children, i, depth + 1, continues, out);
+      _flattenTreeRows(childrenIndex, children, i, depth + 1, continues, out);
     }
   }
 
   Widget _buildTreeRow(
     BuildContext context,
     AppLocalizations l10n,
-    SaveNode node,
-    int depth,
-    List<bool> continues,
+    _TreeRowSpec spec,
   ) {
+    final node = spec.node;
+    final depth = spec.depth;
+    final continues = spec.continues;
     final isSelected = selectedNodeId == node.id;
     return Row(
       // ListViewの子は縦方向が非拘束なのでstretchを指定すると
@@ -1129,13 +1169,11 @@ class _SelectableSlotView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final bySlot = _nodesBySlot(nodes);
     return ListView.builder(
       itemCount: slotMax,
       itemBuilder: (context, slotIndex) {
-        final node = nodes.cast<SaveNode?>().firstWhere(
-              (n) => n!.slotIndex == slotIndex,
-              orElse: () => null,
-            );
+        final node = bySlot[slotIndex];
         if (node == null) return const SizedBox.shrink();
         final isSelected = selectedIds.contains(node.id);
         final isDisabled = limitReached && !isSelected;
@@ -1182,41 +1220,50 @@ class _SelectableTreeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final roots = nodes.where((n) => n.parentId == null).toList();
+    final childrenIndex = _childrenIndex(nodes);
+    final roots = childrenIndex[null] ?? const <SaveNode>[];
     if (roots.isEmpty) {
       return Center(child: Text(l10n.saveTreeEmptyTitle));
     }
-    return ListView(
-      children:
-          roots.map((root) => _buildNode(context, l10n, root, 0)).toList(),
+    // 親子関係を1回の走査で平坦化してからListView.builderへ渡す。
+    // 再帰でColumnを入れ子にしていた頃は、全ノードのListTileとCheckboxを
+    // 毎回のbuild（＝チェックを1つ付け外しするたび）で作り直していた。
+    final rows = <({SaveNode node, int depth})>[];
+    void flatten(SaveNode node, int depth) {
+      rows.add((node: node, depth: depth));
+      for (final child in childrenIndex[node.id] ?? const <SaveNode>[]) {
+        flatten(child, depth + 1);
+      }
+    }
+
+    for (final root in roots) {
+      flatten(root, 0);
+    }
+    return ListView.builder(
+      itemCount: rows.length,
+      itemBuilder: (context, i) =>
+          _buildNode(context, l10n, rows[i].node, rows[i].depth),
     );
   }
 
   Widget _buildNode(BuildContext context, AppLocalizations l10n, SaveNode node, int depth) {
-    final children = saveService.getChildren(projectId, node.id);
     final isSelected = selectedIds.contains(node.id);
     final isDisabled = limitReached && !isSelected;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(left: depth * 24.0),
-          child: ListTile(
-            enabled: !isDisabled,
-            leading: Checkbox(
-              value: isSelected,
-              onChanged: isDisabled ? null : (_) => onToggle(node.id),
-            ),
-            title: Text(
-              node.comment ?? l10n.saveTreeNodeDefaultTitle,
-              style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
-            ),
-            subtitle: Text(_formatDate(node.savedAt)),
-            onTap: isDisabled ? null : () => onToggle(node.id),
-          ),
+    return Padding(
+      padding: EdgeInsets.only(left: depth * 24.0),
+      child: ListTile(
+        enabled: !isDisabled,
+        leading: Checkbox(
+          value: isSelected,
+          onChanged: isDisabled ? null : (_) => onToggle(node.id),
         ),
-        ...children.map((child) => _buildNode(context, l10n, child, depth + 1)),
-      ],
+        title: Text(
+          node.comment ?? l10n.saveTreeNodeDefaultTitle,
+          style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
+        ),
+        subtitle: Text(_formatDate(node.savedAt)),
+        onTap: isDisabled ? null : () => onToggle(node.id),
+      ),
     );
   }
 

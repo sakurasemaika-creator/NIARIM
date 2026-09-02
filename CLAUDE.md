@@ -253,6 +253,26 @@
   `SizedBox`にCanvasAreaを載せた場合に踏む。テストではキャンバスを
   十分広く（例：エクスポート幅の3倍）取るか、`PointerDeviceKind.mouse`を
   使ってこの分岐を回避する。
+- **`ListView(children: [...])`は「遅延している」ように見えて半分しか遅延
+  していない**：`SliverChildListDelegate`はElementの生成（＝実際の
+  レイアウト・描画・`Image`のデコード）は画面内ぶんだけに絞るが、
+  **子のWidgetオブジェクト自体は毎回のbuildで全件作られる**。一覧が
+  数十件を超える画面で`ListView(children: ...)`を使うと、1件チェックを
+  付け外しするたびに全行のListTile・Checkbox・PopupMenuButton・
+  CustomPaintを作って捨てることになる。行数が可変の一覧は
+  `ListView.builder`にすること（セーブツリー一覧の2箇所をこれで直した）。
+  なお、この違いは**Element数を数えるテストでは検出できない**（どちらも
+  画面内ぶんしかmountしないため、`find.byType(ListTile)`の件数は同じに
+  なる）。実際に「全件生成へ戻すと落ちるはずのテスト」を書いたつもりで
+  両方通ってしまう事故を起こしたので、検証したい場合は
+  `ListView.childrenDelegate`が`SliverChildBuilderDelegate`であることを
+  直接assertすること（`test/save_tree_lazy_list_test.dart`が実例）。
+- **ローカルファイルのサムネイルを`Image.file`で並べるときは
+  `cacheWidth`を必ず指定する**：指定しないと保存されている解像度のまま
+  デコードされて画像キャッシュに載る。セーブノードのサムネイルは長辺
+  200pxで保存しているが、一覧での表示は40〜58px。`cacheWidth:
+  (size * MediaQuery.devicePixelRatioOf(context)).round()`のように
+  表示画素数へ落とすこと。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。

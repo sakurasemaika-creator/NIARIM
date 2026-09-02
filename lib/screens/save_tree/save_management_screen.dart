@@ -58,7 +58,11 @@ class _GameStyleSlotScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final saveService = context.watch<SaveTreeService>();
     final adService = context.watch<AdvertisingService>();
-    final nodes = saveService.getNodes(projectId);
+    // スロット番号→ノードの対応表を1回だけ作る（行ごとの線形探索を避ける）。
+    final bySlot = <int, SaveNode>{
+      for (final n in saveService.getNodes(projectId))
+        if (n.slotIndex >= 0) n.slotIndex: n,
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -77,13 +81,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                 itemCount: saveService.slotMax,
                 itemBuilder: (context, slotIndex) {
-                  SaveNode? node;
-                  for (final candidate in nodes) {
-                    if (candidate.slotIndex == slotIndex) {
-                      node = candidate;
-                      break;
-                    }
-                  }
+                  final node = bySlot[slotIndex];
                   return _GameSaveSlotTile(
                     slotIndex: slotIndex,
                     node: node,
@@ -468,6 +466,9 @@ class _SlotThumbnail extends StatelessWidget {
           : Image.file(
               File(path),
               fit: BoxFit.cover,
+              // 保存済みサムネイルは長辺200px。ここでの表示は58pxなので、
+              // 表示画素数に合わせてデコードして画像キャッシュを節約する。
+              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
               errorBuilder: (_, __, ___) => Icon(Icons.image_outlined, color: scheme.onSurfaceVariant),
             ),
     );

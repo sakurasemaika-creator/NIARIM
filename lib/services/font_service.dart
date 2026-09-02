@@ -71,9 +71,47 @@ class FontService extends ChangeNotifier {
 
   Future<void> _registerFont(FontAsset asset, File file) async {
     final bytes = await file.readAsBytes();
+    // FontLoader.load()は壊れたバイト列でも必ず例外を投げるとは限らない
+    // （プラットフォーム／実行環境依存）。素通りすると「追加できたのに
+    // その字だけ別のフォントで描かれる」状態になり、ユーザーからは
+    // 原因が分からない。先にsfntの構造だけ自前で確かめる。
+    if (!_looksLikeSfnt(bytes)) throw FontCorruptedException();
     final loader = FontLoader(familyNameOf(asset))
       ..addFont(Future.value(ByteData.sublistView(bytes)));
     await loader.load();
+  }
+
+  /// TTF/OTFとして最低限の体裁が整っているかを見る。
+  ///
+  /// 先頭のsfntVersionと、テーブルディレクトリの各エントリが実ファイル長の
+  /// 内側を指しているかだけを確認する簡易チェック。字形の中身までは見ない
+  /// （拡張子を付け替えただけのファイル・途中で切れたファイルを弾くのが
+  /// 目的）。
+  static bool _looksLikeSfnt(Uint8List bytes) {
+    if (bytes.length < 12) return false;
+    final data = ByteData.sublistView(bytes);
+    final version = data.getUint32(0);
+    const trueType = 0x00010000;
+    const otto = 0x4F54544F; // 'OTTO'（CFFアウトライン）
+    const trueTag = 0x74727565; // 'true'（旧Mac系TrueType）
+    const ttcf = 0x74746366; // 'ttcf'（コレクション）
+    if (version == ttcf) return bytes.length >= 16;
+    if (version != trueType && version != otto && version != trueTag) {
+      return false;
+    }
+    final numTables = data.getUint16(4);
+    if (numTables == 0) return false;
+    final directoryEnd = 12 + numTables * 16;
+    if (bytes.length < directoryEnd) return false;
+    for (var i = 0; i < numTables; i++) {
+      final entry = 12 + i * 16;
+      final offset = data.getUint32(entry + 8);
+      final length = data.getUint32(entry + 12);
+      if (offset > bytes.length || length > bytes.length - offset) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _persist() async {
