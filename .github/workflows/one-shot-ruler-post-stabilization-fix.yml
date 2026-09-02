@@ -1,0 +1,108 @@
+name: One-shot Ruler Post-Stabilization Fix
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-ruler-post-stabilization-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Guarded production pipeline patch
+        shell: python
+        run: |
+          from pathlib import Path
+
+          # DrawingEngine: optional final coordinate constraint applied after stabilization.
+          p=Path('lib/engine/drawing_engine.dart')
+          s=p.read_text(encoding='utf-8')
+          old="""  bool isEraser = false;\n\n  // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）\n"""
+          new="""  bool isEraser = false;\n\n  // 定規など、入力平滑化より後に必ず満たすべき最終座標制約。\n  // nullなら通常描画。CanvasAreaはRulerEngine.snapToRulerを設定し、\n  // 「手ブレ補正 → 定規拘束 → ラスタライズ」の順序を保証する。\n  ui.Offset Function(ui.Offset)? pointConstraint;\n\n  // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）\n"""
+          if s.count(old)!=1: raise SystemExit('drawing field anchor mismatch')
+          s=s.replace(old,new)
+
+          old="""    _smoothed = point;\n    _activeLayerId = layerId;\n    _distanceSinceLastBrushStamp = 0.0;\n    _hasStampedCurrentStroke = false;\n"""
+          new="""    _smoothed = point;\n    final effective = _applyPointConstraint(point);\n    _activeLayerId = layerId;\n    _distanceSinceLastBrushStamp = 0.0;\n    _hasStampedCurrentStroke = false;\n"""
+          if s.count(old)!=1: raise SystemExit('begin effective anchor mismatch')
+          s=s.replace(old,new)
+          # In beginStroke only, use constrained point for current stroke and initial stamp.
+          old="""    _currentStroke.add(point);\n\n    final brush = currentBrush;\n"""
+          new="""    _currentStroke.add(effective);\n\n    final brush = currentBrush;\n"""
+          if s.count(old)!=1: raise SystemExit('begin currentStroke anchor mismatch')
+          s=s.replace(old,new)
+          old="""      _stampBrush(\n        point.x,\n        point.y,\n        point.pressure,\n        point.tiltX,\n        point.tiltY,\n        layerId,\n"""
+          new="""      _stampBrush(\n        effective.x,\n        effective.y,\n        effective.pressure,\n        effective.tiltX,\n        effective.tiltY,\n        layerId,\n"""
+          if s.count(old)!=1: raise SystemExit(f'begin stamp anchor mismatch count={s.count(old)}')
+          s=s.replace(old,new,1)
+          old="""    final effective = _applyStabilization(point);\n    final from = _currentStroke.last;\n"""
+          new="""    final effective = _applyPointConstraint(_applyStabilization(point));\n    final from = _currentStroke.last;\n"""
+          if s.count(old)!=1: raise SystemExit('continue constraint anchor mismatch')
+          s=s.replace(old,new)
+          old="""  /// 手ブレ補正：入力座標を直近の平滑化済み座標へ指数移動平均で追従させる。\n"""
+          new="""  StrokePoint _applyPointConstraint(StrokePoint point) {\n    final constraint = pointConstraint;\n    if (constraint == null) return point;\n    final constrained = constraint(ui.Offset(point.x, point.y));\n    return StrokePoint(\n      x: constrained.dx,\n      y: constrained.dy,\n      pressure: point.pressure,\n      tiltX: point.tiltX,\n      tiltY: point.tiltY,\n      inputType: point.inputType,\n    );\n  }\n\n  /// 手ブレ補正：入力座標を直近の平滑化済み座標へ指数移動平均で追従させる。\n"""
+          if s.count(old)!=1: raise SystemExit('helper insertion anchor mismatch')
+          s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+          # CanvasArea: configure production constraint and feed raw canvas points to engine.
+          p=Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s=p.read_text(encoding='utf-8')
+          old="""    _drawingEngine = DrawingEngine(tileManager: _tileManager);\n    // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに\n"""
+          new="""    _drawingEngine = DrawingEngine(tileManager: _tileManager)\n      ..pointConstraint = _rulerEngine.snapToRuler;\n    // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに\n"""
+          if s.count(old)!=1: raise SystemExit('CanvasArea engine init anchor mismatch')
+          s=s.replace(old,new)
+          old="""    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));\n    _beginTileUndo();\n    _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));\n"""
+          new="""    final point = _toCanvasPoint(_rawToStrokePoint(event));\n    _beginTileUndo();\n    _drawingEngine.beginStroke(point, _tileKeyFor(_layerId));\n"""
+          if s.count(old)!=1: raise SystemExit('CanvasArea pointer down anchor mismatch')
+          s=s.replace(old,new)
+          old="""    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));\n    _drawingEngine.continueStroke(snapped, _tileKeyFor(_layerId));\n"""
+          new="""    final point = _toCanvasPoint(_rawToStrokePoint(event));\n    _drawingEngine.continueStroke(point, _tileKeyFor(_layerId));\n"""
+          if s.count(old)!=1: raise SystemExit('CanvasArea pointer move anchor mismatch')
+          s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+          # Batch36: exercise the exact production ordering: raw input enters DrawingEngine,
+          # stabilization runs first, then RulerEngine is the final point constraint.
+          p=Path('test/functional_audit_batch36_test.dart')
+          s=p.read_text(encoding='utf-8')
+          old="""      final re = RulerEngine()..setActiveRuler(c.ruler);\n      re.beginStroke();\n      final snapped = <ui.Offset>[];\n      for (final p in c.raw) {\n        snapped.add(re.snapToRuler(p));\n      }\n      final tm = TileManager(canvasWidth: 128, canvasHeight: 128);\n      final draw = DrawingEngine(tileManager: tm)\n        ..currentBrush = baseBrush\n        ..currentColor = const ui.Color(0xFF1C72D8);\n      draw.beginStroke(StrokePoint(x: snapped.first.dx, y: snapped.first.dy, pressure: 1), 'ruler');\n      for (final p in snapped.skip(1)) {\n        draw.continueStroke(StrokePoint(x: p.dx, y: p.dy, pressure: 1), 'ruler');\n      }\n"""
+          new="""      final re = RulerEngine()..setActiveRuler(c.ruler);\n      re.beginStroke();\n      final tm = TileManager(canvasWidth: 128, canvasHeight: 128);\n      final draw = DrawingEngine(tileManager: tm)\n        ..currentBrush = baseBrush\n        ..currentColor = const ui.Color(0xFF1C72D8)\n        ..pointConstraint = re.snapToRuler;\n      final first = c.raw.first;\n      draw.beginStroke(StrokePoint(x: first.dx, y: first.dy, pressure: 1), 'ruler');\n      for (final p in c.raw.skip(1)) {\n        draw.continueStroke(StrokePoint(x: p.dx, y: p.dy, pressure: 1), 'ruler');\n      }\n"""
+          if s.count(old)!=1: raise SystemExit('batch36 pipeline anchor mismatch')
+          s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: dart format lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart test/functional_audit_batch36_test.dart
+
+      - name: Drawing engine regressions
+        run: flutter test test/drawing_engine_test.dart --reporter expanded
+      - name: Ruler engine regressions
+        run: flutter test test/ruler_engine_test.dart --reporter expanded
+      - name: Real CanvasArea line ruler
+        run: flutter test test/functional_audit_batch32_test.dart --reporter expanded
+      - name: All seven rulers after stabilization
+        run: flutter test test/functional_audit_batch36_test.dart --reporter expanded
+
+      - name: Commit verified ruler pipeline fix
+        run: |
+          git config user.name "sakurasemaika-creator"
+          git config user.email "sakurasemaika@gmail.com"
+          git add lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart test/functional_audit_batch36_test.dart
+          git commit -m "fix: constrain ruler strokes after stabilization" || exit 0
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
