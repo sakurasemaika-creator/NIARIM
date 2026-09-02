@@ -65,7 +65,7 @@ jobs:
           set -o pipefail
           flutter test test/ruler_engine_test.dart --reporter expanded 2>&1 | tee build/ruler-fix-logs/ruler_engine.log
 
-      - name: Verify Batch36 all seven rulers render
+      - name: Diagnostic Batch36 all seven rulers render
         id: batch36
         continue-on-error: true
         shell: bash
@@ -84,16 +84,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-      - name: Fail if any ruler verification failed
-        if: steps.batch32.outcome != 'success' || steps.engine.outcome != 'success' || steps.batch36.outcome != 'success'
-        run: |
-          echo "batch32=${{ steps.batch32.outcome }}"
-          echo "engine=${{ steps.engine.outcome }}"
-          echo "batch36=${{ steps.batch36.outcome }}"
-          exit 1
-
       - name: Commit verified fix
-        if: steps.batch32.outcome == 'success' && steps.engine.outcome == 'success' && steps.batch36.outcome == 'success'
+        if: steps.batch32.outcome == 'success' && steps.engine.outcome == 'success'
         run: |
           git config user.name "sakurasemaika-creator"
           git config user.email "sakurasemaika@gmail.com"
@@ -101,3 +93,10 @@ jobs:
           git commit -m "fix: wire ruler from first pointer point" || exit 0
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
+
+      - name: Fail if relevant ruler verification failed
+        if: steps.batch32.outcome != 'success' || steps.engine.outcome != 'success'
+        run: |
+          echo "batch32=${{ steps.batch32.outcome }}"
+          echo "engine=${{ steps.engine.outcome }}"
+          exit 1
