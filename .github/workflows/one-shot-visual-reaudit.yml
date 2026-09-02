@@ -51,6 +51,7 @@ jobs:
           run_case all_stamps test/functional_audit_batch35_test.dart
           run_case all_rulers test/functional_audit_batch36_test.dart
           run_case onion_skin test/functional_audit_batch37_test.dart
+          run_case whole_layer_transform test/functional_audit_batch38_test.dart
           run_case all_filters test/visual_reaudit_filters_test.dart
 
           echo "visual reaudit failures=$failures"
