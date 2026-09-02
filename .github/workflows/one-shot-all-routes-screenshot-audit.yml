@@ -23,7 +23,7 @@ jobs:
         run: |
           set +e
           for attempt in 1 2; do
-            echo "all-route audit attempt $attempt"
+            echo "all-route visual-quality audit attempt $attempt"
             timeout 900s flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
             rc=$?
             if [ $rc -eq 0 ]; then exit 0; fi
