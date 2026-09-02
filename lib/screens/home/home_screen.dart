@@ -1272,63 +1272,78 @@ class _FolderableList<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rootItems = allItems.where((e) => folderIdOf(e) == null).toList();
-    return ListView(
-      children: [
-        if (folders.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: folders.map((f) {
-                final count = allItems
-                    .where((e) => folderIdOf(e) == f.id)
-                    .length;
-                return InkWell(
-                  borderRadius: BorderRadius.circular(10),
-                  onTap: () => onEnterFolder(
-                    f.id,
-                    f.name,
-                    allItems.where((e) => folderIdOf(e) == f.id).toList(),
-                  ),
-                  onLongPress: () => _showFolderMenu(context, f),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.folder, size: 18),
-                        const SizedBox(width: 6),
-                        Text(f.name),
-                        const SizedBox(width: 4),
-                        Text(
-                          '($count)',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+    // フォルダごとの件数を1回の走査で数える。フォルダの数だけallItemsを
+    // whereで舐め直すと、作品数×フォルダ数の走査が毎buildで走っていた。
+    final countByFolder = <String, int>{};
+    for (final e in allItems) {
+      final id = folderIdOf(e);
+      if (id != null) countByFolder[id] = (countByFolder[id] ?? 0) + 1;
+    }
+    final hasHeader = folders.isNotEmpty;
+    // 作品の行は表示されるぶんだけ作る。ListView(children:)だと、実際に
+    // 描画されるのは画面内の行だけでも、全作品ぶんのカード（サムネイルの
+    // Image.fileを含む）のウィジェットが毎buildで作られて捨てられる。
+    return ListView.builder(
+      itemCount: rootItems.length + (hasHeader ? 2 : 0),
+      itemBuilder: (context, index) {
+        if (hasHeader && index == 0) {
+          return _folderChips(context, countByFolder);
+        }
+        if (hasHeader && index == 1) return const Divider(height: 1);
+        return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
+      },
+    );
+  }
+
+  Widget _folderChips(BuildContext context, Map<String, int> countByFolder) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: folders.map((f) {
+          final count = countByFolder[f.id] ?? 0;
+          return InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => onEnterFolder(
+              f.id,
+              f.name,
+              allItems.where((e) => folderIdOf(e) == f.id).toList(),
             ),
-          ),
-        if (folders.isNotEmpty) const Divider(height: 1),
-        ...rootItems.map((e) => itemBuilder(context, e)),
-      ],
+            onLongPress: () => _showFolderMenu(context, f),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.folder, size: 18),
+                  const SizedBox(width: 6),
+                  Text(f.name),
+                  const SizedBox(width: 4),
+                  Text(
+                    '($count)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 

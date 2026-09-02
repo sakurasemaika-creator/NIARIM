@@ -22,6 +22,14 @@ class MaterialListScreen extends StatefulWidget {
 
 class _MaterialListScreenState extends State<MaterialListScreen> {
   List<MaterialAsset> _missing = const [];
+
+  /// 素材IDごとの実ファイルパス解決結果。
+  ///
+  /// build()の中で`pathOf()`を呼ぶと、再ビルドのたびに新しいFutureが作られて
+  /// FutureBuilderが待機状態へ戻るため、一覧をスクロールしたり他の状態を
+  /// 更新したりするだけでサムネイルが消えて出直す（＋ディスクアクセスも
+  /// その都度やり直す）。IDごとに1回だけ解決してこの表に持つ。
+  final Map<String, Future<String?>> _pathFutures = {};
   bool _checkedMissing = false;
 
   @override
@@ -122,14 +130,29 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
   }
 
   Widget _thumbnail(MaterialAsset m, ColorScheme scheme) {
+    final future = _pathFutures.putIfAbsent(
+      m.id,
+      () => context.read<MaterialService>().pathOf(widget.projectId, m.id),
+    );
     return FutureBuilder<String?>(
-      future: context.read<MaterialService>().pathOf(widget.projectId, m.id),
+      future: future,
       builder: (context, snapshot) {
+        // pathOf()は実ファイルが無ければnullを返すので、ここで
+        // existsSync()を重ねて呼ぶ必要は無い（行ごとにUIスレッドで
+        // ディスクを叩くことになる）。
         final path = snapshot.data;
-        if (m.type == MaterialType.image && path != null && File(path).existsSync()) {
+        if (m.type == MaterialType.image && path != null) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.file(File(path), width: 48, height: 48, fit: BoxFit.cover),
+            child: Image.file(
+              File(path),
+              width: 48,
+              height: 48,
+              fit: BoxFit.cover,
+              // 素材の元画像は原寸のまま保存されている。48px表示のために
+              // 原寸でデコードして画像キャッシュへ載せない。
+              cacheWidth: (48 * MediaQuery.devicePixelRatioOf(context)).round(),
+            ),
           );
         }
         final icon = switch (m.type) {
@@ -183,6 +206,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                     materialId: m.id,
                     isUsed: _isUsed,
                   );
+              _pathFutures.remove(m.id);
               if (ctx.mounted) Navigator.pop(ctx);
             },
             child: Text(l10n.commonDelete),
@@ -208,6 +232,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                     projectId: widget.projectId,
                     isUsed: _isUsed,
                   );
+              _pathFutures.clear();
               if (ctx.mounted) Navigator.pop(ctx);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

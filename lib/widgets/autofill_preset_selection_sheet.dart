@@ -61,10 +61,14 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
               Expanded(
                 child: allPresets.isEmpty
                     ? Center(child: Text(l10n.autofillPresetEmpty))
-                    : ListView(
-                        children: [
-                          for (final preset in allPresets)
-                            CheckboxListTile(
+                    // チェックを1つ付け外しするたびに全プリセットぶんの
+                    // CheckboxListTileを作り直さないよう、行はbuilderで
+                    // 遅延生成する。
+                    : ListView.builder(
+                        itemCount: allPresets.length,
+                        itemBuilder: (context, i) {
+                          final preset = allPresets[i];
+                          return CheckboxListTile(
                               value: selected.contains(preset.id),
                               title: Text(preset.name),
                               subtitle: Text(l10n.autofillPresetSelectionPartCount(preset.parts.length)),
@@ -75,8 +79,8 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                                   selected.remove(preset.id);
                                 }
                               }),
-                            ),
-                        ],
+                          );
+                        },
                       ),
               ),
               Padding(

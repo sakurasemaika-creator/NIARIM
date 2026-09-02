@@ -201,7 +201,11 @@ class ProjectListWidget extends StatelessWidget {
 
   /// プロジェクトカードのサムネイル。生成済みのPNGがあればそれを表示し、
   /// 未生成・読み込み失敗の場合は背景色のプレースホルダーへフォールバックする。
-  Widget _thumbnail(Project project) {
+  /// [displayWidth]は表示上の論理幅。指定するとその画素数へ落として
+  /// デコードする（一覧行の48px表示で、保存されている長辺200pxのまま
+  /// 画像キャッシュへ載せないため）。カード表示のように表示側の方が
+  /// 大きくなる場合は指定しない。
+  Widget _thumbnail(BuildContext context, Project project, {double? displayWidth}) {
     final placeholder = Container(
       color: Color(project.backgroundColor),
       child: const Center(child: Icon(Icons.image, color: Colors.white38)),
@@ -211,6 +215,9 @@ class ProjectListWidget extends StatelessWidget {
     return Image.file(
       File(path),
       fit: BoxFit.cover,
+      cacheWidth: displayWidth == null
+          ? null
+          : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
       errorBuilder: (context, error, stackTrace) => placeholder,
     );
   }
@@ -227,7 +234,7 @@ class ProjectListWidget extends StatelessWidget {
               height: 48,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: _thumbnail(project),
+                child: _thumbnail(context, project, displayWidth: 48),
               ),
             ),
       title: Text(project.name),
@@ -303,7 +310,7 @@ class ProjectListWidget extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    _thumbnail(project),
+                    _thumbnail(context, project),
                     // サムネイル下端に淡いグラデーションの帯を敷き、どんな絵柄の
                     // 上でもプロジェクト名が読みやすくなるようにする。
                     Positioned(

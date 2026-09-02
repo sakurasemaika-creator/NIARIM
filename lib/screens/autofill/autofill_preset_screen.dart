@@ -587,6 +587,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                   ? Image.file(
                       File(path),
                       fit: BoxFit.cover,
+                      // サムネイルは512x512で保存されている。88px表示の
+                      // ために原寸でデコードして画像キャッシュへ載せない。
+                      cacheWidth:
+                          (88 * MediaQuery.devicePixelRatioOf(ctx)).round(),
                       errorBuilder: (_, _, _) =>
                           const Icon(Icons.broken_image, size: 32),
                     )
@@ -757,6 +761,11 @@ class _PresetCard extends StatelessWidget {
                     ? Image.file(
                         File(preset.thumbnailPath!),
                         fit: BoxFit.cover,
+                        // 保存は512x512、ここでの表示は48px。一覧に並ぶぶん
+                        // だけ効くので表示画素数へ落としてデコードする。
+                        cacheWidth: (48 *
+                                MediaQuery.devicePixelRatioOf(context))
+                            .round(),
                         errorBuilder: (_, _, _) =>
                             const Icon(Icons.broken_image, size: 24),
                       )
