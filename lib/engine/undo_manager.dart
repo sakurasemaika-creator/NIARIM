@@ -89,16 +89,27 @@ class TileUndoAction extends UndoAction {
   String get description => 'Draw on $layerId';
 }
 
-/// レイヤー追加のUndo/Redo
-/// addLayer/removeLayer は ProjectService 経由で行う
+/// レイヤー追加のUndo/Redo。
+/// 復元時に元の挿入位置を失わないよう、insertIndexもコールバックへ渡す。
 class LayerAddUndoAction extends UndoAction {
   final String projectId;
   final String sceneId;
   final int frameIndex;
   final String layerId;
   final int insertIndex;
-  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doAdd;
-  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doRemove;
+  final void Function(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+    int insertIndex,
+  ) _doAdd;
+  final void Function(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+  ) _doRemove;
 
   LayerAddUndoAction({
     required this.projectId,
@@ -106,27 +117,54 @@ class LayerAddUndoAction extends UndoAction {
     required this.frameIndex,
     required this.layerId,
     required this.insertIndex,
-    required this._doAdd,
-    required this._doRemove,
-  });
+    required void Function(
+      String projectId,
+      String sceneId,
+      int frameIndex,
+      String layerId,
+      int insertIndex,
+    ) doAdd,
+    required void Function(
+      String projectId,
+      String sceneId,
+      int frameIndex,
+      String layerId,
+    ) doRemove,
+  })  : _doAdd = doAdd,
+        _doRemove = doRemove;
 
   @override
   void undo() => _doRemove(projectId, sceneId, frameIndex, layerId);
+
   @override
-  void redo() => _doAdd(projectId, sceneId, frameIndex, layerId);
+  void redo() =>
+      _doAdd(projectId, sceneId, frameIndex, layerId, insertIndex);
+
   @override
   String get description => 'Add layer $layerId';
 }
 
-/// レイヤー削除のUndo/Redo
+/// レイヤー削除のUndo/Redo。
+/// Undo時に元のremovedIndexへ戻すことでレイヤー順を完全に復元する。
 class LayerRemoveUndoAction extends UndoAction {
   final String projectId;
   final String sceneId;
   final int frameIndex;
   final String layerId;
   final int removedIndex;
-  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doAdd;
-  final void Function(String projectId, String sceneId, int frameIndex, String layerId) _doRemove;
+  final void Function(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+    int insertIndex,
+  ) _doAdd;
+  final void Function(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+  ) _doRemove;
 
   LayerRemoveUndoAction({
     required this.projectId,
@@ -134,14 +172,29 @@ class LayerRemoveUndoAction extends UndoAction {
     required this.frameIndex,
     required this.layerId,
     required this.removedIndex,
-    required this._doAdd,
-    required this._doRemove,
-  });
+    required void Function(
+      String projectId,
+      String sceneId,
+      int frameIndex,
+      String layerId,
+      int insertIndex,
+    ) doAdd,
+    required void Function(
+      String projectId,
+      String sceneId,
+      int frameIndex,
+      String layerId,
+    ) doRemove,
+  })  : _doAdd = doAdd,
+        _doRemove = doRemove;
 
   @override
-  void undo() => _doAdd(projectId, sceneId, frameIndex, layerId);
+  void undo() =>
+      _doAdd(projectId, sceneId, frameIndex, layerId, removedIndex);
+
   @override
   void redo() => _doRemove(projectId, sceneId, frameIndex, layerId);
+
   @override
   String get description => 'Remove layer $layerId';
 }
@@ -160,8 +213,10 @@ class RulerUndoAction extends UndoAction {
 
   @override
   void undo() => onApply(before);
+
   @override
   void redo() => onApply(after);
+
   @override
   String get description => '定規を編集';
 }
