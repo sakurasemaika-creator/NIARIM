@@ -245,6 +245,18 @@ class _CanvasAreaState extends State<CanvasArea> {
   ui.Image? _belowImage;
   ui.Image? _aboveImage;
   final Map<int, ui.Image> _onionImages = {};
+
+  /// [_onionImages]をCustomPaintへ渡すための不変ビュー。**中身が変わった
+  /// ときだけ**作り直す。
+  ///
+  /// 以前はbuild()の中で毎回`Map.unmodifiable(_onionImages)`を呼んでいた。
+  /// これは毎回新しいオブジェクトを返すため、`_CanvasPainter.shouldRepaint`
+  /// の`old.onionImages != onionImages`が常に真になり、他の30項目を
+  /// どれだけ丁寧に比較していても**必ず再描画される**状態になっていた
+  /// （＝shouldRepaintが実質無効）。ストロークの1点ごとにキャンバス全体が
+  /// 描き直されるため、影響が大きい。同一インスタンスを渡すことで、
+  /// オニオンスキンが変わっていないときは正しく再描画を省ける。
+  Map<int, ui.Image> _onionImagesView = const {};
   bool _isCompositing = false;
   bool _isComposingSurroundings = false;
 
@@ -342,7 +354,13 @@ class _CanvasAreaState extends State<CanvasArea> {
   @override
   void initState() {
     super.initState();
-    _transformController.addListener(() => setState(() {}));
+    // かつてはここで addListener(() => setState(() {})) として、変換が
+    // 変わるたびにCanvasArea全体（build()は150行超で、ジェスチャー用の
+    // Listener・各種クロージャを含む）を作り直していた。パン・ピンチズーム・
+    // 回転は指を動かしている間ずっと発火するため、これが最も頻度の高い
+    // 無駄になっていた。実際に変換値へ依存しているのはbuild()内のTransform
+    // 以下だけなので、そこをAnimatedBuilderで囲って必要な範囲だけを
+    // 描き直すようにしてある（下のbuild()参照）。
   }
 
   @override
@@ -704,7 +722,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     final newMatrix = zoomMatrix * _transformController.value;
     final newScale = newMatrix.getMaxScaleOnAxis();
     if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;
-    setState(() => _transformController.value = newMatrix);
+    // setState()で包まないこと。_transformControllerの値を変えると
+    // 下のAnimatedBuilderが変換部分だけを描き直す。setStateを重ねると
+    // 画面全体のビルドが余分に1回走る（以前はそうなっていた）。
+    _transformController.value = newMatrix;
   }
 
   /// 2本指以上でのキャンバス操作（パン・ピンチズーム・回転）。[movedPointer]が
@@ -739,7 +760,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final newScale = newMatrix.getMaxScaleOnAxis();
     // ピンチアウトでの過剰縮小・過剰拡大を防ぐ（既知バグの修正）。
     if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;
-    setState(() => _transformController.value = newMatrix);
+    _transformController.value = newMatrix;
   }
 
   void _onPointerDown(PointerEvent event) {
@@ -846,10 +867,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       // 定規のハンドル（移動・回転・サイズ変更・消失点等）付近をタップ
       // した場合はハンドル操作として扱う。ハンドルに当たらなかった
       // 場合は、この下のペンと同じストローク開始処理へフォールスルー
-      // させ、定規ガイドに沿ったスナップ描画（_applyRulerSnap）が
-      // 行えるようにする（【重大バグ修正】以前はここで無条件に
-      // returnしていたため、定規ツールでハンドル以外の場所をタップ
-      // しても何も反応しない不具合があった）。
+      // させ、定規ガイドに沿ったスナップ描画が行えるようにする
+      // （スナップ自体はDrawingEngineのpointConstraintへ
+      // _rulerEngine.snapToRulerを差してあるので、ここでは何もしない。
+      // 【重大バグ修正】以前はここで無条件にreturnしていたため、定規
+      // ツールでハンドル以外の場所をタップしても何も反応しなかった）。
       if (_handleRulerDown(canvasPos)) return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
@@ -914,12 +936,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       final last = _middleClickLastScreenPos;
       if (last != null) {
         final delta = event.localPosition - last;
-        setState(
-          () => _transformController.value =
-              (Matrix4.identity()
-                ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
-              _transformController.value,
-        );
+        _transformController.value =
+            (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+            _transformController.value;
       }
       _middleClickLastScreenPos = event.localPosition;
       return;
@@ -931,12 +950,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       final last = _panToolLastScreenPos;
       if (last != null) {
         final delta = event.localPosition - last;
-        setState(
-          () => _transformController.value =
-              (Matrix4.identity()
-                ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
-              _transformController.value,
-        );
+        _transformController.value =
+            (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+            _transformController.value;
       }
       _panToolLastScreenPos = event.localPosition;
       return;
@@ -2585,19 +2601,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     return result;
   }
 
-  StrokePoint _applyRulerSnap(StrokePoint sp) {
-    if (widget.activeRuler == null) return sp;
-    final snapped = _rulerEngine.snapToRuler(Offset(sp.x, sp.y));
-    return StrokePoint(
-      x: snapped.dx,
-      y: snapped.dy,
-      pressure: sp.pressure,
-      tiltX: sp.tiltX,
-      tiltY: sp.tiltY,
-      inputType: sp.inputType,
-    );
-  }
-
   // ─── 定規の編集（移動・回転・サイズ変更・消失点移動） ───────────
   // 定規ツール選択中はキャンバスタップがハンドル操作として扱われる。
   // ハンドル座標は_paintRulerの描画と同じ座標系（ルーラーの position/
@@ -3016,6 +3019,7 @@ class _CanvasAreaState extends State<CanvasArea> {
             img.dispose();
           }
           _onionImages.clear();
+          _onionImagesView = const {};
         });
       }
       return;
@@ -3068,6 +3072,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _onionImages
         ..clear()
         ..addAll(newImages);
+      _onionImagesView = Map.unmodifiable(_onionImages);
     });
   }
 
@@ -3160,71 +3165,74 @@ class _CanvasAreaState extends State<CanvasArea> {
         // 計算し、_transformControllerの値を直接更新してTransformで反映する
         // （挙動はInteractiveViewer(constrained:true・既定のClip.hardEdge)
         // と同等）。
-        child: ClipRect(
-          child: Transform(
-            transform: _transformController.value,
-            // 低スペック端末対策：キャンバスの再描画を他ウィジェットから分離し、
-            // ストローク中の再描画コストを最小限に抑える。
-            child: RepaintBoundary(
-              child: CustomPaint(
-                painter: _CanvasPainter(
-                  project: widget.project,
-                  background: widget.background,
-                  transform: _transformController.value,
-                  compositeImage: _compositeImage,
-                  belowImage: _belowImage,
-                  aboveImage: _aboveImage,
-                  currentLayerOpacity:
-                      _layers
-                          .where((l) => l.id == _layerId)
-                          .firstOrNull
-                          ?.opacity ??
-                      100,
-                  currentLayerBlendMode:
-                      _layers
-                          .where((l) => l.id == _layerId)
-                          .firstOrNull
-                          ?.blendMode ??
-                      LayerBlendMode.normal,
-                  onionImages: Map.unmodifiable(_onionImages),
-                  onionSettings: widget.onionSkinSettings,
-                  onionEngine: _onionSkinEngine,
-                  selectionStart: _selectionStart,
-                  selectionEnd: _selectionEnd,
-                  // 変形操作中は移動前の位置のハイライトが紛らわしいため非表示にする
-                  // （ハンドル・浮動画像プレビューの方で現在の状態を示す）。
-                  selectionOverlayImage: _selectionTransformActive
-                      ? null
-                      : _selectionOverlayImage,
-                  selectionLayerOverlayImage: _selectionLayerOverlayImage,
-                  lassoPoints: _lassoPoints,
-                  subToolStrokePoints: _subToolStrokePoints,
-                  activeRuler: widget.activeRuler,
-                  shapeKind: widget.shapeKind,
-                  shapeStart: _shapeStart,
-                  shapeEnd: _shapeEnd,
-                  moveDelta: widget.currentTool == DrawingTool.move
-                      ? _moveDelta
-                      : null,
-                  transformLive: widget.currentTool == DrawingTool.transform
-                      ? _transformLive
-                      : null,
-                  showTransformHandles:
-                      widget.currentTool == DrawingTool.transform,
-                  floatingSelectionImage: _floatingSelectionImage,
-                  selectionTransformLive: _selectionTransformLive,
-                  selectionTransformBounds: _selectionTransformBounds,
-                  meshRows: meshRows,
-                  meshCols: meshCols,
-                  meshControlPoints: meshControlPoints,
-                  meshSourceImage: meshSourceImage,
-                  showMeshHandles:
-                      widget.currentTool == DrawingTool.meshTransform,
-                  handleColor: theme.selectionColor,
-                  handleOutlineColor: theme.menuBgColor,
-                  extendedAreaWarningColor: theme.updateMarkColor,
+        child: AnimatedBuilder(
+          animation: _transformController,
+          builder: (context, _) => ClipRect(
+            child: Transform(
+              transform: _transformController.value,
+              // 低スペック端末対策：キャンバスの再描画を他ウィジェットから分離し、
+              // ストローク中の再描画コストを最小限に抑える。
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  painter: _CanvasPainter(
+                    project: widget.project,
+                    background: widget.background,
+                    transform: _transformController.value,
+                    compositeImage: _compositeImage,
+                    belowImage: _belowImage,
+                    aboveImage: _aboveImage,
+                    currentLayerOpacity:
+                        _layers
+                            .where((l) => l.id == _layerId)
+                            .firstOrNull
+                            ?.opacity ??
+                        100,
+                    currentLayerBlendMode:
+                        _layers
+                            .where((l) => l.id == _layerId)
+                            .firstOrNull
+                            ?.blendMode ??
+                        LayerBlendMode.normal,
+                    onionImages: _onionImagesView,
+                    onionSettings: widget.onionSkinSettings,
+                    onionEngine: _onionSkinEngine,
+                    selectionStart: _selectionStart,
+                    selectionEnd: _selectionEnd,
+                    // 変形操作中は移動前の位置のハイライトが紛らわしいため非表示にする
+                    // （ハンドル・浮動画像プレビューの方で現在の状態を示す）。
+                    selectionOverlayImage: _selectionTransformActive
+                        ? null
+                        : _selectionOverlayImage,
+                    selectionLayerOverlayImage: _selectionLayerOverlayImage,
+                    lassoPoints: _lassoPoints,
+                    subToolStrokePoints: _subToolStrokePoints,
+                    activeRuler: widget.activeRuler,
+                    shapeKind: widget.shapeKind,
+                    shapeStart: _shapeStart,
+                    shapeEnd: _shapeEnd,
+                    moveDelta: widget.currentTool == DrawingTool.move
+                        ? _moveDelta
+                        : null,
+                    transformLive: widget.currentTool == DrawingTool.transform
+                        ? _transformLive
+                        : null,
+                    showTransformHandles:
+                        widget.currentTool == DrawingTool.transform,
+                    floatingSelectionImage: _floatingSelectionImage,
+                    selectionTransformLive: _selectionTransformLive,
+                    selectionTransformBounds: _selectionTransformBounds,
+                    meshRows: meshRows,
+                    meshCols: meshCols,
+                    meshControlPoints: meshControlPoints,
+                    meshSourceImage: meshSourceImage,
+                    showMeshHandles:
+                        widget.currentTool == DrawingTool.meshTransform,
+                    handleColor: theme.selectionColor,
+                    handleOutlineColor: theme.menuBgColor,
+                    extendedAreaWarningColor: theme.updateMarkColor,
+                  ),
+                  size: Size.infinite,
                 ),
-                size: Size.infinite,
               ),
             ),
           ),

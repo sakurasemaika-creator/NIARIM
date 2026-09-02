@@ -226,7 +226,13 @@ void main() {
     final menu = tester.widget<PopupMenuButton<String>>(menuFinder.last);
     expect(menu.onSelected, isNotNull);
     menu.onSelected!.call('export');
-    await tester.pump(const Duration(milliseconds: 700));
+    // 遷移アニメーションが終わるまで待つ。go()/push()直後の固定時間待ちだと、
+    // ExportScreenはツリーに入っていてもまだ遷移中でoffstage扱いのため、
+    // 既定でoffstageを除外するfind.textでは0件になる。見つかるまで刻む。
+    for (var i = 0; i < 20; i++) {
+      if (find.text('書き出し').evaluate().isNotEmpty) break;
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     clean(tester, 'timeline menu to export');
     expect(find.text('書き出し'), findsWidgets);
     await shot(tester, '07_export');

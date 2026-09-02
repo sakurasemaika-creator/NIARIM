@@ -200,6 +200,31 @@
   Wrapを使うこと。`test/text_scale_layout_test.dart`が1.3倍・2.0倍で
   全ルートを巡回して監視しているので、レイアウトを触ったらこのテストが
   通ることを確認する。
+- **`shouldRepaint`を1行で無効化しないこと**：`_CanvasPainter.shouldRepaint`は
+  30項目を比較しているが、`build()`側で`Map.unmodifiable(...)`のように
+  **毎回新しいオブジェクト**を作って渡すと、その1項目が常に不一致になり
+  他の29項目に関係なく必ず再描画される（実際にオニオンスキン画像で
+  これが起きていて、ストローク1点ごとにキャンバス全体が描き直されていた）。
+  ペインターへコレクションを渡すときは、中身が変わったときだけ作り直す
+  フィールド（`_onionImagesView`のような形）を経由して**同一インスタンス**を
+  渡すこと。
+- **アイコンの縁取りに`Icon`を8個重ねない**：`CanvasIconButton`は
+  `Icon.shadows`（ぼかし半径0のShadow×8）で1ウィジェットにしてある。
+  `Positioned`で重ねる方式に戻すと、1ボタン9ウィジェット×常時20個前後＝
+  ツールバーだけで180個のRenderObjectになる。テスト側でも`find.byIcon`が
+  1ボタンにつき9件ヒットして`findsOneWidget`が使えなくなる。
+  同様に、`CustomPainter`で同じ字形を何度も描くときは`TextPainter`を
+  1回だけ`layout()`して使い回すこと（`layout()`はテキストシェーピングを
+  伴う重い処理。`help_diagrams.dart`の`_drawOutlinedIcon`が参考）。
+- **`TransformationController`にblanketなリスナーを張らない**：
+  `addListener(() => setState(() {}))`にすると、パン・ピンチのたびに
+  `CanvasArea`全体（build()は150行超）が再ビルドされる。変換値に依存するのは
+  `Transform`以下だけなので`AnimatedBuilder`で囲うこと。あわせて
+  `_transformController.value = ...`を`setState()`で包まないこと
+  （コントローラ自身が通知するため、1フレームに2回ビルドが走る）。
+- **`MediaQuery.of(context)`ではなく`sizeOf`/`paddingOf`/`orientationOf`**：
+  前者はMediaQueryのあらゆる変化（キーボード開閉・文字サイズ変更等）で
+  再ビルドを起こす。
 - **キャンバス周りの実描画テストは`tester.runAsync`が要る（最重要）**：
   `flutter_test`は既定でFakeAsync（偽装時間）の下で走るため、次のような
   **本物の非同期処理は`tester.pump(Duration)`を何回回しても完了しない**。
@@ -246,6 +271,14 @@
   （AVI等）・新しいブラシの描き味・ランチャーアイコンの実機での見え方
   などは、コードレビューだけで「直った」と断定せず「直っている可能性が
   高いが実機要確認」と正直に報告すること。
+
+- **`monetization_gate.dart`を一時的に書き換えたら必ず元に戻すこと**：
+  過去に「test: キャンペーン条件を無効化し無料会員挙動でAPKテスト」
+  （コミット54e4743）で`isMonetizationEnabled`の実装をコメントアウトして
+  `=> true`固定にしたまま残り、**広告SDKとアプリ内課金が無条件で有効**な
+  状態が長く続いていた（税務上の都合による一時停止という設計意図とも、
+  CLAUDE.md・7言語のキャンペーン文言とも食い違う）。検証のために一時的に
+  値を固定する場合は、戻し忘れないよう作業を分けること。
 
 ## 人間の実操作が必要な項目（ストア公開前に必ず確認・最重要）
 

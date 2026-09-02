@@ -140,19 +140,35 @@ class _HelpDiagramPainter extends CustomPainter {
   /// [icon]の実際のグリフ（Material Icons／Font Awesome）をCanvasへ直接
   /// 描画する。画像アセットを使わずに「実際のアイコン」を再現するための
   /// 手段（Icon()ウィジェットと同じ仕組みをTextPainterで直接行う）。
-  void _drawIcon(Canvas canvas, IconData icon, Offset center, {double size = 18, Color? color}) {
-    final tp = TextPainter(textDirection: TextDirection.ltr)
+  /// アイコン1つぶんのTextPainterを組み立てる（layout済み）。
+  ///
+  /// `layout()`はテキストシェーピングを伴う重い処理なので、同じ字形を
+  /// 何度も描くときは**1回だけlayoutして使い回す**こと。
+  /// [_drawOutlinedIcon]がその形になっている。
+  TextPainter _iconPainter(IconData icon, double size, Color color) {
+    return TextPainter(textDirection: TextDirection.ltr)
       ..text = TextSpan(
         text: String.fromCharCode(icon.codePoint),
         style: TextStyle(
           fontSize: size,
           fontFamily: icon.fontFamily,
           package: icon.fontPackage,
-          color: color ?? scheme.onSurfaceVariant,
+          color: color,
         ),
       )
       ..layout();
+  }
+
+  void _paintCentered(TextPainter tp, Canvas canvas, Offset center) {
     tp.paint(canvas, center - Offset(tp.width / 2, tp.height / 2));
+  }
+
+  void _drawIcon(Canvas canvas, IconData icon, Offset center, {double size = 18, Color? color}) {
+    _paintCentered(
+      _iconPainter(icon, size, color ?? scheme.onSurfaceVariant),
+      canvas,
+      center,
+    );
   }
 
   int _clampSlot(int max) => spec.slotIndex.clamp(0, max - 1);
@@ -186,10 +202,19 @@ class _HelpDiagramPainter extends CustomPainter {
   ];
 
   void _drawOutlinedIcon(Canvas canvas, IconData icon, Offset center, {double size = 15, required Color color}) {
+    // 縁取り8方向＋本体で同じ字形を9回描くが、TextPainterのlayout()は
+    // 色ごとに1回で足りる（位置は描画時に決まる）。以前は_drawIconを9回
+    // 呼んでlayoutも9回走らせていた。図解1枚でツールバーのアイコンを
+    // 7個描くため、1枚あたり63回だったlayoutが14回になる。
+    final outline = _iconPainter(
+      icon,
+      size,
+      scheme.surfaceContainerHighest.withValues(alpha: 0.85),
+    );
     for (final o in _iconOutlineOffsets) {
-      _drawIcon(canvas, icon, center + o, size: size, color: scheme.surfaceContainerHighest.withValues(alpha: 0.85));
+      _paintCentered(outline, canvas, center + o);
     }
-    _drawIcon(canvas, icon, center, size: size, color: color);
+    _paintCentered(_iconPainter(icon, size, color), canvas, center);
   }
 
   void _paintToolbarRow(Canvas canvas, Size size) {

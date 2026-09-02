@@ -67,7 +67,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
             },
           ),
           Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
+            top: MediaQuery.paddingOf(context).top + 8,
             left: 8,
             child: IconButton(
               tooltip: l10n.communityShortsModeExitTooltip,

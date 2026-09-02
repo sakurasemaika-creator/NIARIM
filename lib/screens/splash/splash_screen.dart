@@ -69,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+        MediaQuery.orientationOf(context) == Orientation.landscape;
 
     final communityButton = _SplashActionButton(
       icon: Icons.movie_filter_outlined,
@@ -157,7 +157,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // SafeAreaの余白に加えてさらに下部の余白を確保する。端末・OSバージョン
     // によってはSafeAreaだけではジェスチャーナビゲーションバーの領域を
     // 十分に避けきれない場合があるための保険。
-    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: scheme.surface,

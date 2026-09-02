@@ -104,11 +104,17 @@ void main() {
         ),
       ),
     );
-    await _settleRealAsync(tester);
+    await tester.pump(const Duration(milliseconds: 250));
 
-    final off = (await tester.runAsync(() => _capture(boundaryKey)))!;
-    await tester.runAsync(
-      () => File('${out.path}/onion_canvas_real_off.png').writeAsBytes(off.png),
+    // キャンバスに何か描かれるまで待ってから撮る。固定時間だけ待つ書き方だと
+    // 環境の速さ次第で「まだ真っ白なキャンバス」を撮ってしまい、その場合は
+    // オニオンスキンの有無に関係なく全画素が白のまま比較することになる
+    // （実際にこれで落ちていた）。_captureWhenのdocコメント参照。
+    final off = await _captureWhen(
+      tester,
+      boundaryKey,
+      _hasAnyNonWhitePixel,
+      reason: 'オニオンスキンOFFでも現在フレームの図形は描画されること',
     );
     final offPrev = _pixel(off.rgba, off.width, 20 * 3, 33 * 3);
     final offCurrent = _pixel(off.rgba, off.width, 48 * 3, 33 * 3);
@@ -133,9 +139,16 @@ void main() {
       );
     });
     await tester.pump();
-    await _settleRealAsync(tester);
 
-    final on = (await tester.runAsync(() => _capture(boundaryKey)))!;
+    // 前フレームのオニオンスキンが実際に描画されるまで待つ。設定を変えた
+    // 直後は前後フレームの合成が済んでおらず、待たずに撮ると「ONにしたのに
+    // 何も変わっていない」という誤った失敗になる。
+    final on = await _captureWhen(
+      tester,
+      boundaryKey,
+      (c) => !_isWhite(_pixel(c.rgba, c.width, 20 * 3, 33 * 3)),
+      reason: 'オニオンスキンONで前フレームが描画されること',
+    );
     final prev = _pixel(on.rgba, on.width, 20 * 3, 33 * 3);
     final current = _pixel(on.rgba, on.width, 48 * 3, 33 * 3);
     final next = _pixel(on.rgba, on.width, 76 * 3, 33 * 3);
@@ -162,13 +175,47 @@ void main() {
   });
 }
 
-Future<void> _settleRealAsync(WidgetTester tester) async {
-  for (var i = 0; i < 6; i++) {
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pump(const Duration(milliseconds: 50));
+/// [predicate]を満たす撮影が得られるまで、実時間とWidgetのfake-asyncを
+/// 交互に進めてから撮影して返す。
+///
+/// `CanvasArea`のレイヤー合成は`toImage`系の**本物の非同期処理**で、
+/// `flutter_test`既定のFakeAsyncの下では`tester.pump(Duration)`をいくら
+/// 回しても完了しない。`tester.runAsync`で実時間を進める必要があるが、
+/// 「何ミリ秒待てば済むか」は実行環境の速さに依存するため固定値では
+/// 決め打ちできない（250ms待ちでは足りず、追加でもう250ms必要だった）。
+/// 描画が済んだことを撮影画像そのもので確認してから先へ進める。
+Future<_Capture> _captureWhen(
+  WidgetTester tester,
+  GlobalKey key,
+  bool Function(_Capture) predicate, {
+  required String reason,
+  Duration timeout = const Duration(seconds: 10),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (true) {
+    final capture = (await tester.runAsync(() => _capture(key)))!;
+    if (predicate(capture)) return capture;
+    if (!DateTime.now().isBefore(deadline)) {
+      fail('${timeout.inSeconds}秒以内に描画が完了しませんでした：$reason');
+    }
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pump();
   }
+}
+
+bool _isWhite(List<int> pixel) =>
+    pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255;
+
+/// 撮影画像に白以外の画素が1つでもあるか（＝キャンバスが描画済みか）。
+bool _hasAnyNonWhitePixel(_Capture capture) {
+  for (var i = 0; i < capture.rgba.length; i += 4) {
+    if (capture.rgba[i] != 255 ||
+        capture.rgba[i + 1] != 255 ||
+        capture.rgba[i + 2] != 255) {
+      return true;
+    }
+  }
+  return false;
 }
 
 typedef _Capture = ({Uint8List rgba, Uint8List png, int width, int height});

@@ -35,7 +35,7 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
 
     final position = renderObject.localToGlobal(Offset.zero);
     final size = renderObject.size;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     const bubbleWidth = 240.0;
     final left = (position.dx + size.width / 2 - bubbleWidth / 2)
         .clamp(8.0, screenWidth - bubbleWidth - 8.0);
