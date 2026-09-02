@@ -29,25 +29,36 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final ad = context.watch<AdvertisingService>().bannerAd;
-    if (ad == null) {
-      return Container(
-        height: 50,
-        width: double.infinity,
-        color: Colors.grey[900],
-        child: Center(
-          child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-        ),
-      );
-    }
-    return Container(
-      width: double.infinity,
-      color: Colors.grey[900],
-      alignment: Alignment.center,
-      child: SizedBox(
-        width: ad.size.width.toDouble(),
-        height: ad.size.height.toDouble(),
-        child: AdWidget(ad: ad),
-      ),
+    final banner = ad == null
+        ? Container(
+            height: 50,
+            width: double.infinity,
+            color: Colors.grey[900],
+            child: Center(
+              child: Text(
+                l10n.progressDialogAdLoading,
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ),
+          )
+        : Container(
+            width: double.infinity,
+            color: Colors.grey[900],
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: ad.size.width.toDouble(),
+              height: ad.size.height.toDouble(),
+              child: AdWidget(ad: ad),
+            ),
+          );
+
+    // Androidの3ボタン／ジェスチャーナビゲーションや画面切り欠きの領域へ
+    // 広告が重なると、広告が隠れるだけでなく誤タップの原因にもなる。
+    // 配置方向に応じたSafeAreaを共通部品側で必ず確保する。
+    return SafeArea(
+      top: widget.position == AdPosition.top,
+      bottom: widget.position == AdPosition.bottom,
+      child: banner,
     );
   }
 }

@@ -85,7 +85,9 @@ class _SplashScreenState extends State<SplashScreen> {
       icon: Icons.brush_outlined,
       label: l10n.splashCreateButton,
       colors: [scheme.primary, scheme.primaryContainer],
-      onTap: () => context.go('/home'),
+      // 作品広場と同じく起動画面を履歴へ残し、Android標準の戻る操作でも
+      // 「作品をつくる」ホームからこの画面へ戻れるようにする。
+      onTap: () => context.push('/home'),
     );
     // モノグラムは、アプリランチャーアイコン（tool/gen_app_icon.py）と
     // 同じ「テーマ色の角丸正方形の背景に、モノグラムを白抜きで重ねる」

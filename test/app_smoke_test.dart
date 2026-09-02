@@ -570,6 +570,22 @@ void main() {
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets(
+    '作品をつくるホームでAndroid標準の戻る操作をすると起動画面へ戻る',
+    (WidgetTester tester) async {
+      await bootToHome(tester);
+
+      await tester.binding.handlePopRoute();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(tester.takeException(), isNull);
+      expect(find.byIcon(Icons.brush_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.movie_filter_outlined), findsOneWidget);
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+
+  testWidgets(
     '起動→ホーム→新規プロジェクト作成→キャンバス→タイムラインまで例外なく遷移できる',
     (WidgetTester tester) async {
       await bootToHome(tester);

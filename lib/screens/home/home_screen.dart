@@ -260,9 +260,9 @@ class _HomeScreenState extends State<HomeScreen>
           appBar: AppBar(
             // 左上に「起動画面へ戻る」矢印と、ハンバーガーメニュー（設定・
             // ヘルプ等への導線）の2つを並べる。作品広場画面には元々戻る
-            // 矢印がある（プッシュ遷移のため自動表示）のに対し、ホーム画面
-            // はgo()で遷移してくるため戻り先が無く、また既にドロワーで
-            // leadingが埋まっていたため、両方を明示的に並べる形にした。
+            // 矢印がある（プッシュ遷移のため自動表示）。ホーム画面も起動
+            // 画面からpush()で遷移するが、既にドロワーでleadingが埋まるため、
+            // 両方を明示的に並べる形にしている。
             leadingWidth: 96,
             leading: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -274,7 +274,9 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 IconButton(
                   icon: const Icon(Icons.menu),
-                  tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+                  tooltip: MaterialLocalizations.of(
+                    context,
+                  ).openAppDrawerTooltip,
                   onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
               ],
