@@ -43,6 +43,7 @@ jobs:
           flutter test test/functional_audit_batch8_test.dart --reporter expanded
           flutter test test/functional_audit_batch9_test.dart --reporter expanded
           flutter test test/functional_audit_batch10_test.dart --reporter expanded
+          flutter test test/functional_audit_batch11_test.dart --reporter expanded
 
       - name: 機能別レンダリング画像を保存
         if: always()
