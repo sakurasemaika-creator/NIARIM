@@ -1,0 +1,327 @@
+name: One-shot brush transfer completion
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-brush-transfer-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev_branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+
+      - name: Apply exact patches
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected exactly one match, got {count}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # Brush settings UI: expose the model/engine rotation, density and scatter settings.
+          replace_once(
+              'lib/screens/canvas/widgets/brush_panel.dart',
+              """          // ぼかし半径（0〜100・デフォルト0）
+          _sliderRow(l10n.brushSettingsBlurRadiusLabel, _brush.blurRadius.toDouble(), 0, 100,
+              (v) => setState(() => _brush = _brush.copyWith(blurRadius: v.round()))),
+          const Divider(),
+          // 手ブレ補正
+""",
+              """          // ぼかし半径（0〜100・デフォルト0）
+          _sliderRow(l10n.brushSettingsBlurRadiusLabel, _brush.blurRadius.toDouble(), 0, 100,
+              (v) => setState(() => _brush = _brush.copyWith(blurRadius: v.round()))),
+          const Divider(),
+          // 回転・密度・散布。スタンプと同じ意味・同じレンジに統一する。
+          SwitchListTile(
+            title: Text(l10n.stampRotationLabel),
+            value: _brush.rotation,
+            onChanged: (v) => setState(() => _brush = _brush.copyWith(rotation: v)),
+          ),
+          _decimalSliderRow(
+            l10n.stampDensityLabel,
+            _brush.density,
+            0.1,
+            5.0,
+            (v) => setState(() => _brush = _brush.copyWith(density: v)),
+          ),
+          _decimalSliderRow(
+            l10n.stampScatterLabel,
+            _brush.scatter,
+            0.0,
+            1.0,
+            (v) => setState(() => _brush = _brush.copyWith(scatter: v)),
+          ),
+          const Divider(),
+          // 手ブレ補正
+""",
+          )
+
+          replace_once(
+              'lib/screens/canvas/widgets/brush_panel.dart',
+              """  Widget _sliderRow(String label, double value, double min, double max, ValueChanged<double> onChanged) {
+    return Row(
+      children: [
+        SizedBox(width: 80, child: Text(label, style: const TextStyle(fontSize: 12))),
+        Expanded(child: SteppedSlider(min: min, max: max, value: value.clamp(min, max), onChanged: onChanged)),
+        SizedBox(
+          width: 40,
+          child: EditableSliderValue(
+            text: value.round().toString(),
+            style: const TextStyle(fontSize: 12),
+            value: value, min: min, max: max,
+            onChanged: (v) => onChanged(v.toDouble()),
+          ),
+        ),
+      ],
+    );
+  }
+
+""",
+              """  Widget _sliderRow(String label, double value, double min, double max, ValueChanged<double> onChanged) {
+    return Row(
+      children: [
+        SizedBox(width: 80, child: Text(label, style: const TextStyle(fontSize: 12))),
+        Expanded(child: SteppedSlider(min: min, max: max, value: value.clamp(min, max), onChanged: onChanged)),
+        SizedBox(
+          width: 40,
+          child: EditableSliderValue(
+            text: value.round().toString(),
+            style: const TextStyle(fontSize: 12),
+            value: value, min: min, max: max,
+            onChanged: (v) => onChanged(v.toDouble()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _decimalSliderRow(
+    String label,
+    double value,
+    double min,
+    double max,
+    ValueChanged<double> onChanged,
+  ) {
+    return Row(
+      children: [
+        SizedBox(width: 80, child: Text(label, style: const TextStyle(fontSize: 12))),
+        Expanded(
+          child: SteppedSlider(
+            min: min,
+            max: max,
+            value: value.clamp(min, max),
+            step: 0.1,
+            onChanged: onChanged,
+          ),
+        ),
+        SizedBox(
+          width: 48,
+          child: EditableSliderValue(
+            text: value.toStringAsFixed(1),
+            style: const TextStyle(fontSize: 12),
+            value: value,
+            min: min,
+            max: max,
+            isInt: false,
+            onChanged: (v) => onChanged(v.toDouble()),
+          ),
+        ),
+      ],
+    );
+  }
+
+""",
+          )
+
+          # .niabrush import: preserve every model field, including newly added settings and
+          # older fields that the hand-written constructor used to silently drop.
+          old_import = """    // customImagePathは元端末のパスをそのまま引き継げないため、copyWith
+    // （??でnullを無視する実装）を使わず、常にnewImagePath（なければ未設定）で
+    // 明示的に上書きする。
+    final brush = Brush(
+      id: id,
+      name: imported.name, size: imported.size, opacity: imported.opacity,
+      spacing: imported.spacing, blurRadius: imported.blurRadius,
+      stabilization: imported.stabilization, stabilizationStrength: imported.stabilizationStrength,
+      pixelMode: imported.pixelMode, pressureMode: imported.pressureMode,
+      pressureStrength: imported.pressureStrength, fadeMode: imported.fadeMode,
+      fadeCustom: imported.fadeCustom, strokeDecay: imported.strokeDecay,
+      mixingMode: imported.mixingMode, mixingRate: imported.mixingRate,
+      isFavorite: imported.isFavorite, customImagePath: newImagePath,
+    );
+"""
+          new_import = """    // 元端末の絶対パスだけを取り込み先の新パスへ差し替え、その他の
+    // Brushモデル項目はtoJson/fromJsonを通して一切欠落させない。
+    final restoredJson = Map<String, dynamic>.from(imported.toJson())
+      ..['id'] = id
+      ..['folderId'] = null
+      ..['customImagePath'] = newImagePath;
+    final brush = Brush.fromJson(restoredJson);
+"""
+          replace_once('lib/services/brush_service.dart', old_import, new_import)
+
+          # Direct NiatraSerializer use should also preserve the full creative-asset model.
+          replace_once(
+              'lib/engine/niatra_serializer.dart',
+              """  static Map<String, dynamic> _serializeBrush(Brush b) => {
+        'id': b.id, 'name': b.name, 'size': b.size, 'opacity': b.opacity,
+        'spacing': b.spacing, 'blurRadius': b.blurRadius,
+        'stabilization': b.stabilization, 'stabilizationStrength': b.stabilizationStrength,
+        'pixelMode': b.pixelMode, 'pressureMode': b.pressureMode.name,
+        'pressureStrength': b.pressureStrength, 'fadeMode': b.fadeMode.name,
+        'strokeDecay': b.strokeDecay, 'mixingMode': b.mixingMode.name,
+        'mixingRate': b.mixingRate, 'isFavorite': b.isFavorite,
+        'calligraphyAngle': b.calligraphyAngle,
+        'pixelColorMode': b.pixelColorMode.name,
+        'pixelColorLevels': b.pixelColorLevels,
+        'pixelExplicitColors': b.pixelExplicitColors,
+      };
+
+  static Brush _deserializeBrush(Map<String, dynamic> j) => Brush(
+        id: 'Brush${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
+        name: j['name'] as String,
+        size: (j['size'] as num).toDouble(),
+        opacity: j['opacity'] as int,
+        spacing: j['spacing'] as int,
+        blurRadius: j['blurRadius'] as int,
+        stabilization: j['stabilization'] as bool,
+        stabilizationStrength: j['stabilizationStrength'] as int,
+        // pixelModeは旧称dotPenModeからの改称。旧バージョンで書き出された
+        // .niatraファイルも引き続き読み込めるよう旧キーへフォールバックする。
+        pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
+        pressureMode: PressureMode.values.firstWhere((e) => e.name == j['pressureMode'],
+            orElse: () => PressureMode.off),
+        pressureStrength: j['pressureStrength'] as int,
+        fadeMode: FadeMode.values
+            .firstWhere((e) => e.name == j['fadeMode'], orElse: () => FadeMode.off),
+        strokeDecay: j['strokeDecay'] as bool,
+        mixingMode: BrushMixingMode.values.firstWhere((e) => e.name == j['mixingMode'],
+            orElse: () => BrushMixingMode.off),
+        mixingRate: j['mixingRate'] as int,
+        isFavorite: j['isFavorite'] as bool? ?? false,
+        calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
+        pixelColorMode: PixelColorMode.values.firstWhere(
+            (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.none),
+        pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
+        pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)
+                ?.map((e) => e as int)
+                .toList() ??
+            const [0xFF000000],
+      );
+""",
+              """  static Map<String, dynamic> _serializeBrush(Brush b) => b.toJson();
+
+  static Brush _deserializeBrush(Map<String, dynamic> j) {
+    final imported = Brush.fromJson(j);
+    final restored = Map<String, dynamic>.from(imported.toJson())
+      ..['id'] = 'Brush${DateTime.now().microsecondsSinceEpoch}_${imported.id}'
+      ..['folderId'] = null;
+    return Brush.fromJson(restored);
+  }
+""",
+          )
+
+          replace_once(
+              'lib/engine/niatra_serializer.dart',
+              """  static Map<String, dynamic> _serializeTone(Tone t) =>
+      {'id': t.id, 'name': t.name, 'texturePath': t.texturePath, 'isFavorite': t.isFavorite};
+
+  static Tone _deserializeTone(Map<String, dynamic> j) => Tone(
+        id: 'Tone${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
+        name: j['name'] as String,
+        texturePath: j['texturePath'] as String?,
+        isFavorite: j['isFavorite'] as bool? ?? false,
+      );
+
+  static Map<String, dynamic> _serializeStamp(Stamp s) => {
+        'id': s.id, 'name': s.name, 'imagePath': s.imagePath, 'isFavorite': s.isFavorite,
+        'rotation': s.rotation, 'density': s.density, 'scatter': s.scatter,
+        'opacity': s.opacity, 'pixelMode': s.pixelMode,
+      };
+
+  static Stamp _deserializeStamp(Map<String, dynamic> j) => Stamp(
+        id: 'Stamp${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
+        name: j['name'] as String,
+        imagePath: j['imagePath'] as String?,
+        isFavorite: j['isFavorite'] as bool? ?? false,
+        rotation: j['rotation'] as bool? ?? false,
+        density: (j['density'] as num?)?.toDouble() ?? 1.0,
+        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+        opacity: (j['opacity'] as int?) ?? 100,
+        pixelMode: j['pixelMode'] as bool? ?? false,
+      );
+""",
+              """  static Map<String, dynamic> _serializeTone(Tone t) => t.toJson();
+
+  static Tone _deserializeTone(Map<String, dynamic> j) {
+    final imported = Tone.fromJson(j);
+    return Tone(
+      id: 'Tone${DateTime.now().microsecondsSinceEpoch}_${imported.id}',
+      name: imported.name,
+      texturePath: imported.texturePath,
+      isFavorite: imported.isFavorite,
+    );
+  }
+
+  static Map<String, dynamic> _serializeStamp(Stamp s) => s.toJson();
+
+  static Stamp _deserializeStamp(Map<String, dynamic> j) {
+    final imported = Stamp.fromJson(j);
+    return Stamp(
+      id: 'Stamp${DateTime.now().microsecondsSinceEpoch}_${imported.id}',
+      name: imported.name,
+      imagePath: imported.imagePath,
+      isFavorite: imported.isFavorite,
+      rotation: imported.rotation,
+      density: imported.density,
+      scatter: imported.scatter,
+      opacity: imported.opacity,
+      pixelMode: imported.pixelMode,
+    );
+  }
+""",
+          )
+
+          # The full-model serializer no longer needs these enum-only imports directly.
+          # Keep pixel_color_mode import if other code still needs it; dart analyze will tell us.
+
+      - name: Format patched Dart files
+        run: dart format lib/models/brush.dart lib/engine/drawing_engine.dart lib/engine/niatra_asset_bundle.dart lib/engine/niatra_serializer.dart lib/services/brush_service.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/settings/transfer_screen.dart test/brush_rotation_density_scatter_test.dart test/niatra_asset_bundle_test.dart
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Focused tests
+        run: flutter test test/brush_rotation_density_scatter_test.dart test/niatra_asset_bundle_test.dart test/niatra_serializer_test.dart test/creative_asset_persistence_test.dart
+
+      - name: Static analysis
+        run: flutter analyze --no-fatal-infos
+
+      - name: Commit successful patch and remove one-shot workflow
+        run: |
+          rm .github/workflows/one-shot-brush-transfer-fix.yml
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib test .github/workflows/one-shot-brush-transfer-fix.yml
+          git commit -m "fix: complete brush dynamics and niatra asset transfer"
+          git push origin HEAD:dev_branch
