@@ -20,6 +20,15 @@ class Brush {
   final bool isFavorite;
   final String? folderId;
   final String? customImagePath;
+  // ブラシ先端をストローク進行方向へ追従回転させる。
+  // 円形ブラシでは見た目は変わらないが、自作画像ブラシや扁平ブラシで有効。
+  final bool rotation;
+  // 基準のスタンプ間隔に対する密度倍率。1.0が従来どおり、2.0で約2倍、
+  // 0.5で約半分のスタンプ密度。UI範囲は0.1〜5.0。
+  final double density;
+  // ストローク進行方向へ直交する方向へ散布する割合。0.0〜1.0で、実際の
+  // 最大オフセットは描画時のブラシサイズへ乗算して求める。
+  final double scatter;
   // カリグラフィーペン用：ペン先の固定角度（度、0〜360）。nullなら通常の
   // 円形ブラシ（スタイラスの傾き検知があればそちらで扁平化する）。指定時は
   // 実際のスタイラス傾きに関わらず、常にこの角度へ扁平化したペン先で
@@ -61,6 +70,9 @@ class Brush {
     this.isFavorite = false,
     this.folderId,
     this.customImagePath,
+    this.rotation = false,
+    this.density = 1.0,
+    this.scatter = 0.0,
     this.calligraphyAngle,
     this.edgeJitter = false,
     this.edgeJitterStrength = 50,
@@ -89,6 +101,9 @@ class Brush {
     bool? isFavorite,
     String? folderId,
     String? customImagePath,
+    bool? rotation,
+    double? density,
+    double? scatter,
     double? calligraphyAngle,
     bool? edgeJitter,
     int? edgeJitterStrength,
@@ -116,6 +131,9 @@ class Brush {
       isFavorite: isFavorite ?? this.isFavorite,
       folderId: folderId ?? this.folderId,
       customImagePath: customImagePath ?? this.customImagePath,
+      rotation: rotation ?? this.rotation,
+      density: density ?? this.density,
+      scatter: scatter ?? this.scatter,
       calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
       edgeJitter: edgeJitter ?? this.edgeJitter,
       edgeJitterStrength: edgeJitterStrength ?? this.edgeJitterStrength,
@@ -151,6 +169,9 @@ class Brush {
         'isFavorite': isFavorite,
         'folderId': folderId,
         'customImagePath': customImagePath,
+        'rotation': rotation,
+        'density': density,
+        'scatter': scatter,
         'calligraphyAngle': calligraphyAngle,
         'edgeJitter': edgeJitter,
         'edgeJitterStrength': edgeJitterStrength,
@@ -195,6 +216,9 @@ class Brush {
         isFavorite: j['isFavorite'] as bool? ?? false,
         folderId: j['folderId'] as String?,
         customImagePath: j['customImagePath'] as String?,
+        rotation: j['rotation'] as bool? ?? false,
+        density: (j['density'] as num?)?.toDouble() ?? 1.0,
+        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
         calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
         edgeJitter: j['edgeJitter'] as bool? ?? false,
         edgeJitterStrength: j['edgeJitterStrength'] as int? ?? 50,
