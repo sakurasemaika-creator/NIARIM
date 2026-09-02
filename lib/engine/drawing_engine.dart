@@ -138,15 +138,21 @@ class DrawingEngine {
     var size = brush.size;
     var opacity = brush.opacity / 100.0;
 
+    // 筆圧強度0%では筆圧の影響を無効化し、100%では端末からのpressureを
+    // そのまま反映する。中間値は「筆圧なし(1.0)」と生pressureを線形補間する。
+    final rawPressure = pressure.clamp(0.0, 1.0);
+    final pressureStrength = brush.pressureStrength.clamp(0, 100) / 100.0;
+    final effectivePressure = 1.0 - (1.0 - rawPressure) * pressureStrength;
+
     // 筆圧反映
     switch (brush.pressureMode) {
       case PressureMode.size:
-        size *= pressure;
+        size *= effectivePressure;
       case PressureMode.opacity:
-        opacity *= pressure;
+        opacity *= effectivePressure;
       case PressureMode.sizeAndOpacity:
-        size *= pressure;
-        opacity *= pressure;
+        size *= effectivePressure;
+        opacity *= effectivePressure;
       case PressureMode.off:
         break;
     }
