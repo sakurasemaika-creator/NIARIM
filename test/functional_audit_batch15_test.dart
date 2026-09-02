@@ -121,3 +121,7 @@ Future<void> _save(Uint8List rgba, int w, int h, String path) async {
   await File(path).writeAsBytes(png!.buffer.asUint8List());
   frame.image.dispose(); codec.dispose(); desc.dispose(); buffer.dispose();
 }
+
+// Audit retrigger only: verify the complete functional visual suite after the
+// brush rotation/density/scatter UI wiring, transfer fixes, and stamp opacity
+// compositing changes. This comment intentionally changes no test semantics.
