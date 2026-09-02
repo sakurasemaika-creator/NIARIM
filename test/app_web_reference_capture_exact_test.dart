@@ -165,11 +165,14 @@ void main() {
     return (projectId: p.id, sceneId: ps.scenesOf(p.id).first.id);
   }
 
-  Future<void> openTimelineWithGlobalRouter(
+  Future<void> openTimelineWithMountedRouter(
     WidgetTester tester,
     String projectId,
   ) async {
-    appRouter.go('/timeline/$projectId');
+    final scaffold = find.byType(Scaffold);
+    expect(scaffold, findsWidgets);
+    GoRouter.of(tester.element(scaffold.first)).go('/timeline/$projectId');
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
     final e = tester.takeException();
     if (e != null &&
@@ -213,7 +216,7 @@ void main() {
     tester,
   ) async {
     final ids = await canvas(tester);
-    await openTimelineWithGlobalRouter(tester, ids.projectId);
+    await openTimelineWithMountedRouter(tester, ids.projectId);
 
     final menuFinder = find.byWidgetPredicate(
       (widget) => widget is PopupMenuButton<String>,
