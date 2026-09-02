@@ -84,17 +84,28 @@ void main() {
     await _saveRgba(scatter, size, size, '${out.path}/tone_builtin_scatter.png');
   });
 
-  test('組み込みトーン：ディザ密度は指定%に概ね一致し粗密で周期が変わる', () async {
+  test('組み込みトーン：ディザ密度と粗モードの量子化が正しい', () async {
     const size = 32;
-    final fine = generateBuiltInToneTexture(const Tone(id: 'd1', name: 'ピクセルディザ50%'), size: size);
-    final coarse = generateBuiltInToneTexture(const Tone(id: 'd2', name: 'ピクセルディザ50%粗'), size: size);
-    final fineRatio = _opaqueRatio(fine);
-    final coarseRatio = _opaqueRatio(coarse);
-    expect(fineRatio, closeTo(0.5, 0.03));
-    expect(coarseRatio, closeTo(0.5, 0.03));
-    expect(fine, isNot(equals(coarse)));
-    await _saveRgba(fine, size, size, '${out.path}/tone_builtin_dither50.png');
-    await _saveRgba(coarse, size, size, '${out.path}/tone_builtin_dither50_coarse.png');
+
+    // 50%では4x4 Bayerと2x2 Bayerが同じ市松状配置になる場合があるので、
+    // ここでは密度そのものだけを検証する。
+    final fine50 = generateBuiltInToneTexture(const Tone(id: 'd1', name: 'ピクセルディザ50%'), size: size);
+    final coarse50 = generateBuiltInToneTexture(const Tone(id: 'd2', name: 'ピクセルディザ50%粗'), size: size);
+    expect(_opaqueRatio(fine50), closeTo(0.5, 0.03));
+    expect(_opaqueRatio(coarse50), closeTo(0.5, 0.03));
+
+    // 37%では4x4版は6/16=37.5%、2x2粗版は1/4=25%へ量子化される。
+    // 粗版が段階数の少ないディザとして働いていることをこの差で確認する。
+    final fine37 = generateBuiltInToneTexture(const Tone(id: 'd3', name: 'ピクセルディザ37%'), size: size);
+    final coarse37 = generateBuiltInToneTexture(const Tone(id: 'd4', name: 'ピクセルディザ37%粗'), size: size);
+    expect(_opaqueRatio(fine37), closeTo(0.375, 0.03));
+    expect(_opaqueRatio(coarse37), closeTo(0.25, 0.03));
+    expect(fine37, isNot(equals(coarse37)));
+
+    await _saveRgba(fine50, size, size, '${out.path}/tone_builtin_dither50.png');
+    await _saveRgba(coarse50, size, size, '${out.path}/tone_builtin_dither50_coarse.png');
+    await _saveRgba(fine37, size, size, '${out.path}/tone_builtin_dither37.png');
+    await _saveRgba(coarse37, size, size, '${out.path}/tone_builtin_dither37_coarse.png');
   });
 
   test('組み込みトーン：網点%が高いほどインク密度が増える', () {
