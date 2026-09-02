@@ -147,6 +147,18 @@ void main() {
       appRouter.go('/save-tree/$pid');
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
+      // 「保存ボタンを押した瞬間、画面に何の要素も表示されなくなり、
+      // アプリの再起動が必要になった」という報告に対応する確認。
+      // ダイアログを閉じる際にNavigator.popが余分に呼ばれていると、
+      // 画面そのものまで剥がれてナビゲーションスタックが空になり、
+      // 「何も表示されない・戻る手段も無い」状態になる。開く前と閉じた後で
+      // スタックの深さが一致することを確かめる。
+      // 実際に描画されているScaffold・ダイアログの数で画面の重なりを測る。
+      int screenCount() =>
+          find.byType(Scaffold).evaluate().length +
+          find.byType(AlertDialog).evaluate().length;
+
+      final countBefore = screenCount();
       // 保存済みスロットをタップした先（操作シート）も開いてみる。
       final slots = find.byType(InkWell);
       if (slots.evaluate().isNotEmpty) {
@@ -154,10 +166,22 @@ void main() {
         await tester.pump(const Duration(milliseconds: 400));
         await tester.pump(const Duration(milliseconds: 400));
       }
+      // 開いたシート／ダイアログを閉じる。
+      if (find.text('キャンセル').evaluate().isNotEmpty) {
+        await tester.tap(find.text('キャンセル').last, warnIfMissed: false);
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+      final countAfter = screenCount();
       FlutterError.onError = original;
 
       expect(problems, isEmpty,
           reason: '保存後の描画で問題:\n${problems.join("\n")}');
+      expect(countAfter, countBefore,
+          reason: 'ダイアログを閉じた後に画面の数が変化している'
+              '（Navigator.popが余分に呼ばれ、画面自体が剥がれた可能性）');
+      expect(find.byType(Scaffold), findsWidgets,
+          reason: '画面が1つも残っていない（何も表示されない状態）');
     }, timeout: const Timeout(Duration(seconds: 120)));
   }
 }
