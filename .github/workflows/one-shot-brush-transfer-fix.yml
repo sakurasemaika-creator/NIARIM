@@ -1,4 +1,4 @@
-name: One-shot brush transfer verification
+name: One-shot brush transfer completion
 
 on:
   push:
@@ -6,16 +6,20 @@ on:
       - dev_branch
     paths:
       - '.github/workflows/one-shot-brush-transfer-fix.yml'
+      - 'scripts/one_shot_brush_transfer_fix.py'
+
+permissions:
+  contents: write
 
 jobs:
-  verify:
+  patch-test-commit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout dev_branch
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: dev_branch
-          persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
@@ -23,11 +27,26 @@ jobs:
           channel: stable
           cache: false
 
+      - name: Apply exact patches
+        run: python3 scripts/one_shot_brush_transfer_fix.py
+
+      - name: Format patched Dart files
+        run: dart format lib/engine/stamp_engine.dart lib/engine/niatra_serializer.dart lib/services/brush_service.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/canvas/widgets/canvas_area.dart test/stamp_opacity_functional_test.dart
+
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Brush dynamics and transfer tests
-        run: flutter test test/brush_rotation_density_scatter_test.dart test/niatra_asset_bundle_test.dart test/niatra_serializer_test.dart test/creative_asset_persistence_test.dart
+      - name: Focused functional tests
+        run: flutter test test/stamp_opacity_functional_test.dart test/brush_rotation_density_scatter_test.dart test/niatra_asset_bundle_test.dart test/niatra_serializer_test.dart test/creative_asset_persistence_test.dart
 
       - name: Static analysis
         run: flutter analyze --no-fatal-infos
+
+      - name: Commit verified changes
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib test
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: complete brush settings and stamp opacity wiring"
+          git push origin HEAD:dev_branch
