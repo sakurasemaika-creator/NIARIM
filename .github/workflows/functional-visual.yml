@@ -2,11 +2,16 @@ name: Functional Visual Audit
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - 'test/functional_audit_batch2_test.dart'
 
 jobs:
   functional-render:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       contents: read
 
@@ -23,9 +28,10 @@ jobs:
       - name: 依存関係取得
         run: flutter pub get
 
-      # 実描画結果を数値判定しつつ、各機能のPNGも保存する。
-      - name: 描画機能テスト
-        run: flutter test test/functional_render_real_async_test.dart --reporter expanded
+      - name: 描画・フィルター・カメラ機能テスト
+        run: |
+          flutter test test/functional_render_real_async_test.dart --reporter expanded
+          flutter test test/functional_audit_batch2_test.dart --reporter expanded
 
       - name: 機能別レンダリング画像を保存
         if: always()
