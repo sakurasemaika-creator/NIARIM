@@ -358,6 +358,13 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
             value: _stamp.rotation,
             onChanged: (v) => setState(() => _stamp = _stamp.copyWith(rotation: v)),
           ),
+          _intSliderRow(
+            l10n.brushSettingsOpacityLabel,
+            _stamp.opacity,
+            1,
+            100,
+            (v) => setState(() => _stamp = _stamp.copyWith(opacity: v)),
+          ),
           // ピクセルモード：ONにするとスタンプ
           // テクスチャをモザイク低解像度化＋色数削減でドット絵風に加工する。
           SwitchListTile(
@@ -394,6 +401,41 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _intSliderRow(
+    String label,
+    int value,
+    int min,
+    int max,
+    ValueChanged<int> onChanged,
+  ) {
+    return Row(
+      children: [
+        SizedBox(width: 60, child: Text(label, style: const TextStyle(fontSize: 12))),
+        Expanded(
+          child: SteppedSlider(
+            min: min.toDouble(),
+            max: max.toDouble(),
+            value: value.toDouble().clamp(min.toDouble(), max.toDouble()),
+            step: 1,
+            onChanged: (v) => onChanged(v.round()),
+          ),
+        ),
+        SizedBox(
+          width: 40,
+          child: EditableSliderValue(
+            text: value.toString(),
+            style: const TextStyle(fontSize: 12),
+            value: value.toDouble(),
+            min: min.toDouble(),
+            max: max.toDouble(),
+            isInt: true,
+            onChanged: (v) => onChanged(v.round()),
+          ),
+        ),
+      ],
     );
   }
 

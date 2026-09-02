@@ -1360,21 +1360,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     final texture = await generateBuiltInStampTexture(stamp, size: texSize);
     if (!mounted) return;
 
-    // ストローク点をスタンプ間隔で間引く（密度が高すぎるとほぼ塗りつぶしになるため）
-    final spacing = math.max(stampSize * 0.6, 4.0);
-    final sampled = <ui.Offset>[];
-    Offset? last;
-    for (final p in _subToolStrokePoints) {
-      if (last == null || (p - last).distance >= spacing) {
-        sampled.add(ui.Offset(p.dx, p.dy));
-        last = p;
-      }
-    }
-    if (sampled.isEmpty) {
-      sampled.add(
-        ui.Offset(_subToolStrokePoints.first.dx, _subToolStrokePoints.first.dy),
-      );
-    }
+    // StampEngine側でパス長に沿った再サンプリングを行うため、ここでは
+    // 生の入力点を保持する。事前に間引くと短い折れ返し・曲線が失われ、
+    // 入力イベント密度によってスタンプ形状が変化してしまう。
+    final stampPoints = _subToolStrokePoints
+        .map((p) => ui.Offset(p.dx, p.dy))
+        .toList(growable: false);
 
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
     // スタンプ合成処理はバックグラウンドisolateで実行する。
@@ -1384,7 +1375,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       height: h,
       texture: texture,
       texSize: texSize,
-      points: sampled,
+      points: stampPoints,
       stampSize: stampSize,
       rotation: stamp.rotation,
       scatter: stamp.scatter * stampSize,

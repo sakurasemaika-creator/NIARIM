@@ -254,6 +254,14 @@ Future<Uint8List> generateBuiltInStampTexture(Stamp stamp, {int size = 128}) asy
   if (stamp.pixelMode) {
     texture = FilterEngine().applyPixelate(texture, size, size);
   }
+  final opacityScale = stamp.opacity.clamp(1, 100) / 100.0;
+  if (opacityScale < 1.0) {
+    final adjusted = Uint8List.fromList(texture);
+    for (int i = 3; i < adjusted.length; i += 4) {
+      adjusted[i] = (adjusted[i] * opacityScale).round().clamp(0, 255);
+    }
+    texture = adjusted;
+  }
   return texture;
 }
 
