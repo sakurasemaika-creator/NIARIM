@@ -6,7 +6,10 @@ on:
     branches:
       - dev_branch
     paths:
-      - 'test/functional_audit_batch8_test.dart'
+      - 'test/functional_audit_*.dart'
+      - 'test/functional_render_real_async_test.dart'
+      - 'lib/engine/**'
+      - '.github/workflows/functional-visual.yml'
 
 jobs:
   functional-render:
