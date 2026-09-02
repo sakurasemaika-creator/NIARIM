@@ -28,6 +28,7 @@ jobs:
       - name: 依存関係取得
         run: flutter pub get
 
+      # 実描画結果を数値判定しつつ、各機能のPNGも保存する。
       - name: 描画機能テスト
         run: flutter test test/functional_render_real_async_test.dart --reporter expanded
 
