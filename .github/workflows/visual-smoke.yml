@@ -8,6 +8,7 @@ on:
     paths:
       - test/app_web_reference_capture_test_v2.dart
       - test/app_web_reference_capture_exact_test.dart
+      - test/app_web_reference_export_exact_test.dart
       - lib/screens/save_tree/save_tree_screen.dart
       - .github/workflows/visual-smoke.yml
 
@@ -31,15 +32,19 @@ jobs:
       - name: 依存関係取得
         run: flutter pub get
 
-      # 既存の比較用キャプチャ。途中で1状態が失敗しても、下の厳密キャプチャは必ず実行する。
       - name: Web比較用の実アプリ基準スクリーンショット
         continue-on-error: true
         run: flutter test test/app_web_reference_capture_test_v2.dart --reporter expanded
 
-      # オニオンスキン／書き出し／ツリーモードを実際の操作・実画面で撮影する。
-      - name: Web比較用の厳密状態スクリーンショット
-        if: always()
-        run: flutter test test/app_web_reference_capture_exact_test.dart --reporter expanded
+      # 同一GoRouterを複数testWidgets間で再利用するとナビゲータ状態が残るため、
+      # onion/treeだけをこのプロセスで撮り、Exportは下の独立プロセスで実操作する。
+      - name: Web比較用の厳密Onion/Treeスクリーンショット
+        run: |
+          flutter test test/app_web_reference_capture_exact_test.dart --plain-name "exact onion panel through production callbacks" --reporter expanded
+          flutter test test/app_web_reference_capture_exact_test.dart --plain-name "exact tree mode screen using real SaveTreeScreen rendering" --reporter expanded
+
+      - name: Web比較用の厳密Exportスクリーンショット
+        run: flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
 
       - name: 既存スモークテスト
         run: flutter test test/app_smoke_test.dart --reporter expanded
@@ -47,7 +52,6 @@ jobs:
       - name: 狭幅ビジュアルスモークテスト
         run: flutter test test/visual_smoke_test.dart --reporter expanded
 
-      # Drawerを一度も開いていない新規Widgetツリーで、実際に押せる作品一覧タブを再撮影する。
       - name: 作品一覧クリーンスクリーンショット
         run: flutter test test/visual_smoke_clean_home_test.dart --reporter expanded
 
