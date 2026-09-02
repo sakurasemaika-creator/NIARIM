@@ -64,6 +64,18 @@ new1="""    final move1Gesture = await tester.startGesture(
 if text.count(old1)!=1: raise SystemExit('first')
 text=text.replace(old1,new1)
 
+old_expected="""    final expected1 = _translatedSelection(before, 96, 80,
+        left: 16, top: 14, right: 48, bottom: 46, dx: 16, dy: 10);
+    expect(moved1, orderedEquals(expected1),
+"""
+new_expected="""    final expected1 = _translatedSelection(before, 96, 80,
+        left: 16, top: 14, right: 48, bottom: 46, dx: 16, dy: 10);
+    _printCanvasDiagnostics('after-first-commit', moved1, expected1, 96, 80);
+    expect(moved1, orderedEquals(expected1),
+"""
+if text.count(old_expected)!=1: raise SystemExit('first expected diagnostics')
+text=text.replace(old_expected,new_expected)
+
 old2="""    await _dragWithWait(
       tester,
       origin + const Offset(46, 38),
@@ -141,6 +153,32 @@ Future<void> _waitForAnyCanvasDifference(
   print('B20 diagnostic: changedPixels=$changed bbox=[$minX,$minY]-[$maxX,$maxY]');
 }
 
+void _printCanvasDiagnostics(
+  String label, Uint8List actual, Uint8List expected, int w, int h,
+) {
+  int minAX=w, minAY=h, maxAX=-1, maxAY=-1, opaqueA=0;
+  int minDX=w, minDY=h, maxDX=-1, maxDY=-1, diff=0;
+  for (int y=0; y<h; y++) {
+    for (int x=0; x<w; x++) {
+      final i=(y*w+x)*4;
+      if (actual[i+3] != 0) {
+        opaqueA++;
+        if (x<minAX) minAX=x; if (x>maxAX) maxAX=x;
+        if (y<minAY) minAY=y; if (y>maxAY) maxAY=y;
+      }
+      var d=false;
+      for (int c=0;c<4;c++) { if (actual[i+c] != expected[i+c]) d=true; }
+      if (d) {
+        diff++;
+        if (x<minDX) minDX=x; if (x>maxDX) maxDX=x;
+        if (y<minDY) minDY=y; if (y>maxDY) maxDY=y;
+      }
+    }
+  }
+  int alphaAt(int x,int y)=>actual[(y*w+x)*4+3];
+  print('B20 $label: occupied=$opaqueA bbox=[$minAX,$minAY]-[$maxAX,$maxAY] diff=$diff diffBbox=[$minDX,$minDY]-[$maxDX,$maxDY] alphaOld=${alphaAt(20,19)} alphaMoved=${alphaAt(36,29)} alphaMovedFar=${alphaAt(57,47)}');
+}
+
 Future<void> _waitForPixelAlpha(
   WidgetTester tester, dynamic tm, String layer,
   int x, int y, int expectedAlpha,
@@ -158,4 +196,4 @@ if text.count(ha)!=1: raise SystemExit('helper')
 text=text.replace(ha,helpers+ha)
 
 p.write_text(text,encoding='utf-8',newline='\n')
-print('patched Batch20 with changed-pixel bbox diagnostics')
+print('patched Batch20 with post-commit transform diagnostics')
