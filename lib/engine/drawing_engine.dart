@@ -16,6 +16,12 @@ class DrawingEngine {
 
   final List<StrokePoint> _currentStroke = [];
 
+  // 1ストローク内の各画素の最大カバレッジを保持する。
+  // ブラシ不透明度50%の線をspacing=1で引いた際、同じ画素へ多数のスタンプが
+  // 重なって100%近くまで濃くなるのを防ぐ。別ストロークではリセットされるため、
+  // 線同士を交差させた箇所は通常のsource-overどおり濃くなる。
+  final Map<String, Uint8List> _strokeCoverageByTile = {};
+
   Brush? currentBrush;
   ui.Color currentColor = const ui.Color(0xFF000000);
   bool isEraser = false;
@@ -27,6 +33,7 @@ class DrawingEngine {
 
   void beginStroke(StrokePoint point, String layerId) {
     _currentStroke.clear();
+    _strokeCoverageByTile.clear();
     _smoothed = point;
     _currentStroke.add(point);
     _stampBrush(point.x, point.y, point.pressure, point.tiltX, point.tiltY, layerId);
@@ -48,6 +55,7 @@ class DrawingEngine {
 
   void endStroke() {
     _currentStroke.clear();
+    _strokeCoverageByTile.clear();
     _smoothed = null;
   }
 
@@ -82,6 +90,7 @@ class DrawingEngine {
   void commitShapePath(List<StrokePoint> pathPoints, String layerId, {bool closeLoop = false}) {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();
+    _strokeCoverageByTile.clear();
     final first = pathPoints.first;
     _currentStroke.add(first);
     _stampBrush(first.x, first.y, first.pressure, first.tiltX, first.tiltY, layerId);
@@ -94,6 +103,7 @@ class DrawingEngine {
       _renderStrokeSegment(_currentStroke.last, first, layerId);
     }
     _currentStroke.clear();
+    _strokeCoverageByTile.clear();
   }
 
   void _renderStrokeSegment(StrokePoint from, StrokePoint to, String layerId) {
@@ -218,6 +228,11 @@ class DrawingEngine {
         final tile = tileManager.getOrCreateTile(layerId, tx, ty);
         final tileOriginX = tx * TileManager.tileSize;
         final tileOriginY = ty * TileManager.tileSize;
+        final coverageKey = '$layerId:$tx:$ty';
+        final coverage = _strokeCoverageByTile.putIfAbsent(
+          coverageKey,
+          () => Uint8List(TileManager.tileSize * TileManager.tileSize),
+        );
 
         // タイル内の影響ピクセル範囲
         final localMinX = math.max(0, (cx - totalRadius - tileOriginX).floor());
@@ -285,10 +300,26 @@ class DrawingEngine {
             }
 
             if (pixelAlpha <= 0) continue;
-            final finalAlpha = (alpha * pixelAlpha).round().clamp(0, 255);
+            final desiredAlpha = (alpha * pixelAlpha).round().clamp(0, 255);
+            if (desiredAlpha <= 0) continue;
+
+            // 同一ストローク内では、同じ画素へのスタンプ重複を加算せず
+            // 「そのストロークがこの画素をどこまで覆ったか」の最大値だけを採用する。
+            // 既にoldCoverageだけsource-over済みなので、desiredCoverageまで上げるための
+            // 増分alpha = (new-old)/(1-old) を求めて追加合成する。
+            final coveragePos = py * TileManager.tileSize + px;
+            final oldCoverage = coverage[coveragePos];
+            if (desiredAlpha <= oldCoverage) continue;
+            final incrementalAlpha = oldCoverage >= 255
+                ? 0
+                : (((desiredAlpha - oldCoverage) * 255) / (255 - oldCoverage))
+                    .round()
+                    .clamp(0, 255);
+            coverage[coveragePos] = desiredAlpha;
+            if (incrementalAlpha <= 0) continue;
 
             if (isEraser) {
-              tileManager.erasePixel(tile, px, py, finalAlpha);
+              tileManager.erasePixel(tile, px, py, incrementalAlpha);
             } else if (currentBrush!.mixingMode != BrushMixingMode.off) {
               final idx = (py * TileManager.tileSize + px) * 4;
               if (tile[idx + 3] > 0) {
@@ -302,13 +333,13 @@ class DrawingEngine {
                 tileManager.blendPixel(
                   tile, px, py,
                   (mixed.r * 255).round(), (mixed.g * 255).round(), (mixed.b * 255).round(),
-                  finalAlpha,
+                  incrementalAlpha,
                 );
               } else {
-                tileManager.blendPixel(tile, px, py, ri, gi, bi, finalAlpha);
+                tileManager.blendPixel(tile, px, py, ri, gi, bi, incrementalAlpha);
               }
             } else {
-              tileManager.blendPixel(tile, px, py, ri, gi, bi, finalAlpha);
+              tileManager.blendPixel(tile, px, py, ri, gi, bi, incrementalAlpha);
             }
           }
         }
