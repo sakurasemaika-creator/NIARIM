@@ -46,12 +46,11 @@ Uint8List runToneStrokeInIsolate(
 /// トーン描画エンジン
 /// サイズ一定・ループ・回転なし・密度なし・散布なし
 class ToneEngine {
-  /// ストローク軌跡にトーンを描画する
-  /// [points] ストローク点列
-  /// [brushSize] ブラシサイズ（トーンパターン自体のサイズは変化しない）
-  /// [color] 現在色
-  /// [toneTexture] トーンテクスチャ (RGBA)
-  /// [toneWidth] / [toneHeight] テクスチャサイズ
+  /// ストローク軌跡にトーンを描画する。
+  /// 既存ピクセルへは通常ブラシと同じsource-overで合成し、半透明トーンを
+  /// 描いたときに既存の不透明画素そのものを半透明へ置換しない。
+  /// トーン画像側のalphaも描画強度として反映するため、アンチエイリアスを
+  /// 含むトーン素材の縁も滑らかに保たれる。
   Uint8List drawToneStroke({
     required List<ui.Offset> points,
     required double brushSize,
@@ -68,7 +67,10 @@ class ToneEngine {
     if (points.isEmpty) return canvasData;
     final result = Uint8List.fromList(canvasData);
     final radius = (brushSize / 2).round();
-    final opacityFactor = opacity / 100.0;
+    final opacityFactor = (opacity.clamp(0, 100)) / 100.0;
+    final srcR = color.r;
+    final srcG = color.g;
+    final srcB = color.b;
 
     for (final point in points) {
       final cx = point.dx.round();
@@ -82,24 +84,40 @@ class ToneEngine {
           if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight) continue;
           if (selectionMask != null && selectionMask[py * canvasWidth + px] == 0) continue;
 
-          // トーンテクスチャをループ参照
           final tx = px % toneWidth;
           final ty = py % toneHeight;
           final toneIdx = (ty * toneWidth + tx) * 4;
-          if (toneTexture[toneIdx + 3] == 0) continue; // 透明部分は透過維持
+          final toneAlpha = toneTexture[toneIdx + 3] / 255.0;
+          if (toneAlpha <= 0) continue;
 
           final canvasIdx = (py * canvasWidth + px) * 4;
-          result[canvasIdx] = (color.r * 255).round();
-          result[canvasIdx + 1] = (color.g * 255).round();
-          result[canvasIdx + 2] = (color.b * 255).round();
-          result[canvasIdx + 3] = ((color.a * opacityFactor) * 255).round();
+          final srcA = (color.a * opacityFactor * toneAlpha).clamp(0.0, 1.0);
+          if (srcA <= 0) continue;
+          final dstA = result[canvasIdx + 3] / 255.0;
+          final outA = srcA + dstA * (1.0 - srcA);
+          if (outA <= 0) continue;
+
+          final dstR = result[canvasIdx] / 255.0;
+          final dstG = result[canvasIdx + 1] / 255.0;
+          final dstB = result[canvasIdx + 2] / 255.0;
+          final keep = dstA * (1.0 - srcA);
+
+          result[canvasIdx] =
+              ((srcR * srcA + dstR * keep) / outA * 255).round().clamp(0, 255);
+          result[canvasIdx + 1] =
+              ((srcG * srcA + dstG * keep) / outA * 255).round().clamp(0, 255);
+          result[canvasIdx + 2] =
+              ((srcB * srcA + dstB * keep) / outA * 255).round().clamp(0, 255);
+          result[canvasIdx + 3] = (outA * 255).round().clamp(0, 255);
         }
       }
     }
     return result;
   }
 
-  /// トーン消しゴム：トーン形状で透明色を描画
+  /// トーン消しゴム：トーン形状でalphaを削る。
+  /// トーン画像に中間alphaがある場合はその強度ぶんだけ消すことで、
+  /// アンチエイリアス済みの縁を0/255へ潰さない。
   Uint8List eraseToneStroke({
     required List<ui.Offset> points,
     required double brushSize,
@@ -129,13 +147,18 @@ class ToneEngine {
           final tx = px % toneWidth;
           final ty = py % toneHeight;
           final toneIdx = (ty * toneWidth + tx) * 4;
-          if (toneTexture[toneIdx + 3] == 0) continue;
+          final eraseStrength = toneTexture[toneIdx + 3] / 255.0;
+          if (eraseStrength <= 0) continue;
 
           final canvasIdx = (py * canvasWidth + px) * 4;
-          result[canvasIdx] = 0;
-          result[canvasIdx + 1] = 0;
-          result[canvasIdx + 2] = 0;
-          result[canvasIdx + 3] = 0;
+          final oldA = result[canvasIdx + 3];
+          final newA = (oldA * (1.0 - eraseStrength)).round().clamp(0, 255);
+          result[canvasIdx + 3] = newA;
+          if (newA == 0) {
+            result[canvasIdx] = 0;
+            result[canvasIdx + 1] = 0;
+            result[canvasIdx + 2] = 0;
+          }
         }
       }
     }
