@@ -1,0 +1,116 @@
+name: One-shot Exhaustive Real Operation Audit
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-exhaustive-real-operation-audit.yml'
+
+jobs:
+  exhaustive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Run all real-operation and UI capture tests independently with retry
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build/audit-logs build/functional-visual build/visual-smoke build/reference-captures
+          tests=(
+            test/functional_render_real_async_test.dart
+            test/functional_audit_batch2_test.dart
+            test/functional_audit_batch3_test.dart
+            test/functional_audit_batch4_test.dart
+            test/functional_audit_batch5_test.dart
+            test/functional_audit_batch6_test.dart
+            test/functional_audit_batch7_test.dart
+            test/functional_audit_batch8_test.dart
+            test/functional_audit_batch9_test.dart
+            test/functional_audit_batch10_test.dart
+            test/functional_audit_batch11_test.dart
+            test/functional_audit_batch12_test.dart
+            test/functional_audit_batch13_test.dart
+            test/functional_audit_batch14_test.dart
+            test/functional_audit_batch15_test.dart
+            test/functional_audit_batch16_test.dart
+            test/functional_audit_batch17_test.dart
+            test/functional_audit_batch18_test.dart
+            test/functional_audit_batch19_test.dart
+            test/functional_audit_batch20_test.dart
+            test/functional_audit_batch21_test.dart
+            test/functional_audit_batch22_test.dart
+            test/functional_audit_batch23_test.dart
+            test/functional_audit_batch24_test.dart
+            test/functional_audit_batch25_test.dart
+            test/functional_audit_batch26_test.dart
+            test/functional_audit_batch27_test.dart
+            test/functional_audit_batch28_test.dart
+            test/functional_audit_batch29_test.dart
+            test/functional_audit_batch30_test.dart
+            test/functional_audit_batch31_test.dart
+            test/functional_audit_batch32_test.dart
+            test/functional_audit_batch33_test.dart
+            test/functional_audit_batch34_test.dart
+            test/functional_audit_batch35_test.dart
+            test/functional_audit_batch36_test.dart
+            test/functional_audit_batch37_test.dart
+            test/functional_audit_batch38_test.dart
+            test/app_smoke_test.dart
+            test/app_web_reference_capture_exact_test.dart
+            test/app_web_reference_capture_test.dart
+            test/app_web_reference_capture_test_v2.dart
+            test/app_web_reference_export_exact_test.dart
+            test/visual_smoke_test.dart
+            test/visual_smoke_clean_home_test.dart
+            test/savetree_after_save_render_test.dart
+          )
+          failed=0
+          : > build/audit-logs/summary.txt
+          for t in "${tests[@]}"; do
+            name=$(basename "$t" .dart)
+            if [ ! -f "$t" ]; then
+              echo "MISSING $t" | tee -a build/audit-logs/summary.txt
+              failed=1
+              continue
+            fi
+            ok=0
+            for attempt in 1 2; do
+              echo "=== $t attempt $attempt ===" | tee -a build/audit-logs/summary.txt
+              timeout 240s flutter test "$t" --reporter expanded >"build/audit-logs/${name}.attempt${attempt}.log" 2>&1
+              rc=$?
+              if [ $rc -eq 0 ]; then
+                echo "PASS $t attempt=$attempt" | tee -a build/audit-logs/summary.txt
+                ok=1
+                break
+              fi
+              if [ $rc -eq 124 ]; then
+                echo "TIMEOUT $t attempt=$attempt" | tee -a build/audit-logs/summary.txt
+              else
+                echo "FAIL $t attempt=$attempt rc=$rc" | tee -a build/audit-logs/summary.txt
+              fi
+              sleep 10
+            done
+            if [ $ok -ne 1 ]; then failed=1; fi
+          done
+          cat build/audit-logs/summary.txt
+          exit $failed
+      - name: Upload all audit screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exhaustive-real-operation-audit
+          path: |
+            build/audit-logs
+            build/functional-visual
+            build/visual-smoke
+            build/reference-captures
+            build/**/*.png
+          if-no-files-found: warn
+          retention-days: 7
