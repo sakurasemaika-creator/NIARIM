@@ -1503,6 +1503,7 @@
   "saveTreeCommentLabel": "Comentario (opcional)",
   "saveTreeCommentHint": "ej.: Fondo terminado",
   "saveTreeSizeWarningSnackbar": "El árbol de guardado está ocupando mucho espacio (unos {mb} MB). Te recomendamos eliminar los guardados que ya no necesites.",
+  "saveTreeSaveFailedSnackbar": "Error al guardar. Comprueba el espacio libre e inténtalo de nuevo ({error})",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
       "mb": {

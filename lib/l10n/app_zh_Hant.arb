@@ -1503,6 +1503,7 @@
   "saveTreeCommentLabel": "備註（選填）",
   "saveTreeCommentHint": "例：背景完成",
   "saveTreeSizeWarningSnackbar": "存檔樹的容量正在變大（約{mb}MB）。建議刪除不需要的存檔資料。",
+  "saveTreeSaveFailedSnackbar": "儲存失敗。請確認剩餘儲存空間後再試一次（{error}）",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
       "mb": {

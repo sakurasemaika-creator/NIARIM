@@ -4,9 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'app_bootstrap.dart';
+import 'utils/app_error_reporter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 画面が真っ白になる（＝リリースビルドの既定ErrorWidgetが文字の無い
+  // ボックスを描く）代わりに、何が起きたかを画面へ出し、原因を追える
+  // ようにする。詳細はAppErrorReporterのコメント参照。
+  AppErrorReporter.install();
 
   _registerBundledFontLicenses();
 

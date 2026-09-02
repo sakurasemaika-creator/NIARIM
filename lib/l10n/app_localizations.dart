@@ -6785,6 +6785,12 @@ abstract class AppLocalizations {
   /// **'セーブツリーの容量が大きくなっています（約{mb}MB）。不要な保存データの削除をおすすめします。'**
   String saveTreeSizeWarningSnackbar(String mb);
 
+  /// No description provided for @saveTreeSaveFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存に失敗しました。空き容量などを確認してもう一度お試しください（{error}）'**
+  String saveTreeSaveFailedSnackbar(String error);
+
   /// No description provided for @saveTreeSlotSaveDialogTitle.
   ///
   /// In ja, this message translates to:

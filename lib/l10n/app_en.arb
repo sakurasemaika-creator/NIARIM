@@ -1503,6 +1503,7 @@
   "saveTreeCommentLabel": "Comment (optional)",
   "saveTreeCommentHint": "e.g. Background done",
   "saveTreeSizeWarningSnackbar": "Your save tree is getting large (about {mb}MB). We recommend deleting saves you no longer need.",
+  "saveTreeSaveFailedSnackbar": "Save failed. Check your free storage and try again ({error})",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
       "mb": {

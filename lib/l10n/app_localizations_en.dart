@@ -3795,6 +3795,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String saveTreeSaveFailedSnackbar(String error) {
+    return 'Save failed. Check your free storage and try again ($error)';
+  }
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return 'Save to slot $n';
   }

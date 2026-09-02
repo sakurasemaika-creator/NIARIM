@@ -15,6 +15,7 @@ import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
@@ -166,11 +167,14 @@ void _showTreeSaveDialog(BuildContext context, String projectId,
     SaveTreeService service, String? parentId) {
   final l10n = AppLocalizations.of(context)!;
   final commentController = TextEditingController();
+  var saving = false;
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (ctx) => DisposeOnUnmount(
       controller: commentController,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
         title: Text(l10n.commonSave),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -193,38 +197,72 @@ void _showTreeSaveDialog(BuildContext context, String projectId,
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: saving ? null : () => Navigator.pop(ctx),
               child: Text(l10n.commonCancel)),
           FilledButton(
-            onPressed: () async {
-              final ps = context.read<ProjectService>();
-              final project =
-                  ps.projects.where((p) => p.id == projectId).firstOrNull;
-              if (project == null) {
-                Navigator.pop(ctx);
-                return;
-              }
-              final comment = commentController.text.isEmpty
-                  ? null
-                  : commentController.text;
-              final scenes = ps.scenesOf(projectId);
-              final tileManager = ps.tileManagerOf(projectId);
-              final thumb = await _generateSaveNodeThumbnail(ps, projectId);
-              await service.saveAsChild(
-                projectId: projectId,
-                project: project,
-                scenes: scenes,
-                tileManager: tileManager,
-                parentId: parentId,
-                comment: comment,
-                thumbnailPngBytes: thumb,
-              );
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) await _warnIfSaveTreeSizeLarge(context, projectId);
-            },
-            child: Text(l10n.commonSave),
+            // スロット方式の保存ダイアログと同じ方針：保存中は二重実行を
+            // 防ぐためボタンを無効化し、失敗は必ず画面へ出す（以前は
+            // try/catchが無く、失敗しても何の表示も出ないまま
+            // ダイアログが閉じずに固まって見えていた）。
+            onPressed: saving
+                ? null
+                : () async {
+                    final ps = context.read<ProjectService>();
+                    final project =
+                        ps.projects.where((p) => p.id == projectId).firstOrNull;
+                    if (project == null) {
+                      Navigator.pop(ctx);
+                      return;
+                    }
+                    setDialogState(() => saving = true);
+                    try {
+                      final comment = commentController.text.isEmpty
+                          ? null
+                          : commentController.text;
+                      final scenes = ps.scenesOf(projectId);
+                      final tileManager = ps.tileManagerOf(projectId);
+                      final thumb =
+                          await _generateSaveNodeThumbnail(ps, projectId);
+                      await service.saveAsChild(
+                        projectId: projectId,
+                        project: project,
+                        scenes: scenes,
+                        tileManager: tileManager,
+                        parentId: parentId,
+                        comment: comment,
+                        thumbnailPngBytes: thumb,
+                      );
+                      if (ctx.mounted) Navigator.pop(ctx);
+                      if (context.mounted) {
+                        await _warnIfSaveTreeSizeLarge(context, projectId);
+                      }
+                    } catch (e, st) {
+                      AppErrorReporter.record(e, st);
+                      if (ctx.mounted) {
+                        setDialogState(() => saving = false);
+                        Navigator.pop(ctx);
+                      }
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content:
+                                Text(l10n.saveTreeSaveFailedSnackbar('$e')),
+                            duration: const Duration(seconds: 6),
+                          ),
+                        );
+                      }
+                    }
+                  },
+            child: saving
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(l10n.commonSave),
           ),
         ],
+        ),
       ),
     ),
   );

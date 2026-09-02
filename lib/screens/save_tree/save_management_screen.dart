@@ -15,6 +15,7 @@ import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
@@ -192,11 +193,15 @@ class _GameStyleSlotScreen extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final commentController = TextEditingController(text: existing?.comment ?? '');
+    var saving = false;
     showDialog<void>(
       context: context,
+      // 保存中はボタンをスピナー表示にするため、ダイアログ内で状態を持つ。
+      barrierDismissible: false,
       builder: (ctx) => DisposeOnUnmount(
         controller: commentController,
-        builder: (ctx) => AlertDialog(
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
           title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -220,39 +225,76 @@ class _GameStyleSlotScreen extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: saving ? null : () => Navigator.pop(ctx),
               child: Text(l10n.commonCancel),
             ),
             FilledButton(
-              onPressed: () async {
-                final ps = context.read<ProjectService>();
-                Project? project;
-                for (final candidate in ps.projects) {
-                  if (candidate.id == projectId) {
-                    project = candidate;
-                    break;
-                  }
-                }
-                if (project == null) {
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  return;
-                }
-
-                final thumbnail = await _generateThumbnail(ps, projectId);
-                await saveService.saveToSlot(
-                  projectId: projectId,
-                  slotIndex: slotIndex,
-                  project: project,
-                  scenes: ps.scenesOf(projectId),
-                  tileManager: ps.tileManagerOf(projectId),
-                  comment: commentController.text.isEmpty ? null : commentController.text,
-                  thumbnailPngBytes: thumbnail,
-                );
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonSave),
+              // 保存はキャンバス全体の合成＋PNG化＋アーカイブ書き込みを伴い、
+              // 大きなキャンバスでは数秒かかる。その間ボタンを押せたままに
+              // すると同じスロットへの保存が二重に走り、同じファイルを
+              // 同時に書き換えてしまうため、実行中は無効化する。
+              onPressed: saving
+                  ? null
+                  : () async {
+                      final ps = context.read<ProjectService>();
+                      Project? project;
+                      for (final candidate in ps.projects) {
+                        if (candidate.id == projectId) {
+                          project = candidate;
+                          break;
+                        }
+                      }
+                      if (project == null) {
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        return;
+                      }
+                      setDialogState(() => saving = true);
+                      // 保存はディスク書き込み・画像合成を伴うため失敗し得る
+                      // （空き容量不足・ファイル書き込み失敗など）。以前は
+                      // try/catchが無く、失敗すると例外が非同期の外へ抜けて
+                      // ダイアログが閉じないまま何の表示も出ず、ユーザーには
+                      // 「押しても何も起きない／画面がおかしくなる」と
+                      // しか見えなかった。失敗を必ず画面へ出す。
+                      try {
+                        final thumbnail = await _generateThumbnail(ps, projectId);
+                        await saveService.saveToSlot(
+                          projectId: projectId,
+                          slotIndex: slotIndex,
+                          project: project,
+                          scenes: ps.scenesOf(projectId),
+                          tileManager: ps.tileManagerOf(projectId),
+                          comment: commentController.text.isEmpty
+                              ? null
+                              : commentController.text,
+                          thumbnailPngBytes: thumbnail,
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      } catch (e, st) {
+                        AppErrorReporter.record(e, st);
+                        if (ctx.mounted) {
+                          setDialogState(() => saving = false);
+                          Navigator.pop(ctx);
+                        }
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.saveTreeSaveFailedSnackbar('$e')),
+                              duration: const Duration(seconds: 6),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.commonSave),
             ),
           ],
+          ),
         ),
       ),
     );

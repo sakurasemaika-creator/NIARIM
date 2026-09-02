@@ -3671,6 +3671,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String saveTreeSaveFailedSnackbar(String error) {
+    return '保存に失敗しました。空き容量などを確認してもう一度お試しください（$error）';
+  }
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return 'スロット $n に保存';
   }

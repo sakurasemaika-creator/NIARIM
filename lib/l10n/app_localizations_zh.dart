@@ -3658,6 +3658,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String saveTreeSaveFailedSnackbar(String error) {
+    return '保存失败。请检查剩余存储空间后重试（$error）';
+  }
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return '保存到存储槽 $n';
   }
@@ -9499,6 +9504,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String saveTreeSizeWarningSnackbar(String mb) {
     return '存檔樹的容量正在變大（約${mb}MB）。建議刪除不需要的存檔資料。';
+  }
+
+  @override
+  String saveTreeSaveFailedSnackbar(String error) {
+    return '儲存失敗。請確認剩餘儲存空間後再試一次（$error）';
   }
 
   @override

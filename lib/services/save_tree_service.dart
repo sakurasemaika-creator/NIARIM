@@ -61,8 +61,13 @@ class SaveTreeService extends ChangeNotifier {
     final old = _nodesByProject[projectId]!
         .where((n) => n.slotIndex == slotIndex)
         .toList();
-    _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
     final nodeId = _newId();
+    // 【重要】既存スロットの差し替えは「新しい保存が完全に書き終わってから」
+    // 行う。以前はここより前に removeWhere で既存ノードを一覧から外して
+    // いたため、この書き込みが失敗すると（空き容量不足・書き込みエラー等）
+    // 新しい保存が作られないまま古い保存だけが失われ、上書き保存の失敗が
+    // そのままデータ損失になっていた。書き込み成功後に入れ替えることで、
+    // 失敗しても直前の保存がそのまま残るようにする。
     await NiaproSerializer.saveSaveTreeNode(
       project: project,
       scenes: scenes,
@@ -74,6 +79,7 @@ class SaveTreeService extends ChangeNotifier {
       thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
           projectId, nodeId, thumbnailPngBytes);
     }
+    _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
     final node = SaveNode(
       id: nodeId,
       projectId: projectId,

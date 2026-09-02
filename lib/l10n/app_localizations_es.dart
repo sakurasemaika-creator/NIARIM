@@ -3847,6 +3847,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String saveTreeSaveFailedSnackbar(String error) {
+    return 'Error al guardar. Comprueba el espacio libre e inténtalo de nuevo ($error)';
+  }
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return 'Guardar en la ranura $n';
   }

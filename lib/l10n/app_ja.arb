@@ -1753,6 +1753,10 @@
   "saveTreeCommentLabel": "コメント（任意）",
   "saveTreeCommentHint": "例：背景完成",
   "saveTreeSizeWarningSnackbar": "セーブツリーの容量が大きくなっています（約{mb}MB）。不要な保存データの削除をおすすめします。",
+  "saveTreeSaveFailedSnackbar": "保存に失敗しました。空き容量などを確認してもう一度お試しください（{error}）",
+  "@saveTreeSaveFailedSnackbar": {
+    "placeholders": { "error": { "type": "String" } }
+  },
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
       "mb": {
