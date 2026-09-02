@@ -36,7 +36,15 @@ class DrawingEngine {
     _strokeCoverageByTile.clear();
     _smoothed = point;
     _currentStroke.add(point);
-    _stampBrush(point.x, point.y, point.pressure, point.tiltX, point.tiltY, layerId);
+    _stampBrush(
+      point.x,
+      point.y,
+      point.pressure,
+      point.tiltX,
+      point.tiltY,
+      layerId,
+      strokeLengthOverride: 0.0,
+    );
   }
 
   void continueStroke(StrokePoint point, String layerId) {
@@ -45,12 +53,12 @@ class DrawingEngine {
       return;
     }
     final effective = _applyStabilization(point);
+    final from = _currentStroke.last;
+    // 区間を描画してから終点を履歴へ追加する。これにより
+    // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
+    // 累積距離となり、OSから届くmoveイベント数に依存しない。
+    _renderStrokeSegment(from, effective, layerId);
     _currentStroke.add(effective);
-    _renderStrokeSegment(
-      _currentStroke[_currentStroke.length - 2],
-      effective,
-      layerId,
-    );
   }
 
   void endStroke() {
@@ -93,7 +101,15 @@ class DrawingEngine {
     _strokeCoverageByTile.clear();
     final first = pathPoints.first;
     _currentStroke.add(first);
-    _stampBrush(first.x, first.y, first.pressure, first.tiltX, first.tiltY, layerId);
+    _stampBrush(
+      first.x,
+      first.y,
+      first.pressure,
+      first.tiltX,
+      first.tiltY,
+      layerId,
+      strokeLengthOverride: 0.0,
+    );
     for (int i = 1; i < pathPoints.length; i++) {
       final to = pathPoints[i];
       _renderStrokeSegment(_currentStroke.last, to, layerId);
@@ -112,6 +128,10 @@ class DrawingEngine {
     final distance = _distance(from, to);
     final spacing = math.max(1.0, brush.spacing.toDouble());
     final steps = math.max(1, (distance / spacing).ceil());
+    // この区間より前に実際に進んだ距離。各補間スタンプでは
+    // base + distance*t を使うため、1回の大きなmoveでも多数の小さなmoveでも
+    // フェード/ストローク減衰が同じ距離位置で同じ値になる。
+    final baseStrokeLength = _currentStrokeLength();
 
     for (int i = 1; i <= steps; i++) {
       final t = i / steps;
@@ -120,7 +140,15 @@ class DrawingEngine {
       final pressure = from.pressure + (to.pressure - from.pressure) * t;
       final tiltX = from.tiltX + (to.tiltX - from.tiltX) * t;
       final tiltY = from.tiltY + (to.tiltY - from.tiltY) * t;
-      _stampBrush(x, y, pressure, tiltX, tiltY, layerId);
+      _stampBrush(
+        x,
+        y,
+        pressure,
+        tiltX,
+        tiltY,
+        layerId,
+        strokeLengthOverride: baseStrokeLength + distance * t,
+      );
     }
   }
 
@@ -130,8 +158,9 @@ class DrawingEngine {
     double pressure,
     double tiltX,
     double tiltY,
-    String layerId,
-  ) {
+    String layerId, {
+    double? strokeLengthOverride,
+  }) {
     if (currentBrush == null) return;
     final brush = currentBrush!;
 
@@ -157,16 +186,18 @@ class DrawingEngine {
         break;
     }
 
+    final strokeLength = strokeLengthOverride ?? _currentStrokeLength();
+
     // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
     // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
     if (brush.fadeMode != FadeMode.off) {
-      final fade = _calculateFade(brush, _currentStrokeLength());
+      final fade = _calculateFade(brush, strokeLength);
       opacity *= fade;
       size *= fade;
     }
     // ストローク減衰はインク切れ表現なので、不透明度だけを減らして太さは維持する。
     if (brush.strokeDecay) {
-      opacity *= _calculateDecay(_currentStrokeLength());
+      opacity *= _calculateDecay(strokeLength);
     }
 
     opacity = opacity.clamp(0.0, 1.0);
