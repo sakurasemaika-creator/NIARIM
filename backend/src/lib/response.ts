@@ -17,6 +17,9 @@ export function json(
       // 最低限のセキュリティヘッダー。
       'x-content-type-options': 'nosniff',
       'cache-control': 'no-store',
+      'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+      'referrer-policy': 'no-referrer',
+      'strict-transport-security': 'max-age=31536000; includeSubDomains',
     },
     body: JSON.stringify(body),
   };
@@ -62,6 +65,10 @@ export function notFound(message = '見つかりません'): never {
 
 export function conflict(message: string, code?: string): never {
   throw new ApiError(409, message, code);
+}
+
+export function payloadTooLarge(message = 'リクエストボディが大きすぎます'): never {
+  throw new ApiError(413, message, 'PAYLOAD_TOO_LARGE');
 }
 
 export function errorToResponse(err: unknown): APIGatewayProxyStructuredResultV2 {

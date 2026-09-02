@@ -136,6 +136,9 @@ export class NiarimBackendStack extends Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 256,
       timeout: Duration.seconds(10),
+      // 公開Function URLへの急増リクエストがLambda/DynamoDBの費用と
+      // 同時実行枠を無制限に消費しないよう上限を設ける（最大約100 RPS）。
+      reservedConcurrentExecutions: 10,
       environment: commonEnvironment,
       bundling: { minify: true, sourceMap: false },
     });

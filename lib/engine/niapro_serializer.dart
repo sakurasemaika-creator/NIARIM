@@ -18,6 +18,7 @@ import '../models/scene.dart';
 import '../models/text_object.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
+import 'archive_security.dart';
 
 /// .niapro ファイルの保存・読み込み。
 /// 形式：ZIP アーカイブ
@@ -413,8 +414,10 @@ class NiaproSerializer {
   // ─── 読み込み ─────────────────────────────────────────────────────────
 
   static Future<NiaproData> load(String filePath) async {
-    final bytes = await File(filePath).readAsBytes();
-    final archive = ZipDecoder().decodeBytes(bytes);
+    final source = File(filePath);
+    ArchiveSecurity.validateFileSize(await source.length());
+    final bytes = await source.readAsBytes();
+    final archive = ArchiveSecurity.decodeZip(bytes);
 
     final manifestFile = archive.findFile(_manifestFile);
     if (manifestFile == null) throw const FormatException('manifest.json not found');
@@ -532,6 +535,7 @@ class NiaproSerializer {
     for (final file in archive.files) {
       if (!file.name.startsWith('$_materialsArchiveDir/')) continue;
       final name = file.name.substring(_materialsArchiveDir.length + 1);
+      if (name.contains('/')) throw const FormatException('Materials内のファイル名が不正です');
       if (name == 'materials.json') {
         materialsManifest = utf8.decode(file.content as List<int>);
       } else if (name.isNotEmpty) {
@@ -545,6 +549,7 @@ class NiaproSerializer {
     for (final file in archive.files) {
       if (!file.name.startsWith('$_fontsArchiveDir/')) continue;
       final name = file.name.substring(_fontsArchiveDir.length + 1);
+      if (name.contains('/')) throw const FormatException('Fonts内のファイル名が不正です');
       if (name == 'fonts.json') {
         fontsManifest = utf8.decode(file.content as List<int>);
       } else if (name.isNotEmpty) {

@@ -4,6 +4,7 @@ import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate } from '../../lib/auth';
 import { deleteVideo } from '../../lib/youtube';
 import { forbidden, notFound, noContent, badRequest } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { WorkItem } from '../../lib/types';
 
 interface DeleteWorkRequestBody {
@@ -39,10 +40,16 @@ export async function deleteWork(event: APIGatewayProxyEventV2, workId: string) 
 }
 
 function parseBody(raw: string | undefined): DeleteWorkRequestBody {
-  if (!raw) return {};
-  try {
-    return JSON.parse(raw) as DeleteWorkRequestBody;
-  } catch {
-    badRequest('リクエストボディがJSONとして不正です');
+  const body = parseJsonObject(raw, { allowEmpty: true });
+  if (body.deleteYoutubeVideo !== undefined && typeof body.deleteYoutubeVideo !== 'boolean') {
+    badRequest('deleteYoutubeVideoは真偽値である必要があります');
   }
+  if (body.youtubeAccessToken !== undefined &&
+      (typeof body.youtubeAccessToken !== 'string' || body.youtubeAccessToken.length > 4096)) {
+    badRequest('youtubeAccessTokenの形式が不正です');
+  }
+  return {
+    deleteYoutubeVideo: body.deleteYoutubeVideo as boolean | undefined,
+    youtubeAccessToken: body.youtubeAccessToken as string | undefined,
+  };
 }

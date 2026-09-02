@@ -20,6 +20,7 @@ import '../services/settings_service.dart';
 import '../services/stamp_service.dart';
 import '../services/theme_service.dart';
 import '../services/tone_service.dart';
+import 'archive_security.dart';
 import 'niapro_serializer.dart' show NiaproSerializer;
 
 /// .niatra（引き継ぎファイル、旧称.stutra）の書き出し・読み込み。
@@ -116,7 +117,7 @@ class NiatraSerializer {
   /// バイト列から読み込む（Web版でファイル選択ダイアログがパスではなく
   /// バイト列のみを返す場合もこちらを使う）。
   static NiatraData loadFromBytes(List<int> bytes) {
-    final archive = ZipDecoder().decodeBytes(bytes);
+    final archive = ArchiveSecurity.decodeZip(bytes);
     final dataFile = archive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
     final data = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
@@ -125,7 +126,9 @@ class NiatraSerializer {
 
   /// ローカルファイルパスから読み込む（デスクトップ/モバイル用）。
   static Future<NiatraData> load(String filePath) async {
-    final bytes = await File(filePath).readAsBytes();
+    final file = File(filePath);
+    ArchiveSecurity.validateFileSize(await file.length());
+    final bytes = await file.readAsBytes();
     return loadFromBytes(bytes);
   }
 

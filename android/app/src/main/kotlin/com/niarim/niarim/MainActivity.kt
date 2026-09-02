@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import java.io.ByteArrayOutputStream
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -21,6 +22,7 @@ class MainActivity : FlutterActivity() {
     private var methodChannel: MethodChannel? = null
     private var pendingUri: String? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val maxSharedFileBytes = 128 * 1024 * 1024
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,13 +40,23 @@ class MainActivity : FlutterActivity() {
                 }
                 "readUri" -> {
                     val uriStr = call.argument<String>("uri")
-                    try {
-                        val bytes = uriStr?.let { s ->
-                            contentResolver.openInputStream(Uri.parse(s))?.use { it.readBytes() }
+                    if (uriStr == null) {
+                        result.error("INVALID_URI", "URIが指定されていません", null)
+                        return@setMethodCallHandler
+                    }
+                    thread(name = "shared-file-reader") {
+                        try {
+                            val bytes = readSharedFile(Uri.parse(uriStr))
+                            mainHandler.post { result.success(bytes) }
+                        } catch (_: SharedFileTooLargeException) {
+                            mainHandler.post {
+                                result.error("FILE_TOO_LARGE", "共有ファイルがサイズ上限を超えています", null)
+                            }
+                        } catch (_: Exception) {
+                            mainHandler.post {
+                                result.error("READ_FAILED", "共有ファイルを読み込めません", null)
+                            }
                         }
-                        result.success(bytes)
-                    } catch (e: Exception) {
-                        result.error("READ_FAILED", e.message, null)
                     }
                 }
                 else -> result.notImplemented()
@@ -94,8 +106,32 @@ class MainActivity : FlutterActivity() {
 
     private fun extractUri(intent: Intent?): String? {
         if (intent?.action == Intent.ACTION_VIEW) {
-            return intent.data?.toString()
+            val uri = intent.data ?: return null
+            if (uri.scheme == "content" || uri.scheme == "file") return uri.toString()
         }
         return null
     }
+
+    private fun readSharedFile(uri: Uri): ByteArray {
+        if (uri.scheme != "content" && uri.scheme != "file") {
+            throw IllegalArgumentException("unsupported URI scheme")
+        }
+        val stream = contentResolver.openInputStream(uri)
+            ?: throw IllegalArgumentException("input stream unavailable")
+        return stream.use { input ->
+            val output = ByteArrayOutputStream()
+            val buffer = ByteArray(64 * 1024)
+            var total = 0
+            while (true) {
+                val read = input.read(buffer)
+                if (read < 0) break
+                total += read
+                if (total > maxSharedFileBytes) throw SharedFileTooLargeException()
+                output.write(buffer, 0, read)
+            }
+            output.toByteArray()
+        }
+    }
+
+    private class SharedFileTooLargeException : Exception()
 }

@@ -29,6 +29,9 @@ export async function authenticate(authorizationHeader: string | undefined): Pro
     unauthorized('Authorizationヘッダーが不正です');
   }
   const idToken = authorizationHeader.slice('Bearer '.length);
+  if (!idToken || idToken.length > 8192 || /[\r\n]/.test(idToken)) {
+    unauthorized('Authorizationヘッダーが不正です');
+  }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) throw new Error('GOOGLE_CLIENT_ID環境変数が設定されていません');

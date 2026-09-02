@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
-import { errorToResponse, json } from '../lib/response';
+import { badRequest, errorToResponse, json, payloadTooLarge } from '../lib/response';
 import { getRanking } from './routes/ranking';
 import { getLatestWorks } from './routes/worksLatest';
 import { getAuthorWorks } from './routes/userWorks';
@@ -37,6 +37,13 @@ interface Route {
   paramNames: string[];
   handler: Handler;
 }
+
+// 現在のAPIはJSONと小さなパスパラメータだけを受け取る。Function URLへ
+// 直接巨大入力を送られてLambdaのメモリ・実行時間を消費されないよう、
+// ルーティングより前に上限を適用する。
+const MAX_REQUEST_BODY_BYTES = 64 * 1024;
+const MAX_REQUEST_PATH_CHARS = 2048;
+const MAX_PATH_PARAMETER_CHARS = 256;
 
 function route(method: string, path: string, handler: Handler): Route {
   const paramNames: string[] = [];
@@ -82,8 +89,13 @@ export async function handler(
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyStructuredResultV2> {
   try {
+    const normalizedEvent = normalizeRequestBody(event);
     const method = event.requestContext.http.method.toUpperCase();
     const path = normalizePath(event.requestContext.http.path);
+
+    if (path.length > MAX_REQUEST_PATH_CHARS) {
+      badRequest('リクエストパスが長すぎます', 'PATH_TOO_LONG');
+    }
 
     for (const r of routes) {
       if (r.method !== method) continue;
@@ -91,15 +103,45 @@ export async function handler(
       if (!match) continue;
       const params: Record<string, string> = {};
       r.paramNames.forEach((name, i) => {
-        params[name] = decodeURIComponent(match[i + 1]);
+        let value: string;
+        try {
+          value = decodeURIComponent(match[i + 1]);
+        } catch {
+          badRequest('パスパラメータのURLエンコードが不正です', 'INVALID_PATH_ENCODING');
+        }
+        if (value.length > MAX_PATH_PARAMETER_CHARS) {
+          badRequest('パスパラメータが長すぎます', 'PATH_PARAMETER_TOO_LONG');
+        }
+        params[name] = value;
       });
-      return await r.handler(event, params);
+      return await r.handler(normalizedEvent, params);
     }
 
     return json(404, { error: `該当するルートがありません: ${method} ${path}` });
   } catch (err) {
     return errorToResponse(err);
   }
+}
+
+function normalizeRequestBody(event: APIGatewayProxyEventV2): APIGatewayProxyEventV2 {
+  if (event.body === undefined) return event;
+
+  let bytes: Buffer;
+  if (event.isBase64Encoded) {
+    // Buffer.from()は不正文字を黙って無視するため、先に厳密な形式を確認する。
+    const base64 = event.body;
+    const validBase64 =
+      base64.length % 4 === 0 &&
+      /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(base64);
+    if (!validBase64) badRequest('リクエストボディのBase64が不正です', 'INVALID_BASE64');
+    bytes = Buffer.from(base64, 'base64');
+  } else {
+    bytes = Buffer.from(event.body, 'utf8');
+  }
+
+  if (bytes.length > MAX_REQUEST_BODY_BYTES) payloadTooLarge();
+  if (!event.isBase64Encoded) return event;
+  return { ...event, body: bytes.toString('utf8'), isBase64Encoded: false };
 }
 
 function normalizePath(path: string): string {

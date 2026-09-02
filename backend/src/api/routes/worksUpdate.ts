@@ -3,6 +3,7 @@ import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate } from '../../lib/auth';
 import { badRequest, forbidden, notFound, ok } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { WorkItem } from '../../lib/types';
 import { toPublicWork } from './_publicWork';
 
@@ -79,10 +80,16 @@ export async function updateWork(event: APIGatewayProxyEventV2, workId: string) 
 }
 
 function parseBody(raw: string | undefined): UpdateWorkRequestBody {
-  if (!raw) return {};
-  try {
-    return JSON.parse(raw) as UpdateWorkRequestBody;
-  } catch {
-    badRequest('リクエストボディがJSONとして不正です');
+  const body = parseJsonObject(raw, { allowEmpty: true });
+  if (body.isNiarimPublished !== undefined && typeof body.isNiarimPublished !== 'boolean') {
+    badRequest('isNiarimPublishedは真偽値である必要があります');
   }
+  if (body.title !== undefined &&
+      (typeof body.title !== 'string' || !body.title.trim() || body.title.trim().length > 200)) {
+    badRequest('titleは1〜200文字である必要があります');
+  }
+  return {
+    isNiarimPublished: body.isNiarimPublished as boolean | undefined,
+    title: typeof body.title === 'string' ? body.title.trim() : undefined,
+  };
 }

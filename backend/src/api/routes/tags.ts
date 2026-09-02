@@ -3,6 +3,7 @@ import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate } from '../../lib/auth';
 import { badRequest, forbidden, notFound, ok } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { WorkItem } from '../../lib/types';
 import { toPublicWork } from './_publicWork';
 
@@ -90,21 +91,17 @@ export async function updateTags(event: APIGatewayProxyEventV2, workId: string) 
 }
 
 function parseBody(raw: string | undefined): TagAction {
-  if (!raw) badRequest('リクエストボディが空です');
-  let body: Partial<TagAction>;
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    badRequest('リクエストボディがJSONとして不正です');
-  }
+  const body = parseJsonObject(raw);
   if (!body.tag || typeof body.tag !== 'string' || !body.tag.trim()) {
     badRequest('tagは必須です');
   }
   if (body.tag.trim().length > MAX_TAG_LENGTH) {
     badRequest(`タグは${MAX_TAG_LENGTH}文字以内にしてください`, 'TAG_TOO_LONG');
   }
-  if (!body.action || !['add', 'remove', 'lock', 'unlock'].includes(body.action)) {
+  if (typeof body.action !== 'string' ||
+      !['add', 'remove', 'lock', 'unlock'].includes(body.action)) {
     badRequest('actionはadd/remove/lock/unlockのいずれかである必要があります');
   }
-  return { action: body.action, tag: body.tag.trim() } as TagAction;
+  const tag = body.tag.trim();
+  return { action: body.action, tag } as TagAction;
 }

@@ -6,6 +6,7 @@ import { reservePostQuota, releasePostQuota } from '../../lib/quota';
 import { getVideoSnippet, getOwnChannelInfo, verifyVideoOwnership } from '../../lib/youtube';
 import { computeRankingScore } from '../../lib/ranking';
 import { badRequest, conflict, created, forbidden } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { WorkItem } from '../../lib/types';
 import { TABLE_ITEM_TYPE } from '../../lib/types';
 import { toPublicWork } from './_publicWork';
@@ -130,28 +131,21 @@ export async function createWork(event: APIGatewayProxyEventV2) {
 }
 
 function parseBody(raw: string | undefined): CreateWorkRequestBody {
-  if (!raw) badRequest('リクエストボディが空です');
-  let body: Partial<CreateWorkRequestBody>;
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    badRequest('リクエストボディがJSONとして不正です');
-  }
-  if (!body.youtubeVideoId || typeof body.youtubeVideoId !== 'string') {
-    badRequest('youtubeVideoIdは必須です');
-  }
-  // YouTubeの動画IDは11文字の[A-Za-z0-9_-]。この値はDynamoDBのキー
-  // 生成とYouTube APIへのリクエストの両方に使うため、想定外の長さ・
-  // 文字が混ざったまま後続処理へ渡さないよう入口で弾く。
-  if (!/^[A-Za-z0-9_-]{11}$/.test(body.youtubeVideoId)) {
+  const body = parseJsonObject(raw);
+  if (typeof body.youtubeVideoId !== 'string' ||
+      !/^[A-Za-z0-9_-]{11}$/.test(body.youtubeVideoId)) {
     badRequest('youtubeVideoIdの形式が不正です');
   }
-  if (!body.youtubeAccessToken || typeof body.youtubeAccessToken !== 'string') {
+  if (typeof body.youtubeAccessToken !== 'string' ||
+      body.youtubeAccessToken.length === 0 || body.youtubeAccessToken.length > 4096) {
     badRequest('youtubeAccessTokenは必須です');
+  }
+  if (body.isShort !== undefined && typeof body.isShort !== 'boolean') {
+    badRequest('isShortは真偽値である必要があります');
   }
   return {
     youtubeVideoId: body.youtubeVideoId,
     youtubeAccessToken: body.youtubeAccessToken,
-    isShort: Boolean(body.isShort),
+    isShort: body.isShort ?? false,
   };
 }

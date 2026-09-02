@@ -3,6 +3,7 @@ import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate } from '../../lib/auth';
 import { badRequest, created, conflict } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { ReportItem } from '../../lib/types';
 import { TABLE_ITEM_TYPE } from '../../lib/types';
 
@@ -72,16 +73,14 @@ async function checkRateLimit(reporterId: string): Promise<void> {
 }
 
 function parseBody(raw: string | undefined): CreateReportRequestBody {
-  if (!raw) badRequest('リクエストボディが空です');
-  let body: Partial<CreateReportRequestBody>;
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    badRequest('リクエストボディがJSONとして不正です');
+  const body = parseJsonObject(raw);
+  if (typeof body.workId !== 'string' || !/^[A-Za-z0-9_-]{11}$/.test(body.workId)) {
+    badRequest('workIdの形式が不正です');
   }
-  if (!body.workId || typeof body.workId !== 'string') badRequest('workIdは必須です');
   if (!body.reason || typeof body.reason !== 'string' || !body.reason.trim()) {
     badRequest('reasonは必須です');
   }
-  return { workId: body.workId, reason: body.reason.trim().slice(0, 1000) };
+  const reason = body.reason.trim();
+  if (reason.length > 1000) badRequest('reasonは1000文字以内で指定してください');
+  return { workId: body.workId, reason };
 }

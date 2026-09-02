@@ -3,6 +3,7 @@ import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate } from '../../lib/auth';
 import { badRequest, created } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { BlockItem } from '../../lib/types';
 import { TABLE_ITEM_TYPE } from '../../lib/types';
 
@@ -45,15 +46,9 @@ export async function createBlock(event: APIGatewayProxyEventV2) {
 }
 
 function parseBody(raw: string | undefined): CreateBlockRequestBody {
-  if (!raw) badRequest('リクエストボディが空です');
-  let body: Partial<CreateBlockRequestBody>;
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    badRequest('リクエストボディがJSONとして不正です');
-  }
-  if (!body.blockedUserId || typeof body.blockedUserId !== 'string') {
-    badRequest('blockedUserIdは必須です');
+  const body = parseJsonObject(raw);
+  if (typeof body.blockedUserId !== 'string' || !/^N[0-9a-f]{32}$/.test(body.blockedUserId)) {
+    badRequest('blockedUserIdの形式が不正です');
   }
   return { blockedUserId: body.blockedUserId };
 }

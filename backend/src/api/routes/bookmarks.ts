@@ -3,7 +3,8 @@ import { GetCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from '@
 import { TransactionCanceledException } from '@aws-sdk/client-dynamodb';
 import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate, tryAuthenticate, getUser } from '../../lib/auth';
-import { forbidden, notFound, ok } from '../../lib/response';
+import { badRequest, forbidden, notFound, ok } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { BookmarkItem, WorkItem } from '../../lib/types';
 import { TABLE_ITEM_TYPE } from '../../lib/types';
 import { toPublicWork } from './_publicWork';
@@ -146,14 +147,15 @@ export async function updateBookmarksVisibility(event: APIGatewayProxyEventV2, t
   const auth = await authenticate(event.headers['authorization'] ?? event.headers['Authorization']);
   if (auth.niarimUserId !== targetUserId) forbidden('本人のみ変更できます');
 
-  const body = JSON.parse(event.body ?? '{}') as { public?: boolean };
+  const body = parseJsonObject(event.body, { allowEmpty: true });
+  if (typeof body.public !== 'boolean') badRequest('publicは真偽値で指定してください');
   await ddb.send(
     new UpdateCommand({
       TableName: tableName(),
       Key: Keys.user(targetUserId),
       UpdateExpression: 'SET bookmarksPublic = :v',
-      ExpressionAttributeValues: { ':v': Boolean(body.public) },
+      ExpressionAttributeValues: { ':v': body.public },
     }),
   );
-  return ok({ bookmarksPublic: Boolean(body.public) });
+  return ok({ bookmarksPublic: body.public });
 }

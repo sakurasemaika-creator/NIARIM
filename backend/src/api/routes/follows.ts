@@ -5,6 +5,7 @@ import { TransactionCanceledException } from '@aws-sdk/client-dynamodb';
 import { ddb, tableName, Keys } from '../../lib/dynamo';
 import { authenticate, tryAuthenticate, getUser } from '../../lib/auth';
 import { badRequest, forbidden, ok } from '../../lib/response';
+import { parseJsonObject } from '../../lib/request';
 import type { FollowerRecordItem, FollowingRecordItem, FollowNotificationItem, UserItem } from '../../lib/types';
 import { TABLE_ITEM_TYPE } from '../../lib/types';
 
@@ -192,14 +193,15 @@ export async function updateFollowVisibility(event: APIGatewayProxyEventV2, targ
   const auth = await authenticate(event.headers['authorization'] ?? event.headers['Authorization']);
   if (auth.niarimUserId !== targetUserId) forbidden('本人のみ変更できます');
 
-  const body = JSON.parse(event.body ?? '{}') as { public?: boolean };
+  const body = parseJsonObject(event.body, { allowEmpty: true });
+  if (typeof body.public !== 'boolean') badRequest('publicは真偽値で指定してください');
   await ddb.send(
     new UpdateCommand({
       TableName: tableName(),
       Key: Keys.user(targetUserId),
       UpdateExpression: 'SET followersPublic = :v',
-      ExpressionAttributeValues: { ':v': Boolean(body.public) },
+      ExpressionAttributeValues: { ':v': body.public },
     }),
   );
-  return ok({ followersPublic: Boolean(body.public) });
+  return ok({ followersPublic: body.public });
 }
