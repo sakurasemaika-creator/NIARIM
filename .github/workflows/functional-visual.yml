@@ -6,7 +6,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - 'test/functional_audit_batch2_test.dart'
+      - 'test/functional_audit_batch3_test.dart'
 
 jobs:
   functional-render:
@@ -28,10 +28,11 @@ jobs:
       - name: 依存関係取得
         run: flutter pub get
 
-      - name: 描画・フィルター・カメラ機能テスト
+      - name: 機能監査テスト
         run: |
           flutter test test/functional_render_real_async_test.dart --reporter expanded
           flutter test test/functional_audit_batch2_test.dart --reporter expanded
+          flutter test test/functional_audit_batch3_test.dart --reporter expanded
 
       - name: 機能別レンダリング画像を保存
         if: always()
