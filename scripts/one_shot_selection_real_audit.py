@@ -9,7 +9,6 @@ new = "import 'package:flutter/gestures.dart';\nimport 'package:flutter/material
 if text.count(old)==1: text=text.replace(old,new)
 elif "import 'package:niarim/app_bootstrap.dart';" not in text: raise SystemExit('imports')
 
-# real async PNGs
 for a,b in {
 "    await _save(before, 96, 80, '${out.path}/selection_real_before.png');\n":"    print('B20 stage 1: initial pixels ready');\n    await tester.runAsync(() => _save(before, 96, 80, '${out.path}/selection_real_before.png'));\n    print('B20 stage 2: initial PNG saved');\n",
 "    await _save(moved1, 96, 80, '${out.path}/selection_real_moved1.png');\n":"    print('B20 stage 5: first move verified');\n    await tester.runAsync(() => _save(moved1, 96, 80, '${out.path}/selection_real_moved1.png'));\n",
@@ -18,7 +17,6 @@ for a,b in {
 }.items():
     if text.count(a)==1: text=text.replace(a,b)
 
-# providers + callback
 oldp="    await tester.pumpWidget(\n      MultiProvider(\n        providers: [\n          ChangeNotifierProvider<ProjectService>.value(value: projects),\n          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),\n        ],\n"
 newp="    final appProviders = await tester.runAsync(buildAppProviders);\n    var selectionActive = false;\n    await tester.pumpWidget(\n      MultiProvider(\n        providers: [\n          ...appProviders!,\n          ChangeNotifierProvider<ProjectService>.value(value: projects),\n          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),\n        ],\n"
 if text.count(oldp)==1: text=text.replace(oldp,newp)
@@ -27,7 +25,6 @@ rep="                  sceneId: scene.id,\n                  onSelectionActiveCh
 if text.count(needle)!=1: raise SystemExit('callback')
 text=text.replace(needle,rep)
 
-# geometry
 text=text.replace("    tester.view.physicalSize = const Size(320, 240);\n","    tester.view.physicalSize = const Size(480, 360);\n")
 text=text.replace("                width: 96,\n                height: 80,\n","                width: 288,\n                height: 240,\n")
 a="    final area = find.byType(CanvasArea);\n    final origin = tester.getTopLeft(area);\n"
@@ -37,13 +34,11 @@ text=text.replace(a,b)
 text=text.replace("origin + const Offset(16, 14)","at(const Offset(16, 14))")
 text=text.replace("origin + const Offset(48, 46)","at(const Offset(48, 46))")
 
-# selection activation assertion
 n="    expect(tester.takeException(), isNull);\n\n    // 2) 選択内を掴む。"
 r="    expect(tester.takeException(), isNull);\n    expect(selectionActive, isTrue, reason: '矩形選択のPointer操作で選択マスクが実際に確定すること');\n    print('B20 stage 4: rectangle selection mask confirmed active');\n\n    // 2) 選択内を掴む。"
 if text.count(n)!=1: raise SystemExit('active')
 text=text.replace(n,r)
 
-# first drag
 old1="""    await _dragWithWait(
       tester,
       origin + const Offset(30, 28),
@@ -58,6 +53,7 @@ new1="""    final move1Gesture = await tester.startGesture(
     expect(tm.recordingTouchedTiles, isNotNull,
         reason: '選択内Pointer Downで選択変形のUndo記録が開始されること');
     print('B20 stage 4b: selection transform begin confirmed');
+    await _waitForAnyCanvasDifference(tester, tm, key, before, 96, 80);
     await _waitForPixelAlpha(tester, tm, key, 20, 19, 0);
     await move1Gesture.moveTo(at(const Offset(46, 38)));
     await tester.pump(const Duration(milliseconds: 40));
@@ -68,7 +64,6 @@ new1="""    final move1Gesture = await tester.startGesture(
 if text.count(old1)!=1: raise SystemExit('first')
 text=text.replace(old1,new1)
 
-# second grab is translated-only area
 old2="""    await _dragWithWait(
       tester,
       origin + const Offset(46, 38),
@@ -77,7 +72,7 @@ old2="""    await _dragWithWait(
     );
     await tester.pump(const Duration(milliseconds: 250));
 """
-new2="""    await _pumpRealAsyncUntil(tester, () => !tm.isUndoRecording, timeout: const Duration(seconds: 3));
+new2="""    await _pumpRealAsyncUntil(tester, () => tm.recordingTouchedTiles == null, timeout: const Duration(seconds: 3));
     final move2Gesture = await tester.startGesture(
       at(const Offset(60, 50)), kind: PointerDeviceKind.touch);
     await tester.pump();
@@ -91,11 +86,8 @@ new2="""    await _pumpRealAsyncUntil(tester, () => !tm.isUndoRecording, timeout
     await _waitForPixelAlpha(tester, tm, key, 41, 29, 255);
 """
 if text.count(old2)!=1: raise SystemExit('second')
-# isUndoRecording does not exist public; use recordingTouchedTiles null condition instead.
-new2=new2.replace("!tm.isUndoRecording","tm.recordingTouchedTiles == null")
 text=text.replace(old2,new2)
 
-# stage prints if untouched original statements
 text=text.replace("    await tester.pump(const Duration(milliseconds: 200));\n    expect(tester.takeException(), isNull);\n",
                   "    await tester.pump(const Duration(milliseconds: 200));\n    expect(tester.takeException(), isNull);\n    print('B20 stage 3: CanvasArea mounted');\n")
 text=text.replace("    expect(tester.takeException(), isNull);\n    final moved2 = _readCanvas",
@@ -103,9 +95,6 @@ text=text.replace("    expect(tester.takeException(), isNull);\n    final moved2
 text=text.replace("    expect(_readCanvas(tm, key, 96, 80), orderedEquals(moved2),\n        reason: 'Redo 2回で2段階移動後の全RGBAへ完全一致すること');\n",
                   "    expect(_readCanvas(tm, key, 96, 80), orderedEquals(moved2), reason: 'Redo 2回で2段階移動後の全RGBAへ完全一致すること');\n    print('B20 stage 9: redo verified - complete');\n")
 
-# Helpers alternate real event time and fake-zone pump. This is essential for
-# ui.Image Futures whose engine completion occurs in real time but .then body is
-# scheduled back into WidgetTester's fake async zone.
 ha="Future<void> _dragWithWait(\n"
 helpers="""Future<void> _pumpRealAsyncUntil(
   WidgetTester tester,
@@ -119,6 +108,37 @@ helpers="""Future<void> _pumpRealAsyncUntil(
     await tester.pump();
   }
   expect(condition(), isTrue, reason: '実時間イベントとWidget fake-asyncを交互に進めても期限内に完了すること');
+}
+
+Future<void> _waitForAnyCanvasDifference(
+  WidgetTester tester, dynamic tm, String layer, Uint8List before, int w, int h,
+) async {
+  bool differs() {
+    final now = _readCanvas(tm, layer, w, h);
+    for (int i = 0; i < now.length; i++) {
+      if (now[i] != before[i]) return true;
+    }
+    return false;
+  }
+  await _pumpRealAsyncUntil(tester, differs, timeout: const Duration(seconds: 3));
+  final now = _readCanvas(tm, layer, w, h);
+  int minX = w, minY = h, maxX = -1, maxY = -1, changed = 0;
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      final i = (y * w + x) * 4;
+      var diff = false;
+      for (int c = 0; c < 4; c++) {
+        if (now[i + c] != before[i + c]) diff = true;
+      }
+      if (!diff) continue;
+      changed++;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+  print('B20 diagnostic: changedPixels=$changed bbox=[$minX,$minY]-[$maxX,$maxY]');
 }
 
 Future<void> _waitForPixelAlpha(
@@ -138,4 +158,4 @@ if text.count(ha)!=1: raise SystemExit('helper')
 text=text.replace(ha,helpers+ha)
 
 p.write_text(text,encoding='utf-8',newline='\n')
-print('patched Batch20 with alternating real/fake async readiness')
+print('patched Batch20 with changed-pixel bbox diagnostics')
