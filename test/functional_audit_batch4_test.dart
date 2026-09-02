@@ -21,6 +21,7 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
 
   test('全17ブレンド：レイヤー不透明度50%でも標準合成式と一致', () async {
+    const alpha = 128 / 255.0; // Layer.opacity=50 は Paint alpha 128 になる
     for (final mode in LayerBlendMode.values) {
       final tm = TileManager(canvasWidth: w, canvasHeight: h);
       _fill(tm, 'bottom', base);
@@ -38,10 +39,20 @@ void main() {
       await _save(image, '${out.path}/blend_opacity50_${mode.name}.png');
       final actual = _pixel(await _rgba(image), 48, 48);
       final blend = _blend(mode, base, src);
-      final expected = [
-        for (var c = 0; c < 3; c++) ((baseChannel(c) * 0.5 + blend[c] * 0.5)).round(),
-        255,
-      ];
+      final expected = mode == LayerBlendMode.addition
+          // BlendMode.plus は一般的な加算合成（Porter-Duff plus）。
+          // source の premultiplied RGB に layer opacity が掛かった後で
+          // backdrop へ加算されるので、通常ブレンドの補間式とは別になる。
+          ? [
+              for (var c = 0; c < 3; c++)
+                math.min(255, (baseChannel(c) + sourceChannel(c) * alpha).round()),
+              255,
+            ]
+          : [
+              for (var c = 0; c < 3; c++)
+                (baseChannel(c) * (1 - alpha) + blend[c] * alpha).round(),
+              255,
+            ];
       for (var c = 0; c < 3; c++) {
         expect((actual[c] - expected[c]).abs(), lessThanOrEqualTo(5),
             reason: '${mode.name} opacity50 channel=$c actual=${actual[c]} expected=${expected[c]}');
@@ -137,6 +148,7 @@ void main() {
 }
 
 int baseChannel(int c) => switch (c) { 0 => base.red, 1 => base.green, _ => base.blue };
+int sourceChannel(int c) => switch (c) { 0 => src.red, 1 => src.green, _ => src.blue };
 
 void _fill(TileManager tm, String id, ui.Color color, {int inset = 0}) {
   final tile = tm.getOrCreateTile(id, 0, 0);
