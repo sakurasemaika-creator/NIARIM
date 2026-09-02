@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/layer.dart';
 import '../models/layer_keyframe.dart';
@@ -25,8 +26,10 @@ const Set<LayerType> pixelLayerTypes = {
 };
 
 /// LayerBlendMode（17種）をdart:uiのBlendModeへ変換する。
-/// 「減算」はdart:ui標準のBlendModeに直接対応するものが無いため、
-/// 視覚的に近い「差の絶対値」で近似する。
+/// 減算だけはdart:uiに対応BlendModeが存在しないため、[LayerCompositor]
+/// 内でRGBAを用いた本来の「backdrop - source（0未満は0）」を実装する。
+/// この関数単体でsubtractを要求された場合は、誤ってdifferenceを適用しない
+/// ようsrcOverを返す。
 ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
   switch (mode) {
     case LayerBlendMode.normal:
@@ -40,7 +43,7 @@ ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
     case LayerBlendMode.addition:
       return ui.BlendMode.plus;
     case LayerBlendMode.subtract:
-      return ui.BlendMode.difference; // dart:uiに減算が無いための近似
+      return ui.BlendMode.srcOver;
     case LayerBlendMode.darken:
       return ui.BlendMode.darken;
     case LayerBlendMode.lighten:
@@ -69,11 +72,6 @@ ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
 /// [layers]（先頭が最前面／末尾が最背面、レイヤーパネル表示順）の中で、
 /// index番目のレイヤーがクリッピングONの場合に参照すべき「一番下の
 /// クリッピング元レイヤー」のIDを探す。
-/// クリッピング元もさらにクリッピングされている場合は、非クリッピングの
-/// レイヤーが見つかるまで下（配列の後方）を辿る。
-/// 「フォルダを跨ぐクリッピングは禁止」のため、同じ
-/// parentFolderId（同一フォルダ内、またはどちらもトップレベル）の
-/// レイヤーのみを探索対象とし、フォルダ境界に達したら探索を打ち切る。
 String? findClipSourceLayerId(List<Layer> layers, int index) {
   final parentFolderId = layers[index].parentFolderId;
   for (int i = index + 1; i < layers.length; i++) {
@@ -86,13 +84,6 @@ String? findClipSourceLayerId(List<Layer> layers, int index) {
 /// レイヤー群をタイル方式のピクセルデータから合成し1枚のui.Imageを生成する
 /// 共通処理。キャンバス表示・書き出し・オニオンスキン・バケツ参照などで共有する。
 class LayerCompositor {
-  /// [layers]はレイヤーパネル順（先頭が最前面）。[keyOf]は各レイヤーの
-  /// TileManager合成キーを返す（通常レイヤーは`frameLayerKey(sceneId, frameIndex,
-  /// layer.id)`。共通・タイムライン素材・ウォーターマークなど表示範囲を持つ
-  /// レイヤーは`resolveTileKey`〔layer_range_resolver.dart〕でホーム位置の
-  /// キーを解決する必要がある）。
-  /// [shouldRender]でfalseを返したレイヤーは描画をスキップするが、他のレイヤーの
-  /// クリッピング元としては引き続き参照されうる。
   static Future<ui.Image> composite(
     TileManager tileManager,
     List<Layer> layers,
@@ -100,28 +91,102 @@ class LayerCompositor {
     int width,
     int height, {
     bool Function(Layer layer, int index)? shouldRender,
-    // 指定した場合、レイヤーごとの位置・拡大縮小・回転キーフレームを合成時に
-    // 適用する（呼び出し側が現在フレームで補間済みの値を渡す。パーツ単位
-    // キーフレームアニメーション）。省略時は従来通り無変形。
     LayerKeyframe? Function(Layer layer)? keyframeOf,
-    // 指定した場合、レイヤーが所属するグループのキーフレームを合成時に
-    // 追加で適用する（グループ＝複数レイヤーをまとめて動かす全体の変形、
-    // keyframeOf＝そのレイヤー個別の追加調整、という関係で両方を重ねて
-    // 適用する）。省略時は従来通り無変形。
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
   }) async {
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
+    var recorder = ui.PictureRecorder();
+    var canvas = ui.Canvas(recorder);
+
     for (int i = layers.length - 1; i >= 0; i--) {
       final layer = layers[i];
       if (!layer.isVisible) continue;
       if (!pixelLayerTypes.contains(layer.type)) continue;
       if (shouldRender != null && !shouldRender(layer, i)) continue;
+
+      if (layer.blendMode == LayerBlendMode.subtract) {
+        // Skia/dart:uiには「減算」BlendModeが無い。difference（差の絶対値）
+        // で代用すると、backdrop < source のチャンネルが本来0になるところ
+        // 正の値へ反転してしまうため、ここだけ現在までの合成結果と対象レイヤー
+        // をRGBAへ落としてW3Cのalpha合成式で本当の減算を行う。
+        final backdropPicture = recorder.endRecording();
+        final backdrop = await backdropPicture.toImage(width, height);
+        backdropPicture.dispose();
+
+        final source = await _renderLayerIsolated(
+          tileManager,
+          layers,
+          keyOf,
+          layer,
+          i,
+          width,
+          height,
+          keyframeOf,
+          groupKeyframeOf,
+        );
+        final subtracted = await _subtractImages(backdrop, source, width, height);
+        backdrop.dispose();
+        source.dispose();
+
+        recorder = ui.PictureRecorder();
+        canvas = ui.Canvas(recorder);
+        canvas.drawImage(subtracted, ui.Offset.zero, ui.Paint());
+        subtracted.dispose();
+        continue;
+      }
+
       await _drawLayer(
-          canvas, tileManager, layers, keyOf, layer, i, width, height, keyframeOf, groupKeyframeOf);
+        canvas,
+        tileManager,
+        layers,
+        keyOf,
+        layer,
+        i,
+        width,
+        height,
+        keyframeOf,
+        groupKeyframeOf,
+      );
     }
+
     final picture = recorder.endRecording();
-    return picture.toImage(width, height);
+    final image = await picture.toImage(width, height);
+    picture.dispose();
+    return image;
+  }
+
+  /// 減算対象レイヤーを、opacity・クリッピング・位置/回転/拡縮をすべて
+  /// 適用した「透明背景上の通常合成画像」として作る。これによりCPU減算側は
+  /// レイヤーの見た目を再実装せず、最終RGBAだけを正しく合成すればよい。
+  static Future<ui.Image> _renderLayerIsolated(
+    TileManager tileManager,
+    List<Layer> layers,
+    String Function(Layer layer) keyOf,
+    Layer layer,
+    int index,
+    int width,
+    int height,
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+  ) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    await _drawLayer(
+      canvas,
+      tileManager,
+      layers,
+      keyOf,
+      layer,
+      index,
+      width,
+      height,
+      keyframeOf,
+      groupKeyframeOf,
+      blendModeOverride: ui.BlendMode.srcOver,
+    );
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(width, height);
+    picture.dispose();
+    return image;
   }
 
   static Future<void> _drawLayer(
@@ -134,13 +199,14 @@ class LayerCompositor {
     int width,
     int height,
     LayerKeyframe? Function(Layer layer)? keyframeOf,
-    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
-  ) async {
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf, {
+    ui.BlendMode? blendModeOverride,
+  }) async {
     final img = await tileManager.compositeLayerToImage(keyOf(layer));
     final opacityByte = (layer.opacity.clamp(0, 100) * 255 / 100).round();
     final layerPaint = ui.Paint()
       ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
-      ..blendMode = mapLayerBlendMode(layer.blendMode);
+      ..blendMode = blendModeOverride ?? mapLayerBlendMode(layer.blendMode);
 
     final groupKf = groupKeyframeOf?.call(layer);
     final kf = keyframeOf?.call(layer);
@@ -149,8 +215,6 @@ class LayerCompositor {
     final hasTransform = hasGroupTransform || hasLayerTransform;
     if (hasTransform) {
       canvas.save();
-      // グループの変形（全体の動き）を先に適用し、そこへレイヤー個別の
-      // 変形（その上への微調整）を重ねる。
       if (hasGroupTransform) {
         _layerKeyframeEngine.apply(canvas, groupKf, width.toDouble(), height.toDouble());
       }
@@ -162,7 +226,6 @@ class LayerCompositor {
     if (layer.hasClipping) {
       final clipSourceId = findClipSourceLayerId(layers, index);
       if (clipSourceId != null) {
-        // クリッピング元はlayers内の別レイヤーなのでkeyOfへ渡すために一旦探す
         final clipSourceLayer = layers.firstWhere((l) => l.id == clipSourceId);
         final clipImg = await tileManager.compositeLayerToImage(keyOf(clipSourceLayer));
         final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
@@ -176,8 +239,55 @@ class LayerCompositor {
         return;
       }
     }
+
     canvas.drawImage(img, ui.Offset.zero, layerPaint);
     if (hasTransform) canvas.restore();
     img.dispose();
+  }
+
+  /// backdrop - source を各RGBチャンネルへ適用し、透明度は通常のブレンド
+  /// モードと同じsource-over規則で合成する。半透明レイヤー・半透明背景でも
+  /// 正しい結果になるよう、W3C Compositing and Blendingの一般式を使う。
+  static Future<ui.Image> _subtractImages(
+      ui.Image backdrop, ui.Image source, int width, int height) async {
+    final backdropData = await backdrop.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final sourceData = await source.toByteData(format: ui.ImageByteFormat.rawRgba);
+    if (backdropData == null || sourceData == null) {
+      // ネイティブ画像の読み出しに失敗した場合だけ、安全側として元の背景を返す。
+      return backdrop.clone();
+    }
+
+    final b = backdropData.buffer.asUint8List();
+    final s = sourceData.buffer.asUint8List();
+    final out = Uint8List(width * height * 4);
+
+    for (int i = 0; i < out.length; i += 4) {
+      final ab = b[i + 3] / 255.0;
+      final as = s[i + 3] / 255.0;
+      final ao = as + ab * (1.0 - as);
+      if (ao <= 0) continue;
+
+      for (int c = 0; c < 3; c++) {
+        final cb = b[i + c] / 255.0;
+        final cs = s[i + c] / 255.0;
+        final blended = (cb - cs).clamp(0.0, 1.0);
+        final premultiplied =
+            as * (1.0 - ab) * cs +
+            as * ab * blended +
+            (1.0 - as) * ab * cb;
+        out[i + c] = (premultiplied / ao * 255).round().clamp(0, 255);
+      }
+      out[i + 3] = (ao * 255).round().clamp(0, 255);
+    }
+
+    final codec = await ui.ImageDescriptor.raw(
+      await ui.ImmutableBuffer.fromUint8List(out),
+      width: width,
+      height: height,
+      pixelFormat: ui.PixelFormat.rgba8888,
+    ).instantiateCodec();
+    final frame = await codec.getNextFrame();
+    codec.dispose();
+    return frame.image;
   }
 }
