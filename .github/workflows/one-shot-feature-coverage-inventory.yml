@@ -1,0 +1,74 @@
+name: One-shot Feature Coverage Inventory
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-feature-coverage-inventory.yml'
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build source and test inventory
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          out=[]
+          out.append('# NIARIM feature/test inventory')
+          out.append('')
+          out.append('## Dart enums')
+          for p in sorted(Path('lib').rglob('*.dart')):
+              s=p.read_text(encoding='utf-8', errors='ignore')
+              for m in re.finditer(r'enum\s+(\w+)\s*\{([^}]*)\}', s, re.S):
+                  vals=[]
+                  for raw in m.group(2).split(','):
+                      v=re.sub(r'//.*','',raw).strip()
+                      if not v: continue
+                      v=v.split('(')[0].strip()
+                      if re.fullmatch(r'[A-Za-z_]\w*',v): vals.append(v)
+                  if vals:
+                      out.append(f'- `{p}` :: **{m.group(1)}** = ' + ', '.join(vals))
+
+          out.append('')
+          out.append('## Public service/engine methods')
+          roots=[Path('lib/services'),Path('lib/engine')]
+          pat=re.compile(r'^\s{2}(?:Future<[^>]+>|Future<void>|FutureOr<[^>]+>|void|bool|int|double|String|Uint8List|List<[^>]+>|Set<[^>]+>|Map<[^>]+>|[A-Z]\w*(?:\?)?)\s+([a-zA-Z]\w*)\s*\(', re.M)
+          for root in roots:
+              if not root.exists(): continue
+              for p in sorted(root.rglob('*.dart')):
+                  s=p.read_text(encoding='utf-8', errors='ignore')
+                  names=sorted({n for n in pat.findall(s) if not n.startswith('_')})
+                  if names: out.append(f'- `{p}`: ' + ', '.join(names))
+
+          out.append('')
+          out.append('## Routes')
+          routes=set()
+          for p in Path('lib').rglob('*.dart'):
+              s=p.read_text(encoding='utf-8', errors='ignore')
+              for x in re.findall(r"(?:path:|context\.(?:push|go)\()\s*['\"]([^'\"]+)['\"]",s): routes.add(x)
+          for x in sorted(routes): out.append(f'- `{x}`')
+
+          out.append('')
+          out.append('## Test cases')
+          test_pat=re.compile(r"(?:testWidgets|test)\s*\(\s*['\"]([^'\"]+)['\"]")
+          for p in sorted(Path('test').rglob('*.dart')):
+              s=p.read_text(encoding='utf-8', errors='ignore')
+              names=test_pat.findall(s)
+              if names:
+                  out.append(f'### `{p}`')
+                  for n in names: out.append(f'- {n}')
+
+          Path('build').mkdir(exist_ok=True)
+          Path('build/feature_coverage_inventory.md').write_text('\n'.join(out),encoding='utf-8')
+          print('\n'.join(out))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: feature-coverage-inventory
+          path: build/feature_coverage_inventory.md
+          retention-days: 7
