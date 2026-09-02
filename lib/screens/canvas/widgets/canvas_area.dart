@@ -361,7 +361,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     } else {
       _tileManager = TileManager(canvasWidth: 1920, canvasHeight: 1080);
     }
-    _drawingEngine = DrawingEngine(tileManager: _tileManager);
+    _drawingEngine = DrawingEngine(tileManager: _tileManager)
+      ..pointConstraint = _rulerEngine.snapToRuler;
     // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに
     // せずRulerEngineへ同期する。プロジェクト再表示・Widget再生成直後の最初の
     // ストロークだけ定規が効かない状態を防ぐ。
@@ -901,9 +902,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     // MoveだけでなくDownの最初の点から同じsnap経路へ通し、ストローク先頭に
     // 定規外の点が残らないようにする。透視定規はRulerEngine側で最初の点を
     // anchorとして扱うため、この呼び出しで既存仕様も維持される。
-    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
+    final point = _toCanvasPoint(_rawToStrokePoint(event));
     _beginTileUndo();
-    _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));
+    _drawingEngine.beginStroke(point, _tileKeyFor(_layerId));
     _scheduleComposite();
     _armHoldEyedropperIfEligible(event, canvasPos);
   }
@@ -1029,8 +1030,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     _updateHoldEyedropper(event, canvasPos);
-    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
-    _drawingEngine.continueStroke(snapped, _tileKeyFor(_layerId));
+    final point = _toCanvasPoint(_rawToStrokePoint(event));
+    _drawingEngine.continueStroke(point, _tileKeyFor(_layerId));
     _scheduleComposite();
   }
 

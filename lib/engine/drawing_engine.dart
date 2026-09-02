@@ -35,6 +35,9 @@ class DrawingEngine {
   ui.Color currentColor = const ui.Color(0xFF000000);
   bool isEraser = false;
 
+  // 定規など、手ブレ補正より後に必ず満たすべき最終座標制約。
+  ui.Offset Function(ui.Offset)? pointConstraint;
+
   // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）
   StrokePoint? _smoothed;
 
@@ -44,26 +47,22 @@ class DrawingEngine {
     _currentStroke.clear();
     _strokeCoverageByTile.clear();
     _smoothed = point;
+    final effective = _applyPointConstraint(point);
     _activeLayerId = layerId;
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
-    // 同じ入力パスは毎回同じ散布位置になるようストローク単位でseedを固定する。
-    // これによりUndo/Redoや入力イベント分割数の違いでランダム位置が変わらない。
     _scatterRng = math.Random(0);
-    _currentStroke.add(point);
-
+    _currentStroke.add(effective);
     final brush = currentBrush;
     final needsDirection =
         brush != null && (brush.rotation || brush.scatter > 0.0);
-    // 回転・散布では最初の進行方向が次点到着まで分からないため初点を保留する。
-    // 通常ブラシは従来どおりPointerDown時点で即座に点が描かれる。
     if (!needsDirection) {
       _stampBrush(
-        point.x,
-        point.y,
-        point.pressure,
-        point.tiltX,
-        point.tiltY,
+        effective.x,
+        effective.y,
+        effective.pressure,
+        effective.tiltX,
+        effective.tiltY,
         layerId,
         strokeLengthOverride: 0.0,
       );
@@ -76,7 +75,7 @@ class DrawingEngine {
       beginStroke(point, layerId);
       return;
     }
-    final effective = _applyStabilization(point);
+    final effective = _applyPointConstraint(_applyStabilization(point));
     final from = _currentStroke.last;
     // 区間を描画してから終点を履歴へ追加する。これにより
     // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
@@ -111,6 +110,20 @@ class DrawingEngine {
     _hasStampedCurrentStroke = false;
   }
 
+  StrokePoint _applyPointConstraint(StrokePoint point) {
+    final constraint = pointConstraint;
+    if (constraint == null) return point;
+    final constrained = constraint(ui.Offset(point.x, point.y));
+    return StrokePoint(
+      x: constrained.dx,
+      y: constrained.dy,
+      pressure: point.pressure,
+      tiltX: point.tiltX,
+      tiltY: point.tiltY,
+      inputType: point.inputType,
+    );
+  }
+
   /// 手ブレ補正：入力座標を直近の平滑化済み座標へ指数移動平均で追従させる。
   /// strengthが高いほど追従を遅くし、線が滑らかになる（軽量・毎ピクセル計算なし）。
   StrokePoint _applyStabilization(StrokePoint raw) {
@@ -139,8 +152,11 @@ class DrawingEngine {
   /// ブラシでなぞって描画する。トーンでの図形描画は本メソッドではなく
   /// 呼び出し側（canvas_area.dartの_commitShapeWithTone）がToneEngineへ
   /// 直接分岐する（ブラシ・トーンどちらでも描画可能）。
-  void commitShapePath(List<StrokePoint> pathPoints, String layerId,
-      {bool closeLoop = false}) {
+  void commitShapePath(
+    List<StrokePoint> pathPoints,
+    String layerId, {
+    bool closeLoop = false,
+  }) {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();
     _strokeCoverageByTile.clear();
@@ -236,8 +252,7 @@ class DrawingEngine {
     }
   }
 
-  double _stableDouble(double value) =>
-      (value * 1000000).round() / 1000000;
+  double _stableDouble(double value) => (value * 1000000).round() / 1000000;
 
   void _stampBrush(
     double x,
@@ -329,15 +344,16 @@ class DrawingEngine {
     }
     final stylusTiltMagnitude =
         brush.calligraphyAngle == null && !brush.rotation
-            ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
-            : 0.0;
+        ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
+        : 0.0;
 
     // 自作ブラシ（ブラシ画像からのブラシ作成）が選択され、
     // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
     // モード）でスタンプする。
     final texturePath = brush.customImagePath;
-    final customTexture =
-        texturePath != null ? getCachedBrushTexture(texturePath) : null;
+    final customTexture = texturePath != null
+        ? getCachedBrushTexture(texturePath)
+        : null;
     _renderCircleStamp(
       stampX,
       stampY,
@@ -398,14 +414,16 @@ class DrawingEngine {
         );
 
         // タイル内の影響ピクセル範囲
-        final localMinX =
-            math.max(0, (cx - totalRadius - tileOriginX).floor());
+        final localMinX = math.max(0, (cx - totalRadius - tileOriginX).floor());
         final localMaxX = math.min(
-            TileManager.tileSize - 1, (cx + totalRadius - tileOriginX).ceil());
-        final localMinY =
-            math.max(0, (cy - totalRadius - tileOriginY).floor());
+          TileManager.tileSize - 1,
+          (cx + totalRadius - tileOriginX).ceil(),
+        );
+        final localMinY = math.max(0, (cy - totalRadius - tileOriginY).floor());
         final localMaxY = math.min(
-            TileManager.tileSize - 1, (cy + totalRadius - tileOriginY).ceil());
+          TileManager.tileSize - 1,
+          (cy + totalRadius - tileOriginY).ceil(),
+        );
 
         for (int py = localMinY; py <= localMaxY; py++) {
           for (int px = localMinX; px <= localMaxX; px++) {
@@ -457,10 +475,8 @@ class DrawingEngine {
               // 通常ブラシ：アンチエイリアス
               if (edgeJitter && dist > radius - 1.5) {
                 final maxJitter = edgeJitterStrength / 100.0 * 2.5;
-                final jitter =
-                    (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
-                pixelAlpha =
-                    (radius + 0.5 - dist + jitter).clamp(0.0, 1.0);
+                final jitter = (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
+                pixelAlpha = (radius + 0.5 - dist + jitter).clamp(0.0, 1.0);
               } else {
                 pixelAlpha = (radius + 0.5 - dist).clamp(0.0, 1.0);
               }
@@ -475,13 +491,11 @@ class DrawingEngine {
             if (stylusTiltMagnitude > 0.0001 && radius > 0) {
               final alongTilt = (ux / radius).clamp(-1.0, 1.0);
               final shadeStrength = 0.40 * stylusTiltMagnitude;
-              final shade =
-                  (1.0 + alongTilt * shadeStrength).clamp(0.45, 1.0);
+              final shade = (1.0 + alongTilt * shadeStrength).clamp(0.45, 1.0);
               pixelAlpha *= shade;
             }
 
-            final desiredAlpha =
-                (alpha * pixelAlpha).round().clamp(0, 255);
+            final desiredAlpha = (alpha * pixelAlpha).round().clamp(0, 255);
             if (desiredAlpha <= 0) continue;
 
             // 同一ストローク内では、同じ画素へのスタンプ重複を加算せず
@@ -492,8 +506,8 @@ class DrawingEngine {
             final incrementalAlpha = oldCoverage >= 255
                 ? 0
                 : (((desiredAlpha - oldCoverage) * 255) / (255 - oldCoverage))
-                    .round()
-                    .clamp(0, 255);
+                      .round()
+                      .clamp(0, 255);
             coverage[coveragePos] = desiredAlpha;
             if (incrementalAlpha <= 0) continue;
 
@@ -503,12 +517,15 @@ class DrawingEngine {
               final idx = (py * TileManager.tileSize + px) * 4;
               if (tile[idx + 3] > 0) {
                 final below = ui.Color.fromARGB(
-                    tile[idx + 3], tile[idx], tile[idx + 1], tile[idx + 2]);
+                  tile[idx + 3],
+                  tile[idx],
+                  tile[idx + 1],
+                  tile[idx + 2],
+                );
                 final selected = ui.Color.fromARGB(255, ri, gi, bi);
                 final rate = currentBrush!.mixingRate / 100.0;
                 final mixed = currentBrush!.mixingMode == BrushMixingMode.bleed
-                    ? bleedColor(
-                        below, selected, rate, _currentStroke.length)
+                    ? bleedColor(below, selected, rate, _currentStroke.length)
                     : mixColor(below, selected, rate);
                 tileManager.blendPixel(
                   tile,
@@ -521,11 +538,25 @@ class DrawingEngine {
                 );
               } else {
                 tileManager.blendPixel(
-                    tile, px, py, ri, gi, bi, incrementalAlpha);
+                  tile,
+                  px,
+                  py,
+                  ri,
+                  gi,
+                  bi,
+                  incrementalAlpha,
+                );
               }
             } else {
               tileManager.blendPixel(
-                  tile, px, py, ri, gi, bi, incrementalAlpha);
+                tile,
+                px,
+                py,
+                ri,
+                gi,
+                bi,
+                incrementalAlpha,
+              );
             }
           }
         }
@@ -556,16 +587,17 @@ class DrawingEngine {
       FadeMode.weak => (1.0 - strokeLength / 1000).clamp(0.3, 1.0),
       FadeMode.medium => (1.0 - strokeLength / 500).clamp(0.1, 1.0),
       FadeMode.strong => (1.0 - strokeLength / 200).clamp(0.0, 1.0),
-      FadeMode.custom => brush.fadeCustom != null
-          ? () {
-              final progress =
-                  (strokeLength / brush.fadeCustom!.distancePx).clamp(0.0, 1.0);
-              return brush.fadeCustom!.startValue / 100 +
-                  (brush.fadeCustom!.endValue / 100 -
-                          brush.fadeCustom!.startValue / 100) *
-                      progress;
-            }()
-          : 1.0,
+      FadeMode.custom =>
+        brush.fadeCustom != null
+            ? () {
+                final progress = (strokeLength / brush.fadeCustom!.distancePx)
+                    .clamp(0.0, 1.0);
+                return brush.fadeCustom!.startValue / 100 +
+                    (brush.fadeCustom!.endValue / 100 -
+                            brush.fadeCustom!.startValue / 100) *
+                        progress;
+              }()
+            : 1.0,
       FadeMode.off => 1.0,
     };
   }
@@ -574,27 +606,29 @@ class DrawingEngine {
       (1.0 - strokeLength / 2000).clamp(0.05, 1.0);
 
   ui.Color mixColor(ui.Color below, ui.Color selected, double rate) {
-    final r =
-        (below.r * rate + selected.r * (1 - rate)).clamp(0.0, 1.0);
-    final g =
-        (below.g * rate + selected.g * (1 - rate)).clamp(0.0, 1.0);
-    final b =
-        (below.b * rate + selected.b * (1 - rate)).clamp(0.0, 1.0);
+    final r = (below.r * rate + selected.r * (1 - rate)).clamp(0.0, 1.0);
+    final g = (below.g * rate + selected.g * (1 - rate)).clamp(0.0, 1.0);
+    final b = (below.b * rate + selected.b * (1 - rate)).clamp(0.0, 1.0);
     return ui.Color.from(alpha: 1.0, red: r, green: g, blue: b);
   }
 
   ui.Color bleedColor(
-      ui.Color below, ui.Color selected, double rate, int strokeStep) {
+    ui.Color below,
+    ui.Color selected,
+    double rate,
+    int strokeStep,
+  ) {
     final decay = (1.0 - strokeStep * 0.01).clamp(0.0, 1.0);
     return mixColor(below, selected, rate * decay);
   }
 
   ({double scaleX, double scaleY, double angle}) calcTiltTransform(
-      double tiltX, double tiltY) {
+    double tiltX,
+    double tiltY,
+  ) {
     final tiltMag = math.sqrt(tiltX * tiltX + tiltY * tiltY);
     final stretch = 1.0 + tiltMag * 2.0;
-    final angle =
-        (tiltX != 0 || tiltY != 0) ? math.atan2(tiltY, tiltX) : 0.0;
+    final angle = (tiltX != 0 || tiltY != 0) ? math.atan2(tiltY, tiltX) : 0.0;
     return (scaleX: stretch, scaleY: 1.0, angle: angle);
   }
 }
