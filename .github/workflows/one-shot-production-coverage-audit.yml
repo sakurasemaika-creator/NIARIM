@@ -1,0 +1,114 @@
+name: One-shot Production Coverage Audit
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-production-coverage-audit.yml'
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Run aggregate test suite with coverage and retry
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build/coverage-audit
+          rc=1
+          for attempt in 1 2; do
+            echo "coverage attempt $attempt" | tee -a build/coverage-audit/run-summary.txt
+            timeout 2400s flutter test --coverage --reporter compact >"build/coverage-audit/flutter-test-attempt${attempt}.log" 2>&1
+            rc=$?
+            if [ $rc -eq 0 ]; then
+              echo "TEST_SUITE_PASS attempt=$attempt" | tee -a build/coverage-audit/run-summary.txt
+              break
+            fi
+            if [ $rc -eq 124 ]; then
+              echo "TEST_SUITE_TIMEOUT attempt=$attempt" | tee -a build/coverage-audit/run-summary.txt
+            else
+              echo "TEST_SUITE_FAIL attempt=$attempt rc=$rc" | tee -a build/coverage-audit/run-summary.txt
+            fi
+            sleep 10
+          done
+          if [ ! -f coverage/lcov.info ]; then
+            echo "NO_LCOV" | tee -a build/coverage-audit/run-summary.txt
+            exit $rc
+          fi
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          lcov = Path('coverage/lcov.info').read_text(errors='replace').splitlines()
+          files = []
+          current = None
+          for line in lcov:
+              if line.startswith('SF:'):
+                  current = {'path': line[3:], 'lf': 0, 'lh': 0, 'fnf': 0, 'fnh': 0}
+              elif current is not None and line.startswith('LF:'):
+                  current['lf'] = int(line[3:])
+              elif current is not None and line.startswith('LH:'):
+                  current['lh'] = int(line[3:])
+              elif current is not None and line.startswith('FNF:'):
+                  current['fnf'] = int(line[4:])
+              elif current is not None and line.startswith('FNH:'):
+                  current['fnh'] = int(line[4:])
+              elif line == 'end_of_record' and current is not None:
+                  p = current['path'].replace('\\', '/')
+                  marker = '/lib/'
+                  if marker in p:
+                      p = 'lib/' + p.split(marker, 1)[1]
+                  if p.startswith('lib/'):
+                      current['path'] = p
+                      files.append(current)
+                  current = None
+
+          files.sort(key=lambda x: (x['lh'] / x['lf'] if x['lf'] else 1.0, x['path']))
+          total_lf = sum(x['lf'] for x in files)
+          total_lh = sum(x['lh'] for x in files)
+          total_fnf = sum(x['fnf'] for x in files)
+          total_fnh = sum(x['fnh'] for x in files)
+          zero = [x for x in files if x['lf'] > 0 and x['lh'] == 0]
+          partial = [x for x in files if x['lf'] > 0 and x['lh'] < x['lf']]
+
+          out = []
+          out.append('# Production coverage audit')
+          out.append('')
+          out.append(f'- production files in lcov: {len(files)}')
+          out.append(f'- line coverage: {total_lh}/{total_lf} ({(100*total_lh/total_lf if total_lf else 100):.2f}%)')
+          out.append(f'- function coverage: {total_fnh}/{total_fnf} ({(100*total_fnh/total_fnf if total_fnf else 100):.2f}%)')
+          out.append(f'- zero-hit production files: {len(zero)}')
+          out.append(f'- partially uncovered production files: {len(partial)}')
+          out.append('')
+          out.append('## Zero-hit production files')
+          for x in zero:
+              out.append(f"- {x['path']} — lines {x['lh']}/{x['lf']}, functions {x['fnh']}/{x['fnf']}")
+          out.append('')
+          out.append('## Lowest coverage production files')
+          for x in partial[:120]:
+              pct = 100*x['lh']/x['lf'] if x['lf'] else 100
+              out.append(f"- {x['path']} — {pct:.2f}% ({x['lh']}/{x['lf']}), functions {x['fnh']}/{x['fnf']}")
+          Path('build/coverage-audit/production-coverage.md').write_text('\n'.join(out)+'\n')
+          Path('build/coverage-audit/zero-hit-files.txt').write_text('\n'.join(x['path'] for x in zero)+'\n')
+          print('\n'.join(out[:30]))
+          PY
+
+          cp coverage/lcov.info build/coverage-audit/lcov.info
+          exit $rc
+      - name: Upload coverage audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-coverage-audit
+          path: build/coverage-audit
+          if-no-files-found: warn
+          retention-days: 7
