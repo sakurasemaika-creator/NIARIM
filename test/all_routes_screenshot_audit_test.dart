@@ -56,6 +56,61 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
+      Future<void> loadFonts() async {
+        await tester.runAsync(() async {
+          final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+          final assets = manifest.listAssets();
+
+          Future<void> loadFamily(String family, String needle) async {
+            final matches = assets.where((a) => a.contains(needle)).toList();
+            if (matches.isEmpty) return;
+            final loader = FontLoader(family)
+              ..addFont(rootBundle.load(matches.first));
+            await loader.load();
+          }
+
+          Future<void> loadSdkMaterialIcons() async {
+            final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+            if (flutterRoot == null) return;
+            final file = File(
+              '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+            );
+            if (!file.existsSync()) return;
+            final data = ByteData.sublistView(
+              Uint8List.fromList(await file.readAsBytes()),
+            );
+            final loader = FontLoader('MaterialIcons')
+              ..addFont(Future<ByteData>.value(data));
+            await loader.load();
+          }
+
+          await Future.wait([
+            loadFamily('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
+            loadFamily('Kuramubon', 'assets/fonts/Kuramubon.otf'),
+            loadFamily('NotoSerifJP', 'assets/fonts/NotoSerifJP.ttf'),
+            loadFamily('FontAwesomeSolid', 'fa-solid-900.ttf'),
+            loadFamily('FontAwesomeRegular', 'fa-regular-400.ttf'),
+            loadFamily('FontAwesomeBrands', 'fa-brands-400.ttf'),
+            loadSdkMaterialIcons(),
+          ]);
+        });
+      }
+
+      Future<void> settleRoute({int maxRounds = 12}) async {
+        for (var i = 0; i < maxRounds; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 100)),
+          );
+          await tester.pump();
+          if (i >= 2 &&
+              find.byType(CircularProgressIndicator).evaluate().isEmpty) {
+            break;
+          }
+        }
+      }
+
+      await loadFonts();
       appRouter.go('/');
       final providers = await tester.runAsync(buildAppProviders);
       final boundaryKey = GlobalKey();
@@ -65,14 +120,14 @@ void main() {
           child: MultiProvider(providers: providers!, child: const NiarimApp()),
         ),
       );
-      await tester.pump(const Duration(milliseconds: 500));
+      await settleRoute();
 
       final out = Directory('build/all-route-screenshots')
         ..createSync(recursive: true);
       final failures = <String>[];
 
       Future<void> capture(String name) async {
-        await tester.pump(const Duration(milliseconds: 250));
+        await settleRoute();
         final exception = tester.takeException();
         if (exception != null) failures.add('$name: $exception');
         final boundary =
@@ -105,15 +160,15 @@ void main() {
       final launchButton = find.byIcon(Icons.brush_outlined);
       if (launchButton.evaluate().isNotEmpty) {
         await tester.tap(launchButton.first);
-        await tester.pump(const Duration(milliseconds: 700));
+        await settleRoute();
         final firstLaunch = find.text('はじめる');
         if (firstLaunch.evaluate().isNotEmpty) {
           await tester.tap(firstLaunch.first);
-          await tester.pump(const Duration(milliseconds: 600));
+          await settleRoute();
         }
       } else {
         appRouter.go('/home');
-        await tester.pump(const Duration(milliseconds: 700));
+        await settleRoute();
       }
       await capture('01_home');
 
@@ -169,7 +224,7 @@ void main() {
       for (final entry in routes) {
         try {
           appRouter.go(entry.route);
-          await tester.pump(const Duration(milliseconds: 850));
+          await settleRoute();
           await capture(entry.name);
         } catch (e) {
           failures.add('${entry.name}: navigation failed: $e');
@@ -184,6 +239,6 @@ void main() {
       );
       expect(failures, isEmpty, reason: failures.join('\n'));
     },
-    timeout: const Timeout(Duration(minutes: 8)),
+    timeout: const Timeout(Duration(minutes: 10)),
   );
 }
