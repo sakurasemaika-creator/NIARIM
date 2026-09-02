@@ -10,7 +10,7 @@ on:
 jobs:
   visual-reaudit:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -45,6 +45,7 @@ jobs:
           }
 
           run_case all_routes test/all_routes_screenshot_audit_test.dart
+          run_case blend_filters_camera_keyframes test/functional_audit_batch2_test.dart
           run_case builtin_brushes test/functional_audit_batch28_test.dart
           run_case blur_mosaic test/functional_audit_batch33_test.dart
           run_case all_tones test/functional_audit_batch34_test.dart
