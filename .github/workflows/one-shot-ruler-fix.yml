@@ -13,11 +13,12 @@ permissions:
 jobs:
   fix-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Guarded source patch
         shell: python
         run: |
@@ -36,18 +37,63 @@ jobs:
               raise SystemExit('guard failed: anchors not unique')
           s = s.replace(old1, new1).replace(old2, new2)
           p.write_text(s, encoding='utf-8', newline='\n')
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: false
+
       - run: flutter pub get
-      - name: Verify ruler behavior
+
+      - name: Format patched source
+        run: dart format lib/screens/canvas/widgets/canvas_area.dart
+
+      - name: Verify Batch32 real CanvasArea line ruler
+        id: batch32
+        continue-on-error: true
+        shell: bash
         run: |
-          dart format lib/screens/canvas/widgets/canvas_area.dart
-          flutter test test/functional_audit_batch32_test.dart --reporter expanded
-          flutter test test/ruler_engine_test.dart --reporter expanded
-          flutter test test/functional_audit_batch36_test.dart --reporter expanded
+          mkdir -p build/ruler-fix-logs
+          set -o pipefail
+          flutter test test/functional_audit_batch32_test.dart --reporter expanded 2>&1 | tee build/ruler-fix-logs/batch32.log
+
+      - name: Verify RulerEngine unit regressions
+        id: engine
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test test/ruler_engine_test.dart --reporter expanded 2>&1 | tee build/ruler-fix-logs/ruler_engine.log
+
+      - name: Verify Batch36 all seven rulers render
+        id: batch36
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test test/functional_audit_batch36_test.dart --reporter expanded 2>&1 | tee build/ruler-fix-logs/batch36.log
+
+      - name: Save verification logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ruler-fix-diagnostics
+          path: |
+            build/ruler-fix-logs/*.log
+            build/functional-visual/*.png
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail if any ruler verification failed
+        if: steps.batch32.outcome != 'success' || steps.engine.outcome != 'success' || steps.batch36.outcome != 'success'
+        run: |
+          echo "batch32=${{ steps.batch32.outcome }}"
+          echo "engine=${{ steps.engine.outcome }}"
+          echo "batch36=${{ steps.batch36.outcome }}"
+          exit 1
+
       - name: Commit verified fix
+        if: steps.batch32.outcome == 'success' && steps.engine.outcome == 'success' && steps.batch36.outcome == 'success'
         run: |
           git config user.name "sakurasemaika-creator"
           git config user.email "sakurasemaika@gmail.com"
