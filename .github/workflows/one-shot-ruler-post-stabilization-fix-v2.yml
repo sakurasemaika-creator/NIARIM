@@ -1,0 +1,93 @@
+name: One-shot Ruler Post-Stabilization Fix V2
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-ruler-post-stabilization-fix-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Guarded production pipeline patch V2
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p=Path('lib/engine/drawing_engine.dart')
+          s=p.read_text(encoding='utf-8')
+          anchor="""  bool isEraser = false;\n\n  // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）\n"""
+          replacement="""  bool isEraser = false;\n\n  // 定規など、手ブレ補正より後に必ず満たすべき最終座標制約。\n  // nullなら通常描画。CanvasAreaではRulerEngine.snapToRulerを設定する。\n  ui.Offset Function(ui.Offset)? pointConstraint;\n\n  // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）\n"""
+          if anchor not in s: raise SystemExit('field anchor missing')
+          s=s.replace(anchor,replacement,1)
+
+          start=s.index('  void beginStroke(StrokePoint point, String layerId) {')
+          end=s.index('\n  void continueStroke(StrokePoint point, String layerId) {',start)
+          begin="""  void beginStroke(StrokePoint point, String layerId) {\n    _currentStroke.clear();\n    _strokeCoverageByTile.clear();\n    // 平滑化状態は生入力を保持し、定規拘束は描画へ渡す直前に適用する。\n    _smoothed = point;\n    final effective = _applyPointConstraint(point);\n    _activeLayerId = layerId;\n    _distanceSinceLastBrushStamp = 0.0;\n    _hasStampedCurrentStroke = false;\n    // 同じ入力パスは毎回同じ散布位置になるようストローク単位でseedを固定する。\n    // これによりUndo/Redoや入力イベント分割数の違いでランダム位置が変わらない。\n    _scatterRng = math.Random(0);\n    _currentStroke.add(effective);\n\n    final brush = currentBrush;\n    final needsDirection =\n        brush != null && (brush.rotation || brush.scatter > 0.0);\n    // 回転・散布では最初の進行方向が次点到着まで分からないため初点を保留する。\n    // 通常ブラシは従来どおりPointerDown時点で即座に点が描かれる。\n    if (!needsDirection) {\n      _stampBrush(\n        effective.x,\n        effective.y,\n        effective.pressure,\n        effective.tiltX,\n        effective.tiltY,\n        layerId,\n        strokeLengthOverride: 0.0,\n      );\n      _hasStampedCurrentStroke = true;\n    }\n  }\n"""
+          s=s[:start]+begin+s[end:]
+          old="""    final effective = _applyStabilization(point);\n    final from = _currentStroke.last;\n"""
+          new="""    final effective = _applyPointConstraint(_applyStabilization(point));\n    final from = _currentStroke.last;\n"""
+          if old not in s: raise SystemExit('continue anchor missing')
+          s=s.replace(old,new,1)
+          marker='  /// 手ブレ補正：入力座標を直近の平滑化済み座標へ指数移動平均で追従させる。\n'
+          helper="""  StrokePoint _applyPointConstraint(StrokePoint point) {\n    final constraint = pointConstraint;\n    if (constraint == null) return point;\n    final constrained = constraint(ui.Offset(point.x, point.y));\n    return StrokePoint(\n      x: constrained.dx,\n      y: constrained.dy,\n      pressure: point.pressure,\n      tiltX: point.tiltX,\n      tiltY: point.tiltY,\n      inputType: point.inputType,\n    );\n  }\n\n"""
+          if marker not in s: raise SystemExit('stabilization marker missing')
+          s=s.replace(marker,helper+marker,1)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+          p=Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s=p.read_text(encoding='utf-8')
+          old="""    _drawingEngine = DrawingEngine(tileManager: _tileManager);\n    // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに\n"""
+          new="""    _drawingEngine = DrawingEngine(tileManager: _tileManager)\n      ..pointConstraint = _rulerEngine.snapToRuler;\n    // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに\n"""
+          if old not in s: raise SystemExit('CanvasArea init anchor missing')
+          s=s.replace(old,new,1)
+          old="""    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));\n    _beginTileUndo();\n    _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));\n"""
+          new="""    final point = _toCanvasPoint(_rawToStrokePoint(event));\n    _beginTileUndo();\n    _drawingEngine.beginStroke(point, _tileKeyFor(_layerId));\n"""
+          if old not in s: raise SystemExit('CanvasArea down anchor missing')
+          s=s.replace(old,new,1)
+          old="""    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));\n    _drawingEngine.continueStroke(snapped, _tileKeyFor(_layerId));\n"""
+          new="""    final point = _toCanvasPoint(_rawToStrokePoint(event));\n    _drawingEngine.continueStroke(point, _tileKeyFor(_layerId));\n"""
+          if old not in s: raise SystemExit('CanvasArea move anchor missing')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+          p=Path('test/functional_audit_batch36_test.dart')
+          s=p.read_text(encoding='utf-8')
+          old="""      final tm = TileManager(canvasWidth: w, canvasHeight: h);\n      final draw = DrawingEngine(tileManager: tm)\n        ..currentBrush = baseBrush\n        ..currentColor = const ui.Color(0xFFDB3F2E);\n      final re = RulerEngine()..setActiveRuler(c.ruler);\n      re.beginStroke();\n      final snapped = c.raw.map(re.snapToRuler).toList();\n      draw.beginStroke(StrokePoint(x: snapped.first.dx, y: snapped.first.dy, pressure: 1), 'paint');\n      for (final p in snapped.skip(1)) {\n        draw.continueStroke(StrokePoint(x: p.dx, y: p.dy, pressure: 1), 'paint');\n      }\n"""
+          new="""      final tm = TileManager(canvasWidth: w, canvasHeight: h);\n      final re = RulerEngine()..setActiveRuler(c.ruler);\n      re.beginStroke();\n      final draw = DrawingEngine(tileManager: tm)\n        ..currentBrush = baseBrush\n        ..currentColor = const ui.Color(0xFFDB3F2E)\n        ..pointConstraint = re.snapToRuler;\n      final first = c.raw.first;\n      draw.beginStroke(StrokePoint(x: first.dx, y: first.dy, pressure: 1), 'paint');\n      for (final p in c.raw.skip(1)) {\n        draw.continueStroke(StrokePoint(x: p.dx, y: p.dy, pressure: 1), 'paint');\n      }\n"""
+          if old not in s: raise SystemExit('batch36 current pipeline anchor missing')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8',newline='\n')
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: dart format lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart test/functional_audit_batch36_test.dart
+      - name: Drawing engine regressions
+        run: flutter test test/drawing_engine_test.dart --reporter expanded
+      - name: Ruler engine regressions
+        run: flutter test test/ruler_engine_test.dart --reporter expanded
+      - name: Real CanvasArea line ruler
+        run: flutter test test/functional_audit_batch32_test.dart --reporter expanded
+      - name: All seven rulers after stabilization
+        run: flutter test test/functional_audit_batch36_test.dart --reporter expanded
+      - name: Commit verified ruler pipeline fix
+        run: |
+          git config user.name "sakurasemaika-creator"
+          git config user.email "sakurasemaika@gmail.com"
+          git add lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart test/functional_audit_batch36_test.dart
+          git commit -m "fix: constrain ruler strokes after stabilization" || exit 0
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
