@@ -1,0 +1,100 @@
+name: Apply Stamp UI and Niatra Audit Fixes
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/patch-stamp-ui-niatra.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+
+      - name: Apply narrowly-scoped fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected exactly one match, got {count}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8', newline='\n')
+
+          # 1) Quick stamp tab must not pretend built-in stamps are editable.
+          replace_once(
+              'lib/screens/canvas/widgets/pen_sub_tool_panel.dart',
+              """        final stamp = stamps[index];\n        final isSelected = current?.id == stamp.id;\n        return GestureDetector(\n""",
+              """        final stamp = stamps[index];\n        final isSelected = current?.id == stamp.id;\n        final builtIn = stampService.isBuiltIn(stamp.id);\n        return GestureDetector(\n""",
+          )
+          replace_once(
+              'lib/screens/canvas/widgets/pen_sub_tool_panel.dart',
+              """          // 長押しでスタンプ設定（回転・密度・散布）を編集\n          onLongPress: () => _showStampSettingsDialog(context, stampService, stamp),\n""",
+              """          // 組み込みスタンプはStampService側で編集不可なので、\n          // 保存できたように見える偽の編集経路を出さない。複製後は編集可能。\n          onLongPress: builtIn\n              ? null\n              : () => _showStampSettingsDialog(context, stampService, stamp),\n""",
+          )
+
+          # 2) Quick stamp settings use the same ranges/meaning as the full settings panel.
+          replace_once(
+              'lib/screens/canvas/widgets/pen_sub_tool_panel.dart',
+              """    bool rotation = stamp.rotation;\n    double density = stamp.density;\n    double scatter = stamp.scatter;\n""",
+              """    bool rotation = stamp.rotation;\n    int opacity = stamp.opacity;\n    double density = stamp.density;\n    double scatter = stamp.scatter;\n""",
+          )
+          replace_once(
+              'lib/screens/canvas/widgets/pen_sub_tool_panel.dart',
+              """              Row(\n                children: [\n                  Text(l10n.stampDensityLabel, style: const TextStyle(fontSize: 12)),\n                  Expanded(\n                    child: SteppedSlider(\n                      value: density, min: 0.1, max: 1.0, step: 0.01,\n                      label: '${(density * 100).round()}%',\n                      onChanged: (v) => setS(() => density = v),\n                    ),\n                  ),\n                  EditableSliderValue(\n                    text: '${(density * 100).round()}%',\n                    style: const TextStyle(fontSize: 12),\n                    value: (density * 100).round(), min: 10, max: 100,\n                    onChanged: (v) => setS(() => density = v / 100.0),\n                  ),\n                ],\n              ),\n""",
+              """              Row(\n                children: [\n                  Text(l10n.brushSettingsOpacityLabel, style: const TextStyle(fontSize: 12)),\n                  Expanded(\n                    child: SteppedSlider(\n                      value: opacity.toDouble(), min: 1, max: 100, step: 1,\n                      label: '$opacity%',\n                      onChanged: (v) => setS(() => opacity = v.round()),\n                    ),\n                  ),\n                  EditableSliderValue(\n                    text: '$opacity%',\n                    style: const TextStyle(fontSize: 12),\n                    value: opacity.toDouble(), min: 1, max: 100, isInt: true,\n                    onChanged: (v) => setS(() => opacity = v.round()),\n                  ),\n                ],\n              ),\n              Row(\n                children: [\n                  Text(l10n.stampDensityLabel, style: const TextStyle(fontSize: 12)),\n                  Expanded(\n                    child: SteppedSlider(\n                      value: density.clamp(0.1, 5.0), min: 0.1, max: 5.0, step: 0.1,\n                      label: density.toStringAsFixed(1),\n                      onChanged: (v) => setS(() => density = v),\n                    ),\n                  ),\n                  EditableSliderValue(\n                    text: density.toStringAsFixed(1),\n                    style: const TextStyle(fontSize: 12),\n                    value: density, min: 0.1, max: 5.0,\n                    onChanged: (v) => setS(() => density = v.toDouble()),\n                  ),\n                ],\n              ),\n""",
+          )
+          replace_once(
+              'lib/screens/canvas/widgets/pen_sub_tool_panel.dart',
+              """                service.updateStamp(stamp.copyWith(\n                    rotation: rotation, density: density, scatter: scatter));\n""",
+              """                service.updateStamp(stamp.copyWith(\n                  rotation: rotation,\n                  opacity: opacity,\n                  density: density,\n                  scatter: scatter,\n                ));\n""",
+          )
+
+          # 3) Niatra numeric stamp transfer must preserve opacity too.
+          replace_once(
+              'lib/engine/niatra_serializer.dart',
+              """        'rotation': s.rotation, 'density': s.density, 'scatter': s.scatter,\n        'pixelMode': s.pixelMode,\n""",
+              """        'rotation': s.rotation, 'density': s.density, 'scatter': s.scatter,\n        'opacity': s.opacity, 'pixelMode': s.pixelMode,\n""",
+          )
+          replace_once(
+              'lib/engine/niatra_serializer.dart',
+              """        rotation: j['rotation'] as bool? ?? false,\n        density: (j['density'] as num?)?.toDouble() ?? 1.0,\n        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,\n        pixelMode: j['pixelMode'] as bool? ?? false,\n""",
+              """        rotation: j['rotation'] as bool? ?? false,\n        density: (j['density'] as num?)?.toDouble() ?? 1.0,\n        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,\n        opacity: (j['opacity'] as int?) ?? 100,\n        pixelMode: j['pixelMode'] as bool? ?? false,\n""",
+          )
+
+          # 4) Document the fixed-phase tone semantics explicitly.
+          replace_once(
+              'docs/AI設計書/17_ブラシ仕様.md',
+              """- テクスチャは一定サイズでループ表示\n- 回転なし・密度なし・散布なし\n- 不透明度変更可能\n""",
+              """- テクスチャは一定サイズでループ表示\n- パターン原点・位相・向きはキャンバスの絶対ピクセル座標に固定し、ストローク開始位置や描画回数でずらさない\n- 同一トーンを同じ場所へ何度描いても模様の描画位置・空白位置・パターン密度は変化しない（アンチエイリアス部分や不透明度のalpha合成は通常どおり累積してよい）\n- 異なるトーン同士はそれぞれ固定パターンとして重ねられ、ディザリングや疑似グラデーション表現に利用できる\n- 回転なし・密度なし・散布なし\n- 不透明度変更可能\n""",
+          )
+          PY
+
+      - name: Format and verify
+        run: |
+          dart format lib/screens/canvas/widgets/pen_sub_tool_panel.dart lib/engine/niatra_serializer.dart
+          git diff --check
+          git diff --stat
+
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/screens/canvas/widgets/pen_sub_tool_panel.dart lib/engine/niatra_serializer.dart docs/AI設計書/17_ブラシ仕様.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "fix stamp quick settings and tone transfer spec"
+          git push origin HEAD:dev_branch
