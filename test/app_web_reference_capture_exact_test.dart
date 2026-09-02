@@ -165,13 +165,12 @@ void main() {
     return (projectId: p.id, sceneId: ps.scenesOf(p.id).first.id);
   }
 
-  Future<void> openTimelineFromCanvas(WidgetTester tester) async {
-    final timeline = find.text('タイムライン', skipOffstage: false);
-    expect(timeline, findsWidgets);
-    await tester.ensureVisible(timeline.last);
-    await tester.pump(const Duration(milliseconds: 120));
-    await tester.tap(timeline.last, warnIfMissed: false);
-    await tester.pump(const Duration(milliseconds: 650));
+  Future<void> openTimelineWithGlobalRouter(
+    WidgetTester tester,
+    String projectId,
+  ) async {
+    appRouter.go('/timeline/$projectId');
+    await tester.pump(const Duration(milliseconds: 700));
     final e = tester.takeException();
     if (e != null &&
         !e.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
@@ -210,26 +209,22 @@ void main() {
     await shot(tester, '03_canvas_onion_panel');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
-  testWidgets('exact export through production timeline toolbar callback', (
+  testWidgets('exact export through production timeline menu callback', (
     tester,
   ) async {
-    await canvas(tester);
-    await openTimelineFromCanvas(tester);
+    final ids = await canvas(tester);
+    await openTimelineWithGlobalRouter(tester, ids.projectId);
 
-    final exportFinder = find.byWidgetPredicate(
-      (widget) {
-        if (widget is! IconButton) return false;
-        final icon = widget.icon;
-        return icon is Icon && icon.icon == Icons.upload_file;
-      },
+    final menuFinder = find.byWidgetPredicate(
+      (widget) => widget is PopupMenuButton<String>,
       skipOffstage: false,
     );
-    expect(exportFinder, findsWidgets);
-    final exportButton = tester.widget<IconButton>(exportFinder.last);
-    expect(exportButton.onPressed, isNotNull);
-    exportButton.onPressed!.call();
+    expect(menuFinder, findsWidgets);
+    final menu = tester.widget<PopupMenuButton<String>>(menuFinder.last);
+    expect(menu.onSelected, isNotNull);
+    menu.onSelected!.call('export');
     await tester.pump(const Duration(milliseconds: 700));
-    clean(tester, 'timeline to export');
+    clean(tester, 'timeline menu to export');
     expect(find.text('書き出し'), findsWidgets);
     await shot(tester, '07_export');
   }, timeout: const Timeout(Duration(seconds: 180)));
