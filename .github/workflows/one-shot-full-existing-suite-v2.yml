@@ -1,0 +1,29 @@
+name: One-shot Full Existing Suite V2
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/one-shot-full-existing-suite-v2.yml']
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: flutter analyze
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Run every existing test
+        run: flutter test --reporter expanded
