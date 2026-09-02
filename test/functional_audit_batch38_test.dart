@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
@@ -13,6 +16,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final out = Directory('build/functional-visual');
+  setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('実CanvasAreaのレイヤー全体変形で右下拡縮ハンドルをタッチ操作できUndo/Redoできる', (tester) async {
@@ -45,19 +50,25 @@ void main() {
     final beforeCount = _opaque(before);
 
     final providers = await tester.runAsync(buildAppProviders);
+    final boundaryKey = GlobalKey();
     await tester.pumpWidget(MultiProvider(
       providers: [
         ...providers!,
         ChangeNotifierProvider<ProjectService>.value(value: ps),
         ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
       ],
-      child: MaterialApp(home: Scaffold(body: Center(child: SizedBox(
-        width: 288, height: 240,
-        child: CanvasArea(project: p, currentLayerId: layer.id,
-          currentTool: DrawingTool.transform, currentFrame: 0, sceneId: scene.id),
+      child: MaterialApp(home: Scaffold(body: Center(child: RepaintBoundary(
+        key: boundaryKey,
+        child: SizedBox(
+          width: 288, height: 240,
+          child: CanvasArea(project: p, currentLayerId: layer.id,
+            currentTool: DrawingTool.transform, currentFrame: 0, sceneId: scene.id),
+        ),
       )))),
     ));
     await tester.pump(const Duration(milliseconds: 200));
+    await tester.runAsync(() => _capture(boundaryKey, '${out.path}/transform_whole_before_ui.png'));
+
     final origin = tester.getTopLeft(find.byType(CanvasArea));
     Offset at(double x, double y) => origin + Offset(x * 3, y * 3);
 
@@ -70,6 +81,8 @@ void main() {
     await g.up();
     await tester.pump();
     await _waitUndo(tester, undo, 1);
+    await tester.pump(const Duration(milliseconds: 120));
+    await tester.runAsync(() => _capture(boundaryKey, '${out.path}/transform_whole_after_ui.png'));
 
     final after = _read(tm, key, 96, 80);
     final afterCount = _opaque(after);
@@ -82,6 +95,14 @@ void main() {
     undo.redo(); await tester.pump(const Duration(milliseconds: 100));
     expect(_read(tm,key,96,80), orderedEquals(after));
   });
+}
+
+Future<void> _capture(GlobalKey key, String path) async {
+  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final image = await boundary.toImage(pixelRatio: 1);
+  final png = await image.toByteData(format: ui.ImageByteFormat.png);
+  await File(path).writeAsBytes(png!.buffer.asUint8List());
+  image.dispose();
 }
 
 int _opaque(Uint8List d){var n=0;for(var i=3;i<d.length;i+=4)if(d[i]!=0)n++;return n;}
