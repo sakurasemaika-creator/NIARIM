@@ -362,6 +362,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       _tileManager = TileManager(canvasWidth: 1920, canvasHeight: 1080);
     }
     _drawingEngine = DrawingEngine(tileManager: _tileManager);
+    // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに
+    // せずRulerEngineへ同期する。プロジェクト再表示・Widget再生成直後の最初の
+    // ストロークだけ定規が効かない状態を防ぐ。
+    _rulerEngine.setActiveRuler(widget.activeRuler);
     _scheduleComposite();
     _recomposeSurroundings(force: true);
   }
@@ -893,9 +897,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     _syncBrushAndColor();
     // 透視定規：新しいストロークの開始点として、消失点スナップの基準をリセットする。
     _rulerEngine.beginStroke();
-    final snapped = widget.currentTool == DrawingTool.ruler
-        ? _toCanvasPoint(_rawToStrokePoint(event))
-        : _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
+    // 定規ツール自身も、ハンドル以外をドラッグした場合はガイド沿いに描く。
+    // MoveだけでなくDownの最初の点から同じsnap経路へ通し、ストローク先頭に
+    // 定規外の点が残らないようにする。透視定規はRulerEngine側で最初の点を
+    // anchorとして扱うため、この呼び出しで既存仕様も維持される。
+    final snapped = _applyRulerSnap(_toCanvasPoint(_rawToStrokePoint(event)));
     _beginTileUndo();
     _drawingEngine.beginStroke(snapped, _tileKeyFor(_layerId));
     _scheduleComposite();
