@@ -1,0 +1,31 @@
+name: One-shot Batch37 Current Source
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-batch37-current-source.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Show audited assertions
+        run: nl -ba test/functional_audit_batch37_test.dart | sed -n '105,180p'
+      - name: Run current onion real-canvas audit
+        run: flutter test test/functional_audit_batch37_test.dart --reporter expanded
+      - name: Upload onion screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch37-current-source
+          path: build/functional-visual/onion_canvas_real.png
+          if-no-files-found: warn
