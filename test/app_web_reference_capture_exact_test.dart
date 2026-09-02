@@ -100,7 +100,8 @@ void main() {
 
   Future<void> shot(WidgetTester tester, String name) async {
     await tester.pump(const Duration(milliseconds: 220));
-    final boundary = screenshotKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final boundary = screenshotKey.currentContext!.findRenderObject()
+        as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
       final image = await boundary.toImage(pixelRatio: 1);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -122,10 +123,12 @@ void main() {
     phone(tester);
     await fonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(RepaintBoundary(
-      key: screenshotKey,
-      child: MultiProvider(providers: providers!, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: screenshotKey,
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.byIcon(Icons.brush_outlined));
     await tester.pump(const Duration(milliseconds: 650));
@@ -137,11 +140,17 @@ void main() {
     clean(tester, 'boot');
   }
 
-  Future<({String projectId, String sceneId})> canvas(WidgetTester tester) async {
+  Future<({String projectId, String sceneId})> canvas(
+    WidgetTester tester,
+  ) async {
     await boot(tester);
     GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/new-project');
     await tester.pump(const Duration(milliseconds: 600));
-    final create = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
+    final create = find.widgetWithText(
+      FilledButton,
+      '作成',
+      skipOffstage: false,
+    );
     await tester.dragUntilVisible(
       create.first,
       find.byType(SingleChildScrollView).first,
@@ -154,6 +163,21 @@ void main() {
     final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
     final p = ps.projects.first;
     return (projectId: p.id, sceneId: ps.scenesOf(p.id).first.id);
+  }
+
+  Future<void> openTimelineFromCanvas(WidgetTester tester) async {
+    final timeline = find.text('タイムライン', skipOffstage: false);
+    expect(timeline, findsWidgets);
+    await tester.ensureVisible(timeline.last);
+    await tester.pump(const Duration(milliseconds: 120));
+    await tester.tap(timeline.last, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 650));
+    final e = tester.takeException();
+    if (e != null &&
+        !e.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
+      fail('timeline: $e');
+    }
+    expect(find.byType(TimelineScreen), findsOneWidget);
   }
 
   testWidgets('exact onion panel through production callbacks', (tester) async {
@@ -186,17 +210,11 @@ void main() {
     await shot(tester, '03_canvas_onion_panel');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
-  testWidgets('exact export through production timeline toolbar callback', (tester) async {
-    final ids = await canvas(tester);
-    final canvasContext = tester.element(find.byType(Scaffold).first);
-    GoRouter.of(canvasContext).go('/timeline/${ids.projectId}');
-    await tester.pump(const Duration(milliseconds: 700));
-    final timelineException = tester.takeException();
-    if (timelineException != null &&
-        !timelineException.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
-      fail('timeline: $timelineException');
-    }
-    expect(find.byType(TimelineScreen), findsOneWidget);
+  testWidgets('exact export through production timeline toolbar callback', (
+    tester,
+  ) async {
+    await canvas(tester);
+    await openTimelineFromCanvas(tester);
 
     final exportFinder = find.byWidgetPredicate(
       (widget) {
@@ -216,7 +234,9 @@ void main() {
     await shot(tester, '07_export');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
-  testWidgets('exact tree mode screen using real SaveTreeScreen rendering', (tester) async {
+  testWidgets('exact tree mode screen using real SaveTreeScreen rendering', (
+    tester,
+  ) async {
     final ids = await canvas(tester);
     final context = tester.element(find.byType(Scaffold).first);
     final ps = context.read<ProjectService>();
