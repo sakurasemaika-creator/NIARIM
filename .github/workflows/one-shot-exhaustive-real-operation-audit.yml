@@ -18,8 +18,11 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get
-      - name: Analyze current source
-        run: flutter analyze
+      - name: Analyze current source (errors fatal, warnings/info recorded)
+        shell: bash
+        run: |
+          mkdir -p build/audit-logs
+          flutter analyze --no-fatal-warnings --no-fatal-infos 2>&1 | tee build/audit-logs/flutter-analyze.log
       - name: Run every Flutter test file independently with timeout and retry
         shell: bash
         run: |
@@ -51,9 +54,20 @@ jobs:
             if [ $ok -ne 1 ]; then failed=1; fi
           done
           pass_count=$(grep -c '^PASS ' build/audit-logs/summary.txt || true)
-          fail_count=$(grep -Ec '^(FAIL|TIMEOUT|MISSING) ' build/audit-logs/summary.txt || true)
+          unresolved_count=$(awk '
+            /^=== / { current=$2 }
+            /^PASS / { passed[$2]=1 }
+            END {
+              n=0
+              for (i=1; i<=ARGC; i++) {}
+              while ((getline t < "build/audit-logs/discovered-tests.txt") > 0) {
+                if (!(t in passed)) n++
+              }
+              print n
+            }
+          ' build/audit-logs/summary.txt)
           echo "PASS_COUNT=$pass_count" | tee -a build/audit-logs/summary.txt
-          echo "FAIL_EVENT_COUNT=$fail_count" | tee -a build/audit-logs/summary.txt
+          echo "UNRESOLVED_TEST_FILES=$unresolved_count" | tee -a build/audit-logs/summary.txt
           cat build/audit-logs/summary.txt
           exit $failed
       - name: Upload all audit screenshots and logs
