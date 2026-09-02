@@ -6,6 +6,7 @@ on:
       - dev_branch
     paths:
       - '.github/workflows/one-shot-frame-pixel-audit.yml'
+      - 'test/functional_audit_batch23_test.dart'
 
 jobs:
   verify:
