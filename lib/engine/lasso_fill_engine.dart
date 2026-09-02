@@ -64,7 +64,9 @@ class LassoFillEngine {
 
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-        if (!_isInsidePolygon(x.toDouble(), y.toDouble(), points)) continue;
+        // 投げ縄座標は連続座標なので、各画素の左上端ではなく中心点で
+        // 内外判定する。これにより斜辺の外側へ1pxだけはみ出すケースを防ぐ。
+        if (!_isInsidePolygon(x + 0.5, y + 0.5, points)) continue;
         if (selectionMask != null && selectionMask[y * width + x] == 0) continue;
 
         final idx = (y * width + x) * 4;
@@ -118,14 +120,24 @@ class LassoFillEngine {
       for (int x = 0; x < width; x++) {
         final pos = y * width + x;
         if (visited[pos] != 0) continue;
-        if (!_isInsidePolygon(x.toDouble(), y.toDouble(), points)) continue;
+        if (!_isInsidePolygon(x + 0.5, y + 0.5, points)) continue;
         if (selectionMask != null && selectionMask[pos] == 0) continue;
 
         final idx = pos * 4;
         if (result[idx + 3] != 0) continue; // 不透明ピクセルは境界
 
-        // 未訪問の透明ピクセル → フラッドフィルで閉領域を塗る
-        final region = _floodFill(result, width, height, x, y, selectionMask: selectionMask);
+        // 未訪問の透明ピクセル → フラッドフィルで閉領域を塗る。
+        // flood自体も投げ縄内へ制限し、囲みの外側へ接続している透明領域が
+        // 選択範囲外まで広がらないようにする。
+        final region = _floodFill(
+          result,
+          width,
+          height,
+          x,
+          y,
+          polygon: points,
+          selectionMask: selectionMask,
+        );
         for (final pt in region) {
           final rPos = pt.dy.round() * width + pt.dx.round();
           visited[rPos] = 1;
@@ -173,18 +185,25 @@ class LassoFillEngine {
   }
 
   /// スタックベースのフラッドフィル（透明領域を対象）
-  /// 修正：visitedチェックをstack.add()前に行い重複push防止
+  /// visitedチェックをstack.add()前に行い重複push防止。
+  /// [polygon]指定時は画素中心が投げ縄内のピクセルだけを探索する。
   List<ui.Offset> _floodFill(
-    Uint8List data, int width, int height, int startX, int startY, {
+    Uint8List data,
+    int width,
+    int height,
+    int startX,
+    int startY, {
+    List<ui.Offset>? polygon,
     Uint8List? selectionMask,
   }) {
     final result = <ui.Offset>[];
     if (startX < 0 || startX >= width || startY < 0 || startY >= height) return result;
+    if (polygon != null && !_isInsidePolygon(startX + 0.5, startY + 0.5, polygon)) {
+      return result;
+    }
     final startIdx = (startY * width + startX) * 4;
     if (data[startIdx + 3] != 0) return result;
 
-    // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
-    // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策）。
     final visited = Uint8List(width * height);
     final startPos = startY * width + startX;
     visited[startPos] = 1;
@@ -196,6 +215,7 @@ class LassoFillEngine {
       final y = pos ~/ width;
 
       if (selectionMask != null && selectionMask[pos] == 0) continue;
+      if (polygon != null && !_isInsidePolygon(x + 0.5, y + 0.5, polygon)) continue;
 
       final idx = pos * 4;
       if (data[idx + 3] != 0) continue; // 不透明ピクセルは境界
