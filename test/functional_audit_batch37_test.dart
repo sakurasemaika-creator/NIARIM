@@ -104,11 +104,12 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 250));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
-    await tester.pump();
+    await _settleRealAsync(tester);
 
     final off = (await tester.runAsync(() => _capture(boundaryKey)))!;
+    await tester.runAsync(
+      () => File('${out.path}/onion_canvas_real_off.png').writeAsBytes(off.png),
+    );
     final offPrev = _pixel(off.rgba, off.width, 20 * 3, 33 * 3);
     final offCurrent = _pixel(off.rgba, off.width, 48 * 3, 33 * 3);
     final offNext = _pixel(off.rgba, off.width, 76 * 3, 33 * 3);
@@ -132,8 +133,7 @@ void main() {
       );
     });
     await tester.pump();
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 250)));
-    await tester.pump(const Duration(milliseconds: 50));
+    await _settleRealAsync(tester);
 
     final on = (await tester.runAsync(() => _capture(boundaryKey)))!;
     final prev = _pixel(on.rgba, on.width, 20 * 3, 33 * 3);
@@ -160,6 +160,15 @@ void main() {
       () => File('${out.path}/onion_canvas_real.png').writeAsBytes(on.png),
     );
   });
+}
+
+Future<void> _settleRealAsync(WidgetTester tester) async {
+  for (var i = 0; i < 6; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
 }
 
 typedef _Capture = ({Uint8List rgba, Uint8List png, int width, int height});
