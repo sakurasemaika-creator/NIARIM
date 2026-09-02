@@ -63,3 +63,5 @@ jobs:
           name: direct-coverage-gaps
           path: build/direct_coverage_gaps.md
           retention-days: 7
+
+# Audit trigger revision 3: rescan after 458-test baseline.
