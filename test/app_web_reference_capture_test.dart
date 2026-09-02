@@ -14,6 +14,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/project_service.dart';
 
@@ -141,11 +142,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
-  Finder canvasToolbarIcon(IconData icon) {
+  Finder canvasToolbarButton(IconData icon) {
     final toolbar = find.byType(ToolbarWidget);
     return find.descendant(
       of: toolbar,
-      matching: find.byIcon(icon, skipOffstage: false),
+      matching: find.byWidgetPredicate(
+        (widget) => widget is CanvasIconButton && widget.icon == icon,
+        skipOffstage: false,
+      ),
     );
   }
 
@@ -154,7 +158,7 @@ void main() {
     expect(toolbar, findsOneWidget);
     final scroll = find.descendant(of: toolbar, matching: find.byType(SingleChildScrollView));
     expect(scroll, findsOneWidget);
-    final target = canvasToolbarIcon(icon);
+    final target = canvasToolbarButton(icon);
     expect(target, findsOneWidget);
     for (var i = 0; i < 5; i++) {
       final rect = tester.getRect(target);
@@ -171,7 +175,7 @@ void main() {
 
   Future<void> tapCanvasToolbarIcon(WidgetTester tester, IconData icon) async {
     await scrollCanvasToolbarToIcon(tester, icon);
-    final target = canvasToolbarIcon(icon);
+    final target = canvasToolbarButton(icon);
     expect(target, findsOneWidget);
     await tester.tap(target, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 350));
@@ -195,7 +199,7 @@ void main() {
     if (firstLaunch.evaluate().isNotEmpty) {
       await tester.tap(firstLaunch);
       await tester.pump(const Duration(milliseconds: 700));
-      expectClean(tester, '初回案内を閉じる');
+      expectClean(tester, '初回案内を閉じる際に例外');
     }
   }
 
