@@ -8,6 +8,9 @@ class Stamp {
   final bool rotation;
   final double density;
   final double scatter;
+  // スタンプ全体の不透明度（1〜100%）。画像自身のalphaへ乗算して描画する。
+  // 旧データにはこのキーが存在しないため、fromJsonでは100を既定値にする。
+  final int opacity;
   // ピクセルモード：ONの場合、このスタンプの
   // テクスチャをドット絵風（モザイク低解像度化＋色数削減）に加工してから
   // 描画する（procedural_texture.dartのgenerateBuiltInStampTexture参照）。
@@ -22,6 +25,7 @@ class Stamp {
     this.rotation = false,
     this.density = 1.0,
     this.scatter = 0.0,
+    this.opacity = 100,
     this.pixelMode = false,
   });
 
@@ -34,6 +38,7 @@ class Stamp {
     bool? rotation,
     double? density,
     double? scatter,
+    int? opacity,
     bool? pixelMode,
   }) {
     return Stamp(
@@ -45,6 +50,7 @@ class Stamp {
       rotation: rotation ?? this.rotation,
       density: density ?? this.density,
       scatter: scatter ?? this.scatter,
+      opacity: opacity ?? this.opacity,
       pixelMode: pixelMode ?? this.pixelMode,
     );
   }
@@ -58,6 +64,7 @@ class Stamp {
         'rotation': rotation,
         'density': density,
         'scatter': scatter,
+        'opacity': opacity,
         'pixelMode': pixelMode,
       };
 
@@ -70,6 +77,7 @@ class Stamp {
         rotation: j['rotation'] as bool? ?? false,
         density: (j['density'] as num?)?.toDouble() ?? 1.0,
         scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+        opacity: (j['opacity'] as num?)?.round().clamp(1, 100) ?? 100,
         pixelMode: j['pixelMode'] as bool? ?? false,
       );
 }
