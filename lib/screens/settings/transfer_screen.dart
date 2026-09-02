@@ -7,6 +7,7 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../engine/niapro_serializer.dart';
+import '../../engine/niatra_asset_bundle.dart';
 import '../../engine/niatra_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/material_asset.dart' show MaterialType;
@@ -67,139 +68,175 @@ class _TransferScreenState extends State<TransferScreen> {
     return Scaffold(
       // topicはヘルプ画面側の項目タイトル（日本語固定の内部検索キー）と
       // 一致させる必要があるため翻訳しない。
-      appBar: AppBar(title: Text(l10n.transferScreenTitle), actions: const [HelpButton(topic: '引き継ぎ（.niatra）')]),
-      body: desktopCentered(context, Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(l10n.transferInstructionHint,
-                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                Card(
-                  elevation: 1,
-                  shadowColor: Colors.black.withValues(alpha: 0.15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  child: Column(
-                    children: [
-                      for (final key in _items.keys) ...[
-                        if (key != _items.keys.first) const Divider(height: 1),
-                        CheckboxListTile(
-                          title: Text(_itemLabel(l10n, key)),
-                          value: _items[key],
-                          onChanged: (v) => setState(() => _items[key] = v!),
-                        ),
+      appBar: AppBar(
+        title: Text(l10n.transferScreenTitle),
+        actions: const [HelpButton(topic: '引き継ぎ（.niatra）')],
+      ),
+      body: desktopCentered(
+        context,
+        Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                l10n.transferInstructionHint,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  Card(
+                    elevation: 1,
+                    shadowColor: Colors.black.withValues(alpha: 0.15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    child: Column(
+                      children: [
+                        for (final key in _items.keys) ...[
+                          if (key != _items.keys.first) const Divider(height: 1),
+                          CheckboxListTile(
+                            title: Text(_itemLabel(l10n, key)),
+                            value: _items[key],
+                            onChanged: (v) => setState(() => _items[key] = v!),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(l10n.transferProjectsSectionTitle,
-                      style: Theme.of(context).textTheme.titleSmall),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
-                  child: Text(l10n.transferProjectsHint,
-                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                ),
-                Consumer<ProjectService>(
-                  builder: (context, projectService, _) {
-                    final projects = projectService.projects;
-                    if (projects.isEmpty) {
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      l10n.transferProjectsSectionTitle,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+                    child: Text(
+                      l10n.transferProjectsHint,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  Consumer<ProjectService>(
+                    builder: (context, projectService, _) {
+                      final projects = projectService.projects;
+                      if (projects.isEmpty) {
+                        return Card(
+                          elevation: 1,
+                          shadowColor: Colors.black.withValues(alpha: 0.15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          color: Theme.of(context).colorScheme.surfaceContainerLow,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              l10n.transferProjectsEmpty,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      // 削除済みプロジェクトのIDが選択集合に残り続けないよう
+                      // 現存プロジェクトのIDのみに絞り込む。
+                      _selectedProjectIds.removeWhere(
+                        (id) => !projects.any((p) => p.id == id),
+                      );
                       return Card(
                         elevation: 1,
                         shadowColor: Colors.black.withValues(alpha: 0.15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         color: Theme.of(context).colorScheme.surfaceContainerLow,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(l10n.transferProjectsEmpty,
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                        child: Column(
+                          children: [
+                            for (final p in projects) ...[
+                              if (p != projects.first) const Divider(height: 1),
+                              CheckboxListTile(
+                                title: Text(p.name),
+                                value: _selectedProjectIds.contains(p.id),
+                                onChanged: _isBusy
+                                    ? null
+                                    : (v) => setState(() {
+                                          if (v == true) {
+                                            _selectedProjectIds.add(p.id);
+                                          } else {
+                                            _selectedProjectIds.remove(p.id);
+                                          }
+                                        }),
+                              ),
+                            ],
+                          ],
                         ),
                       );
-                    }
-                    // 削除済みプロジェクトのIDが選択集合に残り続けないよう
-                    // 現存プロジェクトのIDのみに絞り込む。
-                    _selectedProjectIds.removeWhere(
-                        (id) => !projects.any((p) => p.id == id));
-                    return Card(
-                      elevation: 1,
-                      shadowColor: Colors.black.withValues(alpha: 0.15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
-                      child: Column(
-                        children: [
-                          for (final p in projects) ...[
-                            if (p != projects.first) const Divider(height: 1),
-                            CheckboxListTile(
-                              title: Text(p.name),
-                              value: _selectedProjectIds.contains(p.id),
-                              onChanged: _isBusy
-                                  ? null
-                                  : (v) => setState(() {
-                                        if (v == true) {
-                                          _selectedProjectIds.add(p.id);
-                                        } else {
-                                          _selectedProjectIds.remove(p.id);
-                                        }
-                                      }),
-                            ),
-                          ],
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            // OSの文字サイズ設定（textScaler）を大きくすると、4つの
-            // ボタンが1行に収まらずRenderFlexオーバーフローになっていた
-            // ため、Wrapで折り返せるようにする（Spacerは使えないので、
-            // 「読み込み」とそれ以外の間隔はspacingで表現する）。
-            child: Wrap(
-              alignment: WrapAlignment.end,
-              spacing: 8,
-              runSpacing: 4,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: _isBusy ? null : _import,
-                  child: Text(l10n.transferImport),
-                ),
-                TextButton(
-                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => true)),
-                  child: Text(l10n.homeSelectionAllSelect),
-                ),
-                TextButton(
-                  onPressed: _isBusy ? null : () => setState(() => _items.updateAll((_, _) => false)),
-                  child: Text(l10n.homeSelectionAllDeselect),
-                ),
-                FilledButton.icon(
-                  onPressed: (!_isBusy &&
-                          (_items.values.any((v) => v) || _selectedProjectIds.isNotEmpty))
-                      ? _export
-                      : null,
-                  icon: _isBusy
-                      ? const SizedBox(
-                          width: 16, height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.file_upload),
-                  label: Text(l10n.transferExport),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              // OSの文字サイズ設定（textScaler）を大きくすると、4つの
+              // ボタンが1行に収まらずRenderFlexオーバーフローになっていた
+              // ため、Wrapで折り返せるようにする（Spacerは使えないので、
+              // 「読み込み」とそれ以外の間隔はspacingで表現する）。
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: _isBusy ? null : _import,
+                    child: Text(l10n.transferImport),
+                  ),
+                  TextButton(
+                    onPressed: _isBusy
+                        ? null
+                        : () => setState(() => _items.updateAll((_, _) => true)),
+                    child: Text(l10n.homeSelectionAllSelect),
+                  ),
+                  TextButton(
+                    onPressed: _isBusy
+                        ? null
+                        : () => setState(() => _items.updateAll((_, _) => false)),
+                    child: Text(l10n.homeSelectionAllDeselect),
+                  ),
+                  FilledButton.icon(
+                    onPressed: (!_isBusy &&
+                            (_items.values.any((v) => v) ||
+                                _selectedProjectIds.isNotEmpty))
+                        ? _export
+                        : null,
+                    icon: _isBusy
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.file_upload),
+                    label: Text(l10n.transferExport),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      )),
+          ],
+        ),
+      ),
     );
   }
 
@@ -210,7 +247,9 @@ class _TransferScreenState extends State<TransferScreen> {
   /// 常にフルバンドル（全素材種別＋使用中フォント）で書き出す。
   /// 生成した.niashareは一時ファイルとしてしか使わないため、バイト列を
   /// 読み終えたら都度削除する。
-  Future<Map<String, Uint8List>> _buildProjectFiles(ProjectService projectService) async {
+  Future<Map<String, Uint8List>> _buildProjectFiles(
+    ProjectService projectService,
+  ) async {
     if (_selectedProjectIds.isEmpty) return const {};
     final materialService = context.read<MaterialService>();
     final fontService = context.read<FontService>();
@@ -220,8 +259,15 @@ class _TransferScreenState extends State<TransferScreen> {
       if (project == null) continue;
       final scenes = projectService.scenesOf(id);
       final tileManager = projectService.tileManagerOf(id);
-      final bundle = await materialService.buildShareBundle(id, MaterialType.values.toSet());
-      final fontBundle = await buildFontShareBundle(projectService, fontService, id);
+      final bundle = await materialService.buildShareBundle(
+        id,
+        MaterialType.values.toSet(),
+      );
+      final fontBundle = await buildFontShareBundle(
+        projectService,
+        fontService,
+        id,
+      );
       final file = await NiaproSerializer.saveShare(
         project: project,
         scenes: scenes,
@@ -244,29 +290,46 @@ class _TransferScreenState extends State<TransferScreen> {
     setState(() => _isBusy = true);
     try {
       final projectService = context.read<ProjectService>();
+      final brushService = context.read<BrushService>();
+      final toneService = context.read<ToneService>();
+      final stampService = context.read<StampService>();
       final projectFiles = await _buildProjectFiles(projectService);
       if (!mounted) return;
-      // メモリ上でZIPバイト列を生成してから共有する（Web版ではpath_provider
-      // が使えずローカルファイルを作れないため、ファイルI/Oを介さない方式に
-      // 統一している）。プロジェクト埋め込みのみ一時ファイル書き出しを内部で
-      // 使う（.niapro形式自体が既にdart:io前提のため）。
-      final bytes = await NiatraSerializer.export(
+      // まず既存Serializerで設定・プリセット・プロジェクト等を生成し、そのZIPへ
+      // カスタムブラシ／トーン／スタンプ画像本体と完全なモデルJSONを追加する。
+      // これにより別端末でも元端末の絶対ファイルパスに依存しない。
+      final rawBytes = await NiatraSerializer.export(
         selectedItems: _items,
         settings: context.read<SettingsService>(),
-        brush: context.read<BrushService>(),
-        tone: context.read<ToneService>(),
-        stamp: context.read<StampService>(),
+        brush: brushService,
+        tone: toneService,
+        stamp: stampService,
         autofillPresets: context.read<AutofillPresetService>(),
         theme: context.read<ThemeService>(),
         palette: context.read<PaletteService>(),
         pixelArtPalette: context.read<PixelArtPaletteService>(),
         projectFiles: projectFiles,
       );
+      final bytes = await NiatraAssetBundle.enrichExport(
+        rawBytes,
+        selectedItems: _items,
+        brush: brushService,
+        tone: toneService,
+        stamp: stampService,
+      );
       if (!mounted) return;
       final fileName = 'niarim_${DateTime.now().millisecondsSinceEpoch}.niatra';
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile.fromData(bytes, name: fileName, mimeType: 'application/octet-stream')],
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              bytes,
+              name: fileName,
+              mimeType: 'application/octet-stream',
+            ),
+          ],
+        ),
+      );
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -301,12 +364,25 @@ class _TransferScreenState extends State<TransferScreen> {
           ? NiatraSerializer.loadFromBytes(picked.bytes!)
           : await NiatraSerializer.load(picked.path!);
       if (!mounted) return;
+
+      final brushService = context.read<BrushService>();
+      final toneService = context.read<ToneService>();
+      final stampService = context.read<StampService>();
+      // 新形式のカスタム画像を先にアプリ領域へ展開する。処理済みカテゴリは
+      // data.rawから除かれるため、その後のapplyTo()で二重追加されない。
+      await NiatraAssetBundle.restoreEmbeddedAssets(
+        data,
+        brush: brushService,
+        tone: toneService,
+        stamp: stampService,
+      );
+      if (!mounted) return;
       NiatraSerializer.applyTo(
         data,
         settings: context.read<SettingsService>(),
-        brush: context.read<BrushService>(),
-        tone: context.read<ToneService>(),
-        stamp: context.read<StampService>(),
+        brush: brushService,
+        tone: toneService,
+        stamp: stampService,
         autofillPresets: context.read<AutofillPresetService>(),
         theme: context.read<ThemeService>(),
         palette: context.read<PaletteService>(),
@@ -314,7 +390,10 @@ class _TransferScreenState extends State<TransferScreen> {
       );
       // プロジェクトの復元はファイルI/Oを伴う非同期処理のため、他項目の
       // 同期的なapplyTo()とは別にawaitする。
-      await NiatraSerializer.restoreProjects(data, context.read<ProjectService>());
+      await NiatraSerializer.restoreProjects(
+        data,
+        context.read<ProjectService>(),
+      );
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
