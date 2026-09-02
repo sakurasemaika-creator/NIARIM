@@ -1,0 +1,26 @@
+name: One-shot export crop camera audit
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - '.github/workflows/one-shot-export-crop-camera-audit.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Export crop and camera functional test
+        run: flutter test test/functional_audit_batch22_test.dart --reporter expanded
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings test/functional_audit_batch22_test.dart
