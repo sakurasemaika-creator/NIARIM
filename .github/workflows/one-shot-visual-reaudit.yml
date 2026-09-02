@@ -57,6 +57,7 @@ jobs:
           run_case whole_layer_transform test/functional_audit_batch38_test.dart
           run_case all_filters test/visual_reaudit_filters_test.dart
           run_case export_camera test/visual_reaudit_export_camera_test.dart
+          run_case initial_canvas_composite test/visual_reaudit_initial_composite_test.dart
 
           echo "visual reaudit failures=$failures"
           exit $failures
