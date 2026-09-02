@@ -250,8 +250,12 @@ class LayerCompositor {
   /// 正しい結果になるよう、W3C Compositing and Blendingの一般式を使う。
   static Future<ui.Image> _subtractImages(
       ui.Image backdrop, ui.Image source, int width, int height) async {
-    final backdropData = await backdrop.toByteData(format: ui.ImageByteFormat.rawRgba);
-    final sourceData = await source.toByteData(format: ui.ImageByteFormat.rawRgba);
+    // rawRgba はpremultiplied alphaなので、半透明レイヤーではRGBにもalphaが
+    // 既に掛かっている。それをstraight RGBとして扱うと、減算計算でalphaを
+    // 二重適用してしまう（例：50%不透明の減算が薄すぎる）。
+    // rawStraightRgbaを使い、ブレンド式へ渡すRGBとalphaを独立した値で取得する。
+    final backdropData = await backdrop.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+    final sourceData = await source.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
     if (backdropData == null || sourceData == null) {
       // ネイティブ画像の読み出しに失敗した場合だけ、安全側として元の背景を返す。
       return backdrop.clone();
