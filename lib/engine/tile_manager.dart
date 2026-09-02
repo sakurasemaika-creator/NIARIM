@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart' show compute;
+
 import 'brightness_alpha_engine.dart';
 import 'filter_engine.dart';
 import 'mesh_warp_engine.dart';
@@ -65,7 +67,8 @@ class TileManager {
   // 経由で小さい値へ絞れるよう、コンストラクタで上書きできるようにしてある
   // （見た目・機能は変わらず、再合成の頻度がわずかに増えるのみ）。
   final int compositeCacheMax;
-  final Map<String, ui.Image> _compositeCache = {}; // 挿入順=LRU順（Dart既定のMapはLinkedHashMap）
+  final Map<String, ui.Image> _compositeCache =
+      {}; // 挿入順=LRU順（Dart既定のMapはLinkedHashMap）
 
   void _invalidateCache(String layerId) {
     _compositeCache.remove(layerId)?.dispose();
@@ -82,7 +85,9 @@ class TileManager {
   }
 
   void _invalidateCachePrefix(String prefix) {
-    final keys = _compositeCache.keys.where((k) => k.startsWith(prefix)).toList();
+    final keys = _compositeCache.keys
+        .where((k) => k.startsWith(prefix))
+        .toList();
     for (final k in keys) {
       _compositeCache.remove(k)?.dispose();
     }
@@ -115,8 +120,8 @@ class TileManager {
     required this.canvasWidth,
     required this.canvasHeight,
     this.compositeCacheMax = 16,
-  })  : tilesX = (canvasWidth / tileSize).ceil(),
-        tilesY = (canvasHeight / tileSize).ceil();
+  }) : tilesX = (canvasWidth / tileSize).ceil(),
+       tilesY = (canvasHeight / tileSize).ceil();
 
   String _tileKey(int tx, int ty) => '$tx,$ty';
 
@@ -165,24 +170,22 @@ class TileManager {
   // ─── ピクセル操作 ─────────────────────────────────────────────────────
 
   /// タイル内の (px, py) に ARGB 値を alpha-composite で書き込む。
-  void blendPixel(
-    Uint8List tile,
-    int px,
-    int py,
-    int r,
-    int g,
-    int b,
-    int a,
-  ) {
+  void blendPixel(Uint8List tile, int px, int py, int r, int g, int b, int a) {
     if (px < 0 || px >= tileSize || py < 0 || py >= tileSize) return;
     final idx = (py * tileSize + px) * 4;
     final srcA = a / 255.0;
     final dstA = tile[idx + 3] / 255.0;
     final outA = srcA + dstA * (1.0 - srcA);
     if (outA <= 0) return;
-    tile[idx]     = ((r * srcA + tile[idx]     * dstA * (1.0 - srcA)) / outA).round().clamp(0, 255);
-    tile[idx + 1] = ((g * srcA + tile[idx + 1] * dstA * (1.0 - srcA)) / outA).round().clamp(0, 255);
-    tile[idx + 2] = ((b * srcA + tile[idx + 2] * dstA * (1.0 - srcA)) / outA).round().clamp(0, 255);
+    tile[idx] = ((r * srcA + tile[idx] * dstA * (1.0 - srcA)) / outA)
+        .round()
+        .clamp(0, 255);
+    tile[idx + 1] = ((g * srcA + tile[idx + 1] * dstA * (1.0 - srcA)) / outA)
+        .round()
+        .clamp(0, 255);
+    tile[idx + 2] = ((b * srcA + tile[idx + 2] * dstA * (1.0 - srcA)) / outA)
+        .round()
+        .clamp(0, 255);
     tile[idx + 3] = (outA * 255).round().clamp(0, 255);
   }
 
@@ -300,7 +303,9 @@ class TileManager {
     final picture = recorder.endRecording();
     final transformed = await picture.toImage(canvasWidth, canvasHeight);
     picture.dispose();
-    final byteData = await transformed.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await transformed.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     transformed.dispose();
     if (byteData == null) return;
     replaceLayerPixels(layerId, byteData.buffer.asUint8List());
@@ -326,7 +331,9 @@ class TileManager {
       outputHeight: canvasHeight,
     );
     composite.dispose();
-    final byteData = await warped.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await warped.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     warped.dispose();
     if (byteData == null) return;
     replaceLayerPixels(layerId, byteData.buffer.asUint8List());
@@ -339,9 +346,14 @@ class TileManager {
   /// そのまま・輝度ベースの単純な不透明度化）、falseならカラー（GIMPの
   /// 「色を透明に」と同じアルゴリズムで、色を白の外側へ復元しながら透過）。
   /// 低スペック端末でのUIスレッドブロックを防ぐため、計算自体は別Isolateで行う。
-  Future<void> applyBrightnessToAlpha(String layerId, {required bool grayMode}) async {
+  Future<void> applyBrightnessToAlpha(
+    String layerId, {
+    required bool grayMode,
+  }) async {
     final composite = await compositeLayerToImage(layerId);
-    final byteData = await composite.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await composite.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     composite.dispose();
     if (byteData == null) return;
     final transformed = await compute(
@@ -361,13 +373,19 @@ class TileManager {
     required double contrast,
   }) async {
     final composite = await compositeLayerToImage(layerId);
-    final byteData = await composite.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await composite.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     composite.dispose();
     if (byteData == null) return;
     final engine = FilterEngine();
     final transformed = engine.applyColorAdjust(
-      byteData.buffer.asUint8List(), canvasWidth, canvasHeight,
-      saturation: saturation, brightness: brightness, contrast: contrast,
+      byteData.buffer.asUint8List(),
+      canvasWidth,
+      canvasHeight,
+      saturation: saturation,
+      brightness: brightness,
+      contrast: contrast,
     );
     replaceLayerPixels(layerId, transformed);
   }
@@ -394,7 +412,10 @@ class TileManager {
           tile.setRange(rowDst, rowDst + byteLen, bytes, rowSrc);
         }
         for (int i = 3; i < tile.length; i += 4) {
-          if (tile[i] != 0) { hasContent = true; break; }
+          if (tile[i] != 0) {
+            hasContent = true;
+            break;
+          }
         }
         final key = _tileKey(tx, ty);
         if (recording) {
@@ -426,10 +447,22 @@ class TileManager {
   /// レイヤー全体を(dx, dy)だけ平行移動する（移動ツール用）。
   Future<void> translateLayer(String layerId, double dx, double dy) {
     final m = Float64List.fromList(const [
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
     ]);
     m[12] = dx;
     m[13] = dy;
@@ -474,7 +507,8 @@ class TileManager {
     for (final dirtyKey in _dirtyTiles) {
       if (dirtyKey.startsWith('$layerId:')) {
         final tileKey = dirtyKey.substring(layerId.length + 1);
-        if (layerTiles.containsKey(tileKey)) result[tileKey] = layerTiles[tileKey]!;
+        if (layerTiles.containsKey(tileKey))
+          result[tileKey] = layerTiles[tileKey]!;
       }
     }
     return result;
@@ -509,11 +543,14 @@ class TileManager {
     if (!_recordingUndo || layerId != _recordingLayerId) return;
     if (_undoBefore.containsKey(tileKey)) return;
     final existing = _tiles[layerId]?[tileKey];
-    _undoBefore[tileKey] = existing == null ? null : Uint8List.fromList(existing);
+    _undoBefore[tileKey] = existing == null
+        ? null
+        : Uint8List.fromList(existing);
   }
 
   /// Undo記録を終了し、変更前後のタイルスナップショットを返す（変更が無ければ空）。
-  ({Map<String, Uint8List?> before, Map<String, Uint8List?> after}) endUndoRecording() {
+  ({Map<String, Uint8List?> before, Map<String, Uint8List?> after})
+  endUndoRecording() {
     _recordingUndo = false;
     final layerId = _recordingLayerId;
     _recordingLayerId = null;
@@ -529,6 +566,20 @@ class TileManager {
     final before = Map<String, Uint8List?>.from(_undoBefore);
     _undoBefore.clear();
     return (before: before, after: after);
+  }
+
+  /// Undo記録中の操作をキャンセルし、変更済みタイルを記録開始直前へ
+  /// 即座に戻す。選択変形の浮動画像生成が間に合わずpointer-upされた場合や、
+  /// 変形途中でフレームを切り替えた場合など「操作自体を成立させない」用途。
+  /// Undo履歴へは登録せず、操作前状態へ完全復元する。
+  void cancelUndoRecordingAndRestore() {
+    final layerId = _recordingLayerId;
+    final before = Map<String, Uint8List?>.from(_undoBefore);
+    _recordingUndo = false;
+    _recordingLayerId = null;
+    _undoBefore.clear();
+    if (layerId == null || before.isEmpty) return;
+    applyTileSnapshot(layerId, before);
   }
 
   /// Undo/Redo用：タイルスナップショットをレイヤーへ適用する。

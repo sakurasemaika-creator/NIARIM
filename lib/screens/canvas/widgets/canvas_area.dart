@@ -400,6 +400,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       // 選択範囲の変形操作中にフレームが切り替わった場合の後始末
       // （通常のUIフローでは起こりにくいが、念のため状態を破棄する）。
       if (_selectionTransformActive) {
+        _cancelTileUndoAndRestore();
         _floatingSelectionImage?.dispose();
         _floatingSelectionImage = null;
         _selectionTransformActive = false;
@@ -453,6 +454,10 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   void dispose() {
+    if (_selectionTransformActive && _undoRecordingLayerKey != null) {
+      _tileManager.cancelUndoRecordingAndRestore();
+      _undoRecordingLayerKey = null;
+    }
     _holdEyedropperTimer?.cancel();
     meshSourceImage?.dispose();
     _transformController.dispose();
@@ -1229,6 +1234,15 @@ class _CanvasAreaState extends State<CanvasArea> {
         },
       ),
     );
+  }
+
+  /// 開始済みのタイルUndo記録を履歴へ残さずキャンセルし、操作開始前の
+  /// タイルへ即時復元する。非同期プレビューの準備前に操作が終了した場合など、
+  /// 「途中までの変更」を絶対にレイヤーへ残してはいけない経路で使う。
+  void _cancelTileUndoAndRestore() {
+    _tileManager.cancelUndoRecordingAndRestore();
+    _undoRecordingLayerKey = null;
+    if (mounted) _scheduleComposite();
   }
 
   // ─── 投げ縄塗り（ペンサブツール） ─────────────────────────────
@@ -2099,9 +2113,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       _floatingSelectionImage = null;
     });
     if (floating == null) {
-      // 浮動画像の生成が間に合わないうちに指を離した場合：既に切り取り済みの
-      // 穴だけが残らないよう、Undoで元に戻せる状態のまま記録を終了する。
-      _finishTileUndo();
+      // 浮動画像の生成が間に合わないうちに指を離した場合：変形操作は成立
+      // していないので、切り取り途中の画素をUndo履歴として残すのではなく、
+      // 操作開始直前へ即時ロールバックする。
+      _cancelTileUndoAndRestore();
       return;
     }
     final key = _tileKeyFor(_layerId);

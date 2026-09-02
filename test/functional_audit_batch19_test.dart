@@ -69,8 +69,11 @@ void main() {
     // 高速pointer-up・フレーム切替・ツール離脱など、変形確定前のキャンセル。
     tm.cancelUndoRecordingAndRestore();
     final restored = _canvas(tm, layer, w, h);
-    expect(restored, orderedEquals(before),
-        reason: '選択変形が成立しなかった場合、切り取った領域も含め全byteが操作前へ戻ること');
+    expect(
+      restored,
+      orderedEquals(before),
+      reason: '選択変形が成立しなかった場合、切り取った領域も含め全byteが操作前へ戻ること',
+    );
     await _save(restored, w, h, '${out.path}/selection_interrupt_restored.png');
   });
 
@@ -86,8 +89,11 @@ void main() {
     expect(tm.hasLayer(layer), isTrue);
 
     tm.cancelUndoRecordingAndRestore();
-    expect(tm.hasLayer(layer), isFalse,
-        reason: '操作前に存在しなかったタイルはキャンセルでnullスナップショットへ戻ること');
+    expect(
+      tm.hasLayer(layer),
+      isFalse,
+      reason: '操作前に存在しなかったタイルはキャンセルでnullスナップショットへ戻ること',
+    );
   });
 }
 
@@ -95,7 +101,11 @@ Uint8List _canvas(TileManager tm, String layer, int w, int h) {
   final result = Uint8List(w * h * 4);
   for (var y = 0; y < h; y++) {
     for (var x = 0; x < w; x++) {
-      final tile = tm.getTile(layer, x ~/ TileManager.tileSize, y ~/ TileManager.tileSize);
+      final tile = tm.getTile(
+        layer,
+        x ~/ TileManager.tileSize,
+        y ~/ TileManager.tileSize,
+      );
       if (tile == null) continue;
       final lx = x % TileManager.tileSize;
       final ly = y % TileManager.tileSize;
@@ -115,9 +125,11 @@ bool _inside(ui.Offset p, List<ui.Offset> poly) {
   for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     final pi = poly[i];
     final pj = poly[j];
-    final intersects = ((pi.dy > p.dy) != (pj.dy > p.dy)) &&
+    final intersects =
+        ((pi.dy > p.dy) != (pj.dy > p.dy)) &&
         (p.dx <
-            (pj.dx - pi.dx) * (p.dy - pi.dy) /
+            (pj.dx - pi.dx) *
+                    (p.dy - pi.dy) /
                     ((pj.dy - pi.dy).abs() < 1e-12 ? 1e-12 : pj.dy - pi.dy) +
                 pi.dx);
     if (intersects) inside = !inside;
