@@ -19,6 +19,7 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get
+      - run: python .github/scripts/fix_final_remaining_test.py
       - run: flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
       - if: always()
         uses: actions/upload-artifact@v4
