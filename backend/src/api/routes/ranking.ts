@@ -16,7 +16,10 @@ import { toPublicWork } from './_publicWork';
  *   済ませるための設計（ranking.tsの設計メモ参照）。
  * - `period=bookmarks`：8.5節のブックマーク数ランキング。GSI2を使う。
  */
-export async function getRanking(event: APIGatewayProxyEventV2, period: string) {
+// eventは現状使っていないが、他のルートと引数の形を揃えておく
+// （router側が全ルートを同じシグネチャで呼び分けるため）。
+// eslint/tscの未使用検出を避けるためアンダースコア始まりにする。
+export async function getRanking(_event: APIGatewayProxyEventV2, period: string) {
   if (period === 'bookmarks') return getBookmarkRanking();
   if (period === 'all') return getAllTimeRanking();
   if (isDeltaRankingPeriod(period)) return getPeriodRanking(period);

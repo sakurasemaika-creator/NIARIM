@@ -100,19 +100,28 @@ export async function reservePostQuota(niarimUserId: string, tier: MembershipTie
 export async function releasePostQuota(niarimUserId: string): Promise<void> {
   const now = new Date();
   const date = todayYyyymmdd(now);
-  for (const key of [Keys.dailyCounter(niarimUserId, date), Keys.dailyCounter(GLOBAL_COUNTER_USER_ID, date)]) {
-    await ddb.send(
-      new UpdateCommand({
-        TableName: tableName(),
-        Key: key,
-        UpdateExpression: 'ADD #c :minusOne',
-        ConditionExpression: 'attribute_exists(#c) AND #c > :zero',
-        ExpressionAttributeNames: { '#c': 'count' },
-        ExpressionAttributeValues: { ':minusOne': -1, ':zero': 0 },
-      }),
-    ).catch((err) => {
-      // 既に0まで戻っている等は無視してよい（解放は best-effort）。
-      if (!(err instanceof ConditionalCheckFailedException)) throw err;
-    });
-  }
+  // ユーザー単位と全体の2カウンターは互いに独立で、どちらも best-effort。
+  // 直列にawaitするとDynamoDBへの往復が2回ぶん待ち時間になるため並列に送る。
+  await Promise.all(
+    [
+      Keys.dailyCounter(niarimUserId, date),
+      Keys.dailyCounter(GLOBAL_COUNTER_USER_ID, date),
+    ].map((key) =>
+      ddb
+        .send(
+          new UpdateCommand({
+            TableName: tableName(),
+            Key: key,
+            UpdateExpression: 'ADD #c :minusOne',
+            ConditionExpression: 'attribute_exists(#c) AND #c > :zero',
+            ExpressionAttributeNames: { '#c': 'count' },
+            ExpressionAttributeValues: { ':minusOne': -1, ':zero': 0 },
+          }),
+        )
+        .catch((err: unknown) => {
+          // 既に0まで戻っている等は無視してよい（解放は best-effort）。
+          if (!(err instanceof ConditionalCheckFailedException)) throw err;
+        }),
+    ),
+  );
 }
