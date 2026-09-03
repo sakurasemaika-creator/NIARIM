@@ -153,6 +153,7 @@ class PremiumScreen extends StatelessWidget {
                   premium,
                   PremiumService.yearlyProductId,
                   originalPrice: l10n.premiumYearlyOriginalPrice,
+                  perMonthLabel: l10n.premiumYearlyPerMonthLabel,
                 ),
                 const SizedBox(height: 12),
                 _planCard(
@@ -390,9 +391,7 @@ class PremiumScreen extends StatelessWidget {
     bool premiumColumn = false,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    final foreground = premiumColumn
-        ? scheme.onPrimary
-        : scheme.onSurface;
+    final foreground = premiumColumn ? scheme.onPrimary : scheme.onSurface;
     if (value == '○') {
       return Icon(
         Icons.check_circle_rounded,
@@ -567,6 +566,7 @@ class PremiumScreen extends StatelessWidget {
     PremiumService premium,
     String productId, {
     String? originalPrice,
+    String? perMonthLabel,
   }) {
     final scheme = Theme.of(context).colorScheme;
     final busy = premium.purchasePending;
@@ -710,6 +710,15 @@ class PremiumScreen extends StatelessWidget {
                           color: scheme.onSurface,
                         ),
                       ),
+                      if (perMonthLabel != null)
+                        Text(
+                          perMonthLabel,
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
                     ],
                   ),
                 ),
