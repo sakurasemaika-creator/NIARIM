@@ -9,6 +9,7 @@ import 'package:niarim/engine/ruler_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/ruler.dart';
+import 'helpers/color_channels.dart';
 
 const _w = 256;
 const _h = 256;
@@ -102,9 +103,9 @@ void main() {
       centers[rate] = p;
       final t = rate / 100.0;
       final expected = [
-        (_red.red * (1 - t) + _blue.red * t).round(),
-        (_red.green * (1 - t) + _blue.green * t).round(),
-        (_red.blue * (1 - t) + _blue.blue * t).round(),
+        (_red.red8 * (1 - t) + _blue.red8 * t).round(),
+        (_red.green8 * (1 - t) + _blue.green8 * t).round(),
+        (_red.blue8 * (1 - t) + _blue.blue8 * t).round(),
       ];
       _near(p, expected, 'mix rate=$rate', tolerance: 5);
       await _save(
@@ -335,9 +336,9 @@ Brush _brush({
 void _fillLayer(TileManager tm, String key, ui.Color color) {
   final rgba = Uint8List(_w * _h * 4);
   for (var i = 0; i < _w * _h; i++) {
-    rgba[i * 4] = color.red;
-    rgba[i * 4 + 1] = color.green;
-    rgba[i * 4 + 2] = color.blue;
+    rgba[i * 4] = color.red8;
+    rgba[i * 4 + 1] = color.green8;
+    rgba[i * 4 + 2] = color.blue8;
     rgba[i * 4 + 3] = 255;
   }
   tm.replaceLayerPixels(key, rgba);
@@ -357,7 +358,7 @@ void _markCross(TileManager tm, String key, ui.Offset p, ui.Color c) {
           y >= 0 &&
           x < TileManager.tileSize &&
           y < TileManager.tileSize) {
-        tm.setPixel(tile, x, y, c.red, c.green, c.blue, 255);
+        tm.setPixel(tile, x, y, c.red8, c.green8, c.blue8, 255);
       }
     }
   }

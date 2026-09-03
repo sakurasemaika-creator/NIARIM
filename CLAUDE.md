@@ -31,13 +31,14 @@
 
 1. `export PATH="$PATH:/opt/flutter-sdk/bin"`（このリモート実行環境では
    flutterがデフォルトPATHに無い。`/opt/flutter-sdk/bin`に入っている）
-2. コード変更後は必ず`flutter analyze`（ベースライン：**74 issues、
-   0 errors**。内訳は`deprecated_member_use` 62件
-   （`Color.red/green/blue`でピクセル値を検証している箇所）と
-   `avoid_print` 12件（`functional_audit_batch20_test.dart`の
-   失敗時デバッグ出力）で、**全てtest/配下。lib/配下のissueは0件**。
-   増減が無いことを確認する）
-3. `flutter test`（ベースライン：**488 tests**、全成功。うち大半は
+2. コード変更後は必ず`flutter analyze`（ベースライン：**0 issues**。
+   info１件も出ていない状態が正なので、**1件でも増えたらそれは自分が
+   足したもの**として必ず直すこと。`Color.red/green/blue`は非推奨なので、
+   テストでピクセル値と突き合わせるときは
+   `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
+   `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
+   `debugPrint`を使う）
+3. `flutter test`（ベースライン：**491 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット

@@ -11,6 +11,7 @@ import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/tone_engine.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/layer.dart';
+import 'helpers/color_channels.dart';
 
 const w = 96;
 const h = 96;
@@ -303,7 +304,7 @@ void _fill(TileManager tm, String key, ui.Color c, {int inset = 0}) {
   final tile = tm.getOrCreateTile(key, 0, 0);
   for (var y = inset; y < h - inset; y++) {
     for (var x = inset; x < w - inset; x++) {
-      tm.setPixel(tile, x, y, c.red, c.green, c.blue, c.alpha);
+      tm.setPixel(tile, x, y, c.red8, c.green8, c.blue8, c.alpha8);
     }
   }
   tm.markDirty(key, 0, 0);
@@ -358,8 +359,8 @@ void _near(
 }
 
 List<int>? _reference(LayerBlendMode mode) {
-  final b = [base.red / 255, base.green / 255, base.blue / 255];
-  final s = [src.red / 255, src.green / 255, src.blue / 255];
+  final b = [base.red8 / 255, base.green8 / 255, base.blue8 / 255];
+  final s = [src.red8 / 255, src.green8 / 255, src.blue8 / 255];
   if ({
     LayerBlendMode.hue,
     LayerBlendMode.saturation,

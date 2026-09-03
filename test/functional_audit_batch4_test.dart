@@ -9,6 +9,7 @@ import 'package:niarim/engine/layer_compositor.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/models/layer.dart';
+import 'helpers/color_channels.dart';
 
 const int w = 96;
 const int h = 96;
@@ -207,21 +208,29 @@ void main() {
 }
 
 int baseChannel(int c) => switch (c) {
-  0 => base.red,
-  1 => base.green,
-  _ => base.blue,
+  0 => base.red8,
+  1 => base.green8,
+  _ => base.blue8,
 };
 int sourceChannel(int c) => switch (c) {
-  0 => src.red,
-  1 => src.green,
-  _ => src.blue,
+  0 => src.red8,
+  1 => src.green8,
+  _ => src.blue8,
 };
 
 void _fill(TileManager tm, String id, ui.Color color, {int inset = 0}) {
   final tile = tm.getOrCreateTile(id, 0, 0);
   for (var y = inset; y < h - inset; y++) {
     for (var x = inset; x < w - inset; x++) {
-      tm.setPixel(tile, x, y, color.red, color.green, color.blue, color.alpha);
+      tm.setPixel(
+        tile,
+        x,
+        y,
+        color.red8,
+        color.green8,
+        color.blue8,
+        color.alpha8,
+      );
     }
   }
   tm.markDirty(id, 0, 0);
@@ -260,11 +269,11 @@ Future<void> _save(ui.Image image, String path) async {
 
 List<int> _blend(LayerBlendMode mode, ui.Color backdrop, ui.Color source) {
   final cb = [
-    backdrop.red / 255.0,
-    backdrop.green / 255.0,
-    backdrop.blue / 255.0,
+    backdrop.red8 / 255.0,
+    backdrop.green8 / 255.0,
+    backdrop.blue8 / 255.0,
   ];
-  final cs = [source.red / 255.0, source.green / 255.0, source.blue / 255.0];
+  final cs = [source.red8 / 255.0, source.green8 / 255.0, source.blue8 / 255.0];
   List<double> o;
   switch (mode) {
     case LayerBlendMode.normal:

@@ -243,6 +243,10 @@ void main() {
     if (w is ListTile) return w.onTap == null;
     if (w is CheckboxListTile) return w.onChanged == null;
     if (w is SwitchListTile) return w.onChanged == null;
+    // RadioListTile.onChangedはRadioGroupへの移行で非推奨になったが、
+    // ここは「そのコントロールが無効化されているか」を読み取るだけで、
+    // 読み取り用の代替APIは用意されていない。
+    // ignore: deprecated_member_use
     if (w is RadioListTile) return w.onChanged == null;
     if (w is ActionChip) return w.onPressed == null;
     if (w is FilterChip) return w.onSelected == null;

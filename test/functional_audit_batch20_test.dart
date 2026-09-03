@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -50,11 +50,11 @@ void main() {
     final initial = _makeInitial(96, 80);
     tm.replaceLayerPixels(key, initial);
     final before = _readCanvas(tm, key, 96, 80);
-    print('B20 stage 1: initial pixels ready');
+    debugPrint('B20 stage 1: initial pixels ready');
     await tester.runAsync(
       () => _save(before, 96, 80, '${out.path}/selection_real_before.png'),
     );
-    print('B20 stage 2: initial PNG saved');
+    debugPrint('B20 stage 2: initial PNG saved');
 
     final appProviders = await tester.runAsync(buildAppProviders);
     var selectionActive = false;
@@ -87,7 +87,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull);
-    print('B20 stage 3: CanvasArea mounted');
+    debugPrint('B20 stage 3: CanvasArea mounted');
 
     final area = find.byType(CanvasArea);
     final origin = tester.getTopLeft(area);
@@ -103,7 +103,7 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(selectionActive, isTrue, reason: '矩形選択のPointer操作で選択マスクが実際に確定すること');
-    print('B20 stage 4: rectangle selection mask confirmed active');
+    debugPrint('B20 stage 4: rectangle selection mask confirmed active');
 
     // 2) 選択内を掴む。浮動画像の非同期生成を待ってから16px右・10px下へ移動。
     final move1Gesture = await tester.startGesture(
@@ -116,7 +116,7 @@ void main() {
       isNotNull,
       reason: '選択内Pointer Downで選択変形のUndo記録が開始されること',
     );
-    print('B20 stage 4b: selection transform begin confirmed');
+    debugPrint('B20 stage 4b: selection transform begin confirmed');
     await _waitForAnyCanvasDifference(tester, tm, key, before, 96, 80);
     await _waitForPixelAlpha(tester, tm, key, 20, 19, 0);
     // 切り取り完了と浮動画像decode完了は別の非同期段階。fake timeだけを
@@ -150,7 +150,7 @@ void main() {
       orderedEquals(expected1),
       reason: '選択内だけが整数平行移動し、選択外全画素は1byteも変わらないこと',
     );
-    print('B20 stage 5: first move verified');
+    debugPrint('B20 stage 5: first move verified');
     await tester.runAsync(
       () => _save(moved1, 96, 80, '${out.path}/selection_real_moved1.png'),
     );
@@ -188,7 +188,7 @@ void main() {
     await tester.pump();
     await _waitForPixelAlpha(tester, tm, key, 62, 47, 255);
     expect(tester.takeException(), isNull);
-    print('B20 stage 6: second drag completed');
+    debugPrint('B20 stage 6: second drag completed');
     final moved2 = _readCanvas(tm, key, 96, 80);
     final expected2 = _translatedSelection(
       moved1,
@@ -206,7 +206,7 @@ void main() {
       orderedEquals(expected2),
       reason: '1回目の移動後も選択マスクが新位置へ追従し、2回目の移動対象になること',
     );
-    print('B20 stage 7: second move verified');
+    debugPrint('B20 stage 7: second move verified');
     await tester.runAsync(
       () => _save(moved2, 96, 80, '${out.path}/selection_real_moved2.png'),
     );
@@ -218,7 +218,7 @@ void main() {
     undo.undo();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_readCanvas(tm, key, 96, 80), orderedEquals(before));
-    print('B20 stage 8: undo verified');
+    debugPrint('B20 stage 8: undo verified');
     await tester.runAsync(
       () => _save(
         _readCanvas(tm, key, 96, 80),
@@ -236,7 +236,7 @@ void main() {
       orderedEquals(moved2),
       reason: 'Redo 2回で2段階移動後の全RGBAへ完全一致すること',
     );
-    print('B20 stage 9: redo verified - complete');
+    debugPrint('B20 stage 9: redo verified - complete');
   });
 }
 
@@ -298,7 +298,7 @@ Future<void> _waitForAnyCanvasDifference(
       if (y > maxY) maxY = y;
     }
   }
-  print(
+  debugPrint(
     'B20 diagnostic: changedPixels=$changed bbox=[$minX,$minY]-[$maxX,$maxY]',
   );
 }
@@ -336,7 +336,7 @@ void _printCanvasDiagnostics(
     }
   }
   int alphaAt(int x, int y) => actual[(y * w + x) * 4 + 3];
-  print(
+  debugPrint(
     'B20 $label: occupied=$opaqueA bbox=[$minAX,$minAY]-[$maxAX,$maxAY] diff=$diff diffBbox=[$minDX,$minDY]-[$maxDX,$maxDY] alphaOld=${alphaAt(20, 19)} alphaMovedFar=${alphaAt(57, 47)}',
   );
 }

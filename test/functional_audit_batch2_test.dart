@@ -15,6 +15,7 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_keyframe.dart';
 import 'package:niarim/engine/layer_compositor.dart';
 import 'package:niarim/engine/tile_manager.dart';
+import 'helpers/color_channels.dart';
 
 const int w = 96;
 const int h = 96;
@@ -425,7 +426,15 @@ void _fill(TileManager tm, String id, ui.Color color, {int inset = 0}) {
   final tile = tm.getOrCreateTile(id, 0, 0);
   for (var y = inset; y < h - inset; y++) {
     for (var x = inset; x < w - inset; x++) {
-      tm.setPixel(tile, x, y, color.red, color.green, color.blue, color.alpha);
+      tm.setPixel(
+        tile,
+        x,
+        y,
+        color.red8,
+        color.green8,
+        color.blue8,
+        color.alpha8,
+      );
     }
   }
   tm.markDirty(id, 0, 0);
@@ -526,11 +535,11 @@ List<int> _blendReference(
   ui.Color source,
 ) {
   final cb = [
-    backdrop.red / 255.0,
-    backdrop.green / 255.0,
-    backdrop.blue / 255.0,
+    backdrop.red8 / 255.0,
+    backdrop.green8 / 255.0,
+    backdrop.blue8 / 255.0,
   ];
-  final cs = [source.red / 255.0, source.green / 255.0, source.blue / 255.0];
+  final cs = [source.red8 / 255.0, source.green8 / 255.0, source.blue8 / 255.0];
   List<double> o;
   switch (mode) {
     case LayerBlendMode.normal:

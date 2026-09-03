@@ -10,6 +10,7 @@ import 'package:niarim/engine/layer_compositor.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/layer.dart';
+import 'helpers/color_channels.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -66,7 +67,7 @@ void main() {
         }
         expect(
           outside.sublist(0, 3),
-          equals([pairs[i].$1.red, pairs[i].$1.green, pairs[i].$1.blue]),
+          equals([pairs[i].$1.red8, pairs[i].$1.green8, pairs[i].$1.blue8]),
           reason: '${mode.name} must not affect non-overlap area',
         );
         if (i == 0) {
@@ -386,10 +387,10 @@ void _fillLayer(
         tile,
         x % TileManager.tileSize,
         y % TileManager.tileSize,
-        color.red,
-        color.green,
-        color.blue,
-        color.alpha,
+        color.red8,
+        color.green8,
+        color.blue8,
+        color.alpha8,
       );
       tm.markDirty(id, tx, ty);
     }
@@ -434,11 +435,11 @@ Future<void> _saveRgba(
 
 List<int> _blend(LayerBlendMode mode, ui.Color backdrop, ui.Color source) {
   final cb = [
-    backdrop.red / 255.0,
-    backdrop.green / 255.0,
-    backdrop.blue / 255.0,
+    backdrop.red8 / 255.0,
+    backdrop.green8 / 255.0,
+    backdrop.blue8 / 255.0,
   ];
-  final cs = [source.red / 255.0, source.green / 255.0, source.blue / 255.0];
+  final cs = [source.red8 / 255.0, source.green8 / 255.0, source.blue8 / 255.0];
   List<double> o;
   switch (mode) {
     case LayerBlendMode.normal:
