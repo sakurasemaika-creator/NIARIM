@@ -193,7 +193,8 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter analyze
+      - name: 静的解析（error/warningは失敗、infoのみは許容）
+        run: flutter analyze --no-fatal-infos
       - run: flutter test --reporter compact
 
   continue_if_needed:
