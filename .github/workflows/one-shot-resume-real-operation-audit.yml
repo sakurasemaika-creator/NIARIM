@@ -5,6 +5,9 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/one-shot-resume-real-operation-audit.yml'
+      - 'test/functional_audit_batch29_test.dart'
+      - 'test/functional_audit_batch30_test.dart'
+      - 'test/functional_audit_batch31_test.dart'
 
 permissions:
   contents: read
@@ -63,8 +66,7 @@ jobs:
         with:
           name: resume-real-operation-audit
           path: |
-            build/functional-visual/**/*.png
-            build/**/*screenshot*.png
+            build/**/*.png
             build/audit-logs/*
           if-no-files-found: warn
           retention-days: 5
