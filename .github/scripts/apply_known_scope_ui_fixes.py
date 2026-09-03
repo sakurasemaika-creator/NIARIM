@@ -11,6 +11,11 @@ if start >= 0:
     end = s.find("                        ),\n", start)
     if end >= 0:
         s = s[:start] + s[end + len("                        ),\n"):]
+# Repair the orphaned close left by the old per-month block removal.
+s = s.replace(
+    "                      Text(\n                        price,\n                        textAlign: TextAlign.end,\n                        style: TextStyle(\n                          fontSize: 18,\n                          fontWeight: FontWeight.bold,\n                          color: scheme.onSurface,\n                        ),\n                      ),\n                        ),\n                    ],",
+    "                      Text(\n                        price,\n                        textAlign: TextAlign.end,\n                        style: TextStyle(\n                          fontSize: 18,\n                          fontWeight: FontWeight.bold,\n                          color: scheme.onSurface,\n                        ),\n                      ),\n                    ],",
+)
 s = s.replace("    final premiumBg = scheme.primaryContainer;", "    final premiumBg = scheme.primary;")
 p.write_text(s)
 
@@ -41,7 +46,7 @@ theme.write_text(s)
 
 # Hardcoded chroma used as app chrome/status styling is theme-derived. Functional
 # colors (user artwork/color pickers, fade-color choices, onion-skin swatches,
-# QR/checkerboard/instructional artwork) are deliberately excluded.
+# checkerboards and instructional/content artwork) are deliberately excluded.
 exclude_files = {
     'lib/screens/canvas/widgets/hsv_color_wheel.dart',
     'lib/widgets/background_color_picker.dart',
@@ -52,7 +57,6 @@ functional_tokens = (
     '_currentColor =', '_backgroundColor =', 'fadeColor', 'Color(0xFFFFFFFF)',
     'Color(0xFF000000)', 'ui.Paint()', 'Paint()..color', 'canvas.draw',
 )
-# User-selectable onion colors are functional data, not app chrome.
 functional_files = {'lib/screens/canvas/widgets/onion_skin_panel.dart'}
 
 mapping = {
@@ -63,7 +67,18 @@ mapping = {
     'grey': 'onSurfaceVariant', 'gray': 'onSurfaceVariant',
     'black': 'onSurface', 'white': 'onSurface',
 }
-rx_index = re.compile(r'Colors\.(black|white|grey|gray|amber|pink|red|blue|green|orange|purple|yellow|brown|cyan|teal|indigo|lime)(?:\[\d+\])?!?')
+# Include Material opacity suffixes (black54, white70, etc.) so no bogus
+# ColorScheme getters such as onSurface54 are created.
+rx_index = re.compile(r'Colors\.(black|white|grey|gray|amber|pink|red|blue|green|orange|purple|yellow|brown|cyan|teal|indigo|lime)(?:(12|24|26|30|38|45|54|60|70|87))?(?:\[\d+\])?!?')
+
+def theme_replacement(name, suffix, line):
+    role = mapping.get(name, 'primary')
+    if 'shadowColor:' in line and name == 'black':
+        role = 'shadow'
+    base = f'ThemeService.activeColorScheme.{role}'
+    if suffix:
+        return f'{base}.withValues(alpha: {int(suffix) / 100:.2f})'
+    return base
 
 for root in [Path('lib/screens'), Path('lib/widgets')]:
     for path in root.rglob('*.dart'):
@@ -78,28 +93,72 @@ for root in [Path('lib/screens'), Path('lib/widgets')]:
                 out.append(line); continue
             if any(tok in line for tok in functional_tokens):
                 out.append(line); continue
-            # Media/content overlays are intentionally contrast colors rather than
-            # app chrome; their source imagery determines contrast.
-            if 'community_' in rel and ('Colors.black' in line or 'Colors.white' in line):
-                out.append(line); continue
             def repl(m):
-                nonlocal_dummy = None
-                name = m.group(1)
-                role = mapping.get(name, 'primary')
-                # shadowColor is explicitly the theme shadow role.
-                if 'shadowColor:' in line and name == 'black': role = 'shadow'
-                return f'ThemeService.activeColorScheme.{role}'
+                return theme_replacement(m.group(1), m.group(2), line)
             new_line = rx_index.sub(repl, line)
             if new_line != line:
                 changed = True
-                # A runtime theme value cannot occur in a const expression on the same line.
-                new_line = new_line.replace('const Icon(', 'Icon(').replace('const TextStyle(', 'TextStyle(').replace('const ColorFilter.mode(', 'ColorFilter.mode(')
             out.append(new_line)
-        if not changed:
-            continue
-        text = ''.join(out)
-        imp = "import 'package:niarim/services/theme_service.dart';\n"
-        if imp not in text:
-            # package import is valid from every lib/ location.
-            text = imp + text
-        path.write_text(text)
+        if changed:
+            text = ''.join(out)
+            # Prefer an existing relative ThemeService import if present; only add
+            # a package import when the file did not already import the service.
+            if 'theme_service.dart' not in text:
+                text = "import 'package:niarim/services/theme_service.dart';\n" + text
+            path.write_text(text)
+
+# ---- Repair bad substitutions from the first migration pass -----------------
+opacity_suffix = re.compile(r'ThemeService\.activeColorScheme\.(onSurface|onSurfaceVariant|primary|secondary|tertiary|error|shadow)(12|24|26|30|38|45|54|60|70|87)\b')
+for root in [Path('lib/screens'), Path('lib/widgets')]:
+    for path in root.rglob('*.dart'):
+        text = path.read_text()
+        text = opacity_suffix.sub(lambda m: f'ThemeService.activeColorScheme.{m.group(1)}.withValues(alpha: {int(m.group(2))/100:.2f})', text)
+
+        # Remove duplicate ThemeService imports introduced when the file already
+        # used a relative import of the same library.
+        lines = text.splitlines(True)
+        theme_imports = [i for i,l in enumerate(lines) if l.lstrip().startswith('import ') and 'theme_service.dart' in l]
+        if len(theme_imports) > 1:
+            keep = theme_imports[-1]  # Prefer the pre-existing local import.
+            lines = [l for i,l in enumerate(lines) if i == keep or i not in theme_imports]
+
+        # Runtime theme values cannot live inside const expressions. Remove the
+        # closest enclosing const for every ThemeService reference. This is
+        # intentionally local (max 8 lines) so unrelated model constants remain.
+        for i, line in enumerate(lines):
+            if 'ThemeService.activeColorScheme' not in line:
+                continue
+            if 'const ' in lines[i]:
+                lines[i] = lines[i].replace('const ', '')
+            for j in range(i - 1, max(-1, i - 9), -1):
+                st = lines[j].strip()
+                if 'const ' in lines[j]:
+                    lines[j] = lines[j].replace('const ', '', 1)
+                    break
+                if st.endswith(';') or st.startswith('return '):
+                    break
+        path.write_text(''.join(lines))
+
+# _CanvasPainter defaults cannot be runtime colors. Make them required and pass
+# the active theme explicitly at the only construction site.
+p = Path('lib/screens/canvas/widgets/canvas_area.dart')
+s = p.read_text()
+s = s.replace('    this.handleColor = ThemeService.activeColorScheme.primary,\n    this.handleOutlineColor = ThemeService.activeColorScheme.onSurface,\n    this.extendedAreaWarningColor = ThemeService.activeColorScheme.error,',
+              '    required this.handleColor,\n    required this.handleOutlineColor,\n    required this.extendedAreaWarningColor,')
+needle = '                  painter: _CanvasPainter(\n'
+if needle in s and 'handleColor: ThemeService.activeColorScheme.primary' not in s:
+    s = s.replace(needle, needle +
+        '                    handleColor: ThemeService.activeColorScheme.primary,\n'
+        '                    handleOutlineColor: ThemeService.activeColorScheme.onSurface,\n'
+        '                    extendedAreaWarningColor: ThemeService.activeColorScheme.error,\n', 1)
+# Canvas outside is application chrome; derive it from active appearance.
+s = s.replace('const Color kCanvasOutsideColor = Color(0xFF3A3A3A);',
+              'Color get kCanvasOutsideColor => ThemeService.activeColorScheme.surfaceContainerHighest;')
+p.write_text(s)
+
+# Onion-skin swatch colors are user-configurable functional data, but its border
+# is UI chrome and must follow the theme.
+p = Path('lib/screens/canvas/widgets/onion_skin_panel.dart')
+s = p.read_text().replace('border: Border.all(color: Colors.grey),',
+                          'border: Border.all(color: Theme.of(context).colorScheme.outline),')
+p.write_text(s)
