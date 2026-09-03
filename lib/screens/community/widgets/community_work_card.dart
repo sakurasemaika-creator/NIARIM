@@ -19,6 +19,11 @@ List<List<Color>> communityThumbnailGradients(ColorScheme scheme) => <List<Color
   [scheme.tertiary.withValues(alpha: 0.55), scheme.primary],
 ];
 
+/// Compatibility accessor for community views that share this palette.
+/// The value is recalculated from the current active theme on every access.
+List<List<Color>> get kCommunityThumbnailGradients =>
+    communityThumbnailGradients(ThemeService.activeColorScheme);
+
 class CommunityWorkCard extends StatelessWidget {
   final CommunityWork work;
   final bool isBookmarked;
