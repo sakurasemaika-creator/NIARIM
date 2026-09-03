@@ -38,7 +38,10 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
             child: Center(
               child: Text(
                 l10n.progressDialogAdLoading,
-                style: TextStyle(color: ThemeService.activeColorScheme.onSurfaceVariant, fontSize: 12),
+                style: TextStyle(
+                  color: ThemeService.activeColorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
               ),
             ),
           )

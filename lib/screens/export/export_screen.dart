@@ -69,7 +69,10 @@ class _ExportScreenState extends State<ExportScreen> {
             if (_error != null)
               Padding(
                 padding: EdgeInsets.only(bottom: 12),
-                child: Text(_error!, style: TextStyle(color: ThemeService.activeColorScheme.error)),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: ThemeService.activeColorScheme.error),
+                ),
               ),
             Text(
               l10n.exportPresetSection,

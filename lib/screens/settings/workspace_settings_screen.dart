@@ -64,7 +64,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             SizedBox(height: 8),
             Card(
               elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -159,7 +161,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 final forceMobile = settings.forcePcMode == false;
                 return Card(
                   elevation: 1,
-                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                    alpha: 0.15,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -194,7 +198,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -238,7 +244,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -293,7 +301,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -367,7 +377,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -375,7 +387,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: SwitchListTile(
                 secondary: premium.isPremium
                     ? null
-                    : Icon(Icons.lock, color: ThemeService.activeColorScheme.tertiary),
+                    : Icon(
+                        Icons.lock,
+                        color: ThemeService.activeColorScheme.tertiary,
+                      ),
                 title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
                 value:
                     premium.isPremium &&
@@ -717,7 +732,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+                      icon: Icon(
+                        Icons.delete,
+                        color: ThemeService.activeColorScheme.error,
+                      ),
                       tooltip: l10n.commonDelete,
                       onPressed: () async {
                         if (!await confirmDelete(
@@ -944,7 +962,10 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
               padding: EdgeInsets.only(top: 4),
               child: Text(
                 _errorText!,
-                style: TextStyle(color: ThemeService.activeColorScheme.error, fontSize: 12),
+                style: TextStyle(
+                  color: ThemeService.activeColorScheme.error,
+                  fontSize: 12,
+                ),
               ),
             ),
         ],

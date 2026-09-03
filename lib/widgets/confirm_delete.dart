@@ -23,7 +23,9 @@ Future<bool> confirmDelete(BuildContext context, {String? itemName}) async {
           child: Text(l10n.commonCancel),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+          style: FilledButton.styleFrom(
+            backgroundColor: ThemeService.activeColorScheme.error,
+          ),
           onPressed: () => Navigator.pop(ctx, true),
           child: Text(l10n.commonDelete),
         ),

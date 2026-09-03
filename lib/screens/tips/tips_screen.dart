@@ -676,7 +676,9 @@ class _TipListTile extends StatelessWidget {
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () => showDialog(

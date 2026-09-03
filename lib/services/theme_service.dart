@@ -14,7 +14,9 @@ class ThemeService extends ChangeNotifier {
   List<AppThemePreset> get presets => List.unmodifiable(_presets);
   AppThemePreset get current => _current;
 
-  static ColorScheme activeColorScheme = ColorScheme.fromSeed(seedColor: const Color(0xFFFF5C7A));
+  static ColorScheme activeColorScheme = ColorScheme.fromSeed(
+    seedColor: const Color(0xFFFF5C7A),
+  );
 
   ThemeData get themeData {
     final data = _buildTheme(_current);

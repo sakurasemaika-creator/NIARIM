@@ -69,7 +69,8 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.38),
+                        color: ThemeService.activeColorScheme.onSurface
+                            .withValues(alpha: 0.38),
                         blurRadius: 8,
                         offset: Offset(0, 2),
                       ),

@@ -430,7 +430,11 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (p.isFavorite)
-                      Icon(Icons.star, size: 10, color: ThemeService.activeColorScheme.tertiary),
+                      Icon(
+                        Icons.star,
+                        size: 10,
+                        color: ThemeService.activeColorScheme.tertiary,
+                      ),
                     Text(
                       p.name,
                       style: const TextStyle(
@@ -630,7 +634,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+              leading: Icon(
+                Icons.delete,
+                color: ThemeService.activeColorScheme.error,
+              ),
               title: Text(
                 l10n.commonDelete,
                 style: TextStyle(color: ThemeService.activeColorScheme.error),

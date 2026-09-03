@@ -106,10 +106,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.brushSize.round()}',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: fgColor,
-                            ),
+                            style: TextStyle(fontSize: 11, color: fgColor),
                             value: widget.brushSize,
                             min: 1,
                             max: 500,
@@ -138,10 +135,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.opacity}%',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: fgColor,
-                            ),
+                            style: TextStyle(fontSize: 11, color: fgColor),
                             value: widget.opacity,
                             min: 1,
                             max: 100,

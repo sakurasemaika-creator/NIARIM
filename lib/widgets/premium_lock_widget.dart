@@ -31,7 +31,11 @@ class PremiumLockWidget extends StatelessWidget {
           Positioned(
             right: 4,
             top: 4,
-            child: Icon(Icons.lock, size: 16, color: ThemeService.activeColorScheme.tertiary),
+            child: Icon(
+              Icons.lock,
+              size: 16,
+              color: ThemeService.activeColorScheme.tertiary,
+            ),
           ),
         ],
       ),
@@ -92,7 +96,11 @@ class _PremiumBannerDialog extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.star, color: ThemeService.activeColorScheme.tertiary, size: 48),
+                        Icon(
+                          Icons.star,
+                          color: ThemeService.activeColorScheme.tertiary,
+                          size: 48,
+                        ),
                         SizedBox(height: 8),
                         Text(
                           'NIARIM Premium',
@@ -106,7 +114,11 @@ class _PremiumBannerDialog extends StatelessWidget {
                         SizedBox(height: 4),
                         Text(
                           'premium_banner.webp',
-                          style: TextStyle(fontSize: 11, color: ThemeService.activeColorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color:
+                                ThemeService.activeColorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),

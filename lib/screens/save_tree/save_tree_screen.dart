@@ -516,7 +516,10 @@ class _SlotView extends StatelessWidget {
                     l10n.saveTreeSlotOverwriteWarning(
                       _formatDate(existing.savedAt),
                     ),
-                    style: TextStyle(fontSize: 12, color: ThemeService.activeColorScheme.tertiary),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: ThemeService.activeColorScheme.tertiary,
+                    ),
                   ),
                 ),
               TextField(
@@ -676,7 +679,9 @@ class _SlotTile extends StatelessWidget {
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
         child: ListTile(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -886,7 +891,9 @@ class _TreeView extends StatelessWidget {
                   value: 'delete',
                   child: Text(
                     l10n.commonDelete,
-                    style: TextStyle(color: ThemeService.activeColorScheme.error),
+                    style: TextStyle(
+                      color: ThemeService.activeColorScheme.error,
+                    ),
                   ),
                 ),
               ],

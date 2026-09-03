@@ -152,7 +152,10 @@ class QuickToolPanel extends StatelessWidget {
             // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録
             if (currentTool == DrawingTool.pen && currentBrushId != null)
               ListTile(
-                leading: Icon(Icons.bolt, color: ThemeService.activeColorScheme.tertiary),
+                leading: Icon(
+                  Icons.bolt,
+                  color: ThemeService.activeColorScheme.tertiary,
+                ),
                 title: Text(l10n.quickToolAddCurrentBrush),
                 subtitle: Text('$currentBrushName ${currentSize.round()}px'),
                 onTap: () {

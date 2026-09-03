@@ -251,7 +251,14 @@ class ProjectListWidget extends StatelessWidget {
   }) {
     final placeholder = Container(
       color: Color(project.backgroundColor),
-      child: Center(child: Icon(Icons.image, color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.38))),
+      child: Center(
+        child: Icon(
+          Icons.image,
+          color: ThemeService.activeColorScheme.onSurface.withValues(
+            alpha: 0.38,
+          ),
+        ),
+      ),
     );
     final path = project.thumbnailPath;
     if (path == null) return placeholder;
@@ -321,7 +328,11 @@ class ProjectListWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (folder.isFavorite)
-            Icon(Icons.star, color: ThemeService.activeColorScheme.tertiary, size: 18),
+            Icon(
+              Icons.star,
+              color: ThemeService.activeColorScheme.tertiary,
+              size: 18,
+            ),
           if (!isSelectionMode) _folderMenu(context, folder),
         ],
       ),
@@ -353,9 +364,11 @@ class ProjectListWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (isSelected ? primary : ThemeService.activeColorScheme.onSurface).withValues(
-                alpha: isSelected ? 0.28 : 0.12,
-              ),
+              color:
+                  (isSelected
+                          ? primary
+                          : ThemeService.activeColorScheme.onSurface)
+                      .withValues(alpha: isSelected ? 0.28 : 0.12),
               blurRadius: isSelected ? 14 : 8,
               offset: const Offset(0, 3),
             ),
@@ -394,7 +407,8 @@ class ProjectListWidget extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
+                              ThemeService.activeColorScheme.onSurface
+                                  .withValues(alpha: 0.55),
                             ],
                           ),
                         ),
@@ -423,7 +437,8 @@ class ProjectListWidget extends StatelessWidget {
                         child: Container(
                           padding: EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.4),
+                            color: ThemeService.activeColorScheme.onSurface
+                                .withValues(alpha: 0.4),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -448,7 +463,8 @@ class ProjectListWidget extends StatelessWidget {
                             border: Border.all(color: primary, width: 1.5),
                             boxShadow: [
                               BoxShadow(
-                                color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.2),
+                                color: ThemeService.activeColorScheme.onSurface
+                                    .withValues(alpha: 0.2),
                                 blurRadius: 3,
                               ),
                             ],
@@ -487,9 +503,11 @@ class ProjectListWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (isSelected ? primary : ThemeService.activeColorScheme.onSurface).withValues(
-                alpha: isSelected ? 0.28 : 0.12,
-              ),
+              color:
+                  (isSelected
+                          ? primary
+                          : ThemeService.activeColorScheme.onSurface)
+                      .withValues(alpha: isSelected ? 0.28 : 0.12),
               blurRadius: isSelected ? 14 : 8,
               offset: const Offset(0, 3),
             ),
@@ -737,7 +755,9 @@ class ProjectListWidget extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               context.read<ProjectService>().deleteFolder(folder.id);
               Navigator.pop(ctx);

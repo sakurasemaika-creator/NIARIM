@@ -77,7 +77,14 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                 Icons.close,
                 color: ThemeService.activeColorScheme.onSurface,
                 size: 28,
-                shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 6)],
+                shadows: [
+                  Shadow(
+                    color: ThemeService.activeColorScheme.onSurface.withValues(
+                      alpha: 0.54,
+                    ),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -102,8 +109,10 @@ class _ShortsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final gradient =
-        communityThumbnailGradient(Theme.of(context).colorScheme, work.thumbnailColorIndex);
+    final gradient = communityThumbnailGradient(
+      Theme.of(context).colorScheme,
+      work.thumbnailColorIndex,
+    );
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -118,7 +127,9 @@ class _ShortsPage extends StatelessWidget {
           child: Center(
             child: Icon(
               Icons.play_circle_fill_rounded,
-              color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+              color: ThemeService.activeColorScheme.onSurface.withValues(
+                alpha: 0.70,
+              ),
               size: 72,
             ),
           ),
@@ -137,7 +148,9 @@ class _ShortsPage extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.75),
+                  ThemeService.activeColorScheme.onSurface.withValues(
+                    alpha: 0.75,
+                  ),
                 ],
               ),
             ),
@@ -176,7 +189,8 @@ class _ShortsPage extends StatelessWidget {
               TextButton(
                 style: TextButton.styleFrom(
                   foregroundColor: ThemeService.activeColorScheme.onSurface,
-                  backgroundColor: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.15),
+                  backgroundColor: ThemeService.activeColorScheme.onSurface
+                      .withValues(alpha: 0.15),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 6,
@@ -206,7 +220,13 @@ class _ShortsPage extends StatelessWidget {
                   isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                   color: ThemeService.activeColorScheme.onSurface,
                   size: 32,
-                  shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 6)],
+                  shadows: [
+                    Shadow(
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.54),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
               ),
               Text(
@@ -217,7 +237,13 @@ class _ShortsPage extends StatelessWidget {
                 style: TextStyle(
                   color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 11,
-                  shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 4)],
+                  shadows: [
+                    Shadow(
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.54),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 12),
@@ -225,7 +251,14 @@ class _ShortsPage extends StatelessWidget {
                 Icons.play_arrow_rounded,
                 color: ThemeService.activeColorScheme.onSurface,
                 size: 26,
-                shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 6)],
+                shadows: [
+                  Shadow(
+                    color: ThemeService.activeColorScheme.onSurface.withValues(
+                      alpha: 0.54,
+                    ),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
               Text(
                 formatCompactCount(
@@ -235,7 +268,13 @@ class _ShortsPage extends StatelessWidget {
                 style: TextStyle(
                   color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 11,
-                  shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 4)],
+                  shadows: [
+                    Shadow(
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.54),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -239,7 +239,9 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () async {
               await context.read<MaterialService>().removeMaterial(
                 projectId: widget.projectId,
@@ -269,7 +271,9 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () async {
               final removed = await context
                   .read<MaterialService>()

@@ -998,7 +998,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
                             size: 22,
-                            color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+                            color: ThemeService.activeColorScheme.onSurface
+                                .withValues(alpha: 0.70),
                           ),
                         ),
                       ),
@@ -2216,7 +2217,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 border: Border.all(
                                   color: color == c
                                       ? Theme.of(ctx).colorScheme.primary
-                                      : ThemeService.activeColorScheme.onSurfaceVariant,
+                                      : ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
                                   width: color == c ? 2 : 1,
                                 ),
                               ),
@@ -2331,7 +2334,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   border: Border.all(
                                     color: outlineColor == c
                                         ? Theme.of(ctx).colorScheme.primary
-                                        : ThemeService.activeColorScheme.onSurfaceVariant,
+                                        : ThemeService
+                                              .activeColorScheme
+                                              .onSurfaceVariant,
                                     width: outlineColor == c ? 2 : 1,
                                   ),
                                 ),

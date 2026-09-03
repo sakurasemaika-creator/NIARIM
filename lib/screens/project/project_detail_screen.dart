@@ -274,7 +274,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     child: _quickAction(
                       icon: project.isFavorite ? Icons.star : Icons.star_border,
                       label: l10n.homeFavoritesOnly,
-                      iconColor: project.isFavorite ? ThemeService.activeColorScheme.tertiary : null,
+                      iconColor: project.isFavorite
+                          ? ThemeService.activeColorScheme.tertiary
+                          : null,
                       onTap: () =>
                           projectService.toggleFavorite(widget.projectId),
                     ),

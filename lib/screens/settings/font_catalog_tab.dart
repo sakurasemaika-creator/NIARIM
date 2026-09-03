@@ -92,7 +92,8 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                     final entry = filtered[index];
                     return Card(
                       elevation: 1,
-                      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+                      shadowColor: ThemeService.activeColorScheme.shadow
+                          .withValues(alpha: 0.15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -132,7 +133,10 @@ class _FontCatalogTabState extends State<FontCatalogTab>
     DownloadableFontEntry entry,
   ) {
     if (service.isCatalogFontDownloaded(entry)) {
-      return Icon(Icons.check_circle, color: ThemeService.activeColorScheme.secondary);
+      return Icon(
+        Icons.check_circle,
+        color: ThemeService.activeColorScheme.secondary,
+      );
     }
     if (_downloadingIds.contains(entry.id)) {
       return const SizedBox(

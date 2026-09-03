@@ -206,7 +206,11 @@ class ToolbarWidget extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: outlineColor, width: 2),
                 ),
-                child: Icon(Icons.block, color: ThemeService.activeColorScheme.error, size: 20),
+                child: Icon(
+                  Icons.block,
+                  color: ThemeService.activeColorScheme.error,
+                  size: 20,
+                ),
               ),
           ],
         ),
@@ -423,7 +427,11 @@ class ToolbarWidget extends StatelessWidget {
                       ),
                       child: Text(
                         l10n.toolbarBucketToneListLabel,
-                        style: TextStyle(fontSize: 11, color: ThemeService.activeColorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color:
+                              ThemeService.activeColorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     GridView.builder(
@@ -453,11 +461,15 @@ class ToolbarWidget extends StatelessWidget {
                               border: Border.all(
                                 color: isSelected
                                     ? Theme.of(context).colorScheme.primary
-                                    : ThemeService.activeColorScheme.onSurfaceVariant,
+                                    : ThemeService
+                                          .activeColorScheme
+                                          .onSurfaceVariant,
                                 width: isSelected ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(4),
-                              color: ThemeService.activeColorScheme.onSurfaceVariant,
+                              color: ThemeService
+                                  .activeColorScheme
+                                  .onSurfaceVariant,
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,

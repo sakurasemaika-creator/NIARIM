@@ -763,7 +763,8 @@ class _HelpScreenState extends State<HelpScreen> {
                             color: scheme.surfaceContainerLow,
                             borderRadius: BorderRadius.circular(14),
                             elevation: 1,
-                            shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+                            shadowColor: ThemeService.activeColorScheme.shadow
+                                .withValues(alpha: 0.15),
                             clipBehavior: Clip.antiAlias,
                             child: ExpansionTile(
                               // 各画面のヘルプボタンから遷移した場合、該当項目を

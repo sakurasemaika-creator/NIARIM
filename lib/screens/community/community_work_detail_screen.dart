@@ -205,7 +205,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               Navigator.pop(ctx);
               _showComingSoonSnackbar(l10n.communityBlockComingSoonSnackbar);
@@ -271,14 +273,17 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors:
-                            communityThumbnailGradient(Theme.of(context).colorScheme, work.thumbnailColorIndex),
+                        colors: communityThumbnailGradient(
+                          Theme.of(context).colorScheme,
+                          work.thumbnailColorIndex,
+                        ),
                       ),
                     ),
                     child: Center(
                       child: Icon(
                         Icons.play_circle_fill_rounded,
-                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+                        color: ThemeService.activeColorScheme.onSurface
+                            .withValues(alpha: 0.70),
                         size: 56,
                       ),
                     ),

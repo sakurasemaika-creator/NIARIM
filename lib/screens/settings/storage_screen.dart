@@ -369,7 +369,9 @@ class _StorageScreenState extends State<StorageScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.storageEraseAllButton),
           ),

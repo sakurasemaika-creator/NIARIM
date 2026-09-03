@@ -273,7 +273,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
                       size: 16,
-                      color: _showFavoritesOnly ? ThemeService.activeColorScheme.tertiary : null,
+                      color: _showFavoritesOnly
+                          ? ThemeService.activeColorScheme.tertiary
+                          : null,
                     ),
                     onPressed: () => setState(
                       () => _showFavoritesOnly = !_showFavoritesOnly,
@@ -327,11 +329,14 @@ class _FilterPanelState extends State<FilterPanel> {
                           border: Border.all(
                             color: isSelected
                                 ? Theme.of(context).colorScheme.primary
-                                : ThemeService.activeColorScheme.onSurfaceVariant,
+                                : ThemeService
+                                      .activeColorScheme
+                                      .onSurfaceVariant,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(4),
-                          color: ThemeService.activeColorScheme.onSurfaceVariant,
+                          color:
+                              ThemeService.activeColorScheme.onSurfaceVariant,
                         ),
                         child: Stack(
                           children: [
@@ -363,8 +368,12 @@ class _FilterPanelState extends State<FilterPanel> {
                                         : Icons.star_outline,
                                     size: 12,
                                     color: f.isFavorite
-                                        ? ThemeService.activeColorScheme.tertiary
-                                        : ThemeService.activeColorScheme.onSurfaceVariant,
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
+                                        : ThemeService
+                                              .activeColorScheme
+                                              .onSurfaceVariant,
                                   ),
                                 ),
                               ),
@@ -384,7 +393,9 @@ class _FilterPanelState extends State<FilterPanel> {
                                   child: Icon(
                                     Icons.more_vert,
                                     size: 14,
-                                    color: ThemeService.activeColorScheme.onSurfaceVariant,
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .onSurfaceVariant,
                                   ),
                                 ),
                               ),
@@ -402,7 +413,9 @@ class _FilterPanelState extends State<FilterPanel> {
                                     child: Icon(
                                       Icons.drag_indicator,
                                       size: 12,
-                                      color: ThemeService.activeColorScheme.onSurfaceVariant,
+                                      color: ThemeService
+                                          .activeColorScheme
+                                          .onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -461,7 +474,9 @@ class _FilterPanelState extends State<FilterPanel> {
                             width: 120,
                             height: 120,
                             decoration: BoxDecoration(
-                              color: ThemeService.activeColorScheme.onSurfaceVariant,
+                              color: ThemeService
+                                  .activeColorScheme
+                                  .onSurfaceVariant,
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: _previewImage != null
@@ -640,7 +655,11 @@ class _FilterPanelState extends State<FilterPanel> {
                                     height: 24,
                                     decoration: BoxDecoration(
                                       color: Color(current.outlineColor),
-                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                                      border: Border.all(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -761,7 +780,11 @@ class _FilterPanelState extends State<FilterPanel> {
                                     height: 24,
                                     decoration: BoxDecoration(
                                       color: Color(current.vignetteColor),
-                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                                      border: Border.all(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -946,7 +969,11 @@ class _FilterPanelState extends State<FilterPanel> {
                                     height: 24,
                                     decoration: BoxDecoration(
                                       color: Color(current.monochromeColor),
-                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                                      border: Border.all(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -1012,7 +1039,11 @@ class _FilterPanelState extends State<FilterPanel> {
                                       color: Color(
                                         _resolvedBgBlendColor(current),
                                       ),
-                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                                      border: Border.all(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -1246,7 +1277,10 @@ class _FilterPanelState extends State<FilterPanel> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+              leading: Icon(
+                Icons.delete,
+                color: ThemeService.activeColorScheme.error,
+              ),
               title: Text(l10n.commonDelete),
               onTap: () {
                 Navigator.pop(ctx);

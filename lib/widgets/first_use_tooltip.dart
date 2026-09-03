@@ -75,7 +75,11 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: _dismiss,
-              child: ColoredBox(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.45)),
+              child: ColoredBox(
+                color: ThemeService.activeColorScheme.onSurface.withValues(
+                  alpha: 0.45,
+                ),
+              ),
             ),
           ),
           Center(
@@ -92,7 +96,8 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.45),
+                        color: ThemeService.activeColorScheme.onSurface
+                            .withValues(alpha: 0.45),
                         blurRadius: 18,
                         offset: Offset(0, 4),
                       ),

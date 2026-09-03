@@ -332,7 +332,10 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
                 ),
                 if (widget.onDelete != null)
                   IconButton(
-                    icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+                    icon: Icon(
+                      Icons.delete,
+                      color: ThemeService.activeColorScheme.error,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                       widget.onDelete!();

@@ -70,7 +70,9 @@ void showFolderManagementSheet(
                   padding: EdgeInsets.all(24),
                   child: Text(
                     l10n.folderManagementEmpty,
-                    style: TextStyle(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                    style: TextStyle(
+                      color: ThemeService.activeColorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               Expanded(
@@ -97,7 +99,9 @@ void showFolderManagementSheet(
                           IconButton(
                             icon: Icon(
                               f.isFavorite ? Icons.star : Icons.star_outline,
-                              color: f.isFavorite ? ThemeService.activeColorScheme.tertiary : null,
+                              color: f.isFavorite
+                                  ? ThemeService.activeColorScheme.tertiary
+                                  : null,
                               size: 18,
                             ),
                             tooltip: l10n.commonFavoriteToggle,

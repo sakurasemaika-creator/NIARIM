@@ -56,7 +56,8 @@ enum _TransformMode { translate, scale, rotate }
 /// （ピンチズームでキャンバス内容ごと縮小した際、背後にテーマの
 /// 明るい背景色が透けて見えてしまう不具合の修正のため、両者を同じ色に
 /// 揃える必要がある）。
-Color get kCanvasOutsideColor => ThemeService.activeColorScheme.surfaceContainerHighest;
+Color get kCanvasOutsideColor =>
+    ThemeService.activeColorScheme.surfaceContainerHighest;
 
 Rect canvasDrawingRectFor(Size size, Project? project) {
   final hasExtended = project?.hasExtendedDrawingArea ?? false;
@@ -3592,7 +3593,9 @@ class _CanvasPainter extends CustomPainter {
       final sy = drawingRect.height / (project?.exportHeight ?? 1080);
       Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final shapePaint = Paint()
-        ..color = ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.87)
+        ..color = ThemeService.activeColorScheme.onSurface.withValues(
+          alpha: 0.87,
+        )
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
       switch (shapeKind) {

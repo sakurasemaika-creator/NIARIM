@@ -139,7 +139,9 @@ class _PresetTile extends StatelessWidget {
                   value: 'delete',
                   child: Text(
                     l10n.commonDelete,
-                    style: TextStyle(color: ThemeService.activeColorScheme.error),
+                    style: TextStyle(
+                      color: ThemeService.activeColorScheme.error,
+                    ),
                   ),
                 ),
               ],

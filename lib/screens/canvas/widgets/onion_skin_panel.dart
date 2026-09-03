@@ -376,7 +376,9 @@ class _OnionSideSection extends StatelessWidget {
                   height: 20,
                   decoration: BoxDecoration(
                     color: color,
-                    border: Border.all(color: Theme.of(context).colorScheme.outline),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),

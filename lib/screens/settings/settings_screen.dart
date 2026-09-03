@@ -258,7 +258,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
         elevation: 1,
-        shadowColor: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.15),
+        shadowColor: Theme.of(
+          context,
+        ).colorScheme.shadow.withValues(alpha: 0.15),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,

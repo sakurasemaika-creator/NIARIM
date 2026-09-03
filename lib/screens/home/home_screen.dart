@@ -397,7 +397,10 @@ class _HomeScreenState extends State<HomeScreen>
                       Text(l10n.homeSelectionCount(_selectedIds.length)),
                       if (_selectedIds.isNotEmpty) ...[
                         IconButton(
-                          icon: Icon(Icons.star, color: ThemeService.activeColorScheme.tertiary),
+                          icon: Icon(
+                            Icons.star,
+                            color: ThemeService.activeColorScheme.tertiary,
+                          ),
                           onPressed: () => _bulkSetFavorite(true),
                           tooltip: l10n.homeSelectionAddFavorite,
                         ),
@@ -427,7 +430,10 @@ class _HomeScreenState extends State<HomeScreen>
                           tooltip: l10n.commonCopy,
                         ),
                         IconButton(
-                          icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+                          icon: Icon(
+                            Icons.delete,
+                            color: ThemeService.activeColorScheme.error,
+                          ),
                           onPressed: _deleteSelected,
                           tooltip: l10n.homeMoveToTrash,
                         ),
@@ -613,7 +619,9 @@ class _HomeScreenState extends State<HomeScreen>
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               for (final id in targetIds) {
                 service.deleteProject(id);
@@ -1124,7 +1132,9 @@ class _SharedTab extends StatelessWidget {
       itemBuilder: (context, project) => Card(
         margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         child: ListTile(
           leading: Container(
@@ -1215,12 +1225,11 @@ class _SharedFolderScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final project = items[index];
                 return Card(
-                  margin: EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   elevation: 1,
-                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                    alpha: 0.15,
+                  ),
                   color: Theme.of(context).colorScheme.surfaceContainerLow,
                   child: ListTile(
                     leading: Container(
@@ -1393,7 +1402,10 @@ class _FolderableList<T> extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.delete_outline, color: ThemeService.activeColorScheme.error),
+              leading: Icon(
+                Icons.delete_outline,
+                color: ThemeService.activeColorScheme.error,
+              ),
               title: Text(
                 l10n.commonDelete,
                 style: TextStyle(color: ThemeService.activeColorScheme.error),
@@ -1468,7 +1480,9 @@ class _TrashTab extends StatelessWidget {
         return Card(
           margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           elevation: 1,
-          shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+          shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+            alpha: 0.15,
+          ),
           color: Theme.of(context).colorScheme.surfaceContainerLow,
           child: ListTile(
             leading: Container(
@@ -1498,7 +1512,9 @@ class _TrashTab extends StatelessWidget {
                   child: Text(l10n.commonRestore),
                 ),
                 TextButton(
-                  style: TextButton.styleFrom(foregroundColor: ThemeService.activeColorScheme.error),
+                  style: TextButton.styleFrom(
+                    foregroundColor: ThemeService.activeColorScheme.error,
+                  ),
                   onPressed: () => _confirmPermanentDelete(context, project.id),
                   child: Text(l10n.homePermanentDelete),
                 ),
@@ -1523,7 +1539,9 @@ class _TrashTab extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               context.read<ProjectService>().permanentDelete(id);
               Navigator.pop(ctx);
@@ -1800,7 +1818,9 @@ class _WorkListItem extends StatelessWidget {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       elevation: 1,
-      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+      shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+        alpha: 0.15,
+      ),
       color: scheme.surfaceContainerLow,
       child: ListTile(
         leading: CircleAvatar(
@@ -1904,7 +1924,9 @@ class _WorkListItem extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               if (file.existsSync()) file.deleteSync();
               Navigator.pop(ctx);

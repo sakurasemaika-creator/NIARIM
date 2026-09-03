@@ -1021,7 +1021,9 @@ class _LayerPanelState extends State<LayerPanel> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeLayer(
@@ -1196,7 +1198,10 @@ class _LayerPanelState extends State<LayerPanel> {
                 },
               ),
             ListTile(
-              leading: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+              leading: Icon(
+                Icons.delete,
+                color: ThemeService.activeColorScheme.error,
+              ),
               title: Text(
                 l10n.commonDelete,
                 style: TextStyle(color: ThemeService.activeColorScheme.error),
@@ -1445,7 +1450,10 @@ class _LayerPanelState extends State<LayerPanel> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.link, color: ThemeService.activeColorScheme.primary),
+              leading: Icon(
+                Icons.link,
+                color: ThemeService.activeColorScheme.primary,
+              ),
               title: Text(l10n.layerPanelMenuCommonLayer),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1466,7 +1474,10 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
             Divider(),
             ListTile(
-              leading: Icon(Icons.edit, color: ThemeService.activeColorScheme.tertiary),
+              leading: Icon(
+                Icons.edit,
+                color: ThemeService.activeColorScheme.tertiary,
+              ),
               title: Text(l10n.layerPanelMenuLineartLayer),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1478,7 +1489,10 @@ class _LayerPanelState extends State<LayerPanel> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.palette, color: ThemeService.activeColorScheme.secondary),
+              leading: Icon(
+                Icons.palette,
+                color: ThemeService.activeColorScheme.secondary,
+              ),
               title: Text(l10n.layerPanelMenuAutofillLayer),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1927,7 +1941,10 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
               if (layer.type == model.LayerType.normal)
                 ListTile(
-                  leading: Icon(Icons.link, color: ThemeService.activeColorScheme.primary),
+                  leading: Icon(
+                    Icons.link,
+                    color: ThemeService.activeColorScheme.primary,
+                  ),
                   title: Text(l10n.layerPanelConvertToCommonLabel),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -2457,7 +2474,11 @@ class _LayerPanelState extends State<LayerPanel> {
                             decoration: BoxDecoration(
                               color: Color(part.color),
                               shape: BoxShape.circle,
-                              border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                              border: Border.all(
+                                color: ThemeService
+                                    .activeColorScheme
+                                    .onSurfaceVariant,
+                              ),
                             ),
                           ),
                           title: Text(part.name),

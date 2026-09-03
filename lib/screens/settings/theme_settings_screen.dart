@@ -150,7 +150,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                           : Theme.of(context).colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(14),
                       elevation: 1,
-                      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+                      shadowColor: ThemeService.activeColorScheme.shadow
+                          .withValues(alpha: 0.15),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
                         onTap: () => themeService.applyPreset(entry.value.id),
@@ -224,7 +225,11 @@ class ThemeSettingsScreen extends StatelessWidget {
                                     value: 'delete',
                                     child: Text(
                                       l10n.commonDelete,
-                                      style: TextStyle(color: ThemeService.activeColorScheme.error),
+                                      style: TextStyle(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .error,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -454,7 +459,9 @@ class _ColorCustomizeTile extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
         elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,

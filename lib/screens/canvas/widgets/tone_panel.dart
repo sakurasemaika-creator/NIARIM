@@ -102,7 +102,9 @@ class _TonePanelState extends State<TonePanel> {
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
                       size: 16,
-                      color: _showFavoritesOnly ? ThemeService.activeColorScheme.tertiary : null,
+                      color: _showFavoritesOnly
+                          ? ThemeService.activeColorScheme.tertiary
+                          : null,
                     ),
                     onPressed: () => setState(
                       () => _showFavoritesOnly = !_showFavoritesOnly,
@@ -227,7 +229,8 @@ class _TonePanelState extends State<TonePanel> {
                         child: Text(
                           l10n.toneEmpty,
                           style: TextStyle(
-                            color: ThemeService.activeColorScheme.onSurfaceVariant,
+                            color:
+                                ThemeService.activeColorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
@@ -284,8 +287,12 @@ class _TonePanelState extends State<TonePanel> {
                                         : Icons.star_outline,
                                     size: 14,
                                     color: tone.isFavorite
-                                        ? ThemeService.activeColorScheme.tertiary
-                                        : ThemeService.activeColorScheme.onSurfaceVariant,
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
+                                        : ThemeService
+                                              .activeColorScheme
+                                              .onSurfaceVariant,
                                   ),
                                 ),
                                 PopupMenuButton<String>(
@@ -325,7 +332,9 @@ class _TonePanelState extends State<TonePanel> {
                                         child: Text(
                                           l10n.commonDelete,
                                           style: TextStyle(
-                                            color: ThemeService.activeColorScheme.error,
+                                            color: ThemeService
+                                                .activeColorScheme
+                                                .error,
                                           ),
                                         ),
                                       ),
@@ -339,7 +348,9 @@ class _TonePanelState extends State<TonePanel> {
                                       child: Icon(
                                         Icons.drag_indicator,
                                         size: 16,
-                                        color: ThemeService.activeColorScheme.onSurfaceVariant,
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
                                       ),
                                     ),
                                   ),

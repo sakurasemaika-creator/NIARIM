@@ -96,12 +96,20 @@ class AdBannerMockWidget extends StatelessWidget {
       height: 50,
       decoration: BoxDecoration(
         color: ThemeService.activeColorScheme.onSurfaceVariant,
-        border: Border.all(color: ThemeService.activeColorScheme.tertiary, width: 1.5),
+        border: Border.all(
+          color: ThemeService.activeColorScheme.tertiary,
+          width: 1.5,
+        ),
       ),
       alignment: Alignment.center,
       child: Text(
         l10n.adMockPlaceholderLabel,
-        style: TextStyle(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70), fontSize: 12),
+        style: TextStyle(
+          color: ThemeService.activeColorScheme.onSurface.withValues(
+            alpha: 0.70,
+          ),
+          fontSize: 12,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -123,12 +131,20 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
         height: 250,
         decoration: BoxDecoration(
           color: ThemeService.activeColorScheme.onSurfaceVariant,
-          border: Border.all(color: ThemeService.activeColorScheme.tertiary, width: 1.5),
+          border: Border.all(
+            color: ThemeService.activeColorScheme.tertiary,
+            width: 1.5,
+          ),
         ),
         alignment: Alignment.center,
         child: Text(
           l10n.adMediumRectangleMockPlaceholderLabel,
-          style: TextStyle(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70), fontSize: 12),
+          style: TextStyle(
+            color: ThemeService.activeColorScheme.onSurface.withValues(
+              alpha: 0.70,
+            ),
+            fontSize: 12,
+          ),
           textAlign: TextAlign.center,
         ),
       ),

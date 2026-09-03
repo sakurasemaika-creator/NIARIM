@@ -10,14 +10,15 @@ String formatDurationLabel(int seconds) {
   return '$m:${s.toString().padLeft(2, '0')}';
 }
 
-List<List<Color>> communityThumbnailGradients(ColorScheme scheme) => <List<Color>>[
-  [scheme.primaryContainer, scheme.primary],
-  [scheme.secondaryContainer, scheme.secondary],
-  [scheme.tertiaryContainer, scheme.tertiary],
-  [scheme.primary.withValues(alpha: 0.55), scheme.secondary],
-  [scheme.secondary.withValues(alpha: 0.55), scheme.tertiary],
-  [scheme.tertiary.withValues(alpha: 0.55), scheme.primary],
-];
+List<List<Color>> communityThumbnailGradients(ColorScheme scheme) =>
+    <List<Color>>[
+      [scheme.primaryContainer, scheme.primary],
+      [scheme.secondaryContainer, scheme.secondary],
+      [scheme.tertiaryContainer, scheme.tertiary],
+      [scheme.primary.withValues(alpha: 0.55), scheme.secondary],
+      [scheme.secondary.withValues(alpha: 0.55), scheme.tertiary],
+      [scheme.tertiary.withValues(alpha: 0.55), scheme.primary],
+    ];
 
 List<Color> communityThumbnailGradient(ColorScheme scheme, int colorIndex) {
   final gradients = communityThumbnailGradients(scheme);
@@ -53,9 +54,9 @@ class CommunityWorkCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final placeholderGradients = communityThumbnailGradients(scheme);
-    final gradient = placeholderGradients[
-      work.thumbnailColorIndex % placeholderGradients.length
-    ];
+    final gradient =
+        placeholderGradients[work.thumbnailColorIndex %
+            placeholderGradients.length];
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 1,
@@ -81,7 +82,8 @@ class CommunityWorkCard extends StatelessWidget {
                       child: Center(
                         child: Icon(
                           Icons.play_circle_fill_rounded,
-                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+                          color: ThemeService.activeColorScheme.onSurface
+                              .withValues(alpha: 0.70),
                           size: 40,
                         ),
                       ),
@@ -92,9 +94,13 @@ class CommunityWorkCard extends StatelessWidget {
                       left: 6,
                       top: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
+                          color: ThemeService.activeColorScheme.onSurface
+                              .withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -114,18 +120,28 @@ class CommunityWorkCard extends StatelessWidget {
                       left: 6,
                       top: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
-                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
+                          color: ThemeService.activeColorScheme.onSurface
+                              .withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.lock_outline, color: ThemeService.activeColorScheme.onSurface, size: 11),
+                            Icon(
+                              Icons.lock_outline,
+                              color: ThemeService.activeColorScheme.onSurface,
+                              size: 11,
+                            ),
                             const SizedBox(width: 3),
                             Text(
-                              AppLocalizations.of(context)!.communityVisibilityHiddenBadge,
+                              AppLocalizations.of(
+                                context,
+                              )!.communityVisibilityHiddenBadge,
                               style: TextStyle(
                                 color: ThemeService.activeColorScheme.onSurface,
                                 fontSize: 11,
@@ -140,14 +156,21 @@ class CommunityWorkCard extends StatelessWidget {
                     right: 6,
                     bottom: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.6),
+                        color: ThemeService.activeColorScheme.onSurface
+                            .withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         formatDurationLabel(work.durationSeconds),
-                        style: TextStyle(color: ThemeService.activeColorScheme.onSurface, fontSize: 10),
+                        style: TextStyle(
+                          color: ThemeService.activeColorScheme.onSurface,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
                   ),
@@ -156,9 +179,13 @@ class CommunityWorkCard extends StatelessWidget {
                       left: 6,
                       bottom: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.6),
+                          color: ThemeService.activeColorScheme.onSurface
+                              .withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -183,7 +210,11 @@ class CommunityWorkCard extends StatelessWidget {
                           isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                           color: ThemeService.activeColorScheme.onSurface,
                           shadows: [
-                            Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 4),
+                            Shadow(
+                              color: ThemeService.activeColorScheme.onSurface
+                                  .withValues(alpha: 0.54),
+                              blurRadius: 4,
+                            ),
                           ],
                         ),
                       ),
@@ -204,10 +235,16 @@ class CommunityWorkCard extends StatelessWidget {
                         const SizedBox(width: 3),
                         Expanded(
                           child: Text(
-                            AppLocalizations.of(context)!.communityRepostedByBadge(repostedByAuthorName!),
+                            AppLocalizations.of(
+                              context,
+                            )!.communityRepostedByBadge(repostedByAuthorName!),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 10, color: scheme.primary, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: scheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -232,29 +269,52 @@ class CommunityWorkCard extends StatelessWidget {
                       work.authorName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.play_arrow_rounded, size: 13, color: scheme.onSurfaceVariant),
+                      Icon(
+                        Icons.play_arrow_rounded,
+                        size: 13,
+                        color: scheme.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 2),
                       Flexible(
                         child: Text(
-                          formatCompactCount(work.viewCount, Localizations.localeOf(context).languageCode),
+                          formatCompactCount(
+                            work.viewCount,
+                            Localizations.localeOf(context).languageCode,
+                          ),
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Icon(Icons.bookmark, size: 13, color: scheme.onSurfaceVariant),
+                      Icon(
+                        Icons.bookmark,
+                        size: 13,
+                        color: scheme.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 2),
                       Flexible(
                         child: Text(
-                          formatCompactCount(work.bookmarkCount, Localizations.localeOf(context).languageCode),
+                          formatCompactCount(
+                            work.bookmarkCount,
+                            Localizations.localeOf(context).languageCode,
+                          ),
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
@@ -312,7 +372,9 @@ class CommunityWorkGrid extends StatelessWidget {
               isBookmarked: bookmarkedIds.contains(work.id),
               onTap: () => onTapWork(work),
               onBookmarkToggle: () => onToggleBookmark(work),
-              onAuthorTap: onTapAuthor == null ? null : () => onTapAuthor!(work),
+              onAuthorTap: onTapAuthor == null
+                  ? null
+                  : () => onTapAuthor!(work),
               rankNumber: rankNumbers?[work.id],
               repostedByAuthorName: repostedByNames?[work.id],
             );

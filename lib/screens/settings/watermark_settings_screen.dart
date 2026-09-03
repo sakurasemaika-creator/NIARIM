@@ -641,7 +641,11 @@ class _WatermarkTile extends StatelessWidget {
                           fontFamily: asset.fontFamily,
                           fontWeight: FontWeight.bold,
                           shadows: [
-                            Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.45), blurRadius: 3),
+                            Shadow(
+                              color: ThemeService.activeColorScheme.onSurface
+                                  .withValues(alpha: 0.45),
+                              blurRadius: 3,
+                            ),
                           ],
                         ),
                         textAlign: TextAlign.center,
@@ -689,7 +693,11 @@ class _WatermarkTile extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.delete, size: 16, color: ThemeService.activeColorScheme.error),
+                  icon: Icon(
+                    Icons.delete,
+                    size: 16,
+                    color: ThemeService.activeColorScheme.error,
+                  ),
                   onPressed: onDelete,
                   tooltip: l10n.commonDelete,
                 ),

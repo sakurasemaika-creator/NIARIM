@@ -390,7 +390,9 @@ class _GameSaveSlotTile extends StatelessWidget {
             ? scheme.surfaceContainerLow
             : scheme.surfaceContainerLowest,
         elevation: hasData ? 2 : 0,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.16),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.16,
+        ),
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(

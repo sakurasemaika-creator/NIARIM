@@ -110,8 +110,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors:
-                                communityThumbnailGradient(Theme.of(context).colorScheme, work.thumbnailColorIndex),
+                            colors: communityThumbnailGradient(
+                              Theme.of(context).colorScheme,
+                              work.thumbnailColorIndex,
+                            ),
                           ),
                         ),
                         child: Center(
@@ -119,7 +121,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                             _isPlaying
                                 ? Icons.play_circle_fill_rounded
                                 : Icons.pause_circle_filled_rounded,
-                            color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+                            color: ThemeService.activeColorScheme.onSurface
+                                .withValues(alpha: 0.70),
                             size: 40,
                           ),
                         ),
@@ -127,7 +130,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                     ),
                     Container(
                       height: CommunityPreviewService.controlBarHeight,
-                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.87),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.87),
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       // SpacerやExpandedを挟むと、この位置（高さ無制限の
                       // Column内、幅固定のContainer内）で極端なオーバー
@@ -164,7 +168,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                   ),
                                   icon: Icon(
                                     _isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: ThemeService.activeColorScheme.onSurface,
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .onSurface,
                                   ),
                                   iconSize: 22,
                                   onPressed: () =>
@@ -185,7 +191,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                   ),
                                   icon: Icon(
                                     Icons.close,
-                                    color: ThemeService.activeColorScheme.onSurface,
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .onSurface,
                                   ),
                                   iconSize: 20,
                                   onPressed: service.close,
@@ -197,12 +205,11 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                           // 奪われないよう、ボタンの右側にハンドル1つ分の
                           // 余白を確保する。
                           Padding(
-                            padding: EdgeInsets.only(
-                              right: handleHitSize - 8,
-                            ),
+                            padding: EdgeInsets.only(right: handleHitSize - 8),
                             child: TextButton(
                               style: TextButton.styleFrom(
-                                foregroundColor: ThemeService.activeColorScheme.onSurface,
+                                foregroundColor:
+                                    ThemeService.activeColorScheme.onSurface,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 8,
@@ -254,7 +261,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                     // 見た目のアイコンは小さいままでも、コンテナ自体の
                     // 当たり判定は広く取れるよう半透明の丸背景を敷く。
                     decoration: BoxDecoration(
-                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.45),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.45),
                       borderRadius: BorderRadius.circular(handleHitSize / 2),
                     ),
                     child: Icon(

@@ -171,7 +171,8 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                       final f = sorted[index];
                       return Card(
                         elevation: 1,
-                        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+                        shadowColor: ThemeService.activeColorScheme.shadow
+                            .withValues(alpha: 0.15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -222,7 +223,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                 icon: Icon(
                                   f.isFavorite ? Icons.star : Icons.star_border,
                                   size: 18,
-                                  color: f.isFavorite ? ThemeService.activeColorScheme.tertiary : null,
+                                  color: f.isFavorite
+                                      ? ThemeService.activeColorScheme.tertiary
+                                      : null,
                                 ),
                                 tooltip: l10n.commonFavoriteToggle,
                                 onPressed: () => service.toggleFavorite(f.id),

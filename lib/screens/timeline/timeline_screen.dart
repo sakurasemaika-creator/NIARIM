@@ -981,14 +981,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   icon: Icons.videocam,
                                   defaultLabel: l10n.projectListMaterialVideo,
                                   allClips: _videoClips,
-                                  addColor: ThemeService.activeColorScheme.primary,
+                                  addColor:
+                                      ThemeService.activeColorScheme.primary,
                                 ),
                                 _buildMaterialTrackGroup(
                                   type: MaterialType.audio,
                                   icon: Icons.audiotrack,
                                   defaultLabel: l10n.projectListMaterialAudio,
                                   allClips: _audioClips,
-                                  addColor: ThemeService.activeColorScheme.tertiary,
+                                  addColor:
+                                      ThemeService.activeColorScheme.tertiary,
                                 ),
                                 _buildCameraTrack(),
                                 _buildMarkerTrack(),
@@ -1147,7 +1149,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ? Center(
                     child: Text(
                       l10n.timelinePreviewPlaceholder,
-                      style: TextStyle(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        color: ThemeService.activeColorScheme.onSurfaceVariant,
+                      ),
                     ),
                   )
                 // 再生位置に追従して作り直すのはこの1枚だけでよい。
@@ -1510,7 +1514,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             SizedBox(width: 2),
-            Icon(Icons.lock, size: 12, color: ThemeService.activeColorScheme.tertiary),
+            Icon(
+              Icons.lock,
+              size: 12,
+              color: ThemeService.activeColorScheme.tertiary,
+            ),
           ],
         ),
       ),
@@ -1879,7 +1887,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     height: 48,
                     decoration: BoxDecoration(
                       color: ThemeService.activeColorScheme.onSurface,
-                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                      border: Border.all(
+                        color: ThemeService.activeColorScheme.onSurfaceVariant,
+                      ),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -1896,7 +1906,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
               child: _moveThumbnail != null
                   ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
-                  : Icon(Icons.movie, size: 20, color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54)),
+                  : Icon(
+                      Icons.movie,
+                      size: 20,
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.54),
+                    ),
             ),
             // 枚数バッジ（右上）
             if (count > 1)
@@ -2129,7 +2144,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             padding: EdgeInsets.only(left: 4),
                                             child: Icon(
                                               Icons.error,
-                                              color: ThemeService.activeColorScheme.tertiary,
+                                              color: ThemeService
+                                                  .activeColorScheme
+                                                  .tertiary,
                                               size: 12,
                                             ),
                                           ),
@@ -2366,7 +2383,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 },
               ),
             ListTile(
-              leading: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+              leading: Icon(
+                Icons.delete,
+                color: ThemeService.activeColorScheme.error,
+              ),
               title: Text(
                 l10n.timelineSceneDeleteMenuItem,
                 style: TextStyle(color: ThemeService.activeColorScheme.error),
@@ -2399,7 +2419,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeScene(
@@ -2429,7 +2451,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeScenes(
@@ -2645,9 +2669,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                               ? Theme.of(
                                                   context,
                                                 ).colorScheme.primaryContainer
-                                              : ThemeService.activeColorScheme.onSurfaceVariant,
+                                              : ThemeService
+                                                    .activeColorScheme
+                                                    .onSurfaceVariant,
                                           border: Border.all(
-                                            color: ThemeService.activeColorScheme.onSurfaceVariant,
+                                            color: ThemeService
+                                                .activeColorScheme
+                                                .onSurfaceVariant,
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             3,
@@ -2687,7 +2715,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color: ThemeService.activeColorScheme.onSurfaceVariant,
+                                            color: ThemeService
+                                                .activeColorScheme
+                                                .onSurfaceVariant,
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             3,
@@ -2697,7 +2727,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                           child: Icon(
                                             Icons.add,
                                             size: 16,
-                                            color: ThemeService.activeColorScheme.onSurfaceVariant,
+                                            color: ThemeService
+                                                .activeColorScheme
+                                                .onSurfaceVariant,
                                           ),
                                         ),
                                       ),
@@ -2756,7 +2788,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             ? Theme.of(
                                                 context,
                                               ).colorScheme.primaryContainer
-                                            : ThemeService.activeColorScheme.onSurface,
+                                            : ThemeService
+                                                  .activeColorScheme
+                                                  .onSurface,
                                         border: Border.all(
                                           color: isChecked
                                               ? Theme.of(
@@ -2789,10 +2823,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                 '${index + 1}',
                                                 style: TextStyle(
                                                   fontSize: 8,
-                                                  color: ThemeService.activeColorScheme.onSurface,
+                                                  color: ThemeService
+                                                      .activeColorScheme
+                                                      .onSurface,
                                                   shadows: [
                                                     Shadow(
-                                                      color: ThemeService.activeColorScheme.onSurface,
+                                                      color: ThemeService
+                                                          .activeColorScheme
+                                                          .onSurface,
                                                       blurRadius: 2,
                                                     ),
                                                   ],
@@ -2810,7 +2848,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                       ),
                                                   child: Icon(
                                                     Icons.error,
-                                                    color: ThemeService.activeColorScheme.tertiary,
+                                                    color: ThemeService
+                                                        .activeColorScheme
+                                                        .tertiary,
                                                     size: 10,
                                                   ),
                                                 ),
@@ -2843,7 +2883,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     height: 40,
                                     decoration: BoxDecoration(
                                       border: Border.all(
-                                        color: ThemeService.activeColorScheme.error,
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .error,
                                         width: 3,
                                       ),
                                       borderRadius: BorderRadius.circular(3),
@@ -2905,7 +2947,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     height: 40,
                     decoration: BoxDecoration(
                       color: ThemeService.activeColorScheme.onSurface,
-                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                      border: Border.all(
+                        color: ThemeService.activeColorScheme.onSurfaceVariant,
+                      ),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -2924,7 +2968,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   : Icon(
                       Icons.movie_filter,
                       size: 18,
-                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.54),
                     ),
             ),
             if (count > 1)
@@ -3405,15 +3450,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       ),
                       borderRadius: BorderRadius.circular(4),
                       border: isDragging
-                          ? Border.all(color: ThemeService.activeColorScheme.onSurface, width: 1.5)
+                          ? Border.all(
+                              color: ThemeService.activeColorScheme.onSurface,
+                              width: 1.5,
+                            )
                           : (isSelected
-                                ? Border.all(color: ThemeService.activeColorScheme.onSurface, width: 1.5)
+                                ? Border.all(
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .onSurface,
+                                    width: 1.5,
+                                  )
                                 : null),
                       boxShadow: isDragging
                           ? null
                           : [
                               BoxShadow(
-                                color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.25),
+                                color: ThemeService.activeColorScheme.onSurface
+                                    .withValues(alpha: 0.25),
                                 blurRadius: 2,
                                 offset: const Offset(0, 1),
                               ),
@@ -3500,13 +3554,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
         child: MouseRegion(
           cursor: SystemMouseCursors.resizeLeftRight,
           child: Container(
-            color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.25),
+            color: ThemeService.activeColorScheme.onSurface.withValues(
+              alpha: 0.25,
+            ),
             alignment: Alignment.center,
             child: Container(
               width: 2,
               height: 12,
               decoration: BoxDecoration(
-                color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.85),
+                color: ThemeService.activeColorScheme.onSurface.withValues(
+                  alpha: 0.85,
+                ),
                 borderRadius: BorderRadius.circular(1),
               ),
             ),
@@ -3654,7 +3712,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.12),
+            color: ThemeService.activeColorScheme.onSurface.withValues(
+              alpha: 0.12,
+            ),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -3926,7 +3986,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         child: Container(
           decoration: BoxDecoration(
             color:
-                (layer.type == LayerType.watermark ? ThemeService.activeColorScheme.secondary : ThemeService.activeColorScheme.primary)
+                (layer.type == LayerType.watermark
+                        ? ThemeService.activeColorScheme.secondary
+                        : ThemeService.activeColorScheme.primary)
                     .withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
@@ -3937,7 +3999,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.25),
+                color: ThemeService.activeColorScheme.onSurface.withValues(
+                  alpha: 0.25,
+                ),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -3977,11 +4041,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   },
                   child: Container(
                     width: 8,
-                    color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.24),
+                    color: ThemeService.activeColorScheme.onSurface.withValues(
+                      alpha: 0.24,
+                    ),
                     child: Icon(
                       Icons.drag_indicator,
                       size: 8,
-                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.70),
                     ),
                   ),
                 ),
@@ -4003,11 +4070,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   },
                   child: Container(
                     width: 8,
-                    color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.24),
+                    color: ThemeService.activeColorScheme.onSurface.withValues(
+                      alpha: 0.24,
+                    ),
                     child: Icon(
                       Icons.drag_indicator,
                       size: 8,
-                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.70),
                     ),
                   ),
                 ),
@@ -4365,7 +4435,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: ThemeService.activeColorScheme.secondary.withValues(alpha: 0.8),
+                        color: ThemeService.activeColorScheme.secondary
+                            .withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -4425,7 +4496,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.3),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.3),
                       blurRadius: 2,
                     ),
                   ],
@@ -4540,7 +4612,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: ThemeService.activeColorScheme.secondary.withValues(alpha: 0.8),
+                        color: ThemeService.activeColorScheme.secondary
+                            .withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -4582,10 +4655,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 decoration: BoxDecoration(
                   color: ThemeService.activeColorScheme.secondary,
                   shape: BoxShape.circle,
-                  border: Border.all(color: ThemeService.activeColorScheme.onSurface, width: 1.5),
+                  border: Border.all(
+                    color: ThemeService.activeColorScheme.onSurface,
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.3),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.3),
                       blurRadius: 2,
                     ),
                   ],
@@ -4659,7 +4736,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+              icon: Icon(
+                Icons.delete,
+                color: ThemeService.activeColorScheme.error,
+              ),
               tooltip: l10n.commonDelete,
               onPressed: () async {
                 if (!await confirmDelete(context)) return;
@@ -4765,9 +4845,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   width: width,
                                   height: 20,
                                   decoration: BoxDecoration(
-                                    color: ThemeService.activeColorScheme.secondary.withValues(
-                                      alpha: e.enabled ? 0.8 : 0.3,
-                                    ),
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .secondary
+                                        .withValues(
+                                          alpha: e.enabled ? 0.8 : 0.3,
+                                        ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
@@ -4831,7 +4914,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 SizedBox(width: 4),
                 if (!premium.isPremium)
-                  Icon(Icons.lock, size: 14, color: ThemeService.activeColorScheme.tertiary)
+                  Icon(
+                    Icons.lock,
+                    size: 14,
+                    color: ThemeService.activeColorScheme.tertiary,
+                  )
                 else ...[
                   const Spacer(),
                   Text(
@@ -5203,7 +5290,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final canvas = ui.Canvas(recorder);
     canvas.drawRect(
       ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-      ui.Paint()..color = ThemeService.activeColorScheme.surfaceContainerHighest,
+      ui.Paint()
+        ..color = ThemeService.activeColorScheme.surfaceContainerHighest,
     );
     final iconSize = (w < h ? w : h) * 0.15;
     final cx = w / 2;
@@ -5213,7 +5301,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ..lineTo(cx - iconSize / 2, cy + iconSize / 2)
       ..lineTo(cx + iconSize / 2, cy)
       ..close();
-    canvas.drawPath(path, ui.Paint()..color = ThemeService.activeColorScheme.onSurfaceVariant);
+    canvas.drawPath(
+      path,
+      ui.Paint()..color = ThemeService.activeColorScheme.onSurfaceVariant,
+    );
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
     final byteData = await rendered.toByteData(
@@ -6085,7 +6176,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         ),
                         FilledButton(
                           style: FilledButton.styleFrom(
-                            backgroundColor: ThemeService.activeColorScheme.error,
+                            backgroundColor:
+                                ThemeService.activeColorScheme.error,
                           ),
                           onPressed: () => Navigator.pop(dialogCtx, true),
                           child: Text(l10n.commonDelete),
@@ -6545,7 +6637,10 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
               decoration: BoxDecoration(
                 color: markColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: ThemeService.activeColorScheme.onSurface, width: 2),
+                border: Border.all(
+                  color: ThemeService.activeColorScheme.onSurface,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -7070,7 +7165,9 @@ class _EffectFilterSheet extends StatelessWidget {
       key: key,
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       elevation: 1,
-      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
+      shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+        alpha: 0.15,
+      ),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: ExpansionTile(
         leading: Icon(_typeIcons[e.type], size: 20),
@@ -7099,7 +7196,11 @@ class _EffectFilterSheet extends StatelessWidget {
               onPressed: () => _duplicate(context, e, effects),
             ),
             IconButton(
-              icon: Icon(Icons.delete, size: 18, color: ThemeService.activeColorScheme.error),
+              icon: Icon(
+                Icons.delete,
+                size: 18,
+                color: ThemeService.activeColorScheme.error,
+              ),
               tooltip: l10n.commonDelete,
               onPressed: () async {
                 if (!await confirmDelete(
@@ -7438,7 +7539,9 @@ class _EffectFilterSheet extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: e.fadeColor,
-                border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                border: Border.all(
+                  color: ThemeService.activeColorScheme.onSurfaceVariant,
+                ),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -7491,7 +7594,9 @@ class _EffectFilterSheet extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: e.fadeColor,
-                border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                border: Border.all(
+                  color: ThemeService.activeColorScheme.onSurfaceVariant,
+                ),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -7670,7 +7775,9 @@ class _EffectFilterSheet extends StatelessWidget {
                   height: 40,
                   decoration: BoxDecoration(
                     color: c,
-                    border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
+                    border: Border.all(
+                      color: ThemeService.activeColorScheme.onSurfaceVariant,
+                    ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -7839,7 +7946,10 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+                  icon: Icon(
+                    Icons.delete,
+                    color: ThemeService.activeColorScheme.error,
+                  ),
                   tooltip: l10n.commonDelete,
                   onPressed: () async {
                     if (!await confirmDelete(context, itemName: _c.label)) {
@@ -8108,7 +8218,10 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+                  icon: Icon(
+                    Icons.delete,
+                    color: ThemeService.activeColorScheme.error,
+                  ),
                   tooltip: l10n.commonDelete,
                   onPressed: () async {
                     if (!await confirmDelete(context)) return;

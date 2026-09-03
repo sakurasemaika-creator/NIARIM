@@ -190,7 +190,9 @@ class _BrushTab extends StatelessWidget {
             child: Icon(
               brush.isFavorite ? Icons.star : Icons.star_outline,
               size: 14,
-              color: brush.isFavorite ? ThemeService.activeColorScheme.tertiary : ThemeService.activeColorScheme.onSurfaceVariant,
+              color: brush.isFavorite
+                  ? ThemeService.activeColorScheme.tertiary
+                  : ThemeService.activeColorScheme.onSurfaceVariant,
             ),
           ),
           onTap: () {
@@ -506,7 +508,10 @@ class LassoFillToneSheet extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Text(
             l10n.toolbarBucketToneListLabel,
-            style: TextStyle(fontSize: 11, color: ThemeService.activeColorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 11,
+              color: ThemeService.activeColorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Expanded(
