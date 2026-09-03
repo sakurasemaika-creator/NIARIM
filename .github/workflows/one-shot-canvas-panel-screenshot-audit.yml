@@ -1,0 +1,35 @@
+name: One-shot Canvas Panel Screenshot Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-canvas-panel-screenshot-audit.yml'
+      - 'test/canvas_panel_screenshot_audit_test.dart'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Run real CanvasScreen panel audit
+        run: flutter test test/canvas_panel_screenshot_audit_test.dart --reporter expanded
+      - name: Upload panel screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: canvas-panel-screenshot-audit
+          path: build/visual-reaudit/canvas-panels/*.png
+          if-no-files-found: warn
+          retention-days: 7
