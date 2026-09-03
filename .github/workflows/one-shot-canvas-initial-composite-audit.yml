@@ -1,0 +1,35 @@
+name: One-shot Canvas Initial Composite Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-canvas-initial-composite-audit.yml'
+      - 'test/functional_audit_canvas_initial_composite_test.dart'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Run initial composite timing audit
+        run: flutter test test/functional_audit_canvas_initial_composite_test.dart --reporter expanded
+      - name: Upload timing screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: canvas-initial-composite-audit
+          path: build/functional-visual/*canvas_initial_composite*
+          if-no-files-found: warn
+          retention-days: 7
