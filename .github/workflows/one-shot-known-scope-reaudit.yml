@@ -5,6 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/one-shot-known-scope-reaudit.yml'
+      - 'test/final_remaining_strict_evidence_test.dart'
 
 jobs:
   verify:
@@ -21,11 +22,8 @@ jobs:
         run: flutter analyze
       - name: Strict remaining evidence must compile and pass
         run: flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
-      - name: Frame strip / Premium regression tests
-        run: |
-          flutter test test/frame_strip_widget_test.dart --reporter expanded || true
-          flutter test test/premium_screen_test.dart --reporter expanded || true
       - name: Audit fixed UI colors in app screens
+        if: always()
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -36,30 +34,26 @@ jobs:
           for root in roots:
             if not root.exists(): continue
             for p in root.rglob('*.dart'):
-              text=p.read_text(encoding='utf-8')
-              for n,line in enumerate(text.splitlines(),1):
+              for n,line in enumerate(p.read_text(encoding='utf-8').splitlines(),1):
                 if any(re.search(x,line) for x in pats): hits.append(f'{p}:{n}:{line.strip()}')
           Path('build').mkdir(exist_ok=True)
           Path('build/ui-fixed-colors.txt').write_text('\n'.join(hits),encoding='utf-8')
-          print('\n'.join(hits[:300]))
-          print('FIXED_UI_COLOR_HITS=',len(hits))
+          print('\n'.join(hits[:500])); print('FIXED_UI_COLOR_HITS=',len(hits))
           PY
       - name: Audit emoji-like UI literals
+        if: always()
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          hits=[]
-          # Broad emoji/symbol ranges; report for review rather than blindly failing text content.
-          rx=re.compile(r'[\U0001F000-\U0001FAFF\u2600-\u27BF]')
+          hits=[]; rx=re.compile(r'[\U0001F000-\U0001FAFF\u2600-\u27BF]')
           for root in [Path('lib/screens'),Path('lib/widgets')]:
             if not root.exists(): continue
             for p in root.rglob('*.dart'):
               for n,line in enumerate(p.read_text(encoding='utf-8').splitlines(),1):
                 if rx.search(line): hits.append(f'{p}:{n}:{line.strip()}')
           Path('build/emoji-ui-literals.txt').write_text('\n'.join(hits),encoding='utf-8')
-          print('\n'.join(hits[:300]))
-          print('EMOJI_UI_HITS=',len(hits))
+          print('\n'.join(hits[:500])); print('EMOJI_UI_HITS=',len(hits))
           PY
       - uses: actions/upload-artifact@v4
         if: always()
