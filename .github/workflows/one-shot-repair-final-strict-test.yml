@@ -1,0 +1,26 @@
+name: One-shot Repair Final Strict Test
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-repair-final-strict-test.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Apply known compile fixes
+        run: python .github/scripts/fix_final_remaining_test.py
+      - name: Commit repaired test
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test/final_remaining_strict_evidence_test.dart
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: repair final strict evidence test compilation"
+          git push origin HEAD:dev_branch
