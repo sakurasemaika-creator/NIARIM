@@ -53,6 +53,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
+      tags: ['線画', '基本'],
     ),
     const Brush(
       id: 'Brush0002',
@@ -70,6 +71,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
+      tags: ['線画', '主線'],
     ),
     const Brush(
       id: 'Brush0003',
@@ -87,6 +89,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
+      tags: ['塗り', 'ぼかし'],
     ),
     const Brush(
       id: 'Brush0004',
@@ -104,6 +107,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.simple,
       mixingRate: 50,
+      tags: ['塗り', '混色'],
     ),
     // マーカーペン：チゼル（斜め切り）先端の太めの半透明ペン先
     // （重ね塗りで色が濃くなる）。calligraphyAngle: 0（ペン先の扁平な
@@ -130,6 +134,7 @@ class BrushService extends ChangeNotifier {
       mixingRate: 15,
       calligraphyAngle: 0.0,
       edgeJitter: true,
+      tags: ['塗り', 'アナログ風'],
     ),
     // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
     // （calligraphyAngle）。進行方向によって線の太さが変わる
@@ -151,6 +156,203 @@ class BrushService extends ChangeNotifier {
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
       calligraphyAngle: 45.0,
+      tags: ['線画', '装飾'],
+    ),
+    // ── ここから下は、よくあるイラスト制作ソフトに入っている定番の
+    // 描き味を、既存のブラシパラメータの組み合わせで再現したもの。
+    // 新しい描画機能は要らず、設定値の妙で作れるものだけを選んである。
+    //
+    // 鉛筆：芯が紙の凹凸に擦れてふちがざらつく質感を、ふち滲み
+    // （edgeJitter）を強めにかけて再現する。筆圧で濃さと太さが同時に
+    // 変わるのが実物に近い。
+    const Brush(
+      id: 'Brush0007',
+      name: '鉛筆',
+      size: 4,
+      opacity: 85,
+      spacing: 2,
+      blurRadius: 0,
+      stabilization: true,
+      stabilizationStrength: 30,
+      pixelMode: false,
+      pressureMode: PressureMode.sizeAndOpacity,
+      pressureStrength: 85,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      edgeJitter: true,
+      edgeJitterStrength: 70,
+      tags: ['線画', 'ラフ', 'アナログ風'],
+    ),
+    // 丸ペン：主線用。細く硬く、筆圧で太さがはっきり出る。
+    // 手ブレ補正は強めにして、長い曲線を一息で引けるようにする。
+    const Brush(
+      id: 'Brush0008',
+      name: '丸ペン',
+      size: 2,
+      opacity: 100,
+      spacing: 1,
+      blurRadius: 0,
+      stabilization: true,
+      stabilizationStrength: 75,
+      pixelMode: false,
+      pressureMode: PressureMode.size,
+      pressureStrength: 95,
+      fadeMode: FadeMode.weak,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      tags: ['線画', '主線'],
+    ),
+    // 平筆：ペン先を90度に固定した扁平ブラシ。縦に引くと細く・横に引くと
+    // 太くなる（カリグラフィーの角度違い）。塗りの面を作るのに向く。
+    const Brush(
+      id: 'Brush0009',
+      name: '平筆',
+      size: 26,
+      opacity: 90,
+      spacing: 3,
+      blurRadius: 5,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.opacity,
+      pressureStrength: 60,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.simple,
+      mixingRate: 25,
+      calligraphyAngle: 90.0,
+      tags: ['塗り', 'アナログ風'],
+    ),
+    // 水彩：下の色をよく拾い（混色率高め）、ふちがにじんで薄く乗る。
+    // 重ねるほど濃くなるよう不透明度は低めにしてある。
+    const Brush(
+      id: 'Brush0010',
+      name: '水彩',
+      size: 24,
+      opacity: 45,
+      spacing: 4,
+      blurRadius: 30,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.sizeAndOpacity,
+      pressureStrength: 75,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.simple,
+      mixingRate: 70,
+      edgeJitter: true,
+      edgeJitterStrength: 40,
+      tags: ['塗り', '混色', 'アナログ風'],
+    ),
+    // ぼかし：ぼかし半径を最大近くまで上げ、輪郭を持たない柔らかい影を
+    // 置くための筆。頬の赤み・光のにじみなどに。
+    const Brush(
+      id: 'Brush0011',
+      name: 'ぼかし',
+      size: 40,
+      opacity: 25,
+      spacing: 4,
+      blurRadius: 90,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.opacity,
+      pressureStrength: 80,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      tags: ['塗り', 'ぼかし'],
+    ),
+    // チョーク／木炭：粒が散ってざらつく質感。散布（scatter）と密度を
+    // 上げ、ふち滲みも最大にして粉っぽさを出す。
+    const Brush(
+      id: 'Brush0012',
+      name: 'チョーク',
+      size: 18,
+      opacity: 70,
+      spacing: 3,
+      blurRadius: 0,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.opacity,
+      pressureStrength: 70,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      density: 1.8,
+      scatter: 0.35,
+      edgeJitter: true,
+      edgeJitterStrength: 100,
+      tags: ['塗り', 'ラフ', 'アナログ風'],
+    ),
+    // スプレー（ハイライトの粒・雪・星などの散布用）。間隔を広く取って
+    // 粒を独立させ、進行方向へ大きく散らす。
+    const Brush(
+      id: 'Brush0013',
+      name: 'スプレー',
+      size: 22,
+      opacity: 55,
+      spacing: 10,
+      blurRadius: 20,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.opacity,
+      pressureStrength: 60,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      density: 2.5,
+      scatter: 0.9,
+      tags: ['効果', 'ぼかし'],
+    ),
+    // ピクセルペン：ドット絵用。アンチエイリアスの無い硬い1px単位の線に
+    // なるよう、ピクセルモードをONにしてぼかしと筆圧を切る。
+    const Brush(
+      id: 'Brush0014',
+      name: 'ピクセルペン',
+      size: 3,
+      opacity: 100,
+      spacing: 1,
+      blurRadius: 0,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: true,
+      pressureMode: PressureMode.off,
+      pressureStrength: 0,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      tags: ['線画', 'ドット絵'],
+    ),
+    // 面相筆：入り抜き（fadeMode）を強くかけ、線の始まりと終わりが自然に
+    // 細くなる筆。まつ毛・髪の毛先・和風の線に向く。
+    const Brush(
+      id: 'Brush0015',
+      name: '面相筆',
+      size: 8,
+      opacity: 100,
+      spacing: 1,
+      blurRadius: 0,
+      stabilization: true,
+      stabilizationStrength: 55,
+      pixelMode: false,
+      pressureMode: PressureMode.size,
+      pressureStrength: 90,
+      fadeMode: FadeMode.strong,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      tags: ['線画', '入り抜き'],
     ),
   ];
 
@@ -211,6 +413,22 @@ class BrushService extends ChangeNotifier {
           needsPersist = true;
         }
         _brushes[markerIndex] = m;
+      }
+      // 組み込みブラシへ後から既定タグを付けたので、保存済みデータにも
+      // 反映する。**利用者が自分で付けたタグは絶対に上書きしない**ため、
+      // タグが1件も無いものだけを対象にする（タグを意図的に全部外した
+      // 状態は「まだ付けていない」と区別できないが、既定タグが戻るだけで
+      // 実害が無く、上書きで消してしまう害のほうが大きい）。
+      final defaultTags = {
+        for (final b in _defaultBrushes())
+          if (b.tags.isNotEmpty) b.id: b.tags,
+      };
+      for (int i = 0; i < _brushes.length; i++) {
+        final tags = defaultTags[_brushes[i].id];
+        if (tags != null && _brushes[i].tags.isEmpty) {
+          _brushes[i] = _brushes[i].copyWith(tags: tags);
+          needsPersist = true;
+        }
       }
       if (needsPersist) {
         await _persist();

@@ -142,6 +142,8 @@ void main() {
       await s.init();
       final builtIn = s.tones.first;
       expect(s.isBuiltIn(builtIn.id), isTrue);
+      // 既定タグが付いた状態から、利用者が付け替えられることを確かめる。
+      expect(builtIn.tags, isNotEmpty);
       s.setTags(builtIn.id, ['影', '影', '  ']);
       expect(s.tones.first.tags, ['影']);
     });
@@ -157,9 +159,19 @@ void main() {
       expect(s2.stamps.first.tags, ['吹き出し', 'ふきだし']);
     });
 
-    test('allTags()は使用件数の多い順、同数なら名前順で返す', () async {
+    // 組み込みブラシには既定タグが付いているため、まず全件のタグを空に
+    // してから検証する（既定タグが混ざると順序の検証がぶれるため）。
+    Future<BrushService> emptyTaggedBrushService() async {
       final s = BrushService();
       await s.init();
+      for (final b in s.brushes) {
+        s.setTags(b.id, const []);
+      }
+      return s;
+    }
+
+    test('allTags()は使用件数の多い順、同数なら名前順で返す', () async {
+      final s = await emptyTaggedBrushService();
       final ids = s.brushes.map((b) => b.id).toList();
       s.setTags(ids[0], ['共通', 'zzz']);
       s.setTags(ids[1], ['共通', 'aaa']);
@@ -168,8 +180,7 @@ void main() {
     });
 
     test('表記ゆれ（大小違い）は1件に数え、最初の表記を代表にする', () async {
-      final s = BrushService();
-      await s.init();
+      final s = await emptyTaggedBrushService();
       final ids = s.brushes.map((b) => b.id).toList();
       s.setTags(ids[0], ['Hair']);
       s.setTags(ids[1], ['hair']);

@@ -14,14 +14,20 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('組み込み全25トーンをToneService実プリセットから生成し固定座標で実描画PNG化する', () async {
+  test('組み込み全トーンをToneService実プリセットから生成し固定座標で実描画PNG化する', () async {
     final service = ToneService();
     await service.init();
     final tones = service.tones
         .where((t) => t.id.startsWith('Tone00'))
         .toList();
-    expect(tones.length, 25, reason: '現行組み込みトーン25種を漏れなく監査すること');
-    expect(tones.map((t) => t.id).toSet().length, 25);
+    // 件数を直書きするとプリセットを増やすたびに落ちるため、
+    // 「全件が漏れなく監査対象になっていること」だけを検証する。
+    expect(
+      tones.length,
+      greaterThanOrEqualTo(25),
+      reason: '現行の組み込みトーンを漏れなく監査すること',
+    );
+    expect(tones.map((t) => t.id).toSet(), hasLength(tones.length));
 
     final signatures = <String>{};
     for (final tone in tones) {

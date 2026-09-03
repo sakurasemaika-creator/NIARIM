@@ -51,13 +51,32 @@ class StampService extends ChangeNotifier {
   Stamp? get currentStamp => _currentStamp;
 
   static List<Stamp> _defaultStamps() => [
-    const Stamp(id: 'Stamp0001', name: '三角形'),
-    const Stamp(id: 'Stamp0002', name: '五角形'),
-    const Stamp(id: 'Stamp0003', name: '六角形'),
-    const Stamp(id: 'Stamp0004', name: '星'),
-    const Stamp(id: 'Stamp0005', name: 'ハート'),
-    const Stamp(id: 'Stamp0006', name: '吹き出し'),
-    const Stamp(id: 'Stamp0007', name: '矢印'),
+    const Stamp(id: 'Stamp0001', name: '三角形', tags: ['図形']),
+    const Stamp(id: 'Stamp0002', name: '五角形', tags: ['図形']),
+    const Stamp(id: 'Stamp0003', name: '六角形', tags: ['図形']),
+    const Stamp(id: 'Stamp0004', name: '星', tags: ['装飾', '効果']),
+    const Stamp(id: 'Stamp0005', name: 'ハート', tags: ['装飾']),
+    const Stamp(id: 'Stamp0006', name: '吹き出し', tags: ['記号', 'マンガ']),
+    const Stamp(id: 'Stamp0007', name: '矢印', tags: ['記号']),
+    // ── ここから下は定番図形の追加分。既製品の素材は使わず、
+    // procedural_texture.dartの_shapePathForName()が数式から生成する。
+    const Stamp(id: 'Stamp0008', name: '円', tags: ['図形']),
+    const Stamp(id: 'Stamp0009', name: '四角形', tags: ['図形']),
+    const Stamp(id: 'Stamp0010', name: '丸角四角', tags: ['図形']),
+    const Stamp(id: 'Stamp0011', name: '菱形', tags: ['図形']),
+    const Stamp(id: 'Stamp0012', name: '八角形', tags: ['図形']),
+    const Stamp(id: 'Stamp0013', name: 'ドーナツ', tags: ['図形']),
+    const Stamp(id: 'Stamp0014', name: '十字', tags: ['図形', '記号']),
+    const Stamp(id: 'Stamp0015', name: '四芒星', tags: ['装飾', '効果']),
+    const Stamp(id: 'Stamp0016', name: '六芒星', tags: ['装飾', '効果']),
+    const Stamp(id: 'Stamp0017', name: '八芒星', tags: ['装飾', '効果']),
+    const Stamp(id: 'Stamp0018', name: 'キラキラ', tags: ['装飾', '効果']),
+    const Stamp(id: 'Stamp0019', name: '三日月', tags: ['背景', '装飾']),
+    const Stamp(id: 'Stamp0020', name: '雲', tags: ['背景', '装飾']),
+    const Stamp(id: 'Stamp0021', name: '稲妻', tags: ['効果', '装飾']),
+    const Stamp(id: 'Stamp0022', name: '花', tags: ['装飾']),
+    const Stamp(id: 'Stamp0023', name: 'チェックマーク', tags: ['記号']),
+    const Stamp(id: 'Stamp0024', name: '両矢印', tags: ['記号']),
   ];
 
   Future<void> init() async {
@@ -71,6 +90,18 @@ class StampService extends ChangeNotifier {
       _stamps.addAll(
         raw.map((s) => Stamp.fromJson(jsonDecode(s) as Map<String, dynamic>)),
       );
+      // 既存ユーザーにも、後から追加した組み込みスタンプを反映する
+      // （同じIDが既にあれば追加しない）。BrushService・ToneServiceは
+      // 以前から同じマージをしていたが、StampServiceだけ抜けており、
+      // プリセットを増やしても新規インストール時にしか出てこなかった。
+      final existingIds = _stamps.map((e) => e.id).toSet();
+      final missing = _defaultStamps().where(
+        (e) => !existingIds.contains(e.id),
+      );
+      if (missing.isNotEmpty) {
+        _stamps.addAll(missing);
+        await _persist();
+      }
     }
     final foldersRaw = prefs.getStringList(_foldersKey);
     _folders.clear();

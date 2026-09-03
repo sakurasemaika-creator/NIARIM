@@ -13,20 +13,25 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('組み込み全6ブラシをBrushService実プリセット値のまま実描画しPNGと画素特性を検査する', () async {
+  test('組み込み全ブラシをBrushService実プリセット値のまま実描画しPNGと画素特性を検査する', () async {
     final service = BrushService();
     await service.init();
+    // 件数を直書きすると、プリセットを増やすたびにこの監査が落ちる。
+    // 「組み込みブラシが全件、漏れなく監査対象になっていること」が要点
+    // なので、IDの並びではなくisBuiltIn()で全件を拾う。
     final brushes = service.brushes
-        .where((b) => b.id.startsWith('Brush000'))
+        .where((b) => service.isBuiltIn(b.id))
         .toList();
-    expect(brushes.map((b) => b.id).toSet(), {
-      'Brush0001',
-      'Brush0002',
-      'Brush0003',
-      'Brush0004',
-      'Brush0005',
-      'Brush0006',
-    }, reason: '組み込みブラシ6種が欠けず監査対象になること');
+    expect(
+      brushes.length,
+      greaterThanOrEqualTo(6),
+      reason: '組み込みブラシが欠けず監査対象になること',
+    );
+    expect(
+      brushes.map((b) => b.id).toSet(),
+      hasLength(brushes.length),
+      reason: '同じIDのブラシが重複していないこと',
+    );
 
     final signatures = <String, String>{};
     final nonTransparent = <String, int>{};

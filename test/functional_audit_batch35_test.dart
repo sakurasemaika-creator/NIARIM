@@ -14,20 +14,28 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('組み込み全7スタンプをStampService実プリセットから生成し実キャンバスへ1個ずつ配置する', () async {
+  test('組み込み全スタンプをStampService実プリセットから生成し実キャンバスへ1個ずつ配置する', () async {
     final service = StampService();
     await service.init();
     final stamps = service.stamps;
-    expect(stamps.length, 7);
-    expect(stamps.map((s) => s.id).toSet(), {
-      'Stamp0001',
-      'Stamp0002',
-      'Stamp0003',
-      'Stamp0004',
-      'Stamp0005',
-      'Stamp0006',
-      'Stamp0007',
-    });
+    // 件数を直書きするとプリセットを増やすたびに落ちるため、
+    // 「全件が漏れなく監査対象になっていること」だけを検証する。
+    expect(stamps.length, greaterThanOrEqualTo(7));
+    expect(stamps.map((e) => e.id).toSet(), hasLength(stamps.length));
+    // 初期からある7種は必ず含まれていること（後から足したぶんは
+    // 上の件数チェックで拾う）。
+    expect(
+      stamps.map((s) => s.id).toSet(),
+      containsAll(const [
+        'Stamp0001',
+        'Stamp0002',
+        'Stamp0003',
+        'Stamp0004',
+        'Stamp0005',
+        'Stamp0006',
+        'Stamp0007',
+      ]),
+    );
     final signatures = <String>{};
     for (final stamp in stamps) {
       const w = 128, h = 128, size = 72;
@@ -61,8 +69,8 @@ void main() {
     }
     expect(
       signatures.length,
-      7,
-      reason: '7種類の組み込みスタンプが同じ形状へ潰れず全て異なる実画素出力を持つこと',
+      stamps.length,
+      reason: '組み込みスタンプが同じ形状へ潰れず全て異なる実画素出力を持つこと',
     );
   });
 }
