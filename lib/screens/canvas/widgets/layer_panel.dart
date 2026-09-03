@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -489,7 +490,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           _rangeSummary(l10n, layer),
                           style: const TextStyle(
                             fontSize: 9,
-                            color: Colors.blue,
+                            color: ThemeService.activeColorScheme.primary,
                           ),
                         )
                       : layer.hasClipping
@@ -514,7 +515,7 @@ class _LayerPanelState extends State<LayerPanel> {
                             onLongPress: () => _showAutofillUpdateHelp(context),
                             child: const Icon(
                               Icons.error,
-                              color: Colors.orange,
+                              color: ThemeService.activeColorScheme.tertiary,
                               size: 14,
                             ),
                           ),
@@ -562,7 +563,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           Icons.delete_outline,
                           size: 16,
                           color: _canDeleteLayerRow(layer, layers)
-                              ? Colors.red[300]
+                              ? ThemeService.activeColorScheme.error
                               : Theme.of(context).disabledColor,
                         ),
                       ),
@@ -665,42 +666,42 @@ class _LayerPanelState extends State<LayerPanel> {
       model.LayerType.autoFillLineart => const Icon(
         Icons.edit,
         size: 12,
-        color: Colors.orange,
+        color: ThemeService.activeColorScheme.tertiary,
       ),
       model.LayerType.autoFill => const Icon(
         Icons.palette,
         size: 12,
-        color: Colors.green,
+        color: ThemeService.activeColorScheme.secondary,
       ),
       model.LayerType.common => const Icon(
         Icons.link,
         size: 12,
-        color: Colors.blue,
+        color: ThemeService.activeColorScheme.primary,
       ),
       model.LayerType.folder => const Icon(
         Icons.folder,
         size: 12,
-        color: Colors.amber,
+        color: ThemeService.activeColorScheme.tertiary,
       ),
       model.LayerType.text => const Icon(
         Icons.text_fields,
         size: 12,
-        color: Colors.purple,
+        color: ThemeService.activeColorScheme.secondary,
       ),
       model.LayerType.timelineImage => const Icon(
         Icons.image,
         size: 12,
-        color: Colors.teal,
+        color: ThemeService.activeColorScheme.secondary,
       ),
       model.LayerType.timelineVideo => const Icon(
         Icons.videocam,
         size: 12,
-        color: Colors.indigo,
+        color: ThemeService.activeColorScheme.primary,
       ),
       model.LayerType.watermark => const Icon(
         Icons.branding_watermark,
         size: 12,
-        color: Colors.pink,
+        color: ThemeService.activeColorScheme.secondary,
       ),
       // 選択レイヤーは他の種別と異なり、固定の意味色ではなく、ユーザーが
       // カスタマイズできるテーマの選択色を使う。
@@ -1020,7 +1021,7 @@ class _LayerPanelState extends State<LayerPanel> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeLayer(
@@ -1195,10 +1196,10 @@ class _LayerPanelState extends State<LayerPanel> {
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
               title: Text(
                 l10n.commonDelete,
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: ThemeService.activeColorScheme.error),
               ),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1444,7 +1445,7 @@ class _LayerPanelState extends State<LayerPanel> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.link, color: Colors.blue),
+              leading: Icon(Icons.link, color: ThemeService.activeColorScheme.primary),
               title: Text(l10n.layerPanelMenuCommonLayer),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1465,7 +1466,7 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.edit, color: Colors.orange),
+              leading: Icon(Icons.edit, color: ThemeService.activeColorScheme.tertiary),
               title: Text(l10n.layerPanelMenuLineartLayer),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1477,7 +1478,7 @@ class _LayerPanelState extends State<LayerPanel> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.palette, color: Colors.green),
+              leading: Icon(Icons.palette, color: ThemeService.activeColorScheme.secondary),
               title: Text(l10n.layerPanelMenuAutofillLayer),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1926,7 +1927,7 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
               if (layer.type == model.LayerType.normal)
                 ListTile(
-                  leading: const Icon(Icons.link, color: Colors.blue),
+                  leading: Icon(Icons.link, color: ThemeService.activeColorScheme.primary),
                   title: Text(l10n.layerPanelConvertToCommonLabel),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -2456,7 +2457,7 @@ class _LayerPanelState extends State<LayerPanel> {
                             decoration: BoxDecoration(
                               color: Color(part.color),
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey),
+                              border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
                             ),
                           ),
                           title: Text(part.name),

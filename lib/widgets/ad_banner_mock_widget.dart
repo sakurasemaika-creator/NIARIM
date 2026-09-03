@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 
@@ -94,13 +95,13 @@ class AdBannerMockWidget extends StatelessWidget {
       width: 320,
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.grey[850],
-        border: Border.all(color: Colors.amber, width: 1.5),
+        color: ThemeService.activeColorScheme.onSurfaceVariant,
+        border: Border.all(color: ThemeService.activeColorScheme.tertiary, width: 1.5),
       ),
       alignment: Alignment.center,
       child: Text(
         l10n.adMockPlaceholderLabel,
-        style: const TextStyle(color: Colors.white70, fontSize: 12),
+        style: TextStyle(color: ThemeService.activeColorScheme.onSurface70, fontSize: 12),
         textAlign: TextAlign.center,
       ),
     );
@@ -121,13 +122,13 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
         width: 300,
         height: 250,
         decoration: BoxDecoration(
-          color: Colors.grey[850],
-          border: Border.all(color: Colors.amber, width: 1.5),
+          color: ThemeService.activeColorScheme.onSurfaceVariant,
+          border: Border.all(color: ThemeService.activeColorScheme.tertiary, width: 1.5),
         ),
         alignment: Alignment.center,
         child: Text(
           l10n.adMediumRectangleMockPlaceholderLabel,
-          style: const TextStyle(color: Colors.white70, fontSize: 12),
+          style: TextStyle(color: ThemeService.activeColorScheme.onSurface70, fontSize: 12),
           textAlign: TextAlign.center,
         ),
       ),

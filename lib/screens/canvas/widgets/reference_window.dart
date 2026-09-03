@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
@@ -70,7 +71,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
         borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         color: theme.panelBgColor,
-        shadowColor: Colors.black.withValues(alpha: 0.4),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.4),
         child: SizedBox(
           width: _size.width,
           height: _size.height,

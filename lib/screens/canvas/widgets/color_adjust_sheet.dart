@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -219,7 +220,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: Colors.grey[850],
+                    color: ThemeService.activeColorScheme.onSurfaceVariant,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: _previewImage != null

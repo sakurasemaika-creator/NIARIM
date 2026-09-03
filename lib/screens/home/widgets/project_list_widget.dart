@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -250,7 +251,7 @@ class ProjectListWidget extends StatelessWidget {
   }) {
     final placeholder = Container(
       color: Color(project.backgroundColor),
-      child: const Center(child: Icon(Icons.image, color: Colors.white38)),
+      child: const Center(child: Icon(Icons.image, color: ThemeService.activeColorScheme.onSurface38)),
     );
     final path = project.thumbnailPath;
     if (path == null) return placeholder;
@@ -320,7 +321,7 @@ class ProjectListWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (folder.isFavorite)
-            const Icon(Icons.star, color: Colors.amber, size: 18),
+            Icon(Icons.star, color: ThemeService.activeColorScheme.tertiary, size: 18),
           if (!isSelectionMode) _folderMenu(context, folder),
         ],
       ),
@@ -352,7 +353,7 @@ class ProjectListWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (isSelected ? primary : Colors.black).withValues(
+              color: (isSelected ? primary : ThemeService.activeColorScheme.onSurface).withValues(
                 alpha: isSelected ? 0.28 : 0.12,
               ),
               blurRadius: isSelected ? 14 : 8,
@@ -393,7 +394,7 @@ class ProjectListWidget extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withValues(alpha: 0.55),
+                              ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
                             ],
                           ),
                         ),
@@ -408,7 +409,7 @@ class ProjectListWidget extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.white,
+                          color: ThemeService.activeColorScheme.onSurface,
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Kuramubon',
                           fontFamilyFallback: kHeadingFontFallback,
@@ -422,12 +423,12 @@ class ProjectListWidget extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.4),
+                            color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.star,
-                            color: Colors.amber,
+                            color: ThemeService.activeColorScheme.tertiary,
                             size: 14,
                           ),
                         ),
@@ -447,7 +448,7 @@ class ProjectListWidget extends StatelessWidget {
                             border: Border.all(color: primary, width: 1.5),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
+                                color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.2),
                                 blurRadius: 3,
                               ),
                             ],
@@ -486,7 +487,7 @@ class ProjectListWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (isSelected ? primary : Colors.black).withValues(
+              color: (isSelected ? primary : ThemeService.activeColorScheme.onSurface).withValues(
                 alpha: isSelected ? 0.28 : 0.12,
               ),
               blurRadius: isSelected ? 14 : 8,
@@ -543,7 +544,7 @@ class ProjectListWidget extends StatelessWidget {
                           ),
                           child: const Icon(
                             Icons.star,
-                            color: Colors.amber,
+                            color: ThemeService.activeColorScheme.tertiary,
                             size: 14,
                           ),
                         ),
@@ -620,7 +621,7 @@ class ProjectListWidget extends StatelessWidget {
           value: 'delete',
           child: Text(
             l10n.projectDetailTrashMenuItem,
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(color: ThemeService.activeColorScheme.error),
           ),
         ),
       ],
@@ -651,7 +652,7 @@ class ProjectListWidget extends StatelessWidget {
           value: 'delete',
           child: Text(
             l10n.commonDelete,
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(color: ThemeService.activeColorScheme.error),
           ),
         ),
       ],
@@ -736,7 +737,7 @@ class ProjectListWidget extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
             onPressed: () {
               context.read<ProjectService>().deleteFolder(folder.id);
               Navigator.pop(ctx);

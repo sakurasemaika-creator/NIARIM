@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -117,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen> {
           padding: const EdgeInsets.all(logoSize * 0.08),
           child: SvgPicture.asset(
             'assets/logo/app_logo.svg',
-            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            colorFilter: ColorFilter.mode(ThemeService.activeColorScheme.onSurface, BlendMode.srcIn),
           ),
         ),
         const SizedBox(height: 10),
@@ -230,13 +231,13 @@ class _SplashActionButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 60),
+              Icon(icon, color: ThemeService.activeColorScheme.onSurface, size: 60),
               const SizedBox(height: 12),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
@@ -250,7 +251,7 @@ class _SplashActionButton extends StatelessWidget {
                   subLabel!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: ThemeService.activeColorScheme.onSurface,
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                     fontFamily: 'Kuramubon',

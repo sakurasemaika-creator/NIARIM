@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -206,7 +207,7 @@ class ToolbarWidget extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: outlineColor, width: 2),
                 ),
-                child: const Icon(Icons.block, color: Colors.red, size: 20),
+                child: Icon(Icons.block, color: ThemeService.activeColorScheme.error, size: 20),
               ),
           ],
         ),
@@ -423,7 +424,7 @@ class ToolbarWidget extends StatelessWidget {
                       ),
                       child: Text(
                         l10n.toolbarBucketToneListLabel,
-                        style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                        style: TextStyle(fontSize: 11, color: ThemeService.activeColorScheme.onSurfaceVariant),
                       ),
                     ),
                     GridView.builder(
@@ -453,11 +454,11 @@ class ToolbarWidget extends StatelessWidget {
                               border: Border.all(
                                 color: isSelected
                                     ? Theme.of(context).colorScheme.primary
-                                    : Colors.grey[600]!,
+                                    : ThemeService.activeColorScheme.onSurfaceVariant,
                                 width: isSelected ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(4),
-                              color: Colors.grey[800],
+                              color: ThemeService.activeColorScheme.onSurfaceVariant,
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,

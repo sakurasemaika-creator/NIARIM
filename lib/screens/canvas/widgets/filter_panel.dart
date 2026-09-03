@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -272,7 +273,7 @@ class _FilterPanelState extends State<FilterPanel> {
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
                       size: 16,
-                      color: _showFavoritesOnly ? Colors.amber : null,
+                      color: _showFavoritesOnly ? ThemeService.activeColorScheme.tertiary : null,
                     ),
                     onPressed: () => setState(
                       () => _showFavoritesOnly = !_showFavoritesOnly,
@@ -326,11 +327,11 @@ class _FilterPanelState extends State<FilterPanel> {
                           border: Border.all(
                             color: isSelected
                                 ? Theme.of(context).colorScheme.primary
-                                : Colors.grey[600]!,
+                                : ThemeService.activeColorScheme.onSurfaceVariant,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(4),
-                          color: Colors.grey[800],
+                          color: ThemeService.activeColorScheme.onSurfaceVariant,
                         ),
                         child: Stack(
                           children: [
@@ -362,8 +363,8 @@ class _FilterPanelState extends State<FilterPanel> {
                                         : Icons.star_outline,
                                     size: 12,
                                     color: f.isFavorite
-                                        ? Colors.amber
-                                        : Colors.grey,
+                                        ? ThemeService.activeColorScheme.tertiary
+                                        : ThemeService.activeColorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ),
@@ -383,7 +384,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                   child: const Icon(
                                     Icons.more_vert,
                                     size: 14,
-                                    color: Colors.grey,
+                                    color: ThemeService.activeColorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ),
@@ -401,7 +402,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                     child: const Icon(
                                       Icons.drag_indicator,
                                       size: 12,
-                                      color: Colors.grey,
+                                      color: ThemeService.activeColorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -460,7 +461,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             width: 120,
                             height: 120,
                             decoration: BoxDecoration(
-                              color: Colors.grey[850],
+                              color: ThemeService.activeColorScheme.onSurfaceVariant,
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: _previewImage != null
@@ -639,7 +640,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                     height: 24,
                                     decoration: BoxDecoration(
                                       color: Color(current.outlineColor),
-                                      border: Border.all(color: Colors.grey),
+                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -760,7 +761,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                     height: 24,
                                     decoration: BoxDecoration(
                                       color: Color(current.vignetteColor),
-                                      border: Border.all(color: Colors.grey),
+                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -945,7 +946,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                     height: 24,
                                     decoration: BoxDecoration(
                                       color: Color(current.monochromeColor),
-                                      border: Border.all(color: Colors.grey),
+                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -1011,7 +1012,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                       color: Color(
                                         _resolvedBgBlendColor(current),
                                       ),
-                                      border: Border.all(color: Colors.grey),
+                                      border: Border.all(color: ThemeService.activeColorScheme.onSurfaceVariant),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -1245,7 +1246,7 @@ class _FilterPanelState extends State<FilterPanel> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
               title: Text(l10n.commonDelete),
               onTap: () {
                 Navigator.pop(ctx);

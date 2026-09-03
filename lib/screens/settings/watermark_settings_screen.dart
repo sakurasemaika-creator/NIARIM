@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -182,7 +183,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
     final fontService = context.read<FontService>();
     Color selected = existing != null
         ? Color(existing.textColor ?? 0xFFFFFFFF)
-        : Colors.white;
+        : ThemeService.activeColorScheme.onSurface;
     String fontFamily = existing?.fontFamily ?? 'Roboto';
     final shadow = _ShadowOutlineState.from(existing);
     showDialog(
@@ -618,7 +619,7 @@ class _WatermarkTile extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.2),
+      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Column(
         children: [
@@ -640,7 +641,7 @@ class _WatermarkTile extends StatelessWidget {
                           fontFamily: asset.fontFamily,
                           fontWeight: FontWeight.bold,
                           shadows: const [
-                            Shadow(color: Colors.black45, blurRadius: 3),
+                            Shadow(color: ThemeService.activeColorScheme.onSurface45, blurRadius: 3),
                           ],
                         ),
                         textAlign: TextAlign.center,
@@ -688,7 +689,7 @@ class _WatermarkTile extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete, size: 16, color: Colors.red),
+                  icon: Icon(Icons.delete, size: 16, color: ThemeService.activeColorScheme.error),
                   onPressed: onDelete,
                   tooltip: l10n.commonDelete,
                 ),

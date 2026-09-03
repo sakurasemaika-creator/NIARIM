@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
@@ -189,7 +190,7 @@ class _BrushTab extends StatelessWidget {
             child: Icon(
               brush.isFavorite ? Icons.star : Icons.star_outline,
               size: 14,
-              color: brush.isFavorite ? Colors.amber : Colors.grey,
+              color: brush.isFavorite ? ThemeService.activeColorScheme.tertiary : ThemeService.activeColorScheme.onSurfaceVariant,
             ),
           ),
           onTap: () {
@@ -234,11 +235,11 @@ class _ToneTab extends StatelessWidget {
               border: Border.all(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary
-                    : Colors.grey[600]!,
+                    : ThemeService.activeColorScheme.onSurfaceVariant,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(4),
-              color: Colors.grey[800],
+              color: ThemeService.activeColorScheme.onSurfaceVariant,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -302,11 +303,11 @@ class _StampTab extends StatelessWidget {
               border: Border.all(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary
-                    : Colors.grey[600]!,
+                    : ThemeService.activeColorScheme.onSurfaceVariant,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(4),
-              color: Colors.grey[800],
+              color: ThemeService.activeColorScheme.onSurfaceVariant,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -505,7 +506,7 @@ class LassoFillToneSheet extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Text(
             l10n.toolbarBucketToneListLabel,
-            style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+            style: TextStyle(fontSize: 11, color: ThemeService.activeColorScheme.onSurfaceVariant),
           ),
         ),
         Expanded(
@@ -532,11 +533,11 @@ class LassoFillToneSheet extends StatelessWidget {
                     border: Border.all(
                       color: isSelected
                           ? Theme.of(context).colorScheme.primary
-                          : Colors.grey[600]!,
+                          : ThemeService.activeColorScheme.onSurfaceVariant,
                       width: isSelected ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.grey[800],
+                    color: ThemeService.activeColorScheme.onSurfaceVariant,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

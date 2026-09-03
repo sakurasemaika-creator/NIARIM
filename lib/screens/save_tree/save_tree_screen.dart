@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -515,7 +516,7 @@ class _SlotView extends StatelessWidget {
                     l10n.saveTreeSlotOverwriteWarning(
                       _formatDate(existing.savedAt),
                     ),
-                    style: const TextStyle(fontSize: 12, color: Colors.orange),
+                    style: TextStyle(fontSize: 12, color: ThemeService.activeColorScheme.tertiary),
                   ),
                 ),
               TextField(
@@ -675,7 +676,7 @@ class _SlotTile extends StatelessWidget {
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         elevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.15),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
         child: ListTile(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -885,7 +886,7 @@ class _TreeView extends StatelessWidget {
                   value: 'delete',
                   child: Text(
                     l10n.commonDelete,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: ThemeService.activeColorScheme.error),
                   ),
                 ),
               ],
@@ -1184,7 +1185,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
             style: TextStyle(
               fontSize: 12,
               color: limitReached
-                  ? Colors.orange
+                  ? ThemeService.activeColorScheme.tertiary
                   : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),

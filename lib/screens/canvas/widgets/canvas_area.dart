@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -3380,9 +3381,9 @@ class _CanvasPainter extends CustomPainter {
     this.meshControlPoints,
     this.meshSourceImage,
     this.showMeshHandles = false,
-    this.handleColor = Colors.blue,
-    this.handleOutlineColor = Colors.white,
-    this.extendedAreaWarningColor = Colors.red,
+    this.handleColor = ThemeService.activeColorScheme.primary,
+    this.handleOutlineColor = ThemeService.activeColorScheme.onSurface,
+    this.extendedAreaWarningColor = ThemeService.activeColorScheme.error,
   });
 
   @override
@@ -3580,7 +3581,7 @@ class _CanvasPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = Colors.orange
+          ..color = ThemeService.activeColorScheme.tertiary
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.0,
       );
@@ -3592,7 +3593,7 @@ class _CanvasPainter extends CustomPainter {
       final sy = drawingRect.height / (project?.exportHeight ?? 1080);
       Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final shapePaint = Paint()
-        ..color = Colors.black87
+        ..color = ThemeService.activeColorScheme.onSurface87
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
       switch (shapeKind) {
@@ -3914,7 +3915,7 @@ class _CanvasPainter extends CustomPainter {
       // 両方で設定が一致する）。
       final color = project != null
           ? Color(project!.backgroundColor)
-          : Colors.white;
+          : ThemeService.activeColorScheme.onSurface;
       canvas.drawRect(rect, Paint()..color = color);
     } else {
       _paintChecker(canvas, rect);

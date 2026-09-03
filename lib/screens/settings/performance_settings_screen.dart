@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../engine/undo_manager.dart';
@@ -221,7 +222,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
             const SizedBox(height: 8),
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),

@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -83,7 +84,7 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
           _sectionLabel(context, l10n.pcWorkspaceLayoutWidthSection),
           Card(
             elevation: 1,
-            shadowColor: Colors.black.withValues(alpha: 0.15),
+            shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
@@ -159,7 +160,7 @@ class _OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 1,
-      shadowColor: Colors.black.withValues(alpha: 0.15),
+      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Column(

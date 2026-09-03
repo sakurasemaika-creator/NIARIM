@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -103,7 +104,7 @@ class _StampPanelState extends State<StampPanel> {
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
                       size: 16,
-                      color: _showFavoritesOnly ? Colors.amber : null,
+                      color: _showFavoritesOnly ? ThemeService.activeColorScheme.tertiary : null,
                     ),
                     onPressed: () => setState(
                       () => _showFavoritesOnly = !_showFavoritesOnly,
@@ -231,7 +232,7 @@ class _StampPanelState extends State<StampPanel> {
                         child: Text(
                           l10n.stampEmpty,
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: ThemeService.activeColorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
@@ -288,8 +289,8 @@ class _StampPanelState extends State<StampPanel> {
                                         : Icons.star_outline,
                                     size: 14,
                                     color: stamp.isFavorite
-                                        ? Colors.amber
-                                        : Colors.grey,
+                                        ? ThemeService.activeColorScheme.tertiary
+                                        : ThemeService.activeColorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 PopupMenuButton<String>(
@@ -329,7 +330,7 @@ class _StampPanelState extends State<StampPanel> {
                                         child: Text(
                                           l10n.commonDelete,
                                           style: const TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeService.activeColorScheme.error,
                                           ),
                                         ),
                                       ),
@@ -343,7 +344,7 @@ class _StampPanelState extends State<StampPanel> {
                                       child: Icon(
                                         Icons.drag_indicator,
                                         size: 16,
-                                        color: Colors.grey,
+                                        color: ThemeService.activeColorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),

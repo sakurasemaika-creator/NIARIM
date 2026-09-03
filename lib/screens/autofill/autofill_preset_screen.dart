@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
@@ -143,7 +144,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                         tooltip: l10n.autofillPresetExportMenuItem,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
                         onPressed: () => _bulkDelete(filtered),
                         tooltip: l10n.commonDelete,
                       ),
@@ -560,7 +561,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
             onPressed: () {
               // 削除されるパーツを使用中の線画レイヤーへ更新マークを伝播（対応プリセット消失前に通知）
               final ps = context.read<ProjectService>();
@@ -624,10 +625,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             ),
             if (path != null)
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                leading: Icon(Icons.delete_outline, color: ThemeService.activeColorScheme.error),
                 title: Text(
                   l10n.autofillThumbnailDeleteButton,
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: ThemeService.activeColorScheme.error),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -688,7 +689,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
             onPressed: () {
               context.read<AutofillPresetService>().clearPresetThumbnail(
                 preset.id,
@@ -823,7 +824,7 @@ class _PresetCard extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       preset.isFavorite ? Icons.star : Icons.star_border,
-                      color: preset.isFavorite ? Colors.amber : null,
+                      color: preset.isFavorite ? ThemeService.activeColorScheme.tertiary : null,
                     ),
                     onPressed: onToggleFavorite,
                     tooltip: preset.isFavorite
@@ -854,7 +855,7 @@ class _PresetCard extends StatelessWidget {
                         value: 'delete',
                         child: Text(
                           l10n.commonDelete,
-                          style: const TextStyle(color: Colors.red),
+                          style: TextStyle(color: ThemeService.activeColorScheme.error),
                         ),
                       ),
                     ],
@@ -1022,7 +1023,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               if (unconfigured.isNotEmpty)
                 Container(
                   width: double.infinity,
-                  color: Colors.red.withValues(alpha: 0.12),
+                  color: ThemeService.activeColorScheme.error.withValues(alpha: 0.12),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
@@ -1032,7 +1033,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       unconfigured.length,
                       unconfigured.map((p) => p.name).join('・'),
                     ),
-                    style: const TextStyle(color: Colors.red, fontSize: 11),
+                    style: TextStyle(color: ThemeService.activeColorScheme.error, fontSize: 11),
                   ),
                 ),
               Expanded(child: _partListBody()),
@@ -1062,7 +1063,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             for (final p in unconfigured)
               Text(
                 l10n.autofillPartUnconfiguredItem(p.name),
-                style: const TextStyle(color: Colors.red, fontSize: 13),
+                style: TextStyle(color: ThemeService.activeColorScheme.error, fontSize: 13),
               ),
           ],
         ),
@@ -1182,7 +1183,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ? null
           : Text(
               l10n.autofillPartToneUnselected,
-              style: const TextStyle(fontSize: 10, color: Colors.red),
+              style: TextStyle(fontSize: 10, color: ThemeService.activeColorScheme.error),
             ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1190,7 +1191,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           Icon(
             part.isConfigured ? Icons.check_circle : Icons.error_outline,
             size: 16,
-            color: part.isConfigured ? Colors.green : Colors.red,
+            color: part.isConfigured ? ThemeService.activeColorScheme.secondary : ThemeService.activeColorScheme.error,
           ),
           // パーツ単位のお気に入りは不要（プリセット一覧側の
           // お気に入り機能に一本化したため削除）。
@@ -1200,7 +1201,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             onPressed: () => _showEditPartDialog(part),
           ),
           IconButton(
-            icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+            icon: Icon(Icons.delete, size: 18, color: ThemeService.activeColorScheme.error),
             tooltip: l10n.commonDelete,
             onPressed: () async {
               if (!await confirmDelete(context, itemName: part.name)) return;
@@ -2426,7 +2427,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                 icon: const Icon(
                                   Icons.delete_outline,
                                   size: 18,
-                                  color: Colors.red,
+                                  color: ThemeService.activeColorScheme.error,
                                 ),
                                 tooltip: l10n.commonDelete,
                                 onPressed: gradient.colors.length <= 2
@@ -2835,7 +2836,7 @@ class _StopHandlePainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = Colors.black54
+        ..color = ThemeService.activeColorScheme.onSurface54
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1,
     );

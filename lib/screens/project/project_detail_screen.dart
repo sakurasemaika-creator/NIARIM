@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -213,7 +214,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 value: 'delete',
                 child: Text(
                   l10n.projectDetailTrashMenuItem,
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: ThemeService.activeColorScheme.error),
                 ),
               ),
             ],
@@ -274,7 +275,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     child: _quickAction(
                       icon: project.isFavorite ? Icons.star : Icons.star_border,
                       label: l10n.homeFavoritesOnly,
-                      iconColor: project.isFavorite ? Colors.amber : null,
+                      iconColor: project.isFavorite ? ThemeService.activeColorScheme.tertiary : null,
                       onTap: () =>
                           projectService.toggleFavorite(widget.projectId),
                     ),

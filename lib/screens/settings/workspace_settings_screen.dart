@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +64,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -158,7 +159,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 final forceMobile = settings.forcePcMode == false;
                 return Card(
                   elevation: 1,
-                  shadowColor: Colors.black.withValues(alpha: 0.15),
+                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -193,7 +194,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -237,7 +238,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -292,7 +293,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -322,7 +323,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                           settings.timelineTrackHeightLevel,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.blue[700],
+                          color: ThemeService.activeColorScheme.primary,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -331,7 +332,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                           l10n.workspaceTimelinePreviewLabel,
                           style: const TextStyle(
                             fontSize: 9,
-                            color: Colors.white,
+                            color: ThemeService.activeColorScheme.onSurface,
                             fontFamily: 'Kuramubon',
                             fontFamilyFallback: kHeadingFontFallback,
                           ),
@@ -366,7 +367,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -374,7 +375,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: SwitchListTile(
                 secondary: premium.isPremium
                     ? null
-                    : const Icon(Icons.lock, color: Colors.amber),
+                    : Icon(Icons.lock, color: ThemeService.activeColorScheme.tertiary),
                 title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
                 value:
                     premium.isPremium &&
@@ -716,7 +717,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
                       tooltip: l10n.commonDelete,
                       onPressed: () async {
                         if (!await confirmDelete(
@@ -943,7 +944,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 _errorText!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
+                style: TextStyle(color: ThemeService.activeColorScheme.error, fontSize: 12),
               ),
             ),
         ],

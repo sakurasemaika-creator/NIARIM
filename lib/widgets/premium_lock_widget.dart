@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,7 @@ class PremiumLockWidget extends StatelessWidget {
           const Positioned(
             right: 4,
             top: 4,
-            child: Icon(Icons.lock, size: 16, color: Colors.amber),
+            child: Icon(Icons.lock, size: 16, color: ThemeService.activeColorScheme.tertiary),
           ),
         ],
       ),
@@ -86,12 +87,12 @@ class _PremiumBannerDialog extends StatelessWidget {
                 fit: BoxFit.fitWidth,
                 errorBuilder: (context, error, stackTrace) => Container(
                   height: 200,
-                  color: Colors.grey[850],
+                  color: ThemeService.activeColorScheme.onSurfaceVariant,
                   child: const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.star, color: Colors.amber, size: 48),
+                        Icon(Icons.star, color: ThemeService.activeColorScheme.tertiary, size: 48),
                         SizedBox(height: 8),
                         Text(
                           'NIARIM Premium',
@@ -105,7 +106,7 @@ class _PremiumBannerDialog extends StatelessWidget {
                         SizedBox(height: 4),
                         Text(
                           'premium_banner.webp',
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                          style: TextStyle(fontSize: 11, color: ThemeService.activeColorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),

@@ -14,7 +14,13 @@ class ThemeService extends ChangeNotifier {
   List<AppThemePreset> get presets => List.unmodifiable(_presets);
   AppThemePreset get current => _current;
 
-  ThemeData get themeData => _buildTheme(_current);
+  static ColorScheme activeColorScheme = ColorScheme.fromSeed(seedColor: const Color(0xFFFF5C7A));
+
+  ThemeData get themeData {
+    final data = _buildTheme(_current);
+    activeColorScheme = data.colorScheme;
+    return data;
+  }
 
   // 虹7色（赤・橙・黄・緑・青・藍・紫）のテーマプリセットを、それぞれ
   // ライト/ダーク両方用意する。「赤」はアプリの

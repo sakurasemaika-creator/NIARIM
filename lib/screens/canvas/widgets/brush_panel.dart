@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -103,7 +104,7 @@ class _BrushPanelState extends State<BrushPanel> {
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
                       size: 16,
-                      color: _showFavoritesOnly ? Colors.amber : null,
+                      color: _showFavoritesOnly ? ThemeService.activeColorScheme.tertiary : null,
                     ),
                     onPressed: () => setState(
                       () => _showFavoritesOnly = !_showFavoritesOnly,
@@ -239,7 +240,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         child: Text(
                           l10n.brushEmpty,
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: ThemeService.activeColorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
@@ -304,8 +305,8 @@ class _BrushPanelState extends State<BrushPanel> {
                                         : Icons.star_outline,
                                     size: 14,
                                     color: brush.isFavorite
-                                        ? Colors.amber
-                                        : Colors.grey,
+                                        ? ThemeService.activeColorScheme.tertiary
+                                        : ThemeService.activeColorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 PopupMenuButton<String>(
@@ -348,7 +349,7 @@ class _BrushPanelState extends State<BrushPanel> {
                                         child: Text(
                                           l10n.commonDelete,
                                           style: const TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeService.activeColorScheme.error,
                                           ),
                                         ),
                                       ),
@@ -362,7 +363,7 @@ class _BrushPanelState extends State<BrushPanel> {
                                       child: Icon(
                                         Icons.drag_indicator,
                                         size: 16,
-                                        color: Colors.grey,
+                                        color: ThemeService.activeColorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),

@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -975,7 +976,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // （kCanvasOutsideColorに統一済み）と地続きに見えるよう、
                     // ここもkCanvasOutsideColorへ合わせる。アイコン色も
                     // onSurface（テーマによっては暗色で暗いkCanvasOutsideColor
-                    // に沈んで見えなくなる）から、常に明るいColors.white70へ
+                    // に沈んで見えなくなる）から、常に明るいThemeService.activeColorScheme.onSurface70へ
                     // 固定する（キャンバス外周の暗い背景色は固定値のため、
                     // アイコン側もテーマに関わらず視認できる固定色でよい）。
                     //
@@ -997,7 +998,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
                             size: 22,
-                            color: Colors.white70,
+                            color: ThemeService.activeColorScheme.onSurface70,
                           ),
                         ),
                       ),
@@ -2215,7 +2216,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 border: Border.all(
                                   color: color == c
                                       ? Theme.of(ctx).colorScheme.primary
-                                      : Colors.grey,
+                                      : ThemeService.activeColorScheme.onSurfaceVariant,
                                   width: color == c ? 2 : 1,
                                 ),
                               ),
@@ -2330,7 +2331,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   border: Border.all(
                                     color: outlineColor == c
                                         ? Theme.of(ctx).colorScheme.primary
-                                        : Colors.grey,
+                                        : ThemeService.activeColorScheme.onSurfaceVariant,
                                     width: outlineColor == c ? 2 : 1,
                                   ),
                                 ),

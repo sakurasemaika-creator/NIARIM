@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
@@ -108,7 +109,7 @@ class QuickToolPanel extends StatelessWidget {
                                   icon: const Icon(
                                     Icons.delete,
                                     size: 16,
-                                    color: Colors.red,
+                                    color: ThemeService.activeColorScheme.error,
                                   ),
                                   tooltip: l10n.commonDelete,
                                   onPressed: () => service.removeEntry(e.id),
@@ -151,7 +152,7 @@ class QuickToolPanel extends StatelessWidget {
             // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録
             if (currentTool == DrawingTool.pen && currentBrushId != null)
               ListTile(
-                leading: const Icon(Icons.bolt, color: Colors.amber),
+                leading: Icon(Icons.bolt, color: ThemeService.activeColorScheme.tertiary),
                 title: Text(l10n.quickToolAddCurrentBrush),
                 subtitle: Text('$currentBrushName ${currentSize.round()}px'),
                 onTap: () {

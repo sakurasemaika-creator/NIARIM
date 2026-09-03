@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../engine/layer_keyframe_engine.dart';
 import '../../../l10n/app_localizations.dart';
@@ -171,7 +172,7 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[600],
+              color: ThemeService.activeColorScheme.onSurfaceVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -249,7 +250,7 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
                           icon: const Icon(
                             Icons.delete,
                             size: 20,
-                            color: Colors.red,
+                            color: ThemeService.activeColorScheme.error,
                           ),
                           onPressed: () {
                             setState(
@@ -310,7 +311,7 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[600],
+              color: ThemeService.activeColorScheme.onSurfaceVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -331,7 +332,7 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
                 ),
                 if (widget.onDelete != null)
                   IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
                     onPressed: () {
                       Navigator.pop(context);
                       widget.onDelete!();

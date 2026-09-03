@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -138,7 +139,7 @@ class _PresetTile extends StatelessWidget {
                   value: 'delete',
                   child: Text(
                     l10n.commonDelete,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: ThemeService.activeColorScheme.error),
                   ),
                 ),
               ],

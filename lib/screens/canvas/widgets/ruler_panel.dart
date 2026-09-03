@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
@@ -56,7 +57,7 @@ class RulerPanel extends StatelessWidget {
                     TextButton(
                       onPressed: () => onRulerChanged(null),
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.red,
+                        foregroundColor: ThemeService.activeColorScheme.error,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -204,7 +205,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
             onPressed: () {
               Navigator.pop(ctx);
               _showComingSoonSnackbar(l10n.communityBlockComingSoonSnackbar);

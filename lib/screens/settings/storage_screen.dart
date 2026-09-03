@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -151,8 +152,8 @@ class _StorageScreenState extends State<StorageScreen> {
       scheme.secondary,
       scheme.tertiary,
       scheme.error,
-      Colors.teal,
-      Colors.brown,
+      ThemeService.activeColorScheme.secondary,
+      ThemeService.activeColorScheme.primary,
     ];
     final entries = [
       (StorageCategory.materials, l10n.storageCategoryMaterials),
@@ -266,9 +267,9 @@ class _StorageScreenState extends State<StorageScreen> {
         const Divider(height: 24),
         _actionTile(
           icon: Icons.warning_amber_outlined,
-          iconColor: Colors.red,
+          iconColor: ThemeService.activeColorScheme.error,
           title: l10n.storageEraseAllButton,
-          titleColor: Colors.red,
+          titleColor: ThemeService.activeColorScheme.error,
           onTap: _confirmEraseAll,
         ),
       ],
@@ -368,7 +369,7 @@ class _StorageScreenState extends State<StorageScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: ThemeService.activeColorScheme.error),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.storageEraseAllButton),
           ),

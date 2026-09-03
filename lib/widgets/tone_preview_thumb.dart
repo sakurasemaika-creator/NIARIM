@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -92,7 +93,7 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
       height: widget.size,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ThemeService.activeColorScheme.onSurface,
         shape: widget.shape,
         borderRadius: widget.shape == BoxShape.rectangle
             ? BorderRadius.circular(6)

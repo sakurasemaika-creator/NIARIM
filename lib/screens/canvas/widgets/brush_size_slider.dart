@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/editable_slider_value.dart';
@@ -34,8 +35,8 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    const fgColor = Colors.white;
-    const fgColorVariant = Colors.white70;
+    const fgColor = ThemeService.activeColorScheme.onSurface;
+    const fgColorVariant = ThemeService.activeColorScheme.onSurface70;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       color: Colors.transparent,

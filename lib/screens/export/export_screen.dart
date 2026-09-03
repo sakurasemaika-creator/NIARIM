@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -68,7 +69,7 @@ class _ExportScreenState extends State<ExportScreen> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                child: Text(_error!, style: TextStyle(color: ThemeService.activeColorScheme.error)),
               ),
             Text(
               l10n.exportPresetSection,

@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -34,12 +35,12 @@ class QrShareDialog extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              color: Colors.white,
+              color: ThemeService.activeColorScheme.onSurface,
               child: QrImageView(
                 data: payload,
                 version: QrVersions.auto,
                 size: 240,
-                backgroundColor: Colors.white,
+                backgroundColor: ThemeService.activeColorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),

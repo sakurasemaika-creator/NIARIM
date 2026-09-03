@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -33,17 +34,17 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
         ? Container(
             height: 50,
             width: double.infinity,
-            color: Colors.grey[900],
+            color: ThemeService.activeColorScheme.onSurfaceVariant,
             child: Center(
               child: Text(
                 l10n.progressDialogAdLoading,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(color: ThemeService.activeColorScheme.onSurfaceVariant, fontSize: 12),
               ),
             ),
           )
         : Container(
             width: double.infinity,
-            color: Colors.grey[900],
+            color: ThemeService.activeColorScheme.onSurfaceVariant,
             alignment: Alignment.center,
             child: SizedBox(
               width: ad.size.width.toDouble(),

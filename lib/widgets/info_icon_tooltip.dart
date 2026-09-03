@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 
 /// 「ここだけはUIだけでは伝わりにくい」という箇所に置く、小さな「i」アイコン。
@@ -68,7 +69,7 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: const [
                       BoxShadow(
-                        color: Colors.black38,
+                        color: ThemeService.activeColorScheme.onSurface38,
                         blurRadius: 8,
                         offset: Offset(0, 2),
                       ),

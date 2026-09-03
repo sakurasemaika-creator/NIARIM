@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_delete.dart';
@@ -69,7 +70,7 @@ void showFolderManagementSheet(
                   padding: const EdgeInsets.all(24),
                   child: Text(
                     l10n.folderManagementEmpty,
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: ThemeService.activeColorScheme.onSurfaceVariant),
                   ),
                 ),
               Expanded(
@@ -96,7 +97,7 @@ void showFolderManagementSheet(
                           IconButton(
                             icon: Icon(
                               f.isFavorite ? Icons.star : Icons.star_outline,
-                              color: f.isFavorite ? Colors.amber : null,
+                              color: f.isFavorite ? ThemeService.activeColorScheme.tertiary : null,
                               size: 18,
                             ),
                             tooltip: l10n.commonFavoriteToggle,
@@ -123,7 +124,7 @@ void showFolderManagementSheet(
                             icon: const Icon(
                               Icons.delete_outline,
                               size: 18,
-                              color: Colors.red,
+                              color: ThemeService.activeColorScheme.error,
                             ),
                             tooltip: l10n.commonDelete,
                             // お気に入り登録中は削除できない。

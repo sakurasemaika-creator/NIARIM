@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -150,7 +151,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                           : Theme.of(context).colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(14),
                       elevation: 1,
-                      shadowColor: Colors.black.withValues(alpha: 0.15),
+                      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
                         onTap: () => themeService.applyPreset(entry.value.id),
@@ -192,7 +193,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                       : Icons.star_outline,
                                   size: 16,
                                   color: entry.value.isFavorite
-                                      ? Colors.amber
+                                      ? ThemeService.activeColorScheme.tertiary
                                       : null,
                                 ),
                                 tooltip: l10n.commonFavoriteToggle,
@@ -224,7 +225,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                     value: 'delete',
                                     child: Text(
                                       l10n.commonDelete,
-                                      style: const TextStyle(color: Colors.red),
+                                      style: TextStyle(color: ThemeService.activeColorScheme.error),
                                     ),
                                   ),
                                 ],
@@ -454,7 +455,7 @@ class _ColorCustomizeTile extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
         elevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.15),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,

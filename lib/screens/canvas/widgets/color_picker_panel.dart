@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -429,7 +430,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (p.isFavorite)
-                      const Icon(Icons.star, size: 10, color: Colors.amber),
+                      Icon(Icons.star, size: 10, color: ThemeService.activeColorScheme.tertiary),
                     Text(
                       p.name,
                       style: const TextStyle(
@@ -566,7 +567,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             ListTile(
               leading: Icon(
                 palette.isFavorite ? Icons.star : Icons.star_border,
-                color: Colors.amber,
+                color: ThemeService.activeColorScheme.tertiary,
               ),
               title: Text(
                 palette.isFavorite
@@ -629,10 +630,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
               title: Text(
                 l10n.commonDelete,
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: ThemeService.activeColorScheme.error),
               ),
               // お気に入り登録中は削除できない。
               onTap: paletteService.palettes.length > 1

@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -170,7 +171,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                       final f = sorted[index];
                       return Card(
                         elevation: 1,
-                        shadowColor: Colors.black.withValues(alpha: 0.15),
+                        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -221,7 +222,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                 icon: Icon(
                                   f.isFavorite ? Icons.star : Icons.star_border,
                                   size: 18,
-                                  color: f.isFavorite ? Colors.amber : null,
+                                  color: f.isFavorite ? ThemeService.activeColorScheme.tertiary : null,
                                 ),
                                 tooltip: l10n.commonFavoriteToggle,
                                 onPressed: () => service.toggleFavorite(f.id),
@@ -235,7 +236,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                 icon: const Icon(
                                   Icons.delete_outline,
                                   size: 18,
-                                  color: Colors.red,
+                                  color: ThemeService.activeColorScheme.error,
                                 ),
                                 tooltip: l10n.commonDelete,
                                 onPressed: () => _confirmDelete(context, f),

@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -28,7 +29,7 @@ class GestureSettingsScreen extends StatelessWidget {
           children: [
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -83,7 +84,7 @@ class GestureSettingsScreen extends StatelessWidget {
             ),
             Card(
               elevation: 1,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),

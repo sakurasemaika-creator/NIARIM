@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -91,7 +92,7 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                     final entry = filtered[index];
                     return Card(
                       elevation: 1,
-                      shadowColor: Colors.black.withValues(alpha: 0.15),
+                      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -131,7 +132,7 @@ class _FontCatalogTabState extends State<FontCatalogTab>
     DownloadableFontEntry entry,
   ) {
     if (service.isCatalogFontDownloaded(entry)) {
-      return const Icon(Icons.check_circle, color: Colors.green);
+      return Icon(Icons.check_circle, color: ThemeService.activeColorScheme.secondary);
     }
     if (_downloadingIds.contains(entry.id)) {
       return const SizedBox(

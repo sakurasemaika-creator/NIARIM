@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -216,7 +217,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                       ),
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.orange,
+                        color: ThemeService.activeColorScheme.tertiary,
                       ),
                     ),
                   ),
@@ -389,7 +390,7 @@ class _GameSaveSlotTile extends StatelessWidget {
             ? scheme.surfaceContainerLow
             : scheme.surfaceContainerLowest,
         elevation: hasData ? 2 : 0,
-        shadowColor: Colors.black.withValues(alpha: 0.16),
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
