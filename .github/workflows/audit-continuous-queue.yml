@@ -108,7 +108,6 @@ jobs:
   strict-visual:
     name: '01 以前に確認済みの描画機能を、より厳しい基準でもう一度確認'
     needs: repair-known-failures
-    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -127,7 +126,6 @@ jobs:
   real-operation:
     name: '02 各機能へ実操作相当の入力を与えて結果を確認'
     needs: strict-visual
-    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -165,7 +163,6 @@ jobs:
   canvas-panels:
     name: '03 Canvas画面の主要パネルを開閉・操作して見た目を確認'
     needs: real-operation
-    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -184,7 +181,6 @@ jobs:
   routes-and-filters:
     name: '04 全主要画面と全フィルターが意図した見た目か確認'
     needs: canvas-panels
-    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -204,7 +200,6 @@ jobs:
   coverage:
     name: '05 アプリ全体の自動テストと検証範囲を確認'
     needs: routes-and-filters
-    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -223,7 +218,6 @@ jobs:
   final-regression:
     name: '06 監査や修正で別機能を壊していないか全体を最終確認'
     needs: coverage
-    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
@@ -243,14 +237,26 @@ jobs:
       - run: flutter test --reporter compact
 
   continue-if-needed:
-    name: '07 未確認項目が残っていれば待たずに次の監査を開始'
+    name: '07 成功した監査だけ次サイクルへ進める'
     needs: [repair-known-failures, strict-visual, real-operation, canvas-panels, routes-and-filters, coverage, final-regression]
     if: always()
     runs-on: ubuntu-latest
+    env:
+      ALL_STAGES_SUCCESS: ${{ needs.repair-known-failures.result == 'success' && needs.strict-visual.result == 'success' && needs.real-operation.result == 'success' && needs.canvas-panels.result == 'success' && needs.routes-and-filters.result == 'success' && needs.coverage.result == 'success' && needs.final-regression.result == 'success' }}
     steps:
       - uses: actions/checkout@v4
         with: { ref: dev_branch }
+      - name: ダッシュボードを最新状態へ更新
+        if: always()
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: 途中失敗があればここで停止
+        if: env.ALL_STAGES_SUCCESS != 'true'
+        run: |
+          echo '前工程に失敗またはスキップがあります。修正して失敗工程を通過するまで次の監査サイクルへ進みません。'
+          exit 1
       - name: 台帳の未確認項目数を確認
+        if: env.ALL_STAGES_SUCCESS == 'true'
         id: remaining
         shell: bash
         run: |
@@ -262,15 +268,12 @@ jobs:
           print(f'remaining={remaining}')
           print(f'total={len(fs)}')
           PY
-      - name: ダッシュボードを最新状態へ更新
-        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
       - name: 未確認が残っていれば連続監査を即再起動
-        if: steps.remaining.outputs.remaining != '0'
+        if: env.ALL_STAGES_SUCCESS == 'true' && steps.remaining.outputs.remaining != '0'
         run: |
-          echo "未確認 ${{ steps.remaining.outputs.remaining }} 件。待機せず次の監査サイクルを開始します。"
+          echo "未確認 ${{ steps.remaining.outputs.remaining }} 件。全工程が成功したため次の監査サイクルを開始します。"
           gh workflow run audit-continuous-queue.yml --ref dev_branch
         env: { GH_TOKEN: '${{ github.token }}' }
       - name: 全件確認済み
-        if: steps.remaining.outputs.remaining == '0'
+        if: env.ALL_STAGES_SUCCESS == 'true' && steps.remaining.outputs.remaining == '0'
         run: echo "AI/CIで確認可能な全 ${{ steps.remaining.outputs.total }} 項目が最終確認済みです。"
