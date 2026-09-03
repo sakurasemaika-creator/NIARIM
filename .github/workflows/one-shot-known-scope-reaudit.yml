@@ -10,7 +10,7 @@ on:
       - 'lib/screens/premium/premium_screen.dart'
       - 'lib/screens/canvas/widgets/frame_strip_widget.dart'
 
-# One-shot verification only. This workflow does not dispatch or rerun itself.
+# One-shot verification rerun after theme-migration repair. No self-dispatch.
 jobs:
   verify:
     runs-on: ubuntu-latest
