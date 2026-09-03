@@ -864,6 +864,7 @@
   "creativePanelTagClearFilter": "タグの絞り込みを解除",
   "widgetSettingsTitle": "ホーム画面ウィジェット",
   "widgetSettingsDescription": "スマホのホーム画面へ、好きな作品のフレーム1枚・「作品をつくる」・「作品広場」の3種類のウィジェットを置けます。ウィジェットの追加自体はホーム画面の長押しから行ってください。",
+  "widgetSettingsSubtitle": "表示する作品・ウィジェットの色",
   "widgetArtworkSection": "表示する作品",
   "widgetArtworkNone": "作品を選んでいません",
   "widgetColorSection": "ウィジェットの色",

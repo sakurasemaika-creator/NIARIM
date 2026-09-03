@@ -21,17 +21,15 @@ enum HomeWidgetKind {
 /// 載せてMainActivityを起動し、Flutter側がgo_routerのpushへ橋渡しする。
 /// ネイティブとDartで文字列を二重管理すると片方の変更に気付けないため、
 /// 生成もここへ集約する。
-String homeWidgetRoute(HomeWidgetKind kind, {String? projectId}) =>
-    switch (kind) {
-      // 作品ウィジェットは「その作品」を開くのが自然。まだ作品が選ばれて
-      // いない場合はプロジェクト一覧へ落とす。
-      HomeWidgetKind.artwork =>
-        projectId == null || projectId.isEmpty
-            ? '/home'
-            : '/project/$projectId',
-      HomeWidgetKind.create => '/new-project',
-      HomeWidgetKind.plaza => '/community',
-    };
+String homeWidgetRoute(HomeWidgetKind kind) => switch (kind) {
+  // 作品ウィジェットは「作品を眺めるための飾り」で、タップは
+  // 「NIARIMを開く」という意味にする。表示している作品の編集画面へ
+  // いきなり飛ばさない（ホーム画面から不意に編集画面へ入るより、
+  // 通常の起動と同じ入口に着地するほうが迷わないため）。
+  HomeWidgetKind.artwork => '/',
+  HomeWidgetKind.create => '/new-project',
+  HomeWidgetKind.plaza => '/community',
+};
 
 /// ホーム画面ウィジェットの設定（どの作品を出すか・背景色）を保持する。
 ///
@@ -118,10 +116,7 @@ class HomeWidgetService extends ChangeNotifier {
     'projectId': _projectId ?? '',
     'projectName': projectName ?? '',
     'thumbnailPath': thumbnailPath ?? '',
-    'routeArtwork': homeWidgetRoute(
-      HomeWidgetKind.artwork,
-      projectId: _projectId,
-    ),
+    'routeArtwork': homeWidgetRoute(HomeWidgetKind.artwork),
     'routeCreate': homeWidgetRoute(HomeWidgetKind.create),
     'routePlaza': homeWidgetRoute(HomeWidgetKind.plaza),
   };

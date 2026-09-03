@@ -4157,6 +4157,12 @@ abstract class AppLocalizations {
   /// **'スマホのホーム画面へ、好きな作品のフレーム1枚・「作品をつくる」・「作品広場」の3種類のウィジェットを置けます。ウィジェットの追加自体はホーム画面の長押しから行ってください。'**
   String get widgetSettingsDescription;
 
+  /// No description provided for @widgetSettingsSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示する作品・ウィジェットの色'**
+  String get widgetSettingsSubtitle;
+
   /// No description provided for @widgetArtworkSection.
   ///
   /// In ja, this message translates to:

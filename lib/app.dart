@@ -46,7 +46,14 @@ class _NiarimAppState extends State<NiarimApp> {
     // go()ではなくpush()を使う（go()は履歴を丸ごと置き換えるため、
     // ウィジェット経由で入った画面から戻れなくなる）。
     _homeWidgetBridge.onRoute = (route) {
-      if (mounted) appRouter.push(route);
+      if (!mounted) return;
+      // 作品ウィジェットの行き先は起動画面（'/'）＝Routerの初期位置なので、
+      // 冷たい起動では既にそこに居る。そのままpushすると起動画面が二重に
+      // 積まれるため、今いる場所と同じなら何もしない。
+      final current = appRouter.routerDelegate.currentConfiguration.uri
+          .toString();
+      if (current == route) return;
+      appRouter.push(route);
     };
     // Routerが最初のルートを構築し終える前にpush()すると遷移が失われる
     // ため、最初のフレームが出てから起動時ルートを取りに行く。

@@ -93,7 +93,7 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray,
     ) {
         val background = prefColor(context, "backgroundColor", FALLBACK_BACKGROUND)
-        val route = prefString(context, "routeArtwork", "/home")
+        val route = prefString(context, "routeArtwork", "/")
         val name = prefString(context, "projectName")
         val thumbnail = prefString(context, "thumbnailPath")
 

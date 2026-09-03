@@ -2317,6 +2317,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Place three widgets on your home screen: a single frame from a work you choose, “New work”, and “Plaza”. Add them by long-pressing your home screen.';
 
   @override
+  String get widgetSettingsSubtitle => 'Work to display, widget colour';
+
+  @override
   String get widgetArtworkSection => 'Work to display';
 
   @override

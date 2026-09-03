@@ -107,10 +107,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       (
         icon: Icons.widgets_outlined,
         title: l10n.widgetSettingsTitle,
-        subtitle: l10n.widgetArtworkSection,
+        subtitle: l10n.widgetSettingsSubtitle,
         keywords: 'ウィジェット ホーム画面 widget home screen 作品 色',
         onTap: () => context.push('/settings/widget'),
-        accent: const Color(0xFF00B39B),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.palette,

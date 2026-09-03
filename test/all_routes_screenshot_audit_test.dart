@@ -211,12 +211,13 @@ void main() {
       (name: '22_settings_theme', route: '/settings/theme'),
       (name: '23_settings_transfer', route: '/settings/transfer'),
       (name: '24_settings_watermark', route: '/settings/watermark'),
-      (name: '25_settings_workspace', route: '/settings/workspace'),
-      (name: '26_help', route: '/help'),
-      (name: '27_tips', route: '/tips'),
-      (name: '28_shared', route: '/shared'),
-      (name: '29_storage', route: '/storage'),
-      (name: '30_trash', route: '/trash'),
+      (name: '25_settings_widget', route: '/settings/widget'),
+      (name: '26_settings_workspace', route: '/settings/workspace'),
+      (name: '27_help', route: '/help'),
+      (name: '28_tips', route: '/tips'),
+      (name: '29_shared', route: '/shared'),
+      (name: '30_storage', route: '/storage'),
+      (name: '31_trash', route: '/trash'),
     ];
 
     for (final entry in routes) {

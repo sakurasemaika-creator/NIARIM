@@ -2349,6 +2349,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Placez trois widgets sur votre écran d’accueil : une image d’une œuvre de votre choix, « Créer » et « Place ». Ajoutez-les par un appui long sur l’écran d’accueil.';
 
   @override
+  String get widgetSettingsSubtitle => 'Œuvre à afficher, couleur du widget';
+
+  @override
   String get widgetArtworkSection => 'Œuvre à afficher';
 
   @override

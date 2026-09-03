@@ -6,16 +6,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('homeWidgetRoute', () {
-    test('作品ウィジェットは選ばれた作品を開く', () {
-      expect(
-        homeWidgetRoute(HomeWidgetKind.artwork, projectId: 'abc'),
-        '/project/abc',
-      );
-    });
-
-    test('作品が未選択なら作品一覧へ落とす', () {
-      expect(homeWidgetRoute(HomeWidgetKind.artwork), '/home');
-      expect(homeWidgetRoute(HomeWidgetKind.artwork, projectId: ''), '/home');
+    test('作品ウィジェットは起動画面を開く（作品の編集画面へは飛ばさない）', () {
+      expect(homeWidgetRoute(HomeWidgetKind.artwork), '/');
     });
 
     test('ショートカット2種は固定のルート', () {
@@ -98,7 +90,7 @@ void main() {
         projectName: 'テスト作品',
         thumbnailPath: '/tmp/a.png',
       );
-      expect(payload['routeArtwork'], '/project/p9');
+      expect(payload['routeArtwork'], '/');
       expect(payload['routeCreate'], '/new-project');
       expect(payload['routePlaza'], '/community');
       expect(payload['projectId'], 'p9');

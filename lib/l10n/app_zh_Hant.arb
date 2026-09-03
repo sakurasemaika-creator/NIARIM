@@ -727,6 +727,7 @@
   "creativePanelTagClearFilter": "清除標籤篩選",
   "widgetSettingsTitle": "主畫面小工具",
   "widgetSettingsDescription": "可在手機主畫面放置三種小工具：所選作品的一格畫面、「創作作品」與「作品廣場」。新增小工具請長按主畫面。",
+  "widgetSettingsSubtitle": "要顯示的作品、小工具顏色",
   "widgetArtworkSection": "要顯示的作品",
   "widgetArtworkNone": "尚未選擇作品",
   "widgetColorSection": "小工具顏色",

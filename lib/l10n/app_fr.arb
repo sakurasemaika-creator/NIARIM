@@ -727,6 +727,7 @@
   "creativePanelTagClearFilter": "Effacer le filtre par étiquette",
   "widgetSettingsTitle": "Widgets de l’écran d’accueil",
   "widgetSettingsDescription": "Placez trois widgets sur votre écran d’accueil : une image d’une œuvre de votre choix, « Créer » et « Place ». Ajoutez-les par un appui long sur l’écran d’accueil.",
+  "widgetSettingsSubtitle": "Œuvre à afficher, couleur du widget",
   "widgetArtworkSection": "Œuvre à afficher",
   "widgetArtworkNone": "Aucune œuvre sélectionnée",
   "widgetColorSection": "Couleur du widget",

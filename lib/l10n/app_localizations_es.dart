@@ -2350,6 +2350,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Coloca tres widgets en tu pantalla de inicio: un fotograma de la obra que elijas, «Crear obra» y «Plaza». Añádelos manteniendo pulsada la pantalla de inicio.';
 
   @override
+  String get widgetSettingsSubtitle => 'Obra que mostrar, color del widget';
+
+  @override
   String get widgetArtworkSection => 'Obra que mostrar';
 
   @override

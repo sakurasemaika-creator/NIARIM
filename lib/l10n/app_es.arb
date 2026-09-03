@@ -727,6 +727,7 @@
   "creativePanelTagClearFilter": "Quitar el filtro de etiquetas",
   "widgetSettingsTitle": "Widgets de la pantalla de inicio",
   "widgetSettingsDescription": "Coloca tres widgets en tu pantalla de inicio: un fotograma de la obra que elijas, «Crear obra» y «Plaza». Añádelos manteniendo pulsada la pantalla de inicio.",
+  "widgetSettingsSubtitle": "Obra que mostrar, color del widget",
   "widgetArtworkSection": "Obra que mostrar",
   "widgetArtworkNone": "Ninguna obra seleccionada",
   "widgetColorSection": "Color del widget",

@@ -727,6 +727,7 @@
   "creativePanelTagClearFilter": "Clear tag filter",
   "widgetSettingsTitle": "Home screen widgets",
   "widgetSettingsDescription": "Place three widgets on your home screen: a single frame from a work you choose, “New work”, and “Plaza”. Add them by long-pressing your home screen.",
+  "widgetSettingsSubtitle": "Work to display, widget colour",
   "widgetArtworkSection": "Work to display",
   "widgetArtworkNone": "No work selected",
   "widgetColorSection": "Widget colour",

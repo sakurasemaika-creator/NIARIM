@@ -2219,6 +2219,9 @@ class AppLocalizationsZh extends AppLocalizations {
       '可在手机主屏幕放置三种小组件：所选作品的一帧画面、「创作作品」和「作品广场」。添加小组件请长按主屏幕。';
 
   @override
+  String get widgetSettingsSubtitle => '要显示的作品、小组件颜色';
+
+  @override
   String get widgetArtworkSection => '要显示的作品';
 
   @override
@@ -8103,6 +8106,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get widgetSettingsDescription =>
       '可在手機主畫面放置三種小工具：所選作品的一格畫面、「創作作品」與「作品廣場」。新增小工具請長按主畫面。';
+
+  @override
+  String get widgetSettingsSubtitle => '要顯示的作品、小工具顏色';
 
   @override
   String get widgetArtworkSection => '要顯示的作品';

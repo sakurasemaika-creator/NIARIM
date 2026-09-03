@@ -2238,6 +2238,9 @@ class AppLocalizationsKo extends AppLocalizations {
       '홈 화면에 좋아하는 작품의 한 프레임, 「작품 만들기」, 「작품 광장」 3종류의 위젯을 놓을 수 있습니다. 위젯 추가는 홈 화면을 길게 눌러서 하세요.';
 
   @override
+  String get widgetSettingsSubtitle => '표시할 작품 · 위젯 색상';
+
+  @override
   String get widgetArtworkSection => '표시할 작품';
 
   @override

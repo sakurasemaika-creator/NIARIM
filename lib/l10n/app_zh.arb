@@ -727,6 +727,7 @@
   "creativePanelTagClearFilter": "清除标签筛选",
   "widgetSettingsTitle": "主屏幕小组件",
   "widgetSettingsDescription": "可在手机主屏幕放置三种小组件：所选作品的一帧画面、「创作作品」和「作品广场」。添加小组件请长按主屏幕。",
+  "widgetSettingsSubtitle": "要显示的作品、小组件颜色",
   "widgetArtworkSection": "要显示的作品",
   "widgetArtworkNone": "尚未选择作品",
   "widgetColorSection": "小组件颜色",
