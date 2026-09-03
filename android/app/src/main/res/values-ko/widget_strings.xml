@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_artwork_label">작품</string>
+    <string name="widget_create_label">작품 만들기</string>
+    <string name="widget_plaza_label">작품 광장</string>
+    <string name="widget_artwork_picker">NIARIM 작품</string>
+    <string name="widget_create_picker">NIARIM 작품 만들기</string>
+    <string name="widget_plaza_picker">NIARIM 작품 광장</string>
+</resources>

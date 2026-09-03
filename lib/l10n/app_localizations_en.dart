@@ -2310,6 +2310,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creativePanelTagClearFilter => 'Clear tag filter';
 
   @override
+  String get widgetSettingsTitle => 'Home screen widgets';
+
+  @override
+  String get widgetSettingsDescription =>
+      'Place three widgets on your home screen: a single frame from a work you choose, “New work”, and “Plaza”. Add them by long-pressing your home screen.';
+
+  @override
+  String get widgetArtworkSection => 'Work to display';
+
+  @override
+  String get widgetArtworkNone => 'No work selected';
+
+  @override
+  String get widgetColorSection => 'Widget colour';
+
+  @override
+  String get widgetColorFollowTheme => 'Match the app theme';
+
+  @override
+  String get widgetColorCustom => 'Pick a colour';
+
+  @override
+  String get widgetNoProjects =>
+      'No works yet. Once you create one, you can choose it here.';
+
+  @override
+  String get widgetSettingsNote =>
+      'Home screen widgets cannot play video, so a single frame of the chosen work is shown as a still image.';
+
+  @override
   String get assetTagLineArt => 'Line art';
 
   @override

@@ -4145,6 +4145,60 @@ abstract class AppLocalizations {
   /// **'タグの絞り込みを解除'**
   String get creativePanelTagClearFilter;
 
+  /// No description provided for @widgetSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェット'**
+  String get widgetSettingsTitle;
+
+  /// No description provided for @widgetSettingsDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'スマホのホーム画面へ、好きな作品のフレーム1枚・「作品をつくる」・「作品広場」の3種類のウィジェットを置けます。ウィジェットの追加自体はホーム画面の長押しから行ってください。'**
+  String get widgetSettingsDescription;
+
+  /// No description provided for @widgetArtworkSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示する作品'**
+  String get widgetArtworkSection;
+
+  /// No description provided for @widgetArtworkNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を選んでいません'**
+  String get widgetArtworkNone;
+
+  /// No description provided for @widgetColorSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウィジェットの色'**
+  String get widgetColorSection;
+
+  /// No description provided for @widgetColorFollowTheme.
+  ///
+  /// In ja, this message translates to:
+  /// **'アプリのテーマに合わせる'**
+  String get widgetColorFollowTheme;
+
+  /// No description provided for @widgetColorCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を選ぶ'**
+  String get widgetColorCustom;
+
+  /// No description provided for @widgetNoProjects.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ作品がありません。作品を作るとここで選べるようになります。'**
+  String get widgetNoProjects;
+
+  /// No description provided for @widgetSettingsNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェットは動画を再生できないため、選んだ作品の1コマを静止画として表示します。'**
+  String get widgetSettingsNote;
+
   /// No description provided for @assetTagLineArt.
   ///
   /// In ja, this message translates to:

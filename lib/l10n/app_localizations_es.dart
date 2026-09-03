@@ -2343,6 +2343,36 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creativePanelTagClearFilter => 'Quitar el filtro de etiquetas';
 
   @override
+  String get widgetSettingsTitle => 'Widgets de la pantalla de inicio';
+
+  @override
+  String get widgetSettingsDescription =>
+      'Coloca tres widgets en tu pantalla de inicio: un fotograma de la obra que elijas, «Crear obra» y «Plaza». Añádelos manteniendo pulsada la pantalla de inicio.';
+
+  @override
+  String get widgetArtworkSection => 'Obra que mostrar';
+
+  @override
+  String get widgetArtworkNone => 'Ninguna obra seleccionada';
+
+  @override
+  String get widgetColorSection => 'Color del widget';
+
+  @override
+  String get widgetColorFollowTheme => 'Seguir el tema de la app';
+
+  @override
+  String get widgetColorCustom => 'Elegir un color';
+
+  @override
+  String get widgetNoProjects =>
+      'Aún no hay obras. Cuando crees una, podrás elegirla aquí.';
+
+  @override
+  String get widgetSettingsNote =>
+      'Los widgets de la pantalla de inicio no pueden reproducir vídeo, así que se muestra un fotograma de la obra como imagen fija.';
+
+  @override
   String get assetTagLineArt => 'Línea';
 
   @override

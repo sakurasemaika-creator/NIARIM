@@ -83,6 +83,7 @@ dependencies:
   # 資産を持たない小さなJSON設定のみを対象とする。詳細は12章の変更履歴・
   # settings_share_screen.dartのコメント参照）。
   qr_flutter: ^4.1.0
+  home_widget: ^0.9.3
 
 dev_dependencies:
   flutter_test:

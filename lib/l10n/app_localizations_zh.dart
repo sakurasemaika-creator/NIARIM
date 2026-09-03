@@ -2212,6 +2212,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creativePanelTagClearFilter => '清除标签筛选';
 
   @override
+  String get widgetSettingsTitle => '主屏幕小组件';
+
+  @override
+  String get widgetSettingsDescription =>
+      '可在手机主屏幕放置三种小组件：所选作品的一帧画面、「创作作品」和「作品广场」。添加小组件请长按主屏幕。';
+
+  @override
+  String get widgetArtworkSection => '要显示的作品';
+
+  @override
+  String get widgetArtworkNone => '尚未选择作品';
+
+  @override
+  String get widgetColorSection => '小组件颜色';
+
+  @override
+  String get widgetColorFollowTheme => '跟随应用主题';
+
+  @override
+  String get widgetColorCustom => '选择颜色';
+
+  @override
+  String get widgetNoProjects => '还没有作品。创作后即可在这里选择。';
+
+  @override
+  String get widgetSettingsNote => '主屏幕小组件无法播放视频，因此以静止图像显示所选作品的一帧。';
+
+  @override
   String get assetTagLineArt => '线稿';
 
   @override
@@ -8068,6 +8096,34 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creativePanelTagClearFilter => '清除標籤篩選';
+
+  @override
+  String get widgetSettingsTitle => '主畫面小工具';
+
+  @override
+  String get widgetSettingsDescription =>
+      '可在手機主畫面放置三種小工具：所選作品的一格畫面、「創作作品」與「作品廣場」。新增小工具請長按主畫面。';
+
+  @override
+  String get widgetArtworkSection => '要顯示的作品';
+
+  @override
+  String get widgetArtworkNone => '尚未選擇作品';
+
+  @override
+  String get widgetColorSection => '小工具顏色';
+
+  @override
+  String get widgetColorFollowTheme => '跟隨應用程式主題';
+
+  @override
+  String get widgetColorCustom => '選擇顏色';
+
+  @override
+  String get widgetNoProjects => '還沒有作品。創作後即可在這裡選擇。';
+
+  @override
+  String get widgetSettingsNote => '主畫面小工具無法播放影片，因此以靜止影像顯示所選作品的一格畫面。';
 
   @override
   String get assetTagLineArt => '線稿';

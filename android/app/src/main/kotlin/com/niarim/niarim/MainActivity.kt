@@ -18,15 +18,22 @@ import kotlin.concurrent.thread
  */
 class MainActivity : FlutterActivity() {
     private val channelName = "com.niarim.niarim/share_intent"
+    private val widgetChannelName = "com.niarim.niarim/home_widget_route"
     private val hwVideoEncoderChannelName = "com.niarim.niarim/hw_video_encoder"
     private var methodChannel: MethodChannel? = null
+    private var widgetChannel: MethodChannel? = null
     private var pendingUri: String? = null
+    // ホーム画面ウィジェットのタップで指定されたアプリ内ルート。
+    // Flutter側が起動しきる前にIntentが届くため、いったん保持して
+    // getInitialRouteで取りに来てもらう（共有ファイルURIと同じ方式）。
+    private var pendingWidgetRoute: String? = null
     private val mainHandler = Handler(Looper.getMainLooper())
     private val maxSharedFileBytes = 128 * 1024 * 1024
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingUri = extractUri(intent)
+        pendingWidgetRoute = intent?.getStringExtra(WIDGET_ROUTE_EXTRA)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -93,6 +100,19 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        // ホーム画面ウィジェットのタップで開くルートをFlutterへ渡す。
+        widgetChannel =
+            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, widgetChannelName)
+        widgetChannel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getInitialRoute" -> {
+                    result.success(pendingWidgetRoute)
+                    pendingWidgetRoute = null
+                }
+                else -> result.notImplemented()
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -101,6 +121,10 @@ class MainActivity : FlutterActivity() {
         val uri = extractUri(intent)
         if (uri != null) {
             methodChannel?.invokeMethod("onSharedFile", uri)
+        }
+        val route = intent.getStringExtra(WIDGET_ROUTE_EXTRA)
+        if (route != null) {
+            widgetChannel?.invokeMethod("onWidgetRoute", route)
         }
     }
 

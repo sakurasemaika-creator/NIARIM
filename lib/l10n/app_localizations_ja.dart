@@ -2222,6 +2222,35 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creativePanelTagClearFilter => 'タグの絞り込みを解除';
 
   @override
+  String get widgetSettingsTitle => 'ホーム画面ウィジェット';
+
+  @override
+  String get widgetSettingsDescription =>
+      'スマホのホーム画面へ、好きな作品のフレーム1枚・「作品をつくる」・「作品広場」の3種類のウィジェットを置けます。ウィジェットの追加自体はホーム画面の長押しから行ってください。';
+
+  @override
+  String get widgetArtworkSection => '表示する作品';
+
+  @override
+  String get widgetArtworkNone => '作品を選んでいません';
+
+  @override
+  String get widgetColorSection => 'ウィジェットの色';
+
+  @override
+  String get widgetColorFollowTheme => 'アプリのテーマに合わせる';
+
+  @override
+  String get widgetColorCustom => '色を選ぶ';
+
+  @override
+  String get widgetNoProjects => 'まだ作品がありません。作品を作るとここで選べるようになります。';
+
+  @override
+  String get widgetSettingsNote =>
+      'ホーム画面ウィジェットは動画を再生できないため、選んだ作品の1コマを静止画として表示します。';
+
+  @override
   String get assetTagLineArt => '線画';
 
   @override

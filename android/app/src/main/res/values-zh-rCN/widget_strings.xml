@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_artwork_label">作品</string>
+    <string name="widget_create_label">创作作品</string>
+    <string name="widget_plaza_label">作品广场</string>
+    <string name="widget_artwork_picker">NIARIM 作品</string>
+    <string name="widget_create_picker">NIARIM 创作作品</string>
+    <string name="widget_plaza_picker">NIARIM 作品广场</string>
+</resources>

@@ -2342,6 +2342,36 @@ class AppLocalizationsFr extends AppLocalizations {
   String get creativePanelTagClearFilter => 'Effacer le filtre par étiquette';
 
   @override
+  String get widgetSettingsTitle => 'Widgets de l’écran d’accueil';
+
+  @override
+  String get widgetSettingsDescription =>
+      'Placez trois widgets sur votre écran d’accueil : une image d’une œuvre de votre choix, « Créer » et « Place ». Ajoutez-les par un appui long sur l’écran d’accueil.';
+
+  @override
+  String get widgetArtworkSection => 'Œuvre à afficher';
+
+  @override
+  String get widgetArtworkNone => 'Aucune œuvre sélectionnée';
+
+  @override
+  String get widgetColorSection => 'Couleur du widget';
+
+  @override
+  String get widgetColorFollowTheme => 'Suivre le thème de l’application';
+
+  @override
+  String get widgetColorCustom => 'Choisir une couleur';
+
+  @override
+  String get widgetNoProjects =>
+      'Aucune œuvre pour l’instant. Dès que vous en créez une, vous pourrez la choisir ici.';
+
+  @override
+  String get widgetSettingsNote =>
+      'Les widgets de l’écran d’accueil ne peuvent pas lire de vidéo : une image de l’œuvre choisie est affichée en fixe.';
+
+  @override
   String get assetTagLineArt => 'Trait';
 
   @override

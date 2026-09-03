@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**491 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**556 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -352,6 +352,17 @@
   （`onReorder`は使わない）。正しさは`test/reorder_index_test.dart`が
   総当たりで検証している。
 
+- **ホーム画面ウィジェットのPendingIntentは`requestCode`を必ず変えること**：
+  `NiarimWidgetProviders.kt`の3種のウィジェット（作品／作品をつくる／
+  作品広場）は同じ`MainActivity`を起動するIntentを使うため、
+  `PendingIntent.getActivity()`の`requestCode`が同じだと**後から作った
+  Intentのextraで既存のPendingIntentが上書きされ、3つとも同じ画面へ飛ぶ**
+  （AndroidはIntentのextraをPendingIntentの同一性判定に含めない）。
+  ルートごとに異なる`requestCode`を渡し、あわせて`niarim://widget<route>`の
+  data URIも設定してある。ウィジェットを増やす際は必ず両方を新しい値にすること。
+  なお`RemoteViews`は動画再生もWebViewもできない（ImageView/TextView等の
+  限られた部品のみ）ので、ウィジェットへ出せるのは静止画だけ。
+  タップ後の遷移は`go()`ではなく`push()`（上記のgo/push地雷と同じ理由）。
 - **`monetization_gate.dart`を一時的に書き換えたら必ず元に戻すこと**：
   過去に「test: キャンペーン条件を無効化し無料会員挙動でAPKテスト」
   （コミット54e4743）で`isMonetizationEnabled`の実装をコメントアウトして

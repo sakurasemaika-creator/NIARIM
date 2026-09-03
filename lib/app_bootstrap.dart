@@ -27,6 +27,7 @@ import 'services/pixel_art_palette_service.dart';
 import 'services/work_folder_service.dart';
 import 'services/community_service.dart';
 import 'services/community_preview_service.dart';
+import 'services/home_widget_service.dart';
 
 /// アプリ全体で使う各Serviceを初期化し、`MultiProvider`へ渡す
 /// プロバイダー一覧を組み立てる。main()と、アプリ全体を実際に起動して
@@ -120,6 +121,9 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
   final workFolderService = WorkFolderService();
   await workFolderService.init();
 
+  final homeWidgetService = HomeWidgetService();
+  await homeWidgetService.init();
+
   // 「作品広場」機能のダミーデータ・タグ・ブックマークの状態と、
   // フローティングプレビューウィンドウの表示状態。バックエンド未実装の
   // ため初期化不要（コンストラクタでダミーデータを生成するのみ）。
@@ -162,6 +166,7 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
     ChangeNotifierProvider.value(value: paletteService),
     ChangeNotifierProvider.value(value: pixelArtPaletteService),
     ChangeNotifierProvider.value(value: workFolderService),
+    ChangeNotifierProvider.value(value: homeWidgetService),
     ChangeNotifierProvider.value(value: communityService),
     ChangeNotifierProvider.value(value: communityPreviewService),
     Provider<ShareIntentService>.value(value: shareIntentService),

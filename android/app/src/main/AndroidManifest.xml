@@ -57,6 +57,45 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />
+
+        <!-- ホーム画面ウィジェット（3種）。
+             RemoteViewsは動画再生もWebViewも扱えないため、表示するのは
+             ローカルの自作作品のフレーム1枚（静止画）だけ。詳細は
+             NiarimWidgetProviders.kt のコメント参照。 -->
+        <receiver
+            android:name=".NiarimArtworkWidgetProvider"
+            android:label="@string/widget_artwork_picker"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_artwork_info" />
+        </receiver>
+        <receiver
+            android:name=".NiarimCreateWidgetProvider"
+            android:label="@string/widget_create_picker"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_create_info" />
+        </receiver>
+        <receiver
+            android:name=".NiarimPlazaWidgetProvider"
+            android:label="@string/widget_plaza_picker"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_plaza_info" />
+        </receiver>
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

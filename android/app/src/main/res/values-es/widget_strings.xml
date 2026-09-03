@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_artwork_label">Obra</string>
+    <string name="widget_create_label">Crear obra</string>
+    <string name="widget_plaza_label">Plaza</string>
+    <string name="widget_artwork_picker">Obra de NIARIM</string>
+    <string name="widget_create_picker">NIARIM: crear obra</string>
+    <string name="widget_plaza_picker">NIARIM: Plaza</string>
+</resources>
