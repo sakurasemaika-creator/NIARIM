@@ -183,9 +183,9 @@ class _SplashScreenState extends State<SplashScreen> {
             // テーマの文字色と背景色が潰れていて画面が読めない状態のときだけ、
             // 固定色（白地・黒文字・黒枠）のリセットボタンを右上に出す。
             // テーマ・外観設定側でこの組み合わせは弾いているが、引き継ぎ
-            // ファイルの取り込みや、その判定を入れる前に保存された設定から
-            // 到達しうるため、最後の逃げ道として用意している。ふだんは
-            // 出ないので、起動画面の見た目を汚さない。
+            // ファイル（.niatra）の取り込みでは他人の端末で作られたテーマが
+            // そのまま入ってくるため、最後の逃げ道として用意している。
+            // ふだんは出ないので、起動画面の見た目を汚さない。
             if (!isThemeReadable(context.watch<ThemeService>().current))
               const Positioned(top: 8, right: 8, child: _ThemeRescueButton()),
           ],

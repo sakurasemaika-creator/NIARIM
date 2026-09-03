@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../models/community_follow_notification.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';
+import 'api/community_api.dart';
+import 'api/niarim_api_exception.dart';
 
 /// フォロー中の作者タブに表示する1件（[CommunityService.favoriteAuthorFeed]）。
 /// フォロー中の作者自身の投稿か、フォロー中の作者が他者の作品をリポスト
@@ -25,16 +27,89 @@ class FavoriteFeedEntry {
   bool get isRepost => repostedByAuthorId != null;
 }
 
-/// 「作品広場」機能のダミーデータと、タグ・ブックマークの
-/// 一時的な状態をアプリ全体で共有するサービス。
+/// 「作品広場」機能の作品一覧と、タグ・ブックマーク等の状態を
+/// アプリ全体で共有するサービス。
 ///
-/// バックエンド（`29_動画投稿・ランキング機能仕様.md`）は未実装のため、
-/// ここで保持するのは表示確認用のダミーデータのみ。以前は
-/// `CommunityScreen`のState内にローカルで持っていたが、フローティング
+/// `CommunityScreen`のState内にローカルで持っていたものを、フローティング
 /// プレビューウィンドウ（画面をまたいで表示し続ける）・作品詳細画面
-/// （別ルート）の両方から同じ状態を参照・編集できる必要があるため、
-/// アプリ全体で共有するProviderへ引き上げた。
+/// （別ルート）の両方から同じ状態を参照・編集できるように、アプリ全体で
+/// 共有するProviderへ引き上げてある。
+///
+/// ## バックエンドとの関係
+///
+/// [api]を渡すと実際のバックエンド（`backend/`）から一覧を取得できる
+/// （[refreshFromBackend]）。渡さない場合は従来どおり表示確認用の
+/// ダミーデータで動く。どちらを使うかは
+/// `NiarimApiConfig.isConfigured`（ビルド時の`--dart-define`）で決まり、
+/// **デプロイ前でもアプリの画面確認・スクリーンショット・テストが一通り
+/// できる状態を保つ**ようにしてある。
+///
+/// 書き込み系（投稿・ブックマーク・フォロー・通報）はGoogleログインで
+/// 得たIDトークンが要る。ログイン基盤自体はまだ無いため、[api]の
+/// 書き込みメソッドは層としては用意済みだが、このサービスからはまだ
+/// 呼んでいない（呼ぶと401になる）。ログインを実装したら、下の
+/// トグル系メソッドをAPI呼び出し＋楽観更新へ差し替えること。
 class CommunityService extends ChangeNotifier {
+  /// バックエンドのAPIクライアント。未設定（デプロイ前）ならnull。
+  final CommunityApi? api;
+
+  CommunityService({this.api});
+
+  /// バックエンドに接続する設定になっているか。
+  bool get isBackendConnected => api != null;
+
+  /// 直近の取得が失敗した理由（成功していればnull）。画面側で
+  /// 「読み込めませんでした・再試行」を出すために使う。
+  NiarimApiException? get lastError => _lastError;
+  NiarimApiException? _lastError;
+
+  /// バックエンドから一覧を取得中かどうか。
+  bool get isLoading => _isLoading;
+  bool _isLoading = false;
+
+  /// バックエンドから新着一覧を取り直して[works]へ反映する。
+  ///
+  /// [api]がnull（デプロイ前）のときは何もしないでfalseを返す
+  /// ＝ダミーデータのまま。失敗しても**手元の一覧は消さない**
+  /// （画面が真っ白になるより、古い内容が残っているほうがましなため）。
+  /// 失敗の理由は[lastError]に入る。
+  Future<bool> refreshFromBackend() async {
+    final client = api;
+    if (client == null) return false;
+    _isLoading = true;
+    _lastError = null;
+    notifyListeners();
+    try {
+      final fetched = await client.latestWorks();
+      _works
+        ..clear()
+        ..addAll(fetched.map((w) => w.toCommunityWork()));
+      return true;
+    } on NiarimApiException catch (e) {
+      _lastError = e;
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// ランキングを取得する（画面側がタブごとに呼ぶ）。
+  /// [api]がnullなら手元のダミーデータから作った一覧を返す。
+  Future<List<CommunityWork>> fetchRanking(RankingPeriod period) async {
+    final client = api;
+    if (client == null) return discoverableWorks;
+    try {
+      final page = await client.ranking(period);
+      _lastError = null;
+      return page.works.map((w) => w.toCommunityWork()).toList();
+    } on NiarimApiException catch (e) {
+      _lastError = e;
+      notifyListeners();
+      return const [];
+    }
+  }
+
   late final List<CommunityWork> _works = buildDummyCommunityWorks();
   final Set<String> _bookmarkedIds = {};
   // お気に入り作者（フォロー、Task#144）のNIARIM User ID集合。

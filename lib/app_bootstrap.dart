@@ -25,6 +25,7 @@ import 'services/first_use_tooltip_service.dart';
 import 'services/palette_service.dart';
 import 'services/pixel_art_palette_service.dart';
 import 'services/work_folder_service.dart';
+import 'services/api/niarim_api_config.dart';
 import 'services/community_service.dart';
 import 'services/community_preview_service.dart';
 import 'services/home_widget_service.dart';
@@ -124,10 +125,12 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
   final homeWidgetService = HomeWidgetService();
   await homeWidgetService.init();
 
-  // 「作品広場」機能のダミーデータ・タグ・ブックマークの状態と、
-  // フローティングプレビューウィンドウの表示状態。バックエンド未実装の
-  // ため初期化不要（コンストラクタでダミーデータを生成するのみ）。
-  final communityService = CommunityService();
+  // 「作品広場」機能の作品一覧・タグ・ブックマークの状態と、
+  // フローティングプレビューウィンドウの表示状態。
+  // バックエンドの接続先がビルド時（--dart-define=NIARIM_API_BASE_URL）に
+  // 渡されていれば実データ、渡されていなければ従来どおりダミーデータで
+  // 動く（デプロイ前でも画面確認・テストが一通りできる状態を保つため）。
+  final communityService = CommunityService(api: NiarimApiConfig.createApi());
   final communityPreviewService = CommunityPreviewService();
 
   final shareIntentService = ShareIntentService();

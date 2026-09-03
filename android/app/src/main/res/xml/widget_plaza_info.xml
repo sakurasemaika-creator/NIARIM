@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  意匠は正方形のPNG（shortcut_widget_renderer.dart）をfitCenterで出す方式
+  なので、既定の置かれ方も正方形（2x2マス）に寄せておく。横長・縦長のマスへ
+  リサイズされても中央に正方形のまま収まる（切れたり歪んだりはしない）が、
+  余白が増えるだけなので既定では正方形にする。
+
+  minWidth 110dp は Android のマス目換算式（70*n-30）で2マス相当。
+  minResize* を同値で明示して、文字が潰れる大きさまで縮められないようにする。
+  （110dp で意匠内のラベルは実効10px前後。これ以上小さいと読めない。
+  test/home_widget_cell_size_test.dart がこの下限で可読性を検証している）
+-->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_shortcut"
     android:resizeMode="horizontal|vertical"

@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**582 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**614 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -381,6 +381,23 @@
   （`onReorder`は使わない）。正しさは`test/reorder_index_test.dart`が
   総当たりで検証している。
 
+- **`http.Response.body`を使わないこと（日本語が化ける・例外になる）**：
+  `body`はContent-Typeの`charset`を見て復号し、**charsetの指定が無ければ
+  RFC通りlatin1へ倒す**。バックエンドは`charset=utf-8`を付けているが、
+  途中のプロキシやエラーページはその限りではなく、日本語のエラー文が
+  返ると文字化けするか「Contains invalid characters」で例外になる
+  （実際に踏んだ）。JSONはRFC 8259でUTF-8と決まっているので、
+  `utf8.decode(response.bodyBytes, allowMalformed: true)`で読むこと
+  （`niarim_api_client.dart`の`_decode`が実例）。
+  なお**テスト側の`http.Response('日本語...', 400)`も同じ理由で落ちる**
+  （こちらはエンコード時）。MockClientの応答には必ず
+  `headers: {'content-type': 'application/json; charset=utf-8'}`を付ける。
+- **通信の再試行はGETだけにすること**：POST/PATCH/PUT/DELETEは、サーバーへ
+  届いたあとで応答が失われた場合に二重投稿・二重通報を起こしうる。
+  投稿APIはworkId=youtubeVideoIdの冪等キーで守られているが、通報のように
+  冪等でないものもあるため、層としては一律で投げ直さない方針にしてある
+  （`_sendWithRetry`の`retries`引数）。GETでも4xxは投げ直さない
+  （何度やっても同じため）。
 - **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
   すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
   バージョン・フォント設定で字形も色も変わり、同梱フォント
@@ -596,21 +613,24 @@
      に同じ内容がある。バックエンドのデプロイ手順全体・前提条件・
      `youtube.upload`スコープのGoogle審査についてはそちらを参照）。
 
-9. **作品広場（コミュニティ機能）のフロントエンドは、バックエンドと
-   一切繋がっていない**（上記8の後もこれ単独では解決しない、大規模な
-   追加実装項目）：`lib/services/community_service.dart`は全データが
-   ハードコードされたダミーデータで、`package:http`を使うコードは
-   `lib/`全体で`font_service.dart`（フォントダウンロード）以外に存在しない。
-   つまり`backend/`（AWS CDK+Lambda+DynamoDB、コードのみ）を実際にAWSへ
-   デプロイしても、**Flutterアプリ側は自動的には繋がらない**。実際に
-   多人数で使える作品広場にするには、認証（NIARIM User ID発行フロー）・
-   作品CRUD・ランキング/検索・フォロー/ブロック/通報・ブックマーク/リポストの
-   各APIを呼ぶHTTPクライアント層をFlutter側に新規実装し、
-   `community_service.dart`のダミーデータをすべて実データ連携へ差し替える、
-   という大規模な追加実装が丸ごと未着手のまま残っている（人間の判断という
-   より純粋な追加開発work。ユーザー自身の操作が要るのは上記8のAPIキー
-   発行部分のみ）。
-
+9. **作品広場のAPIクライアント層は実装済み。残るのはGoogleログインと
+   デプロイ**：`lib/services/api/`にバックエンドの**21エンドポイント全て**を
+   型付きで呼ぶ層がある（`community_api.dart`＋HTTP下請けの
+   `niarim_api_client.dart`＋DTOの`niarim_api_models.dart`）。接続先は
+   ビルド時の`--dart-define=NIARIM_API_BASE_URL=https://...`で渡し、
+   未指定なら`CommunityService`は従来どおりダミーデータで動く
+   （デプロイ前でも画面確認・スクリーンショット・テストが一通りできる
+   状態を保つため）。読み取り系（新着一覧・ランキング）は
+   `CommunityService.refreshFromBackend()`・`fetchRanking()`で配線済み。
+   **残っているのは次の2つ**：
+   - **Googleログイン（NIARIM User ID発行フロー）が未実装**。書き込み系
+     （投稿・ブックマーク・フォロー・通報・ブロック）はIDトークンが要る。
+     クライアント側は`NiarimAuthTokenProvider`（`Future<String?>`を返す
+     関数）を受け取る形で口を開けてあるので、ログイン基盤ができたら
+     `NiarimApiConfig.createApi(tokenProvider: ...)`へ渡し、
+     `CommunityService`のトグル系メソッドをAPI呼び出し＋楽観更新へ
+     差し替える。これはユーザー操作ではなく純粋な追加開発work。
+   - 上記8のAPIキー発行と、`backend/`の実デプロイ（Task#175）。
 10. **規約・法令コンプライアンス監査（2026年9月実施）で見つかった、
     人間の判断・ストア管理画面操作が必要な項目**（コード側で対応できる
     部分は既に対応済み。詳細は`12_実装チェックリスト.md`の「アプリ全体の
