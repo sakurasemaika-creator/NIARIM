@@ -1,0 +1,61 @@
+name: One-shot Apply Confirmed Strict Evidence
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-apply-confirmed-strict-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - name: strict-v2成功済み6機能をfinal_passへ反映
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('audit-dashboard/feature-audit-manifest.json')
+          data = json.loads(path.read_text())
+          confirmed = {
+              'brush.stabilizer',
+              'brush.mix',
+              'brush.color_extension',
+              'ruler.perspective1',
+              'ruler.perspective2',
+              'ruler.perspective3',
+          }
+          found = set()
+          for f in data['features']:
+              if f.get('id') in confirmed:
+                  found.add(f['id'])
+                  f['interaction'] = True
+                  f['output'] = True
+                  f['screenshot'] = True
+                  f['visual'] = True
+                  f['final_pass'] = True
+                  f['evidence_note'] = 'Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed.'
+          missing = confirmed - found
+          if missing:
+              raise SystemExit(f'missing ids: {sorted(missing)}')
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+          print('confirmed:', ', '.join(sorted(found)))
+          print('final_pass:', sum(bool(f.get('final_pass')) for f in data['features']))
+          PY
+      - name: dev_branchへ反映
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add audit-dashboard/feature-audit-manifest.json
+          git commit -m "strict-v2証拠確認済み6機能を最終確認済みに更新"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
