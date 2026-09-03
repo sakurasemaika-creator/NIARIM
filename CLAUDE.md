@@ -31,21 +31,33 @@
 
 1. `export PATH="$PATH:/opt/flutter-sdk/bin"`（このリモート実行環境では
    flutterがデフォルトPATHに無い。`/opt/flutter-sdk/bin`に入っている）
-2. コード変更後は必ず`flutter analyze`（ベースライン：72 issues、0 errors。
-   全て既存のdeprecated_member_use / use_build_context_synchronousのinfoで
+2. コード変更後は必ず`flutter analyze`（ベースライン：**63 issues、
+   0 errors**。内訳はtest/配下の`deprecated_member_use` 50件
+   （`Color.red/green/blue`でピクセル値を検証している箇所）・
+   `avoid_print` 12件（`functional_audit_batch20_test.dart`の
+   失敗時デバッグ出力）・`use_build_context_synchronously` 1件
+   （`timeline_screen.dart`）で、**lib/配下のissueは0件**。
    増減が無いことを確認する）
-3. `flutter test`（ベースライン：236 tests、全成功。うち大半は
+3. `flutter test`（ベースライン：**484 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
-4. ARBファイル（`lib/l10n/app_*.arb`）を編集したら`flutter gen-l10n`を
+4. **コード変更後は`dart format lib test tool`をかける**。
+   リポジトリ全体を一度フォーマッタに通してあるので（コミット
+   `9eb9923`）、整形済みの状態が正。手で字下げを合わせようとしないこと。
+   なお整形すると`curly_braces_in_flow_control_structures`が出ることが
+   ある（このlintは「if文が1行に収まっていれば波括弧を省略してよい」
+   という例外を持ち、tall styleが長い1行ifを2行へ折ると例外から外れる）。
+   出たら`dart fix --apply --code=curly_braces_in_flow_control_structures`
+   で消す。
+5. ARBファイル（`lib/l10n/app_*.arb`）を編集したら`flutter gen-l10n`を
    必ず実行し直す（対応7言語：ja/en/es/fr/ko/zh/zh_Hant、jaがテンプレート）。
    機械的な文字列置換だとES/FR等で訳が崩れることがあるため、ロケールごとに
    手で訳すこと。
-5. コミットメッセージは日本語で、「ユーザーの依頼引用→調査で分かった原因→
+6. コミットメッセージは日本語で、「ユーザーの依頼引用→調査で分かった原因→
    対応内容→検証結果（analyze/testの件数）」の構成にするのがこのリポジトリの
    慣行。ソースコード中のコメントには仕様書番号・Task番号は書かない
    （コードの技術的な説明のみ）が、`12_実装チェックリスト.md`への追記や
    コミットメッセージには経緯を書いてよい。
-6. 大きめの作業が終わったら`docs/AI設計書/12_実装チェックリスト.md`へ
+7. 大きめの作業が終わったら`docs/AI設計書/12_実装チェックリスト.md`へ
    追記し、必要ならこのファイルや`28_継続タスク（未着手一覧）.md`も更新する。
 
 ### APKビルド（GitHub Actions）
@@ -319,6 +331,26 @@
   （AVI等）・新しいブラシの描き味・ランチャーアイコンの実機での見え方
   などは、コードレビューだけで「直った」と断定せず「直っている可能性が
   高いが実機要確認」と正直に報告すること。
+
+- **`ReorderableListView`の並び替えは、newIndexの意味がコールバックで
+  違う**：非推奨の`onReorder`は「移動元をまだ取り除いていないリスト上の
+  挿入位置」、後継の`onReorderItem`は「取り除いた後のリスト上の最終位置」を
+  渡す。下方向へ動かしたときだけ1ずれる。
+  このアプリの各サービスの並び替えメソッド（`reorderBrush`・`reorderLayer`・
+  `reorderTone`・`reorderStamp`・`reorderEffectFilters`・
+  `QuickToolService.reorder`・`ThemeService.reorder`・
+  `reorderCustomSizePresets`）は**全て前者（取り除く前）の規約**で書かれて
+  いて、内部に`if (newIndex > oldIndex) newIndex--;`を持っている。
+  しかもドラッグ以外の呼び出し元がある（`AutofillBatchRunner`は自動塗り
+  レイヤーを線画の上へ、`FilterPanel`は縁取りレイヤーを、どちらも
+  `indexWhere(...) + 1`という「取り除く前」の位置を自分で計算して
+  `reorderLayer`を呼ぶ。`reorderBrush`と`QuickToolService.reorder`は
+  テストからも呼ばれる）。**サービス側の`-1`を消すとこれらが黙って壊れる**。
+  UI側は`lib/utils/reorder_index.dart`の`preRemovalIndex(old, new)`で
+  `onReorderItem`の添字を元の規約へ戻してからサービスへ渡す形に統一して
+  あるので、新しく`ReorderableListView`を足すときもこの形に乗せること
+  （`onReorder`は使わない）。正しさは`test/reorder_index_test.dart`が
+  総当たりで検証している。
 
 - **`monetization_gate.dart`を一時的に書き換えたら必ず元に戻すこと**：
   過去に「test: キャンペーン条件を無効化し無料会員挙動でAPKテスト」
