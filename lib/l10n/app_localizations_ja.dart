@@ -2235,10 +2235,26 @@ class AppLocalizationsJa extends AppLocalizations {
   String get widgetArtworkSection => '表示する作品';
 
   @override
-  String get widgetArtworkNone => '作品を選んでいません';
+  String get widgetSectionArtwork => '起動画面ウィジェット';
 
   @override
-  String get widgetColorSection => 'ウィジェットの色';
+  String get widgetSectionArtworkDesc =>
+      '選んだ作品のフレーム1枚を表示します。タップするとNIARIMが起動します。';
+
+  @override
+  String get widgetSectionCreate => '作品をつくるウィジェット';
+
+  @override
+  String get widgetSectionCreateDesc => 'タップすると「作品をつくる」画面が開きます。';
+
+  @override
+  String get widgetSectionPlaza => '作品広場ウィジェット';
+
+  @override
+  String get widgetSectionPlazaDesc => 'タップすると「作品広場」が開きます。';
+
+  @override
+  String get widgetArtworkNone => '作品を選んでいません';
 
   @override
   String get widgetColorFollowTheme => 'アプリのテーマに合わせる';

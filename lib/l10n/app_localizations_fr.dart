@@ -2355,10 +2355,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get widgetArtworkSection => 'Œuvre à afficher';
 
   @override
-  String get widgetArtworkNone => 'Aucune œuvre sélectionnée';
+  String get widgetSectionArtwork => 'Widget d’écran de démarrage';
 
   @override
-  String get widgetColorSection => 'Couleur du widget';
+  String get widgetSectionArtworkDesc =>
+      'Affiche une image de l’œuvre que vous choisissez. Un appui ouvre NIARIM.';
+
+  @override
+  String get widgetSectionCreate => 'Widget de création';
+
+  @override
+  String get widgetSectionCreateDesc => 'Un appui ouvre l’écran « Créer ».';
+
+  @override
+  String get widgetSectionPlaza => 'Widget de la place';
+
+  @override
+  String get widgetSectionPlazaDesc => 'Un appui ouvre la Place.';
+
+  @override
+  String get widgetArtworkNone => 'Aucune œuvre sélectionnée';
 
   @override
   String get widgetColorFollowTheme => 'Suivre le thème de l’application';

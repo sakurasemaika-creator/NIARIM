@@ -2244,10 +2244,26 @@ class AppLocalizationsKo extends AppLocalizations {
   String get widgetArtworkSection => '표시할 작품';
 
   @override
-  String get widgetArtworkNone => '작품을 선택하지 않았습니다';
+  String get widgetSectionArtwork => '시작 화면 위젯';
 
   @override
-  String get widgetColorSection => '위젯 색상';
+  String get widgetSectionArtworkDesc =>
+      '선택한 작품의 한 컷을 표시합니다. 누르면 NIARIM이 실행됩니다.';
+
+  @override
+  String get widgetSectionCreate => '작품 만들기 위젯';
+
+  @override
+  String get widgetSectionCreateDesc => '누르면 \'작품 만들기\' 화면이 열립니다.';
+
+  @override
+  String get widgetSectionPlaza => '작품 광장 위젯';
+
+  @override
+  String get widgetSectionPlazaDesc => '누르면 \'작품 광장\'이 열립니다.';
+
+  @override
+  String get widgetArtworkNone => '작품을 선택하지 않았습니다';
 
   @override
   String get widgetColorFollowTheme => '앱 테마에 맞추기';

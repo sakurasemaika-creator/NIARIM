@@ -2225,10 +2225,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get widgetArtworkSection => '要显示的作品';
 
   @override
-  String get widgetArtworkNone => '尚未选择作品';
+  String get widgetSectionArtwork => '启动页小组件';
 
   @override
-  String get widgetColorSection => '小组件颜色';
+  String get widgetSectionArtworkDesc => '显示所选作品的一帧画面。点按即可打开 NIARIM。';
+
+  @override
+  String get widgetSectionCreate => '创作作品小组件';
+
+  @override
+  String get widgetSectionCreateDesc => '点按即可打开“创作作品”页面。';
+
+  @override
+  String get widgetSectionPlaza => '作品广场小组件';
+
+  @override
+  String get widgetSectionPlazaDesc => '点按即可打开“作品广场”。';
+
+  @override
+  String get widgetArtworkNone => '尚未选择作品';
 
   @override
   String get widgetColorFollowTheme => '跟随应用主题';
@@ -8114,10 +8129,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get widgetArtworkSection => '要顯示的作品';
 
   @override
-  String get widgetArtworkNone => '尚未選擇作品';
+  String get widgetSectionArtwork => '啟動頁小工具';
 
   @override
-  String get widgetColorSection => '小工具顏色';
+  String get widgetSectionArtworkDesc => '顯示所選作品的一格畫面。點按即可開啟 NIARIM。';
+
+  @override
+  String get widgetSectionCreate => '創作作品小工具';
+
+  @override
+  String get widgetSectionCreateDesc => '點按即可開啟「創作作品」頁面。';
+
+  @override
+  String get widgetSectionPlaza => '作品廣場小工具';
+
+  @override
+  String get widgetSectionPlazaDesc => '點按即可開啟「作品廣場」。';
+
+  @override
+  String get widgetArtworkNone => '尚未選擇作品';
 
   @override
   String get widgetColorFollowTheme => '跟隨應用程式主題';

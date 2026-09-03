@@ -4169,17 +4169,47 @@ abstract class AppLocalizations {
   /// **'表示する作品'**
   String get widgetArtworkSection;
 
+  /// No description provided for @widgetSectionArtwork.
+  ///
+  /// In ja, this message translates to:
+  /// **'起動画面ウィジェット'**
+  String get widgetSectionArtwork;
+
+  /// No description provided for @widgetSectionArtworkDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ作品のフレーム1枚を表示します。タップするとNIARIMが起動します。'**
+  String get widgetSectionArtworkDesc;
+
+  /// No description provided for @widgetSectionCreate.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品をつくるウィジェット'**
+  String get widgetSectionCreate;
+
+  /// No description provided for @widgetSectionCreateDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップすると「作品をつくる」画面が開きます。'**
+  String get widgetSectionCreateDesc;
+
+  /// No description provided for @widgetSectionPlaza.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場ウィジェット'**
+  String get widgetSectionPlaza;
+
+  /// No description provided for @widgetSectionPlazaDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップすると「作品広場」が開きます。'**
+  String get widgetSectionPlazaDesc;
+
   /// No description provided for @widgetArtworkNone.
   ///
   /// In ja, this message translates to:
   /// **'作品を選んでいません'**
   String get widgetArtworkNone;
-
-  /// No description provided for @widgetColorSection.
-  ///
-  /// In ja, this message translates to:
-  /// **'ウィジェットの色'**
-  String get widgetColorSection;
 
   /// No description provided for @widgetColorFollowTheme.
   ///

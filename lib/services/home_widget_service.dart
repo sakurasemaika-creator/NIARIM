@@ -31,7 +31,8 @@ String homeWidgetRoute(HomeWidgetKind kind) => switch (kind) {
   HomeWidgetKind.plaza => '/community',
 };
 
-/// ホーム画面ウィジェットの設定（どの作品を出すか・背景色）を保持する。
+/// ホーム画面ウィジェットの設定（どの作品を出すか・種類ごとの背景色）を
+/// 保持する。
 ///
 /// ## なぜ動画ではなく静止画なのか
 ///
@@ -46,23 +47,28 @@ String homeWidgetRoute(HomeWidgetKind kind) => switch (kind) {
 ///
 /// ## 色について
 ///
-/// 背景色は任意のARGBを保存できる（`RemoteViews.setInt`は任意の色を
-/// 受け取れるため、プリセットに限定する必要がない）。既定は「アプリの
-/// テーマカラーに追従」で、[backgroundColor]がnullのときがその状態。
+/// 背景色は**ウィジェットの種類ごとに独立**して持つ。3種類を並べて置いた
+/// ときに色を変えて見分けたい、という使い方ができるようにするため。
+/// 任意のARGBを保存できる（`RemoteViews.setInt`は任意の色を受け取れるので
+/// プリセットに限定する必要がない）。既定は「アプリのテーマカラーに追従」で、
+/// その種類の色がnullのときがその状態。
 class HomeWidgetService extends ChangeNotifier {
   static const _prefsKey = 'home_widget_config_v1';
 
   String? _projectId;
-  int? _backgroundColor;
+
+  /// 種類ごとの背景色（ARGB）。値が無い種類は「テーマカラーに追従」。
+  final Map<HomeWidgetKind, int> _backgroundColors = {};
 
   /// 作品ウィジェットに表示するプロジェクトのID。未選択ならnull。
   String? get projectId => _projectId;
 
-  /// ウィジェットの背景色（ARGB）。nullなら「アプリのテーマカラーに追従」。
-  int? get backgroundColor => _backgroundColor;
+  /// [kind]の背景色（ARGB）。nullなら「アプリのテーマカラーに追従」。
+  int? backgroundColorOf(HomeWidgetKind kind) => _backgroundColors[kind];
 
-  /// テーマ追従かどうか。
-  bool get followsTheme => _backgroundColor == null;
+  /// [kind]がテーマ追従かどうか。
+  bool followsTheme(HomeWidgetKind kind) =>
+      !_backgroundColors.containsKey(kind);
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -71,11 +77,26 @@ class HomeWidgetService extends ChangeNotifier {
     try {
       final json = jsonDecode(raw) as Map<String, dynamic>;
       _projectId = json['projectId'] as String?;
-      _backgroundColor = json['backgroundColor'] as int?;
+      final colors = json['backgroundColors'];
+      if (colors is Map) {
+        for (final kind in HomeWidgetKind.values) {
+          final value = colors[kind.name];
+          if (value is int) _backgroundColors[kind] = value;
+        }
+      } else {
+        // 種類ごとの色を持つ前は3種類で1つの色を共有していた。
+        // 既に色を選んでいた人の設定が消えないよう、全種類へ引き継ぐ。
+        final legacy = json['backgroundColor'];
+        if (legacy is int) {
+          for (final kind in HomeWidgetKind.values) {
+            _backgroundColors[kind] = legacy;
+          }
+        }
+      }
     } catch (_) {
       // 壊れた設定で起動できなくなるほうが害が大きいので、既定値へ倒す。
       _projectId = null;
-      _backgroundColor = null;
+      _backgroundColors.clear();
     }
   }
 
@@ -85,9 +106,13 @@ class HomeWidgetService extends ChangeNotifier {
     await _persist();
   }
 
-  /// 背景色を指定する。nullを渡すと「アプリのテーマカラーに追従」へ戻す。
-  Future<void> setBackgroundColor(int? argb) async {
-    _backgroundColor = argb;
+  /// [kind]の背景色を指定する。nullを渡すと「テーマカラーに追従」へ戻す。
+  Future<void> setBackgroundColor(HomeWidgetKind kind, int? argb) async {
+    if (argb == null) {
+      _backgroundColors.remove(kind);
+    } else {
+      _backgroundColors[kind] = argb;
+    }
     notifyListeners();
     await _persist();
   }
@@ -98,21 +123,28 @@ class HomeWidgetService extends ChangeNotifier {
       _prefsKey,
       jsonEncode({
         'projectId': _projectId,
-        'backgroundColor': _backgroundColor,
+        'backgroundColors': {
+          for (final e in _backgroundColors.entries) e.key.name: e.value,
+        },
       }),
     );
   }
 
+  /// ネイティブ側が読む設定値のキー（Kotlin側と一致させること）。
+  static String backgroundColorKey(HomeWidgetKind kind) =>
+      'backgroundColor_${kind.name}';
+
   /// ネイティブ側へ渡す値をまとめる。
   ///
-  /// [themeColor]はアプリの現在のテーマカラー。テーマ追従のときはこれを
+  /// [themeColor]はアプリの現在のテーマカラー。テーマ追従の種類はこれを
   /// そのまま背景色として使う。
   Map<String, Object?> widgetPayload({
     required int themeColor,
     String? thumbnailPath,
     String? projectName,
   }) => {
-    'backgroundColor': _backgroundColor ?? themeColor,
+    for (final kind in HomeWidgetKind.values)
+      backgroundColorKey(kind): _backgroundColors[kind] ?? themeColor,
     'projectId': _projectId ?? '',
     'projectName': projectName ?? '',
     'thumbnailPath': thumbnailPath ?? '',

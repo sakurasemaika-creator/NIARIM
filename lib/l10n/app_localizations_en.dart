@@ -2323,10 +2323,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetArtworkSection => 'Work to display';
 
   @override
-  String get widgetArtworkNone => 'No work selected';
+  String get widgetSectionArtwork => 'Launch screen widget';
 
   @override
-  String get widgetColorSection => 'Widget colour';
+  String get widgetSectionArtworkDesc =>
+      'Shows one frame from the work you pick. Tapping it opens NIARIM.';
+
+  @override
+  String get widgetSectionCreate => 'New work widget';
+
+  @override
+  String get widgetSectionCreateDesc =>
+      'Tapping it opens the “New work” screen.';
+
+  @override
+  String get widgetSectionPlaza => 'Plaza widget';
+
+  @override
+  String get widgetSectionPlazaDesc => 'Tapping it opens the Plaza.';
+
+  @override
+  String get widgetArtworkNone => 'No work selected';
 
   @override
   String get widgetColorFollowTheme => 'Match the app theme';

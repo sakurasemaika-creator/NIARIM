@@ -26,12 +26,12 @@ import java.io.File
  * **`HomeWidgetPreferences`という専用のプリファレンス**へ、Dartで渡した
  * キーそのままで保存する（`flutter.`接頭辞は付かない）。
  */
-private const val PREFS_NAME = "HomeWidgetPreferences"
+internal const val PREFS_NAME = "HomeWidgetPreferences"
 
-private fun prefs(context: Context) =
+internal fun prefs(context: Context) =
     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-private fun prefString(context: Context, key: String, fallback: String = ""): String =
+internal fun prefString(context: Context, key: String, fallback: String = ""): String =
     prefs(context).getString(key, fallback) ?: fallback
 
 /**
@@ -43,7 +43,7 @@ private fun prefString(context: Context, key: String, fallback: String = ""): St
  * 常にClassCastExceptionになり、**背景色の設定が一度も反映されない**。
  * longとintの両方を見て、下位32bitをそのままARGBとして解釈する。
  */
-private fun prefColor(context: Context, key: String, fallback: Int): Int {
+internal fun prefColor(context: Context, key: String, fallback: Int): Int {
     val p = prefs(context)
     return try {
         if (!p.contains(key)) fallback else p.getLong(key, fallback.toLong()).toInt()
@@ -63,7 +63,7 @@ private fun prefColor(context: Context, key: String, fallback: Int): Int {
  * 決めて`SharedPreferences`へ書いたものをそのまま使う。ネイティブ側で
  * ルートを組み立てるとDartと二重管理になり、片方の変更に気付けないため。
  */
-private fun launchIntent(context: Context, route: String): PendingIntent {
+internal fun launchIntent(context: Context, route: String): PendingIntent {
     val intent = Intent(context, MainActivity::class.java).apply {
         action = Intent.ACTION_MAIN
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -83,7 +83,7 @@ private fun launchIntent(context: Context, route: String): PendingIntent {
 const val WIDGET_ROUTE_EXTRA = "niarim_widget_route"
 
 /** アプリのテーマ既定色（テーマ追従が読めなかった場合の保険）。 */
-private const val FALLBACK_BACKGROUND = 0xFFFF5C7A.toInt()
+internal const val FALLBACK_BACKGROUND = 0xFFFF5C7A.toInt()
 
 /** 好きな作品のフレーム1枚を出し、タップでその作品を開くウィジェット。 */
 class NiarimArtworkWidgetProvider : AppWidgetProvider() {
@@ -92,7 +92,8 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
     ) {
-        val background = prefColor(context, "backgroundColor", FALLBACK_BACKGROUND)
+        val background =
+            prefColor(context, "backgroundColor_artwork", FALLBACK_BACKGROUND)
         val route = prefString(context, "routeArtwork", "/")
         val name = prefString(context, "projectName")
         val thumbnail = prefString(context, "thumbnailPath")
@@ -114,8 +115,16 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
     }
 }
 
-/** ショートカット系ウィジェットの共通処理。 */
-private abstract class ShortcutWidgetProvider : AppWidgetProvider() {
+/**
+ * ショートカット系ウィジェットの共通処理。
+ *
+ * **privateにしないこと**。サブクラスはマニフェストの`<receiver>`から
+ * クラス名で参照されるため必ずpublicで、Kotlinは「publicなサブクラスが
+ * private/internalな親クラスを露出する」ことを禁じている
+ * （`'public' subclass exposes its 'private-in-file' supertype`）。
+ */
+abstract class ShortcutWidgetProvider : AppWidgetProvider() {
+    abstract val colorKey: String
     abstract val routeKey: String
     abstract val fallbackRoute: String
     abstract val labelResId: Int
@@ -126,7 +135,7 @@ private abstract class ShortcutWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
     ) {
-        val background = prefColor(context, "backgroundColor", FALLBACK_BACKGROUND)
+        val background = prefColor(context, colorKey, FALLBACK_BACKGROUND)
         val route = prefString(context, routeKey, fallbackRoute)
         for (id in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_shortcut)
@@ -141,6 +150,7 @@ private abstract class ShortcutWidgetProvider : AppWidgetProvider() {
 
 /** ワンタップで「作品をつくる」へ。 */
 class NiarimCreateWidgetProvider : ShortcutWidgetProvider() {
+    override val colorKey = "backgroundColor_create"
     override val routeKey = "routeCreate"
     override val fallbackRoute = "/new-project"
     override val labelResId = R.string.widget_create_label
@@ -149,6 +159,7 @@ class NiarimCreateWidgetProvider : ShortcutWidgetProvider() {
 
 /** ワンタップで「作品広場」へ。 */
 class NiarimPlazaWidgetProvider : ShortcutWidgetProvider() {
+    override val colorKey = "backgroundColor_plaza"
     override val routeKey = "routePlaza"
     override val fallbackRoute = "/community"
     override val labelResId = R.string.widget_plaza_label
