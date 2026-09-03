@@ -37,11 +37,11 @@
    `avoid_print` 12件（`functional_audit_batch20_test.dart`の
    失敗時デバッグ出力）で、**全てtest/配下。lib/配下のissueは0件**。
    増減が無いことを確認する）
-3. `flutter test`（ベースライン：**484 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**488 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
-   `7ea30be`）、整形済みの状態が正。手で字下げを合わせようとしないこと。
+   `0319d57`）、整形済みの状態が正。手で字下げを合わせようとしないこと。
    なお整形すると`curly_braces_in_flow_control_structures`が出ることが
    ある（このlintは「if文が1行に収まっていれば波括弧を省略してよい」
    という例外を持ち、tall styleが長い1行ifを2行へ折ると例外から外れる）。
