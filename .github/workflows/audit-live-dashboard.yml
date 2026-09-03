@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
+      - 'Audit Continuous Queue'
       - 'One-shot Strict Visual Evidence Audit'
       - 'One-shot Screenshot-first Visual Reaudit'
       - 'One-shot Resume Real Operation Audit'
