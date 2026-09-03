@@ -32,6 +32,17 @@ class CanvasIconButton extends StatelessWidget {
   final bool selected;
   final double iconSize;
 
+  /// 長押しでツールチップを出すかどうか。
+  ///
+  /// Materialの[Tooltip]は既定でタッチの長押しに反応する。このボタンを
+  /// `GestureDetector(onLongPress: ...)`で包んで独自の長押しメニューを
+  /// 付けている場合、**ジェスチャーアリーナで内側のTooltipが勝ってしまい、
+  /// 外側の長押しが一度も発火しない**（ツールチップだけが出る）。
+  /// そういう箇所ではfalseにして、長押しを外側へ譲る。
+  /// falseでもマウスホバーでのツールチップ表示は従来どおり効くため、
+  /// PC/DeXでのラベル確認手段は失われない。
+  final bool longPressTooltip;
+
   const CanvasIconButton({
     super.key,
     this.icon,
@@ -40,6 +51,7 @@ class CanvasIconButton extends StatelessWidget {
     required this.tooltip,
     this.selected = false,
     this.iconSize = 20,
+    this.longPressTooltip = true,
   }) : assert(icon != null || iconBuilder != null, 'iconかiconBuilderのどちらかを指定してください');
 
   /// 縁取りを作るための8方向のずらし量（上下左右＋斜め、1px）。
@@ -91,6 +103,9 @@ class CanvasIconButton extends StatelessWidget {
     final iconColor = selected ? scheme.primary : scheme.onSurface;
     return Tooltip(
       message: tooltip,
+      triggerMode: longPressTooltip
+          ? TooltipTriggerMode.longPress
+          : TooltipTriggerMode.manual,
       child: InkResponse(
         onTap: onPressed,
         radius: 22,

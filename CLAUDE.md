@@ -253,6 +253,34 @@
   `SizedBox`にCanvasAreaを載せた場合に踏む。テストではキャンバスを
   十分広く（例：エクスポート幅の3倍）取るか、`PointerDeviceKind.mouse`を
   使ってこの分岐を回避する。
+- **`Tooltip`で包んだボタンに外側から`onLongPress`を足しても発火しない**：
+  Materialの`Tooltip`は既定でタッチの長押しに反応する
+  （`TooltipTriggerMode.longPress`）。`Tooltip`を含むボタンを
+  `GestureDetector(onLongPress: ...)`で包むと、ジェスチャーアリーナで
+  **内側のTooltipが勝つ**ため、外側の長押しは一度も呼ばれずツールチップ
+  だけが出る。実際にこれで、キャンバスのツールバーの**長押しメニュー5つが
+  全て無反応**になっていた（ペンのサブツール・バケツのベタ/トーン・
+  指ツール・クイックツールパネル・選択ツールのメニュー）。
+  `CanvasIconButton`に`longPressTooltip`を追加し、外側で長押しを扱う
+  ボタンでは`TooltipTriggerMode.manual`にして長押しを譲っている。
+  新しく長押しメニューを足すときは必ず`longPressTooltip: false`を付ける
+  こと（falseでもマウスホバーのツールチップは出るのでPC/DeXでは困らない）。
+  なお、この不具合はウィジェットテストでも再現する
+  （`test/canvas_panel_screenshot_audit_test.dart`が実例）。
+- **狭い画面のテストではツールバー・シートを必ずスクロールしてからタップ
+  する**：キャンバスのツールバーは横スクロール、設定シートは縦スクロール
+  なので、論理320px幅の端末ではボタンが表示領域の外に出る。座標が外だと
+  タップはヒットテストに当たらず、例外も出ないまま「押したのに何も
+  起きない」形の失敗になる。`tester.ensureVisible()`を挟むこと。
+  併せて、キャンバスのオーバーレイパネルは画面左側へ縦いっぱいに開いて
+  **ツールバーを覆う**ため、次のツールバー操作の前に閉じる必要がある。
+- **`FirstUseTooltip`の吹き出しは画面全体の透明バリアを敷く**：吹き出しが
+  出ている間はどこをタップしても閉じられるよう`Positioned.fill`の
+  `GestureDetector`をOverlayへ置いている。そのため、吹き出しが出た直後の
+  操作はバリアに吸われて何も起きない。ツールバーを操作するテストでは
+  `SharedPreferences.setMockInitialValues({'first_use_tooltips_seen': [...]})`
+  で全キーを表示済みにしておくこと（キーは`grep -rho "tooltipKey: '[^']*'" lib/`
+  で洗い出せる）。
 - **`ListView(children: [...])`は「遅延している」ように見えて半分しか遅延
   していない**：`SliverChildListDelegate`はElementの生成（＝実際の
   レイアウト・描画・`Image`のデコード）は画面内ぶんだけに絞るが、

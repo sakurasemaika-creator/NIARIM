@@ -75,6 +75,7 @@ class ToolbarWidget extends StatelessWidget {
             Icons.brush,
             DrawingTool.pen,
             l10n.toolbarPenTooltip,
+            longPressTooltip: false,
           ),
         ),
       ),
@@ -104,6 +105,7 @@ class ToolbarWidget extends StatelessWidget {
             Icons.format_color_fill,
             DrawingTool.bucket,
             l10n.toolbarBucketTooltip,
+            longPressTooltip: false,
           ),
         ),
       ),
@@ -123,6 +125,7 @@ class ToolbarWidget extends StatelessWidget {
           Icons.pan_tool_alt,
           DrawingTool.finger,
           l10n.toolbarItemFinger,
+          longPressTooltip: false,
           isSelected:
               currentTool == DrawingTool.finger ||
               currentTool == DrawingTool.blur ||
@@ -235,6 +238,7 @@ class ToolbarWidget extends StatelessWidget {
             Icons.loop,
             onPressed: onQuickToolTap,
             tooltip: l10n.toolbarQuickToolTooltip,
+            longPressTooltip: false,
           ),
         ),
       ),
@@ -280,6 +284,9 @@ class ToolbarWidget extends StatelessWidget {
     String tooltip, {
     VoidCallback? onTap,
     bool? isSelected,
+    // 外側で独自の長押しメニューを持つボタンはfalseにする
+    // （Tooltipの長押しに取られて外側のonLongPressが発火しなくなるため）。
+    bool longPressTooltip = true,
   }) {
     final selected = isSelected ?? (currentTool == tool);
     return GestureDetector(
@@ -290,6 +297,7 @@ class ToolbarWidget extends StatelessWidget {
         onPressed: onTap ?? () => onToolSelected(tool),
         tooltip: tooltip,
         selected: selected,
+        longPressTooltip: longPressTooltip,
       ),
     );
   }
@@ -311,12 +319,14 @@ class ToolbarWidget extends StatelessWidget {
     required VoidCallback? onPressed,
     required String tooltip,
     bool selected = false,
+    bool longPressTooltip = true,
   }) {
     return CanvasIconButton(
       icon: icon,
       onPressed: onPressed,
       tooltip: tooltip,
       selected: selected,
+      longPressTooltip: longPressTooltip,
     );
   }
 
@@ -345,6 +355,7 @@ class ToolbarWidget extends StatelessWidget {
         onPressed: () => onToolSelected(DrawingTool.selectRect),
         tooltip: l10n.toolbarSelectTooltip,
         selected: isSelected,
+        longPressTooltip: false,
       ),
     );
   }
