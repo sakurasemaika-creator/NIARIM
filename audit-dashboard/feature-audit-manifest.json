@@ -486,14 +486,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "全25トーンが各パターン固有の見た目を示すことをstrict-v2で再確認"
+      "recheck_reason": "全25トーンが各パターン固有の見た目を示すことをstrict-v2で再確認",
+      "evidence_note": "Audit Continuous Queue #24 real-operation artifact visually reviewed; all built-in variants are rendered with distinct intended appearances."
     },
     {
       "id": "stamp.all",
@@ -502,14 +503,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "全7スタンプが各プリセット固有形状として実描画されることをstrict-v2で再確認"
+      "recheck_reason": "全7スタンプが各プリセット固有形状として実描画されることをstrict-v2で再確認",
+      "evidence_note": "Audit Continuous Queue #24 real-operation artifact visually reviewed; all built-in variants are rendered with distinct intended appearances."
     },
     {
       "id": "filter.all",
