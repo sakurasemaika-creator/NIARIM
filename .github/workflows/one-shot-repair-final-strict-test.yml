@@ -5,6 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/one-shot-repair-final-strict-test.yml'
+      - '.github/scripts/fix_final_remaining_test.py'
 
 permissions:
   contents: write
