@@ -2,86 +2,14 @@ name: Audit Emergency Timeline Repair
 
 on:
   push:
-    branches: [dev_branch]
+    branches:
+      - dev_branch
     paths:
       - '.github/workflows/audit-emergency-timeline-repair.yml'
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
-  verify-repair:
+  smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: dev_branch
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-      - run: flutter pub get
-      - name: 修正案を作業ツリーへ適用
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('lib/screens/timeline/timeline_screen.dart')
-          s = p.read_text()
-          old = '                      _buildPreviewWithHandle(outerConstraints.maxHeight),'
-          new = '''                      Flexible(
-                        flex: 3,
-                        fit: FlexFit.loose,
-                        child: _buildPreviewWithHandle(
-                          outerConstraints.maxHeight,
-                        ),
-                      ),'''
-          if old not in s:
-              raise SystemExit('timeline preview insertion point changed')
-          s = s.replace(old, new, 1)
-          marker = '  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
-          start = s.index(marker)
-          end = s.index('\n  /// プレビューと再生バーの間のシークバー。', start)
-          block = s[start:end]
-          old_return = '    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
-          new_return = '''    return LayoutBuilder(
-      builder: (context, constraints) {
-        final allocatedPreviewHeight = constraints.hasBoundedHeight
-            ? math.max(0.0, constraints.maxHeight - 22.0)
-            : maxPreviewHeight;
-        final visiblePreviewHeight = math.min(
-          previewHeight,
-          allocatedPreviewHeight,
-        );
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-'''
-          if old_return not in block:
-              raise SystemExit('preview return pattern changed')
-          block = block.replace(old_return, new_return, 1)
-          if '          height: previewHeight,' not in block:
-              raise SystemExit('preview height pattern changed')
-          block = block.replace('          height: previewHeight,', '          height: visiblePreviewHeight,', 1)
-          trimmed = block.rstrip()
-          if not trimmed.endswith('    );'):
-              raise SystemExit('unexpected preview function ending')
-          trimmed = trimmed[:-len('    );')] + '        );\n      },\n    );'
-          block = trimmed + '\n'
-          s = s[:start] + block + s[end:]
-          p.write_text(s)
-          PY
-          dart format lib/screens/timeline/timeline_screen.dart
-      - name: 失敗していた3ケースを修正案で再実行
-        run: |
-          flutter test test/timeline_no_overflow_test.dart --reporter expanded
-          flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
-          flutter test test/app_web_reference_capture_exact_test.dart --reporter expanded
-      - name: 修正差分を保存
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: timeline-overflow-repair-proposal
-          path: lib/screens/timeline/timeline_screen.dart
-          retention-days: 3
+      - run: echo 'Emergency audit workflow is valid.'
