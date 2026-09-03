@@ -1,0 +1,181 @@
+name: Audit Live Dashboard
+
+on:
+  push:
+    branches: [dev_branch]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: audit-live-dashboard-dev
+  cancel-in-progress: true
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - name: Update dashboard every minute
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: |
+          python3 - <<'PY'
+          import json, os, time, urllib.request, urllib.error
+          from datetime import datetime, timezone
+
+          token = os.environ['GH_TOKEN']
+          repo = os.environ['REPO']
+          issue = os.environ['ISSUE_NUMBER']
+          branch = os.environ['BRANCH']
+          api = 'https://api.github.com'
+
+          tracked = [
+              ('全体回帰', ['one-shot-close-blockers-and-full-suite.yml', 'one-shot-exhaustive-real-operation-audit.yml']),
+              ('実操作 batch27-38', ['one-shot-resume-real-operation-audit.yml', 'one-shot-gap-audit.yml']),
+              ('Canvasパネル実操作＋スクショ', ['one-shot-canvas-panel-screenshot-audit.yml']),
+              ('Canvas初期合成', ['one-shot-canvas-initial-composite-audit.yml']),
+              ('全ルートスクショ', ['one-shot-all-routes-screenshot-audit.yml']),
+              ('Functional Visual', ['functional-visual.yml']),
+              ('Screenshot-first Visual', ['one-shot-screenshot-first-visual-reaudit.yml']),
+              ('Visual Delta', ['one-shot-visual-delta-audit.yml']),
+              ('Coverage census', ['one-shot-current-coverage-census.yml']),
+              ('Service直接監査', ['one-shot-direct-service-coverage.yml']),
+              ('Engine直接監査', ['one-shot-direct-engine-coverage.yml']),
+              ('定規最終監査', ['one-shot-ruler-post-stabilization-fix-v5.yml', 'one-shot-ruler-post-stabilization-fix-v4.yml', 'one-shot-ruler-post-stabilization-fix-v3.yml']),
+          ]
+
+          def request(path, method='GET', data=None):
+              body = None if data is None else json.dumps(data).encode()
+              req = urllib.request.Request(api + path, data=body, method=method)
+              req.add_header('Authorization', f'Bearer {token}')
+              req.add_header('Accept', 'application/vnd.github+json')
+              req.add_header('X-GitHub-Api-Version', '2022-11-28')
+              if body is not None:
+                  req.add_header('Content-Type', 'application/json')
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+
+          def esc(s):
+              return str(s).replace('|', '\\|').replace('\n', ' ')
+
+          def state_icon(run):
+              if not run:
+                  return '⚪ 未実行'
+              st = run.get('status')
+              co = run.get('conclusion')
+              if st in ('queued', 'in_progress', 'waiting', 'requested', 'pending'):
+                  return '🟡 実行中'
+              if co == 'success':
+                  return '🟢 PASS'
+              if co in ('failure', 'timed_out', 'cancelled', 'action_required', 'startup_failure'):
+                  return '🔴 要対応'
+              if co == 'skipped':
+                  return '⚪ SKIP'
+              return f'⚪ {co or st or "不明"}'
+
+          def update_once():
+              runs_obj = request(f'/repos/{repo}/actions/runs?branch={branch}&per_page=100')
+              runs = runs_obj.get('workflow_runs', [])
+              # 自分自身は監査進捗から除外
+              audit_runs = [r for r in runs if r.get('path') != '.github/workflows/audit-live-dashboard.yml']
+
+              head = request(f'/repos/{repo}/branches/{branch}')['commit']['sha']
+              head_short = head[:10]
+              by_category = []
+              success = running = failed = missing = 0
+              for label, paths in tracked:
+                  candidates = [r for r in audit_runs if any((r.get('path') or '').endswith(p) for p in paths)]
+                  latest = candidates[0] if candidates else None
+                  icon = state_icon(latest)
+                  if icon.startswith('🟢'): success += 1
+                  elif icon.startswith('🟡'): running += 1
+                  elif icon.startswith('🔴'): failed += 1
+                  else: missing += 1
+                  by_category.append((label, latest, icon))
+
+              total = len(tracked)
+              pct = round(success * 100 / total) if total else 0
+              blocks = 20
+              filled = round(pct * blocks / 100)
+              bar = '█' * filled + '░' * (blocks - filled)
+
+              active = [r for r in audit_runs if r.get('status') in ('queued','in_progress','waiting','requested','pending')]
+              latest_runs = audit_runs[:12]
+              now = datetime.now(timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
+
+              lines = []
+              lines.append('# NIARIM Audit Live Dashboard')
+              lines.append('')
+              lines.append(f'> **自動更新:** 約1分ごと  ·  **最終更新:** `{now}`')
+              lines.append('')
+              lines.append(f'**Branch:** `{branch}`  ·  **HEAD:** [`{head_short}`](https://github.com/{repo}/commit/{head})')
+              lines.append('')
+              lines.append('## 主要監査カテゴリ進捗')
+              lines.append('')
+              lines.append(f'`{bar}` **{pct}%**  —  🟢 {success} / 🟡 {running} / 🔴 {failed} / ⚪ {missing}')
+              lines.append('')
+              lines.append('> この%は「主要監査パイプラインの最新成功率」です。アプリ全機能の網羅率そのものではありません。最終完了条件は、未検証機能ゼロ＋必要なスクショ目視＋最新HEADで全体回帰PASSです。')
+              lines.append('')
+              lines.append('| 監査カテゴリ | 状態 | 最新Run | 更新 |')
+              lines.append('|---|---|---|---|')
+              for label, r, icon in by_category:
+                  if r:
+                      url = r.get('html_url', '')
+                      title = esc(r.get('display_title') or r.get('name') or 'run')
+                      upd = esc(r.get('updated_at') or r.get('created_at') or '')
+                      run_link = f'[{title}]({url})'
+                  else:
+                      run_link = '—'
+                      upd = '—'
+                  lines.append(f'| {label} | {icon} | {run_link} | `{upd}` |')
+
+              lines.append('')
+              lines.append('## 現在動いている監査')
+              lines.append('')
+              if active:
+                  for r in active:
+                      lines.append(f'- 🟡 [{esc(r.get("name") or r.get("display_title") or "run")}]({r.get("html_url")}) — `{esc(r.get("status"))}`')
+              else:
+                  lines.append('- 現在 `in_progress / queued` の監査Actionはありません。')
+
+              lines.append('')
+              lines.append('## 直近のActions')
+              lines.append('')
+              lines.append('| 状態 | Workflow | Run | Commit |')
+              lines.append('|---|---|---|---|')
+              for r in latest_runs:
+                  icon = state_icon(r)
+                  name = esc(r.get('name') or '')
+                  title = esc(r.get('display_title') or '')
+                  url = r.get('html_url') or ''
+                  sha = (r.get('head_sha') or '')[:8]
+                  lines.append(f'| {icon} | `{name}` | [{title}]({url}) | `{sha}` |')
+
+              lines.append('')
+              lines.append('## リンク')
+              lines.append('')
+              lines.append(f'- [GitHub Actions](https://github.com/{repo}/actions?query=branch%3A{branch})')
+              lines.append(f'- [dev_branch](https://github.com/{repo}/tree/{branch})')
+              lines.append('')
+              lines.append('---')
+              lines.append('_このIssueは `.github/workflows/audit-live-dashboard.yml` が自動更新しています。監視Workflow自身は監査進捗の集計から除外しています。_')
+
+              request(f'/repos/{repo}/issues/{issue}', method='PATCH', data={'body': '\n'.join(lines)})
+              print(f'[{now}] dashboard updated: success={success}, running={running}, failed={failed}, missing={missing}, active={len(active)}', flush=True)
+
+          # 最初に即時更新し、その後約1分ごと。最大約5時間半。
+          for i in range(325):
+              try:
+                  update_once()
+              except Exception as e:
+                  print(f'dashboard update failed: {type(e).__name__}: {e}', flush=True)
+              if i < 324:
+                  time.sleep(60)
+          PY
