@@ -46,10 +46,11 @@ if old in s:
         '          height: visiblePreviewHeight,',
         1,
     )
+    suffix = '    );\n  }'
     trimmed = block.rstrip()
-    if not trimmed.endswith('    );'):
+    if not trimmed.endswith(suffix):
         raise SystemExit('unexpected preview function ending')
-    trimmed = trimmed[:-len('    );')] + '        );\n      },\n    );'
+    trimmed = trimmed[:-len(suffix)] + '        );\n      },\n    );\n  }'
     s = s[:start] + trimmed + '\n' + s[end:]
     p.write_text(s)
     print('applied timeline overflow repair')
