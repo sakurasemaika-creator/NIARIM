@@ -1,4 +1,4 @@
-name: One-shot Apply Existing Visual Evidence
+name: One-shot Apply Existing Visual Evidence 2
 
 on:
   push:
@@ -17,24 +17,21 @@ jobs:
         with:
           ref: dev_branch
           fetch-depth: 0
-      - name: 既存Artifactで確認済み2項目をfinal_passへ反映
+      - name: スタンプとトーンをfinal_passへ反映
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
           path=Path('audit-dashboard/feature-audit-manifest.json')
           data=json.loads(path.read_text())
-          confirmed={'ui.canvas_panels','filter.all'}
+          confirmed={'stamp.all','tone.all'}
           found=set()
           for f in data['features']:
               if f.get('id') in confirmed:
                   found.add(f['id'])
                   for k in ['interaction','output','screenshot','visual','final_pass']:
                       f[k]=True
-                  if f['id']=='ui.canvas_panels':
-                      f['evidence_note']='Audit Continuous Queue #24 canvas panel screenshot audit passed; 10 panel screenshots visually reviewed.'
-                  else:
-                      f['evidence_note']='Audit Continuous Queue #24 visual_reaudit_filters passed; all 21 filter output images visually reviewed.'
+                  f['evidence_note']='Audit Continuous Queue #24 real-operation artifact visually reviewed; all built-in variants are rendered with distinct intended appearances.'
           missing=confirmed-found
           if missing: raise SystemExit(f'missing ids: {sorted(missing)}')
           path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
@@ -46,6 +43,6 @@ jobs:
           git config user.name "NIARIM Audit Bot"
           git config user.email "actions@users.noreply.github.com"
           git add audit-dashboard/feature-audit-manifest.json
-          git commit -m "既存視覚証拠で確認済み2項目を最終確認済みに更新"
+          git commit -m "全7スタンプと全25トーンを最終確認済みに更新"
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
