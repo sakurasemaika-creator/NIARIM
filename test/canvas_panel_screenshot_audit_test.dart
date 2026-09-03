@@ -24,8 +24,37 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final out = Directory('build/visual-reaudit/canvas-panels');
-  setUpAll(() => out.createSync(recursive: true));
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  final appDocs = Directory('${Directory.systemTemp.path}/niarim_canvas_panel_audit_docs');
+  const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+
+  setUpAll(() {
+    out.createSync(recursive: true);
+    appDocs.createSync(recursive: true);
+  });
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      pathProviderChannel,
+      (call) async {
+        switch (call.method) {
+          case 'getApplicationDocumentsDirectory':
+          case 'getApplicationSupportDirectory':
+          case 'getTemporaryDirectory':
+            return appDocs.path;
+          default:
+            return appDocs.path;
+        }
+      },
+    );
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      pathProviderChannel,
+      null,
+    );
+  });
 
   testWidgets('実CanvasScreenの主要オーバーレイパネルを実操作で開いてPNG保存する', (tester) async {
     tester.view.physicalSize = const Size(960, 2160);
