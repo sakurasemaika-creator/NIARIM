@@ -28,6 +28,8 @@ jobs:
 
       - run: flutter pub get
 
+      # 320 logical px級の高さでも、プレビューと下部タイムラインが互いの
+      # 領域を押し出さないFlex構造へ実装側を修正する。
       - name: タイムラインのプレビューを利用可能な縦幅内へ制約
         shell: bash
         run: |
@@ -81,7 +83,6 @@ jobs:
               '          height: visiblePreviewHeight,',
               1,
           )
-          # 元の return Column の閉じ括弧の直後に LayoutBuilder builder を閉じる。
           if not block.rstrip().endswith('    );'):
               raise SystemExit('unexpected preview function ending')
           trimmed = block.rstrip()
