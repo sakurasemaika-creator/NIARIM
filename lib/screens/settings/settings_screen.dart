@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsBasicSubtitle,
         keywords: 'fps 背景色 言語 描画領域初期値',
         onTap: _showBasicSettings,
-        accent: const Color(0xFFFF5C7A),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         // 容量・重さに影響する設定（Undo回数・ゴミ箱自動削除等）は全て
@@ -62,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         keywords:
             '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除 performance quality cache',
         onTap: () => context.push('/settings/performance'),
-        accent: const Color(0xFF3DDC97),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.touch_app,
@@ -70,7 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsGestureSubtitle,
         keywords: 'タップ スワイプ 長押し ペンボタン gesture tap swipe',
         onTap: () => context.push('/settings/gestures'),
-        accent: const Color(0xFFFFB020),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.keyboard,
@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsShortcutSubtitle,
         keywords: 'ショートカット キーボード 左手デバイス キー割り当て shortcut keyboard key',
         onTap: () => context.push('/settings/shortcuts'),
-        accent: const Color(0xFF3AA6FF),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.edit,
@@ -86,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsPenSubtitle,
         keywords: '筆圧 傾き ペンボタン 筆圧カーブ pen pressure tilt',
         onTap: () => context.push('/settings/pen'),
-        accent: const Color(0xFFB15CFF),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.desktop_windows,
@@ -94,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsWorkspaceSubtitle,
         keywords: 'ツールバー パネル配置 右利き 左利き dex デックス workspace toolbar panel',
         onTap: () => context.push('/settings/workspace'),
-        accent: const Color(0xFF3AA6FF),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.format_color_fill,
@@ -102,7 +102,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsBucketSubtitle,
         keywords: 'バケツ 塗り つぶし 許容誤差 拡張 隙間 線の下 bucket fill tolerance expand',
         onTap: () => context.push('/settings/bucket'),
-        accent: const Color(0xFFFFB020),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.palette,
@@ -110,18 +110,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsThemeSubtitle,
         keywords: 'テーマ 配色 ベースカラー アクセントカラー theme color',
         onTap: () => context.push('/settings/theme'),
-        accent: const Color(0xFFFF5C7A),
+        accent: Theme.of(context).colorScheme.primary,
       ),
-      // 無料会員のみ🔒マーク付きで表示
+      // 無料会員はMaterialのlockアイコンで表示
       (
-        icon: Icons.water,
-        title: isPremium
-            ? l10n.settingsWatermarkTitle
-            : '${l10n.settingsWatermarkTitle} 🔒',
+        icon: isPremium ? Icons.water : Icons.lock_outline,
+        title: l10n.settingsWatermarkTitle,
         subtitle: l10n.settingsWatermarkSubtitle,
         keywords: 'ウォーターマーク premium プレミアム watermark',
         onTap: _showWatermarkSetting,
-        accent: const Color(0xFFB15CFF),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.import_export,
@@ -129,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsTransferSubtitle,
         keywords: '引き継ぎ エクスポート インポート 他端末 niatra transfer export import',
         onTap: () => context.push('/settings/transfer'),
-        accent: const Color(0xFF3DDC97),
+        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.font_download_outlined,
@@ -137,7 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsFontSubtitle,
         keywords: 'フォント ttf otf font',
         onTap: () => context.push('/settings/fonts'),
-        accent: const Color(0xFFFFB020),
+        accent: Theme.of(context).colorScheme.primary,
       ),
     ];
     final filtered = _query.isEmpty
@@ -252,7 +250,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
         elevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.15),
+        shadowColor: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.15),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
