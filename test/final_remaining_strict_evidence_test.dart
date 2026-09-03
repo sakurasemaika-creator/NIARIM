@@ -165,7 +165,7 @@ void main() {
       final grid = MeshWarpEngine.regularGrid(
         1,
         1,
-        const ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+        ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
       );
       final moved = List<ui.Offset>.from(grid);
       moved[1] = moved[1] + ui.Offset(-shift.toDouble(), shift.toDouble());
