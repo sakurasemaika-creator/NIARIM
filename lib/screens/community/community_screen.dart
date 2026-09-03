@@ -194,7 +194,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   void _openAuthorWorks(CommunityWork work) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      adMockMaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
           authorId: work.authorId,
           authorName: work.authorName,
@@ -225,7 +225,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final target = shorts.isNotEmpty ? shorts : base;
     final communityService = context.read<CommunityService>();
     Navigator.of(context).push(
-      MaterialPageRoute(
+      adMockMaterialPageRoute(
         builder: (_) => CommunityShortsScreen(
           works: target,
           bookmarkedIds: communityService.bookmarkedIds,
@@ -350,7 +350,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
               tooltip: l10n.communityFollowNotificationsTooltip,
               onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
+                adMockMaterialPageRoute<void>(
                   builder: (_) => const CommunityFollowNotificationsScreen(),
                 ),
               ),
@@ -388,31 +388,15 @@ class _CommunityScreenState extends State<CommunityScreen>
           ],
         ),
       ),
-      // 【試験配置】「投稿する」ボタンの左に広告バナーのモックを置く。
-      // 実際のAdMobバナー（AdSize.banner）は320×50dpの固定サイズで縮まない
-      // ため、一般的なスマホ幅（360dp前後）ではFABと並べると画面外へ
-      // はみ出す。ここではその見え方を実機で確認できるよう、画面幅に
-      // 対して余裕がある場合（FAB・余白を除いて320dp以上取れる場合）
-      // のみ表示する。
-      floatingActionButton: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (MediaQuery.sizeOf(context).width >= 560) ...[
-            const AdBannerMockWidget(),
-            // 指1本分（48dp）の余白を空け、FABの誤タップを避ける。
-            const SizedBox(width: 48),
-          ],
-          FloatingActionButton.extended(
-            onPressed: _handlePostTap,
-            icon: const Icon(Icons.video_call_outlined),
-            label: Text(l10n.communityPostButton),
-            // テーマ側のFAB共通形状（CircleBorder、丸型FAB用）を上書きする。
-            // 円形のままだとアイコン+ラベルの横幅を確保できず、ラベル文字が
-            // 円の外へはみ出す／切れてしまうため、拡張FAB本来の横長カプセル
-            // 形状（StadiumBorder）へ戻す。
-            shape: const StadiumBorder(),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _handlePostTap,
+        icon: const Icon(Icons.video_call_outlined),
+        label: Text(l10n.communityPostButton),
+        // テーマ側のFAB共通形状（CircleBorder、丸型FAB用）を上書きする。
+        // 円形のままだとアイコン+ラベルの横幅を確保できず、ラベル文字が
+        // 円の外へはみ出す／切れてしまうため、拡張FAB本来の横長カプセル
+        // 形状（StadiumBorder）へ戻す。
+        shape: const StadiumBorder(),
       ),
       body: desktopCentered(
         context,

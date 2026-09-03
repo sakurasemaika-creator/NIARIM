@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../services/advertising_service.dart';
 import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
 import '../../services/brush_service.dart';
@@ -12,8 +11,6 @@ import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
-import '../../widgets/ad_banner_mock_widget.dart';
-import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
@@ -678,7 +675,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final adService = context.watch<AdvertisingService>();
     final project = context
         .watch<ProjectService>()
         .projects
@@ -715,8 +711,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
               children: [
                 Column(
                   children: [
-                    if (adService.shouldShowAds)
-                      const AdBannerWidget(position: AdPosition.top),
                     _buildTopBar(),
                     Expanded(
                       child: Row(
@@ -1736,20 +1730,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ),
               ),
             ),
-          const Spacer(),
-          // 【試験配置】広告バナーのモック（実際のAdMob広告ではなく、
-          // 実サイズ320×50dpの見た目だけを模したプレースホルダー）。
-          // 左右のUndo/Redo・設定/ホームボタンとは指1本分（48dp）以上
-          // 離し、誤タップを避ける。画面幅が足りない端末では
-          // FittedBoxで縮小し、RenderFlexオーバーフローにしない。
-          const SizedBox(width: 48),
-          const Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: AdBannerMockWidget(),
-            ),
-          ),
-          const SizedBox(width: 48),
           const Spacer(),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。

@@ -10,7 +10,6 @@ import '../../engine/export_engine.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
-import '../../services/advertising_service.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/font_service.dart';
@@ -22,7 +21,7 @@ import '../../services/shortcut_service.dart';
 import '../../services/work_folder_service.dart';
 import '../community/widgets/community_work_card.dart';
 import '../../models/shortcut_binding.dart';
-import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import 'widgets/project_list_widget.dart';
@@ -245,7 +244,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final adService = context.watch<AdvertisingService>();
     final l10n = AppLocalizations.of(context)!;
 
     // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
@@ -514,7 +512,6 @@ class _HomeScreenState extends State<HomeScreen>
                   ],
                 ),
               ),
-              if (adService.shouldShowAds) const AdBannerWidget(),
             ],
           ),
           // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
@@ -1112,7 +1109,7 @@ class _SharedTab extends StatelessWidget {
       folderIdOf: (p) => p.sharedFolderId,
       onEnterFolder: (folderId, folderName, itemsInFolder) =>
           Navigator.of(context).push(
-            MaterialPageRoute(
+            adMockMaterialPageRoute(
               builder: (_) => _SharedFolderScreen(
                 folderId: folderId,
                 folderName: folderName,
@@ -1671,7 +1668,7 @@ class _WorksTabState extends State<_WorksTab> {
                 workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
             onEnterFolder: (folderId, folderName, itemsInFolder) =>
                 Navigator.of(context).push(
-                  MaterialPageRoute(
+                  adMockMaterialPageRoute(
                     builder: (_) => _WorksFolderScreen(
                       folderId: folderId,
                       folderName: folderName,

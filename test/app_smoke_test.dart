@@ -156,6 +156,11 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: '起動画面の描画で例外');
+    expect(
+      find.byKey(const Key('persistent-horizontal-ad-mock')),
+      findsWidgets,
+      reason: '起動画面の最上部に横長広告モックが必要',
+    );
 
     final createButtonFinder = find.byIcon(Icons.brush_outlined);
     expect(createButtonFinder, findsOneWidget);
@@ -164,6 +169,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
     expect(find.byType(Scaffold), findsWidgets);
+    expect(
+      find.byKey(const Key('persistent-horizontal-ad-mock')),
+      findsWidgets,
+      reason: 'ホーム画面の最上部に横長広告モックが必要',
+    );
 
     final firstLaunchDialogButton = find.text('はじめる');
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
@@ -510,6 +520,11 @@ void main() {
       await tester.pump(settleDelay);
       expect(tester.takeException(), isNull, reason: '$route への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
+      expect(
+        find.byKey(const Key('persistent-horizontal-ad-mock')),
+        findsWidgets,
+        reason: '$route の最上部に横長広告モックが必要',
+      );
 
       await probeAllControls(tester);
 

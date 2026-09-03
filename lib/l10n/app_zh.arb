@@ -2064,6 +2064,7 @@
   "frameStripTimelineModeLabel": "时间轴",
   "progressDialogAdLoading": "广告加载中…",
   "adMockPlaceholderLabel": "广告横幅（用于位置试验的模型）",
+  "adSquareMockPlaceholderLabel": "方形广告（用于位置试验的模型）",
   "progressDialogTipLabel": "提示",
   "premiumBannerRegisterButton": "升级Premium",
   "licenseTermsArt1Title": "第1条（适用）",

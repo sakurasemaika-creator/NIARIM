@@ -5,6 +5,7 @@ import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
@@ -69,7 +70,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final shorts = works.where((w) => w.isShort).toList();
     final target = shorts.isNotEmpty ? shorts : works;
     Navigator.of(context).push(
-      MaterialPageRoute(
+      adMockMaterialPageRoute(
         builder: (_) => CommunityShortsScreen(
           works: target,
           bookmarkedIds: bookmarkedIds,

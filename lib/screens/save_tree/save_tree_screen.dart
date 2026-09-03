@@ -7,14 +7,13 @@ import 'package:provider/provider.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
-import '../../services/advertising_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
-import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
@@ -144,7 +143,6 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final saveService = context.watch<SaveTreeService>();
-    final adService = context.watch<AdvertisingService>();
     final isTreeMode = saveService.isTreeMode;
 
     return Scaffold(
@@ -192,7 +190,6 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
                     ),
                   ),
           ),
-          if (adService.shouldShowAds) const AdBannerWidget(),
         ],
       ),
     );
@@ -1057,7 +1054,7 @@ Future<void> showSaveModeChangeFlowIfNeeded({
 
   if (!context.mounted) return;
   await Navigator.of(context).push(
-    MaterialPageRoute(
+    adMockMaterialPageRoute(
       builder: (_) => _SaveModeChangeScreen(
         projectId: projectId,
         saveService: saveService,

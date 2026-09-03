@@ -28,129 +28,172 @@ import 'screens/settings/font_settings_screen.dart';
 import 'screens/settings/license_screen.dart';
 import 'screens/settings/privacy_policy_screen.dart';
 import 'screens/settings/storage_screen.dart';
+import 'widgets/ad_banner_mock_widget.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-    GoRoute(path: '/shared', builder: (context, state) => const SharedScreen()),
-    GoRoute(path: '/trash', builder: (context, state) => const TrashScreen()),
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const AdMockPageFrame(child: SplashScreen()),
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (context, state) => const AdMockPageFrame(child: HomeScreen()),
+    ),
+    GoRoute(
+      path: '/shared',
+      builder: (context, state) => const AdMockPageFrame(child: SharedScreen()),
+    ),
+    GoRoute(
+      path: '/trash',
+      builder: (context, state) => const AdMockPageFrame(child: TrashScreen()),
+    ),
     GoRoute(
       path: '/community',
-      builder: (context, state) =>
-          CommunityScreen(initialTagFilter: state.extra as String?),
+      builder: (context, state) => AdMockPageFrame(
+        child: CommunityScreen(initialTagFilter: state.extra as String?),
+      ),
     ),
     GoRoute(
       path: '/community/work/:id',
-      builder: (context, state) =>
-          CommunityWorkDetailScreen(workId: state.pathParameters['id']!),
+      builder: (context, state) => AdMockPageFrame(
+        child: CommunityWorkDetailScreen(workId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/new-project',
-      builder: (context, state) => const NewProjectScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: NewProjectScreen()),
     ),
     GoRoute(
       path: '/project/:id',
-      builder: (context, state) =>
-          ProjectDetailScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) => AdMockPageFrame(
+        child: ProjectDetailScreen(projectId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/canvas/:id',
-      builder: (context, state) =>
-          CanvasScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) => AdMockPageFrame(
+        child: CanvasScreen(projectId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/timeline/:id',
-      builder: (context, state) =>
-          TimelineScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) => AdMockPageFrame(
+        child: TimelineScreen(projectId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/export/:id',
-      builder: (context, state) =>
-          ExportScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) => AdMockPageFrame(
+        child: ExportScreen(projectId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: SettingsScreen()),
     ),
     GoRoute(
       path: '/settings/gestures',
-      builder: (context, state) => const GestureSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: GestureSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/shortcuts',
-      builder: (context, state) => const ShortcutSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: ShortcutSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/performance',
-      builder: (context, state) => const PerformanceSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: PerformanceSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/pen',
-      builder: (context, state) => const PenSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: PenSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/bucket',
-      builder: (context, state) => const BucketFillSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: BucketFillSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/workspace',
-      builder: (context, state) => const WorkspaceSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: WorkspaceSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/transfer',
-      builder: (context, state) => const TransferScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: TransferScreen()),
     ),
     GoRoute(
       path: '/settings/theme',
-      builder: (context, state) => const ThemeSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: ThemeSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/watermark',
-      builder: (context, state) => const WatermarkSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: WatermarkSettingsScreen()),
     ),
     GoRoute(
       path: '/help',
-      builder: (context, state) =>
-          HelpScreen(initialTopic: state.uri.queryParameters['topic']),
+      builder: (context, state) => AdMockPageFrame(
+        child: HelpScreen(initialTopic: state.uri.queryParameters['topic']),
+      ),
     ),
-    GoRoute(path: '/tips', builder: (context, state) => const TipsScreen()),
+    GoRoute(
+      path: '/tips',
+      builder: (context, state) => const AdMockPageFrame(child: TipsScreen()),
+    ),
     GoRoute(
       path: '/premium',
-      builder: (context, state) => const PremiumScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: PremiumScreen()),
     ),
     GoRoute(
       path: '/autofill-presets',
-      builder: (context, state) => const AutofillPresetScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: AutofillPresetScreen()),
     ),
     GoRoute(
       path: '/save-tree/:id',
-      builder: (context, state) => SaveManagementScreen(
-        projectId: state.pathParameters['id']!,
-        entryMode: parseSaveTreeEntryMode(state.uri.queryParameters['entry']),
+      builder: (context, state) => AdMockPageFrame(
+        child: SaveManagementScreen(
+          projectId: state.pathParameters['id']!,
+          entryMode: parseSaveTreeEntryMode(state.uri.queryParameters['entry']),
+        ),
       ),
     ),
     GoRoute(
       path: '/materials/:id',
-      builder: (context, state) =>
-          MaterialListScreen(projectId: state.pathParameters['id']!),
+      builder: (context, state) => AdMockPageFrame(
+        child: MaterialListScreen(projectId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/settings/fonts',
-      builder: (context, state) => const FontSettingsScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: FontSettingsScreen()),
     ),
     GoRoute(
       path: '/settings/license',
-      builder: (context, state) => const LicenseScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: LicenseScreen()),
     ),
     GoRoute(
       path: '/settings/privacy-policy',
-      builder: (context, state) => const PrivacyPolicyScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: PrivacyPolicyScreen()),
     ),
     GoRoute(
       path: '/storage',
-      builder: (context, state) => const StorageScreen(),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: StorageScreen()),
     ),
   ],
 );

@@ -1,19 +1,18 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/tips/tips_screen.dart' show allTipEntries;
-import '../services/advertising_service.dart';
 import '../config/font_fallback.dart';
+import 'ad_banner_mock_widget.dart';
 
 /// 処理中ダイアログ（フィルター適用／動画書き出し／GIF生成／
 /// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に正方形広告）。
-/// 会員種別に関わらず、10秒おきにランダムでTipsを表示する。無料会員は
-/// Tipsカードの下に続けて正方形広告を表示する（広告を中間に挟むと
+/// 会員種別に関わらず、10秒おきにランダムでTipsを表示する。現在は
+/// ダイアログ下部に配置確認用の正方形広告モックを表示する（広告を中間に挟むと
 /// 視線の邪魔になりやすいため、プログレスバー→Tips→広告の順に配置。
-/// 縦に並ぶ分、内容全体をスクロール可能にしている）。
+/// 縦に並ぶ分、内容全体をスクロール可能にしている）。実広告への切替時は
+/// [AdSquareMockWidget]だけを差し替える。
 class ProgressDialog extends StatefulWidget {
   final String title;
   final double progress;
@@ -52,7 +51,6 @@ class _ProgressDialogState extends State<ProgressDialog> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<AdvertisingService>().showSquareAd();
       _startTipRotation();
     });
   }
@@ -81,8 +79,6 @@ class _ProgressDialogState extends State<ProgressDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final adService = context.watch<AdvertisingService>();
-    final ad = adService.squareAd;
     final tips = _tips;
     final tipIndex = _tipIndex;
     final tip = (tips != null && tipIndex != null && tipIndex < tips.length)
@@ -182,27 +178,6 @@ class _ProgressDialogState extends State<ProgressDialog> {
                 ),
               ),
             ],
-            if (adService.shouldShowAds) ...[
-              const SizedBox(height: 16),
-              if (ad == null)
-                Container(
-                  width: 250,
-                  height: 250,
-                  color: Colors.grey[800],
-                  child: Center(
-                    child: Text(
-                      l10n.progressDialogAdLoading,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                )
-              else
-                SizedBox(
-                  width: ad.size.width.toDouble(),
-                  height: ad.size.height.toDouble(),
-                  child: AdWidget(ad: ad),
-                ),
-            ],
             if (widget.cancelHint != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -213,6 +188,12 @@ class _ProgressDialogState extends State<ProgressDialog> {
                 ),
               ),
             ],
+            // 注記を含む処理情報のさらに下へ広告を置き、ダイアログ内でも
+            // できるだけ下側に配置する。前後に余白を確保し、キャンセル等の
+            // 操作項目と広告が近接しないようにする。
+            const SizedBox(height: 20),
+            const AdSquareMockWidget(),
+            const SizedBox(height: 16),
           ],
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router.dart';
 import '../../../services/community_preview_service.dart';
+import '../../../widgets/ad_banner_mock_widget.dart';
 import 'community_work_card.dart';
 
 /// ランキング・新着で作品カードをタップした際に表示するフローティング
@@ -52,6 +53,15 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     final screenSize = MediaQuery.sizeOf(context);
     final position = service.position;
     final size = service.size;
+    // このプレビューはNavigatorの外側に常駐するため、通常のページ制約だけでは
+    // 画面最上部の固定広告まで覆えてしまう。広告専用領域より下だけへ移動を
+    // 制限し、ドラッグ中も広告と重ならないようにする。
+    final previewTopLimit =
+        MediaQuery.paddingOf(context).top + kPersistentHorizontalAdMockExtent;
+    final previewBottomLimit = (screenSize.height - size.height).clamp(
+      previewTopLimit,
+      double.infinity,
+    );
 
     // リサイズハンドルの当たり判定は、見た目のアイコンより一回り以上
     // 広く取る（「指を反応させるのが難しい」というフィードバックへの対応）。
@@ -66,10 +76,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
         0,
         (screenSize.width - size.width).clamp(0, double.infinity),
       ),
-      top: position.dy.clamp(
-        0,
-        (screenSize.height - size.height).clamp(0, double.infinity),
-      ),
+      top: position.dy.clamp(previewTopLimit, previewBottomLimit),
       child: SizedBox(
         width: size.width,
         height: size.height,

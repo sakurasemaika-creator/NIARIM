@@ -15,6 +15,7 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/help_button.dart';
@@ -706,7 +707,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final projectService = context.read<ProjectService>();
     Navigator.push(
       context,
-      MaterialPageRoute(
+      adMockMaterialPageRoute(
         builder: (_) => _PresetDetailScreen(
           preset: preset,
           onUpdate: (updated, {String? changedPartId}) {

@@ -12,6 +12,7 @@ import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import 'canvas_size_preset_manage_screen.dart';
 import '../../config/font_fallback.dart';
 
@@ -296,7 +297,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   TextButton.icon(
                     onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      adMockMaterialPageRoute(
                         builder: (_) => const CanvasSizePresetManageScreen(),
                       ),
                     ),

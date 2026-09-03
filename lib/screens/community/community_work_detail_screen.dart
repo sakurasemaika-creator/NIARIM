@@ -5,6 +5,7 @@ import '../../models/community_work.dart';
 import '../../router.dart';
 import '../../services/community_service.dart';
 import '../../widgets/dispose_on_unmount.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
 import 'widgets/community_work_card.dart';
@@ -41,7 +42,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
 
   void _openAuthorWorks(CommunityWork work) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      adMockMaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
           authorId: work.authorId,
           authorName: work.authorName,

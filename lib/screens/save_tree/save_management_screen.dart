@@ -10,10 +10,8 @@ import '../../engine/layer_compositor.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../models/save_node.dart';
-import '../../services/advertising_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
-import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
@@ -57,7 +55,6 @@ class _GameStyleSlotScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final saveService = context.watch<SaveTreeService>();
-    final adService = context.watch<AdvertisingService>();
     // スロット番号→ノードの対応表を1回だけ作る（行ごとの線形探索を避ける）。
     final bySlot = <int, SaveNode>{
       for (final n in saveService.getNodes(projectId))
@@ -95,7 +92,6 @@ class _GameStyleSlotScreen extends StatelessWidget {
               ),
             ),
           ),
-          if (adService.shouldShowAds) const AdBannerWidget(),
         ],
       ),
     );

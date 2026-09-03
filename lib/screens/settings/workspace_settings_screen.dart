@@ -14,6 +14,7 @@ import '../../services/settings_service.dart';
 import '../../services/workspace_preset_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/premium_lock_widget.dart';
@@ -267,7 +268,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                adMockMaterialPageRoute(
                   builder: (_) => const PcWorkspaceLayoutSettingsScreen(),
                 ),
               ),

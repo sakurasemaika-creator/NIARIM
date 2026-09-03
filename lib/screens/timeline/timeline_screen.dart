@@ -38,7 +38,6 @@ import '../../models/material_asset.dart';
 import '../../models/scene.dart';
 import '../../models/text_object.dart';
 import '../../models/watermark_asset.dart';
-import '../../services/advertising_service.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
@@ -49,7 +48,6 @@ import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
 import '../canvas/widgets/color_picker_panel.dart';
-import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
@@ -857,8 +855,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final adService = context.watch<AdvertisingService>();
-
     // シーンは実プロジェクトデータ（ProjectService）から取得する。
     // 選択中シーンが未設定・削除済みの場合は先頭シーンへ同期する。
     final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
@@ -992,8 +988,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 _buildMarkerTrack(),
                                 _buildEffectFilterTrack(),
                                 _buildEndCardTrack(),
-                                if (adService.shouldShowAds)
-                                  const AdBannerWidget(),
                               ],
                             ),
                           ),

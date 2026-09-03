@@ -4785,6 +4785,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adMockPlaceholderLabel => 'Ad banner (placement trial mock)';
 
   @override
+  String get adSquareMockPlaceholderLabel => 'Square ad (placement trial mock)';
+
+  @override
   String get progressDialogTipLabel => 'Tip';
 
   @override

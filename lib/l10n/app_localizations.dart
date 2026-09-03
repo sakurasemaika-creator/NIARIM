@@ -8501,6 +8501,12 @@ abstract class AppLocalizations {
   /// **'広告バナー（配置検討用モック）'**
   String get adMockPlaceholderLabel;
 
+  /// No description provided for @adSquareMockPlaceholderLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'正方形広告（配置検討用モック）'**
+  String get adSquareMockPlaceholderLabel;
+
   /// No description provided for @progressDialogTipLabel.
   ///
   /// In ja, this message translates to:
