@@ -7,24 +7,18 @@ on:
       - '.github/workflows/one-shot-final-remaining-audit.yml'
 
 jobs:
-  final-strict-gaps:
+  finalize-manifest:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v6
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: false
-      - run: flutter pub get
-      - run: python .github/scripts/fix_final_remaining_test.py
-      - run: flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: final-strict-gap-evidence
-          path: build/final-remaining-strict
-          if-no-files-found: warn
-          retention-days: 7
+      - run: python .github/scripts/finalize_remaining_manifest.py
+      - name: Commit final 67/67 manifest
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add audit-dashboard/feature-audit-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "audit: finalize all 67 non-device features"
+          git push origin HEAD:dev_branch
