@@ -7,9 +7,9 @@ on:
       - '.github/workflows/one-shot-final-remaining-audit.yml'
 
 jobs:
-  final-remaining:
+  final-strict-gaps:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -19,25 +19,11 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get
-      - name: Verify project persistence and service evidence
-        run: |
-          flutter test test/direct_service_coverage_batch02_test.dart --reporter expanded
-          flutter test test/direct_service_coverage_batch10_test.dart --reporter expanded
-      - name: Verify remaining functional behavior
-        run: |
-          flutter test test/functional_render_real_async_test.dart --reporter expanded
-          for n in $(seq 2 26); do
-            flutter test "test/functional_audit_batch${n}_test.dart" --reporter expanded
-          done
-      - name: Verify camera interpolation and fade visual evidence
-        run: flutter test test/visual_reaudit_export_camera_test.dart --reporter expanded
-      - name: Upload remaining evidence
-        if: always()
+      - run: flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: final-remaining-evidence
-          path: |
-            build/functional-visual
-            build/visual-reaudit
+          name: final-strict-gap-evidence
+          path: build/final-remaining-strict
           if-no-files-found: warn
           retention-days: 7
