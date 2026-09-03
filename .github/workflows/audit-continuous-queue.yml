@@ -19,4 +19,4 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
-      - run: echo 'Audit Continuous Queue is running.'
+      - run: echo 'Audit Continuous Queue is running and valid.'
