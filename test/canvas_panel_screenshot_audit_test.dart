@@ -42,14 +42,37 @@ void main() {
     });
 
     // buildAppProviders() が生成・初期化した ProjectService / UndoManager を
-    // そのまま使う。別インスタンスを MultiProvider の後段で上書きすると、
-    // buildAppProviders 内で配線済みのサービス群が別 ProjectService を参照し、
-    // 実 CanvasScreen 初期化時に null 状態へ到達し得るため。
+    // そのまま使う。Provider Widget の内部値を直接取り出さず、実際の
+    // MultiProvider ツリー上の context.read<ProjectService>() から取得する。
     final providers = await tester.runAsync(buildAppProviders);
     final providerList = providers!;
-    final projectProvider = providerList.whereType<ChangeNotifierProvider<ProjectService>>().single;
-    final ps = projectProvider.value;
-    final project = (await tester.runAsync(() => ps.createProject(
+    ProjectService? ps;
+    StateSetter? rebuildHost;
+    String? projectId;
+    final rootKey = GlobalKey();
+
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: rootKey,
+        child: MultiProvider(
+          providers: providerList,
+          child: MaterialApp(
+            home: StatefulBuilder(
+              builder: (context, setState) {
+                ps ??= context.read<ProjectService>();
+                rebuildHost = setState;
+                if (projectId == null) return const SizedBox.expand();
+                return CanvasScreen(projectId: projectId!);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(ps, isNotNull, reason: '本番ProviderツリーからProjectServiceを取得できること');
+
+    final project = (await tester.runAsync(() => ps!.createProject(
       name: 'panel-visual-audit',
       fps: 24,
       durationSeconds: 1,
@@ -57,17 +80,8 @@ void main() {
       exportWidth: 320,
       exportHeight: 320,
     )))!;
-
-    final rootKey = GlobalKey();
-    await tester.pumpWidget(
-      RepaintBoundary(
-        key: rootKey,
-        child: MultiProvider(
-          providers: providerList,
-          child: MaterialApp(home: CanvasScreen(projectId: project.id)),
-        ),
-      ),
-    );
+    projectId = project.id;
+    rebuildHost!(() {});
     await tester.pump(const Duration(milliseconds: 1400));
     _expectNoException(tester, 'CanvasScreen initial');
     await _capture(rootKey, '${out.path}/00_canvas_default.png');
