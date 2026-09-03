@@ -1043,7 +1043,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumFeatureCommunityUpload =>
-      'Publications communautaires par jour';
+      'Publications quotidiennes sur la Place des œuvres';
 
   @override
   String get premiumValueYes => 'Oui';
@@ -5658,7 +5658,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get splashCommunityButtonTitle => 'Place des œuvres';
 
   @override
-  String get splashCommunityButtonSubtitle => 'Voir les œuvres de tous';
+  String get splashCommunityButtonSubtitle => 'Voir les œuvres publiées';
 
   @override
   String get splashCreateButton => 'Créer une animation';

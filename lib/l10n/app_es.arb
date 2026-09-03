@@ -364,7 +364,7 @@
   "premiumFeatureToneCurve": "Curva de tonos",
   "premiumFeatureLevelCorrection": "Corrección de niveles",
   "premiumFeatureAds": "Anuncios",
-  "premiumFeatureCommunityUpload": "Publicaciones diarias en la comunidad",
+  "premiumFeatureCommunityUpload": "Publicaciones diarias en Plaza de Obras",
   "premiumValueYes": "Sí",
   "premiumValueNo": "No",
   "premiumValueRemovable": "Se puede quitar",
@@ -2359,7 +2359,7 @@
     }
   },
   "splashCommunityButtonTitle": "Plaza de Obras",
-  "splashCommunityButtonSubtitle": "Ver las obras de todos",
+  "splashCommunityButtonSubtitle": "Ver obras publicadas",
   "splashCreateButton": "Crear una animación",
   "communityScreenTitle": "Plaza de Obras",
   "communityTabNew": "Novedades",

@@ -581,6 +581,8 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byIcon(Icons.brush_outlined), findsOneWidget);
       expect(find.byIcon(Icons.movie_filter_outlined), findsOneWidget);
+      expect(find.text('投稿作品をみる'), findsOneWidget);
+      expect(find.textContaining('みんなの作品'), findsNothing);
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
@@ -2089,6 +2091,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: '有料会員画面への遷移で例外');
+    expect(find.text('作品広場への投稿数/日'), findsOneWidget);
+    expect(find.textContaining('みんなの作品'), findsNothing);
     await probeAllControls(tester);
   }, timeout: const Timeout(Duration(seconds: 60)));
 

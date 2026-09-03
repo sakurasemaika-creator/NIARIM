@@ -11,7 +11,7 @@ import '../../config/font_fallback.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
-/// 「みんなの作品をみる」と表示する2行構成）、下に「作品をつくる」の
+/// 「投稿作品をみる」と表示する2行構成）、下に「作品をつくる」の
 /// 2つの大きな導線ボタンを配置する。どちらかをタップするまで自動遷移は
 /// しない。
 ///
@@ -181,7 +181,7 @@ class _SplashScreenState extends State<SplashScreen> {
 ///
 /// [subLabel]を指定すると、[label]を1行目に大きく・太字で、[subLabel]を
 /// 2行目にやや小さく添える2行構成になる（例：「作品広場」
-/// 「みんなの作品をみる」）。省略時は[label]のみの1行構成（[createButton]
+/// 「投稿作品をみる」）。省略時は[label]のみの1行構成（[createButton]
 /// が使う従来通りの表示）。
 class _SplashActionButton extends StatelessWidget {
   final IconData icon;

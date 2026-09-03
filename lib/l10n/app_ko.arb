@@ -364,7 +364,7 @@
   "premiumFeatureToneCurve": "톤 커브",
   "premiumFeatureLevelCorrection": "레벨 보정",
   "premiumFeatureAds": "광고",
-  "premiumFeatureCommunityUpload": "하루 커뮤니티 게시 수",
+  "premiumFeatureCommunityUpload": "작품 광장 일일 게시 수",
   "premiumValueYes": "있음",
   "premiumValueNo": "없음",
   "premiumValueRemovable": "삭제 가능",
@@ -2359,7 +2359,7 @@
     }
   },
   "splashCommunityButtonTitle": "NIARIM 갤러리",
-  "splashCommunityButtonSubtitle": "모두의 작품 보기",
+  "splashCommunityButtonSubtitle": "게시 작품 보기",
   "splashCreateButton": "애니메이션 만들기",
   "communityScreenTitle": "작품 광장",
   "communityTabNew": "신착",

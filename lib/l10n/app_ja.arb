@@ -475,7 +475,7 @@
   "premiumFeatureToneCurve": "トーンカーブ",
   "premiumFeatureLevelCorrection": "レベル補正",
   "premiumFeatureAds": "広告",
-  "premiumFeatureCommunityUpload": "みんなの作品への投稿数/日",
+  "premiumFeatureCommunityUpload": "作品広場への投稿数/日",
   "premiumValueYes": "あり",
   "premiumValueNo": "なし",
   "premiumValueRemovable": "削除可",
@@ -2616,7 +2616,7 @@
     }
   },
   "splashCommunityButtonTitle": "作品広場",
-  "splashCommunityButtonSubtitle": "みんなの作品をみる",
+  "splashCommunityButtonSubtitle": "投稿作品をみる",
   "splashCreateButton": "作品をつくる",
   "communityScreenTitle": "作品広場",
   "communityTabNew": "新着",

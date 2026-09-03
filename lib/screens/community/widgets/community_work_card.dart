@@ -21,7 +21,7 @@ String formatDurationLabel(int seconds) {
   return '$m:${s.toString().padLeft(2, '0')}';
 }
 
-/// みんなの作品一覧（新着・ランキング・作者別）で共通して使う作品カード。
+/// 作品広場の一覧（新着・ランキング・作者別）で共通して使う作品カード。
 class CommunityWorkCard extends StatelessWidget {
   final CommunityWork work;
   final bool isBookmarked;

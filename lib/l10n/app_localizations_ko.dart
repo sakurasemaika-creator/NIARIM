@@ -1008,7 +1008,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumFeatureAds => '광고';
 
   @override
-  String get premiumFeatureCommunityUpload => '하루 커뮤니티 게시 수';
+  String get premiumFeatureCommunityUpload => '작품 광장 일일 게시 수';
 
   @override
   String get premiumValueYes => '있음';
@@ -5392,7 +5392,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get splashCommunityButtonTitle => 'NIARIM 갤러리';
 
   @override
-  String get splashCommunityButtonSubtitle => '모두의 작품 보기';
+  String get splashCommunityButtonSubtitle => '게시 작품 보기';
 
   @override
   String get splashCreateButton => '애니메이션 만들기';

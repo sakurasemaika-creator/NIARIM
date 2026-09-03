@@ -364,7 +364,7 @@
   "premiumFeatureToneCurve": "Courbe de tons",
   "premiumFeatureLevelCorrection": "Correction des niveaux",
   "premiumFeatureAds": "Publicités",
-  "premiumFeatureCommunityUpload": "Publications communautaires par jour",
+  "premiumFeatureCommunityUpload": "Publications quotidiennes sur la Place des œuvres",
   "premiumValueYes": "Oui",
   "premiumValueNo": "Non",
   "premiumValueRemovable": "Amovible",
@@ -2359,7 +2359,7 @@
     }
   },
   "splashCommunityButtonTitle": "Place des œuvres",
-  "splashCommunityButtonSubtitle": "Voir les œuvres de tous",
+  "splashCommunityButtonSubtitle": "Voir les œuvres publiées",
   "splashCreateButton": "Créer une animation",
   "communityScreenTitle": "Place des œuvres",
   "communityTabNew": "Nouveautés",

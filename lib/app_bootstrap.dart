@@ -120,7 +120,7 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
   final workFolderService = WorkFolderService();
   await workFolderService.init();
 
-  // 「みんなの作品をみる」機能のダミーデータ・タグ・ブックマークの状態と、
+  // 「作品広場」機能のダミーデータ・タグ・ブックマークの状態と、
   // フローティングプレビューウィンドウの表示状態。バックエンド未実装の
   // ため初期化不要（コンストラクタでダミーデータを生成するのみ）。
   final communityService = CommunityService();

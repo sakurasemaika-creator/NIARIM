@@ -364,7 +364,7 @@
   "premiumFeatureToneCurve": "Tone Curve",
   "premiumFeatureLevelCorrection": "Level Correction",
   "premiumFeatureAds": "Ads",
-  "premiumFeatureCommunityUpload": "Community uploads per day",
+  "premiumFeatureCommunityUpload": "Work Plaza uploads per day",
   "premiumValueYes": "Yes",
   "premiumValueNo": "No",
   "premiumValueRemovable": "Removable",
@@ -2359,7 +2359,7 @@
     }
   },
   "splashCommunityButtonTitle": "Work Plaza",
-  "splashCommunityButtonSubtitle": "See everyone's works",
+  "splashCommunityButtonSubtitle": "Browse posted works",
   "splashCreateButton": "Create an Animation",
   "communityScreenTitle": "Work Plaza",
   "communityTabNew": "New",

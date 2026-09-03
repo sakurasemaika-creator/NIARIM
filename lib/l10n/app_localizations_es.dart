@@ -1046,7 +1046,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumFeatureCommunityUpload =>
-      'Publicaciones diarias en la comunidad';
+      'Publicaciones diarias en Plaza de Obras';
 
   @override
   String get premiumValueYes => 'Sí';
@@ -5648,7 +5648,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get splashCommunityButtonTitle => 'Plaza de Obras';
 
   @override
-  String get splashCommunityButtonSubtitle => 'Ver las obras de todos';
+  String get splashCommunityButtonSubtitle => 'Ver obras publicadas';
 
   @override
   String get splashCreateButton => 'Crear una animación';

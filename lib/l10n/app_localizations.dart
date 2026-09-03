@@ -1982,7 +1982,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeatureCommunityUpload.
   ///
   /// In ja, this message translates to:
-  /// **'みんなの作品への投稿数/日'**
+  /// **'作品広場への投稿数/日'**
   String get premiumFeatureCommunityUpload;
 
   /// No description provided for @premiumValueYes.
@@ -9836,7 +9836,7 @@ abstract class AppLocalizations {
   /// No description provided for @splashCommunityButtonSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'みんなの作品をみる'**
+  /// **'投稿作品をみる'**
   String get splashCommunityButtonSubtitle;
 
   /// No description provided for @splashCreateButton.

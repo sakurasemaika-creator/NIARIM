@@ -1025,7 +1025,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureAds => 'Ads';
 
   @override
-  String get premiumFeatureCommunityUpload => 'Community uploads per day';
+  String get premiumFeatureCommunityUpload => 'Work Plaza uploads per day';
 
   @override
   String get premiumValueYes => 'Yes';
@@ -5551,7 +5551,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashCommunityButtonTitle => 'Work Plaza';
 
   @override
-  String get splashCommunityButtonSubtitle => 'See everyone\'s works';
+  String get splashCommunityButtonSubtitle => 'Browse posted works';
 
   @override
   String get splashCreateButton => 'Create an Animation';

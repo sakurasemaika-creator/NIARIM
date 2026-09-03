@@ -1005,7 +1005,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumFeatureAds => '広告';
 
   @override
-  String get premiumFeatureCommunityUpload => 'みんなの作品への投稿数/日';
+  String get premiumFeatureCommunityUpload => '作品広場への投稿数/日';
 
   @override
   String get premiumValueYes => 'あり';
@@ -5369,7 +5369,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get splashCommunityButtonTitle => '作品広場';
 
   @override
-  String get splashCommunityButtonSubtitle => 'みんなの作品をみる';
+  String get splashCommunityButtonSubtitle => '投稿作品をみる';
 
   @override
   String get splashCreateButton => '作品をつくる';

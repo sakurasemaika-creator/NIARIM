@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 /// 認証済みのNIARIM User IDと`work.authorId`を比較する形に置き換える。
 const String kDummySelfAuthorId = 'author_01';
 
-/// みんなの作品画面で表示する投稿作品1件分のデータ。
+/// 作品広場画面で表示する投稿作品1件分のデータ。
 /// バックエンド（29_動画投稿・ランキング機能仕様.md）が未実装のため、
 /// 現段階ではUI・デザイン確認用のダミーデータのみを保持するモデル。
 class CommunityWork {

@@ -323,7 +323,7 @@ class PremiumScreen extends StatelessWidget {
       (l10n.premiumFeatureWatermark, '×', '○'),
       (l10n.premiumFeatureToneCurve, '×', '○'), (l10n.premiumFeatureLevelCorrection, '×', '○'),
       (l10n.premiumFeatureAds, l10n.premiumValueYes, l10n.premiumValueNo),
-      // みんなの作品への投稿数上限（29_動画投稿・ランキング機能仕様.md
+      // 作品広場への投稿数上限（29_動画投稿・ランキング機能仕様.md
       // 11章。バックエンド未実装のため実際の投稿処理は無いが、実装予定の
       // 制限値としてここに明記しておく）。
       (l10n.premiumFeatureCommunityUpload, l10n.premiumValueUploadFree, l10n.premiumValueUploadPremium),

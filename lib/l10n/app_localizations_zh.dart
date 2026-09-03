@@ -999,7 +999,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureAds => '广告';
 
   @override
-  String get premiumFeatureCommunityUpload => '每日社区投稿数';
+  String get premiumFeatureCommunityUpload => '作品广场每日投稿数';
 
   @override
   String get premiumValueYes => '有';
@@ -5334,7 +5334,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get splashCommunityButtonTitle => 'NIARIM 作品广场';
 
   @override
-  String get splashCommunityButtonSubtitle => '看看大家的作品';
+  String get splashCommunityButtonSubtitle => '浏览投稿作品';
 
   @override
   String get splashCreateButton => '制作动画';
@@ -6849,7 +6849,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumFeatureAds => '廣告';
 
   @override
-  String get premiumFeatureCommunityUpload => '每日社群投稿數';
+  String get premiumFeatureCommunityUpload => '作品廣場每日投稿數';
 
   @override
   String get premiumValueYes => '有';
@@ -11183,7 +11183,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get splashCommunityButtonTitle => 'NIARIM 作品廣場';
 
   @override
-  String get splashCommunityButtonSubtitle => '看看大家的作品';
+  String get splashCommunityButtonSubtitle => '瀏覽投稿作品';
 
   @override
   String get splashCreateButton => '製作動畫';

@@ -364,7 +364,7 @@
   "premiumFeatureToneCurve": "色调曲线",
   "premiumFeatureLevelCorrection": "色阶校正",
   "premiumFeatureAds": "广告",
-  "premiumFeatureCommunityUpload": "每日社区投稿数",
+  "premiumFeatureCommunityUpload": "作品广场每日投稿数",
   "premiumValueYes": "有",
   "premiumValueNo": "无",
   "premiumValueRemovable": "可删除",
@@ -2359,7 +2359,7 @@
     }
   },
   "splashCommunityButtonTitle": "NIARIM 作品广场",
-  "splashCommunityButtonSubtitle": "看看大家的作品",
+  "splashCommunityButtonSubtitle": "浏览投稿作品",
   "splashCreateButton": "制作动画",
   "communityScreenTitle": "作品广场",
   "communityTabNew": "最新",

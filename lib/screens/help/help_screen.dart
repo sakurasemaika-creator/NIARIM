@@ -132,7 +132,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '書き出し画面', title: l10n.helpExportScreenTitle, description: l10n.helpExportScreenDesc, category: l10n.helpCategoryExport, diagram: const HelpDiagramSpec(HelpScreenTemplate.exportPicker, 1)),
 
         // ── コミュニティ ──────────────────────────────────────────
-        _HelpEntry(topicKey: 'みんなの作品を見る', title: l10n.helpCommunityTitle, description: l10n.helpCommunityDesc, category: l10n.helpCategoryCommunity, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1, icon: Icons.people_outline)),
+        _HelpEntry(topicKey: '作品広場', title: l10n.helpCommunityTitle, description: l10n.helpCommunityDesc, category: l10n.helpCategoryCommunity, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1, icon: Icons.people_outline)),
 
         // ── プレミアム ──────────────────────────────────────────
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),

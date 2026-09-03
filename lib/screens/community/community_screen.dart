@@ -18,7 +18,7 @@ enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
 enum _RankingSort { views, bookmarks }
 
-/// みんなの作品を見る画面。
+/// 作品広場画面。
 ///
 /// `29_動画投稿・ランキング機能仕様.md`のバックエンド（YouTube投稿・
 /// DynamoDB・ランキング集計）は未実装のため、この画面は表示確認用の
@@ -350,10 +350,10 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
               tooltip: l10n.commonSearch,
               onPressed: () => setState(() => _isSearching = true),
             ),
-            // topic: 'みんなの作品を見る' はhelp_screen.dart側の項目タイトル
+            // topic: '作品広場' はhelp_screen.dart側の項目タイトル
             // （日本語固定の内部検索キー）と一致させる必要があるため、
             // 翻訳対象から除外している。
-            const HelpButton(topic: 'みんなの作品を見る'),
+            const HelpButton(topic: '作品広場'),
           ],
         ],
         bottom: TabBar(
