@@ -1,11 +1,6 @@
 name: Audit Continuous Queue
 
 on:
-  push:
-    branches:
-      - dev_branch
-    paths:
-      - '.github/workflows/audit-continuous-queue.yml'
   workflow_dispatch:
 
 permissions:
@@ -247,8 +242,8 @@ jobs:
         run: flutter analyze --no-fatal-infos
       - run: flutter test --reporter compact
 
-  continue_if_needed:
-    name: '07 全工程が成功し未確認項目が残れば待たずに次サイクルを開始'
+  finish_cycle:
+    name: '07 共通監査サイクルを終了し未確認項目数を報告'
     needs: final_regression
     runs-on: ubuntu-latest
     steps:
@@ -262,13 +257,9 @@ jobs:
           ISSUE_NUMBER: '3'
           BRANCH: dev_branch
         run: python3 audit-dashboard/update_dashboard.py
-      - name: 未確認項目数を確認して必要なら次サイクルを起動
+      - name: 未確認項目数を報告して終了
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           remaining=$(python3 -c "import json; d=json.load(open('audit-dashboard/feature-audit-manifest.json')); fs=[f for f in d['features'] if not (f.get('device_required') and not f.get('final_pass'))]; print(sum(not f.get('final_pass', False) for f in fs))")
           echo "未確認項目: $remaining"
-          if [ "$remaining" -gt 0 ]; then
-            gh workflow run audit-continuous-queue.yml --ref dev_branch
-          fi
+          echo "同一の共通監査は自動再実行しません。未確認項目は機能固有の監査・修正で進めてください。"
