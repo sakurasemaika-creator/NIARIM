@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
 
+# Deliberate one-shot rerun after adding app-owned placeholder color cleanup.
 jobs:
   fix:
     runs-on: ubuntu-latest
