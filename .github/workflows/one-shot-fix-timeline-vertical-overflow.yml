@@ -1,10 +1,6 @@
 name: One-shot Fix Timeline Vertical Overflow
 
 on:
-  push:
-    branches: [dev_branch]
-    paths:
-      - '.github/workflows/one-shot-fix-timeline-vertical-overflow.yml'
   workflow_dispatch:
 
 permissions:
@@ -28,69 +24,9 @@ jobs:
 
       - run: flutter pub get
 
-      # 320 logical px級の高さでも、プレビューと下部タイムラインが互いの
-      # 領域を押し出さないFlex構造へ実装側を修正する。
-      - name: タイムラインのプレビューを利用可能な縦幅内へ制約
-        shell: bash
+      - name: 現行の既知修復スクリプトを適用
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('lib/screens/timeline/timeline_screen.dart')
-          s = p.read_text()
-
-          old = '                      _buildPreviewWithHandle(outerConstraints.maxHeight),'
-          new = '''                      Flexible(
-                        flex: 3,
-                        fit: FlexFit.loose,
-                        child: _buildPreviewWithHandle(
-                          outerConstraints.maxHeight,
-                        ),
-                      ),'''
-          if old not in s:
-              raise SystemExit('root preview insertion point not found')
-          s = s.replace(old, new, 1)
-
-          marker = '  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
-          start = s.index(marker)
-          end_marker = '\n  /// プレビューと再生バーの間のシークバー。'
-          end = s.index(end_marker, start)
-          block = s[start:end]
-
-          old_return = '    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
-          new_return = '''    // 親Columnではこのプレビューと下部タイムラインをFlexで分配する。
-    // 画面が低い場合や横幅を広げた場合も、希望プレビュー高をそのまま
-    // 固定確保せず、実際に割り当てられた高さからドラッグハンドル分を
-    // 差し引いた範囲へ収める。これにより下端RenderFlex overflowを防ぐ。
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final allocatedPreviewHeight = constraints.hasBoundedHeight
-            ? math.max(0.0, constraints.maxHeight - 22.0)
-            : maxPreviewHeight;
-        final visiblePreviewHeight = math.min(
-          previewHeight,
-          allocatedPreviewHeight,
-        );
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-'''
-          if old_return not in block:
-              raise SystemExit('preview Column return not found')
-          block = block.replace(old_return, new_return, 1)
-          if '          height: previewHeight,' not in block:
-              raise SystemExit('preview SizedBox height not found')
-          block = block.replace(
-              '          height: previewHeight,',
-              '          height: visiblePreviewHeight,',
-              1,
-          )
-          if not block.rstrip().endswith('    );'):
-              raise SystemExit('unexpected preview function ending')
-          trimmed = block.rstrip()
-          trimmed = trimmed[:-len('    );')] + '        );\n      },\n    );'
-          block = trimmed + '\n'
-          s = s[:start] + block + s[end:]
-          p.write_text(s)
-          PY
+          python3 .github/scripts/repair_timeline_overflow.py
           dart format lib/screens/timeline/timeline_screen.dart
 
       - name: 失敗していた3テストを再実行
@@ -99,19 +35,19 @@ jobs:
           flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
           flutter test test/app_web_reference_capture_exact_test.dart --reporter expanded
 
-      - name: 修正をdev_branchへ反映
+      - name: 修正がある場合だけdev_branchへ反映
         shell: bash
         run: |
           git config user.name "NIARIM Audit Bot"
           git config user.email "actions@users.noreply.github.com"
           git add lib/screens/timeline/timeline_screen.dart
-          git diff --cached --quiet && exit 0
-          git commit -m "タイムラインの小画面縦オーバーフローを修正"
-          git pull --rebase origin dev_branch
-          git push origin HEAD:dev_branch
+          if ! git diff --cached --quiet; then
+            git commit -m "タイムラインの小画面縦オーバーフローを修正"
+            git pull --rebase origin dev_branch
+            git push origin HEAD:dev_branch
+          fi
 
       - name: 修正後HEADで連続監査を即開始
-        if: success()
         run: gh workflow run audit-continuous-queue.yml --ref dev_branch
         env:
           GH_TOKEN: ${{ github.token }}
