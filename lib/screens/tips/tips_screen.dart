@@ -671,7 +671,7 @@ class _TipListTile extends StatelessWidget {
     // 無駄が大きいため、詳細ポップアップ（_TipDetailDialog）側でのみ描画する。
     // カード自体は影付きで浮かせ、電球アイコンのバッジを添える。
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: EdgeInsets.only(bottom: 6),
       child: Material(
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),

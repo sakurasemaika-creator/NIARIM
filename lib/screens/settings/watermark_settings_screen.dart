@@ -640,8 +640,8 @@ class _WatermarkTile extends StatelessWidget {
                           color: Color(asset.textColor ?? 0xFFFFFFFF),
                           fontFamily: asset.fontFamily,
                           fontWeight: FontWeight.bold,
-                          shadows: const [
-                            Shadow(color: ThemeService.activeColorScheme.onSurface45, blurRadius: 3),
+                          shadows: [
+                            Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.45), blurRadius: 3),
                           ],
                         ),
                         textAlign: TextAlign.center,

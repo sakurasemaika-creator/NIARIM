@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -450,7 +449,7 @@ class _ColorCustomizeTile extends StatelessWidget {
     // 他の画面（設定トップ・セーブツリー・テーマプリセット一覧）と統一した
     // 影付きカードデザイン（作り込みの一環）。
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Material(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),

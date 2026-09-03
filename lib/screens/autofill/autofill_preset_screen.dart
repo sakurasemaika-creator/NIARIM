@@ -139,7 +139,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                         tooltip: l10n.commonPaste,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.ios_share),
+                        icon: Icon(Icons.ios_share),
                         onPressed: () => _bulkExport(filtered),
                         tooltip: l10n.autofillPresetExportMenuItem,
                       ),
@@ -1059,7 +1059,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l10n.autofillPartUnconfiguredDialogBody),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             for (final p in unconfigured)
               Text(
                 l10n.autofillPartUnconfiguredItem(p.name),
@@ -1196,7 +1196,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           // パーツ単位のお気に入りは不要（プリセット一覧側の
           // お気に入り機能に一本化したため削除）。
           IconButton(
-            icon: const Icon(Icons.edit, size: 18),
+            icon: Icon(Icons.edit, size: 18),
             tooltip: l10n.commonEdit,
             onPressed: () => _showEditPartDialog(part),
           ),
@@ -2424,7 +2424,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.delete_outline,
                                   size: 18,
                                   color: ThemeService.activeColorScheme.error,
@@ -2836,7 +2836,7 @@ class _StopHandlePainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = ThemeService.activeColorScheme.onSurface54
+        ..color = ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1,
     );

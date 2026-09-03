@@ -114,7 +114,7 @@ class PenSettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const PressureCurveTryDraw(),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             _sectionLabel(context, l10n.penSettingsButtonSection),
             Card(
               elevation: 1,

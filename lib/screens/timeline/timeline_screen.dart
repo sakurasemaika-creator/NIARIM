@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
@@ -1132,7 +1131,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.watch<ProjectService>();
     final sceneId = _selectedSceneId;
     final preview = Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      margin: EdgeInsets.symmetric(horizontal: 8),
       // プレビュー画像自体は透明部分を含むため、背景は実際のキャンバス背景
       // （既定は白）に合わせる必要がある（濃色にすると透明部分の見え方が
       // 実際のキャンバス画面と一致しなくなるため、ここは色固定のままにする
@@ -1439,7 +1438,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.videocam, size: 18),
+                  icon: Icon(Icons.videocam, size: 18),
                   onPressed: () => _showAddClipDialog(
                     l10n.projectListMaterialVideo,
                     _videoClips,
@@ -1449,7 +1448,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   tooltip: l10n.timelineAddVideoTooltip,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.audiotrack, size: 18),
+                  icon: Icon(Icons.audiotrack, size: 18),
                   onPressed: () => _showAddClipDialog(
                     l10n.projectListMaterialAudio,
                     _audioClips,
@@ -1510,7 +1509,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               size: 18,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 2),
+            SizedBox(width: 2),
             Icon(Icons.lock, size: 12, color: ThemeService.activeColorScheme.tertiary),
           ],
         ),
@@ -1897,7 +1896,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
               child: _moveThumbnail != null
                   ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
-                  : Icon(Icons.movie, size: 20, color: ThemeService.activeColorScheme.onSurface54),
+                  : Icon(Icons.movie, size: 20, color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54)),
             ),
             // 枚数バッジ（右上）
             if (count > 1)
@@ -1915,7 +1914,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                   child: Text(
                     '×$count',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       color: ThemeService.activeColorScheme.onSurface,
                       fontWeight: FontWeight.bold,
@@ -2126,7 +2125,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         GestureDetector(
                                           onTap: () =>
                                               _showAutofillUpdateHelp(context),
-                                          child: const Padding(
+                                          child: Padding(
                                             padding: EdgeInsets.only(left: 4),
                                             child: Icon(
                                               Icons.error,
@@ -2638,7 +2637,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                           );
                                       return Container(
                                         width: _frameW,
-                                        margin: const EdgeInsets.symmetric(
+                                        margin: EdgeInsets.symmetric(
                                           horizontal: _frameMargin,
                                         ),
                                         decoration: BoxDecoration(
@@ -2683,7 +2682,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       },
                                       child: Container(
                                         width: _frameW,
-                                        margin: const EdgeInsets.symmetric(
+                                        margin: EdgeInsets.symmetric(
                                           horizontal: _frameMargin,
                                         ),
                                         decoration: BoxDecoration(
@@ -2694,7 +2693,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             3,
                                           ),
                                         ),
-                                        child: const Center(
+                                        child: Center(
                                           child: Icon(
                                             Icons.add,
                                             size: 16,
@@ -2788,7 +2787,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                               bottom: 1,
                                               child: Text(
                                                 '${index + 1}',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 8,
                                                   color: ThemeService.activeColorScheme.onSurface,
                                                   shadows: [
@@ -2809,7 +2808,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                       _showAutofillUpdateHelp(
                                                         context,
                                                       ),
-                                                  child: const Icon(
+                                                  child: Icon(
                                                     Icons.error,
                                                     color: ThemeService.activeColorScheme.tertiary,
                                                     size: 10,
@@ -2922,10 +2921,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
               child: _moveThumbnail != null
                   ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
-                  : const Icon(
+                  : Icon(
                       Icons.movie_filter,
                       size: 18,
-                      color: ThemeService.activeColorScheme.onSurface54,
+                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54),
                     ),
             ),
             if (count > 1)
@@ -2943,7 +2942,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                   child: Text(
                     '×$count',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       color: ThemeService.activeColorScheme.onSurface,
                       fontWeight: FontWeight.bold,
@@ -3277,7 +3276,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           color: addColor.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.add,
                           size: 14,
                           color: ThemeService.activeColorScheme.onSurface,
@@ -3437,7 +3436,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               clip.label,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 9,
                                 color: ThemeService.activeColorScheme.onSurface,
                                 fontFamily: 'Kuramubon',
@@ -3951,7 +3950,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     layer.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 9,
                       color: ThemeService.activeColorScheme.onSurface,
                       fontFamily: 'Kuramubon',
@@ -3978,11 +3977,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   },
                   child: Container(
                     width: 8,
-                    color: ThemeService.activeColorScheme.onSurface24,
-                    child: const Icon(
+                    color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.24),
+                    child: Icon(
                       Icons.drag_indicator,
                       size: 8,
-                      color: ThemeService.activeColorScheme.onSurface70,
+                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
                     ),
                   ),
                 ),
@@ -4004,11 +4003,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   },
                   child: Container(
                     width: 8,
-                    color: ThemeService.activeColorScheme.onSurface24,
-                    child: const Icon(
+                    color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.24),
+                    child: Icon(
                       Icons.drag_indicator,
                       size: 8,
-                      color: ThemeService.activeColorScheme.onSurface70,
+                      color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
                     ),
                   ),
                 ),
@@ -4369,7 +4368,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         color: ThemeService.activeColorScheme.secondary.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.add,
                         size: 14,
                         color: ThemeService.activeColorScheme.onSurface,
@@ -4544,7 +4543,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         color: ThemeService.activeColorScheme.secondary.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.add,
                         size: 14,
                         color: ThemeService.activeColorScheme.onSurface,
@@ -4830,7 +4829,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
                 if (!premium.isPremium)
                   Icon(Icons.lock, size: 14, color: ThemeService.activeColorScheme.tertiary)
                 else ...[
@@ -4847,7 +4846,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   const SizedBox(width: 4),
                   if (!hidden)
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete,
                         size: 14,
                         color: ThemeService.activeColorScheme.error,
@@ -6948,7 +6947,7 @@ class _EffectFilterSheet extends StatelessWidget {
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: EdgeInsets.symmetric(vertical: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
@@ -7069,7 +7068,7 @@ class _EffectFilterSheet extends StatelessWidget {
     );
     return Card(
       key: key,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       elevation: 1,
       shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -7095,7 +7094,7 @@ class _EffectFilterSheet extends StatelessWidget {
               onChanged: (v) => _update(context, e.copyWith(enabled: v)),
             ),
             IconButton(
-              icon: const Icon(Icons.copy, size: 18),
+              icon: Icon(Icons.copy, size: 18),
               tooltip: l10n.themeDuplicateAction,
               onPressed: () => _duplicate(context, e, effects),
             ),
@@ -7431,7 +7430,7 @@ class _EffectFilterSheet extends StatelessWidget {
               style: const TextStyle(fontSize: 11),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           GestureDetector(
             onTap: () => _pickFadeColor(context, e),
             child: Container(
@@ -7484,7 +7483,7 @@ class _EffectFilterSheet extends StatelessWidget {
               style: const TextStyle(fontSize: 11),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           GestureDetector(
             onTap: () => _pickMonochromeColor(context, e),
             child: Container(
@@ -7808,7 +7807,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: EdgeInsets.symmetric(vertical: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
@@ -8052,7 +8051,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
       widget.sceneId,
     );
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      margin: EdgeInsets.fromLTRB(16, 4, 16, 8),
       height: 140,
       // _TimelinePreviewは透明部分を含む合成結果をそのまま描画するため、
       // 背景はテーマ色ではなく実際のキャンバス背景色に合わせる必要がある
@@ -8085,7 +8084,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: EdgeInsets.symmetric(vertical: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(

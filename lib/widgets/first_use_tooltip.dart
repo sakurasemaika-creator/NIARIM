@@ -90,9 +90,9 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                   decoration: BoxDecoration(
                     color: Theme.of(ctx).colorScheme.primary,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: ThemeService.activeColorScheme.onSurface45,
+                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.45),
                         blurRadius: 18,
                         offset: Offset(0, 4),
                       ),

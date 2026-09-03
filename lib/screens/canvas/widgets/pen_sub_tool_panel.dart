@@ -183,7 +183,7 @@ class _BrushTab extends StatelessWidget {
           ),
           subtitle: Text(
             l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
-            style: const TextStyle(fontSize: 10),
+            style: TextStyle(fontSize: 10),
           ),
           trailing: GestureDetector(
             onTap: () => brushService.toggleFavoriteBrush(brush.id),
@@ -503,7 +503,7 @@ class LassoFillToneSheet extends StatelessWidget {
         const Divider(height: 1),
         // トーン一覧
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Text(
             l10n.toolbarBucketToneListLabel,
             style: TextStyle(fontSize: 11, color: ThemeService.activeColorScheme.onSurfaceVariant),

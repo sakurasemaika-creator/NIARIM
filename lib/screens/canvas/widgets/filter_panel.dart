@@ -268,7 +268,7 @@ class _FilterPanelState extends State<FilterPanel> {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   IconButton(
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
@@ -322,7 +322,7 @@ class _FilterPanelState extends State<FilterPanel> {
                           : () => filterService.selectFilter(f.id),
                       child: Container(
                         width: 72,
-                        margin: const EdgeInsets.only(right: 6),
+                        margin: EdgeInsets.only(right: 6),
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: isSelected
@@ -381,7 +381,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                     filterService,
                                     f,
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.more_vert,
                                     size: 14,
                                     color: ThemeService.activeColorScheme.onSurfaceVariant,
@@ -399,7 +399,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                 child: Center(
                                   child: ReorderableDragStartListener(
                                     index: index,
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.drag_indicator,
                                       size: 12,
                                       color: ThemeService.activeColorScheme.onSurfaceVariant,

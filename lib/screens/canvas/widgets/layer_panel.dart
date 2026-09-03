@@ -488,7 +488,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   subtitle: layer.type == model.LayerType.common
                       ? Text(
                           _rangeSummary(l10n, layer),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 9,
                             color: ThemeService.activeColorScheme.primary,
                           ),
@@ -513,7 +513,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           child: GestureDetector(
                             onTap: () => _showAutofillDialog(context, layer),
                             onLongPress: () => _showAutofillUpdateHelp(context),
-                            child: const Icon(
+                            child: Icon(
                               Icons.error,
                               color: ThemeService.activeColorScheme.tertiary,
                               size: 14,
@@ -663,42 +663,42 @@ class _LayerPanelState extends State<LayerPanel> {
 
   Widget _layerTypeIcon(BuildContext context, model.LayerType type) {
     return switch (type) {
-      model.LayerType.autoFillLineart => const Icon(
+      model.LayerType.autoFillLineart => Icon(
         Icons.edit,
         size: 12,
         color: ThemeService.activeColorScheme.tertiary,
       ),
-      model.LayerType.autoFill => const Icon(
+      model.LayerType.autoFill => Icon(
         Icons.palette,
         size: 12,
         color: ThemeService.activeColorScheme.secondary,
       ),
-      model.LayerType.common => const Icon(
+      model.LayerType.common => Icon(
         Icons.link,
         size: 12,
         color: ThemeService.activeColorScheme.primary,
       ),
-      model.LayerType.folder => const Icon(
+      model.LayerType.folder => Icon(
         Icons.folder,
         size: 12,
         color: ThemeService.activeColorScheme.tertiary,
       ),
-      model.LayerType.text => const Icon(
+      model.LayerType.text => Icon(
         Icons.text_fields,
         size: 12,
         color: ThemeService.activeColorScheme.secondary,
       ),
-      model.LayerType.timelineImage => const Icon(
+      model.LayerType.timelineImage => Icon(
         Icons.image,
         size: 12,
         color: ThemeService.activeColorScheme.secondary,
       ),
-      model.LayerType.timelineVideo => const Icon(
+      model.LayerType.timelineVideo => Icon(
         Icons.videocam,
         size: 12,
         color: ThemeService.activeColorScheme.primary,
       ),
-      model.LayerType.watermark => const Icon(
+      model.LayerType.watermark => Icon(
         Icons.branding_watermark,
         size: 12,
         color: ThemeService.activeColorScheme.secondary,
@@ -1464,7 +1464,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 );
               },
             ),
-            const Divider(),
+            Divider(),
             ListTile(
               leading: Icon(Icons.edit, color: ThemeService.activeColorScheme.tertiary),
               title: Text(l10n.layerPanelMenuLineartLayer),

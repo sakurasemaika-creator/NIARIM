@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
@@ -80,10 +81,10 @@ class CommunityWorkCard extends StatelessWidget {
                           colors: gradient,
                         ),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.play_circle_fill_rounded,
-                          color: Colors.white70,
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
                           size: 40,
                         ),
                       ),
@@ -97,18 +98,18 @@ class CommunityWorkCard extends StatelessWidget {
                       // 何位かがすぐ伝わるよう、他のバッジ文字より一回り
                       // 大きく・見出し用フォント（くらむぼん）で表示する。
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '#$rankNumber',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: ThemeService.activeColorScheme.onSurface,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Kuramubon',
@@ -125,20 +126,20 @@ class CommunityWorkCard extends StatelessWidget {
                       left: 6,
                       top: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.lock_outline,
-                              color: Colors.white,
+                              color: ThemeService.activeColorScheme.onSurface,
                               size: 11,
                             ),
                             const SizedBox(width: 3),
@@ -146,8 +147,8 @@ class CommunityWorkCard extends StatelessWidget {
                               AppLocalizations.of(
                                 context,
                               )!.communityVisibilityHiddenBadge,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: ThemeService.activeColorScheme.onSurface,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -160,18 +161,18 @@ class CommunityWorkCard extends StatelessWidget {
                     right: 6,
                     bottom: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: 6,
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
+                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         formatDurationLabel(work.durationSeconds),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: ThemeService.activeColorScheme.onSurface,
                           fontSize: 10,
                         ),
                       ),
@@ -182,18 +183,18 @@ class CommunityWorkCard extends StatelessWidget {
                       left: 6,
                       bottom: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: 6,
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           AppLocalizations.of(context)!.communityShortsBadge,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: ThemeService.activeColorScheme.onSurface,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -210,9 +211,9 @@ class CommunityWorkCard extends StatelessWidget {
                         onPressed: onBookmarkToggle,
                         icon: Icon(
                           isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                          color: Colors.white,
-                          shadows: const [
-                            Shadow(color: Colors.black54, blurRadius: 4),
+                          color: ThemeService.activeColorScheme.onSurface,
+                          shadows: [
+                            Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 4),
                           ],
                         ),
                       ),

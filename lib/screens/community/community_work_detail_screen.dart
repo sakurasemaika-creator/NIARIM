@@ -277,10 +277,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                                 kCommunityThumbnailGradients.length],
                       ),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         Icons.play_circle_fill_rounded,
-                        color: Colors.white70,
+                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
                         size: 56,
                       ),
                     ),

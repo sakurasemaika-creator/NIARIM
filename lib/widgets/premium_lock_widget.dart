@@ -28,7 +28,7 @@ class PremiumLockWidget extends StatelessWidget {
       child: Stack(
         children: [
           Opacity(opacity: 0.5, child: child),
-          const Positioned(
+          Positioned(
             right: 4,
             top: 4,
             child: Icon(Icons.lock, size: 16, color: ThemeService.activeColorScheme.tertiary),
@@ -88,7 +88,7 @@ class _PremiumBannerDialog extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) => Container(
                   height: 200,
                   color: ThemeService.activeColorScheme.onSurfaceVariant,
-                  child: const Center(
+                  child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

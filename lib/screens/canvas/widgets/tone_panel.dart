@@ -97,7 +97,7 @@ class _TonePanelState extends State<TonePanel> {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   IconButton(
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
@@ -226,7 +226,7 @@ class _TonePanelState extends State<TonePanel> {
                     ? Center(
                         child: Text(
                           l10n.toneEmpty,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: ThemeService.activeColorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
@@ -324,7 +324,7 @@ class _TonePanelState extends State<TonePanel> {
                                         value: 'delete',
                                         child: Text(
                                           l10n.commonDelete,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: ThemeService.activeColorScheme.error,
                                           ),
                                         ),
@@ -334,7 +334,7 @@ class _TonePanelState extends State<TonePanel> {
                                 if (!isFiltering)
                                   ReorderableDragStartListener(
                                     index: index,
-                                    child: const Padding(
+                                    child: Padding(
                                       padding: EdgeInsets.only(left: 2),
                                       child: Icon(
                                         Icons.drag_indicator,

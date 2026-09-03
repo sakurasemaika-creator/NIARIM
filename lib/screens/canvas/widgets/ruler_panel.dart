@@ -52,7 +52,7 @@ class RulerPanel extends StatelessWidget {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   if (activeRuler != null)
                     TextButton(
                       onPressed: () => onRulerChanged(null),

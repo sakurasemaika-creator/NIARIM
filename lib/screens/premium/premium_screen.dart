@@ -710,7 +710,6 @@ class PremiumScreen extends StatelessWidget {
                           color: scheme.onSurface,
                         ),
                       ),
-                        ),
                     ],
                   ),
                 ),

@@ -219,7 +219,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 fontFamilyFallback: kHeadingFontFallback,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Card(
               elevation: 1,
               shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),

@@ -393,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen>
                         }),
                         child: Text(l10n.homeSelectionAllDeselect),
                       ),
-                      const Spacer(),
+                      Spacer(),
                       Text(l10n.homeSelectionCount(_selectedIds.length)),
                       if (_selectedIds.isNotEmpty) ...[
                         IconButton(
@@ -1122,7 +1122,7 @@ class _SharedTab extends StatelessWidget {
       onDeleteFolder: (id) =>
           context.read<ProjectService>().deleteSharedFolder(id),
       itemBuilder: (context, project) => Card(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         elevation: 1,
         shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
         color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -1215,7 +1215,7 @@ class _SharedFolderScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final project = items[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(
+                  margin: EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 4,
                   ),
@@ -1466,7 +1466,7 @@ class _TrashTab extends StatelessWidget {
               );
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
         return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           elevation: 1,
           shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
           color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -1798,7 +1798,7 @@ class _WorkListItem extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       elevation: 1,
       shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
       color: scheme.surfaceContainerLow,
@@ -1834,7 +1834,7 @@ class _WorkListItem extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline,
                 size: 20,
                 color: ThemeService.activeColorScheme.error,

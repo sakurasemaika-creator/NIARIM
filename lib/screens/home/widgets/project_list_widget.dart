@@ -251,7 +251,7 @@ class ProjectListWidget extends StatelessWidget {
   }) {
     final placeholder = Container(
       color: Color(project.backgroundColor),
-      child: const Center(child: Icon(Icons.image, color: ThemeService.activeColorScheme.onSurface38)),
+      child: Center(child: Icon(Icons.image, color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.38))),
     );
     final path = project.thumbnailPath;
     if (path == null) return placeholder;
@@ -347,7 +347,7 @@ class ProjectListWidget extends StatelessWidget {
           : () => context.push('/canvas/${project.id}'),
       onLongPress: () => onLongPress(project.id),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: Duration(milliseconds: 150),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
@@ -407,7 +407,7 @@ class ProjectListWidget extends StatelessWidget {
                       child: Text(
                         project.name,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: ThemeService.activeColorScheme.onSurface,
                           fontWeight: FontWeight.w600,
@@ -421,12 +421,12 @@ class ProjectListWidget extends StatelessWidget {
                         top: 4,
                         right: 4,
                         child: Container(
-                          padding: const EdgeInsets.all(3),
+                          padding: EdgeInsets.all(3),
                           decoration: BoxDecoration(
                             color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.star,
                             color: ThemeService.activeColorScheme.tertiary,
                             size: 14,
@@ -481,7 +481,7 @@ class ProjectListWidget extends StatelessWidget {
           : () => onOpenFolder(folder.id),
       onLongPress: () => onLongPress(folder.id),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: Duration(milliseconds: 150),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
@@ -542,7 +542,7 @@ class ProjectListWidget extends StatelessWidget {
                             color: scheme.surface.withValues(alpha: 0.75),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.star,
                             color: ThemeService.activeColorScheme.tertiary,
                             size: 14,

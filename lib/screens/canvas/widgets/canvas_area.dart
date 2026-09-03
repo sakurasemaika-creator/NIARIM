@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -57,7 +56,7 @@ enum _TransformMode { translate, scale, rotate }
 /// （ピンチズームでキャンバス内容ごと縮小した際、背後にテーマの
 /// 明るい背景色が透けて見えてしまう不具合の修正のため、両者を同じ色に
 /// 揃える必要がある）。
-const Color kCanvasOutsideColor = Color(0xFF3A3A3A);
+Color get kCanvasOutsideColor => ThemeService.activeColorScheme.surfaceContainerHighest;
 
 Rect canvasDrawingRectFor(Size size, Project? project) {
   final hasExtended = project?.hasExtendedDrawingArea ?? false;
@@ -3196,6 +3195,9 @@ class _CanvasAreaState extends State<CanvasArea> {
               child: RepaintBoundary(
                 child: CustomPaint(
                   painter: _CanvasPainter(
+                    handleColor: ThemeService.activeColorScheme.primary,
+                    handleOutlineColor: ThemeService.activeColorScheme.onSurface,
+                    extendedAreaWarningColor: ThemeService.activeColorScheme.error,
                     project: widget.project,
                     background: widget.background,
                     transform: _transformController.value,
@@ -3381,9 +3383,9 @@ class _CanvasPainter extends CustomPainter {
     this.meshControlPoints,
     this.meshSourceImage,
     this.showMeshHandles = false,
-    this.handleColor = ThemeService.activeColorScheme.primary,
-    this.handleOutlineColor = ThemeService.activeColorScheme.onSurface,
-    this.extendedAreaWarningColor = ThemeService.activeColorScheme.error,
+    required this.handleColor,
+    required this.handleOutlineColor,
+    required this.extendedAreaWarningColor,
   });
 
   @override
@@ -3593,7 +3595,7 @@ class _CanvasPainter extends CustomPainter {
       final sy = drawingRect.height / (project?.exportHeight ?? 1080);
       Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final shapePaint = Paint()
-        ..color = ThemeService.activeColorScheme.onSurface87
+        ..color = ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.87)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
       switch (shapeKind) {

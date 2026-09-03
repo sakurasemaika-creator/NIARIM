@@ -91,7 +91,7 @@ class AdBannerMockWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      key: const Key('fixed-banner-ad-mock'),
+      key: Key('fixed-banner-ad-mock'),
       width: 320,
       height: 50,
       decoration: BoxDecoration(
@@ -101,7 +101,7 @@ class AdBannerMockWidget extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         l10n.adMockPlaceholderLabel,
-        style: TextStyle(color: ThemeService.activeColorScheme.onSurface70, fontSize: 12),
+        style: TextStyle(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70), fontSize: 12),
         textAlign: TextAlign.center,
       ),
     );
@@ -118,7 +118,7 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Container(
-        key: const Key('medium-rectangle-ad-mock'),
+        key: Key('medium-rectangle-ad-mock'),
         width: 300,
         height: 250,
         decoration: BoxDecoration(
@@ -128,7 +128,7 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           l10n.adMediumRectangleMockPlaceholderLabel,
-          style: TextStyle(color: ThemeService.activeColorScheme.onSurface70, fontSize: 12),
+          style: TextStyle(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70), fontSize: 12),
           textAlign: TextAlign.center,
         ),
       ),

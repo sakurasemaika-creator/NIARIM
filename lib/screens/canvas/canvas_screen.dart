@@ -998,7 +998,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
                             size: 22,
-                            color: ThemeService.activeColorScheme.onSurface70,
+                            color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
                           ),
                         ),
                       ),

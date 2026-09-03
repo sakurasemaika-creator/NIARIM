@@ -98,7 +98,7 @@ class _BrushPanelState extends State<BrushPanel> {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   // お気に入りのみ表示
                   IconButton(
                     icon: Icon(
@@ -239,7 +239,7 @@ class _BrushPanelState extends State<BrushPanel> {
                     ? Center(
                         child: Text(
                           l10n.brushEmpty,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: ThemeService.activeColorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
@@ -348,7 +348,7 @@ class _BrushPanelState extends State<BrushPanel> {
                                         value: 'delete',
                                         child: Text(
                                           l10n.commonDelete,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: ThemeService.activeColorScheme.error,
                                           ),
                                         ),
@@ -358,7 +358,7 @@ class _BrushPanelState extends State<BrushPanel> {
                                 if (!isFiltering)
                                   ReorderableDragStartListener(
                                     index: index,
-                                    child: const Padding(
+                                    child: Padding(
                                       padding: EdgeInsets.only(left: 2),
                                       child: Icon(
                                         Icons.drag_indicator,

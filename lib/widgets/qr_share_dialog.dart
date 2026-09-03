@@ -34,7 +34,7 @@ class QrShareDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               color: ThemeService.activeColorScheme.onSurface,
               child: QrImageView(
                 data: payload,

@@ -214,7 +214,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                   fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
-              const Divider(),
+              Divider(),
               Center(
                 child: Container(
                   width: 120,

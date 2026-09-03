@@ -80,7 +80,7 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
             onReset: () => settings.resetRightDockOrder(),
             resetLabel: l10n.pcWorkspaceLayoutResetOrderButton,
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _sectionLabel(context, l10n.pcWorkspaceLayoutWidthSection),
           Card(
             elevation: 1,

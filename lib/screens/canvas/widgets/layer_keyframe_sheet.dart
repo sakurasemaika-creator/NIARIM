@@ -168,7 +168,7 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: EdgeInsets.symmetric(vertical: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
@@ -247,7 +247,7 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
                         ),
                         onTap: () => _editKeyframe(kf, isNew: false),
                         trailing: IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.delete,
                             size: 20,
                             color: ThemeService.activeColorScheme.error,
@@ -307,7 +307,7 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: EdgeInsets.symmetric(vertical: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(

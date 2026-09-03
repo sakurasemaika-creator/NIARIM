@@ -67,7 +67,7 @@ void showFolderManagementSheet(
               const Divider(height: 1),
               if (folders.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24),
                   child: Text(
                     l10n.folderManagementEmpty,
                     style: TextStyle(color: ThemeService.activeColorScheme.onSurfaceVariant),
@@ -89,7 +89,7 @@ void showFolderManagementSheet(
                     final f = folders[index];
                     return ListTile(
                       key: ValueKey(f.id),
-                      leading: const Icon(Icons.folder),
+                      leading: Icon(Icons.folder),
                       title: Text(f.name),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -121,7 +121,7 @@ void showFolderManagementSheet(
                             },
                           ),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.delete_outline,
                               size: 18,
                               color: ThemeService.activeColorScheme.error,

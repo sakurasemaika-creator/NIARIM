@@ -115,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen> {
             color: scheme.primary,
             borderRadius: BorderRadius.circular(logoSize * 0.22),
           ),
-          padding: const EdgeInsets.all(logoSize * 0.08),
+          padding: EdgeInsets.all(logoSize * 0.08),
           child: SvgPicture.asset(
             'assets/logo/app_logo.svg',
             colorFilter: ColorFilter.mode(ThemeService.activeColorScheme.onSurface, BlendMode.srcIn),
@@ -236,7 +236,7 @@ class _SplashActionButton extends StatelessWidget {
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -250,7 +250,7 @@ class _SplashActionButton extends StatelessWidget {
                 Text(
                   subLabel!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: ThemeService.activeColorScheme.onSurface,
                     fontSize: 12,
                     fontWeight: FontWeight.normal,

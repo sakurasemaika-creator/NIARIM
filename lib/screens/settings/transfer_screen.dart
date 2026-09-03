@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 // MaterialTypeはflutter/material.dart（Material widgetの描画種別）と
@@ -89,7 +88,7 @@ class _TransferScreenState extends State<TransferScreen> {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   Card(
                     elevation: 1,

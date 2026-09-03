@@ -61,7 +61,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               order: settings.toolbarOrder,
               hidden: settings.hiddenToolbarItems,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Card(
               elevation: 1,
               shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.15),
@@ -330,7 +330,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           l10n.workspaceTimelinePreviewLabel,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 9,
                             color: ThemeService.activeColorScheme.onSurface,
                             fontFamily: 'Kuramubon',
@@ -941,7 +941,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           ),
           if (_errorText != null)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: EdgeInsets.only(top: 4),
               child: Text(
                 _errorText!,
                 style: TextStyle(color: ThemeService.activeColorScheme.error, fontSize: 12),

@@ -755,7 +755,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         final scheme = Theme.of(context).colorScheme;
                         // 各項目を独立したカードとして浮かせる。
                         return Padding(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 4,
                           ),

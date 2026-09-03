@@ -215,7 +215,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                       l10n.saveTreeSlotOverwriteWarning(
                         _formatDate(existing.savedAt),
                       ),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: ThemeService.activeColorScheme.tertiary,
                       ),
@@ -384,7 +384,7 @@ class _GameSaveSlotTile extends StatelessWidget {
     final hasData = node != null;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: EdgeInsets.symmetric(vertical: 5),
       child: Material(
         color: hasData
             ? scheme.surfaceContainerLow

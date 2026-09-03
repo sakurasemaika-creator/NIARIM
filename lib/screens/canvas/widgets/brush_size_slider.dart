@@ -35,8 +35,8 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    const fgColor = ThemeService.activeColorScheme.onSurface;
-    const fgColorVariant = ThemeService.activeColorScheme.onSurface70;
+    fgColor = ThemeService.activeColorScheme.onSurface;
+    fgColorVariant = ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       color: Colors.transparent,

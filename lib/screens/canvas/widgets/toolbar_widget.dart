@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -418,7 +417,7 @@ class ToolbarWidget extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 4,
                       ),

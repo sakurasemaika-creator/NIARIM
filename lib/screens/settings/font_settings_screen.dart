@@ -233,7 +233,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                 onPressed: () => _showRenameDialog(context, f),
                               ),
                               IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.delete_outline,
                                   size: 18,
                                   color: ThemeService.activeColorScheme.error,

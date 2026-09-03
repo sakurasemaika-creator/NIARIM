@@ -511,7 +511,7 @@ class _SlotView extends StatelessWidget {
             children: [
               if (existing != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: EdgeInsets.only(bottom: 8),
                   child: Text(
                     l10n.saveTreeSlotOverwriteWarning(
                       _formatDate(existing.savedAt),
@@ -671,7 +671,7 @@ class _SlotTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     // 他の一覧画面（ホーム・設定・ヘルプ等）と統一した「影付きカード」デザイン。
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       child: Material(
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
@@ -1179,7 +1179,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             l10n.saveTreeSelectedCountLabel(_selectedIds.length, _limit),
             style: TextStyle(

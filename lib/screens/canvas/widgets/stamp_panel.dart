@@ -99,7 +99,7 @@ class _StampPanelState extends State<StampPanel> {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   IconButton(
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
@@ -231,7 +231,7 @@ class _StampPanelState extends State<StampPanel> {
                     ? Center(
                         child: Text(
                           l10n.stampEmpty,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: ThemeService.activeColorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
@@ -329,7 +329,7 @@ class _StampPanelState extends State<StampPanel> {
                                         value: 'delete',
                                         child: Text(
                                           l10n.commonDelete,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: ThemeService.activeColorScheme.error,
                                           ),
                                         ),
@@ -339,7 +339,7 @@ class _StampPanelState extends State<StampPanel> {
                                 if (!isFiltering)
                                   ReorderableDragStartListener(
                                     index: index,
-                                    child: const Padding(
+                                    child: Padding(
                                       padding: EdgeInsets.only(left: 2),
                                       child: Icon(
                                         Icons.drag_indicator,

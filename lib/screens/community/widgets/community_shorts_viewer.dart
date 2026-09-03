@@ -1,3 +1,4 @@
+import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
@@ -51,7 +52,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: ThemeService.activeColorScheme.onSurface,
       body: Stack(
         children: [
           PageView.builder(
@@ -72,11 +73,11 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
             left: 8,
             child: IconButton(
               tooltip: l10n.communityShortsModeExitTooltip,
-              icon: const Icon(
+              icon: Icon(
                 Icons.close,
-                color: Colors.white,
+                color: ThemeService.activeColorScheme.onSurface,
                 size: 28,
-                shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
+                shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 6)],
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -115,10 +116,10 @@ class _ShortsPage extends StatelessWidget {
               colors: gradient,
             ),
           ),
-          child: const Center(
+          child: Center(
             child: Icon(
               Icons.play_circle_fill_rounded,
-              color: Colors.white70,
+              color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
               size: 72,
             ),
           ),
@@ -137,7 +138,7 @@ class _ShortsPage extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withValues(alpha: 0.75),
+                  ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.75),
                 ],
               ),
             ),
@@ -155,8 +156,8 @@ class _ShortsPage extends StatelessWidget {
                 work.authorName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
@@ -166,17 +167,17 @@ class _ShortsPage extends StatelessWidget {
                 work.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  foregroundColor: ThemeService.activeColorScheme.onSurface,
+                  backgroundColor: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.15),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 6,
@@ -204,9 +205,9 @@ class _ShortsPage extends StatelessWidget {
                 onPressed: onToggleBookmark,
                 icon: Icon(
                   isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                  color: Colors.white,
+                  color: ThemeService.activeColorScheme.onSurface,
                   size: 32,
-                  shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
+                  shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 6)],
                 ),
               ),
               Text(
@@ -214,28 +215,28 @@ class _ShortsPage extends StatelessWidget {
                   work.bookmarkCount,
                   Localizations.localeOf(context).languageCode,
                 ),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 11,
-                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                  shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 4)],
                 ),
               ),
-              const SizedBox(height: 12),
-              const Icon(
+              SizedBox(height: 12),
+              Icon(
                 Icons.play_arrow_rounded,
-                color: Colors.white,
+                color: ThemeService.activeColorScheme.onSurface,
                 size: 26,
-                shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
+                shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 6)],
               ),
               Text(
                 formatCompactCount(
                   work.viewCount,
                   Localizations.localeOf(context).languageCode,
                 ),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: ThemeService.activeColorScheme.onSurface,
                   fontSize: 11,
-                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                  shadows: [Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 4)],
                 ),
               ),
             ],

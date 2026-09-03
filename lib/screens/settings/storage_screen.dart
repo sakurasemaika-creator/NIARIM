@@ -264,7 +264,7 @@ class _StorageScreenState extends State<StorageScreen> {
           title: l10n.storageOrganizeProjectsButton,
           onTap: () => context.push('/home'),
         ),
-        const Divider(height: 24),
+        Divider(height: 24),
         _actionTile(
           icon: Icons.warning_amber_outlined,
           iconColor: ThemeService.activeColorScheme.error,

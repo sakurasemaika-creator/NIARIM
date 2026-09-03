@@ -68,7 +68,7 @@ class _ExportScreenState extends State<ExportScreen> {
           children: [
             if (_error != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: 12),
                 child: Text(_error!, style: TextStyle(color: ThemeService.activeColorScheme.error)),
               ),
             Text(

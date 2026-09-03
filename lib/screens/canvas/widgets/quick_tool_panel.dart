@@ -106,7 +106,7 @@ class QuickToolPanel extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.delete,
                                     size: 16,
                                     color: ThemeService.activeColorScheme.error,

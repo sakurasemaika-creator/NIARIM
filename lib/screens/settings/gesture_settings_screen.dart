@@ -25,7 +25,7 @@ class GestureSettingsScreen extends StatelessWidget {
       body: desktopCentered(
         context,
         ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           children: [
             Card(
               elevation: 1,
