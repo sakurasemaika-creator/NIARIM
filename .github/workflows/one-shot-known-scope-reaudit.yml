@@ -10,7 +10,7 @@ on:
       - 'lib/screens/premium/premium_screen.dart'
       - 'lib/screens/canvas/widgets/frame_strip_widget.dart'
 
-# One-shot verification rerun after theme-migration repair. No self-dispatch.
+# Final deliberate one-shot verification on the repaired NIARIM app. No self-dispatch.
 jobs:
   verify:
     runs-on: ubuntu-latest
