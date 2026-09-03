@@ -1,4 +1,4 @@
-name: One-shot Apply Existing Visual Evidence 2
+name: One-shot Apply Existing Service Evidence
 
 on:
   push:
@@ -17,32 +17,34 @@ jobs:
         with:
           ref: dev_branch
           fetch-depth: 0
-      - name: スタンプとトーンをfinal_passへ反映
+      - name: 設定永続化とツールバー設定をfinal_passへ反映
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
           path=Path('audit-dashboard/feature-audit-manifest.json')
           data=json.loads(path.read_text())
-          confirmed={'stamp.all','tone.all'}
+          confirmed={'settings.persistence','settings.toolbar'}
           found=set()
           for f in data['features']:
               if f.get('id') in confirmed:
                   found.add(f['id'])
-                  for k in ['interaction','output','screenshot','visual','final_pass']:
-                      f[k]=True
-                  f['evidence_note']='Audit Continuous Queue #24 real-operation artifact visually reviewed; all built-in variants are rendered with distinct intended appearances.'
+                  f['interaction']=True
+                  f['output']=True
+                  f['final_pass']=True
+                  f['evidence_note']='direct_service_coverage_batch10_test.dart verifies write, reset/reorder/visibility/dock behavior and fresh SettingsService round-trip restoration; full suite passed in Audit Continuous Queue #24.'
           missing=confirmed-found
           if missing: raise SystemExit(f'missing ids: {sorted(missing)}')
           path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
           print('confirmed',sorted(found))
-          print('final_pass',sum(bool(f.get('final_pass')) for f in data['features']))
+          eligible=[f for f in data['features'] if not (f.get('device_required') and not f.get('final_pass'))]
+          print('final_pass_eligible',sum(bool(f.get('final_pass')) for f in eligible),'/',len(eligible))
           PY
       - name: dev_branchへ反映
         run: |
           git config user.name "NIARIM Audit Bot"
           git config user.email "actions@users.noreply.github.com"
           git add audit-dashboard/feature-audit-manifest.json
-          git commit -m "全7スタンプと全25トーンを最終確認済みに更新"
+          git commit -m "設定永続化とツールバー設定を最終確認済みに更新"
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
