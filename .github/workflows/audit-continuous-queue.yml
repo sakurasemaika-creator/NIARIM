@@ -11,6 +11,7 @@ on:
 permissions:
   contents: write
   actions: write
+  issues: write
 
 concurrency:
   group: audit-continuous-queue-dev
@@ -26,6 +27,13 @@ jobs:
         with:
           ref: dev_branch
           fetch-depth: 0
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -61,6 +69,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -84,6 +99,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -118,6 +140,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -141,6 +170,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -165,6 +201,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -188,6 +231,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -205,6 +255,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      - name: ダッシュボードを現在工程へ更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: '3'
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py
       - name: 未確認項目数を確認して必要なら次サイクルを起動
         shell: bash
         env:
