@@ -710,16 +710,6 @@ class PremiumScreen extends StatelessWidget {
                           color: scheme.onSurface,
                         ),
                       ),
-                      // 年額プランは総額だけだと月額と比べにくいので、
-                      // 月あたりの相当額を小さく添える。
-                      if (perMonthLabel != null)
-                        Text(
-                          perMonthLabel,
-                          textAlign: TextAlign.end,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: scheme.onSurfaceVariant,
-                          ),
                         ),
                     ],
                   ),

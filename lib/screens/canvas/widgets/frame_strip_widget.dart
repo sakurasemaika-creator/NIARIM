@@ -83,7 +83,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
         }),
         IgnorePointer(child: Center(child: Container(width: 48, height: 56, decoration: BoxDecoration(border: Border.all(color: context.watch<ThemeService>().current.updateMarkColor, width: 3), borderRadius: BorderRadius.circular(4))))),
       ])); })),
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: SegmentedButton<String>(segments: [ButtonSegment(value: 'frames', label: Text(l10n.frameStripFrameListModeLabel, style: const TextStyle(fontSize: 11))), ButtonSegment(value: 'timeline', label: Text(l10n.frameStripTimelineModeLabel, style: const TextStyle(fontSize: 11)))], selected: const {'frames'}, showSelectedIcon: false, style: const ButtonStyle(visualDensity: VisualDensity.compact, tapTargetSize: MaterialTapTargetSize.shrinkWrap, backgroundColor: WidgetStatePropertyAll(scheme.surface.withValues(alpha: 0))), onSelectionChanged: (selected) { if (selected.contains('timeline')) widget.onTimelineTap(); })),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: SegmentedButton<String>(segments: [ButtonSegment(value: 'frames', label: Text(l10n.frameStripFrameListModeLabel, style: const TextStyle(fontSize: 11))), ButtonSegment(value: 'timeline', label: Text(l10n.frameStripTimelineModeLabel, style: const TextStyle(fontSize: 11)))], selected: const {'frames'}, showSelectedIcon: false, style: ButtonStyle(visualDensity: VisualDensity.compact, tapTargetSize: MaterialTapTargetSize.shrinkWrap, backgroundColor: WidgetStatePropertyAll(scheme.surface.withValues(alpha: 0))), onSelectionChanged: (selected) { if (selected.contains('timeline')) widget.onTimelineTap(); })),
     ]));
   }
 }
