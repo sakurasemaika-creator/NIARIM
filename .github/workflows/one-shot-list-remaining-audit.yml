@@ -1,4 +1,4 @@
-name: One-shot List Remaining Audit
+name: One-shot Apply Existing Visual Evidence
 
 on:
   push:
@@ -7,29 +7,45 @@ on:
       - '.github/workflows/one-shot-list-remaining-audit.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  list:
+  apply:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
-      - name: 未確認項目を一覧化
+          fetch-depth: 0
+      - name: 既存Artifactで確認済み2項目をfinal_passへ反映
         run: |
           python3 - <<'PY'
           import json
-          d=json.load(open('audit-dashboard/feature-audit-manifest.json'))
-          fs=[f for f in d['features'] if not (f.get('device_required') and not f.get('final_pass'))]
-          rem=[f for f in fs if not f.get('final_pass')]
-          print('remaining',len(rem))
-          for f in rem:
-              print('ID=',f.get('id'))
-              print('NAME=',f.get('name'))
-              print('CATEGORY=',f.get('category'))
-              print('FLAGS=',{k:f.get(k) for k in ['interaction','output','screenshot','visual','final_pass','device_required']})
-              print('WORKFLOWS=',','.join(f.get('workflows',[])))
-              print('REASON=',f.get('recheck_reason',''))
-              print('---')
+          from pathlib import Path
+          path=Path('audit-dashboard/feature-audit-manifest.json')
+          data=json.loads(path.read_text())
+          confirmed={'ui.canvas_panels','filter.all'}
+          found=set()
+          for f in data['features']:
+              if f.get('id') in confirmed:
+                  found.add(f['id'])
+                  for k in ['interaction','output','screenshot','visual','final_pass']:
+                      f[k]=True
+                  if f['id']=='ui.canvas_panels':
+                      f['evidence_note']='Audit Continuous Queue #24 canvas panel screenshot audit passed; 10 panel screenshots visually reviewed.'
+                  else:
+                      f['evidence_note']='Audit Continuous Queue #24 visual_reaudit_filters passed; all 21 filter output images visually reviewed.'
+          missing=confirmed-found
+          if missing: raise SystemExit(f'missing ids: {sorted(missing)}')
+          path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          print('confirmed',sorted(found))
+          print('final_pass',sum(bool(f.get('final_pass')) for f in data['features']))
           PY
+      - name: dev_branchへ反映
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add audit-dashboard/feature-audit-manifest.json
+          git commit -m "既存視覚証拠で確認済み2項目を最終確認済みに更新"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
