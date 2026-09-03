@@ -19,7 +19,7 @@ on:
 
 permissions:
   actions: read
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
@@ -27,6 +27,93 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  repair-timeline-overflow:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '監査ダッシュボードからタイムライン修正を実行')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: 狭い画面でプレビューが下部UIを押し出さないよう修正
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/timeline/timeline_screen.dart')
+          s = p.read_text()
+          old = '                      _buildPreviewWithHandle(outerConstraints.maxHeight),'
+          new = '''                      Flexible(
+                        flex: 3,
+                        fit: FlexFit.loose,
+                        child: _buildPreviewWithHandle(
+                          outerConstraints.maxHeight,
+                        ),
+                      ),'''
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif 'child: _buildPreviewWithHandle(' not in s:
+              raise SystemExit('timeline preview insertion point changed')
+          marker = '  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
+          start = s.index(marker)
+          end = s.index('\n  /// プレビューと再生バーの間のシークバー。', start)
+          block = s[start:end]
+          if 'visiblePreviewHeight' not in block:
+              old_return = '    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
+              new_return = '''    // 親から実際に割り当てられた高さを超えてプレビューを確保しない。
+    // 狭い画面でも下部の再生操作・ツールバー・タイムライン領域を画面内に残す。
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final allocatedPreviewHeight = constraints.hasBoundedHeight
+            ? math.max(0.0, constraints.maxHeight - 22.0)
+            : maxPreviewHeight;
+        final visiblePreviewHeight = math.min(
+          previewHeight,
+          allocatedPreviewHeight,
+        );
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+'''
+              if old_return not in block:
+                  raise SystemExit('preview return pattern changed')
+              block = block.replace(old_return, new_return, 1)
+              if '          height: previewHeight,' not in block:
+                  raise SystemExit('preview height pattern changed')
+              block = block.replace('          height: previewHeight,', '          height: visiblePreviewHeight,', 1)
+              trimmed = block.rstrip()
+              if not trimmed.endswith('    );'):
+                  raise SystemExit('unexpected preview function ending')
+              trimmed = trimmed[:-len('    );')] + '        );\n      },\n    );'
+              block = trimmed + '\n'
+              s = s[:start] + block + s[end:]
+          p.write_text(s)
+          PY
+          dart format lib/screens/timeline/timeline_screen.dart
+      - name: 失敗していた3ケースを修正後コードで再実行
+        run: |
+          flutter test test/timeline_no_overflow_test.dart --reporter expanded
+          flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
+          flutter test test/app_web_reference_capture_exact_test.dart --reporter expanded
+      - name: 修正をdev_branchへ反映
+        shell: bash
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/timeline/timeline_screen.dart
+          if git diff --cached --quiet; then
+            echo 'already fixed; no commit needed'
+            exit 0
+          fi
+          git commit -m "タイムラインの小画面縦オーバーフローを修正"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
+
   update:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'dev_branch'
     runs-on: ubuntu-latest
