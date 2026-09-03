@@ -1,0 +1,26 @@
+name: One-shot Apply Known Scope UI Fixes
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-apply-known-scope-ui-fixes.yml'
+      - '.github/scripts/apply_known_scope_ui_fixes.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: python .github/scripts/apply_known_scope_ui_fixes.py
+      - name: Commit UI fixes
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/premium/premium_screen.dart lib/screens/canvas/widgets/frame_strip_widget.dart
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: finish premium and frame bulk-add UI"
+          git push origin HEAD:dev_branch
