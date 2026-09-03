@@ -84,4 +84,4 @@ jobs:
             coverage/lcov.info
           retention-days: 7
 
-# Audit trigger revision 4: current HEAD after real-operation visual selection screenshots.
+# Audit trigger revision 5: current HEAD after built-in Pen/G-Pen continuity fix.
