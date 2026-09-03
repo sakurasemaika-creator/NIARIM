@@ -2317,6 +2317,31 @@ class AppLocalizationsFr extends AppLocalizations {
   String get creativePanelSearchTooltip => 'Rechercher par nom';
 
   @override
+  String get creativePanelSearchModeKeyword =>
+      'Recherche par mot-clé (appuyez pour la recherche par étiquette)';
+
+  @override
+  String get creativePanelSearchModeTag =>
+      'Recherche par étiquette (appuyez pour la recherche par mot-clé)';
+
+  @override
+  String get creativePanelTagSearchHint => 'Rechercher par étiquette';
+
+  @override
+  String get creativePanelTagNoneYet =>
+      'Aucune étiquette pour l\'instant — ajoutez-en depuis l\'écran d\'édition';
+
+  @override
+  String get creativePanelTagsLabel => 'Étiquettes';
+
+  @override
+  String get creativePanelTagsHint =>
+      'Séparez-les par des virgules ou des espaces';
+
+  @override
+  String get creativePanelTagClearFilter => 'Effacer le filtre par étiquette';
+
+  @override
   String get creativePanelFolderButton => 'Dossier';
 
   @override

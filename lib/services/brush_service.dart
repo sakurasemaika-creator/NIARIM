@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../engine/brush_texture_cache.dart';
+import '../models/asset_tags.dart';
 import '../models/brush.dart';
 
 /// ブラシ管理サービス。
@@ -325,6 +326,41 @@ class BrushService extends ChangeNotifier {
     _brushes.add(brush.copyWith(id: newId, name: '${brush.name} (コピー)'));
     notifyListeners();
     _persist();
+  }
+
+  /// ブラシへ分類用タグを設定する（既存のタグ列を置き換える）。
+  ///
+  /// お気に入りと同様、**組み込みブラシにも付けられる**。編集・削除は
+  /// できなくても「どう分類したいか」は利用者の都合であり、そこを縛ると
+  /// タグ機能がほとんど使えなくなるため（`updateXxx`のような
+  /// `isBuiltIn`ガードは意図的に置いていない）。
+  void setTags(String id, List<String> tags) {
+    final idx = _brushes.indexWhere((e) => e.id == id);
+    if (idx < 0) return;
+    _brushes[idx] = _brushes[idx].copyWith(tags: normalizeTags(tags));
+    notifyListeners();
+    _persist();
+  }
+
+  /// 登録されている全タグを、使われている件数の多い順（同数なら名前順）で
+  /// 返す。タグ検索の候補チップに使う。表記ゆれで別タグ扱いにならないよう、
+  /// 大文字小文字を無視して数え、代表表記は最初に見つかったものを使う。
+  List<String> allTags() {
+    final count = <String, int>{};
+    final display = <String, String>{};
+    for (final e in _brushes) {
+      for (final tag in e.tags) {
+        final key = tag.toLowerCase();
+        count[key] = (count[key] ?? 0) + 1;
+        display.putIfAbsent(key, () => tag);
+      }
+    }
+    final keys = count.keys.toList()
+      ..sort((a, b) {
+        final c = count[b]!.compareTo(count[a]!);
+        return c != 0 ? c : a.compareTo(b);
+      });
+    return [for (final k in keys) display[k]!];
   }
 
   void toggleFavoriteBrush(String id) {

@@ -2286,6 +2286,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creativePanelSearchTooltip => 'Search by Name';
 
   @override
+  String get creativePanelSearchModeKeyword =>
+      'Searching by keyword (tap for tag search)';
+
+  @override
+  String get creativePanelSearchModeTag =>
+      'Searching by tag (tap for keyword search)';
+
+  @override
+  String get creativePanelTagSearchHint => 'Search by tag';
+
+  @override
+  String get creativePanelTagNoneYet =>
+      'No tags yet — add them from the edit screen';
+
+  @override
+  String get creativePanelTagsLabel => 'Tags';
+
+  @override
+  String get creativePanelTagsHint => 'Separate with commas or spaces';
+
+  @override
+  String get creativePanelTagClearFilter => 'Clear tag filter';
+
+  @override
   String get creativePanelFolderButton => 'Folder';
 
   @override

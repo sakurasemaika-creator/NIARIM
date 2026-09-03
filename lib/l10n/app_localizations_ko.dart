@@ -2210,6 +2210,27 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creativePanelSearchTooltip => '이름으로 검색';
 
   @override
+  String get creativePanelSearchModeKeyword => '키워드 검색 중 (탭하면 태그 검색)';
+
+  @override
+  String get creativePanelSearchModeTag => '태그 검색 중 (탭하면 키워드 검색)';
+
+  @override
+  String get creativePanelTagSearchHint => '태그로 검색';
+
+  @override
+  String get creativePanelTagNoneYet => '아직 태그가 없습니다. 편집 화면에서 붙일 수 있습니다';
+
+  @override
+  String get creativePanelTagsLabel => '태그';
+
+  @override
+  String get creativePanelTagsHint => '쉼표나 공백으로 구분해 입력';
+
+  @override
+  String get creativePanelTagClearFilter => '태그 필터 해제';
+
+  @override
   String get creativePanelFolderButton => '폴더';
 
   @override

@@ -4103,6 +4103,48 @@ abstract class AppLocalizations {
   /// **'名前で検索'**
   String get creativePanelSearchTooltip;
 
+  /// No description provided for @creativePanelSearchModeKeyword.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーワード検索中（タップでタグ検索へ）'**
+  String get creativePanelSearchModeKeyword;
+
+  /// No description provided for @creativePanelSearchModeTag.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ検索中（タップでキーワード検索へ）'**
+  String get creativePanelSearchModeTag;
+
+  /// No description provided for @creativePanelTagSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグで検索'**
+  String get creativePanelTagSearchHint;
+
+  /// No description provided for @creativePanelTagNoneYet.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだタグがありません。編集画面から付けられます'**
+  String get creativePanelTagNoneYet;
+
+  /// No description provided for @creativePanelTagsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ'**
+  String get creativePanelTagsLabel;
+
+  /// No description provided for @creativePanelTagsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'カンマか空白で区切って入力'**
+  String get creativePanelTagsHint;
+
+  /// No description provided for @creativePanelTagClearFilter.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグの絞り込みを解除'**
+  String get creativePanelTagClearFilter;
+
   /// No description provided for @creativePanelFolderButton.
   ///
   /// In ja, this message translates to:

@@ -2191,6 +2191,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creativePanelSearchTooltip => '按名称搜索';
 
   @override
+  String get creativePanelSearchModeKeyword => '正在按关键词搜索（点按切换到标签搜索）';
+
+  @override
+  String get creativePanelSearchModeTag => '正在按标签搜索（点按切换到关键词搜索）';
+
+  @override
+  String get creativePanelTagSearchHint => '按标签搜索';
+
+  @override
+  String get creativePanelTagNoneYet => '还没有标签，可在编辑界面添加';
+
+  @override
+  String get creativePanelTagsLabel => '标签';
+
+  @override
+  String get creativePanelTagsHint => '用逗号或空格分隔输入';
+
+  @override
+  String get creativePanelTagClearFilter => '清除标签筛选';
+
+  @override
   String get creativePanelFolderButton => '文件夹';
 
   @override
@@ -7954,6 +7975,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creativePanelSearchTooltip => '依名稱搜尋';
+
+  @override
+  String get creativePanelSearchModeKeyword => '正在依關鍵字搜尋（點按切換為標籤搜尋）';
+
+  @override
+  String get creativePanelSearchModeTag => '正在依標籤搜尋（點按切換為關鍵字搜尋）';
+
+  @override
+  String get creativePanelTagSearchHint => '依標籤搜尋';
+
+  @override
+  String get creativePanelTagNoneYet => '尚未有標籤，可在編輯畫面新增';
+
+  @override
+  String get creativePanelTagsLabel => '標籤';
+
+  @override
+  String get creativePanelTagsHint => '以逗號或空格分隔輸入';
+
+  @override
+  String get creativePanelTagClearFilter => '清除標籤篩選';
 
   @override
   String get creativePanelFolderButton => '資料夾';

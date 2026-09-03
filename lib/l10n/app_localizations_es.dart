@@ -2319,6 +2319,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creativePanelSearchTooltip => 'Buscar por nombre';
 
   @override
+  String get creativePanelSearchModeKeyword =>
+      'Buscando por palabra clave (toca para buscar por etiqueta)';
+
+  @override
+  String get creativePanelSearchModeTag =>
+      'Buscando por etiqueta (toca para buscar por palabra clave)';
+
+  @override
+  String get creativePanelTagSearchHint => 'Buscar por etiqueta';
+
+  @override
+  String get creativePanelTagNoneYet =>
+      'Aún no hay etiquetas: añádelas desde la pantalla de edición';
+
+  @override
+  String get creativePanelTagsLabel => 'Etiquetas';
+
+  @override
+  String get creativePanelTagsHint => 'Sepáralas con comas o espacios';
+
+  @override
+  String get creativePanelTagClearFilter => 'Quitar el filtro de etiquetas';
+
+  @override
   String get creativePanelFolderButton => 'Carpeta';
 
   @override

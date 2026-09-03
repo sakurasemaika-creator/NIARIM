@@ -2201,6 +2201,27 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creativePanelSearchTooltip => '名前で検索';
 
   @override
+  String get creativePanelSearchModeKeyword => 'キーワード検索中（タップでタグ検索へ）';
+
+  @override
+  String get creativePanelSearchModeTag => 'タグ検索中（タップでキーワード検索へ）';
+
+  @override
+  String get creativePanelTagSearchHint => 'タグで検索';
+
+  @override
+  String get creativePanelTagNoneYet => 'まだタグがありません。編集画面から付けられます';
+
+  @override
+  String get creativePanelTagsLabel => 'タグ';
+
+  @override
+  String get creativePanelTagsHint => 'カンマか空白で区切って入力';
+
+  @override
+  String get creativePanelTagClearFilter => 'タグの絞り込みを解除';
+
+  @override
   String get creativePanelFolderButton => 'フォルダ';
 
   @override

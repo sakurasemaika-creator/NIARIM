@@ -1,3 +1,5 @@
+import 'asset_tags.dart';
+
 /// スタンプモデル。色情報をスタンプ画像自体が保持する。
 class Stamp {
   final String id;
@@ -15,6 +17,10 @@ class Stamp {
   // テクスチャをドット絵風（モザイク低解像度化＋色数削減）に加工してから
   // 描画する（procedural_texture.dartのgenerateBuiltInStampTexture参照）。
   final bool pixelMode;
+  // 分類用の自由入力タグ。お気に入り・フォルダとは別軸で、1つの素材へ
+  // 複数の観点（用途・雰囲気・案件名など）を付けて絞り込めるようにする。
+  // 一覧画面の検索欄は「キーワード検索」と「タグ検索」を切り替えられる。
+  final List<String> tags;
 
   const Stamp({
     required this.id,
@@ -27,6 +33,7 @@ class Stamp {
     this.scatter = 0.0,
     this.opacity = 100,
     this.pixelMode = false,
+    this.tags = const [],
   });
 
   Stamp copyWith({
@@ -40,6 +47,7 @@ class Stamp {
     double? scatter,
     int? opacity,
     bool? pixelMode,
+    List<String>? tags,
   }) {
     return Stamp(
       id: id ?? this.id,
@@ -52,6 +60,7 @@ class Stamp {
       scatter: scatter ?? this.scatter,
       opacity: opacity ?? this.opacity,
       pixelMode: pixelMode ?? this.pixelMode,
+      tags: tags ?? this.tags,
     );
   }
 
@@ -66,6 +75,7 @@ class Stamp {
     'scatter': scatter,
     'opacity': opacity,
     'pixelMode': pixelMode,
+    'tags': tags,
   };
 
   factory Stamp.fromJson(Map<String, dynamic> j) => Stamp(
@@ -79,5 +89,6 @@ class Stamp {
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
     opacity: (j['opacity'] as num?)?.round().clamp(1, 100) ?? 100,
     pixelMode: j['pixelMode'] as bool? ?? false,
+    tags: parseTags(j['tags']),
   );
 }

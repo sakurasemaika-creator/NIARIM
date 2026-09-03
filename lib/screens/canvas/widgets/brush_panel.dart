@@ -13,6 +13,8 @@ import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
+import 'asset_search_bar.dart';
+import 'asset_tag_dialog.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -25,6 +27,7 @@ class BrushPanel extends StatefulWidget {
 class _BrushPanelState extends State<BrushPanel> {
   bool _showFavoritesOnly = false;
   bool _showSearch = false;
+  AssetSearchMode _searchMode = AssetSearchMode.keyword;
   String _searchQuery = '';
   final _searchController = TextEditingController();
   // null=全て表示・''(空文字)=フォルダなしのみ・その他=そのフォルダIDのみ
@@ -53,7 +56,14 @@ class _BrushPanelState extends State<BrushPanel> {
     }
     final query = _searchQuery.trim().toLowerCase();
     if (query.isNotEmpty) {
-      brushes = brushes.where((b) => b.name.toLowerCase().contains(query));
+      brushes = brushes.where(
+        (b) => assetMatchesSearch(
+          name: b.name,
+          tags: b.tags,
+          mode: _searchMode,
+          query: query,
+        ),
+      );
     }
     final brushList = brushes.toList();
     final isFiltering =
@@ -200,19 +210,20 @@ class _BrushPanelState extends State<BrushPanel> {
                   ),
                 ),
               if (_showSearch)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    style: const TextStyle(fontSize: 13),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: l10n.brushSearchHint,
-                      prefixIcon: const Icon(Icons.search, size: 16),
-                    ),
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                  ),
+                AssetSearchBar(
+                  controller: _searchController,
+                  mode: _searchMode,
+                  availableTags: brushService.allTags(),
+                  keywordHint: l10n.brushSearchHint,
+                  onModeChanged: (m) => setState(() {
+                    _searchMode = m;
+                    // 方式を切り替えたら入力は持ち越さない。名前とタグでは
+                    // 一致するものが全く違い、切り替えた瞬間に0件になって
+                    // 「壊れた」ように見えるため。
+                    _searchQuery = '';
+                    _searchController.clear();
+                  }),
+                  onQueryChanged: (v) => setState(() => _searchQuery = v),
                 ),
               const Divider(),
               Expanded(
@@ -313,6 +324,13 @@ class _BrushPanelState extends State<BrushPanel> {
                                       value: 'move',
                                       child: Text(l10n.folderMoveToTitle),
                                     ),
+                                    // タグはお気に入りと同じく
+                                    // 「利用者の分類」なので、
+                                    // 組み込み素材にも付けられる。
+                                    PopupMenuItem(
+                                      value: 'tags',
+                                      child: Text(l10n.creativePanelTagsLabel),
+                                    ),
                                     PopupMenuItem(
                                       value: 'export',
                                       child: Text(l10n.transferExport),
@@ -396,6 +414,14 @@ class _BrushPanelState extends State<BrushPanel> {
               .map((f) => (id: f.id, name: f.name))
               .toList(),
           onSelect: (folderId) => service.moveToFolder(brush.id, folderId),
+        );
+      case 'tags':
+        showAssetTagDialog(
+          context,
+          assetName: brush.name,
+          currentTags: brush.tags,
+          suggestions: service.allTags(),
+          onSave: (tags) => service.setTags(brush.id, tags),
         );
       case 'export':
         _exportBrush(context, service, brush);

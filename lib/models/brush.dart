@@ -1,3 +1,4 @@
+import 'asset_tags.dart';
 import 'pixel_color_mode.dart';
 
 class Brush {
@@ -49,6 +50,10 @@ class Brush {
   final PixelColorMode pixelColorMode;
   final int pixelColorLevels;
   final List<int> pixelExplicitColors;
+  // 分類用の自由入力タグ。お気に入り・フォルダとは別軸で、1つの素材へ
+  // 複数の観点（用途・雰囲気・案件名など）を付けて絞り込めるようにする。
+  // 一覧画面の検索欄は「キーワード検索」と「タグ検索」を切り替えられる。
+  final List<String> tags;
 
   const Brush({
     required this.id,
@@ -79,6 +84,7 @@ class Brush {
     this.pixelColorMode = PixelColorMode.none,
     this.pixelColorLevels = 8,
     this.pixelExplicitColors = const [0xFF000000],
+    this.tags = const [],
   });
 
   Brush copyWith({
@@ -110,6 +116,7 @@ class Brush {
     PixelColorMode? pixelColorMode,
     int? pixelColorLevels,
     List<int>? pixelExplicitColors,
+    List<String>? tags,
   }) {
     return Brush(
       id: id ?? this.id,
@@ -141,6 +148,7 @@ class Brush {
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
+      tags: tags ?? this.tags,
     );
   }
 
@@ -179,6 +187,7 @@ class Brush {
     'pixelColorMode': pixelColorMode.name,
     'pixelColorLevels': pixelColorLevels,
     'pixelExplicitColors': pixelExplicitColors,
+    'tags': tags,
   };
 
   factory Brush.fromJson(Map<String, dynamic> j) => Brush(
@@ -242,6 +251,7 @@ class Brush {
             ?.map((e) => e as int)
             .toList() ??
         const [0xFF000000],
+    tags: parseTags(j['tags']),
   );
 }
 

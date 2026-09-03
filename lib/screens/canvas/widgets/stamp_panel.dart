@@ -11,6 +11,8 @@ import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
+import 'asset_search_bar.dart';
+import 'asset_tag_dialog.dart';
 
 /// スタンプの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -25,6 +27,7 @@ class StampPanel extends StatefulWidget {
 class _StampPanelState extends State<StampPanel> {
   bool _showFavoritesOnly = false;
   bool _showSearch = false;
+  AssetSearchMode _searchMode = AssetSearchMode.keyword;
   String _searchQuery = '';
   final _searchController = TextEditingController();
   String? _folderFilter;
@@ -52,7 +55,14 @@ class _StampPanelState extends State<StampPanel> {
     }
     final query = _searchQuery.trim().toLowerCase();
     if (query.isNotEmpty) {
-      stamps = stamps.where((s) => s.name.toLowerCase().contains(query));
+      stamps = stamps.where(
+        (s) => assetMatchesSearch(
+          name: s.name,
+          tags: s.tags,
+          mode: _searchMode,
+          query: query,
+        ),
+      );
     }
     final stampList = stamps.toList();
     final current = stampService.currentStamp;
@@ -192,19 +202,20 @@ class _StampPanelState extends State<StampPanel> {
                   ),
                 ),
               if (_showSearch)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    style: const TextStyle(fontSize: 13),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: l10n.stampSearchHint,
-                      prefixIcon: const Icon(Icons.search, size: 16),
-                    ),
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                  ),
+                AssetSearchBar(
+                  controller: _searchController,
+                  mode: _searchMode,
+                  availableTags: stampService.allTags(),
+                  keywordHint: l10n.stampSearchHint,
+                  onModeChanged: (m) => setState(() {
+                    _searchMode = m;
+                    // 方式を切り替えたら入力は持ち越さない。名前とタグでは
+                    // 一致するものが全く違い、切り替えた瞬間に0件になって
+                    // 「壊れた」ように見えるため。
+                    _searchQuery = '';
+                    _searchController.clear();
+                  }),
+                  onQueryChanged: (v) => setState(() => _searchQuery = v),
                 ),
               const Divider(),
               Expanded(
@@ -294,6 +305,13 @@ class _StampPanelState extends State<StampPanel> {
                                       value: 'move',
                                       child: Text(l10n.folderMoveToTitle),
                                     ),
+                                    // タグはお気に入りと同じく
+                                    // 「利用者の分類」なので、
+                                    // 組み込み素材にも付けられる。
+                                    PopupMenuItem(
+                                      value: 'tags',
+                                      child: Text(l10n.creativePanelTagsLabel),
+                                    ),
                                     PopupMenuItem(
                                       value: 'export',
                                       child: Text(l10n.transferExport),
@@ -371,6 +389,14 @@ class _StampPanelState extends State<StampPanel> {
               .map((f) => (id: f.id, name: f.name))
               .toList(),
           onSelect: (folderId) => service.moveToFolder(stamp.id, folderId),
+        );
+      case 'tags':
+        showAssetTagDialog(
+          context,
+          assetName: stamp.name,
+          currentTags: stamp.tags,
+          suggestions: service.allTags(),
+          onSave: (tags) => service.setTags(stamp.id, tags),
         );
       case 'export':
         _exportStamp(context, service, stamp);
