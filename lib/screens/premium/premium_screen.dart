@@ -153,7 +153,6 @@ class PremiumScreen extends StatelessWidget {
                   premium,
                   PremiumService.yearlyProductId,
                   originalPrice: l10n.premiumYearlyOriginalPrice,
-                  perMonthLabel: l10n.premiumYearlyPerMonthLabel,
                 ),
                 const SizedBox(height: 12),
                 _planCard(
@@ -392,12 +391,12 @@ class PremiumScreen extends StatelessWidget {
   }) {
     final scheme = Theme.of(context).colorScheme;
     final foreground = premiumColumn
-        ? scheme.onPrimaryContainer
+        ? scheme.onPrimary
         : scheme.onSurface;
     if (value == '○') {
       return Icon(
         Icons.check_circle_rounded,
-        color: premiumColumn ? scheme.primary : scheme.onSurfaceVariant,
+        color: premiumColumn ? scheme.onPrimary : scheme.onSurfaceVariant,
         size: 20,
       );
     }
@@ -405,7 +404,7 @@ class PremiumScreen extends StatelessWidget {
       return Icon(
         Icons.remove_circle_outline_rounded,
         color: premiumColumn
-            ? scheme.onPrimaryContainer.withValues(alpha: 0.55)
+            ? scheme.onPrimary.withValues(alpha: 0.72)
             : scheme.outline,
         size: 20,
       );
@@ -443,7 +442,7 @@ class PremiumScreen extends StatelessWidget {
         l10n.premiumValueUploadPremium,
       ),
     ];
-    final premiumBg = scheme.primaryContainer;
+    final premiumBg = scheme.primary;
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
@@ -501,7 +500,7 @@ class PremiumScreen extends StatelessWidget {
                     Icon(
                       Icons.workspace_premium_rounded,
                       size: 14,
-                      color: scheme.primary,
+                      color: scheme.onPrimary,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -511,7 +510,7 @@ class PremiumScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
                         fontFamilyFallback: kHeadingFontFallback,
-                        color: scheme.onPrimaryContainer,
+                        color: scheme.onPrimary,
                       ),
                     ),
                   ],
@@ -568,7 +567,6 @@ class PremiumScreen extends StatelessWidget {
     PremiumService premium,
     String productId, {
     String? originalPrice,
-    String? perMonthLabel,
   }) {
     final scheme = Theme.of(context).colorScheme;
     final busy = premium.purchasePending;

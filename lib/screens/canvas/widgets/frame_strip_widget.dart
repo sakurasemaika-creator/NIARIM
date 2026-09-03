@@ -28,7 +28,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   @override void initState() { super.initState(); WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent(animate: false)); }
   @override void didUpdateWidget(covariant FrameStripWidget old) { super.didUpdateWidget(old); if (old.currentFrame != widget.currentFrame || old.sceneId != widget.sceneId) { final left = old.currentFrame; _refreshTick[left] = (_refreshTick[left] ?? 0) + 1; WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent(animate: true)); } }
   void _scrollToCurrent({required bool animate}) { if (!_scrollController.hasClients) return; final target = (widget.currentFrame * _itemExtent).clamp(0.0, _scrollController.position.maxScrollExtent); if (animate) { _scrollController.animateTo(target, duration: const Duration(milliseconds: 200), curve: Curves.easeOut); } else { _scrollController.jumpTo(target); } }
-  bool _handleScrollEnd(ScrollEndNotification notification, int total) { if (notification.dragDetails == null || widget.multiSelectMode || total <= 0 || !_scrollController.hasClients) return false; final nearest = (_scrollController.offset / _itemExtent).round().clamp(0, total - 1); if (nearest != widget.currentFrame) widget.onFrameSelected(nearest); else _scrollToCurrent(animate: true); return false; }
+  bool _handleScrollEnd(ScrollEndNotification notification, int total) { if (notification.dragDetails == null || widget.multiSelectMode || total <= 0 || !_scrollController.hasClients) return false; final nearest = (_scrollController.offset / _itemExtent).round().clamp(0, total - 1); if (nearest != widget.currentFrame) { widget.onFrameSelected(nearest); } else { _scrollToCurrent(animate: true); } return false; }
   @override void dispose() { _scrollController.dispose(); super.dispose(); }
 
   bool _canAddFrames(BuildContext context, ProjectService service, int count) {
@@ -70,7 +70,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
 
   @override Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!; final service = context.watch<ProjectService>(); final total = service.frameCount(widget.projectId, widget.sceneId); final scheme = Theme.of(context).colorScheme;
-    return Container(height: 64, color: Colors.transparent, child: Row(children: [
+    return Container(height: 64, color: scheme.surface.withValues(alpha: 0), child: Row(children: [
       Expanded(child: LayoutBuilder(builder: (context, constraints) { final sidePadding = ((constraints.maxWidth - _itemExtent) / 2).clamp(0.0, double.infinity); return NotificationListener<ScrollEndNotification>(onNotification: (n) => _handleScrollEnd(n, total), child: Stack(children: [
         ListView.builder(controller: _scrollController, scrollDirection: Axis.horizontal, padding: EdgeInsets.symmetric(horizontal: sidePadding), itemCount: total + 1, itemBuilder: (context, index) {
           if (index == total) return GestureDetector(onTap: () { if (!_canAddFrames(context, service, 1)) return; service.addFrame(widget.projectId, widget.sceneId); }, onLongPress: () => _showBatchAddDialog(context, service), child: Container(width: 48, margin: const EdgeInsets.all(4), decoration: BoxDecoration(border: Border.all(color: scheme.outline), borderRadius: BorderRadius.circular(4)), child: Center(child: Icon(Icons.add, color: scheme.onSurfaceVariant))));
@@ -83,7 +83,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
         }),
         IgnorePointer(child: Center(child: Container(width: 48, height: 56, decoration: BoxDecoration(border: Border.all(color: context.watch<ThemeService>().current.updateMarkColor, width: 3), borderRadius: BorderRadius.circular(4))))),
       ])); })),
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: SegmentedButton<String>(segments: [ButtonSegment(value: 'frames', label: Text(l10n.frameStripFrameListModeLabel, style: const TextStyle(fontSize: 11))), ButtonSegment(value: 'timeline', label: Text(l10n.frameStripTimelineModeLabel, style: const TextStyle(fontSize: 11)))], selected: const {'frames'}, showSelectedIcon: false, style: const ButtonStyle(visualDensity: VisualDensity.compact, tapTargetSize: MaterialTapTargetSize.shrinkWrap, backgroundColor: WidgetStatePropertyAll(Colors.transparent)), onSelectionChanged: (selected) { if (selected.contains('timeline')) widget.onTimelineTap(); })),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: SegmentedButton<String>(segments: [ButtonSegment(value: 'frames', label: Text(l10n.frameStripFrameListModeLabel, style: const TextStyle(fontSize: 11))), ButtonSegment(value: 'timeline', label: Text(l10n.frameStripTimelineModeLabel, style: const TextStyle(fontSize: 11)))], selected: const {'frames'}, showSelectedIcon: false, style: const ButtonStyle(visualDensity: VisualDensity.compact, tapTargetSize: MaterialTapTargetSize.shrinkWrap, backgroundColor: WidgetStatePropertyAll(scheme.surface.withValues(alpha: 0))), onSelectionChanged: (selected) { if (selected.contains('timeline')) widget.onTimelineTap(); })),
     ]));
   }
 }
