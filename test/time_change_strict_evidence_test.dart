@@ -7,8 +7,10 @@ import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/camera_engine.dart';
 import 'package:niarim/engine/filter_engine.dart';
+import 'package:niarim/engine/layer_keyframe_engine.dart';
 import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
+import 'package:niarim/models/layer_keyframe.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +46,72 @@ void main() {
     for (var i = 1; i < rendered.length; i++) {
       expect(_meanAbsDiff(rendered[i - 1], rendered[i]), greaterThan(0.15), reason: 'camera frame $i must visibly change');
     }
+  });
+
+  test('layer keyframe position/scale/rotation interpolation produces sequential visual evidence', () async {
+    final engine = LayerKeyframeEngine();
+    const keys = [
+      LayerKeyframe(
+        frameIndex: 0,
+        x: -30,
+        y: 16,
+        scale: 0.72,
+        rotation: -22,
+        easing: LayerKeyframeEasing.easeInOut,
+      ),
+      LayerKeyframe(
+        frameIndex: 10,
+        x: 34,
+        y: -20,
+        scale: 1.42,
+        rotation: 38,
+      ),
+    ];
+
+    final start = engine.valueAt(keys, 0);
+    final mid = engine.valueAt(keys, 5);
+    final end = engine.valueAt(keys, 10);
+    expect(start.x, -30);
+    expect(end.x, 34);
+    // easeInOut is exactly 0.5 at the interval midpoint.
+    expect(mid.x, closeTo(2, 1e-9));
+    expect(mid.y, closeTo(-2, 1e-9));
+    expect(mid.scale, closeTo(1.07, 1e-9));
+    expect(mid.rotation, closeTo(8, 1e-9));
+
+    final rendered = <Uint8List>[];
+    for (var frame = 0; frame <= 10; frame++) {
+      final kf = engine.valueAt(keys, frame);
+      final image = await _renderLayerKeyframe(engine, kf, 192, 144);
+      final rgba = await _rgba(image);
+      rendered.add(rgba);
+      await _saveImage(image, '${out.path}/layer_keyframe_${frame.toString().padLeft(2, '0')}.png');
+      image.dispose();
+    }
+    expect(_meanAbsDiff(rendered.first, rendered[5]), greaterThan(2));
+    expect(_meanAbsDiff(rendered[5], rendered.last), greaterThan(2));
+    for (var i = 1; i < rendered.length; i++) {
+      expect(_meanAbsDiff(rendered[i - 1], rendered[i]), greaterThan(0.10), reason: 'layer keyframe $i must visibly change');
+    }
+  });
+
+  test('layer keyframe easing curves differ from linear at quarter progress', () {
+    final engine = LayerKeyframeEngine();
+    const linear = [
+      LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.linear),
+      LayerKeyframe(frameIndex: 100, x: 100),
+    ];
+    const easeIn = [
+      LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.easeIn),
+      LayerKeyframe(frameIndex: 100, x: 100),
+    ];
+    const easeOut = [
+      LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.easeOut),
+      LayerKeyframe(frameIndex: 100, x: 100),
+    ];
+    expect(engine.valueAt(linear, 25).x, closeTo(25, 1e-9));
+    expect(engine.valueAt(easeIn, 25).x, lessThan(25));
+    expect(engine.valueAt(easeOut, 25).x, greaterThan(25));
   });
 
   test('fade presentation effect changes continuously across its active range', () async {
@@ -158,6 +226,22 @@ Future<ui.Image> _renderCameraFrame(CameraEngine engine, CameraKeyframe kf, int 
   canvas.drawCircle(const ui.Offset(135, 44), 20, ui.Paint()..color = const ui.Color(0xFF438EDB));
   final path = ui.Path()..moveTo(50, 112)..lineTo(96, 70)..lineTo(148, 112)..close();
   canvas.drawPath(path, ui.Paint()..color = const ui.Color(0xFF4BA56A));
+  canvas.restore();
+  return recorder.endRecording().toImage(w, h);
+}
+
+Future<ui.Image> _renderLayerKeyframe(LayerKeyframeEngine engine, LayerKeyframe kf, int w, int h) async {
+  final recorder = ui.PictureRecorder();
+  final canvas = ui.Canvas(recorder);
+  canvas.drawRect(ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()), ui.Paint()..color = const ui.Color(0xFFF3F0E9));
+  canvas.save();
+  engine.apply(canvas, kf, w.toDouble(), h.toDouble());
+  canvas.drawRRect(
+    ui.RRect.fromRectAndRadius(const ui.Rect.fromLTWH(48, 44, 96, 54), const ui.Radius.circular(10)),
+    ui.Paint()..color = const ui.Color(0xFFBE4A64),
+  );
+  canvas.drawRect(const ui.Rect.fromLTWH(58, 55, 25, 12), ui.Paint()..color = const ui.Color(0xFFF4D66D));
+  canvas.drawCircle(const ui.Offset(122, 72), 14, ui.Paint()..color = const ui.Color(0xFF3979B9));
   canvas.restore();
   return recorder.endRecording().toImage(w, h);
 }
