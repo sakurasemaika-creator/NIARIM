@@ -111,18 +111,20 @@ void main() {
       ) ?? 0;
     }
 
-    // 元画素自体があることと、遅くとも1秒で実Canvas描画へ反映されることを別々に確認。
+    // 元画素自体があることと、初期合成が短時間で実Canvasへ反映されることを別々に確認。
     final tile = tm.getTile(key, 0, 0) as Uint8List?;
     expect(tile, isNotNull);
     expect(tile![(40 * 256 + 30) * 4 + 3], 255, reason: '入力した既存画素はTileManager上に存在すること');
+    expect(samples['250ms']!, greaterThan(50),
+      reason: '本番Provider配線では既存画素が250ms以内に実Canvasへ表示されること。samples=$samples');
     expect(samples['1000ms']!, greaterThan(50),
-      reason: '本番Provider配線では既存画素が1秒以内に実Canvasへ表示されること。samples=$samples');
+      reason: '1秒時点でも既存画素が実Canvasへ表示されること。samples=$samples');
     expect(samples['2000ms']!, greaterThan(50),
       reason: '表示後に既存画素が消えないこと。samples=$samples');
 
-    await File('${out.path}/canvas_initial_composite_counts.txt')
-        .writeAsString(samples.entries.map((e) => '${e.key}=${e.value}').join('\n'));
-  });
+    await tester.runAsync(() => File('${out.path}/canvas_initial_composite_counts.txt')
+        .writeAsString(samples.entries.map((e) => '${e.key}=${e.value}').join('\n')));
+  }, timeout: const Timeout(Duration(seconds: 30)));
 }
 
 Future<int> _captureAndCountRed(GlobalKey key, String path) async {
