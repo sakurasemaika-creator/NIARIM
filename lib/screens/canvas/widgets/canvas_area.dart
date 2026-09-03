@@ -129,6 +129,8 @@ class CanvasArea extends StatefulWidget {
   // 通知する。反転自体はmeshCommitToken等と同じトークン方式で駆動する
   // （主導権はcanvas_screen.dart側、実処理はCanvasArea側）。 ───────────
   final int invertSelectionToken;
+  final int selectAllSelectionToken;
+  final int clearSelectionToken;
   final ValueChanged<bool>? onSelectionActiveChanged;
 
   const CanvasArea({
@@ -160,6 +162,8 @@ class CanvasArea extends StatefulWidget {
     this.onNextFrame,
     this.onPreviousFrame,
     this.invertSelectionToken = 0,
+    this.selectAllSelectionToken = 0,
+    this.clearSelectionToken = 0,
     this.onSelectionActiveChanged,
   });
 
@@ -473,6 +477,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (old.invertSelectionToken != widget.invertSelectionToken) {
       _invertSelectionMask();
     }
+    if (old.selectAllSelectionToken != widget.selectAllSelectionToken) {
+      _selectAllSelectionMask();
+    }
+    if (old.clearSelectionToken != widget.clearSelectionToken) {
+      _clearSelectionMask();
+    }
   }
 
   @override
@@ -504,6 +514,13 @@ class _CanvasAreaState extends State<CanvasArea> {
     _selectionOverlayImage = null;
     setState(() => _selectionMask = null);
     widget.onSelectionActiveChanged?.call(false);
+  }
+
+  /// キャンバスの全ピクセルを選択する。UIの「全選択」から呼ばれる。
+  void _selectAllSelectionMask() {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    _setSelectionMask(Uint8List(w * h)..fillRange(0, w * h, 0xFF), w, h);
   }
 
   /// 選択範囲を反転する（選択されていた部分と外側を入れ替える）。

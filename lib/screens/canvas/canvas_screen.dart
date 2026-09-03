@@ -113,6 +113,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // （meshCommitToken等と同じトークン方式）。
   bool _hasActiveSelection = false;
   int _invertSelectionToken = 0;
+  int _selectAllSelectionToken = 0;
+  int _clearSelectionToken = 0;
 
   bool get _isSelectionToolActive =>
       _currentTool == DrawingTool.selectRect ||
@@ -809,11 +811,56 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   onNextFrame: _goToNextFrame,
                                   onPreviousFrame: _goToPreviousFrame,
                                   invertSelectionToken: _invertSelectionToken,
+                                  selectAllSelectionToken:
+                                      _selectAllSelectionToken,
+                                  clearSelectionToken: _clearSelectionToken,
                                   onSelectionActiveChanged: (v) {
                                     if (_hasActiveSelection == v) return;
                                     setState(() => _hasActiveSelection = v);
                                   },
                                 ),
+                                if (_isSelectionToolActive)
+                                  Positioned(
+                                    left: 12,
+                                    bottom: 12,
+                                    child: SafeArea(
+                                      child: Material(
+                                        elevation: 4,
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              FilledButton.tonalIcon(
+                                                onPressed: () => setState(
+                                                  () =>
+                                                      _selectAllSelectionToken++,
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.select_all,
+                                                ),
+                                                label: const Text('全選択'),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              FilledButton.tonalIcon(
+                                                onPressed: _hasActiveSelection
+                                                    ? () => setState(
+                                                        () =>
+                                                            _clearSelectionToken++,
+                                                      )
+                                                    : null,
+                                                icon: const Icon(
+                                                  Icons.deselect,
+                                                ),
+                                                label: const Text('全解除'),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 // ツールオプション系フローティングパネル（ブラシ・トーン・
                                 // スタンプ・ペンサブツール・オニオンスキン・定規・
                                 // フィルター・早替え設定・レイヤー）は画面全体を覆う

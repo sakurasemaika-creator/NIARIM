@@ -352,7 +352,7 @@ class ToolbarWidget extends StatelessWidget {
       child: _borderedIconButton(
         context,
         icon,
-        onPressed: () => onToolSelected(DrawingTool.selectRect),
+        onPressed: () => onToolSelected(DrawingTool.selectLasso),
         tooltip: l10n.toolbarSelectTooltip,
         selected: isSelected,
         longPressTooltip: false,
