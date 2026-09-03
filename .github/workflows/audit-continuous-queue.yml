@@ -19,7 +19,7 @@ env:
   DASHBOARD_WORKFLOW: audit-live-dashboard.yml
 
 jobs:
-  repair-known-failures:
+  repair_known_failures:
     name: '00 検出済みのタイムライン画面はみ出しを修正して再確認'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -107,7 +107,7 @@ jobs:
 
   strict-visual:
     name: '01 以前に確認済みの描画機能を、より厳しい基準でもう一度確認'
-    needs: repair-known-failures
+    needs: repair_known_failures
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -238,11 +238,11 @@ jobs:
 
   continue-if-needed:
     name: '07 成功した監査だけ次サイクルへ進める'
-    needs: [repair-known-failures, strict-visual, real-operation, canvas-panels, routes-and-filters, coverage, final-regression]
+    needs: [repair_known_failures, strict-visual, real-operation, canvas-panels, routes-and-filters, coverage, final-regression]
     if: always()
     runs-on: ubuntu-latest
     env:
-      ALL_STAGES_SUCCESS: ${{ needs.repair-known-failures.result == 'success' && needs.strict-visual.result == 'success' && needs.real-operation.result == 'success' && needs.canvas-panels.result == 'success' && needs.routes-and-filters.result == 'success' && needs.coverage.result == 'success' && needs.final-regression.result == 'success' }}
+      ALL_STAGES_SUCCESS: ${{ needs.repair_known_failures.result == 'success' && needs.strict-visual.result == 'success' && needs.real-operation.result == 'success' && needs.canvas-panels.result == 'success' && needs.routes-and-filters.result == 'success' && needs.coverage.result == 'success' && needs.final-regression.result == 'success' }}
     steps:
       - uses: actions/checkout@v4
         with: { ref: dev_branch }
