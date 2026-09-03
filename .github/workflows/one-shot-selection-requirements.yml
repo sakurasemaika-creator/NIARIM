@@ -1,0 +1,53 @@
+name: One-shot Selection Audit Requirements
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/apply_selection_requirements.py'
+      - '.github/workflows/one-shot-selection-requirements.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: 選択ツール追加要件を本体へ適用
+        run: |
+          python3 .github/scripts/apply_selection_requirements.py
+          dart format lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/toolbar_widget.dart
+      - name: 静的解析
+        run: flutter analyze --no-fatal-infos
+      - name: 選択系既存テスト
+        run: |
+          flutter test test/functional_audit_batch27_test.dart --reporter expanded
+          flutter test test/functional_audit_batch28_test.dart --reporter expanded
+      - name: 修正をdev_branchへ反映
+        shell: bash
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/toolbar_widget.dart
+          if ! git diff --cached --quiet; then
+            git commit -m "選択ツールに全選択・全解除と投げ縄既定を追加"
+            git pull --rebase origin dev_branch
+            git push origin HEAD:dev_branch
+          fi
+      - name: 連続監査を再開
+        run: gh workflow run audit-continuous-queue.yml --ref dev_branch
+        env:
+          GH_TOKEN: ${{ github.token }}
