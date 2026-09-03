@@ -2064,7 +2064,7 @@
   "frameStripTimelineModeLabel": "타임라인",
   "progressDialogAdLoading": "광고 불러오는 중…",
   "adMockPlaceholderLabel": "광고 배너(배치 검토용 목업)",
-  "adSquareMockPlaceholderLabel": "정사각형 광고(배치 검토용 목업)",
+  "adMediumRectangleMockPlaceholderLabel": "중형 직사각형 광고(300×250 배치 검토용 목업)",
   "progressDialogTipLabel": "팁",
   "premiumBannerRegisterButton": "Premium에 가입",
   "licenseTermsArt1Title": "제1조（적용）",

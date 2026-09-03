@@ -4605,7 +4605,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get adMockPlaceholderLabel => '广告横幅（用于位置试验的模型）';
 
   @override
-  String get adSquareMockPlaceholderLabel => '方形广告（用于位置试验的模型）';
+  String get adMediumRectangleMockPlaceholderLabel => '中矩形广告（300×250 位置测试模型）';
 
   @override
   String get progressDialogTipLabel => '提示';
@@ -10355,7 +10355,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get adMockPlaceholderLabel => '廣告橫幅（用於版位試驗的模型）';
 
   @override
-  String get adSquareMockPlaceholderLabel => '方形廣告（用於版位試驗的模型）';
+  String get adMediumRectangleMockPlaceholderLabel => '中型矩形廣告（300×250 版位測試模型）';
 
   @override
   String get progressDialogTipLabel => '提示';

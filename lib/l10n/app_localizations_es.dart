@@ -4855,8 +4855,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Banner publicitario (maqueta de prueba de ubicación)';
 
   @override
-  String get adSquareMockPlaceholderLabel =>
-      'Anuncio cuadrado (maqueta de prueba de ubicación)';
+  String get adMediumRectangleMockPlaceholderLabel =>
+      'Anuncio rectangular mediano (maqueta de ubicación 300×250)';
 
   @override
   String get progressDialogTipLabel => 'Consejo';

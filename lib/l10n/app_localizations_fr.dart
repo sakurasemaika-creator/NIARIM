@@ -4868,8 +4868,8 @@ class AppLocalizationsFr extends AppLocalizations {
       'Bannière publicitaire (maquette d\'essai d\'emplacement)';
 
   @override
-  String get adSquareMockPlaceholderLabel =>
-      'Publicité carrée (maquette d\'essai d\'emplacement)';
+  String get adMediumRectangleMockPlaceholderLabel =>
+      'Publicité rectangle moyen (maquette 300×250)';
 
   @override
   String get progressDialogTipLabel => 'Astuce';

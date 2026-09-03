@@ -7,12 +7,12 @@ import '../config/font_fallback.dart';
 import 'ad_banner_mock_widget.dart';
 
 /// 処理中ダイアログ（フィルター適用／動画書き出し／GIF生成／
-/// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に正方形広告）。
+/// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に中型広告）。
 /// 会員種別に関わらず、10秒おきにランダムでTipsを表示する。現在は
-/// ダイアログ下部に配置確認用の正方形広告モックを表示する（広告を中間に挟むと
+/// ダイアログ下部に配置確認用の中型レクタングル広告モックを表示する（広告を中間に挟むと
 /// 視線の邪魔になりやすいため、プログレスバー→Tips→広告の順に配置。
 /// 縦に並ぶ分、内容全体をスクロール可能にしている）。実広告への切替時は
-/// [AdSquareMockWidget]だけを差し替える。
+/// [AdMediumRectangleMockWidget]だけを差し替える。
 class ProgressDialog extends StatefulWidget {
   final String title;
   final double progress;
@@ -86,6 +86,10 @@ class _ProgressDialogState extends State<ProgressDialog> {
         : null;
 
     return AlertDialog(
+      // 320dp幅の端末でも左右6dpずつの内容余白を残して、AdMob標準の
+      // 300×250dpを縮小せず収める。
+      insetPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 24),
+      contentPadding: const EdgeInsets.fromLTRB(6, 20, 6, 0),
       // 無料会員は広告＋Tipsカードが縦に並び内容が長くなるため、画面が
       // 小さい端末でもオーバーフローしないようスクロール可能にする。
       content: SingleChildScrollView(
@@ -192,7 +196,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
             // できるだけ下側に配置する。前後に余白を確保し、キャンセル等の
             // 操作項目と広告が近接しないようにする。
             const SizedBox(height: 20),
-            const AdSquareMockWidget(),
+            const AdMediumRectangleMockWidget(),
             const SizedBox(height: 16),
           ],
         ),

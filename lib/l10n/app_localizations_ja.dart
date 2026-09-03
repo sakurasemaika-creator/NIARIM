@@ -4637,7 +4637,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get adMockPlaceholderLabel => '広告バナー（配置検討用モック）';
 
   @override
-  String get adSquareMockPlaceholderLabel => '正方形広告（配置検討用モック）';
+  String get adMediumRectangleMockPlaceholderLabel =>
+      '中型レクタングル広告（300×250・配置検討用モック）';
 
   @override
   String get progressDialogTipLabel => 'ヒント';

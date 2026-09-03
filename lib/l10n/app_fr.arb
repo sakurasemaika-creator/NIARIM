@@ -2064,7 +2064,7 @@
   "frameStripTimelineModeLabel": "Timeline",
   "progressDialogAdLoading": "Chargement de la publicité…",
   "adMockPlaceholderLabel": "Bannière publicitaire (maquette d'essai d'emplacement)",
-  "adSquareMockPlaceholderLabel": "Publicité carrée (maquette d'essai d'emplacement)",
+  "adMediumRectangleMockPlaceholderLabel": "Publicité rectangle moyen (maquette 300×250)",
   "progressDialogTipLabel": "Astuce",
   "premiumBannerRegisterButton": "Passer à Premium",
   "licenseTermsArt1Title": "Article 1 (Application)",

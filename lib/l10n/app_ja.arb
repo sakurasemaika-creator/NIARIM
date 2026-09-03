@@ -2330,7 +2330,7 @@
   "frameStripTimelineModeLabel": "タイムライン",
   "progressDialogAdLoading": "広告読み込み中…",
   "adMockPlaceholderLabel": "広告バナー（配置検討用モック）",
-  "adSquareMockPlaceholderLabel": "正方形広告（配置検討用モック）",
+  "adMediumRectangleMockPlaceholderLabel": "中型レクタングル広告（300×250・配置検討用モック）",
   "progressDialogTipLabel": "ヒント",
   "premiumBannerRegisterButton": "プレミアムに登録",
   "licenseTermsArt1Title": "第1条（適用）",

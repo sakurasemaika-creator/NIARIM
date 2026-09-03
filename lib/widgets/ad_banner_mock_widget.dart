@@ -59,17 +59,15 @@ class _AdBannerMockSlot extends StatelessWidget {
           child: Padding(
             // ステータスバーとはSafeAreaに加えて8dp、直下のAppBarや
             // 戻るボタンとは16dp離し、広告の誤タップを防ぐ。
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+            // 320dp幅の端末でもAdSize.bannerの実寸を確保できるよう、
+            // 左右にはpaddingを置かない。実広告で利用可能幅が320dp未満に
+            // なる場合は縮小せず、適応型バナーへ切り替えること。
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
             child: SizedBox(
               key: const Key('persistent-horizontal-ad-mock'),
               width: double.infinity,
               height: 50,
-              child: const Center(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: AdBannerMockWidget(),
-                ),
-              ),
+              child: const Center(child: AdBannerMockWidget()),
             ),
           ),
         ),
@@ -92,6 +90,7 @@ class AdBannerMockWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
+      key: const Key('fixed-banner-ad-mock'),
       width: 320,
       height: 50,
       decoration: BoxDecoration(
@@ -108,35 +107,28 @@ class AdBannerMockWidget extends StatelessWidget {
   }
 }
 
-/// 書き出し・フィルター等の処理中画面に置く正方形広告モック。
-/// 狭い端末ではダイアログの利用可能幅まで縮小し、横方向へはみ出さない。
-class AdSquareMockWidget extends StatelessWidget {
-  const AdSquareMockWidget({super.key});
+/// 書き出し・フィルター等の処理中画面に置く中型レクタングル広告モック。
+/// 実際のAdSize.mediumRectangleと同じ300×250dpで、縮小せずに表示する。
+class AdMediumRectangleMockWidget extends StatelessWidget {
+  const AdMediumRectangleMockWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // AlertDialogは内容のintrinsic dimensionsを測るため、LayoutBuilderは
-    // 使用できない。親幅で縮むConstrainedBox＋AspectRatioなら、最大
-    // 250dpの正方形を保ちながら狭いダイアログにも収まる。
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 250),
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: Container(
-            key: const Key('square-ad-mock'),
-            decoration: BoxDecoration(
-              color: Colors.grey[850],
-              border: Border.all(color: Colors.amber, width: 1.5),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              l10n.adSquareMockPlaceholderLabel,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ),
+      child: Container(
+        key: const Key('medium-rectangle-ad-mock'),
+        width: 300,
+        height: 250,
+        decoration: BoxDecoration(
+          color: Colors.grey[850],
+          border: Border.all(color: Colors.amber, width: 1.5),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          l10n.adMediumRectangleMockPlaceholderLabel,
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
+          textAlign: TextAlign.center,
         ),
       ),
     );
