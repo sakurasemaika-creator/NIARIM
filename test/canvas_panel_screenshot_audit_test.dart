@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
@@ -57,6 +58,9 @@ void main() {
         child: MultiProvider(
           providers: providerList,
           child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: StatefulBuilder(
               builder: (context, setState) {
                 ps ??= context.read<ProjectService>();
