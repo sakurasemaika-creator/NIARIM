@@ -94,14 +94,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "同一入力で不透明度設定を段階変更し、実画素alpha/見た目が設定値に追従することをstrict-v2で再証明"
+      "recheck_reason": "同一入力で不透明度設定を段階変更し、実画素alpha/見た目が設定値に追従することをstrict-v2で再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "brush.pressure.opacity",
@@ -110,14 +111,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し不透明度が段階追従することをstrict-v2で再証明"
+      "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し不透明度が段階追従することをstrict-v2で再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "brush.pressure.size",
@@ -126,14 +128,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し線幅が段階追従することをstrict-v2で再証明"
+      "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し線幅が段階追従することをstrict-v2で再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "brush.fade",
@@ -142,14 +145,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "off/weak/medium/strong/customの距離依存変化を同一ストロークで比較するstrict-v2再監査"
+      "recheck_reason": "off/weak/medium/strong/customの距離依存変化を同一ストロークで比較するstrict-v2再監査",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "brush.stabilizer",
@@ -306,13 +310,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "単一ストローク画像では任意入力が定規へ拘束されたことを視覚証明できないためstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "ruler.circle",
@@ -321,13 +326,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "定規ON入力と拘束結果の対応が一枚で判別できる証拠へ更新するためstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "ruler.ellipse",
@@ -336,13 +342,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "定規ON入力と拘束結果の対応が一枚で判別できる証拠へ更新するためstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "ruler.radial",
@@ -351,13 +358,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "単一スポークでは放射定規固有の中心収束を視覚証明できないためstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "ruler.perspective1",
@@ -456,14 +464,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "ぼかし強度に応じてエッジ/高周波成分が段階的に減ることをstrict-v2再証明"
+      "recheck_reason": "ぼかし強度に応じてエッジ/高周波成分が段階的に減ることをstrict-v2再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "effect.mosaic",
@@ -537,14 +546,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "各自動塗りモードが対象領域へ意図した塗り結果を作ることをstrict-v2再確認"
+      "recheck_reason": "各自動塗りモードが対象領域へ意図した塗り結果を作ることをstrict-v2再確認",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "layer.opacity",
@@ -553,14 +563,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "レイヤー不透明度の複数値で合成結果が段階追従することをstrict-v2再証明"
+      "recheck_reason": "レイヤー不透明度の複数値で合成結果が段階追従することをstrict-v2再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "layer.clipping",
@@ -583,14 +594,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "全17モードを差分の有無だけでなく各ブレンド式固有の結果としてstrict-v2再確認"
+      "recheck_reason": "全17モードを差分の有無だけでなく各ブレンド式固有の結果としてstrict-v2再確認",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "layer.transform",
@@ -613,14 +625,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "メッシュ操作量に応じた局所変形方向・量が正しいことをstrict-v2再証明"
+      "recheck_reason": "メッシュ操作量に応じた局所変形方向・量が正しいことをstrict-v2再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "layer.outline",
@@ -699,14 +712,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "基本ON/OFF・前後色は強い証拠済みだが、不透明度/枚数/間隔/距離フェードの設定追従をstrict-v2追加監査"
+      "recheck_reason": "基本ON/OFF・前後色は強い証拠済みだが、不透明度/枚数/間隔/距離フェードの設定追従をstrict-v2追加監査",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "animation.frame_duplicate",
@@ -716,11 +730,12 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
     },
     {
       "id": "animation.frame_delete",
@@ -730,11 +745,12 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
     },
     {
       "id": "animation.frame_reorder",
@@ -744,11 +760,12 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
     },
     {
       "id": "animation.camera",
@@ -757,14 +774,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "移動/回転/ズーム各パラメータの方向と量が出力へ正しく反映されることをstrict-v2再証明"
+      "recheck_reason": "移動/回転/ズーム各パラメータの方向と量が出力へ正しく反映されることをstrict-v2再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "animation.keyframe",
@@ -773,14 +791,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "始点/中間/終点の補間値と見た目が補間式どおりであることをstrict-v2再証明"
+      "recheck_reason": "始点/中間/終点の補間値と見た目が補間式どおりであることをstrict-v2再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "animation.fade",
@@ -789,14 +808,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "フェード値と時間位置に応じて不透明度が段階変化することをstrict-v2再証明"
+      "recheck_reason": "フェード値と時間位置に応じて不透明度が段階変化することをstrict-v2再証明",
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
     },
     {
       "id": "text.horizontal",
@@ -904,11 +924,12 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-direct-service-coverage.yml"
-      ]
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
     },
     {
       "id": "save.tree",
