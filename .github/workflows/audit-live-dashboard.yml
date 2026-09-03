@@ -29,13 +29,14 @@ jobs:
           python3 - <<'PY'
           import base64, json, os, time, urllib.request
           from collections import defaultdict
-          from datetime import datetime, timezone
+          from datetime import datetime, timezone, timedelta
 
           token = os.environ['GH_TOKEN']
           repo = os.environ['REPO']
           issue = os.environ['ISSUE_NUMBER']
           branch = os.environ['BRANCH']
           api = 'https://api.github.com'
+          JST = timezone(timedelta(hours=9), name='JST')
 
           tracked = [
               ('全体回帰', ['one-shot-close-blockers-and-full-suite.yml', 'one-shot-exhaustive-real-operation-audit.yml']),
@@ -44,6 +45,7 @@ jobs:
               ('Canvas初期合成', ['one-shot-canvas-initial-composite-audit.yml']),
               ('全ルートスクショ', ['one-shot-all-routes-screenshot-audit.yml']),
               ('Functional Visual', ['functional-visual.yml']),
+              ('Strict Visual Evidence', ['one-shot-strict-visual-evidence-audit.yml']),
               ('Screenshot-first Visual', ['one-shot-screenshot-first-visual-reaudit.yml']),
               ('Visual Delta', ['one-shot-visual-delta-audit.yml']),
               ('Coverage census', ['one-shot-current-coverage-census.yml']),
@@ -87,6 +89,12 @@ jobs:
                   return '⚪ SKIP'
               return f'⚪ {co or st or "不明"}'
 
+          def related_action(run):
+              if not run:
+                  return '—'
+              label = state_icon(run)
+              return f'[{label}]({run.get("html_url")})'
+
           def latest_for_paths(runs, paths):
               candidates = [r for r in runs if any((r.get('path') or '').endswith(p) for p in paths)]
               return candidates[0] if candidates else None
@@ -112,7 +120,7 @@ jobs:
               excluded_device_only = len(all_features) - len(features)
 
               head = request(f'/repos/{repo}/branches/{branch}')['commit']['sha']
-              now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+              now = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S JST')
 
               total = len(features)
               keys = ['interaction', 'output', 'screenshot', 'visual', 'final_pass']
@@ -139,6 +147,7 @@ jobs:
               lines.append(f'`{bar(pct["final_pass"])}` **{pct["final_pass"]}%**  —  **{counts["final_pass"]} / {total} 機能 最終PASS**  ·  残り **{pending}**')
               lines.append('')
               lines.append('> **この%が今回の監査進捗です。AI/CIで確認可能な画面・動作だけを母数にし、実機専用確認は完了条件から除外しています。**')
+              lines.append('> **strict-v2:** 見た目が重要な機能は「PNGがある／画素差が出た」だけではPASSにせず、その機能固有の正しさ（必要なら設定値に応じた段階変化）が証拠画像から判断できることを要求します。')
               lines.append('')
               lines.append('| 工程 | 完了 | 進捗 |')
               lines.append('|---|---:|---:|')
@@ -150,22 +159,20 @@ jobs:
               lines.append('')
               lines.append(f'- 実機専用として今回のIssueから除外: **{excluded_device_only}項目**')
               lines.append('- `最終PASS` は、その機能に必要なAI監査工程をすべて満たしたものだけを数えます。')
+              lines.append('- 右端の「関連Action」は参考情報です。`—` は「未監査」ではなく、直近100 Run内に専用Workflowを紐付けられなかったことを意味します。監査結果そのものは左側の各工程と最終PASSを見てください。')
               lines.append('')
 
               lines.append('## 機能別AI監査台帳')
               lines.append('')
-              lines.append('| カテゴリ | 機能 | 実操作 | 出力 | SS | 目視 | 最終 | Live Action |')
+              lines.append('| カテゴリ | 機能 | 実操作 | 出力 | SS | 目視 | 最終 | 関連Action（参考） |')
               lines.append('|---|---|:---:|:---:|:---:|:---:|:---:|---|')
               for category in sorted(by_category):
                   for f in by_category[category]:
                       paths = f.get('workflows') or []
                       latest = latest_for_paths(audit_runs, paths) if paths else None
-                      live = state_icon(latest)
-                      if latest:
-                          live = f'[{live}]({latest.get("html_url")})'
                       lines.append(
                           f'| {esc(category)} | {esc(f.get("name"))} | {yes(f.get("interaction"))} | {yes(f.get("output"))} | '
-                          f'{yes(f.get("screenshot"))} | {yes(f.get("visual"))} | {"🟢" if f.get("final_pass") else "⚪"} | {live} |'
+                          f'{yes(f.get("screenshot"))} | {yes(f.get("visual"))} | {"🟢" if f.get("final_pass") else "⚪"} | {related_action(latest)} |'
                       )
 
               lines.append('')
