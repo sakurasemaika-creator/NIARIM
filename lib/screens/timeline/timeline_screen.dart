@@ -380,8 +380,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_lastCenteredFrame == _currentFrame) return;
     final hadPrevious = _lastCenteredFrame != null;
     _lastCenteredFrame = _currentFrame;
+    // 再生中はアニメーションさせない。再生タイマーはfps間隔（24fpsなら約41ms）
+    // でフレームを進めるため、200msのanimateToを毎フレーム張り直すことになり、
+    // 前のアニメーションを打ち切っては新しいSimulationを作る動作を毎秒24回
+    // 繰り返す。処理が無駄なうえ、スクロールが再生位置に追いつかず遅れて
+    // 揺れる。jumpToなら再生位置とぴったり一致する。
+    final animate = hadPrevious && !_isPlaying;
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _centerFrameInList(animate: hadPrevious),
+      (_) => _centerFrameInList(animate: animate),
     );
   }
 
