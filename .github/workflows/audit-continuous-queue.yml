@@ -8,23 +8,32 @@ on:
       - '.github/workflows/audit-continuous-queue.yml'
 
 permissions:
-  contents: read
+  contents: write
+  actions: write
+
+concurrency:
+  group: audit-continuous-queue-dev
+  cancel-in-progress: false
+
+env:
+  DASHBOARD_WORKFLOW: audit-live-dashboard.yml
 
 jobs:
-  verify_timeline_repair:
-    name: 'タイムラインの狭い画面でのはみ出し修正案を3ケースで再確認'
+  repair_known_failures:
+    name: '00 検出済みのタイムライン画面はみ出しを修正して、失敗していた3ケースを再確認'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: 修正案を作業ツリーへ適用
+      - name: タイムラインのプレビュー高さを狭い画面でも収まるよう修正
         shell: bash
         run: |
           python3 - <<'PY'
@@ -32,23 +41,23 @@ jobs:
           p=Path('lib/screens/timeline/timeline_screen.dart')
           s=p.read_text()
           old='                      _buildPreviewWithHandle(outerConstraints.maxHeight),'
-          if old not in s:
-            raise SystemExit('timeline preview insertion point changed')
-          s=s.replace(old, '''                      Flexible(
+          already='                        child: _buildPreviewWithHandle('
+          if old in s:
+            s=s.replace(old, '''                      Flexible(
                         flex: 3,
                         fit: FlexFit.loose,
                         child: _buildPreviewWithHandle(
                           outerConstraints.maxHeight,
                         ),
                       ),''', 1)
-          marker='  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
-          start=s.index(marker)
-          end=s.index('\n  /// プレビューと再生バーの間のシークバー。', start)
-          block=s[start:end]
-          old_return='    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
-          if old_return not in block:
-            raise SystemExit('preview Column return not found')
-          block=block.replace(old_return, '''    return LayoutBuilder(
+            marker='  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
+            start=s.index(marker)
+            end=s.index('\n  /// プレビューと再生バーの間のシークバー。', start)
+            block=s[start:end]
+            old_return='    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
+            if old_return not in block:
+              raise SystemExit('preview Column return not found')
+            block=block.replace(old_return, '''    return LayoutBuilder(
       builder: (context, constraints) {
         final allocatedPreviewHeight = constraints.hasBoundedHeight
             ? math.max(0.0, constraints.maxHeight - 22.0)
@@ -57,19 +66,226 @@ jobs:
         return Column(
           mainAxisSize: MainAxisSize.min,
 ''', 1)
-          if '          height: previewHeight,' not in block:
-            raise SystemExit('preview height pattern changed')
-          block=block.replace('          height: previewHeight,','          height: visiblePreviewHeight,',1)
-          trimmed=block.rstrip()
-          if not trimmed.endswith('    );'):
-            raise SystemExit('unexpected preview function ending')
-          trimmed=trimmed[:-len('    );')]+'        );\n      },\n    );'
-          s=s[:start]+trimmed+'\n'+s[end:]
-          p.write_text(s)
+            if '          height: previewHeight,' not in block:
+              raise SystemExit('preview height pattern changed')
+            block=block.replace('          height: previewHeight,','          height: visiblePreviewHeight,',1)
+            trimmed=block.rstrip()
+            if not trimmed.endswith('    );'):
+              raise SystemExit('unexpected preview function ending')
+            trimmed=trimmed[:-len('    );')]+'        );\n      },\n    );'
+            s=s[:start]+trimmed+'\n'+s[end:]
+            p.write_text(s)
+          elif already in s and 'visiblePreviewHeight' in s:
+            print('timeline layout fix already applied')
+          else:
+            raise SystemExit('timeline layout pattern changed; manual diagnosis required')
           PY
           dart format lib/screens/timeline/timeline_screen.dart
-      - name: 失敗していた3ケースを再実行
+      - name: 失敗していた3ケースを修正後コードで再実行
         run: |
           flutter test test/timeline_no_overflow_test.dart --reporter expanded
           flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
           flutter test test/app_web_reference_capture_exact_test.dart --reporter expanded
+      - name: 修正をdev_branchへ反映
+        shell: bash
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/timeline/timeline_screen.dart
+          if git diff --cached --quiet; then
+            echo '修正済みのため追加コミットなし'
+            exit 0
+          fi
+          git commit -m "タイムラインの小画面縦オーバーフローを修正"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
+
+  strict_visual:
+    name: '01 以前に確認済みの描画機能を、より厳しい基準でもう一度確認'
+    needs: repair_known_failures
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - run: flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-01-strict-visual
+          path: build/strict-visual-evidence
+          if-no-files-found: warn
+          retention-days: 14
+
+  real_operation:
+    name: '02 各機能へ実操作相当の入力を与えて結果を確認'
+    needs: strict_visual
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - shell: bash
+        run: |
+          set +e
+          mkdir -p build/audit-logs
+          failures=0
+          for n in $(seq 27 38); do
+            t="test/functional_audit_batch${n}_test.dart"
+            echo "===== $t ====="
+            if [ ! -f "$t" ]; then echo "MISSING $t" | tee "build/audit-logs/batch${n}.log"; failures=$((failures+1)); continue; fi
+            timeout 300s flutter test "$t" --reporter expanded 2>&1 | tee "build/audit-logs/batch${n}.log"
+            rc=${PIPESTATUS[0]}
+            [ "$rc" -eq 0 ] || failures=$((failures+1))
+          done
+          test "$failures" -eq 0
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-02-real-operation
+          path: |
+            build/**/*.png
+            build/audit-logs/*
+          if-no-files-found: warn
+          retention-days: 14
+
+  canvas_panels:
+    name: '03 Canvas画面の主要パネルを開閉・操作して見た目を確認'
+    needs: real_operation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: flutter test test/canvas_panel_screenshot_audit_test.dart --reporter expanded
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-03-canvas-panels
+          path: build/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+  routes_and_filters:
+    name: '04 全主要画面と全フィルターが意図した見た目か確認'
+    needs: canvas_panels
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
+      - run: flutter test test/visual_reaudit_filters_test.dart --reporter expanded
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-04-routes-filters
+          path: build/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+  coverage:
+    name: '05 アプリ全体の自動テストと検証範囲を確認'
+    needs: routes_and_filters
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: flutter test --coverage --reporter compact
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-05-coverage
+          path: coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 14
+
+  final_regression:
+    name: '06 監査や修正で別機能を壊していないか全体を最終確認'
+    needs: coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - shell: bash
+        run: |
+          set +e
+          flutter analyze 2>&1 | tee analyze.log
+          if grep -Eq '^[[:space:]]*error[[:space:]]' analyze.log; then exit 1; fi
+      - run: flutter test --reporter compact
+
+  continue_if_needed:
+    name: '07 全工程が成功した場合だけ、未確認項目の次サイクルへ進む'
+    needs: [repair_known_failures, strict_visual, real_operation, canvas_panels, routes_and_filters, coverage, final_regression]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - name: ダッシュボードを最新状態へ更新
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: 前工程がすべて成功したか確認
+        id: gate
+        shell: bash
+        env:
+          R0: '${{ needs.repair_known_failures.result }}'
+          R1: '${{ needs.strict_visual.result }}'
+          R2: '${{ needs.real_operation.result }}'
+          R3: '${{ needs.canvas_panels.result }}'
+          R4: '${{ needs.routes_and_filters.result }}'
+          R5: '${{ needs.coverage.result }}'
+          R6: '${{ needs.final_regression.result }}'
+        run: |
+          printf 'results: %s %s %s %s %s %s %s\n' "$R0" "$R1" "$R2" "$R3" "$R4" "$R5" "$R6"
+          if [ "$R0" = success ] && [ "$R1" = success ] && [ "$R2" = success ] && [ "$R3" = success ] && [ "$R4" = success ] && [ "$R5" = success ] && [ "$R6" = success ]; then
+            echo 'all_success=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'all_success=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: 途中失敗があれば先へ進まず修復フローへ渡す
+        if: steps.gate.outputs.all_success != 'true'
+        run: |
+          echo '前工程に失敗があります。失敗を直すまで次の監査サイクルへ進みません。'
+          exit 1
+      - name: 台帳の未確認項目数を確認
+        if: steps.gate.outputs.all_success == 'true'
+        id: remaining
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          d=json.load(open('audit-dashboard/feature-audit-manifest.json'))
+          fs=[f for f in d['features'] if not (f.get('device_required') and not f.get('final_pass'))]
+          print('remaining='+str(sum(not f.get('final_pass',False) for f in fs)))
+          print('total='+str(len(fs)))
+          PY
+      - name: 未確認が残っていれば待たずに次サイクルを即起動
+        if: steps.gate.outputs.all_success == 'true' && steps.remaining.outputs.remaining != '0'
+        run: gh workflow run audit-continuous-queue.yml --ref dev_branch
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: 全件確認済み
+        if: steps.gate.outputs.all_success == 'true' && steps.remaining.outputs.remaining == '0'
+        run: echo "AI/CIで確認可能な全 ${{ steps.remaining.outputs.total }} 項目が最終確認済みです。"
