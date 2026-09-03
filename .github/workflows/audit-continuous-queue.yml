@@ -9,14 +9,89 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  smoke:
-    name: '連続監査キューの起動確認'
+  repair_timeline:
+    name: 'タイムラインの狭い画面でのはみ出し3件を修正して再確認'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
-      - run: echo 'Audit Continuous Queue is running and valid.'
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: タイムラインのプレビュー高さを利用可能な高さに収める
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/timeline/timeline_screen.dart')
+          s = p.read_text()
+          old = '                      _buildPreviewWithHandle(outerConstraints.maxHeight),'
+          wrapped = '                        child: _buildPreviewWithHandle('
+          if old in s:
+              s = s.replace(old, '''                      Flexible(
+                        flex: 3,
+                        fit: FlexFit.loose,
+                        child: _buildPreviewWithHandle(
+                          outerConstraints.maxHeight,
+                        ),
+                      ),''', 1)
+              marker = '  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
+              start = s.index(marker)
+              end = s.index('\n  /// プレビューと再生バーの間のシークバー。', start)
+              block = s[start:end]
+              old_return = '    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
+              if old_return not in block:
+                  raise SystemExit('preview Column return not found')
+              block = block.replace(old_return, '''    return LayoutBuilder(
+      builder: (context, constraints) {
+        final allocatedPreviewHeight = constraints.hasBoundedHeight
+            ? math.max(0.0, constraints.maxHeight - 22.0)
+            : maxPreviewHeight;
+        final visiblePreviewHeight = math.min(
+          previewHeight,
+          allocatedPreviewHeight,
+        );
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+''', 1)
+              if '          height: previewHeight,' not in block:
+                  raise SystemExit('preview height pattern changed')
+              block = block.replace('          height: previewHeight,', '          height: visiblePreviewHeight,', 1)
+              trimmed = block.rstrip()
+              if not trimmed.endswith('    );'):
+                  raise SystemExit('unexpected preview function ending')
+              trimmed = trimmed[:-len('    );')] + '        );\n      },\n    );'
+              s = s[:start] + trimmed + '\n' + s[end:]
+              p.write_text(s)
+          elif wrapped in s and 'visiblePreviewHeight' in s:
+              print('timeline layout fix already applied')
+          else:
+              raise SystemExit('timeline layout pattern changed; diagnosis required')
+          PY
+          dart format lib/screens/timeline/timeline_screen.dart
+      - name: 失敗していた3ケースを修正後コードで再実行
+        run: |
+          flutter test test/timeline_no_overflow_test.dart --reporter expanded
+          flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
+          flutter test test/app_web_reference_capture_exact_test.dart --reporter expanded
+      - name: 3ケース成功後に修正をdev_branchへ反映
+        shell: bash
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/timeline/timeline_screen.dart
+          if git diff --cached --quiet; then
+            echo '修正済みのため追加コミットなし'
+            exit 0
+          fi
+          git commit -m "タイムラインの小画面縦オーバーフローを修正"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
