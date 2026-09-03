@@ -87,8 +87,10 @@ void main() {
           mixingRate: rate,
         )
         ..currentColor = _red;
-      engine.beginStroke(const StrokePoint(x: 30, y: 128), _layer);
-      engine.continueStroke(const StrokePoint(x: 226, y: 128), _layer);
+      // 1回のdabで率そのものを検証する。長いストロークでは同じ画素へ
+      // 複数stampが重なり、各stampが直前結果を再び混色するため、単純な1回分の
+      // 線形補間値との比較にはならない。機能の率追従を見るfixtureとして単発dabを使う。
+      engine.beginStroke(const StrokePoint(x: 128, y: 128), _layer);
       engine.endStroke();
 
       final image = await tm.compositeLayerToImage(_layer);
