@@ -1,0 +1,79 @@
+name: One-shot strict-v2 audit reclassification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-strict-v2-reclassify.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reclassify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - name: Reclassify weak visual PASS entries
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('audit-dashboard/feature-audit-manifest.json')
+          data = json.loads(path.read_text())
+
+          reasons = {
+            'brush.opacity': '同一入力で不透明度設定を段階変更し、実画素alpha/見た目が設定値に追従することをstrict-v2で再証明',
+            'brush.pressure.opacity': 'シミュレーション筆圧と筆圧強度の複数値に対し不透明度が段階追従することをstrict-v2で再証明',
+            'brush.pressure.size': 'シミュレーション筆圧と筆圧強度の複数値に対し線幅が段階追従することをstrict-v2で再証明',
+            'brush.fade': 'off/weak/medium/strong/customの距離依存変化を同一ストロークで比較するstrict-v2再監査',
+            'brush.mix': '混色率0〜100の複数値で境界色が段階変化することを画像と色値でstrict-v2再証明',
+            'brush.color_extension': '色伸び率とストローク進行に応じた既存色の引きずり量を画像と色値でstrict-v2再証明',
+            'effect.blur': 'ぼかし強度に応じてエッジ/高周波成分が段階的に減ることをstrict-v2再証明',
+            'tone.all': '全25トーンが各パターン固有の見た目を示すことをstrict-v2で再確認',
+            'stamp.all': '全7スタンプが各プリセット固有形状として実描画されることをstrict-v2で再確認',
+            'filter.all': '全21フィルターを単なる画素差ではなく各効果固有の期待結果としてstrict-v2再確認',
+            'autofill': '各自動塗りモードが対象領域へ意図した塗り結果を作ることをstrict-v2再確認',
+            'layer.opacity': 'レイヤー不透明度の複数値で合成結果が段階追従することをstrict-v2再証明',
+            'layer.blendmodes': '全17モードを差分の有無だけでなく各ブレンド式固有の結果としてstrict-v2再確認',
+            'layer.mesh': 'メッシュ操作量に応じた局所変形方向・量が正しいことをstrict-v2再証明',
+            'animation.onion': '基本ON/OFF・前後色は強い証拠済みだが、不透明度/枚数/間隔/距離フェードの設定追従をstrict-v2追加監査',
+            'animation.camera': '移動/回転/ズーム各パラメータの方向と量が出力へ正しく反映されることをstrict-v2再証明',
+            'animation.keyframe': '始点/中間/終点の補間値と見た目が補間式どおりであることをstrict-v2再証明',
+            'animation.fade': 'フェード値と時間位置に応じて不透明度が段階変化することをstrict-v2再証明',
+          }
+
+          for f in data.get('features', []):
+            if f.get('id') in reasons:
+              f['visual'] = False
+              f['final_pass'] = False
+              f['recheck_reason'] = reasons[f['id']]
+              wf = f.setdefault('workflows', [])
+              if 'one-shot-strict-visual-evidence-audit.yml' not in wf:
+                wf.append('one-shot-strict-visual-evidence-audit.yml')
+            if f.get('id') in {'brush.pressure.opacity', 'brush.pressure.size'}:
+              # 実機スタイラス固有の確認は input.stylus 側へ分離済み。
+              # ここはCIで生成できるpressure値に対する描画エンジン挙動として母数に残す。
+              f['device_required'] = False
+
+          data['version'] = max(int(data.get('version', 1)), 3)
+          data['visual_acceptance_standard'] = (
+            'strict-v2: appearance-sensitive features require feature-specific visual evidence; '
+            'parameterized features additionally require multi-value progression checks. Numeric checks support but do not replace visual review.'
+          )
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+          PY
+      - name: Commit manifest reclassification
+        run: |
+          git config user.name 'NIARIM Audit Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add audit-dashboard/feature-audit-manifest.json
+          if git diff --cached --quiet; then
+            echo 'No manifest changes'
+            exit 0
+          fi
+          git commit -m 'strict-v2基準で既存Visual PASSを再監査待ちへ戻す'
+          git push origin HEAD:dev_branch
