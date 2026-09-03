@@ -98,7 +98,12 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
+                    // 動画エリア。**この矩形の上には何も重ねない**
+                    // （YouTubeの埋め込みプレーヤーは、その上へ別の
+                    // コンテンツを重ねたり隠したりすることが認められて
+                    // いない）。操作ボタンはすべて下のバーへ置く。
+                    AspectRatio(
+                      aspectRatio: CommunityPreviewService.playerAspect,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -122,11 +127,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                       ),
                     ),
                     Container(
+                      height: CommunityPreviewService.controlBarHeight,
                       color: Colors.black87,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       // SpacerやExpandedを挟むと、この位置（高さ無制限の
                       // Column内、幅固定のContainer内）で極端なオーバー
                       // フローが発生したため、Flex系ウィジェットを使わず
@@ -235,12 +238,13 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 bottom: 0,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
+                  // 幅だけを動かす。高さは16:9＋コントロールバーから
+                  // 導出されるため、利用者の操作でプレーヤーが
+                  // 最小サイズ（200×200）を割ることが構造的に起きない。
                   onPanUpdate: (details) {
-                    service.updateSize(
-                      Size(
-                        service.size.width + details.delta.dx,
-                        service.size.height + details.delta.dy,
-                      ),
+                    service.updateWidth(
+                      service.width + details.delta.dx,
+                      availableWidth: screenSize.width,
                     );
                   },
                   child: Container(

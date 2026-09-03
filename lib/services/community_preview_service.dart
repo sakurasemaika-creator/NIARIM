@@ -18,14 +18,40 @@ class CommunityPreviewService extends ChangeNotifier {
   Offset _position = const Offset(16, 100);
   Offset get position => _position;
 
-  Size _size = const Size(220, 160);
-  Size get size => _size;
+  // ── サイズは「幅」だけを状態として持ち、高さは幅から計算する ──
+  //
+  // YouTubeの埋め込みプレーヤーには**最小200×200px**という要件がある。
+  // 幅と高さを独立に持たせると、利用者がリサイズハンドルを動かした結果
+  // 簡単にこれを下回ってしまう（実際、旧実装の最小サイズは200×140で、
+  // 動画エリアはさらにコントロールバーぶん低く、要件を満たしていなかった）。
+  //
+  // そこで幅だけを可変にし、動画エリアは常に16:9、ウィンドウの高さは
+  // 「動画エリアの高さ＋コントロールバーの高さ」で導出する。これにより
+  // 最小幅さえ守れば最小サイズ要件が構造的に保証される。
+  double _width = minWidth;
+  double get width => _width;
 
-  // 下部コントロールバー（再生/一時停止・閉じる・詳細への3ボタン）を
-  // 誤タップ防止の間隔込みで収められる最小幅として200へ引き上げた
-  // （旧160のままだと最小サイズ時にボタン列が横幅からはみ出す）。
-  static const Size minSize = Size(200, 140);
-  static const Size maxSize = Size(420, 320);
+  /// 動画エリアの縦横比（16:9）。
+  static const double playerAspect = 16 / 9;
+
+  /// 下部コントロールバー（再生/一時停止・閉じる・詳細への3ボタン）の高さ。
+  /// プレーヤーの**外側**に置くための領域で、ここにボタンを収めることで
+  /// 「プレーヤーの上に何も重ねない」という条件を満たす。
+  static const double controlBarHeight = 44;
+
+  /// 最小幅。16:9で高さ200pxを確保するのに必要な幅
+  /// （200 × 16 / 9 = 355.6 → 356）。これを下回るとYouTubeの埋め込み
+  /// プレーヤーの最小サイズ要件を満たせないため、リサイズの下限とする。
+  static const double minWidth = 356;
+
+  /// 最大幅。画面幅を超えないよう、呼び出し側でさらに絞る。
+  static const double maxWidth = 640;
+
+  /// 動画エリアの大きさ（この矩形の上には何も重ねてはいけない）。
+  Size get playerSize => Size(_width, _width / playerAspect);
+
+  /// ウィンドウ全体の大きさ（動画エリア＋コントロールバー）。
+  Size get size => Size(_width, _width / playerAspect + controlBarHeight);
 
   void show(CommunityWork work) {
     _work = work;
@@ -42,11 +68,18 @@ class CommunityPreviewService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSize(Size size) {
-    _size = Size(
-      size.width.clamp(minSize.width, maxSize.width),
-      size.height.clamp(minSize.height, maxSize.height),
-    );
+  /// リサイズ。幅だけを受け取り、高さは幅から導出する。
+  ///
+  /// [availableWidth]（画面幅など）が与えられた場合は、そこも上限にする。
+  /// 画面より広いウィンドウは操作できなくなるため。
+  void updateWidth(double width, {double? availableWidth}) {
+    var upper = maxWidth;
+    if (availableWidth != null && availableWidth < upper) {
+      // 画面が最小幅より狭い端末では、最小幅のほうを優先する
+      // （プレーヤーの最小サイズ要件は画面の都合では緩められない）。
+      upper = availableWidth < minWidth ? minWidth : availableWidth;
+    }
+    _width = width.clamp(minWidth, upper);
     notifyListeners();
   }
 }

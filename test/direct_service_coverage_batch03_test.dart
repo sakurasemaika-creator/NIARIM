@@ -24,16 +24,25 @@ void main() {
       service.updatePosition(const Offset(31, 47));
       expect(service.position, const Offset(31, 47));
 
-      service.updateSize(const Size(20, 900));
-      expect(service.size.width, CommunityPreviewService.minSize.width);
-      expect(service.size.height, CommunityPreviewService.maxSize.height);
+      // サイズは幅だけを持ち、高さは16:9＋コントロールバーから導出する
+      // （YouTubeの埋め込みプレーヤーの最小200×200を構造的に守るため。
+      // 詳細はCommunityPreviewServiceのコメント参照）。
+      service.updateWidth(20);
+      expect(service.width, CommunityPreviewService.minWidth);
 
-      service.updateSize(const Size(300, 210));
-      expect(service.size, const Size(300, 210));
+      service.updateWidth(9999);
+      expect(service.width, CommunityPreviewService.maxWidth);
+
+      service.updateWidth(400);
+      expect(service.width, 400);
+      expect(
+        service.size.height,
+        closeTo(400 / CommunityPreviewService.playerAspect + 44, 0.001),
+      );
 
       service.close();
       expect(service.work, isNull);
-      expect(notifications, 5);
+      expect(notifications, 6);
     });
   });
 

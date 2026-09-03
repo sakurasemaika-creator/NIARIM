@@ -311,8 +311,9 @@ Future<void> _rulerLine(Directory out) async {
   final rgba = await _rgba(im);
   for (var y = 0; y < 256; y++) {
     for (var x = 0; x < 256; x++) {
-      if (rgba[(y * 256 + x) * 4 + 3] > 0)
+      if (rgba[(y * 256 + x) * 4 + 3] > 0) {
         expect((y - 128).abs(), lessThanOrEqualTo(4));
+      }
     }
   }
   await _saveImage(im, '${out.path}/ruler_line_constrained.png');
@@ -343,10 +344,11 @@ Future<void> _rulerCircle(Directory out, {required bool ellipse}) async {
       128 + (rx + jitter) * math.cos(a),
       128 + (ry + jitter) * math.sin(a),
     );
-    if (i == 0)
+    if (i == 0) {
       d.beginStroke(StrokePoint(x: p.dx, y: p.dy), 'r');
-    else
+    } else {
       d.continueStroke(StrokePoint(x: p.dx, y: p.dy), 'r');
+    }
   }
   d.endStroke();
   final im = await tm.compositeLayerToImage('r');
@@ -422,13 +424,17 @@ double _edgeEnergy(Uint8List d, int w, int h) {
 
 double _meanAbsDiff(Uint8List a, Uint8List b) {
   double s = 0;
-  for (var i = 0; i < a.length; i++) s += (a[i] - b[i]).abs();
+  for (var i = 0; i < a.length; i++) {
+    s += (a[i] - b[i]).abs();
+  }
   return s / a.length;
 }
 
 int _opaqueCount(Uint8List d) {
   var n = 0;
-  for (var i = 3; i < d.length; i += 4) if (d[i] > 0) n++;
+  for (var i = 3; i < d.length; i += 4) {
+    if (d[i] > 0) n++;
+  }
   return n;
 }
 
