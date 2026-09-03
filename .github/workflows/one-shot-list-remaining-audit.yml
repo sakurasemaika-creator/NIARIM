@@ -1,0 +1,35 @@
+name: One-shot List Remaining Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-list-remaining-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - name: 未確認項目を一覧化
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('audit-dashboard/feature-audit-manifest.json'))
+          fs=[f for f in d['features'] if not (f.get('device_required') and not f.get('final_pass'))]
+          rem=[f for f in fs if not f.get('final_pass')]
+          print('remaining',len(rem))
+          for f in rem:
+              print('ID=',f.get('id'))
+              print('NAME=',f.get('name'))
+              print('CATEGORY=',f.get('category'))
+              print('FLAGS=',{k:f.get(k) for k in ['interaction','output','screenshot','visual','final_pass','device_required']})
+              print('WORKFLOWS=',','.join(f.get('workflows',[])))
+              print('REASON=',f.get('recheck_reason',''))
+              print('---')
+          PY
