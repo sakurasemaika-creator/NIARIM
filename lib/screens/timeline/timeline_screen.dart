@@ -1457,7 +1457,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                   tooltip: l10n.timelineAddAudioTooltip,
                 ),
-                // ウォーターマーク：無料会員は🔒付き表示、タップで共通Premiumバナー
+                // ウォーターマーク：無料会員はlockアイコン付き表示、タップで共通Premiumバナー
                 _buildWatermarkButton(isPremium),
                 IconButton(
                   icon: const Icon(Icons.movie_filter, size: 18),
@@ -1496,7 +1496,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         tooltip: l10n.timelineAddWatermarkTooltip,
       );
     }
-    // 無料会員：🔒アイコン付きで表示、タップで共通Premiumバナー
+    // 無料会員：lockアイコン付きで表示、タップで共通Premiumバナー
     return GestureDetector(
       onTap: () => showPremiumBanner(context),
       child: Padding(
@@ -2115,7 +2115,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                               kHeadingFontFallback,
                                         ),
                                       ),
-                                      // シーン内に自動塗り未更新のフレームがある場合の❗マーク
+                                      // シーン内に自動塗り未更新のフレームがある場合の警告アイコン
                                       // （更新マークはレイヤー・タイムライン両方に表示）
                                       if (projectService
                                           .sceneHasOutdatedAutofillLayers(
@@ -2486,7 +2486,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  // タイムライン側❗マークのヘルプ（レイヤーパネル側と同一文言）
+  // タイムライン側警告アイコンのヘルプ（レイヤーパネル側と同一文言）
   void _showAutofillUpdateHelp(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -2708,7 +2708,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   // ここで色分けする）。
                                   final isChecked = _selectedFrameIndices
                                       .contains(index);
-                                  // このフレームに自動塗り未更新のレイヤーがある場合の❗マーク
+                                  // このフレームに自動塗り未更新のレイヤーがある場合の警告アイコン
                                   // （更新マークはレイヤー・タイムライン両方に表示）
                                   final hasOutdatedAutofill =
                                       frameListSceneId != null &&

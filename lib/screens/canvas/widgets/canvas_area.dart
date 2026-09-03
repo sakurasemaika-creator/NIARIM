@@ -3195,9 +3195,6 @@ class _CanvasAreaState extends State<CanvasArea> {
               child: RepaintBoundary(
                 child: CustomPaint(
                   painter: _CanvasPainter(
-                    handleColor: ThemeService.activeColorScheme.primary,
-                    handleOutlineColor: ThemeService.activeColorScheme.onSurface,
-                    extendedAreaWarningColor: ThemeService.activeColorScheme.error,
                     project: widget.project,
                     background: widget.background,
                     transform: _transformController.value,

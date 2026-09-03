@@ -1060,7 +1060,7 @@ class _LayerPanelState extends State<LayerPanel> {
     }
   }
 
-  /// 共通レイヤーの表示範囲を「🔗 名前（開始〜終了）」の形式で要約する
+  /// 共通レイヤーの表示範囲を「リンクアイコン 名前（開始〜終了）」の形式で要約する
   String _rangeSummary(AppLocalizations l10n, model.Layer layer) {
     switch (layer.rangeMode) {
       case model.LayerRangeMode.allFrames:
@@ -2208,7 +2208,7 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  /// [layer] は❗マークが表示された自動塗りレイヤー、または三点メニューから起動した場合は
+  /// [layer] は警告アイコンが表示された自動塗りレイヤー、または三点メニューから起動した場合は
   /// 自動塗り用線画レイヤー（[isLineartLayer]=true）。実行対象の線画レイヤーを特定してから
   /// ダイアログを表示する。
   void _showAutofillDialog(

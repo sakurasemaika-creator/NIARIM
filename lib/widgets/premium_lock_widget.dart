@@ -7,7 +7,7 @@ import '../services/premium_service.dart';
 import '../config/font_fallback.dart';
 
 /// Premium限定機能の共通ロックウィジェット。
-/// 無料会員には🔒アイコン付きで表示し、タップで共通Premiumバナーを表示する。
+/// 無料会員にはlockアイコン付きで表示し、タップで共通Premiumバナーを表示する。
 class PremiumLockWidget extends StatelessWidget {
   final Widget child;
   final PremiumFeature feature;

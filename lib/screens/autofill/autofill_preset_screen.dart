@@ -1116,7 +1116,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           );
   }
 
-  /// パーツ一覧の1行（[サムネイル] パーツ名 [色チップ] ✓設定完了マーク）。
+  /// パーツ一覧の1行（[サムネイル] パーツ名 [色チップ] 設定完了チェックアイコン）。
   /// トーンを使用しているパーツは、単色/グラデーションの丸ではなく指定色で
   /// 着色した実際のトーンパターンをサムネイルに表示する。
   Widget _partTile(AutofillPart part, {int? dragIndex}) {
@@ -1178,7 +1178,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         ),
       ),
       title: Text(part.name),
-      // ✓設定完了マーク（保存チェック用）
+      // 設定完了チェックアイコン（保存チェック用）
       subtitle: part.isConfigured
           ? null
           : Text(
