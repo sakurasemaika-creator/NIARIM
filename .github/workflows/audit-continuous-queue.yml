@@ -29,7 +29,9 @@ jobs:
           ref: dev_branch
           fetch-depth: 0
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with:
+          channel: stable
+          cache: true
       - run: flutter pub get
       - name: 画面高が足りない時にプレビューが下部UIを押し出さないよう修正
         shell: bash
@@ -48,7 +50,6 @@ jobs:
                           outerConstraints.maxHeight,
                         ),
                       ),''', 1)
-
             marker='  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
             start=s.index(marker)
             end=s.index('\n  /// プレビューと再生バーの間のシークバー。', start)
@@ -56,8 +57,7 @@ jobs:
             old_return='    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
             if old_return not in block:
               raise SystemExit('preview Column return not found')
-            block=block.replace(old_return, '''    // プレビューは親から実際に割り当てられた高さを超えて確保しない。
-    // 小さい画面や横幅変更時も、下部のタイムラインUIを画面外へ押し出さない。
+            block=block.replace(old_return, '''    // 親から割り当てられた高さを超えてプレビューを確保しない。
     return LayoutBuilder(
       builder: (context, constraints) {
         final allocatedPreviewHeight = constraints.hasBoundedHeight
@@ -77,8 +77,7 @@ jobs:
             if not trimmed.endswith('    );'):
               raise SystemExit('unexpected preview function ending')
             trimmed=trimmed[:-len('    );')]+'        );\n      },\n    );'
-            block=trimmed+'\n'
-            s=s[:start]+block+s[end:]
+            s=s[:start]+trimmed+'\n'+s[end:]
             p.write_text(s)
           elif already in s and 'visiblePreviewHeight' in s:
             print('timeline layout fix already applied')
@@ -105,37 +104,49 @@ jobs:
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
 
-  strict-visual:
+  strict_visual:
     name: '01 以前に確認済みの描画機能を、より厳しい基準でもう一度確認'
     needs: repair_known_failures
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dev_branch }
+        with:
+          ref: dev_branch
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with:
+          channel: stable
+          cache: true
       - run: flutter pub get
       - run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - run: flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
       - if: always()
         uses: actions/upload-artifact@v4
-        with: { name: queue-01-strict-visual, path: build/strict-visual-evidence, if-no-files-found: warn, retention-days: 14 }
+        with:
+          name: queue-01-strict-visual
+          path: build/strict-visual-evidence
+          if-no-files-found: warn
+          retention-days: 14
 
-  real-operation:
+  real_operation:
     name: '02 各機能へ実操作相当の入力を与えて結果を確認'
-    needs: strict-visual
+    needs: strict_visual
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dev_branch }
+        with:
+          ref: dev_branch
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with:
+          channel: stable
+          cache: true
       - run: flutter pub get
       - run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - shell: bash
         run: |
           set +e
@@ -144,9 +155,14 @@ jobs:
           for n in $(seq 27 38); do
             t="test/functional_audit_batch${n}_test.dart"
             echo "===== $t ====="
-            if [ ! -f "$t" ]; then echo "MISSING $t" | tee "build/audit-logs/batch${n}.log"; failures=$((failures+1)); continue; fi
+            if [ ! -f "$t" ]; then
+              echo "MISSING $t" | tee "build/audit-logs/batch${n}.log"
+              failures=$((failures+1))
+              continue
+            fi
             timeout 300s flutter test "$t" --reporter expanded 2>&1 | tee "build/audit-logs/batch${n}.log"
-            rc=${PIPESTATUS[0]}; [ "$rc" -eq 0 ] || failures=$((failures+1))
+            rc=${PIPESTATUS[0]}
+            [ "$rc" -eq 0 ] || failures=$((failures+1))
           done
           echo "$failures" > build/audit-logs/failure-count.txt
           test "$failures" -eq 0
@@ -160,74 +176,102 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  canvas-panels:
+  canvas_panels:
     name: '03 Canvas画面の主要パネルを開閉・操作して見た目を確認'
-    needs: real-operation
+    needs: real_operation
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dev_branch }
+        with:
+          ref: dev_branch
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with:
+          channel: stable
+          cache: true
       - run: flutter pub get
       - run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - run: flutter test test/canvas_panel_screenshot_audit_test.dart --reporter expanded
       - if: always()
         uses: actions/upload-artifact@v4
-        with: { name: queue-03-canvas-panels, path: build/**/*.png, if-no-files-found: warn, retention-days: 14 }
+        with:
+          name: queue-03-canvas-panels
+          path: build/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
 
-  routes-and-filters:
+  routes_and_filters:
     name: '04 全主要画面と全フィルターが意図した見た目か確認'
-    needs: canvas-panels
+    needs: canvas_panels
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dev_branch }
+        with:
+          ref: dev_branch
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with:
+          channel: stable
+          cache: true
       - run: flutter pub get
       - run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - run: flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
       - run: flutter test test/visual_reaudit_filters_test.dart --reporter expanded
       - if: always()
         uses: actions/upload-artifact@v4
-        with: { name: queue-04-routes-filters, path: build/**/*.png, if-no-files-found: warn, retention-days: 14 }
+        with:
+          name: queue-04-routes-filters
+          path: build/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
 
   coverage:
     name: '05 アプリ全体の自動テストと検証範囲を確認'
-    needs: routes-and-filters
+    needs: routes_and_filters
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dev_branch }
+        with:
+          ref: dev_branch
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with:
+          channel: stable
+          cache: true
       - run: flutter pub get
       - run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - run: flutter test --coverage --reporter compact
       - if: always()
         uses: actions/upload-artifact@v4
-        with: { name: queue-05-coverage, path: coverage/lcov.info, if-no-files-found: warn, retention-days: 14 }
+        with:
+          name: queue-05-coverage
+          path: coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 14
 
-  final-regression:
+  final_regression:
     name: '06 監査や修正で別機能を壊していないか全体を最終確認'
     needs: coverage
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dev_branch }
+        with:
+          ref: dev_branch
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with:
+          channel: stable
+          cache: true
       - run: flutter pub get
       - run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - shell: bash
         run: |
           set +e
@@ -236,20 +280,29 @@ jobs:
           exit 0
       - run: flutter test --reporter compact
 
-  continue-if-needed:
+  continue_if_needed:
     name: '07 成功した監査だけ次サイクルへ進める'
-    needs: [repair_known_failures, strict-visual, real-operation, canvas-panels, routes-and-filters, coverage, final-regression]
+    needs:
+      - repair_known_failures
+      - strict_visual
+      - real_operation
+      - canvas_panels
+      - routes_and_filters
+      - coverage
+      - final_regression
     if: always()
     runs-on: ubuntu-latest
     env:
-      ALL_STAGES_SUCCESS: ${{ needs.repair_known_failures.result == 'success' && needs.strict-visual.result == 'success' && needs.real-operation.result == 'success' && needs.canvas-panels.result == 'success' && needs.routes-and-filters.result == 'success' && needs.coverage.result == 'success' && needs.final-regression.result == 'success' }}
+      ALL_STAGES_SUCCESS: ${{ needs.repair_known_failures.result == 'success' && needs.strict_visual.result == 'success' && needs.real_operation.result == 'success' && needs.canvas_panels.result == 'success' && needs.routes_and_filters.result == 'success' && needs.coverage.result == 'success' && needs.final_regression.result == 'success' }}
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dev_branch }
+        with:
+          ref: dev_branch
       - name: ダッシュボードを最新状態へ更新
         if: always()
         run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: 途中失敗があればここで停止
         if: env.ALL_STAGES_SUCCESS != 'true'
         run: |
@@ -273,7 +326,8 @@ jobs:
         run: |
           echo "未確認 ${{ steps.remaining.outputs.remaining }} 件。全工程が成功したため次の監査サイクルを開始します。"
           gh workflow run audit-continuous-queue.yml --ref dev_branch
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: 全件確認済み
         if: env.ALL_STAGES_SUCCESS == 'true' && steps.remaining.outputs.remaining == '0'
         run: echo "AI/CIで確認可能な全 ${{ steps.remaining.outputs.total }} 項目が最終確認済みです。"
