@@ -1,9 +1,5 @@
 {
   "@@locale": "ja",
-  "appTitle": "NIARIM",
-  "@appTitle": {
-    "description": "アプリ名。翻訳しない固有名詞"
-  },
   "homeTabProjects": "プロジェクト",
   "homeTabShared": "共有",
   "homeTabTrash": "ゴミ箱",
@@ -61,10 +57,6 @@
   "homeViewModeMedium": "中",
   "homeViewModeSmall": "小",
   "homeViewModeDetail": "詳細",
-  "homeSortNameAsc": "名前 ↑",
-  "homeSortNameDesc": "名前 ↓",
-  "homeSortUpdatedAsc": "更新日時 ↑",
-  "homeSortUpdatedDesc": "更新日時 ↓",
   "homeSortFieldName": "名前",
   "homeSortFieldUpdated": "更新日時",
   "homeSortDirectionAscTooltip": "昇順（タップで降順に切り替え）",
@@ -311,7 +303,6 @@
     }
   },
   "autofillPresetSelectionButton": "使用する自動塗り設定を選択",
-  "autofillPresetSelectionAllLabel": "すべて使用",
   "autofillPresetSelectionCountLabel": "{count}件を使用",
   "@autofillPresetSelectionCountLabel": {
     "placeholders": {
@@ -512,8 +503,6 @@
   "workspacePcModeAlwaysMobile": "常にスマホモード",
   "workspaceSaveSection": "ワークスペース保存",
   "workspaceSaveHint": "左利きモード・PCモード・ツールバー・ツール早替え設定を名前を付けて保存し、後から呼び出せます。",
-  "workspaceSaveCurrentButton": "現在のワークスペースを保存",
-  "workspaceLoadButtonEmpty": "ワークスペースを読み込み（未保存）",
   "workspaceLoadButton": "ワークスペースを読み込み",
   "workspaceEmptyToolbar": "表示するツールがありません",
   "workspaceSaveDialogTitle": "ワークスペースを保存",
@@ -1065,14 +1054,6 @@
   "canvasSizePresetEmpty": "保存されたサイズはありません",
   "canvasSizePresetEmptyHint": "新規プロジェクト画面でカスタムサイズを指定し、「このサイズを保存する」から追加できます",
   "canvasSizePresetEditDialogTitle": "サイズを編集",
-  "canvasSizePresetDeleteConfirmTitle": "「{name}」を削除しますか？",
-  "@canvasSizePresetDeleteConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "canvasSizePresetDuplicateSuffix": "のコピー",
   "newProjectDurationLabel": "長さ（最大{max}）",
   "@newProjectDurationLabel": {
@@ -1220,7 +1201,6 @@
   "penSubToolTabLassoFill": "投げ縄塗り",
   "penSubToolToneTooltipMessage": "トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。",
   "penSubToolStampTooltipMessage": "決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。",
-  "penSubToolLassoTooltipMessage": "投げ縄で囲んだ範囲を一括で塗りつぶせます。",
   "penSubToolManageTooltip": "管理",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
@@ -1291,8 +1271,6 @@
   "projectDetailLastFrameTooltip": "最終フレーム",
   "projectDetailFullscreenTooltip": "プレビューを全画面表示",
   "projectDetailFullscreenCloseTooltip": "全画面プレビューを閉じる",
-  "projectDetailCollapsePreviewTooltip": "プレビューを縮小表示",
-  "projectDetailExpandPreviewTooltip": "プレビューを通常サイズに戻す",
   "projectDetailStartEditButton": "編集開始",
   "projectDetailTagsQuickAction": "タグ",
   "projectDetailShareQuickAction": "共有",
@@ -1314,7 +1292,6 @@
   "projectDetailInfoWorkTime": "制作時間",
   "projectDetailInfoLastSaved": "最終保存",
   "projectDetailInfoSize": "容量",
-  "projectDetailSaveTreeButton": "セーブツリー",
   "projectDetailAddTagHint": "タグを追加",
   "projectDetailNiashareFailedSnackbar": ".niashareの作成に失敗しました: {error}",
   "@projectDetailNiashareFailedSnackbar": {
@@ -1632,10 +1609,6 @@
       }
     }
   },
-  "autofillPartResetLineColorButton": "デフォルトに戻す",
-  "autofillThumbnailHint": "サムネイル画像（参照イラスト等）を設定すると、そこからスポイトで色を拾えます。",
-  "autofillThumbnailSetButton": "画像を追加",
-  "autofillThumbnailChangeButton": "画像を変更",
   "autofillEyedropperFromThumbnailButton": "画像からスポイト",
   "autofillEyedropperDialogTitle": "画像から色を拾う",
   "autofillEyedropperDialogHint": "画像をタップして色を選択してください",
@@ -1719,7 +1692,6 @@
   },
   "autofillPartGradientColorLabel": "色",
   "autofillPartGradientAddColorButton": "色を追加",
-  "autofillPartGradientDeleteHint": "長押しで削除（2色未満にはできません）",
   "autofillPartGradientRemoveButton": "グラデーション解除",
   "autofillPartGradientFeatherLabel": "ぼかしの強さ: {value}%",
   "@autofillPartGradientFeatherLabel": {
@@ -2023,8 +1995,6 @@
   },
   "layerPanelClippingBadge": "クリッピング",
   "layerPanelAddTooltip": "追加",
-  "layerPanelMergeTooltip": "結合",
-  "layerPanelSettingsTooltip": "レイヤー設定",
   "layerPanelAutofillMarkTooltip": "線画が更新されました。タップすると自動塗りを最新の状態に更新できます。",
   "layerPanelRangeAllFrames": "全フレーム",
   "layerPanelRangeCurrentScene": "現在シーン",
@@ -2056,15 +2026,6 @@
     }
   },
   "layerPanelDeleteConfirmBody": "この素材の表示範囲内のすべてのフレームから削除されます。",
-  "layerPanelMultiDeleteConfirmTitle": "選択中の{count}件を削除しますか？",
-  "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "layerPanelMultiDeleteConfirmBody": "タイムライン素材の表示範囲内のすべてのフレームから削除されます。",
   "layerPanelCommonDeleteMidDialogTitle": "{name}の表示範囲を変更しますか？",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {
@@ -2116,14 +2077,6 @@
   "layerPanelExecuteButton": "実行",
   "layerPanelAutofillPartMissingSnackbar": "パーツが未設定です。「パーツ設定」から設定してください。",
   "layerPanelAutofillPresetMissingSnackbar": "対応する自動塗り設定のパーツが見つかりません。",
-  "layerPanelAutofillLayerNameSuffix": "{name}（自動塗り）",
-  "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "layerPanelOrphanFillSuccessSnackbar": "対応する線画レイヤーが見つからないため、最新の色で塗りつぶしました。",
   "layerPanelOrphanFillFailSnackbar": "パーツが未設定、または塗り形状がないため処理できませんでした。",
   "layerPanelAutofillUpdateHelpTitle": "自動塗り更新マーク",
@@ -2154,11 +2107,9 @@
   },
   "timelineFullscreenPreviewCloseTooltip": "全画面プレビューを閉じる",
   "timelineDefaultProjectName": "プロジェクト名",
-  "timelineProjectSaveMenuItem": "プロジェクト保存",
   "timelinePreviewPlaceholder": "プレビュー",
   "timelinePreviewFullscreenTip": "タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。",
   "timelinePreviewFullscreenTooltip": "プレビューを全画面表示",
-  "timelineAddImageTooltip": "＋画像",
   "timelineAddVideoTooltip": "＋動画",
   "timelineAddAudioTooltip": "＋音源",
   "timelineEffectFilterLabel": "演出フィルター",
@@ -2213,28 +2164,11 @@
   },
   "timelineAutofillUpdateHelpBody": "このシーン・フレームには最新ではない自動塗りレイヤーが含まれています。レイヤーパネルで対象レイヤーをタップすると更新できます。",
   "timelineFrameTrackLabel": "フレーム",
-  "timelineTrackRowDeleteBlockedSnackbar": "この行には素材があるため削除できません。先に素材を移動または削除してください。",
   "timelineTrackRowRenameTitle": "行名を変更",
   "timelineCameraTrackLabel": "カメラ",
   "timelineRangeSceneFixed": "シーン固定",
-  "timelineEndCardCustomLabel": "差替済",
   "timelineEndCardDefaultLogoLabel": "NIARIMロゴ",
-  "timelineEndCardStatusFormat": "{label}・{seconds}秒",
-  "@timelineEndCardStatusFormat": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "timelineEndCardHiddenLabel": "非表示",
-  "timelineEndCardVisibilityToggleTooltip": "表示ON/OFF",
-  "timelineEndCardLengthChangeTooltip": "長さ変更",
-  "timelineEndCardReplaceTooltip": "差し替え",
-  "timelineEndCardLengthDialogTitle": "エンドカードの長さ",
   "timelineEndCardTrackLabel": "エンドカードトラック",
   "timelineMarkerTrackLabel": "タイムスタンプ",
   "timelineMarkerAddDialogTitle": "F{n} にタイムスタンプを追加",
@@ -2254,14 +2188,6 @@
     }
   },
   "timelineMarkerCommentHint": "コメント（例：ここで口パク「あ」）",
-  "timelineSecondsLabel": "{n}秒",
-  "@timelineSecondsLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "timelineAddClipDialogTitle": "{trackName}クリップを追加",
   "@timelineAddClipDialogTitle": {
     "placeholders": {
@@ -2273,7 +2199,6 @@
   "timelineClipLabelFieldLabel": "ラベル",
   "timelineClipStartLabel": "開始:",
   "timelineClipLengthLabel": "長さ:",
-  "timelineSaveSuccessSnackbar": "プロジェクトを保存しました",
   "timelineAutofillNote2": "※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。",
   "timelineAutofillTargetLabel": "実行対象",
   "timelineAutofillScopeCurrentFrame": "現在のフレームのみ",
@@ -2401,7 +2326,6 @@
       }
     }
   },
-  "frameStripTimelineModeTooltip": "タイムラインモード",
   "frameStripFrameListModeLabel": "フレーム一覧",
   "frameStripTimelineModeLabel": "タイムライン",
   "progressDialogAdLoading": "広告読み込み中…",

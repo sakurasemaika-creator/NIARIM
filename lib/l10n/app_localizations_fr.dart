@@ -9,9 +9,6 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appTitle => 'NIARIM';
-
-  @override
   String get homeTabProjects => 'Projets';
 
   @override
@@ -107,18 +104,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => 'Détails';
-
-  @override
-  String get homeSortNameAsc => 'Nom ↑';
-
-  @override
-  String get homeSortNameDesc => 'Nom ↓';
-
-  @override
-  String get homeSortUpdatedAsc => 'Mis à jour ↑';
-
-  @override
-  String get homeSortUpdatedDesc => 'Mis à jour ↓';
 
   @override
   String get homeSortFieldName => 'Nom';
@@ -671,9 +656,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Sélectionner les réglages de remplissage auto à utiliser';
 
   @override
-  String get autofillPresetSelectionAllLabel => 'Tout utiliser';
-
-  @override
   String autofillPresetSelectionCountLabel(int count) {
     return '$count sélectionné(s)';
   }
@@ -1159,14 +1141,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get workspaceSaveHint =>
       'Enregistrez vos réglages de mode gaucher, mode PC, barre d\'outils et outils rapides sous un nom afin de pouvoir les recharger plus tard.';
-
-  @override
-  String get workspaceSaveCurrentButton =>
-      'Enregistrer l\'espace de travail actuel';
-
-  @override
-  String get workspaceLoadButtonEmpty =>
-      'Charger un espace de travail (aucun enregistré)';
 
   @override
   String get workspaceLoadButton => 'Charger un espace de travail';
@@ -2713,11 +2687,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => 'Modifier la taille';
 
   @override
-  String canvasSizePresetDeleteConfirmTitle(String name) {
-    return 'Supprimer « $name » ?';
-  }
-
-  @override
   String get canvasSizePresetDuplicateSuffix => 'copie';
 
   @override
@@ -2861,10 +2830,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get penSubToolStampTooltipMessage =>
       'Placez des tampons de forme fixe. Appuyez longuement pour régler la rotation, la densité, etc.';
-
-  @override
-  String get penSubToolLassoTooltipMessage =>
-      'Remplit d\'un coup la zone entourée par le lasso.';
 
   @override
   String get penSubToolManageTooltip => 'Gérer';
@@ -3017,12 +2982,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Fermer l\'aperçu plein écran';
 
   @override
-  String get projectDetailCollapsePreviewTooltip => 'Réduire l\'aperçu';
-
-  @override
-  String get projectDetailExpandPreviewTooltip => 'Agrandir l\'aperçu';
-
-  @override
   String get projectDetailStartEditButton => 'Commencer l\'édition';
 
   @override
@@ -3056,9 +3015,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectDetailInfoSize => 'Taille';
-
-  @override
-  String get projectDetailSaveTreeButton => 'Arbre de sauvegardes';
 
   @override
   String get projectDetailAddTagHint => 'Ajouter une étiquette';
@@ -3622,19 +3578,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get autofillPartResetLineColorButton => 'Réinitialiser';
-
-  @override
-  String get autofillThumbnailHint =>
-      'Définissez une image miniature (par ex. une illustration de référence) pour y prélever des couleurs à la pipette.';
-
-  @override
-  String get autofillThumbnailSetButton => 'Ajouter une image';
-
-  @override
-  String get autofillThumbnailChangeButton => 'Changer l\'image';
-
-  @override
   String get autofillEyedropperFromThumbnailButton =>
       'Prélever depuis l\'image';
 
@@ -3760,10 +3703,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get autofillPartGradientAddColorButton => 'Ajouter une couleur';
-
-  @override
-  String get autofillPartGradientDeleteHint =>
-      'Appui long pour supprimer (2 couleurs minimum)';
 
   @override
   String get autofillPartGradientRemoveButton => 'Supprimer le dégradé';
@@ -4260,12 +4199,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelAddTooltip => 'Ajouter';
 
   @override
-  String get layerPanelMergeTooltip => 'Fusionner';
-
-  @override
-  String get layerPanelSettingsTooltip => 'Paramètres du calque';
-
-  @override
   String get layerPanelAutofillMarkTooltip =>
       'Le dessin au trait a été mis à jour. Touchez pour actualiser le remplissage automatique.';
 
@@ -4314,15 +4247,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get layerPanelDeleteConfirmBody =>
       'Ce matériau sera supprimé de toutes les images de sa plage d\'affichage.';
-
-  @override
-  String layerPanelMultiDeleteConfirmTitle(int count) {
-    return 'Supprimer les $count éléments sélectionnés ?';
-  }
-
-  @override
-  String get layerPanelMultiDeleteConfirmBody =>
-      'Les matériaux de la timeline seront supprimés de toutes les images de leur plage d\'affichage.';
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {
@@ -4480,11 +4404,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Aucune partie correspondante trouvée dans le réglage de remplissage automatique.';
 
   @override
-  String layerPanelAutofillLayerNameSuffix(String name) {
-    return '$name (remplissage auto)';
-  }
-
-  @override
   String get layerPanelOrphanFillSuccessSnackbar =>
       'Aucun calque de trait correspondant trouvé, rempli avec la couleur la plus récente à la place.';
 
@@ -4523,9 +4442,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineDefaultProjectName => 'Nom du projet';
 
   @override
-  String get timelineProjectSaveMenuItem => 'Enregistrer le projet';
-
-  @override
   String get timelinePreviewPlaceholder => 'Aperçu';
 
   @override
@@ -4535,9 +4451,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get timelinePreviewFullscreenTooltip =>
       'Afficher l\'aperçu en plein écran';
-
-  @override
-  String get timelineAddImageTooltip => '+ Image';
 
   @override
   String get timelineAddVideoTooltip => '+ Vidéo';
@@ -4654,10 +4567,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineFrameTrackLabel => 'Image';
 
   @override
-  String get timelineTrackRowDeleteBlockedSnackbar =>
-      'Cette ligne contient encore des clips et ne peut pas être supprimée. Déplacez-les ou supprimez-les d\'abord.';
-
-  @override
   String get timelineTrackRowRenameTitle => 'Renommer la ligne';
 
   @override
@@ -4667,30 +4576,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineRangeSceneFixed => 'Scène fixe';
 
   @override
-  String get timelineEndCardCustomLabel => 'Remplacé';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'Logo NIARIM';
 
   @override
-  String timelineEndCardStatusFormat(String label, int seconds) {
-    return '$label · $seconds s';
-  }
-
-  @override
   String get timelineEndCardHiddenLabel => 'Masqué';
-
-  @override
-  String get timelineEndCardVisibilityToggleTooltip => 'Afficher/masquer';
-
-  @override
-  String get timelineEndCardLengthChangeTooltip => 'Modifier la durée';
-
-  @override
-  String get timelineEndCardReplaceTooltip => 'Remplacer';
-
-  @override
-  String get timelineEndCardLengthDialogTitle => 'Durée de la carte de fin';
 
   @override
   String get timelineEndCardTrackLabel => 'Piste de la carte de fin';
@@ -4712,11 +4601,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineMarkerCommentHint => 'Commentaire (ex. bouche « a » ici)';
 
   @override
-  String timelineSecondsLabel(int n) {
-    return '$n s';
-  }
-
-  @override
   String timelineAddClipDialogTitle(String trackName) {
     return 'Ajouter un clip $trackName';
   }
@@ -4729,9 +4613,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineClipLengthLabel => 'Durée :';
-
-  @override
-  String get timelineSaveSuccessSnackbar => 'Projet enregistré';
 
   @override
   String get timelineAutofillNote2 =>
@@ -4972,9 +4853,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n images de maintien';
   }
-
-  @override
-  String get frameStripTimelineModeTooltip => 'Mode timeline';
 
   @override
   String get frameStripFrameListModeLabel => 'Images';

@@ -1,6 +1,5 @@
 {
   "@@locale": "en",
-  "appTitle": "NIARIM",
   "homeTabProjects": "Projects",
   "homeTabShared": "Shared",
   "homeTabTrash": "Trash",
@@ -30,10 +29,6 @@
   "homeViewModeMedium": "Medium",
   "homeViewModeSmall": "Small",
   "homeViewModeDetail": "Detail",
-  "homeSortNameAsc": "Name ↑",
-  "homeSortNameDesc": "Name ↓",
-  "homeSortUpdatedAsc": "Updated ↑",
-  "homeSortUpdatedDesc": "Updated ↓",
   "homeSortFieldName": "Name",
   "homeSortFieldUpdated": "Updated",
   "homeSortDirectionAscTooltip": "Ascending (tap to switch to descending)",
@@ -228,7 +223,6 @@
     }
   },
   "autofillPresetSelectionButton": "Select autofill settings to use",
-  "autofillPresetSelectionAllLabel": "Use all",
   "autofillPresetSelectionCountLabel": "{count} selected",
   "@autofillPresetSelectionCountLabel": {
     "placeholders": {
@@ -401,8 +395,6 @@
   "workspacePcModeAlwaysMobile": "Always Mobile Mode",
   "workspaceSaveSection": "Save Workspace",
   "workspaceSaveHint": "Save your left-handed mode, PC mode, toolbar, and quick tool settings under a name so you can load them again later.",
-  "workspaceSaveCurrentButton": "Save Current Workspace",
-  "workspaceLoadButtonEmpty": "Load Workspace (none saved)",
   "workspaceLoadButton": "Load Workspace",
   "workspaceEmptyToolbar": "No tools to display",
   "workspaceSaveDialogTitle": "Save Workspace",
@@ -838,14 +830,6 @@
   "canvasSizePresetEmpty": "No saved sizes yet",
   "canvasSizePresetEmptyHint": "Specify a custom size on the new project screen and tap \"Save this size\" to add one",
   "canvasSizePresetEditDialogTitle": "Edit size",
-  "canvasSizePresetDeleteConfirmTitle": "Delete \"{name}\"?",
-  "@canvasSizePresetDeleteConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "canvasSizePresetDuplicateSuffix": "copy",
   "newProjectDurationLabel": "Length (max {max})",
   "@newProjectDurationLabel": {
@@ -993,7 +977,6 @@
   "penSubToolTabLassoFill": "Lasso fill",
   "penSubToolToneTooltipMessage": "Choose a tone to paint screentone patterns with the bucket or pen.",
   "penSubToolStampTooltipMessage": "Place stamps of a fixed shape. Long-press to set rotation, density, and more.",
-  "penSubToolLassoTooltipMessage": "Fill the area enclosed by the lasso all at once.",
   "penSubToolManageTooltip": "Manage",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
@@ -1064,8 +1047,6 @@
   "projectDetailLastFrameTooltip": "Last frame",
   "projectDetailFullscreenTooltip": "Show preview fullscreen",
   "projectDetailFullscreenCloseTooltip": "Close fullscreen preview",
-  "projectDetailCollapsePreviewTooltip": "Collapse preview",
-  "projectDetailExpandPreviewTooltip": "Expand preview",
   "projectDetailStartEditButton": "Start editing",
   "projectDetailTagsQuickAction": "Tags",
   "projectDetailShareQuickAction": "Share",
@@ -1087,7 +1068,6 @@
   "projectDetailInfoWorkTime": "Work time",
   "projectDetailInfoLastSaved": "Last saved",
   "projectDetailInfoSize": "Size",
-  "projectDetailSaveTreeButton": "Save tree",
   "projectDetailAddTagHint": "Add a tag",
   "projectDetailNiashareFailedSnackbar": "Failed to create .niashare: {error}",
   "@projectDetailNiashareFailedSnackbar": {
@@ -1371,10 +1351,6 @@
   "autofillPartSelectColorButton": "Choose color",
   "autofillPartOutlineLabel": "Outline with specified color",
   "autofillPartOutlineWidthLabel": "Outline width: {value}px",
-  "autofillPartResetLineColorButton": "Reset to default",
-  "autofillThumbnailHint": "Set a thumbnail image (e.g. a reference illustration) to pick colors from it with the eyedropper.",
-  "autofillThumbnailSetButton": "Add image",
-  "autofillThumbnailChangeButton": "Change image",
   "autofillEyedropperFromThumbnailButton": "Pick from image",
   "autofillEyedropperDialogTitle": "Pick a color from the image",
   "autofillEyedropperDialogHint": "Tap the image to pick a color",
@@ -1457,7 +1433,6 @@
   },
   "autofillPartGradientColorLabel": "Colors",
   "autofillPartGradientAddColorButton": "Add color",
-  "autofillPartGradientDeleteHint": "Long-press to remove (at least 2 colors required)",
   "autofillPartGradientRemoveButton": "Remove gradient",
   "autofillPartGradientFeatherLabel": "Blur strength: {value}%",
   "@autofillPartGradientFeatherLabel": {
@@ -1754,8 +1729,6 @@
   },
   "layerPanelClippingBadge": "Clipping",
   "layerPanelAddTooltip": "Add",
-  "layerPanelMergeTooltip": "Merge",
-  "layerPanelSettingsTooltip": "Layer settings",
   "layerPanelAutofillMarkTooltip": "The lineart was updated. Tap to bring the auto-fill up to date.",
   "layerPanelRangeAllFrames": "All frames",
   "layerPanelRangeCurrentScene": "Current scene",
@@ -1787,15 +1760,6 @@
     }
   },
   "layerPanelDeleteConfirmBody": "This material will be removed from every frame within its display range.",
-  "layerPanelMultiDeleteConfirmTitle": "Delete the {count} selected items?",
-  "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "layerPanelMultiDeleteConfirmBody": "The timeline materials will be removed from every frame within their display range.",
   "layerPanelCommonDeleteMidDialogTitle": "Change the display range of {name}?",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {
@@ -1847,14 +1811,6 @@
   "layerPanelExecuteButton": "Run",
   "layerPanelAutofillPartMissingSnackbar": "No part is assigned. Assign one from “Assign part”.",
   "layerPanelAutofillPresetMissingSnackbar": "No matching part was found in the autofill setting.",
-  "layerPanelAutofillLayerNameSuffix": "{name} (Auto-fill)",
-  "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "layerPanelOrphanFillSuccessSnackbar": "No matching lineart layer was found, so it was filled with the latest color instead.",
   "layerPanelOrphanFillFailSnackbar": "Couldn't process this: no part is assigned, or there's no fill shape.",
   "layerPanelAutofillUpdateHelpTitle": "Auto-fill update mark",
@@ -1885,11 +1841,9 @@
   },
   "timelineFullscreenPreviewCloseTooltip": "Close fullscreen preview",
   "timelineDefaultProjectName": "Project name",
-  "timelineProjectSaveMenuItem": "Save project",
   "timelinePreviewPlaceholder": "Preview",
   "timelinePreviewFullscreenTip": "Tap to show the preview fullscreen. Handy for checking the finished result.",
   "timelinePreviewFullscreenTooltip": "Show preview fullscreen",
-  "timelineAddImageTooltip": "+ Image",
   "timelineAddVideoTooltip": "+ Video",
   "timelineAddAudioTooltip": "+ Audio",
   "timelineEffectFilterLabel": "Effect filters",
@@ -1944,28 +1898,11 @@
   },
   "timelineAutofillUpdateHelpBody": "This scene/frame contains an auto-fill layer that isn't up to date. Tap the layer in the layer panel to update it.",
   "timelineFrameTrackLabel": "Frame",
-  "timelineTrackRowDeleteBlockedSnackbar": "This row still has clips and can't be removed. Move or delete them first.",
   "timelineTrackRowRenameTitle": "Rename row",
   "timelineCameraTrackLabel": "Camera",
   "timelineRangeSceneFixed": "Fixed scene",
-  "timelineEndCardCustomLabel": "Replaced",
   "timelineEndCardDefaultLogoLabel": "NIARIM logo",
-  "timelineEndCardStatusFormat": "{label} · {seconds}s",
-  "@timelineEndCardStatusFormat": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "timelineEndCardHiddenLabel": "Hidden",
-  "timelineEndCardVisibilityToggleTooltip": "Show/hide",
-  "timelineEndCardLengthChangeTooltip": "Change length",
-  "timelineEndCardReplaceTooltip": "Replace",
-  "timelineEndCardLengthDialogTitle": "End card length",
   "timelineEndCardTrackLabel": "End Card Track",
   "timelineMarkerTrackLabel": "Timestamps",
   "timelineMarkerAddDialogTitle": "Add timestamp at F{n}",
@@ -1985,14 +1922,6 @@
     }
   },
   "timelineMarkerCommentHint": "Comment (e.g. mouth flap \"ah\" here)",
-  "timelineSecondsLabel": "{n}s",
-  "@timelineSecondsLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "timelineAddClipDialogTitle": "Add {trackName} clip",
   "@timelineAddClipDialogTitle": {
     "placeholders": {
@@ -2004,7 +1933,6 @@
   "timelineClipLabelFieldLabel": "Label",
   "timelineClipStartLabel": "Start:",
   "timelineClipLengthLabel": "Length:",
-  "timelineSaveSuccessSnackbar": "Project saved",
   "timelineAutofillNote2": "✳ If only an auto-fill layer exists (with no lineart), the area will be judged from scratch either way.",
   "timelineAutofillTargetLabel": "Target",
   "timelineAutofillScopeCurrentFrame": "Current frame only",
@@ -2132,7 +2060,6 @@
       }
     }
   },
-  "frameStripTimelineModeTooltip": "Timeline mode",
   "frameStripFrameListModeLabel": "Frames",
   "frameStripTimelineModeLabel": "Timeline",
   "progressDialogAdLoading": "Loading ad…",

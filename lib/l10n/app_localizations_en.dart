@@ -9,9 +9,6 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'NIARIM';
-
-  @override
   String get homeTabProjects => 'Projects';
 
   @override
@@ -107,18 +104,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => 'Detail';
-
-  @override
-  String get homeSortNameAsc => 'Name ↑';
-
-  @override
-  String get homeSortNameDesc => 'Name ↓';
-
-  @override
-  String get homeSortUpdatedAsc => 'Updated ↑';
-
-  @override
-  String get homeSortUpdatedDesc => 'Updated ↓';
 
   @override
   String get homeSortFieldName => 'Name';
@@ -662,9 +647,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autofillPresetSelectionButton => 'Select autofill settings to use';
 
   @override
-  String get autofillPresetSelectionAllLabel => 'Use all';
-
-  @override
   String autofillPresetSelectionCountLabel(int count) {
     return '$count selected';
   }
@@ -1141,12 +1123,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get workspaceSaveHint =>
       'Save your left-handed mode, PC mode, toolbar, and quick tool settings under a name so you can load them again later.';
-
-  @override
-  String get workspaceSaveCurrentButton => 'Save Current Workspace';
-
-  @override
-  String get workspaceLoadButtonEmpty => 'Load Workspace (none saved)';
 
   @override
   String get workspaceLoadButton => 'Load Workspace';
@@ -2677,11 +2653,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => 'Edit size';
 
   @override
-  String canvasSizePresetDeleteConfirmTitle(String name) {
-    return 'Delete \"$name\"?';
-  }
-
-  @override
   String get canvasSizePresetDuplicateSuffix => 'copy';
 
   @override
@@ -2824,10 +2795,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get penSubToolStampTooltipMessage =>
       'Place stamps of a fixed shape. Long-press to set rotation, density, and more.';
-
-  @override
-  String get penSubToolLassoTooltipMessage =>
-      'Fill the area enclosed by the lasso all at once.';
 
   @override
   String get penSubToolManageTooltip => 'Manage';
@@ -2977,12 +2944,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectDetailFullscreenCloseTooltip => 'Close fullscreen preview';
 
   @override
-  String get projectDetailCollapsePreviewTooltip => 'Collapse preview';
-
-  @override
-  String get projectDetailExpandPreviewTooltip => 'Expand preview';
-
-  @override
   String get projectDetailStartEditButton => 'Start editing';
 
   @override
@@ -3016,9 +2977,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectDetailInfoSize => 'Size';
-
-  @override
-  String get projectDetailSaveTreeButton => 'Save tree';
 
   @override
   String get projectDetailAddTagHint => 'Add a tag';
@@ -3570,19 +3528,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get autofillPartResetLineColorButton => 'Reset to default';
-
-  @override
-  String get autofillThumbnailHint =>
-      'Set a thumbnail image (e.g. a reference illustration) to pick colors from it with the eyedropper.';
-
-  @override
-  String get autofillThumbnailSetButton => 'Add image';
-
-  @override
-  String get autofillThumbnailChangeButton => 'Change image';
-
-  @override
   String get autofillEyedropperFromThumbnailButton => 'Pick from image';
 
   @override
@@ -3705,10 +3650,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autofillPartGradientAddColorButton => 'Add color';
-
-  @override
-  String get autofillPartGradientDeleteHint =>
-      'Long-press to remove (at least 2 colors required)';
 
   @override
   String get autofillPartGradientRemoveButton => 'Remove gradient';
@@ -4190,12 +4131,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelAddTooltip => 'Add';
 
   @override
-  String get layerPanelMergeTooltip => 'Merge';
-
-  @override
-  String get layerPanelSettingsTooltip => 'Layer settings';
-
-  @override
   String get layerPanelAutofillMarkTooltip =>
       'The lineart was updated. Tap to bring the auto-fill up to date.';
 
@@ -4243,15 +4178,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get layerPanelDeleteConfirmBody =>
       'This material will be removed from every frame within its display range.';
-
-  @override
-  String layerPanelMultiDeleteConfirmTitle(int count) {
-    return 'Delete the $count selected items?';
-  }
-
-  @override
-  String get layerPanelMultiDeleteConfirmBody =>
-      'The timeline materials will be removed from every frame within their display range.';
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {
@@ -4405,11 +4331,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'No matching part was found in the autofill setting.';
 
   @override
-  String layerPanelAutofillLayerNameSuffix(String name) {
-    return '$name (Auto-fill)';
-  }
-
-  @override
   String get layerPanelOrphanFillSuccessSnackbar =>
       'No matching lineart layer was found, so it was filled with the latest color instead.';
 
@@ -4447,9 +4368,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineDefaultProjectName => 'Project name';
 
   @override
-  String get timelineProjectSaveMenuItem => 'Save project';
-
-  @override
   String get timelinePreviewPlaceholder => 'Preview';
 
   @override
@@ -4458,9 +4376,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelinePreviewFullscreenTooltip => 'Show preview fullscreen';
-
-  @override
-  String get timelineAddImageTooltip => '+ Image';
 
   @override
   String get timelineAddVideoTooltip => '+ Video';
@@ -4575,10 +4490,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineFrameTrackLabel => 'Frame';
 
   @override
-  String get timelineTrackRowDeleteBlockedSnackbar =>
-      'This row still has clips and can\'t be removed. Move or delete them first.';
-
-  @override
   String get timelineTrackRowRenameTitle => 'Rename row';
 
   @override
@@ -4588,30 +4499,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineRangeSceneFixed => 'Fixed scene';
 
   @override
-  String get timelineEndCardCustomLabel => 'Replaced';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM logo';
 
   @override
-  String timelineEndCardStatusFormat(String label, int seconds) {
-    return '$label · ${seconds}s';
-  }
-
-  @override
   String get timelineEndCardHiddenLabel => 'Hidden';
-
-  @override
-  String get timelineEndCardVisibilityToggleTooltip => 'Show/hide';
-
-  @override
-  String get timelineEndCardLengthChangeTooltip => 'Change length';
-
-  @override
-  String get timelineEndCardReplaceTooltip => 'Replace';
-
-  @override
-  String get timelineEndCardLengthDialogTitle => 'End card length';
 
   @override
   String get timelineEndCardTrackLabel => 'End Card Track';
@@ -4634,11 +4525,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Comment (e.g. mouth flap \"ah\" here)';
 
   @override
-  String timelineSecondsLabel(int n) {
-    return '${n}s';
-  }
-
-  @override
   String timelineAddClipDialogTitle(String trackName) {
     return 'Add $trackName clip';
   }
@@ -4651,9 +4537,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineClipLengthLabel => 'Length:';
-
-  @override
-  String get timelineSaveSuccessSnackbar => 'Project saved';
 
   @override
   String get timelineAutofillNote2 =>
@@ -4888,9 +4771,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n hold cells';
   }
-
-  @override
-  String get frameStripTimelineModeTooltip => 'Timeline mode';
 
   @override
   String get frameStripFrameListModeLabel => 'Frames';

@@ -107,12 +107,6 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
-  /// アプリ名。翻訳しない固有名詞
-  ///
-  /// In ja, this message translates to:
-  /// **'NIARIM'**
-  String get appTitle;
-
   /// No description provided for @homeTabProjects.
   ///
   /// In ja, this message translates to:
@@ -286,30 +280,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'詳細'**
   String get homeViewModeDetail;
-
-  /// No description provided for @homeSortNameAsc.
-  ///
-  /// In ja, this message translates to:
-  /// **'名前 ↑'**
-  String get homeSortNameAsc;
-
-  /// No description provided for @homeSortNameDesc.
-  ///
-  /// In ja, this message translates to:
-  /// **'名前 ↓'**
-  String get homeSortNameDesc;
-
-  /// No description provided for @homeSortUpdatedAsc.
-  ///
-  /// In ja, this message translates to:
-  /// **'更新日時 ↑'**
-  String get homeSortUpdatedAsc;
-
-  /// No description provided for @homeSortUpdatedDesc.
-  ///
-  /// In ja, this message translates to:
-  /// **'更新日時 ↓'**
-  String get homeSortUpdatedDesc;
 
   /// No description provided for @homeSortFieldName.
   ///
@@ -1307,12 +1277,6 @@ abstract class AppLocalizations {
   /// **'使用する自動塗り設定を選択'**
   String get autofillPresetSelectionButton;
 
-  /// No description provided for @autofillPresetSelectionAllLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'すべて使用'**
-  String get autofillPresetSelectionAllLabel;
-
   /// No description provided for @autofillPresetSelectionCountLabel.
   ///
   /// In ja, this message translates to:
@@ -2200,18 +2164,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'左利きモード・PCモード・ツールバー・ツール早替え設定を名前を付けて保存し、後から呼び出せます。'**
   String get workspaceSaveHint;
-
-  /// No description provided for @workspaceSaveCurrentButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'現在のワークスペースを保存'**
-  String get workspaceSaveCurrentButton;
-
-  /// No description provided for @workspaceLoadButtonEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'ワークスペースを読み込み（未保存）'**
-  String get workspaceLoadButtonEmpty;
 
   /// No description provided for @workspaceLoadButton.
   ///
@@ -4823,12 +4775,6 @@ abstract class AppLocalizations {
   /// **'サイズを編集'**
   String get canvasSizePresetEditDialogTitle;
 
-  /// No description provided for @canvasSizePresetDeleteConfirmTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'「{name}」を削除しますか？'**
-  String canvasSizePresetDeleteConfirmTitle(String name);
-
   /// No description provided for @canvasSizePresetDuplicateSuffix.
   ///
   /// In ja, this message translates to:
@@ -5056,12 +5002,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。'**
   String get penSubToolStampTooltipMessage;
-
-  /// No description provided for @penSubToolLassoTooltipMessage.
-  ///
-  /// In ja, this message translates to:
-  /// **'投げ縄で囲んだ範囲を一括で塗りつぶせます。'**
-  String get penSubToolLassoTooltipMessage;
 
   /// No description provided for @penSubToolManageTooltip.
   ///
@@ -5339,18 +5279,6 @@ abstract class AppLocalizations {
   /// **'全画面プレビューを閉じる'**
   String get projectDetailFullscreenCloseTooltip;
 
-  /// No description provided for @projectDetailCollapsePreviewTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'プレビューを縮小表示'**
-  String get projectDetailCollapsePreviewTooltip;
-
-  /// No description provided for @projectDetailExpandPreviewTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'プレビューを通常サイズに戻す'**
-  String get projectDetailExpandPreviewTooltip;
-
   /// No description provided for @projectDetailStartEditButton.
   ///
   /// In ja, this message translates to:
@@ -5416,12 +5344,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'容量'**
   String get projectDetailInfoSize;
-
-  /// No description provided for @projectDetailSaveTreeButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'セーブツリー'**
-  String get projectDetailSaveTreeButton;
 
   /// No description provided for @projectDetailAddTagHint.
   ///
@@ -6407,30 +6329,6 @@ abstract class AppLocalizations {
   /// **'縁取り太さ: {value}px'**
   String autofillPartOutlineWidthLabel(int value);
 
-  /// No description provided for @autofillPartResetLineColorButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'デフォルトに戻す'**
-  String get autofillPartResetLineColorButton;
-
-  /// No description provided for @autofillThumbnailHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'サムネイル画像（参照イラスト等）を設定すると、そこからスポイトで色を拾えます。'**
-  String get autofillThumbnailHint;
-
-  /// No description provided for @autofillThumbnailSetButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'画像を追加'**
-  String get autofillThumbnailSetButton;
-
-  /// No description provided for @autofillThumbnailChangeButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'画像を変更'**
-  String get autofillThumbnailChangeButton;
-
   /// No description provided for @autofillEyedropperFromThumbnailButton.
   ///
   /// In ja, this message translates to:
@@ -6634,12 +6532,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'色を追加'**
   String get autofillPartGradientAddColorButton;
-
-  /// No description provided for @autofillPartGradientDeleteHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'長押しで削除（2色未満にはできません）'**
-  String get autofillPartGradientDeleteHint;
 
   /// No description provided for @autofillPartGradientRemoveButton.
   ///
@@ -7457,18 +7349,6 @@ abstract class AppLocalizations {
   /// **'追加'**
   String get layerPanelAddTooltip;
 
-  /// No description provided for @layerPanelMergeTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'結合'**
-  String get layerPanelMergeTooltip;
-
-  /// No description provided for @layerPanelSettingsTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'レイヤー設定'**
-  String get layerPanelSettingsTooltip;
-
   /// No description provided for @layerPanelAutofillMarkTooltip.
   ///
   /// In ja, this message translates to:
@@ -7552,18 +7432,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'この素材の表示範囲内のすべてのフレームから削除されます。'**
   String get layerPanelDeleteConfirmBody;
-
-  /// No description provided for @layerPanelMultiDeleteConfirmTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'選択中の{count}件を削除しますか？'**
-  String layerPanelMultiDeleteConfirmTitle(int count);
-
-  /// No description provided for @layerPanelMultiDeleteConfirmBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'タイムライン素材の表示範囲内のすべてのフレームから削除されます。'**
-  String get layerPanelMultiDeleteConfirmBody;
 
   /// No description provided for @layerPanelCommonDeleteMidDialogTitle.
   ///
@@ -7829,12 +7697,6 @@ abstract class AppLocalizations {
   /// **'対応する自動塗り設定のパーツが見つかりません。'**
   String get layerPanelAutofillPresetMissingSnackbar;
 
-  /// No description provided for @layerPanelAutofillLayerNameSuffix.
-  ///
-  /// In ja, this message translates to:
-  /// **'{name}（自動塗り）'**
-  String layerPanelAutofillLayerNameSuffix(String name);
-
   /// No description provided for @layerPanelOrphanFillSuccessSnackbar.
   ///
   /// In ja, this message translates to:
@@ -7889,12 +7751,6 @@ abstract class AppLocalizations {
   /// **'プロジェクト名'**
   String get timelineDefaultProjectName;
 
-  /// No description provided for @timelineProjectSaveMenuItem.
-  ///
-  /// In ja, this message translates to:
-  /// **'プロジェクト保存'**
-  String get timelineProjectSaveMenuItem;
-
   /// No description provided for @timelinePreviewPlaceholder.
   ///
   /// In ja, this message translates to:
@@ -7912,12 +7768,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プレビューを全画面表示'**
   String get timelinePreviewFullscreenTooltip;
-
-  /// No description provided for @timelineAddImageTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'＋画像'**
-  String get timelineAddImageTooltip;
 
   /// No description provided for @timelineAddVideoTooltip.
   ///
@@ -8117,12 +7967,6 @@ abstract class AppLocalizations {
   /// **'フレーム'**
   String get timelineFrameTrackLabel;
 
-  /// No description provided for @timelineTrackRowDeleteBlockedSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'この行には素材があるため削除できません。先に素材を移動または削除してください。'**
-  String get timelineTrackRowDeleteBlockedSnackbar;
-
   /// No description provided for @timelineTrackRowRenameTitle.
   ///
   /// In ja, this message translates to:
@@ -8141,53 +7985,17 @@ abstract class AppLocalizations {
   /// **'シーン固定'**
   String get timelineRangeSceneFixed;
 
-  /// No description provided for @timelineEndCardCustomLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'差替済'**
-  String get timelineEndCardCustomLabel;
-
   /// No description provided for @timelineEndCardDefaultLogoLabel.
   ///
   /// In ja, this message translates to:
   /// **'NIARIMロゴ'**
   String get timelineEndCardDefaultLogoLabel;
 
-  /// No description provided for @timelineEndCardStatusFormat.
-  ///
-  /// In ja, this message translates to:
-  /// **'{label}・{seconds}秒'**
-  String timelineEndCardStatusFormat(String label, int seconds);
-
   /// No description provided for @timelineEndCardHiddenLabel.
   ///
   /// In ja, this message translates to:
   /// **'非表示'**
   String get timelineEndCardHiddenLabel;
-
-  /// No description provided for @timelineEndCardVisibilityToggleTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'表示ON/OFF'**
-  String get timelineEndCardVisibilityToggleTooltip;
-
-  /// No description provided for @timelineEndCardLengthChangeTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'長さ変更'**
-  String get timelineEndCardLengthChangeTooltip;
-
-  /// No description provided for @timelineEndCardReplaceTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'差し替え'**
-  String get timelineEndCardReplaceTooltip;
-
-  /// No description provided for @timelineEndCardLengthDialogTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'エンドカードの長さ'**
-  String get timelineEndCardLengthDialogTitle;
 
   /// No description provided for @timelineEndCardTrackLabel.
   ///
@@ -8219,12 +8027,6 @@ abstract class AppLocalizations {
   /// **'コメント（例：ここで口パク「あ」）'**
   String get timelineMarkerCommentHint;
 
-  /// No description provided for @timelineSecondsLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'{n}秒'**
-  String timelineSecondsLabel(int n);
-
   /// No description provided for @timelineAddClipDialogTitle.
   ///
   /// In ja, this message translates to:
@@ -8248,12 +8050,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'長さ:'**
   String get timelineClipLengthLabel;
-
-  /// No description provided for @timelineSaveSuccessSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'プロジェクトを保存しました'**
-  String get timelineSaveSuccessSnackbar;
 
   /// No description provided for @timelineAutofillNote2.
   ///
@@ -8680,12 +8476,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'F{n} 保持セル数'**
   String frameStripHoldDialogTitle(int n);
-
-  /// No description provided for @frameStripTimelineModeTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'タイムラインモード'**
-  String get frameStripTimelineModeTooltip;
 
   /// No description provided for @frameStripFrameListModeLabel.
   ///

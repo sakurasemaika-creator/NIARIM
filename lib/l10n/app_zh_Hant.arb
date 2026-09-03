@@ -1,6 +1,5 @@
 {
   "@@locale": "zh_Hant",
-  "appTitle": "NIARIM",
   "homeTabProjects": "專案",
   "homeTabShared": "共享",
   "homeTabTrash": "垃圾桶",
@@ -30,10 +29,6 @@
   "homeViewModeMedium": "中",
   "homeViewModeSmall": "小",
   "homeViewModeDetail": "詳細",
-  "homeSortNameAsc": "名稱 ↑",
-  "homeSortNameDesc": "名稱 ↓",
-  "homeSortUpdatedAsc": "更新時間 ↑",
-  "homeSortUpdatedDesc": "更新時間 ↓",
   "homeSortFieldName": "名稱",
   "homeSortFieldUpdated": "更新時間",
   "homeSortDirectionAscTooltip": "遞增（點一下切換為遞減）",
@@ -228,7 +223,6 @@
     }
   },
   "autofillPresetSelectionButton": "選擇要使用的自動上色設定",
-  "autofillPresetSelectionAllLabel": "全部使用",
   "autofillPresetSelectionCountLabel": "已選{count}個",
   "@autofillPresetSelectionCountLabel": {
     "placeholders": {
@@ -401,8 +395,6 @@
   "workspacePcModeAlwaysMobile": "永遠使用手機模式",
   "workspaceSaveSection": "儲存工作區",
   "workspaceSaveHint": "可將左手模式・PC模式・工具列・快速切換工具設定命名儲存，之後隨時叫出。",
-  "workspaceSaveCurrentButton": "儲存目前的工作區",
-  "workspaceLoadButtonEmpty": "載入工作區（尚未儲存）",
   "workspaceLoadButton": "載入工作區",
   "workspaceEmptyToolbar": "沒有要顯示的工具",
   "workspaceSaveDialogTitle": "儲存工作區",
@@ -838,14 +830,6 @@
   "canvasSizePresetEmpty": "尚無已儲存的尺寸",
   "canvasSizePresetEmptyHint": "在新增專案畫面指定自訂尺寸後，點選「儲存此尺寸」即可新增",
   "canvasSizePresetEditDialogTitle": "編輯尺寸",
-  "canvasSizePresetDeleteConfirmTitle": "要刪除「{name}」嗎？",
-  "@canvasSizePresetDeleteConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "canvasSizePresetDuplicateSuffix": "副本",
   "newProjectDurationLabel": "時長（最大{max}）",
   "@newProjectDurationLabel": {
@@ -993,7 +977,6 @@
   "penSubToolTabLassoFill": "套索填色",
   "penSubToolToneTooltipMessage": "選擇網點後，可以用填色桶或筆刷塗上網點紋理。",
   "penSubToolStampTooltipMessage": "可以放置固定形狀的印章。長按可設定旋轉、密度等。",
-  "penSubToolLassoTooltipMessage": "可以一次填滿套索圈起的範圍。",
   "penSubToolManageTooltip": "管理",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
@@ -1064,8 +1047,6 @@
   "projectDetailLastFrameTooltip": "最後一格",
   "projectDetailFullscreenTooltip": "全螢幕顯示預覽",
   "projectDetailFullscreenCloseTooltip": "關閉全螢幕預覽",
-  "projectDetailCollapsePreviewTooltip": "縮小預覽",
-  "projectDetailExpandPreviewTooltip": "還原預覽大小",
   "projectDetailStartEditButton": "開始編輯",
   "projectDetailTagsQuickAction": "標籤",
   "projectDetailShareQuickAction": "分享",
@@ -1087,7 +1068,6 @@
   "projectDetailInfoWorkTime": "製作時間",
   "projectDetailInfoLastSaved": "最近儲存",
   "projectDetailInfoSize": "容量",
-  "projectDetailSaveTreeButton": "存檔樹",
   "projectDetailAddTagHint": "新增標籤",
   "projectDetailNiashareFailedSnackbar": ".niashare建立失敗：{error}",
   "@projectDetailNiashareFailedSnackbar": {
@@ -1371,10 +1351,6 @@
   "autofillPartSelectColorButton": "選擇顏色",
   "autofillPartOutlineLabel": "用指定顏色描邊",
   "autofillPartOutlineWidthLabel": "描邊粗細：{value}px",
-  "autofillPartResetLineColorButton": "恢復預設",
-  "autofillThumbnailHint": "設定縮圖（例如參考插圖）後，可以用滴管從圖中拾取顏色。",
-  "autofillThumbnailSetButton": "新增圖片",
-  "autofillThumbnailChangeButton": "更換圖片",
   "autofillEyedropperFromThumbnailButton": "從圖片取色",
   "autofillEyedropperDialogTitle": "從圖片中拾取顏色",
   "autofillEyedropperDialogHint": "點擊圖片以選擇顏色",
@@ -1457,7 +1433,6 @@
   },
   "autofillPartGradientColorLabel": "顏色",
   "autofillPartGradientAddColorButton": "新增顏色",
-  "autofillPartGradientDeleteHint": "長按可刪除（不能少於2種顏色）",
   "autofillPartGradientRemoveButton": "解除漸層",
   "autofillPartGradientFeatherLabel": "模糊強度: {value}%",
   "@autofillPartGradientFeatherLabel": {
@@ -1754,8 +1729,6 @@
   },
   "layerPanelClippingBadge": "剪裁",
   "layerPanelAddTooltip": "新增",
-  "layerPanelMergeTooltip": "合併",
-  "layerPanelSettingsTooltip": "圖層設定",
   "layerPanelAutofillMarkTooltip": "線稿已更新。點一下即可將自動上色更新為最新狀態。",
   "layerPanelRangeAllFrames": "全部影格",
   "layerPanelRangeCurrentScene": "目前場景",
@@ -1787,15 +1760,6 @@
     }
   },
   "layerPanelDeleteConfirmBody": "將從此素材顯示範圍內的所有影格中刪除。",
-  "layerPanelMultiDeleteConfirmTitle": "要刪除已選取的{count}項嗎？",
-  "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "layerPanelMultiDeleteConfirmBody": "將從時間軸素材顯示範圍內的所有影格中刪除。",
   "layerPanelCommonDeleteMidDialogTitle": "要變更「{name}」的顯示範圍嗎？",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {
@@ -1847,14 +1811,6 @@
   "layerPanelExecuteButton": "執行",
   "layerPanelAutofillPartMissingSnackbar": "尚未設定部件。請透過「部件設定」進行設定。",
   "layerPanelAutofillPresetMissingSnackbar": "在自動上色設定中找不到對應的部位。",
-  "layerPanelAutofillLayerNameSuffix": "{name}（自動上色）",
-  "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "layerPanelOrphanFillSuccessSnackbar": "找不到對應的線稿圖層，已改為以最新顏色填色。",
   "layerPanelOrphanFillFailSnackbar": "未設定部件，或沒有填色形狀，因此無法處理。",
   "layerPanelAutofillUpdateHelpTitle": "自動上色更新標記",
@@ -1885,11 +1841,9 @@
   },
   "timelineFullscreenPreviewCloseTooltip": "關閉全螢幕預覽",
   "timelineDefaultProjectName": "專案名稱",
-  "timelineProjectSaveMenuItem": "專案儲存",
   "timelinePreviewPlaceholder": "預覽",
   "timelinePreviewFullscreenTip": "點一下即可全螢幕顯示預覽，方便確認成品效果。",
   "timelinePreviewFullscreenTooltip": "全螢幕顯示預覽",
-  "timelineAddImageTooltip": "＋圖片",
   "timelineAddVideoTooltip": "＋影片",
   "timelineAddAudioTooltip": "＋音源",
   "timelineEffectFilterLabel": "演出濾鏡",
@@ -1944,28 +1898,11 @@
   },
   "timelineAutofillUpdateHelpBody": "此場景／影格中包含並非最新狀態的自動上色圖層。在圖層面板中點一下目標圖層即可更新。",
   "timelineFrameTrackLabel": "影格",
-  "timelineTrackRowDeleteBlockedSnackbar": "此行中還有素材，無法刪除。請先移動或刪除這些素材。",
   "timelineTrackRowRenameTitle": "重新命名行",
   "timelineCameraTrackLabel": "相機",
   "timelineRangeSceneFixed": "固定場景",
-  "timelineEndCardCustomLabel": "已替換",
   "timelineEndCardDefaultLogoLabel": "NIARIM標誌",
-  "timelineEndCardStatusFormat": "{label}・{seconds}秒",
-  "@timelineEndCardStatusFormat": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "timelineEndCardHiddenLabel": "隱藏",
-  "timelineEndCardVisibilityToggleTooltip": "顯示開關",
-  "timelineEndCardLengthChangeTooltip": "變更長度",
-  "timelineEndCardReplaceTooltip": "替換",
-  "timelineEndCardLengthDialogTitle": "片尾卡長度",
   "timelineEndCardTrackLabel": "片尾卡軌道",
   "timelineMarkerTrackLabel": "時間戳記",
   "timelineMarkerAddDialogTitle": "在F{n}加入時間戳記",
@@ -1985,14 +1922,6 @@
     }
   },
   "timelineMarkerCommentHint": "備註（例：這裡對嘴形「啊」）",
-  "timelineSecondsLabel": "{n}秒",
-  "@timelineSecondsLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "timelineAddClipDialogTitle": "新增{trackName}片段",
   "@timelineAddClipDialogTitle": {
     "placeholders": {
@@ -2004,7 +1933,6 @@
   "timelineClipLabelFieldLabel": "標籤",
   "timelineClipStartLabel": "開始：",
   "timelineClipLengthLabel": "長度：",
-  "timelineSaveSuccessSnackbar": "已儲存專案",
   "timelineAutofillNote2": "※ 若僅存在自動上色圖層（無線稿），無論選擇哪一項都會從頭判定區域進行自動上色。",
   "timelineAutofillTargetLabel": "執行對象",
   "timelineAutofillScopeCurrentFrame": "僅目前影格",
@@ -2132,7 +2060,6 @@
       }
     }
   },
-  "frameStripTimelineModeTooltip": "時間軸模式",
   "frameStripFrameListModeLabel": "影格清單",
   "frameStripTimelineModeLabel": "時間軸",
   "progressDialogAdLoading": "廣告載入中…",

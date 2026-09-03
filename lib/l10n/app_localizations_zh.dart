@@ -9,9 +9,6 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'NIARIM';
-
-  @override
   String get homeTabProjects => '项目';
 
   @override
@@ -106,18 +103,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '详情';
-
-  @override
-  String get homeSortNameAsc => '名称 ↑';
-
-  @override
-  String get homeSortNameDesc => '名称 ↓';
-
-  @override
-  String get homeSortUpdatedAsc => '更新时间 ↑';
-
-  @override
-  String get homeSortUpdatedDesc => '更新时间 ↓';
 
   @override
   String get homeSortFieldName => '名称';
@@ -646,9 +631,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autofillPresetSelectionButton => '选择要使用的自动上色设置';
 
   @override
-  String get autofillPresetSelectionAllLabel => '全部使用';
-
-  @override
   String autofillPresetSelectionCountLabel(int count) {
     return '已选$count个';
   }
@@ -1108,12 +1090,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get workspaceSaveHint => '可将左手模式・PC模式・工具栏・快捷工具设置命名保存，之后随时调用。';
-
-  @override
-  String get workspaceSaveCurrentButton => '保存当前工作区';
-
-  @override
-  String get workspaceLoadButtonEmpty => '加载工作区（尚未保存）';
 
   @override
   String get workspaceLoadButton => '加载工作区';
@@ -2575,11 +2551,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => '编辑尺寸';
 
   @override
-  String canvasSizePresetDeleteConfirmTitle(String name) {
-    return '要删除“$name”吗？';
-  }
-
-  @override
   String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
@@ -2718,9 +2689,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get penSubToolStampTooltipMessage => '可以放置固定形状的图章。长按可设置旋转、密度等。';
-
-  @override
-  String get penSubToolLassoTooltipMessage => '可以一次性填充套索圈起的范围。';
 
   @override
   String get penSubToolManageTooltip => '管理';
@@ -2867,12 +2835,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectDetailFullscreenCloseTooltip => '关闭全屏预览';
 
   @override
-  String get projectDetailCollapsePreviewTooltip => '缩小预览';
-
-  @override
-  String get projectDetailExpandPreviewTooltip => '还原预览大小';
-
-  @override
   String get projectDetailStartEditButton => '开始编辑';
 
   @override
@@ -2906,9 +2868,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectDetailInfoSize => '容量';
-
-  @override
-  String get projectDetailSaveTreeButton => '存档树';
 
   @override
   String get projectDetailAddTagHint => '添加标签';
@@ -3445,18 +3404,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get autofillPartResetLineColorButton => '恢复默认';
-
-  @override
-  String get autofillThumbnailHint => '设置缩略图（如参考插图）后，可以用取色器从图中拾取颜色。';
-
-  @override
-  String get autofillThumbnailSetButton => '添加图片';
-
-  @override
-  String get autofillThumbnailChangeButton => '更换图片';
-
-  @override
   String get autofillEyedropperFromThumbnailButton => '从图片取色';
 
   @override
@@ -3574,9 +3521,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autofillPartGradientAddColorButton => '添加颜色';
-
-  @override
-  String get autofillPartGradientDeleteHint => '长按可删除（不能少于2种颜色）';
 
   @override
   String get autofillPartGradientRemoveButton => '解除渐变';
@@ -4037,12 +3981,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelAddTooltip => '添加';
 
   @override
-  String get layerPanelMergeTooltip => '合并';
-
-  @override
-  String get layerPanelSettingsTooltip => '图层设置';
-
-  @override
   String get layerPanelAutofillMarkTooltip => '线稿已更新。点按可将自动上色更新为最新状态。';
 
   @override
@@ -4087,14 +4025,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get layerPanelDeleteConfirmBody => '将从该素材显示范围内的所有帧中删除。';
-
-  @override
-  String layerPanelMultiDeleteConfirmTitle(int count) {
-    return '要删除已选中的$count项吗？';
-  }
-
-  @override
-  String get layerPanelMultiDeleteConfirmBody => '将从时间轴素材显示范围内的所有帧中删除。';
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {
@@ -4233,11 +4163,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelAutofillPresetMissingSnackbar => '在自动上色设置中找不到对应的部位。';
 
   @override
-  String layerPanelAutofillLayerNameSuffix(String name) {
-    return '$name（自动上色）';
-  }
-
-  @override
   String get layerPanelOrphanFillSuccessSnackbar => '未找到对应的线稿图层，已改为用最新颜色填充。';
 
   @override
@@ -4271,9 +4196,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineDefaultProjectName => '项目名称';
 
   @override
-  String get timelineProjectSaveMenuItem => '项目保存';
-
-  @override
   String get timelinePreviewPlaceholder => '预览';
 
   @override
@@ -4281,9 +4203,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelinePreviewFullscreenTooltip => '全屏显示预览';
-
-  @override
-  String get timelineAddImageTooltip => '＋图片';
 
   @override
   String get timelineAddVideoTooltip => '＋视频';
@@ -4395,10 +4314,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineFrameTrackLabel => '帧';
 
   @override
-  String get timelineTrackRowDeleteBlockedSnackbar =>
-      '该行中还有素材，无法删除。请先移动或删除这些素材。';
-
-  @override
   String get timelineTrackRowRenameTitle => '重命名行';
 
   @override
@@ -4408,30 +4323,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineRangeSceneFixed => '固定场景';
 
   @override
-  String get timelineEndCardCustomLabel => '已替换';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM标志';
 
   @override
-  String timelineEndCardStatusFormat(String label, int seconds) {
-    return '$label・$seconds秒';
-  }
-
-  @override
   String get timelineEndCardHiddenLabel => '隐藏';
-
-  @override
-  String get timelineEndCardVisibilityToggleTooltip => '显示开关';
-
-  @override
-  String get timelineEndCardLengthChangeTooltip => '更改长度';
-
-  @override
-  String get timelineEndCardReplaceTooltip => '替换';
-
-  @override
-  String get timelineEndCardLengthDialogTitle => '片尾卡长度';
 
   @override
   String get timelineEndCardTrackLabel => '片尾卡轨道';
@@ -4453,11 +4348,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineMarkerCommentHint => '备注（例：这里对口型「啊」）';
 
   @override
-  String timelineSecondsLabel(int n) {
-    return '$n秒';
-  }
-
-  @override
   String timelineAddClipDialogTitle(String trackName) {
     return '添加$trackName片段';
   }
@@ -4470,9 +4360,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineClipLengthLabel => '长度：';
-
-  @override
-  String get timelineSaveSuccessSnackbar => '已保存项目';
 
   @override
   String get timelineAutofillNote2 =>
@@ -4704,9 +4591,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 保持格数';
   }
-
-  @override
-  String get frameStripTimelineModeTooltip => '时间轴模式';
 
   @override
   String get frameStripFrameListModeLabel => '帧列表';
@@ -5873,9 +5757,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   AppLocalizationsZhHant() : super('zh_Hant');
 
   @override
-  String get appTitle => 'NIARIM';
-
-  @override
   String get homeTabProjects => '專案';
 
   @override
@@ -5970,18 +5851,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeViewModeDetail => '詳細';
-
-  @override
-  String get homeSortNameAsc => '名稱 ↑';
-
-  @override
-  String get homeSortNameDesc => '名稱 ↓';
-
-  @override
-  String get homeSortUpdatedAsc => '更新時間 ↑';
-
-  @override
-  String get homeSortUpdatedDesc => '更新時間 ↓';
 
   @override
   String get homeSortFieldName => '名稱';
@@ -6510,9 +6379,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get autofillPresetSelectionButton => '選擇要使用的自動上色設定';
 
   @override
-  String get autofillPresetSelectionAllLabel => '全部使用';
-
-  @override
   String autofillPresetSelectionCountLabel(int count) {
     return '已選$count個';
   }
@@ -6972,12 +6838,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get workspaceSaveHint => '可將左手模式・PC模式・工具列・快速切換工具設定命名儲存，之後隨時叫出。';
-
-  @override
-  String get workspaceSaveCurrentButton => '儲存目前的工作區';
-
-  @override
-  String get workspaceLoadButtonEmpty => '載入工作區（尚未儲存）';
 
   @override
   String get workspaceLoadButton => '載入工作區';
@@ -8438,11 +8298,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasSizePresetEditDialogTitle => '編輯尺寸';
 
   @override
-  String canvasSizePresetDeleteConfirmTitle(String name) {
-    return '要刪除「$name」嗎？';
-  }
-
-  @override
   String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
@@ -8581,9 +8436,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get penSubToolStampTooltipMessage => '可以放置固定形狀的印章。長按可設定旋轉、密度等。';
-
-  @override
-  String get penSubToolLassoTooltipMessage => '可以一次填滿套索圈起的範圍。';
 
   @override
   String get penSubToolManageTooltip => '管理';
@@ -8730,12 +8582,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get projectDetailFullscreenCloseTooltip => '關閉全螢幕預覽';
 
   @override
-  String get projectDetailCollapsePreviewTooltip => '縮小預覽';
-
-  @override
-  String get projectDetailExpandPreviewTooltip => '還原預覽大小';
-
-  @override
   String get projectDetailStartEditButton => '開始編輯';
 
   @override
@@ -8769,9 +8615,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectDetailInfoSize => '容量';
-
-  @override
-  String get projectDetailSaveTreeButton => '存檔樹';
 
   @override
   String get projectDetailAddTagHint => '新增標籤';
@@ -9308,18 +9151,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get autofillPartResetLineColorButton => '恢復預設';
-
-  @override
-  String get autofillThumbnailHint => '設定縮圖（例如參考插圖）後，可以用滴管從圖中拾取顏色。';
-
-  @override
-  String get autofillThumbnailSetButton => '新增圖片';
-
-  @override
-  String get autofillThumbnailChangeButton => '更換圖片';
-
-  @override
   String get autofillEyedropperFromThumbnailButton => '從圖片取色';
 
   @override
@@ -9437,9 +9268,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get autofillPartGradientAddColorButton => '新增顏色';
-
-  @override
-  String get autofillPartGradientDeleteHint => '長按可刪除（不能少於2種顏色）';
 
   @override
   String get autofillPartGradientRemoveButton => '解除漸層';
@@ -9900,12 +9728,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelAddTooltip => '新增';
 
   @override
-  String get layerPanelMergeTooltip => '合併';
-
-  @override
-  String get layerPanelSettingsTooltip => '圖層設定';
-
-  @override
   String get layerPanelAutofillMarkTooltip => '線稿已更新。點一下即可將自動上色更新為最新狀態。';
 
   @override
@@ -9950,14 +9772,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get layerPanelDeleteConfirmBody => '將從此素材顯示範圍內的所有影格中刪除。';
-
-  @override
-  String layerPanelMultiDeleteConfirmTitle(int count) {
-    return '要刪除已選取的$count項嗎？';
-  }
-
-  @override
-  String get layerPanelMultiDeleteConfirmBody => '將從時間軸素材顯示範圍內的所有影格中刪除。';
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {
@@ -10096,11 +9910,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelAutofillPresetMissingSnackbar => '在自動上色設定中找不到對應的部位。';
 
   @override
-  String layerPanelAutofillLayerNameSuffix(String name) {
-    return '$name（自動上色）';
-  }
-
-  @override
   String get layerPanelOrphanFillSuccessSnackbar => '找不到對應的線稿圖層，已改為以最新顏色填色。';
 
   @override
@@ -10134,9 +9943,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineDefaultProjectName => '專案名稱';
 
   @override
-  String get timelineProjectSaveMenuItem => '專案儲存';
-
-  @override
   String get timelinePreviewPlaceholder => '預覽';
 
   @override
@@ -10144,9 +9950,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelinePreviewFullscreenTooltip => '全螢幕顯示預覽';
-
-  @override
-  String get timelineAddImageTooltip => '＋圖片';
 
   @override
   String get timelineAddVideoTooltip => '＋影片';
@@ -10258,10 +10061,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineFrameTrackLabel => '影格';
 
   @override
-  String get timelineTrackRowDeleteBlockedSnackbar =>
-      '此行中還有素材，無法刪除。請先移動或刪除這些素材。';
-
-  @override
   String get timelineTrackRowRenameTitle => '重新命名行';
 
   @override
@@ -10271,30 +10070,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineRangeSceneFixed => '固定場景';
 
   @override
-  String get timelineEndCardCustomLabel => '已替換';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM標誌';
 
   @override
-  String timelineEndCardStatusFormat(String label, int seconds) {
-    return '$label・$seconds秒';
-  }
-
-  @override
   String get timelineEndCardHiddenLabel => '隱藏';
-
-  @override
-  String get timelineEndCardVisibilityToggleTooltip => '顯示開關';
-
-  @override
-  String get timelineEndCardLengthChangeTooltip => '變更長度';
-
-  @override
-  String get timelineEndCardReplaceTooltip => '替換';
-
-  @override
-  String get timelineEndCardLengthDialogTitle => '片尾卡長度';
 
   @override
   String get timelineEndCardTrackLabel => '片尾卡軌道';
@@ -10316,11 +10095,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineMarkerCommentHint => '備註（例：這裡對嘴形「啊」）';
 
   @override
-  String timelineSecondsLabel(int n) {
-    return '$n秒';
-  }
-
-  @override
   String timelineAddClipDialogTitle(String trackName) {
     return '新增$trackName片段';
   }
@@ -10333,9 +10107,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineClipLengthLabel => '長度：';
-
-  @override
-  String get timelineSaveSuccessSnackbar => '已儲存專案';
 
   @override
   String get timelineAutofillNote2 =>
@@ -10567,9 +10338,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 保持格數';
   }
-
-  @override
-  String get frameStripTimelineModeTooltip => '時間軸模式';
 
   @override
   String get frameStripFrameListModeLabel => '影格清單';

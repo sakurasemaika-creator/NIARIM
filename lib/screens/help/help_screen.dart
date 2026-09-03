@@ -59,6 +59,7 @@ class _HelpScreenState extends State<HelpScreen> {
         // font_settings_screen.dartのHelpButtonが'テキストツール'を参照する
         // よう合わせて変更済み。
         _HelpEntry(topicKey: 'テキストツール', title: l10n.helpTextToolTitle, description: l10n.helpTextToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 6, icon: Icons.text_fields)),
+        _HelpEntry(topicKey: '早替えツール管理', title: l10n.helpQuickToolManagementTitle, description: l10n.helpQuickToolManagementDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 5, icon: Icons.restart_alt)),
         _HelpEntry(topicKey: '早替えツール', title: l10n.helpQuickToolTitle, description: l10n.helpQuickToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 5, icon: Icons.restart_alt)),
         // スタンプの回転・拡大縮小の説明は、独立項目にせずこちらへ統合済み。
         _HelpEntry(topicKey: 'スタンプツール', title: l10n.helpStampToolTitle, description: l10n.helpStampToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
@@ -79,6 +80,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'クリッピング', title: l10n.helpClippingTitle, description: l10n.helpClippingDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 1, icon: Icons.content_cut)),
         // 「レイヤーの共通化」の説明は、独立項目にせずこちらへ統合済み。
         _HelpEntry(topicKey: '共通レイヤー', title: l10n.helpCommonLayerTitle, description: l10n.helpCommonLayerDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 2)),
+        _HelpEntry(topicKey: 'レイヤーの複数選択・一括操作', title: l10n.helpLayerMultiSelectTitle, description: l10n.helpLayerMultiSelectDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0)),
         _HelpEntry(topicKey: 'レイヤーフォルダ', title: l10n.helpLayerFolderTitle, description: l10n.helpLayerFolderDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 0, icon: Icons.folder_outlined)),
         // 自動塗り実行・自動塗りの線画色設定・自動塗りプリセット絞り込みの説明は、
         // 独立項目にせずこちらへ統合済み。
@@ -86,6 +88,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: 'グラデーション塗り', title: l10n.helpGradientAutofillTitle, description: l10n.helpGradientAutofillDesc, category: l10n.helpCategoryLayer, diagram: const HelpDiagramSpec(HelpScreenTemplate.layerPanelList, 3)),
 
         // ── 描画補助 ────────────────────────────────────────────
+        _HelpEntry(topicKey: 'シーン操作', title: l10n.helpSceneOperationsTitle, description: l10n.helpSceneOperationsDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 0)),
         _HelpEntry(topicKey: 'オニオンスキン', title: l10n.helpOnionSkinTitle, description: l10n.helpOnionSkinDesc, category: l10n.helpCategoryAnimation, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
         _HelpEntry(topicKey: '定規', title: l10n.helpRulerTitle, description: l10n.helpRulerDesc, category: l10n.helpCategoryDrawing, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'フェード', title: l10n.helpFadeTitle, description: l10n.helpFadeDesc, category: l10n.helpCategoryBrush, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3)),
@@ -141,6 +144,7 @@ class _HelpScreenState extends State<HelpScreen> {
         _HelpEntry(topicKey: '作品広場', title: l10n.helpCommunityTitle, description: l10n.helpCommunityDesc, category: l10n.helpCategoryCommunity, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 1, icon: Icons.people_outline)),
 
         // ── プレミアム ──────────────────────────────────────────
+        _HelpEntry(topicKey: 'ウォーターマークの再編集', title: l10n.helpWatermarkEditTitle, description: l10n.helpWatermarkEditDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.timelineTrack, 1)),
         _HelpEntry(topicKey: 'ウォーターマーク', title: l10n.helpWatermarkEntryTitle, description: l10n.helpWatermarkEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1)),
         _HelpEntry(topicKey: 'プレミアム', title: l10n.helpPremiumEntryTitle, description: l10n.helpPremiumEntryDesc, category: l10n.helpCategoryPremium, diagram: const HelpDiagramSpec(HelpScreenTemplate.cardGrid, 0, icon: Icons.workspace_premium_outlined)),
 

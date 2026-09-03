@@ -9,9 +9,6 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get appTitle => 'NIARIM';
-
-  @override
   String get homeTabProjects => 'プロジェクト';
 
   @override
@@ -106,18 +103,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '詳細';
-
-  @override
-  String get homeSortNameAsc => '名前 ↑';
-
-  @override
-  String get homeSortNameDesc => '名前 ↓';
-
-  @override
-  String get homeSortUpdatedAsc => '更新日時 ↑';
-
-  @override
-  String get homeSortUpdatedDesc => '更新日時 ↓';
 
   @override
   String get homeSortFieldName => '名前';
@@ -649,9 +634,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autofillPresetSelectionButton => '使用する自動塗り設定を選択';
 
   @override
-  String get autofillPresetSelectionAllLabel => 'すべて使用';
-
-  @override
   String autofillPresetSelectionCountLabel(int count) {
     return '$count件を使用';
   }
@@ -1116,12 +1098,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get workspaceSaveHint =>
       '左利きモード・PCモード・ツールバー・ツール早替え設定を名前を付けて保存し、後から呼び出せます。';
-
-  @override
-  String get workspaceSaveCurrentButton => '現在のワークスペースを保存';
-
-  @override
-  String get workspaceLoadButtonEmpty => 'ワークスペースを読み込み（未保存）';
 
   @override
   String get workspaceLoadButton => 'ワークスペースを読み込み';
@@ -2585,11 +2561,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => 'サイズを編集';
 
   @override
-  String canvasSizePresetDeleteConfirmTitle(String name) {
-    return '「$name」を削除しますか？';
-  }
-
-  @override
   String get canvasSizePresetDuplicateSuffix => 'のコピー';
 
   @override
@@ -2729,9 +2700,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get penSubToolStampTooltipMessage =>
       '決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。';
-
-  @override
-  String get penSubToolLassoTooltipMessage => '投げ縄で囲んだ範囲を一括で塗りつぶせます。';
 
   @override
   String get penSubToolManageTooltip => '管理';
@@ -2878,12 +2846,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectDetailFullscreenCloseTooltip => '全画面プレビューを閉じる';
 
   @override
-  String get projectDetailCollapsePreviewTooltip => 'プレビューを縮小表示';
-
-  @override
-  String get projectDetailExpandPreviewTooltip => 'プレビューを通常サイズに戻す';
-
-  @override
   String get projectDetailStartEditButton => '編集開始';
 
   @override
@@ -2917,9 +2879,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get projectDetailInfoSize => '容量';
-
-  @override
-  String get projectDetailSaveTreeButton => 'セーブツリー';
 
   @override
   String get projectDetailAddTagHint => 'タグを追加';
@@ -3456,18 +3415,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get autofillPartResetLineColorButton => 'デフォルトに戻す';
-
-  @override
-  String get autofillThumbnailHint => 'サムネイル画像（参照イラスト等）を設定すると、そこからスポイトで色を拾えます。';
-
-  @override
-  String get autofillThumbnailSetButton => '画像を追加';
-
-  @override
-  String get autofillThumbnailChangeButton => '画像を変更';
-
-  @override
   String get autofillEyedropperFromThumbnailButton => '画像からスポイト';
 
   @override
@@ -3585,9 +3532,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get autofillPartGradientAddColorButton => '色を追加';
-
-  @override
-  String get autofillPartGradientDeleteHint => '長押しで削除（2色未満にはできません）';
 
   @override
   String get autofillPartGradientRemoveButton => 'グラデーション解除';
@@ -4053,12 +3997,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelAddTooltip => '追加';
 
   @override
-  String get layerPanelMergeTooltip => '結合';
-
-  @override
-  String get layerPanelSettingsTooltip => 'レイヤー設定';
-
-  @override
   String get layerPanelAutofillMarkTooltip =>
       '線画が更新されました。タップすると自動塗りを最新の状態に更新できます。';
 
@@ -4105,15 +4043,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get layerPanelDeleteConfirmBody => 'この素材の表示範囲内のすべてのフレームから削除されます。';
-
-  @override
-  String layerPanelMultiDeleteConfirmTitle(int count) {
-    return '選択中の$count件を削除しますか？';
-  }
-
-  @override
-  String get layerPanelMultiDeleteConfirmBody =>
-      'タイムライン素材の表示範囲内のすべてのフレームから削除されます。';
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {
@@ -4261,11 +4190,6 @@ class AppLocalizationsJa extends AppLocalizations {
       '対応する自動塗り設定のパーツが見つかりません。';
 
   @override
-  String layerPanelAutofillLayerNameSuffix(String name) {
-    return '$name（自動塗り）';
-  }
-
-  @override
   String get layerPanelOrphanFillSuccessSnackbar =>
       '対応する線画レイヤーが見つからないため、最新の色で塗りつぶしました。';
 
@@ -4302,9 +4226,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineDefaultProjectName => 'プロジェクト名';
 
   @override
-  String get timelineProjectSaveMenuItem => 'プロジェクト保存';
-
-  @override
   String get timelinePreviewPlaceholder => 'プレビュー';
 
   @override
@@ -4313,9 +4234,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelinePreviewFullscreenTooltip => 'プレビューを全画面表示';
-
-  @override
-  String get timelineAddImageTooltip => '＋画像';
 
   @override
   String get timelineAddVideoTooltip => '＋動画';
@@ -4429,10 +4347,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineFrameTrackLabel => 'フレーム';
 
   @override
-  String get timelineTrackRowDeleteBlockedSnackbar =>
-      'この行には素材があるため削除できません。先に素材を移動または削除してください。';
-
-  @override
   String get timelineTrackRowRenameTitle => '行名を変更';
 
   @override
@@ -4442,30 +4356,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineRangeSceneFixed => 'シーン固定';
 
   @override
-  String get timelineEndCardCustomLabel => '差替済';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIMロゴ';
 
   @override
-  String timelineEndCardStatusFormat(String label, int seconds) {
-    return '$label・$seconds秒';
-  }
-
-  @override
   String get timelineEndCardHiddenLabel => '非表示';
-
-  @override
-  String get timelineEndCardVisibilityToggleTooltip => '表示ON/OFF';
-
-  @override
-  String get timelineEndCardLengthChangeTooltip => '長さ変更';
-
-  @override
-  String get timelineEndCardReplaceTooltip => '差し替え';
-
-  @override
-  String get timelineEndCardLengthDialogTitle => 'エンドカードの長さ';
 
   @override
   String get timelineEndCardTrackLabel => 'エンドカードトラック';
@@ -4487,11 +4381,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineMarkerCommentHint => 'コメント（例：ここで口パク「あ」）';
 
   @override
-  String timelineSecondsLabel(int n) {
-    return '$n秒';
-  }
-
-  @override
   String timelineAddClipDialogTitle(String trackName) {
     return '$trackNameクリップを追加';
   }
@@ -4504,9 +4393,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineClipLengthLabel => '長さ:';
-
-  @override
-  String get timelineSaveSuccessSnackbar => 'プロジェクトを保存しました';
 
   @override
   String get timelineAutofillNote2 => '※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。';
@@ -4737,9 +4623,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 保持セル数';
   }
-
-  @override
-  String get frameStripTimelineModeTooltip => 'タイムラインモード';
 
   @override
   String get frameStripFrameListModeLabel => 'フレーム一覧';

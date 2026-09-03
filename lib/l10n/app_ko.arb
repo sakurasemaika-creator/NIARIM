@@ -1,6 +1,5 @@
 {
   "@@locale": "ko",
-  "appTitle": "NIARIM",
   "homeTabProjects": "프로젝트",
   "homeTabShared": "공유",
   "homeTabTrash": "휴지통",
@@ -30,10 +29,6 @@
   "homeViewModeMedium": "보통",
   "homeViewModeSmall": "작게",
   "homeViewModeDetail": "상세",
-  "homeSortNameAsc": "이름 ↑",
-  "homeSortNameDesc": "이름 ↓",
-  "homeSortUpdatedAsc": "수정일 ↑",
-  "homeSortUpdatedDesc": "수정일 ↓",
   "homeSortFieldName": "이름",
   "homeSortFieldUpdated": "수정일",
   "homeSortDirectionAscTooltip": "오름차순（탭하면 내림차순으로 전환）",
@@ -228,7 +223,6 @@
     }
   },
   "autofillPresetSelectionButton": "사용할 자동 채색 설정 선택",
-  "autofillPresetSelectionAllLabel": "전체 사용",
   "autofillPresetSelectionCountLabel": "{count}개 선택됨",
   "@autofillPresetSelectionCountLabel": {
     "placeholders": {
@@ -401,8 +395,6 @@
   "workspacePcModeAlwaysMobile": "항상 모바일 모드",
   "workspaceSaveSection": "작업 공간 저장",
   "workspaceSaveHint": "왼손잡이 모드・PC 모드・도구 모음・빠른 도구 설정을 이름을 붙여 저장하고, 나중에 불러올 수 있습니다.",
-  "workspaceSaveCurrentButton": "현재 작업 공간 저장",
-  "workspaceLoadButtonEmpty": "작업 공간 불러오기（저장된 항목 없음）",
   "workspaceLoadButton": "작업 공간 불러오기",
   "workspaceEmptyToolbar": "표시할 도구가 없습니다",
   "workspaceSaveDialogTitle": "작업 공간 저장",
@@ -838,14 +830,6 @@
   "canvasSizePresetEmpty": "저장된 크기가 없습니다",
   "canvasSizePresetEmptyHint": "새 프로젝트 화면에서 사용자 지정 크기를 지정하고 「이 크기 저장하기」로 추가할 수 있습니다",
   "canvasSizePresetEditDialogTitle": "크기 편집",
-  "canvasSizePresetDeleteConfirmTitle": "「{name}」을(를) 삭제할까요?",
-  "@canvasSizePresetDeleteConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "canvasSizePresetDuplicateSuffix": "사본",
   "newProjectDurationLabel": "길이(최대 {max})",
   "@newProjectDurationLabel": {
@@ -993,7 +977,6 @@
   "penSubToolTabLassoFill": "올가미 채우기",
   "penSubToolToneTooltipMessage": "톤을 선택하면 페인트통이나 펜으로 스크린톤 무늬를 칠할 수 있습니다.",
   "penSubToolStampTooltipMessage": "정해진 모양의 스탬프를 배치할 수 있습니다. 길게 누르면 회전・밀도 등을 설정할 수 있습니다.",
-  "penSubToolLassoTooltipMessage": "올가미로 둘러싼 범위를 한 번에 채울 수 있습니다.",
   "penSubToolManageTooltip": "관리",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
@@ -1064,8 +1047,6 @@
   "projectDetailLastFrameTooltip": "마지막 프레임",
   "projectDetailFullscreenTooltip": "미리보기 전체 화면으로 표시",
   "projectDetailFullscreenCloseTooltip": "전체 화면 미리보기 닫기",
-  "projectDetailCollapsePreviewTooltip": "미리보기 축소",
-  "projectDetailExpandPreviewTooltip": "미리보기 원래 크기로",
   "projectDetailStartEditButton": "편집 시작",
   "projectDetailTagsQuickAction": "태그",
   "projectDetailShareQuickAction": "공유",
@@ -1087,7 +1068,6 @@
   "projectDetailInfoWorkTime": "제작 시간",
   "projectDetailInfoLastSaved": "마지막 저장",
   "projectDetailInfoSize": "용량",
-  "projectDetailSaveTreeButton": "세이브 트리",
   "projectDetailAddTagHint": "태그 추가",
   "projectDetailNiashareFailedSnackbar": ".niashare 생성에 실패했습니다: {error}",
   "@projectDetailNiashareFailedSnackbar": {
@@ -1371,10 +1351,6 @@
   "autofillPartSelectColorButton": "색상 선택",
   "autofillPartOutlineLabel": "지정 색상으로 테두리",
   "autofillPartOutlineWidthLabel": "테두리 두께: {value}px",
-  "autofillPartResetLineColorButton": "기본값으로 되돌리기",
-  "autofillThumbnailHint": "썸네일 이미지(참고 일러스트 등)를 설정하면 스포이드로 색을 추출할 수 있습니다.",
-  "autofillThumbnailSetButton": "이미지 추가",
-  "autofillThumbnailChangeButton": "이미지 변경",
   "autofillEyedropperFromThumbnailButton": "이미지에서 추출",
   "autofillEyedropperDialogTitle": "이미지에서 색상 추출",
   "autofillEyedropperDialogHint": "이미지를 탭하여 색상을 선택하세요",
@@ -1457,7 +1433,6 @@
   },
   "autofillPartGradientColorLabel": "색상",
   "autofillPartGradientAddColorButton": "색상 추가",
-  "autofillPartGradientDeleteHint": "길게 눌러 삭제(색상은 최소 2개 필요)",
   "autofillPartGradientRemoveButton": "그라데이션 해제",
   "autofillPartGradientFeatherLabel": "흐림 강도: {value}%",
   "@autofillPartGradientFeatherLabel": {
@@ -1754,8 +1729,6 @@
   },
   "layerPanelClippingBadge": "클리핑",
   "layerPanelAddTooltip": "추가",
-  "layerPanelMergeTooltip": "결합",
-  "layerPanelSettingsTooltip": "레이어 설정",
   "layerPanelAutofillMarkTooltip": "선화가 업데이트되었습니다. 탭하면 자동 채색을 최신 상태로 업데이트할 수 있습니다.",
   "layerPanelRangeAllFrames": "전체 프레임",
   "layerPanelRangeCurrentScene": "현재 씬",
@@ -1787,15 +1760,6 @@
     }
   },
   "layerPanelDeleteConfirmBody": "이 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.",
-  "layerPanelMultiDeleteConfirmTitle": "선택한 {count}개 항목을 삭제하시겠습니까?",
-  "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "layerPanelMultiDeleteConfirmBody": "타임라인 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.",
   "layerPanelCommonDeleteMidDialogTitle": "{name}의 표시 범위를 변경하시겠습니까?",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {
@@ -1847,14 +1811,6 @@
   "layerPanelExecuteButton": "실행",
   "layerPanelAutofillPartMissingSnackbar": "파츠가 설정되지 않았습니다.「파츠 설정」에서 설정해 주세요.",
   "layerPanelAutofillPresetMissingSnackbar": "자동 채색 설정에서 대응하는 부위를 찾을 수 없습니다.",
-  "layerPanelAutofillLayerNameSuffix": "{name}（자동 채색）",
-  "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "layerPanelOrphanFillSuccessSnackbar": "대응하는 선화 레이어를 찾을 수 없어 최신 색으로 채웠습니다.",
   "layerPanelOrphanFillFailSnackbar": "파츠가 설정되지 않았거나 채울 모양이 없어 처리할 수 없었습니다.",
   "layerPanelAutofillUpdateHelpTitle": "자동 채색 업데이트 표시",
@@ -1885,11 +1841,9 @@
   },
   "timelineFullscreenPreviewCloseTooltip": "전체 화면 미리보기 닫기",
   "timelineDefaultProjectName": "프로젝트 이름",
-  "timelineProjectSaveMenuItem": "프로젝트 저장",
   "timelinePreviewPlaceholder": "미리보기",
   "timelinePreviewFullscreenTip": "탭하면 미리보기를 전체 화면으로 볼 수 있습니다. 완성도 확인에 편리합니다.",
   "timelinePreviewFullscreenTooltip": "미리보기 전체 화면으로 보기",
-  "timelineAddImageTooltip": "＋이미지",
   "timelineAddVideoTooltip": "＋동영상",
   "timelineAddAudioTooltip": "＋음원",
   "timelineEffectFilterLabel": "연출 필터",
@@ -1944,28 +1898,11 @@
   },
   "timelineAutofillUpdateHelpBody": "이 씬・프레임에는 최신이 아닌 자동 채색 레이어가 포함되어 있습니다. 레이어 패널에서 대상 레이어를 탭하면 업데이트할 수 있습니다.",
   "timelineFrameTrackLabel": "프레임",
-  "timelineTrackRowDeleteBlockedSnackbar": "이 행에는 소재가 있어 삭제할 수 없습니다. 먼저 소재를 이동하거나 삭제하세요.",
   "timelineTrackRowRenameTitle": "행 이름 변경",
   "timelineCameraTrackLabel": "카메라",
   "timelineRangeSceneFixed": "씬 고정",
-  "timelineEndCardCustomLabel": "교체됨",
   "timelineEndCardDefaultLogoLabel": "NIARIM 로고",
-  "timelineEndCardStatusFormat": "{label}・{seconds}초",
-  "@timelineEndCardStatusFormat": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "timelineEndCardHiddenLabel": "숨김",
-  "timelineEndCardVisibilityToggleTooltip": "표시 켜기/끄기",
-  "timelineEndCardLengthChangeTooltip": "길이 변경",
-  "timelineEndCardReplaceTooltip": "교체",
-  "timelineEndCardLengthDialogTitle": "엔드카드 길이",
   "timelineEndCardTrackLabel": "엔드카드 트랙",
   "timelineMarkerTrackLabel": "타임스탬프",
   "timelineMarkerAddDialogTitle": "F{n}에 타임스탬프 추가",
@@ -1985,14 +1922,6 @@
     }
   },
   "timelineMarkerCommentHint": "코멘트（예: 여기서 입모양 「아」）",
-  "timelineSecondsLabel": "{n}초",
-  "@timelineSecondsLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "timelineAddClipDialogTitle": "{trackName} 클립 추가",
   "@timelineAddClipDialogTitle": {
     "placeholders": {
@@ -2004,7 +1933,6 @@
   "timelineClipLabelFieldLabel": "라벨",
   "timelineClipStartLabel": "시작:",
   "timelineClipLengthLabel": "길이:",
-  "timelineSaveSuccessSnackbar": "프로젝트를 저장했습니다",
   "timelineAutofillNote2": "※ 자동 채색 레이어만 존재하는 경우（선화 없음）어느 쪽을 선택해도 영역을 처음부터 판정해 자동 채색합니다.",
   "timelineAutofillTargetLabel": "실행 대상",
   "timelineAutofillScopeCurrentFrame": "현재 프레임만",
@@ -2132,7 +2060,6 @@
       }
     }
   },
-  "frameStripTimelineModeTooltip": "타임라인 모드",
   "frameStripFrameListModeLabel": "프레임 목록",
   "frameStripTimelineModeLabel": "타임라인",
   "progressDialogAdLoading": "광고 불러오는 중…",

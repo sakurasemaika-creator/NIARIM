@@ -1,6 +1,5 @@
 {
   "@@locale": "es",
-  "appTitle": "NIARIM",
   "homeTabProjects": "Proyectos",
   "homeTabShared": "Compartidos",
   "homeTabTrash": "Papelera",
@@ -30,10 +29,6 @@
   "homeViewModeMedium": "Mediano",
   "homeViewModeSmall": "Pequeño",
   "homeViewModeDetail": "Detalle",
-  "homeSortNameAsc": "Nombre ↑",
-  "homeSortNameDesc": "Nombre ↓",
-  "homeSortUpdatedAsc": "Actualizado ↑",
-  "homeSortUpdatedDesc": "Actualizado ↓",
   "homeSortFieldName": "Nombre",
   "homeSortFieldUpdated": "Actualizado",
   "homeSortDirectionAscTooltip": "Ascendente (toca para cambiar a descendente)",
@@ -228,7 +223,6 @@
     }
   },
   "autofillPresetSelectionButton": "Seleccionar ajustes de relleno automático a usar",
-  "autofillPresetSelectionAllLabel": "Usar todos",
   "autofillPresetSelectionCountLabel": "{count} seleccionados",
   "@autofillPresetSelectionCountLabel": {
     "placeholders": {
@@ -401,8 +395,6 @@
   "workspacePcModeAlwaysMobile": "Siempre modo móvil",
   "workspaceSaveSection": "Guardar espacio de trabajo",
   "workspaceSaveHint": "Guarda tus ajustes de modo zurdo, modo PC, barra de herramientas y herramientas rápidas con un nombre para poder cargarlos más tarde.",
-  "workspaceSaveCurrentButton": "Guardar espacio de trabajo actual",
-  "workspaceLoadButtonEmpty": "Cargar espacio de trabajo (ninguno guardado)",
   "workspaceLoadButton": "Cargar espacio de trabajo",
   "workspaceEmptyToolbar": "No hay herramientas para mostrar",
   "workspaceSaveDialogTitle": "Guardar espacio de trabajo",
@@ -838,14 +830,6 @@
   "canvasSizePresetEmpty": "Todavía no hay tamaños guardados",
   "canvasSizePresetEmptyHint": "Especifica un tamaño personalizado en la pantalla de nuevo proyecto y toca «Guardar este tamaño» para añadirlo",
   "canvasSizePresetEditDialogTitle": "Editar tamaño",
-  "canvasSizePresetDeleteConfirmTitle": "¿Eliminar «{name}»?",
-  "@canvasSizePresetDeleteConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "canvasSizePresetDuplicateSuffix": "copia",
   "newProjectDurationLabel": "Duración (máx. {max})",
   "@newProjectDurationLabel": {
@@ -993,7 +977,6 @@
   "penSubToolTabLassoFill": "Relleno con lazo",
   "penSubToolToneTooltipMessage": "Elige una trama para pintar patrones de trama con el bote de pintura o el lápiz.",
   "penSubToolStampTooltipMessage": "Coloca sellos de forma fija. Mantén pulsado para ajustar la rotación, la densidad y más.",
-  "penSubToolLassoTooltipMessage": "Rellena de una vez el área rodeada por el lazo.",
   "penSubToolManageTooltip": "Gestionar",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
@@ -1064,8 +1047,6 @@
   "projectDetailLastFrameTooltip": "Último fotograma",
   "projectDetailFullscreenTooltip": "Mostrar vista previa a pantalla completa",
   "projectDetailFullscreenCloseTooltip": "Cerrar vista previa a pantalla completa",
-  "projectDetailCollapsePreviewTooltip": "Reducir vista previa",
-  "projectDetailExpandPreviewTooltip": "Restaurar tamaño de vista previa",
   "projectDetailStartEditButton": "Empezar a editar",
   "projectDetailTagsQuickAction": "Etiquetas",
   "projectDetailShareQuickAction": "Compartir",
@@ -1087,7 +1068,6 @@
   "projectDetailInfoWorkTime": "Tiempo de trabajo",
   "projectDetailInfoLastSaved": "Último guardado",
   "projectDetailInfoSize": "Tamaño",
-  "projectDetailSaveTreeButton": "Árbol de guardado",
   "projectDetailAddTagHint": "Añadir etiqueta",
   "projectDetailNiashareFailedSnackbar": "Error al crear el .niashare: {error}",
   "@projectDetailNiashareFailedSnackbar": {
@@ -1371,10 +1351,6 @@
   "autofillPartSelectColorButton": "Elegir color",
   "autofillPartOutlineLabel": "Contorno con color especificado",
   "autofillPartOutlineWidthLabel": "Grosor del contorno: {value}px",
-  "autofillPartResetLineColorButton": "Restablecer",
-  "autofillThumbnailHint": "Configura una imagen en miniatura (p. ej. una ilustración de referencia) para extraer colores de ella con el cuentagotas.",
-  "autofillThumbnailSetButton": "Añadir imagen",
-  "autofillThumbnailChangeButton": "Cambiar imagen",
   "autofillEyedropperFromThumbnailButton": "Extraer de la imagen",
   "autofillEyedropperDialogTitle": "Extraer un color de la imagen",
   "autofillEyedropperDialogHint": "Toca la imagen para elegir un color",
@@ -1457,7 +1433,6 @@
   },
   "autofillPartGradientColorLabel": "Colores",
   "autofillPartGradientAddColorButton": "Añadir color",
-  "autofillPartGradientDeleteHint": "Mantén pulsado para eliminar (mínimo 2 colores)",
   "autofillPartGradientRemoveButton": "Quitar degradado",
   "autofillPartGradientFeatherLabel": "Intensidad del desenfoque: {value}%",
   "@autofillPartGradientFeatherLabel": {
@@ -1754,8 +1729,6 @@
   },
   "layerPanelClippingBadge": "Recorte",
   "layerPanelAddTooltip": "Añadir",
-  "layerPanelMergeTooltip": "Combinar",
-  "layerPanelSettingsTooltip": "Ajustes de capa",
   "layerPanelAutofillMarkTooltip": "El dibujo de líneas se actualizó. Toca para poner al día el relleno automático.",
   "layerPanelRangeAllFrames": "Todos los fotogramas",
   "layerPanelRangeCurrentScene": "Escena actual",
@@ -1787,15 +1760,6 @@
     }
   },
   "layerPanelDeleteConfirmBody": "Este material se eliminará de todos los fotogramas dentro de su rango de visualización.",
-  "layerPanelMultiDeleteConfirmTitle": "¿Eliminar los {count} elementos seleccionados?",
-  "@layerPanelMultiDeleteConfirmTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "layerPanelMultiDeleteConfirmBody": "Los materiales de la línea de tiempo se eliminarán de todos los fotogramas dentro de su rango de visualización.",
   "layerPanelCommonDeleteMidDialogTitle": "¿Cambiar el rango de visualización de {name}?",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {
@@ -1847,14 +1811,6 @@
   "layerPanelExecuteButton": "Ejecutar",
   "layerPanelAutofillPartMissingSnackbar": "No hay ninguna parte asignada. Asigna una desde «Asignar parte».",
   "layerPanelAutofillPresetMissingSnackbar": "No se encontró una parte correspondiente en el ajuste de relleno automático.",
-  "layerPanelAutofillLayerNameSuffix": "{name} (relleno automático)",
-  "@layerPanelAutofillLayerNameSuffix": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "layerPanelOrphanFillSuccessSnackbar": "No se encontró una capa de líneas correspondiente, así que se rellenó con el color más reciente.",
   "layerPanelOrphanFillFailSnackbar": "No se pudo procesar: no hay ninguna parte asignada, o no hay una forma que rellenar.",
   "layerPanelAutofillUpdateHelpTitle": "Marca de actualización del relleno automático",
@@ -1885,11 +1841,9 @@
   },
   "timelineFullscreenPreviewCloseTooltip": "Cerrar la vista previa a pantalla completa",
   "timelineDefaultProjectName": "Nombre del proyecto",
-  "timelineProjectSaveMenuItem": "Guardar proyecto",
   "timelinePreviewPlaceholder": "Vista previa",
   "timelinePreviewFullscreenTip": "Toca para ver la vista previa a pantalla completa. Útil para comprobar el resultado final.",
   "timelinePreviewFullscreenTooltip": "Ver la vista previa a pantalla completa",
-  "timelineAddImageTooltip": "+ Imagen",
   "timelineAddVideoTooltip": "+ Vídeo",
   "timelineAddAudioTooltip": "+ Audio",
   "timelineEffectFilterLabel": "Filtros de efecto",
@@ -1944,28 +1898,11 @@
   },
   "timelineAutofillUpdateHelpBody": "Esta escena/fotograma contiene una capa de relleno automático que no está actualizada. Toca la capa en el panel de capas para actualizarla.",
   "timelineFrameTrackLabel": "Fotograma",
-  "timelineTrackRowDeleteBlockedSnackbar": "Esta fila todavía tiene clips y no se puede eliminar. Muévelos o elimínalos primero.",
   "timelineTrackRowRenameTitle": "Renombrar fila",
   "timelineCameraTrackLabel": "Cámara",
   "timelineRangeSceneFixed": "Escena fija",
-  "timelineEndCardCustomLabel": "Reemplazado",
   "timelineEndCardDefaultLogoLabel": "Logo de NIARIM",
-  "timelineEndCardStatusFormat": "{label} · {seconds} s",
-  "@timelineEndCardStatusFormat": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "timelineEndCardHiddenLabel": "Oculto",
-  "timelineEndCardVisibilityToggleTooltip": "Mostrar/ocultar",
-  "timelineEndCardLengthChangeTooltip": "Cambiar duración",
-  "timelineEndCardReplaceTooltip": "Reemplazar",
-  "timelineEndCardLengthDialogTitle": "Duración de la tarjeta final",
   "timelineEndCardTrackLabel": "Pista de tarjeta final",
   "timelineMarkerTrackLabel": "Marcas de tiempo",
   "timelineMarkerAddDialogTitle": "Añadir marca de tiempo en F{n}",
@@ -1985,14 +1922,6 @@
     }
   },
   "timelineMarkerCommentHint": "Comentario (p. ej., boca \"a\" aquí)",
-  "timelineSecondsLabel": "{n} s",
-  "@timelineSecondsLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "timelineAddClipDialogTitle": "Añadir clip de {trackName}",
   "@timelineAddClipDialogTitle": {
     "placeholders": {
@@ -2004,7 +1933,6 @@
   "timelineClipLabelFieldLabel": "Etiqueta",
   "timelineClipStartLabel": "Inicio:",
   "timelineClipLengthLabel": "Duración:",
-  "timelineSaveSuccessSnackbar": "Proyecto guardado",
   "timelineAutofillNote2": "✳ Si solo existe una capa de relleno automático (sin dibujo de líneas), el área se determinará desde cero de todos modos.",
   "timelineAutofillTargetLabel": "Objetivo",
   "timelineAutofillScopeCurrentFrame": "Solo el fotograma actual",
@@ -2132,7 +2060,6 @@
       }
     }
   },
-  "frameStripTimelineModeTooltip": "Modo línea de tiempo",
   "frameStripFrameListModeLabel": "Fotogramas",
   "frameStripTimelineModeLabel": "Línea de tiempo",
   "progressDialogAdLoading": "Cargando anuncio…",

@@ -9,9 +9,6 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get appTitle => 'NIARIM';
-
-  @override
   String get homeTabProjects => '프로젝트';
 
   @override
@@ -106,18 +103,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '상세';
-
-  @override
-  String get homeSortNameAsc => '이름 ↑';
-
-  @override
-  String get homeSortNameDesc => '이름 ↓';
-
-  @override
-  String get homeSortUpdatedAsc => '수정일 ↑';
-
-  @override
-  String get homeSortUpdatedDesc => '수정일 ↓';
 
   @override
   String get homeSortFieldName => '이름';
@@ -651,9 +636,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get autofillPresetSelectionButton => '사용할 자동 채색 설정 선택';
 
   @override
-  String get autofillPresetSelectionAllLabel => '전체 사용';
-
-  @override
   String autofillPresetSelectionCountLabel(int count) {
     return '$count개 선택됨';
   }
@@ -1120,12 +1102,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get workspaceSaveHint =>
       '왼손잡이 모드・PC 모드・도구 모음・빠른 도구 설정을 이름을 붙여 저장하고, 나중에 불러올 수 있습니다.';
-
-  @override
-  String get workspaceSaveCurrentButton => '현재 작업 공간 저장';
-
-  @override
-  String get workspaceLoadButtonEmpty => '작업 공간 불러오기（저장된 항목 없음）';
 
   @override
   String get workspaceLoadButton => '작업 공간 불러오기';
@@ -2594,11 +2570,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => '크기 편집';
 
   @override
-  String canvasSizePresetDeleteConfirmTitle(String name) {
-    return '「$name」을(를) 삭제할까요?';
-  }
-
-  @override
   String get canvasSizePresetDuplicateSuffix => '사본';
 
   @override
@@ -2740,9 +2711,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get penSubToolStampTooltipMessage =>
       '정해진 모양의 스탬프를 배치할 수 있습니다. 길게 누르면 회전・밀도 등을 설정할 수 있습니다.';
-
-  @override
-  String get penSubToolLassoTooltipMessage => '올가미로 둘러싼 범위를 한 번에 채울 수 있습니다.';
 
   @override
   String get penSubToolManageTooltip => '관리';
@@ -2889,12 +2857,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectDetailFullscreenCloseTooltip => '전체 화면 미리보기 닫기';
 
   @override
-  String get projectDetailCollapsePreviewTooltip => '미리보기 축소';
-
-  @override
-  String get projectDetailExpandPreviewTooltip => '미리보기 원래 크기로';
-
-  @override
   String get projectDetailStartEditButton => '편집 시작';
 
   @override
@@ -2928,9 +2890,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectDetailInfoSize => '용량';
-
-  @override
-  String get projectDetailSaveTreeButton => '세이브 트리';
 
   @override
   String get projectDetailAddTagHint => '태그 추가';
@@ -3470,19 +3429,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get autofillPartResetLineColorButton => '기본값으로 되돌리기';
-
-  @override
-  String get autofillThumbnailHint =>
-      '썸네일 이미지(참고 일러스트 등)를 설정하면 스포이드로 색을 추출할 수 있습니다.';
-
-  @override
-  String get autofillThumbnailSetButton => '이미지 추가';
-
-  @override
-  String get autofillThumbnailChangeButton => '이미지 변경';
-
-  @override
   String get autofillEyedropperFromThumbnailButton => '이미지에서 추출';
 
   @override
@@ -3603,9 +3549,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get autofillPartGradientAddColorButton => '색상 추가';
-
-  @override
-  String get autofillPartGradientDeleteHint => '길게 눌러 삭제(색상은 최소 2개 필요)';
 
   @override
   String get autofillPartGradientRemoveButton => '그라데이션 해제';
@@ -4072,12 +4015,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelAddTooltip => '추가';
 
   @override
-  String get layerPanelMergeTooltip => '결합';
-
-  @override
-  String get layerPanelSettingsTooltip => '레이어 설정';
-
-  @override
   String get layerPanelAutofillMarkTooltip =>
       '선화가 업데이트되었습니다. 탭하면 자동 채색을 최신 상태로 업데이트할 수 있습니다.';
 
@@ -4124,15 +4061,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get layerPanelDeleteConfirmBody => '이 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.';
-
-  @override
-  String layerPanelMultiDeleteConfirmTitle(int count) {
-    return '선택한 $count개 항목을 삭제하시겠습니까?';
-  }
-
-  @override
-  String get layerPanelMultiDeleteConfirmBody =>
-      '타임라인 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.';
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {
@@ -4281,11 +4209,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '자동 채색 설정에서 대응하는 부위를 찾을 수 없습니다.';
 
   @override
-  String layerPanelAutofillLayerNameSuffix(String name) {
-    return '$name（자동 채색）';
-  }
-
-  @override
   String get layerPanelOrphanFillSuccessSnackbar =>
       '대응하는 선화 레이어를 찾을 수 없어 최신 색으로 채웠습니다.';
 
@@ -4322,9 +4245,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineDefaultProjectName => '프로젝트 이름';
 
   @override
-  String get timelineProjectSaveMenuItem => '프로젝트 저장';
-
-  @override
   String get timelinePreviewPlaceholder => '미리보기';
 
   @override
@@ -4333,9 +4253,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelinePreviewFullscreenTooltip => '미리보기 전체 화면으로 보기';
-
-  @override
-  String get timelineAddImageTooltip => '＋이미지';
 
   @override
   String get timelineAddVideoTooltip => '＋동영상';
@@ -4449,10 +4366,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineFrameTrackLabel => '프레임';
 
   @override
-  String get timelineTrackRowDeleteBlockedSnackbar =>
-      '이 행에는 소재가 있어 삭제할 수 없습니다. 먼저 소재를 이동하거나 삭제하세요.';
-
-  @override
   String get timelineTrackRowRenameTitle => '행 이름 변경';
 
   @override
@@ -4462,30 +4375,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineRangeSceneFixed => '씬 고정';
 
   @override
-  String get timelineEndCardCustomLabel => '교체됨';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM 로고';
 
   @override
-  String timelineEndCardStatusFormat(String label, int seconds) {
-    return '$label・$seconds초';
-  }
-
-  @override
   String get timelineEndCardHiddenLabel => '숨김';
-
-  @override
-  String get timelineEndCardVisibilityToggleTooltip => '표시 켜기/끄기';
-
-  @override
-  String get timelineEndCardLengthChangeTooltip => '길이 변경';
-
-  @override
-  String get timelineEndCardReplaceTooltip => '교체';
-
-  @override
-  String get timelineEndCardLengthDialogTitle => '엔드카드 길이';
 
   @override
   String get timelineEndCardTrackLabel => '엔드카드 트랙';
@@ -4507,11 +4400,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineMarkerCommentHint => '코멘트（예: 여기서 입모양 「아」）';
 
   @override
-  String timelineSecondsLabel(int n) {
-    return '$n초';
-  }
-
-  @override
   String timelineAddClipDialogTitle(String trackName) {
     return '$trackName 클립 추가';
   }
@@ -4524,9 +4412,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineClipLengthLabel => '길이:';
-
-  @override
-  String get timelineSaveSuccessSnackbar => '프로젝트를 저장했습니다';
 
   @override
   String get timelineAutofillNote2 =>
@@ -4758,9 +4643,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 유지 셀 수';
   }
-
-  @override
-  String get frameStripTimelineModeTooltip => '타임라인 모드';
 
   @override
   String get frameStripFrameListModeLabel => '프레임 목록';
