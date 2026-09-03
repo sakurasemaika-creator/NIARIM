@@ -31,12 +31,11 @@
 
 1. `export PATH="$PATH:/opt/flutter-sdk/bin"`（このリモート実行環境では
    flutterがデフォルトPATHに無い。`/opt/flutter-sdk/bin`に入っている）
-2. コード変更後は必ず`flutter analyze`（ベースライン：**63 issues、
-   0 errors**。内訳はtest/配下の`deprecated_member_use` 50件
-   （`Color.red/green/blue`でピクセル値を検証している箇所）・
+2. コード変更後は必ず`flutter analyze`（ベースライン：**74 issues、
+   0 errors**。内訳は`deprecated_member_use` 62件
+   （`Color.red/green/blue`でピクセル値を検証している箇所）と
    `avoid_print` 12件（`functional_audit_batch20_test.dart`の
-   失敗時デバッグ出力）・`use_build_context_synchronously` 1件
-   （`timeline_screen.dart`）で、**lib/配下のissueは0件**。
+   失敗時デバッグ出力）で、**全てtest/配下。lib/配下のissueは0件**。
    増減が無いことを確認する）
 3. `flutter test`（ベースライン：**484 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）

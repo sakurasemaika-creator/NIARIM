@@ -52,7 +52,10 @@ void main() {
       final image = await tm.compositeLayerToImage(_layer);
       final rgba = await _rgba(image);
       roughness[strength] = _centerlineVariation(rgba, _w, _h);
-      await _save(image, '${out.path}/stabilizer_${strength.toString().padLeft(3, '0')}.png');
+      await _save(
+        image,
+        '${out.path}/stabilizer_${strength.toString().padLeft(3, '0')}.png',
+      );
       image.dispose();
       tm.dispose();
     }
@@ -104,7 +107,10 @@ void main() {
         (_red.blue * (1 - t) + _blue.blue * t).round(),
       ];
       _near(p, expected, 'mix rate=$rate', tolerance: 5);
-      await _save(image, '${out.path}/mix_${rate.toString().padLeft(3, '0')}.png');
+      await _save(
+        image,
+        '${out.path}/mix_${rate.toString().padLeft(3, '0')}.png',
+      );
       image.dispose();
       tm.dispose();
     }
@@ -147,7 +153,10 @@ void main() {
       final rgba = await _rgba(image);
       early[rate] = _pixel(rgba, _w, 48, 128);
       late[rate] = _pixel(rgba, _w, 208, 128);
-      await _save(image, '${out.path}/color_extension_${rate.toString().padLeft(3, '0')}.png');
+      await _save(
+        image,
+        '${out.path}/color_extension_${rate.toString().padLeft(3, '0')}.png',
+      );
       image.dispose();
       tm.dispose();
     }
@@ -158,10 +167,16 @@ void main() {
     expect(early[60]![0], lessThan(early[20]![0]));
 
     for (final rate in rates) {
-      expect(late[rate]![0], greaterThanOrEqualTo(early[rate]![0] - 3),
-          reason: '色伸びはストローク進行に伴い選択色へ戻る方向であること rate=$rate');
-      expect(late[rate]![2], lessThanOrEqualTo(early[rate]![2] + 3),
-          reason: '色伸びはストローク進行に伴い既存色の拾いが弱くなること rate=$rate');
+      expect(
+        late[rate]![0],
+        greaterThanOrEqualTo(early[rate]![0] - 3),
+        reason: '色伸びはストローク進行に伴い選択色へ戻る方向であること rate=$rate',
+      );
+      expect(
+        late[rate]![2],
+        lessThanOrEqualTo(early[rate]![2] + 3),
+        reason: '色伸びはストローク進行に伴い既存色の拾いが弱くなること rate=$rate',
+      );
     }
   });
 
@@ -223,7 +238,11 @@ void main() {
         (anchor: ui.Offset(112, 75), vp: ui.Offset(128, 18)),
         (anchor: ui.Offset(144, 75), vp: ui.Offset(128, 18)),
       ],
-      vanishingPoints: const [ui.Offset(20, 105), ui.Offset(236, 105), ui.Offset(128, 18)],
+      vanishingPoints: const [
+        ui.Offset(20, 105),
+        ui.Offset(236, 105),
+        ui.Offset(128, 18),
+      ],
     );
   });
 }
@@ -295,24 +314,23 @@ Brush _brush({
   int stabilizationStrength = 0,
   BrushMixingMode mixingMode = BrushMixingMode.off,
   int mixingRate = 0,
-}) =>
-    Brush(
-      id: 'strict',
-      name: 'strict',
-      size: size,
-      opacity: opacity,
-      spacing: 1,
-      blurRadius: 0,
-      stabilization: stabilization,
-      stabilizationStrength: stabilizationStrength,
-      pixelMode: false,
-      pressureMode: PressureMode.off,
-      pressureStrength: 100,
-      fadeMode: FadeMode.off,
-      strokeDecay: false,
-      mixingMode: mixingMode,
-      mixingRate: mixingRate,
-    );
+}) => Brush(
+  id: 'strict',
+  name: 'strict',
+  size: size,
+  opacity: opacity,
+  spacing: 1,
+  blurRadius: 0,
+  stabilization: stabilization,
+  stabilizationStrength: stabilizationStrength,
+  pixelMode: false,
+  pressureMode: PressureMode.off,
+  pressureStrength: 100,
+  fadeMode: FadeMode.off,
+  strokeDecay: false,
+  mixingMode: mixingMode,
+  mixingRate: mixingRate,
+);
 
 void _fillLayer(TileManager tm, String key, ui.Color color) {
   final rgba = Uint8List(_w * _h * 4);
@@ -335,7 +353,10 @@ void _markCross(TileManager tm, String key, ui.Offset p, ui.Color c) {
     for (final q in [ui.Offset(p.dx + d, p.dy), ui.Offset(p.dx, p.dy + d)]) {
       final x = q.dx.round() - ox;
       final y = q.dy.round() - oy;
-      if (x >= 0 && y >= 0 && x < TileManager.tileSize && y < TileManager.tileSize) {
+      if (x >= 0 &&
+          y >= 0 &&
+          x < TileManager.tileSize &&
+          y < TileManager.tileSize) {
         tm.setPixel(tile, x, y, c.red, c.green, c.blue, 255);
       }
     }
@@ -343,8 +364,9 @@ void _markCross(TileManager tm, String key, ui.Offset p, ui.Color c) {
   tm.markDirty(key, tx, ty);
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 Future<void> _save(ui.Image image, String path) async {
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -356,10 +378,18 @@ List<int> _pixel(Uint8List rgba, int w, int x, int y) {
   return [rgba[i], rgba[i + 1], rgba[i + 2], rgba[i + 3]];
 }
 
-void _near(List<int> actual, List<int> expected, String reason, {int tolerance = 4}) {
+void _near(
+  List<int> actual,
+  List<int> expected,
+  String reason, {
+  int tolerance = 4,
+}) {
   for (var i = 0; i < 3; i++) {
-    expect((actual[i] - expected[i]).abs(), lessThanOrEqualTo(tolerance),
-        reason: '$reason ch$i actual=${actual[i]} expected=${expected[i]}');
+    expect(
+      (actual[i] - expected[i]).abs(),
+      lessThanOrEqualTo(tolerance),
+      reason: '$reason ch$i actual=${actual[i]} expected=${expected[i]}',
+    );
   }
 }
 

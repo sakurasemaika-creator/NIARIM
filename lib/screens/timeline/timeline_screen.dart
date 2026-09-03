@@ -4930,6 +4930,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       widget.projectId,
       asset.id,
     );
+    if (!mounted) return;
     final labelCtrl = TextEditingController(
       text: asset.originalFileName.replaceAll(RegExp(r'\.[^.]+$'), ''),
     );
