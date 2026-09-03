@@ -4,6 +4,7 @@ from datetime import datetime, timezone, timedelta
 
 TOKEN=os.environ['GH_TOKEN']; REPO=os.environ['REPO']; ISSUE=os.environ.get('ISSUE_NUMBER','3'); BRANCH=os.environ.get('BRANCH','dev_branch')
 API='https://api.github.com'; JST=timezone(timedelta(hours=9), name='JST')
+ACTIVE_STATUSES=('queued','in_progress','waiting','requested','pending')
 RETIRED_WORKFLOWS={
     '.github/workflows/one-shot-close-blockers-and-full-suite.yml',
     '.github/workflows/one-shot-ruler-post-stabilization-fix-v3.yml',
@@ -32,7 +33,10 @@ def to_jst(iso):
 
 def current_run_state(r, head):
     if not r:return '—'
-    if r.get('status') in ('queued','in_progress','waiting','requested','pending'):return '🟡 実行中'
+    running=r.get('status') in ACTIVE_STATUSES
+    if running and r.get('head_sha') and r.get('head_sha') != head:
+        return '⚪ 旧HEADで実行中（参考）'
+    if running:return '🟡 実行中'
     c=r.get('conclusion')
     if c=='success':return '🟢 正常終了'
     if c in ('failure','timed_out','cancelled','action_required','startup_failure'):
@@ -71,21 +75,26 @@ remaining_features=[f for f in features if not f.get('final_pass')]
 now=datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S JST')
 bycat=defaultdict(list)
 for f in features:bycat[f.get('category','その他')].append(f)
-active=[r for r in audit_runs if r.get('status') in ('queued','in_progress','waiting','requested','pending')]
+
+# 現在HEADのActionだけを「現在実行中」として扱う。旧HEADの継続runは参考表示へ分離する。
+running=[r for r in audit_runs if r.get('status') in ACTIVE_STATUSES]
+active=[r for r in running if not r.get('head_sha') or r.get('head_sha') == head]
+superseded_active=[r for r in running if r.get('head_sha') and r.get('head_sha') != head]
 latest_activity=to_jst(audit_runs[0].get('updated_at')) if audit_runs else '—'
 queue_run=next((r for r in active if (r.get('path') or '').endswith('audit-continuous-queue.yml')),None)
 queue_jobs=[]; queue_current=None; queue_stage=None
 if queue_run:
     try:
         queue_jobs=req(f'/repos/{REPO}/actions/runs/{queue_run["id"]}/jobs?per_page=100').get('jobs',[])
-        queue_current=next((j for j in queue_jobs if j.get('status') in ('queued','in_progress','waiting','pending')),None)
+        queue_current=next((j for j in queue_jobs if j.get('status') in ACTIVE_STATUSES),None)
         if queue_current:
             m=re.match(r'^(\d+)',queue_current.get('name') or '')
             if m: queue_stage=int(m.group(1))
     except Exception:pass
 
-# 未確認が残っているのに何も動いていない状態を「待機」とは呼ばない。
-if active:
+# 手動/証拠精査中の作業はActionが無くても current-task.json の in_progress を尊重する。
+current_declared=current.get('status')
+if active or (remaining_features and current_declared=='in_progress'):
     effective_status='in_progress'
 elif remaining_features:
     effective_status='blocked'
@@ -96,26 +105,32 @@ status_label={'in_progress':'作業中','blocked':'監査停止・復旧が必�
 current_title=current.get('title'); current_detail=current.get('detail'); current_next=current.get('next')
 if queue_current: current_title,current_detail,current_next=explain_job(queue_current.get('name'),total)
 elif effective_status=='blocked':
-    current_title='未確認の機能が残っていますが、現在動いている監査処理がありません'
-    current_detail='これは正常な待機状態ではありません。連続監査または修復処理を再起動し、残件の確認を続ける必要があります。'
-    current_next='停止原因を確認して監査を再開します。'
+    current_title='未確認の機能が残っていますが、現在の作業情報も自動監査も停止しています'
+    current_detail='残件があるのに current-task.json が作業中ではなく、現在HEADの監査Actionもありません。旧HEADのrunだけでは現在作業とはみなしません。'
+    current_next='現在HEADで残件処理を再開し、current-task.jsonも同時に更新します。'
 
-L=['# NIARIM Audit Live Dashboard','',f'> **更新方式:** 状態変更時に更新  ·  **ダッシュボード最終更新:** `{now}`','',f'**Branch:** `{BRANCH}`  ·  **HEAD:** [`{head[:10]}`](https://github.com/{REPO}/commit/{head})','','## 🔎 現在の作業','',f'### {status_icon} {status_label} — {esc(current_title)}','',esc(current_detail),'',f'**このあと:** {esc(current_next)}',f'**直近の監査Action活動:** `{latest_activity}`']
+L=['# NIARIM Audit Live Dashboard','',f'> **更新方式:** 監査状態の変更時に自動更新  ·  **ダッシュボード最終更新:** `{now}`','',f'**Branch:** `{BRANCH}`  ·  **HEAD:** [`{head[:10]}`](https://github.com/{REPO}/commit/{head})','','## 🔎 現在の作業','',f'### {status_icon} {status_label} — {esc(current_title)}','',esc(current_detail),'',f'**このあと:** {esc(current_next)}',f'**作業情報の更新:** `{esc(current.get("updated_at_jst") or "—")}`',f'**直近の自動監査Action活動:** `{latest_activity}`']
 if queue_run:
-    L.append(f'**連続監査の実行状況:** [GitHub Actionsを開く]({queue_run.get("html_url")})')
+    L.append(f'**現在HEADの連続監査:** [GitHub Actionsを開く]({queue_run.get("html_url")})')
     if queue_stage is not None:L.append(f'**現在の共通チェック工程:** `{queue_current.get("name")}`')
 L.append('')
-if active:L += ['**現在実行中の監査処理:**']+[f'- 🟡 [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")})' for r in active]+['']
-else:L += ['**現在実行中の監査処理:** なし','']
+if active:
+    L += ['**現在HEADで実行中の監査処理:**']+[f'- 🟡 [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")})' for r in active]+['']
+else:
+    L += ['**現在HEADで実行中の監査処理:** なし（既存証拠の精査・台帳更新はActionなしでも進行する場合があります）','']
+if superseded_active:
+    L += ['**旧HEADで継続中の処理（参考・現在作業には不採用）:**']+[f'- ⚪ [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")}) — `{(r.get("head_sha") or "")[:10]}`' for r in superseded_active[:5]]+['']
 
 L += ['## AIで確認できる機能の最終確認状況','',f'`{exact_bar(counts["final_pass"],total)}`',f'**{pct["final_pass"]}% — {counts["final_pass"]} / {total} 機能を最終確認済み** · 未確認/再確認中 **{total-counts["final_pass"]}**','',f'> このバーはGitHub Actionsの進捗ではありません。**1マス＝1機能**で、AI/CIで確認可能な{total}機能のうち、必要な実出力・スクリーンショット・見た目・設定値ごとの変化まで確認できた数を表しています。','']
 if remaining_features:
-    L += ['### 次に最終確認していく機能','共通チェックが終わった後は、未確認/再確認中の機能を順に証拠まで確認して台帳を更新します。','']
+    missing_ss=sum(not bool(f.get('screenshot')) for f in remaining_features)
+    missing_visual=sum(not bool(f.get('visual')) for f in remaining_features)
+    L += [f'**残件の証拠状況:** SS未取得 **{missing_ss}** · 目視未完了 **{missing_visual}** · 最終未確定 **{len(remaining_features)}**','', '### 次に最終確認していく機能','成功済みテスト・Artifact・実画像を再利用できる項目から先に確定し、証拠が不足する機能だけ追加テストへ回します。','']
     for f in remaining_features[:7]:
         reason=f.get('recheck_reason') or '不足している確認を追加し、機能固有の結果まで確認する'
         L.append(f'- **{esc(f.get("name"))}** — {esc(reason)}')
     L.append('')
-L += ['> 以前いったん確認済みになった項目も含めて基準を引き上げて再監査しています。「操作できた」「画像が変化した」だけでは確認済みにせず、その機能に期待される結果になっていることまで確かめています。','', '| 確認工程 | 完了 | 進捗 |','|---|---:|---:|']
+L += ['> strict-v2では「操作できた」「PNGが存在した」「画素が変化した」だけでは最終確認済みにしません。機能固有の意図した結果が証拠から確認できることを条件にしています。','', '| 確認工程 | 完了 | 進捗 |','|---|---:|---:|']
 labels={'interaction':'実際の操作に相当する入力まで確認','output':'処理結果・出力まで確認','screenshot':'結果画像を取得','visual':'結果画像の見た目まで確認','final_pass':'**必要な確認をすべて終えた機能**'}
 for k in keys:L.append(f'| {labels[k]} | {counts[k]}/{total} | **{pct[k]}%** |')
 L += ['',f'- 実機でしか確認できないため今回の進捗から除外: **{excluded}項目**','','## 機能別AI監査台帳','', '| カテゴリ | 機能 | 実操作 | 出力 | SS | 目視 | 最終確認 | 関連する自動処理（参考） |','|---|---|:---:|:---:|:---:|:---:|:---:|---|']
@@ -125,14 +140,14 @@ for cat in sorted(bycat):
         action=f'[{current_run_state(r,head)}]({r.get("html_url")})' if r else '—'
         L.append(f'| {esc(cat)} | {esc(f.get("name"))} | {yes(f.get("interaction"))} | {yes(f.get("output"))} | {yes(f.get("screenshot"))} | {yes(f.get("visual"))} | {"🟢" if f.get("final_pass") else "⚪"} | {action} |')
 
-# 実行履歴はWorkflowごとの最新1件だけ。古い同一Workflowの失敗を現在の要対応に見せない。
+# 実行履歴はWorkflowごとの最新1件だけ。旧HEADで動いているrunも現在作業と混同しない。
 latest_by_path=[]; seen=set()
 for r in audit_runs:
     p=r.get('path') or r.get('name') or str(r.get('id'))
     if p in seen: continue
     seen.add(p); latest_by_path.append(r)
     if len(latest_by_path)>=12: break
-L += ['','## 現在の自動監査・修復処理の状態','', '> 同じWorkflowの古い失敗はここには重ねて表示しません。現在HEADより前の失敗は「過去の失敗」として区別し、**今も解決が必要なものだけ赤い「現在要対応」**になります。','', '| 状態 | 処理名 | 最新実行 |','|---|---|---|']
+L += ['','## 自動監査・修復処理の状態','', '> 同じWorkflowの古い実行は重ねて表示しません。旧HEADで継続中のrunは「参考」、現在HEADの未解決失敗だけを赤い「現在要対応」として表示します。','', '| 状態 | 処理名 | 最新実行 |','|---|---|---|']
 for r in latest_by_path:
     L.append(f'| {current_run_state(r,head)} | `{esc(r.get("name"))}` | [{esc(r.get("display_title"))}]({r.get("html_url")}) |')
 L += ['','---','_実機でしか確認できない項目は、このAI監査の進捗・残件数・100%達成条件には含めていません。_']
