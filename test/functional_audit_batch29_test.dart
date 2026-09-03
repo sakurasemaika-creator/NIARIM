@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
@@ -13,6 +16,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final out = Directory('build/functional-visual');
+  setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('実CanvasAreaで選択回転ハンドルを90度操作し色別位置とUndo/Redoを検証する', (tester) async {
@@ -43,6 +48,7 @@ void main() {
     final before = _readCanvas(tm, key, 96, 96);
 
     final providers = await tester.runAsync(buildAppProviders);
+    final boundaryKey = GlobalKey();
     await tester.pumpWidget(MultiProvider(
       providers: [
         ...providers!,
@@ -51,13 +57,17 @@ void main() {
       ],
       child: MaterialApp(home: Scaffold(body: Center(child: SizedBox(
         width: 288, height: 288,
-        child: CanvasArea(
-          project: p, currentLayerId: layer.id,
-          currentTool: DrawingTool.selectRect, currentFrame: 0, sceneId: scene.id,
+        child: RepaintBoundary(
+          key: boundaryKey,
+          child: CanvasArea(
+            project: p, currentLayerId: layer.id,
+            currentTool: DrawingTool.selectRect, currentFrame: 0, sceneId: scene.id,
+          ),
         ),
       )))),
     ));
-    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_00_before.png'));
     final origin = tester.getTopLeft(find.byType(CanvasArea));
     Offset at(Offset px) => origin + Offset(px.dx * 3, px.dy * 3);
 
@@ -66,6 +76,7 @@ void main() {
     await tester.pump();
     await select.up();
     await tester.pump();
+    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_01_selected.png'));
 
     // 回転ハンドル=(center.x, top-40)=(48,10)。開始ベクトル(0,-60)から
     // current=(88,70)の(40,0)へ移すため +90° 回転になる。
@@ -80,6 +91,7 @@ void main() {
     await rotate.up();
     await tester.pump();
     await _waitForUndo(tester, undo, 1);
+    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_02_after.png'));
 
     final actual = _readCanvas(tm, key, 96, 96);
     _expectColorNear(actual, 96, 56, 58, red: true);
@@ -90,12 +102,21 @@ void main() {
     undo.undo();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_readCanvas(tm, key, 96, 96), orderedEquals(before));
+    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_03_undo.png'));
     undo.redo();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_readCanvas(tm, key, 96, 96), orderedEquals(actual));
+    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_04_redo.png'));
   });
 }
 
+Future<void> _shot(GlobalKey key, String path) async {
+  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final image = await boundary.toImage(pixelRatio: 1);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+  await File(path).writeAsBytes(bytes!.buffer.asUint8List(), flush: true);
+}
 void _rect(Uint8List d, int w, int x0, int y0, int x1, int y1, int r, int g, int b) {
   for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) {
     final i = (y * w + x) * 4; d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
