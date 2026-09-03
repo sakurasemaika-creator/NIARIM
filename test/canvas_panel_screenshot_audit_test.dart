@@ -42,9 +42,6 @@ void main() {
       await Future.wait(loaders.map((e) => e.load()));
     });
 
-    // buildAppProviders() が生成・初期化した ProjectService / UndoManager を
-    // そのまま使う。Provider Widget の内部値を直接取り出さず、実際の
-    // MultiProvider ツリー上の context.read<ProjectService>() から取得する。
     final providers = await tester.runAsync(buildAppProviders);
     final providerList = providers!;
     ProjectService? ps;
@@ -88,7 +85,12 @@ void main() {
     rebuildHost!(() {});
     await tester.pump(const Duration(milliseconds: 1400));
     _expectNoException(tester, 'CanvasScreen initial');
-    await _capture(rootKey, '${out.path}/00_canvas_default.png');
+
+    Future<void> capture(String file) async {
+      await tester.runAsync(() => _capture(rootKey, '${out.path}/$file.png'));
+    }
+
+    await capture('00_canvas_default');
 
     Future<void> tapPanel({
       required Finder control,
@@ -105,7 +107,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       _expectNoException(tester, file);
       expect(find.byType(panelType), findsOneWidget, reason: '$file panel opened from real CanvasScreen control');
-      await _capture(rootKey, '${out.path}/$file.png');
+      await capture(file);
     }
 
     final colorStack = find.descendant(
@@ -117,7 +119,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     _expectNoException(tester, 'color_picker');
     expect(find.byType(ColorPickerPanel), findsOneWidget);
-    await _capture(rootKey, '${out.path}/01_color_picker.png');
+    await capture('01_color_picker');
 
     await tapPanel(control: find.byIcon(Icons.tune), panelType: BrushPanel, file: '02_brush_panel');
     expect(find.byType(ColorPickerPanel), findsNothing);
@@ -129,13 +131,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     _expectNoException(tester, 'settings_edit_sheet');
     expect(find.byType(BottomSheet), findsWidgets);
-    await _capture(rootKey, '${out.path}/06_settings_edit_sheet.png');
+    await capture('06_settings_edit_sheet');
 
     await tester.tap(find.byIcon(Icons.layers_outlined).last);
     await tester.pump(const Duration(milliseconds: 500));
     _expectNoException(tester, 'onion_skin_panel');
     expect(find.byType(OnionSkinPanel), findsOneWidget);
-    await _capture(rootKey, '${out.path}/07_onion_skin_panel.png');
+    await capture('07_onion_skin_panel');
 
     await tester.tap(find.byIcon(Icons.settings).first);
     await tester.pump(const Duration(milliseconds: 350));
@@ -143,7 +145,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     _expectNoException(tester, 'filter_panel');
     expect(find.byType(FilterPanel), findsOneWidget);
-    await _capture(rootKey, '${out.path}/08_filter_panel.png');
+    await capture('08_filter_panel');
 
     await tester.tap(find.byIcon(Icons.settings).first);
     await tester.pump(const Duration(milliseconds: 350));
@@ -153,8 +155,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     _expectNoException(tester, 'mesh_transform_panel');
     expect(find.byType(MeshTransformPanel), findsOneWidget);
-    await _capture(rootKey, '${out.path}/09_mesh_transform_panel.png');
-  }, timeout: const Timeout(Duration(minutes: 4)));
+    await capture('09_mesh_transform_panel');
+  }, timeout: const Timeout(Duration(minutes: 2)));
 }
 
 void _expectNoException(WidgetTester tester, String operation) {
@@ -166,6 +168,6 @@ Future<void> _capture(GlobalKey key, String path) async {
   final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
-  await File(path).writeAsBytes(data!.buffer.asUint8List());
+  await File(path).writeAsBytes(data!.buffer.asUint8List(), flush: true);
   image.dispose();
 }
