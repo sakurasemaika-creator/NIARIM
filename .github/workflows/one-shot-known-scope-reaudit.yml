@@ -9,8 +9,12 @@ on:
       - 'test/time_change_strict_evidence_test.dart'
       - 'lib/screens/premium/premium_screen.dart'
       - 'lib/screens/canvas/widgets/frame_strip_widget.dart'
+      - 'lib/screens/community/community_work_detail_screen.dart'
+      - 'lib/screens/community/widgets/community_floating_preview.dart'
+      - 'lib/screens/community/widgets/community_shorts_viewer.dart'
+      - 'lib/screens/community/widgets/community_work_card.dart'
 
-# Final deliberate one-shot verification on latest repaired NIARIM HEAD after community palette repair. No self-dispatch.
+# Final deliberate one-shot verification after the community palette selector repair. No self-dispatch.
 jobs:
   verify:
     runs-on: ubuntu-latest
