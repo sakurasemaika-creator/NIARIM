@@ -10,6 +10,7 @@ on:
       - 'lib/screens/premium/premium_screen.dart'
       - 'lib/screens/canvas/widgets/frame_strip_widget.dart'
 
+# One-shot verification only. This workflow does not dispatch or rerun itself.
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -32,12 +33,7 @@ jobs:
       - name: Time-change strict evidence
         id: timechange
         continue-on-error: true
-        run: |
-          if [ -f test/time_change_strict_evidence_test.dart ]; then
-            flutter test test/time_change_strict_evidence_test.dart --reporter expanded
-          else
-            echo 'time-change test not added yet'
-          fi
+        run: flutter test test/time_change_strict_evidence_test.dart --reporter expanded
       - name: Frame strip / Premium regression tests
         id: regressions
         continue-on-error: true
