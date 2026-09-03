@@ -16,7 +16,8 @@ class PixelArtPaletteEditDialog extends StatefulWidget {
   const PixelArtPaletteEditDialog({super.key, this.existing});
 
   @override
-  State<PixelArtPaletteEditDialog> createState() => _PixelArtPaletteEditDialogState();
+  State<PixelArtPaletteEditDialog> createState() =>
+      _PixelArtPaletteEditDialogState();
 }
 
 class _PixelArtPaletteEditDialogState extends State<PixelArtPaletteEditDialog> {
@@ -46,7 +47,11 @@ class _PixelArtPaletteEditDialogState extends State<PixelArtPaletteEditDialog> {
     }
     final service = context.read<PixelArtPaletteService>();
     if (widget.existing != null) {
-      await service.updatePalette(widget.existing!.id, name: name, colors: _colors);
+      await service.updatePalette(
+        widget.existing!.id,
+        name: name,
+        colors: _colors,
+      );
     } else {
       await service.addPalette(name, _colors);
     }

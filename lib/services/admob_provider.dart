@@ -16,7 +16,8 @@ class AdMobProvider implements AdProvider {
   /// notifyListenersと連動し、UI側の再描画をトリガーする）。
   final VoidCallback? onAdEvent;
 
-  static String get _bannerAdUnitId => defaultTargetPlatform == TargetPlatform.iOS
+  static String get _bannerAdUnitId =>
+      defaultTargetPlatform == TargetPlatform.iOS
       ? 'ca-app-pub-3940256099942544/2934735716' // Google公式テストID（iOSバナー）
       : 'ca-app-pub-3940256099942544/6300978111'; // Google公式テストID（Androidバナー）
 

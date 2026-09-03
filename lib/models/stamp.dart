@@ -56,28 +56,28 @@ class Stamp {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'imagePath': imagePath,
-        'isFavorite': isFavorite,
-        'folderId': folderId,
-        'rotation': rotation,
-        'density': density,
-        'scatter': scatter,
-        'opacity': opacity,
-        'pixelMode': pixelMode,
-      };
+    'id': id,
+    'name': name,
+    'imagePath': imagePath,
+    'isFavorite': isFavorite,
+    'folderId': folderId,
+    'rotation': rotation,
+    'density': density,
+    'scatter': scatter,
+    'opacity': opacity,
+    'pixelMode': pixelMode,
+  };
 
   factory Stamp.fromJson(Map<String, dynamic> j) => Stamp(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        imagePath: j['imagePath'] as String?,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        folderId: j['folderId'] as String?,
-        rotation: j['rotation'] as bool? ?? false,
-        density: (j['density'] as num?)?.toDouble() ?? 1.0,
-        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
-        opacity: (j['opacity'] as num?)?.round().clamp(1, 100) ?? 100,
-        pixelMode: j['pixelMode'] as bool? ?? false,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    imagePath: j['imagePath'] as String?,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+    folderId: j['folderId'] as String?,
+    rotation: j['rotation'] as bool? ?? false,
+    density: (j['density'] as num?)?.toDouble() ?? 1.0,
+    scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+    opacity: (j['opacity'] as num?)?.round().clamp(1, 100) ?? 100,
+    pixelMode: j['pixelMode'] as bool? ?? false,
+  );
 }

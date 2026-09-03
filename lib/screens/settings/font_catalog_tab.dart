@@ -17,7 +17,8 @@ class FontCatalogTab extends StatefulWidget {
   State<FontCatalogTab> createState() => _FontCatalogTabState();
 }
 
-class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAliveClientMixin {
+class _FontCatalogTabState extends State<FontCatalogTab>
+    with AutomaticKeepAliveClientMixin {
   String _query = '';
   String? _category; // null = すべて
   final Set<String> _downloadingIds = {};
@@ -50,7 +51,10 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
               filled: true,
               fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
               isDense: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
             ),
             onChanged: (v) => setState(() => _query = v),
           ),
@@ -75,8 +79,10 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
         Expanded(
           child: filtered.isEmpty
               ? Center(
-                  child: Text(l10n.fontCatalogNoResults,
-                      style: TextStyle(color: scheme.onSurfaceVariant)),
+                  child: Text(
+                    l10n.fontCatalogNoResults,
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
@@ -86,14 +92,20 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
                     return Card(
                       elevation: 1,
                       shadowColor: Colors.black.withValues(alpha: 0.15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       color: scheme.surfaceContainerLow,
                       child: ListTile(
                         leading: const Icon(Icons.font_download_outlined),
                         title: Text(entry.displayName),
                         subtitle: Text(
-                            '${kFontCategoryLabels[entry.category] ?? entry.category} ・ ${entry.license}',
-                            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                          '${kFontCategoryLabels[entry.category] ?? entry.category} ・ ${entry.license}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
                         trailing: _downloadTrailing(context, service, entry),
                       ),
                     );
@@ -113,13 +125,18 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
     );
   }
 
-  Widget _downloadTrailing(BuildContext context, FontService service, DownloadableFontEntry entry) {
+  Widget _downloadTrailing(
+    BuildContext context,
+    FontService service,
+    DownloadableFontEntry entry,
+  ) {
     if (service.isCatalogFontDownloaded(entry)) {
       return const Icon(Icons.check_circle, color: Colors.green);
     }
     if (_downloadingIds.contains(entry.id)) {
       return const SizedBox(
-        width: 20, height: 20,
+        width: 20,
+        height: 20,
         child: CircularProgressIndicator(strokeWidth: 2),
       );
     }
@@ -136,7 +153,9 @@ class _FontCatalogTabState extends State<FontCatalogTab> with AutomaticKeepAlive
       await context.read<FontService>().downloadCatalogFont(entry);
     } on FontDownloadException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _downloadingIds.remove(entry.id));

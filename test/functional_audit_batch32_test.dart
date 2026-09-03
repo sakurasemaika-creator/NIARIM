@@ -17,7 +17,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaの垂直直線定規でDownからUpまで全ストロークがx=48付近へ拘束される', (tester) async {
+  testWidgets('実CanvasAreaの垂直直線定規でDownからUpまで全ストロークがx=48付近へ拘束される', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -32,14 +34,16 @@ void main() {
     // テスト用の仮Brushを作らず、実組み込み既定ブラシをそのまま使う。
     expect(brushes.currentBrush, isNotNull);
 
-    final p = (await tester.runAsync(() => projects.createProject(
-      name: 'ruler-line-functional',
-      fps: 24,
-      durationSeconds: 1,
-      backgroundColor: 0x00000000,
-      exportWidth: 96,
-      exportHeight: 80,
-    )))!;
+    final p = (await tester.runAsync(
+      () => projects.createProject(
+        name: 'ruler-line-functional',
+        fps: 24,
+        durationSeconds: 1,
+        backgroundColor: 0x00000000,
+        exportWidth: 96,
+        exportHeight: 80,
+      ),
+    ))!;
     final scene = projects.scenesOf(p.id).first;
     final layer = projects.layersOf(p.id, scene.id, 0).first;
     final key = projects.tileKeyFor(p.id, scene.id, 0, layer.id);
@@ -52,32 +56,34 @@ void main() {
       rotation: 1.5707963267948966,
       settings: RulerSettings(),
     );
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ...providers!,
-        ChangeNotifierProvider<ProjectService>.value(value: projects),
-        ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
-        ChangeNotifierProvider<BrushService>.value(value: brushes),
-      ],
-      child: MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: SizedBox(
-              width: 288,
-              height: 240,
-              child: CanvasArea(
-                project: p,
-                currentLayerId: layer.id,
-                currentTool: DrawingTool.ruler,
-                currentFrame: 0,
-                sceneId: scene.id,
-                activeRuler: ruler,
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: projects),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
+          ChangeNotifierProvider<BrushService>.value(value: brushes),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 288,
+                height: 240,
+                child: CanvasArea(
+                  project: p,
+                  currentLayerId: layer.id,
+                  currentTool: DrawingTool.ruler,
+                  currentFrame: 0,
+                  sceneId: scene.id,
+                  activeRuler: ruler,
+                ),
               ),
             ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull);
     final origin = tester.getTopLeft(find.byType(CanvasArea));
@@ -114,11 +120,7 @@ void main() {
     }
     expect(total, greaterThan(20), reason: '本番既定ブラシで実ストロークが描かれること');
     expect(onGuide, greaterThan(20), reason: '定規上に実際のブラシ画素が描かれること');
-    expect(
-      offGuide,
-      0,
-      reason: 'Pointer Down直後を含め、定規から離れた画素を1pxも発生させないこと',
-    );
+    expect(offGuide, 0, reason: 'Pointer Down直後を含め、定規から離れた画素を1pxも発生させないこと');
   });
 }
 

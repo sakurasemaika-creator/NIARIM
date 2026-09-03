@@ -29,7 +29,9 @@ class WorkFolderService extends ChangeNotifier {
         final list = jsonDecode(rawFolders) as List<dynamic>;
         _folders
           ..clear()
-          ..addAll(list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)));
+          ..addAll(
+            list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
+          );
       }
       final rawMap = prefs.getString(_fileFolderPrefsKey);
       if (rawMap != null) {
@@ -47,7 +49,10 @@ class WorkFolderService extends ChangeNotifier {
   Future<void> _persistFolders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_foldersPrefsKey, jsonEncode(_folders.map((f) => f.toJson()).toList()));
+      await prefs.setString(
+        _foldersPrefsKey,
+        jsonEncode(_folders.map((f) => f.toJson()).toList()),
+      );
     } catch (_) {}
   }
 
@@ -59,7 +64,10 @@ class WorkFolderService extends ChangeNotifier {
   }
 
   Future<ProjectFolder> createFolder(String name) async {
-    final folder = ProjectFolder(id: 'work_folder_${DateTime.now().microsecondsSinceEpoch}', name: name);
+    final folder = ProjectFolder(
+      id: 'work_folder_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+    );
     _folders.add(folder);
     await _persistFolders();
     notifyListeners();

@@ -5,18 +5,20 @@ import 'dart:math' as math;
 /// 投げ縄塗りの確定処理（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
 Uint8List runLassoFillInIsolate(
-    ({
-      bool enclosed,
-      List<ui.Offset> points,
-      ui.Color color,
-      Uint8List canvasData,
-      int width,
-      int height,
-      Uint8List? toneTexture,
-      int toneTextureWidth,
-      int toneTextureHeight,
-      Uint8List? selectionMask,
-    }) args) {
+  ({
+    bool enclosed,
+    List<ui.Offset> points,
+    ui.Color color,
+    Uint8List canvasData,
+    int width,
+    int height,
+    Uint8List? toneTexture,
+    int toneTextureWidth,
+    int toneTextureHeight,
+    Uint8List? selectionMask,
+  })
+  args,
+) {
   final engine = LassoFillEngine();
   return args.enclosed
       ? engine.fillEnclosed(
@@ -67,7 +69,8 @@ class LassoFillEngine {
         // 投げ縄座標は連続座標なので、各画素の左上端ではなく中心点で
         // 内外判定する。これにより斜辺の外側へ1pxだけはみ出すケースを防ぐ。
         if (!_isInsidePolygon(x + 0.5, y + 0.5, points)) continue;
-        if (selectionMask != null && selectionMask[y * width + x] == 0) continue;
+        if (selectionMask != null && selectionMask[y * width + x] == 0)
+          continue;
 
         final idx = (y * width + x) * 4;
         if (isEraser) {
@@ -197,8 +200,10 @@ class LassoFillEngine {
     Uint8List? selectionMask,
   }) {
     final result = <ui.Offset>[];
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height) return result;
-    if (polygon != null && !_isInsidePolygon(startX + 0.5, startY + 0.5, polygon)) {
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+      return result;
+    if (polygon != null &&
+        !_isInsidePolygon(startX + 0.5, startY + 0.5, polygon)) {
       return result;
     }
     final startIdx = (startY * width + startX) * 4;
@@ -215,7 +220,8 @@ class LassoFillEngine {
       final y = pos ~/ width;
 
       if (selectionMask != null && selectionMask[pos] == 0) continue;
-      if (polygon != null && !_isInsidePolygon(x + 0.5, y + 0.5, polygon)) continue;
+      if (polygon != null && !_isInsidePolygon(x + 0.5, y + 0.5, polygon))
+        continue;
 
       final idx = pos * 4;
       if (data[idx + 3] != 0) continue; // 不透明ピクセルは境界

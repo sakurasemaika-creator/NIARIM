@@ -55,8 +55,11 @@ void main() {
 
       await restored.deleteFolder(b.id);
       expect(restored.folders.any((f) => f.id == b.id), isFalse);
-      expect(restored.folderIdOf('two.gif'), isNull,
-          reason: 'deleting a folder returns its files to root');
+      expect(
+        restored.folderIdOf('two.gif'),
+        isNull,
+        reason: 'deleting a folder returns its files to root',
+      );
       expect(notifications, greaterThanOrEqualTo(6));
     });
 
@@ -73,116 +76,128 @@ void main() {
   });
 
   group('WorkspacePresetService direct coverage', () {
-    test('save overwrite-by-name rename overwrite export import delete and persistence work', () async {
-      final service = WorkspacePresetService();
-      await service.init();
-      expect(service.presets, isEmpty);
+    test(
+      'save overwrite-by-name rename overwrite export import delete and persistence work',
+      () async {
+        final service = WorkspacePresetService();
+        await service.init();
+        expect(service.presets, isEmpty);
 
-      await service.save(
-        'Anime',
-        isLeftHanded: true,
-        forcePcMode: true,
-        toolbarOrder: const ['pen', 'eraser', 'invalid'],
-        hiddenToolbarItems: const ['bucket'],
-        quickToolEntries: const [
-          {'id': 'q1', 'label': 'Q1', 'toolKey': 'pen'},
-        ],
-        defaultDockedPanels: const ['layers', 'colorPicker'],
-        desktopPanelWidth: 333,
-        desktopToolPanelWidth: 222,
-        toolOptionDockOrder: const ['brush', 'ruler'],
-        rightDockOrder: const ['layers', 'preview'],
-      );
-      expect(service.presets, hasLength(1));
-      final original = service.presets.single;
-      expect(original.isLeftHanded, isTrue);
-      expect(original.forcePcMode, isTrue);
-      expect(original.desktopPanelWidth, 333);
+        await service.save(
+          'Anime',
+          isLeftHanded: true,
+          forcePcMode: true,
+          toolbarOrder: const ['pen', 'eraser', 'invalid'],
+          hiddenToolbarItems: const ['bucket'],
+          quickToolEntries: const [
+            {'id': 'q1', 'label': 'Q1', 'toolKey': 'pen'},
+          ],
+          defaultDockedPanels: const ['layers', 'colorPicker'],
+          desktopPanelWidth: 333,
+          desktopToolPanelWidth: 222,
+          toolOptionDockOrder: const ['brush', 'ruler'],
+          rightDockOrder: const ['layers', 'preview'],
+        );
+        expect(service.presets, hasLength(1));
+        final original = service.presets.single;
+        expect(original.isLeftHanded, isTrue);
+        expect(original.forcePcMode, isTrue);
+        expect(original.desktopPanelWidth, 333);
 
-      await service.save(
-        'Anime',
-        isLeftHanded: false,
-        forcePcMode: null,
-        toolbarOrder: const ['eraser'],
-      );
-      expect(service.presets, hasLength(1),
-          reason: 'saving the same name replaces the prior preset');
-      final replaced = service.presets.single;
-      expect(replaced.id, isNot(original.id));
-      expect(replaced.isLeftHanded, isFalse);
-      expect(replaced.forcePcMode, isNull);
+        await service.save(
+          'Anime',
+          isLeftHanded: false,
+          forcePcMode: null,
+          toolbarOrder: const ['eraser'],
+        );
+        expect(
+          service.presets,
+          hasLength(1),
+          reason: 'saving the same name replaces the prior preset',
+        );
+        final replaced = service.presets.single;
+        expect(replaced.id, isNot(original.id));
+        expect(replaced.isLeftHanded, isFalse);
+        expect(replaced.forcePcMode, isNull);
 
-      await service.rename(replaced.id, '  Animation  ');
-      expect(service.presets.single.name, 'Animation');
-      await service.rename(replaced.id, '   ');
-      expect(service.presets.single.name, 'Animation');
-      await service.rename('missing', 'Ignored');
+        await service.rename(replaced.id, '  Animation  ');
+        expect(service.presets.single.name, 'Animation');
+        await service.rename(replaced.id, '   ');
+        expect(service.presets.single.name, 'Animation');
+        await service.rename('missing', 'Ignored');
 
-      await service.overwrite(
-        replaced.id,
-        newName: 'Detailed',
-        isLeftHanded: true,
-        forcePcMode: false,
-        toolbarOrder: const ['pen', 'bucket'],
-        hiddenToolbarItems: const ['eraser'],
-        quickToolEntries: const [
-          {'id': 'q2', 'label': 'Q2', 'toolKey': 'bucket'},
-        ],
-        defaultDockedPanels: const ['layers'],
-        desktopPanelWidth: 400,
-        desktopToolPanelWidth: 250,
-        toolOptionDockOrder: const ['tone'],
-        rightDockOrder: const ['preview'],
-      );
-      final overwritten = service.presets.single;
-      expect(overwritten.id, replaced.id,
-          reason: 'overwrite preserves the preset ID');
-      expect(overwritten.name, 'Detailed');
-      expect(overwritten.isLeftHanded, isTrue);
-      expect(overwritten.forcePcMode, isFalse);
-      expect(overwritten.toolbarOrder, ['pen', 'bucket']);
-      expect(overwritten.hiddenToolbarItems, ['eraser']);
-      expect(overwritten.desktopPanelWidth, 400);
-      expect(overwritten.desktopToolPanelWidth, 250);
+        await service.overwrite(
+          replaced.id,
+          newName: 'Detailed',
+          isLeftHanded: true,
+          forcePcMode: false,
+          toolbarOrder: const ['pen', 'bucket'],
+          hiddenToolbarItems: const ['eraser'],
+          quickToolEntries: const [
+            {'id': 'q2', 'label': 'Q2', 'toolKey': 'bucket'},
+          ],
+          defaultDockedPanels: const ['layers'],
+          desktopPanelWidth: 400,
+          desktopToolPanelWidth: 250,
+          toolOptionDockOrder: const ['tone'],
+          rightDockOrder: const ['preview'],
+        );
+        final overwritten = service.presets.single;
+        expect(
+          overwritten.id,
+          replaced.id,
+          reason: 'overwrite preserves the preset ID',
+        );
+        expect(overwritten.name, 'Detailed');
+        expect(overwritten.isLeftHanded, isTrue);
+        expect(overwritten.forcePcMode, isFalse);
+        expect(overwritten.toolbarOrder, ['pen', 'bucket']);
+        expect(overwritten.hiddenToolbarItems, ['eraser']);
+        expect(overwritten.desktopPanelWidth, 400);
+        expect(overwritten.desktopToolPanelWidth, 250);
 
-      await service.overwrite(
-        overwritten.id,
-        newName: '   ',
-        isLeftHanded: false,
-        forcePcMode: null,
-      );
-      expect(service.presets.single.name, 'Detailed',
-          reason: 'blank overwrite name preserves current name');
-      await service.overwrite(
-        'missing',
-        isLeftHanded: false,
-        forcePcMode: null,
-      );
+        await service.overwrite(
+          overwritten.id,
+          newName: '   ',
+          isLeftHanded: false,
+          forcePcMode: null,
+        );
+        expect(
+          service.presets.single.name,
+          'Detailed',
+          reason: 'blank overwrite name preserves current name',
+        );
+        await service.overwrite(
+          'missing',
+          isLeftHanded: false,
+          forcePcMode: null,
+        );
 
-      final exportFile = await service.exportPreset(overwritten.id);
-      expect(exportFile.path, endsWith('Detailed.niaworkspace'));
-      expect(exportFile.existsSync(), isTrue);
-      final exportedText = await exportFile.readAsString();
-      expect(exportedText, contains('Detailed'));
+        final exportFile = await service.exportPreset(overwritten.id);
+        expect(exportFile.path, endsWith('Detailed.niaworkspace'));
+        expect(exportFile.existsSync(), isTrue);
+        final exportedText = await exportFile.readAsString();
+        expect(exportedText, contains('Detailed'));
 
-      final fromJson = await service.importPresetJson(exportedText);
-      expect(fromJson.id, isNot(overwritten.id));
-      expect(fromJson.name, 'Detailed');
-      expect(service.presets, hasLength(2));
+        final fromJson = await service.importPresetJson(exportedText);
+        expect(fromJson.id, isNot(overwritten.id));
+        expect(fromJson.name, 'Detailed');
+        expect(service.presets, hasLength(2));
 
-      final fromFile = await service.importPresetFile(exportFile.path);
-      expect(fromFile.id, isNot(fromJson.id));
-      expect(fromFile.name, 'Detailed');
-      expect(service.presets, hasLength(3));
+        final fromFile = await service.importPresetFile(exportFile.path);
+        expect(fromFile.id, isNot(fromJson.id));
+        expect(fromFile.name, 'Detailed');
+        expect(service.presets, hasLength(3));
 
-      final restored = WorkspacePresetService();
-      await restored.init();
-      expect(restored.presets, hasLength(3));
-      expect(restored.presets.every((p) => p.name == 'Detailed'), isTrue);
+        final restored = WorkspacePresetService();
+        await restored.init();
+        expect(restored.presets, hasLength(3));
+        expect(restored.presets.every((p) => p.name == 'Detailed'), isTrue);
 
-      await restored.delete(fromJson.id);
-      expect(restored.presets.any((p) => p.id == fromJson.id), isFalse);
-    });
+        await restored.delete(fromJson.id);
+        expect(restored.presets.any((p) => p.id == fromJson.id), isFalse);
+      },
+    );
 
     test('export sanitizes invalid filename characters', () async {
       final service = WorkspacePresetService();

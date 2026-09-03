@@ -40,7 +40,11 @@ void main() {
   group('valueAt（イージング、Task#137）', () {
     test('easeInは区間前半で線形補間より遅れて進む（値が小さい）', () {
       final keyframes = [
-        const LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.easeIn),
+        const LayerKeyframe(
+          frameIndex: 0,
+          x: 0,
+          easing: LayerKeyframeEasing.easeIn,
+        ),
         const LayerKeyframe(frameIndex: 100, x: 100),
       ];
       // t=0.25時点：linearなら25、easeIn（t*t）なら6.25。
@@ -51,7 +55,11 @@ void main() {
 
     test('easeOutは区間前半で線形補間より先行して進む（値が大きい）', () {
       final keyframes = [
-        const LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.easeOut),
+        const LayerKeyframe(
+          frameIndex: 0,
+          x: 0,
+          easing: LayerKeyframeEasing.easeOut,
+        ),
         const LayerKeyframe(frameIndex: 100, x: 100),
       ];
       // t=0.25時点：linearなら25、easeOut（1-(1-t)^2）なら43.75。
@@ -62,7 +70,11 @@ void main() {
 
     test('easeInOutは中間点(t=0.5)でlinearと一致し、前半は遅れ・後半は追いつく', () {
       final keyframes = [
-        const LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.easeInOut),
+        const LayerKeyframe(
+          frameIndex: 0,
+          x: 0,
+          easing: LayerKeyframeEasing.easeInOut,
+        ),
         const LayerKeyframe(frameIndex: 100, x: 100),
       ];
       expect(engine.valueAt(keyframes, 50).x, closeTo(50, 0.5));
@@ -72,7 +84,11 @@ void main() {
 
     test('bounceOutは開始・終了の値そのものは変えず、途中経過だけを変える', () {
       final keyframes = [
-        const LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.bounceOut),
+        const LayerKeyframe(
+          frameIndex: 0,
+          x: 0,
+          easing: LayerKeyframeEasing.bounceOut,
+        ),
         const LayerKeyframe(frameIndex: 100, x: 100),
       ];
       expect(engine.valueAt(keyframes, 0).x, closeTo(0, 0.001));
@@ -91,8 +107,16 @@ void main() {
       // aがeaseIn、bがlinearでも意味を持たない（bは終端キーフレームで
       // 「次への」つなぎ方は使われないため）: a側の設定のみが効く。
       final keyframes = [
-        const LayerKeyframe(frameIndex: 0, x: 0, easing: LayerKeyframeEasing.easeIn),
-        const LayerKeyframe(frameIndex: 100, x: 100, easing: LayerKeyframeEasing.bounceOut),
+        const LayerKeyframe(
+          frameIndex: 0,
+          x: 0,
+          easing: LayerKeyframeEasing.easeIn,
+        ),
+        const LayerKeyframe(
+          frameIndex: 100,
+          x: 100,
+          easing: LayerKeyframeEasing.bounceOut,
+        ),
       ];
       final x = engine.valueAt(keyframes, 25).x;
       expect(x, closeTo(6.25, 0.5), reason: 'aのeaseInが使われ、bのbounceOutは無視されるはず');
@@ -106,7 +130,11 @@ void main() {
 
   group('LayerKeyframe.toJson/fromJson（Task#137：easingの永続化）', () {
     test('easingがJSONへ保存され、復元される', () {
-      const kf = LayerKeyframe(frameIndex: 3, x: 1, easing: LayerKeyframeEasing.bounceOut);
+      const kf = LayerKeyframe(
+        frameIndex: 3,
+        x: 1,
+        easing: LayerKeyframeEasing.bounceOut,
+      );
       final json = kf.toJson();
       expect(json['easing'], 'bounceOut');
       final restored = LayerKeyframe.fromJson(json);
@@ -114,7 +142,13 @@ void main() {
     });
 
     test('easingキーが無い古い保存データはlinearとして復元される（後方互換）', () {
-      final json = {'frameIndex': 0, 'x': 10.0, 'y': 0.0, 'scale': 1.0, 'rotation': 0.0};
+      final json = {
+        'frameIndex': 0,
+        'x': 10.0,
+        'y': 0.0,
+        'scale': 1.0,
+        'rotation': 0.0,
+      };
       final restored = LayerKeyframe.fromJson(json);
       expect(restored.easing, LayerKeyframeEasing.linear);
     });

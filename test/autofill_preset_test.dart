@@ -11,13 +11,23 @@ void main() {
   });
 
   test('トーン使用中でトーン未選択ならisConfiguredはfalse', () {
-    const part = AutofillPart(id: 'p1', name: '肌', color: 0xFFFFD5B0, useTone: true);
+    const part = AutofillPart(
+      id: 'p1',
+      name: '肌',
+      color: 0xFFFFD5B0,
+      useTone: true,
+    );
     expect(part.isConfigured, isFalse);
   });
 
   test('トーン使用中でトーン選択済みならisConfiguredはtrue', () {
-    const part =
-        AutofillPart(id: 'p1', name: '肌', color: 0xFFFFD5B0, useTone: true, toneId: 'tone1');
+    const part = AutofillPart(
+      id: 'p1',
+      name: '肌',
+      color: 0xFFFFD5B0,
+      useTone: true,
+      toneId: 'tone1',
+    );
     expect(part.isConfigured, isTrue);
   });
 

@@ -119,7 +119,8 @@ class Brush {
       spacing: spacing ?? this.spacing,
       blurRadius: blurRadius ?? this.blurRadius,
       stabilization: stabilization ?? this.stabilization,
-      stabilizationStrength: stabilizationStrength ?? this.stabilizationStrength,
+      stabilizationStrength:
+          stabilizationStrength ?? this.stabilizationStrength,
       pixelMode: pixelMode ?? this.pixelMode,
       pressureMode: pressureMode ?? this.pressureMode,
       pressureStrength: pressureStrength ?? this.pressureStrength,
@@ -144,92 +145,104 @@ class Brush {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'size': size,
-        'opacity': opacity,
-        'spacing': spacing,
-        'blurRadius': blurRadius,
-        'stabilization': stabilization,
-        'stabilizationStrength': stabilizationStrength,
-        'pixelMode': pixelMode,
-        'pressureMode': pressureMode.name,
-        'pressureStrength': pressureStrength,
-        'fadeMode': fadeMode.name,
-        'fadeCustom': fadeCustom == null
-            ? null
-            : {
-                'startValue': fadeCustom!.startValue,
-                'endValue': fadeCustom!.endValue,
-                'distancePx': fadeCustom!.distancePx,
-              },
-        'strokeDecay': strokeDecay,
-        'mixingMode': mixingMode.name,
-        'mixingRate': mixingRate,
-        'isFavorite': isFavorite,
-        'folderId': folderId,
-        'customImagePath': customImagePath,
-        'rotation': rotation,
-        'density': density,
-        'scatter': scatter,
-        'calligraphyAngle': calligraphyAngle,
-        'edgeJitter': edgeJitter,
-        'edgeJitterStrength': edgeJitterStrength,
-        'pixelColorMode': pixelColorMode.name,
-        'pixelColorLevels': pixelColorLevels,
-        'pixelExplicitColors': pixelExplicitColors,
-      };
+    'id': id,
+    'name': name,
+    'size': size,
+    'opacity': opacity,
+    'spacing': spacing,
+    'blurRadius': blurRadius,
+    'stabilization': stabilization,
+    'stabilizationStrength': stabilizationStrength,
+    'pixelMode': pixelMode,
+    'pressureMode': pressureMode.name,
+    'pressureStrength': pressureStrength,
+    'fadeMode': fadeMode.name,
+    'fadeCustom': fadeCustom == null
+        ? null
+        : {
+            'startValue': fadeCustom!.startValue,
+            'endValue': fadeCustom!.endValue,
+            'distancePx': fadeCustom!.distancePx,
+          },
+    'strokeDecay': strokeDecay,
+    'mixingMode': mixingMode.name,
+    'mixingRate': mixingRate,
+    'isFavorite': isFavorite,
+    'folderId': folderId,
+    'customImagePath': customImagePath,
+    'rotation': rotation,
+    'density': density,
+    'scatter': scatter,
+    'calligraphyAngle': calligraphyAngle,
+    'edgeJitter': edgeJitter,
+    'edgeJitterStrength': edgeJitterStrength,
+    'pixelColorMode': pixelColorMode.name,
+    'pixelColorLevels': pixelColorLevels,
+    'pixelExplicitColors': pixelExplicitColors,
+  };
 
   factory Brush.fromJson(Map<String, dynamic> j) => Brush(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        size: (j['size'] as num).toDouble(),
-        opacity: j['opacity'] as int,
-        spacing: j['spacing'] as int,
-        blurRadius: j['blurRadius'] as int,
-        stabilization: j['stabilization'] as bool,
-        stabilizationStrength: j['stabilizationStrength'] as int,
-        // pixelModeは旧称dotPenModeからの改称（「ドット」だと水玉模様と
-        // 誤認される恐れがあるため）。旧バージョンで保存・共有
-        // 済みのブラシ（.niabrush・SharedPreferences永続化データ）を
-        // 引き続き読み込めるよう、旧キーからのフォールバックを残す。
-        pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
-        pressureMode: PressureMode.values
-            .firstWhere((e) => e.name == j['pressureMode'], orElse: () => PressureMode.off),
-        pressureStrength: j['pressureStrength'] as int,
-        fadeMode:
-            FadeMode.values.firstWhere((e) => e.name == j['fadeMode'], orElse: () => FadeMode.off),
-        fadeCustom: j['fadeCustom'] == null
-            ? null
-            : FadeCustomSettings(
-                startValue: ((j['fadeCustom'] as Map<String, dynamic>)['startValue'] as num)
+    id: j['id'] as String,
+    name: j['name'] as String,
+    size: (j['size'] as num).toDouble(),
+    opacity: j['opacity'] as int,
+    spacing: j['spacing'] as int,
+    blurRadius: j['blurRadius'] as int,
+    stabilization: j['stabilization'] as bool,
+    stabilizationStrength: j['stabilizationStrength'] as int,
+    // pixelModeは旧称dotPenModeからの改称（「ドット」だと水玉模様と
+    // 誤認される恐れがあるため）。旧バージョンで保存・共有
+    // 済みのブラシ（.niabrush・SharedPreferences永続化データ）を
+    // 引き続き読み込めるよう、旧キーからのフォールバックを残す。
+    pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
+    pressureMode: PressureMode.values.firstWhere(
+      (e) => e.name == j['pressureMode'],
+      orElse: () => PressureMode.off,
+    ),
+    pressureStrength: j['pressureStrength'] as int,
+    fadeMode: FadeMode.values.firstWhere(
+      (e) => e.name == j['fadeMode'],
+      orElse: () => FadeMode.off,
+    ),
+    fadeCustom: j['fadeCustom'] == null
+        ? null
+        : FadeCustomSettings(
+            startValue:
+                ((j['fadeCustom'] as Map<String, dynamic>)['startValue'] as num)
                     .toDouble(),
-                endValue:
-                    ((j['fadeCustom'] as Map<String, dynamic>)['endValue'] as num).toDouble(),
-                distancePx:
-                    ((j['fadeCustom'] as Map<String, dynamic>)['distancePx'] as num).toDouble(),
-              ),
-        strokeDecay: j['strokeDecay'] as bool,
-        mixingMode: BrushMixingMode.values
-            .firstWhere((e) => e.name == j['mixingMode'], orElse: () => BrushMixingMode.off),
-        mixingRate: j['mixingRate'] as int,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        folderId: j['folderId'] as String?,
-        customImagePath: j['customImagePath'] as String?,
-        rotation: j['rotation'] as bool? ?? false,
-        density: (j['density'] as num?)?.toDouble() ?? 1.0,
-        scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
-        calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
-        edgeJitter: j['edgeJitter'] as bool? ?? false,
-        edgeJitterStrength: j['edgeJitterStrength'] as int? ?? 50,
-        pixelColorMode: PixelColorMode.values.firstWhere(
-            (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.none),
-        pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
-        pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)
-                ?.map((e) => e as int)
-                .toList() ??
-            const [0xFF000000],
-      );
+            endValue:
+                ((j['fadeCustom'] as Map<String, dynamic>)['endValue'] as num)
+                    .toDouble(),
+            distancePx:
+                ((j['fadeCustom'] as Map<String, dynamic>)['distancePx'] as num)
+                    .toDouble(),
+          ),
+    strokeDecay: j['strokeDecay'] as bool,
+    mixingMode: BrushMixingMode.values.firstWhere(
+      (e) => e.name == j['mixingMode'],
+      orElse: () => BrushMixingMode.off,
+    ),
+    mixingRate: j['mixingRate'] as int,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+    folderId: j['folderId'] as String?,
+    customImagePath: j['customImagePath'] as String?,
+    rotation: j['rotation'] as bool? ?? false,
+    density: (j['density'] as num?)?.toDouble() ?? 1.0,
+    scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+    calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
+    edgeJitter: j['edgeJitter'] as bool? ?? false,
+    edgeJitterStrength: j['edgeJitterStrength'] as int? ?? 50,
+    pixelColorMode: PixelColorMode.values.firstWhere(
+      (e) => e.name == j['pixelColorMode'],
+      orElse: () => PixelColorMode.none,
+    ),
+    pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
+    pixelExplicitColors:
+        (j['pixelExplicitColors'] as List<dynamic>?)
+            ?.map((e) => e as int)
+            .toList() ??
+        const [0xFF000000],
+  );
 }
 
 enum PressureMode { off, size, opacity, sizeAndOpacity }

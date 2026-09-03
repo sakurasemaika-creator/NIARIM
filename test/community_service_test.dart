@@ -19,7 +19,10 @@ void main() {
     service.toggleNiarimVisibility(work.id);
 
     expect(service.byId(work.id)!.isNiarimPublished, isFalse);
-    expect(service.discoverableWorks.map((w) => w.id), isNot(contains(work.id)));
+    expect(
+      service.discoverableWorks.map((w) => w.id),
+      isNot(contains(work.id)),
+    );
 
     // 再度呼ぶと公開状態へ戻る（トグル）。
     service.toggleNiarimVisibility(work.id);
@@ -30,7 +33,11 @@ void main() {
   test('worksByAuthorはincludeHidden未指定（false）の場合、非公開作品を除外する', () {
     final service = CommunityService();
     final selfWorks = service.worksByAuthor(kDummySelfAuthorId);
-    expect(selfWorks, isNotEmpty, reason: 'ダミーデータにkDummySelfAuthorIdの作品が含まれる前提');
+    expect(
+      selfWorks,
+      isNotEmpty,
+      reason: 'ダミーデータにkDummySelfAuthorIdの作品が含まれる前提',
+    );
     final target = selfWorks.first;
 
     service.toggleNiarimVisibility(target.id);
@@ -47,8 +54,15 @@ void main() {
 
     service.toggleNiarimVisibility(target.id);
 
-    final withHidden = service.worksByAuthor(kDummySelfAuthorId, includeHidden: true);
-    expect(withHidden, hasLength(beforeCount), reason: '非公開になっても本人向け一覧では件数が減らないはず');
+    final withHidden = service.worksByAuthor(
+      kDummySelfAuthorId,
+      includeHidden: true,
+    );
+    expect(
+      withHidden,
+      hasLength(beforeCount),
+      reason: '非公開になっても本人向け一覧では件数が減らないはず',
+    );
     expect(withHidden.map((w) => w.id), contains(target.id));
   });
 
@@ -128,12 +142,17 @@ void main() {
       final target = service.favoriteAuthorWorks.first;
       service.toggleNiarimVisibility(target.id);
 
-      expect(service.favoriteAuthorWorks.map((w) => w.id), isNot(contains(target.id)));
+      expect(
+        service.favoriteAuthorWorks.map((w) => w.id),
+        isNot(contains(target.id)),
+      );
     });
 
     test('followerCountOfは自分がフォローすると+1され、解除すると元に戻る', () {
       final service = CommunityService();
-      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      final authorId = service.works
+          .firstWhere((w) => w.authorId != kDummySelfAuthorId)
+          .authorId;
       final before = service.followerCountOf(authorId);
 
       service.toggleFavoriteAuthor(authorId);
@@ -145,14 +164,25 @@ void main() {
 
     test('followerIdsOfはfollowerCountOfと同じ人数を返し、自分がフォローすると自分自身のIDが含まれる', () {
       final service = CommunityService();
-      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      final authorId = service.works
+          .firstWhere((w) => w.authorId != kDummySelfAuthorId)
+          .authorId;
 
-      expect(service.followerIdsOf(authorId).length, service.followerCountOf(authorId));
-      expect(service.followerIdsOf(authorId), isNot(contains(kDummySelfAuthorId)));
+      expect(
+        service.followerIdsOf(authorId).length,
+        service.followerCountOf(authorId),
+      );
+      expect(
+        service.followerIdsOf(authorId),
+        isNot(contains(kDummySelfAuthorId)),
+      );
 
       service.toggleFavoriteAuthor(authorId);
       expect(service.followerIdsOf(authorId), contains(kDummySelfAuthorId));
-      expect(service.followerNamesOf(authorId), contains(service.authorNameOf(kDummySelfAuthorId)));
+      expect(
+        service.followerNamesOf(authorId),
+        contains(service.authorNameOf(kDummySelfAuthorId)),
+      );
     });
 
     test('フォロワー一覧の公開設定は既定で非公開、setSelfFollowersPublicで変更できる', () {
@@ -171,19 +201,27 @@ void main() {
       final service = CommunityService();
       expect(service.followingIdsOf(kDummySelfAuthorId), isEmpty);
 
-      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      final authorId = service.works
+          .firstWhere((w) => w.authorId != kDummySelfAuthorId)
+          .authorId;
       service.toggleFavoriteAuthor(authorId);
       expect(service.followingIdsOf(kDummySelfAuthorId), [authorId]);
       expect(service.followingCountOf(kDummySelfAuthorId), 1);
-      expect(service.followingNamesOf(kDummySelfAuthorId), [service.authorNameOf(authorId)]);
+      expect(service.followingNamesOf(kDummySelfAuthorId), [
+        service.authorNameOf(authorId),
+      ]);
     });
 
     test('followingIdsOfはfollowerIdsOfの逆引きとして整合する（他のダミー作者同士）', () {
       final service = CommunityService();
       for (final authorId in service.works.map((w) => w.authorId).toSet()) {
         for (final followingId in service.followingIdsOf(authorId)) {
-          expect(service.followerIdsOf(followingId), contains(authorId),
-              reason: '$authorIdが$followingIdをフォロー中なら、$followingIdのフォロワーに$authorIdが含まれるはず');
+          expect(
+            service.followerIdsOf(followingId),
+            contains(authorId),
+            reason:
+                '$authorIdが$followingIdをフォロー中なら、$followingIdのフォロワーに$authorIdが含まれるはず',
+          );
         }
       }
     });
@@ -199,28 +237,41 @@ void main() {
 
     test('visibleFollowerIdsOfは自分の公開設定に従って自分自身の表示・非表示が切り替わる', () {
       final service = CommunityService();
-      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      final authorId = service.works
+          .firstWhere((w) => w.authorId != kDummySelfAuthorId)
+          .authorId;
       service.toggleFavoriteAuthor(authorId);
 
       // 既定では自分のフォロー中/フォロワー一覧の公開はfalseなので、
       // 実際のフォロワーとしては数えられるが一覧には現れない。
       expect(service.followerIdsOf(authorId), contains(kDummySelfAuthorId));
-      expect(service.visibleFollowerIdsOf(authorId), isNot(contains(kDummySelfAuthorId)));
+      expect(
+        service.visibleFollowerIdsOf(authorId),
+        isNot(contains(kDummySelfAuthorId)),
+      );
 
       service.setSelfFollowersPublic(true);
-      expect(service.visibleFollowerIdsOf(authorId), contains(kDummySelfAuthorId));
+      expect(
+        service.visibleFollowerIdsOf(authorId),
+        contains(kDummySelfAuthorId),
+      );
     });
 
     test('followerCountOfは非公開のフォロワーも含めた実数のまま変わらない', () {
       final service = CommunityService();
-      final authorId = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId).authorId;
+      final authorId = service.works
+          .firstWhere((w) => w.authorId != kDummySelfAuthorId)
+          .authorId;
       final before = service.followerCountOf(authorId);
 
       service.toggleFavoriteAuthor(authorId);
       // 自分の公開設定は既定でfalseのままでも、実数のfollowerCountOfには
       // カウントされる（「集計」と「表示」を分離する設計）。
       expect(service.followerCountOf(authorId), before + 1);
-      expect(service.visibleFollowerIdsOf(authorId), isNot(contains(kDummySelfAuthorId)));
+      expect(
+        service.visibleFollowerIdsOf(authorId),
+        isNot(contains(kDummySelfAuthorId)),
+      );
     });
   });
 
@@ -228,7 +279,9 @@ void main() {
   group('リポスト', () {
     test('toggleRepostで自分のリポストが登録・解除される', () {
       final service = CommunityService();
-      final work = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
+      final work = service.works.firstWhere(
+        (w) => w.authorId != kDummySelfAuthorId,
+      );
 
       expect(service.isRepostedBySelf(work.id), isFalse);
 
@@ -241,10 +294,16 @@ void main() {
 
     test('自分自身が投稿した作品もリポストできる', () {
       final service = CommunityService();
-      final ownWork = service.works.firstWhere((w) => w.authorId == kDummySelfAuthorId);
+      final ownWork = service.works.firstWhere(
+        (w) => w.authorId == kDummySelfAuthorId,
+      );
 
       service.toggleRepost(ownWork.id);
-      expect(service.isRepostedBySelf(ownWork.id), isTrue, reason: '自作もフォロワーへ改めて周知する用途でリポストできるはず');
+      expect(
+        service.isRepostedBySelf(ownWork.id),
+        isTrue,
+        reason: '自作もフォロワーへ改めて周知する用途でリポストできるはず',
+      );
 
       service.toggleRepost(ownWork.id);
       expect(service.isRepostedBySelf(ownWork.id), isFalse);
@@ -252,7 +311,9 @@ void main() {
 
     test('repostCountOfはリポスト数を反映する', () {
       final service = CommunityService();
-      final work = service.works.firstWhere((w) => w.authorId != kDummySelfAuthorId);
+      final work = service.works.firstWhere(
+        (w) => w.authorId != kDummySelfAuthorId,
+      );
       final before = service.repostCountOf(work.id);
 
       service.toggleRepost(work.id);
@@ -268,8 +329,10 @@ void main() {
       // 自分がフォローしている作者（author_02）が、フォローしていない
       // 別の作者（author_03）の作品をリポストした状況を作る。
       const followedAuthorId = 'author_02';
-      final otherAuthorsWork =
-          service.works.firstWhere((w) => w.authorId != followedAuthorId && w.authorId != kDummySelfAuthorId);
+      final otherAuthorsWork = service.works.firstWhere(
+        (w) =>
+            w.authorId != followedAuthorId && w.authorId != kDummySelfAuthorId,
+      );
 
       service.toggleFavoriteAuthor(followedAuthorId);
       expect(
@@ -300,7 +363,9 @@ void main() {
       // postedAtより明らかに新しいリポストのため、そちらのrepostedAtが
       // 採用されるはず。
       service.toggleRepost(ownWorkOfFollowed.id, authorId: followedAuthorId);
-      final entry = service.favoriteAuthorFeed.firstWhere((e) => e.work.id == ownWorkOfFollowed.id);
+      final entry = service.favoriteAuthorFeed.firstWhere(
+        (e) => e.work.id == ownWorkOfFollowed.id,
+      );
       expect(entry.isRepost, isTrue, reason: '自作リポストの方が新しければそちらが採用されるはず');
       expect(entry.repostedByAuthorId, followedAuthorId);
     });
@@ -328,7 +393,10 @@ void main() {
 
       service.toggleBookmark(work.id);
 
-      expect(service.bookmarkedWorksOf(kDummySelfAuthorId).map((w) => w.id), contains(work.id));
+      expect(
+        service.bookmarkedWorksOf(kDummySelfAuthorId).map((w) => w.id),
+        contains(work.id),
+      );
     });
 
     test('bookmarkedWorksOfは他のダミー作者の場合、生成済みの固定ダミーブックマークを返す', () {
@@ -341,8 +409,14 @@ void main() {
 
     test('同じ引数で呼び出すたびに同じ結果を返す（固定シードで再現可能）', () {
       final service = CommunityService();
-      final first = service.bookmarkedWorksOf('author_03').map((w) => w.id).toList();
-      final second = service.bookmarkedWorksOf('author_03').map((w) => w.id).toList();
+      final first = service
+          .bookmarkedWorksOf('author_03')
+          .map((w) => w.id)
+          .toList();
+      final second = service
+          .bookmarkedWorksOf('author_03')
+          .map((w) => w.id)
+          .toList();
       expect(first, second);
     });
   });
@@ -352,12 +426,17 @@ void main() {
   group('フォロー通知', () {
     test('followNotificationsは自分のフォロワー（ダミー）と件数が一致する', () {
       final service = CommunityService();
-      expect(service.followNotifications.length, service.followerCountOf(kDummySelfAuthorId));
+      expect(
+        service.followNotifications.length,
+        service.followerCountOf(kDummySelfAuthorId),
+      );
     });
 
     test('followNotificationsの通知元は自分のフォロワー一覧と一致する', () {
       final service = CommunityService();
-      final notifiedIds = service.followNotifications.map((n) => n.followerId).toSet();
+      final notifiedIds = service.followNotifications
+          .map((n) => n.followerId)
+          .toSet();
       expect(notifiedIds, service.followerIdsOf(kDummySelfAuthorId).toSet());
     });
 

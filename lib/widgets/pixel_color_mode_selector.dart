@@ -48,11 +48,11 @@ class PixelColorModeSelector extends StatelessWidget {
   }
 
   String _label(AppLocalizations l10n, PixelColorMode m) => switch (m) {
-        PixelColorMode.none => l10n.pixelColorModeNone,
-        PixelColorMode.palette => l10n.pixelColorModePalette,
-        PixelColorMode.explicit => l10n.pixelColorModeExplicit,
-        PixelColorMode.count => l10n.pixelColorModeCount,
-      };
+    PixelColorMode.none => l10n.pixelColorModeNone,
+    PixelColorMode.palette => l10n.pixelColorModePalette,
+    PixelColorMode.explicit => l10n.pixelColorModeExplicit,
+    PixelColorMode.count => l10n.pixelColorModeCount,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +65,10 @@ class PixelColorModeSelector extends StatelessWidget {
         DropdownButtonFormField<PixelColorMode>(
           initialValue: mode,
           isExpanded: true,
-          decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.zero),
+          decoration: const InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
           items: [
             for (final m in PixelColorMode.values)
               DropdownMenuItem(value: m, child: Text(_label(l10n, m))),

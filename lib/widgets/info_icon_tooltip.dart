@@ -37,8 +37,10 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
     final size = renderObject.size;
     final screenWidth = MediaQuery.sizeOf(context).width;
     const bubbleWidth = 240.0;
-    final left = (position.dx + size.width / 2 - bubbleWidth / 2)
-        .clamp(8.0, screenWidth - bubbleWidth - 8.0);
+    final left = (position.dx + size.width / 2 - bubbleWidth / 2).clamp(
+      8.0,
+      screenWidth - bubbleWidth - 8.0,
+    );
 
     _entry = OverlayEntry(
       builder: (ctx) => Stack(
@@ -64,7 +66,13 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                   decoration: BoxDecoration(
                     color: Theme.of(ctx).colorScheme.primary,
                     borderRadius: BorderRadius.circular(10),
-                    boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 2))],
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black38,
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +91,11 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                           ),
                         ),
                       ),
-                      Icon(Icons.close, size: 14, color: Theme.of(ctx).colorScheme.onPrimary),
+                      Icon(
+                        Icons.close,
+                        size: 14,
+                        color: Theme.of(ctx).colorScheme.onPrimary,
+                      ),
                     ],
                   ),
                 ),

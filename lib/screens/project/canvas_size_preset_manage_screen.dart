@@ -45,7 +45,7 @@ class CanvasSizePresetManageScreen extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
@@ -98,8 +98,10 @@ class _PresetTile extends StatelessWidget {
         leading: const Icon(Icons.aspect_ratio),
         title: Text(
           preset.name,
-          style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+          style: const TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          ),
         ),
         subtitle: Text('${preset.width}×${preset.height}'),
         trailing: Row(

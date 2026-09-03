@@ -42,7 +42,11 @@ Uint8List applyBrightnessToAlpha(Uint8List src, {required bool grayMode}) {
       final alphaR = (255 - r) / 255.0;
       final alphaG = (255 - g) / 255.0;
       final alphaB = (255 - b) / 255.0;
-      final resultAlpha = [alphaR, alphaG, alphaB].reduce((x, y) => x > y ? x : y);
+      final resultAlpha = [
+        alphaR,
+        alphaG,
+        alphaB,
+      ].reduce((x, y) => x > y ? x : y);
       int nr, ng, nb;
       if (resultAlpha > 0.0001) {
         nr = (255 - (255 - r) / resultAlpha).round().clamp(0, 255);

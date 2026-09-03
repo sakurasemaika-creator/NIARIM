@@ -34,7 +34,8 @@ class _CommunityFollowNotificationsScreenState
     // 画面を開いたタイミングで全て既読にする（アプリ内通知の一般的な
     // 挙動。build中にnotifyListenersを誘発しないようフレーム後に行う）。
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<CommunityService>().markAllFollowNotificationsRead();
+      if (mounted)
+        context.read<CommunityService>().markAllFollowNotificationsRead();
     });
   }
 
@@ -56,8 +57,10 @@ class _CommunityFollowNotificationsScreenState
         context,
         notifications.isEmpty
             ? Center(
-                child: Text(l10n.communityFollowNotificationsEmpty,
-                    style: TextStyle(color: scheme.onSurfaceVariant)),
+                child: Text(
+                  l10n.communityFollowNotificationsEmpty,
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
               )
             : ListView.separated(
                 itemCount: notifications.length,
@@ -67,10 +70,14 @@ class _CommunityFollowNotificationsScreenState
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: scheme.primaryContainer,
-                      child: Text(n.followerName.substring(0, 1),
-                          style: TextStyle(color: scheme.onPrimaryContainer)),
+                      child: Text(
+                        n.followerName.substring(0, 1),
+                        style: TextStyle(color: scheme.onPrimaryContainer),
+                      ),
                     ),
-                    title: Text(l10n.communityFollowNotificationBody(n.followerName)),
+                    title: Text(
+                      l10n.communityFollowNotificationBody(n.followerName),
+                    ),
                     subtitle: Text(_formatDate(n.followedAt)),
                   );
                 },

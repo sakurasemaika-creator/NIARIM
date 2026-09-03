@@ -7,6 +7,4 @@
 /// 常時必要なためここに残し、それ以外のテキストツール用フリーフォントは
 /// 初期インストール容量を抑えるため[kDownloadableFonts]（オンデマンド
 /// ダウンロード方式）へ移行した。
-const kBundledFonts = [
-  (family: 'NotoSerifJP', displayName: '源ノ明朝'),
-];
+const kBundledFonts = [(family: 'NotoSerifJP', displayName: '源ノ明朝')];

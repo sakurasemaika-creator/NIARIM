@@ -13,11 +13,7 @@ class ColorPalette {
     this.isFavorite = false,
   });
 
-  ColorPalette copyWith({
-    String? name,
-    List<int>? colors,
-    bool? isFavorite,
-  }) =>
+  ColorPalette copyWith({String? name, List<int>? colors, bool? isFavorite}) =>
       ColorPalette(
         id: id,
         name: name ?? this.name,
@@ -26,18 +22,18 @@ class ColorPalette {
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'colors': colors,
-        'isFavorite': isFavorite,
-      };
+    'id': id,
+    'name': name,
+    'colors': colors,
+    'isFavorite': isFavorite,
+  };
 
   factory ColorPalette.fromJson(Map<String, dynamic> json) => ColorPalette(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        colors: (json['colors'] as List<dynamic>? ?? const [])
-            .map((e) => e as int)
-            .toList(),
-        isFavorite: json['isFavorite'] as bool? ?? false,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    colors: (json['colors'] as List<dynamic>? ?? const [])
+        .map((e) => e as int)
+        .toList(),
+    isFavorite: json['isFavorite'] as bool? ?? false,
+  );
 }

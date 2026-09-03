@@ -35,88 +35,154 @@ class PenSettingsScreen extends StatelessWidget {
     return Scaffold(
       // topicはヘルプ画面側の項目タイトル（日本語固定）と一致させるための
       // 内部検索キーであり、UI表示文字列ではないため翻訳しない。
-      appBar: AppBar(title: Text(l10n.penSettingsTitle), actions: const [HelpButton(topic: 'ペン設定')]),
-      body: desktopCentered(context, ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _sectionLabel(context, l10n.penSettingsCurveSection),
-          Text(l10n.penSettingsCurveHint,
-              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          const SizedBox(height: 8),
-          SegmentedButton<PenPressureCurve>(
-            segments: [
-              ButtonSegment(value: PenPressureCurve.weak, label: Text(l10n.penSettingsCurveWeak)),
-              ButtonSegment(value: PenPressureCurve.normal, label: Text(l10n.penSettingsCurveNormal)),
-              ButtonSegment(value: PenPressureCurve.strong, label: Text(l10n.penSettingsCurveStrong)),
-              ButtonSegment(value: PenPressureCurve.custom, label: Text(l10n.penSettingsCurveCustom)),
-            ],
-            selected: {settings.penPressureCurve},
-            onSelectionChanged: (v) => settings.setPenPressureCurve(v.first),
-          ),
-          if (settings.penPressureCurve == PenPressureCurve.custom) ...[
-            const SizedBox(height: 8),
-            Text(l10n.penSettingsCustomGraphHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            const SizedBox(height: 8),
-            Center(
-              child: PressureCurveGraph(
-                points: settings.customPressurePoints,
-                onAddPoint: (x, y) => settings.addCustomPressurePoint(x, y),
-                onMovePoint: (i, x, y) => settings.moveCustomPressurePoint(i, x, y),
-                onRemovePoint: (i) => settings.removeCustomPressurePoint(i),
+      appBar: AppBar(
+        title: Text(l10n.penSettingsTitle),
+        actions: const [HelpButton(topic: 'ペン設定')],
+      ),
+      body: desktopCentered(
+        context,
+        ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _sectionLabel(context, l10n.penSettingsCurveSection),
+            Text(
+              l10n.penSettingsCurveHint,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
-            Center(
-              child: TextButton.icon(
-                icon: const Icon(Icons.restart_alt, size: 16),
-                label: Text(l10n.penSettingsResetCurveButton),
-                onPressed: () => settings.resetCustomPressureCurve(),
+            SegmentedButton<PenPressureCurve>(
+              segments: [
+                ButtonSegment(
+                  value: PenPressureCurve.weak,
+                  label: Text(l10n.penSettingsCurveWeak),
+                ),
+                ButtonSegment(
+                  value: PenPressureCurve.normal,
+                  label: Text(l10n.penSettingsCurveNormal),
+                ),
+                ButtonSegment(
+                  value: PenPressureCurve.strong,
+                  label: Text(l10n.penSettingsCurveStrong),
+                ),
+                ButtonSegment(
+                  value: PenPressureCurve.custom,
+                  label: Text(l10n.penSettingsCurveCustom),
+                ),
+              ],
+              selected: {settings.penPressureCurve},
+              onSelectionChanged: (v) => settings.setPenPressureCurve(v.first),
+            ),
+            if (settings.penPressureCurve == PenPressureCurve.custom) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.penSettingsCustomGraphHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: PressureCurveGraph(
+                  points: settings.customPressurePoints,
+                  onAddPoint: (x, y) => settings.addCustomPressurePoint(x, y),
+                  onMovePoint: (i, x, y) =>
+                      settings.moveCustomPressurePoint(i, x, y),
+                  onRemovePoint: (i) => settings.removeCustomPressurePoint(i),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton.icon(
+                  icon: const Icon(Icons.restart_alt, size: 16),
+                  label: Text(l10n.penSettingsResetCurveButton),
+                  onPressed: () => settings.resetCustomPressureCurve(),
+                ),
+              ),
+            ],
+            const SizedBox(height: 4),
+            Text(
+              l10n.penSettingsPerBrushNote,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const PressureCurveTryDraw(),
+            const SizedBox(height: 20),
+            _sectionLabel(context, l10n.penSettingsButtonSection),
+            Card(
+              elevation: 1,
+              shadowColor: Colors.black.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: Column(
+                children: [
+                  _buttonItem(
+                    context,
+                    l10n.penSettingsButton1,
+                    settings.penButton1,
+                    (a) => settings.setPenButton(1, a),
+                  ),
+                  const Divider(height: 1),
+                  _buttonItem(
+                    context,
+                    l10n.penSettingsButton2,
+                    settings.penButton2,
+                    (a) => settings.setPenButton(2, a),
+                  ),
+                ],
               ),
             ),
           ],
-          const SizedBox(height: 4),
-          Text(l10n.penSettingsPerBrushNote,
-              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          const SizedBox(height: 16),
-          const PressureCurveTryDraw(),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.penSettingsButtonSection),
-          Card(
-            elevation: 1,
-            shadowColor: Colors.black.withValues(alpha: 0.15),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: Column(
-              children: [
-                _buttonItem(context, l10n.penSettingsButton1, settings.penButton1, (a) => settings.setPenButton(1, a)),
-                const Divider(height: 1),
-                _buttonItem(context, l10n.penSettingsButton2, settings.penButton2, (a) => settings.setPenButton(2, a)),
-              ],
-            ),
-          ),
-        ],
-      )),
+        ),
+      ),
     );
   }
 
   Widget _sectionLabel(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(text,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-              color: Theme.of(context).colorScheme.onSurfaceVariant)),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 
-  Widget _buttonItem(BuildContext context, String title, GestureAction current, ValueChanged<GestureAction> onChanged) {
+  Widget _buttonItem(
+    BuildContext context,
+    String title,
+    GestureAction current,
+    ValueChanged<GestureAction> onChanged,
+  ) {
     return ListTile(
       title: Text(title),
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        Text(_actionLabel(context, current), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
-        Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.primary),
-      ]),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            _actionLabel(context, current),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ],
+      ),
       onTap: () => showModalBottomSheet(
         context: context,
         builder: (ctx) => SafeArea(
@@ -124,13 +190,20 @@ class PenSettingsScreen extends StatelessWidget {
           // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
           child: RadioGroup<GestureAction>(
             groupValue: current,
-            onChanged: (v) { if (v != null) onChanged(v); Navigator.pop(ctx); },
+            onChanged: (v) {
+              if (v != null) onChanged(v);
+              Navigator.pop(ctx);
+            },
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: _penButtonActions.map((action) => RadioListTile<GestureAction>(
-                title: Text(_actionLabel(ctx, action)),
-                value: action,
-              )).toList(),
+              children: _penButtonActions
+                  .map(
+                    (action) => RadioListTile<GestureAction>(
+                      title: Text(_actionLabel(ctx, action)),
+                      value: action,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         ),

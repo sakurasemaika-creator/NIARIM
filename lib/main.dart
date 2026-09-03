@@ -39,17 +39,16 @@ void main() async {
 /// ならないため、ここで明示的に登録する。
 void _registerBundledFontLicenses() {
   LicenseRegistry.addLicense(() async* {
-    final text = await rootBundle.loadString('assets/licenses/FONT_LICENSES.txt');
-    yield LicenseEntryWithLineBreaks(
-      const [
-        'HakkouMincho',
-        'Kuramubon',
-        'Noto Serif JP',
-        'Dela Gothic One',
-        'Noto Serif KR / SC',
-        'Noto Sans KR / SC',
-      ],
-      text,
+    final text = await rootBundle.loadString(
+      'assets/licenses/FONT_LICENSES.txt',
     );
+    yield LicenseEntryWithLineBreaks(const [
+      'HakkouMincho',
+      'Kuramubon',
+      'Noto Serif JP',
+      'Dela Gothic One',
+      'Noto Serif KR / SC',
+      'Noto Sans KR / SC',
+    ], text);
   });
 }

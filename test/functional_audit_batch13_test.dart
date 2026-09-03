@@ -26,18 +26,40 @@ void main() {
     final aMid = _pixel(sparse, 260, 130, 50)[3];
     final aLate = _pixel(sparse, 260, 205, 50)[3];
 
-    expect(sEarly, greaterThan(sMid), reason: 'sparse input must still taper progressively');
+    expect(
+      sEarly,
+      greaterThan(sMid),
+      reason: 'sparse input must still taper progressively',
+    );
     expect(sMid, greaterThan(sLate));
     expect(aEarly, greaterThan(aMid));
     expect(aMid, greaterThan(aLate));
 
     // 同じ幾何パスなら、OSから届くmoveイベント数の違いで見た目が大きく変わらないこと。
-    expect((sEarly - _verticalSpan(dense, 260, 100, 55, threshold: 8)).abs(), lessThanOrEqualTo(2));
-    expect((sMid - _verticalSpan(dense, 260, 100, 130, threshold: 8)).abs(), lessThanOrEqualTo(2));
-    expect((sLate - _verticalSpan(dense, 260, 100, 205, threshold: 8)).abs(), lessThanOrEqualTo(2));
-    expect((aEarly - _pixel(dense, 260, 55, 50)[3]).abs(), lessThanOrEqualTo(12));
-    expect((aMid - _pixel(dense, 260, 130, 50)[3]).abs(), lessThanOrEqualTo(12));
-    expect((aLate - _pixel(dense, 260, 205, 50)[3]).abs(), lessThanOrEqualTo(12));
+    expect(
+      (sEarly - _verticalSpan(dense, 260, 100, 55, threshold: 8)).abs(),
+      lessThanOrEqualTo(2),
+    );
+    expect(
+      (sMid - _verticalSpan(dense, 260, 100, 130, threshold: 8)).abs(),
+      lessThanOrEqualTo(2),
+    );
+    expect(
+      (sLate - _verticalSpan(dense, 260, 100, 205, threshold: 8)).abs(),
+      lessThanOrEqualTo(2),
+    );
+    expect(
+      (aEarly - _pixel(dense, 260, 55, 50)[3]).abs(),
+      lessThanOrEqualTo(12),
+    );
+    expect(
+      (aMid - _pixel(dense, 260, 130, 50)[3]).abs(),
+      lessThanOrEqualTo(12),
+    );
+    expect(
+      (aLate - _pixel(dense, 260, 205, 50)[3]).abs(),
+      lessThanOrEqualTo(12),
+    );
   });
 
   test('入力イベント密度：ストローク減衰も2点だけの長い線で距離に沿って徐々に薄くなる', () async {
@@ -54,7 +76,11 @@ void main() {
     final early = _pixel(d, 260, 55, 45)[3];
     final mid = _pixel(d, 260, 130, 45)[3];
     final late = _pixel(d, 260, 205, 45)[3];
-    expect(early, greaterThan(mid), reason: 'decay must use traveled distance within a long segment');
+    expect(
+      early,
+      greaterThan(mid),
+      reason: 'decay must use traveled distance within a long segment',
+    );
     expect(mid, greaterThan(late));
     image.dispose();
     tm.dispose();
@@ -67,7 +93,11 @@ Future<Uint8List> _drawFade({required int segments}) async {
     ..currentBrush = _brush(
       size: 30,
       fadeMode: FadeMode.custom,
-      fadeCustom: const FadeCustomSettings(startValue: 100, endValue: 20, distancePx: 220),
+      fadeCustom: const FadeCustomSettings(
+        startValue: 100,
+        endValue: 20,
+        distancePx: 220,
+      ),
     )
     ..currentColor = const ui.Color(0xFF2040C0);
   const x0 = 20.0, x1 = 240.0;
@@ -90,24 +120,67 @@ Brush _brush({
   FadeCustomSettings? fadeCustom,
   bool strokeDecay = false,
 }) => Brush(
-  id: 'audit13', name: 'audit13', size: size, opacity: 100, spacing: 1,
-  blurRadius: 0, stabilization: false, stabilizationStrength: 0,
-  pixelMode: false, pressureMode: PressureMode.off, pressureStrength: 100,
-  fadeMode: fadeMode, fadeCustom: fadeCustom, strokeDecay: strokeDecay,
-  mixingMode: BrushMixingMode.off, mixingRate: 0,
+  id: 'audit13',
+  name: 'audit13',
+  size: size,
+  opacity: 100,
+  spacing: 1,
+  blurRadius: 0,
+  stabilization: false,
+  stabilizationStrength: 0,
+  pixelMode: false,
+  pressureMode: PressureMode.off,
+  pressureStrength: 100,
+  fadeMode: fadeMode,
+  fadeCustom: fadeCustom,
+  strokeDecay: strokeDecay,
+  mixingMode: BrushMixingMode.off,
+  mixingRate: 0,
 );
 
-int _verticalSpan(Uint8List d,int width,int height,int x,{required int threshold}){
-  var minY=height,maxY=-1;
-  for(var y=0;y<height;y++) if(d[(y*width+x)*4+3]>=threshold){minY=math.min(minY,y);maxY=math.max(maxY,y);}
-  return maxY<minY?0:maxY-minY+1;
+int _verticalSpan(
+  Uint8List d,
+  int width,
+  int height,
+  int x, {
+  required int threshold,
+}) {
+  var minY = height, maxY = -1;
+  for (var y = 0; y < height; y++)
+    if (d[(y * width + x) * 4 + 3] >= threshold) {
+      minY = math.min(minY, y);
+      maxY = math.max(maxY, y);
+    }
+  return maxY < minY ? 0 : maxY - minY + 1;
 }
 
-List<int> _pixel(List<int> d,int width,int x,int y){final i=(y*width+x)*4;return[d[i],d[i+1],d[i+2],d[i+3]];}
-Future<Uint8List> _rgba(ui.Image i)async=>(await i.toByteData(format:ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
-Future<void> _save(ui.Image i,String p)async{final d=await i.toByteData(format:ui.ImageByteFormat.png);await File(p).writeAsBytes(d!.buffer.asUint8List());}
-Future<void> _saveRgba(Uint8List rgba,int w,int h,String p)async{
-  final b=await ui.ImmutableBuffer.fromUint8List(rgba);final desc=ui.ImageDescriptor.raw(b,width:w,height:h,pixelFormat:ui.PixelFormat.rgba8888);
-  final c=await desc.instantiateCodec();final f=await c.getNextFrame();final png=await f.image.toByteData(format:ui.ImageByteFormat.png);
-  await File(p).writeAsBytes(png!.buffer.asUint8List());f.image.dispose();c.dispose();desc.dispose();b.dispose();
+List<int> _pixel(List<int> d, int width, int x, int y) {
+  final i = (y * width + x) * 4;
+  return [d[i], d[i + 1], d[i + 2], d[i + 3]];
+}
+
+Future<Uint8List> _rgba(ui.Image i) async => (await i.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
+Future<void> _save(ui.Image i, String p) async {
+  final d = await i.toByteData(format: ui.ImageByteFormat.png);
+  await File(p).writeAsBytes(d!.buffer.asUint8List());
+}
+
+Future<void> _saveRgba(Uint8List rgba, int w, int h, String p) async {
+  final b = await ui.ImmutableBuffer.fromUint8List(rgba);
+  final desc = ui.ImageDescriptor.raw(
+    b,
+    width: w,
+    height: h,
+    pixelFormat: ui.PixelFormat.rgba8888,
+  );
+  final c = await desc.instantiateCodec();
+  final f = await c.getNextFrame();
+  final png = await f.image.toByteData(format: ui.ImageByteFormat.png);
+  await File(p).writeAsBytes(png!.buffer.asUint8List());
+  f.image.dispose();
+  c.dispose();
+  desc.dispose();
+  b.dispose();
 }

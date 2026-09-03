@@ -96,7 +96,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
-          children: const [_PolicyBody(), SizedBox(height: 16), _PrivacyOptionsButton()],
+          children: const [
+            _PolicyBody(),
+            SizedBox(height: 16),
+            _PrivacyOptionsButton(),
+          ],
         ),
       ),
     );
@@ -160,8 +164,15 @@ class _PolicyBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(body, style: const TextStyle(fontSize: 12, height: 1.5)),
               ],

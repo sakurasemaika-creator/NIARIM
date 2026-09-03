@@ -38,19 +38,27 @@ Uint8List _source() {
 
       // Three saturated bars for channel/color effects.
       if (x >= 172 && x < 220 && y >= 56 && y < 76) {
-        d[i] = 240; d[i + 1] = 38; d[i + 2] = 44;
+        d[i] = 240;
+        d[i + 1] = 38;
+        d[i + 2] = 44;
       }
       if (x >= 172 && x < 220 && y >= 80 && y < 100) {
-        d[i] = 34; d[i + 1] = 220; d[i + 2] = 72;
+        d[i] = 34;
+        d[i + 1] = 220;
+        d[i + 2] = 72;
       }
       if (x >= 172 && x < 220 && y >= 104 && y < 124) {
-        d[i] = 40; d[i + 1] = 82; d[i + 2] = 238;
+        d[i] = 40;
+        d[i + 1] = 82;
+        d[i + 2] = 238;
       }
 
       // Fine diagonal light line: distortion and chromatic aberration reference.
       final lineY = 150 - ((x - 30) * 90 ~/ 260);
       if (x >= 30 && x < 290 && (y - lineY).abs() <= 1) {
-        d[i] = 246; d[i + 1] = 238; d[i + 2] = 170;
+        d[i] = 246;
+        d[i + 1] = 238;
+        d[i + 2] = 170;
       }
     }
   }
@@ -70,9 +78,13 @@ Uint8List _outlineSource() {
       if (!inMain && !inCircle) continue;
       final i = (y * _w + x) * 4;
       if (inMain) {
-        d[i] = 238; d[i + 1] = 126; d[i + 2] = 48;
+        d[i] = 238;
+        d[i + 1] = 126;
+        d[i + 2] = 48;
       } else {
-        d[i] = 58; d[i + 1] = 184; d[i + 2] = 236;
+        d[i] = 58;
+        d[i + 1] = 184;
+        d[i + 2] = 236;
       }
       d[i + 3] = 255;
     }
@@ -110,55 +122,55 @@ Future<void> _save(Uint8List rgba, String path) async {
 }
 
 FilterDef _def(FilterKind kind) => FilterDef(
-      id: 'visual_${kind.name}',
-      name: kind.name,
-      kind: kind,
-      strength: switch (kind) {
-        FilterKind.gaussianBlur => 7,
-        FilterKind.lensBlur => 8,
-        FilterKind.unsharpMask => 4,
-        FilterKind.pixelate => 12,
-        FilterKind.lensDistortion => 58,
-        FilterKind.fisheye => 55,
-        FilterKind.chromaticAberration => 55,
-        FilterKind.noise => 35,
-        FilterKind.vignette => 75,
-        FilterKind.auroraHologram => 82,
-        _ => 62,
-      },
-      colorLevels: 5,
-      edgeStrength: 1.35,
-      inputBlack: 28,
-      inputWhite: 222,
-      outputBlack: 8,
-      outputWhite: 248,
-      toneCurvePreset: ToneCurvePreset.highContrast,
-      outlineColor: 0xFFFF2D55,
-      outlineWidth: 6,
-      vignetteColor: 0xFF07101E,
-      caSaturation: 42,
-      caBrightness: 15,
-      caContrast: 28,
-      monochromeColor: 0xFF72B9FF,
-      thresholdValue: 126,
-      lensCenterOffsetX: 8,
-      lensCenterOffsetY: -4,
-      pixelColorMode: PixelColorMode.explicit,
-      pixelExplicitColors: const [
-        0xFF111827,
-        0xFFF8FAFC,
-        0xFFFF4D5A,
-        0xFF18C98B,
-        0xFF4E7BFF,
-      ],
-      hologramBrightness: 12,
-      hologramSaturation: 28,
-      hologramPreset: AuroraHologramPreset.aurora,
-      bgBlendColor: 0xFF78A9C8,
-      bgBlendDirection: 35,
-      bgBlendLength: 14,
-      bgBlendBlur: 7,
-    );
+  id: 'visual_${kind.name}',
+  name: kind.name,
+  kind: kind,
+  strength: switch (kind) {
+    FilterKind.gaussianBlur => 7,
+    FilterKind.lensBlur => 8,
+    FilterKind.unsharpMask => 4,
+    FilterKind.pixelate => 12,
+    FilterKind.lensDistortion => 58,
+    FilterKind.fisheye => 55,
+    FilterKind.chromaticAberration => 55,
+    FilterKind.noise => 35,
+    FilterKind.vignette => 75,
+    FilterKind.auroraHologram => 82,
+    _ => 62,
+  },
+  colorLevels: 5,
+  edgeStrength: 1.35,
+  inputBlack: 28,
+  inputWhite: 222,
+  outputBlack: 8,
+  outputWhite: 248,
+  toneCurvePreset: ToneCurvePreset.highContrast,
+  outlineColor: 0xFFFF2D55,
+  outlineWidth: 6,
+  vignetteColor: 0xFF07101E,
+  caSaturation: 42,
+  caBrightness: 15,
+  caContrast: 28,
+  monochromeColor: 0xFF72B9FF,
+  thresholdValue: 126,
+  lensCenterOffsetX: 8,
+  lensCenterOffsetY: -4,
+  pixelColorMode: PixelColorMode.explicit,
+  pixelExplicitColors: const [
+    0xFF111827,
+    0xFFF8FAFC,
+    0xFFFF4D5A,
+    0xFF18C98B,
+    0xFF4E7BFF,
+  ],
+  hologramBrightness: 12,
+  hologramSaturation: 28,
+  hologramPreset: AuroraHologramPreset.aurora,
+  bgBlendColor: 0xFF78A9C8,
+  bgBlendDirection: 35,
+  bgBlendLength: 14,
+  bgBlendBlur: 7,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -176,7 +188,13 @@ void main() {
     for (var i = 0; i < kinds.length; i++) {
       final kind = kinds[i];
       final input = kind == FilterKind.outline ? outlineSource : source;
-      final rendered = applyDrawFilterInIsolate((input, _w, _h, _def(kind), mask));
+      final rendered = applyDrawFilterInIsolate((
+        input,
+        _w,
+        _h,
+        _def(kind),
+        mask,
+      ));
       expect(rendered.length, input.length, reason: '${kind.name}: RGBA size');
 
       // This is only a guard. Visual acceptance is done from the emitted PNG itself.
@@ -189,10 +207,21 @@ void main() {
           changed++;
         }
       }
-      expect(changed, greaterThan(40), reason: '${kind.name}: visible region must exist');
-      await _save(rendered, '${out.path}/${(i + 1).toString().padLeft(2, '0')}_${kind.name}.png');
+      expect(
+        changed,
+        greaterThan(40),
+        reason: '${kind.name}: visible region must exist',
+      );
+      await _save(
+        rendered,
+        '${out.path}/${(i + 1).toString().padLeft(2, '0')}_${kind.name}.png',
+      );
     }
 
-    expect(kinds.length, 21, reason: '新しいFilterKind追加時はVisual Audit対象を自動的に増やすこと');
+    expect(
+      kinds.length,
+      21,
+      reason: '新しいFilterKind追加時はVisual Audit対象を自動的に増やすこと',
+    );
   }, timeout: const Timeout(Duration(minutes: 3)));
 }

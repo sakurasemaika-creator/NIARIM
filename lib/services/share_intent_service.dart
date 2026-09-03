@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 /// .niashare のOSレベル受信（他アプリ/ファイラーからのタップで開く）を扱うサービス。
 /// ネイティブ側（MainActivity.kt）とMethodChannelで連携する。
 class ShareIntentService {
-  static const MethodChannel _channel =
-      MethodChannel('com.niarim.niarim/share_intent');
+  static const MethodChannel _channel = MethodChannel(
+    'com.niarim.niarim/share_intent',
+  );
 
-  final StreamController<String> _controller = StreamController<String>.broadcast();
+  final StreamController<String> _controller =
+      StreamController<String>.broadcast();
 
   /// アプリ起動中（ウォームスタート）に共有ファイルが開かれた際に発火する。
   Stream<String> get onFileReceived => _controller.stream;

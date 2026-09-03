@@ -53,14 +53,14 @@ class _TransferScreenState extends State<TransferScreen> {
   bool _isBusy = false;
 
   String _itemLabel(AppLocalizations l10n, String key) => switch (key) {
-        '設定' => l10n.transferItemSettings,
-        '素材' => l10n.transferItemMaterials,
-        'ブラシ' => l10n.transferItemBrush,
-        'プリセット' => l10n.transferItemPresets,
-        'UIテーマ' => l10n.transferItemTheme,
-        'パレット' => l10n.transferItemPalette,
-        _ => key,
-      };
+    '設定' => l10n.transferItemSettings,
+    '素材' => l10n.transferItemMaterials,
+    'ブラシ' => l10n.transferItemBrush,
+    'プリセット' => l10n.transferItemPresets,
+    'UIテーマ' => l10n.transferItemTheme,
+    'パレット' => l10n.transferItemPalette,
+    _ => key,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +100,8 @@ class _TransferScreenState extends State<TransferScreen> {
                     child: Column(
                       children: [
                         for (final key in _items.keys) ...[
-                          if (key != _items.keys.first) const Divider(height: 1),
+                          if (key != _items.keys.first)
+                            const Divider(height: 1),
                           CheckboxListTile(
                             title: Text(_itemLabel(l10n, key)),
                             value: _items[key],
@@ -138,13 +139,17 @@ class _TransferScreenState extends State<TransferScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          color: Theme.of(context).colorScheme.surfaceContainerLow,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerLow,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Text(
                               l10n.transferProjectsEmpty,
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -161,7 +166,9 @@ class _TransferScreenState extends State<TransferScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        color: Theme.of(context).colorScheme.surfaceContainerLow,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
                         child: Column(
                           children: [
                             for (final p in projects) ...[
@@ -172,12 +179,12 @@ class _TransferScreenState extends State<TransferScreen> {
                                 onChanged: _isBusy
                                     ? null
                                     : (v) => setState(() {
-                                          if (v == true) {
-                                            _selectedProjectIds.add(p.id);
-                                          } else {
-                                            _selectedProjectIds.remove(p.id);
-                                          }
-                                        }),
+                                        if (v == true) {
+                                          _selectedProjectIds.add(p.id);
+                                        } else {
+                                          _selectedProjectIds.remove(p.id);
+                                        }
+                                      }),
                               ),
                             ],
                           ],
@@ -207,17 +214,20 @@ class _TransferScreenState extends State<TransferScreen> {
                   TextButton(
                     onPressed: _isBusy
                         ? null
-                        : () => setState(() => _items.updateAll((_, _) => true)),
+                        : () =>
+                              setState(() => _items.updateAll((_, _) => true)),
                     child: Text(l10n.homeSelectionAllSelect),
                   ),
                   TextButton(
                     onPressed: _isBusy
                         ? null
-                        : () => setState(() => _items.updateAll((_, _) => false)),
+                        : () =>
+                              setState(() => _items.updateAll((_, _) => false)),
                     child: Text(l10n.homeSelectionAllDeselect),
                   ),
                   FilledButton.icon(
-                    onPressed: (!_isBusy &&
+                    onPressed:
+                        (!_isBusy &&
                             (_items.values.any((v) => v) ||
                                 _selectedProjectIds.isNotEmpty))
                         ? _export
@@ -255,7 +265,9 @@ class _TransferScreenState extends State<TransferScreen> {
     final fontService = context.read<FontService>();
     final files = <String, Uint8List>{};
     for (final id in _selectedProjectIds) {
-      final project = projectService.projects.where((p) => p.id == id).firstOrNull;
+      final project = projectService.projects
+          .where((p) => p.id == id)
+          .firstOrNull;
       if (project == null) continue;
       final scenes = projectService.scenesOf(id);
       final tileManager = projectService.tileManagerOf(id);
@@ -339,7 +351,9 @@ class _TransferScreenState extends State<TransferScreen> {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.transferExportFailedSnackbar(e.toString()))),
+        SnackBar(
+          content: Text(l10n.transferExportFailedSnackbar(e.toString())),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isBusy = false);
@@ -403,7 +417,9 @@ class _TransferScreenState extends State<TransferScreen> {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.transferImportFailedSnackbar(e.toString()))),
+        SnackBar(
+          content: Text(l10n.transferImportFailedSnackbar(e.toString())),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isBusy = false);

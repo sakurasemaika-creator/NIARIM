@@ -39,7 +39,9 @@ class _TonePanelState extends State<TonePanel> {
     final toneService = context.watch<ToneService>();
     final allTones = toneService.tones;
     final folders = toneService.folders;
-    var tones = _showFavoritesOnly ? allTones.where((t) => t.isFavorite) : allTones.where((_) => true);
+    var tones = _showFavoritesOnly
+        ? allTones.where((t) => t.isFavorite)
+        : allTones.where((_) => true);
     if (_folderFilter == '') {
       tones = tones.where((t) => t.folderId == null);
     } else if (_folderFilter != null && _folderFilter != _allFolders) {
@@ -53,7 +55,9 @@ class _TonePanelState extends State<TonePanel> {
     final current = toneService.currentTone;
     // 絞込中（お気に入りのみ・検索・フォルダ指定）は表示順と実際の並び順が
     // 一致しないため、並べ替えは絞込なしのときだけ有効にする。
-    final isFiltering = _showFavoritesOnly || query.isNotEmpty ||
+    final isFiltering =
+        _showFavoritesOnly ||
+        query.isNotEmpty ||
         (_folderFilter != null && _folderFilter != _allFolders);
 
     return Card(
@@ -69,20 +73,37 @@ class _TonePanelState extends State<TonePanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.toneTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                  Text(
+                    l10n.toneTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
-                        color: _showFavoritesOnly ? Colors.amber : null),
-                    onPressed: () => setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+                    icon: Icon(
+                      _showFavoritesOnly ? Icons.star : Icons.star_outline,
+                      size: 16,
+                      color: _showFavoritesOnly ? Colors.amber : null,
+                    ),
+                    onPressed: () => setState(
+                      () => _showFavoritesOnly = !_showFavoritesOnly,
+                    ),
                     tooltip: l10n.creativePanelFavoritesOnlyTooltip,
                   ),
                   IconButton(
-                    icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 16),
+                    icon: Icon(
+                      _showSearch ? Icons.search_off : Icons.search,
+                      size: 16,
+                    ),
                     onPressed: () => setState(() {
                       _showSearch = !_showSearch;
-                      if (!_showSearch) { _searchQuery = ''; _searchController.clear(); }
+                      if (!_showSearch) {
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }
                     }),
                     tooltip: l10n.creativePanelSearchTooltip,
                   ),
@@ -97,20 +118,42 @@ class _TonePanelState extends State<TonePanel> {
                   children: [
                     TextButton.icon(
                       icon: const Icon(Icons.folder_outlined, size: 15),
-                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-                      onPressed: () => _openFolderManagement(context, toneService),
+                      label: Text(
+                        l10n.creativePanelFolderButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
+                      onPressed: () =>
+                          _openFolderManagement(context, toneService),
                     ),
                     TextButton.icon(
-                      icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                      icon: const Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: 15,
+                      ),
+                      label: Text(
+                        l10n.creativePanelCreateButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                       onPressed: () => _createFromImage(context, toneService),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.file_upload_outlined, size: 15),
-                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                      label: Text(
+                        l10n.creativePanelImportButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                       onPressed: () => _importTone(context, toneService),
                     ),
                   ],
@@ -124,11 +167,23 @@ class _TonePanelState extends State<TonePanel> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _folderChip(l10n.creativePanelFolderAllChip, _folderFilter == null || _folderFilter == _allFolders,
-                            () => setState(() => _folderFilter = null)),
-                        _folderChip(l10n.folderNone, _folderFilter == '', () => setState(() => _folderFilter = '')),
-                        ...folders.map((f) => _folderChip(
-                            f.name, _folderFilter == f.id, () => setState(() => _folderFilter = f.id))),
+                        _folderChip(
+                          l10n.creativePanelFolderAllChip,
+                          _folderFilter == null || _folderFilter == _allFolders,
+                          () => setState(() => _folderFilter = null),
+                        ),
+                        _folderChip(
+                          l10n.folderNone,
+                          _folderFilter == '',
+                          () => setState(() => _folderFilter = ''),
+                        ),
+                        ...folders.map(
+                          (f) => _folderChip(
+                            f.name,
+                            _folderFilter == f.id,
+                            () => setState(() => _folderFilter = f.id),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -141,14 +196,25 @@ class _TonePanelState extends State<TonePanel> {
                     autofocus: true,
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
-                        isDense: true, hintText: l10n.toneSearchHint, prefixIcon: const Icon(Icons.search, size: 16)),
+                      isDense: true,
+                      hintText: l10n.toneSearchHint,
+                      prefixIcon: const Icon(Icons.search, size: 16),
+                    ),
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
                 ),
               const Divider(),
               Expanded(
                 child: toneList.isEmpty
-                    ? Center(child: Text(l10n.toneEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
+                    ? Center(
+                        child: Text(
+                          l10n.toneEmpty,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      )
                     : ReorderableListView.builder(
                         // ドラッグハンドルは行末に明示アイコンとして置く
                         // （既定のドラッグハンドルだと、行全体の長押しで開く
@@ -157,7 +223,8 @@ class _TonePanelState extends State<TonePanel> {
                         buildDefaultDragHandles: false,
                         itemCount: toneList.length,
                         onReorder: (oldIndex, newIndex) {
-                          if (!isFiltering) toneService.reorderTone(oldIndex, newIndex);
+                          if (!isFiltering)
+                            toneService.reorderTone(oldIndex, newIndex);
                         },
                         itemBuilder: (context, index) {
                           final tone = toneList[index];
@@ -169,28 +236,71 @@ class _TonePanelState extends State<TonePanel> {
                             key: ValueKey(tone.id),
                             dense: true,
                             selected: isSelected,
-                            leading: Icon(Icons.texture, size: 16,
-                                color: isSelected ? Theme.of(context).colorScheme.primary : null),
-                            title: Text(tone.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                            leading: Icon(
+                              Icons.texture,
+                              size: 16,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                            title: Text(
+                              tone.name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
+                            ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 GestureDetector(
-                                  onTap: () => toneService.toggleFavorite(tone.id),
-                                  child: Icon(tone.isFavorite ? Icons.star : Icons.star_outline,
-                                      size: 14, color: tone.isFavorite ? Colors.amber : Colors.grey),
+                                  onTap: () =>
+                                      toneService.toggleFavorite(tone.id),
+                                  child: Icon(
+                                    tone.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_outline,
+                                    size: 14,
+                                    color: tone.isFavorite
+                                        ? Colors.amber
+                                        : Colors.grey,
+                                  ),
                                 ),
                                 PopupMenuButton<String>(
                                   icon: const Icon(Icons.more_vert, size: 14),
-                                  onSelected: (action) => _handleAction(context, action, tone),
+                                  onSelected: (action) =>
+                                      _handleAction(context, action, tone),
                                   itemBuilder: (_) => [
-                                    if (!builtIn) PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
-                                    PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
-                                    PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
-                                    PopupMenuItem(value: 'export', child: Text(l10n.transferExport)),
                                     if (!builtIn)
-                                      PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text(
+                                          l10n.creativePanelEditAction,
+                                        ),
+                                      ),
+                                    PopupMenuItem(
+                                      value: 'duplicate',
+                                      child: Text(l10n.themeDuplicateAction),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'move',
+                                      child: Text(l10n.folderMoveToTitle),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'export',
+                                      child: Text(l10n.transferExport),
+                                    ),
+                                    if (!builtIn)
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(
+                                          l10n.commonDelete,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                                 if (!isFiltering)
@@ -198,13 +308,19 @@ class _TonePanelState extends State<TonePanel> {
                                     index: index,
                                     child: const Padding(
                                       padding: EdgeInsets.only(left: 2),
-                                      child: Icon(Icons.drag_indicator, size: 16, color: Colors.grey),
+                                      child: Icon(
+                                        Icons.drag_indicator,
+                                        size: 16,
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                   ),
                               ],
                             ),
                             onTap: () => toneService.selectTone(tone.id),
-                            onLongPress: builtIn ? null : () => _showToneSettings(context, tone),
+                            onLongPress: builtIn
+                                ? null
+                                : () => _showToneSettings(context, tone),
                           );
                         },
                       ),
@@ -216,11 +332,18 @@ class _TonePanelState extends State<TonePanel> {
     );
   }
 
-  Widget _folderChip(String label, bool selected, VoidCallback onTap) => Padding(
+  Widget _folderChip(String label, bool selected, VoidCallback onTap) =>
+      Padding(
         padding: const EdgeInsets.only(right: 4),
         child: ChoiceChip(
-          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+          label: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
           selected: selected,
           onSelected: (_) => onTap(),
           visualDensity: VisualDensity.compact,
@@ -237,7 +360,9 @@ class _TonePanelState extends State<TonePanel> {
       case 'move':
         showMoveToCreativeFolderSheet(
           context,
-          folders: service.folders.map((f) => (id: f.id, name: f.name)).toList(),
+          folders: service.folders
+              .map((f) => (id: f.id, name: f.name))
+              .toList(),
           onSelect: (folderId) => service.moveToFolder(tone.id, folderId),
         );
       case 'export':
@@ -251,8 +376,9 @@ class _TonePanelState extends State<TonePanel> {
   void _deleteTone(BuildContext context, ToneService service, Tone tone) {
     if (tone.isFavorite) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
     service.deleteTone(tone.id);
@@ -268,38 +394,62 @@ class _TonePanelState extends State<TonePanel> {
   void _openFolderManagement(BuildContext context, ToneService service) {
     showFolderManagementSheet(
       context,
-      getFolders: () => service.folders.map((f) => (id: f.id, name: f.name, isFavorite: f.isFavorite)).toList(),
+      getFolders: () => service.folders
+          .map((f) => (id: f.id, name: f.name, isFavorite: f.isFavorite))
+          .toList(),
       onCreate: (name) => service.createFolder(name),
       onRename: (id, name) => service.renameFolder(id, name),
       onToggleFavorite: (id) => service.toggleFolderFavorite(id),
-      onReorder: (oldIndex, newIndex) => service.reorderFolder(oldIndex, newIndex),
+      onReorder: (oldIndex, newIndex) =>
+          service.reorderFolder(oldIndex, newIndex),
       onDelete: (id) => service.deleteFolder(id),
     );
   }
 
-  Future<void> _createFromImage(BuildContext context, ToneService service) async {
+  Future<void> _createFromImage(
+    BuildContext context,
+    ToneService service,
+  ) async {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (result == null ||
+        result.files.isEmpty ||
+        result.files.first.path == null)
+      return;
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    final name = await promptCreativeAssetName(context, title: l10n.toneCreateDialogTitle);
+    final name = await promptCreativeAssetName(
+      context,
+      title: l10n.toneCreateDialogTitle,
+    );
     if (name == null) return;
     await service.createToneFromImage(result.files.first.path!, name: name);
   }
 
   Future<void> _importTone(BuildContext context, ToneService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['niatone']);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['niatone'],
+    );
+    if (result == null ||
+        result.files.isEmpty ||
+        result.files.first.path == null)
+      return;
     try {
       await service.importToneFile(result.files.first.path!);
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.toneImportFailedSnackbar(e.toString()))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.toneImportFailedSnackbar(e.toString()))),
+      );
     }
   }
 
-  Future<void> _exportTone(BuildContext context, ToneService service, Tone tone) async {
+  Future<void> _exportTone(
+    BuildContext context,
+    ToneService service,
+    Tone tone,
+  ) async {
     try {
       final file = await service.exportTone(tone.id);
       if (!context.mounted) return;
@@ -307,7 +457,9 @@ class _TonePanelState extends State<TonePanel> {
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.toneExportFailedSnackbar(e.toString()))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.toneExportFailedSnackbar(e.toString()))),
+      );
     }
   }
 }
@@ -346,23 +498,41 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.toneEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+            Text(
+              l10n.toneEditTitle,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
+              decoration: InputDecoration(
+                labelText: l10n.creativeAssetNameLabel,
+                border: const OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
               icon: const Icon(Icons.image_outlined, size: 16),
               label: Text(l10n.toneChangeTextureButton),
               onPressed: () async {
-                final result = await FilePicker.platform.pickFiles(type: FileType.image);
-                if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.image,
+                );
+                if (result == null ||
+                    result.files.isEmpty ||
+                    result.files.first.path == null)
+                  return;
                 if (!context.mounted) return;
                 final service = context.read<ToneService>();
-                await service.createToneFromImage(result.files.first.path!, name: _nameController.text);
+                await service.createToneFromImage(
+                  result.files.first.path!,
+                  name: _nameController.text,
+                );
                 service.deleteTone(widget.tone.id);
                 if (context.mounted) Navigator.pop(context);
               },
@@ -370,7 +540,9 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () {
-                context.read<ToneService>().updateTone(widget.tone.copyWith(name: _nameController.text));
+                context.read<ToneService>().updateTone(
+                  widget.tone.copyWith(name: _nameController.text),
+                );
                 Navigator.pop(context);
               },
               child: Text(l10n.commonSave),

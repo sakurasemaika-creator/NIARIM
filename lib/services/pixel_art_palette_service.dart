@@ -27,13 +27,19 @@ class PixelArtPaletteService extends ChangeNotifier {
     final raw = prefs.getStringList(_prefsKey) ?? const [];
     _palettes
       ..clear()
-      ..addAll(raw.map((s) => ColorPalette.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      ..addAll(
+        raw.map(
+          (s) => ColorPalette.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
-        _prefsKey, _palettes.map((p) => jsonEncode(p.toJson())).toList());
+      _prefsKey,
+      _palettes.map((p) => jsonEncode(p.toJson())).toList(),
+    );
   }
 
   /// 新規パレットを追加する。[name]は事前に空でないことを呼び出し側
@@ -50,7 +56,11 @@ class PixelArtPaletteService extends ChangeNotifier {
     return palette;
   }
 
-  Future<void> updatePalette(String id, {String? name, List<int>? colors}) async {
+  Future<void> updatePalette(
+    String id, {
+    String? name,
+    List<int>? colors,
+  }) async {
     final idx = _palettes.indexWhere((p) => p.id == id);
     if (idx < 0) return;
     _palettes[idx] = _palettes[idx].copyWith(name: name, colors: colors);
@@ -88,7 +98,9 @@ class PixelArtPaletteService extends ChangeNotifier {
     final decoded = jsonDecode(json) as Map<String, dynamic>;
     return addPalette(
       (decoded['name'] as String?) ?? '',
-      ((decoded['colors'] as List<dynamic>?) ?? const []).map((e) => e as int).toList(),
+      ((decoded['colors'] as List<dynamic>?) ?? const [])
+          .map((e) => e as int)
+          .toList(),
     );
   }
 }

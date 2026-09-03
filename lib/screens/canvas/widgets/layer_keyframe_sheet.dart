@@ -8,13 +8,16 @@ import '../../../widgets/stepped_slider.dart';
 import '../../../config/font_fallback.dart';
 
 /// イージング種別の表示名（一覧の行・編集シートの選択チップの両方で使う）。
-String layerKeyframeEasingLabel(AppLocalizations l10n, LayerKeyframeEasing easing) => switch (easing) {
-      LayerKeyframeEasing.linear => l10n.layerKeyframeEasingLinear,
-      LayerKeyframeEasing.easeIn => l10n.layerKeyframeEasingEaseIn,
-      LayerKeyframeEasing.easeOut => l10n.layerKeyframeEasingEaseOut,
-      LayerKeyframeEasing.easeInOut => l10n.layerKeyframeEasingEaseInOut,
-      LayerKeyframeEasing.bounceOut => l10n.layerKeyframeEasingBounceOut,
-    };
+String layerKeyframeEasingLabel(
+  AppLocalizations l10n,
+  LayerKeyframeEasing easing,
+) => switch (easing) {
+  LayerKeyframeEasing.linear => l10n.layerKeyframeEasingLinear,
+  LayerKeyframeEasing.easeIn => l10n.layerKeyframeEasingEaseIn,
+  LayerKeyframeEasing.easeOut => l10n.layerKeyframeEasingEaseOut,
+  LayerKeyframeEasing.easeInOut => l10n.layerKeyframeEasingEaseInOut,
+  LayerKeyframeEasing.bounceOut => l10n.layerKeyframeEasingBounceOut,
+};
 
 /// レイヤー単位の位置・拡大縮小・回転キーフレーム（パーツ単位アニメーション）を
 /// 一覧・追加・編集・削除するシート。カメラキーフレームと違い専用のタイムライン
@@ -92,7 +95,8 @@ class _LayerKeyframeListSheet extends StatefulWidget {
   });
 
   @override
-  State<_LayerKeyframeListSheet> createState() => _LayerKeyframeListSheetState();
+  State<_LayerKeyframeListSheet> createState() =>
+      _LayerKeyframeListSheetState();
 }
 
 class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
@@ -124,15 +128,26 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
         canvasHeight: widget.canvasHeight,
         onSave: (newKf) {
           setState(() {
-            _keyframes = _keyframes.where((k) => k.frameIndex != kf.frameIndex && k.frameIndex != newKf.frameIndex).toList()
-              ..add(newKf);
+            _keyframes =
+                _keyframes
+                    .where(
+                      (k) =>
+                          k.frameIndex != kf.frameIndex &&
+                          k.frameIndex != newKf.frameIndex,
+                    )
+                    .toList()
+                  ..add(newKf);
           });
           _persist();
         },
         onDelete: isNew
             ? null
             : () {
-                setState(() => _keyframes = _keyframes.where((k) => k.frameIndex != kf.frameIndex).toList());
+                setState(
+                  () => _keyframes = _keyframes
+                      .where((k) => k.frameIndex != kf.frameIndex)
+                      .toList(),
+                );
                 _persist();
               },
       ),
@@ -142,7 +157,8 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final sorted = [..._keyframes]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    final sorted = [..._keyframes]
+      ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.55,
@@ -152,25 +168,40 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
         children: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(2)),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
                 Expanded(
-                  child: Text(l10n.layerKeyframeSheetTitle(widget.layerName),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                  child: Text(
+                    l10n.layerKeyframeSheetTitle(widget.layerName),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(l10n.layerKeyframeSheetDesc,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            child: Text(
+              l10n.layerKeyframeSheetDesc,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           Padding(
@@ -179,7 +210,9 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
               width: double.infinity,
               child: FilledButton.icon(
                 icon: const Icon(Icons.add),
-                label: Text(l10n.layerKeyframeAddAtCurrentFrame(widget.currentFrame + 1)),
+                label: Text(
+                  l10n.layerKeyframeAddAtCurrentFrame(widget.currentFrame + 1),
+                ),
                 onPressed: _addAtCurrentFrame,
               ),
             ),
@@ -188,8 +221,13 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
           Expanded(
             child: sorted.isEmpty
                 ? Center(
-                    child: Text(l10n.layerKeyframeEmpty,
-                        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                    child: Text(
+                      l10n.layerKeyframeEmpty,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   )
                 : ListView.builder(
                     controller: scrollCtrl,
@@ -208,9 +246,17 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
                         ),
                         onTap: () => _editKeyframe(kf, isNew: false),
                         trailing: IconButton(
-                          icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                          icon: const Icon(
+                            Icons.delete,
+                            size: 20,
+                            color: Colors.red,
+                          ),
                           onPressed: () {
-                            setState(() => _keyframes = _keyframes.where((k) => k.frameIndex != kf.frameIndex).toList());
+                            setState(
+                              () => _keyframes = _keyframes
+                                  .where((k) => k.frameIndex != kf.frameIndex)
+                                  .toList(),
+                            );
                             _persist();
                           },
                         ),
@@ -241,7 +287,8 @@ class _LayerKeyframeEditSheet extends StatefulWidget {
   });
 
   @override
-  State<_LayerKeyframeEditSheet> createState() => _LayerKeyframeEditSheetState();
+  State<_LayerKeyframeEditSheet> createState() =>
+      _LayerKeyframeEditSheetState();
 }
 
 class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
@@ -260,16 +307,28 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
         children: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(2)),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                Expanded(child: Text(l10n.layerKeyframeEditTitle(_kf.frameIndex + 1),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback))),
+                Expanded(
+                  child: Text(
+                    l10n.layerKeyframeEditTitle(_kf.frameIndex + 1),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
+                ),
                 if (widget.onDelete != null)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -287,27 +346,73 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
               controller: scrollCtrl,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _row(l10n.layerKeyframeFrameLabel, _kf.frameIndex.toDouble(), 0, maxFrame.toDouble(), maxFrame + 1,
-                    (v) => setState(() => _kf = _kf.copyWith(frameIndex: v.round())), 'F${_kf.frameIndex + 1}', isInt: true),
-                _row('X', _kf.x, -widget.canvasWidth.toDouble(), widget.canvasWidth.toDouble(), 0,
-                    (v) => setState(() => _kf = _kf.copyWith(x: v)), _kf.x.round().toString()),
-                _row('Y', _kf.y, -widget.canvasHeight.toDouble(), widget.canvasHeight.toDouble(), 0,
-                    (v) => setState(() => _kf = _kf.copyWith(y: v)), _kf.y.round().toString()),
-                _row(l10n.layerKeyframeScaleLabel, _kf.scale, 0.1, 3.0, 0,
-                    (v) => setState(() => _kf = _kf.copyWith(scale: v)), '${(_kf.scale * 100).round()}%', isInt: false, step: 0.05),
-                _row(l10n.layerKeyframeRotationLabel, _kf.rotation, -180, 180, 0,
-                    (v) => setState(() => _kf = _kf.copyWith(rotation: v)), '${_kf.rotation.round()}°'),
+                _row(
+                  l10n.layerKeyframeFrameLabel,
+                  _kf.frameIndex.toDouble(),
+                  0,
+                  maxFrame.toDouble(),
+                  maxFrame + 1,
+                  (v) =>
+                      setState(() => _kf = _kf.copyWith(frameIndex: v.round())),
+                  'F${_kf.frameIndex + 1}',
+                  isInt: true,
+                ),
+                _row(
+                  'X',
+                  _kf.x,
+                  -widget.canvasWidth.toDouble(),
+                  widget.canvasWidth.toDouble(),
+                  0,
+                  (v) => setState(() => _kf = _kf.copyWith(x: v)),
+                  _kf.x.round().toString(),
+                ),
+                _row(
+                  'Y',
+                  _kf.y,
+                  -widget.canvasHeight.toDouble(),
+                  widget.canvasHeight.toDouble(),
+                  0,
+                  (v) => setState(() => _kf = _kf.copyWith(y: v)),
+                  _kf.y.round().toString(),
+                ),
+                _row(
+                  l10n.layerKeyframeScaleLabel,
+                  _kf.scale,
+                  0.1,
+                  3.0,
+                  0,
+                  (v) => setState(() => _kf = _kf.copyWith(scale: v)),
+                  '${(_kf.scale * 100).round()}%',
+                  isInt: false,
+                  step: 0.05,
+                ),
+                _row(
+                  l10n.layerKeyframeRotationLabel,
+                  _kf.rotation,
+                  -180,
+                  180,
+                  0,
+                  (v) => setState(() => _kf = _kf.copyWith(rotation: v)),
+                  '${_kf.rotation.round()}°',
+                ),
                 const SizedBox(height: 8),
-                Text(l10n.layerKeyframeEasingLabel, style: const TextStyle(fontSize: 12)),
+                Text(
+                  l10n.layerKeyframeEasingLabel,
+                  style: const TextStyle(fontSize: 12),
+                ),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
                   children: LayerKeyframeEasing.values.map((easing) {
                     return ChoiceChip(
-                      label: Text(layerKeyframeEasingLabel(l10n, easing), style: const TextStyle(fontSize: 11)),
+                      label: Text(
+                        layerKeyframeEasingLabel(l10n, easing),
+                        style: const TextStyle(fontSize: 11),
+                      ),
                       selected: _kf.easing == easing,
-                      onSelected: (_) => setState(() => _kf = _kf.copyWith(easing: easing)),
+                      onSelected: (_) =>
+                          setState(() => _kf = _kf.copyWith(easing: easing)),
                     );
                   }).toList(),
                 ),
@@ -332,17 +437,30 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
     );
   }
 
-  Widget _row(String label, double value, double min, double max, int divisions,
-      ValueChanged<double> onChanged, String valueText, {bool isInt = false, double step = 1}) {
+  Widget _row(
+    String label,
+    double value,
+    double min,
+    double max,
+    int divisions,
+    ValueChanged<double> onChanged,
+    String valueText, {
+    bool isInt = false,
+    double step = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(width: 56, child: Text(label, style: const TextStyle(fontSize: 12))),
+          SizedBox(
+            width: 56,
+            child: Text(label, style: const TextStyle(fontSize: 12)),
+          ),
           Expanded(
             child: SteppedSlider(
               value: value.clamp(min, max),
-              min: min, max: max,
+              min: min,
+              max: max,
               divisions: divisions > 0 ? divisions : null,
               step: step,
               onChanged: onChanged,
@@ -354,7 +472,10 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
               text: valueText,
               style: const TextStyle(fontSize: 11),
               textAlign: TextAlign.right,
-              value: value, min: min, max: max, isInt: isInt,
+              value: value,
+              min: min,
+              max: max,
+              isInt: isInt,
               onChanged: (v) => onChanged(v.toDouble()),
             ),
           ),

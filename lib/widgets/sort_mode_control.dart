@@ -23,8 +23,9 @@ class SortModeControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final fieldLabel =
-        sortByName ? l10n.homeSortFieldName : l10n.homeSortFieldUpdated;
+    final fieldLabel = sortByName
+        ? l10n.homeSortFieldName
+        : l10n.homeSortFieldUpdated;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -72,7 +73,7 @@ class SortModeControl extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                     ),
@@ -102,7 +103,10 @@ class SortModeControl extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           // 文字サイズ拡大時にプルダウン側が縮められるようFlexibleで包む
           // （矢印ボタンは固定幅のまま残す）。
-          children: [Flexible(child: fieldControl), directionControl],
+          children: [
+            Flexible(child: fieldControl),
+            directionControl,
+          ],
         );
       },
     );

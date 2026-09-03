@@ -79,7 +79,7 @@ class _BrushPanelState extends State<BrushPanel> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                      fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                   const Spacer(),
@@ -130,7 +130,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       onPressed: () =>
@@ -146,7 +146,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       onPressed: () => _createFromImage(context, brushService),
@@ -158,7 +158,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       onPressed: () => _importBrush(context, brushService),
@@ -259,7 +259,7 @@ class _BrushPanelState extends State<BrushPanel> {
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                                fontFamilyFallback: kHeadingFontFallback,
                               ),
                             ),
                             subtitle: Text(
@@ -365,8 +365,11 @@ class _BrushPanelState extends State<BrushPanel> {
       child: ChoiceChip(
         label: Text(
           label,
-          style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+          style: const TextStyle(
+            fontSize: 11,
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          ),
         ),
         selected: selected,
         onSelected: (_) => onTap(),
@@ -527,7 +530,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               fontSize: 18,
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+              fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           const SizedBox(height: 16),
@@ -639,7 +642,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+              fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           // 選択状態と変更通知はRadioGroupがまとめて持つ
@@ -648,15 +651,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           RadioGroup<PressureMode>(
             groupValue: _brush.pressureMode,
             onChanged: (v) =>
-                  setState(() => _brush = _brush.copyWith(pressureMode: v)),
+                setState(() => _brush = _brush.copyWith(pressureMode: v)),
             child: Column(
-              children: PressureMode.values.map(
-            (mode) => RadioListTile<PressureMode>(
-              title: Text(_pressureLabel(l10n, mode)),
-              value: mode,
-              dense: true,
-            ),
-              ).toList(),
+              children: PressureMode.values
+                  .map(
+                    (mode) => RadioListTile<PressureMode>(
+                      title: Text(_pressureLabel(l10n, mode)),
+                      value: mode,
+                      dense: true,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           const Divider(),
@@ -666,7 +671,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+              fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           // 選択状態と変更通知はRadioGroupがまとめて持つ
@@ -675,15 +680,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           RadioGroup<FadeMode>(
             groupValue: _brush.fadeMode,
             onChanged: (v) =>
-                  setState(() => _brush = _brush.copyWith(fadeMode: v)),
+                setState(() => _brush = _brush.copyWith(fadeMode: v)),
             child: Column(
-              children: FadeMode.values.map(
-            (mode) => RadioListTile<FadeMode>(
-              title: Text(_fadeModeLabel(l10n, mode)),
-              value: mode,
-              dense: true,
-            ),
-              ).toList(),
+              children: FadeMode.values
+                  .map(
+                    (mode) => RadioListTile<FadeMode>(
+                      title: Text(_fadeModeLabel(l10n, mode)),
+                      value: mode,
+                      dense: true,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           if (_brush.fadeMode == FadeMode.custom) ...[
@@ -774,7 +781,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+              fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           // 選択状態と変更通知はRadioGroupがまとめて持つ
@@ -783,15 +790,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           RadioGroup<BrushMixingMode>(
             groupValue: _brush.mixingMode,
             onChanged: (v) =>
-                  setState(() => _brush = _brush.copyWith(mixingMode: v)),
+                setState(() => _brush = _brush.copyWith(mixingMode: v)),
             child: Column(
-              children: BrushMixingMode.values.map(
-            (mode) => RadioListTile<BrushMixingMode>(
-              title: Text(_mixingModeLabel(l10n, mode)),
-              value: mode,
-              dense: true,
-            ),
-              ).toList(),
+              children: BrushMixingMode.values
+                  .map(
+                    (mode) => RadioListTile<BrushMixingMode>(
+                      title: Text(_mixingModeLabel(l10n, mode)),
+                      value: mode,
+                      dense: true,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           if (_brush.mixingMode != BrushMixingMode.off) ...[

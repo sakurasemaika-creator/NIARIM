@@ -73,18 +73,26 @@ void main() {
       Future<void> loadFamily(String family, String needle) async {
         final matches = assets.where((a) => a.contains(needle)).toList();
         if (matches.isEmpty) return;
-        final loader = FontLoader(family)..addFont(rootBundle.load(matches.first));
+        final loader = FontLoader(family)
+          ..addFont(rootBundle.load(matches.first));
         await loader.load();
       }
+
       Future<void> loadSdkMaterialIcons() async {
         final flutterRoot = Platform.environment['FLUTTER_ROOT'];
         if (flutterRoot == null) return;
-        final file = File('$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf');
+        final file = File(
+          '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+        );
         if (!file.existsSync()) return;
-        final data = ByteData.sublistView(Uint8List.fromList(await file.readAsBytes()));
-        final loader = FontLoader('MaterialIcons')..addFont(Future<ByteData>.value(data));
+        final data = ByteData.sublistView(
+          Uint8List.fromList(await file.readAsBytes()),
+        );
+        final loader = FontLoader('MaterialIcons')
+          ..addFont(Future<ByteData>.value(data));
         await loader.load();
       }
+
       await Future.wait([
         loadFamily('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
         loadFamily('Kuramubon', 'assets/fonts/Kuramubon.otf'),
@@ -99,7 +107,9 @@ void main() {
 
   Future<void> capture(WidgetTester tester, String name) async {
     await tester.pump(const Duration(milliseconds: 180));
-    final boundary = screenshotKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final boundary =
+        screenshotKey.currentContext!.findRenderObject()
+            as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
       final image = await boundary.toImage(pixelRatio: 1.0);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -153,16 +163,23 @@ void main() {
     );
   }
 
-  Future<void> scrollCanvasToolbarToIcon(WidgetTester tester, IconData icon) async {
+  Future<void> scrollCanvasToolbarToIcon(
+    WidgetTester tester,
+    IconData icon,
+  ) async {
     final toolbar = find.byType(ToolbarWidget);
     expect(toolbar, findsOneWidget);
-    final scroll = find.descendant(of: toolbar, matching: find.byType(SingleChildScrollView));
+    final scroll = find.descendant(
+      of: toolbar,
+      matching: find.byType(SingleChildScrollView),
+    );
     expect(scroll, findsOneWidget);
     final target = canvasToolbarButton(icon);
     expect(target, findsOneWidget);
     for (var i = 0; i < 5; i++) {
       final rect = tester.getRect(target);
-      final viewWidth = tester.view.physicalSize.width / tester.view.devicePixelRatio;
+      final viewWidth =
+          tester.view.physicalSize.width / tester.view.devicePixelRatio;
       if (rect.left >= 2 && rect.right <= viewWidth - 2) return;
       await tester.drag(
         scroll,
@@ -186,7 +203,10 @@ void main() {
     await loadFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
-      RepaintBoundary(key: screenshotKey, child: MultiProvider(providers: providers!, child: const NiarimApp())),
+      RepaintBoundary(
+        key: screenshotKey,
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+      ),
     );
     await tester.pump(const Duration(milliseconds: 500));
     expectClean(tester, '起動');
@@ -203,15 +223,21 @@ void main() {
     }
   }
 
-  Future<(String, String)> createProjectAndOpenCanvas(WidgetTester tester) async {
+  Future<(String, String)> createProjectAndOpenCanvas(
+    WidgetTester tester,
+  ) async {
     await bootToHome(tester);
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '新規プロジェクト画面');
     await tapReachable(tester, find.text('作成', skipOffstage: false));
     await tester.pump(const Duration(milliseconds: 550));
     expectClean(tester, '作成→キャンバス');
-    final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
     final project = ps.projects.first;
     return (project.id, ps.scenesOf(project.id).first.id);
   }
@@ -244,19 +270,34 @@ void main() {
     final ids = await createProjectAndOpenCanvas(tester);
     await openTimelineFromCanvas(tester);
     await capture(tester, '04_timeline_default');
-    final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
     ps.addAudioClip(
       ids.$1,
       ids.$2,
-      const AudioClip(id: 'webref_audio', label: '比較用音声', startFrame: 0, lengthFrames: 24, volume: 0.72, fadeIn: 0, fadeOut: 0),
+      const AudioClip(
+        id: 'webref_audio',
+        label: '比較用音声',
+        startFrame: 0,
+        lengthFrames: 24,
+        volume: 0.72,
+        fadeIn: 0,
+        fadeOut: 0,
+      ),
     );
     await tester.pump(const Duration(milliseconds: 250));
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.$1}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimelineFromCanvas(tester);
     await tapReachable(tester, find.text('比較用音声', skipOffstage: false));
     final postTapException = tester.takeException();
-    if (postTapException != null && !postTapException.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
+    if (postTapException != null &&
+        !postTapException.toString().contains(
+          'RenderFlex overflowed by 24 pixels on the right',
+        )) {
       fail('音声クリップ編集で例外: $postTapException');
     }
     await capture(tester, '05_timeline_audio_editor');
@@ -268,13 +309,21 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expectClean(tester, 'Canvas→SaveSlot');
     await capture(tester, '06_save_slot');
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.$1}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimelineFromCanvas(tester);
-    await tapReachable(tester, find.byIcon(Icons.upload_file, skipOffstage: false));
+    await tapReachable(
+      tester,
+      find.byIcon(Icons.upload_file, skipOffstage: false),
+    );
     await tester.pump(const Duration(milliseconds: 500));
     final exportException = tester.takeException();
-    if (exportException != null && !exportException.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
+    if (exportException != null &&
+        !exportException.toString().contains(
+          'RenderFlex overflowed by 24 pixels on the right',
+        )) {
       fail('Timeline→Exportで例外: $exportException');
     }
     await capture(tester, '07_export');
@@ -289,7 +338,9 @@ void main() {
     if (workspace.evaluate().isNotEmpty) {
       await tapReachable(tester, workspace);
     } else {
-      GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/settings/workspace');
+      GoRouter.of(
+        tester.element(find.byType(Scaffold).first),
+      ).push('/settings/workspace');
       await tester.pump(const Duration(milliseconds: 500));
     }
     expectClean(tester, '設定→ワークスペース');

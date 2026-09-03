@@ -28,7 +28,8 @@ class CommunityWorkDetailScreen extends StatefulWidget {
   const CommunityWorkDetailScreen({super.key, required this.workId});
 
   @override
-  State<CommunityWorkDetailScreen> createState() => _CommunityWorkDetailScreenState();
+  State<CommunityWorkDetailScreen> createState() =>
+      _CommunityWorkDetailScreenState();
 }
 
 class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
@@ -50,7 +51,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   }
 
   void _showComingSoonSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showAddTagDialog(CommunityService communityService, String workId) {
@@ -65,14 +68,19 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: InputDecoration(hintText: l10n.communityAddTagDialogHint),
+            decoration: InputDecoration(
+              hintText: l10n.communityAddTagDialogHint,
+            ),
             onSubmitted: (v) {
               Navigator.pop(ctx);
               communityService.addTag(workId, v);
             },
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
@@ -140,17 +148,23 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     decoration: InputDecoration(
                       labelText: l10n.communityReportDetailLabel,
                       hintText: l10n.communityReportDetailHint,
-                      errorText: showDetailError ? l10n.communityReportDetailRequiredError : null,
+                      errorText: showDetailError
+                          ? l10n.communityReportDetailRequiredError
+                          : null,
                     ),
                     onChanged: (_) {
-                      if (showDetailError) setDialogState(() => showDetailError = false);
+                      if (showDetailError)
+                        setDialogState(() => showDetailError = false);
                     },
                   ),
                 ],
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
               FilledButton(
                 onPressed: () {
                   if (detailController.text.trim().isEmpty) {
@@ -158,7 +172,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     return;
                   }
                   Navigator.pop(ctx);
-                  _showComingSoonSnackbar(l10n.communityReportComingSoonSnackbar);
+                  _showComingSoonSnackbar(
+                    l10n.communityReportComingSoonSnackbar,
+                  );
                   // 通報送信後、続けてこの投稿者をブロックするか確認する
                   // （「通報後はブロック確認ポップアップを表示してほしい」
                   // という要望への対応）。
@@ -181,7 +197,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
         title: Text(l10n.communityBlockConfirmTitle(work.authorName)),
         content: Text(l10n.communityBlockConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -217,9 +236,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final isBookmarked = communityService.isBookmarked(work.id);
     final isAuthorSelf = work.authorId == kDummySelfAuthorId;
     final isReposted = communityService.isRepostedBySelf(work.id);
-    final maxPreviewHeight =
-        (MediaQuery.sizeOf(context).height * 0.55).clamp(_minPreviewHeight, 500.0);
-    final previewHeight = _previewHeight.clamp(_minPreviewHeight, maxPreviewHeight);
+    final maxPreviewHeight = (MediaQuery.sizeOf(context).height * 0.55).clamp(
+      _minPreviewHeight,
+      500.0,
+    );
+    final previewHeight = _previewHeight.clamp(
+      _minPreviewHeight,
+      maxPreviewHeight,
+    );
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
@@ -244,12 +268,18 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: kCommunityThumbnailGradients[
-                            work.thumbnailColorIndex % kCommunityThumbnailGradients.length],
+                        colors:
+                            kCommunityThumbnailGradients[work
+                                    .thumbnailColorIndex %
+                                kCommunityThumbnailGradients.length],
                       ),
                     ),
                     child: const Center(
-                      child: Icon(Icons.play_circle_fill_rounded, color: Colors.white70, size: 56),
+                      child: Icon(
+                        Icons.play_circle_fill_rounded,
+                        color: Colors.white70,
+                        size: 56,
+                      ),
                     ),
                   ),
                 ),
@@ -274,9 +304,15 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ),
                 ),
               ),
-              Text(work.title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+              Text(
+                work.title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -292,15 +328,25 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                           CircleAvatar(
                             radius: 14,
                             backgroundColor: scheme.primaryContainer,
-                            child: Text(work.authorName.substring(0, 1),
-                                style: TextStyle(fontSize: 13, color: scheme.onPrimaryContainer)),
+                            child: Text(
+                              work.authorName.substring(0, 1),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: scheme.onPrimaryContainer,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Flexible(
-                            child: Text(work.authorName,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 14, color: scheme.primary, fontWeight: FontWeight.w600)),
+                            child: Text(
+                              work.authorName,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: scheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -309,7 +355,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   // お気に入り作者（フォロー、Task#144）。自分自身の作品では表示しない。
                   if (!isAuthorSelf)
                     IconButton(
-                      onPressed: () => communityService.toggleFavoriteAuthor(work.authorId),
+                      onPressed: () =>
+                          communityService.toggleFavoriteAuthor(work.authorId),
                       icon: Icon(
                         communityService.isFavoriteAuthor(work.authorId)
                             ? Icons.person_remove_alt_1
@@ -327,30 +374,56 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               const SizedBox(height: 14),
               Row(
                 children: [
-                  Icon(Icons.play_arrow_rounded, size: 16, color: scheme.onSurfaceVariant),
+                  Icon(
+                    Icons.play_arrow_rounded,
+                    size: 16,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(work.viewCount, languageCode), style: TextStyle(color: scheme.onSurfaceVariant)),
+                  Text(
+                    formatCompactCount(work.viewCount, languageCode),
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
                   const SizedBox(width: 14),
                   // YouTube側の「いいね」数。APIが返す値をそのまま表示し、
                   // NIARIM側で独自に加算・合算はしない（YouTube API利用規約
                   // の要件）。
-                  Icon(Icons.thumb_up_alt_outlined, size: 16, color: scheme.onSurfaceVariant),
+                  Icon(
+                    Icons.thumb_up_alt_outlined,
+                    size: 16,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(work.likeCount, languageCode), style: TextStyle(color: scheme.onSurfaceVariant)),
+                  Text(
+                    formatCompactCount(work.likeCount, languageCode),
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
                   const SizedBox(width: 14),
                   // NIARIM独自のブックマーク数（YouTube側の「いいね」とは
                   // 別のNIARIM内機能。29_動画投稿・ランキング機能仕様.md
                   // 8.5節）。
-                  Icon(Icons.bookmark, size: 16, color: scheme.onSurfaceVariant),
+                  Icon(
+                    Icons.bookmark,
+                    size: 16,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(work.bookmarkCount, languageCode), style: TextStyle(color: scheme.onSurfaceVariant)),
+                  Text(
+                    formatCompactCount(work.bookmarkCount, languageCode),
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
                   const SizedBox(width: 14),
                   // リポスト数（Task#145）。ブックマーク同様NIARIM独自の
                   // カウントで、YouTube側の統計とは無関係。
                   Icon(Icons.repeat, size: 16, color: scheme.onSurfaceVariant),
                   const SizedBox(width: 3),
-                  Text(formatCompactCount(communityService.repostCountOf(work.id), languageCode),
-                      style: TextStyle(color: scheme.onSurfaceVariant)),
+                  Text(
+                    formatCompactCount(
+                      communityService.repostCountOf(work.id),
+                      languageCode,
+                    ),
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -362,7 +435,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 const SizedBox(height: 12),
                 _NiarimVisibilitySwitch(
                   isPublished: work.isNiarimPublished,
-                  onChanged: () => communityService.toggleNiarimVisibility(work.id),
+                  onChanged: () =>
+                      communityService.toggleNiarimVisibility(work.id),
                 ),
               ] else if (!work.isNiarimPublished) ...[
                 const SizedBox(height: 12),
@@ -400,7 +474,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ActionChip(
                     avatar: const Icon(Icons.add, size: 16),
                     label: Text(l10n.communityAddTagButton),
-                    onPressed: () => _showAddTagDialog(communityService, work.id),
+                    onPressed: () =>
+                        _showAddTagDialog(communityService, work.id),
                   ),
                 ],
               ),
@@ -409,7 +484,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 children: [
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () => _showComingSoonSnackbar(l10n.communityWorkDetailViewOnYoutubeComingSoonSnackbar),
+                      onPressed: () => _showComingSoonSnackbar(
+                        l10n.communityWorkDetailViewOnYoutubeComingSoonSnackbar,
+                      ),
                       icon: const Icon(Icons.smart_display_outlined),
                       label: Text(l10n.communityWorkDetailViewOnYoutube),
                     ),
@@ -417,10 +494,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   const SizedBox(width: 8),
                   OutlinedButton.icon(
                     onPressed: () => communityService.toggleBookmark(work.id),
-                    icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
-                    label: Text(isBookmarked
-                        ? l10n.communityWorkDetailBookmarkRemove
-                        : l10n.communityWorkDetailBookmarkAdd),
+                    icon: Icon(
+                      isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                    ),
+                    label: Text(
+                      isBookmarked
+                          ? l10n.communityWorkDetailBookmarkRemove
+                          : l10n.communityWorkDetailBookmarkAdd,
+                    ),
                   ),
                 ],
               ),
@@ -432,9 +513,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () => communityService.toggleRepost(work.id),
-                  icon: Icon(Icons.repeat, color: isReposted ? scheme.primary : null),
+                  icon: Icon(
+                    Icons.repeat,
+                    color: isReposted ? scheme.primary : null,
+                  ),
                   label: Text(
-                    isReposted ? l10n.communityRepostedButton : l10n.communityRepostButton,
+                    isReposted
+                        ? l10n.communityRepostedButton
+                        : l10n.communityRepostButton,
                     style: TextStyle(color: isReposted ? scheme.primary : null),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -506,7 +592,10 @@ class _TagChip extends StatelessWidget {
                 Icon(Icons.lock, size: 13, color: scheme.onSurfaceVariant),
                 const SizedBox(width: 4),
               ],
-              Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+              Text(
+                label,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
               if (onToggleLock != null)
                 IconButton(
                   visualDensity: VisualDensity.compact,
@@ -541,7 +630,10 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
   final bool isPublished;
   final VoidCallback onChanged;
 
-  const _NiarimVisibilitySwitch({required this.isPublished, required this.onChanged});
+  const _NiarimVisibilitySwitch({
+    required this.isPublished,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -567,15 +659,24 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.communityVisibilityCardTitle,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                    Text(
+                      l10n.communityVisibilityCardTitle,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       isPublished
                           ? l10n.communityVisibilityPublishedDesc
                           : l10n.communityVisibilityHiddenDesc,
-                      style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -609,8 +710,10 @@ class _NiarimHiddenNotice extends StatelessWidget {
           Icon(Icons.lock_outline, size: 16, color: scheme.onSurfaceVariant),
           const SizedBox(width: 6),
           Expanded(
-            child: Text(l10n.communityVisibilityHiddenNotice,
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            child: Text(
+              l10n.communityVisibilityHiddenNotice,
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
           ),
         ],
       ),

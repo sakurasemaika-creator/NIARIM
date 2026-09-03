@@ -9,12 +9,14 @@ import 'package:niarim/models/ruler.dart';
 void main() {
   test('直線定規：回転した直線上へ正しく投影される', () {
     final engine = RulerEngine();
-    engine.setActiveRuler(Ruler(
-      type: RulerType.line,
-      position: const Offset(100, 100),
-      rotation: math.pi / 2, // 垂直線
-      settings: const RulerSettings(),
-    ));
+    engine.setActiveRuler(
+      Ruler(
+        type: RulerType.line,
+        position: const Offset(100, 100),
+        rotation: math.pi / 2, // 垂直線
+        settings: const RulerSettings(),
+      ),
+    );
     final snapped = engine.snapToRuler(const Offset(150, 200));
     // 垂直線上（x=100固定）に投影されるはず
     expect(snapped.dx, closeTo(100, 0.001));
@@ -23,12 +25,14 @@ void main() {
 
   test('楕円定規：回転を考慮して楕円周上へスナップされる', () {
     final engine = RulerEngine();
-    engine.setActiveRuler(Ruler(
-      type: RulerType.ellipse,
-      position: const Offset(0, 0),
-      rotation: math.pi / 2, // 90度回転（横幅・縦幅が入れ替わる）
-      settings: const RulerSettings(radiusX: 100, radiusY: 50),
-    ));
+    engine.setActiveRuler(
+      Ruler(
+        type: RulerType.ellipse,
+        position: const Offset(0, 0),
+        rotation: math.pi / 2, // 90度回転（横幅・縦幅が入れ替わる）
+        settings: const RulerSettings(radiusX: 100, radiusY: 50),
+      ),
+    );
     // 90度回転しているため、ワールド座標のY軸方向がローカルのX軸（半径100）になる
     final snapped = engine.snapToRuler(const Offset(0, 200));
     expect(snapped.dx, closeTo(0, 1));
@@ -37,12 +41,14 @@ void main() {
 
   test('集中線定規：回転角度がスポーク基準角に反映される', () {
     final engine = RulerEngine();
-    engine.setActiveRuler(Ruler(
-      type: RulerType.radial,
-      position: const Offset(0, 0),
-      rotation: 0.1,
-      settings: const RulerSettings(divisions: 4),
-    ));
+    engine.setActiveRuler(
+      Ruler(
+        type: RulerType.radial,
+        position: const Offset(0, 0),
+        rotation: 0.1,
+        settings: const RulerSettings(divisions: 4),
+      ),
+    );
     // 4分割・回転なしなら0, pi/2, pi, 3pi/2にスナップするが、
     // rotation=0.1が加算されるため、角度0.1近辺の点は0.1へスナップされる。
     final snapped = engine.snapToRuler(const Offset(100, 5));
@@ -53,11 +59,13 @@ void main() {
   test('1点透視定規：ストローク開始点と消失点を結ぶ直線へスナップし続ける', () {
     final engine = RulerEngine();
     final vp = const Offset(500, 500);
-    engine.setActiveRuler(Ruler(
-      type: RulerType.onePointPerspective,
-      position: vp,
-      settings: RulerSettings(vanishingPoint1: vp),
-    ));
+    engine.setActiveRuler(
+      Ruler(
+        type: RulerType.onePointPerspective,
+        position: vp,
+        settings: RulerSettings(vanishingPoint1: vp),
+      ),
+    );
     engine.beginStroke();
     // 最初の点：そのまま返り、以後のスナップ基準（直線）を確定する
     final first = engine.snapToRuler(const Offset(100, 300));
@@ -77,11 +85,13 @@ void main() {
   test('1点透視定規：新しいストローク開始でスナップ基準がリセットされる', () {
     final engine = RulerEngine();
     final vp = const Offset(0, 0);
-    engine.setActiveRuler(Ruler(
-      type: RulerType.onePointPerspective,
-      position: vp,
-      settings: RulerSettings(vanishingPoint1: vp),
-    ));
+    engine.setActiveRuler(
+      Ruler(
+        type: RulerType.onePointPerspective,
+        position: vp,
+        settings: RulerSettings(vanishingPoint1: vp),
+      ),
+    );
     engine.beginStroke();
     engine.snapToRuler(const Offset(100, 0)); // 1本目：水平線を確定
     final duringFirstStroke = engine.snapToRuler(const Offset(100, 50));
@@ -96,11 +106,13 @@ void main() {
     final engine = RulerEngine();
     final vp1 = const Offset(0, 0);
     final vp2 = const Offset(1000, 0);
-    engine.setActiveRuler(Ruler(
-      type: RulerType.twoPointPerspective,
-      position: const Offset(500, 0),
-      settings: RulerSettings(vanishingPoint1: vp1, vanishingPoint2: vp2),
-    ));
+    engine.setActiveRuler(
+      Ruler(
+        type: RulerType.twoPointPerspective,
+        position: const Offset(500, 0),
+        settings: RulerSettings(vanishingPoint1: vp1, vanishingPoint2: vp2),
+      ),
+    );
     engine.beginStroke();
     // vp1に近い点から開始
     final first = engine.snapToRuler(const Offset(50, 50));

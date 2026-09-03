@@ -55,7 +55,10 @@ void main() {
     expect(service.activePalette!.colors, [0xFF00FF00]);
 
     await service.toggleFavorite(newPalette.id);
-    expect(service.palettes.firstWhere((p) => p.id == newPalette.id).isFavorite, isTrue);
+    expect(
+      service.palettes.firstWhere((p) => p.id == newPalette.id).isFavorite,
+      isTrue,
+    );
   });
 
   test('最後の1件のパレットは削除できない', () async {
@@ -65,8 +68,7 @@ void main() {
     final onlyId = service.palettes.first.id;
 
     await service.deletePalette(onlyId);
-    expect(service.palettes, hasLength(1),
-        reason: '唯一のパレットは削除されずに残っているはず');
+    expect(service.palettes, hasLength(1), reason: '唯一のパレットは削除されずに残っているはず');
   });
 
   test('保存内容は再起動後も復元される', () async {
@@ -88,7 +90,11 @@ void main() {
       final before = service.palettes.length;
 
       final imported = await service.importPalette(
-        const ColorPalette(id: 'other-device-id', name: '共有パレット', colors: [0xFF112233, 0xFF445566]),
+        const ColorPalette(
+          id: 'other-device-id',
+          name: '共有パレット',
+          colors: [0xFF112233, 0xFF445566],
+        ),
       );
 
       expect(service.palettes, hasLength(before + 1));

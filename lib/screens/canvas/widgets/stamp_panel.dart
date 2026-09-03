@@ -41,7 +41,9 @@ class _StampPanelState extends State<StampPanel> {
     final stampService = context.watch<StampService>();
     final allStamps = stampService.stamps;
     final folders = stampService.folders;
-    var stamps = _showFavoritesOnly ? allStamps.where((s) => s.isFavorite) : allStamps.where((_) => true);
+    var stamps = _showFavoritesOnly
+        ? allStamps.where((s) => s.isFavorite)
+        : allStamps.where((_) => true);
     if (_folderFilter == '') {
       stamps = stamps.where((s) => s.folderId == null);
     } else if (_folderFilter != null && _folderFilter != _allFolders) {
@@ -55,7 +57,9 @@ class _StampPanelState extends State<StampPanel> {
     final current = stampService.currentStamp;
     // 絞込中（お気に入りのみ・検索・フォルダ指定）は表示順と実際の並び順が
     // 一致しないため、並べ替えは絞込なしのときだけ有効にする。
-    final isFiltering = _showFavoritesOnly || query.isNotEmpty ||
+    final isFiltering =
+        _showFavoritesOnly ||
+        query.isNotEmpty ||
         (_folderFilter != null && _folderFilter != _allFolders);
 
     return Card(
@@ -71,20 +75,37 @@ class _StampPanelState extends State<StampPanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.stampTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                  Text(
+                    l10n.stampTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(_showFavoritesOnly ? Icons.star : Icons.star_outline, size: 16,
-                        color: _showFavoritesOnly ? Colors.amber : null),
-                    onPressed: () => setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+                    icon: Icon(
+                      _showFavoritesOnly ? Icons.star : Icons.star_outline,
+                      size: 16,
+                      color: _showFavoritesOnly ? Colors.amber : null,
+                    ),
+                    onPressed: () => setState(
+                      () => _showFavoritesOnly = !_showFavoritesOnly,
+                    ),
                     tooltip: l10n.creativePanelFavoritesOnlyTooltip,
                   ),
                   IconButton(
-                    icon: Icon(_showSearch ? Icons.search_off : Icons.search, size: 16),
+                    icon: Icon(
+                      _showSearch ? Icons.search_off : Icons.search,
+                      size: 16,
+                    ),
                     onPressed: () => setState(() {
                       _showSearch = !_showSearch;
-                      if (!_showSearch) { _searchQuery = ''; _searchController.clear(); }
+                      if (!_showSearch) {
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }
                     }),
                     tooltip: l10n.creativePanelSearchTooltip,
                   ),
@@ -99,20 +120,42 @@ class _StampPanelState extends State<StampPanel> {
                   children: [
                     TextButton.icon(
                       icon: const Icon(Icons.folder_outlined, size: 15),
-                      label: Text(l10n.creativePanelFolderButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-                      onPressed: () => _openFolderManagement(context, stampService),
+                      label: Text(
+                        l10n.creativePanelFolderButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
+                      onPressed: () =>
+                          _openFolderManagement(context, stampService),
                     ),
                     TextButton.icon(
-                      icon: const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                      label: Text(l10n.creativePanelCreateButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                      icon: const Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: 15,
+                      ),
+                      label: Text(
+                        l10n.creativePanelCreateButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                       onPressed: () => _createFromImage(context, stampService),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.file_upload_outlined, size: 15),
-                      label: Text(l10n.creativePanelImportButton, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                      label: Text(
+                        l10n.creativePanelImportButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                       onPressed: () => _importStamp(context, stampService),
                     ),
                   ],
@@ -126,11 +169,23 @@ class _StampPanelState extends State<StampPanel> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _folderChip(l10n.creativePanelFolderAllChip, _folderFilter == null || _folderFilter == _allFolders,
-                            () => setState(() => _folderFilter = null)),
-                        _folderChip(l10n.folderNone, _folderFilter == '', () => setState(() => _folderFilter = '')),
-                        ...folders.map((f) => _folderChip(
-                            f.name, _folderFilter == f.id, () => setState(() => _folderFilter = f.id))),
+                        _folderChip(
+                          l10n.creativePanelFolderAllChip,
+                          _folderFilter == null || _folderFilter == _allFolders,
+                          () => setState(() => _folderFilter = null),
+                        ),
+                        _folderChip(
+                          l10n.folderNone,
+                          _folderFilter == '',
+                          () => setState(() => _folderFilter = ''),
+                        ),
+                        ...folders.map(
+                          (f) => _folderChip(
+                            f.name,
+                            _folderFilter == f.id,
+                            () => setState(() => _folderFilter = f.id),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -143,14 +198,25 @@ class _StampPanelState extends State<StampPanel> {
                     autofocus: true,
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
-                        isDense: true, hintText: l10n.stampSearchHint, prefixIcon: const Icon(Icons.search, size: 16)),
+                      isDense: true,
+                      hintText: l10n.stampSearchHint,
+                      prefixIcon: const Icon(Icons.search, size: 16),
+                    ),
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
                 ),
               const Divider(),
               Expanded(
                 child: stampList.isEmpty
-                    ? Center(child: Text(l10n.stampEmpty, style: const TextStyle(color: Colors.grey, fontSize: 12)))
+                    ? Center(
+                        child: Text(
+                          l10n.stampEmpty,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      )
                     : ReorderableListView.builder(
                         // ドラッグハンドルは行末に明示アイコンとして置く
                         // （既定のドラッグハンドルだと、行全体の長押しで開く
@@ -159,7 +225,8 @@ class _StampPanelState extends State<StampPanel> {
                         buildDefaultDragHandles: false,
                         itemCount: stampList.length,
                         onReorder: (oldIndex, newIndex) {
-                          if (!isFiltering) stampService.reorderStamp(oldIndex, newIndex);
+                          if (!isFiltering)
+                            stampService.reorderStamp(oldIndex, newIndex);
                         },
                         itemBuilder: (context, index) {
                           final stamp = stampList[index];
@@ -171,28 +238,71 @@ class _StampPanelState extends State<StampPanel> {
                             key: ValueKey(stamp.id),
                             dense: true,
                             selected: isSelected,
-                            leading: Icon(Icons.star_border_purple500, size: 16,
-                                color: isSelected ? Theme.of(context).colorScheme.primary : null),
-                            title: Text(stamp.name, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                            leading: Icon(
+                              Icons.star_border_purple500,
+                              size: 16,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                            title: Text(
+                              stamp.name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
+                            ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 GestureDetector(
-                                  onTap: () => stampService.toggleFavorite(stamp.id),
-                                  child: Icon(stamp.isFavorite ? Icons.star : Icons.star_outline,
-                                      size: 14, color: stamp.isFavorite ? Colors.amber : Colors.grey),
+                                  onTap: () =>
+                                      stampService.toggleFavorite(stamp.id),
+                                  child: Icon(
+                                    stamp.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_outline,
+                                    size: 14,
+                                    color: stamp.isFavorite
+                                        ? Colors.amber
+                                        : Colors.grey,
+                                  ),
                                 ),
                                 PopupMenuButton<String>(
                                   icon: const Icon(Icons.more_vert, size: 14),
-                                  onSelected: (action) => _handleAction(context, action, stamp),
+                                  onSelected: (action) =>
+                                      _handleAction(context, action, stamp),
                                   itemBuilder: (_) => [
-                                    if (!builtIn) PopupMenuItem(value: 'edit', child: Text(l10n.creativePanelEditAction)),
-                                    PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
-                                    PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
-                                    PopupMenuItem(value: 'export', child: Text(l10n.transferExport)),
                                     if (!builtIn)
-                                      PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text(
+                                          l10n.creativePanelEditAction,
+                                        ),
+                                      ),
+                                    PopupMenuItem(
+                                      value: 'duplicate',
+                                      child: Text(l10n.themeDuplicateAction),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'move',
+                                      child: Text(l10n.folderMoveToTitle),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'export',
+                                      child: Text(l10n.transferExport),
+                                    ),
+                                    if (!builtIn)
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(
+                                          l10n.commonDelete,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                                 if (!isFiltering)
@@ -200,13 +310,19 @@ class _StampPanelState extends State<StampPanel> {
                                     index: index,
                                     child: const Padding(
                                       padding: EdgeInsets.only(left: 2),
-                                      child: Icon(Icons.drag_indicator, size: 16, color: Colors.grey),
+                                      child: Icon(
+                                        Icons.drag_indicator,
+                                        size: 16,
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                   ),
                               ],
                             ),
                             onTap: () => stampService.selectStamp(stamp.id),
-                            onLongPress: builtIn ? null : () => _showStampSettings(context, stamp),
+                            onLongPress: builtIn
+                                ? null
+                                : () => _showStampSettings(context, stamp),
                           );
                         },
                       ),
@@ -218,11 +334,18 @@ class _StampPanelState extends State<StampPanel> {
     );
   }
 
-  Widget _folderChip(String label, bool selected, VoidCallback onTap) => Padding(
+  Widget _folderChip(String label, bool selected, VoidCallback onTap) =>
+      Padding(
         padding: const EdgeInsets.only(right: 4),
         child: ChoiceChip(
-          label: Text(label, style: const TextStyle(fontSize: 11, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+          label: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
           selected: selected,
           onSelected: (_) => onTap(),
           visualDensity: VisualDensity.compact,
@@ -239,7 +362,9 @@ class _StampPanelState extends State<StampPanel> {
       case 'move':
         showMoveToCreativeFolderSheet(
           context,
-          folders: service.folders.map((f) => (id: f.id, name: f.name)).toList(),
+          folders: service.folders
+              .map((f) => (id: f.id, name: f.name))
+              .toList(),
           onSelect: (folderId) => service.moveToFolder(stamp.id, folderId),
         );
       case 'export':
@@ -253,8 +378,9 @@ class _StampPanelState extends State<StampPanel> {
   void _deleteStamp(BuildContext context, StampService service, Stamp stamp) {
     if (stamp.isFavorite) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
     service.deleteStamp(stamp.id);
@@ -271,38 +397,62 @@ class _StampPanelState extends State<StampPanel> {
   void _openFolderManagement(BuildContext context, StampService service) {
     showFolderManagementSheet(
       context,
-      getFolders: () => service.folders.map((f) => (id: f.id, name: f.name, isFavorite: f.isFavorite)).toList(),
+      getFolders: () => service.folders
+          .map((f) => (id: f.id, name: f.name, isFavorite: f.isFavorite))
+          .toList(),
       onCreate: (name) => service.createFolder(name),
       onRename: (id, name) => service.renameFolder(id, name),
       onToggleFavorite: (id) => service.toggleFolderFavorite(id),
-      onReorder: (oldIndex, newIndex) => service.reorderFolder(oldIndex, newIndex),
+      onReorder: (oldIndex, newIndex) =>
+          service.reorderFolder(oldIndex, newIndex),
       onDelete: (id) => service.deleteFolder(id),
     );
   }
 
-  Future<void> _createFromImage(BuildContext context, StampService service) async {
+  Future<void> _createFromImage(
+    BuildContext context,
+    StampService service,
+  ) async {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    if (result == null ||
+        result.files.isEmpty ||
+        result.files.first.path == null)
+      return;
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    final name = await promptCreativeAssetName(context, title: l10n.stampCreateDialogTitle);
+    final name = await promptCreativeAssetName(
+      context,
+      title: l10n.stampCreateDialogTitle,
+    );
     if (name == null) return;
     await service.createStampFromImage(result.files.first.path!, name: name);
   }
 
   Future<void> _importStamp(BuildContext context, StampService service) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['niastamp']);
-    if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['niastamp'],
+    );
+    if (result == null ||
+        result.files.isEmpty ||
+        result.files.first.path == null)
+      return;
     try {
       await service.importStampFile(result.files.first.path!);
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.stampImportFailedSnackbar(e.toString()))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.stampImportFailedSnackbar(e.toString()))),
+      );
     }
   }
 
-  Future<void> _exportStamp(BuildContext context, StampService service, Stamp stamp) async {
+  Future<void> _exportStamp(
+    BuildContext context,
+    StampService service,
+    Stamp stamp,
+  ) async {
     try {
       final file = await service.exportStamp(stamp.id);
       if (!context.mounted) return;
@@ -310,7 +460,9 @@ class _StampPanelState extends State<StampPanel> {
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.stampExportFailedSnackbar(e.toString()))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.stampExportFailedSnackbar(e.toString()))),
+      );
     }
   }
 }
@@ -352,19 +504,30 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
         controller: controller,
         padding: const EdgeInsets.all(16),
         children: [
-          Text(l10n.stampEditTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+          Text(
+            l10n.stampEditTitle,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _nameController,
-            decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
+            decoration: InputDecoration(
+              labelText: l10n.creativeAssetNameLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
           const SizedBox(height: 8),
           // スタンプは回転・密度・散布に対応
           SwitchListTile(
             title: Text(l10n.stampRotationLabel),
             value: _stamp.rotation,
-            onChanged: (v) => setState(() => _stamp = _stamp.copyWith(rotation: v)),
+            onChanged: (v) =>
+                setState(() => _stamp = _stamp.copyWith(rotation: v)),
           ),
           _intSliderRow(
             l10n.brushSettingsOpacityLabel,
@@ -377,24 +540,46 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
           // テクスチャをモザイク低解像度化＋色数削減でドット絵風に加工する。
           SwitchListTile(
             title: Text(l10n.stampPixelModeLabel),
-            subtitle: Text(l10n.stampPixelModeHint, style: const TextStyle(fontSize: 11)),
+            subtitle: Text(
+              l10n.stampPixelModeHint,
+              style: const TextStyle(fontSize: 11),
+            ),
             value: _stamp.pixelMode,
-            onChanged: (v) => setState(() => _stamp = _stamp.copyWith(pixelMode: v)),
+            onChanged: (v) =>
+                setState(() => _stamp = _stamp.copyWith(pixelMode: v)),
           ),
-          _sliderRow(l10n.stampDensityLabel, _stamp.density, 0.1, 5.0,
-              (v) => setState(() => _stamp = _stamp.copyWith(density: v))),
-          _sliderRow(l10n.stampScatterLabel, _stamp.scatter, 0.0, 1.0,
-              (v) => setState(() => _stamp = _stamp.copyWith(scatter: v))),
+          _sliderRow(
+            l10n.stampDensityLabel,
+            _stamp.density,
+            0.1,
+            5.0,
+            (v) => setState(() => _stamp = _stamp.copyWith(density: v)),
+          ),
+          _sliderRow(
+            l10n.stampScatterLabel,
+            _stamp.scatter,
+            0.0,
+            1.0,
+            (v) => setState(() => _stamp = _stamp.copyWith(scatter: v)),
+          ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             icon: const Icon(Icons.image_outlined, size: 16),
             label: Text(l10n.stampChangeImageButton),
             onPressed: () async {
-              final result = await FilePicker.platform.pickFiles(type: FileType.image);
-              if (result == null || result.files.isEmpty || result.files.first.path == null) return;
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.image,
+              );
+              if (result == null ||
+                  result.files.isEmpty ||
+                  result.files.first.path == null)
+                return;
               if (!context.mounted) return;
               final service = context.read<StampService>();
-              await service.createStampFromImage(result.files.first.path!, name: _nameController.text);
+              await service.createStampFromImage(
+                result.files.first.path!,
+                name: _nameController.text,
+              );
               service.deleteStamp(_stamp.id);
               if (context.mounted) Navigator.pop(context);
             },
@@ -402,7 +587,9 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () {
-              context.read<StampService>().updateStamp(_stamp.copyWith(name: _nameController.text));
+              context.read<StampService>().updateStamp(
+                _stamp.copyWith(name: _nameController.text),
+              );
               Navigator.pop(context);
             },
             child: Text(l10n.commonSave),
@@ -421,7 +608,10 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
   ) {
     return Row(
       children: [
-        SizedBox(width: 60, child: Text(label, style: const TextStyle(fontSize: 12))),
+        SizedBox(
+          width: 60,
+          child: Text(label, style: const TextStyle(fontSize: 12)),
+        ),
         Expanded(
           child: SteppedSlider(
             min: min.toDouble(),
@@ -447,17 +637,37 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
     );
   }
 
-  Widget _sliderRow(String label, double value, double min, double max, ValueChanged<double> onChanged) {
+  Widget _sliderRow(
+    String label,
+    double value,
+    double min,
+    double max,
+    ValueChanged<double> onChanged,
+  ) {
     return Row(
       children: [
-        SizedBox(width: 60, child: Text(label, style: const TextStyle(fontSize: 12))),
-        Expanded(child: SteppedSlider(min: min, max: max, value: value.clamp(min, max), step: 0.1, onChanged: onChanged)),
+        SizedBox(
+          width: 60,
+          child: Text(label, style: const TextStyle(fontSize: 12)),
+        ),
+        Expanded(
+          child: SteppedSlider(
+            min: min,
+            max: max,
+            value: value.clamp(min, max),
+            step: 0.1,
+            onChanged: onChanged,
+          ),
+        ),
         SizedBox(
           width: 40,
           child: EditableSliderValue(
             text: value.toStringAsFixed(1),
             style: const TextStyle(fontSize: 12),
-            value: value, min: min, max: max, isInt: false,
+            value: value,
+            min: min,
+            max: max,
+            isInt: false,
             onChanged: (v) => onChanged(v.toDouble()),
           ),
         ),

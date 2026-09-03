@@ -49,15 +49,25 @@ class MeshTransformPanel extends StatelessWidget {
             PanelCenterCloseBar(onClose: onClose),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text(l10n.meshTransformPanelTitle,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+              child: Text(
+                l10n.meshTransformPanelTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(l10n.meshTransformPanelHint,
-                  style: TextStyle(
-                      fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              child: Text(
+                l10n.meshTransformPanelHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
             const Divider(height: 12),
             _sliderRow(
@@ -122,8 +132,12 @@ class MeshTransformPanel extends StatelessWidget {
     );
   }
 
-  Widget _sliderRow(BuildContext context,
-      {required String label, required String valueText, required Widget child}) {
+  Widget _sliderRow(
+    BuildContext context, {
+    required String label,
+    required String valueText,
+    required Widget child,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(

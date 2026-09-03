@@ -27,7 +27,8 @@ class AppErrorReporter {
   static const int _maxRecent = 20;
 
   static void record(Object error, StackTrace? stack) {
-    final head = stack
+    final head =
+        stack
             ?.toString()
             .split('\n')
             .where((l) => l.contains('package:niarim/'))

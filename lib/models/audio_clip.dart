@@ -38,7 +38,9 @@ class AudioClip {
     return AudioClip(
       id: id,
       label: label ?? this.label,
-      materialId: materialId == _sentinel ? this.materialId : materialId as String?,
+      materialId: materialId == _sentinel
+          ? this.materialId
+          : materialId as String?,
       startFrame: startFrame ?? this.startFrame,
       lengthFrames: lengthFrames ?? this.lengthFrames,
       volume: volume ?? this.volume,

@@ -48,8 +48,14 @@ class QuickToolPanel extends StatelessWidget {
               PanelCenterCloseBar(onClose: onClose),
               Row(
                 children: [
-                  Text(l10n.quickToolPanelTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                  Text(
+                    l10n.quickToolPanelTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
                   const Spacer(),
                 ],
               ),
@@ -57,8 +63,16 @@ class QuickToolPanel extends StatelessWidget {
               Expanded(
                 child: entries.isEmpty
                     ? Center(
-                        child: Text(l10n.quickToolEmpty,
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)))
+                        child: Text(
+                          l10n.quickToolEmpty,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                      )
                     : ReorderableListView.builder(
                         // ドラッグハンドルを明示アイコンとして置く（既定のまま
                         // だと行の長押しでしか並べ替えを開始できず、可視の
@@ -71,20 +85,36 @@ class QuickToolPanel extends StatelessWidget {
                           return ListTile(
                             key: ValueKey(e.id),
                             dense: true,
-                            leading: Text('${index + 1}', style: const TextStyle(fontSize: 12)),
-                            title: Text(e.label, style: const TextStyle(fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                            leading: Text(
+                              '${index + 1}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            title: Text(
+                              e.label,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
+                            ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.delete, size: 16, color: Colors.red),
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    size: 16,
+                                    color: Colors.red,
+                                  ),
                                   tooltip: l10n.commonDelete,
                                   onPressed: () => service.removeEntry(e.id),
                                 ),
                                 ReorderableDragStartListener(
                                   index: index,
-                                  child: const Icon(Icons.drag_handle, size: 18),
+                                  child: const Icon(
+                                    Icons.drag_handle,
+                                    size: 18,
+                                  ),
                                 ),
                               ],
                             ),
@@ -121,24 +151,33 @@ class QuickToolPanel extends StatelessWidget {
                 title: Text(l10n.quickToolAddCurrentBrush),
                 subtitle: Text('$currentBrushName ${currentSize.round()}px'),
                 onTap: () {
-                  service.addEntry(QuickToolEntry(
-                    id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
-                    label: '$currentBrushName ${currentSize.round()}px',
-                    toolKey: 'pen',
-                    brushId: currentBrushId,
-                    sizeOverride: currentSize,
-                  ));
+                  service.addEntry(
+                    QuickToolEntry(
+                      id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
+                      label: '$currentBrushName ${currentSize.round()}px',
+                      toolKey: 'pen',
+                      brushId: currentBrushId,
+                      sizeOverride: currentSize,
+                    ),
+                  );
                   Navigator.pop(ctx);
                 },
               ),
-            if (currentTool == DrawingTool.pen && currentBrushId != null) const Divider(height: 1),
+            if (currentTool == DrawingTool.pen && currentBrushId != null)
+              const Divider(height: 1),
             for (final brush in brushService.brushes)
               ListTile(
                 leading: const Icon(Icons.brush),
                 title: Text(brush.name),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _showSizeDialog(context, service, brush.id, brush.name, brush.size);
+                  _showSizeDialog(
+                    context,
+                    service,
+                    brush.id,
+                    brush.name,
+                    brush.size,
+                  );
                 },
               ),
             ListTile(
@@ -172,15 +211,22 @@ class QuickToolPanel extends StatelessWidget {
   }
 
   void _addSimple(QuickToolService service, String toolKey, String label) {
-    service.addEntry(QuickToolEntry(
-      id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
-      label: label,
-      toolKey: toolKey,
-    ));
+    service.addEntry(
+      QuickToolEntry(
+        id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
+        label: label,
+        toolKey: toolKey,
+      ),
+    );
   }
 
   void _showSizeDialog(
-      BuildContext context, QuickToolService service, String brushId, String brushName, double defaultSize) {
+    BuildContext context,
+    QuickToolService service,
+    String brushId,
+    String brushName,
+    double defaultSize,
+  ) {
     double size = defaultSize;
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -193,7 +239,8 @@ class QuickToolPanel extends StatelessWidget {
               Expanded(
                 child: SteppedSlider(
                   value: size.clamp(1, 200),
-                  min: 1, max: 200,
+                  min: 1,
+                  max: 200,
                   label: '${size.round()}px',
                   onChanged: (v) => setS(() => size = v),
                 ),
@@ -201,24 +248,32 @@ class QuickToolPanel extends StatelessWidget {
               SizedBox(
                 width: 48,
                 child: EditableSliderValue(
-                  text: '${size.round()}px', textAlign: TextAlign.center,
-                  value: size, min: 1, max: 200,
+                  text: '${size.round()}px',
+                  textAlign: TextAlign.center,
+                  value: size,
+                  min: 1,
+                  max: 200,
                   onChanged: (v) => setS(() => size = v.toDouble()),
                 ),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
-                service.addEntry(QuickToolEntry(
-                  id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
-                  label: '$brushName ${size.round()}px',
-                  toolKey: 'pen',
-                  brushId: brushId,
-                  sizeOverride: size,
-                ));
+                service.addEntry(
+                  QuickToolEntry(
+                    id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
+                    label: '$brushName ${size.round()}px',
+                    toolKey: 'pen',
+                    brushId: brushId,
+                    sizeOverride: size,
+                  ),
+                );
                 Navigator.pop(ctx);
               },
               child: Text(l10n.commonAdd),

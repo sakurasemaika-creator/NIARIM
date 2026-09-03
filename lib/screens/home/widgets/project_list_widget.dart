@@ -19,7 +19,10 @@ import '../../../config/font_fallback.dart';
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
 /// 双方から共通で使う（重複実装を避けるためpublicなトップレベル関数として
 /// 定義し、home_screen.dartからも呼び出せるようにしている）。
-void showCreateFolderNameDialog(BuildContext context, Future<void> Function(String name) onCreate) {
+void showCreateFolderNameDialog(
+  BuildContext context,
+  Future<void> Function(String name) onCreate,
+) {
   final l10n = AppLocalizations.of(context)!;
   final controller = TextEditingController();
   showDialog(
@@ -33,19 +36,28 @@ void showCreateFolderNameDialog(BuildContext context, Future<void> Function(Stri
           TextField(
             controller: controller,
             autofocus: true,
-            decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
+            decoration: InputDecoration(
+              labelText: l10n.folderNameLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
           const SizedBox(height: 8),
           // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
           // ヒント（フォルダは複数階層に対応しているため実現可能）。
           Text(
             l10n.projectListFolderHint,
-            style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 11,
+              color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: Text(l10n.commonCancel),
+        ),
         FilledButton(
           onPressed: () async {
             if (controller.text.trim().isEmpty) return;
@@ -133,13 +145,21 @@ class ProjectListWidget extends StatelessWidget {
       // 検索時はフォルダ階層を無視して全体から名前一致するものを表示する
       // （検索対象：プロジェクト名 / フォルダ名）。
       entries = [
-        ...allFolders.where((f) => f.name.toLowerCase().contains(query)).map((f) => _Entry.folder(f)),
-        ...source.where((p) => p.name.toLowerCase().contains(query)).map((p) => _Entry.project(p)),
+        ...allFolders
+            .where((f) => f.name.toLowerCase().contains(query))
+            .map((f) => _Entry.folder(f)),
+        ...source
+            .where((p) => p.name.toLowerCase().contains(query))
+            .map((p) => _Entry.project(p)),
       ];
     } else {
       entries = [
-        ...allFolders.where((f) => f.parentFolderId == currentFolderId).map((f) => _Entry.folder(f)),
-        ...source.where((p) => p.folderId == currentFolderId).map((p) => _Entry.project(p)),
+        ...allFolders
+            .where((f) => f.parentFolderId == currentFolderId)
+            .map((f) => _Entry.folder(f)),
+        ...source
+            .where((p) => p.folderId == currentFolderId)
+            .map((p) => _Entry.project(p)),
       ];
     }
     if (showFavoritesOnly) {
@@ -154,17 +174,34 @@ class ProjectListWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 96, height: 96,
-              decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
-              child: Icon(Icons.movie_creation_outlined, size: 44, color: scheme.primary),
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.movie_creation_outlined,
+                size: 44,
+                color: scheme.primary,
+              ),
             ),
             const SizedBox(height: 20),
-            Text(l10n.projectListEmptyTitle,
-                style: TextStyle(color: scheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+            Text(
+              l10n.projectListEmptyTitle,
+              style: TextStyle(
+                color: scheme.onSurface,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(l10n.projectListEmptyHint,
-                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
+            Text(
+              l10n.projectListEmptyHint,
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
+            ),
           ],
         ),
       );
@@ -173,7 +210,8 @@ class ProjectListWidget extends StatelessWidget {
     if (viewMode == ProjectViewMode.detail) {
       return ListView.builder(
         itemCount: sorted.length,
-        itemBuilder: (context, index) => _detailTile(context, l10n, sorted[index]),
+        itemBuilder: (context, index) =>
+            _detailTile(context, l10n, sorted[index]),
       );
     }
 
@@ -205,7 +243,11 @@ class ProjectListWidget extends StatelessWidget {
   /// デコードする（一覧行の48px表示で、保存されている長辺200pxのまま
   /// 画像キャッシュへ載せないため）。カード表示のように表示側の方が
   /// 大きくなる場合は指定しない。
-  Widget _thumbnail(BuildContext context, Project project, {double? displayWidth}) {
+  Widget _thumbnail(
+    BuildContext context,
+    Project project, {
+    double? displayWidth,
+  }) {
     final placeholder = Container(
       color: Color(project.backgroundColor),
       child: const Center(child: Icon(Icons.image, color: Colors.white38)),
@@ -222,13 +264,20 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _detailTile(BuildContext context, AppLocalizations l10n, _Entry entry) {
+  Widget _detailTile(
+    BuildContext context,
+    AppLocalizations l10n,
+    _Entry entry,
+  ) {
     if (entry.isFolder) return _folderDetailTile(context, entry.folder!);
     final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
     return ListTile(
       leading: isSelectionMode
-          ? Checkbox(value: isSelected, onChanged: (_) => onSelectionChanged(project.id))
+          ? Checkbox(
+              value: isSelected,
+              onChanged: (_) => onSelectionChanged(project.id),
+            )
           : SizedBox(
               width: 48,
               height: 48,
@@ -238,10 +287,10 @@ class ProjectListWidget extends StatelessWidget {
               ),
             ),
       title: Text(project.name),
-      subtitle: Text(l10n.homeProjectMeta(project.fps, project.durationSeconds)),
-      trailing: isSelectionMode
-          ? null
-          : _projectMenu(context, project),
+      subtitle: Text(
+        l10n.homeProjectMeta(project.fps, project.durationSeconds),
+      ),
+      trailing: isSelectionMode ? null : _projectMenu(context, project),
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : () => context.push('/project/${project.id}'),
@@ -254,18 +303,30 @@ class ProjectListWidget extends StatelessWidget {
     final color = folder.color != null ? Color(folder.color!) : null;
     return ListTile(
       leading: isSelectionMode
-          ? Checkbox(value: isSelected, onChanged: (_) => onSelectionChanged(folder.id))
+          ? Checkbox(
+              value: isSelected,
+              onChanged: (_) => onSelectionChanged(folder.id),
+            )
           : Icon(Icons.folder, color: color, size: 32),
-      title: Text(folder.name, style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+      title: Text(
+        folder.name,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+        ),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (folder.isFavorite) const Icon(Icons.star, color: Colors.amber, size: 18),
+          if (folder.isFavorite)
+            const Icon(Icons.star, color: Colors.amber, size: 18),
           if (!isSelectionMode) _folderMenu(context, folder),
         ],
       ),
-      onTap: isSelectionMode ? () => onSelectionChanged(folder.id) : () => onOpenFolder(folder.id),
+      onTap: isSelectionMode
+          ? () => onSelectionChanged(folder.id)
+          : () => onOpenFolder(folder.id),
       onLongPress: () => onLongPress(folder.id),
     );
   }
@@ -280,7 +341,9 @@ class ProjectListWidget extends StatelessWidget {
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : () => context.push('/project/${project.id}'),
-      onDoubleTap: isSelectionMode ? null : () => context.push('/canvas/${project.id}'),
+      onDoubleTap: isSelectionMode
+          ? null
+          : () => context.push('/canvas/${project.id}'),
       onLongPress: () => onLongPress(project.id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -289,7 +352,9 @@ class ProjectListWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (isSelected ? primary : Colors.black).withValues(alpha: isSelected ? 0.28 : 0.12),
+              color: (isSelected ? primary : Colors.black).withValues(
+                alpha: isSelected ? 0.28 : 0.12,
+              ),
               blurRadius: isSelected ? 14 : 8,
               offset: const Offset(0, 3),
             ),
@@ -301,7 +366,10 @@ class ProjectListWidget extends StatelessWidget {
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: isSelected ? primary : Colors.transparent, width: 2),
+            side: BorderSide(
+              color: isSelected ? primary : Colors.transparent,
+              width: 2,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -323,7 +391,10 @@ class ProjectListWidget extends StatelessWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.55),
+                            ],
                           ),
                         ),
                       ),
@@ -332,11 +403,17 @@ class ProjectListWidget extends StatelessWidget {
                       left: 6,
                       right: 6,
                       bottom: 4,
-                      child: Text(project.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600,
-                              fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                      child: Text(
+                        project.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                     ),
                     if (project.isFavorite)
                       Positioned(
@@ -344,23 +421,42 @@ class ProjectListWidget extends StatelessWidget {
                         right: 4,
                         child: Container(
                           padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4), shape: BoxShape.circle),
-                          child: const Icon(Icons.star, color: Colors.amber, size: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                            size: 14,
+                          ),
                         ),
                       ),
                     if (isSelectionMode)
                       Positioned(
-                        top: 4, left: 4,
+                        top: 4,
+                        left: 4,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 120),
                           padding: const EdgeInsets.all(1),
                           decoration: BoxDecoration(
-                            color: isSelected ? primary : scheme.surface.withValues(alpha: 0.9),
+                            color: isSelected
+                                ? primary
+                                : scheme.surface.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                             border: Border.all(color: primary, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 3)],
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 3,
+                              ),
+                            ],
                           ),
-                          child: Icon(isSelected ? Icons.check : null, size: 16, color: scheme.onPrimary),
+                          child: Icon(
+                            isSelected ? Icons.check : null,
+                            size: 16,
+                            color: scheme.onPrimary,
+                          ),
                         ),
                       ),
                   ],
@@ -379,7 +475,9 @@ class ProjectListWidget extends StatelessWidget {
     final primary = scheme.primary;
     final color = folder.color != null ? Color(folder.color!) : primary;
     return GestureDetector(
-      onTap: isSelectionMode ? () => onSelectionChanged(folder.id) : () => onOpenFolder(folder.id),
+      onTap: isSelectionMode
+          ? () => onSelectionChanged(folder.id)
+          : () => onOpenFolder(folder.id),
       onLongPress: () => onLongPress(folder.id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -388,7 +486,9 @@ class ProjectListWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (isSelected ? primary : Colors.black).withValues(alpha: isSelected ? 0.28 : 0.12),
+              color: (isSelected ? primary : Colors.black).withValues(
+                alpha: isSelected ? 0.28 : 0.12,
+              ),
               blurRadius: isSelected ? 14 : 8,
               offset: const Offset(0, 3),
             ),
@@ -400,59 +500,91 @@ class ProjectListWidget extends StatelessWidget {
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: isSelected ? primary : Colors.transparent, width: 2),
+            side: BorderSide(
+              color: isSelected ? primary : Colors.transparent,
+              width: 2,
+            ),
           ),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [color.withValues(alpha: 0.22), color.withValues(alpha: 0.1)],
-                      ),
-                    ),
-                    child: Center(child: Icon(Icons.folder_rounded, color: color, size: 46)),
-                  ),
-                  if (folder.isFavorite)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(color: scheme.surface.withValues(alpha: 0.75), shape: BoxShape.circle),
-                        child: const Icon(Icons.star, color: Colors.amber, size: 14),
-                      ),
-                    ),
-                  if (isSelectionMode)
-                    Positioned(
-                      top: 4, left: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(1),
-                        decoration: BoxDecoration(
-                          color: isSelected ? primary : scheme.surface.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: primary, width: 1.5),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            color.withValues(alpha: 0.22),
+                            color.withValues(alpha: 0.1),
+                          ],
                         ),
-                        child: Icon(isSelected ? Icons.check : null, size: 16, color: scheme.onPrimary),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.folder_rounded,
+                          color: color,
+                          size: 46,
+                        ),
                       ),
                     ),
-                ],
+                    if (folder.isFavorite)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: scheme.surface.withValues(alpha: 0.75),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                            size: 14,
+                          ),
+                        ),
+                      ),
+                    if (isSelectionMode)
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? primary
+                                : scheme.surface.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: primary, width: 1.5),
+                          ),
+                          child: Icon(
+                            isSelected ? Icons.check : null,
+                            size: 16,
+                            color: scheme.onPrimary,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-              child: Text(folder.name,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
+                child: Text(
+                  folder.name,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-            ),
-          ],
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -467,16 +599,29 @@ class ProjectListWidget extends StatelessWidget {
       itemBuilder: (_) => [
         PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
         PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-        PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
-        PopupMenuItem(value: 'share', child: Text(l10n.projectListCreateShareAction)),
+        PopupMenuItem(
+          value: 'duplicate',
+          child: Text(l10n.themeDuplicateAction),
+        ),
+        PopupMenuItem(
+          value: 'share',
+          child: Text(l10n.projectListCreateShareAction),
+        ),
         PopupMenuItem(
           value: 'favorite',
-          child: Text(project.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd),
+          child: Text(
+            project.isFavorite
+                ? l10n.colorPickerFavoriteRemove
+                : l10n.colorPickerFavoriteAdd,
+          ),
         ),
         PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
         PopupMenuItem(
           value: 'delete',
-          child: Text(l10n.projectDetailTrashMenuItem, style: const TextStyle(color: Colors.red)),
+          child: Text(
+            l10n.projectDetailTrashMenuItem,
+            style: const TextStyle(color: Colors.red),
+          ),
         ),
       ],
     );
@@ -489,15 +634,25 @@ class ProjectListWidget extends StatelessWidget {
       onSelected: (action) => _handleFolderAction(context, action, folder),
       itemBuilder: (_) => [
         PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
-        PopupMenuItem(value: 'edit', child: Text(l10n.projectListEditFolderAction)),
+        PopupMenuItem(
+          value: 'edit',
+          child: Text(l10n.projectListEditFolderAction),
+        ),
         PopupMenuItem(
           value: 'favorite',
-          child: Text(folder.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd),
+          child: Text(
+            folder.isFavorite
+                ? l10n.colorPickerFavoriteRemove
+                : l10n.colorPickerFavoriteAdd,
+          ),
         ),
         PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
         PopupMenuItem(
           value: 'delete',
-          child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
+          child: Text(
+            l10n.commonDelete,
+            style: const TextStyle(color: Colors.red),
+          ),
         ),
       ],
     );
@@ -524,17 +679,26 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   /// お気に入り登録中は削除できない。
-  void _deleteProject(BuildContext context, ProjectService service, Project project) {
+  void _deleteProject(
+    BuildContext context,
+    ProjectService service,
+    Project project,
+  ) {
     if (project.isFavorite) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
     service.deleteProject(project.id);
   }
 
-  void _handleFolderAction(BuildContext context, String action, ProjectFolder folder) {
+  void _handleFolderAction(
+    BuildContext context,
+    String action,
+    ProjectFolder folder,
+  ) {
     final service = context.read<ProjectService>();
     switch (action) {
       case 'open':
@@ -556,8 +720,9 @@ class ProjectListWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     // お気に入り登録中は削除できない。
     if (folder.isFavorite) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
     showDialog(
@@ -566,7 +731,10 @@ class ProjectListWidget extends StatelessWidget {
         title: Text(l10n.projectListDeleteFolderConfirmTitle),
         content: Text(l10n.projectListDeleteFolderConfirmBody(folder.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -592,7 +760,9 @@ class ProjectListWidget extends StatelessWidget {
     final tileManager = service.tileManagerOf(project.id);
     try {
       final bundle = await materialService.buildShareBundle(
-          project.id, includeOptions.materialTypes);
+        project.id,
+        includeOptions.materialTypes,
+      );
       final fontBundle = includeOptions.includeFonts
           ? await buildFontShareBundle(service, fontService, project.id)
           : (files: <String, Uint8List>{}, manifest: null);
@@ -628,10 +798,16 @@ class ProjectListWidget extends StatelessWidget {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
-              context.read<ProjectService>().renameProject(project.id, controller.text);
+              context.read<ProjectService>().renameProject(
+                project.id,
+                controller.text,
+              );
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonChange),
@@ -645,7 +821,8 @@ class ProjectListWidget extends StatelessWidget {
     _showFolderPickerSheet(
       context,
       excludeFolderId: null,
-      onSelect: (folderId) => context.read<ProjectService>().moveToFolder(project.id, folderId),
+      onSelect: (folderId) =>
+          context.read<ProjectService>().moveToFolder(project.id, folderId),
       onCreateAndSelect: (name) async {
         final service = context.read<ProjectService>();
         final folder = await service.createFolder(name);
@@ -654,12 +831,16 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  void _showMoveFolderToFolderDialog(BuildContext context, ProjectFolder folder) {
+  void _showMoveFolderToFolderDialog(
+    BuildContext context,
+    ProjectFolder folder,
+  ) {
     _showFolderPickerSheet(
       context,
       // 自分自身の直下へは移動できない（循環防止はサービス側でも二重にガードする）
       excludeFolderId: folder.id,
-      onSelect: (folderId) => context.read<ProjectService>().moveFolderTo(folder.id, folderId),
+      onSelect: (folderId) =>
+          context.read<ProjectService>().moveFolderTo(folder.id, folderId),
       onCreateAndSelect: (name) async {
         final service = context.read<ProjectService>();
         final newFolder = await service.createFolder(name);
@@ -675,7 +856,11 @@ class ProjectListWidget extends StatelessWidget {
     required Future<void> Function(String name) onCreateAndSelect,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    final folders = context.read<ProjectService>().folders.where((f) => f.id != excludeFolderId).toList();
+    final folders = context
+        .read<ProjectService>()
+        .folders
+        .where((f) => f.id != excludeFolderId)
+        .toList();
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -684,8 +869,14 @@ class ProjectListWidget extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+              child: Text(
+                l10n.folderMoveToTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.folder_open),
@@ -695,19 +886,24 @@ class ProjectListWidget extends StatelessWidget {
                 Navigator.pop(ctx);
               },
             ),
-            ...folders.map((folder) => ListTile(
-              leading: Icon(Icons.folder, color: folder.color != null ? Color(folder.color!) : null),
-              title: Text(folder.name),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 20),
-                tooltip: l10n.projectListEditFolderTooltip,
-                onPressed: () => _showEditFolderDialog(context, folder),
+            ...folders.map(
+              (folder) => ListTile(
+                leading: Icon(
+                  Icons.folder,
+                  color: folder.color != null ? Color(folder.color!) : null,
+                ),
+                title: Text(folder.name),
+                trailing: IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  tooltip: l10n.projectListEditFolderTooltip,
+                  onPressed: () => _showEditFolderDialog(context, folder),
+                ),
+                onTap: () {
+                  onSelect(folder.id);
+                  Navigator.pop(ctx);
+                },
               ),
-              onTap: () {
-                onSelect(folder.id);
-                Navigator.pop(ctx);
-              },
-            )),
+            ),
             ListTile(
               leading: const Icon(Icons.create_new_folder),
               title: Text(l10n.projectListCreateFolderAction),
@@ -724,8 +920,13 @@ class ProjectListWidget extends StatelessWidget {
 
   // フォルダ名変更・色変更・削除（フォルダ管理）
   static const _folderColors = [
-    0xFFFF5C7A, 0xFFFFB020, 0xFFFFE066, 0xFF3DDC97,
-    0xFF3AA6FF, 0xFFB15CFF, 0xFF9E9E9E,
+    0xFFFF5C7A,
+    0xFFFFB020,
+    0xFFFFE066,
+    0xFF3DDC97,
+    0xFF3AA6FF,
+    0xFFB15CFF,
+    0xFF9E9E9E,
   ];
 
   void _showEditFolderDialog(BuildContext context, ProjectFolder folder) {
@@ -744,27 +945,49 @@ class ProjectListWidget extends StatelessWidget {
               TextField(
                 controller: controller,
                 autofocus: true,
-                decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: l10n.folderNameLabel,
+                  border: const OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 16),
-              Text(l10n.projectListFolderColorLabel, style: const TextStyle(fontSize: 12)),
+              Text(
+                l10n.projectListFolderColorLabel,
+                style: const TextStyle(fontSize: 12),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _colorDot(ctx, null, selectedColor, (v) => setS(() => selectedColor = v)),
-                  ..._folderColors.map((c) => _colorDot(ctx, c, selectedColor, (v) => setS(() => selectedColor = v))),
+                  _colorDot(
+                    ctx,
+                    null,
+                    selectedColor,
+                    (v) => setS(() => selectedColor = v),
+                  ),
+                  ..._folderColors.map(
+                    (c) => _colorDot(
+                      ctx,
+                      c,
+                      selectedColor,
+                      (v) => setS(() => selectedColor = v),
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
                 final service = context.read<ProjectService>();
-                if (controller.text.isNotEmpty && controller.text != folder.name) {
+                if (controller.text.isNotEmpty &&
+                    controller.text != folder.name) {
                   service.renameFolder(folder.id, controller.text);
                 }
                 if (selectedColor != folder.color) {
@@ -780,7 +1003,12 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _colorDot(BuildContext context, int? color, int? selected, ValueChanged<int?> onTap) {
+  Widget _colorDot(
+    BuildContext context,
+    int? color,
+    int? selected,
+    ValueChanged<int?> onTap,
+  ) {
     final isSelected = color == selected;
     final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
@@ -796,7 +1024,9 @@ class ProjectListWidget extends StatelessWidget {
             width: isSelected ? 3 : 1,
           ),
         ),
-        child: color == null ? Icon(Icons.block, size: 16, color: scheme.onSurfaceVariant) : null,
+        child: color == null
+            ? Icon(Icons.block, size: 16, color: scheme.onSurfaceVariant)
+            : null,
       ),
     );
   }
@@ -805,10 +1035,14 @@ class ProjectListWidget extends StatelessWidget {
 /// .niashare作成時の同梱選択ダイアログ（画像/動画/音声を
 /// 種類ごとに選択できる。デフォルトは全種類ON。「フォントを含める」を
 /// 選択した場合のみユーザー追加フォントも同梱する）。キャンセル時はnullを返す。
-Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncludeDialog(
-    BuildContext context) {
+Future<({Set<MaterialType> materialTypes, bool includeFonts})?>
+showMaterialIncludeDialog(BuildContext context) {
   final l10n = AppLocalizations.of(context)!;
-  final selected = <MaterialType>{MaterialType.image, MaterialType.video, MaterialType.audio};
+  final selected = <MaterialType>{
+    MaterialType.image,
+    MaterialType.video,
+    MaterialType.audio,
+  };
   bool includeFonts = true;
   return showDialog<({Set<MaterialType> materialTypes, bool includeFonts})>(
     context: context,
@@ -819,43 +1053,63 @@ Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncl
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.projectListMaterialIncludeHint,
-                style: const TextStyle(fontSize: 12)),
+            Text(
+              l10n.projectListMaterialIncludeHint,
+              style: const TextStyle(fontSize: 12),
+            ),
             CheckboxListTile(
               value: selected.contains(MaterialType.image),
               title: Text(l10n.projectListMaterialImage),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(
-                  () => v == true ? selected.add(MaterialType.image) : selected.remove(MaterialType.image)),
+                () => v == true
+                    ? selected.add(MaterialType.image)
+                    : selected.remove(MaterialType.image),
+              ),
             ),
             CheckboxListTile(
               value: selected.contains(MaterialType.video),
               title: Text(l10n.projectListMaterialVideo),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(
-                  () => v == true ? selected.add(MaterialType.video) : selected.remove(MaterialType.video)),
+                () => v == true
+                    ? selected.add(MaterialType.video)
+                    : selected.remove(MaterialType.video),
+              ),
             ),
             CheckboxListTile(
               value: selected.contains(MaterialType.audio),
               title: Text(l10n.projectListMaterialAudio),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(
-                  () => v == true ? selected.add(MaterialType.audio) : selected.remove(MaterialType.audio)),
+                () => v == true
+                    ? selected.add(MaterialType.audio)
+                    : selected.remove(MaterialType.audio),
+              ),
             ),
             const Divider(),
             CheckboxListTile(
               value: includeFonts,
               title: Text(l10n.projectListIncludeFontsTitle),
-              subtitle: Text(l10n.projectListIncludeFontsSubtitle, style: const TextStyle(fontSize: 11)),
+              subtitle: Text(
+                l10n.projectListIncludeFontsSubtitle,
+                style: const TextStyle(fontSize: 11),
+              ),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(() => includeFonts = v ?? true),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
-            onPressed: () => Navigator.pop(ctx, (materialTypes: selected, includeFonts: includeFonts)),
+            onPressed: () => Navigator.pop(ctx, (
+              materialTypes: selected,
+              includeFonts: includeFonts,
+            )),
             child: Text(l10n.commonCreate),
           ),
         ],
@@ -868,7 +1122,10 @@ Future<({Set<MaterialType> materialTypes, bool includeFonts})?> showMaterialIncl
 /// ためのファイル群とマニフェストを作成する（プロジェクト共有時の
 /// 「フォントを含める」選択時に使用）。使用フォントがアプリ標準フォントのみの場合は空を返す。
 Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(
-    ProjectService projectService, FontService fontService, String projectId) async {
+  ProjectService projectService,
+  FontService fontService,
+  String projectId,
+) async {
   final usedFamilies = projectService.usedFontFamiliesOf(projectId);
   final files = <String, Uint8List>{};
   final manifestList = <Map<String, dynamic>>[];
@@ -877,7 +1134,11 @@ Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(
     final bytes = await fontService.readFontBytes(font);
     if (bytes == null) continue;
     files[font.fileName] = bytes;
-    manifestList.add({'id': font.id, 'displayName': font.displayName, 'fileName': font.fileName});
+    manifestList.add({
+      'id': font.id,
+      'displayName': font.displayName,
+      'fileName': font.fileName,
+    });
   }
   if (files.isEmpty) return (files: <String, Uint8List>{}, manifest: null);
   return (files: files, manifest: jsonEncode(manifestList));

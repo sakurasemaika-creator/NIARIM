@@ -27,7 +27,11 @@ class PremiumLockWidget extends StatelessWidget {
       child: Stack(
         children: [
           Opacity(opacity: 0.5, child: child),
-          const Positioned(right: 4, top: 4, child: Icon(Icons.lock, size: 16, color: Colors.amber)),
+          const Positioned(
+            right: 4,
+            top: 4,
+            child: Icon(Icons.lock, size: 16, color: Colors.amber),
+          ),
         ],
       ),
     );
@@ -59,10 +63,7 @@ class _PremiumBannerDialog extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback onRegister;
 
-  const _PremiumBannerDialog({
-    required this.onClose,
-    required this.onRegister,
-  });
+  const _PremiumBannerDialog({required this.onClose, required this.onRegister});
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +77,9 @@ class _PremiumBannerDialog extends StatelessWidget {
           GestureDetector(
             onTap: onRegister,
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
               child: Image.asset(
                 'assets/images/premium_banner.webp',
                 width: double.infinity,
@@ -90,10 +93,20 @@ class _PremiumBannerDialog extends StatelessWidget {
                       children: [
                         Icon(Icons.star, color: Colors.amber, size: 48),
                         SizedBox(height: 8),
-                        Text('NIARIM Premium', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                        Text(
+                          'NIARIM Premium',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
+                        ),
                         SizedBox(height: 4),
-                        Text('premium_banner.webp', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text(
+                          'premium_banner.webp',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ],
                     ),
                   ),

@@ -55,8 +55,10 @@ class SaveTreeService extends ChangeNotifier {
     String? comment,
     Uint8List? thumbnailPngBytes,
   }) async {
-    assert(slotIndex >= 0 && slotIndex < _slotMax,
-        'slotIndex must be 0..${ _slotMax - 1}');
+    assert(
+      slotIndex >= 0 && slotIndex < _slotMax,
+      'slotIndex must be 0..${_slotMax - 1}',
+    );
     _nodesByProject.putIfAbsent(projectId, () => []);
     final old = _nodesByProject[projectId]!
         .where((n) => n.slotIndex == slotIndex)
@@ -77,7 +79,10 @@ class SaveTreeService extends ChangeNotifier {
     String? thumbnailPath;
     if (thumbnailPngBytes != null) {
       thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
-          projectId, nodeId, thumbnailPngBytes);
+        projectId,
+        nodeId,
+        thumbnailPngBytes,
+      );
     }
     _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
     final node = SaveNode(
@@ -118,7 +123,10 @@ class SaveTreeService extends ChangeNotifier {
     String? thumbnailPath;
     if (thumbnailPngBytes != null) {
       thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
-          projectId, nodeId, thumbnailPngBytes);
+        projectId,
+        nodeId,
+        thumbnailPngBytes,
+      );
     }
     final node = SaveNode(
       id: nodeId,
@@ -204,15 +212,19 @@ class SaveTreeService extends ChangeNotifier {
       }).toList();
       if (newSlotMax != null) _slotMax = newSlotMax;
     } else {
-      newNodes = keep.map((n) => SaveNode(
-        id: n.id,
-        projectId: n.projectId,
-        savedAt: n.savedAt,
-        comment: n.comment,
-        thumbnailPath: n.thumbnailPath,
-        parentId: null,
-        slotIndex: -1,
-      )).toList();
+      newNodes = keep
+          .map(
+            (n) => SaveNode(
+              id: n.id,
+              projectId: n.projectId,
+              savedAt: n.savedAt,
+              comment: n.comment,
+              thumbnailPath: n.thumbnailPath,
+              parentId: null,
+              slotIndex: -1,
+            ),
+          )
+          .toList();
     }
 
     _nodesByProject[projectId] = newNodes;

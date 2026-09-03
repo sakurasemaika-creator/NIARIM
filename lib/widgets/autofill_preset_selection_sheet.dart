@@ -23,7 +23,8 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final selected = Set<String>.from(
-      initiallyEnabledIds ?? allPresets.map((p) => p.id));
+    initiallyEnabledIds ?? allPresets.map((p) => p.id),
+  );
   final result = await showModalBottomSheet<Set<String>>(
     context: context,
     isScrollControlled: true,
@@ -38,12 +39,20 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(l10n.autofillPresetSelectionTitle,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                      child: Text(
+                        l10n.autofillPresetSelectionTitle,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                     ),
                     TextButton(
-                      onPressed: () => setS(() => selected.addAll(allPresets.map((p) => p.id))),
+                      onPressed: () => setS(
+                        () => selected.addAll(allPresets.map((p) => p.id)),
+                      ),
                       child: Text(l10n.homeSelectionAllSelect),
                     ),
                     TextButton(
@@ -55,8 +64,13 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(l10n.autofillPresetSelectionHint,
-                    style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+                child: Text(
+                  l10n.autofillPresetSelectionHint,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
               Expanded(
                 child: allPresets.isEmpty
@@ -69,16 +83,20 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                         itemBuilder: (context, i) {
                           final preset = allPresets[i];
                           return CheckboxListTile(
-                              value: selected.contains(preset.id),
-                              title: Text(preset.name),
-                              subtitle: Text(l10n.autofillPresetSelectionPartCount(preset.parts.length)),
-                              onChanged: (v) => setS(() {
-                                if (v ?? false) {
-                                  selected.add(preset.id);
-                                } else {
-                                  selected.remove(preset.id);
-                                }
-                              }),
+                            value: selected.contains(preset.id),
+                            title: Text(preset.name),
+                            subtitle: Text(
+                              l10n.autofillPresetSelectionPartCount(
+                                preset.parts.length,
+                              ),
+                            ),
+                            onChanged: (v) => setS(() {
+                              if (v ?? false) {
+                                selected.add(preset.id);
+                              } else {
+                                selected.remove(preset.id);
+                              }
+                            }),
                           );
                         },
                       ),
@@ -87,7 +105,9 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                 padding: const EdgeInsets.all(12),
                 child: FilledButton(
                   onPressed: () => Navigator.pop(ctx, selected),
-                  style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                  ),
                   child: Text(l10n.commonOk),
                 ),
               ),
@@ -97,7 +117,8 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
       ),
     ),
   );
-  if (result == null) return const AutofillPresetSelectionResult(cancelled: true, ids: null);
+  if (result == null)
+    return const AutofillPresetSelectionResult(cancelled: true, ids: null);
   final allIds = allPresets.map((p) => p.id).toSet();
   // 全選択のままなら「すべて使用する」を意味するnullとして保存する
   // （今後プリセットが増えた場合も自動的に対象へ含まれるようにするため）。
@@ -110,5 +131,8 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
 class AutofillPresetSelectionResult {
   final bool cancelled;
   final List<String>? ids;
-  const AutofillPresetSelectionResult({required this.cancelled, required this.ids});
+  const AutofillPresetSelectionResult({
+    required this.cancelled,
+    required this.ids,
+  });
 }

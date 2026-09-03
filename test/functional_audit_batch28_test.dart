@@ -17,10 +17,16 @@ void main() {
   test('組み込み全6ブラシをBrushService実プリセット値のまま実描画しPNGと画素特性を検査する', () async {
     final service = BrushService();
     await service.init();
-    final brushes = service.brushes.where((b) => b.id.startsWith('Brush000')).toList();
+    final brushes = service.brushes
+        .where((b) => b.id.startsWith('Brush000'))
+        .toList();
     expect(brushes.map((b) => b.id).toSet(), {
-      'Brush0001', 'Brush0002', 'Brush0003',
-      'Brush0004', 'Brush0005', 'Brush0006',
+      'Brush0001',
+      'Brush0002',
+      'Brush0003',
+      'Brush0004',
+      'Brush0005',
+      'Brush0006',
     }, reason: '組み込みブラシ6種が欠けず監査対象になること');
 
     final signatures = <String, String>{};
@@ -36,21 +42,40 @@ void main() {
 
       // 実際のペン入力に近い、筆圧が弱→強→弱へ変化する緩いS字ストローク。
       const points = <(double, double, double)>[
-        (18, 78, 0.30), (35, 63, 0.45), (55, 51, 0.62),
-        (78, 45, 0.78), (104, 48, 1.00), (130, 58, 0.85),
-        (156, 70, 0.65), (182, 76, 0.45), (204, 70, 0.30),
+        (18, 78, 0.30),
+        (35, 63, 0.45),
+        (55, 51, 0.62),
+        (78, 45, 0.78),
+        (104, 48, 1.00),
+        (130, 58, 0.85),
+        (156, 70, 0.65),
+        (182, 76, 0.45),
+        (204, 70, 0.30),
       ];
-      engine.beginStroke(StrokePoint(x: points.first.$1, y: points.first.$2, pressure: points.first.$3), 'paint');
+      engine.beginStroke(
+        StrokePoint(
+          x: points.first.$1,
+          y: points.first.$2,
+          pressure: points.first.$3,
+        ),
+        'paint',
+      );
       for (final p in points.skip(1)) {
-        engine.continueStroke(StrokePoint(x: p.$1, y: p.$2, pressure: p.$3), 'paint');
+        engine.continueStroke(
+          StrokePoint(x: p.$1, y: p.$2, pressure: p.$3),
+          'paint',
+        );
       }
       engine.endStroke();
 
       final image = await tm.compositeLayerToImage('paint');
-      final rgba = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+      final rgba = (await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!.buffer.asUint8List();
       final png = await image.toByteData(format: ui.ImageByteFormat.png);
-      await File('${out.path}/builtin_brush_${brush.id}_${_safe(brush.name)}.png')
-          .writeAsBytes(png!.buffer.asUint8List());
+      await File(
+        '${out.path}/builtin_brush_${brush.id}_${_safe(brush.name)}.png',
+      ).writeAsBytes(png!.buffer.asUint8List());
 
       var count = 0;
       var mid = 0;
@@ -68,7 +93,12 @@ void main() {
       nonTransparent[brush.id] = count;
       intermediateAlpha[brush.id] = mid;
       signatures[brush.id] = '$hash:$count:$mid';
-      expect(count, greaterThan(20), reason: '${brush.name} must produce a visible stroke with its actual preset');
+      expect(
+        count,
+        greaterThan(20),
+        reason:
+            '${brush.name} must produce a visible stroke with its actual preset',
+      );
 
       image.dispose();
       tm.dispose();
@@ -81,10 +111,14 @@ void main() {
     // エアブラシはopacity40 + blur50の実プリセットなので中間alphaが大量に生じる。
     expect(intermediateAlpha['Brush0003']!, greaterThan(200));
     // Gペンは3px、エアブラシは30pxなので同じ入力でも描画面積が明確に違う。
-    expect(nonTransparent['Brush0003']!, greaterThan(nonTransparent['Brush0002']! * 3));
+    expect(
+      nonTransparent['Brush0003']!,
+      greaterThan(nonTransparent['Brush0002']! * 3),
+    );
     // マーカーは65%不透明度 + 減衰を持つため、中間alphaが存在する。
     expect(intermediateAlpha['Brush0005']!, greaterThan(20));
   });
 }
 
-String _safe(String s) => s.replaceAll(RegExp(r'[^0-9A-Za-z_\-ぁ-んァ-ヶ一-龠]'), '_');
+String _safe(String s) =>
+    s.replaceAll(RegExp(r'[^0-9A-Za-z_\-ぁ-んァ-ヶ一-龠]'), '_');

@@ -76,11 +76,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     _b = (color.b * 255).round();
   }
 
-  Color get _currentColor => HSVColor.fromAHSV(_alpha, _hue, _saturation, _value).toColor();
+  Color get _currentColor =>
+      HSVColor.fromAHSV(_alpha, _hue, _saturation, _value).toColor();
 
   void _applyHsv() {
     // 透明色を選択中にHSVを操作した場合は、不透明色へ自動的に戻す。
-    setState(() { if (_alpha == 0) _alpha = 1.0; });
+    setState(() {
+      if (_alpha == 0) _alpha = 1.0;
+    });
     final color = _currentColor;
     _r = (color.r * 255).round();
     _g = (color.g * 255).round();
@@ -145,11 +148,18 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.showCloseBar) PanelCenterCloseBar(onClose: widget.onClose),
+              if (widget.showCloseBar)
+                PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(l10n.colorPickerTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                  Text(
+                    l10n.colorPickerTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
                   const Spacer(),
                   // スポイトボタン（カラーピッカー内のスポイトボタン）
                   if (widget.onEyedropperTap != null)
@@ -172,37 +182,67 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   hue: _hue,
                   saturation: _saturation,
                   value: _value,
-                  onHueChanged: (h) { _hue = h; _applyHsv(); },
-                  onSvChanged: (s, v) { _saturation = s; _value = v; _applyHsv(); },
+                  onHueChanged: (h) {
+                    _hue = h;
+                    _applyHsv();
+                  },
+                  onSvChanged: (s, v) {
+                    _saturation = s;
+                    _value = v;
+                    _applyHsv();
+                  },
                   onChangeEnd: _commitToRecent,
                   isTransparent: _alpha == 0,
                   onToggleTransparent: _toggleTransparent,
                 ),
               ),
               const SizedBox(height: 8),
-              _slider('R', _r.toDouble(), 0, 255, (v) { _r = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
-              _slider('G', _g.toDouble(), 0, 255, (v) { _g = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
-              _slider('B', _b.toDouble(), 0, 255, (v) { _b = v.round(); _applyRgb(); }, (_) => _commitToRecent()),
+              _slider('R', _r.toDouble(), 0, 255, (v) {
+                _r = v.round();
+                _applyRgb();
+              }, (_) => _commitToRecent()),
+              _slider('G', _g.toDouble(), 0, 255, (v) {
+                _g = v.round();
+                _applyRgb();
+              }, (_) => _commitToRecent()),
+              _slider('B', _b.toDouble(), 0, 255, (v) {
+                _b = v.round();
+                _applyRgb();
+              }, (_) => _commitToRecent()),
               const SizedBox(height: 4),
               // 不透明度スライダー（カラーピッカーは常に透明色も選択
               // できるようにする）。チェッカー柄の上にプレビューを
               // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
               // 現在色プレビューは一目で分かるよう大きめに表示する。
-              Text(l10n.colorPickerOpacityLabel,
-                  style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(
+                l10n.colorPickerOpacityLabel,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
               Row(
                 children: [
                   SizedBox(
                     width: 28,
                     height: 28,
-                    child: CustomPaint(painter: _CheckerboardPainter(), child: ColoredBox(color: _currentColor)),
+                    child: CustomPaint(
+                      painter: _CheckerboardPainter(),
+                      child: ColoredBox(color: _currentColor),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: SteppedSlider(
-                      min: 0, max: 1, value: _alpha, step: 0.01,
+                      min: 0,
+                      max: 1,
+                      value: _alpha,
+                      step: 0.01,
                       label: '${(_alpha * 100).round()}%',
-                      onChanged: (v) { _alpha = v; _applyAlpha(); },
+                      onChanged: (v) {
+                        _alpha = v;
+                        _applyAlpha();
+                      },
                       onChangeEnd: (_) => _commitToRecent(),
                     ),
                   ),
@@ -211,8 +251,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     child: EditableSliderValue(
                       text: '${(_alpha * 100).round()}%',
                       style: const TextStyle(fontSize: 11),
-                      value: (_alpha * 100).round(), min: 0, max: 100,
-                      onChanged: (v) { _alpha = v / 100; _applyAlpha(); _commitToRecent(); },
+                      value: (_alpha * 100).round(),
+                      min: 0,
+                      max: 100,
+                      onChanged: (v) {
+                        _alpha = v / 100;
+                        _applyAlpha();
+                        _commitToRecent();
+                      },
                     ),
                   ),
                 ],
@@ -228,7 +274,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       style: const TextStyle(fontSize: 12),
                       decoration: const InputDecoration(
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
                         border: OutlineInputBorder(),
                       ),
                       onSubmitted: (hex) {
@@ -245,16 +294,23 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     icon: const Icon(Icons.copy, size: 16),
                     tooltip: l10n.commonCopy,
                     onPressed: () {
-                      Clipboard.setData(ClipboardData(text: '#${_hexController.text}'));
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(l10n.colorPickerHexCopiedSnackbar)));
+                      Clipboard.setData(
+                        ClipboardData(text: '#${_hexController.text}'),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.colorPickerHexCopiedSnackbar),
+                        ),
+                      );
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.paste, size: 16),
                     tooltip: l10n.commonPaste,
                     onPressed: () async {
-                      final data = await Clipboard.getData(Clipboard.kTextPlain);
+                      final data = await Clipboard.getData(
+                        Clipboard.kTextPlain,
+                      );
                       final text = data?.text;
                       if (text == null) return;
                       final color = _hexToColor(text);
@@ -268,11 +324,22 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(l10n.colorPickerRecentColorsLabel,
-                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(
+                l10n.colorPickerRecentColorsLabel,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 4),
               if (paletteService.recentColors.isEmpty)
-                Text(l10n.colorPickerRecentColorsEmpty, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline))
+                Text(
+                  l10n.colorPickerRecentColorsEmpty,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                )
               else
                 Wrap(
                   spacing: 6,
@@ -287,7 +354,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         decoration: BoxDecoration(
                           color: color,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
                         ),
                       ),
                     );
@@ -307,30 +376,44 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   /// パレットセクション（「ユーザーが任意の色を登録できる」
   /// 「パレットの作成・名前変更・削除が可能」「複数パレットを切替えて使用」
   /// 「色の追加・削除・ドラッグで並び替えが可能」「お気に入り登録に対応」）。
-  Widget _paletteSection(BuildContext context, AppLocalizations l10n, PaletteService paletteService) {
+  Widget _paletteSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    PaletteService paletteService,
+  ) {
     final active = paletteService.activePalette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Text(l10n.colorPickerPaletteLabel,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            Text(
+              l10n.colorPickerPaletteLabel,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
             const Spacer(),
             IconButton(
               icon: const Icon(Icons.add, size: 16),
               tooltip: l10n.colorPickerNewPaletteTooltip,
-              onPressed: () => _showCreatePaletteDialog(context, l10n, paletteService),
+              onPressed: () =>
+                  _showCreatePaletteDialog(context, l10n, paletteService),
             ),
             IconButton(
               icon: const Icon(Icons.download_outlined, size: 16),
               tooltip: l10n.colorPickerImportPaletteTooltip,
-              onPressed: () => _showImportPaletteSheet(context, l10n, paletteService),
+              onPressed: () =>
+                  _showImportPaletteSheet(context, l10n, paletteService),
             ),
             IconButton(
               icon: const Icon(Icons.more_horiz, size: 16),
               tooltip: l10n.colorPickerManagePaletteTooltip,
-              onPressed: active == null ? null : () => _showPaletteMenu(context, l10n, paletteService, active),
+              onPressed: active == null
+                  ? null
+                  : () =>
+                        _showPaletteMenu(context, l10n, paletteService, active),
             ),
           ],
         ),
@@ -345,9 +428,16 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 label: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (p.isFavorite) const Icon(Icons.star, size: 10, color: Colors.amber),
-                    Text(p.name, style: const TextStyle(fontSize: 10, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                    if (p.isFavorite)
+                      const Icon(Icons.star, size: 10, color: Colors.amber),
+                    Text(
+                      p.name,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                   ],
                 ),
                 selected: isActive,
@@ -360,8 +450,13 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
         if (active == null)
           const SizedBox.shrink()
         else if (active.colors.isEmpty)
-          Text(l10n.colorPickerPaletteEmptyHint,
-              style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline))
+          Text(
+            l10n.colorPickerPaletteEmptyHint,
+            style: TextStyle(
+              fontSize: 10,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          )
         else
           Wrap(
             spacing: 6,
@@ -370,14 +465,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               for (int i = 0; i < active.colors.length; i++)
                 GestureDetector(
                   onTap: () => _applyColor(Color(active.colors[i])),
-                  onLongPress: () => paletteService.removeColorFromPalette(active.id, i),
+                  onLongPress: () =>
+                      paletteService.removeColorFromPalette(active.id, i),
                   child: Container(
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
                       color: Color(active.colors[i]),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                     ),
                   ),
                 ),
@@ -386,23 +484,38 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
         if (active != null && active.colors.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 2),
-            child: Text(l10n.colorPickerPaletteLongPressHint,
-                style: TextStyle(fontSize: 9, color: Theme.of(context).colorScheme.outline)),
+            child: Text(
+              l10n.colorPickerPaletteLongPressHint,
+              style: TextStyle(
+                fontSize: 9,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
           ),
         const SizedBox(height: 4),
         if (active != null)
           TextButton.icon(
             onPressed: () {
-              paletteService.addColorToPalette(active.id, _currentColor.toARGB32());
+              paletteService.addColorToPalette(
+                active.id,
+                _currentColor.toARGB32(),
+              );
             },
             icon: const Icon(Icons.add, size: 14),
-            label: Text(l10n.colorPickerAddCurrentColorButton, style: const TextStyle(fontSize: 11)),
+            label: Text(
+              l10n.colorPickerAddCurrentColorButton,
+              style: const TextStyle(fontSize: 11),
+            ),
           ),
       ],
     );
   }
 
-  void _showCreatePaletteDialog(BuildContext context, AppLocalizations l10n, PaletteService paletteService) {
+  void _showCreatePaletteDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+    PaletteService paletteService,
+  ) {
     final ctrl = TextEditingController();
     showDialog(
       context: context,
@@ -413,13 +526,20 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
           content: TextField(
             controller: ctrl,
             autofocus: true,
-            decoration: InputDecoration(labelText: l10n.colorPickerPaletteNameLabel, border: const OutlineInputBorder()),
+            decoration: InputDecoration(
+              labelText: l10n.colorPickerPaletteNameLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
-                if (ctrl.text.isNotEmpty) paletteService.createPalette(ctrl.text);
+                if (ctrl.text.isNotEmpty)
+                  paletteService.createPalette(ctrl.text);
                 Navigator.pop(ctx);
               },
               child: Text(l10n.commonCreate),
@@ -430,7 +550,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     );
   }
 
-  void _showPaletteMenu(BuildContext context, AppLocalizations l10n, PaletteService paletteService, ColorPalette palette) {
+  void _showPaletteMenu(
+    BuildContext context,
+    AppLocalizations l10n,
+    PaletteService paletteService,
+    ColorPalette palette,
+  ) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -438,9 +563,19 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(palette.isFavorite ? Icons.star : Icons.star_border, color: Colors.amber),
-              title: Text(palette.isFavorite ? l10n.colorPickerFavoriteRemove : l10n.colorPickerFavoriteAdd),
-              onTap: () { Navigator.pop(ctx); paletteService.toggleFavorite(palette.id); },
+              leading: Icon(
+                palette.isFavorite ? Icons.star : Icons.star_border,
+                color: Colors.amber,
+              ),
+              title: Text(
+                palette.isFavorite
+                    ? l10n.colorPickerFavoriteRemove
+                    : l10n.colorPickerFavoriteAdd,
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                paletteService.toggleFavorite(palette.id);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.edit),
@@ -454,13 +589,25 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     controller: ctrl,
                     builder: (dctx) => AlertDialog(
                       title: Text(l10n.commonRename),
-                      content: TextField(controller: ctrl, autofocus: true,
-                          decoration: const InputDecoration(border: OutlineInputBorder())),
+                      content: TextField(
+                        controller: ctrl,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(dctx), child: Text(l10n.commonCancel)),
+                        TextButton(
+                          onPressed: () => Navigator.pop(dctx),
+                          child: Text(l10n.commonCancel),
+                        ),
                         FilledButton(
                           onPressed: () {
-                            if (ctrl.text.isNotEmpty) paletteService.renamePalette(palette.id, ctrl.text);
+                            if (ctrl.text.isNotEmpty)
+                              paletteService.renamePalette(
+                                palette.id,
+                                ctrl.text,
+                              );
                             Navigator.pop(dctx);
                           },
                           child: Text(l10n.commonChange),
@@ -481,17 +628,24 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red)),
+              title: Text(
+                l10n.commonDelete,
+                style: const TextStyle(color: Colors.red),
+              ),
               // お気に入り登録中は削除できない。
               onTap: paletteService.palettes.length > 1
                   ? () async {
                       Navigator.pop(ctx);
                       if (palette.isFavorite) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.commonFavoriteDeleteBlocked),
+                          ),
+                        );
                         return;
                       }
-                      if (!await confirmDelete(context, itemName: palette.name)) return;
+                      if (!await confirmDelete(context, itemName: palette.name))
+                        return;
                       paletteService.deletePalette(palette.id);
                     }
                   : null,
@@ -507,7 +661,11 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   /// JSON設定であるため候補として提示するが、色数が多くQRの安全な
   /// 文字数上限（[kQrShareSafeCharLimit]）を超える場合は非活性にし、
   /// ファイル共有のみを案内する。
-  void _showSharePaletteSheet(BuildContext context, AppLocalizations l10n, ColorPalette palette) {
+  void _showSharePaletteSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    ColorPalette palette,
+  ) {
     final paletteService = context.read<PaletteService>();
     final payload = jsonEncode(palette.toJson());
     final qrAvailable = payload.length <= kQrShareSafeCharLimit;
@@ -525,11 +683,18 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 try {
                   final file = await paletteService.exportPalette(palette.id);
                   if (!context.mounted) return;
-                  await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+                  await SharePlus.instance.share(
+                    ShareParams(files: [XFile(file.path)]),
+                  );
                 } catch (e) {
                   if (!context.mounted) return;
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerShareFailedSnackbar(e.toString()))));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.colorPickerShareFailedSnackbar(e.toString()),
+                      ),
+                    ),
+                  );
                 }
               },
             ),
@@ -542,7 +707,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       Navigator.pop(ctx);
                       showDialog(
                         context: context,
-                        builder: (_) => QrShareDialog(title: palette.name, payload: payload),
+                        builder: (_) => QrShareDialog(
+                          title: palette.name,
+                          payload: payload,
+                        ),
                       );
                     }
                   : null,
@@ -555,7 +723,11 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
 
   /// パレットの取り込み方法選択（ファイルから選択／QRコードの読み取り
   /// テキストを貼り付け）。
-  void _showImportPaletteSheet(BuildContext context, AppLocalizations l10n, PaletteService paletteService) {
+  void _showImportPaletteSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    PaletteService paletteService,
+  ) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -577,8 +749,13 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   await paletteService.importPaletteFile(path);
                 } catch (e) {
                   if (!context.mounted) return;
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerImportFailedSnackbar(e.toString()))));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.colorPickerImportFailedSnackbar(e.toString()),
+                      ),
+                    ),
+                  );
                 }
               },
             ),
@@ -605,20 +782,42 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     );
   }
 
-  Widget _slider(String label, double value, double min, double max,
-      ValueChanged<double> onChanged, ValueChanged<double>? onChangeEnd) {
+  Widget _slider(
+    String label,
+    double value,
+    double min,
+    double max,
+    ValueChanged<double> onChanged,
+    ValueChanged<double>? onChangeEnd,
+  ) {
     return Row(
       children: [
-        SizedBox(width: 14, child: Text(label, style: const TextStyle(fontSize: 12))),
-        Expanded(child: SteppedSlider(min: min, max: max, value: value, onChanged: onChanged, onChangeEnd: onChangeEnd)),
+        SizedBox(
+          width: 14,
+          child: Text(label, style: const TextStyle(fontSize: 12)),
+        ),
+        Expanded(
+          child: SteppedSlider(
+            min: min,
+            max: max,
+            value: value,
+            onChanged: onChanged,
+            onChangeEnd: onChangeEnd,
+          ),
+        ),
         // 数値部分をタップすると直接入力できる。
         SizedBox(
           width: 32,
           child: EditableSliderValue(
             text: value.round().toString(),
             style: const TextStyle(fontSize: 11),
-            value: value, min: min, max: max,
-            onChanged: (v) { onChanged(v.toDouble()); onChangeEnd?.call(v.toDouble()); },
+            value: value,
+            min: min,
+            max: max,
+            onChanged: (v) {
+              onChanged(v.toDouble());
+              onChangeEnd?.call(v.toDouble());
+            },
           ),
         ),
       ],
@@ -628,7 +827,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   /// RRGGBB（不透明時）またはRRGGBBAA（透明色を含む場合）で出力する
   /// （カラーピッカーは常に透明色も選択できる）。
   String _colorToHex(Color color) {
-    final rgb = color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase();
+    final rgb = color
+        .toARGB32()
+        .toRadixString(16)
+        .padLeft(8, '0')
+        .substring(2)
+        .toUpperCase();
     final a = (color.a * 255).round();
     if (a >= 255) return rgb;
     return '$rgb${a.toRadixString(16).padLeft(2, '0').toUpperCase()}';

@@ -12,7 +12,8 @@ class LayerKeyframeEngine {
   /// 先頭、後ろは末尾の値でクランプする。
   LayerKeyframe valueAt(List<LayerKeyframe> keyframes, int frame) {
     if (keyframes.isEmpty) return const LayerKeyframe(frameIndex: 0);
-    final sorted = [...keyframes]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    final sorted = [...keyframes]
+      ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
     if (frame <= sorted.first.frameIndex) return sorted.first;
     if (frame >= sorted.last.frameIndex) return sorted.last;
     for (int i = 0; i < sorted.length - 1; i++) {
@@ -40,9 +41,10 @@ class LayerKeyframeEngine {
       LayerKeyframeEasing.linear => clamped,
       LayerKeyframeEasing.easeIn => clamped * clamped,
       LayerKeyframeEasing.easeOut => 1 - (1 - clamped) * (1 - clamped),
-      LayerKeyframeEasing.easeInOut => clamped < 0.5
-          ? 2 * clamped * clamped
-          : 1 - math.pow(-2 * clamped + 2, 2) / 2,
+      LayerKeyframeEasing.easeInOut =>
+        clamped < 0.5
+            ? 2 * clamped * clamped
+            : 1 - math.pow(-2 * clamped + 2, 2) / 2,
       LayerKeyframeEasing.bounceOut => _bounceOut(clamped),
     };
   }
@@ -67,7 +69,8 @@ class LayerKeyframeEngine {
 
   /// キーフレームが実質的に無変形（誰も動かしていない）かどうか。呼び出し側が
   /// 変形の要不要を判定して余計なcanvas.save/restoreを避けるために使う。
-  bool isIdentity(LayerKeyframe kf) => kf.x == 0 && kf.y == 0 && kf.scale == 1.0 && kf.rotation == 0;
+  bool isIdentity(LayerKeyframe kf) =>
+      kf.x == 0 && kf.y == 0 && kf.scale == 1.0 && kf.rotation == 0;
 
   /// [width]x[height]の中心を基準にレイヤーの変形を[canvas]へ適用する。
   /// 呼び出し側は事前に`canvas.save()`し、描画後に`canvas.restore()`すること。

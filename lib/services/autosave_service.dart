@@ -32,7 +32,8 @@ class AutosaveService extends ChangeNotifier {
   List<AutosaveSlot> get slots => List.unmodifiable(_slots);
 
   /// このアプリセッション中に既にクラッシュ復元確認を行ったプロジェクトか。
-  bool hasPromptedThisSession(String projectId) => _promptedProjectIds.contains(projectId);
+  bool hasPromptedThisSession(String projectId) =>
+      _promptedProjectIds.contains(projectId);
 
   /// クラッシュ復元確認を行った（結果に関わらず）ことを記録する。
   void markPrompted(String projectId) => _promptedProjectIds.add(projectId);
@@ -45,11 +46,13 @@ class AutosaveService extends ChangeNotifier {
       final savedAtMs = prefs.getInt('autosave_${i}_savedAt');
       final slotIndex = prefs.getInt('autosave_${i}_slot');
       if (projectId != null && savedAtMs != null && slotIndex != null) {
-        _slots.add(AutosaveSlot(
-          projectId: projectId,
-          savedAt: DateTime.fromMillisecondsSinceEpoch(savedAtMs),
-          slotIndex: slotIndex,
-        ));
+        _slots.add(
+          AutosaveSlot(
+            projectId: projectId,
+            savedAt: DateTime.fromMillisecondsSinceEpoch(savedAtMs),
+            slotIndex: slotIndex,
+          ),
+        );
       }
     }
     _nextSlotIndex = prefs.getInt('autosave_next_slot') ?? 0;
@@ -57,7 +60,11 @@ class AutosaveService extends ChangeNotifier {
   }
 
   /// プロジェクトを開いた際に呼び出す。定期保存タイマーとUndo更新連動を開始する。
-  void attach(ProjectService projectService, String projectId, {UndoManager? undoManager}) {
+  void attach(
+    ProjectService projectService,
+    String projectId, {
+    UndoManager? undoManager,
+  }) {
     _projectService = projectService;
     _currentProjectId = projectId;
     _timer?.cancel();
@@ -93,7 +100,9 @@ class AutosaveService extends ChangeNotifier {
 
   /// 指定プロジェクトを自動保存スロットへ書き出す（3件固定・古い順に上書き）。
   Future<void> save(String projectId, ProjectService projectService) async {
-    final project = projectService.projects.where((p) => p.id == projectId).firstOrNull;
+    final project = projectService.projects
+        .where((p) => p.id == projectId)
+        .firstOrNull;
     if (project == null) return;
     final scenes = projectService.scenesOf(projectId);
     final tileManager = projectService.tileManagerOf(projectId);
@@ -111,11 +120,13 @@ class AutosaveService extends ChangeNotifier {
       return; // 保存失敗はサイレントに無視（自動保存は補助機能のため）
     }
     _slots.removeWhere((s) => s.slotIndex == slotIndex);
-    _slots.add(AutosaveSlot(
-      projectId: projectId,
-      savedAt: DateTime.now(),
-      slotIndex: slotIndex,
-    ));
+    _slots.add(
+      AutosaveSlot(
+        projectId: projectId,
+        savedAt: DateTime.now(),
+        slotIndex: slotIndex,
+      ),
+    );
     while (_slots.length > maxSlots) {
       _slots.removeAt(0);
     }
@@ -144,7 +155,10 @@ class AutosaveService extends ChangeNotifier {
     await prefs.setInt('autosave_count', _slots.length);
     for (int i = 0; i < _slots.length; i++) {
       await prefs.setString('autosave_${i}_project', _slots[i].projectId);
-      await prefs.setInt('autosave_${i}_savedAt', _slots[i].savedAt.millisecondsSinceEpoch);
+      await prefs.setInt(
+        'autosave_${i}_savedAt',
+        _slots[i].savedAt.millisecondsSinceEpoch,
+      );
       await prefs.setInt('autosave_${i}_slot', _slots[i].slotIndex);
     }
     await prefs.setInt('autosave_next_slot', _nextSlotIndex);

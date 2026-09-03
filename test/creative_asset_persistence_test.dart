@@ -62,12 +62,26 @@ void main() {
       final s1 = BrushService();
       await s1.init();
       const custom = Brush(
-        id: 'BrushCustom001', name: '自作ブラシ', size: 12, opacity: 90, spacing: 15,
-        blurRadius: 5, stabilization: true, stabilizationStrength: 40,
-        pixelMode: true, pressureMode: PressureMode.sizeAndOpacity, pressureStrength: 55,
+        id: 'BrushCustom001',
+        name: '自作ブラシ',
+        size: 12,
+        opacity: 90,
+        spacing: 15,
+        blurRadius: 5,
+        stabilization: true,
+        stabilizationStrength: 40,
+        pixelMode: true,
+        pressureMode: PressureMode.sizeAndOpacity,
+        pressureStrength: 55,
         fadeMode: FadeMode.custom,
-        fadeCustom: FadeCustomSettings(startValue: 100, endValue: 20, distancePx: 80),
-        strokeDecay: true, mixingMode: BrushMixingMode.bleed, mixingRate: 40,
+        fadeCustom: FadeCustomSettings(
+          startValue: 100,
+          endValue: 20,
+          distancePx: 80,
+        ),
+        strokeDecay: true,
+        mixingMode: BrushMixingMode.bleed,
+        mixingRate: 40,
       );
       s1.addBrush(custom);
       s1.updateBrush(custom.copyWith(size: 20));
@@ -86,7 +100,13 @@ void main() {
     test('自作トーンの追加とお気に入りが再起動後も復元される', () async {
       final s1 = ToneService();
       await s1.init();
-      s1.addTone(const Tone(id: 'ToneCustom001', name: '自作トーン', texturePath: '/tmp/x.png'));
+      s1.addTone(
+        const Tone(
+          id: 'ToneCustom001',
+          name: '自作トーン',
+          texturePath: '/tmp/x.png',
+        ),
+      );
       s1.toggleFavorite('ToneCustom001');
 
       final s2 = ToneService();
@@ -101,9 +121,16 @@ void main() {
     test('自作スタンプの追加が再起動後も復元される', () async {
       final s1 = StampService();
       await s1.init();
-      s1.addStamp(const Stamp(
-          id: 'StampCustom001', name: '自作スタンプ', imagePath: '/tmp/s.png',
-          rotation: true, density: 2.0, scatter: 0.5));
+      s1.addStamp(
+        const Stamp(
+          id: 'StampCustom001',
+          name: '自作スタンプ',
+          imagePath: '/tmp/s.png',
+          rotation: true,
+          density: 2.0,
+          scatter: 0.5,
+        ),
+      );
 
       final s2 = StampService();
       await s2.init();

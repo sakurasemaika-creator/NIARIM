@@ -120,19 +120,33 @@ class Layer {
       isLocked: isLocked ?? this.isLocked,
       opacityLocked: opacityLocked ?? this.opacityLocked,
       hasClipping: hasClipping ?? this.hasClipping,
-      parentFolderId: parentFolderId == _sentinel ? this.parentFolderId : parentFolderId as String?,
+      parentFolderId: parentFolderId == _sentinel
+          ? this.parentFolderId
+          : parentFolderId as String?,
       needsAutofillUpdate: needsAutofillUpdate ?? this.needsAutofillUpdate,
       partId: partId == _sentinel ? this.partId : partId as String?,
       textObject: textObject ?? this.textObject,
       rangeMode: rangeMode ?? this.rangeMode,
-      rangeStart: rangeStart == _sentinel ? this.rangeStart : rangeStart as int?,
+      rangeStart: rangeStart == _sentinel
+          ? this.rangeStart
+          : rangeStart as int?,
       rangeEnd: rangeEnd == _sentinel ? this.rangeEnd : rangeEnd as int?,
-      rangeSceneId: rangeSceneId == _sentinel ? this.rangeSceneId : rangeSceneId as String?,
+      rangeSceneId: rangeSceneId == _sentinel
+          ? this.rangeSceneId
+          : rangeSceneId as String?,
       isExpanded: isExpanded ?? this.isExpanded,
-      materialId: materialId == _sentinel ? this.materialId : materialId as String?,
-      sourceTrimStart: sourceTrimStart == _sentinel ? this.sourceTrimStart : sourceTrimStart as int?,
-      sourceTrimEnd: sourceTrimEnd == _sentinel ? this.sourceTrimEnd : sourceTrimEnd as int?,
-      watermarkAssetId: watermarkAssetId == _sentinel ? this.watermarkAssetId : watermarkAssetId as String?,
+      materialId: materialId == _sentinel
+          ? this.materialId
+          : materialId as String?,
+      sourceTrimStart: sourceTrimStart == _sentinel
+          ? this.sourceTrimStart
+          : sourceTrimStart as int?,
+      sourceTrimEnd: sourceTrimEnd == _sentinel
+          ? this.sourceTrimEnd
+          : sourceTrimEnd as int?,
+      watermarkAssetId: watermarkAssetId == _sentinel
+          ? this.watermarkAssetId
+          : watermarkAssetId as String?,
       watermarkAngle: watermarkAngle ?? this.watermarkAngle,
       watermarkScale: watermarkScale ?? this.watermarkScale,
       trackRow: trackRow ?? this.trackRow,
@@ -151,17 +165,17 @@ enum LayerType {
   common,
   folder,
   autoFillLineart, // 自動塗り用線画レイヤー（ユーザー作成可）
-  autoFill,        // 自動塗りレイヤー（ユーザー作成可）
-  text,            // テキストレイヤー（ユーザー作成可）
-  timelineImage,   // タイムライン画像素材レイヤー（タイムラインから追加。表示範囲内のフレームのみレイヤーパレットに表示）
-  timelineVideo,   // タイムライン動画素材レイヤー（タイムラインから追加。表示範囲内のフレームのみレイヤーパレットに表示）
-  watermark,       // ウォーターマークレイヤー（プレミアム限定。画像素材と同じタイムライン素材として扱う）
-  selection,       // 選択レイヤー（マスク専用、ユーザー作成可）。眼鏡断層フィルター等、
-                   // 範囲指定フィルターの対象範囲を通常の描画ツールで塗って指定する用途。
-                   // pixelLayerTypes（layer_compositor.dart）からは除外されるため
-                   // 通常の合成結果・書き出しには写り込まないが、テーマの選択色による
-                   // 半透明タイントでキャンバス上に常時オーバーレイ表示される
-                   // （canvas_area.dartの_selectionLayerOverlayImage）。
+  autoFill, // 自動塗りレイヤー（ユーザー作成可）
+  text, // テキストレイヤー（ユーザー作成可）
+  timelineImage, // タイムライン画像素材レイヤー（タイムラインから追加。表示範囲内のフレームのみレイヤーパレットに表示）
+  timelineVideo, // タイムライン動画素材レイヤー（タイムラインから追加。表示範囲内のフレームのみレイヤーパレットに表示）
+  watermark, // ウォーターマークレイヤー（プレミアム限定。画像素材と同じタイムライン素材として扱う）
+  selection, // 選択レイヤー（マスク専用、ユーザー作成可）。眼鏡断層フィルター等、
+  // 範囲指定フィルターの対象範囲を通常の描画ツールで塗って指定する用途。
+  // pixelLayerTypes（layer_compositor.dart）からは除外されるため
+  // 通常の合成結果・書き出しには写り込まないが、テーマの選択色による
+  // 半透明タイントでキャンバス上に常時オーバーレイ表示される
+  // （canvas_area.dartの_selectionLayerOverlayImage）。
 }
 
 /// 表示範囲（rangeMode/rangeStart/rangeEnd）を持ち、複数フレームにまたがって
@@ -198,7 +212,21 @@ bool isRangeLayerType(LayerType type) =>
 }
 
 enum LayerBlendMode {
-  normal, multiply, screen, overlay, addition, subtract,
-  darken, lighten, colorBurn, colorDodge, hardLight, softLight,
-  difference, hue, saturation, color, luminosity,
+  normal,
+  multiply,
+  screen,
+  overlay,
+  addition,
+  subtract,
+  darken,
+  lighten,
+  colorBurn,
+  colorDodge,
+  hardLight,
+  softLight,
+  difference,
+  hue,
+  saturation,
+  color,
+  luminosity,
 }

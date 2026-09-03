@@ -29,7 +29,7 @@ class SquareImageCropDialog extends StatefulWidget {
   final String? imagePath;
   final Uint8List? imageBytes;
   const SquareImageCropDialog({super.key, this.imagePath, this.imageBytes})
-      : assert(imagePath != null || imageBytes != null);
+    : assert(imagePath != null || imageBytes != null);
 
   @override
   State<SquareImageCropDialog> createState() => _SquareImageCropDialogState();
@@ -60,7 +60,8 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
       // Web版はdart:ioのFileが使えないため、bytesが渡されていればそちらを
       // 優先する（imagePathのみが渡されるのはデスクトップ/モバイルのみの
       // 想定）。
-      final bytes = widget.imageBytes ?? await File(widget.imagePath!).readAsBytes();
+      final bytes =
+          widget.imageBytes ?? await File(widget.imagePath!).readAsBytes();
       // 長辺が_kDecodeMaxEdgeを超える場合のみ縮小してデコードする
       // （allowUpscaling: falseにより、それより小さい画像は等倍のまま）。
       // targetWidth・targetHeightを両方指定すると、アスペクト比を保ったまま
@@ -119,7 +120,9 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
     final outputScale = _kOutputSize / _kCropViewSize;
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(
-        recorder, ui.Rect.fromLTWH(0, 0, _kOutputSize.toDouble(), _kOutputSize.toDouble()));
+      recorder,
+      ui.Rect.fromLTWH(0, 0, _kOutputSize.toDouble(), _kOutputSize.toDouble()),
+    );
     canvas.save();
     canvas.translate(_kOutputSize / 2, _kOutputSize / 2);
     canvas.scale(outputScale);
@@ -146,17 +149,25 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l10n.autofillThumbnailCropDialogHint,
-                style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
+            Text(
+              l10n.autofillThumbnailCropDialogHint,
+              style: const TextStyle(fontSize: 11),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             _loadFailed
                 ? SizedBox(
                     width: _kCropViewSize,
                     height: _kCropViewSize,
                     child: Center(
-                      child: Text(l10n.autofillThumbnailCropLoadFailed,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+                      child: Text(
+                        l10n.autofillThumbnailCropLoadFailed,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   )
                 : _image == null
@@ -176,7 +187,10 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
                           // 画像が回転してクロップ枠の外側に空きができた部分の背景。
                           // 固定の黒ではなく、テーマのパネル背景色（暗めの面色）に
                           // 連動させる。
-                          color: context.watch<ThemeService>().current.panelBgColor,
+                          color: context
+                              .watch<ThemeService>()
+                              .current
+                              .panelBgColor,
                           child: CustomPaint(
                             size: const Size(_kCropViewSize, _kCropViewSize),
                             painter: _CropPreviewPainter(
@@ -194,7 +208,10 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
         FilledButton(
           onPressed: _image == null
               ? null

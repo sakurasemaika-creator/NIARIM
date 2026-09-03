@@ -95,7 +95,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                     hintText: l10n.fontDownloadedSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
-                    fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerLow,
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -109,8 +111,10 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
               FilterChip(
                 label: Text(
                   l10n.homeFavoritesOnly,
-                  style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+                  style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
                 ),
                 selected: _favoritesOnly,
                 onSelected: (v) => setState(() => _favoritesOnly = v),
@@ -145,7 +149,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                            fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -339,7 +343,7 @@ class _ImportFontTab extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 4),

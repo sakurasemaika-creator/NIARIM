@@ -41,7 +41,10 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
       // pathも常にnullになるため、bytesが無い場合のみpath経由で読み込む
       // （自動塗りサムネイル調整で発生した「Web版で読み込み中のまま
       // 止まる」不具合と同じ轍を踏まないための対応）。
-      final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        withData: true,
+      );
       if (result == null || result.files.isEmpty) return;
       final picked = result.files.first;
       var bytes = picked.bytes;
@@ -79,25 +82,47 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                 onPanUpdate: (d) => setState(() => _position += d.delta),
                 child: Container(
                   color: theme.menuBgColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.dashboard_customize_outlined, size: 14, color: theme.textColor),
+                      Icon(
+                        Icons.dashboard_customize_outlined,
+                        size: 14,
+                        color: theme.textColor,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text(l10n.referenceWindowTitle,
-                            style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
-                            overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          l10n.referenceWindowTitle,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: theme.textColor,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       InkWell(
                         onTap: _pickImage,
-                        child: Icon(Icons.add_photo_alternate_outlined, size: 16, color: theme.textColor),
+                        child: Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: 16,
+                          color: theme.textColor,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       InkWell(
                         onTap: widget.onClose,
-                        child: Icon(Icons.close, size: 16, color: theme.textColor),
+                        child: Icon(
+                          Icons.close,
+                          size: 16,
+                          color: theme.textColor,
+                        ),
                       ),
                     ],
                   ),
@@ -110,22 +135,32 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                   child: _loading
                       ? const Center(child: CircularProgressIndicator())
                       : _imageBytes == null
-                          ? Center(
-                              child: TextButton.icon(
-                                onPressed: _pickImage,
-                                icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
-                                label: Text(l10n.referenceWindowSelectImageButton, style: const TextStyle(fontSize: 12)),
-                              ),
-                            )
-                          // InteractiveViewerでピンチ拡大・パンできるようにし、
-                          // 資料の細部（線の入り方等）まで確認できるようにする。
-                          : ClipRect(
-                              child: InteractiveViewer(
-                                minScale: 0.5,
-                                maxScale: 6,
-                                child: Image.memory(_imageBytes!, fit: BoxFit.contain, width: double.infinity),
-                              ),
+                      ? Center(
+                          child: TextButton.icon(
+                            onPressed: _pickImage,
+                            icon: const Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 18,
                             ),
+                            label: Text(
+                              l10n.referenceWindowSelectImageButton,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        )
+                      // InteractiveViewerでピンチ拡大・パンできるようにし、
+                      // 資料の細部（線の入り方等）まで確認できるようにする。
+                      : ClipRect(
+                          child: InteractiveViewer(
+                            minScale: 0.5,
+                            maxScale: 6,
+                            child: Image.memory(
+                              _imageBytes!,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               // 右下角のリサイズハンドル。
@@ -142,7 +177,11 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                   child: SizedBox(
                     width: 22,
                     height: 22,
-                    child: Icon(Icons.open_in_full, size: 12, color: theme.textColor.withValues(alpha: 0.5)),
+                    child: Icon(
+                      Icons.open_in_full,
+                      size: 12,
+                      color: theme.textColor.withValues(alpha: 0.5),
+                    ),
                   ),
                 ),
               ),

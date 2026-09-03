@@ -33,20 +33,20 @@ class LayerGroup {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'memberLayerIds': memberLayerIds,
-        'keyframes': keyframes.map((k) => k.toJson()).toList(),
-      };
+    'id': id,
+    'name': name,
+    'memberLayerIds': memberLayerIds,
+    'keyframes': keyframes.map((k) => k.toJson()).toList(),
+  };
 
   factory LayerGroup.fromJson(Map<String, dynamic> j) => LayerGroup(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        memberLayerIds: (j['memberLayerIds'] as List<dynamic>? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        keyframes: (j['keyframes'] as List<dynamic>? ?? const [])
-            .map((k) => LayerKeyframe.fromJson(k as Map<String, dynamic>))
-            .toList(),
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    memberLayerIds: (j['memberLayerIds'] as List<dynamic>? ?? const [])
+        .map((e) => e as String)
+        .toList(),
+    keyframes: (j['keyframes'] as List<dynamic>? ?? const [])
+        .map((k) => LayerKeyframe.fromJson(k as Map<String, dynamic>))
+        .toList(),
+  );
 }

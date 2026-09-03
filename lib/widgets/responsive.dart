@@ -12,8 +12,9 @@ import '../services/settings_service.dart';
 /// される）。イベントハンドラ（onPressed等）から呼ぶ場合はfalseを渡す
 /// こと（build外でwatch()すると例外になる）。
 bool isWideScreen(BuildContext context, {bool listen = true}) {
-  final settings =
-      listen ? context.watch<SettingsService>() : context.read<SettingsService>();
+  final settings = listen
+      ? context.watch<SettingsService>()
+      : context.read<SettingsService>();
   final forced = settings.forcePcMode;
   if (forced != null) return forced;
   final size = MediaQuery.sizeOf(context);
@@ -30,8 +31,9 @@ bool isWideScreen(BuildContext context, {bool listen = true}) {
 /// [listen]は既定でtrue。isWideScreen同様、イベントハンドラから呼ぶ
 /// 場合はfalseを渡すこと。
 bool canShowPanTool(BuildContext context, {bool listen = true}) {
-  final settings =
-      listen ? context.watch<SettingsService>() : context.read<SettingsService>();
+  final settings = listen
+      ? context.watch<SettingsService>()
+      : context.read<SettingsService>();
   final forced = settings.forcePcMode;
   if (forced == false) return false;
   final size = MediaQuery.sizeOf(context);

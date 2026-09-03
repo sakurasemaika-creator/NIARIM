@@ -34,7 +34,8 @@ class CommunityFloatingPreview extends StatefulWidget {
   const CommunityFloatingPreview({super.key});
 
   @override
-  State<CommunityFloatingPreview> createState() => _CommunityFloatingPreviewState();
+  State<CommunityFloatingPreview> createState() =>
+      _CommunityFloatingPreviewState();
 }
 
 class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
@@ -61,8 +62,14 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     const handleIconSize = 16.0;
 
     return Positioned(
-      left: position.dx.clamp(0, (screenSize.width - size.width).clamp(0, double.infinity)),
-      top: position.dy.clamp(0, (screenSize.height - size.height).clamp(0, double.infinity)),
+      left: position.dx.clamp(
+        0,
+        (screenSize.width - size.width).clamp(0, double.infinity),
+      ),
+      top: position.dy.clamp(
+        0,
+        (screenSize.height - size.height).clamp(0, double.infinity),
+      ),
       child: SizedBox(
         width: size.width,
         height: size.height,
@@ -90,13 +97,17 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: kCommunityThumbnailGradients[
-                                work.thumbnailColorIndex % kCommunityThumbnailGradients.length],
+                            colors:
+                                kCommunityThumbnailGradients[work
+                                        .thumbnailColorIndex %
+                                    kCommunityThumbnailGradients.length],
                           ),
                         ),
                         child: Center(
                           child: Icon(
-                            _isPlaying ? Icons.play_circle_fill_rounded : Icons.pause_circle_filled_rounded,
+                            _isPlaying
+                                ? Icons.play_circle_fill_rounded
+                                : Icons.pause_circle_filled_rounded,
                             color: Colors.white70,
                             size: 40,
                           ),
@@ -105,7 +116,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                     ),
                     Container(
                       color: Colors.black87,
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       // SpacerやExpandedを挟むと、この位置（高さ無制限の
                       // Column内、幅固定のContainer内）で極端なオーバー
                       // フローが発生したため、Flex系ウィジェットを使わず
@@ -135,10 +149,17 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                 button: true,
                                 child: IconButton(
                                   padding: const EdgeInsets.all(6),
-                                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                                  icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 40,
+                                    minHeight: 40,
+                                  ),
+                                  icon: Icon(
+                                    _isPlaying ? Icons.pause : Icons.play_arrow,
+                                    color: Colors.white,
+                                  ),
                                   iconSize: 22,
-                                  onPressed: () => setState(() => _isPlaying = !_isPlaying),
+                                  onPressed: () =>
+                                      setState(() => _isPlaying = !_isPlaying),
                                 ),
                               ),
                               // 再生ボタンと閉じるボタンの間は、誤タップ防止
@@ -149,8 +170,14 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                 button: true,
                                 child: IconButton(
                                   padding: const EdgeInsets.all(6),
-                                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                                  icon: const Icon(Icons.close, color: Colors.white),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 36,
+                                    minHeight: 36,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                  ),
                                   iconSize: 20,
                                   onPressed: service.close,
                                 ),
@@ -161,11 +188,16 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                           // 奪われないよう、ボタンの右側にハンドル1つ分の
                           // 余白を確保する。
                           Padding(
-                            padding: const EdgeInsets.only(right: handleHitSize - 8),
+                            padding: const EdgeInsets.only(
+                              right: handleHitSize - 8,
+                            ),
                             child: TextButton(
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                                 minimumSize: Size.zero,
                               ),
                               onPressed: () {
@@ -175,7 +207,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                               },
                               child: Text(
                                 l10n.communityFloatingPreviewDetailButton,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -194,10 +229,12 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onPanUpdate: (details) {
-                    service.updateSize(Size(
-                      service.size.width + details.delta.dx,
-                      service.size.height + details.delta.dy,
-                    ));
+                    service.updateSize(
+                      Size(
+                        service.size.width + details.delta.dx,
+                        service.size.height + details.delta.dy,
+                      ),
+                    );
                   },
                   child: Container(
                     width: handleHitSize,
@@ -210,7 +247,11 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                       color: Colors.black45,
                       borderRadius: BorderRadius.circular(handleHitSize / 2),
                     ),
-                    child: const Icon(Icons.open_in_full, size: handleIconSize, color: Colors.white),
+                    child: const Icon(
+                      Icons.open_in_full,
+                      size: handleIconSize,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),

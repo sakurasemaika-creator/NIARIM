@@ -29,36 +29,38 @@ class AutofillPreset {
     return AutofillPreset(
       id: id ?? this.id,
       name: name ?? this.name,
-      thumbnailPath: thumbnailPath == _sentinel ? this.thumbnailPath : thumbnailPath as String?,
+      thumbnailPath: thumbnailPath == _sentinel
+          ? this.thumbnailPath
+          : thumbnailPath as String?,
       parts: parts ?? this.parts,
       isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'thumbnailPath': thumbnailPath,
-        'parts': parts.map((p) => p.toJson()).toList(),
-        'isFavorite': isFavorite,
-      };
+    'id': id,
+    'name': name,
+    'thumbnailPath': thumbnailPath,
+    'parts': parts.map((p) => p.toJson()).toList(),
+    'isFavorite': isFavorite,
+  };
 
   factory AutofillPreset.fromJson(Map<String, dynamic> j) => AutofillPreset(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        thumbnailPath: j['thumbnailPath'] as String?,
-        parts: (j['parts'] as List<dynamic>? ?? const [])
-            .map((e) => AutofillPart.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        isFavorite: j['isFavorite'] as bool? ?? false,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    thumbnailPath: j['thumbnailPath'] as String?,
+    parts: (j['parts'] as List<dynamic>? ?? const [])
+        .map((e) => AutofillPart.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    isFavorite: j['isFavorite'] as bool? ?? false,
+  );
 }
 
 /// 線画色の決定方法。
 enum AutofillLineColorMode {
-  specified,     // 指定色
-  sameAsFill,    // 塗り色と同じ
-  traceAdjust,   // 色トレス・線画馴染ませ（元の線画色をHSLシフトして塗り色に馴染ませる）
+  specified, // 指定色
+  sameAsFill, // 塗り色と同じ
+  traceAdjust, // 色トレス・線画馴染ませ（元の線画色をHSLシフトして塗り色に馴染ませる）
 }
 
 class AutofillPart {
@@ -147,7 +149,9 @@ class AutofillPart {
       id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
-      gradient: identical(gradient, _sentinel) ? this.gradient : gradient as AutofillGradient?,
+      gradient: identical(gradient, _sentinel)
+          ? this.gradient
+          : gradient as AutofillGradient?,
       opacity: opacity ?? this.opacity,
       blendMode: blendMode ?? this.blendMode,
       useTone: useTone ?? this.useTone,
@@ -171,50 +175,54 @@ class AutofillPart {
   bool get isConfigured => !useTone || toneId != null;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'color': color,
-        'gradient': gradient?.toJson(),
-        'opacity': opacity,
-        'blendMode': blendMode.name,
-        'useTone': useTone,
-        'toneId': toneId,
-        'lineColorMode': lineColorMode.name,
-        'lineColor': lineColor,
-        'lineOpacity': lineOpacity,
-        'traceHue': traceHue,
-        'traceSaturation': traceSaturation,
-        'traceLightness': traceLightness,
-        'outlineEnabled': outlineEnabled,
-        'outlineColor': outlineColor,
-        'outlineWidth': outlineWidth,
-        'isFavorite': isFavorite,
-      };
+    'id': id,
+    'name': name,
+    'color': color,
+    'gradient': gradient?.toJson(),
+    'opacity': opacity,
+    'blendMode': blendMode.name,
+    'useTone': useTone,
+    'toneId': toneId,
+    'lineColorMode': lineColorMode.name,
+    'lineColor': lineColor,
+    'lineOpacity': lineOpacity,
+    'traceHue': traceHue,
+    'traceSaturation': traceSaturation,
+    'traceLightness': traceLightness,
+    'outlineEnabled': outlineEnabled,
+    'outlineColor': outlineColor,
+    'outlineWidth': outlineWidth,
+    'isFavorite': isFavorite,
+  };
 
   factory AutofillPart.fromJson(Map<String, dynamic> j) => AutofillPart(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        color: j['color'] as int,
-        gradient: j['gradient'] == null
-            ? null
-            : AutofillGradient.fromJson(j['gradient'] as Map<String, dynamic>),
-        opacity: j['opacity'] as int? ?? 100,
-        blendMode: LayerBlendMode.values.firstWhere((e) => e.name == j['blendMode'],
-            orElse: () => LayerBlendMode.normal),
-        useTone: j['useTone'] as bool? ?? false,
-        toneId: j['toneId'] as String?,
-        lineColorMode: AutofillLineColorMode.values.firstWhere((e) => e.name == j['lineColorMode'],
-            orElse: () => AutofillLineColorMode.specified),
-        lineColor: j['lineColor'] as int? ?? 0xFF000000,
-        lineOpacity: j['lineOpacity'] as int? ?? 100,
-        traceHue: (j['traceHue'] as num?)?.toDouble() ?? -10,
-        traceSaturation: (j['traceSaturation'] as num?)?.toDouble() ?? 60,
-        traceLightness: (j['traceLightness'] as num?)?.toDouble() ?? -50,
-        outlineEnabled: j['outlineEnabled'] as bool? ?? false,
-        outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
-        outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    color: j['color'] as int,
+    gradient: j['gradient'] == null
+        ? null
+        : AutofillGradient.fromJson(j['gradient'] as Map<String, dynamic>),
+    opacity: j['opacity'] as int? ?? 100,
+    blendMode: LayerBlendMode.values.firstWhere(
+      (e) => e.name == j['blendMode'],
+      orElse: () => LayerBlendMode.normal,
+    ),
+    useTone: j['useTone'] as bool? ?? false,
+    toneId: j['toneId'] as String?,
+    lineColorMode: AutofillLineColorMode.values.firstWhere(
+      (e) => e.name == j['lineColorMode'],
+      orElse: () => AutofillLineColorMode.specified,
+    ),
+    lineColor: j['lineColor'] as int? ?? 0xFF000000,
+    lineOpacity: j['lineOpacity'] as int? ?? 100,
+    traceHue: (j['traceHue'] as num?)?.toDouble() ?? -10,
+    traceSaturation: (j['traceSaturation'] as num?)?.toDouble() ?? 60,
+    traceLightness: (j['traceLightness'] as num?)?.toDouble() ?? -50,
+    outlineEnabled: j['outlineEnabled'] as bool? ?? false,
+    outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
+    outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+  );
 }
 
 const Object _sentinel = Object();

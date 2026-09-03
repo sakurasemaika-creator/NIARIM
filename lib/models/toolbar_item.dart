@@ -35,17 +35,17 @@ enum ToolbarItemId {
 
 extension ToolbarItemLabel on ToolbarItemId {
   String label(AppLocalizations l10n) => switch (this) {
-        ToolbarItemId.pen => l10n.toolbarItemPen,
-        ToolbarItemId.eraser => l10n.toolbarItemEraser,
-        ToolbarItemId.bucket => l10n.toolbarItemBucket,
-        ToolbarItemId.eyedropper => l10n.toolbarItemEyedropper,
-        ToolbarItemId.finger => l10n.toolbarItemFinger,
-        ToolbarItemId.pan => l10n.toolbarItemPan,
-        ToolbarItemId.select => l10n.toolbarItemSelect,
-        ToolbarItemId.transform => l10n.toolbarItemTransform,
-        ToolbarItemId.text => l10n.toolbarItemText,
-        ToolbarItemId.shape => l10n.toolbarItemShape,
-      };
+    ToolbarItemId.pen => l10n.toolbarItemPen,
+    ToolbarItemId.eraser => l10n.toolbarItemEraser,
+    ToolbarItemId.bucket => l10n.toolbarItemBucket,
+    ToolbarItemId.eyedropper => l10n.toolbarItemEyedropper,
+    ToolbarItemId.finger => l10n.toolbarItemFinger,
+    ToolbarItemId.pan => l10n.toolbarItemPan,
+    ToolbarItemId.select => l10n.toolbarItemSelect,
+    ToolbarItemId.transform => l10n.toolbarItemTransform,
+    ToolbarItemId.text => l10n.toolbarItemText,
+    ToolbarItemId.shape => l10n.toolbarItemShape,
+  };
 }
 
 /// ワークスペース設定＞ツールバー編集のプレビュー表示用アイコン
@@ -63,24 +63,24 @@ extension ToolbarItemIcon on ToolbarItemId {
   // 通常のIcon()では正しく描画されない（クリッピング崩れ）ため、[buildIcon]
   // 経由で常に適切なウィジェットへ変換して使うこと。
   Object get _iconData => switch (this) {
-        ToolbarItemId.pen => Icons.brush,
-        ToolbarItemId.eraser => FontAwesomeIcons.eraser,
-        // バケツ塗り：Material Iconsの汎用的な「塗り」アイコンより、
-        // Font Awesomeのペンキ缶（滴付き）の方がバケツ塗りらしいため変更。
-        ToolbarItemId.bucket => FontAwesomeIcons.fillDrip,
-        ToolbarItemId.eyedropper => Icons.colorize,
-        // 指先ツール（歪み）：人差し指を立てたアイコンを使う
-        // （以前のback_handは掌全体を広げた「手のひら」の形で紛らわしく、
-        // 手のひらツール〔画面移動〕の方へ移した）。
-        ToolbarItemId.finger => Icons.pan_tool_alt,
-        ToolbarItemId.pan => Icons.back_hand,
-        ToolbarItemId.select => Icons.highlight_alt,
-        ToolbarItemId.transform => Icons.transform,
-        ToolbarItemId.text => Icons.text_fields,
-        // 図形ツール：Font Awesomeの「shapes」（複数の図形を重ねた見た目）が
-        // Material Iconsのcategory（三角形1つ）よりも図形選択ツールらしいため変更。
-        ToolbarItemId.shape => FontAwesomeIcons.shapes,
-      };
+    ToolbarItemId.pen => Icons.brush,
+    ToolbarItemId.eraser => FontAwesomeIcons.eraser,
+    // バケツ塗り：Material Iconsの汎用的な「塗り」アイコンより、
+    // Font Awesomeのペンキ缶（滴付き）の方がバケツ塗りらしいため変更。
+    ToolbarItemId.bucket => FontAwesomeIcons.fillDrip,
+    ToolbarItemId.eyedropper => Icons.colorize,
+    // 指先ツール（歪み）：人差し指を立てたアイコンを使う
+    // （以前のback_handは掌全体を広げた「手のひら」の形で紛らわしく、
+    // 手のひらツール〔画面移動〕の方へ移した）。
+    ToolbarItemId.finger => Icons.pan_tool_alt,
+    ToolbarItemId.pan => Icons.back_hand,
+    ToolbarItemId.select => Icons.highlight_alt,
+    ToolbarItemId.transform => Icons.transform,
+    ToolbarItemId.text => Icons.text_fields,
+    // 図形ツール：Font Awesomeの「shapes」（複数の図形を重ねた見た目）が
+    // Material Iconsのcategory（三角形1つ）よりも図形選択ツールらしいため変更。
+    ToolbarItemId.shape => FontAwesomeIcons.shapes,
+  };
 
   /// [_iconData]の種類（Material／Font Awesome）を意識せず、常に正しく
   /// 描画できるアイコンウィジェットを組み立てる。

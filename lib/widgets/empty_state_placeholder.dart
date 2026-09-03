@@ -41,7 +41,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.w600,
               fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+              fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
           if (hint != null) ...[

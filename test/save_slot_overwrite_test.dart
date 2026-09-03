@@ -21,9 +21,9 @@ void main() {
     dir = Directory.systemTemp.createTempSync('niarim_overwrite');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (call) async => dir.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => dir.path,
+        );
   });
 
   testWidgets('上書き保存が失敗しても直前の保存が残る', (WidgetTester tester) async {

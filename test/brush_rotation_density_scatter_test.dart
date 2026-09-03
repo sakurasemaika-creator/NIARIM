@@ -39,7 +39,9 @@ Brush _brush({
 
 Uint8List _tileBytes(TileManager manager, String layer) {
   final tile = manager.getTile(layer, 0, 0);
-  return tile == null ? Uint8List(TileManager.tileSize * TileManager.tileSize * 4) : Uint8List.fromList(tile);
+  return tile == null
+      ? Uint8List(TileManager.tileSize * TileManager.tileSize * 4)
+      : Uint8List.fromList(tile);
 }
 
 int _paintedPixelCount(Uint8List bytes) {
@@ -83,50 +85,44 @@ Uint8List _drawLine(Brush brush, List<StrokePoint> points) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('Brush JSON round-trips rotation density and scatter with old-data defaults', () {
-    final brush = _brush(rotation: true, density: 2.4, scatter: 0.35);
-    final restored = Brush.fromJson(brush.toJson());
-    expect(restored.rotation, true);
-    expect(restored.density, 2.4);
-    expect(restored.scatter, 0.35);
+  test(
+    'Brush JSON round-trips rotation density and scatter with old-data defaults',
+    () {
+      final brush = _brush(rotation: true, density: 2.4, scatter: 0.35);
+      final restored = Brush.fromJson(brush.toJson());
+      expect(restored.rotation, true);
+      expect(restored.density, 2.4);
+      expect(restored.scatter, 0.35);
 
-    final legacy = Map<String, dynamic>.from(brush.toJson())
-      ..remove('rotation')
-      ..remove('density')
-      ..remove('scatter');
-    final legacyRestored = Brush.fromJson(legacy);
-    expect(legacyRestored.rotation, false);
-    expect(legacyRestored.density, 1.0);
-    expect(legacyRestored.scatter, 0.0);
-  });
+      final legacy = Map<String, dynamic>.from(brush.toJson())
+        ..remove('rotation')
+        ..remove('density')
+        ..remove('scatter');
+      final legacyRestored = Brush.fromJson(legacy);
+      expect(legacyRestored.rotation, false);
+      expect(legacyRestored.density, 1.0);
+      expect(legacyRestored.scatter, 0.0);
+    },
+  );
 
   test('higher brush density creates more separated stamp coverage', () {
-    final normal = _drawLine(
-      _brush(size: 2, spacing: 20, density: 1.0),
-      const [
-        StrokePoint(x: 10, y: 100),
-        StrokePoint(x: 210, y: 100),
-      ],
-    );
-    final dense = _drawLine(
-      _brush(size: 2, spacing: 20, density: 2.0),
-      const [
-        StrokePoint(x: 10, y: 100),
-        StrokePoint(x: 210, y: 100),
-      ],
-    );
+    final normal = _drawLine(_brush(size: 2, spacing: 20, density: 1.0), const [
+      StrokePoint(x: 10, y: 100),
+      StrokePoint(x: 210, y: 100),
+    ]);
+    final dense = _drawLine(_brush(size: 2, spacing: 20, density: 2.0), const [
+      StrokePoint(x: 10, y: 100),
+      StrokePoint(x: 210, y: 100),
+    ]);
     expect(_paintedPixelCount(dense), greaterThan(_paintedPixelCount(normal)));
   });
 
   test('brush sampling is invariant to input move-event density', () {
     final brush = _brush(size: 5, spacing: 17, density: 1.7, scatter: 0.45);
-    final sparse = _drawLine(
-      brush,
-      const [
-        StrokePoint(x: 10, y: 100),
-        StrokePoint(x: 210, y: 100),
-      ],
-    );
+    final sparse = _drawLine(brush, const [
+      StrokePoint(x: 10, y: 100),
+      StrokePoint(x: 210, y: 100),
+    ]);
     final densePoints = <StrokePoint>[
       for (int x = 10; x <= 210; x += 10) StrokePoint(x: x.toDouble(), y: 100),
     ];
@@ -137,17 +133,11 @@ void main() {
   test('scatter moves brush stamps away from the path normal direction', () {
     final straight = _drawLine(
       _brush(size: 8, spacing: 20, scatter: 0.0),
-      const [
-        StrokePoint(x: 20, y: 100),
-        StrokePoint(x: 220, y: 100),
-      ],
+      const [StrokePoint(x: 20, y: 100), StrokePoint(x: 220, y: 100)],
     );
     final scattered = _drawLine(
       _brush(size: 8, spacing: 20, scatter: 1.0),
-      const [
-        StrokePoint(x: 20, y: 100),
-        StrokePoint(x: 220, y: 100),
-      ],
+      const [StrokePoint(x: 20, y: 100), StrokePoint(x: 220, y: 100)],
     );
     final straightBounds = _bounds(straight);
     final scatterBounds = _bounds(scattered);
@@ -159,17 +149,11 @@ void main() {
   test('rotation follows path direction for a flat brush tip', () {
     final fixed = _drawLine(
       _brush(size: 20, spacing: 100, calligraphyAngle: 0, rotation: false),
-      const [
-        StrokePoint(x: 100, y: 100),
-        StrokePoint(x: 100, y: 110),
-      ],
+      const [StrokePoint(x: 100, y: 100), StrokePoint(x: 100, y: 110)],
     );
     final rotating = _drawLine(
       _brush(size: 20, spacing: 100, calligraphyAngle: 0, rotation: true),
-      const [
-        StrokePoint(x: 100, y: 100),
-        StrokePoint(x: 100, y: 110),
-      ],
+      const [StrokePoint(x: 100, y: 100), StrokePoint(x: 100, y: 110)],
     );
     final fixedBounds = _bounds(fixed);
     final rotatingBounds = _bounds(rotating);

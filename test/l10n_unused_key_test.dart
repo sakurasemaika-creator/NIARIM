@@ -16,9 +16,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('ARBのキーはすべてどこかのDartソースから参照されている', () {
-    final arb = jsonDecode(
-      File('lib/l10n/app_ja.arb').readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final arb =
+        jsonDecode(File('lib/l10n/app_ja.arb').readAsStringSync())
+            as Map<String, dynamic>;
     final keys = arb.keys.where((k) => !k.startsWith('@')).toList();
 
     final buffer = StringBuffer();
@@ -32,16 +32,16 @@ void main() {
         buffer.writeln(f.readAsStringSync());
       }
     }
-    final words = RegExp(r'[A-Za-z_][A-Za-z0-9_]*')
-        .allMatches(buffer.toString())
-        .map((m) => m.group(0)!)
-        .toSet();
+    final words = RegExp(
+      r'[A-Za-z_][A-Za-z0-9_]*',
+    ).allMatches(buffer.toString()).map((m) => m.group(0)!).toSet();
 
     final unused = keys.where((k) => !words.contains(k)).toList();
     expect(
       unused,
       isEmpty,
-      reason: '未使用のARBキーが${unused.length}件あります。'
+      reason:
+          '未使用のARBキーが${unused.length}件あります。'
           '画面へ配線するか、7言語すべてのARBから削除してください：$unused',
     );
   });

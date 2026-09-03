@@ -3,15 +3,15 @@ import 'dart:ui';
 /// オニオンスキン設定モデル
 class OnionSkinSettings {
   final bool enabled;
-  final bool showPrev;       // 前フレーム表示ON/OFF
-  final bool showNext;       // 後フレーム表示ON/OFF
-  final int prevFrames;      // 前表示枚数 1〜10
-  final int nextFrames;      // 後表示枚数 1〜10
-  final int frameInterval;   // フレーム間隔 1/2/3/5
+  final bool showPrev; // 前フレーム表示ON/OFF
+  final bool showNext; // 後フレーム表示ON/OFF
+  final int prevFrames; // 前表示枚数 1〜10
+  final int nextFrames; // 後表示枚数 1〜10
+  final int frameInterval; // フレーム間隔 1/2/3/5
   final Color prevColor;
   final Color nextColor;
-  final double prevOpacity;  // 前フレーム透明度 0〜1
-  final double nextOpacity;  // 後フレーム透明度 0〜1
+  final double prevOpacity; // 前フレーム透明度 0〜1
+  final double nextOpacity; // 後フレーム透明度 0〜1
   final bool fadeByDistance; // 近いほど濃く表示
 
   const OnionSkinSettings({

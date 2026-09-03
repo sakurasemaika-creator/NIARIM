@@ -16,10 +16,7 @@ class TimelineMarker {
     this.comment = '',
   });
 
-  TimelineMarker copyWith({
-    int? frameIndex,
-    String? comment,
-  }) {
+  TimelineMarker copyWith({int? frameIndex, String? comment}) {
     return TimelineMarker(
       id: id,
       frameIndex: frameIndex ?? this.frameIndex,
@@ -28,14 +25,14 @@ class TimelineMarker {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'frameIndex': frameIndex,
-        'comment': comment,
-      };
+    'id': id,
+    'frameIndex': frameIndex,
+    'comment': comment,
+  };
 
   factory TimelineMarker.fromJson(Map<String, dynamic> j) => TimelineMarker(
-        id: j['id'] as String,
-        frameIndex: j['frameIndex'] as int,
-        comment: j['comment'] as String? ?? '',
-      );
+    id: j['id'] as String,
+    frameIndex: j['frameIndex'] as int,
+    comment: j['comment'] as String? ?? '',
+  );
 }

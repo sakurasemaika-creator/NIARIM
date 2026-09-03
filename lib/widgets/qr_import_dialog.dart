@@ -12,7 +12,11 @@ class QrImportDialog extends StatefulWidget {
   final String title;
   final Future<bool> Function(String text) onImport;
 
-  const QrImportDialog({super.key, required this.title, required this.onImport});
+  const QrImportDialog({
+    super.key,
+    required this.title,
+    required this.onImport,
+  });
 
   @override
   State<QrImportDialog> createState() => _QrImportDialogState();

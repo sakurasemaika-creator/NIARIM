@@ -86,20 +86,13 @@ const Object _sentinel = Object();
 class Frame {
   final int index;
   final List<Layer> layers;
+
   /// 保持セル数（1=保持なし、2以上=このフレームをn枚分保持）
   final int hold;
 
-  const Frame({
-    required this.index,
-    this.layers = const [],
-    this.hold = 1,
-  });
+  const Frame({required this.index, this.layers = const [], this.hold = 1});
 
-  Frame copyWith({
-    int? index,
-    List<Layer>? layers,
-    int? hold,
-  }) {
+  Frame copyWith({int? index, List<Layer>? layers, int? hold}) {
     return Frame(
       index: index ?? this.index,
       layers: layers ?? this.layers,

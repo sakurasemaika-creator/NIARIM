@@ -54,7 +54,11 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
       // ブラシタブへフォールバックする。
       PenSubTool.lassoFill => 0,
     };
-    _tabController = TabController(length: 3, vsync: this, initialIndex: initialIndex);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
     // TabControllerのindex変化をonSubToolSelectedに通知
     _tabController.addListener(_onTabChanged);
   }
@@ -163,12 +167,23 @@ class _BrushTab extends StatelessWidget {
         return ListTile(
           dense: true,
           selected: isSelected,
-          leading: Icon(Icons.brush, size: 16,
-              color: isSelected ? Theme.of(context).colorScheme.primary : null),
-          title: Text(brush.name, style: const TextStyle(fontSize: 12, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-          subtitle: Text(l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
-              style: const TextStyle(fontSize: 10)),
+          leading: Icon(
+            Icons.brush,
+            size: 16,
+            color: isSelected ? Theme.of(context).colorScheme.primary : null,
+          ),
+          title: Text(
+            brush.name,
+            style: const TextStyle(
+              fontSize: 12,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+          subtitle: Text(
+            l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
+            style: const TextStyle(fontSize: 10),
+          ),
           trailing: GestureDetector(
             onTap: () => brushService.toggleFavoriteBrush(brush.id),
             child: Icon(
@@ -217,7 +232,9 @@ class _ToneTab extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[600]!,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(4),
@@ -228,9 +245,16 @@ class _ToneTab extends StatelessWidget {
               children: [
                 const Icon(Icons.grid_on, size: 20),
                 const SizedBox(height: 2),
-                Text(tone.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
-                    textAlign: TextAlign.center, maxLines: 2),
+                Text(
+                  tone.name,
+                  style: const TextStyle(
+                    fontSize: 8,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
               ],
             ),
           ),
@@ -276,7 +300,9 @@ class _StampTab extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[600]!,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(4),
@@ -287,9 +313,16 @@ class _StampTab extends StatelessWidget {
               children: [
                 const Icon(Icons.star, size: 20),
                 const SizedBox(height: 2),
-                Text(stamp.name, style: const TextStyle(fontSize: 8, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
-                    textAlign: TextAlign.center, maxLines: 2),
+                Text(
+                  stamp.name,
+                  style: const TextStyle(
+                    fontSize: 8,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
               ],
             ),
           ),
@@ -299,7 +332,11 @@ class _StampTab extends StatelessWidget {
   }
 
   /// スタンプ設定ダイアログ（回転ON/OFF・密度・散布）
-  void _showStampSettingsDialog(BuildContext context, StampService service, Stamp stamp) {
+  void _showStampSettingsDialog(
+    BuildContext context,
+    StampService service,
+    Stamp stamp,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     bool rotation = stamp.rotation;
     int opacity = stamp.opacity;
@@ -317,16 +354,25 @@ class _StampTab extends StatelessWidget {
               SwitchListTile(
                 dense: true,
                 title: Text(l10n.stampRotationLabel),
-                subtitle: Text(l10n.penSubToolStampRotationSubtitle, style: const TextStyle(fontSize: 11)),
+                subtitle: Text(
+                  l10n.penSubToolStampRotationSubtitle,
+                  style: const TextStyle(fontSize: 11),
+                ),
                 value: rotation,
                 onChanged: (v) => setS(() => rotation = v),
               ),
               Row(
                 children: [
-                  Text(l10n.brushSettingsOpacityLabel, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    l10n.brushSettingsOpacityLabel,
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   Expanded(
                     child: SteppedSlider(
-                      value: opacity.toDouble(), min: 1, max: 100, step: 1,
+                      value: opacity.toDouble(),
+                      min: 1,
+                      max: 100,
+                      step: 1,
                       label: '$opacity%',
                       onChanged: (v) => setS(() => opacity = v.round()),
                     ),
@@ -334,17 +380,26 @@ class _StampTab extends StatelessWidget {
                   EditableSliderValue(
                     text: '$opacity%',
                     style: const TextStyle(fontSize: 12),
-                    value: opacity.toDouble(), min: 1, max: 100, isInt: true,
+                    value: opacity.toDouble(),
+                    min: 1,
+                    max: 100,
+                    isInt: true,
                     onChanged: (v) => setS(() => opacity = v.round()),
                   ),
                 ],
               ),
               Row(
                 children: [
-                  Text(l10n.stampDensityLabel, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    l10n.stampDensityLabel,
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   Expanded(
                     child: SteppedSlider(
-                      value: density.clamp(0.1, 5.0), min: 0.1, max: 5.0, step: 0.1,
+                      value: density.clamp(0.1, 5.0),
+                      min: 0.1,
+                      max: 5.0,
+                      step: 0.1,
                       label: density.toStringAsFixed(1),
                       onChanged: (v) => setS(() => density = v),
                     ),
@@ -352,17 +407,25 @@ class _StampTab extends StatelessWidget {
                   EditableSliderValue(
                     text: density.toStringAsFixed(1),
                     style: const TextStyle(fontSize: 12),
-                    value: density, min: 0.1, max: 5.0,
+                    value: density,
+                    min: 0.1,
+                    max: 5.0,
                     onChanged: (v) => setS(() => density = v.toDouble()),
                   ),
                 ],
               ),
               Row(
                 children: [
-                  Text(l10n.stampScatterLabel, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    l10n.stampScatterLabel,
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   Expanded(
                     child: SteppedSlider(
-                      value: scatter, min: 0, max: 1.0, step: 0.01,
+                      value: scatter,
+                      min: 0,
+                      max: 1.0,
+                      step: 0.01,
                       label: '${(scatter * 100).round()}%',
                       onChanged: (v) => setS(() => scatter = v),
                     ),
@@ -370,7 +433,9 @@ class _StampTab extends StatelessWidget {
                   EditableSliderValue(
                     text: '${(scatter * 100).round()}%',
                     style: const TextStyle(fontSize: 12),
-                    value: (scatter * 100).round(), min: 0, max: 100,
+                    value: (scatter * 100).round(),
+                    min: 0,
+                    max: 100,
                     onChanged: (v) => setS(() => scatter = v / 100.0),
                   ),
                 ],
@@ -378,15 +443,20 @@ class _StampTab extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () {
-                service.updateStamp(stamp.copyWith(
-                  rotation: rotation,
-                  opacity: opacity,
-                  density: density,
-                  scatter: scatter,
-                ));
+                service.updateStamp(
+                  stamp.copyWith(
+                    rotation: rotation,
+                    opacity: opacity,
+                    density: density,
+                    scatter: scatter,
+                  ),
+                );
                 Navigator.pop(ctx);
               },
               child: Text(l10n.commonOk),
@@ -419,7 +489,10 @@ class LassoFillToneSheet extends StatelessWidget {
         ListTile(
           dense: true,
           leading: const Icon(Icons.format_color_fill, size: 18),
-          title: Text(l10n.toolbarBucketFlatFill, style: const TextStyle(fontSize: 13)),
+          title: Text(
+            l10n.toolbarBucketFlatFill,
+            style: const TextStyle(fontSize: 13),
+          ),
           selected: !useTone,
           onTap: () {
             toneService.setLassoUseTone(false);
@@ -430,7 +503,10 @@ class LassoFillToneSheet extends StatelessWidget {
         // トーン一覧
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: Text(l10n.toolbarBucketToneListLabel, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+          child: Text(
+            l10n.toolbarBucketToneListLabel,
+            style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+          ),
         ),
         Expanded(
           child: GridView.builder(
@@ -454,7 +530,9 @@ class LassoFillToneSheet extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]!,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey[600]!,
                       width: isSelected ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
@@ -465,9 +543,16 @@ class LassoFillToneSheet extends StatelessWidget {
                     children: [
                       const Icon(Icons.grid_on, size: 16),
                       const SizedBox(height: 2),
-                      Text(tone.name, style: const TextStyle(fontSize: 7, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
-                          textAlign: TextAlign.center, maxLines: 2),
+                      Text(
+                        tone.name,
+                        style: const TextStyle(
+                          fontSize: 7,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
                     ],
                   ),
                 ),

@@ -37,13 +37,16 @@ Future<void> preloadBrushTexture(String path) async {
     );
     final frame = await codec.getNextFrame();
     codec.dispose();
-    final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await frame.image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     frame.image.dispose();
     if (byteData == null) return;
     final rgba = byteData.buffer.asUint8List();
     final mask = Uint8List(rgba.length);
     for (int i = 0; i < rgba.length; i += 4) {
-      final luminance = rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
+      final luminance =
+          rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
       final ink = ((255 - luminance) * rgba[i + 3] / 255).round();
       mask[i + 3] = ink.clamp(0, 255);
     }

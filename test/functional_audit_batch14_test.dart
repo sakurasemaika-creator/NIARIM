@@ -28,40 +28,84 @@ void main() {
         density: density,
       );
       results[density] = d;
-      await _saveRgba(d, w, h, '${out.path}/stamp_density_${density.toStringAsFixed(1)}.png');
+      await _saveRgba(
+        d,
+        w,
+        h,
+        '${out.path}/stamp_density_${density.toStringAsFixed(1)}.png',
+      );
     }
 
     final a05 = _meanAlpha(results[0.5]!, w, 60, 260, 50);
     final a10 = _meanAlpha(results[1.0]!, w, 60, 260, 50);
     final a20 = _meanAlpha(results[2.0]!, w, 60, 260, 50);
     final a50 = _meanAlpha(results[5.0]!, w, 60, 260, 50);
-    expect(a05, lessThan(a10), reason: 'density 0.5 must be visibly sparser than 1.0');
-    expect(a10, lessThan(a20), reason: 'density 2.0 must actually increase stamp density');
-    expect(a20, lessThan(a50), reason: 'density 5.0 must not collapse to the same behavior as >=1.0');
+    expect(
+      a05,
+      lessThan(a10),
+      reason: 'density 0.5 must be visibly sparser than 1.0',
+    );
+    expect(
+      a10,
+      lessThan(a20),
+      reason: 'density 2.0 must actually increase stamp density',
+    );
+    expect(
+      a20,
+      lessThan(a50),
+      reason: 'density 5.0 must not collapse to the same behavior as >=1.0',
+    );
   });
 
   test('散布はrotation OFFでもストローク進行方向に対して垂直に広がる', () async {
     const w = 300, h = 300;
     final tex = _solidTexture(5, alpha: 255);
     final horizontal = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 5,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 5,
       points: const [ui.Offset(30, 150), ui.Offset(270, 150)],
-      stampSize: 8, rotation: false, scatter: 35, density: 0.5, seed: 123,
+      stampSize: 8,
+      rotation: false,
+      scatter: 35,
+      density: 0.5,
+      seed: 123,
     );
     final vertical = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 5,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 5,
       points: const [ui.Offset(150, 30), ui.Offset(150, 270)],
-      stampSize: 8, rotation: false, scatter: 35, density: 0.5, seed: 123,
+      stampSize: 8,
+      rotation: false,
+      scatter: 35,
+      density: 0.5,
+      seed: 123,
     );
-    await _saveRgba(horizontal, w, h, '${out.path}/stamp_scatter_horizontal.png');
+    await _saveRgba(
+      horizontal,
+      w,
+      h,
+      '${out.path}/stamp_scatter_horizontal.png',
+    );
     await _saveRgba(vertical, w, h, '${out.path}/stamp_scatter_vertical.png');
 
     final hb = _alphaBounds(horizontal, w, h);
     final vb = _alphaBounds(vertical, w, h);
-    expect(hb.height, greaterThan(30), reason: 'horizontal stroke scatter must spread vertically');
-    expect(vb.width, greaterThan(30), reason: 'vertical stroke scatter must spread horizontally');
+    expect(
+      hb.height,
+      greaterThan(30),
+      reason: 'horizontal stroke scatter must spread vertically',
+    );
+    expect(
+      vb.width,
+      greaterThan(30),
+      reason: 'vertical stroke scatter must spread horizontally',
+    );
     expect(hb.width, greaterThan(hb.height));
     expect(vb.height, greaterThan(vb.width));
   });
@@ -70,19 +114,39 @@ void main() {
     const w = 180, h = 220;
     final tex = _horizontalBarTexture(17);
     final off = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 17,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 17,
       points: const [ui.Offset(90, 45), ui.Offset(90, 175)],
-      stampSize: 26, rotation: false, density: 0.5,
+      stampSize: 26,
+      rotation: false,
+      density: 0.5,
     );
     final on = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 17,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 17,
       points: const [ui.Offset(90, 45), ui.Offset(90, 175)],
-      stampSize: 26, rotation: true, density: 0.5,
+      stampSize: 26,
+      rotation: true,
+      density: 0.5,
     );
-    await _saveRgba(off, w, h, '${out.path}/stamp_rotation_off_vertical_path.png');
-    await _saveRgba(on, w, h, '${out.path}/stamp_rotation_on_vertical_path.png');
+    await _saveRgba(
+      off,
+      w,
+      h,
+      '${out.path}/stamp_rotation_off_vertical_path.png',
+    );
+    await _saveRgba(
+      on,
+      w,
+      h,
+      '${out.path}/stamp_rotation_on_vertical_path.png',
+    );
 
     // 先頭スタンプ中心y=45の±14pxだけを測る。次のスタンプを混ぜず、
     // OFFは横長、ONは縦長であることを実画素から判定する。
@@ -96,20 +160,28 @@ void main() {
     const w = 320, h = 110;
     final tex = _solidTexture(5, alpha: 90);
     final sparse = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 5,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 5,
       points: const [ui.Offset(20, 55), ui.Offset(300, 55)],
-      stampSize: 18, density: 1.7,
+      stampSize: 18,
+      density: 1.7,
     );
     final densePoints = List<ui.Offset>.generate(51, (i) {
       final t = i / 50;
       return ui.Offset(20 + 280 * t, 55);
     });
     final dense = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 5,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 5,
       points: densePoints,
-      stampSize: 18, density: 1.7,
+      stampSize: 18,
+      density: 1.7,
     );
     await _saveRgba(sparse, w, h, '${out.path}/stamp_sparse_input.png');
     await _saveRgba(dense, w, h, '${out.path}/stamp_dense_input.png');
@@ -125,15 +197,25 @@ void main() {
       maxChannelDiff = math.max(maxChannelDiff, localMax);
       if (localMax != 0) differentPixels++;
     }
-    expect(differentPixels, 0,
-        reason: 'same straight path must rasterize identically regardless of pointer event count');
+    expect(
+      differentPixels,
+      0,
+      reason:
+          'same straight path must rasterize identically regardless of pointer event count',
+    );
     expect(maxChannelDiff, 0);
   });
 
   test('スタンプ設定はrotation/density/scatter/opacityをJSON往復して保持し旧データは100%', () {
     const original = Stamp(
-      id: 'audit14', name: 'audit stamp', imagePath: '/tmp/a.png',
-      rotation: true, density: 3.4, scatter: 0.7, opacity: 42, pixelMode: true,
+      id: 'audit14',
+      name: 'audit stamp',
+      imagePath: '/tmp/a.png',
+      rotation: true,
+      density: 3.4,
+      scatter: 0.7,
+      opacity: 42,
+      pixelMode: true,
     );
     final restored = Stamp.fromJson(original.toJson());
     expect(restored.rotation, isTrue);
@@ -142,9 +224,14 @@ void main() {
     expect(restored.opacity, 42);
     expect(restored.pixelMode, isTrue);
 
-    final legacy = Map<String, dynamic>.from(original.toJson())..remove('opacity');
-    expect(Stamp.fromJson(legacy).opacity, 100,
-        reason: 'stamps saved before opacity existed must keep their old fully-opaque appearance');
+    final legacy = Map<String, dynamic>.from(original.toJson())
+      ..remove('opacity');
+    expect(
+      Stamp.fromJson(legacy).opacity,
+      100,
+      reason:
+          'stamps saved before opacity existed must keep their old fully-opaque appearance',
+    );
   });
 }
 
@@ -165,14 +252,20 @@ Uint8List _horizontalBarTexture(int size) {
   for (var y = cy - 1; y <= cy + 1; y++) {
     for (var x = 1; x < size - 1; x++) {
       final i = (y * size + x) * 4;
-      d[i] = 240; d[i + 1] = 60; d[i + 2] = 30; d[i + 3] = 255;
+      d[i] = 240;
+      d[i + 1] = 60;
+      d[i + 2] = 30;
+      d[i + 3] = 255;
     }
   }
   // 片端だけ青いマーカーを置いて180度方向も判別できる非対称形状にする。
   for (var y = cy - 3; y <= cy + 3; y++) {
     final x = size - 3;
     final i = (y * size + x) * 4;
-    d[i] = 30; d[i + 1] = 80; d[i + 2] = 240; d[i + 3] = 255;
+    d[i] = 30;
+    d[i + 1] = 80;
+    d[i + 2] = 240;
+    d[i + 3] = 255;
   }
   return d;
 }
@@ -191,13 +284,22 @@ math.Rectangle<int> _alphaBounds(Uint8List d, int w, int h) =>
     _alphaBoundsIn(d, w, h, 0, 0, w, h);
 
 math.Rectangle<int> _alphaBoundsIn(
-    Uint8List d, int w, int h, int x0, int y0, int x1, int y1) {
+  Uint8List d,
+  int w,
+  int h,
+  int x0,
+  int y0,
+  int x1,
+  int y1,
+) {
   var minX = x1, minY = y1, maxX = x0 - 1, maxY = y0 - 1;
   for (var y = y0.clamp(0, h - 1); y < y1.clamp(0, h); y++) {
     for (var x = x0.clamp(0, w - 1); x < x1.clamp(0, w); x++) {
       if (d[(y * w + x) * 4 + 3] == 0) continue;
-      minX = math.min(minX, x); minY = math.min(minY, y);
-      maxX = math.max(maxX, x); maxY = math.max(maxY, y);
+      minX = math.min(minX, x);
+      minY = math.min(minY, y);
+      maxX = math.max(maxX, x);
+      maxY = math.max(maxY, y);
     }
   }
   if (maxX < minX || maxY < minY) return const math.Rectangle<int>(0, 0, 0, 0);
@@ -207,11 +309,17 @@ math.Rectangle<int> _alphaBoundsIn(
 Future<void> _saveRgba(Uint8List rgba, int w, int h, String path) async {
   final buffer = await ui.ImmutableBuffer.fromUint8List(rgba);
   final desc = ui.ImageDescriptor.raw(
-    buffer, width: w, height: h, pixelFormat: ui.PixelFormat.rgba8888,
+    buffer,
+    width: w,
+    height: h,
+    pixelFormat: ui.PixelFormat.rgba8888,
   );
   final codec = await desc.instantiateCodec();
   final frame = await codec.getNextFrame();
   final png = await frame.image.toByteData(format: ui.ImageByteFormat.png);
   await File(path).writeAsBytes(png!.buffer.asUint8List());
-  frame.image.dispose(); codec.dispose(); desc.dispose(); buffer.dispose();
+  frame.image.dispose();
+  codec.dispose();
+  desc.dispose();
+  buffer.dispose();
 }

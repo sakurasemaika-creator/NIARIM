@@ -78,19 +78,18 @@ class _GameStyleSlotScreen extends StatelessWidget {
             child: desktopCentered(
               context,
               ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 10,
+                ),
                 itemCount: saveService.slotMax,
                 itemBuilder: (context, slotIndex) {
                   final node = bySlot[slotIndex];
                   return _GameSaveSlotTile(
                     slotIndex: slotIndex,
                     node: node,
-                    onTap: () => _handleSlotTap(
-                      context,
-                      saveService,
-                      slotIndex,
-                      node,
-                    ),
+                    onTap: () =>
+                        _handleSlotTap(context, saveService, slotIndex, node),
                   );
                 },
               ),
@@ -133,10 +132,15 @@ class _GameStyleSlotScreen extends StatelessWidget {
                 onTap: () => Navigator.pop(sheetContext, _SlotAction.load),
               ),
             ListTile(
-              leading: Icon(Icons.delete_outline, color: Theme.of(sheetContext).colorScheme.error),
+              leading: Icon(
+                Icons.delete_outline,
+                color: Theme.of(sheetContext).colorScheme.error,
+              ),
               title: Text(
                 l10n.commonDelete,
-                style: TextStyle(color: Theme.of(sheetContext).colorScheme.error),
+                style: TextStyle(
+                  color: Theme.of(sheetContext).colorScheme.error,
+                ),
               ),
               onTap: () => Navigator.pop(sheetContext, _SlotAction.delete),
             ),
@@ -191,7 +195,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
     SaveNode? existing,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final commentController = TextEditingController(text: existing?.comment ?? '');
+    final commentController = TextEditingController(
+      text: existing?.comment ?? '',
+    );
     var saving = false;
     showDialog<void>(
       context: context,
@@ -201,98 +207,108 @@ class _GameStyleSlotScreen extends StatelessWidget {
         controller: commentController,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (existing != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    l10n.saveTreeSlotOverwriteWarning(_formatDate(existing.savedAt)),
-                    style: const TextStyle(fontSize: 12, color: Colors.orange),
+            title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (existing != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      l10n.saveTreeSlotOverwriteWarning(
+                        _formatDate(existing.savedAt),
+                      ),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+                TextField(
+                  controller: commentController,
+                  decoration: InputDecoration(
+                    labelText: l10n.saveTreeCommentLabel,
+                    hintText: l10n.saveTreeCommentHint,
                   ),
                 ),
-              TextField(
-                controller: commentController,
-                decoration: InputDecoration(
-                  labelText: l10n.saveTreeCommentLabel,
-                  hintText: l10n.saveTreeCommentHint,
-                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: saving ? null : () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                // 保存はキャンバス全体の合成＋PNG化＋アーカイブ書き込みを伴い、
+                // 大きなキャンバスでは数秒かかる。その間ボタンを押せたままに
+                // すると同じスロットへの保存が二重に走り、同じファイルを
+                // 同時に書き換えてしまうため、実行中は無効化する。
+                onPressed: saving
+                    ? null
+                    : () async {
+                        final ps = context.read<ProjectService>();
+                        Project? project;
+                        for (final candidate in ps.projects) {
+                          if (candidate.id == projectId) {
+                            project = candidate;
+                            break;
+                          }
+                        }
+                        if (project == null) {
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          return;
+                        }
+                        setDialogState(() => saving = true);
+                        // 保存はディスク書き込み・画像合成を伴うため失敗し得る
+                        // （空き容量不足・ファイル書き込み失敗など）。以前は
+                        // try/catchが無く、失敗すると例外が非同期の外へ抜けて
+                        // ダイアログが閉じないまま何の表示も出ず、ユーザーには
+                        // 「押しても何も起きない／画面がおかしくなる」と
+                        // しか見えなかった。失敗を必ず画面へ出す。
+                        try {
+                          final thumbnail = await _generateThumbnail(
+                            ps,
+                            projectId,
+                          );
+                          await saveService.saveToSlot(
+                            projectId: projectId,
+                            slotIndex: slotIndex,
+                            project: project,
+                            scenes: ps.scenesOf(projectId),
+                            tileManager: ps.tileManagerOf(projectId),
+                            comment: commentController.text.isEmpty
+                                ? null
+                                : commentController.text,
+                            thumbnailPngBytes: thumbnail,
+                          );
+                          if (ctx.mounted) Navigator.pop(ctx);
+                        } catch (e, st) {
+                          AppErrorReporter.record(e, st);
+                          if (ctx.mounted) {
+                            setDialogState(() => saving = false);
+                            Navigator.pop(ctx);
+                          }
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.saveTreeSaveFailedSnackbar('$e'),
+                                ),
+                                duration: const Duration(seconds: 6),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                child: saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.commonSave),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: saving ? null : () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              // 保存はキャンバス全体の合成＋PNG化＋アーカイブ書き込みを伴い、
-              // 大きなキャンバスでは数秒かかる。その間ボタンを押せたままに
-              // すると同じスロットへの保存が二重に走り、同じファイルを
-              // 同時に書き換えてしまうため、実行中は無効化する。
-              onPressed: saving
-                  ? null
-                  : () async {
-                      final ps = context.read<ProjectService>();
-                      Project? project;
-                      for (final candidate in ps.projects) {
-                        if (candidate.id == projectId) {
-                          project = candidate;
-                          break;
-                        }
-                      }
-                      if (project == null) {
-                        if (ctx.mounted) Navigator.pop(ctx);
-                        return;
-                      }
-                      setDialogState(() => saving = true);
-                      // 保存はディスク書き込み・画像合成を伴うため失敗し得る
-                      // （空き容量不足・ファイル書き込み失敗など）。以前は
-                      // try/catchが無く、失敗すると例外が非同期の外へ抜けて
-                      // ダイアログが閉じないまま何の表示も出ず、ユーザーには
-                      // 「押しても何も起きない／画面がおかしくなる」と
-                      // しか見えなかった。失敗を必ず画面へ出す。
-                      try {
-                        final thumbnail = await _generateThumbnail(ps, projectId);
-                        await saveService.saveToSlot(
-                          projectId: projectId,
-                          slotIndex: slotIndex,
-                          project: project,
-                          scenes: ps.scenesOf(projectId),
-                          tileManager: ps.tileManagerOf(projectId),
-                          comment: commentController.text.isEmpty
-                              ? null
-                              : commentController.text,
-                          thumbnailPngBytes: thumbnail,
-                        );
-                        if (ctx.mounted) Navigator.pop(ctx);
-                      } catch (e, st) {
-                        AppErrorReporter.record(e, st);
-                        if (ctx.mounted) {
-                          setDialogState(() => saving = false);
-                          Navigator.pop(ctx);
-                        }
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.saveTreeSaveFailedSnackbar('$e')),
-                              duration: const Duration(seconds: 6),
-                            ),
-                          );
-                        }
-                      }
-                    },
-              child: saving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.commonSave),
-            ),
-          ],
           ),
         ),
       ),
@@ -331,9 +347,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
     final data = await saveService.loadNode(projectId, node.id);
     if (!context.mounted) return;
     if (data == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
       return;
     }
 
@@ -373,7 +389,9 @@ class _GameSaveSlotTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Material(
-        color: hasData ? scheme.surfaceContainerLow : scheme.surfaceContainerLowest,
+        color: hasData
+            ? scheme.surfaceContainerLow
+            : scheme.surfaceContainerLowest,
         elevation: hasData ? 2 : 0,
         shadowColor: Colors.black.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(14),
@@ -405,25 +423,31 @@ class _GameSaveSlotTile extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         hasData
-                            ? (node!.comment ?? l10n.saveTreeSlotFallbackName(slotIndex + 1))
+                            ? (node!.comment ??
+                                  l10n.saveTreeSlotFallbackName(slotIndex + 1))
                             : l10n.saveTreeNoDataLabel,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: hasData ? scheme.onSurface : scheme.onSurfaceVariant,
+                          color: hasData
+                              ? scheme.onSurface
+                              : scheme.onSurfaceVariant,
                         ),
                       ),
                       if (hasData) ...[
                         const SizedBox(height: 3),
                         Text(
                           _formatDate(node!.savedAt),
-                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ],
@@ -462,20 +486,28 @@ class _SlotThumbnail extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: path == null
-          ? Icon(node == null ? Icons.add : Icons.image_outlined, color: scheme.onSurfaceVariant)
+          ? Icon(
+              node == null ? Icons.add : Icons.image_outlined,
+              color: scheme.onSurfaceVariant,
+            )
           : Image.file(
               File(path),
               fit: BoxFit.cover,
               // 保存済みサムネイルは長辺200px。ここでの表示は58pxなので、
               // 表示画素数に合わせてデコードして画像キャッシュを節約する。
-              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
-              errorBuilder: (_, __, ___) => Icon(Icons.image_outlined, color: scheme.onSurfaceVariant),
+              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
+                  .round(),
+              errorBuilder: (_, __, ___) =>
+                  Icon(Icons.image_outlined, color: scheme.onSurfaceVariant),
             ),
     );
   }
 }
 
-Future<Uint8List?> _generateThumbnail(ProjectService ps, String projectId) async {
+Future<Uint8List?> _generateThumbnail(
+  ProjectService ps,
+  String projectId,
+) async {
   final scenes = ps.scenesOf(projectId);
   if (scenes.isEmpty || scenes.first.frames.isEmpty) return null;
   final scene = scenes.first;

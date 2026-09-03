@@ -53,8 +53,11 @@ void main() {
         expected.setRange(di, di + 4, src, si);
       }
     }
-    expect(actual, orderedEquals(expected),
-        reason: '赤枠に相当する中央32x24だけが1pxのずれなく書き出されること');
+    expect(
+      actual,
+      orderedEquals(expected),
+      reason: '赤枠に相当する中央32x24だけが1pxのずれなく書き出されること',
+    );
   });
 
   test('カメラX=+4は書き出しビューを描画領域の右へ4px移動する', () async {
@@ -103,7 +106,10 @@ void main() {
         expected.setRange(di, di + 4, src, si);
       }
     }
-    expect(actual, orderedEquals(expected),
-        reason: 'カメラ移動が書き出し時にも整数4pxぶん正しい方向へ反映されること');
+    expect(
+      actual,
+      orderedEquals(expected),
+      reason: 'カメラ移動が書き出し時にも整数4pxぶん正しい方向へ反映されること',
+    );
   });
 }

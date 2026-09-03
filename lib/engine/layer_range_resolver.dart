@@ -25,7 +25,11 @@ Map<String, LayerHome> buildLayerHomeIndex(List<Scene> scenes) {
 /// [layer]（ホームが[homeSceneId]）が、[targetSceneId]の[targetFrameIndex]
 /// フレームに表示範囲として適用されるかを判定する。
 bool rangeAppliesToFrame(
-    Layer layer, String homeSceneId, String targetSceneId, int targetFrameIndex) {
+  Layer layer,
+  String homeSceneId,
+  String targetSceneId,
+  int targetFrameIndex,
+) {
   switch (layer.rangeMode) {
     case LayerRangeMode.allFrames:
       return true;
@@ -45,7 +49,9 @@ bool rangeAppliesToFrame(
 Layer? _layerAtHome(List<Scene> scenes, LayerHome home, String layerId) {
   final scene = scenes.where((s) => s.id == home.sceneId).firstOrNull;
   if (scene == null || home.frameIndex >= scene.frames.length) return null;
-  return scene.frames[home.frameIndex].layers.where((l) => l.id == layerId).firstOrNull;
+  return scene.frames[home.frameIndex].layers
+      .where((l) => l.id == layerId)
+      .firstOrNull;
 }
 
 /// [sceneId]の[frameIndex]フレームで実際に表示すべきレイヤー一覧を返す
@@ -78,8 +84,13 @@ List<Layer> resolveFrameLayers(
 /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは表示中の
 /// フレームに関わらずホーム位置のタイルバッファを常に参照する。
 String resolveTileKey(
-    Map<String, LayerHome> homes, String sceneId, int frameIndex, String layerId) {
+  Map<String, LayerHome> homes,
+  String sceneId,
+  int frameIndex,
+  String layerId,
+) {
   final home = homes[layerId];
-  if (home != null) return frameLayerKey(home.sceneId, home.frameIndex, layerId);
+  if (home != null)
+    return frameLayerKey(home.sceneId, home.frameIndex, layerId);
   return frameLayerKey(sceneId, frameIndex, layerId);
 }

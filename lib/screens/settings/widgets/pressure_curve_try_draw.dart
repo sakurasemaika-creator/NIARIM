@@ -23,7 +23,11 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
   void _addPoint(PointerEvent event) {
     setState(() {
       _points.add(event.localPosition);
-      _pressures.add(event.kind == PointerDeviceKind.stylus ? event.pressure.clamp(0.0, 1.0) : 1.0);
+      _pressures.add(
+        event.kind == PointerDeviceKind.stylus
+            ? event.pressure.clamp(0.0, 1.0)
+            : 1.0,
+      );
     });
   }
 
@@ -57,7 +61,10 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
                 style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
               ),
             ),
-            TextButton(onPressed: _points.isEmpty ? null : _clear, child: Text(l10n.pressureTryDrawClear)),
+            TextButton(
+              onPressed: _points.isEmpty ? null : _clear,
+              child: Text(l10n.pressureTryDrawClear),
+            ),
           ],
         ),
         Listener(

@@ -41,32 +41,40 @@ Future<AutofillBatchResult> runAutofillForLayer({
   final lineartKey = frameLayerKey(sceneId, frameIndex, lineartLayer.id);
 
   final lineartImg = await tileManager.compositeLayerToImage(lineartKey);
-  final lineartBytes =
-      (await lineartImg.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+  final lineartBytes = (await lineartImg.toByteData(
+    format: ui.ImageByteFormat.rawRgba,
+  ))!.buffer.asUint8List();
   lineartImg.dispose();
 
   var layers = projectService.layersOf(projectId, sceneId, frameIndex);
   final lineartIdx = layers.indexWhere((l) => l.id == lineartLayer.id);
-  Layer? autofillLayer = (lineartIdx >= 0 &&
+  Layer? autofillLayer =
+      (lineartIdx >= 0 &&
           lineartIdx + 1 < layers.length &&
           layers[lineartIdx + 1].type == LayerType.autoFill)
       ? layers[lineartIdx + 1]
       : null;
 
-  final autofillKey =
-      autofillLayer == null ? null : frameLayerKey(sceneId, frameIndex, autofillLayer.id);
+  final autofillKey = autofillLayer == null
+      ? null
+      : frameLayerKey(sceneId, frameIndex, autofillLayer.id);
   final hasExisting = autofillKey != null && tileManager.hasLayer(autofillKey);
   Uint8List? existingBytes;
   if (hasExisting) {
     final img = await tileManager.compositeLayerToImage(autofillKey);
-    existingBytes = (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+    existingBytes = (await img.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!.buffer.asUint8List();
     img.dispose();
   }
 
   Uint8List? toneTexture;
   if (part.useTone && part.toneId != null) {
-    final tone = toneService.tones.where((t) => t.id == part.toneId).firstOrNull;
-    if (tone != null) toneTexture = generateBuiltInToneTexture(tone, size: _toneSize);
+    final tone = toneService.tones
+        .where((t) => t.id == part.toneId)
+        .firstOrNull;
+    if (tone != null)
+      toneTexture = generateBuiltInToneTexture(tone, size: _toneSize);
   }
 
   // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る。
@@ -109,7 +117,10 @@ Future<AutofillBatchResult> runAutofillForLayer({
     autofillLayer = created.copyWith(partId: part.id);
   }
 
-  tileManager.replaceLayerPixels(frameLayerKey(sceneId, frameIndex, autofillLayer.id), result);
+  tileManager.replaceLayerPixels(
+    frameLayerKey(sceneId, frameIndex, autofillLayer.id),
+    result,
+  );
   projectService.updateLayer(
     projectId: projectId,
     sceneId: sceneId,
@@ -119,14 +130,17 @@ Future<AutofillBatchResult> runAutofillForLayer({
       needsAutofillUpdate: false,
       opacity: part.opacity,
       blendMode: part.blendMode,
-      opacityLocked: effectiveMode == AutofillMode.colorUpdate ? true : autofillLayer.opacityLocked,
+      opacityLocked: effectiveMode == AutofillMode.colorUpdate
+          ? true
+          : autofillLayer.opacityLocked,
     ),
   );
 
   // 線画色設定（指定色／塗り色と同じ／色トレス・線画馴染ませ）を線画レイヤーへ
   // 反映する。指定色が既定の黒のままなら変更不要なので処理自体をスキップする。
   final lineartUnchanged =
-      part.lineColorMode == AutofillLineColorMode.specified && part.lineColor == 0xFF000000;
+      part.lineColorMode == AutofillLineColorMode.specified &&
+      part.lineColor == 0xFF000000;
   if (!lineartUnchanged) {
     final recoloredLineart = await compute(runRecolorLineartInIsolate, (
       lineartData: lineartBytes,
@@ -140,7 +154,10 @@ Future<AutofillBatchResult> runAutofillForLayer({
     projectId: projectId,
     sceneId: sceneId,
     frameIndex: frameIndex,
-    layer: lineartLayer.copyWith(opacity: part.lineOpacity, blendMode: part.blendMode),
+    layer: lineartLayer.copyWith(
+      opacity: part.lineOpacity,
+      blendMode: part.blendMode,
+    ),
   );
 
   return AutofillBatchResult.applied;
@@ -170,8 +187,9 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
   final w = tileManager.canvasWidth;
   final h = tileManager.canvasHeight;
   final img = await tileManager.compositeLayerToImage(key);
-  final existingBytes =
-      (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+  final existingBytes = (await img.toByteData(
+    format: ui.ImageByteFormat.rawRgba,
+  ))!.buffer.asUint8List();
   img.dispose();
 
   final result = await compute(runAutofillColorUpdateInIsolate, (
@@ -189,7 +207,11 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
     projectId: projectId,
     sceneId: sceneId,
     frameIndex: frameIndex,
-    layer: autofillLayer.copyWith(partId: part.id, needsAutofillUpdate: false, opacityLocked: true),
+    layer: autofillLayer.copyWith(
+      partId: part.id,
+      needsAutofillUpdate: false,
+      opacityLocked: true,
+    ),
   );
   return AutofillBatchResult.applied;
 }

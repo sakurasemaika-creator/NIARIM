@@ -20,14 +20,8 @@ void main() {
 
   test('同一キーへの同時呼び出しはin-flightのFutureを共有する', () async {
     const path = '/no/such/file/for/niarim/waveform/test2.mp3';
-    final f1 = AudioWaveformService.getWaveform(
-      filePath: path,
-      cacheKey: 'k1',
-    );
-    final f2 = AudioWaveformService.getWaveform(
-      filePath: path,
-      cacheKey: 'k1',
-    );
+    final f1 = AudioWaveformService.getWaveform(filePath: path, cacheKey: 'k1');
+    final f2 = AudioWaveformService.getWaveform(filePath: path, cacheKey: 'k1');
     final results = await Future.wait([f1, f2]);
     expect(results[0], isNull);
     expect(results[1], isNull);

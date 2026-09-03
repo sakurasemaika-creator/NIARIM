@@ -42,17 +42,22 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
   }
 
   Future<void> _detectMissing() async {
-    final missing = await context.read<MaterialService>().detectMissing(widget.projectId);
+    final missing = await context.read<MaterialService>().detectMissing(
+      widget.projectId,
+    );
     if (mounted) setState(() => _missing = missing);
   }
 
-  bool _isUsed(String materialId) =>
-      context.read<ProjectService>().isMaterialUsed(widget.projectId, materialId);
+  bool _isUsed(String materialId) => context
+      .read<ProjectService>()
+      .isMaterialUsed(widget.projectId, materialId);
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final materials = context.watch<MaterialService>().materialsOf(widget.projectId);
+    final materials = context.watch<MaterialService>().materialsOf(
+      widget.projectId,
+    );
     final scheme = Theme.of(context).colorScheme;
     final unusedCount = materials.where((m) => !_isUsed(m.id)).length;
 
@@ -76,17 +81,36 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      width: 88, height: 88,
-                      decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
-                      child: Icon(Icons.perm_media_outlined, size: 40, color: scheme.primary),
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: scheme.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.perm_media_outlined,
+                        size: 40,
+                        color: scheme.primary,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    Text(l10n.materialEmptyTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                    Text(
+                      l10n.materialEmptyTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(l10n.materialEmptyHint,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
+                    Text(
+                      l10n.materialEmptyHint,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -100,25 +124,36 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                   return Card(
                     child: ListTile(
                       leading: _thumbnail(m, scheme),
-                      title: Text(m.originalFileName, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      title: Text(
+                        m.originalFileName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       subtitle: Text(
                         [
                           m.id,
                           _formatSize(m.sizeBytes),
-                          if (m.width != null && m.height != null) '${m.width}×${m.height}',
+                          if (m.width != null && m.height != null)
+                            '${m.width}×${m.height}',
                           if (m.duration != null) _formatDuration(m.duration!),
                           _formatDate(m.addedAt),
-                          used ? l10n.materialUsedLabel : l10n.materialUnusedLabel,
+                          used
+                              ? l10n.materialUsedLabel
+                              : l10n.materialUnusedLabel,
                           if (isMissing) l10n.materialMissingLabel,
                         ].join(' ・ '),
                         style: TextStyle(
                           fontSize: 11,
-                          color: isMissing ? Colors.red : scheme.onSurfaceVariant,
+                          color: isMissing
+                              ? Colors.red
+                              : scheme.onSurfaceVariant,
                         ),
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        tooltip: used ? l10n.materialDeleteTooltipUsed : l10n.commonDelete,
+                        tooltip: used
+                            ? l10n.materialDeleteTooltipUsed
+                            : l10n.commonDelete,
                         onPressed: used ? null : () => _confirmRemoveOne(m),
                       ),
                     ),
@@ -161,7 +196,8 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
           MaterialType.audio => Icons.audiotrack_outlined,
         };
         return Container(
-          width: 48, height: 48,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: scheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
@@ -197,15 +233,18 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
         title: Text(l10n.materialRemoveOneConfirmTitle),
         content: Text(m.originalFileName),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               await context.read<MaterialService>().removeMaterial(
-                    projectId: widget.projectId,
-                    materialId: m.id,
-                    isUsed: _isUsed,
-                  );
+                projectId: widget.projectId,
+                materialId: m.id,
+                isUsed: _isUsed,
+              );
               _pathFutures.remove(m.id);
               if (ctx.mounted) Navigator.pop(ctx);
             },
@@ -224,19 +263,23 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
         title: Text(l10n.materialRemoveUnusedConfirmTitle),
         content: Text(l10n.materialRemoveUnusedConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              final removed = await context.read<MaterialService>().removeUnused(
-                    projectId: widget.projectId,
-                    isUsed: _isUsed,
-                  );
+              final removed = await context
+                  .read<MaterialService>()
+                  .removeUnused(projectId: widget.projectId, isUsed: _isUsed);
               _pathFutures.clear();
               if (ctx.mounted) Navigator.pop(ctx);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.materialRemovedSnackbar(removed))),
+                  SnackBar(
+                    content: Text(l10n.materialRemovedSnackbar(removed)),
+                  ),
                 );
               }
             },

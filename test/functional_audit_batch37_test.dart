@@ -166,7 +166,11 @@ void main() {
     );
     expect(next[2], greaterThan(next[0]), reason: '後フレーム領域は青チャンネルが優勢になること');
     expect(next[2], greaterThan(next[1]));
-    expect(current[1], greaterThan(current[0]), reason: '現在フレームはオニオン色に置換されず元の緑を維持すること');
+    expect(
+      current[1],
+      greaterThan(current[0]),
+      reason: '現在フレームはオニオン色に置換されず元の緑を維持すること',
+    );
     expect(current[1], greaterThan(current[2]));
 
     await tester.runAsync(
@@ -198,7 +202,9 @@ Future<_Capture> _captureWhen(
     if (!DateTime.now().isBefore(deadline)) {
       fail('${timeout.inSeconds}秒以内に描画が完了しませんでした：$reason');
     }
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
     await tester.pump();
   }
 }
@@ -221,7 +227,8 @@ bool _hasAnyNonWhitePixel(_Capture capture) {
 typedef _Capture = ({Uint8List rgba, Uint8List png, int width, int height});
 
 Future<_Capture> _capture(GlobalKey key) async {
-  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
   final raw = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
   final png = await image.toByteData(format: ui.ImageByteFormat.png);

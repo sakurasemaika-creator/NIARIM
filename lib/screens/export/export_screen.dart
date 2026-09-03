@@ -40,16 +40,19 @@ class _ExportScreenState extends State<ExportScreen> {
   int _customFps = 30;
 
   int get _fps => switch (_preset) {
-        ExportPreset.standard => 30,
-        ExportPreset.highQuality => 60,
-        ExportPreset.custom => _customFps,
-      };
+    ExportPreset.standard => 30,
+    ExportPreset.highQuality => 60,
+    ExportPreset.custom => _customFps,
+  };
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.exportScreenTitle), actions: const [HelpButton(topic: '動画書き出し（MP4）')]),
+      appBar: AppBar(
+        title: Text(l10n.exportScreenTitle),
+        actions: const [HelpButton(topic: '動画書き出し（MP4）')],
+      ),
       body: _buildSettings(l10n),
     );
   }
@@ -58,96 +61,151 @@ class _ExportScreenState extends State<ExportScreen> {
     return desktopCentered(
       context,
       SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(_error!, style: const TextStyle(color: Colors.red)),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              ),
+            Text(
+              l10n.exportPresetSection,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
-          Text(l10n.exportPresetSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-          const SizedBox(height: 8),
-          SegmentedButton<ExportPreset>(
-            segments: [
-              ButtonSegment(value: ExportPreset.standard, label: Text(l10n.exportPresetStandard)),
-              ButtonSegment(value: ExportPreset.highQuality, label: Text(l10n.exportPresetHighQuality)),
-              ButtonSegment(value: ExportPreset.custom, label: Text(l10n.exportPresetCustom)),
-            ],
-            selected: {_preset},
-            onSelectionChanged: (v) => setState(() => _preset = v.first),
-          ),
-          // 「カスタム」選択時のみ詳細設定を展開表示する（初心者はプリセットを
-          // 選ぶだけで書き出しが完了する。詳細設定は「カスタム」タップ時のみ表示）。
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            child: _preset != ExportPreset.custom
-                ? const SizedBox.shrink()
-                : Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(l10n.exportAdvancedSettings, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Text(l10n.exportFpsLabel),
-                                Expanded(
-                                  child: SteppedSlider(
-                                    value: _customFps.toDouble(),
-                                    min: 12, max: 60, divisions: 48,
-                                    label: '$_customFps',
-                                    onChanged: (v) => setState(() => _customFps = v.round()),
-                                  ),
+            const SizedBox(height: 8),
+            SegmentedButton<ExportPreset>(
+              segments: [
+                ButtonSegment(
+                  value: ExportPreset.standard,
+                  label: Text(l10n.exportPresetStandard),
+                ),
+                ButtonSegment(
+                  value: ExportPreset.highQuality,
+                  label: Text(l10n.exportPresetHighQuality),
+                ),
+                ButtonSegment(
+                  value: ExportPreset.custom,
+                  label: Text(l10n.exportPresetCustom),
+                ),
+              ],
+              selected: {_preset},
+              onSelectionChanged: (v) => setState(() => _preset = v.first),
+            ),
+            // 「カスタム」選択時のみ詳細設定を展開表示する（初心者はプリセットを
+            // 選ぶだけで書き出しが完了する。詳細設定は「カスタム」タップ時のみ表示）。
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              child: _preset != ExportPreset.custom
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.exportAdvancedSettings,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
                                 ),
-                                SizedBox(
-                                  width: 36,
-                                  child: EditableSliderValue(
-                                    text: '$_customFps', textAlign: TextAlign.center,
-                                    value: _customFps, min: 12, max: 60,
-                                    onChanged: (v) => setState(() => _customFps = v.round()),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(l10n.exportFpsLabel),
+                                  Expanded(
+                                    child: SteppedSlider(
+                                      value: _customFps.toDouble(),
+                                      min: 12,
+                                      max: 60,
+                                      divisions: 48,
+                                      label: '$_customFps',
+                                      onChanged: (v) => setState(
+                                        () => _customFps = v.round(),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                  SizedBox(
+                                    width: 36,
+                                    child: EditableSliderValue(
+                                      text: '$_customFps',
+                                      textAlign: TextAlign.center,
+                                      value: _customFps,
+                                      min: 12,
+                                      max: 60,
+                                      onChanged: (v) => setState(
+                                        () => _customFps = v.round(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-          ),
-          const SizedBox(height: 24),
-          Text(l10n.exportFormatSection, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-          const SizedBox(height: 8),
-          RadioGroup<ExportFormat>(
-            groupValue: _format,
-            onChanged: (v) => setState(() => _format = v!),
-            child: Column(
-              children: [
-                RadioListTile(title: Text(l10n.exportFormatMp4), subtitle: Text(l10n.exportFormatMp4Subtitle), value: ExportFormat.mp4),
-                RadioListTile(title: Text(l10n.exportFormatGif), subtitle: Text(l10n.exportFormatGifSubtitle), value: ExportFormat.gif),
-                RadioListTile(title: Text(l10n.helpTransparentWebmTitle), subtitle: Text(l10n.exportFormatWebmSubtitle), value: ExportFormat.webm),
-                RadioListTile(title: Text(l10n.exportFormatAvi), subtitle: Text(l10n.exportFormatAviSubtitle), value: ExportFormat.avi),
-              ],
             ),
-          ),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _isExporting ? null : _startExport,
-            icon: const Icon(Icons.file_download),
-            label: Text(l10n.exportStartButton),
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          ),
-        ],
-      ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.exportFormatSection,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            const SizedBox(height: 8),
+            RadioGroup<ExportFormat>(
+              groupValue: _format,
+              onChanged: (v) => setState(() => _format = v!),
+              child: Column(
+                children: [
+                  RadioListTile(
+                    title: Text(l10n.exportFormatMp4),
+                    subtitle: Text(l10n.exportFormatMp4Subtitle),
+                    value: ExportFormat.mp4,
+                  ),
+                  RadioListTile(
+                    title: Text(l10n.exportFormatGif),
+                    subtitle: Text(l10n.exportFormatGifSubtitle),
+                    value: ExportFormat.gif,
+                  ),
+                  RadioListTile(
+                    title: Text(l10n.helpTransparentWebmTitle),
+                    subtitle: Text(l10n.exportFormatWebmSubtitle),
+                    value: ExportFormat.webm,
+                  ),
+                  RadioListTile(
+                    title: Text(l10n.exportFormatAvi),
+                    subtitle: Text(l10n.exportFormatAviSubtitle),
+                    value: ExportFormat.avi,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: _isExporting ? null : _startExport,
+              icon: const Icon(Icons.file_download),
+              label: Text(l10n.exportStartButton),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -166,21 +224,33 @@ class _ExportScreenState extends State<ExportScreen> {
     // 無料版の最大動画尺チェック
     if (!premiumService.isPremium) {
       final scenesPreview = projectService.scenesOf(widget.projectId);
-      final totalFramesPreview = scenesPreview.fold(0, (sum, s) => sum + s.frames.length);
+      final totalFramesPreview = scenesPreview.fold(
+        0,
+        (sum, s) => sum + s.frames.length,
+      );
       final seconds = totalFramesPreview / _fps;
       if (seconds > premiumService.maxProjectDurationSeconds) {
-        final proceed = await _confirmDurationExceeded(seconds, premiumService.maxProjectDurationSeconds);
+        final proceed = await _confirmDurationExceeded(
+          seconds,
+          premiumService.maxProjectDurationSeconds,
+        );
         if (proceed != true) return;
       }
     }
 
     final cancelToken = ExportCancelToken();
     _cancelToken = cancelToken;
-    setState(() { _isExporting = true; _error = null; _progress = 0; });
+    setState(() {
+      _isExporting = true;
+      _error = null;
+      _progress = 0;
+    });
     _showProgressDialog();
 
     try {
-      final project = projectService.projects.where((p) => p.id == widget.projectId).firstOrNull;
+      final project = projectService.projects
+          .where((p) => p.id == widget.projectId)
+          .firstOrNull;
       if (project == null) throw Exception(l10n.exportProjectNotFoundError);
 
       final scenes = projectService.scenesOf(widget.projectId);
@@ -198,7 +268,8 @@ class _ExportScreenState extends State<ExportScreen> {
       // 無料版：書き出し時にエンドカード（NIARIMロゴ・約5秒）を本編末尾へ
       // 自動追加する。mp4/webmとも、動画の結合ではなく
       // フレーム生成の段階で末尾へ焼き込む（endcard_frame参照）。
-      final shouldAppendEndCard = !premiumService.isPremium &&
+      final shouldAppendEndCard =
+          !premiumService.isPremium &&
           (_format == ExportFormat.mp4 ||
               _format == ExportFormat.webm ||
               _format == ExportFormat.avi);
@@ -264,12 +335,17 @@ class _ExportScreenState extends State<ExportScreen> {
 
       _closeProgressDialog();
       if (!mounted) return;
-      setState(() { _isExporting = false; _cancelToken = null; });
+      setState(() {
+        _isExporting = false;
+        _cancelToken = null;
+      });
       if (cancelToken.isCancelled) {
         // 最終エンコード段階でキャンセルされていた場合：処理自体は完了して
         // いるが、キャンセル操作の意図に沿って出力ファイルを破棄する
         // （最終エンコードは安全に中断する手段がないため事後処理となる）。
-        try { File(outputPath).deleteSync(); } catch (_) {}
+        try {
+          File(outputPath).deleteSync();
+        } catch (_) {}
         _showCancelledSnackBar();
         return;
       }
@@ -277,11 +353,19 @@ class _ExportScreenState extends State<ExportScreen> {
     } on ExportCancelledException {
       _closeProgressDialog();
       if (!mounted) return;
-      setState(() { _isExporting = false; _cancelToken = null; });
+      setState(() {
+        _isExporting = false;
+        _cancelToken = null;
+      });
       _showCancelledSnackBar();
     } catch (e) {
       _closeProgressDialog();
-      if (mounted) setState(() { _isExporting = false; _cancelToken = null; _error = l10n.exportFailedError(e.toString()); });
+      if (mounted)
+        setState(() {
+          _isExporting = false;
+          _cancelToken = null;
+          _error = l10n.exportFailedError(e.toString());
+        });
     }
   }
 
@@ -314,9 +398,9 @@ class _ExportScreenState extends State<ExportScreen> {
 
   void _showCancelledSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.exportCancelledSnackbar)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
   }
 
   void _closeProgressDialog() {
@@ -332,8 +416,14 @@ class _ExportScreenState extends State<ExportScreen> {
         title: Text(l10n.exportOutdatedAutofillTitle),
         content: Text(l10n.exportOutdatedAutofillBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.exportContinueButton)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.exportContinueButton),
+          ),
         ],
       ),
     );
@@ -345,9 +435,14 @@ class _ExportScreenState extends State<ExportScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.exportDurationExceededTitle),
-        content: Text(l10n.exportDurationExceededBody(maxSeconds, seconds.round())),
+        content: Text(
+          l10n.exportDurationExceededBody(maxSeconds, seconds.round()),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx, false);
@@ -355,7 +450,10 @@ class _ExportScreenState extends State<ExportScreen> {
             },
             child: Text(l10n.exportViewPremiumButton),
           ),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.exportContinueAnywayButton)),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.exportContinueAnywayButton),
+          ),
         ],
       ),
     );
@@ -378,25 +476,45 @@ class _ExportScreenState extends State<ExportScreen> {
             // 直接見えないアプリ専用領域）。端末の「写真」アプリや
             // ファイルアプリで見つけたい場合は「共有」から保存先を選ぶ
             // 必要があることを明示する。
-            Text(l10n.exportSaveLocationLabel(fileName),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+            Text(
+              l10n.exportSaveLocationLabel(fileName),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(l10n.exportSaveLocationHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
+            Text(
+              l10n.exportSaveLocationHint,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () { Navigator.pop(ctx); context.go('/home'); },
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.go('/home');
+            },
             child: Text(l10n.exportBackToProjectsButton),
           ),
           TextButton(
-            onPressed: () { Navigator.pop(ctx); context.go('/canvas/${widget.projectId}'); },
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.go('/canvas/${widget.projectId}');
+            },
             child: Text(l10n.exportBackToCanvasButton),
           ),
           FilledButton.icon(
-            onPressed: () { Navigator.pop(ctx); SharePlus.instance.share(ShareParams(files: [XFile(outputPath)])); },
+            onPressed: () {
+              Navigator.pop(ctx);
+              SharePlus.instance.share(ShareParams(files: [XFile(outputPath)]));
+            },
             icon: const Icon(Icons.share),
             label: Text(l10n.homeShareOpenWith),
           ),
@@ -407,4 +525,5 @@ class _ExportScreenState extends State<ExportScreen> {
 }
 
 enum ExportFormat { mp4, gif, webm, avi }
+
 enum ExportPreset { standard, highQuality, custom }

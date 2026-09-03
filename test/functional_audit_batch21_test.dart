@@ -89,8 +89,11 @@ void main() {
 
     // 透明背景への通常描画なので、PNG再デコード後もRGBAが完全一致する。
     // （PNGは可逆。色値やalphaがファイル化の段階で変化してはならない。）
-    expect(actual, orderedEquals(source),
-        reason: 'PNG書き出し→再デコード後も全RGBAが1byte単位で一致すること');
+    expect(
+      actual,
+      orderedEquals(source),
+      reason: 'PNG書き出し→再デコード後も全RGBAが1byte単位で一致すること',
+    );
 
     // 特に半透明画素が勝手に不透明化・premultiplyされたままになっていないこと。
     int alphaAt(int x, int y) => actual[(y * 32 + x) * 4 + 3];

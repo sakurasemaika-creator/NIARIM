@@ -65,7 +65,9 @@ class StorageInfoService {
   /// 各プロジェクトフォルダを[StorageCategory.trash]か
   /// [StorageCategory.materials]/[StorageCategory.projectData]かに
   /// 振り分ける。
-  Future<StorageBreakdown> computeBreakdown(Set<String> trashedProjectIds) async {
+  Future<StorageBreakdown> computeBreakdown(
+    Set<String> trashedProjectIds,
+  ) async {
     final docs = await getApplicationDocumentsDirectory();
     final niarimDir = Directory('${docs.path}/niarim');
 
@@ -77,10 +79,13 @@ class StorageInfoService {
     if (projectsDir.existsSync()) {
       for (final entry in projectsDir.listSync()) {
         if (entry is! Directory) continue;
-        final projectId = entry.uri.pathSegments.where((s) => s.isNotEmpty).last;
+        final projectId = entry.uri.pathSegments
+            .where((s) => s.isNotEmpty)
+            .last;
         final materialsDir = Directory('${entry.path}/Materials');
-        final materialsBytes =
-            materialsDir.existsSync() ? await _dirSize(materialsDir) : 0;
+        final materialsBytes = materialsDir.existsSync()
+            ? await _dirSize(materialsDir)
+            : 0;
         final totalBytes = await _dirSize(entry);
         final ownBytes = (totalBytes - materialsBytes).clamp(0, totalBytes);
         if (trashedProjectIds.contains(projectId)) {
@@ -93,7 +98,9 @@ class StorageInfoService {
     }
 
     final exportsDir = Directory('${docs.path}/exports');
-    final exportsBytes = exportsDir.existsSync() ? await _dirSize(exportsDir) : 0;
+    final exportsBytes = exportsDir.existsSync()
+        ? await _dirSize(exportsDir)
+        : 0;
 
     int customAssets = 0;
     for (final name in ['Brushes', 'Tones', 'Stamps', 'Fonts']) {

@@ -47,7 +47,11 @@ Uint8List _applyPixelModeThreshold(Uint8List data, TextObject text) {
   return result;
 }
 
-Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int canvasHeight) {
+Future<Uint8List?> _rasterizeHorizontal(
+  TextObject text,
+  int canvasWidth,
+  int canvasHeight,
+) {
   if (_rubyPattern.hasMatch(text.text)) {
     return _rasterizeHorizontalWithRuby(text, canvasWidth, canvasHeight);
   }
@@ -56,7 +60,11 @@ Future<Uint8List?> _rasterizeHorizontal(TextObject text, int canvasWidth, int ca
 
 /// ルビを含まない横書き（従来実装）。ParagraphBuilder一括レイアウトのため
 /// 自動折り返し（幅制約超過時の改行）に対応する。
-Future<Uint8List?> _rasterizeHorizontalSimple(TextObject text, int canvasWidth, int canvasHeight) async {
+Future<Uint8List?> _rasterizeHorizontalSimple(
+  TextObject text,
+  int canvasWidth,
+  int canvasHeight,
+) async {
   final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
   final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
 
@@ -70,9 +78,7 @@ Future<Uint8List?> _rasterizeHorizontalSimple(TextObject text, int canvasWidth, 
     height: text.lineHeight,
   );
 
-  final paragraphStyle = ui.ParagraphStyle(
-    textAlign: text.align,
-  );
+  final paragraphStyle = ui.ParagraphStyle(textAlign: text.align);
   final builder = ui.ParagraphBuilder(paragraphStyle)
     ..pushStyle(style)
     ..addText(text.text);
@@ -160,22 +166,27 @@ List<_HRun> _parseRubyRuns(String line) {
 /// ルビは各基底実行の直上に、基底の幅へ収まるよう小さいフォントサイズで
 /// 中央揃えに表示する（縦書きのルビは列の右側、横書きのルビは行の上側という
 /// 一般的な配置慣習に合わせる）。
-Future<Uint8List?> _rasterizeHorizontalWithRuby(TextObject text, int canvasWidth, int canvasHeight) async {
+Future<Uint8List?> _rasterizeHorizontalWithRuby(
+  TextObject text,
+  int canvasWidth,
+  int canvasHeight,
+) async {
   final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
   final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
 
   ui.TextStyle styleFor(ui.Color color, {double? size}) => ui.TextStyle(
-        color: color,
-        fontSize: size ?? text.fontSize,
-        fontFamily: text.fontFamily,
-        fontStyle: fontStyle,
-        fontWeight: fontWeight,
-      );
+    color: color,
+    fontSize: size ?? text.fontSize,
+    fontFamily: text.fontFamily,
+    fontStyle: fontStyle,
+    fontWeight: fontWeight,
+  );
 
   ui.Paragraph buildRun(String s, ui.TextStyle style) {
-    final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.left))
-      ..pushStyle(style)
-      ..addText(s);
+    final builder =
+        ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.left))
+          ..pushStyle(style)
+          ..addText(s);
     return builder.build()..layout(const ui.ParagraphConstraints(width: 4000));
   }
 
@@ -189,11 +200,15 @@ Future<Uint8List?> _rasterizeHorizontalWithRuby(TextObject text, int canvasWidth
 
   // 各行・各実行のレイアウト結果（幅）を先に計算し、行全体の幅・全体の
   // 幅（揃え計算用）を求める。
-  final mainStyle = styleFor(text.color.withValues(alpha: text.color.a * text.opacity));
+  final mainStyle = styleFor(
+    text.color.withValues(alpha: text.color.a * text.opacity),
+  );
   final lineWidths = <double>[];
   final lineRunWidths = <List<double>>[];
   for (final runs in lines) {
-    final widths = runs.map((r) => buildRun(r.text, mainStyle).longestLine).toList();
+    final widths = runs
+        .map((r) => buildRun(r.text, mainStyle).longestLine)
+        .toList();
     lineRunWidths.add(widths);
     lineWidths.add(widths.fold<double>(0, (sum, w) => sum + w));
   }
@@ -214,7 +229,13 @@ Future<Uint8List?> _rasterizeHorizontalWithRuby(TextObject text, int canvasWidth
   final outline = text.outline;
   final hasOutline = outline != null && outline.enabled && outline.width > 0;
 
-  void drawRuby(String ruby, double runX, double runWidth, double baseY, ui.Color color) {
+  void drawRuby(
+    String ruby,
+    double runX,
+    double runWidth,
+    double baseY,
+    ui.Color color,
+  ) {
     final rubySize = text.fontSize * 0.5;
     final rubyStyle = styleFor(color, size: rubySize);
     final paragraph = buildRun(ruby, rubyStyle);
@@ -223,16 +244,23 @@ Future<Uint8List?> _rasterizeHorizontalWithRuby(TextObject text, int canvasWidth
     canvas.drawParagraph(paragraph, ui.Offset(rx, ry.clamp(0.0, baseY)));
   }
 
-  void drawLines(ui.TextStyle style, ui.Color color, ui.Offset extraOffset, {required bool withRuby}) {
+  void drawLines(
+    ui.TextStyle style,
+    ui.Color color,
+    ui.Offset extraOffset, {
+    required bool withRuby,
+  }) {
     for (int lineIdx = 0; lineIdx < lines.length; lineIdx++) {
       final runs = lines[lineIdx];
       final widths = lineRunWidths[lineIdx];
       final lineWidth = lineWidths[lineIdx];
-      final startX = switch (text.align) {
-        ui.TextAlign.center => (totalWidth - lineWidth) / 2,
-        ui.TextAlign.right => totalWidth - lineWidth,
-        _ => 0.0,
-      } + extraOffset.dx;
+      final startX =
+          switch (text.align) {
+            ui.TextAlign.center => (totalWidth - lineWidth) / 2,
+            ui.TextAlign.right => totalWidth - lineWidth,
+            _ => 0.0,
+          } +
+          extraOffset.dx;
       final y = lineIdx * lineSlot + rubyReserve + extraOffset.dy;
 
       double x = startX;
@@ -257,7 +285,12 @@ Future<Uint8List?> _rasterizeHorizontalWithRuby(TextObject text, int canvasWidth
       final dx = outline.width * math.cos(angle);
       final dy = outline.width * math.sin(angle);
       // ルビは縁取りせず、本文のみに縁取りを適用する
-      drawLines(outlineStyle, outline.color, ui.Offset(dx, dy), withRuby: false);
+      drawLines(
+        outlineStyle,
+        outline.color,
+        ui.Offset(dx, dy),
+        withRuby: false,
+      );
     }
   }
   final mainColor = text.color.withValues(alpha: text.color.a * text.opacity);
@@ -275,9 +308,9 @@ Future<Uint8List?> _rasterizeHorizontalWithRuby(TextObject text, int canvasWidth
 // ─── 縦書き ───────────────────────────────────────────────────────────────
 
 enum _VKind {
-  upright,      // 全角文字・ルビ基底文字など、正立のまま縦に積む
-  rotated,      // 半角英字・記号など、単独文字を90°回転して配置
-  tateChuYoko,  // 半角数字2桁を1文字分の高さへ横並びで収める（縦中横）
+  upright, // 全角文字・ルビ基底文字など、正立のまま縦に積む
+  rotated, // 半角英字・記号など、単独文字を90°回転して配置
+  tateChuYoko, // 半角数字2桁を1文字分の高さへ横並びで収める（縦中横）
 }
 
 /// 縦書きの1レイアウト単位（1文字〜ルビ基底文字列）。
@@ -352,17 +385,21 @@ List<_VUnit> _parsePlainRun(String text) {
 /// サポートしないため、1レイアウト単位ずつ個別にレイアウトして上→下・列は
 /// 右→左の順に配置する自前実装。半角英数字の回転・縦中横・ルビ注釈
 /// （{base|ruby}記法）に対応する。手動改行（\n）は列の区切りとして扱う。
-Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canvasHeight) async {
+Future<Uint8List?> _rasterizeVertical(
+  TextObject text,
+  int canvasWidth,
+  int canvasHeight,
+) async {
   final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
   final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
 
   ui.TextStyle styleFor(ui.Color color, {double? size}) => ui.TextStyle(
-        color: color,
-        fontSize: size ?? text.fontSize,
-        fontFamily: text.fontFamily,
-        fontStyle: fontStyle,
-        fontWeight: fontWeight,
-      );
+    color: color,
+    fontSize: size ?? text.fontSize,
+    fontFamily: text.fontFamily,
+    fontStyle: fontStyle,
+    fontWeight: fontWeight,
+  );
 
   // 手動改行で列を分割する（縦書きでは列は右から左へ進む）
   final rawColumns = text.text.split('\n');
@@ -370,8 +407,9 @@ Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canv
   final charAdvance = text.fontSize * text.lineHeight; // 1文字分の縦送り量
   final columnAdvance = text.fontSize * 1.15 + text.letterSpacing; // 列の間隔
 
-  final slotsPerColumn =
-      columns.map((units) => units.fold<int>(0, (sum, u) => sum + u.slotCount)).toList();
+  final slotsPerColumn = columns
+      .map((units) => units.fold<int>(0, (sum, u) => sum + u.slotCount))
+      .toList();
   final maxSlots = slotsPerColumn.isEmpty ? 0 : slotsPerColumn.reduce(math.max);
   if (maxSlots == 0) return null;
 
@@ -391,23 +429,37 @@ Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canv
   final outline = text.outline;
   final hasOutline = outline != null && outline.enabled && outline.width > 0;
 
-  void drawUprightChars(String s, ui.TextStyle style, double columnX, double y) {
+  void drawUprightChars(
+    String s,
+    ui.TextStyle style,
+    double columnX,
+    double y,
+  ) {
     final chars = s.characters;
     for (int i = 0; i < chars.length; i++) {
-      final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
-        ..pushStyle(style)
-        ..addText(chars[i]);
-      final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: columnAdvance));
+      final builder =
+          ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
+            ..pushStyle(style)
+            ..addText(chars[i]);
+      final paragraph = builder.build()
+        ..layout(ui.ParagraphConstraints(width: columnAdvance));
       canvas.drawParagraph(paragraph, ui.Offset(columnX, y + i * charAdvance));
     }
   }
 
   // 半角英数字の回転：文字を90°回転し、1文字分の高さのマス内に収める。
-  void drawRotatedChar(String ch, ui.TextStyle style, double columnX, double y) {
-    final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
-      ..pushStyle(style)
-      ..addText(ch);
-    final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: charAdvance));
+  void drawRotatedChar(
+    String ch,
+    ui.TextStyle style,
+    double columnX,
+    double y,
+  ) {
+    final builder =
+        ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
+          ..pushStyle(style)
+          ..addText(ch);
+    final paragraph = builder.build()
+      ..layout(ui.ParagraphConstraints(width: charAdvance));
     canvas.save();
     canvas.translate(columnX + columnAdvance / 2, y + charAdvance / 2);
     canvas.rotate(math.pi / 2);
@@ -420,45 +472,69 @@ Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canv
   void drawTateChuYoko(String pair, ui.Color color, double columnX, double y) {
     final miniSize = text.fontSize * 0.55;
     final miniStyle = styleFor(color, size: miniSize);
-    final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
-      ..pushStyle(miniStyle)
-      ..addText(pair);
-    final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: columnAdvance));
+    final builder =
+        ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
+          ..pushStyle(miniStyle)
+          ..addText(pair);
+    final paragraph = builder.build()
+      ..layout(ui.ParagraphConstraints(width: columnAdvance));
     final yOffset = (charAdvance - miniSize * text.lineHeight) / 2;
-    canvas.drawParagraph(paragraph, ui.Offset(columnX, y + yOffset.clamp(0, charAdvance)));
+    canvas.drawParagraph(
+      paragraph,
+      ui.Offset(columnX, y + yOffset.clamp(0, charAdvance)),
+    );
   }
 
   // ルビ（{base|ruby}記法）：基底文字の右側（列の右隣＝既に描画済みの
   // 前の列側）へ、基底が占める高さへ均等配置した小さな縦書きで表示する。
-  void drawRuby(String ruby, double columnX, double y, double slotHeight, ui.Color color) {
+  void drawRuby(
+    String ruby,
+    double columnX,
+    double y,
+    double slotHeight,
+    ui.Color color,
+  ) {
     final chars = ruby.characters;
     if (chars.isEmpty) return;
     final rubySize = text.fontSize * 0.48;
     final rubyStyle = styleFor(color, size: rubySize);
     final step = slotHeight / chars.length;
     for (int i = 0; i < chars.length; i++) {
-      final builder = ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
-        ..pushStyle(rubyStyle)
-        ..addText(chars[i]);
-      final paragraph = builder.build()..layout(ui.ParagraphConstraints(width: rubySize * 1.3));
+      final builder =
+          ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: ui.TextAlign.center))
+            ..pushStyle(rubyStyle)
+            ..addText(chars[i]);
+      final paragraph = builder.build()
+        ..layout(ui.ParagraphConstraints(width: rubySize * 1.3));
       final ry = y + i * step + (step - rubySize) / 2;
-      canvas.drawParagraph(paragraph, ui.Offset(columnX + columnAdvance * 0.6, ry.clamp(y, y + slotHeight)));
+      canvas.drawParagraph(
+        paragraph,
+        ui.Offset(columnX + columnAdvance * 0.6, ry.clamp(y, y + slotHeight)),
+      );
     }
   }
 
-  void drawColumns(ui.TextStyle style, ui.Color color, ui.Offset extraOffset, {required bool withRuby}) {
+  void drawColumns(
+    ui.TextStyle style,
+    ui.Color color,
+    ui.Offset extraOffset, {
+    required bool withRuby,
+  }) {
     for (int colIdx = 0; colIdx < columns.length; colIdx++) {
       // 列は右から左へ進む（縦書きの伝統的な配置）
-      final columnX = totalWidth - (colIdx + 1) * columnAdvance + extraOffset.dx;
+      final columnX =
+          totalWidth - (colIdx + 1) * columnAdvance + extraOffset.dx;
       final units = columns[colIdx];
       final columnSlots = units.fold<int>(0, (sum, u) => sum + u.slotCount);
       final columnHeight = columnSlots * charAdvance;
       // 揃え（左/中央/右）は縦書きでは列全体の縦方向の開始位置に読み替える
-      final startY = switch (text.align) {
-        ui.TextAlign.center => (totalHeight - columnHeight) / 2,
-        ui.TextAlign.right => totalHeight - columnHeight,
-        _ => 0.0,
-      } + extraOffset.dy;
+      final startY =
+          switch (text.align) {
+            ui.TextAlign.center => (totalHeight - columnHeight) / 2,
+            ui.TextAlign.right => totalHeight - columnHeight,
+            _ => 0.0,
+          } +
+          extraOffset.dy;
 
       double y = startY;
       for (final unit in units) {
@@ -487,7 +563,12 @@ Future<Uint8List?> _rasterizeVertical(TextObject text, int canvasWidth, int canv
       final dx = outline.width * math.cos(angle);
       final dy = outline.width * math.sin(angle);
       // ルビは縁取りせず、本文のみに縁取りを適用する
-      drawColumns(outlineStyle, outline.color, ui.Offset(dx, dy), withRuby: false);
+      drawColumns(
+        outlineStyle,
+        outline.color,
+        ui.Offset(dx, dy),
+        withRuby: false,
+      );
     }
   }
   final mainColor = text.color.withValues(alpha: text.color.a * text.opacity);

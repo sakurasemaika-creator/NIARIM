@@ -26,12 +26,19 @@ class WatermarkService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_prefsKey) ?? const [];
-    _assets.addAll(raw.map((s) => WatermarkAsset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+    _assets.addAll(
+      raw.map(
+        (s) => WatermarkAsset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+      ),
+    );
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _assets.map((a) => jsonEncode(a.toJson())).toList());
+    await prefs.setStringList(
+      _prefsKey,
+      _assets.map((a) => jsonEncode(a.toJson())).toList(),
+    );
   }
 
   /// [sourcePath]の画像をウォーターマークとして登録する。
@@ -41,8 +48,16 @@ class WatermarkService extends ChangeNotifier {
     final id = 'wm_${DateTime.now().millisecondsSinceEpoch}_${_counter++}';
     final fileName = '$id.$ext';
     await File(sourcePath).copy('${dir.path}/$fileName');
-    final name = sourcePath.split(RegExp(r'[\\/]')).last.replaceAll(RegExp(r'\.[^.]+$'), '');
-    final asset = WatermarkAsset(id: id, name: name, type: WatermarkAssetType.image, fileName: fileName);
+    final name = sourcePath
+        .split(RegExp(r'[\\/]'))
+        .last
+        .replaceAll(RegExp(r'\.[^.]+$'), '');
+    final asset = WatermarkAsset(
+      id: id,
+      name: name,
+      type: WatermarkAssetType.image,
+      fileName: fileName,
+    );
     _assets.add(asset);
     await _persist();
     notifyListeners();

@@ -70,8 +70,7 @@ void main() {
       }
     }
 
-    expect(opaque, 16 * 12,
-        reason: '8x6の元矩形がzoom=2で16x12=192画素へ拡大されること');
+    expect(opaque, 16 * 12, reason: '8x6の元矩形がzoom=2で16x12=192画素へ拡大されること');
     expect(minX, 8);
     expect(maxX, 23);
     expect(minY, 6);

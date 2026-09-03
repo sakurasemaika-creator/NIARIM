@@ -58,12 +58,7 @@ class NiarimApp extends StatelessWidget {
         onPointerHover: (e) =>
             context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
         behavior: HitTestBehavior.translucent,
-        child: Stack(
-          children: [
-            child!,
-            const CommunityFloatingPreview(),
-          ],
-        ),
+        child: Stack(children: [child!, const CommunityFloatingPreview()]),
       ),
     );
   }

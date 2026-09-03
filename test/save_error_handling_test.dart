@@ -15,8 +15,7 @@ import 'package:niarim/utils/app_error_reporter.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('描画中に例外が出ても空白にならず、内容が画面に表示される',
-      (WidgetTester tester) async {
+  testWidgets('描画中に例外が出ても空白にならず、内容が画面に表示される', (WidgetTester tester) async {
     final originalBuilder = ErrorWidget.builder;
     final originalOnError = FlutterError.onError;
     AppErrorReporter.install();
@@ -57,4 +56,3 @@ void main() {
     expect(AppErrorReporter.recentErrors.first, contains('エラー29'));
   });
 }
-

@@ -11,7 +11,8 @@ class CameraEngine {
   /// 後ろは末尾の値でクランプする。
   CameraKeyframe valueAt(List<CameraKeyframe> keyframes, int frame) {
     if (keyframes.isEmpty) return const CameraKeyframe(frameIndex: 0);
-    final sorted = [...keyframes]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    final sorted = [...keyframes]
+      ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
     if (frame <= sorted.first.frameIndex) return sorted.first;
     if (frame >= sorted.last.frameIndex) return sorted.last;
     for (int i = 0; i < sorted.length - 1; i++) {

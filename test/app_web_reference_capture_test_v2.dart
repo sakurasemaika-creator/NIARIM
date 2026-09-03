@@ -70,18 +70,26 @@ void main() {
       Future<void> loadFamily(String family, String needle) async {
         final matches = assets.where((a) => a.contains(needle)).toList();
         if (matches.isEmpty) return;
-        final loader = FontLoader(family)..addFont(rootBundle.load(matches.first));
+        final loader = FontLoader(family)
+          ..addFont(rootBundle.load(matches.first));
         await loader.load();
       }
+
       Future<void> loadSdkMaterialIcons() async {
         final flutterRoot = Platform.environment['FLUTTER_ROOT'];
         if (flutterRoot == null) return;
-        final file = File('$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf');
+        final file = File(
+          '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+        );
         if (!file.existsSync()) return;
-        final data = ByteData.sublistView(Uint8List.fromList(await file.readAsBytes()));
-        final loader = FontLoader('MaterialIcons')..addFont(Future<ByteData>.value(data));
+        final data = ByteData.sublistView(
+          Uint8List.fromList(await file.readAsBytes()),
+        );
+        final loader = FontLoader('MaterialIcons')
+          ..addFont(Future<ByteData>.value(data));
         await loader.load();
       }
+
       await Future.wait([
         loadFamily('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
         loadFamily('Kuramubon', 'assets/fonts/Kuramubon.otf'),
@@ -96,7 +104,9 @@ void main() {
 
   Future<void> capture(WidgetTester tester, String name) async {
     await tester.pump(const Duration(milliseconds: 220));
-    final boundary = screenshotKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final boundary =
+        screenshotKey.currentContext!.findRenderObject()
+            as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
       final image = await boundary.toImage(pixelRatio: 1.0);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -111,13 +121,19 @@ void main() {
 
   void expectClean(WidgetTester tester, String operation) {
     final exception = tester.takeException();
-    expect(exception, isNull, reason: '$operation でFlutter例外/overflow: $exception');
+    expect(
+      exception,
+      isNull,
+      reason: '$operation でFlutter例外/overflow: $exception',
+    );
   }
 
   void consumeKnownTimelineOverflow(WidgetTester tester) {
     final exception = tester.takeException();
     if (exception == null) return;
-    if (!exception.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
+    if (!exception.toString().contains(
+      'RenderFlex overflowed by 24 pixels on the right',
+    )) {
       fail('Timelineで想定外のFlutter例外: $exception');
     }
   }
@@ -168,19 +184,28 @@ void main() {
     WidgetTester tester,
   ) async {
     await bootToHome(tester);
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '新規プロジェクト画面');
-    final createButton = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
+    final createButton = find.widgetWithText(
+      FilledButton,
+      '作成',
+      skipOffstage: false,
+    );
     await dragIntoView(tester, createButton);
     final rect = tester.getRect(createButton.first);
-    final logicalHeight = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    final logicalHeight =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
     expect(rect.top, greaterThanOrEqualTo(0));
     expect(rect.bottom, lessThanOrEqualTo(logicalHeight));
     await tapVisible(tester, createButton);
     await tester.pump(const Duration(milliseconds: 900));
     expectClean(tester, '作成→キャンバス');
-    final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
     expect(ps.projects, isNotEmpty);
     final project = ps.projects.first;
     final scenes = ps.scenesOf(project.id);
@@ -246,7 +271,9 @@ void main() {
     // TimelineScreen側のローカル表示への復元は非同期かつ内部実装なので、ここでは
     // 特定ラベルの出現をCI全体の必須条件にはしない。復元できた場合だけ実UIから
     // クリップ編集シートを撮影し、できない場合も他の基準画面・厳密状態テストを続行する。
-    final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
     ps.addAudioClip(
       ids.projectId,
       ids.sceneId,
@@ -259,7 +286,9 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 800));
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.projectId}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${ids.projectId}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimeline(tester);
     await tester.pump(const Duration(milliseconds: 700));
@@ -272,7 +301,9 @@ void main() {
       await capture(tester, '05_timeline_audio_editor');
     } else {
       // ignore: avoid_print
-      print('web-reference audio editor skipped: clip label not materialized in widget tree');
+      print(
+        'web-reference audio editor skipped: clip label not materialized in widget tree',
+      );
     }
   }, timeout: const Timeout(Duration(seconds: 180)));
 
@@ -283,7 +314,9 @@ void main() {
     expectClean(tester, 'Canvas→SaveTree');
     await capture(tester, '06_save_tree');
 
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/canvas/${ids.projectId}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${ids.projectId}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimeline(tester);
     final export = find.byIcon(Icons.upload_file, skipOffstage: false);
@@ -299,7 +332,9 @@ void main() {
     GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/settings');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '設定画面');
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/settings/workspace');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/settings/workspace');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '設定→Workspace');
     await capture(tester, '08_workspace');

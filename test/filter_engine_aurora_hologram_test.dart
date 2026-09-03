@@ -27,7 +27,9 @@ void main() {
   test('strength=0のときは元の画素と完全に一致する', () {
     final data = buildPattern();
     final result = engine.applyAuroraHologram(
-      data, width, height,
+      data,
+      width,
+      height,
       strength: 0,
       brightness: 0,
       saturation: 0,
@@ -39,7 +41,9 @@ void main() {
   test('strength>0のとき、不透明画素の色はグラデーションマップ側へ寄る', () {
     final data = buildPattern();
     final result = engine.applyAuroraHologram(
-      data, width, height,
+      data,
+      width,
+      height,
       strength: 100,
       brightness: 0,
       saturation: 0,
@@ -49,7 +53,9 @@ void main() {
     // （cyberNeonプリセットはグレーを含まない配色のため）はず。
     var changed = false;
     for (int i = 0; i < data.length; i += 4) {
-      if (result[i] != data[i] || result[i + 1] != data[i + 1] || result[i + 2] != data[i + 2]) {
+      if (result[i] != data[i] ||
+          result[i + 1] != data[i + 1] ||
+          result[i + 2] != data[i + 2]) {
         changed = true;
         break;
       }
@@ -60,7 +66,9 @@ void main() {
   test('アルファ0（透明）の画素は変化しない', () {
     final data = Uint8List(width * height * 4); // 全画素アルファ0
     final result = engine.applyAuroraHologram(
-      data, width, height,
+      data,
+      width,
+      height,
       strength: 100,
       brightness: 50,
       saturation: 50,
@@ -79,7 +87,9 @@ void main() {
       data[i + 3] = 255;
     }
     final result = engine.applyAuroraHologram(
-      data, width, height,
+      data,
+      width,
+      height,
       strength: 100,
       brightness: 0,
       saturation: 0,
@@ -94,13 +104,21 @@ void main() {
   test('プリセットごとに結果が異なる（配色パターンとして機能している）', () {
     final data = buildPattern();
     final aurora = engine.applyAuroraHologram(
-      data, width, height,
-      strength: 100, brightness: 0, saturation: 0,
+      data,
+      width,
+      height,
+      strength: 100,
+      brightness: 0,
+      saturation: 0,
       preset: AuroraHologramPreset.aurora,
     );
     final silverFoil = engine.applyAuroraHologram(
-      data, width, height,
-      strength: 100, brightness: 0, saturation: 0,
+      data,
+      width,
+      height,
+      strength: 100,
+      brightness: 0,
+      saturation: 0,
       preset: AuroraHologramPreset.silverFoil,
     );
     expect(aurora, isNot(equals(silverFoil)));
@@ -109,13 +127,21 @@ void main() {
   test('brightnessを上げると結果が明るくなる', () {
     final data = buildPattern();
     final base = engine.applyAuroraHologram(
-      data, width, height,
-      strength: 100, brightness: 0, saturation: 0,
+      data,
+      width,
+      height,
+      strength: 100,
+      brightness: 0,
+      saturation: 0,
       preset: AuroraHologramPreset.silverFoil,
     );
     final brighter = engine.applyAuroraHologram(
-      data, width, height,
-      strength: 100, brightness: 80, saturation: 0,
+      data,
+      width,
+      height,
+      strength: 100,
+      brightness: 80,
+      saturation: 0,
       preset: AuroraHologramPreset.silverFoil,
     );
     // 明度80だけ底上げした結果は、平均してbaseより明るいはず。

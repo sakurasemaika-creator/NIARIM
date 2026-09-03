@@ -11,7 +11,8 @@ import '../../../config/font_fallback.dart';
 /// フォルダ管理シート（新規作成・名前変更・並び替え・お気に入り登録・削除）。
 void showFolderManagementSheet(
   BuildContext context, {
-  required List<({String id, String name, bool isFavorite})> Function() getFolders,
+  required List<({String id, String name, bool isFavorite})> Function()
+  getFolders,
   required Future<void> Function(String name) onCreate,
   required void Function(String id, String name) onRename,
   required void Function(String id) onToggleFavorite,
@@ -36,14 +37,23 @@ void showFolderManagementSheet(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    Text(l10n.folderManagementTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                    Text(
+                      l10n.folderManagementTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     const Spacer(),
                     TextButton.icon(
                       icon: const Icon(Icons.create_new_folder, size: 18),
                       label: Text(l10n.folderManagementCreateNew),
                       onPressed: () async {
-                        final name = await _promptFolderName(ctx, title: l10n.homeAddSheetNewFolder);
+                        final name = await _promptFolderName(
+                          ctx,
+                          title: l10n.homeAddSheetNewFolder,
+                        );
                         if (name == null || name.trim().isEmpty) return;
                         await onCreate(name.trim());
                         setSheetState(() {});
@@ -56,7 +66,10 @@ void showFolderManagementSheet(
               if (folders.isEmpty)
                 Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(l10n.folderManagementEmpty, style: const TextStyle(color: Colors.grey)),
+                  child: Text(
+                    l10n.folderManagementEmpty,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
                 ),
               Expanded(
                 child: ReorderableListView.builder(
@@ -80,8 +93,11 @@ void showFolderManagementSheet(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: Icon(f.isFavorite ? Icons.star : Icons.star_outline,
-                                color: f.isFavorite ? Colors.amber : null, size: 18),
+                            icon: Icon(
+                              f.isFavorite ? Icons.star : Icons.star_outline,
+                              color: f.isFavorite ? Colors.amber : null,
+                              size: 18,
+                            ),
                             tooltip: l10n.commonFavoriteToggle,
                             onPressed: () {
                               onToggleFavorite(f.id);
@@ -92,23 +108,37 @@ void showFolderManagementSheet(
                             icon: const Icon(Icons.edit_outlined, size: 18),
                             tooltip: l10n.commonRename,
                             onPressed: () async {
-                              final name = await _promptFolderName(ctx, title: l10n.commonRename, initial: f.name);
+                              final name = await _promptFolderName(
+                                ctx,
+                                title: l10n.commonRename,
+                                initial: f.name,
+                              );
                               if (name == null || name.trim().isEmpty) return;
                               onRename(f.id, name.trim());
                               setSheetState(() {});
                             },
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                              color: Colors.red,
+                            ),
                             tooltip: l10n.commonDelete,
                             // お気に入り登録中は削除できない。
                             onPressed: () async {
                               if (f.isFavorite) {
                                 ScaffoldMessenger.of(ctx).showSnackBar(
-                                    SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+                                  SnackBar(
+                                    content: Text(
+                                      l10n.commonFavoriteDeleteBlocked,
+                                    ),
+                                  ),
+                                );
                                 return;
                               }
-                              if (!await confirmDelete(ctx, itemName: f.name)) return;
+                              if (!await confirmDelete(ctx, itemName: f.name))
+                                return;
                               onDelete(f.id);
                               setSheetState(() {});
                             },
@@ -131,7 +161,11 @@ void showFolderManagementSheet(
   );
 }
 
-Future<String?> _promptFolderName(BuildContext context, {required String title, String? initial}) {
+Future<String?> _promptFolderName(
+  BuildContext context, {
+  required String title,
+  String? initial,
+}) {
   final controller = TextEditingController(text: initial);
   final l10n = AppLocalizations.of(context)!;
   return showDialog<String>(
@@ -143,11 +177,20 @@ Future<String?> _promptFolderName(BuildContext context, {required String title, 
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(labelText: l10n.folderNameLabel, border: const OutlineInputBorder()),
+          decoration: InputDecoration(
+            labelText: l10n.folderNameLabel,
+            border: const OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('OK')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('OK'),
+          ),
         ],
       ),
     ),
@@ -165,39 +208,51 @@ void showMoveToCreativeFolderSheet(
     builder: (ctx) {
       final l10n = AppLocalizations.of(ctx)!;
       return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(l10n.folderMoveToTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-          ),
-          ListTile(
-            leading: const Icon(Icons.folder_open),
-            title: Text(l10n.folderNone),
-            onTap: () {
-              onSelect(null);
-              Navigator.pop(ctx);
-            },
-          ),
-          ...folders.map((f) => ListTile(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                l10n.folderMoveToTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_open),
+              title: Text(l10n.folderNone),
+              onTap: () {
+                onSelect(null);
+                Navigator.pop(ctx);
+              },
+            ),
+            ...folders.map(
+              (f) => ListTile(
                 leading: const Icon(Icons.folder),
                 title: Text(f.name),
                 onTap: () {
                   onSelect(f.id);
                   Navigator.pop(ctx);
                 },
-              )),
-        ],
-      ),
+              ),
+            ),
+          ],
+        ),
       );
     },
   );
 }
 
 /// 新規名を入力するダイアログ（自作ブラシ/トーン/スタンプ作成時の名前入力）。
-Future<String?> promptCreativeAssetName(BuildContext context, {required String title, String initial = ''}) {
+Future<String?> promptCreativeAssetName(
+  BuildContext context, {
+  required String title,
+  String initial = '',
+}) {
   final controller = TextEditingController(text: initial);
   final l10n = AppLocalizations.of(context)!;
   return showDialog<String>(
@@ -209,11 +264,20 @@ Future<String?> promptCreativeAssetName(BuildContext context, {required String t
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(labelText: l10n.creativeAssetNameLabel, border: const OutlineInputBorder()),
+          decoration: InputDecoration(
+            labelText: l10n.creativeAssetNameLabel,
+            border: const OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: Text(l10n.commonCreate)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text(l10n.commonCreate),
+          ),
         ],
       ),
     ),

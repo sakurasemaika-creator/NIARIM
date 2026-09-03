@@ -21,7 +21,11 @@ class AutofillPresetService extends ChangeNotifier {
   /// 下げる）。サンプルプリセットの「1影・2影・ハイライト」を色相の近い
   /// 一貫した配色で機械的に生成するために使う。サンプルは使い方を学んで
   /// もらうためのものなので、すべてのパーツにきちんと陰影を用意する。
-  static int _shade(int argb, {required double lightnessDelta, double saturationDelta = 0}) {
+  static int _shade(
+    int argb, {
+    required double lightnessDelta,
+    double saturationDelta = 0,
+  }) {
     final a = (argb >> 24) & 0xFF;
     final r = ((argb >> 16) & 0xFF) / 255.0;
     final g = ((argb >> 8) & 0xFF) / 255.0;
@@ -50,17 +54,29 @@ class AutofillPresetService extends ChangeNotifier {
     final m = l - c / 2;
     double rr, gg, bb;
     if (h < 60) {
-      rr = c; gg = x; bb = 0;
+      rr = c;
+      gg = x;
+      bb = 0;
     } else if (h < 120) {
-      rr = x; gg = c; bb = 0;
+      rr = x;
+      gg = c;
+      bb = 0;
     } else if (h < 180) {
-      rr = 0; gg = c; bb = x;
+      rr = 0;
+      gg = c;
+      bb = x;
     } else if (h < 240) {
-      rr = 0; gg = x; bb = c;
+      rr = 0;
+      gg = x;
+      bb = c;
     } else if (h < 300) {
-      rr = x; gg = 0; bb = c;
+      rr = x;
+      gg = 0;
+      bb = c;
     } else {
-      rr = c; gg = 0; bb = x;
+      rr = c;
+      gg = 0;
+      bb = x;
     }
     final nr = ((rr + m) * 255).round().clamp(0, 255);
     final ng = ((gg + m) * 255).round().clamp(0, 255);
@@ -68,54 +84,89 @@ class AutofillPresetService extends ChangeNotifier {
     return (a << 24) | (nr << 16) | (ng << 8) | nb;
   }
 
-  static int _shadow1(int base) => _shade(base, lightnessDelta: -0.12, saturationDelta: 0.05);
-  static int _shadow2(int base) => _shade(base, lightnessDelta: -0.26, saturationDelta: 0.08);
-  static int _highlight(int base) => _shade(base, lightnessDelta: 0.20, saturationDelta: -0.15);
+  static int _shadow1(int base) =>
+      _shade(base, lightnessDelta: -0.12, saturationDelta: 0.05);
+  static int _shadow2(int base) =>
+      _shade(base, lightnessDelta: -0.26, saturationDelta: 0.08);
+  static int _highlight(int base) =>
+      _shade(base, lightnessDelta: 0.20, saturationDelta: -0.15);
 
   /// 髪・肌・服の各パーツ用に、基本色＋1影＋2影＋ハイライトの4パーツを
   /// まとめて生成する（サンプルのすべてのパーツにこれらを用意する）。
-  static List<AutofillPart> _shadedSet(String idPrefix, String name, int base) => [
-        AutofillPart(id: '${idPrefix}_base', name: name, color: base),
-        AutofillPart(id: '${idPrefix}_s1', name: '${name}1影', color: _shadow1(base)),
-        AutofillPart(id: '${idPrefix}_s2', name: '${name}2影', color: _shadow2(base)),
-        AutofillPart(id: '${idPrefix}_hl', name: '$nameハイライト', color: _highlight(base)),
-      ];
+  static List<AutofillPart> _shadedSet(
+    String idPrefix,
+    String name,
+    int base,
+  ) => [
+    AutofillPart(id: '${idPrefix}_base', name: name, color: base),
+    AutofillPart(
+      id: '${idPrefix}_s1',
+      name: '${name}1影',
+      color: _shadow1(base),
+    ),
+    AutofillPart(
+      id: '${idPrefix}_s2',
+      name: '${name}2影',
+      color: _shadow2(base),
+    ),
+    AutofillPart(
+      id: '${idPrefix}_hl',
+      name: '$nameハイライト',
+      color: _highlight(base),
+    ),
+  ];
 
   /// 瞳（白目・瞳孔・虹彩本体・虹彩の影・キャッチライト）をまとめて生成する。
   /// 白目・瞳孔・キャッチライトは実際の作画でも陰影を付けずフラットに
   /// 塗ることが多いため単色のみ、虹彩本体のみ1影を用意する。瞳だけだと
   /// ざっくりしすぎるため、白目や瞳孔の色も別パーツとして持たせている。
   static List<AutofillPart> _eyeSet(String idPrefix, int irisBase) => [
-        AutofillPart(id: '${idPrefix}_white', name: '白目', color: 0xFFFAFAF8),
-        AutofillPart(id: '${idPrefix}_pupil', name: '瞳孔', color: 0xFF1A1410),
-        AutofillPart(id: '${idPrefix}_iris', name: '瞳', color: irisBase),
-        AutofillPart(id: '${idPrefix}_iris_s1', name: '瞳1影', color: _shadow1(irisBase)),
-        AutofillPart(id: '${idPrefix}_iris_hl', name: '瞳キャッチライト', color: 0xFFFFFFFF),
-      ];
+    AutofillPart(id: '${idPrefix}_white', name: '白目', color: 0xFFFAFAF8),
+    AutofillPart(id: '${idPrefix}_pupil', name: '瞳孔', color: 0xFF1A1410),
+    AutofillPart(id: '${idPrefix}_iris', name: '瞳', color: irisBase),
+    AutofillPart(
+      id: '${idPrefix}_iris_s1',
+      name: '瞳1影',
+      color: _shadow1(irisBase),
+    ),
+    AutofillPart(
+      id: '${idPrefix}_iris_hl',
+      name: '瞳キャッチライト',
+      color: 0xFFFFFFFF,
+    ),
+  ];
 
   /// 初回起動時（保存データが存在しない場合）のみ使用するサンプルプリセット。
   /// 各パーツへ1影・2影・ハイライトを用意し、瞳は白目・瞳孔・キャッチライト
   /// まで、服はトップス／ボトムス／シューズへ細分化した、実際の塗り方が
   /// 学べる内容にしている。
   static List<AutofillPreset> _defaultPresets() => [
-        AutofillPreset(id: 'p1', name: '主人公', parts: [
-          ..._shadedSet('p1_hair', '髪', 0xFF4A3728),
-          ..._shadedSet('p1_skin', '肌', 0xFFFFD5B0),
-          ..._eyeSet('p1_eye', 0xFF3A6EA5),
-          ..._shadedSet('p1_top', 'トップス', 0xFF2C5F8A),
-          ..._shadedSet('p1_bottom', 'ボトムス', 0xFF33302E),
-          ..._shadedSet('p1_shoes', 'シューズ', 0xFF4A3020),
-        ]),
-        AutofillPreset(id: 'p2', name: 'ヒロイン', parts: [
-          ..._shadedSet('p2_hair', '髪', 0xFFE8C4A0),
-          ..._shadedSet('p2_skin', '肌', 0xFFFFE0C8),
-          ..._eyeSet('p2_eye', 0xFF8B4513),
-          ..._shadedSet('p2_top', 'トップス', 0xFFFF6B9D),
-          ..._shadedSet('p2_bottom', 'ボトムス', 0xFFFF8CB0),
-          ..._shadedSet('p2_shoes', 'シューズ', 0xFFD94F7A),
-          ..._shadedSet('p2_ribbon', 'リボン', 0xFFFF1493),
-        ]),
-      ];
+    AutofillPreset(
+      id: 'p1',
+      name: '主人公',
+      parts: [
+        ..._shadedSet('p1_hair', '髪', 0xFF4A3728),
+        ..._shadedSet('p1_skin', '肌', 0xFFFFD5B0),
+        ..._eyeSet('p1_eye', 0xFF3A6EA5),
+        ..._shadedSet('p1_top', 'トップス', 0xFF2C5F8A),
+        ..._shadedSet('p1_bottom', 'ボトムス', 0xFF33302E),
+        ..._shadedSet('p1_shoes', 'シューズ', 0xFF4A3020),
+      ],
+    ),
+    AutofillPreset(
+      id: 'p2',
+      name: 'ヒロイン',
+      parts: [
+        ..._shadedSet('p2_hair', '髪', 0xFFE8C4A0),
+        ..._shadedSet('p2_skin', '肌', 0xFFFFE0C8),
+        ..._eyeSet('p2_eye', 0xFF8B4513),
+        ..._shadedSet('p2_top', 'トップス', 0xFFFF6B9D),
+        ..._shadedSet('p2_bottom', 'ボトムス', 0xFFFF8CB0),
+        ..._shadedSet('p2_shoes', 'シューズ', 0xFFD94F7A),
+        ..._shadedSet('p2_ribbon', 'リボン', 0xFFFF1493),
+      ],
+    ),
+  ];
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -127,7 +178,10 @@ class AutofillPresetService extends ChangeNotifier {
       await _persist();
     } else {
       _presets.addAll(
-          raw.map((s) => AutofillPreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+        raw.map(
+          (s) => AutofillPreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
       var changed = _dedupeIds();
       if (_upgradeSampleContent()) changed = true;
       if (changed) await _persist();
@@ -145,7 +199,8 @@ class AutofillPresetService extends ChangeNotifier {
       final preset = _presets[i];
       final fresh = defaults[preset.id];
       if (fresh == null) continue;
-      if (preset.parts.length <= 7 && preset.parts.length < fresh.parts.length) {
+      if (preset.parts.length <= 7 &&
+          preset.parts.length < fresh.parts.length) {
         _presets[i] = preset.copyWith(parts: fresh.parts);
         changed = true;
       }
@@ -167,7 +222,9 @@ class AutofillPresetService extends ChangeNotifier {
     for (int i = 0; i < _presets.length; i++) {
       var preset = _presets[i];
       if (!seenPresetIds.add(preset.id)) {
-        preset = preset.copyWith(id: 'p_${DateTime.now().microsecondsSinceEpoch}_$i');
+        preset = preset.copyWith(
+          id: 'p_${DateTime.now().microsecondsSinceEpoch}_$i',
+        );
         changed = true;
       }
       final seenPartIds = <String>{};
@@ -176,7 +233,9 @@ class AutofillPresetService extends ChangeNotifier {
       for (int j = 0; j < preset.parts.length; j++) {
         var part = preset.parts[j];
         if (!seenPartIds.add(part.id)) {
-          part = part.copyWith(id: 'part_${DateTime.now().microsecondsSinceEpoch}_${i}_$j');
+          part = part.copyWith(
+            id: 'part_${DateTime.now().microsecondsSinceEpoch}_${i}_$j',
+          );
           partsChanged = true;
         }
         parts.add(part);
@@ -193,7 +252,9 @@ class AutofillPresetService extends ChangeNotifier {
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
-        _prefsKey, _presets.map((p) => jsonEncode(p.toJson())).toList());
+      _prefsKey,
+      _presets.map((p) => jsonEncode(p.toJson())).toList(),
+    );
   }
 
   AutofillPart? findPart(String partId) {
@@ -235,7 +296,10 @@ class AutofillPresetService extends ChangeNotifier {
 
   /// [pngBytes]（1:1トリミング済みのPNG）をプリセットのサムネイル画像として
   /// 登録する。アプリ専用領域へ保存して永続化する。
-  Future<void> setPresetThumbnailBytes(String presetId, Uint8List pngBytes) async {
+  Future<void> setPresetThumbnailBytes(
+    String presetId,
+    Uint8List pngBytes,
+  ) async {
     final idx = _presets.indexWhere((p) => p.id == presetId);
     if (idx < 0) return;
     final dir = await _thumbnailsDir();
@@ -247,7 +311,9 @@ class AutofillPresetService extends ChangeNotifier {
     if (oldPath != null && oldPath != destPath) {
       final oldFile = File(oldPath);
       if (oldFile.existsSync()) {
-        try { await oldFile.delete(); } catch (_) {}
+        try {
+          await oldFile.delete();
+        } catch (_) {}
       }
     }
     _presets[idx] = _presets[idx].copyWith(thumbnailPath: destPath);
@@ -262,7 +328,9 @@ class AutofillPresetService extends ChangeNotifier {
     if (oldPath != null) {
       final oldFile = File(oldPath);
       if (oldFile.existsSync()) {
-        try { await oldFile.delete(); } catch (_) {}
+        try {
+          await oldFile.delete();
+        } catch (_) {}
       }
     }
     _presets[idx] = _presets[idx].copyWith(thumbnailPath: null);

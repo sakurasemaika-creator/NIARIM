@@ -38,8 +38,11 @@ class _StorageScreenState extends State<StorageScreen> {
 
   Future<void> _reload() async {
     setState(() => _loading = true);
-    final trashedIds =
-        context.read<ProjectService>().trash.map((p) => p.id).toSet();
+    final trashedIds = context
+        .read<ProjectService>()
+        .trash
+        .map((p) => p.id)
+        .toSet();
     final breakdown = await _service.computeBreakdown(trashedIds);
     final deviceSpace = await _service.deviceSpace();
     if (!mounted) return;
@@ -73,7 +76,7 @@ class _StorageScreenState extends State<StorageScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -85,7 +88,7 @@ class _StorageScreenState extends State<StorageScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                        fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -96,7 +99,7 @@ class _StorageScreenState extends State<StorageScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                        fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -112,18 +115,36 @@ class _StorageScreenState extends State<StorageScreen> {
 
   Widget _buildDeviceChart(AppLocalizations l10n, DeviceSpaceInfo device) {
     final niarimBytes = _breakdown!.totalBytes;
-    final others = (device.usedByOthersBytes - niarimBytes).clamp(0, device.totalBytes);
+    final others = (device.usedByOthersBytes - niarimBytes).clamp(
+      0,
+      device.totalBytes,
+    );
     final free = device.freeBytes;
     final scheme = Theme.of(context).colorScheme;
     final slices = [
-      _PieSlice(niarimBytes.toDouble(), scheme.primary, l10n.storageCategoryNiarimTotal),
-      _PieSlice(others.toDouble(), scheme.tertiary, l10n.storageCategoryOtherApps),
-      _PieSlice(free.toDouble(), scheme.surfaceContainerHighest, l10n.storageCategoryFree),
+      _PieSlice(
+        niarimBytes.toDouble(),
+        scheme.primary,
+        l10n.storageCategoryNiarimTotal,
+      ),
+      _PieSlice(
+        others.toDouble(),
+        scheme.tertiary,
+        l10n.storageCategoryOtherApps,
+      ),
+      _PieSlice(
+        free.toDouble(),
+        scheme.surfaceContainerHighest,
+        l10n.storageCategoryFree,
+      ),
     ];
     return _chartWithLegend(slices);
   }
 
-  Widget _buildBreakdownChart(AppLocalizations l10n, StorageBreakdown breakdown) {
+  Widget _buildBreakdownChart(
+    AppLocalizations l10n,
+    StorageBreakdown breakdown,
+  ) {
     final scheme = Theme.of(context).colorScheme;
     final colors = [
       scheme.primary,
@@ -184,13 +205,24 @@ class _StorageScreenState extends State<StorageScreen> {
                         Container(
                           width: 10,
                           height: 10,
-                          decoration: BoxDecoration(color: s.color, shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                            color: s.color,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                         const SizedBox(width: 6),
-                        Expanded(child: Text(s.label, style: const TextStyle(fontSize: 12))),
+                        Expanded(
+                          child: Text(
+                            s.label,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
                         Text(
                           formatStorageBytes(s.value),
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -268,19 +300,29 @@ class _StorageScreenState extends State<StorageScreen> {
 
   Future<void> _confirmClearCache() async {
     final l10n = AppLocalizations.of(context)!;
-    final ok = await confirmDelete(context, itemName: l10n.storageCategoryCache);
+    final ok = await confirmDelete(
+      context,
+      itemName: l10n.storageCategoryCache,
+    );
     if (!ok || !mounted) return;
     final freed = await _service.clearCache();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.storageClearCacheDoneSnackbar(formatStorageBytes(freed)))),
+      SnackBar(
+        content: Text(
+          l10n.storageClearCacheDoneSnackbar(formatStorageBytes(freed)),
+        ),
+      ),
     );
     await _reload();
   }
 
   Future<void> _confirmRemoveUnusedMaterials() async {
     final l10n = AppLocalizations.of(context)!;
-    final ok = await confirmDelete(context, itemName: l10n.storageRemoveUnusedMaterialsButton);
+    final ok = await confirmDelete(
+      context,
+      itemName: l10n.storageRemoveUnusedMaterialsButton,
+    );
     if (!ok || !mounted) return;
     final ps = context.read<ProjectService>();
     final ms = context.read<MaterialService>();
@@ -300,7 +342,10 @@ class _StorageScreenState extends State<StorageScreen> {
 
   Future<void> _confirmEmptyTrash() async {
     final l10n = AppLocalizations.of(context)!;
-    final ok = await confirmDelete(context, itemName: l10n.storageCategoryTrash);
+    final ok = await confirmDelete(
+      context,
+      itemName: l10n.storageCategoryTrash,
+    );
     if (!ok || !mounted) return;
     final ps = context.read<ProjectService>();
     for (final project in List.of(ps.trash)) {
@@ -339,9 +384,9 @@ class _StorageScreenState extends State<StorageScreen> {
     // 使い続けるリスクを避けるため）。
     await _service.eraseAllData();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.storageEraseAllDoneSnackbar)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.storageEraseAllDoneSnackbar)));
     await _reload();
   }
 }

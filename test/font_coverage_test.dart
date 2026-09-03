@@ -36,7 +36,7 @@ Set<int> cmapCodePoints(String path) {
   var cmapOffset = -1;
   for (var i = 0; i < numTables; i++) {
     final rec = tableStart + 12 + i * 16;
-    if (_tagAt(bytes, rec) == 0x636D6170 /* 'cmap' */) {
+    if (_tagAt(bytes, rec) == 0x636D6170 /* 'cmap' */ ) {
       cmapOffset = bytes.getUint32(rec + 8);
       break;
     }
@@ -50,7 +50,8 @@ Set<int> cmapCodePoints(String path) {
     final platformId = bytes.getUint16(rec);
     final encodingId = bytes.getUint16(rec + 2);
     final isUnicode =
-        platformId == 0 || (platformId == 3 && (encodingId == 1 || encodingId == 10));
+        platformId == 0 ||
+        (platformId == 3 && (encodingId == 1 || encodingId == 10));
     if (!isUnicode) continue;
     final sub = cmapOffset + bytes.getUint32(rec + 4);
     switch (bytes.getUint16(sub)) {
@@ -142,11 +143,7 @@ Set<int> uiCharsOf(File arb) {
     if (key.startsWith('@') || value is! String) return;
     buffer.write(value.replaceAll(RegExp(r'\{[^}]*\}'), ''));
   });
-  return buffer
-      .toString()
-      .runes
-      .where((r) => r > 0x20)
-      .toSet();
+  return buffer.toString().runes.where((r) => r > 0x20).toSet();
 }
 
 void main() {
@@ -166,12 +163,13 @@ void main() {
     headingCoverage = coverageOf([...kHeadingFontFallback, 'Kuramubon']);
   });
 
-  final arbs = Directory('lib/l10n')
-      .listSync()
-      .whereType<File>()
-      .where((f) => f.path.endsWith('.arb'))
-      .toList()
-    ..sort((a, b) => a.path.compareTo(b.path));
+  final arbs =
+      Directory('lib/l10n')
+          .listSync()
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.arb'))
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
 
   test('検証対象のARBが7言語ぶんある', () {
     expect(arbs.length, 7, reason: '対応言語が増減している');
@@ -187,7 +185,8 @@ void main() {
       expect(
         missing,
         isEmpty,
-        reason: '本文用スタックに無い文字: '
+        reason:
+            '本文用スタックに無い文字: '
             '${String.fromCharCodes(missing.take(30))}\n'
             'tool/build_fallback_fonts.py でフォントを再生成してください',
       );
@@ -200,7 +199,8 @@ void main() {
       expect(
         missing,
         isEmpty,
-        reason: '見出し用スタックに無い文字: '
+        reason:
+            '見出し用スタックに無い文字: '
             '${String.fromCharCodes(missing.take(30))}\n'
             'tool/build_fallback_fonts.py でフォントを再生成してください',
       );
@@ -211,8 +211,11 @@ void main() {
     // 極太ゴシックの中に細い明朝が混ざると、同じ単語の中で浮いてしまう
     // （「550엔」のように極太の数字と細い明朝のハングルが並ぶ）。
     for (final family in kHeadingFontFallback) {
-      expect(family.toLowerCase().contains('serif'), isFalse,
-          reason: '見出し用の代替フォントに明朝($family)が入っている');
+      expect(
+        family.toLowerCase().contains('serif'),
+        isFalse,
+        reason: '見出し用の代替フォントに明朝($family)が入っている',
+      );
     }
   });
 }

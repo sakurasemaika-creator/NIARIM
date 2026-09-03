@@ -24,20 +24,36 @@ void main() {
     ];
 
     final sparse = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 7, points: sparsePoints,
-      stampSize: 18, density: 1.4, rotation: true,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 7,
+      points: sparsePoints,
+      stampSize: 18,
+      density: 1.4,
+      rotation: true,
     );
     final dense = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 7, points: densePoints,
-      stampSize: 18, density: 1.4, rotation: true,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 7,
+      points: densePoints,
+      stampSize: 18,
+      density: 1.4,
+      rotation: true,
     );
     await _save(sparse, w, h, '${out.path}/stamp_corner_sparse.png');
     await _save(dense, w, h, '${out.path}/stamp_corner_dense.png');
 
-    expect(sparse, orderedEquals(dense),
-        reason: 'same L-shaped path must not change with pointer event subdivision');
+    expect(
+      sparse,
+      orderedEquals(dense),
+      reason:
+          'same L-shaped path must not change with pointer event subdivision',
+    );
   });
 
   test('スタンプ散布付き折れ線：seed固定なら疎入力と密入力で画素完全一致', () async {
@@ -54,20 +70,40 @@ void main() {
     ];
 
     final sparse = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 5, points: sparsePoints,
-      stampSize: 14, density: 0.9, rotation: false, scatter: 18, seed: 77,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 5,
+      points: sparsePoints,
+      stampSize: 14,
+      density: 0.9,
+      rotation: false,
+      scatter: 18,
+      seed: 77,
     );
     final dense = StampEngine().stampAlongPath(
-      canvasData: Uint8List(w * h * 4), width: w, height: h,
-      texture: tex, texSize: 5, points: densePoints,
-      stampSize: 14, density: 0.9, rotation: false, scatter: 18, seed: 77,
+      canvasData: Uint8List(w * h * 4),
+      width: w,
+      height: h,
+      texture: tex,
+      texSize: 5,
+      points: densePoints,
+      stampSize: 14,
+      density: 0.9,
+      rotation: false,
+      scatter: 18,
+      seed: 77,
     );
     await _save(sparse, w, h, '${out.path}/stamp_corner_scatter_sparse.png');
     await _save(dense, w, h, '${out.path}/stamp_corner_scatter_dense.png');
 
-    expect(sparse, orderedEquals(dense),
-        reason: 'scatter RNG sequence and path normals must also be event-density invariant');
+    expect(
+      sparse,
+      orderedEquals(dense),
+      reason:
+          'scatter RNG sequence and path normals must also be event-density invariant',
+    );
   });
 
   test('旧CanvasArea型の事前間引きは短い折れ返しを消すため使用してはいけない', () {
@@ -90,8 +126,12 @@ void main() {
         last = p;
       }
     }
-    expect(legacySampled.length, lessThan(raw.length),
-        reason: 'this demonstrates why pre-sampling before StampEngine loses geometry');
+    expect(
+      legacySampled.length,
+      lessThan(raw.length),
+      reason:
+          'this demonstrates why pre-sampling before StampEngine loses geometry',
+    );
     expect(legacySampled, isNot(orderedEquals(raw)));
   });
 }
@@ -113,13 +153,19 @@ Uint8List _texture(int size) {
 Future<void> _save(Uint8List rgba, int w, int h, String path) async {
   final buffer = await ui.ImmutableBuffer.fromUint8List(rgba);
   final desc = ui.ImageDescriptor.raw(
-    buffer, width: w, height: h, pixelFormat: ui.PixelFormat.rgba8888,
+    buffer,
+    width: w,
+    height: h,
+    pixelFormat: ui.PixelFormat.rgba8888,
   );
   final codec = await desc.instantiateCodec();
   final frame = await codec.getNextFrame();
   final png = await frame.image.toByteData(format: ui.ImageByteFormat.png);
   await File(path).writeAsBytes(png!.buffer.asUint8List());
-  frame.image.dispose(); codec.dispose(); desc.dispose(); buffer.dispose();
+  frame.image.dispose();
+  codec.dispose();
+  desc.dispose();
+  buffer.dispose();
 }
 
 // Audit retrigger only: verify the complete functional visual suite after the

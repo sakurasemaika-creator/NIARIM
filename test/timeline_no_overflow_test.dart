@@ -33,10 +33,14 @@ class _FakeFilePicker extends FilePicker {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('timeline has no RenderFlex overflow at 320 logical pixels', (tester) async {
+  testWidgets('timeline has no RenderFlex overflow at 320 logical pixels', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     FilePicker.platform = _FakeFilePicker();
-    final tempDir = Directory.systemTemp.createTempSync('niarim_timeline_overflow_');
+    final tempDir = Directory.systemTemp.createTempSync(
+      'niarim_timeline_overflow_',
+    );
     const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathChannel, (_) async => tempDir.path);
@@ -57,18 +61,26 @@ void main() {
       Future<void> family(String name, String needle) async {
         final matches = assets.where((a) => a.contains(needle)).toList();
         if (matches.isEmpty) return;
-        final loader = FontLoader(name)..addFont(rootBundle.load(matches.first));
+        final loader = FontLoader(name)
+          ..addFont(rootBundle.load(matches.first));
         await loader.load();
       }
+
       Future<void> materialIcons() async {
         final flutterRoot = Platform.environment['FLUTTER_ROOT'];
         if (flutterRoot == null) return;
-        final file = File('$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf');
+        final file = File(
+          '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+        );
         if (!file.existsSync()) return;
-        final data = ByteData.sublistView(Uint8List.fromList(await file.readAsBytes()));
-        final loader = FontLoader('MaterialIcons')..addFont(Future<ByteData>.value(data));
+        final data = ByteData.sublistView(
+          Uint8List.fromList(await file.readAsBytes()),
+        );
+        final loader = FontLoader('MaterialIcons')
+          ..addFont(Future<ByteData>.value(data));
         await loader.load();
       }
+
       await Future.wait([
         family('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
         family('Kuramubon', 'assets/fonts/Kuramubon.otf'),
@@ -104,7 +116,8 @@ void main() {
     expect(
       tester.takeException(),
       isNull,
-      reason: 'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
+      reason:
+          'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
     );
     expect(find.text('timeline-overflow-probe'), findsOneWidget);
   }, timeout: const Timeout(Duration(seconds: 120)));

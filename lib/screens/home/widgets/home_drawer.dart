@@ -75,8 +75,10 @@ class HomeDrawer extends StatelessWidget {
             leading: const Icon(Icons.share_outlined),
             title: Text(
               l10n.homeTabShared,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -87,8 +89,10 @@ class HomeDrawer extends StatelessWidget {
             leading: const Icon(Icons.delete_outline),
             title: Text(
               l10n.homeTabTrash,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -100,8 +104,10 @@ class HomeDrawer extends StatelessWidget {
             leading: const Icon(Icons.palette_outlined),
             title: Text(
               l10n.homeDrawerAutofillPreset,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -112,8 +118,10 @@ class HomeDrawer extends StatelessWidget {
             leading: const Icon(Icons.cleaning_services_outlined),
             title: Text(
               l10n.homeDrawerStorage,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -125,8 +133,10 @@ class HomeDrawer extends StatelessWidget {
             leading: const Icon(Icons.settings_outlined),
             title: Text(
               l10n.homeDrawerSettings,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -137,8 +147,10 @@ class HomeDrawer extends StatelessWidget {
             leading: const Icon(Icons.help_outline),
             title: Text(
               l10n.homeDrawerHelp,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -149,8 +161,10 @@ class HomeDrawer extends StatelessWidget {
             leading: const Icon(Icons.lightbulb_outline),
             title: Text(
               l10n.homeDrawerTips,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -164,8 +178,10 @@ class HomeDrawer extends StatelessWidget {
             ),
             title: Text(
               l10n.homeDrawerPremium,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             onTap: () {
               Navigator.pop(context);

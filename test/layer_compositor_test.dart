@@ -2,7 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/layer_compositor.dart';
 import 'package:niarim/models/layer.dart';
 
-Layer _layer(String id, {bool hasClipping = false, String? parentFolderId}) => Layer(
+Layer _layer(String id, {bool hasClipping = false, String? parentFolderId}) =>
+    Layer(
       id: id,
       name: id,
       type: LayerType.normal,
@@ -50,9 +51,7 @@ void main() {
     });
 
     test('クリッピング元が見つからない場合はnull', () {
-      final layers = [
-        _layer('a', hasClipping: true),
-      ];
+      final layers = [_layer('a', hasClipping: true)];
       expect(findClipSourceLayerId(layers, 0), isNull);
     });
   });

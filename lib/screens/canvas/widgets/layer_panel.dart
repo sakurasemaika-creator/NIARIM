@@ -225,7 +225,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 const Spacer(),
@@ -480,7 +480,7 @@ class _LayerPanelState extends State<LayerPanel> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                      fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                   subtitle: layer.type == model.LayerType.common
@@ -631,22 +631,16 @@ class _LayerPanelState extends State<LayerPanel> {
                     icon: const Icon(Icons.visibility, size: 18),
                     onPressed: _selectedIds.isEmpty
                         ? null
-                        : () => _setVisibilityForSelected(
-                            context,
-                            layers,
-                            true,
-                          ),
+                        : () =>
+                              _setVisibilityForSelected(context, layers, true),
                     tooltip: l10n.layerPanelShowSelectedTooltip,
                   ),
                   IconButton(
                     icon: const Icon(Icons.visibility_off, size: 18),
                     onPressed: _selectedIds.isEmpty
                         ? null
-                        : () => _setVisibilityForSelected(
-                            context,
-                            layers,
-                            false,
-                          ),
+                        : () =>
+                              _setVisibilityForSelected(context, layers, false),
                     tooltip: l10n.layerPanelHideSelectedTooltip,
                   ),
                   IconButton(
@@ -1116,7 +1110,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
             ),
@@ -1645,7 +1639,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
               ),
@@ -2175,7 +2169,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.layerPanelHelpBlendModeBody),
@@ -2185,7 +2179,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.layerPanelHelpClippingBody),
@@ -2195,7 +2189,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.layerPanelHelpCommonLayerBody),
@@ -2448,7 +2442,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                            fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
                       ),

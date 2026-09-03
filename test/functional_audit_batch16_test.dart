@@ -79,8 +79,12 @@ void main() {
     expect(_maxAlpha(normal), inInclusiveRange(127, 129));
     expect(_maxAlpha(pixel), inInclusiveRange(127, 129));
     expect(_nonTransparentPixels(pixel), greaterThan(0));
-    expect(pixel, isNot(orderedEquals(normal)),
-        reason: 'pixelMode should alter the texture geometry/color processing without resetting opacity');
+    expect(
+      pixel,
+      isNot(orderedEquals(normal)),
+      reason:
+          'pixelMode should alter the texture geometry/color processing without resetting opacity',
+    );
   });
 
   test('不透明度の境界値は1〜100として保持される', () {
@@ -110,11 +114,17 @@ int _nonTransparentPixels(Uint8List rgba) {
 Future<void> _save(Uint8List rgba, int w, int h, String path) async {
   final buffer = await ui.ImmutableBuffer.fromUint8List(rgba);
   final desc = ui.ImageDescriptor.raw(
-    buffer, width: w, height: h, pixelFormat: ui.PixelFormat.rgba8888,
+    buffer,
+    width: w,
+    height: h,
+    pixelFormat: ui.PixelFormat.rgba8888,
   );
   final codec = await desc.instantiateCodec();
   final frame = await codec.getNextFrame();
   final png = await frame.image.toByteData(format: ui.ImageByteFormat.png);
   await File(path).writeAsBytes(png!.buffer.asUint8List());
-  frame.image.dispose(); codec.dispose(); desc.dispose(); buffer.dispose();
+  frame.image.dispose();
+  codec.dispose();
+  desc.dispose();
+  buffer.dispose();
 }

@@ -47,7 +47,14 @@ class EditableSliderValue extends StatelessWidget {
             top: 0,
             bottom: 0,
             child: Center(
-              child: Icon(Icons.edit, size: 9, color: (style?.color ?? Theme.of(context).colorScheme.onSurfaceVariant).withValues(alpha: 0.7)),
+              child: Icon(
+                Icons.edit,
+                size: 9,
+                color:
+                    (style?.color ??
+                            Theme.of(context).colorScheme.onSurfaceVariant)
+                        .withValues(alpha: 0.7),
+              ),
             ),
           ),
         ],
@@ -130,12 +137,21 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
       content: TextField(
         controller: _controller,
         autofocus: true,
-        keyboardType: TextInputType.numberWithOptions(decimal: !widget.isInt, signed: widget.signed),
+        keyboardType: TextInputType.numberWithOptions(
+          decimal: !widget.isInt,
+          signed: widget.signed,
+        ),
         onSubmitted: (v) => Navigator.pop(context, _parse(v)),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
-        FilledButton(onPressed: () => Navigator.pop(context, _parse(_controller.text)), child: Text(l10n.commonOk)),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _parse(_controller.text)),
+          child: Text(l10n.commonOk),
+        ),
       ],
     );
   }

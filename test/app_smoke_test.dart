@@ -569,66 +569,62 @@ void main() {
     }
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '作品をつくるホームでAndroid標準の戻る操作をすると起動画面へ戻る',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('作品をつくるホームでAndroid標準の戻る操作をすると起動画面へ戻る', (
+    WidgetTester tester,
+  ) async {
+    await bootToHome(tester);
 
-      await tester.binding.handlePopRoute();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    await tester.binding.handlePopRoute();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      expect(tester.takeException(), isNull);
-      expect(find.byIcon(Icons.brush_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.movie_filter_outlined), findsOneWidget);
-      expect(find.text('投稿作品をみる'), findsOneWidget);
-      expect(find.textContaining('みんなの作品'), findsNothing);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    expect(tester.takeException(), isNull);
+    expect(find.byIcon(Icons.brush_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.movie_filter_outlined), findsOneWidget);
+    expect(find.text('投稿作品をみる'), findsOneWidget);
+    expect(find.textContaining('みんなの作品'), findsNothing);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動→ホーム→新規プロジェクト作成→キャンバス→タイムラインまで例外なく遷移できる',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('起動→ホーム→新規プロジェクト作成→キャンバス→タイムラインまで例外なく遷移できる', (
+    WidgetTester tester,
+  ) async {
+    await bootToHome(tester);
 
-      // 「＋」FAB→「新規プロジェクト」のボトムシート操作は、テスト環境の
-      // 描画領域サイズに応じてヒットテストが不安定になりやすいため、
-      // 実際に到達する先のルートへ直接遷移する（遷移経路自体の妥当性より、
-      // 各画面が例外なく描画できるかの確認を優先する）。
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+    // 「＋」FAB→「新規プロジェクト」のボトムシート操作は、テスト環境の
+    // 描画領域サイズに応じてヒットテストが不安定になりやすいため、
+    // 実際に到達する先のルートへ直接遷移する（遷移経路自体の妥当性より、
+    // 各画面が例外なく描画できるかの確認を優先する）。
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
 
-      // 既定値のまま「作成」を押すとキャンバスモードへ遷移する。
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
+    // 既定値のまま「作成」を押すとキャンバスモードへ遷移する。
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
 
-      // 作成されたプロジェクトのIDでタイムラインモードへ直接遷移する
-      // （フレーム帯の切り替えUIはジェスチャーが複雑なため、経路の妥当性
-      // より画面自体が例外なく描画できるかの確認を優先する）。
-      final projectId = tester
-          .element(find.byType(Scaffold).first)
-          .read<ProjectService>()
-          .projects
-          .first
-          .id;
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).go('/timeline/$projectId');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 作成されたプロジェクトのIDでタイムラインモードへ直接遷移する
+    // （フレーム帯の切り替えUIはジェスチャーが複雑なため、経路の妥当性
+    // より画面自体が例外なく描画できるかの確認を優先する）。
+    final projectId = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>()
+        .projects
+        .first
+        .id;
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).go('/timeline/$projectId');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→新規プロジェクト作成→キャンバス→タイムラインの各種パネルを'
       '例外なく操作できる', (WidgetTester tester) async {
@@ -1434,83 +1430,81 @@ void main() {
     );
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動→新規プロジェクト作成→タイムライン再生：ループOFFなら最終フレームで自動停止する',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('起動→新規プロジェクト作成→タイムライン再生：ループOFFなら最終フレームで自動停止する', (
+    WidgetTester tester,
+  ) async {
+    await bootToHome(tester);
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      final ps = tester
-          .element(find.byType(Scaffold).first)
-          .read<ProjectService>();
-      final projectId = ps.projects.first.id;
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
+    final projectId = ps.projects.first.id;
 
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).go('/timeline/$projectId');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).go('/timeline/$projectId');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
 
-      // 新規プロジェクトは既定で百数十フレームあるため、まず最終フレーム
-      // 付近まで一気に移動しておく（最初から全フレーム分再生し続けると
-      // テストが長時間化する）。「最終フレームへ」→「1つ前へ戻る」で
-      // 最終フレームの手前（total-2）に位置させ、そこから再生することで
-      // 「途中から最終フレームに到達して自動停止する」経路を検証する。
-      final skipToEndButton = find.byIcon(Icons.skip_next);
-      expect(skipToEndButton, findsOneWidget);
-      await tester.tap(skipToEndButton);
-      await tester.pump();
-      final stepBackButton = find.byIcon(Icons.fast_rewind);
-      expect(stepBackButton, findsOneWidget);
-      await tester.tap(stepBackButton);
-      await tester.pump();
+    // 新規プロジェクトは既定で百数十フレームあるため、まず最終フレーム
+    // 付近まで一気に移動しておく（最初から全フレーム分再生し続けると
+    // テストが長時間化する）。「最終フレームへ」→「1つ前へ戻る」で
+    // 最終フレームの手前（total-2）に位置させ、そこから再生することで
+    // 「途中から最終フレームに到達して自動停止する」経路を検証する。
+    final skipToEndButton = find.byIcon(Icons.skip_next);
+    expect(skipToEndButton, findsOneWidget);
+    await tester.tap(skipToEndButton);
+    await tester.pump();
+    final stepBackButton = find.byIcon(Icons.fast_rewind);
+    expect(stepBackButton, findsOneWidget);
+    await tester.tap(stepBackButton);
+    await tester.pump();
 
-      // ループトグルをOFFにする（既定はON）。
-      final loopButton = find.byIcon(Icons.repeat);
-      expect(loopButton, findsOneWidget, reason: 'ループトグルボタンが見つからない');
-      await tester.tap(loopButton);
-      await tester.pump();
+    // ループトグルをOFFにする（既定はON）。
+    final loopButton = find.byIcon(Icons.repeat);
+    expect(loopButton, findsOneWidget, reason: 'ループトグルボタンが見つからない');
+    await tester.tap(loopButton);
+    await tester.pump();
 
-      // 再生開始。
-      final playButton = find.byIcon(Icons.play_arrow);
-      expect(playButton, findsOneWidget);
-      await tester.tap(playButton);
-      await tester.pump();
-      expect(
-        find.byIcon(Icons.pause),
-        findsOneWidget,
-        reason: '再生中はpauseアイコンに切り替わるはず',
-      );
+    // 再生開始。
+    final playButton = find.byIcon(Icons.play_arrow);
+    expect(playButton, findsOneWidget);
+    await tester.tap(playButton);
+    await tester.pump();
+    expect(
+      find.byIcon(Icons.pause),
+      findsOneWidget,
+      reason: '再生中はpauseアイコンに切り替わるはず',
+    );
 
-      // 最終フレームに到達するまで十分な時間を進める（開始位置は
-      // 最終フレームの1つ手前なので、既定fps=12でも300msあれば
-      // 「最終フレームへ進む」「最終フレームで停止判定」の2回分の
-      // Timer.periodicが確実に発火する）。
-      await tester.pump(const Duration(milliseconds: 300));
+    // 最終フレームに到達するまで十分な時間を進める（開始位置は
+    // 最終フレームの1つ手前なので、既定fps=12でも300msあれば
+    // 「最終フレームへ進む」「最終フレームで停止判定」の2回分の
+    // Timer.periodicが確実に発火する）。
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // ループOFFのため、最終フレームで自動停止してplay_arrowアイコンへ
-      // 戻っているはず（ループONなら先頭へ戻ってpauseのまま再生継続する）。
-      expect(
-        find.byIcon(Icons.play_arrow),
-        findsOneWidget,
-        reason: 'ループOFFなら最終フレームで自動停止するはず',
-      );
-      expect(find.byIcon(Icons.pause), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // ループOFFのため、最終フレームで自動停止してplay_arrowアイコンへ
+    // 戻っているはず（ループONなら先頭へ戻ってpauseのまま再生継続する）。
+    expect(
+      find.byIcon(Icons.play_arrow),
+      findsOneWidget,
+      reason: 'ループOFFなら最終フレームで自動停止するはず',
+    );
+    expect(find.byIcon(Icons.pause), findsNothing);
+    expect(tester.takeException(), isNull);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動画面→コミュニティ画面まで例外なく遷移できる', (WidgetTester tester) async {
     setPhoneViewSize(tester);
@@ -1530,231 +1524,220 @@ void main() {
     await probeAllControls(tester);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    'コミュニティ画面：作品タイトル・投稿者名のいずれでも検索絞り込みできる',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('コミュニティ画面：作品タイトル・投稿者名のいずれでも検索絞り込みできる', (
+    WidgetTester tester,
+  ) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      expect(communityButtonFinder, findsOneWidget);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    expect(communityButtonFinder, findsOneWidget);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      // 絞り込み前は複数件のカードが表示されている（ダミーデータは24件）。
-      final cardCountBefore = find.byType(CommunityWorkCard).evaluate().length;
+    // 絞り込み前は複数件のカードが表示されている（ダミーデータは24件）。
+    final cardCountBefore = find.byType(CommunityWorkCard).evaluate().length;
 
-      // 検索を開いて、ダミーデータの投稿者名の一部（'sakura_draws'）で
-      // 検索する。作品タイトルでは一致しない語のため、投稿者名検索が
-      // 機能していることの確認になる。
-      final searchIconFinder = find.byIcon(Icons.search);
-      expect(searchIconFinder, findsOneWidget);
-      await tester.tap(searchIconFinder);
-      await tester.pump();
+    // 検索を開いて、ダミーデータの投稿者名の一部（'sakura_draws'）で
+    // 検索する。作品タイトルでは一致しない語のため、投稿者名検索が
+    // 機能していることの確認になる。
+    final searchIconFinder = find.byIcon(Icons.search);
+    expect(searchIconFinder, findsOneWidget);
+    await tester.tap(searchIconFinder);
+    await tester.pump();
 
-      final searchFieldFinder = find.byType(TextField);
-      expect(searchFieldFinder, findsOneWidget);
-      await tester.enterText(searchFieldFinder, 'sakura_draws');
-      await tester.pump();
-      expect(tester.takeException(), isNull, reason: '投稿者名検索の絞り込みで例外');
+    final searchFieldFinder = find.byType(TextField);
+    expect(searchFieldFinder, findsOneWidget);
+    await tester.enterText(searchFieldFinder, 'sakura_draws');
+    await tester.pump();
+    expect(tester.takeException(), isNull, reason: '投稿者名検索の絞り込みで例外');
 
-      // 絞り込み後は全件表示より少なくなっているはず（該当作者の作品のみ）。
-      final cardCountAfter = find.byType(CommunityWorkCard).evaluate().length;
-      expect(cardCountAfter, lessThan(cardCountBefore));
-      expect(cardCountAfter, greaterThan(0));
+    // 絞り込み後は全件表示より少なくなっているはず（該当作者の作品のみ）。
+    final cardCountAfter = find.byType(CommunityWorkCard).evaluate().length;
+    expect(cardCountAfter, lessThan(cardCountBefore));
+    expect(cardCountAfter, greaterThan(0));
 
-      // 存在しない語で検索すると「該当なし」の空状態表示になる
-      // （クラッシュせず、CommunityWorkCard＝作品カードが0件になること）。
-      await tester.enterText(searchFieldFinder, 'このキーワードには絶対一致しない__zzz');
-      await tester.pump();
-      expect(tester.takeException(), isNull, reason: '該当なし検索の表示で例外');
-      expect(find.byIcon(Icons.search_off), findsOneWidget);
+    // 存在しない語で検索すると「該当なし」の空状態表示になる
+    // （クラッシュせず、CommunityWorkCard＝作品カードが0件になること）。
+    await tester.enterText(searchFieldFinder, 'このキーワードには絶対一致しない__zzz');
+    await tester.pump();
+    expect(tester.takeException(), isNull, reason: '該当なし検索の表示で例外');
+    expect(find.byIcon(Icons.search_off), findsOneWidget);
 
-      // 検索を閉じると全件表示に戻る。
-      final closeIconFinder = find.byIcon(Icons.close);
-      expect(closeIconFinder, findsOneWidget);
-      await tester.tap(closeIconFinder);
-      await tester.pump();
-      expect(tester.takeException(), isNull, reason: '検索クローズで例外');
-      final cardCountRestored = find
-          .byType(CommunityWorkCard)
-          .evaluate()
-          .length;
-      expect(cardCountRestored, cardCountBefore);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 検索を閉じると全件表示に戻る。
+    final closeIconFinder = find.byIcon(Icons.close);
+    expect(closeIconFinder, findsOneWidget);
+    await tester.tap(closeIconFinder);
+    await tester.pump();
+    expect(tester.takeException(), isNull, reason: '検索クローズで例外');
+    final cardCountRestored = find.byType(CommunityWorkCard).evaluate().length;
+    expect(cardCountRestored, cardCountBefore);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    'コミュニティ画面：ショートモードでショート動画のみの全画面ビューアが開く（Task#159）',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('コミュニティ画面：ショートモードでショート動画のみの全画面ビューアが開く（Task#159）', (
+    WidgetTester tester,
+  ) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // 縦画面モードボタンは「縦画面のみ」フィルターを選択したときにのみ
-      // 表示される仕様のため、先に動画種類フィルターを「縦画面のみ」へ
-      // 切り替える。
-      final videoTypeFilterFinder = find.byIcon(Icons.filter_alt_outlined);
-      expect(videoTypeFilterFinder, findsOneWidget);
-      await tester.tap(videoTypeFilterFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('縦画面のみ').last);
-      await tester.pumpAndSettle();
+    // 縦画面モードボタンは「縦画面のみ」フィルターを選択したときにのみ
+    // 表示される仕様のため、先に動画種類フィルターを「縦画面のみ」へ
+    // 切り替える。
+    final videoTypeFilterFinder = find.byIcon(Icons.filter_alt_outlined);
+    expect(videoTypeFilterFinder, findsOneWidget);
+    await tester.tap(videoTypeFilterFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('縦画面のみ').last);
+    await tester.pumpAndSettle();
 
-      // ダミーデータは約35%がショート動画になるよう生成しているため、
-      // 24件中で1件も無いことは考えにくいが、念のためボタン自体は必ず
-      // 存在することを先に確認する。
-      final shortsButtonFinder = find.byIcon(Icons.view_carousel_outlined);
-      expect(shortsButtonFinder, findsOneWidget);
-      await tester.tap(shortsButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'ショートモードを開く際に例外');
+    // ダミーデータは約35%がショート動画になるよう生成しているため、
+    // 24件中で1件も無いことは考えにくいが、念のためボタン自体は必ず
+    // 存在することを先に確認する。
+    final shortsButtonFinder = find.byIcon(Icons.view_carousel_outlined);
+    expect(shortsButtonFinder, findsOneWidget);
+    await tester.tap(shortsButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'ショートモードを開く際に例外');
 
-      // 全画面ビューア（CommunityShortsScreen）が開き、閉じるボタンが
-      // 表示されていること。背後にはコミュニティ画面のTabBarView
-      // （内部的に横方向PageViewを使う）がまだマウントされたままのため、
-      // ショートモード側の縦方向PageViewのみを絞り込んで確認する。
-      expect(find.byType(CommunityShortsScreen), findsOneWidget);
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is PageView && w.scrollDirection == Axis.vertical,
-        ),
-        findsOneWidget,
-      );
+    // 全画面ビューア（CommunityShortsScreen）が開き、閉じるボタンが
+    // 表示されていること。背後にはコミュニティ画面のTabBarView
+    // （内部的に横方向PageViewを使う）がまだマウントされたままのため、
+    // ショートモード側の縦方向PageViewのみを絞り込んで確認する。
+    expect(find.byType(CommunityShortsScreen), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is PageView && w.scrollDirection == Axis.vertical,
+      ),
+      findsOneWidget,
+    );
 
-      // 閉じるボタンでコミュニティ画面へ戻れる。
-      final closeFinder = find.byIcon(Icons.close);
-      expect(closeFinder, findsOneWidget);
-      await tester.tap(closeFinder);
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: 'ショートモードを閉じる際に例外');
-      expect(find.byType(CommunityShortsScreen), findsNothing);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 閉じるボタンでコミュニティ画面へ戻れる。
+    final closeFinder = find.byIcon(Icons.close);
+    expect(closeFinder, findsOneWidget);
+    await tester.tap(closeFinder);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: 'ショートモードを閉じる際に例外');
+    expect(find.byType(CommunityShortsScreen), findsNothing);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    'コミュニティ画面：タグの追加・タップでの絞り込み・削除ができる',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('コミュニティ画面：タグの追加・タップでの絞り込み・削除ができる', (WidgetTester tester) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // 最初の作品カードをタップするとフローティング動画プレビュー
-      // ウィンドウが開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ
-      // 遷移する。
-      final workCardFinder = find.byType(CommunityWorkCard);
-      expect(workCardFinder, findsWidgets);
-      await tester.tap(workCardFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'フローティングプレビュー表示で例外');
-      final detailButtonFinder = find.text('詳細へ');
-      expect(
-        detailButtonFinder,
-        findsOneWidget,
-        reason: 'フローティングプレビューの「詳細へ」ボタンが見つからない',
-      );
-      await tester.tap(detailButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
+    // 最初の作品カードをタップするとフローティング動画プレビュー
+    // ウィンドウが開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ
+    // 遷移する。
+    final workCardFinder = find.byType(CommunityWorkCard);
+    expect(workCardFinder, findsWidgets);
+    await tester.tap(workCardFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'フローティングプレビュー表示で例外');
+    final detailButtonFinder = find.text('詳細へ');
+    expect(
+      detailButtonFinder,
+      findsOneWidget,
+      reason: 'フローティングプレビューの「詳細へ」ボタンが見つからない',
+    );
+    await tester.tap(detailButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
 
-      // 「タグを追加」→ダイアログでタグ名を入力→OK。
-      const newTag = 'テスト用タグ__probe';
-      final addTagChipFinder = find.text('タグを追加');
-      expect(addTagChipFinder, findsOneWidget);
-      await tester.tap(addTagChipFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      final tagInputFinder = find.byType(TextField).last;
-      await tester.enterText(tagInputFinder, newTag);
-      await tester.tap(find.text('OK'));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'タグ追加で例外');
-      expect(find.text(newTag), findsOneWidget, reason: '追加したタグがシートに表示されていない');
+    // 「タグを追加」→ダイアログでタグ名を入力→OK。
+    const newTag = 'テスト用タグ__probe';
+    final addTagChipFinder = find.text('タグを追加');
+    expect(addTagChipFinder, findsOneWidget);
+    await tester.tap(addTagChipFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    final tagInputFinder = find.byType(TextField).last;
+    await tester.enterText(tagInputFinder, newTag);
+    await tester.tap(find.text('OK'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'タグ追加で例外');
+    expect(find.text(newTag), findsOneWidget, reason: '追加したタグがシートに表示されていない');
 
-      // 追加したタグ（一意な文字列のため該当作品は1件のみのはず）をタップし、
-      // タグ検索モードでの絞り込みへ遷移することを確認する。
-      await tester.tap(find.text(newTag));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'タグタップでの絞り込みで例外');
-      expect(
-        find.byIcon(Icons.sell),
-        findsOneWidget,
-        reason: 'タグ検索モードに切り替わっていない',
-      );
-      expect(
-        find.byType(CommunityWorkCard),
-        findsOneWidget,
-        reason: '一意なタグでの絞り込み件数が想定と異なる',
-      );
+    // 追加したタグ（一意な文字列のため該当作品は1件のみのはず）をタップし、
+    // タグ検索モードでの絞り込みへ遷移することを確認する。
+    await tester.tap(find.text(newTag));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'タグタップでの絞り込みで例外');
+    expect(
+      find.byIcon(Icons.sell),
+      findsOneWidget,
+      reason: 'タグ検索モードに切り替わっていない',
+    );
+    expect(
+      find.byType(CommunityWorkCard),
+      findsOneWidget,
+      reason: '一意なタグでの絞り込み件数が想定と異なる',
+    );
 
-      // 絞り込まれた唯一の作品カードを開き（フローティングプレビュー→
-      // 「詳細へ」）、追加したタグを削除できることを確認する
-      // （新規タグなのでロックされておらず、削除ボタンが必ず出る）。
-      await tester.tap(find.byType(CommunityWorkCard).first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.text('詳細へ'));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      // 検索中の（下に隠れている）コミュニティ画面のAppBar検索欄にも
-      // 同じタグ文字列が残ったままなので（EditableTextもテキストの
-      // 一致対象になる）、find.text(newTag)は単体では一意にならない。
-      // 作品詳細画面本体のSingleChildScrollView配下に絞り込むことで、
-      // 詳細画面側のタグチップのTextだけを特定する。
-      final sheetScope = find.byType(SingleChildScrollView).last;
-      final tagTextInSheet = find.descendant(
-        of: sheetScope,
-        matching: find.text(newTag),
-      );
-      expect(tagTextInSheet, findsOneWidget, reason: '追加したタグがシートに表示されていない');
-      // タグチップ内部ではラベルのTextと削除ボタンが同じRowの直接の子と
-      // なっているため、最も近いRow祖先へ絞り込むことで、他のタグ
-      // （同じ作品に元から付いているダミータグ）の削除ボタンと混同せずに
-      // このタグ専用の削除ボタンだけを特定できる。
-      final removeButtonFinder = find.descendant(
-        of: find.ancestor(of: tagTextInSheet, matching: find.byType(Row)).first,
-        matching: find.byIcon(Icons.close),
-      );
-      expect(removeButtonFinder, findsOneWidget, reason: 'タグ削除ボタンが見つからない');
-      await tester.tap(removeButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'タグ削除で例外');
-      // AppBarの検索欄には削除後もタグ文字列のクエリが残ったままなので
-      // （find.text(newTag)単体では引き続きヒットする）、シート側だけを
-      // 見て削除できたことを確認する。
-      expect(
-        find.descendant(of: sheetScope, matching: find.text(newTag)),
-        findsNothing,
-        reason: '削除したはずのタグがまだシートに表示されている',
-      );
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 絞り込まれた唯一の作品カードを開き（フローティングプレビュー→
+    // 「詳細へ」）、追加したタグを削除できることを確認する
+    // （新規タグなのでロックされておらず、削除ボタンが必ず出る）。
+    await tester.tap(find.byType(CommunityWorkCard).first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('詳細へ'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    // 検索中の（下に隠れている）コミュニティ画面のAppBar検索欄にも
+    // 同じタグ文字列が残ったままなので（EditableTextもテキストの
+    // 一致対象になる）、find.text(newTag)は単体では一意にならない。
+    // 作品詳細画面本体のSingleChildScrollView配下に絞り込むことで、
+    // 詳細画面側のタグチップのTextだけを特定する。
+    final sheetScope = find.byType(SingleChildScrollView).last;
+    final tagTextInSheet = find.descendant(
+      of: sheetScope,
+      matching: find.text(newTag),
+    );
+    expect(tagTextInSheet, findsOneWidget, reason: '追加したタグがシートに表示されていない');
+    // タグチップ内部ではラベルのTextと削除ボタンが同じRowの直接の子と
+    // なっているため、最も近いRow祖先へ絞り込むことで、他のタグ
+    // （同じ作品に元から付いているダミータグ）の削除ボタンと混同せずに
+    // このタグ専用の削除ボタンだけを特定できる。
+    final removeButtonFinder = find.descendant(
+      of: find.ancestor(of: tagTextInSheet, matching: find.byType(Row)).first,
+      matching: find.byIcon(Icons.close),
+    );
+    expect(removeButtonFinder, findsOneWidget, reason: 'タグ削除ボタンが見つからない');
+    await tester.tap(removeButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'タグ削除で例外');
+    // AppBarの検索欄には削除後もタグ文字列のクエリが残ったままなので
+    // （find.text(newTag)単体では引き続きヒットする）、シート側だけを
+    // 見て削除できたことを確認する。
+    expect(
+      find.descendant(of: sheetScope, matching: find.text(newTag)),
+      findsNothing,
+      reason: '削除したはずのタグがまだシートに表示されている',
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('コミュニティ画面：タグのロックは投稿者本人にのみ操作可能', (WidgetTester tester) async {
     setPhoneViewSize(tester);
@@ -1830,126 +1813,122 @@ void main() {
     );
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    'コミュニティでブックマークした作品がホームの「ブクマ済み」タブに表示される',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('コミュニティでブックマークした作品がホームの「ブクマ済み」タブに表示される', (
+    WidgetTester tester,
+  ) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      expect(communityButtonFinder, findsOneWidget);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    expect(communityButtonFinder, findsOneWidget);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      // 先頭の作品カードのタイトルを記録し、そのカードのブックマーク
-      // ボタン（サムネイル右上）をタップしてブックマークする。
-      final firstCard = tester.widget<CommunityWorkCard>(
-        find.byType(CommunityWorkCard).first,
-      );
-      final bookmarkedTitle = firstCard.work.title;
-      final bookmarkButtonFinder = find.byIcon(Icons.bookmark_border).first;
-      await tester.tap(bookmarkButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'ブックマーク操作で例外');
-      expect(
-        find.byIcon(Icons.bookmark).first,
-        findsOneWidget,
-        reason: 'ブックマーク済み表示に切り替わっていない',
-      );
+    // 先頭の作品カードのタイトルを記録し、そのカードのブックマーク
+    // ボタン（サムネイル右上）をタップしてブックマークする。
+    final firstCard = tester.widget<CommunityWorkCard>(
+      find.byType(CommunityWorkCard).first,
+    );
+    final bookmarkedTitle = firstCard.work.title;
+    final bookmarkButtonFinder = find.byIcon(Icons.bookmark_border).first;
+    await tester.tap(bookmarkButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'ブックマーク操作で例外');
+    expect(
+      find.byIcon(Icons.bookmark).first,
+      findsOneWidget,
+      reason: 'ブックマーク済み表示に切り替わっていない',
+    );
 
-      // コミュニティ画面を閉じてスプラッシュへ戻り、通常のホーム画面遷移
-      // 経路で「作品をつくる」からホームへ入る。
-      Navigator.of(tester.element(find.byType(Scaffold).first)).pop();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+    // コミュニティ画面を閉じてスプラッシュへ戻り、通常のホーム画面遷移
+    // 経路で「作品をつくる」からホームへ入る。
+    Navigator.of(tester.element(find.byType(Scaffold).first)).pop();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
 
-      final createButtonFinder = find.byIcon(Icons.brush_outlined);
-      expect(createButtonFinder, findsOneWidget);
-      await tester.tap(createButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
+    final createButtonFinder = find.byIcon(Icons.brush_outlined);
+    expect(createButtonFinder, findsOneWidget);
+    await tester.tap(createButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
 
-      final firstLaunchDialogButton = find.text('はじめる');
-      if (firstLaunchDialogButton.evaluate().isNotEmpty) {
-        await tester.tap(firstLaunchDialogButton);
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.pump(const Duration(milliseconds: 300));
-      }
+    final firstLaunchDialogButton = find.text('はじめる');
+    if (firstLaunchDialogButton.evaluate().isNotEmpty) {
+      await tester.tap(firstLaunchDialogButton);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+    }
 
-      // 「ブクマ済み」タブへ切り替え、先ほどブックマークした作品が
-      // 表示されることを確認する（CommunityServiceがアプリ全体で共有の
-      // Providerであることの確認でもある）。
-      final bookmarkedTabFinder = find.text('ブクマ済み');
-      expect(bookmarkedTabFinder, findsOneWidget);
-      await tester.tap(bookmarkedTabFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'ブクマ済みタブ表示で例外');
-      expect(
-        find.widgetWithText(CommunityWorkCard, bookmarkedTitle),
-        findsOneWidget,
-        reason: 'ブックマークした作品がブクマ済みタブに表示されていない',
-      );
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 「ブクマ済み」タブへ切り替え、先ほどブックマークした作品が
+    // 表示されることを確認する（CommunityServiceがアプリ全体で共有の
+    // Providerであることの確認でもある）。
+    final bookmarkedTabFinder = find.text('ブクマ済み');
+    expect(bookmarkedTabFinder, findsOneWidget);
+    await tester.tap(bookmarkedTabFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'ブクマ済みタブ表示で例外');
+    expect(
+      find.widgetWithText(CommunityWorkCard, bookmarkedTitle),
+      findsOneWidget,
+      reason: 'ブックマークした作品がブクマ済みタブに表示されていない',
+    );
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    'コミュニティ作品詳細画面：リポストボタンでトグルできる（Task#145）',
-    (WidgetTester tester) async {
-      setPhoneViewSize(tester);
-      final providers = await tester.runAsync(buildAppProviders);
-      await tester.pumpWidget(
-        MultiProvider(providers: providers!, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  testWidgets('コミュニティ作品詳細画面：リポストボタンでトグルできる（Task#145）', (
+    WidgetTester tester,
+  ) async {
+    setPhoneViewSize(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
 
-      final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-      expect(communityButtonFinder, findsOneWidget);
-      await tester.tap(communityButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
+    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
+    expect(communityButtonFinder, findsOneWidget);
+    await tester.tap(communityButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-      final communityService = tester
-          .element(find.byType(Scaffold).first)
-          .read<CommunityService>();
-      // 自作リポストも許可されているが（Task#134継続）、フォロー中作者
-      // タブとの兼ね合いをテストしやすいよう自分以外の作者の作品を選ぶ。
-      final work = communityService.works.firstWhere(
-        (w) => w.authorId != kDummySelfAuthorId,
-      );
-      expect(communityService.isRepostedBySelf(work.id), isFalse);
+    final communityService = tester
+        .element(find.byType(Scaffold).first)
+        .read<CommunityService>();
+    // 自作リポストも許可されているが（Task#134継続）、フォロー中作者
+    // タブとの兼ね合いをテストしやすいよう自分以外の作者の作品を選ぶ。
+    final work = communityService.works.firstWhere(
+      (w) => w.authorId != kDummySelfAuthorId,
+    );
+    expect(communityService.isRepostedBySelf(work.id), isFalse);
 
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).push('/community/work/${work.id}');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '作品詳細画面への遷移で例外');
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).push('/community/work/${work.id}');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '作品詳細画面への遷移で例外');
 
-      final repostButtonFinder = find.widgetWithText(OutlinedButton, 'リポスト');
-      expect(repostButtonFinder, findsOneWidget, reason: 'リポストボタンが見つからない');
-      await tester.tap(repostButtonFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'リポスト操作で例外');
-      expect(communityService.isRepostedBySelf(work.id), isTrue);
-      expect(find.widgetWithText(OutlinedButton, 'リポスト済み'), findsOneWidget);
+    final repostButtonFinder = find.widgetWithText(OutlinedButton, 'リポスト');
+    expect(repostButtonFinder, findsOneWidget, reason: 'リポストボタンが見つからない');
+    await tester.tap(repostButtonFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'リポスト操作で例外');
+    expect(communityService.isRepostedBySelf(work.id), isTrue);
+    expect(find.widgetWithText(OutlinedButton, 'リポスト済み'), findsOneWidget);
 
-      // もう一度タップして取り消せることも確認する。
-      await tester.tap(find.widgetWithText(OutlinedButton, 'リポスト済み'));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'リポスト取り消しで例外');
-      expect(communityService.isRepostedBySelf(work.id), isFalse);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // もう一度タップして取り消せることも確認する。
+    await tester.tap(find.widgetWithText(OutlinedButton, 'リポスト済み'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'リポスト取り消しで例外');
+    expect(communityService.isRepostedBySelf(work.id), isFalse);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('コミュニティ画面：フォロー通知ベルのバッジと通知一覧画面が動作する'
       '（Task#134継続）', (WidgetTester tester) async {
@@ -2096,27 +2075,25 @@ void main() {
     await probeAllControls(tester);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動→ホーム→各種設定画面（ショートカット以外）を例外なく巡回できる',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
-      await visitRoutesAndPop(tester, const [
-        '/settings/gestures',
-        '/settings/performance',
-        '/settings/pen',
-        '/settings/bucket',
-        '/settings/workspace',
-        '/settings/transfer',
-        '/settings/theme',
-        '/settings/watermark',
-        '/settings/fonts',
-        '/settings/license',
-        '/settings/privacy-policy',
-        '/storage',
-      ]);
-    },
-    timeout: const Timeout(Duration(seconds: 90)),
-  );
+  testWidgets('起動→ホーム→各種設定画面（ショートカット以外）を例外なく巡回できる', (
+    WidgetTester tester,
+  ) async {
+    await bootToHome(tester);
+    await visitRoutesAndPop(tester, const [
+      '/settings/gestures',
+      '/settings/performance',
+      '/settings/pen',
+      '/settings/bucket',
+      '/settings/workspace',
+      '/settings/transfer',
+      '/settings/theme',
+      '/settings/watermark',
+      '/settings/fonts',
+      '/settings/license',
+      '/settings/privacy-policy',
+      '/storage',
+    ]);
+  }, timeout: const Timeout(Duration(seconds: 90)));
 
   testWidgets('起動→ホーム→ヘルプ・ヒント画面を例外なく表示できる', (WidgetTester tester) async {
     await bootToHome(tester);
@@ -2167,62 +2144,60 @@ void main() {
   // ここから先は、独立したルートを持たずNavigator.push（MaterialPageRoute）
   // で開く画面（対象UIのタップ操作が別途必要な画面）を巡回する。
 
-  testWidgets(
-    '起動→自動塗りプリセット作成→詳細画面（別ルート）を例外なく表示できる',
-    (WidgetTester tester) async {
-      await bootToHome(tester);
+  testWidgets('起動→自動塗りプリセット作成→詳細画面（別ルート）を例外なく表示できる', (
+    WidgetTester tester,
+  ) async {
+    await bootToHome(tester);
 
-      // ホーム画面にも同じ+アイコンのFABがあるため、pushではなくgoで
-      // スタックごと置き換えて、FAB検索が2件ヒットしないようにする。
-      final routerContext = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext).go('/autofill-presets');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      // FABはScaffoldのデフォルトHeroアニメーションの対象になるため、
-      // 遷移アニメーションが完全に収まってからタップする必要がある。
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '自動塗りプリセット画面への遷移で例外');
+    // ホーム画面にも同じ+アイコンのFABがあるため、pushではなくgoで
+    // スタックごと置き換えて、FAB検索が2件ヒットしないようにする。
+    final routerContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext).go('/autofill-presets');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    // FABはScaffoldのデフォルトHeroアニメーションの対象になるため、
+    // 遷移アニメーションが完全に収まってからタップする必要がある。
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '自動塗りプリセット画面への遷移で例外');
 
-      // FAB→「新規作成」を選び、プリセットを1件作成する。ホーム画面にも
-      // 同じ+アイコンのFABが（画面遷移アニメーション中などに）同時に
-      // 存在し得るため、AutofillPresetScreen配下のFABに絞って探す。
-      final fabFinder = find.descendant(
-        of: find.byType(AutofillPresetScreen),
-        matching: find.byType(FloatingActionButton),
-      );
-      expect(fabFinder, findsOneWidget);
-      await tester.tap(fabFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規作成/読み込み選択シート表示で例外');
+    // FAB→「新規作成」を選び、プリセットを1件作成する。ホーム画面にも
+    // 同じ+アイコンのFABが（画面遷移アニメーション中などに）同時に
+    // 存在し得るため、AutofillPresetScreen配下のFABに絞って探す。
+    final fabFinder = find.descendant(
+      of: find.byType(AutofillPresetScreen),
+      matching: find.byType(FloatingActionButton),
+    );
+    expect(fabFinder, findsOneWidget);
+    await tester.tap(fabFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '新規作成/読み込み選択シート表示で例外');
 
-      final newPresetOptionFinder = find.text('新規作成');
-      expect(newPresetOptionFinder, findsWidgets);
-      await tester.tap(newPresetOptionFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規作成ダイアログ表示で例外');
+    final newPresetOptionFinder = find.text('新規作成');
+    expect(newPresetOptionFinder, findsWidgets);
+    await tester.tap(newPresetOptionFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '新規作成ダイアログ表示で例外');
 
-      const presetName = 'スモークテスト用';
-      await tester.enterText(find.byType(TextField), presetName);
-      await tester.pump(const Duration(milliseconds: 100));
-      final createPresetFinder = find.text('作成');
-      expect(createPresetFinder, findsWidgets);
-      await tester.tap(createPresetFinder.last);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'プリセット作成で例外');
+    const presetName = 'スモークテスト用';
+    await tester.enterText(find.byType(TextField), presetName);
+    await tester.pump(const Duration(milliseconds: 100));
+    final createPresetFinder = find.text('作成');
+    expect(createPresetFinder, findsWidgets);
+    await tester.tap(createPresetFinder.last);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'プリセット作成で例外');
 
-      // 一覧に追加されたカードをタップして詳細画面（MaterialPageRoute）を開く。
-      final presetCardFinder = find.text(presetName);
-      expect(presetCardFinder, findsWidgets);
-      await tester.tap(presetCardFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'プリセット詳細画面への遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-      await probeAllControls(tester);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    // 一覧に追加されたカードをタップして詳細画面（MaterialPageRoute）を開く。
+    final presetCardFinder = find.text(presetName);
+    expect(presetCardFinder, findsWidgets);
+    await tester.tap(presetCardFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'プリセット詳細画面への遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→ホーム→設定→ワークスペース設定→PCレイアウト詳細設定画面'
       '（別ルート）を例外なく表示できる', (WidgetTester tester) async {
@@ -2369,71 +2344,69 @@ void main() {
     await probeAllControls(tester);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets(
-    '起動→保存データ超過状態→保存方式変更（別ルート）を例外なく表示できる',
-    (WidgetTester tester) async {
-      mockPathProvider(tester);
-      await bootToHome(tester);
+  testWidgets('起動→保存データ超過状態→保存方式変更（別ルート）を例外なく表示できる', (
+    WidgetTester tester,
+  ) async {
+    mockPathProvider(tester);
+    await bootToHome(tester);
 
-      final routerContext1 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext1).push('/new-project');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
+    final routerContext1 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext1).push('/new-project');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '新規プロジェクト画面への遷移で例外');
 
-      final createFinder = find.text('作成');
-      expect(createFinder, findsOneWidget);
-      await tester.tap(createFinder);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
+    final createFinder = find.text('作成');
+    expect(createFinder, findsOneWidget);
+    await tester.tap(createFinder);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
 
-      // 保存データ変更画面（スロット選択）は、ツリー方式（無制限）で保存件数を
-      // 増やしたあと、より少ないスロット数の方式へ切り替えた場合にのみ
-      // 表示される。切り替え自体はUI操作（品質プリセット→低品質）で行うが、
-      // 事前の保存件数の積み上げはサービスを直接呼んで用意する（実際の
-      // 保存ボタン連打をUI操作で再現するのは手間が大きいため）。
-      final element = tester.element(find.byType(Scaffold).first);
-      final performance = element.read<PerformanceService>();
-      final saveService = element.read<SaveTreeService>();
-      final projectService = element.read<ProjectService>();
-      final project = projectService.projects.first;
-      final scenes = projectService.scenesOf(project.id);
-      final tileManager = projectService.tileManagerOf(project.id);
+    // 保存データ変更画面（スロット選択）は、ツリー方式（無制限）で保存件数を
+    // 増やしたあと、より少ないスロット数の方式へ切り替えた場合にのみ
+    // 表示される。切り替え自体はUI操作（品質プリセット→低品質）で行うが、
+    // 事前の保存件数の積み上げはサービスを直接呼んで用意する（実際の
+    // 保存ボタン連打をUI操作で再現するのは手間が大きいため）。
+    final element = tester.element(find.byType(Scaffold).first);
+    final performance = element.read<PerformanceService>();
+    final saveService = element.read<SaveTreeService>();
+    final projectService = element.read<ProjectService>();
+    final project = projectService.projects.first;
+    final scenes = projectService.scenesOf(project.id);
+    final tileManager = projectService.tileManagerOf(project.id);
 
-      performance.setQualityLevel(QualityLevel.high); // ツリー方式（無制限）
-      saveService.setTreeMode(true);
-      for (var i = 0; i < 6; i++) {
-        await tester.runAsync(
-          () => saveService.saveAsChild(
-            projectId: project.id,
-            project: project,
-            scenes: scenes,
-            tileManager: tileManager,
-          ),
-        );
-      }
-      expect(tester.takeException(), isNull, reason: '保存データの積み上げで例外');
+    performance.setQualityLevel(QualityLevel.high); // ツリー方式（無制限）
+    saveService.setTreeMode(true);
+    for (var i = 0; i < 6; i++) {
+      await tester.runAsync(
+        () => saveService.saveAsChild(
+          projectId: project.id,
+          project: project,
+          scenes: scenes,
+          tileManager: tileManager,
+        ),
+      );
+    }
+    expect(tester.takeException(), isNull, reason: '保存データの積み上げで例外');
 
-      // 設定→パフォーマンス設定画面で品質プリセットを「低」（スロット5件）へ
-      // 切り替える。保存済み6件 > 5件のため、保存データ変更画面が開く。
-      // routerContext1は新規プロジェクト作成でウィジェットツリーが
-      // 差し替わり無効化されているため、ここで改めて取得し直す。
-      final routerContext2 = tester.element(find.byType(Scaffold).first);
-      GoRouter.of(routerContext2).push('/settings/performance');
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: 'パフォーマンス設定画面への遷移で例外');
+    // 設定→パフォーマンス設定画面で品質プリセットを「低」（スロット5件）へ
+    // 切り替える。保存済み6件 > 5件のため、保存データ変更画面が開く。
+    // routerContext1は新規プロジェクト作成でウィジェットツリーが
+    // 差し替わり無効化されているため、ここで改めて取得し直す。
+    final routerContext2 = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(routerContext2).push('/settings/performance');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: 'パフォーマンス設定画面への遷移で例外');
 
-      final lowQualityFinder = find.text('低品質');
-      expect(lowQualityFinder, findsWidgets);
-      await tester.tap(lowQualityFinder.first);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(tester.takeException(), isNull, reason: '保存データ変更画面への遷移で例外');
-      expect(find.byType(Scaffold), findsWidgets);
-      await probeAllControls(tester);
-    },
-    timeout: const Timeout(Duration(seconds: 60)),
-  );
+    final lowQualityFinder = find.text('低品質');
+    expect(lowQualityFinder, findsWidgets);
+    await tester.tap(lowQualityFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull, reason: '保存データ変更画面への遷移で例外');
+    expect(find.byType(Scaffold), findsWidgets);
+    await probeAllControls(tester);
+  }, timeout: const Timeout(Duration(seconds: 60)));
 }

@@ -52,18 +52,29 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                 children: [
                   const Icon(Icons.circle, size: 8, color: fgColor),
                   const SizedBox(width: 4),
-                  Text('${widget.brushSize.round()}',
-                      style: const TextStyle(fontSize: 11, color: fgColor)),
+                  Text(
+                    '${widget.brushSize.round()}',
+                    style: const TextStyle(fontSize: 11, color: fgColor),
+                  ),
                   const SizedBox(width: 10),
                   const Icon(Icons.opacity, size: 12, color: fgColor),
                   const SizedBox(width: 4),
-                  Text('${widget.opacity}%',
-                      style: const TextStyle(fontSize: 11, color: fgColor)),
+                  Text(
+                    '${widget.opacity}%',
+                    style: const TextStyle(fontSize: 11, color: fgColor),
+                  ),
                   const Spacer(),
-                  Text(l10n.canvasBrushSliderToggleLabel,
-                      style: const TextStyle(fontSize: 10, color: fgColorVariant)),
-                  Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                      size: 16, color: fgColor),
+                  Text(
+                    l10n.canvasBrushSliderToggleLabel,
+                    style: const TextStyle(fontSize: 10, color: fgColorVariant),
+                  ),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 16,
+                    color: fgColor,
+                  ),
                 ],
               ),
             ),
@@ -95,11 +106,15 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.brushSize.round()}',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 11, color: fgColor),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: fgColor,
+                            ),
                             value: widget.brushSize,
                             min: 1,
                             max: 500,
-                            onChanged: (v) => widget.onSizeChanged(v.toDouble()),
+                            onChanged: (v) =>
+                                widget.onSizeChanged(v.toDouble()),
                           ),
                         ),
                       ],
@@ -114,7 +129,8 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                             min: 1,
                             max: 100,
                             value: widget.opacity.toDouble(),
-                            onChanged: (v) => widget.onOpacityChanged(v.round()),
+                            onChanged: (v) =>
+                                widget.onOpacityChanged(v.round()),
                           ),
                         ),
                         SizedBox(
@@ -122,11 +138,15 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.opacity}%',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 11, color: fgColor),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: fgColor,
+                            ),
                             value: widget.opacity,
                             min: 1,
                             max: 100,
-                            onChanged: (v) => widget.onOpacityChanged(v.round()),
+                            onChanged: (v) =>
+                                widget.onOpacityChanged(v.round()),
                           ),
                         ),
                       ],

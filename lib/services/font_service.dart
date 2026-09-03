@@ -46,7 +46,9 @@ class FontService extends ChangeNotifier {
       final raw = prefs.getString(_prefsKey);
       if (raw != null) {
         final list = jsonDecode(raw) as List<dynamic>;
-        _fonts.addAll(list.map((e) => FontAsset.fromJson(e as Map<String, dynamic>)));
+        _fonts.addAll(
+          list.map((e) => FontAsset.fromJson(e as Map<String, dynamic>)),
+        );
         for (final f in _fonts) {
           final n = int.tryParse(f.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
           if (n >= _counter) _counter = n + 1;
@@ -117,7 +119,10 @@ class FontService extends ChangeNotifier {
   Future<void> _persist() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_prefsKey, jsonEncode(_fonts.map((f) => f.toJson()).toList()));
+      await prefs.setString(
+        _prefsKey,
+        jsonEncode(_fonts.map((f) => f.toJson()).toList()),
+      );
     } catch (_) {
       // 保存失敗時も続行
     }

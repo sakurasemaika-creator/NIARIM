@@ -19,10 +19,16 @@ Future<Uint8List?> _loadImageRgba(String path, int size) async {
   if (!await file.exists()) return null;
   try {
     final bytes = await file.readAsBytes();
-    final codec = await ui.instantiateImageCodec(bytes, targetWidth: size, targetHeight: size);
+    final codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: size,
+      targetHeight: size,
+    );
     final frame = await codec.getNextFrame();
     codec.dispose();
-    final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await frame.image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     frame.image.dispose();
     return byteData?.buffer.asUint8List();
   } catch (_) {
@@ -36,7 +42,8 @@ Future<Uint8List?> _loadImageRgba(String path, int size) async {
 Uint8List _toToneAlphaMask(Uint8List rgba) {
   final out = Uint8List(rgba.length);
   for (int i = 0; i < rgba.length; i += 4) {
-    final luminance = rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
+    final luminance =
+        rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
     final ink = ((255 - luminance) * rgba[i + 3] / 255).round();
     out[i + 3] = ink.clamp(0, 255);
   }
@@ -76,7 +83,8 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
   final name = tone.name;
   if (name.contains('網点')) {
     final percent =
-        int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '30') ?? 30;
+        int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '30') ??
+        30;
     _fillDotPattern(data, size, percent / 100.0);
   } else if (name.contains('ライン')) {
     _fillLinePattern(data, size, name.contains('太') ? 3 : 1);
@@ -93,11 +101,18 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
     _fillPixelScatteredDotPattern(data, size);
   } else if (name.contains('ピクセルディザ')) {
     final percent =
-        int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '50') ?? 50;
-    _fillPixelDitherPattern(data, size, percent / 100.0, coarse: name.contains('粗'));
+        int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '50') ??
+        50;
+    _fillPixelDitherPattern(
+      data,
+      size,
+      percent / 100.0,
+      coarse: name.contains('粗'),
+    );
   } else if (name.contains('ストッキング') || name.contains('タイツ')) {
     final denier =
-        int.tryParse(RegExp(r'(\d+)デニール').firstMatch(name)?.group(1) ?? '20') ?? 20;
+        int.tryParse(RegExp(r'(\d+)デニール').firstMatch(name)?.group(1) ?? '20') ??
+        20;
     _fillStockingMeshPattern(data, size, denier);
   } else {
     _fillDotPattern(data, size, 0.3);
@@ -235,7 +250,10 @@ void _fillLinePattern(Uint8List data, int size, int thickness) {
 /// 両方が必要）。ストローク確定のたびに毎回呼ばれる関数のため、事前に
 /// 加工済み画像をキャッシュするような仕組みは持たず、その都度計算する
 /// （テクスチャサイズが小さく負荷は軽微なため）。
-Future<Uint8List> generateBuiltInStampTexture(Stamp stamp, {int size = 128}) async {
+Future<Uint8List> generateBuiltInStampTexture(
+  Stamp stamp, {
+  int size = 128,
+}) async {
   final path = stamp.imagePath;
   Uint8List? texture;
   if (path != null) {
@@ -269,8 +287,10 @@ Future<Uint8List> generateBuiltInStampTexture(Stamp stamp, {int size = 128}) asy
 ui.Path _shapePathForName(String name, double s) {
   final c = ui.Offset(s / 2, s / 2);
   final r = s * 0.42;
-  if (name.contains('三角')) return _regularPolygon(c, r, 3, rotation: -math.pi / 2);
-  if (name.contains('五角')) return _regularPolygon(c, r, 5, rotation: -math.pi / 2);
+  if (name.contains('三角'))
+    return _regularPolygon(c, r, 3, rotation: -math.pi / 2);
+  if (name.contains('五角'))
+    return _regularPolygon(c, r, 5, rotation: -math.pi / 2);
   if (name.contains('六角')) return _regularPolygon(c, r, 6);
   if (name.contains('星')) return _star(c, r, r * 0.42, 5);
   if (name.contains('ハート')) return _heart(c, r);
@@ -279,7 +299,12 @@ ui.Path _shapePathForName(String name, double s) {
   return ui.Path()..addOval(ui.Rect.fromCircle(center: c, radius: r));
 }
 
-ui.Path _regularPolygon(ui.Offset c, double r, int sides, {double rotation = 0}) {
+ui.Path _regularPolygon(
+  ui.Offset c,
+  double r,
+  int sides, {
+  double rotation = 0,
+}) {
   final path = ui.Path();
   for (int i = 0; i < sides; i++) {
     final a = rotation + (2 * math.pi * i / sides);
@@ -313,16 +338,34 @@ ui.Path _star(ui.Offset c, double outerR, double innerR, int points) {
 ui.Path _heart(ui.Offset c, double r) {
   final path = ui.Path();
   path.moveTo(c.dx, c.dy + r * 0.8);
-  path.cubicTo(c.dx - r * 1.4, c.dy - r * 0.3, c.dx - r * 0.5, c.dy - r * 1.3, c.dx, c.dy - r * 0.5);
-  path.cubicTo(c.dx + r * 0.5, c.dy - r * 1.3, c.dx + r * 1.4, c.dy - r * 0.3, c.dx, c.dy + r * 0.8);
+  path.cubicTo(
+    c.dx - r * 1.4,
+    c.dy - r * 0.3,
+    c.dx - r * 0.5,
+    c.dy - r * 1.3,
+    c.dx,
+    c.dy - r * 0.5,
+  );
+  path.cubicTo(
+    c.dx + r * 0.5,
+    c.dy - r * 1.3,
+    c.dx + r * 1.4,
+    c.dy - r * 0.3,
+    c.dx,
+    c.dy + r * 0.8,
+  );
   path.close();
   return path;
 }
 
 ui.Path _speechBubble(ui.Offset c, double r) {
-  final rect =
-      ui.Rect.fromCenter(center: ui.Offset(c.dx, c.dy - r * 0.15), width: r * 1.8, height: r * 1.3);
-  final body = ui.Path()..addRRect(ui.RRect.fromRectAndRadius(rect, ui.Radius.circular(r * 0.25)));
+  final rect = ui.Rect.fromCenter(
+    center: ui.Offset(c.dx, c.dy - r * 0.15),
+    width: r * 1.8,
+    height: r * 1.3,
+  );
+  final body = ui.Path()
+    ..addRRect(ui.RRect.fromRectAndRadius(rect, ui.Radius.circular(r * 0.25)));
   final tail = ui.Path()
     ..moveTo(c.dx - r * 0.2, rect.bottom - 2)
     ..lineTo(c.dx - r * 0.5, rect.bottom + r * 0.4)

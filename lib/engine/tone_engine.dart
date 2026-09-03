@@ -4,19 +4,21 @@ import 'dart:ui' as ui;
 /// トーン自由描画の確定処理（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
 Uint8List runToneStrokeInIsolate(
-    ({
-      bool erase,
-      List<ui.Offset> points,
-      double brushSize,
-      ui.Color color,
-      Uint8List canvasData,
-      int canvasWidth,
-      int canvasHeight,
-      Uint8List toneTexture,
-      int toneWidth,
-      int toneHeight,
-      int opacity,
-    }) args) {
+  ({
+    bool erase,
+    List<ui.Offset> points,
+    double brushSize,
+    ui.Color color,
+    Uint8List canvasData,
+    int canvasWidth,
+    int canvasHeight,
+    Uint8List toneTexture,
+    int toneWidth,
+    int toneHeight,
+    int opacity,
+  })
+  args,
+) {
   final engine = ToneEngine();
   return args.erase
       ? engine.eraseToneStroke(
@@ -81,8 +83,11 @@ class ToneEngine {
           if (dx * dx + dy * dy > radius * radius) continue;
           final px = cx + dx;
           final py = cy + dy;
-          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight) continue;
-          if (selectionMask != null && selectionMask[py * canvasWidth + px] == 0) continue;
+          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight)
+            continue;
+          if (selectionMask != null &&
+              selectionMask[py * canvasWidth + px] == 0)
+            continue;
 
           final tx = px % toneWidth;
           final ty = py % toneHeight;
@@ -102,12 +107,15 @@ class ToneEngine {
           final dstB = result[canvasIdx + 2] / 255.0;
           final keep = dstA * (1.0 - srcA);
 
-          result[canvasIdx] =
-              ((srcR * srcA + dstR * keep) / outA * 255).round().clamp(0, 255);
-          result[canvasIdx + 1] =
-              ((srcG * srcA + dstG * keep) / outA * 255).round().clamp(0, 255);
-          result[canvasIdx + 2] =
-              ((srcB * srcA + dstB * keep) / outA * 255).round().clamp(0, 255);
+          result[canvasIdx] = ((srcR * srcA + dstR * keep) / outA * 255)
+              .round()
+              .clamp(0, 255);
+          result[canvasIdx + 1] = ((srcG * srcA + dstG * keep) / outA * 255)
+              .round()
+              .clamp(0, 255);
+          result[canvasIdx + 2] = ((srcB * srcA + dstB * keep) / outA * 255)
+              .round()
+              .clamp(0, 255);
           result[canvasIdx + 3] = (outA * 255).round().clamp(0, 255);
         }
       }
@@ -141,8 +149,11 @@ class ToneEngine {
           if (dx * dx + dy * dy > radius * radius) continue;
           final px = cx + dx;
           final py = cy + dy;
-          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight) continue;
-          if (selectionMask != null && selectionMask[py * canvasWidth + px] == 0) continue;
+          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight)
+            continue;
+          if (selectionMask != null &&
+              selectionMask[py * canvasWidth + px] == 0)
+            continue;
 
           final tx = px % toneWidth;
           final ty = py % toneHeight;

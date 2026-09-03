@@ -80,29 +80,29 @@ class AppThemePreset {
   );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'accentColor': accentColor.toARGB32(),
-        'textColor': textColor.toARGB32(),
-        'panelBgColor': panelBgColor.toARGB32(),
-        'menuBgColor': menuBgColor.toARGB32(),
-        'selectionColor': selectionColor.toARGB32(),
-        'updateMarkColor': updateMarkColor.toARGB32(),
-        'isFavorite': isFavorite,
-      };
+    'id': id,
+    'name': name,
+    'accentColor': accentColor.toARGB32(),
+    'textColor': textColor.toARGB32(),
+    'panelBgColor': panelBgColor.toARGB32(),
+    'menuBgColor': menuBgColor.toARGB32(),
+    'selectionColor': selectionColor.toARGB32(),
+    'updateMarkColor': updateMarkColor.toARGB32(),
+    'isFavorite': isFavorite,
+  };
 
   factory AppThemePreset.fromJson(Map<String, dynamic> json) => AppThemePreset(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        // 'baseTheme'キーは廃止済みだが、旧バージョンで保存されたデータ
-        // （プリセット・.niatra引き継ぎファイル等）に含まれている場合が
-        // あるため、存在しても単に無視する（読み込みエラーにしない）。
-        accentColor: Color(json['accentColor'] as int),
-        textColor: Color(json['textColor'] as int),
-        panelBgColor: Color(json['panelBgColor'] as int),
-        menuBgColor: Color(json['menuBgColor'] as int),
-        selectionColor: Color(json['selectionColor'] as int),
-        updateMarkColor: Color(json['updateMarkColor'] as int),
-        isFavorite: json['isFavorite'] as bool? ?? false,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    // 'baseTheme'キーは廃止済みだが、旧バージョンで保存されたデータ
+    // （プリセット・.niatra引き継ぎファイル等）に含まれている場合が
+    // あるため、存在しても単に無視する（読み込みエラーにしない）。
+    accentColor: Color(json['accentColor'] as int),
+    textColor: Color(json['textColor'] as int),
+    panelBgColor: Color(json['panelBgColor'] as int),
+    menuBgColor: Color(json['menuBgColor'] as int),
+    selectionColor: Color(json['selectionColor'] as int),
+    updateMarkColor: Color(json['updateMarkColor'] as int),
+    isFavorite: json['isFavorite'] as bool? ?? false,
+  );
 }

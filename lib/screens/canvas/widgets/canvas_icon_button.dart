@@ -52,13 +52,21 @@ class CanvasIconButton extends StatelessWidget {
     this.selected = false,
     this.iconSize = 20,
     this.longPressTooltip = true,
-  }) : assert(icon != null || iconBuilder != null, 'iconかiconBuilderのどちらかを指定してください');
+  }) : assert(
+         icon != null || iconBuilder != null,
+         'iconかiconBuilderのどちらかを指定してください',
+       );
 
   /// 縁取りを作るための8方向のずらし量（上下左右＋斜め、1px）。
   static const _offsets = [
-    Offset(-1, -1), Offset(0, -1), Offset(1, -1),
-    Offset(-1, 0), Offset(1, 0),
-    Offset(-1, 1), Offset(0, 1), Offset(1, 1),
+    Offset(-1, -1),
+    Offset(0, -1),
+    Offset(1, -1),
+    Offset(-1, 0),
+    Offset(1, 0),
+    Offset(-1, 1),
+    Offset(0, 1),
+    Offset(1, 1),
   ];
 
   /// アイコン本体＋縁取りを描く。
@@ -74,7 +82,11 @@ class CanvasIconButton extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           for (final o in _offsets)
-            Positioned(left: o.dx, top: o.dy, child: iconBuilder!(outlineColor)),
+            Positioned(
+              left: o.dx,
+              top: o.dy,
+              child: iconBuilder!(outlineColor),
+            ),
           iconBuilder!(iconColor),
         ],
       );

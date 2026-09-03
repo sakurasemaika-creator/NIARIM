@@ -29,10 +29,16 @@ void main() {
     final projects = ProjectService();
     final undo = app_undo.UndoManager();
     projects.setUndoManager(undo);
-    final project = await tester.runAsync(() => projects.createProject(
-      name: 'selection-rotate-functional', fps: 24, durationSeconds: 1,
-      backgroundColor: 0x00000000, exportWidth: 96, exportHeight: 96,
-    ));
+    final project = await tester.runAsync(
+      () => projects.createProject(
+        name: 'selection-rotate-functional',
+        fps: 24,
+        durationSeconds: 1,
+        backgroundColor: 0x00000000,
+        exportWidth: 96,
+        exportHeight: 96,
+      ),
+    );
     final p = project!;
     final scene = projects.scenesOf(p.id).first;
     final layer = projects.layersOf(p.id, scene.id, 0).first;
@@ -49,49 +55,79 @@ void main() {
 
     final providers = await tester.runAsync(buildAppProviders);
     final boundaryKey = GlobalKey();
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ...providers!,
-        ChangeNotifierProvider<ProjectService>.value(value: projects),
-        ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
-      ],
-      child: MaterialApp(home: Scaffold(body: Center(child: SizedBox(
-        width: 288, height: 288,
-        child: RepaintBoundary(
-          key: boundaryKey,
-          child: CanvasArea(
-            project: p, currentLayerId: layer.id,
-            currentTool: DrawingTool.selectRect, currentFrame: 0, sceneId: scene.id,
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: projects),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 288,
+                height: 288,
+                child: RepaintBoundary(
+                  key: boundaryKey,
+                  child: CanvasArea(
+                    project: p,
+                    currentLayerId: layer.id,
+                    currentTool: DrawingTool.selectRect,
+                    currentFrame: 0,
+                    sceneId: scene.id,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
-      )))),
-    ));
+      ),
+    );
     await tester.pump(const Duration(seconds: 1));
-    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_00_before.png'));
+    await tester.runAsync(
+      () => _shot(boundaryKey, '${out.path}/selection_rotate_00_before.png'),
+    );
     final origin = tester.getTopLeft(find.byType(CanvasArea));
     Offset at(Offset px) => origin + Offset(px.dx * 3, px.dy * 3);
 
-    final select = await tester.startGesture(at(const Offset(24, 50)), kind: PointerDeviceKind.touch);
+    final select = await tester.startGesture(
+      at(const Offset(24, 50)),
+      kind: PointerDeviceKind.touch,
+    );
     await select.moveTo(at(const Offset(72, 90)));
     await tester.pump();
     await select.up();
     await tester.pump();
-    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_01_selected.png'));
+    await tester.runAsync(
+      () => _shot(boundaryKey, '${out.path}/selection_rotate_01_selected.png'),
+    );
 
     // 回転ハンドル=(center.x, top-40)=(48,10)。開始ベクトル(0,-60)から
     // current=(88,70)の(40,0)へ移すため +90° 回転になる。
-    final rotate = await tester.startGesture(at(const Offset(48, 10)), kind: PointerDeviceKind.touch);
+    final rotate = await tester.startGesture(
+      at(const Offset(48, 10)),
+      kind: PointerDeviceKind.touch,
+    );
     await tester.pump();
-    expect(tm.recordingTouchedTiles, isNotNull, reason: '上部回転ハンドルが実際に回転モードを開始すること');
+    expect(
+      tm.recordingTouchedTiles,
+      isNotNull,
+      reason: '上部回転ハンドルが実際に回転モードを開始すること',
+    );
     await _waitForAlpha(tester, tm, key, 36, 62, 0);
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
     await tester.pump();
     await rotate.moveTo(at(const Offset(88, 70)));
     await tester.pump(const Duration(milliseconds: 40));
     await rotate.up();
     await tester.pump();
     await _waitForUndo(tester, undo, 1);
-    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_02_after.png'));
+    await tester.runAsync(
+      () => _shot(boundaryKey, '${out.path}/selection_rotate_02_after.png'),
+    );
 
     final actual = _readCanvas(tm, key, 96, 96);
     _expectColorNear(actual, 96, 56, 58, red: true);
@@ -102,52 +138,102 @@ void main() {
     undo.undo();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_readCanvas(tm, key, 96, 96), orderedEquals(before));
-    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_03_undo.png'));
+    await tester.runAsync(
+      () => _shot(boundaryKey, '${out.path}/selection_rotate_03_undo.png'),
+    );
     undo.redo();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_readCanvas(tm, key, 96, 96), orderedEquals(actual));
-    await tester.runAsync(() => _shot(boundaryKey, '${out.path}/selection_rotate_04_redo.png'));
+    await tester.runAsync(
+      () => _shot(boundaryKey, '${out.path}/selection_rotate_04_redo.png'),
+    );
   });
 }
 
 Future<void> _shot(GlobalKey key, String path) async {
-  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   image.dispose();
   await File(path).writeAsBytes(bytes!.buffer.asUint8List(), flush: true);
 }
-void _rect(Uint8List d, int w, int x0, int y0, int x1, int y1, int r, int g, int b) {
-  for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) {
-    final i = (y * w + x) * 4; d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
-  }
+
+void _rect(
+  Uint8List d,
+  int w,
+  int x0,
+  int y0,
+  int x1,
+  int y1,
+  int r,
+  int g,
+  int b,
+) {
+  for (var y = y0; y < y1; y++)
+    for (var x = x0; x < x1; x++) {
+      final i = (y * w + x) * 4;
+      d[i] = r;
+      d[i + 1] = g;
+      d[i + 2] = b;
+      d[i + 3] = 255;
+    }
 }
+
 int _alpha(Uint8List d, int w, int x, int y) => d[(y * w + x) * 4 + 3];
 void _expectColorNear(Uint8List d, int w, int x, int y, {required bool red}) {
   final i = (y * w + x) * 4;
   expect(d[i + 3], greaterThan(200));
-  if (red) { expect(d[i], greaterThan(180)); expect(d[i + 2], lessThan(100)); }
-  else { expect(d[i + 2], greaterThan(180)); expect(d[i], lessThan(100)); }
+  if (red) {
+    expect(d[i], greaterThan(180));
+    expect(d[i + 2], lessThan(100));
+  } else {
+    expect(d[i + 2], greaterThan(180));
+    expect(d[i], lessThan(100));
+  }
 }
-Future<void> _waitForUndo(WidgetTester tester, app_undo.UndoManager undo, int n) async {
+
+Future<void> _waitForUndo(
+  WidgetTester tester,
+  app_undo.UndoManager undo,
+  int n,
+) async {
   final end = DateTime.now().add(const Duration(seconds: 3));
   while (DateTime.now().isBefore(end) && undo.undoCount < n) {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10))); await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+    await tester.pump();
   }
   expect(undo.undoCount, n);
 }
-Future<void> _waitForAlpha(WidgetTester tester, dynamic tm, String key, int x, int y, int a) async {
+
+Future<void> _waitForAlpha(
+  WidgetTester tester,
+  dynamic tm,
+  String key,
+  int x,
+  int y,
+  int a,
+) async {
   final end = DateTime.now().add(const Duration(seconds: 3));
   while (DateTime.now().isBefore(end)) {
     final tile = tm.getTile(key, 0, 0) as Uint8List?;
     final got = tile == null ? 0 : tile[(y * 256 + x) * 4 + 3];
     if (got == a) return;
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10))); await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+    await tester.pump();
   }
   fail('alpha did not become $a at $x,$y');
 }
+
 Uint8List _readCanvas(dynamic tm, String key, int w, int h) {
-  final out = Uint8List(w * h * 4); final tile = tm.getTile(key, 0, 0) as Uint8List?; if (tile == null) return out;
-  for (var y = 0; y < h; y++) out.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
+  final out = Uint8List(w * h * 4);
+  final tile = tm.getTile(key, 0, 0) as Uint8List?;
+  if (tile == null) return out;
+  for (var y = 0; y < h; y++)
+    out.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
   return out;
 }

@@ -1,8 +1,8 @@
 // キャンバス背景表示設定
 // 書き出し結果には影響しない・キャンバス表示のみ
 enum CanvasBackground {
-  white,        // 白背景
-  transparent,  // 透過（グレー・白の市松模様）
+  white, // 白背景
+  transparent, // 透過（グレー・白の市松模様）
 }
 
 const Object _projectSentinel = Object();
@@ -102,11 +102,17 @@ class Project {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       totalWorkSeconds: totalWorkSeconds ?? this.totalWorkSeconds,
-      folderId: folderId == _projectSentinel ? this.folderId : folderId as String?,
-      sharedFolderId: sharedFolderId == _projectSentinel ? this.sharedFolderId : sharedFolderId as String?,
+      folderId: folderId == _projectSentinel
+          ? this.folderId
+          : folderId as String?,
+      sharedFolderId: sharedFolderId == _projectSentinel
+          ? this.sharedFolderId
+          : sharedFolderId as String?,
       isSharedImport: isSharedImport ?? this.isSharedImport,
       isFavorite: isFavorite ?? this.isFavorite,
-      thumbnailPath: thumbnailPath == _projectSentinel ? this.thumbnailPath : thumbnailPath as String?,
+      thumbnailPath: thumbnailPath == _projectSentinel
+          ? this.thumbnailPath
+          : thumbnailPath as String?,
       sizeBytes: sizeBytes ?? this.sizeBytes,
       tags: tags ?? this.tags,
       exportWidth: exportWidth ?? this.exportWidth,

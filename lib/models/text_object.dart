@@ -70,7 +70,9 @@ class TextObject {
       rotation: rotation ?? this.rotation,
       scale: scale ?? this.scale,
       opacity: opacity ?? this.opacity,
-      outline: identical(outline, _sentinel) ? this.outline : outline as TextOutline?,
+      outline: identical(outline, _sentinel)
+          ? this.outline
+          : outline as TextOutline?,
     );
   }
 }

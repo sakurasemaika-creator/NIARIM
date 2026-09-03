@@ -17,16 +17,18 @@ import 'package:niarim/services/tone_service.dart';
 /// （PixelArtPaletteService）が「パレット」カテゴリとして引き継がれる
 /// ことを確認する。
 Future<
-    ({
-      SettingsService settings,
-      BrushService brush,
-      ToneService tone,
-      StampService stamp,
-      AutofillPresetService autofillPresets,
-      ThemeService theme,
-      PaletteService palette,
-      PixelArtPaletteService pixelArtPalette,
-    })> _buildServices() async {
+  ({
+    SettingsService settings,
+    BrushService brush,
+    ToneService tone,
+    StampService stamp,
+    AutofillPresetService autofillPresets,
+    ThemeService theme,
+    PaletteService palette,
+    PixelArtPaletteService pixelArtPalette,
+  })
+>
+_buildServices() async {
   final settings = SettingsService();
   final brush = BrushService();
   final tone = ToneService();
@@ -67,7 +69,10 @@ void main() {
     await src.palette.createPalette('引き継ぎ用パレット');
     final srcPalette = src.palette.activePalette!;
     await src.palette.addColorToPalette(srcPalette.id, 0xFF112233);
-    await src.pixelArtPalette.addPalette('引き継ぎ用ドット絵パレット', [0xFF000000, 0xFFFFFFFF]);
+    await src.pixelArtPalette.addPalette('引き継ぎ用ドット絵パレット', [
+      0xFF000000,
+      0xFFFFFFFF,
+    ]);
 
     final bytes = await NiatraSerializer.export(
       selectedItems: const {'パレット': true},
@@ -108,9 +113,14 @@ void main() {
     // あり、選択したカテゴリの全パレットが引き継がれるため、dst側には
     // それら2件がIDを振り直されて追加される。
     expect(dst.palette.palettes, hasLength(dstPaletteCountBefore + 2));
-    final importedPalette =
-        dst.palette.palettes.firstWhere((p) => p.name == '引き継ぎ用パレット');
-    expect(importedPalette.id, isNot(srcPalette.id), reason: 'ID衝突を避けるため振り直すはず');
+    final importedPalette = dst.palette.palettes.firstWhere(
+      (p) => p.name == '引き継ぎ用パレット',
+    );
+    expect(
+      importedPalette.id,
+      isNot(srcPalette.id),
+      reason: 'ID衝突を避けるため振り直すはず',
+    );
     expect(importedPalette.colors, contains(0xFF112233));
 
     expect(dst.pixelArtPalette.palettes, hasLength(1));
@@ -159,47 +169,58 @@ void main() {
   // バイト列を「埋め込み対象」として渡すことでexport()側のZIP構造・
   // data.json記録の正しさのみを検証する（実際の.niashare内容の妥当性は
   // niapro_serializer側の既存テストで担保される）。
-  test('projectFilesに渡したプロジェクトがProjects/以下へ埋め込まれ、data.jsonへ記録される（Task#158）', () async {
-    final src = await _buildServices();
-    final fakeNiashareBytes = Uint8List.fromList(utf8.encode('dummy niashare content'));
+  test(
+    'projectFilesに渡したプロジェクトがProjects/以下へ埋め込まれ、data.jsonへ記録される（Task#158）',
+    () async {
+      final src = await _buildServices();
+      final fakeNiashareBytes = Uint8List.fromList(
+        utf8.encode('dummy niashare content'),
+      );
 
-    final bytes = await NiatraSerializer.export(
-      selectedItems: const {},
-      settings: src.settings,
-      brush: src.brush,
-      tone: src.tone,
-      stamp: src.stamp,
-      autofillPresets: src.autofillPresets,
-      theme: src.theme,
-      palette: src.palette,
-      pixelArtPalette: src.pixelArtPalette,
-      projectFiles: {'proj1.niashare': fakeNiashareBytes},
-    );
-    final data = NiatraSerializer.loadFromBytes(bytes);
+      final bytes = await NiatraSerializer.export(
+        selectedItems: const {},
+        settings: src.settings,
+        brush: src.brush,
+        tone: src.tone,
+        stamp: src.stamp,
+        autofillPresets: src.autofillPresets,
+        theme: src.theme,
+        palette: src.palette,
+        pixelArtPalette: src.pixelArtPalette,
+        projectFiles: {'proj1.niashare': fakeNiashareBytes},
+      );
+      final data = NiatraSerializer.loadFromBytes(bytes);
 
-    expect(data.raw['projectFiles'], ['proj1.niashare']);
-    final entry = data.archive.findFile('Projects/proj1.niashare');
-    expect(entry, isNotNull);
-    expect(utf8.decode(entry!.content as List<int>), 'dummy niashare content');
-  });
+      expect(data.raw['projectFiles'], ['proj1.niashare']);
+      final entry = data.archive.findFile('Projects/proj1.niashare');
+      expect(entry, isNotNull);
+      expect(
+        utf8.decode(entry!.content as List<int>),
+        'dummy niashare content',
+      );
+    },
+  );
 
-  test('projectFilesを渡さない場合はdata.jsonにprojectFilesキーが含まれない（Task#158）', () async {
-    final src = await _buildServices();
+  test(
+    'projectFilesを渡さない場合はdata.jsonにprojectFilesキーが含まれない（Task#158）',
+    () async {
+      final src = await _buildServices();
 
-    final bytes = await NiatraSerializer.export(
-      selectedItems: const {'設定': true},
-      settings: src.settings,
-      brush: src.brush,
-      tone: src.tone,
-      stamp: src.stamp,
-      autofillPresets: src.autofillPresets,
-      theme: src.theme,
-      palette: src.palette,
-      pixelArtPalette: src.pixelArtPalette,
-    );
-    final data = NiatraSerializer.loadFromBytes(bytes);
+      final bytes = await NiatraSerializer.export(
+        selectedItems: const {'設定': true},
+        settings: src.settings,
+        brush: src.brush,
+        tone: src.tone,
+        stamp: src.stamp,
+        autofillPresets: src.autofillPresets,
+        theme: src.theme,
+        palette: src.palette,
+        pixelArtPalette: src.pixelArtPalette,
+      );
+      final data = NiatraSerializer.loadFromBytes(bytes);
 
-    expect(data.raw.containsKey('projectFiles'), isFalse);
-    expect(data.archive.findFile('Projects/proj1.niashare'), isNull);
-  });
+      expect(data.raw.containsKey('projectFiles'), isFalse);
+      expect(data.archive.findFile('Projects/proj1.niashare'), isNull);
+    },
+  );
 }

@@ -37,8 +37,9 @@ class CommunityShortsScreen extends StatefulWidget {
 }
 
 class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
-  late final PageController _controller =
-      PageController(initialPage: widget.initialIndex);
+  late final PageController _controller = PageController(
+    initialPage: widget.initialIndex,
+  );
 
   @override
   void dispose() {
@@ -71,8 +72,12 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
             left: 8,
             child: IconButton(
               tooltip: l10n.communityShortsModeExitTooltip,
-              icon: const Icon(Icons.close, color: Colors.white, size: 28,
-                  shadows: [Shadow(color: Colors.black54, blurRadius: 6)]),
+              icon: const Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 28,
+                shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
@@ -96,8 +101,9 @@ class _ShortsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final gradient = kCommunityThumbnailGradients[
-        work.thumbnailColorIndex % kCommunityThumbnailGradients.length];
+    final gradient =
+        kCommunityThumbnailGradients[work.thumbnailColorIndex %
+            kCommunityThumbnailGradients.length];
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -110,7 +116,11 @@ class _ShortsPage extends StatelessWidget {
             ),
           ),
           child: const Center(
-            child: Icon(Icons.play_circle_fill_rounded, color: Colors.white70, size: 72),
+            child: Icon(
+              Icons.play_circle_fill_rounded,
+              color: Colors.white70,
+              size: 72,
+            ),
           ),
         ),
         // 下部のグラデーションで文字を読みやすくする（動画プレイヤーアプリの
@@ -125,7 +135,10 @@ class _ShortsPage extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.75)],
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.75),
+                ],
               ),
             ),
           ),
@@ -142,28 +155,41 @@ class _ShortsPage extends StatelessWidget {
                 work.authorName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 work.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               TextButton(
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.white.withValues(alpha: 0.15),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: const StadiumBorder(),
                 ),
                 onPressed: () => appRouter.push('/community/work/${work.id}'),
-                child: Text(l10n.communityFloatingPreviewDetailButton,
-                    style: const TextStyle(fontSize: 12)),
+                child: Text(
+                  l10n.communityFloatingPreviewDetailButton,
+                  style: const TextStyle(fontSize: 12),
+                ),
               ),
             ],
           ),
@@ -183,15 +209,35 @@ class _ShortsPage extends StatelessWidget {
                   shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
                 ),
               ),
-              Text(formatCompactCount(work.bookmarkCount, Localizations.localeOf(context).languageCode),
-                  style: const TextStyle(color: Colors.white, fontSize: 11,
-                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)])),
+              Text(
+                formatCompactCount(
+                  work.bookmarkCount,
+                  Localizations.localeOf(context).languageCode,
+                ),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                ),
+              ),
               const SizedBox(height: 12),
-              const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 26,
-                  shadows: [Shadow(color: Colors.black54, blurRadius: 6)]),
-              Text(formatCompactCount(work.viewCount, Localizations.localeOf(context).languageCode),
-                  style: const TextStyle(color: Colors.white, fontSize: 11,
-                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)])),
+              const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: 26,
+                shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
+              ),
+              Text(
+                formatCompactCount(
+                  work.viewCount,
+                  Localizations.localeOf(context).languageCode,
+                ),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                ),
+              ),
             ],
           ),
         ),

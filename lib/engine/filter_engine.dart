@@ -10,84 +10,165 @@ import '../models/pixel_color_mode.dart';
 /// [maskData]はlensDistortion（眼鏡断層フィルター）専用（選択レイヤーを
 /// 単体合成したrawRgba画像）で、それ以外のフィルター種別では無視される。
 Uint8List applyDrawFilterInIsolate(
-    (Uint8List data, int width, int height, FilterDef filter, Uint8List? maskData) args) {
+  (Uint8List data, int width, int height, FilterDef filter, Uint8List? maskData)
+  args,
+) {
   final (data, width, height, filter, maskData) = args;
   final engine = FilterEngine();
   return switch (filter.kind) {
-    FilterKind.gaussianBlur => engine.applyGaussianBlur(data, width, height, filter.strength),
-    FilterKind.lensBlur => engine.applyLensBlur(data, width, height, filter.strength),
+    FilterKind.gaussianBlur => engine.applyGaussianBlur(
+      data,
+      width,
+      height,
+      filter.strength,
+    ),
+    FilterKind.lensBlur => engine.applyLensBlur(
+      data,
+      width,
+      height,
+      filter.strength,
+    ),
     FilterKind.animeStyle => engine.applyAnimeStyle(
-        data,
-        width,
-        height,
-        strength: filter.strength,
-        colorCount: filter.colorLevels,
-        edgeStrength: filter.edgeStrength,
-      ),
+      data,
+      width,
+      height,
+      strength: filter.strength,
+      colorCount: filter.colorLevels,
+      edgeStrength: filter.edgeStrength,
+    ),
     // 本適用は選択レイヤーを書き換えず新規レイヤーへ縁取りリングのみを
     // 描画するため、applyOutline（元の描画内容を保持した合成結果。
     // プレビュー専用）ではなくapplyOutlineLayer（リング部分のみ）を使う。
     FilterKind.outline => engine.applyOutlineLayer(
-        data,
-        width,
-        height,
-        color: filter.outlineColor,
-        widthPx: filter.outlineWidth,
-      ),
+      data,
+      width,
+      height,
+      color: filter.outlineColor,
+      widthPx: filter.outlineWidth,
+    ),
     FilterKind.toneCurve => engine.applyToneCurve(
-        data, width, height, toneCurvePoints(filter.toneCurvePreset)),
+      data,
+      width,
+      height,
+      toneCurvePoints(filter.toneCurvePreset),
+    ),
     FilterKind.levels => engine.applyLevels(
-        data, width, height,
-        inputBlack: filter.inputBlack,
-        inputWhite: filter.inputWhite,
-        outputBlack: filter.outputBlack,
-        outputWhite: filter.outputWhite,
-      ),
-    FilterKind.sharpen => engine.applySharpen(data, width, height, filter.strength),
-    FilterKind.unsharpMask =>
-      engine.applyUnsharpMask(data, width, height, filter.strength, filter.edgeStrength),
-    FilterKind.vignette =>
-      engine.applyVignette(data, width, height, filter.strength, color: filter.vignetteColor),
-    FilterKind.noise =>
-      engine.applyNoise(data, width, height, (filter.strength / 100).clamp(0.0, 1.0), NoiseType.gaussian),
-    FilterKind.retroAnime => engine.applyRetroAnime(data, width, height, filter.strength),
+      data,
+      width,
+      height,
+      inputBlack: filter.inputBlack,
+      inputWhite: filter.inputWhite,
+      outputBlack: filter.outputBlack,
+      outputWhite: filter.outputWhite,
+    ),
+    FilterKind.sharpen => engine.applySharpen(
+      data,
+      width,
+      height,
+      filter.strength,
+    ),
+    FilterKind.unsharpMask => engine.applyUnsharpMask(
+      data,
+      width,
+      height,
+      filter.strength,
+      filter.edgeStrength,
+    ),
+    FilterKind.vignette => engine.applyVignette(
+      data,
+      width,
+      height,
+      filter.strength,
+      color: filter.vignetteColor,
+    ),
+    FilterKind.noise => engine.applyNoise(
+      data,
+      width,
+      height,
+      (filter.strength / 100).clamp(0.0, 1.0),
+      NoiseType.gaussian,
+    ),
+    FilterKind.retroAnime => engine.applyRetroAnime(
+      data,
+      width,
+      height,
+      filter.strength,
+    ),
     FilterKind.crt => engine.applyCrt(data, width, height, filter.strength),
     FilterKind.monochrome => engine.applyMonochrome(
-        data, width, height, (filter.strength / 100).clamp(0.0, 1.0),
-        targetColor: filter.monochromeColor),
+      data,
+      width,
+      height,
+      (filter.strength / 100).clamp(0.0, 1.0),
+      targetColor: filter.monochromeColor,
+    ),
     FilterKind.colorAdjust => engine.applyColorAdjust(
-        data, width, height,
-        saturation: filter.caSaturation, brightness: filter.caBrightness, contrast: filter.caContrast),
-    FilterKind.threshold => engine.applyThreshold(data, width, height, filter.thresholdValue),
-    FilterKind.fisheye => engine.applyFisheye(data, width, height, filter.strength),
-    FilterKind.chromaticAberration =>
-      engine.applyChromaticAberration(data, width, height, filter.strength, 0),
+      data,
+      width,
+      height,
+      saturation: filter.caSaturation,
+      brightness: filter.caBrightness,
+      contrast: filter.caContrast,
+    ),
+    FilterKind.threshold => engine.applyThreshold(
+      data,
+      width,
+      height,
+      filter.thresholdValue,
+    ),
+    FilterKind.fisheye => engine.applyFisheye(
+      data,
+      width,
+      height,
+      filter.strength,
+    ),
+    FilterKind.chromaticAberration => engine.applyChromaticAberration(
+      data,
+      width,
+      height,
+      filter.strength,
+      0,
+    ),
     FilterKind.lensDistortion => engine.applyLensDistortion(
-        data, width, height, filter.strength, maskData,
-        centerOffsetX: filter.lensCenterOffsetX, centerOffsetY: filter.lensCenterOffsetY),
+      data,
+      width,
+      height,
+      filter.strength,
+      maskData,
+      centerOffsetX: filter.lensCenterOffsetX,
+      centerOffsetY: filter.lensCenterOffsetY,
+    ),
     FilterKind.pixelate => engine.applyPixelate(
-        data, width, height,
-        mosaicSize: filter.strength.round().clamp(1, 64),
-        colorMode: filter.pixelColorMode,
-        colorLevels: filter.colorLevels,
-        paletteColors: filter.pixelExplicitColors,
-      ),
+      data,
+      width,
+      height,
+      mosaicSize: filter.strength.round().clamp(1, 64),
+      colorMode: filter.pixelColorMode,
+      colorLevels: filter.colorLevels,
+      paletteColors: filter.pixelExplicitColors,
+    ),
     FilterKind.auroraHologram => engine.applyAuroraHologram(
-        data, width, height,
-        strength: filter.strength,
-        brightness: filter.hologramBrightness,
-        saturation: filter.hologramSaturation,
-        preset: filter.hologramPreset,
-      ),
+      data,
+      width,
+      height,
+      strength: filter.strength,
+      brightness: filter.hologramBrightness,
+      saturation: filter.hologramSaturation,
+      preset: filter.hologramPreset,
+    ),
     // 背景馴染ませ：呼び出し側（filter_panel.dart）がこの呼び出し前に
     // bgBlendColorを常に確定済みの具体色へ解決してから渡す
     // （-1＝自動のままここへ来ることは無い想定だが、念のため
     // フォールバック色を用意しておく）。
     FilterKind.backgroundBlend => engine.applyBackgroundBlend(
-        data, width, height,
-        filter.bgBlendColor == -1 ? 0xFF808080 : filter.bgBlendColor,
-        filter.bgBlendDirection, filter.bgBlendLength, filter.bgBlendBlur,
-      ),
+      data,
+      width,
+      height,
+      filter.bgBlendColor == -1 ? 0xFF808080 : filter.bgBlendColor,
+      filter.bgBlendDirection,
+      filter.bgBlendLength,
+      filter.bgBlendBlur,
+    ),
   };
 }
 
@@ -96,12 +177,27 @@ Uint8List applyDrawFilterInIsolate(
 List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
   return switch (preset) {
     ToneCurvePreset.linear => const [ui.Offset(0, 0), ui.Offset(1, 1)],
-    ToneCurvePreset.brighten => const [ui.Offset(0, 0), ui.Offset(0.5, 0.65), ui.Offset(1, 1)],
-    ToneCurvePreset.darken => const [ui.Offset(0, 0), ui.Offset(0.5, 0.35), ui.Offset(1, 1)],
-    ToneCurvePreset.highContrast =>
-      const [ui.Offset(0, 0), ui.Offset(0.25, 0.15), ui.Offset(0.75, 0.85), ui.Offset(1, 1)],
-    ToneCurvePreset.lowContrast =>
-      const [ui.Offset(0, 0.15), ui.Offset(0.5, 0.5), ui.Offset(1, 0.85)],
+    ToneCurvePreset.brighten => const [
+      ui.Offset(0, 0),
+      ui.Offset(0.5, 0.65),
+      ui.Offset(1, 1),
+    ],
+    ToneCurvePreset.darken => const [
+      ui.Offset(0, 0),
+      ui.Offset(0.5, 0.35),
+      ui.Offset(1, 1),
+    ],
+    ToneCurvePreset.highContrast => const [
+      ui.Offset(0, 0),
+      ui.Offset(0.25, 0.15),
+      ui.Offset(0.75, 0.85),
+      ui.Offset(1, 1),
+    ],
+    ToneCurvePreset.lowContrast => const [
+      ui.Offset(0, 0.15),
+      ui.Offset(0.5, 0.5),
+      ui.Offset(1, 0.85),
+    ],
     ToneCurvePreset.invert => const [ui.Offset(0, 1), ui.Offset(1, 0)],
   };
 }
@@ -125,38 +221,38 @@ List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
 List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
   return switch (preset) {
     AuroraHologramPreset.aurora => const [
-        (0.0, 40, 20, 80),
-        (0.33, 30, 200, 150),
-        (0.66, 60, 220, 255),
-        (1.0, 200, 180, 255),
-      ],
+      (0.0, 40, 20, 80),
+      (0.33, 30, 200, 150),
+      (0.66, 60, 220, 255),
+      (1.0, 200, 180, 255),
+    ],
     AuroraHologramPreset.soapBubble => const [
-        (0.0, 255, 120, 180),
-        (0.25, 170, 120, 255),
-        (0.5, 100, 180, 255),
-        (0.75, 120, 255, 190),
-        (1.0, 255, 240, 150),
-      ],
+      (0.0, 255, 120, 180),
+      (0.25, 170, 120, 255),
+      (0.5, 100, 180, 255),
+      (0.75, 120, 255, 190),
+      (1.0, 255, 240, 150),
+    ],
     AuroraHologramPreset.cyberNeon => const [
-        (0.0, 20, 20, 80),
-        (0.5, 255, 50, 200),
-        (1.0, 50, 255, 240),
-      ],
+      (0.0, 20, 20, 80),
+      (0.5, 255, 50, 200),
+      (1.0, 50, 255, 240),
+    ],
     AuroraHologramPreset.pastelDream => const [
-        (0.0, 220, 200, 255),
-        (0.5, 200, 255, 230),
-        (1.0, 255, 220, 200),
-      ],
+      (0.0, 220, 200, 255),
+      (0.5, 200, 255, 230),
+      (1.0, 255, 220, 200),
+    ],
     AuroraHologramPreset.sunsetGold => const [
-        (0.0, 90, 30, 90),
-        (0.5, 255, 120, 150),
-        (1.0, 255, 220, 120),
-      ],
+      (0.0, 90, 30, 90),
+      (0.5, 255, 120, 150),
+      (1.0, 255, 220, 120),
+    ],
     AuroraHologramPreset.silverFoil => const [
-        (0.0, 90, 100, 130),
-        (0.5, 255, 255, 255),
-        (1.0, 180, 170, 210),
-      ],
+      (0.0, 90, 100, 130),
+      (0.5, 255, 255, 255),
+      (1.0, 180, 170, 210),
+    ],
   };
 }
 
@@ -245,83 +341,165 @@ class FilterEngine {
   ) {
     var result = data;
     for (final e in effects) {
-      if (!e.enabled || frameIndex < e.startFrame || frameIndex > e.endFrame) continue;
+      if (!e.enabled || frameIndex < e.startFrame || frameIndex > e.endFrame)
+        continue;
       result = switch (e.type) {
         EffectFilterType.fade => applyFade(
-            result,
-            width,
-            height,
-            e.fadeColor,
-            e.endFrame > e.startFrame
-                ? (frameIndex - e.startFrame) / (e.endFrame - e.startFrame)
-                : 1.0,
-          ),
-        EffectFilterType.gaussianBlur => applyGaussianBlur(result, width, height, e.param1),
-        EffectFilterType.lensBlur => applyLensBlur(result, width, height, e.param1),
-        EffectFilterType.mosaic => applyMosaic(result, width, height, e.param1.round()),
-        EffectFilterType.chromaticAberration =>
-          applyChromaticAberration(result, width, height, e.param1, 0),
-        EffectFilterType.noise =>
-          applyNoise(result, width, height, (e.param1 / 20).clamp(0.0, 1.0), NoiseType.gaussian),
-        EffectFilterType.sepia => applySepia(result, width, height, (e.param1 / 20).clamp(0.0, 1.0)),
+          result,
+          width,
+          height,
+          e.fadeColor,
+          e.endFrame > e.startFrame
+              ? (frameIndex - e.startFrame) / (e.endFrame - e.startFrame)
+              : 1.0,
+        ),
+        EffectFilterType.gaussianBlur => applyGaussianBlur(
+          result,
+          width,
+          height,
+          e.param1,
+        ),
+        EffectFilterType.lensBlur => applyLensBlur(
+          result,
+          width,
+          height,
+          e.param1,
+        ),
+        EffectFilterType.mosaic => applyMosaic(
+          result,
+          width,
+          height,
+          e.param1.round(),
+        ),
+        EffectFilterType.chromaticAberration => applyChromaticAberration(
+          result,
+          width,
+          height,
+          e.param1,
+          0,
+        ),
+        EffectFilterType.noise => applyNoise(
+          result,
+          width,
+          height,
+          (e.param1 / 20).clamp(0.0, 1.0),
+          NoiseType.gaussian,
+        ),
+        EffectFilterType.sepia => applySepia(
+          result,
+          width,
+          height,
+          (e.param1 / 20).clamp(0.0, 1.0),
+        ),
         // 単色化：param1=混合量（0〜20相当を0.0〜1.0へ換算）、
         // fadeColor（他の演出フィルターと共用のColorスロットを流用）=単色化する色。
         EffectFilterType.monochrome => applyMonochrome(
-            result, width, height, (e.param1 / 20).clamp(0.0, 1.0),
-            targetColor: e.fadeColor.toARGB32()),
+          result,
+          width,
+          height,
+          (e.param1 / 20).clamp(0.0, 1.0),
+          targetColor: e.fadeColor.toARGB32(),
+        ),
         // 色調調整：param1=彩度、param2=明度、param3=コントラスト（いずれも-100〜100）。
         EffectFilterType.colorAdjust => applyColorAdjust(
-            result, width, height,
-            saturation: e.param1, brightness: e.param2, contrast: e.param3),
+          result,
+          width,
+          height,
+          saturation: e.param1,
+          brightness: e.param2,
+          contrast: e.param3,
+        ),
         // 二値化：param1=閾値（0〜255）。
-        EffectFilterType.threshold => applyThreshold(result, width, height, e.param1),
+        EffectFilterType.threshold => applyThreshold(
+          result,
+          width,
+          height,
+          e.param1,
+        ),
         EffectFilterType.animeStyle => applyAnimeStyle(
-            result, width, height,
-            strength: e.param1, colorCount: 6, edgeStrength: (e.param1 / 20).clamp(0.0, 1.0)),
-        EffectFilterType.retroAnime =>
-          applyRetroAnime(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
-        EffectFilterType.crt => applyCrt(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
+          result,
+          width,
+          height,
+          strength: e.param1,
+          colorCount: 6,
+          edgeStrength: (e.param1 / 20).clamp(0.0, 1.0),
+        ),
+        EffectFilterType.retroAnime => applyRetroAnime(
+          result,
+          width,
+          height,
+          (e.param1 / 20 * 100).clamp(0.0, 100.0),
+        ),
+        EffectFilterType.crt => applyCrt(
+          result,
+          width,
+          height,
+          (e.param1 / 20 * 100).clamp(0.0, 100.0),
+        ),
         EffectFilterType.animatedNoise => applyAnimatedNoise(
-            result, width, height, frameIndex,
-            strength: (e.param1 / 20).clamp(0.0, 1.0),
-            amount: (e.param2 / 100).clamp(0.0, 1.0),
-            size: e.param3.round().clamp(1, 8),
-          ),
+          result,
+          width,
+          height,
+          frameIndex,
+          strength: (e.param1 / 20).clamp(0.0, 1.0),
+          amount: (e.param2 / 100).clamp(0.0, 1.0),
+          size: e.param3.round().clamp(1, 8),
+        ),
         EffectFilterType.rain => applyRain(
-            result, width, height, frameIndex,
-            intensity: e.param1.round().clamp(1, 20),
-            speed: e.param2,
-            size: e.param3,
-            windAngleDeg: e.param4,
-          ),
-        EffectFilterType.fisheye =>
-          applyFisheye(result, width, height, (e.param1 / 20 * 100).clamp(0.0, 100.0)),
+          result,
+          width,
+          height,
+          frameIndex,
+          intensity: e.param1.round().clamp(1, 20),
+          speed: e.param2,
+          size: e.param3,
+          windAngleDeg: e.param4,
+        ),
+        EffectFilterType.fisheye => applyFisheye(
+          result,
+          width,
+          height,
+          (e.param1 / 20 * 100).clamp(0.0, 100.0),
+        ),
         // ドット絵：param1=モザイクブロックサイズ（1〜64px）、
         // param2=色数（2〜32）。スタンプのピクセルモードと同じ
         // applyPixelateを使う。
         EffectFilterType.pixelate => applyPixelate(
-            result, width, height,
-            mosaicSize: e.param1.round().clamp(1, 64),
-            colorMode: e.pixelColorMode,
-            colorLevels: e.param2.round().clamp(1, 256),
-            paletteColors: e.pixelExplicitColors,
-          ),
+          result,
+          width,
+          height,
+          mosaicSize: e.param1.round().clamp(1, 64),
+          colorMode: e.pixelColorMode,
+          colorLevels: e.param2.round().clamp(1, 256),
+          paletteColors: e.pixelExplicitColors,
+        ),
         // オーロラホログラム：param1=フィルター強度（0〜100）、
         // param2=明度、param3=彩度（いずれも-100〜100）、
         // param4=配色プリセットのインデックス（AuroraHologramPreset.values）。
         EffectFilterType.auroraHologram => applyAuroraHologram(
-            result, width, height,
-            strength: e.param1,
-            brightness: e.param2,
-            saturation: e.param3,
-            preset: AuroraHologramPreset.values[
-                e.param4.round().clamp(0, AuroraHologramPreset.values.length - 1)],
-          ),
+          result,
+          width,
+          height,
+          strength: e.param1,
+          brightness: e.param2,
+          saturation: e.param3,
+          preset:
+              AuroraHologramPreset.values[e.param4.round().clamp(
+                0,
+                AuroraHologramPreset.values.length - 1,
+              )],
+        ),
       };
     }
     return result;
   }
-  Uint8List applyGaussianBlur(Uint8List data, int width, int height, double strength) {
+
+  Uint8List applyGaussianBlur(
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+  ) {
     final radius = strength.round().clamp(1, 20);
     final kernel = _gaussianKernel(radius);
     final tmp = _convolveH(data, width, height, kernel);
@@ -333,7 +511,12 @@ class FilterEngine {
   /// かかり具合を調整する。中心画素の重みを上げ、上下左右の重みを下げる
   /// 古典的なシャープカーネルの応用。アルファは変化させない（線画の輪郭を
   /// 崩さないため）。
-  Uint8List applySharpen(Uint8List data, int width, int height, double strength) {
+  Uint8List applySharpen(
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+  ) {
     final amount = (strength / 100.0).clamp(0.0, 2.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final result = Uint8List.fromList(data);
@@ -345,10 +528,22 @@ class FilterEngine {
           final center = data[idx + c];
           double sum = 0;
           int n = 0;
-          if (y > 0) { sum += data[((y - 1) * width + x) * 4 + c]; n++; }
-          if (y < height - 1) { sum += data[((y + 1) * width + x) * 4 + c]; n++; }
-          if (x > 0) { sum += data[(y * width + x - 1) * 4 + c]; n++; }
-          if (x < width - 1) { sum += data[(y * width + x + 1) * 4 + c]; n++; }
+          if (y > 0) {
+            sum += data[((y - 1) * width + x) * 4 + c];
+            n++;
+          }
+          if (y < height - 1) {
+            sum += data[((y + 1) * width + x) * 4 + c];
+            n++;
+          }
+          if (x > 0) {
+            sum += data[(y * width + x - 1) * 4 + c];
+            n++;
+          }
+          if (x < width - 1) {
+            sum += data[(y * width + x + 1) * 4 + c];
+            n++;
+          }
           final neighborAvg = n > 0 ? sum / n : center.toDouble();
           final sharpened = center + amount * (center - neighborAvg);
           result[idx + c] = sharpened.round().clamp(0, 255);
@@ -364,7 +559,13 @@ class FilterEngine {
   /// 実装のため、負荷はガウスぼかしフィルター1回分＋差分計算のみで軽い。
   /// [radiusStrength]はぼかし半径（px、1〜20。gaussianBlurと同じ意味）、
   /// [amount]はかかり具合（0.0〜3.0程度、既定1.0）。
-  Uint8List applyUnsharpMask(Uint8List data, int width, int height, double radiusStrength, double amount) {
+  Uint8List applyUnsharpMask(
+    Uint8List data,
+    int width,
+    int height,
+    double radiusStrength,
+    double amount,
+  ) {
     final blurred = applyGaussianBlur(data, width, height, radiusStrength);
     final result = Uint8List.fromList(data);
     for (int i = 0; i < data.length; i += 4) {
@@ -379,7 +580,12 @@ class FilterEngine {
     return result;
   }
 
-  Uint8List applyLensBlur(Uint8List data, int width, int height, double strength) {
+  Uint8List applyLensBlur(
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+  ) {
     // レンズぼかし = 円形カーネルによるボックスブラー近似
     final radius = strength.round().clamp(1, 20);
     final result = Uint8List.fromList(data);
@@ -392,8 +598,10 @@ class FilterEngine {
             final nx = (x + dx).clamp(0, width - 1);
             final ny = (y + dy).clamp(0, height - 1);
             final idx = (ny * width + nx) * 4;
-            r += data[idx]; g += data[idx + 1];
-            b += data[idx + 2]; a += data[idx + 3];
+            r += data[idx];
+            g += data[idx + 1];
+            b += data[idx + 2];
+            a += data[idx + 3];
             count++;
           }
         }
@@ -417,8 +625,10 @@ class FilterEngine {
         for (int dy = 0; dy < size && y + dy < height; dy++) {
           for (int dx = 0; dx < size && x + dx < width; dx++) {
             final idx = ((y + dy) * width + (x + dx)) * 4;
-            r += data[idx]; g += data[idx + 1];
-            b += data[idx + 2]; a += data[idx + 3];
+            r += data[idx];
+            g += data[idx + 1];
+            b += data[idx + 2];
+            a += data[idx + 3];
             count++;
           }
         }
@@ -430,8 +640,10 @@ class FilterEngine {
         for (int dy = 0; dy < size && y + dy < height; dy++) {
           for (int dx = 0; dx < size && x + dx < width; dx++) {
             final idx = ((y + dy) * width + (x + dx)) * 4;
-            result[idx] = ar; result[idx + 1] = ag;
-            result[idx + 2] = ab; result[idx + 3] = aa;
+            result[idx] = ar;
+            result[idx + 1] = ag;
+            result[idx + 2] = ab;
+            result[idx + 3] = aa;
           }
         }
       }
@@ -440,7 +652,12 @@ class FilterEngine {
   }
 
   Uint8List applyChromaticAberration(
-      Uint8List data, int width, int height, double strength, double direction) {
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+    double direction,
+  ) {
     final shift = strength.round().clamp(1, 30);
     final dx = (math.cos(direction) * shift).round();
     final dy = (math.sin(direction) * shift).round();
@@ -467,7 +684,12 @@ class FilterEngine {
   /// サンプリング元の位置をずらす（[exponent]が1より小さいほど、外側の
   /// 画素も中心付近の画素からサンプリングされるため、中心が拡大されて
   /// 見える）。[strength]は0〜100（%）。
-  Uint8List applyFisheye(Uint8List data, int width, int height, double strength) {
+  Uint8List applyFisheye(
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+  ) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final exponent = (1.0 - amount * 0.85).clamp(0.15, 1.0);
@@ -623,15 +845,22 @@ class FilterEngine {
         for (int c = 0; c < 4; c++) {
           final warped = data[srcIdx + c];
           final original = data[dstIdx + c];
-          result[dstIdx + c] =
-              (warped * maskAlpha + original * (1 - maskAlpha)).round().clamp(0, 255);
+          result[dstIdx + c] = (warped * maskAlpha + original * (1 - maskAlpha))
+              .round()
+              .clamp(0, 255);
         }
       }
     }
     return result;
   }
 
-  Uint8List applyNoise(Uint8List data, int width, int height, double strength, NoiseType type) {
+  Uint8List applyNoise(
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+    NoiseType type,
+  ) {
     final result = Uint8List.fromList(data);
     final rng = math.Random();
     final s = (strength * 255).round().clamp(0, 255);
@@ -727,16 +956,25 @@ class FilterEngine {
           final rx = ((px + tx) % width + width) % width;
           final idx = (py * width + rx) * 4;
           if (result[idx + 3] == 0) continue;
-          result[idx] = (result[idx] + (220 - result[idx]) * alpha).round().clamp(0, 255);
-          result[idx + 1] = (result[idx + 1] + (235 - result[idx + 1]) * alpha).round().clamp(0, 255);
-          result[idx + 2] = (result[idx + 2] + (255 - result[idx + 2]) * alpha).round().clamp(0, 255);
+          result[idx] = (result[idx] + (220 - result[idx]) * alpha)
+              .round()
+              .clamp(0, 255);
+          result[idx + 1] = (result[idx + 1] + (235 - result[idx + 1]) * alpha)
+              .round()
+              .clamp(0, 255);
+          result[idx + 2] = (result[idx + 2] + (255 - result[idx + 2]) * alpha)
+              .round()
+              .clamp(0, 255);
         }
       }
     }
     return result;
   }
 
-  Uint8List applyAnimeStyle(Uint8List data, int width, int height, {
+  Uint8List applyAnimeStyle(
+    Uint8List data,
+    int width,
+    int height, {
     required double strength,
     required int colorCount,
     required double edgeStrength,
@@ -746,8 +984,14 @@ class FilterEngine {
     final posterized = Uint8List.fromList(data);
     for (int i = 0; i < posterized.length; i += 4) {
       posterized[i] = ((posterized[i] / step).round() * step).clamp(0, 255);
-      posterized[i + 1] = ((posterized[i + 1] / step).round() * step).clamp(0, 255);
-      posterized[i + 2] = ((posterized[i + 2] / step).round() * step).clamp(0, 255);
+      posterized[i + 1] = ((posterized[i + 1] / step).round() * step).clamp(
+        0,
+        255,
+      );
+      posterized[i + 2] = ((posterized[i + 2] / step).round() * step).clamp(
+        0,
+        255,
+      );
     }
     // ② エッジ検出（Sobelフィルタ）して輪郭を黒く
     if (edgeStrength > 0) {
@@ -767,19 +1011,39 @@ class FilterEngine {
   /// 縁取りを重ねた画像を返す。プレビューサムネイルの生成にのみ使用する
   /// （実際の本適用は、選択レイヤーを書き換えずリング部分だけを新規
   /// レイヤーへ描画するため[applyOutlineLayer]を使う）。
-  Uint8List applyOutline(Uint8List data, int width, int height, {
+  Uint8List applyOutline(
+    Uint8List data,
+    int width,
+    int height, {
     required int color,
     required double widthPx,
-  }) => _outlineFill(data, width, height, color: color, widthPx: widthPx, keepSource: true);
+  }) => _outlineFill(
+    data,
+    width,
+    height,
+    color: color,
+    widthPx: widthPx,
+    keepSource: true,
+  );
 
   /// 縁取りフィルター（本適用用）：選択レイヤーの描画内容はコピーせず、
   /// 縁取りリング部分だけを描画した画像（それ以外は透明）を返す。
   /// 選択レイヤーの直下へ挿入する新規レイヤーのピクセルデータとして使う
   /// （filter_panel.dartの`_applyToFrame`参照）。
-  Uint8List applyOutlineLayer(Uint8List data, int width, int height, {
+  Uint8List applyOutlineLayer(
+    Uint8List data,
+    int width,
+    int height, {
     required int color,
     required double widthPx,
-  }) => _outlineFill(data, width, height, color: color, widthPx: widthPx, keepSource: false);
+  }) => _outlineFill(
+    data,
+    width,
+    height,
+    color: color,
+    widthPx: widthPx,
+    keepSource: false,
+  );
 
   /// 縁取り計算の共通処理。[keepSource]がtrueなら元の不透明画素をそのまま
   /// 結果へコピーする（[applyOutline]）。falseなら縁取りリング部分だけを
@@ -787,13 +1051,18 @@ class FilterEngine {
   /// いずれも元画像側で不透明だった画素はリングの対象から除外するため、
   /// 元の描画内容の上にリングが重なって隠すことはない。
   /// [color]はARGB32形式のint値（FilterDef.outlineColorと同じ表現）。
-  Uint8List _outlineFill(Uint8List data, int width, int height, {
+  Uint8List _outlineFill(
+    Uint8List data,
+    int width,
+    int height, {
     required int color,
     required double widthPx,
     required bool keepSource,
   }) {
     final radius = widthPx.round().clamp(1, 100);
-    final result = keepSource ? Uint8List.fromList(data) : Uint8List(data.length);
+    final result = keepSource
+        ? Uint8List.fromList(data)
+        : Uint8List(data.length);
     final ca = (color >> 24) & 0xFF;
     final cr = (color >> 16) & 0xFF;
     final cg = (color >> 8) & 0xFF;
@@ -865,8 +1134,13 @@ class FilterEngine {
   /// 単純な1パス処理で負荷は軽い。[strength]は0〜100（%）で減光の強さを
   /// 調整する。[color]に黒以外を指定すると、暗くするのではなく指定色を
   /// 周辺へかぶせる（夕焼けオレンジ・夜の青など）演出にも使える。
-  Uint8List applyVignette(Uint8List data, int width, int height, double strength,
-      {int color = 0xFF000000}) {
+  Uint8List applyVignette(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int color = 0xFF000000,
+  }) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final result = Uint8List.fromList(data);
@@ -890,9 +1164,16 @@ class FilterEngine {
         if (dist <= innerRadius) continue;
         final t = ((dist - innerRadius) / (1.0 - innerRadius)).clamp(0.0, 1.0);
         final mix = t * amount;
-        result[idx] = (data[idx] + (cr - data[idx]) * mix).round().clamp(0, 255);
-        result[idx + 1] = (data[idx + 1] + (cg - data[idx + 1]) * mix).round().clamp(0, 255);
-        result[idx + 2] = (data[idx + 2] + (cb - data[idx + 2]) * mix).round().clamp(0, 255);
+        result[idx] = (data[idx] + (cr - data[idx]) * mix).round().clamp(
+          0,
+          255,
+        );
+        result[idx + 1] = (data[idx + 1] + (cg - data[idx + 1]) * mix)
+            .round()
+            .clamp(0, 255);
+        result[idx + 2] = (data[idx + 2] + (cb - data[idx + 2]) * mix)
+            .round()
+            .clamp(0, 255);
       }
     }
     return result;
@@ -922,8 +1203,13 @@ class FilterEngine {
   /// 白黒、セピア色を指定すればセピア調、というように任意の1色で単色化できる）。
   /// [amount]（0.0〜1.0）で元の色との混合量を調整する（100%で完全な単色化）。
   /// 1画素あたりの計算のみで負荷は軽い。描画フィルター・演出フィルター両方から使う。
-  Uint8List applyMonochrome(Uint8List data, int width, int height, double amount,
-      {int targetColor = 0xFFFFFFFF}) {
+  Uint8List applyMonochrome(
+    Uint8List data,
+    int width,
+    int height,
+    double amount, {
+    int targetColor = 0xFFFFFFFF,
+  }) {
     if (amount <= 0) return Uint8List.fromList(data);
     final tr = (targetColor >> 16) & 0xFF;
     final tg = (targetColor >> 8) & 0xFF;
@@ -970,11 +1256,20 @@ class FilterEngine {
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
       final r = data[i], g = data[i + 1], b = data[i + 2];
-      final luminanceIdx = ((r * 0.299 + g * 0.587 + b * 0.114)).round().clamp(0, 255);
+      final luminanceIdx = ((r * 0.299 + g * 0.587 + b * 0.114)).round().clamp(
+        0,
+        255,
+      );
       var mapped = cache[luminanceIdx];
       if (mapped == null) {
         final (mr, mg, mb) = _sampleGradient(stops, luminanceIdx / 255.0);
-        mapped = _adjustHsl(mr, mg, mb, saturationDelta: saturation / 100, lightnessDelta: brightness / 100);
+        mapped = _adjustHsl(
+          mr,
+          mg,
+          mb,
+          saturationDelta: saturation / 100,
+          lightnessDelta: brightness / 100,
+        );
         cache[luminanceIdx] = mapped;
       }
       result[i] = (r + (mapped.$1 - r) * amount).round().clamp(0, 255);
@@ -1012,15 +1307,30 @@ class FilterEngine {
     double blurPx,
   ) {
     final length = lengthPx.round().clamp(1, 200);
-    final blurredAlpha = _boxBlurAlpha(data, width, height, blurPx.round().clamp(0, 60));
+    final blurredAlpha = _boxBlurAlpha(
+      data,
+      width,
+      height,
+      blurPx.round().clamp(0, 60),
+    );
 
     final baseR = (colorArgb >> 16) & 0xFF;
     final baseG = (colorArgb >> 8) & 0xFF;
     final baseB = colorArgb & 0xFF;
-    final (lr, lg, lb) =
-        _adjustHsl(baseR, baseG, baseB, saturationDelta: 0, lightnessDelta: 0.25);
-    final (sr, sg, sb) =
-        _adjustHsl(baseR, baseG, baseB, saturationDelta: 0, lightnessDelta: -0.25);
+    final (lr, lg, lb) = _adjustHsl(
+      baseR,
+      baseG,
+      baseB,
+      saturationDelta: 0,
+      lightnessDelta: 0.25,
+    );
+    final (sr, sg, sb) = _adjustHsl(
+      baseR,
+      baseG,
+      baseB,
+      saturationDelta: 0,
+      lightnessDelta: -0.25,
+    );
 
     final rad = directionDegrees * math.pi / 180.0;
     final dx = math.cos(rad);
@@ -1032,9 +1342,19 @@ class FilterEngine {
         final idx = (y * width + x) * 4;
         if (data[idx + 3] == 0) continue;
         final farAlpha = _sampleAlpha(
-            blurredAlpha, width, height, x + dx * length, y + dy * length);
+          blurredAlpha,
+          width,
+          height,
+          x + dx * length,
+          y + dy * length,
+        );
         final nearOppositeAlpha = _sampleAlpha(
-            blurredAlpha, width, height, x - dx * length, y - dy * length);
+          blurredAlpha,
+          width,
+          height,
+          x - dx * length,
+          y - dy * length,
+        );
         final lightAmount = (1.0 - farAlpha / 255.0).clamp(0.0, 1.0);
         final shadowAmount = (1.0 - nearOppositeAlpha / 255.0).clamp(0.0, 1.0);
         if (lightAmount <= 0 && shadowAmount <= 0) continue;
@@ -1149,14 +1469,19 @@ class FilterEngine {
 
   /// [stops]（明度0.0〜1.0の位置とRGB色のペア。位置は昇順）を[t]（0.0〜1.0）
   /// で線形補間する。
-  (int, int, int) _sampleGradient(List<(double, int, int, int)> stops, double t) {
+  (int, int, int) _sampleGradient(
+    List<(double, int, int, int)> stops,
+    double t,
+  ) {
     final clamped = t.clamp(0.0, 1.0);
     for (int i = 0; i < stops.length - 1; i++) {
       final (pos0, r0, g0, b0) = stops[i];
       final (pos1, r1, g1, b1) = stops[i + 1];
       if (clamped <= pos1 || i == stops.length - 2) {
         final span = pos1 - pos0;
-        final localT = span <= 0 ? 0.0 : ((clamped - pos0) / span).clamp(0.0, 1.0);
+        final localT = span <= 0
+            ? 0.0
+            : ((clamped - pos0) / span).clamp(0.0, 1.0);
         return (
           (r0 + (r1 - r0) * localT).round(),
           (g0 + (g1 - g0) * localT).round(),
@@ -1171,7 +1496,9 @@ class FilterEngine {
   /// RGB色をHSLへ変換し、彩度・明度へそれぞれ[saturationDelta]・
   /// [lightnessDelta]（-1.0〜1.0）を加算してRGBへ戻す。
   (int, int, int) _adjustHsl(
-    int r, int g, int b, {
+    int r,
+    int g,
+    int b, {
     required double saturationDelta,
     required double lightnessDelta,
   }) {
@@ -1219,13 +1546,19 @@ class FilterEngine {
       if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
       return p;
     }
+
     return (hue2rgb(hk + 1 / 3), hue2rgb(hk), hue2rgb(hk - 1 / 3));
   }
 
   /// 二値化：輝度が[threshold]（0〜255）以上の画素を白、未満を黒に分ける。
   /// アルファはそのまま維持する。色調調整・単色化・「明度で透過」と組み合わせて
   /// 線画抽出に使うことを想定している。
-  Uint8List applyThreshold(Uint8List data, int width, int height, double threshold) {
+  Uint8List applyThreshold(
+    Uint8List data,
+    int width,
+    int height,
+    double threshold,
+  ) {
     final result = Uint8List.fromList(data);
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
@@ -1251,13 +1584,15 @@ class FilterEngine {
     required double brightness,
     required double contrast,
   }) {
-    if (saturation == 0 && brightness == 0 && contrast == 0) return Uint8List.fromList(data);
+    if (saturation == 0 && brightness == 0 && contrast == 0)
+      return Uint8List.fromList(data);
     final result = Uint8List.fromList(data);
     final satFactor = 1.0 + saturation / 100.0;
     final briOffset = brightness / 100.0 * 255.0;
     // 古典的なコントラスト補正式：F = 259*(C+255) / (255*(259-C))
     final contrastScaled = (contrast / 100.0 * 255.0).clamp(-255.0, 255.0);
-    final conF = (259 * (contrastScaled + 255)) / (255 * (259 - contrastScaled));
+    final conF =
+        (259 * (contrastScaled + 255)) / (255 * (259 - contrastScaled));
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
       var r = data[i].toDouble();
@@ -1290,7 +1625,12 @@ class FilterEngine {
   /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。1画素あたりの
   /// 色変換とノイズ処理1回分のみで、既存のanimeStyle（ポスタリゼーション＋
   /// Sobelエッジ検出）より軽い。
-  Uint8List applyRetroAnime(Uint8List data, int width, int height, double strength) {
+  Uint8List applyRetroAnime(
+    Uint8List data,
+    int width,
+    int height,
+    double strength,
+  ) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final result = Uint8List.fromList(data);
@@ -1316,7 +1656,13 @@ class FilterEngine {
   Uint8List applyCrt(Uint8List data, int width, int height, double strength) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
-    var result = applyChromaticAberration(data, width, height, 1 + amount * 2, 0);
+    var result = applyChromaticAberration(
+      data,
+      width,
+      height,
+      1 + amount * 2,
+      0,
+    );
     result = applyVignette(result, width, height, 20 + amount * 30);
     final darken = 1.0 - amount * 0.35;
     for (int y = 0; y < height; y += 2) {
@@ -1335,7 +1681,10 @@ class FilterEngine {
   /// ドット絵化。配色の実際の処理は[quantizeColors]（モザイク化と分離した
   /// 純粋な減色関数。ブラシのピクセルモードのストローク確定直後の色スナップ
   /// でも共用する）に委譲する。
-  Uint8List applyPixelate(Uint8List data, int width, int height, {
+  Uint8List applyPixelate(
+    Uint8List data,
+    int width,
+    int height, {
     int mosaicSize = 8,
     PixelColorMode colorMode = PixelColorMode.count,
     int colorLevels = 6,
@@ -1350,7 +1699,13 @@ class FilterEngine {
     );
   }
 
-  Uint8List applyFade(Uint8List data, int width, int height, ui.Color fadeColor, double progress) {
+  Uint8List applyFade(
+    Uint8List data,
+    int width,
+    int height,
+    ui.Color fadeColor,
+    double progress,
+  ) {
     final result = Uint8List.fromList(data);
     final fr = (fadeColor.r * 255).round();
     final fg = (fadeColor.g * 255).round();
@@ -1364,7 +1719,12 @@ class FilterEngine {
     return result;
   }
 
-  Uint8List applyToneCurve(Uint8List data, int width, int height, List<ui.Offset> curvePoints) {
+  Uint8List applyToneCurve(
+    Uint8List data,
+    int width,
+    int height,
+    List<ui.Offset> curvePoints,
+  ) {
     if (curvePoints.length < 2) return data;
     // LUT生成（0-255 → 0-255）
     final lut = List<int>.generate(256, (i) {
@@ -1389,7 +1749,10 @@ class FilterEngine {
     return result;
   }
 
-  Uint8List applyLevels(Uint8List data, int width, int height, {
+  Uint8List applyLevels(
+    Uint8List data,
+    int width,
+    int height, {
     required int inputBlack,
     required int inputWhite,
     required int outputBlack,
@@ -1400,8 +1763,10 @@ class FilterEngine {
     final result = Uint8List.fromList(data);
     for (int i = 0; i < result.length; i += 4) {
       for (int c = 0; c < 3; c++) {
-        final v = ((result[i + c] - inputBlack) / inRange * outRange + outputBlack)
-            .round().clamp(0, 255);
+        final v =
+            ((result[i + c] - inputBlack) / inRange * outRange + outputBlack)
+                .round()
+                .clamp(0, 255);
         result[i + c] = v;
       }
     }
@@ -1420,7 +1785,12 @@ class FilterEngine {
     return kernel.map((v) => v / sum).toList();
   }
 
-  Uint8List _convolveH(Uint8List data, int width, int height, List<double> kernel) {
+  Uint8List _convolveH(
+    Uint8List data,
+    int width,
+    int height,
+    List<double> kernel,
+  ) {
     final radius = kernel.length ~/ 2;
     final result = Uint8List(data.length);
     for (int y = 0; y < height; y++) {
@@ -1444,7 +1814,12 @@ class FilterEngine {
     return result;
   }
 
-  Uint8List _convolveV(Uint8List data, int width, int height, List<double> kernel) {
+  Uint8List _convolveV(
+    Uint8List data,
+    int width,
+    int height,
+    List<double> kernel,
+  ) {
     final radius = kernel.length ~/ 2;
     final result = Uint8List(data.length);
     for (int y = 0; y < height; y++) {
@@ -1478,13 +1853,20 @@ class FilterEngine {
         for (int ky2 = -1; ky2 <= 1; ky2++) {
           for (int kx2 = -1; kx2 <= 1; kx2++) {
             final idx = ((y + ky2) * width + (x + kx2)) * 4;
-            final gray = (data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114).round();
+            final gray =
+                (data[idx] * 0.299 +
+                        data[idx + 1] * 0.587 +
+                        data[idx + 2] * 0.114)
+                    .round();
             final ki = (ky2 + 1) * 3 + (kx2 + 1);
             gx += gray * kx[ki];
             gy += gray * ky[ki];
           }
         }
-        result[y * width + x] = math.sqrt(gx * gx + gy * gy).round().clamp(0, 255);
+        result[y * width + x] = math
+            .sqrt(gx * gx + gy * gy)
+            .round()
+            .clamp(0, 255);
       }
     }
     return result;
@@ -1519,15 +1901,27 @@ class EffectFilter {
 }
 
 enum EffectFilterType {
-  fade, gaussianBlur, lensBlur, mosaic, chromaticAberration, noise, sepia,
-  animeStyle, retroAnime, crt,
-  animatedNoise, rain, monochrome, colorAdjust, threshold, fisheye, pixelate,
+  fade,
+  gaussianBlur,
+  lensBlur,
+  mosaic,
+  chromaticAberration,
+  noise,
+  sepia,
+  animeStyle,
+  retroAnime,
+  crt,
+  animatedNoise,
+  rain,
+  monochrome,
+  colorAdjust,
+  threshold,
+  fisheye,
+  pixelate,
   auroraHologram,
 }
 
-enum DrawFilterType {
-  animeBackground,
-}
+enum DrawFilterType { animeBackground }
 
 class DrawFilter {
   final DrawFilterType type;

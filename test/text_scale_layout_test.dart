@@ -28,9 +28,9 @@ void main() {
     final dir = Directory.systemTemp.createTempSync('niarim_text_scale');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (call) async => dir.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => dir.path,
+        );
   });
 
   /// [scale]倍の文字サイズで主要画面を巡回し、レイアウト例外が出た画面と
@@ -40,13 +40,16 @@ void main() {
     final original = FlutterError.onError;
     FlutterError.onError = (details) {
       final s = details.toString();
-      final where =
-          RegExp(r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)').firstMatch(s);
-      final what = RegExp(r'(overflowed by [\d.]+ pixels on the \w+)')
-              .firstMatch(s)
-              ?.group(1) ??
-          s.split('\n').firstWhere((l) => l.contains('thrown'),
-              orElse: () => 'レイアウト例外');
+      final where = RegExp(
+        r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)',
+      ).firstMatch(s);
+      final what =
+          RegExp(
+            r'(overflowed by [\d.]+ pixels on the \w+)',
+          ).firstMatch(s)?.group(1) ??
+          s
+              .split('\n')
+              .firstWhere((l) => l.contains('thrown'), orElse: () => 'レイアウト例外');
       problems.add('${where?.group(1) ?? "場所不明"}: $what');
     };
     // 一般的なスマホ相当（360×760dp）。狭い端末ほど文字拡大の影響が出る。
@@ -90,15 +93,36 @@ void main() {
     final projectId = projectService.projects.first.id;
 
     for (final route in <String>[
-      '/', '/home', '/shared', '/trash', '/community', '/new-project',
-      '/project/$projectId', '/canvas/$projectId', '/timeline/$projectId',
-      '/export/$projectId', '/save-tree/$projectId', '/materials/$projectId',
-      '/settings', '/settings/gestures', '/settings/shortcuts',
-      '/settings/performance', '/settings/pen', '/settings/bucket',
-      '/settings/workspace', '/settings/transfer', '/settings/theme',
-      '/settings/watermark', '/settings/fonts', '/settings/license',
-      '/settings/privacy-policy', '/help', '/tips', '/premium',
-      '/autofill-presets', '/storage',
+      '/',
+      '/home',
+      '/shared',
+      '/trash',
+      '/community',
+      '/new-project',
+      '/project/$projectId',
+      '/canvas/$projectId',
+      '/timeline/$projectId',
+      '/export/$projectId',
+      '/save-tree/$projectId',
+      '/materials/$projectId',
+      '/settings',
+      '/settings/gestures',
+      '/settings/shortcuts',
+      '/settings/performance',
+      '/settings/pen',
+      '/settings/bucket',
+      '/settings/workspace',
+      '/settings/transfer',
+      '/settings/theme',
+      '/settings/watermark',
+      '/settings/fonts',
+      '/settings/license',
+      '/settings/privacy-policy',
+      '/help',
+      '/tips',
+      '/premium',
+      '/autofill-presets',
+      '/storage',
     ]) {
       appRouter.go(route);
       await tester.pump(const Duration(milliseconds: 400));
@@ -115,15 +139,21 @@ void main() {
     return problems;
   }
 
-  testWidgets('文字サイズ1.3倍でも全画面がレイアウト例外を起こさない',
-      (WidgetTester tester) async {
+  testWidgets('文字サイズ1.3倍でも全画面がレイアウト例外を起こさない', (WidgetTester tester) async {
     final problems = await visitScreens(tester, 1.3);
-    expect(problems, isEmpty, reason: '文字サイズ1.3倍で以下の問題:\n${problems.join("\n")}');
+    expect(
+      problems,
+      isEmpty,
+      reason: '文字サイズ1.3倍で以下の問題:\n${problems.join("\n")}',
+    );
   }, timeout: const Timeout(Duration(seconds: 90)));
 
-  testWidgets('文字サイズ2.0倍でも全画面がレイアウト例外を起こさない',
-      (WidgetTester tester) async {
+  testWidgets('文字サイズ2.0倍でも全画面がレイアウト例外を起こさない', (WidgetTester tester) async {
     final problems = await visitScreens(tester, 2.0);
-    expect(problems, isEmpty, reason: '文字サイズ2.0倍で以下の問題:\n${problems.join("\n")}');
+    expect(
+      problems,
+      isEmpty,
+      reason: '文字サイズ2.0倍で以下の問題:\n${problems.join("\n")}',
+    );
   }, timeout: const Timeout(Duration(seconds: 90)));
 }

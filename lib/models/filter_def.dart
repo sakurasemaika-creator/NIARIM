@@ -54,20 +54,52 @@ import 'pixel_color_mode.dart';
 /// （長さ、px）・[bgBlendBlur]（ぼかし具合、px）はそれぞれ独立した
 /// スライダーで調整する。
 enum FilterKind {
-  gaussianBlur, lensBlur, animeStyle, outline, toneCurve, levels, sharpen, unsharpMask, vignette, noise,
-  retroAnime, crt, monochrome, colorAdjust, threshold, fisheye, chromaticAberration, lensDistortion,
-  pixelate, auroraHologram, backgroundBlend,
+  gaussianBlur,
+  lensBlur,
+  animeStyle,
+  outline,
+  toneCurve,
+  levels,
+  sharpen,
+  unsharpMask,
+  vignette,
+  noise,
+  retroAnime,
+  crt,
+  monochrome,
+  colorAdjust,
+  threshold,
+  fisheye,
+  chromaticAberration,
+  lensDistortion,
+  pixelate,
+  auroraHologram,
+  backgroundBlend,
 }
 
 /// トーンカーブのプリセット形状。
 /// 本格的な自由曲線編集の代わりに、よく使う形状をプリセットとして提供する。
-enum ToneCurvePreset { linear, brighten, darken, highContrast, lowContrast, invert }
+enum ToneCurvePreset {
+  linear,
+  brighten,
+  darken,
+  highContrast,
+  lowContrast,
+  invert,
+}
 
 /// オーロラホログラムフィルターの配色パターン（プリセットのみ・
 /// ユーザーによる個別色指定は不可）。グラデーションマップ方式（画素の
 /// 明度に応じて色を割り当てる）で使う色の並びは
 /// [FilterEngine.auroraHologramStops]参照。
-enum AuroraHologramPreset { aurora, soapBubble, cyberNeon, pastelDream, sunsetGold, silverFoil }
+enum AuroraHologramPreset {
+  aurora,
+  soapBubble,
+  cyberNeon,
+  pastelDream,
+  sunsetGold,
+  silverFoil,
+}
 
 /// フィルター定義＋現在のパラメータ値。
 ///
@@ -253,79 +285,86 @@ class FilterDef {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'kind': kind.name,
-        'isFavorite': isFavorite,
-        'strength': strength,
-        'colorLevels': colorLevels,
-        'edgeStrength': edgeStrength,
-        'inputBlack': inputBlack,
-        'inputWhite': inputWhite,
-        'outputBlack': outputBlack,
-        'outputWhite': outputWhite,
-        'toneCurvePreset': toneCurvePreset.name,
-        'outlineColor': outlineColor,
-        'outlineWidth': outlineWidth,
-        'vignetteColor': vignetteColor,
-        'caSaturation': caSaturation,
-        'caBrightness': caBrightness,
-        'caContrast': caContrast,
-        'monochromeColor': monochromeColor,
-        'thresholdValue': thresholdValue,
-        'lensCenterOffsetX': lensCenterOffsetX,
-        'lensCenterOffsetY': lensCenterOffsetY,
-        'pixelColorMode': pixelColorMode.name,
-        'pixelExplicitColors': pixelExplicitColors,
-        'hologramBrightness': hologramBrightness,
-        'hologramSaturation': hologramSaturation,
-        'hologramPreset': hologramPreset.name,
-        'bgBlendColor': bgBlendColor,
-        'bgBlendDirection': bgBlendDirection,
-        'bgBlendLength': bgBlendLength,
-        'bgBlendBlur': bgBlendBlur,
-      };
+    'id': id,
+    'name': name,
+    'kind': kind.name,
+    'isFavorite': isFavorite,
+    'strength': strength,
+    'colorLevels': colorLevels,
+    'edgeStrength': edgeStrength,
+    'inputBlack': inputBlack,
+    'inputWhite': inputWhite,
+    'outputBlack': outputBlack,
+    'outputWhite': outputWhite,
+    'toneCurvePreset': toneCurvePreset.name,
+    'outlineColor': outlineColor,
+    'outlineWidth': outlineWidth,
+    'vignetteColor': vignetteColor,
+    'caSaturation': caSaturation,
+    'caBrightness': caBrightness,
+    'caContrast': caContrast,
+    'monochromeColor': monochromeColor,
+    'thresholdValue': thresholdValue,
+    'lensCenterOffsetX': lensCenterOffsetX,
+    'lensCenterOffsetY': lensCenterOffsetY,
+    'pixelColorMode': pixelColorMode.name,
+    'pixelExplicitColors': pixelExplicitColors,
+    'hologramBrightness': hologramBrightness,
+    'hologramSaturation': hologramSaturation,
+    'hologramPreset': hologramPreset.name,
+    'bgBlendColor': bgBlendColor,
+    'bgBlendDirection': bgBlendDirection,
+    'bgBlendLength': bgBlendLength,
+    'bgBlendBlur': bgBlendBlur,
+  };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        kind: FilterKind.values
-            .firstWhere((e) => e.name == j['kind'], orElse: () => FilterKind.gaussianBlur),
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        strength: (j['strength'] as num?)?.toDouble() ?? 8,
-        colorLevels: j['colorLevels'] as int? ?? 6,
-        edgeStrength: (j['edgeStrength'] as num?)?.toDouble() ?? 0.4,
-        inputBlack: j['inputBlack'] as int? ?? 0,
-        inputWhite: j['inputWhite'] as int? ?? 255,
-        outputBlack: j['outputBlack'] as int? ?? 0,
-        outputWhite: j['outputWhite'] as int? ?? 255,
-        caSaturation: (j['caSaturation'] as num?)?.toDouble() ?? 0,
-        caBrightness: (j['caBrightness'] as num?)?.toDouble() ?? 0,
-        caContrast: (j['caContrast'] as num?)?.toDouble() ?? 0,
-        toneCurvePreset: ToneCurvePreset.values.firstWhere(
-            (e) => e.name == j['toneCurvePreset'],
-            orElse: () => ToneCurvePreset.linear),
-        outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
-        outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
-        vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
-        monochromeColor: j['monochromeColor'] as int? ?? 0xFFFFFFFF,
-        thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
-        lensCenterOffsetX: (j['lensCenterOffsetX'] as num?)?.toDouble() ?? 0,
-        lensCenterOffsetY: (j['lensCenterOffsetY'] as num?)?.toDouble() ?? 0,
-        pixelColorMode: PixelColorMode.values.firstWhere(
-            (e) => e.name == j['pixelColorMode'], orElse: () => PixelColorMode.count),
-        pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)
-                ?.map((e) => e as int)
-                .toList() ??
-            const [0xFF000000],
-        hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
-        hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
-        hologramPreset: AuroraHologramPreset.values.firstWhere(
-            (e) => e.name == j['hologramPreset'],
-            orElse: () => AuroraHologramPreset.aurora),
-        bgBlendColor: j['bgBlendColor'] as int? ?? -1,
-        bgBlendDirection: (j['bgBlendDirection'] as num?)?.toDouble() ?? 315,
-        bgBlendLength: (j['bgBlendLength'] as num?)?.toDouble() ?? 20,
-        bgBlendBlur: (j['bgBlendBlur'] as num?)?.toDouble() ?? 6,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    kind: FilterKind.values.firstWhere(
+      (e) => e.name == j['kind'],
+      orElse: () => FilterKind.gaussianBlur,
+    ),
+    isFavorite: j['isFavorite'] as bool? ?? false,
+    strength: (j['strength'] as num?)?.toDouble() ?? 8,
+    colorLevels: j['colorLevels'] as int? ?? 6,
+    edgeStrength: (j['edgeStrength'] as num?)?.toDouble() ?? 0.4,
+    inputBlack: j['inputBlack'] as int? ?? 0,
+    inputWhite: j['inputWhite'] as int? ?? 255,
+    outputBlack: j['outputBlack'] as int? ?? 0,
+    outputWhite: j['outputWhite'] as int? ?? 255,
+    caSaturation: (j['caSaturation'] as num?)?.toDouble() ?? 0,
+    caBrightness: (j['caBrightness'] as num?)?.toDouble() ?? 0,
+    caContrast: (j['caContrast'] as num?)?.toDouble() ?? 0,
+    toneCurvePreset: ToneCurvePreset.values.firstWhere(
+      (e) => e.name == j['toneCurvePreset'],
+      orElse: () => ToneCurvePreset.linear,
+    ),
+    outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
+    outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
+    vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
+    monochromeColor: j['monochromeColor'] as int? ?? 0xFFFFFFFF,
+    thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
+    lensCenterOffsetX: (j['lensCenterOffsetX'] as num?)?.toDouble() ?? 0,
+    lensCenterOffsetY: (j['lensCenterOffsetY'] as num?)?.toDouble() ?? 0,
+    pixelColorMode: PixelColorMode.values.firstWhere(
+      (e) => e.name == j['pixelColorMode'],
+      orElse: () => PixelColorMode.count,
+    ),
+    pixelExplicitColors:
+        (j['pixelExplicitColors'] as List<dynamic>?)
+            ?.map((e) => e as int)
+            .toList() ??
+        const [0xFF000000],
+    hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
+    hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
+    hologramPreset: AuroraHologramPreset.values.firstWhere(
+      (e) => e.name == j['hologramPreset'],
+      orElse: () => AuroraHologramPreset.aurora,
+    ),
+    bgBlendColor: j['bgBlendColor'] as int? ?? -1,
+    bgBlendDirection: (j['bgBlendDirection'] as num?)?.toDouble() ?? 315,
+    bgBlendLength: (j['bgBlendLength'] as num?)?.toDouble() ?? 20,
+    bgBlendBlur: (j['bgBlendBlur'] as num?)?.toDouble() ?? 6,
+  );
 }

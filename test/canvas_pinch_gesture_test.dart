@@ -85,7 +85,10 @@ void main() {
     // Transformのうち、実際に倍率が変わるものを拾う。
     double currentScale() {
       final transforms = tester.widgetList<Transform>(
-        find.descendant(of: find.byType(CanvasArea), matching: find.byType(Transform)),
+        find.descendant(
+          of: find.byType(CanvasArea),
+          matching: find.byType(Transform),
+        ),
       );
       var maxScale = 1.0;
       for (final t in transforms) {
@@ -128,10 +131,14 @@ void main() {
   testWidgets('2本指を広げるとキャンバスが拡大される', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     final before = scaleOf();
-    await pinch(tester, tester.getCenter(find.byType(CanvasArea)), from: 80, to: 200);
+    await pinch(
+      tester,
+      tester.getCenter(find.byType(CanvasArea)),
+      from: 80,
+      to: 200,
+    );
     expect(tester.takeException(), isNull);
-    expect(scaleOf(), greaterThan(before),
-        reason: 'ピンチアウトで拡大率が上がること');
+    expect(scaleOf(), greaterThan(before), reason: 'ピンチアウトで拡大率が上がること');
   });
 
   testWidgets('2本指を狭めるとキャンバスが縮小される', (tester) async {
@@ -154,8 +161,11 @@ void main() {
       await pinch(tester, center, from: 20, to: 300);
     }
     expect(tester.takeException(), isNull);
-    expect(scaleOf(), lessThanOrEqualTo(10.0),
-        reason: '_maxCanvasScale(10倍)を超えないこと');
+    expect(
+      scaleOf(),
+      lessThanOrEqualTo(10.0),
+      reason: '_maxCanvasScale(10倍)を超えないこと',
+    );
   });
 
   testWidgets('1本指のドラッグでは変形しない（描画操作を奪わない）', (tester) async {

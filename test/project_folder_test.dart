@@ -43,15 +43,24 @@ void main() {
     await service.init();
     final root = await service.createFolder('親');
     final child = await service.createFolder('子', parentFolderId: root.id);
-    final grandchild = await service.createFolder('孫', parentFolderId: child.id);
+    final grandchild = await service.createFolder(
+      '孫',
+      parentFolderId: child.id,
+    );
 
     // 自分自身の子（孫）へは移動できない
     await service.moveFolderTo(root.id, grandchild.id);
-    expect(service.folders.firstWhere((f) => f.id == root.id).parentFolderId, isNull);
+    expect(
+      service.folders.firstWhere((f) => f.id == root.id).parentFolderId,
+      isNull,
+    );
 
     // 通常の移動は成功する
     await service.moveFolderTo(grandchild.id, root.id);
-    expect(service.folders.firstWhere((f) => f.id == grandchild.id).parentFolderId, root.id);
+    expect(
+      service.folders.firstWhere((f) => f.id == grandchild.id).parentFolderId,
+      root.id,
+    );
   });
 
   test('フォルダ削除時、中の子フォルダ・プロジェクトはルートへ戻る', () async {
@@ -60,15 +69,24 @@ void main() {
     final root = await service.createFolder('削除予定');
     final child = await service.createFolder('中身フォルダ', parentFolderId: root.id);
     final project = await service.createProject(
-      name: 'テスト作品', fps: 12, durationSeconds: 5, backgroundColor: 0xFFFFFFFF,
+      name: 'テスト作品',
+      fps: 12,
+      durationSeconds: 5,
+      backgroundColor: 0xFFFFFFFF,
     );
     await service.moveToFolder(project.id, root.id);
 
     await service.deleteFolder(root.id);
 
     expect(service.folders.any((f) => f.id == root.id), isFalse);
-    expect(service.folders.firstWhere((f) => f.id == child.id).parentFolderId, isNull);
-    expect(service.projects.firstWhere((p) => p.id == project.id).folderId, isNull);
+    expect(
+      service.folders.firstWhere((f) => f.id == child.id).parentFolderId,
+      isNull,
+    );
+    expect(
+      service.projects.firstWhere((p) => p.id == project.id).folderId,
+      isNull,
+    );
   });
 
   test('保存内容（名前・色・親・お気に入り）は再起動後も復元される', () async {
@@ -86,7 +104,10 @@ void main() {
     final restoredRoot = restarted.folders.firstWhere((f) => f.id == root.id);
     expect(restoredRoot.color, 0xFFFF5C7A);
     expect(restoredRoot.isFavorite, isTrue);
-    expect(restarted.folders.firstWhere((f) => f.id == child.id).parentFolderId, root.id);
+    expect(
+      restarted.folders.firstWhere((f) => f.id == child.id).parentFolderId,
+      root.id,
+    );
   });
 
   // .niashareインポート（importSharedProject）で追加したプロジェクトが
@@ -96,7 +117,10 @@ void main() {
     final service = ProjectService();
     await service.init();
     final own = await service.createProject(
-      name: '自作作品', fps: 12, durationSeconds: 5, backgroundColor: 0xFFFFFFFF,
+      name: '自作作品',
+      fps: 12,
+      durationSeconds: 5,
+      backgroundColor: 0xFFFFFFFF,
     );
 
     final incoming = Project(
@@ -129,7 +153,10 @@ void main() {
     final service = ProjectService();
     await service.init();
     final own = await service.createProject(
-      name: '自作作品2', fps: 12, durationSeconds: 5, backgroundColor: 0xFFFFFFFF,
+      name: '自作作品2',
+      fps: 12,
+      durationSeconds: 5,
+      backgroundColor: 0xFFFFFFFF,
     );
     final incoming = Project(
       id: 'ignored',
@@ -149,14 +176,23 @@ void main() {
     // 通常プロジェクト（isSharedImport=false）はプロジェクト一覧タブ専用の
     // フォルダしか対象にできないため、共有タブ用フォルダへの移動は無視される。
     await service.moveToSharedFolder(own.id, folder.id);
-    expect(service.projects.firstWhere((p) => p.id == own.id).sharedFolderId, isNull);
+    expect(
+      service.projects.firstWhere((p) => p.id == own.id).sharedFolderId,
+      isNull,
+    );
 
     await service.moveToSharedFolder(imported.id, folder.id);
-    expect(service.shared.firstWhere((p) => p.id == imported.id).sharedFolderId, folder.id);
+    expect(
+      service.shared.firstWhere((p) => p.id == imported.id).sharedFolderId,
+      folder.id,
+    );
 
     await service.deleteSharedFolder(folder.id);
     expect(service.sharedFolders.any((f) => f.id == folder.id), isFalse);
-    expect(service.shared.firstWhere((p) => p.id == imported.id).sharedFolderId, isNull);
+    expect(
+      service.shared.firstWhere((p) => p.id == imported.id).sharedFolderId,
+      isNull,
+    );
   });
 
   // Task#158：.niatra（引き継ぎ）経由でのプロジェクト復元は、他人から受け取った

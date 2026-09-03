@@ -30,7 +30,11 @@ void main() {
   group('PixelColorMode.count', () {
     test('チャンネルごとに指定段階へ均等割り（ポスタライズ）される', () {
       final data = solidPixels(130, 130, 130, 255);
-      final result = quantizeColors(data, colorMode: PixelColorMode.count, colorLevels: 2);
+      final result = quantizeColors(
+        data,
+        colorMode: PixelColorMode.count,
+        colorLevels: 2,
+      );
       // colorLevels=2 → step=128。130は128の倍数へ丸められる（256 or 128）。
       expect(result[0] % 128, 0);
       expect(result[1] % 128, 0);
@@ -39,13 +43,21 @@ void main() {
 
     test('透明画素（alpha=0）は変化しない', () {
       final data = solidPixels(130, 130, 130, 0);
-      final result = quantizeColors(data, colorMode: PixelColorMode.count, colorLevels: 2);
+      final result = quantizeColors(
+        data,
+        colorMode: PixelColorMode.count,
+        colorLevels: 2,
+      );
       expect(result, equals(data));
     });
 
     test('colorLevels=256はほぼ元の値のまま（1刻み）', () {
       final data = solidPixels(77, 200, 5, 255);
-      final result = quantizeColors(data, colorMode: PixelColorMode.count, colorLevels: 256);
+      final result = quantizeColors(
+        data,
+        colorMode: PixelColorMode.count,
+        colorLevels: 256,
+      );
       expect(result[0], 77);
       expect(result[1], 200);
       expect(result[2], 5);
@@ -113,7 +125,9 @@ void main() {
       final engine = FilterEngine();
       final data = solidPixels(77, 200, 5, 255, count: 16); // 4x4画像を想定
       final result = engine.applyPixelate(
-        data, 4, 4,
+        data,
+        4,
+        4,
         mosaicSize: 1,
         colorMode: PixelColorMode.none,
       );

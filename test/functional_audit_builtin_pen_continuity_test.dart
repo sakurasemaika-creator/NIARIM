@@ -33,9 +33,15 @@ void main() {
       engine.endStroke();
 
       final image = await tm.compositeLayerToImage('paint');
-      final raw = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
-      final png = (await image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
-      await File('${out.path}/builtin_${id}_continuous_line.png').writeAsBytes(png);
+      final raw = (await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!.buffer.asUint8List();
+      final png = (await image.toByteData(
+        format: ui.ImageByteFormat.png,
+      ))!.buffer.asUint8List();
+      await File(
+        '${out.path}/builtin_${id}_continuous_line.png',
+      ).writeAsBytes(png);
 
       // 手ブレ補正の追従遅れを避けて中央区間のみ見る。各x列の中心±3pxに
       // 少なくとも1画素が存在し、目視で点線になる透明列が1本も無いこと。
@@ -57,11 +63,14 @@ void main() {
   test('旧版に保存済みの標準Pen/Gペンの点線spacingを起動時に1へ移行する', () async {
     final seed = BrushService();
     await seed.init();
-    final old = seed.brushes.map((b) {
-      if (b.id == 'Brush0001') return b.copyWith(spacing: 10);
-      if (b.id == 'Brush0002') return b.copyWith(spacing: 5);
-      return b;
-    }).map((b) => jsonEncode(b.toJson())).toList();
+    final old = seed.brushes
+        .map((b) {
+          if (b.id == 'Brush0001') return b.copyWith(spacing: 10);
+          if (b.id == 'Brush0002') return b.copyWith(spacing: 5);
+          return b;
+        })
+        .map((b) => jsonEncode(b.toJson()))
+        .toList();
     SharedPreferences.setMockInitialValues({'brushes': old});
 
     final migrated = BrushService();
@@ -70,7 +79,10 @@ void main() {
     expect(migrated.brushes.firstWhere((b) => b.id == 'Brush0002').spacing, 1);
 
     final prefs = await SharedPreferences.getInstance();
-    final persisted = prefs.getStringList('brushes')!.map((s) => jsonDecode(s) as Map<String, dynamic>).toList();
+    final persisted = prefs
+        .getStringList('brushes')!
+        .map((s) => jsonDecode(s) as Map<String, dynamic>)
+        .toList();
     expect(persisted.firstWhere((j) => j['id'] == 'Brush0001')['spacing'], 1);
     expect(persisted.firstWhere((j) => j['id'] == 'Brush0002')['spacing'], 1);
   });

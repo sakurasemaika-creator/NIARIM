@@ -67,16 +67,22 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
       rgba[i + 2] = b;
       rgba[i + 3] = mask[i + 3];
     }
-    ui.decodeImageFromPixels(rgba, _textureSize, _textureSize, ui.PixelFormat.rgba8888, (img) {
-      if (!mounted) {
-        img.dispose();
-        return;
-      }
-      setState(() {
-        _image?.dispose();
-        _image = img;
-      });
-    });
+    ui.decodeImageFromPixels(
+      rgba,
+      _textureSize,
+      _textureSize,
+      ui.PixelFormat.rgba8888,
+      (img) {
+        if (!mounted) {
+          img.dispose();
+          return;
+        }
+        setState(() {
+          _image?.dispose();
+          _image = img;
+        });
+      },
+    );
   }
 
   @override
@@ -88,7 +94,9 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
       decoration: BoxDecoration(
         color: Colors.white,
         shape: widget.shape,
-        borderRadius: widget.shape == BoxShape.rectangle ? BorderRadius.circular(6) : null,
+        borderRadius: widget.shape == BoxShape.rectangle
+            ? BorderRadius.circular(6)
+            : null,
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: _image == null ? null : RawImage(image: _image, fit: BoxFit.cover),

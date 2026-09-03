@@ -22,7 +22,8 @@ class CommunityFollowNotification {
     this.isRead = false,
   });
 
-  CommunityFollowNotification copyWith({bool? isRead}) => CommunityFollowNotification(
+  CommunityFollowNotification copyWith({bool? isRead}) =>
+      CommunityFollowNotification(
         id: id,
         followerId: followerId,
         followerName: followerName,

@@ -78,7 +78,9 @@ void main() {
         name: kind.name,
         kind: kind,
         strength: switch (kind) {
-          FilterKind.gaussianBlur || FilterKind.lensBlur || FilterKind.unsharpMask => 2,
+          FilterKind.gaussianBlur ||
+          FilterKind.lensBlur ||
+          FilterKind.unsharpMask => 2,
           FilterKind.pixelate => 3,
           FilterKind.lensDistortion => 45,
           _ => 60,
@@ -101,7 +103,12 @@ void main() {
         lensCenterOffsetX: 0.5,
         lensCenterOffsetY: -0.5,
         pixelColorMode: PixelColorMode.explicit,
-        pixelExplicitColors: const [0xFF000000, 0xFFFFFFFF, 0xFFFF0000, 0xFF00FFFF],
+        pixelExplicitColors: const [
+          0xFF000000,
+          0xFFFFFFFF,
+          0xFFFF0000,
+          0xFF00FFFF,
+        ],
         hologramBrightness: 10,
         hologramSaturation: 20,
         hologramPreset: AuroraHologramPreset.soapBubble,
@@ -112,8 +119,12 @@ void main() {
       );
       final out = applyDrawFilterInIsolate((source, w, h, def, mask));
       expect(out, hasLength(source.length), reason: '${kind.name} output size');
-      expect(_differs(source, out), isTrue,
-          reason: '${kind.name} should produce a visible pixel change for audit input');
+      expect(
+        _differs(source, out),
+        isTrue,
+        reason:
+            '${kind.name} should produce a visible pixel change for audit input',
+      );
     }
   }, timeout: const Timeout(Duration(seconds: 120)));
 
@@ -149,38 +160,45 @@ void main() {
       expect(stops.first.$1, 0.0, reason: '${preset.name} starts at 0');
       expect(stops.last.$1, 1.0, reason: '${preset.name} ends at 1');
       for (var i = 1; i < stops.length; i++) {
-        expect(stops[i].$1, greaterThanOrEqualTo(stops[i - 1].$1),
-            reason: '${preset.name} stops are ordered');
+        expect(
+          stops[i].$1,
+          greaterThanOrEqualTo(stops[i - 1].$1),
+          reason: '${preset.name} stops are ordered',
+        );
       }
     }
   });
 
-  test('all pixel color modes quantize deterministically and preserve alpha', () {
-    const modes = <PixelColorMode>[
-      PixelColorMode.none,
-      PixelColorMode.count,
-      PixelColorMode.explicit,
-      PixelColorMode.palette,
-    ];
-    expect(PixelColorMode.values, modes);
-    final source = Uint8List.fromList([
-      123, 80, 240, 255,
-      10, 20, 30, 0,
-    ]);
-    for (final mode in modes) {
-      final out = quantizeColors(
-        source,
-        colorMode: mode,
-        colorLevels: 4,
-        paletteColors: const [0xFF000000, 0xFFFFFFFF, 0xFF8040FF],
-      );
-      expect(out, hasLength(source.length));
-      expect(out[7], 0, reason: '${mode.name} must preserve transparent alpha');
-      if (mode == PixelColorMode.none) {
-        expect(out, orderedEquals(source));
-      } else {
-        expect(out[3], 255);
+  test(
+    'all pixel color modes quantize deterministically and preserve alpha',
+    () {
+      const modes = <PixelColorMode>[
+        PixelColorMode.none,
+        PixelColorMode.count,
+        PixelColorMode.explicit,
+        PixelColorMode.palette,
+      ];
+      expect(PixelColorMode.values, modes);
+      final source = Uint8List.fromList([123, 80, 240, 255, 10, 20, 30, 0]);
+      for (final mode in modes) {
+        final out = quantizeColors(
+          source,
+          colorMode: mode,
+          colorLevels: 4,
+          paletteColors: const [0xFF000000, 0xFFFFFFFF, 0xFF8040FF],
+        );
+        expect(out, hasLength(source.length));
+        expect(
+          out[7],
+          0,
+          reason: '${mode.name} must preserve transparent alpha',
+        );
+        if (mode == PixelColorMode.none) {
+          expect(out, orderedEquals(source));
+        } else {
+          expect(out[3], 255);
+        }
       }
-    }
-  });
+    },
+  );
 }

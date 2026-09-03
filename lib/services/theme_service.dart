@@ -295,7 +295,11 @@ class ThemeService extends ChangeNotifier {
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
     } else {
-      _presets.addAll(raw.map((s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      _presets.addAll(
+        raw.map(
+          (s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
       // 保存済みプリセット一覧に、組み込みプリセット（パステル・
       // ニュアンス・くすみカラー等）を反映する（同IDが既に存在する場合は
       // 追加しない。プリセット名は同一IDであれば保存済みデータ側が優先
@@ -307,7 +311,10 @@ class ThemeService extends ChangeNotifier {
     }
     final currentId = prefs.getString(_prefsCurrentIdKey);
     if (currentId != null) {
-      _current = _presets.firstWhere((p) => p.id == currentId, orElse: () => _presets.first);
+      _current = _presets.firstWhere(
+        (p) => p.id == currentId,
+        orElse: () => _presets.first,
+      );
     } else if (_presets.isNotEmpty) {
       _current = _presets.first;
     }
@@ -315,12 +322,18 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsPresetsKey, _presets.map((p) => jsonEncode(p.toJson())).toList());
+    await prefs.setStringList(
+      _prefsPresetsKey,
+      _presets.map((p) => jsonEncode(p.toJson())).toList(),
+    );
     await prefs.setString(_prefsCurrentIdKey, _current.id);
   }
 
   void applyPreset(String id) {
-    final preset = _presets.firstWhere((p) => p.id == id, orElse: () => _current);
+    final preset = _presets.firstWhere(
+      (p) => p.id == id,
+      orElse: () => _current,
+    );
     _current = preset;
     notifyListeners();
     _persist();
@@ -371,7 +384,9 @@ class ThemeService extends ChangeNotifier {
   void toggleFavorite(String id) {
     final idx = _presets.indexWhere((p) => p.id == id);
     if (idx >= 0) {
-      _presets[idx] = _presets[idx].copyWith(isFavorite: !_presets[idx].isFavorite);
+      _presets[idx] = _presets[idx].copyWith(
+        isFavorite: !_presets[idx].isFavorite,
+      );
       notifyListeners();
       _persist();
     }
@@ -386,28 +401,33 @@ class ThemeService extends ChangeNotifier {
     // 選べてしまい、暗い文字が暗い背景に埋もれて読めなくなる不具合の
     // 原因になっていた。プリセット自身の背景色（panelBgColor）の明るさ
     // から自動的に決めることで、常に矛盾のない組み合わせになるようにする。
-    final brightness =
-        preset.panelBgColor.computeLuminance() > 0.5 ? Brightness.light : Brightness.dark;
+    final brightness = preset.panelBgColor.computeLuminance() > 0.5
+        ? Brightness.light
+        : Brightness.dark;
     // 「文字色」（UI全体の文字色）はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
     // しまわないようにする。
-    final scheme = ColorScheme.fromSeed(
-      seedColor: preset.accentColor,
-      brightness: brightness,
-    ).copyWith(
-      primary: preset.accentColor,
-      secondary: preset.selectionColor,
-      onSurface: preset.textColor,
-      onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: preset.accentColor,
+          brightness: brightness,
+        ).copyWith(
+          primary: preset.accentColor,
+          secondary: preset.selectionColor,
+          onSurface: preset.textColor,
+          onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
+        );
     // 角丸を大きめにし、Google Material標準の角丸14pxよりも柔らかい印象にする
     // （LINE・メルカリ等、日本の人気アプリに共通するポップで丸みの強い形状）。
     const radius = 18.0;
     const minTapSize = Size(48, 48);
     // Text等が明示的に色指定していない場合に使うデフォルト文字色
     // （「文字色 | UI全体の文字色」）。
-    final baseTextTheme = ThemeData(brightness: brightness, useMaterial3: true).textTheme;
+    final baseTextTheme = ThemeData(
+      brightness: brightness,
+      useMaterial3: true,
+    ).textTheme;
     // アプリ全体の基本フォント（白光明朝）。白光明朝に無い文字
     // （対応外の漢字・記号等）は、Android標準フォントへ直接落ちて浮いて
     // 見えないよう、まず源ノ明朝相当（Noto Serif JP）で穴埋めし、それでも
@@ -418,14 +438,16 @@ class ThemeService extends ChangeNotifier {
     // 文字が読みにくい。デフォルトの太さがRegular以下（未指定含む）の
     // スタイルはMedium以上へ底上げする（既に太字指定済みの箇所、例：
     // AppBarタイトルのBold等はそのまま維持される）。
-    final bodyTextTheme = _boldenForReadability(_withFontFallback(
-      baseTextTheme.apply(
-        fontFamily: 'HakkouMincho',
-        bodyColor: preset.textColor,
-        displayColor: preset.textColor,
+    final bodyTextTheme = _boldenForReadability(
+      _withFontFallback(
+        baseTextTheme.apply(
+          fontFamily: 'HakkouMincho',
+          bodyColor: preset.textColor,
+          displayColor: preset.textColor,
+        ),
+        kBodyFontFallback,
       ),
-      kBodyFontFallback,
-    ));
+    );
     // フォントの使い分け：項目名・見出しなど文字サイズが
     // 大きく目立たせたい箇所（display/headline/title）はくらむぼん、
     // それ以外の説明文・通常サイズの文字（body/label）はすべて白光明朝、
@@ -458,41 +480,51 @@ class ThemeService extends ChangeNotifier {
         // 継承されない。textTheme.titleLarge（見出し用にくらむぼんへ差し替え
         // 済み）を土台にして色・サイズ・太さだけ上書きすることで、正しく
         // 適用されるようにした。
-        titleTextStyle: textTheme.titleLarge?.copyWith(
-          color: preset.textColor,
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-        ) ?? TextStyle(
-          fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-          color: preset.textColor,
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-        ),
+        titleTextStyle:
+            textTheme.titleLarge?.copyWith(
+              color: preset.textColor,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ) ??
+            TextStyle(
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+              color: preset.textColor,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
         color: preset.menuBgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(64, 48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(64, 48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(48, 44),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
@@ -509,8 +541,12 @@ class ThemeService extends ChangeNotifier {
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 12,
         iconColor: scheme.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
-        titleTextStyle: textTheme.titleMedium?.copyWith(color: preset.textColor),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        titleTextStyle: textTheme.titleMedium?.copyWith(
+          color: preset.textColor,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -519,7 +555,10 @@ class ThemeService extends ChangeNotifier {
           borderRadius: BorderRadius.circular(radius),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
       // AlertDialogのtitleは既定でheadlineSmall（＝白光明朝）を使う仕様の
       // ため、fontFamilyを明示していないtitle: Text(...)は軒並み明朝体に
@@ -542,7 +581,9 @@ class ThemeService extends ChangeNotifier {
         behavior: SnackBarBehavior.floating,
         backgroundColor: preset.menuBgColor,
         contentTextStyle: TextStyle(color: preset.textColor),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: preset.menuBgColor,
@@ -553,11 +594,13 @@ class ThemeService extends ChangeNotifier {
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? scheme.primary : null,
+          (states) =>
+              states.contains(WidgetState.selected) ? scheme.primary : null,
         ),
         trackColor: WidgetStateProperty.resolveWith(
-          (states) =>
-              states.contains(WidgetState.selected) ? scheme.primary.withValues(alpha: 0.5) : null,
+          (states) => states.contains(WidgetState.selected)
+              ? scheme.primary.withValues(alpha: 0.5)
+              : null,
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -572,7 +615,9 @@ class ThemeService extends ChangeNotifier {
         labelColor: scheme.primary,
         unselectedLabelColor: preset.textColor.withValues(alpha: 0.6),
       ),
-      dividerTheme: DividerThemeData(color: preset.textColor.withValues(alpha: 0.08)),
+      dividerTheme: DividerThemeData(
+        color: preset.textColor.withValues(alpha: 0.08),
+      ),
     );
   }
 
@@ -580,7 +625,8 @@ class ThemeService extends ChangeNotifier {
   /// 列）を適用したコピーを返す。TextTheme.apply()にはfontFamilyFallback
   /// を指定するオプションが無いため、各スタイルへ個別にcopyWith()する。
   TextTheme _withFontFallback(TextTheme textTheme, List<String> fallback) {
-    TextStyle? apply(TextStyle? style) => style?.copyWith(fontFamilyFallback: fallback);
+    TextStyle? apply(TextStyle? style) =>
+        style?.copyWith(fontFamilyFallback: fallback);
     return textTheme.copyWith(
       displayLarge: apply(textTheme.displayLarge),
       displayMedium: apply(textTheme.displayMedium),
@@ -608,9 +654,9 @@ class ThemeService extends ChangeNotifier {
     // 代替フォント列は消さずに引き継ぐ（以前はnullで消しており、
     // くらむぼんに無い文字が豆腐（□）になっていた）。
     TextStyle? heading(TextStyle? style) => style?.copyWith(
-          fontFamily: fontFamily,
-          fontFamilyFallback: kHeadingFontFallback,
-        );
+      fontFamily: fontFamily,
+      fontFamilyFallback: kHeadingFontFallback,
+    );
     return textTheme.copyWith(
       displayLarge: heading(textTheme.displayLarge),
       displayMedium: heading(textTheme.displayMedium),
@@ -635,6 +681,7 @@ class ThemeService extends ChangeNotifier {
       if (weight.value >= FontWeight.w500.value) return style;
       return style.copyWith(fontWeight: FontWeight.w500);
     }
+
     return textTheme.copyWith(
       displayLarge: bolden(textTheme.displayLarge),
       displayMedium: bolden(textTheme.displayMedium),

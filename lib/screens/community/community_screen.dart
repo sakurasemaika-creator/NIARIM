@@ -43,7 +43,8 @@ class CommunityScreen extends StatefulWidget {
   State<CommunityScreen> createState() => _CommunityScreenState();
 }
 
-class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProviderStateMixin {
+class _CommunityScreenState extends State<CommunityScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.views;
@@ -88,7 +89,9 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     // Widgetインスタンス）が使い回された場合でも、新しいinitialTagFilterを
     // 取りこぼさないようにする。
     final newTag = widget.initialTagFilter;
-    if (newTag != null && newTag.isNotEmpty && newTag != oldWidget.initialTagFilter) {
+    if (newTag != null &&
+        newTag.isNotEmpty &&
+        newTag != oldWidget.initialTagFilter) {
       setState(() {
         _isSearching = true;
         _tagSearchMode = true;
@@ -119,24 +122,28 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
           .toList();
     }
     return typeFiltered
-        .where((w) =>
-            w.title.toLowerCase().contains(query) ||
-            w.authorName.toLowerCase().contains(query))
+        .where(
+          (w) =>
+              w.title.toLowerCase().contains(query) ||
+              w.authorName.toLowerCase().contains(query),
+        )
         .toList();
   }
 
-  List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) => _applySearch(
-      [...allWorks]..sort((a, b) => b.postedAt.compareTo(a.postedAt)));
+  List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) =>
+      _applySearch(
+        [...allWorks]..sort((a, b) => b.postedAt.compareTo(a.postedAt)),
+      );
 
   /// 期間別ランキングのスコア算出に使う「期間の長さ」。全期間はnull
   /// （減衰なし＝累計の再生・ブックマーク数をそのまま使う）。
   Duration? _periodWindow(_RankingPeriod period) => switch (period) {
-        _RankingPeriod.allTime => null,
-        _RankingPeriod.yearly => const Duration(days: 365),
-        _RankingPeriod.monthly => const Duration(days: 30),
-        _RankingPeriod.weekly => const Duration(days: 7),
-        _RankingPeriod.daily => const Duration(days: 1),
-      };
+    _RankingPeriod.allTime => null,
+    _RankingPeriod.yearly => const Duration(days: 365),
+    _RankingPeriod.monthly => const Duration(days: 30),
+    _RankingPeriod.weekly => const Duration(days: 7),
+    _RankingPeriod.daily => const Duration(days: 1),
+  };
 
   /// ランキング対象の作品を並び替える。
   ///
@@ -159,11 +166,16 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     final window = _periodWindow(_period);
     final now = DateTime.now();
     double scoreOf(CommunityWork w) {
-      final metric = _sort == _RankingSort.views ? w.viewCount : w.bookmarkCount;
+      final metric = _sort == _RankingSort.views
+          ? w.viewCount
+          : w.bookmarkCount;
       if (window == null) return metric.toDouble();
       final age = now.difference(w.postedAt);
       final windowSeconds = window.inSeconds.toDouble();
-      final ageSeconds = age.inSeconds.toDouble().clamp(windowSeconds, double.infinity);
+      final ageSeconds = age.inSeconds.toDouble().clamp(
+        windowSeconds,
+        double.infinity,
+      );
       final weight = windowSeconds / ageSeconds; // 範囲内なら1.0、古いほど0へ漸近
       return metric * weight;
     }
@@ -252,7 +264,10 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         title: Text(l10n.communityPostInfoTitle),
         content: Text(l10n.communityPostInfoBody),
         actions: [
-          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonOk),
+          ),
         ],
       ),
     );
@@ -266,7 +281,10 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         title: Text(l10n.communityPostComingSoonTitle),
         content: Text(l10n.communityPostComingSoonBody),
         actions: [
-          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonOk),
+          ),
         ],
       ),
     );
@@ -323,14 +341,19 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
             // 一覧画面（開いた時点で既読になる）を開く。
             IconButton(
               icon: Badge(
-                label: Text('${communityService.unreadFollowNotificationCount}'),
-                isLabelVisible: communityService.unreadFollowNotificationCount > 0,
+                label: Text(
+                  '${communityService.unreadFollowNotificationCount}',
+                ),
+                isLabelVisible:
+                    communityService.unreadFollowNotificationCount > 0,
                 child: const Icon(Icons.notifications_outlined),
               ),
               tooltip: l10n.communityFollowNotificationsTooltip,
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
-                builder: (_) => const CommunityFollowNotificationsScreen(),
-              )),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const CommunityFollowNotificationsScreen(),
+                ),
+              ),
             ),
             VideoTypeFilterButton(
               value: _videoTypeFilter,
@@ -396,19 +419,22 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         TabBarView(
           controller: _tabController,
           children: [
-            Builder(builder: (context) {
-              final works = _newArrivals(allWorks);
-              if (works.isEmpty) return _buildSearchEmptyState(l10n);
-              return SingleChildScrollView(
-                child: CommunityWorkGrid(
-                  works: works,
-                  bookmarkedIds: bookmarkedIds,
-                  onTapWork: _openFloatingPreview,
-                  onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
-                  onTapAuthor: _openAuthorWorks,
-                ),
-              );
-            }),
+            Builder(
+              builder: (context) {
+                final works = _newArrivals(allWorks);
+                if (works.isEmpty) return _buildSearchEmptyState(l10n);
+                return SingleChildScrollView(
+                  child: CommunityWorkGrid(
+                    works: works,
+                    bookmarkedIds: bookmarkedIds,
+                    onTapWork: _openFloatingPreview,
+                    onToggleBookmark: (w) =>
+                        communityService.toggleBookmark(w.id),
+                    onTapAuthor: _openAuthorWorks,
+                  ),
+                );
+              },
+            ),
             SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -433,77 +459,95 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                     child: Row(
                       children: [
                         ChoiceChip(
-                          avatar: const Icon(Icons.play_arrow_rounded, size: 16),
+                          avatar: const Icon(
+                            Icons.play_arrow_rounded,
+                            size: 16,
+                          ),
                           label: Text(l10n.communityRankingSortViews),
                           selected: _sort == _RankingSort.views,
-                          onSelected: (_) => setState(() => _sort = _RankingSort.views),
+                          onSelected: (_) =>
+                              setState(() => _sort = _RankingSort.views),
                         ),
                         const SizedBox(width: 8),
                         ChoiceChip(
                           avatar: const Icon(Icons.bookmark, size: 16),
                           label: Text(l10n.communityRankingSortBookmarks),
                           selected: _sort == _RankingSort.bookmarks,
-                          onSelected: (_) => setState(() => _sort = _RankingSort.bookmarks),
+                          onSelected: (_) =>
+                              setState(() => _sort = _RankingSort.bookmarks),
                         ),
                         const Spacer(),
                         // ワンタップで昇順/降順を切り替える矢印ボタン
                         // （ホーム画面の並び替え矢印＝SortModeControlと
                         // 同じ操作感に揃えている）。
                         IconButton(
-                          icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                          icon: Icon(
+                            _sortAscending
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                          ),
                           tooltip: _sortAscending
                               ? l10n.communityRankingSortAscendingTooltip
                               : l10n.communityRankingSortDescendingTooltip,
-                          onPressed: () => setState(() => _sortAscending = !_sortAscending),
+                          onPressed: () =>
+                              setState(() => _sortAscending = !_sortAscending),
                         ),
                       ],
                     ),
                   ),
-                  Builder(builder: (context) {
-                    final ranked = _rankingWorks(allWorks);
-                    if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
-                    final rankNumbers = {
-                      for (int i = 0; i < ranked.length; i++) ranked[i].id: i + 1,
-                    };
-                    return CommunityWorkGrid(
-                      works: ranked,
-                      bookmarkedIds: bookmarkedIds,
-                      onTapWork: _openFloatingPreview,
-                      onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
-                      onTapAuthor: _openAuthorWorks,
-                      rankNumbers: rankNumbers,
-                    );
-                  }),
+                  Builder(
+                    builder: (context) {
+                      final ranked = _rankingWorks(allWorks);
+                      if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
+                      final rankNumbers = {
+                        for (int i = 0; i < ranked.length; i++)
+                          ranked[i].id: i + 1,
+                      };
+                      return CommunityWorkGrid(
+                        works: ranked,
+                        bookmarkedIds: bookmarkedIds,
+                        onTapWork: _openFloatingPreview,
+                        onToggleBookmark: (w) =>
+                            communityService.toggleBookmark(w.id),
+                        onTapAuthor: _openAuthorWorks,
+                        rankNumbers: rankNumbers,
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-            Builder(builder: (context) {
-              // お気に入り作者（フォロー、Task#144）の新着一覧。
-              // favoriteAuthorFeedは既にNIARIM側非公開作品を除外し新着順
-              // （フォロー中の作者本人の投稿日時、またはフォロー中の作者に
-              // よるリポストがより新しい場合はその日時）に並んでいるため、
-              // 検索絞り込みのみ追加で適用する（Task#145：リポスト機能）。
-              final feed = communityService.favoriteAuthorFeed;
-              final works = _applySearch(feed.map((e) => e.work).toList());
-              final repostedByNames = {
-                for (final e in feed)
-                  if (e.repostedByAuthorName != null) e.work.id: e.repostedByAuthorName!,
-              };
-              if (communityService.favoriteAuthorIds.isEmpty) {
-                return _buildNoFavoriteAuthorsState(l10n);
-              }
-              if (works.isEmpty) return _buildSearchEmptyState(l10n);
-              return SingleChildScrollView(
-                child: CommunityWorkGrid(
-                  works: works,
-                  bookmarkedIds: bookmarkedIds,
-                  onTapWork: _openFloatingPreview,
-                  onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
-                  onTapAuthor: _openAuthorWorks,
-                  repostedByNames: repostedByNames,
-                ),
-              );
-            }),
+            Builder(
+              builder: (context) {
+                // お気に入り作者（フォロー、Task#144）の新着一覧。
+                // favoriteAuthorFeedは既にNIARIM側非公開作品を除外し新着順
+                // （フォロー中の作者本人の投稿日時、またはフォロー中の作者に
+                // よるリポストがより新しい場合はその日時）に並んでいるため、
+                // 検索絞り込みのみ追加で適用する（Task#145：リポスト機能）。
+                final feed = communityService.favoriteAuthorFeed;
+                final works = _applySearch(feed.map((e) => e.work).toList());
+                final repostedByNames = {
+                  for (final e in feed)
+                    if (e.repostedByAuthorName != null)
+                      e.work.id: e.repostedByAuthorName!,
+                };
+                if (communityService.favoriteAuthorIds.isEmpty) {
+                  return _buildNoFavoriteAuthorsState(l10n);
+                }
+                if (works.isEmpty) return _buildSearchEmptyState(l10n);
+                return SingleChildScrollView(
+                  child: CommunityWorkGrid(
+                    works: works,
+                    bookmarkedIds: bookmarkedIds,
+                    onTapWork: _openFloatingPreview,
+                    onToggleBookmark: (w) =>
+                        communityService.toggleBookmark(w.id),
+                    onTapAuthor: _openAuthorWorks,
+                    repostedByNames: repostedByNames,
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -521,12 +565,20 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_add_alt_1, size: 64, color: scheme.primary.withValues(alpha: 0.6)),
+            Icon(
+              Icons.person_add_alt_1,
+              size: 64,
+              color: scheme.primary.withValues(alpha: 0.6),
+            ),
             const SizedBox(height: 16),
             Text(
               l10n.communityFavoriteAuthorsEmptyTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -551,12 +603,20 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 40, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            Icon(
+              Icons.search_off,
+              size: 40,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(height: 12),
             Text(
-              query.isEmpty ? l10n.communityEmptyState : l10n.communitySearchNoResults(query),
+              query.isEmpty
+                  ? l10n.communityEmptyState
+                  : l10n.communitySearchNoResults(query),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

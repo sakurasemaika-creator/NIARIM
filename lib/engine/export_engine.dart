@@ -20,7 +20,8 @@ import '../models/layer_keyframe.dart';
 import '../models/scene.dart';
 import '../services/hw_video_encoder.dart';
 
-typedef ExportProgressCallback = void Function(int currentFrame, int totalFrames);
+typedef ExportProgressCallback =
+    void Function(int currentFrame, int totalFrames);
 
 /// 書き出し中のキャンセル要求を伝えるためのトークン（誤タップ対応の
 /// キャンセルボタン）。フレーム生成ループの各反復で
@@ -73,11 +74,16 @@ class ExportEngine {
   /// 更新日時の新しい順で返す。[forceRefresh]がfalse（既定）かつキャッシュが
   /// あればそれを返す。ファイルの追加・削除後は[forceRefresh]をtrueにして
   /// 呼び出す。
-  static Future<List<File>> listExportedFiles({bool forceRefresh = false}) async {
-    if (!forceRefresh && _cachedExportedFiles != null) return _cachedExportedFiles!;
+  static Future<List<File>> listExportedFiles({
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh && _cachedExportedFiles != null)
+      return _cachedExportedFiles!;
     final dir = await exportsDir();
     final files = dir.listSync().whereType<File>().toList();
-    files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+    files.sort(
+      (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
+    );
     _cachedExportedFiles = files;
     return files;
   }
@@ -111,7 +117,9 @@ class ExportEngine {
     LayerKeyframe? groupKeyframeOf(Layer layer) {
       for (final g in groups) {
         if (g.memberLayerIds.contains(layer.id)) {
-          return g.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(g.keyframes, frameIndex);
+          return g.keyframes.isEmpty
+              ? null
+              : _layerKeyframeEngine.valueAt(g.keyframes, frameIndex);
         }
       }
       return null;
@@ -123,8 +131,9 @@ class ExportEngine {
       (l) => resolveTileKey(layerHomes, sceneId, frameIndex, l.id),
       drawingWidth,
       drawingHeight,
-      keyframeOf: (l) =>
-          l.keyframes.isEmpty ? null : _layerKeyframeEngine.valueAt(l.keyframes, frameIndex),
+      keyframeOf: (l) => l.keyframes.isEmpty
+          ? null
+          : _layerKeyframeEngine.valueAt(l.keyframes, frameIndex),
       groupKeyframeOf: groupKeyframeOf,
     );
 
@@ -153,11 +162,19 @@ class ExportEngine {
 
     final picture = recorder.endRecording();
     final uiImage = await picture.toImage(width, height);
-    final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await uiImage.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     uiImage.dispose();
     final rgba = byteData!.buffer.asUint8List();
     if (effectFilters.isEmpty) return rgba;
-    return _filterEngine.applyEffectFilters(rgba, width, height, effectFilters, frameIndex);
+    return _filterEngine.applyEffectFilters(
+      rgba,
+      width,
+      height,
+      effectFilters,
+      frameIndex,
+    );
   }
 
   /// タイムラインモードで現在選択中のフレーム1枚だけを静止画（PNG/JPEG）
@@ -180,7 +197,13 @@ class ExportEngine {
     final scene = scenes.firstWhere((s) => s.id == sceneId);
     final frame = scene.frames.firstWhere((f) => f.index == frameIndex);
     final rgba = await renderFrame(
-      layers: resolveFrameLayers(scenes, layerHomes, sceneId, frameIndex, frame.layers),
+      layers: resolveFrameLayers(
+        scenes,
+        layerHomes,
+        sceneId,
+        frameIndex,
+        frame.layers,
+      ),
       tileManager: tileManager,
       sceneId: sceneId,
       frameIndex: frameIndex,
@@ -194,11 +217,19 @@ class ExportEngine {
       layerHomes: layerHomes,
       groups: scene.groups,
     );
-    final image = img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4);
-    final bytes = asJpeg ? img.encodeJpg(image, quality: 92) : img.encodePng(image);
+    final image = img.Image.fromBytes(
+      width: width,
+      height: height,
+      bytes: rgba.buffer,
+      numChannels: 4,
+    );
+    final bytes = asJpeg
+        ? img.encodeJpg(image, quality: 92)
+        : img.encodePng(image);
     final dir = await ExportEngine.exportsDir();
     final ext = asJpeg ? 'jpg' : 'png';
-    final outputPath = '${dir.path}/niarim_frame_${DateTime.now().millisecondsSinceEpoch}.$ext';
+    final outputPath =
+        '${dir.path}/niarim_frame_${DateTime.now().millisecondsSinceEpoch}.$ext';
     await File(outputPath).writeAsBytes(bytes);
     _cachedExportedFiles = null;
     return outputPath;
@@ -211,7 +242,10 @@ class ExportEngine {
   /// 使わずvg.loadPictureを直接呼ぶ）。タイトルロゴは以前まで
   /// ParagraphBuilderで「NIARIM」の文字を仮描画していたが、完成した
   /// アプリタイトルロゴ（assets/logo/title_logo.svg）に差し替えた。
-  Future<Uint8List> _renderEndCardPng({required int width, required int height}) async {
+  Future<Uint8List> _renderEndCardPng({
+    required int width,
+    required int height,
+  }) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     canvas.drawRect(
@@ -300,11 +334,18 @@ class ExportEngine {
 
     final picture = recorder.endRecording();
     final uiImage = await picture.toImage(width, height);
-    final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await uiImage.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     uiImage.dispose();
     final rgba = byteData!.buffer.asUint8List();
     return img.encodePng(
-      img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
+      img.Image.fromBytes(
+        width: width,
+        height: height,
+        bytes: rgba.buffer,
+        numChannels: 4,
+      ),
     );
   }
 
@@ -347,7 +388,13 @@ class ExportEngine {
           throw const ExportCancelledException();
         }
         final rgba = await renderFrame(
-          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
+          layers: resolveFrameLayers(
+            scenes,
+            layerHomes,
+            scene.id,
+            frame.index,
+            frame.layers,
+          ),
           tileManager: tileManager,
           sceneId: scene.id,
           frameIndex: frame.index,
@@ -362,9 +409,16 @@ class ExportEngine {
           groups: scene.groups,
         );
         final pngBytes = img.encodePng(
-          img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
+          img.Image.fromBytes(
+            width: width,
+            height: height,
+            bytes: rgba.buffer,
+            numChannels: 4,
+          ),
         );
-        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
         await file.writeAsBytes(pngBytes);
         framePaths.add(file.path);
         onProgress?.call(globalIndex + 1, totalFrames);
@@ -373,7 +427,10 @@ class ExportEngine {
     }
 
     if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(width: width, height: height);
+      final endCardBytes = await _renderEndCardPng(
+        width: width,
+        height: height,
+      );
       final endCardFile = File('${framesDir.path}/endcard.png');
       await endCardFile.writeAsBytes(endCardBytes);
       for (int i = 0; i < fps * 5; i++) {
@@ -382,7 +439,8 @@ class ExportEngine {
     }
 
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.mp4';
+    final outputPath =
+        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.mp4';
     await HardwareVideoEncoder.encodeMp4(
       framePaths: framePaths,
       fps: fps,
@@ -415,9 +473,16 @@ class ExportEngine {
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
-        if (cancelToken?.isCancelled == true) throw const ExportCancelledException();
+        if (cancelToken?.isCancelled == true)
+          throw const ExportCancelledException();
         final rgba = await renderFrame(
-          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
+          layers: resolveFrameLayers(
+            scenes,
+            layerHomes,
+            scene.id,
+            frame.index,
+            frame.layers,
+          ),
           tileManager: tileManager,
           sceneId: scene.id,
           frameIndex: frame.index,
@@ -432,7 +497,10 @@ class ExportEngine {
           groups: scene.groups,
         );
         final imgFrame = img.Image.fromBytes(
-          width: width, height: height, bytes: rgba.buffer, numChannels: 4,
+          width: width,
+          height: height,
+          bytes: rgba.buffer,
+          numChannels: 4,
         );
         imgFrame.frameDuration = delayMs;
         if (gifImage == null) {
@@ -446,7 +514,8 @@ class ExportEngine {
 
     final gifBytes = img.encodeGif(gifImage!);
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.gif';
+    final outputPath =
+        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.gif';
     await File(outputPath).writeAsBytes(gifBytes);
     return outputPath;
   }
@@ -487,7 +556,13 @@ class ExportEngine {
           throw const ExportCancelledException();
         }
         final rgba = await renderFrame(
-          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
+          layers: resolveFrameLayers(
+            scenes,
+            layerHomes,
+            scene.id,
+            frame.index,
+            frame.layers,
+          ),
           tileManager: tileManager,
           sceneId: scene.id,
           frameIndex: frame.index,
@@ -502,9 +577,16 @@ class ExportEngine {
           groups: scene.groups,
         );
         final pngBytes = img.encodePng(
-          img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
+          img.Image.fromBytes(
+            width: width,
+            height: height,
+            bytes: rgba.buffer,
+            numChannels: 4,
+          ),
         );
-        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
         await file.writeAsBytes(pngBytes);
         onProgress?.call(globalIndex + 1, totalFrames);
         globalIndex++;
@@ -512,16 +594,22 @@ class ExportEngine {
     }
 
     if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(width: width, height: height);
+      final endCardBytes = await _renderEndCardPng(
+        width: width,
+        height: height,
+      );
       for (int i = 0; i < fps * 5; i++) {
-        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
         await file.writeAsBytes(endCardBytes);
         globalIndex++;
       }
     }
 
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.webm';
+    final outputPath =
+        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.webm';
     final session = await FFmpegKit.execute(
       '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
       '-c:v libvpx-vp9 -pix_fmt yuva420p "$outputPath"',
@@ -573,7 +661,13 @@ class ExportEngine {
           throw const ExportCancelledException();
         }
         final rgba = await renderFrame(
-          layers: resolveFrameLayers(scenes, layerHomes, scene.id, frame.index, frame.layers),
+          layers: resolveFrameLayers(
+            scenes,
+            layerHomes,
+            scene.id,
+            frame.index,
+            frame.layers,
+          ),
           tileManager: tileManager,
           sceneId: scene.id,
           frameIndex: frame.index,
@@ -588,9 +682,16 @@ class ExportEngine {
           groups: scene.groups,
         );
         final pngBytes = img.encodePng(
-          img.Image.fromBytes(width: width, height: height, bytes: rgba.buffer, numChannels: 4),
+          img.Image.fromBytes(
+            width: width,
+            height: height,
+            bytes: rgba.buffer,
+            numChannels: 4,
+          ),
         );
-        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
         await file.writeAsBytes(pngBytes);
         onProgress?.call(globalIndex + 1, totalFrames);
         globalIndex++;
@@ -598,16 +699,22 @@ class ExportEngine {
     }
 
     if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(width: width, height: height);
+      final endCardBytes = await _renderEndCardPng(
+        width: width,
+        height: height,
+      );
       for (int i = 0; i < fps * 5; i++) {
-        final file = File('${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png');
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
         await file.writeAsBytes(endCardBytes);
         globalIndex++;
       }
     }
 
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.avi';
+    final outputPath =
+        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.avi';
     // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
     // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
     final session = await FFmpegKit.execute(

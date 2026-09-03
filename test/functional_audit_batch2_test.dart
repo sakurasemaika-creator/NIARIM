@@ -34,7 +34,12 @@ void main() {
       final image = await LayerCompositor.composite(
         tm,
         [
-          Layer(id: 'top', name: 'top', type: LayerType.normal, blendMode: mode),
+          Layer(
+            id: 'top',
+            name: 'top',
+            type: LayerType.normal,
+            blendMode: mode,
+          ),
           const Layer(id: 'bottom', name: 'bottom', type: LayerType.normal),
         ],
         (l) => l.id,
@@ -46,8 +51,12 @@ void main() {
       final actual = _pixel(rgba, 48, 48);
       final expected = _blendReference(mode, base, src);
       for (var c = 0; c < 3; c++) {
-        expect((actual[c] - expected[c]).abs(), lessThanOrEqualTo(5),
-            reason: '${mode.name} channel=$c actual=${actual[c]} expected=${expected[c]}');
+        expect(
+          (actual[c] - expected[c]).abs(),
+          lessThanOrEqualTo(5),
+          reason:
+              '${mode.name} channel=$c actual=${actual[c]} expected=${expected[c]}',
+        );
       }
       expect(actual[3], 255, reason: '${mode.name} alpha');
       image.dispose();
@@ -60,34 +69,74 @@ void main() {
     final mask = _lensMask();
     for (final kind in FilterKind.values) {
       final filter = _filterFor(kind);
-      final result = applyDrawFilterInIsolate((input, w, h, filter, kind == FilterKind.lensDistortion ? mask : null));
+      final result = applyDrawFilterInIsolate((
+        input,
+        w,
+        h,
+        filter,
+        kind == FilterKind.lensDistortion ? mask : null,
+      ));
       expect(result.length, input.length, reason: '${kind.name} output length');
-      expect(result, isNot(same(input)), reason: '${kind.name} must return independent buffer');
+      expect(
+        result,
+        isNot(same(input)),
+        reason: '${kind.name} must return independent buffer',
+      );
       final image = await _image(result);
       await _save(image, '${out.path}/draw_filter_${kind.name}.png');
       image.dispose();
       for (var i = 3; i < result.length; i += 4) {
-        expect(result[i], inInclusiveRange(0, 255), reason: '${kind.name} alpha range');
+        expect(
+          result[i],
+          inInclusiveRange(0, 255),
+          reason: '${kind.name} alpha range',
+        );
       }
     }
 
     final linear = applyDrawFilterInIsolate((
-      input, w, h,
-      const FilterDef(id: 'linear', name: 'linear', kind: FilterKind.toneCurve, toneCurvePreset: ToneCurvePreset.linear),
+      input,
+      w,
+      h,
+      const FilterDef(
+        id: 'linear',
+        name: 'linear',
+        kind: FilterKind.toneCurve,
+        toneCurvePreset: ToneCurvePreset.linear,
+      ),
       null,
     ));
-    _expectBytesNear(linear, input, tolerance: 1, reason: 'linear tone curve must be identity');
+    _expectBytesNear(
+      linear,
+      input,
+      tolerance: 1,
+      reason: 'linear tone curve must be identity',
+    );
 
     final levels = applyDrawFilterInIsolate((
-      input, w, h,
+      input,
+      w,
+      h,
       const FilterDef(id: 'levels', name: 'levels', kind: FilterKind.levels),
       null,
     ));
-    _expectBytesNear(levels, input, tolerance: 1, reason: 'default levels must be identity');
+    _expectBytesNear(
+      levels,
+      input,
+      tolerance: 1,
+      reason: 'default levels must be identity',
+    );
 
     final threshold = applyDrawFilterInIsolate((
-      input, w, h,
-      const FilterDef(id: 'threshold', name: 'threshold', kind: FilterKind.threshold, thresholdValue: 128),
+      input,
+      w,
+      h,
+      const FilterDef(
+        id: 'threshold',
+        name: 'threshold',
+        kind: FilterKind.threshold,
+        thresholdValue: 128,
+      ),
       null,
     ));
     for (var i = 0; i < threshold.length; i += 4) {
@@ -98,20 +147,40 @@ void main() {
     }
 
     final vignette = applyDrawFilterInIsolate((
-      input, w, h,
-      const FilterDef(id: 'vig', name: 'vig', kind: FilterKind.vignette, strength: 100),
+      input,
+      w,
+      h,
+      const FilterDef(
+        id: 'vig',
+        name: 'vig',
+        kind: FilterKind.vignette,
+        strength: 100,
+      ),
       null,
     ));
-    expect(_luma(_pixel(vignette, 48, 48)), greaterThan(_luma(_pixel(vignette, 2, 2))),
-        reason: 'vignette should darken corners more than center');
+    expect(
+      _luma(_pixel(vignette, 48, 48)),
+      greaterThan(_luma(_pixel(vignette, 2, 2))),
+      reason: 'vignette should darken corners more than center',
+    );
 
     final pixelated = applyDrawFilterInIsolate((
-      input, w, h,
-      const FilterDef(id: 'px', name: 'px', kind: FilterKind.pixelate, strength: 8),
+      input,
+      w,
+      h,
+      const FilterDef(
+        id: 'px',
+        name: 'px',
+        kind: FilterKind.pixelate,
+        strength: 8,
+      ),
       null,
     ));
-    expect(_pixel(pixelated, 17, 17).sublist(0, 3), equals(_pixel(pixelated, 22, 22).sublist(0, 3)),
-        reason: 'pixelate should make pixels inside a block equal');
+    expect(
+      _pixel(pixelated, 17, 17).sublist(0, 3),
+      equals(_pixel(pixelated, 22, 22).sublist(0, 3)),
+      reason: 'pixelate should make pixels inside a block equal',
+    );
   });
 
   test('演出フィルター全種：範囲・enabled・実出力を確認', () async {
@@ -129,13 +198,45 @@ void main() {
         param4: 25,
         fadeColor: const Color(0xFF203060),
       );
-      final before = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect], 2);
-      expect(before, equals(input), reason: '${type.name}: before range must be no-op');
-      final after = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect], 8);
-      expect(after, equals(input), reason: '${type.name}: after range must be no-op');
-      final disabled = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect.copyWith(enabled: false)], 5);
-      expect(disabled, equals(input), reason: '${type.name}: disabled must be no-op');
-      final active = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [effect], 5);
+      final before = engine.applyEffectFilters(
+        Uint8List.fromList(input),
+        w,
+        h,
+        [effect],
+        2,
+      );
+      expect(
+        before,
+        equals(input),
+        reason: '${type.name}: before range must be no-op',
+      );
+      final after = engine.applyEffectFilters(Uint8List.fromList(input), w, h, [
+        effect,
+      ], 8);
+      expect(
+        after,
+        equals(input),
+        reason: '${type.name}: after range must be no-op',
+      );
+      final disabled = engine.applyEffectFilters(
+        Uint8List.fromList(input),
+        w,
+        h,
+        [effect.copyWith(enabled: false)],
+        5,
+      );
+      expect(
+        disabled,
+        equals(input),
+        reason: '${type.name}: disabled must be no-op',
+      );
+      final active = engine.applyEffectFilters(
+        Uint8List.fromList(input),
+        w,
+        h,
+        [effect],
+        5,
+      );
       expect(active.length, input.length);
       final image = await _image(active);
       await _save(image, '${out.path}/effect_filter_${type.name}.png');
@@ -162,8 +263,14 @@ void main() {
       await _save(image, '${out.path}/camera_frame_$frame.png');
       image.dispose();
     }
-    final noMove = await _renderCamera(engine, const CameraKeyframe(frameIndex: 0));
-    final moveX = await _renderCamera(engine, const CameraKeyframe(frameIndex: 0, x: 15));
+    final noMove = await _renderCamera(
+      engine,
+      const CameraKeyframe(frameIndex: 0),
+    );
+    final moveX = await _renderCamera(
+      engine,
+      const CameraKeyframe(frameIndex: 0, x: 15),
+    );
     final a = await _rgba(noMove);
     final b = await _rgba(moveX);
     expect(_centroidX(b), lessThan(_centroidX(a)));
@@ -175,7 +282,13 @@ void main() {
     final engine = LayerKeyframeEngine();
     for (final easing in LayerKeyframeEasing.values) {
       final keys = [
-        LayerKeyframe(frameIndex: 0, x: 0, scale: 1, rotation: 0, easing: easing),
+        LayerKeyframe(
+          frameIndex: 0,
+          x: 0,
+          scale: 1,
+          rotation: 0,
+          easing: easing,
+        ),
         const LayerKeyframe(frameIndex: 10, x: 40, scale: 2, rotation: 90),
       ];
       final start = engine.valueAt(keys, 0);
@@ -183,7 +296,8 @@ void main() {
       expect(start.x, closeTo(0, 1e-9));
       expect(end.x, closeTo(40, 1e-9));
       final mid = engine.valueAt(keys, 5);
-      if (easing == LayerKeyframeEasing.linear || easing == LayerKeyframeEasing.easeInOut) {
+      if (easing == LayerKeyframeEasing.linear ||
+          easing == LayerKeyframeEasing.easeInOut) {
         expect(mid.x, closeTo(20, 0.001));
       } else if (easing == LayerKeyframeEasing.easeIn) {
         expect(mid.x, lessThan(20));
@@ -204,7 +318,14 @@ void main() {
         LayerKeyframe(frameIndex: 0, x: 0, y: 0, scale: 1, rotation: 0),
         LayerKeyframe(frameIndex: 10, x: 35, y: -10, scale: 1.5, rotation: 45),
       ], frame);
-      final image = await LayerCompositor.composite(tm, const [layer], (l) => l.id, w, h, keyframeOf: (_) => kf);
+      final image = await LayerCompositor.composite(
+        tm,
+        const [layer],
+        (l) => l.id,
+        w,
+        h,
+        keyframeOf: (_) => kf,
+      );
       await _save(image, '${out.path}/layer_keyframe_$frame.png');
       image.dispose();
     }
@@ -224,14 +345,18 @@ FilterDef _filterFor(FilterKind kind) {
       FilterKind.vignette => 70,
       FilterKind.noise => 35,
       FilterKind.threshold => 128,
-      FilterKind.fisheye || FilterKind.chromaticAberration || FilterKind.lensDistortion => 45,
+      FilterKind.fisheye ||
+      FilterKind.chromaticAberration ||
+      FilterKind.lensDistortion => 45,
       FilterKind.pixelate => 8,
       FilterKind.auroraHologram => 100,
       _ => 60,
     },
     colorLevels: 6,
     edgeStrength: 0.8,
-    toneCurvePreset: kind == FilterKind.toneCurve ? ToneCurvePreset.highContrast : ToneCurvePreset.linear,
+    toneCurvePreset: kind == FilterKind.toneCurve
+        ? ToneCurvePreset.highContrast
+        : ToneCurvePreset.linear,
     outlineColor: 0xFFFF3050,
     outlineWidth: 4,
     vignetteColor: 0xFF101020,
@@ -306,7 +431,12 @@ void _fill(TileManager tm, String id, ui.Color color, {int inset = 0}) {
 
 Future<ui.Image> _image(Uint8List rgba) async {
   final buffer = await ui.ImmutableBuffer.fromUint8List(rgba);
-  final descriptor = ui.ImageDescriptor.raw(buffer, width: w, height: h, pixelFormat: ui.PixelFormat.rgba8888);
+  final descriptor = ui.ImageDescriptor.raw(
+    buffer,
+    width: w,
+    height: h,
+    pixelFormat: ui.PixelFormat.rgba8888,
+  );
   final codec = await descriptor.instantiateCodec();
   final frame = await codec.getNextFrame();
   codec.dispose();
@@ -330,10 +460,19 @@ Future<void> _save(ui.Image image, String path) async {
   await File(path).writeAsBytes(data!.buffer.asUint8List());
 }
 
-void _expectBytesNear(List<int> actual, List<int> expected, {required int tolerance, required String reason}) {
+void _expectBytesNear(
+  List<int> actual,
+  List<int> expected, {
+  required int tolerance,
+  required String reason,
+}) {
   expect(actual.length, expected.length, reason: reason);
   for (var i = 0; i < actual.length; i++) {
-    expect((actual[i] - expected[i]).abs(), lessThanOrEqualTo(tolerance), reason: '$reason index=$i');
+    expect(
+      (actual[i] - expected[i]).abs(),
+      lessThanOrEqualTo(tolerance),
+      reason: '$reason index=$i',
+    );
   }
 }
 
@@ -342,11 +481,21 @@ double _luma(List<int> p) => p[0] * 0.2126 + p[1] * 0.7152 + p[2] * 0.0722;
 Future<ui.Image> _renderCamera(CameraEngine engine, CameraKeyframe kf) async {
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
-  canvas.drawRect(ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()), ui.Paint()..color = const ui.Color(0xFFFFFFFF));
+  canvas.drawRect(
+    ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+    ui.Paint()..color = const ui.Color(0xFFFFFFFF),
+  );
   canvas.save();
   engine.apply(canvas, kf, w.toDouble(), h.toDouble());
-  canvas.drawRect(const ui.Rect.fromLTWH(58, 38, 16, 20), ui.Paint()..color = const ui.Color(0xFFEF4030));
-  canvas.drawCircle(const ui.Offset(30, 62), 8, ui.Paint()..color = const ui.Color(0xFF2060D0));
+  canvas.drawRect(
+    const ui.Rect.fromLTWH(58, 38, 16, 20),
+    ui.Paint()..color = const ui.Color(0xFFEF4030),
+  );
+  canvas.drawCircle(
+    const ui.Offset(30, 62),
+    8,
+    ui.Paint()..color = const ui.Color(0xFF2060D0),
+  );
   canvas.restore();
   final picture = recorder.endRecording();
   final image = await picture.toImage(w, h);
@@ -369,8 +518,16 @@ double _centroidX(List<int> rgba) {
   return count == 0 ? double.nan : sum / count;
 }
 
-List<int> _blendReference(LayerBlendMode mode, ui.Color backdrop, ui.Color source) {
-  final cb = [backdrop.red / 255.0, backdrop.green / 255.0, backdrop.blue / 255.0];
+List<int> _blendReference(
+  LayerBlendMode mode,
+  ui.Color backdrop,
+  ui.Color source,
+) {
+  final cb = [
+    backdrop.red / 255.0,
+    backdrop.green / 255.0,
+    backdrop.blue / 255.0,
+  ];
   final cs = [source.red / 255.0, source.green / 255.0, source.blue / 255.0];
   List<double> o;
   switch (mode) {
@@ -381,7 +538,12 @@ List<int> _blendReference(LayerBlendMode mode, ui.Color backdrop, ui.Color sourc
     case LayerBlendMode.screen:
       o = List.generate(3, (i) => cb[i] + cs[i] - cb[i] * cs[i]);
     case LayerBlendMode.overlay:
-      o = List.generate(3, (i) => cb[i] <= 0.5 ? 2 * cb[i] * cs[i] : 1 - 2 * (1 - cb[i]) * (1 - cs[i]));
+      o = List.generate(
+        3,
+        (i) => cb[i] <= 0.5
+            ? 2 * cb[i] * cs[i]
+            : 1 - 2 * (1 - cb[i]) * (1 - cs[i]),
+      );
     case LayerBlendMode.addition:
       o = List.generate(3, (i) => math.min(1.0, cb[i] + cs[i]));
     case LayerBlendMode.subtract:
@@ -391,16 +553,29 @@ List<int> _blendReference(LayerBlendMode mode, ui.Color backdrop, ui.Color sourc
     case LayerBlendMode.lighten:
       o = List.generate(3, (i) => math.max(cb[i], cs[i]));
     case LayerBlendMode.colorBurn:
-      o = List.generate(3, (i) => cs[i] <= 0 ? 0 : 1 - math.min(1.0, (1 - cb[i]) / cs[i]));
+      o = List.generate(
+        3,
+        (i) => cs[i] <= 0 ? 0 : 1 - math.min(1.0, (1 - cb[i]) / cs[i]),
+      );
     case LayerBlendMode.colorDodge:
-      o = List.generate(3, (i) => cs[i] >= 1 ? 1 : math.min(1.0, cb[i] / (1 - cs[i])));
+      o = List.generate(
+        3,
+        (i) => cs[i] >= 1 ? 1 : math.min(1.0, cb[i] / (1 - cs[i])),
+      );
     case LayerBlendMode.hardLight:
-      o = List.generate(3, (i) => cs[i] <= 0.5 ? 2 * cb[i] * cs[i] : 1 - 2 * (1 - cb[i]) * (1 - cs[i]));
+      o = List.generate(
+        3,
+        (i) => cs[i] <= 0.5
+            ? 2 * cb[i] * cs[i]
+            : 1 - 2 * (1 - cb[i]) * (1 - cs[i]),
+      );
     case LayerBlendMode.softLight:
       o = List.generate(3, (i) {
         final b = cb[i], s = cs[i];
         final d = b <= 0.25 ? ((16 * b - 12) * b + 4) * b : math.sqrt(b);
-        return s <= 0.5 ? b - (1 - 2 * s) * b * (1 - b) : b + (2 * s - 1) * (d - b);
+        return s <= 0.5
+            ? b - (1 - 2 * s) * b * (1 - b)
+            : b + (2 * s - 1) * (d - b);
       });
     case LayerBlendMode.difference:
       o = List.generate(3, (i) => (cb[i] - cs[i]).abs());

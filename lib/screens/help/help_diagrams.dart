@@ -22,30 +22,38 @@ enum HelpScreenTemplate {
   /// キャンバス下部ツールバー（アイコンが横一列）。ペン・消しゴム・バケツ等の
   /// 描画ツール系の項目で使う。7スロット。
   toolbarRow,
+
   /// キャンバス上部バー（右寄りにアイコンが横一列）。編集メニュー経由の項目
   /// （変形・回転、筆圧カーブ導線等）や自動保存で使う。4スロット。
   topBar,
+
   /// レイヤーパネル（行が縦に並ぶリスト、各行にサムネイル＋名前＋目アイコン）。
   /// レイヤー関連の項目で使う。4スロット。
   layerPanelList,
+
   /// フローティングパネル（タイトル行＋設定行2つ＋スライダー行）。オニオン
   /// スキン・定規・各種設定画面など、単独のパネル/画面で完結する項目で使う。
   /// 4スロット（0=タイトル/閉じる、1・2=設定行、3=スライダー）。
   floatingPanel,
+
   /// タイムラインのトラック帯（横長の帯にクリップが並ぶ）。タイムライン・
   /// シーン・フレーム操作・素材・カメラキーフレーム・演出フィルター等で使う。
   /// 5スロット。
   timelineTrack,
+
   /// セーブツリー／スロットのリスト（サムネイル＋行が縦に並ぶ）。保存関連の
   /// 項目で使う。3スロット。
   saveList,
+
   /// 書き出し形式選択（チップが横に3つ並ぶ）。書き出し関連の項目で使う。
   /// 3スロット。
   exportPicker,
+
   /// キャンバス作画エリア（白／市松の矩形＋下に小さなツールバー）。描画領域・
   /// 背景色・トーン塗り等、キャンバスの表示そのものに関する項目で使う。
   /// 2スロット（0=キャンバス本体、1=下の小さなツールバー）。
   canvasArea,
+
   /// カード一覧（矩形カードが2×2に並ぶ）。ホーム画面・プロジェクト管理系の
   /// 項目で使う。4スロット。
   cardGrid,
@@ -115,7 +123,8 @@ class _HelpDiagramPainter extends CustomPainter {
 
   // ── 共通パーツ ──────────────────────────────────────────────
   Paint get _fillMuted => Paint()..color = scheme.surfaceContainerHighest;
-  Paint get _fillPrimaryFaint => Paint()..color = scheme.primary.withValues(alpha: 0.35);
+  Paint get _fillPrimaryFaint =>
+      Paint()..color = scheme.primary.withValues(alpha: 0.35);
   Paint get _strokeOutline => Paint()
     ..color = scheme.outlineVariant
     ..style = PaintingStyle.stroke
@@ -163,7 +172,13 @@ class _HelpDiagramPainter extends CustomPainter {
     tp.paint(canvas, center - Offset(tp.width / 2, tp.height / 2));
   }
 
-  void _drawIcon(Canvas canvas, IconData icon, Offset center, {double size = 18, Color? color}) {
+  void _drawIcon(
+    Canvas canvas,
+    IconData icon,
+    Offset center, {
+    double size = 18,
+    Color? color,
+  }) {
     _paintCentered(
       _iconPainter(icon, size, color ?? scheme.onSurfaceVariant),
       canvas,
@@ -196,12 +211,23 @@ class _HelpDiagramPainter extends CustomPainter {
   /// ツールバーは背景を一切持たず、この縁取りだけでキャンバス上の視認性を
   /// 確保しているため、図解でも同じ手法を使うことで見た目を近づける。
   static const List<Offset> _iconOutlineOffsets = [
-    Offset(-1, -1), Offset(0, -1), Offset(1, -1),
-    Offset(-1, 0), Offset(1, 0),
-    Offset(-1, 1), Offset(0, 1), Offset(1, 1),
+    Offset(-1, -1),
+    Offset(0, -1),
+    Offset(1, -1),
+    Offset(-1, 0),
+    Offset(1, 0),
+    Offset(-1, 1),
+    Offset(0, 1),
+    Offset(1, 1),
   ];
 
-  void _drawOutlinedIcon(Canvas canvas, IconData icon, Offset center, {double size = 15, required Color color}) {
+  void _drawOutlinedIcon(
+    Canvas canvas,
+    IconData icon,
+    Offset center, {
+    double size = 15,
+    required Color color,
+  }) {
     // 縁取り8方向＋本体で同じ字形を9回描くが、TextPainterのlayout()は
     // 色ごとに1回で足りる（位置は描画時に決まる）。以前は_drawIconを9回
     // 呼んでlayoutも9回走らせていた。図解1枚でツールバーのアイコンを
@@ -237,7 +263,12 @@ class _HelpDiagramPainter extends CustomPainter {
       final cx = barRect.left + w * (i + 0.5);
       final isTarget = i == target;
       final icon = (isTarget ? spec.icon : null) ?? _toolbarIcons[i];
-      _drawOutlinedIcon(canvas, icon, Offset(cx, y), color: isTarget ? scheme.primary : scheme.onInverseSurface);
+      _drawOutlinedIcon(
+        canvas,
+        icon,
+        Offset(cx, y),
+        color: isTarget ? scheme.primary : scheme.onInverseSurface,
+      );
       if (isTarget) _highlightMarker(canvas, Offset(cx, y));
     }
   }
@@ -247,20 +278,34 @@ class _HelpDiagramPainter extends CustomPainter {
   // フィルター・自由変形などを集約）・ヘルプ。4スロットは
   // 0=Undo・1=Redo・2=定規・3=設定に対応させる（ヘルプボタン自体はヘルプ
   // 項目の対象にならないため常時非ハイライトで添えるのみ）。
-  static const List<IconData> _topBarIcons = [Icons.undo, Icons.redo, Icons.straighten, Icons.settings];
+  static const List<IconData> _topBarIcons = [
+    Icons.undo,
+    Icons.redo,
+    Icons.straighten,
+    Icons.settings,
+  ];
 
   void _paintTopBar(Canvas canvas, Size size) {
     const slots = 4;
     final y = size.height * 0.24;
     final barRect = Rect.fromLTWH(4, 4, size.width - 8, 24);
-    canvas.drawRRect(RRect.fromRectAndRadius(barRect, const Radius.circular(5)), _fillMuted);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(barRect, const Radius.circular(5)),
+      _fillMuted,
+    );
     final target = _clampSlot(slots);
     // 左詰め2つ（Undo・Redo）
     const leftX = [18.0, 40.0];
     for (int i = 0; i < 2; i++) {
       final isTarget = i == target;
       final icon = (isTarget ? spec.icon : null) ?? _topBarIcons[i];
-      _drawIcon(canvas, icon, Offset(leftX[i], y), size: 14, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      _drawIcon(
+        canvas,
+        icon,
+        Offset(leftX[i], y),
+        size: 14,
+        color: isTarget ? scheme.primary : scheme.onSurfaceVariant,
+      );
       if (isTarget) _highlightMarker(canvas, Offset(leftX[i], y), r: 12);
     }
     // 右詰め2つ＋ヘルプ（定規・設定・ヘルプの順）
@@ -268,15 +313,33 @@ class _HelpDiagramPainter extends CustomPainter {
     for (int i = 2; i < slots; i++) {
       final isTarget = i == target;
       final icon = (isTarget ? spec.icon : null) ?? _topBarIcons[i];
-      _drawIcon(canvas, icon, Offset(rightX[i - 2], y), size: 14, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      _drawIcon(
+        canvas,
+        icon,
+        Offset(rightX[i - 2], y),
+        size: 14,
+        color: isTarget ? scheme.primary : scheme.onSurfaceVariant,
+      );
       if (isTarget) _highlightMarker(canvas, Offset(rightX[i - 2], y), r: 12);
     }
-    _drawIcon(canvas, Icons.help_outline, Offset(rightX[2], y), size: 12,
-        color: scheme.onSurfaceVariant.withValues(alpha: 0.5));
+    _drawIcon(
+      canvas,
+      Icons.help_outline,
+      Offset(rightX[2], y),
+      size: 12,
+      color: scheme.onSurfaceVariant.withValues(alpha: 0.5),
+    );
     // 下に画面本体の枠だけ添えて「上部バー」であることを示す。
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(size.width * 0.2, size.height * 0.48, size.width * 0.6, size.height * 0.44),
-          const Radius.circular(6)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          size.width * 0.2,
+          size.height * 0.48,
+          size.width * 0.6,
+          size.height * 0.44,
+        ),
+        const Radius.circular(6),
+      ),
       _strokeOutline,
     );
   }
@@ -290,7 +353,11 @@ class _HelpDiagramPainter extends CustomPainter {
     Icons.groups_outlined, // 共通レイヤー
     Icons.auto_fix_high_outlined, // 自動塗り
   ];
-  static const List<IconData> _saveIcons = [Icons.save_outlined, Icons.history, Icons.bookmark_border];
+  static const List<IconData> _saveIcons = [
+    Icons.save_outlined,
+    Icons.history,
+    Icons.bookmark_border,
+  ];
 
   void _paintLayerPanelList(Canvas canvas, Size size) {
     const rows = 4;
@@ -300,59 +367,130 @@ class _HelpDiagramPainter extends CustomPainter {
       final top = i * rowH + 2;
       final rowRect = Rect.fromLTWH(4, top, size.width - 8, rowH - 4);
       final isTarget = i == target;
-      canvas.drawRRect(RRect.fromRectAndRadius(rowRect, const Radius.circular(5)),
-          isTarget ? _fillPrimaryFaint : _fillMuted);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rowRect, const Radius.circular(5)),
+        isTarget ? _fillPrimaryFaint : _fillMuted,
+      );
       final cy = rowRect.center.dy;
       // 目（表示切替）アイコン：実画面と同じく行の一番左
-      _drawIcon(canvas, Icons.visibility_outlined, Offset(rowRect.left + 12, cy), size: 12,
-          color: scheme.onSurfaceVariant.withValues(alpha: 0.75));
+      _drawIcon(
+        canvas,
+        Icons.visibility_outlined,
+        Offset(rowRect.left + 12, cy),
+        size: 12,
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.75),
+      );
       // レイヤー種別アイコン
       final typeIcon = _layerTypeIcons[i % _layerTypeIcons.length];
-      _drawIcon(canvas, typeIcon, Offset(rowRect.left + 26, cy), size: 11, color: scheme.onSurfaceVariant);
+      _drawIcon(
+        canvas,
+        typeIcon,
+        Offset(rowRect.left + 26, cy),
+        size: 11,
+        color: scheme.onSurfaceVariant,
+      );
       // サムネイル（対象行はここへ実アイコンを重ねて示す）
-      final thumb = Rect.fromLTWH(rowRect.left + 34, rowRect.top + 4, rowRect.height - 8, rowRect.height - 8);
-      canvas.drawRRect(RRect.fromRectAndRadius(thumb, const Radius.circular(3)), _strokeOutline);
+      final thumb = Rect.fromLTWH(
+        rowRect.left + 34,
+        rowRect.top + 4,
+        rowRect.height - 8,
+        rowRect.height - 8,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(thumb, const Radius.circular(3)),
+        _strokeOutline,
+      );
       if (isTarget && spec.icon != null) {
-        _drawIcon(canvas, spec.icon!, thumb.center, size: thumb.height * 0.5, color: scheme.primary);
+        _drawIcon(
+          canvas,
+          spec.icon!,
+          thumb.center,
+          size: thumb.height * 0.5,
+          color: scheme.primary,
+        );
       }
       // 名前のテキスト行
       final lineX = thumb.right + 8;
-      canvas.drawLine(Offset(lineX, cy), Offset(rowRect.right - 20, cy),
-          Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2);
+      canvas.drawLine(
+        Offset(lineX, cy),
+        Offset(rowRect.right - 20, cy),
+        Paint()
+          ..color = scheme.onSurfaceVariant
+          ..strokeWidth = 2,
+      );
       // 行末のドラッグハンドル（実画面と同じ、並べ替え用）
-      _drawIcon(canvas, Icons.drag_indicator, Offset(rowRect.right - 12, cy), size: 12,
-          color: scheme.onSurfaceVariant.withValues(alpha: 0.55));
-      if (isTarget) _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
+      _drawIcon(
+        canvas,
+        Icons.drag_indicator,
+        Offset(rowRect.right - 12, cy),
+        size: 12,
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.55),
+      );
+      if (isTarget)
+        _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
     }
   }
 
   // save_tree_screen.dartの実際の行構成：サムネイル→タイトル（1行目）・
   // 更新日時等（2行目）のListTile。レイヤーパネルと異なり目アイコンは無い。
-  void _paintRowList(Canvas canvas, Size size,
-      {required int rows, required List<IconData> icons, bool twoLines = false}) {
+  void _paintRowList(
+    Canvas canvas,
+    Size size, {
+    required int rows,
+    required List<IconData> icons,
+    bool twoLines = false,
+  }) {
     final rowH = size.height / rows;
     final target = _clampSlot(rows);
     for (int i = 0; i < rows; i++) {
       final top = i * rowH + 3;
       final rowRect = Rect.fromLTWH(6, top, size.width - 12, rowH - 6);
       final isTarget = i == target;
-      canvas.drawRRect(RRect.fromRectAndRadius(rowRect, const Radius.circular(5)),
-          isTarget ? _fillPrimaryFaint : _fillMuted);
-      final thumb = Rect.fromLTWH(rowRect.left + 6, rowRect.top + 4, rowRect.height - 8, rowRect.height - 8);
-      canvas.drawRRect(RRect.fromRectAndRadius(thumb, const Radius.circular(3)), _strokeOutline);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rowRect, const Radius.circular(5)),
+        isTarget ? _fillPrimaryFaint : _fillMuted,
+      );
+      final thumb = Rect.fromLTWH(
+        rowRect.left + 6,
+        rowRect.top + 4,
+        rowRect.height - 8,
+        rowRect.height - 8,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(thumb, const Radius.circular(3)),
+        _strokeOutline,
+      );
       final icon = (isTarget ? spec.icon : null) ?? icons[i % icons.length];
-      _drawIcon(canvas, icon, thumb.center, size: thumb.height * 0.55,
-          color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      _drawIcon(
+        canvas,
+        icon,
+        thumb.center,
+        size: thumb.height * 0.55,
+        color: isTarget ? scheme.primary : scheme.onSurfaceVariant,
+      );
       final lineX = thumb.right + 8;
-      final linePaint = Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2;
-      canvas.drawLine(Offset(lineX, rowRect.top + rowRect.height * 0.35),
-          Offset(rowRect.right - 10, rowRect.top + rowRect.height * 0.35), linePaint);
+      final linePaint = Paint()
+        ..color = scheme.onSurfaceVariant
+        ..strokeWidth = 2;
+      canvas.drawLine(
+        Offset(lineX, rowRect.top + rowRect.height * 0.35),
+        Offset(rowRect.right - 10, rowRect.top + rowRect.height * 0.35),
+        linePaint,
+      );
       if (twoLines) {
-        canvas.drawLine(Offset(lineX, rowRect.top + rowRect.height * 0.65),
-            Offset(lineX + (rowRect.width * 0.3), rowRect.top + rowRect.height * 0.65),
-            Paint()..color = scheme.onSurfaceVariant.withValues(alpha: 0.6)..strokeWidth = 2);
+        canvas.drawLine(
+          Offset(lineX, rowRect.top + rowRect.height * 0.65),
+          Offset(
+            lineX + (rowRect.width * 0.3),
+            rowRect.top + rowRect.height * 0.65,
+          ),
+          Paint()
+            ..color = scheme.onSurfaceVariant.withValues(alpha: 0.6)
+            ..strokeWidth = 2,
+        );
       }
-      if (isTarget) _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
+      if (isTarget)
+        _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
     }
   }
 
@@ -363,21 +501,48 @@ class _HelpDiagramPainter extends CustomPainter {
   // として常に描く。
   void _paintFloatingPanel(Canvas canvas, Size size) {
     const slots = 4;
-    final panel = Rect.fromLTWH(size.width * 0.08, 2, size.width * 0.84, size.height - 4);
-    canvas.drawRRect(RRect.fromRectAndRadius(panel, const Radius.circular(8)), _fillMuted);
-    canvas.drawRRect(RRect.fromRectAndRadius(panel, const Radius.circular(8)), _strokeOutline);
+    final panel = Rect.fromLTWH(
+      size.width * 0.08,
+      2,
+      size.width * 0.84,
+      size.height - 4,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(panel, const Radius.circular(8)),
+      _fillMuted,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(panel, const Radius.circular(8)),
+      _strokeOutline,
+    );
     final target = _clampSlot(slots);
     // 最上部中央：閉じるボタン（実画面と同じ配置。常時表示・非ハイライト）
     final closeY = panel.top + panel.height * 0.1;
-    _drawIcon(canvas, Icons.close, Offset(panel.center.dx, closeY), size: 12,
-        color: scheme.onSurfaceVariant.withValues(alpha: 0.6));
+    _drawIcon(
+      canvas,
+      Icons.close,
+      Offset(panel.center.dx, closeY),
+      size: 12,
+      color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+    );
     // 0: タイトル行（アイコン＋見出しテキスト）
     final titleY = panel.top + panel.height * 0.3;
-    _drawIcon(canvas, target == 0 ? (spec.icon ?? Icons.tune) : Icons.tune, Offset(panel.left + 16, titleY),
-        size: 14, color: target == 0 ? scheme.primary : scheme.onSurfaceVariant);
-    canvas.drawLine(Offset(panel.left + 30, titleY), Offset(panel.left + panel.width * 0.6, titleY),
-        Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2.5);
-    if (target == 0) _highlightMarker(canvas, Offset(panel.left + 16, titleY), r: 10);
+    _drawIcon(
+      canvas,
+      target == 0 ? (spec.icon ?? Icons.tune) : Icons.tune,
+      Offset(panel.left + 16, titleY),
+      size: 14,
+      color: target == 0 ? scheme.primary : scheme.onSurfaceVariant,
+    );
+    canvas.drawLine(
+      Offset(panel.left + 30, titleY),
+      Offset(panel.left + panel.width * 0.6, titleY),
+      Paint()
+        ..color = scheme.onSurfaceVariant
+        ..strokeWidth = 2.5,
+    );
+    if (target == 0)
+      _highlightMarker(canvas, Offset(panel.left + 16, titleY), r: 10);
     // 1・2: 設定行
     final row1Y = panel.top + panel.height * 0.52;
     _rowMark(canvas, panel, row1Y, target == 1, target == 1 ? spec.icon : null);
@@ -385,21 +550,48 @@ class _HelpDiagramPainter extends CustomPainter {
     _rowMark(canvas, panel, row2Y, target == 2, target == 2 ? spec.icon : null);
     // 3: スライダー行
     final sliderY = panel.top + panel.height * 0.86;
-    final sliderPaint = Paint()..color = scheme.outlineVariant..strokeWidth = 2;
-    canvas.drawLine(Offset(panel.left + 12, sliderY), Offset(panel.right - 12, sliderY), sliderPaint);
+    final sliderPaint = Paint()
+      ..color = scheme.outlineVariant
+      ..strokeWidth = 2;
+    canvas.drawLine(
+      Offset(panel.left + 12, sliderY),
+      Offset(panel.right - 12, sliderY),
+      sliderPaint,
+    );
     final handleX = panel.left + panel.width * 0.6;
-    canvas.drawCircle(Offset(handleX, sliderY), 5,
-        target == 3 ? (Paint()..color = scheme.primary) : (Paint()..color = scheme.onSurfaceVariant));
+    canvas.drawCircle(
+      Offset(handleX, sliderY),
+      5,
+      target == 3
+          ? (Paint()..color = scheme.primary)
+          : (Paint()..color = scheme.onSurfaceVariant),
+    );
     if (target == 3) _highlightMarker(canvas, Offset(handleX, sliderY));
   }
 
-  void _rowMark(Canvas canvas, Rect panel, double y, bool isTarget, IconData? icon) {
+  void _rowMark(
+    Canvas canvas,
+    Rect panel,
+    double y,
+    bool isTarget,
+    IconData? icon,
+  ) {
     final linePaint = Paint()
       ..color = isTarget ? scheme.primary : scheme.onSurfaceVariant
       ..strokeWidth = 3;
-    canvas.drawLine(Offset(panel.left + 12, y), Offset(panel.left + panel.width * 0.55, y), linePaint);
+    canvas.drawLine(
+      Offset(panel.left + 12, y),
+      Offset(panel.left + panel.width * 0.55, y),
+      linePaint,
+    );
     if (icon != null) {
-      _drawIcon(canvas, icon, Offset(panel.right - 22, y), size: 13, color: scheme.primary);
+      _drawIcon(
+        canvas,
+        icon,
+        Offset(panel.right - 22, y),
+        size: 13,
+        color: scheme.primary,
+      );
     }
     if (isTarget) _highlightMarker(canvas, Offset(panel.right - 20, y), r: 9);
   }
@@ -421,11 +613,23 @@ class _HelpDiagramPainter extends CustomPainter {
     for (int i = 0; i < slots; i++) {
       final cx = 8 + w * (i + 0.5);
       final isTarget = i == target;
-      final clip = Rect.fromCenter(center: Offset(cx, y), width: w - 10, height: 22);
-      canvas.drawRRect(RRect.fromRectAndRadius(clip, const Radius.circular(3)),
-          isTarget ? (Paint()..color = scheme.primary) : _fillMuted);
+      final clip = Rect.fromCenter(
+        center: Offset(cx, y),
+        width: w - 10,
+        height: 22,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(clip, const Radius.circular(3)),
+        isTarget ? (Paint()..color = scheme.primary) : _fillMuted,
+      );
       final icon = (isTarget ? spec.icon : null) ?? _timelineIcons[i];
-      _drawIcon(canvas, icon, Offset(cx, y), size: 13, color: isTarget ? scheme.onPrimary : scheme.onSurfaceVariant);
+      _drawIcon(
+        canvas,
+        icon,
+        Offset(cx, y),
+        size: 13,
+        color: isTarget ? scheme.onPrimary : scheme.onSurfaceVariant,
+      );
       if (isTarget) _highlightMarker(canvas, Offset(cx, y), r: 16);
     }
   }
@@ -433,7 +637,11 @@ class _HelpDiagramPainter extends CustomPainter {
   // 実画面（export_screen.dart）の書き出し形式選択はRadioListTileの縦並び
   // （MP4・GIF・透過WebMの順）のため、横並びチップではなくラジオボタン付きの
   // 縦リストとして再現する。
-  static const List<IconData> _exportIcons = [Icons.movie_outlined, Icons.gif_box_outlined, Icons.layers_outlined];
+  static const List<IconData> _exportIcons = [
+    Icons.movie_outlined,
+    Icons.gif_box_outlined,
+    Icons.layers_outlined,
+  ];
 
   void _paintExportPicker(Canvas canvas, Size size) {
     const rows = 3;
@@ -444,54 +652,117 @@ class _HelpDiagramPainter extends CustomPainter {
       final cy = rowH * (i + 0.5);
       // ラジオボタン
       final radioCenter = Offset(20, cy);
-      canvas.drawCircle(radioCenter, 6, Paint()
-        ..color = isTarget ? scheme.primary : scheme.onSurfaceVariant
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5);
-      if (isTarget) canvas.drawCircle(radioCenter, 3, Paint()..color = scheme.primary);
+      canvas.drawCircle(
+        radioCenter,
+        6,
+        Paint()
+          ..color = isTarget ? scheme.primary : scheme.onSurfaceVariant
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+      if (isTarget)
+        canvas.drawCircle(radioCenter, 3, Paint()..color = scheme.primary);
       // アイコン
       final icon = (isTarget ? spec.icon : null) ?? _exportIcons[i];
-      _drawIcon(canvas, icon, Offset(40, cy), size: 15, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+      _drawIcon(
+        canvas,
+        icon,
+        Offset(40, cy),
+        size: 15,
+        color: isTarget ? scheme.primary : scheme.onSurfaceVariant,
+      );
       // タイトル・サブタイトル行（実画面はRadioListTileでtitle+subtitleの2段）
       final lineX = 54.0;
-      canvas.drawLine(Offset(lineX, cy - 4), Offset(size.width - 16, cy - 4),
-          Paint()..color = scheme.onSurfaceVariant..strokeWidth = 2);
-      canvas.drawLine(Offset(lineX, cy + 6), Offset(lineX + (size.width - lineX) * 0.5, cy + 6),
-          Paint()..color = scheme.onSurfaceVariant.withValues(alpha: 0.55)..strokeWidth = 1.5);
+      canvas.drawLine(
+        Offset(lineX, cy - 4),
+        Offset(size.width - 16, cy - 4),
+        Paint()
+          ..color = scheme.onSurfaceVariant
+          ..strokeWidth = 2,
+      );
+      canvas.drawLine(
+        Offset(lineX, cy + 6),
+        Offset(lineX + (size.width - lineX) * 0.5, cy + 6),
+        Paint()
+          ..color = scheme.onSurfaceVariant.withValues(alpha: 0.55)
+          ..strokeWidth = 1.5,
+      );
       if (isTarget) _highlightMarker(canvas, Offset(40, cy), r: 14);
       if (i < rows - 1) {
-        canvas.drawLine(Offset(8, rowH * (i + 1)), Offset(size.width - 8, rowH * (i + 1)), _strokeOutline);
+        canvas.drawLine(
+          Offset(8, rowH * (i + 1)),
+          Offset(size.width - 8, rowH * (i + 1)),
+          _strokeOutline,
+        );
       }
     }
   }
 
   void _paintCanvasArea(Canvas canvas, Size size) {
-    final canvasRect = Rect.fromLTWH(size.width * 0.18, 4, size.width * 0.64, size.height * 0.72);
+    final canvasRect = Rect.fromLTWH(
+      size.width * 0.18,
+      4,
+      size.width * 0.64,
+      size.height * 0.72,
+    );
     // 市松模様（透過・背景色を意識させる）
     canvas.save();
-    canvas.clipRRect(RRect.fromRectAndRadius(canvasRect, const Radius.circular(6)));
+    canvas.clipRRect(
+      RRect.fromRectAndRadius(canvasRect, const Radius.circular(6)),
+    );
     final cell = canvasRect.width / 6;
-    final checker = Paint()..color = scheme.outlineVariant.withValues(alpha: 0.4);
+    final checker = Paint()
+      ..color = scheme.outlineVariant.withValues(alpha: 0.4);
     for (int gy = 0; gy * cell < canvasRect.height; gy++) {
       for (int gx = 0; gx < 6; gx++) {
         if ((gx + gy).isEven) continue;
         canvas.drawRect(
-            Rect.fromLTWH(canvasRect.left + gx * cell, canvasRect.top + gy * cell, cell, cell), checker);
+          Rect.fromLTWH(
+            canvasRect.left + gx * cell,
+            canvasRect.top + gy * cell,
+            cell,
+            cell,
+          ),
+          checker,
+        );
       }
     }
     canvas.restore();
-    canvas.drawRRect(RRect.fromRectAndRadius(canvasRect, const Radius.circular(6)), _strokeOutline);
-    final toolbarRect = Rect.fromLTWH(size.width * 0.28, size.height * 0.84, size.width * 0.44, size.height * 0.14);
-    canvas.drawRRect(RRect.fromRectAndRadius(toolbarRect, const Radius.circular(4)), _fillMuted);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(canvasRect, const Radius.circular(6)),
+      _strokeOutline,
+    );
+    final toolbarRect = Rect.fromLTWH(
+      size.width * 0.28,
+      size.height * 0.84,
+      size.width * 0.44,
+      size.height * 0.14,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(toolbarRect, const Radius.circular(4)),
+      _fillMuted,
+    );
     // 下部ミニツールバーに実際のツールアイコンを小さく3つ並べる
     for (int i = 0; i < 3; i++) {
       final cx = toolbarRect.left + toolbarRect.width * (i + 0.5) / 3;
-      _drawIcon(canvas, _toolbarIcons[i], Offset(cx, toolbarRect.center.dy), size: 9,
-          color: scheme.onSurfaceVariant.withValues(alpha: 0.8));
+      _drawIcon(
+        canvas,
+        _toolbarIcons[i],
+        Offset(cx, toolbarRect.center.dy),
+        size: 9,
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.8),
+      );
     }
     final target = _clampSlot(2);
     if (target == 0) {
-      if (spec.icon != null) _drawIcon(canvas, spec.icon!, canvasRect.center, size: 20, color: scheme.primary);
+      if (spec.icon != null)
+        _drawIcon(
+          canvas,
+          spec.icon!,
+          canvasRect.center,
+          size: 20,
+          color: scheme.primary,
+        );
       _highlightMarker(canvas, canvasRect.center, r: 18);
     } else {
       _highlightMarker(canvas, toolbarRect.center, r: 10);
@@ -520,20 +791,47 @@ class _HelpDiagramPainter extends CustomPainter {
         final rr = RRect.fromRectAndRadius(rect, const Radius.circular(6));
         final isTarget = i == target;
         canvas.drawRRect(rr, _fillMuted);
-        canvas.drawRRect(rr, isTarget ? (Paint()
-          ..color = scheme.primary
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2) : _strokeOutline);
+        canvas.drawRRect(
+          rr,
+          isTarget
+              ? (Paint()
+                  ..color = scheme.primary
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = 2)
+              : _strokeOutline,
+        );
         // サムネイル領域（下の名前帯を除いた上側）
-        final thumbRect = Rect.fromLTWH(rect.left, rect.top, rect.width, rect.height - 14);
-        final icon = (isTarget ? spec.icon : null) ?? _cardIcons[i % _cardIcons.length];
-        _drawIcon(canvas, icon, thumbRect.center, size: 16, color: isTarget ? scheme.primary : scheme.onSurfaceVariant);
+        final thumbRect = Rect.fromLTWH(
+          rect.left,
+          rect.top,
+          rect.width,
+          rect.height - 14,
+        );
+        final icon =
+            (isTarget ? spec.icon : null) ?? _cardIcons[i % _cardIcons.length];
+        _drawIcon(
+          canvas,
+          icon,
+          thumbRect.center,
+          size: 16,
+          color: isTarget ? scheme.primary : scheme.onSurfaceVariant,
+        );
         // お気に入り星バッジ（右上）
-        _drawIcon(canvas, Icons.star, Offset(rect.right - 9, rect.top + 8), size: 9,
-            color: Colors.amber.withValues(alpha: 0.8));
+        _drawIcon(
+          canvas,
+          Icons.star,
+          Offset(rect.right - 9, rect.top + 8),
+          size: 9,
+          color: Colors.amber.withValues(alpha: 0.8),
+        );
         // 名前ラベル行（下部の帯）
-        canvas.drawLine(Offset(rect.left + 6, rect.bottom - 7), Offset(rect.right - 16, rect.bottom - 7),
-            Paint()..color = scheme.onSurfaceVariant.withValues(alpha: 0.7)..strokeWidth = 1.5);
+        canvas.drawLine(
+          Offset(rect.left + 6, rect.bottom - 7),
+          Offset(rect.right - 16, rect.bottom - 7),
+          Paint()
+            ..color = scheme.onSurfaceVariant.withValues(alpha: 0.7)
+            ..strokeWidth = 1.5,
+        );
         if (isTarget) _highlightMarker(canvas, thumbRect.center, r: 12);
       }
     }

@@ -75,6 +75,7 @@ void main() {
         final loader = FontLoader(name)..addFont(rootBundle.load(hit));
         await loader.load();
       }
+
       Future<void> loadSdkMaterialIcons() async {
         final flutterRoot = Platform.environment['FLUTTER_ROOT'];
         if (flutterRoot == null) return;
@@ -89,6 +90,7 @@ void main() {
           ..addFont(Future<ByteData>.value(data));
         await loader.load();
       }
+
       await Future.wait([
         family('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
         family('Kuramubon', 'assets/fonts/Kuramubon.otf'),
@@ -100,8 +102,9 @@ void main() {
 
   Future<void> shot(WidgetTester tester, String name) async {
     await tester.pump(const Duration(milliseconds: 220));
-    final boundary = screenshotKey.currentContext!.findRenderObject()
-        as RenderRepaintBoundary;
+    final boundary =
+        screenshotKey.currentContext!.findRenderObject()
+            as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
       final image = await boundary.toImage(pixelRatio: 1);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -144,13 +147,11 @@ void main() {
     WidgetTester tester,
   ) async {
     await boot(tester);
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 600));
-    final create = find.widgetWithText(
-      FilledButton,
-      '作成',
-      skipOffstage: false,
-    );
+    final create = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
     await tester.dragUntilVisible(
       create.first,
       find.byType(SingleChildScrollView).first,
@@ -160,7 +161,9 @@ void main() {
     await tester.tap(create.first, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 900));
     clean(tester, 'create canvas');
-    final ps = tester.element(find.byType(Scaffold).first).read<ProjectService>();
+    final ps = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
     final p = ps.projects.first;
     return (projectId: p.id, sceneId: ps.scenesOf(p.id).first.id);
   }
@@ -176,7 +179,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
     final e = tester.takeException();
     if (e != null &&
-        !e.toString().contains('RenderFlex overflowed by 24 pixels on the right')) {
+        !e.toString().contains(
+          'RenderFlex overflowed by 24 pixels on the right',
+        )) {
       fail('timeline: $e');
     }
     expect(find.byType(TimelineScreen), findsOneWidget);
@@ -195,14 +200,11 @@ void main() {
     settingsButton.onPressed!.call();
     await tester.pump(const Duration(milliseconds: 350));
 
-    final onionTileFinder = find.byWidgetPredicate(
-      (widget) {
-        if (widget is! ListTile) return false;
-        final leading = widget.leading;
-        return leading is Icon && leading.icon == Icons.layers_outlined;
-      },
-      skipOffstage: false,
-    );
+    final onionTileFinder = find.byWidgetPredicate((widget) {
+      if (widget is! ListTile) return false;
+      final leading = widget.leading;
+      return leading is Icon && leading.icon == Icons.layers_outlined;
+    }, skipOffstage: false);
     expect(onionTileFinder, findsWidgets);
     final onionTile = tester.widget<ListTile>(onionTileFinder.last);
     expect(onionTile.onTap, isNotNull);

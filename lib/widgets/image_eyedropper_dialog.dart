@@ -15,7 +15,7 @@ class ImageEyedropperDialog extends StatefulWidget {
   final String? imagePath;
   final Uint8List? imageBytes;
   const ImageEyedropperDialog({super.key, this.imagePath, this.imageBytes})
-      : assert(imagePath != null || imageBytes != null);
+    : assert(imagePath != null || imageBytes != null);
 
   @override
   State<ImageEyedropperDialog> createState() => _ImageEyedropperDialogState();
@@ -34,12 +34,15 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
   }
 
   Future<void> _load() async {
-    final bytes = widget.imageBytes ?? await File(widget.imagePath!).readAsBytes();
+    final bytes =
+        widget.imageBytes ?? await File(widget.imagePath!).readAsBytes();
     _sourceBytes = bytes;
     final codec = await ui.instantiateImageCodec(bytes);
     final frame = await codec.getNextFrame();
     codec.dispose();
-    final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final byteData = await frame.image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     if (!mounted) {
       frame.image.dispose();
       return;
@@ -77,7 +80,12 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
     if (x < 0 || y < 0 || x >= image.width || y >= image.height) return null;
     final idx = (y * image.width + x) * 4;
     if (idx + 3 >= pixels.length) return null;
-    return Color.fromARGB(pixels[idx + 3], pixels[idx], pixels[idx + 1], pixels[idx + 2]);
+    return Color.fromARGB(
+      pixels[idx + 3],
+      pixels[idx],
+      pixels[idx + 1],
+      pixels[idx + 2],
+    );
   }
 
   @override
@@ -91,51 +99,78 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l10n.autofillEyedropperDialogHint,
-                style: const TextStyle(fontSize: 12), textAlign: TextAlign.center),
+            Text(
+              l10n.autofillEyedropperDialogHint,
+              style: const TextStyle(fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Expanded(
               child: _image == null
                   ? const Center(child: CircularProgressIndicator())
-                  : LayoutBuilder(builder: (ctx, constraints) {
-                      final boxSize = Size(constraints.maxWidth, constraints.maxHeight);
-                      return GestureDetector(
-                        onTapUp: (details) {
-                          final c = _colorAt(details.localPosition, boxSize);
-                          if (c != null) setState(() => _previewColor = c);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Theme.of(context).colorScheme.outlineVariant)),
-                          // dart:ioのFileはWeb版で使えないため、常にバイト列
-                          // （_load()で読み込み済み）から表示する。
-                          child: Image.memory(_sourceBytes!, fit: BoxFit.contain),
-                        ),
-                      );
-                    }),
+                  : LayoutBuilder(
+                      builder: (ctx, constraints) {
+                        final boxSize = Size(
+                          constraints.maxWidth,
+                          constraints.maxHeight,
+                        );
+                        return GestureDetector(
+                          onTapUp: (details) {
+                            final c = _colorAt(details.localPosition, boxSize);
+                            if (c != null) setState(() => _previewColor = c);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                              ),
+                            ),
+                            // dart:ioのFileはWeb版で使えないため、常にバイト列
+                            // （_load()で読み込み済み）から表示する。
+                            child: Image.memory(
+                              _sourceBytes!,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 Container(
-                  width: 28, height: 28,
+                  width: 28,
+                  height: 28,
                   decoration: BoxDecoration(
                     color: _previewColor ?? Colors.transparent,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(l10n.autofillEyedropperPickedLabel, style: const TextStyle(fontSize: 12)),
+                Text(
+                  l10n.autofillEyedropperPickedLabel,
+                  style: const TextStyle(fontSize: 12),
+                ),
               ],
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
         FilledButton(
-          onPressed: _previewColor == null ? null : () => Navigator.pop(context, _previewColor),
+          onPressed: _previewColor == null
+              ? null
+              : () => Navigator.pop(context, _previewColor),
           child: Text(l10n.commonOk),
         ),
       ],

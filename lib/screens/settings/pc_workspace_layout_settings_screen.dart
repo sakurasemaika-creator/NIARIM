@@ -131,7 +131,7 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w700,
           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+          fontFamilyFallback: kHeadingFontFallback,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),

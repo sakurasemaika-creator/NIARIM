@@ -78,11 +78,16 @@ void main() {
       );
       service.updateBinding(updated);
       await Future<void>.delayed(Duration.zero);
-      expect(service.bindings.firstWhere((b) => b.id == custom.id).label, 'Custom W');
+      expect(
+        service.bindings.firstWhere((b) => b.id == custom.id).label,
+        'Custom W',
+      );
 
       final restored = ShortcutService();
       await restored.init();
-      final restoredBinding = restored.bindings.firstWhere((b) => b.id == custom.id);
+      final restoredBinding = restored.bindings.firstWhere(
+        (b) => b.id == custom.id,
+      );
       expect(restoredBinding.keyId, LogicalKeyboardKey.keyW.keyId);
       expect(restoredBinding.alt, isTrue);
       expect(restoredBinding.command, ShortcutCommand.nextFrame);
@@ -96,79 +101,96 @@ void main() {
   group('FilterService direct coverage', () {
     setUp(() => SharedPreferences.setMockInitialValues({}));
 
-    test('select params favorite search add duplicate reorder remove persist', () async {
-      final service = FilterService();
-      await service.init();
-      expect(service.filters.length, 20);
-      expect(service.currentFilter?.id, 'Filter0001');
-      expect(service.isBuiltIn('Filter0001'), isTrue);
-      expect(service.removeFilter('Filter0001'), isFalse);
+    test(
+      'select params favorite search add duplicate reorder remove persist',
+      () async {
+        final service = FilterService();
+        await service.init();
+        expect(service.filters.length, 20);
+        expect(service.currentFilter?.id, 'Filter0001');
+        expect(service.isBuiltIn('Filter0001'), isTrue);
+        expect(service.removeFilter('Filter0001'), isFalse);
 
-      service.selectFilter('Filter0018');
-      expect(service.currentFilter?.id, 'Filter0018');
-      service.updateFilterParams(
-        'Filter0018',
-        strength: 13,
-        colorLevels: 5,
-        edgeStrength: 0.7,
-      );
-      await Future<void>.delayed(Duration.zero);
-      expect(service.currentFilter?.strength, 13);
-      expect(service.currentFilter?.colorLevels, 5);
+        service.selectFilter('Filter0018');
+        expect(service.currentFilter?.id, 'Filter0018');
+        service.updateFilterParams(
+          'Filter0018',
+          strength: 13,
+          colorLevels: 5,
+          edgeStrength: 0.7,
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(service.currentFilter?.strength, 13);
+        expect(service.currentFilter?.colorLevels, 5);
 
-      service.toggleFavorite('Filter0018');
-      await Future<void>.delayed(Duration.zero);
-      expect(service.currentFilter?.isFavorite, isTrue);
-      service.setFavoritesOnly(true);
-      expect(service.visibleFilters.every((f) => f.isFavorite), isTrue);
-      expect(service.visibleFilters.map((f) => f.id), contains('Filter0018'));
-      service.setFavoritesOnly(false);
+        service.toggleFavorite('Filter0018');
+        await Future<void>.delayed(Duration.zero);
+        expect(service.currentFilter?.isFavorite, isTrue);
+        service.setFavoritesOnly(true);
+        expect(service.visibleFilters.every((f) => f.isFavorite), isTrue);
+        expect(service.visibleFilters.map((f) => f.id), contains('Filter0018'));
+        service.setFavoritesOnly(false);
 
-      service.setSearchQuery('ガウス');
-      expect(service.visibleFilters.map((f) => f.id), contains('Filter0001'));
-      expect(service.visibleFilters.every((f) => f.name.contains('ガウス')), isTrue);
-      service.setSearchQuery('');
+        service.setSearchQuery('ガウス');
+        expect(service.visibleFilters.map((f) => f.id), contains('Filter0001'));
+        expect(
+          service.visibleFilters.every((f) => f.name.contains('ガウス')),
+          isTrue,
+        );
+        service.setSearchQuery('');
 
-      const custom = FilterDef(
-        id: 'custom_direct',
-        name: 'Direct Custom',
-        kind: FilterKind.colorAdjust,
-        strength: 22,
-      );
-      service.addFilter(custom);
-      await Future<void>.delayed(Duration.zero);
-      expect(service.currentFilter?.id, custom.id);
-      expect(service.isBuiltIn(custom.id), isFalse);
+        const custom = FilterDef(
+          id: 'custom_direct',
+          name: 'Direct Custom',
+          kind: FilterKind.colorAdjust,
+          strength: 22,
+        );
+        service.addFilter(custom);
+        await Future<void>.delayed(Duration.zero);
+        expect(service.currentFilter?.id, custom.id);
+        expect(service.isBuiltIn(custom.id), isFalse);
 
-      service.duplicateFilter(custom.id);
-      await Future<void>.delayed(Duration.zero);
-      final copies = service.filters.where((f) => f.name == 'Direct Custom_copy').toList();
-      expect(copies, hasLength(1));
-      final copyId = copies.single.id;
-      expect(service.isBuiltIn(copyId), isFalse);
+        service.duplicateFilter(custom.id);
+        await Future<void>.delayed(Duration.zero);
+        final copies = service.filters
+            .where((f) => f.name == 'Direct Custom_copy')
+            .toList();
+        expect(copies, hasLength(1));
+        final copyId = copies.single.id;
+        expect(service.isBuiltIn(copyId), isFalse);
 
-      service.reorderFilter(copyId, 0);
-      await Future<void>.delayed(Duration.zero);
-      expect(service.filters.first.id, copyId);
+        service.reorderFilter(copyId, 0);
+        await Future<void>.delayed(Duration.zero);
+        expect(service.filters.first.id, copyId);
 
-      service.toggleFavorite(custom.id);
-      await Future<void>.delayed(Duration.zero);
-      expect(service.removeFilter(custom.id), isFalse,
-          reason: 'favorite custom filters are protected');
-      service.toggleFavorite(custom.id);
-      await Future<void>.delayed(Duration.zero);
-      expect(service.removeFilter(custom.id), isTrue);
-      await Future<void>.delayed(Duration.zero);
-      expect(service.filters.any((f) => f.id == custom.id), isFalse);
+        service.toggleFavorite(custom.id);
+        await Future<void>.delayed(Duration.zero);
+        expect(
+          service.removeFilter(custom.id),
+          isFalse,
+          reason: 'favorite custom filters are protected',
+        );
+        service.toggleFavorite(custom.id);
+        await Future<void>.delayed(Duration.zero);
+        expect(service.removeFilter(custom.id), isTrue);
+        await Future<void>.delayed(Duration.zero);
+        expect(service.filters.any((f) => f.id == custom.id), isFalse);
 
-      expect(service.removeFilter(copyId), isTrue);
-      await Future<void>.delayed(Duration.zero);
+        expect(service.removeFilter(copyId), isTrue);
+        await Future<void>.delayed(Duration.zero);
 
-      final restored = FilterService();
-      await restored.init();
-      expect(restored.filters.any((f) => f.id == custom.id), isFalse);
-      expect(restored.filters.firstWhere((f) => f.id == 'Filter0018').strength, 13);
-      expect(restored.filters.firstWhere((f) => f.id == 'Filter0018').isFavorite, isTrue);
-    });
+        final restored = FilterService();
+        await restored.init();
+        expect(restored.filters.any((f) => f.id == custom.id), isFalse);
+        expect(
+          restored.filters.firstWhere((f) => f.id == 'Filter0018').strength,
+          13,
+        );
+        expect(
+          restored.filters.firstWhere((f) => f.id == 'Filter0018').isFavorite,
+          isTrue,
+        );
+      },
+    );
   });
 }

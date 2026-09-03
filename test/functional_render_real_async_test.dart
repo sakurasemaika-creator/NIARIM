@@ -31,7 +31,12 @@ void main() {
       final image = await LayerCompositor.composite(
         tm,
         [
-          Layer(id: 'top', name: 'top', type: LayerType.normal, blendMode: mode),
+          Layer(
+            id: 'top',
+            name: 'top',
+            type: LayerType.normal,
+            blendMode: mode,
+          ),
           const Layer(id: 'bottom', name: 'bottom', type: LayerType.normal),
         ],
         (l) => l.id,
@@ -48,9 +53,18 @@ void main() {
       image.dispose();
       tm.dispose();
     }
-    expect(outputs[LayerBlendMode.multiply], isNot(equals(outputs[LayerBlendMode.screen])));
-    expect(outputs[LayerBlendMode.addition], isNot(equals(outputs[LayerBlendMode.difference])));
-    expect(outputs[LayerBlendMode.overlay], isNot(equals(outputs[LayerBlendMode.hardLight])));
+    expect(
+      outputs[LayerBlendMode.multiply],
+      isNot(equals(outputs[LayerBlendMode.screen])),
+    );
+    expect(
+      outputs[LayerBlendMode.addition],
+      isNot(equals(outputs[LayerBlendMode.difference])),
+    );
+    expect(
+      outputs[LayerBlendMode.overlay],
+      isNot(equals(outputs[LayerBlendMode.hardLight])),
+    );
   });
 
   test('通常ブラシ：連続線・円形断面', () async {
@@ -162,8 +176,22 @@ void main() {
 
   test('トーン：2x2周期を保ち円形ストローク内だけ描画', () async {
     final tone = Uint8List.fromList([
-      0, 0, 0, 255, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 255,
+      0,
+      0,
+      0,
+      255,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      255,
     ]);
     final result = ToneEngine().drawToneStroke(
       points: const [ui.Offset(48, 48)],
@@ -244,14 +272,30 @@ void main() {
   });
 }
 
-Brush _brush({double size = 20, int blurRadius = 0, bool pixelMode = false,
-        PressureMode pressureMode = PressureMode.off, double? calligraphyAngle}) =>
-    Brush(id: 'f', name: 'f', size: size, opacity: 100, spacing: 1,
-      blurRadius: blurRadius, stabilization: false, stabilizationStrength: 0,
-      pixelMode: pixelMode, pressureMode: pressureMode, pressureStrength: 100,
-      fadeMode: FadeMode.off, strokeDecay: false,
-      mixingMode: BrushMixingMode.off, mixingRate: 0,
-      calligraphyAngle: calligraphyAngle);
+Brush _brush({
+  double size = 20,
+  int blurRadius = 0,
+  bool pixelMode = false,
+  PressureMode pressureMode = PressureMode.off,
+  double? calligraphyAngle,
+}) => Brush(
+  id: 'f',
+  name: 'f',
+  size: size,
+  opacity: 100,
+  spacing: 1,
+  blurRadius: blurRadius,
+  stabilization: false,
+  stabilizationStrength: 0,
+  pixelMode: pixelMode,
+  pressureMode: pressureMode,
+  pressureStrength: 100,
+  fadeMode: FadeMode.off,
+  strokeDecay: false,
+  mixingMode: BrushMixingMode.off,
+  mixingRate: 0,
+  calligraphyAngle: calligraphyAngle,
+);
 
 void _fill(TileManager tm, String key, ui.Color c, {int inset = 0}) {
   final tile = tm.getOrCreateTile(key, 0, 0);
@@ -263,8 +307,9 @@ void _fill(TileManager tm, String key, ui.Color c, {int inset = 0}) {
   tm.markDirty(key, 0, 0);
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 Future<void> _save(ui.Image image, String path) async {
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -287,40 +332,66 @@ List<int> _pixel(Uint8List d, int x, int y) {
 int _span(Uint8List d, int x) {
   var first = -1, last = -1;
   for (var y = 0; y < h; y++) {
-    if (_pixel(d, x, y)[3] > 0) { first = first < 0 ? y : first; last = y; }
+    if (_pixel(d, x, y)[3] > 0) {
+      first = first < 0 ? y : first;
+      last = y;
+    }
   }
   return first < 0 ? 0 : last - first + 1;
 }
 
-void _near(List<int> actual, List<int> expected, String reason, {int tolerance = 4}) {
+void _near(
+  List<int> actual,
+  List<int> expected,
+  String reason, {
+  int tolerance = 4,
+}) {
   for (var i = 0; i < 3; i++) {
-    expect((actual[i] - expected[i]).abs(), lessThanOrEqualTo(tolerance),
-      reason: '$reason ch$i actual=${actual[i]} expected=${expected[i]}');
+    expect(
+      (actual[i] - expected[i]).abs(),
+      lessThanOrEqualTo(tolerance),
+      reason: '$reason ch$i actual=${actual[i]} expected=${expected[i]}',
+    );
   }
 }
 
 List<int>? _reference(LayerBlendMode mode) {
   final b = [base.red / 255, base.green / 255, base.blue / 255];
   final s = [src.red / 255, src.green / 255, src.blue / 255];
-  if ({LayerBlendMode.hue, LayerBlendMode.saturation, LayerBlendMode.color,
-       LayerBlendMode.luminosity}.contains(mode)) return null;
+  if ({
+    LayerBlendMode.hue,
+    LayerBlendMode.saturation,
+    LayerBlendMode.color,
+    LayerBlendMode.luminosity,
+  }.contains(mode))
+    return null;
   double blend(double cb, double cs) => switch (mode) {
     LayerBlendMode.normal => cs,
     LayerBlendMode.multiply => cb * cs,
     LayerBlendMode.screen => cb + cs - cb * cs,
-    LayerBlendMode.overlay => cb <= .5 ? 2 * cb * cs : 1 - 2 * (1 - cb) * (1 - cs),
+    LayerBlendMode.overlay =>
+      cb <= .5 ? 2 * cb * cs : 1 - 2 * (1 - cb) * (1 - cs),
     LayerBlendMode.addition => math.min(1, cb + cs),
     LayerBlendMode.subtract => math.max(0, cb - cs),
     LayerBlendMode.darken => math.min(cb, cs),
     LayerBlendMode.lighten => math.max(cb, cs),
     LayerBlendMode.colorBurn => cs <= 0 ? 0 : 1 - math.min(1, (1 - cb) / cs),
     LayerBlendMode.colorDodge => cs >= 1 ? 1 : math.min(1, cb / (1 - cs)),
-    LayerBlendMode.hardLight => cs <= .5 ? 2 * cb * cs : 1 - 2 * (1 - cb) * (1 - cs),
-    LayerBlendMode.softLight => cs <= .5
-        ? cb - (1 - 2 * cs) * cb * (1 - cb)
-        : cb + (2 * cs - 1) * ((cb <= .25 ? ((16 * cb - 12) * cb + 4) * cb : math.sqrt(cb)) - cb),
+    LayerBlendMode.hardLight =>
+      cs <= .5 ? 2 * cb * cs : 1 - 2 * (1 - cb) * (1 - cs),
+    LayerBlendMode.softLight =>
+      cs <= .5
+          ? cb - (1 - 2 * cs) * cb * (1 - cb)
+          : cb +
+                (2 * cs - 1) *
+                    ((cb <= .25
+                            ? ((16 * cb - 12) * cb + 4) * cb
+                            : math.sqrt(cb)) -
+                        cb),
     LayerBlendMode.difference => (cb - cs).abs(),
     _ => double.nan,
   };
-  return [for (var i = 0; i < 3; i++) (blend(b[i], s[i]) * 255).round().clamp(0, 255)];
+  return [
+    for (var i = 0; i < 3; i++) (blend(b[i], s[i]) * 255).round().clamp(0, 255),
+  ];
 }

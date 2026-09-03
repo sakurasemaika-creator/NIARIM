@@ -37,8 +37,13 @@ class Ruler {
 }
 
 enum RulerType {
-  line, circle, ellipse, radial,
-  onePointPerspective, twoPointPerspective, threePointPerspective,
+  line,
+  circle,
+  ellipse,
+  radial,
+  onePointPerspective,
+  twoPointPerspective,
+  threePointPerspective,
 }
 
 class RulerSettings {

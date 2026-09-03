@@ -22,10 +22,12 @@ class PixelArtPalettePickerDialog extends StatefulWidget {
   const PixelArtPalettePickerDialog({super.key});
 
   @override
-  State<PixelArtPalettePickerDialog> createState() => _PixelArtPalettePickerDialogState();
+  State<PixelArtPalettePickerDialog> createState() =>
+      _PixelArtPalettePickerDialogState();
 }
 
-class _PixelArtPalettePickerDialogState extends State<PixelArtPalettePickerDialog> {
+class _PixelArtPalettePickerDialogState
+    extends State<PixelArtPalettePickerDialog> {
   String? _selectedId;
 
   void _openEditor({ColorPalette? existing}) {
@@ -61,11 +63,18 @@ class _PixelArtPalettePickerDialogState extends State<PixelArtPalettePickerDialo
                 try {
                   final file = await service.exportPalette(palette.id);
                   if (!mounted) return;
-                  await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+                  await SharePlus.instance.share(
+                    ShareParams(files: [XFile(file.path)]),
+                  );
                 } catch (e) {
                   if (!mounted) return;
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerShareFailedSnackbar(e.toString()))));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.colorPickerShareFailedSnackbar(e.toString()),
+                      ),
+                    ),
+                  );
                 }
               },
             ),
@@ -78,7 +87,10 @@ class _PixelArtPalettePickerDialogState extends State<PixelArtPalettePickerDialo
                       Navigator.pop(ctx);
                       showDialog(
                         context: context,
-                        builder: (_) => QrShareDialog(title: palette.name, payload: payload),
+                        builder: (_) => QrShareDialog(
+                          title: palette.name,
+                          payload: payload,
+                        ),
                       );
                     }
                   : null,
@@ -113,8 +125,13 @@ class _PixelArtPalettePickerDialogState extends State<PixelArtPalettePickerDialo
                   await service.importPaletteFile(path);
                 } catch (e) {
                   if (!mounted) return;
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(l10n.colorPickerImportFailedSnackbar(e.toString()))));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.colorPickerImportFailedSnackbar(e.toString()),
+                      ),
+                    ),
+                  );
                 }
               },
             ),
@@ -253,7 +270,9 @@ class _ColorSwatchRow extends StatelessWidget {
             decoration: BoxDecoration(
               color: Color(c),
               borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
             ),
           ),
       ],

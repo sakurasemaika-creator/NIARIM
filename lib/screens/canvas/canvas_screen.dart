@@ -318,13 +318,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: Color(context.read<ProjectService>()
-                        .projects
-                        .where((p) => p.id == widget.projectId)
-                        .firstOrNull
-                        ?.backgroundColor ?? 0xFFFFFFFF),
+                    color: Color(
+                      context
+                              .read<ProjectService>()
+                              .projects
+                              .where((p) => p.id == widget.projectId)
+                              .firstOrNull
+                              ?.backgroundColor ??
+                          0xFFFFFFFF,
+                    ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Theme.of(context).colorScheme.outline),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
                 ),
                 title: Text(l10n.newProjectBackgroundColorLabel),
@@ -1491,8 +1497,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 切替であり、こちらとは別物。
   void _showBackgroundColorPicker(BuildContext context) {
     final ps = context.read<ProjectService>();
-    final project =
-        ps.projects.where((p) => p.id == widget.projectId).firstOrNull;
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     if (project == null) return;
     showModalBottomSheet(
       context: context,
@@ -1508,7 +1515,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 12),
@@ -2039,265 +2046,150 @@ class _CanvasScreenState extends State<CanvasScreen> {
       builder: (ctx) => DisposeOnUnmount(
         controller: controller,
         builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: Text(
-            existingLayerId == null
-                ? l10n.canvasTextInputTitle
-                : l10n.canvasTextEditTitle,
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  maxLines: null,
-                  decoration: InputDecoration(
-                    hintText: l10n.canvasTextInputHint,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: fontFamily,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    labelText: l10n.canvasTextFontLabel,
-                    isDense: true,
-                  ),
-                  items: [
-                    DropdownMenuItem(
-                      value: 'Roboto',
-                      child: Text(l10n.canvasTextStandardFont),
+          builder: (ctx, setS) => AlertDialog(
+            title: Text(
+              existingLayerId == null
+                  ? l10n.canvasTextInputTitle
+                  : l10n.canvasTextEditTitle,
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    maxLines: null,
+                    decoration: InputDecoration(
+                      hintText: l10n.canvasTextInputHint,
                     ),
-                    // あらかじめ同梱しているフリーフォント（全てSIL Open Font
-                    // License、Google Fonts配布分。ライセンス表記は設定画面
-                    // 「利用規約・ライセンス」参照）
-                    for (final f in kBundledFonts)
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: fontFamily,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.canvasTextFontLabel,
+                      isDense: true,
+                    ),
+                    items: [
                       DropdownMenuItem(
-                        value: f.family,
-                        child: Text(
-                          f.displayName,
-                          style: TextStyle(fontFamily: f.family),
-                        ),
+                        value: 'Roboto',
+                        child: Text(l10n.canvasTextStandardFont),
                       ),
-                    ...fontService.fonts.map(
-                      (f) => DropdownMenuItem(
-                        value: fontService.familyNameOf(f),
-                        child: Text(
-                          f.displayName,
-                          style: TextStyle(
-                            fontFamily: fontService.familyNameOf(f),
+                      // あらかじめ同梱しているフリーフォント（全てSIL Open Font
+                      // License、Google Fonts配布分。ライセンス表記は設定画面
+                      // 「利用規約・ライセンス」参照）
+                      for (final f in kBundledFonts)
+                        DropdownMenuItem(
+                          value: f.family,
+                          child: Text(
+                            f.displayName,
+                            style: TextStyle(fontFamily: f.family),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                  onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      l10n.brushSettingsSizeLabel,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Expanded(
-                      child: SteppedSlider(
-                        value: fontSize,
-                        min: 8,
-                        max: 200,
-                        label: fontSize.round().toString(),
-                        onChanged: (v) => setS(() => fontSize = v),
-                      ),
-                    ),
-                    EditableSliderValue(
-                      text: '${fontSize.round()}',
-                      style: const TextStyle(fontSize: 12),
-                      value: fontSize,
-                      min: 8,
-                      max: 200,
-                      onChanged: (v) => setS(() => fontSize = v.toDouble()),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    FilterChip(
-                      label: Text(l10n.canvasTextBold),
-                      selected: isBold,
-                      onSelected: (v) => setS(() => isBold = v),
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChip(
-                      label: Text(l10n.canvasTextItalic),
-                      selected: isItalic,
-                      onSelected: (v) => setS(() => isItalic = v),
-                    ),
-                    const SizedBox(width: 8),
-                    // 縦書き・横書きのワンタップ切替
-                    ActionChip(
-                      avatar: Icon(
-                        direction == model.TextWritingDirection.vertical
-                            ? Icons.text_rotate_vertical
-                            : Icons.text_rotation_none,
-                        size: 16,
-                      ),
-                      label: Text(
-                        direction == model.TextWritingDirection.vertical
-                            ? l10n.canvasTextVertical
-                            : l10n.canvasTextHorizontal,
-                      ),
-                      onPressed: () => setS(() {
-                        direction =
-                            direction == model.TextWritingDirection.vertical
-                            ? model.TextWritingDirection.horizontal
-                            : model.TextWritingDirection.vertical;
-                      }),
-                    ),
-                    // ルビ・縦中横・半角英数字回転の説明（ルビは縦書き・
-                    // 横書きどちらでも使えるため、書字方向によらず常に表示する）
-                    IconButton(
-                      icon: const Icon(Icons.help_outline, size: 18),
-                      tooltip: l10n.canvasTypesettingHelpTooltip,
-                      onPressed: () => _showVerticalTextHelp(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  children: _textColorPalette
-                      .map(
-                        (c) => GestureDetector(
-                          onTap: () => setS(() => color = c),
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: Color(c),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: color == c
-                                    ? Theme.of(ctx).colorScheme.primary
-                                    : Colors.grey,
-                                width: color == c ? 2 : 1,
-                              ),
+                      ...fontService.fonts.map(
+                        (f) => DropdownMenuItem(
+                          value: fontService.familyNameOf(f),
+                          child: Text(
+                            f.displayName,
+                            style: TextStyle(
+                              fontFamily: fontService.familyNameOf(f),
                             ),
                           ),
                         ),
-                      )
-                      .toList(),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Text(
-                      l10n.canvasTextLineHeight,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Expanded(
-                      child: SteppedSlider(
-                        value: lineHeight,
-                        min: 0.8,
-                        max: 3.0,
-                        step: 0.1,
-                        label: lineHeight.toStringAsFixed(1),
-                        onChanged: (v) => setS(() => lineHeight = v),
                       ),
-                    ),
-                    EditableSliderValue(
-                      text: lineHeight.toStringAsFixed(1),
-                      style: const TextStyle(fontSize: 12),
-                      value: lineHeight,
-                      min: 0.8,
-                      max: 3.0,
-                      isInt: false,
-                      onChanged: (v) => setS(() => lineHeight = v.toDouble()),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text(
-                      l10n.canvasTextLetterSpacing,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Expanded(
-                      child: SteppedSlider(
-                        value: letterSpacing,
-                        min: -2,
-                        max: 20,
-                        label: letterSpacing.toStringAsFixed(0),
-                        onChanged: (v) => setS(() => letterSpacing = v),
+                    ],
+                    onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        l10n.brushSettingsSizeLabel,
+                        style: const TextStyle(fontSize: 12),
                       ),
-                    ),
-                    EditableSliderValue(
-                      text: letterSpacing.toStringAsFixed(0),
-                      style: const TextStyle(fontSize: 12),
-                      value: letterSpacing,
-                      min: -2,
-                      max: 20,
-                      onChanged: (v) =>
-                          setS(() => letterSpacing = v.toDouble()),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      l10n.canvasTextAlign,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    const SizedBox(width: 8),
-                    SegmentedButton<TextAlign>(
-                      segments: const [
-                        ButtonSegment(
-                          value: TextAlign.left,
-                          icon: Icon(Icons.format_align_left, size: 16),
+                      Expanded(
+                        child: SteppedSlider(
+                          value: fontSize,
+                          min: 8,
+                          max: 200,
+                          label: fontSize.round().toString(),
+                          onChanged: (v) => setS(() => fontSize = v),
                         ),
-                        ButtonSegment(
-                          value: TextAlign.center,
-                          icon: Icon(Icons.format_align_center, size: 16),
+                      ),
+                      EditableSliderValue(
+                        text: '${fontSize.round()}',
+                        style: const TextStyle(fontSize: 12),
+                        value: fontSize,
+                        min: 8,
+                        max: 200,
+                        onChanged: (v) => setS(() => fontSize = v.toDouble()),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      FilterChip(
+                        label: Text(l10n.canvasTextBold),
+                        selected: isBold,
+                        onSelected: (v) => setS(() => isBold = v),
+                      ),
+                      const SizedBox(width: 8),
+                      FilterChip(
+                        label: Text(l10n.canvasTextItalic),
+                        selected: isItalic,
+                        onSelected: (v) => setS(() => isItalic = v),
+                      ),
+                      const SizedBox(width: 8),
+                      // 縦書き・横書きのワンタップ切替
+                      ActionChip(
+                        avatar: Icon(
+                          direction == model.TextWritingDirection.vertical
+                              ? Icons.text_rotate_vertical
+                              : Icons.text_rotation_none,
+                          size: 16,
                         ),
-                        ButtonSegment(
-                          value: TextAlign.right,
-                          icon: Icon(Icons.format_align_right, size: 16),
+                        label: Text(
+                          direction == model.TextWritingDirection.vertical
+                              ? l10n.canvasTextVertical
+                              : l10n.canvasTextHorizontal,
                         ),
-                      ],
-                      selected: {textAlign},
-                      onSelectionChanged: (v) =>
-                          setS(() => textAlign = v.first),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                FilterChip(
-                  label: Text(l10n.canvasTextOutline),
-                  selected: outlineEnabled,
-                  onSelected: (v) => setS(() => outlineEnabled = v),
-                ),
-                if (outlineEnabled) ...[
-                  const SizedBox(height: 4),
+                        onPressed: () => setS(() {
+                          direction =
+                              direction == model.TextWritingDirection.vertical
+                              ? model.TextWritingDirection.horizontal
+                              : model.TextWritingDirection.vertical;
+                        }),
+                      ),
+                      // ルビ・縦中横・半角英数字回転の説明（ルビは縦書き・
+                      // 横書きどちらでも使えるため、書字方向によらず常に表示する）
+                      IconButton(
+                        icon: const Icon(Icons.help_outline, size: 18),
+                        tooltip: l10n.canvasTypesettingHelpTooltip,
+                        onPressed: () => _showVerticalTextHelp(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 6,
                     children: _textColorPalette
                         .map(
                           (c) => GestureDetector(
-                            onTap: () => setS(() => outlineColor = c),
+                            onTap: () => setS(() => color = c),
                             child: Container(
-                              width: 22,
-                              height: 22,
+                              width: 28,
+                              height: 28,
                               decoration: BoxDecoration(
                                 color: Color(c),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: outlineColor == c
+                                  color: color == c
                                       ? Theme.of(ctx).colorScheme.primary
                                       : Colors.grey,
-                                  width: outlineColor == c ? 2 : 1,
+                                  width: color == c ? 2 : 1,
                                 ),
                               ),
                             ),
@@ -2305,140 +2197,255 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         )
                         .toList(),
                   ),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       Text(
-                        l10n.canvasOutlineWidthLabel,
+                        l10n.canvasTextLineHeight,
                         style: const TextStyle(fontSize: 12),
                       ),
                       Expanded(
                         child: SteppedSlider(
-                          value: outlineWidth,
-                          min: 0,
-                          max: 20,
-                          label: outlineWidth.round().toString(),
-                          onChanged: (v) => setS(() => outlineWidth = v),
+                          value: lineHeight,
+                          min: 0.8,
+                          max: 3.0,
+                          step: 0.1,
+                          label: lineHeight.toStringAsFixed(1),
+                          onChanged: (v) => setS(() => lineHeight = v),
                         ),
                       ),
                       EditableSliderValue(
-                        text: '${outlineWidth.round()}',
+                        text: lineHeight.toStringAsFixed(1),
                         style: const TextStyle(fontSize: 12),
-                        value: outlineWidth,
-                        min: 0,
-                        max: 20,
-                        onChanged: (v) =>
-                            setS(() => outlineWidth = v.toDouble()),
+                        value: lineHeight,
+                        min: 0.8,
+                        max: 3.0,
+                        isInt: false,
+                        onChanged: (v) => setS(() => lineHeight = v.toDouble()),
                       ),
                     ],
                   ),
+                  Row(
+                    children: [
+                      Text(
+                        l10n.canvasTextLetterSpacing,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Expanded(
+                        child: SteppedSlider(
+                          value: letterSpacing,
+                          min: -2,
+                          max: 20,
+                          label: letterSpacing.toStringAsFixed(0),
+                          onChanged: (v) => setS(() => letterSpacing = v),
+                        ),
+                      ),
+                      EditableSliderValue(
+                        text: letterSpacing.toStringAsFixed(0),
+                        style: const TextStyle(fontSize: 12),
+                        value: letterSpacing,
+                        min: -2,
+                        max: 20,
+                        onChanged: (v) =>
+                            setS(() => letterSpacing = v.toDouble()),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        l10n.canvasTextAlign,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(width: 8),
+                      SegmentedButton<TextAlign>(
+                        segments: const [
+                          ButtonSegment(
+                            value: TextAlign.left,
+                            icon: Icon(Icons.format_align_left, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: TextAlign.center,
+                            icon: Icon(Icons.format_align_center, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: TextAlign.right,
+                            icon: Icon(Icons.format_align_right, size: 16),
+                          ),
+                        ],
+                        selected: {textAlign},
+                        onSelectionChanged: (v) =>
+                            setS(() => textAlign = v.first),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  FilterChip(
+                    label: Text(l10n.canvasTextOutline),
+                    selected: outlineEnabled,
+                    onSelected: (v) => setS(() => outlineEnabled = v),
+                  ),
+                  if (outlineEnabled) ...[
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      children: _textColorPalette
+                          .map(
+                            (c) => GestureDetector(
+                              onTap: () => setS(() => outlineColor = c),
+                              child: Container(
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: Color(c),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: outlineColor == c
+                                        ? Theme.of(ctx).colorScheme.primary
+                                        : Colors.grey,
+                                    width: outlineColor == c ? 2 : 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          l10n.canvasOutlineWidthLabel,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        Expanded(
+                          child: SteppedSlider(
+                            value: outlineWidth,
+                            min: 0,
+                            max: 20,
+                            label: outlineWidth.round().toString(),
+                            onChanged: (v) => setS(() => outlineWidth = v),
+                          ),
+                        ),
+                        EditableSliderValue(
+                          text: '${outlineWidth.round()}',
+                          style: const TextStyle(fontSize: 12),
+                          value: outlineWidth,
+                          min: 0,
+                          max: 20,
+                          onChanged: (v) =>
+                              setS(() => outlineWidth = v.toDouble()),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () async {
-                if (controller.text.isEmpty) {
-                  Navigator.pop(ctx);
-                  return;
-                }
-                final ps = context.read<ProjectService>();
-                final sceneId = _currentSceneId;
-                model.Layer layer;
-                model.TextObject textObject;
-                if (existingLayerId != null && existing != null) {
-                  final current = ps
-                      .layersOf(widget.projectId, sceneId, _currentFrame)
-                      .where((l) => l.id == existingLayerId)
-                      .firstOrNull;
-                  if (current == null) {
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  if (controller.text.isEmpty) {
                     Navigator.pop(ctx);
                     return;
                   }
-                  layer = current;
-                  textObject = existing.copyWith(
-                    text: controller.text,
-                    fontSize: fontSize,
-                    color: Color(color),
-                    isBold: isBold,
-                    isItalic: isItalic,
-                    fontFamily: fontFamily,
-                    lineHeight: lineHeight,
-                    letterSpacing: letterSpacing,
-                    align: textAlign,
-                    direction: direction,
-                    outline: model.TextOutline(
-                      enabled: outlineEnabled,
-                      color: Color(outlineColor),
-                      width: outlineWidth,
-                    ),
+                  final ps = context.read<ProjectService>();
+                  final sceneId = _currentSceneId;
+                  model.Layer layer;
+                  model.TextObject textObject;
+                  if (existingLayerId != null && existing != null) {
+                    final current = ps
+                        .layersOf(widget.projectId, sceneId, _currentFrame)
+                        .where((l) => l.id == existingLayerId)
+                        .firstOrNull;
+                    if (current == null) {
+                      Navigator.pop(ctx);
+                      return;
+                    }
+                    layer = current;
+                    textObject = existing.copyWith(
+                      text: controller.text,
+                      fontSize: fontSize,
+                      color: Color(color),
+                      isBold: isBold,
+                      isItalic: isItalic,
+                      fontFamily: fontFamily,
+                      lineHeight: lineHeight,
+                      letterSpacing: letterSpacing,
+                      align: textAlign,
+                      direction: direction,
+                      outline: model.TextOutline(
+                        enabled: outlineEnabled,
+                        color: Color(outlineColor),
+                        width: outlineWidth,
+                      ),
+                    );
+                  } else {
+                    layer = ps.addTextLayer(
+                      projectId: widget.projectId,
+                      sceneId: sceneId,
+                      frameIndex: _currentFrame,
+                      text: controller.text,
+                      position: position,
+                    );
+                    textObject =
+                        (layer.textObject ??
+                                model.TextObject(
+                                  id: layer.id,
+                                  text: controller.text,
+                                  position: position,
+                                ))
+                            .copyWith(
+                              fontSize: fontSize,
+                              color: Color(color),
+                              isBold: isBold,
+                              isItalic: isItalic,
+                              fontFamily: fontFamily,
+                              lineHeight: lineHeight,
+                              letterSpacing: letterSpacing,
+                              align: textAlign,
+                              direction: direction,
+                              outline: model.TextOutline(
+                                enabled: outlineEnabled,
+                                color: Color(outlineColor),
+                                width: outlineWidth,
+                              ),
+                            );
+                  }
+                  final tileManager = ps.tileManagerOf(widget.projectId);
+                  final bytes = await rasterizeTextObject(
+                    textObject,
+                    tileManager.canvasWidth,
+                    tileManager.canvasHeight,
+                    pixelMode: fontService.pixelModeForFamily(fontFamily),
                   );
-                } else {
-                  layer = ps.addTextLayer(
+                  if (bytes != null) {
+                    tileManager.replaceLayerPixels(
+                      ps.tileKeyFor(
+                        widget.projectId,
+                        sceneId,
+                        _currentFrame,
+                        layer.id,
+                      ),
+                      bytes,
+                    );
+                  }
+                  ps.updateLayer(
                     projectId: widget.projectId,
                     sceneId: sceneId,
                     frameIndex: _currentFrame,
-                    text: controller.text,
-                    position: position,
+                    layer: layer.copyWith(textObject: textObject),
                   );
-                  textObject =
-                      (layer.textObject ??
-                              model.TextObject(
-                                id: layer.id,
-                                text: controller.text,
-                                position: position,
-                              ))
-                          .copyWith(
-                            fontSize: fontSize,
-                            color: Color(color),
-                            isBold: isBold,
-                            isItalic: isItalic,
-                            fontFamily: fontFamily,
-                            lineHeight: lineHeight,
-                            letterSpacing: letterSpacing,
-                            align: textAlign,
-                            direction: direction,
-                            outline: model.TextOutline(
-                              enabled: outlineEnabled,
-                              color: Color(outlineColor),
-                              width: outlineWidth,
-                            ),
-                          );
-                }
-                final tileManager = ps.tileManagerOf(widget.projectId);
-                final bytes = await rasterizeTextObject(
-                  textObject,
-                  tileManager.canvasWidth,
-                  tileManager.canvasHeight,
-                  pixelMode: fontService.pixelModeForFamily(fontFamily),
-                );
-                if (bytes != null) {
-                  tileManager.replaceLayerPixels(
-                    ps.tileKeyFor(
-                      widget.projectId,
-                      sceneId,
-                      _currentFrame,
-                      layer.id,
-                    ),
-                    bytes,
-                  );
-                }
-                ps.updateLayer(
-                  projectId: widget.projectId,
-                  sceneId: sceneId,
-                  frameIndex: _currentFrame,
-                  layer: layer.copyWith(textObject: textObject),
-                );
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonOk),
-            ),
-          ],
-        ),
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: Text(l10n.commonOk),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2461,7 +2468,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.canvasHelpRotationBody),
@@ -2471,7 +2478,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.canvasHelpTatechuyokoBody),
@@ -2481,7 +2488,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               Text(l10n.canvasHelpRubyBody('{漢字|かんじ}')),

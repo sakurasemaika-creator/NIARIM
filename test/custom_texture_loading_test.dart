@@ -46,7 +46,9 @@ void main() {
     test('黒画像は全ピクセルがalpha高値（インクあり）のマスクへ変換される', () async {
       final dir = await Directory.systemTemp.createTemp('niabrush_test');
       final file = File('${dir.path}/black.png');
-      await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFF000000)));
+      await file.writeAsBytes(
+        await _solidColorPng(8, const ui.Color(0xFF000000)),
+      );
 
       expect(getCachedBrushTexture(file.path), isNull);
       await preloadBrushTexture(file.path);
@@ -61,7 +63,9 @@ void main() {
     test('白画像は全ピクセルがalpha低値（インクなし）のマスクへ変換される', () async {
       final dir = await Directory.systemTemp.createTemp('niabrush_test');
       final file = File('${dir.path}/white.png');
-      await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFFFFFFFF)));
+      await file.writeAsBytes(
+        await _solidColorPng(8, const ui.Color(0xFFFFFFFF)),
+      );
 
       await preloadBrushTexture(file.path);
       final texture = getCachedBrushTexture(file.path);
@@ -89,7 +93,9 @@ void main() {
     test('ensureToneTextureLoaded後は画像由来のパターンが同期関数からも返る', () async {
       final dir = await Directory.systemTemp.createTemp('niatone_test');
       final file = File('${dir.path}/white.png');
-      await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFFFFFFFF)));
+      await file.writeAsBytes(
+        await _solidColorPng(8, const ui.Color(0xFFFFFFFF)),
+      );
       final tone = Tone(id: 't2', name: 'カスタム2', texturePath: file.path);
 
       await ensureToneTextureLoaded(tone, size: 32);
@@ -155,7 +161,9 @@ void main() {
     test('imagePath設定時は画像のRGBAがそのまま返る（四隅も不透明）', () async {
       final dir = await Directory.systemTemp.createTemp('niastamp_test');
       final file = File('${dir.path}/red.png');
-      await file.writeAsBytes(await _solidColorPng(8, const ui.Color(0xFFFF0000)));
+      await file.writeAsBytes(
+        await _solidColorPng(8, const ui.Color(0xFFFF0000)),
+      );
       final stamp = Stamp(id: 's2', name: '自作', imagePath: file.path);
 
       final texture = await generateBuiltInStampTexture(stamp, size: 16);

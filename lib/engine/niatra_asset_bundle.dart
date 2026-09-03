@@ -40,7 +40,9 @@ class NiatraAssetBundle {
     final sourceArchive = ArchiveSecurity.decodeZip(original);
     final dataFile = sourceArchive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final data = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
+    final data =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     data[_versionKey] = _version;
 
     final output = Archive();
@@ -123,14 +125,17 @@ class NiatraAssetBundle {
   }) async {
     if (data.raw[_versionKey] != _version) return;
 
-    final String? basePath =
-        kIsWeb ? null : (await getApplicationDocumentsDirectory()).path;
+    final String? basePath = kIsWeb
+        ? null
+        : (await getApplicationDocumentsDirectory()).path;
     final importNonce = DateTime.now().microsecondsSinceEpoch;
 
     final brushesJson = data.raw['brushes'] as List<dynamic>?;
     if (brushesJson != null) {
       for (int i = 0; i < brushesJson.length; i++) {
-        final json = Map<String, dynamic>.from(brushesJson[i] as Map<String, dynamic>);
+        final json = Map<String, dynamic>.from(
+          brushesJson[i] as Map<String, dynamic>,
+        );
         final id = 'Brush${importNonce}_$i';
         json['id'] = id;
         json['folderId'] = null;
@@ -150,7 +155,9 @@ class NiatraAssetBundle {
     final tonesJson = data.raw['tones'] as List<dynamic>?;
     if (tonesJson != null) {
       for (int i = 0; i < tonesJson.length; i++) {
-        final json = Map<String, dynamic>.from(tonesJson[i] as Map<String, dynamic>);
+        final json = Map<String, dynamic>.from(
+          tonesJson[i] as Map<String, dynamic>,
+        );
         final id = 'Tone${importNonce}_$i';
         json['id'] = id;
         json['folderId'] = null;
@@ -170,7 +177,9 @@ class NiatraAssetBundle {
     final stampsJson = data.raw['stamps'] as List<dynamic>?;
     if (stampsJson != null) {
       for (int i = 0; i < stampsJson.length; i++) {
-        final json = Map<String, dynamic>.from(stampsJson[i] as Map<String, dynamic>);
+        final json = Map<String, dynamic>.from(
+          stampsJson[i] as Map<String, dynamic>,
+        );
         final id = 'Stamp${importNonce}_$i';
         json['id'] = id;
         json['folderId'] = null;

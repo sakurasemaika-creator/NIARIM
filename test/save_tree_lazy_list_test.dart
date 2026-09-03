@@ -34,13 +34,12 @@ void main() {
     final dir = Directory.systemTemp.createTempSync('niarim_savetree_lazy');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (call) async => dir.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => dir.path,
+        );
   });
 
-  testWidgets('ツリー方式のセーブ一覧は行をbuilderで遅延生成する',
-      (tester) async {
+  testWidgets('ツリー方式のセーブ一覧は行をbuilderで遅延生成する', (tester) async {
     tester.view.physicalSize = const Size(1080, 2280);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -57,14 +56,16 @@ void main() {
     final sts = ctx.read<SaveTreeService>();
     sts.setTreeMode(true);
 
-    final project = await tester.runAsync(() => ps.createProject(
-          name: 'lazy',
-          fps: 12,
-          durationSeconds: 1,
-          backgroundColor: 0xFFFFFFFF,
-          exportWidth: 64,
-          exportHeight: 64,
-        ));
+    final project = await tester.runAsync(
+      () => ps.createProject(
+        name: 'lazy',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
     final pid = project!.id;
 
     // 1本の長い枝としてノードを積む（深い木ほど行数が増える構造）。
@@ -97,9 +98,12 @@ void main() {
         .toList();
     expect(delegates, isNotEmpty, reason: 'セーブ一覧のListViewが見つからない');
     expect(
-      delegates.whereType<SliverChildBuilderDelegate>().map((d) => d.childCount),
+      delegates.whereType<SliverChildBuilderDelegate>().map(
+        (d) => d.childCount,
+      ),
       contains(nodeCount),
-      reason: '全ノードぶんの行ウィジェットを毎buildで作る実装に戻っている'
+      reason:
+          '全ノードぶんの行ウィジェットを毎buildで作る実装に戻っている'
           '（builder方式で$nodeCount行を持つListViewが無い）',
     );
 
@@ -112,14 +116,13 @@ void main() {
     expect(find.text('保存0'), findsOneWidget);
   });
 
-  testWidgets('親子インデックスは表示順を変えない（rootが下・子孫が上）',
-      (tester) async {
+  testWidgets('親子インデックスは表示順を変えない（rootが下・子孫が上）', (tester) async {
     final dir = Directory.systemTemp.createTempSync('niarim_savetree_order');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (call) async => dir.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => dir.path,
+        );
 
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
@@ -132,14 +135,16 @@ void main() {
     final sts = ctx.read<SaveTreeService>();
     sts.setTreeMode(true);
 
-    final project = await tester.runAsync(() => ps.createProject(
-          name: 'order',
-          fps: 12,
-          durationSeconds: 1,
-          backgroundColor: 0xFFFFFFFF,
-          exportWidth: 64,
-          exportHeight: 64,
-        ));
+    final project = await tester.runAsync(
+      () => ps.createProject(
+        name: 'order',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
     final pid = project!.id;
 
     late SaveNode root;
@@ -174,8 +179,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
 
     // reverse:true なので、DFS順の先頭（root）ほど画面下に来る。
-    double top(String label) =>
-        tester.getTopLeft(find.text(label).first).dy;
+    double top(String label) => tester.getTopLeft(find.text(label).first).dy;
     expect(top('root'), greaterThan(top('childA')));
     expect(top('childA'), greaterThan(top('childB')));
   });

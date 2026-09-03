@@ -73,7 +73,12 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     final w = tm.canvasWidth;
     final h = tm.canvasHeight;
     if (w <= 0 || h <= 0) return;
-    final key = ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, layerId);
+    final key = ps.tileKeyFor(
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+      layerId,
+    );
     final img = await tm.compositeLayerToImage(key);
 
     const maxSize = 150;
@@ -105,11 +110,21 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     final base = _previewBase;
     if (base == null || !mounted) return;
     final filtered = _engine.applyColorAdjust(
-      base, _previewW, _previewH,
-      saturation: _saturation, brightness: _brightness, contrast: _contrast,
+      base,
+      _previewW,
+      _previewH,
+      saturation: _saturation,
+      brightness: _brightness,
+      contrast: _contrast,
     );
     final completer = Completer<ui.Image>();
-    ui.decodeImageFromPixels(filtered, _previewW, _previewH, ui.PixelFormat.rgba8888, completer.complete);
+    ui.decodeImageFromPixels(
+      filtered,
+      _previewW,
+      _previewH,
+      ui.PixelFormat.rgba8888,
+      completer.complete,
+    );
     final img = await completer.future;
     if (!mounted) {
       img.dispose();
@@ -127,35 +142,51 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     setState(() => _applying = true);
     final ps = context.read<ProjectService>();
     final tm = ps.tileManagerOf(widget.projectId);
-    final key = ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, layerId);
-    await tm.applyColorAdjustToLayer(key, saturation: _saturation, brightness: _brightness, contrast: _contrast);
+    final key = ps.tileKeyFor(
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+      layerId,
+    );
+    await tm.applyColorAdjustToLayer(
+      key,
+      saturation: _saturation,
+      brightness: _brightness,
+      contrast: _contrast,
+    );
     if (!mounted) return;
     widget.onClose();
   }
 
   void _addToDrawFilter(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    context.read<FilterService>().addFilter(FilterDef(
-          id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
-          name: l10n.filterNameColorAdjust,
-          kind: FilterKind.colorAdjust,
-          caSaturation: _saturation,
-          caBrightness: _brightness,
-          caContrast: _contrast,
-        ));
+    context.read<FilterService>().addFilter(
+      FilterDef(
+        id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
+        name: l10n.filterNameColorAdjust,
+        kind: FilterKind.colorAdjust,
+        caSaturation: _saturation,
+        caBrightness: _brightness,
+        caContrast: _contrast,
+      ),
+    );
     widget.onClose();
   }
 
   void _addToEffectFilter(BuildContext context) {
-    context.read<ProjectService>().addEffectFilter(widget.projectId, widget.sceneId, EffectFilterInstance(
-          id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
-          type: EffectFilterType.colorAdjust,
-          startFrame: widget.frameIndex,
-          endFrame: (widget.frameIndex + 11).clamp(0, widget.totalFrames - 1),
-          param1: _saturation,
-          param2: _brightness,
-          param3: _contrast,
-        ));
+    context.read<ProjectService>().addEffectFilter(
+      widget.projectId,
+      widget.sceneId,
+      EffectFilterInstance(
+        id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
+        type: EffectFilterType.colorAdjust,
+        startFrame: widget.frameIndex,
+        endFrame: (widget.frameIndex + 11).clamp(0, widget.totalFrames - 1),
+        param1: _saturation,
+        param2: _brightness,
+        param3: _contrast,
+      ),
+    );
     widget.onClose();
   }
 
@@ -173,21 +204,39 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PanelCenterCloseBar(onClose: widget.onClose),
-              Text(l10n.canvasColorAdjustTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+              Text(
+                l10n.canvasColorAdjustTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
               const Divider(),
               Center(
                 child: Container(
                   width: 120,
                   height: 120,
-                  decoration: BoxDecoration(color: Colors.grey[850], borderRadius: BorderRadius.circular(4)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[850],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                   child: _previewImage != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(4),
-                          child: RawImage(image: _previewImage, fit: BoxFit.contain),
+                          child: RawImage(
+                            image: _previewImage,
+                            fit: BoxFit.contain,
+                          ),
                         )
                       : const Center(
-                          child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -195,15 +244,25 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _slider(l10n.filterColorAdjustSaturationLabel, _saturation, (v) {
-                        setState(() => _saturation = v);
-                        _updatePreview();
-                      }),
-                      _slider(l10n.filterColorAdjustBrightnessLabel, _brightness, (v) {
-                        setState(() => _brightness = v);
-                        _updatePreview();
-                      }),
-                      _slider(l10n.filterColorAdjustContrastLabel, _contrast, (v) {
+                      _slider(
+                        l10n.filterColorAdjustSaturationLabel,
+                        _saturation,
+                        (v) {
+                          setState(() => _saturation = v);
+                          _updatePreview();
+                        },
+                      ),
+                      _slider(
+                        l10n.filterColorAdjustBrightnessLabel,
+                        _brightness,
+                        (v) {
+                          setState(() => _brightness = v);
+                          _updatePreview();
+                        },
+                      ),
+                      _slider(l10n.filterColorAdjustContrastLabel, _contrast, (
+                        v,
+                      ) {
                         setState(() => _contrast = v);
                         _updatePreview();
                       }),
@@ -214,9 +273,14 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TextButton(onPressed: widget.onClose, child: Text(l10n.commonCancel)),
+                  TextButton(
+                    onPressed: widget.onClose,
+                    child: Text(l10n.commonCancel),
+                  ),
                   FilledButton(
-                    onPressed: _applying || widget.layerId == null ? null : _apply,
+                    onPressed: _applying || widget.layerId == null
+                        ? null
+                        : _apply,
                     child: Text(l10n.filterApplyButton),
                   ),
                 ],
@@ -226,11 +290,17 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                 children: [
                   TextButton(
                     onPressed: () => _addToDrawFilter(context),
-                    child: Text(l10n.canvasColorAdjustAddToDrawFilter, style: const TextStyle(fontSize: 11)),
+                    child: Text(
+                      l10n.canvasColorAdjustAddToDrawFilter,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
                   TextButton(
                     onPressed: () => _addToEffectFilter(context),
-                    child: Text(l10n.canvasColorAdjustAddToEffectFilter, style: const TextStyle(fontSize: 11)),
+                    child: Text(
+                      l10n.canvasColorAdjustAddToEffectFilter,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
                 ],
               ),
@@ -247,13 +317,21 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$label: ${value.round()}', style: const TextStyle(fontSize: 11)),
+          Text(
+            '$label: ${value.round()}',
+            style: const TextStyle(fontSize: 11),
+          ),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               trackHeight: 2,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
             ),
-            child: SteppedSlider(value: value, min: -100, max: 100, onChanged: onChanged),
+            child: SteppedSlider(
+              value: value,
+              min: -100,
+              max: 100,
+              onChanged: onChanged,
+            ),
           ),
         ],
       ),

@@ -33,17 +33,18 @@ class RulerEngine {
       RulerType.circle => _snapToCircle(point),
       RulerType.ellipse => _snapToEllipse(point),
       RulerType.radial => _snapToRadial(point),
-      RulerType.onePointPerspective => _snapToPerspective(
-          point, [settings.vanishingPoint1 ?? _activeRuler!.position]),
+      RulerType.onePointPerspective => _snapToPerspective(point, [
+        settings.vanishingPoint1 ?? _activeRuler!.position,
+      ]),
       RulerType.twoPointPerspective => _snapToPerspective(point, [
-          settings.vanishingPoint1 ?? const Offset(200, 540),
-          settings.vanishingPoint2 ?? const Offset(1720, 540),
-        ]),
+        settings.vanishingPoint1 ?? const Offset(200, 540),
+        settings.vanishingPoint2 ?? const Offset(1720, 540),
+      ]),
       RulerType.threePointPerspective => _snapToPerspective(point, [
-          settings.vanishingPoint1 ?? const Offset(200, 540),
-          settings.vanishingPoint2 ?? const Offset(1720, 540),
-          settings.vanishingPoint3 ?? const Offset(960, 100),
-        ]),
+        settings.vanishingPoint1 ?? const Offset(200, 540),
+        settings.vanishingPoint2 ?? const Offset(1720, 540),
+        settings.vanishingPoint3 ?? const Offset(960, 100),
+      ]),
     };
   }
 
@@ -55,7 +56,10 @@ class RulerEngine {
     final dx = point.dx - ruler.position.dx;
     final dy = point.dy - ruler.position.dy;
     final projection = dx * c + dy * s;
-    return Offset(ruler.position.dx + projection * c, ruler.position.dy + projection * s);
+    return Offset(
+      ruler.position.dx + projection * c,
+      ruler.position.dy + projection * s,
+    );
   }
 
   Offset _snapToCircle(Offset point) {
@@ -103,7 +107,8 @@ class RulerEngine {
     // rotationは各スポークの基準角度のオフセット（回転角度は変更可能）。
     final angle = atan2(dy, dx) - ruler.rotation;
     final sliceAngle = 2 * pi / divisions;
-    final snappedAngle = (angle / sliceAngle).round() * sliceAngle + ruler.rotation;
+    final snappedAngle =
+        (angle / sliceAngle).round() * sliceAngle + ruler.rotation;
     final dist = sqrt(dx * dx + dy * dy);
     return Offset(
       ruler.position.dx + dist * cos(snappedAngle),

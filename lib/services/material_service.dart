@@ -18,7 +18,8 @@ import '../models/material_asset.dart';
 class MaterialService extends ChangeNotifier {
   final Map<String, List<MaterialAsset>> _materials = {}; // projectId -> assets
   final Map<String, int> _counters = {}; // projectId -> 次の連番
-  final Map<String, Future<void>> _loading = {}; // projectId -> 読み込み中Future（同時読み込み防止）
+  final Map<String, Future<void>> _loading =
+      {}; // projectId -> 読み込み中Future（同時読み込み防止）
 
   /// materialsOf()はUIのbuild内で同期的に呼ばれるため、事前に
   /// ensureLoaded()を呼んでおく必要がある（material_list_screen.dart等）。
@@ -56,7 +57,8 @@ class MaterialService extends ChangeNotifier {
       return;
     }
     try {
-      final json = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      final json =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       _counters[projectId] = json['nextCounter'] as int? ?? 0;
       _materials[projectId] = (json['materials'] as List<dynamic>? ?? [])
           .map((e) => _deserialize(e as Map<String, dynamic>))
@@ -82,28 +84,31 @@ class MaterialService extends ChangeNotifier {
   }
 
   Map<String, dynamic> _serialize(MaterialAsset m) => {
-        'id': m.id,
-        'originalFileName': m.originalFileName,
-        'type': m.type.name,
-        'sizeBytes': m.sizeBytes,
-        'addedAt': m.addedAt.toIso8601String(),
-        'width': m.width,
-        'height': m.height,
-        'durationMs': m.duration?.inMilliseconds,
-      };
+    'id': m.id,
+    'originalFileName': m.originalFileName,
+    'type': m.type.name,
+    'sizeBytes': m.sizeBytes,
+    'addedAt': m.addedAt.toIso8601String(),
+    'width': m.width,
+    'height': m.height,
+    'durationMs': m.duration?.inMilliseconds,
+  };
 
   MaterialAsset _deserialize(Map<String, dynamic> j) => MaterialAsset(
-        id: j['id'] as String,
-        originalFileName: j['originalFileName'] as String,
-        type: MaterialType.values
-            .firstWhere((t) => t.name == j['type'], orElse: () => MaterialType.image),
-        sizeBytes: j['sizeBytes'] as int,
-        addedAt: DateTime.parse(j['addedAt'] as String),
-        width: j['width'] as int?,
-        height: j['height'] as int?,
-        duration:
-            j['durationMs'] != null ? Duration(milliseconds: j['durationMs'] as int) : null,
-      );
+    id: j['id'] as String,
+    originalFileName: j['originalFileName'] as String,
+    type: MaterialType.values.firstWhere(
+      (t) => t.name == j['type'],
+      orElse: () => MaterialType.image,
+    ),
+    sizeBytes: j['sizeBytes'] as int,
+    addedAt: DateTime.parse(j['addedAt'] as String),
+    width: j['width'] as int?,
+    height: j['height'] as int?,
+    duration: j['durationMs'] != null
+        ? Duration(milliseconds: j['durationMs'] as int)
+        : null,
+  );
 
   String _nextId(String projectId) {
     final n = (_counters[projectId] ?? 0) + 1;
@@ -166,7 +171,9 @@ class MaterialService extends ChangeNotifier {
   }
 
   MaterialAsset? assetOf(String projectId, String materialId) =>
-      (_materials[projectId] ?? const []).where((m) => m.id == materialId).firstOrNull;
+      (_materials[projectId] ?? const [])
+          .where((m) => m.id == materialId)
+          .firstOrNull;
 
   /// 使用中でない素材を削除する。[isUsed]がtrueを返す場合は削除しない
   /// （使用中の素材は削除できない）。
@@ -199,7 +206,11 @@ class MaterialService extends ChangeNotifier {
     final list = List<MaterialAsset>.from(_materials[projectId] ?? const []);
     int removed = 0;
     for (final m in list) {
-      final ok = await removeMaterial(projectId: projectId, materialId: m.id, isUsed: isUsed);
+      final ok = await removeMaterial(
+        projectId: projectId,
+        materialId: m.id,
+        isUsed: isUsed,
+      );
       if (ok) removed++;
     }
     return removed;
@@ -222,11 +233,15 @@ class MaterialService extends ChangeNotifier {
   /// [includeTypes]が空、または対象素材が実ファイルとして見つからない場合は
   /// filesが空・manifestがnullの結果を返す。
   Future<({Map<String, Uint8List> files, String? manifest})> buildShareBundle(
-      String projectId, Set<MaterialType> includeTypes) async {
+    String projectId,
+    Set<MaterialType> includeTypes,
+  ) async {
     await ensureLoaded(projectId);
-    if (includeTypes.isEmpty) return (files: <String, Uint8List>{}, manifest: null);
-    final selected =
-        (_materials[projectId] ?? const []).where((m) => includeTypes.contains(m.type));
+    if (includeTypes.isEmpty)
+      return (files: <String, Uint8List>{}, manifest: null);
+    final selected = (_materials[projectId] ?? const []).where(
+      (m) => includeTypes.contains(m.type),
+    );
     final dir = await _materialsDir(projectId);
     final files = <String, Uint8List>{};
     final included = <MaterialAsset>[];

@@ -28,7 +28,9 @@ const int _saveTreeSizeWarningThresholdBytes = 300 * 1024 * 1024; // 300MB
 /// 保存ノードのサムネイルを生成する（先頭シーン・先頭フレームを縮小合成）。
 /// 生成できない場合（シーン・フレームが存在しない等）はnullを返す。
 Future<Uint8List?> _generateSaveNodeThumbnail(
-    ProjectService ps, String projectId) async {
+  ProjectService ps,
+  String projectId,
+) async {
   final scenes = ps.scenesOf(projectId);
   if (scenes.isEmpty) return null;
   final scene = scenes.first;
@@ -102,10 +104,12 @@ enum SaveTreeEntryMode {
   /// 「ここから再開する（このノードの内容で現在のセッションを置き換える）」
   /// の2択＋各操作の確認ダイアログを出す。
   timeline,
+
   /// プロジェクト詳細画面から：まだ編集セッションを始めていない場面の
   /// ため、「ここから作業を再開する」か「キャンセルして閉じる」だけの
   /// シンプルな確認にする（上書きの概念はここにはない）。
   projectDetail,
+
   /// それ以外（キャンバス画面の保存ボタン等）：新規保存の作成・一覧の
   /// 閲覧はできるが、過去のセーブへの復元（＝現在の内容の破棄）は
   /// この2つの入口からのみ行えるようにするため、ここでは無効化する。
@@ -115,10 +119,10 @@ enum SaveTreeEntryMode {
 /// クエリパラメータ（例：`/save-tree/xxx?entry=timeline`）からエントリ
 /// モードを解決する。未指定・不明な値は最も制限の強いquickSaveへ倒す。
 SaveTreeEntryMode parseSaveTreeEntryMode(String? raw) => switch (raw) {
-      'timeline' => SaveTreeEntryMode.timeline,
-      'projectDetail' => SaveTreeEntryMode.projectDetail,
-      _ => SaveTreeEntryMode.quickSave,
-    };
+  'timeline' => SaveTreeEntryMode.timeline,
+  'projectDetail' => SaveTreeEntryMode.projectDetail,
+  _ => SaveTreeEntryMode.quickSave,
+};
 
 class SaveTreeScreen extends StatefulWidget {
   final String projectId;
@@ -145,15 +149,23 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isTreeMode ? l10n.saveTreeScreenTitleTree : l10n.saveTreeScreenTitleSlot),
+        title: Text(
+          isTreeMode
+              ? l10n.saveTreeScreenTitleTree
+              : l10n.saveTreeScreenTitleSlot,
+        ),
         actions: [
           const HelpButton(topic: 'セーブツリー'),
           if (isTreeMode)
             FilledButton.icon(
               icon: const Icon(Icons.save, size: 16),
               label: Text(l10n.commonSave),
-              onPressed: () =>
-                  _showTreeSaveDialog(context, widget.projectId, saveService, _selectedNodeId),
+              onPressed: () => _showTreeSaveDialog(
+                context,
+                widget.projectId,
+                saveService,
+                _selectedNodeId,
+              ),
             ),
           const SizedBox(width: 8),
         ],
@@ -167,7 +179,8 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
                     nodes: saveService.getNodes(widget.projectId),
                     saveService: saveService,
                     selectedNodeId: _selectedNodeId,
-                    onNodeSelected: (id) => setState(() => _selectedNodeId = id),
+                    onNodeSelected: (id) =>
+                        setState(() => _selectedNodeId = id),
                     entryMode: widget.entryMode,
                   )
                 : desktopCentered(
@@ -186,12 +199,15 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
   }
 }
 
-
 /// ツリー方式での新規保存ダイアログ（トップの「保存」ボタン・ノードの
 /// 「上書きする」選択の両方から呼ぶため、Widgetをまたいで使えるよう
 /// トップレベル関数にしている）。
-void _showTreeSaveDialog(BuildContext context, String projectId,
-    SaveTreeService service, String? parentId) {
+void _showTreeSaveDialog(
+  BuildContext context,
+  String projectId,
+  SaveTreeService service,
+  String? parentId,
+) {
   final l10n = AppLocalizations.of(context)!;
   final commentController = TextEditingController();
   var saving = false;
@@ -202,93 +218,103 @@ void _showTreeSaveDialog(BuildContext context, String projectId,
       controller: commentController,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-        title: Text(l10n.commonSave),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                parentId != null ? l10n.saveTreeSaveAsChildHint : l10n.saveTreeSaveAsRootHint,
-                style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+          title: Text(l10n.commonSave),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  parentId != null
+                      ? l10n.saveTreeSaveAsChildHint
+                      : l10n.saveTreeSaveAsRootHint,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
+              TextField(
+                controller: commentController,
+                decoration: InputDecoration(
+                  labelText: l10n.saveTreeCommentLabel,
+                  hintText: l10n.saveTreeCommentHint,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: saving ? null : () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
             ),
-            TextField(
-              controller: commentController,
-              decoration: InputDecoration(
-                labelText: l10n.saveTreeCommentLabel,
-                hintText: l10n.saveTreeCommentHint,
-              ),
+            FilledButton(
+              // スロット方式の保存ダイアログと同じ方針：保存中は二重実行を
+              // 防ぐためボタンを無効化し、失敗は必ず画面へ出す（以前は
+              // try/catchが無く、失敗しても何の表示も出ないまま
+              // ダイアログが閉じずに固まって見えていた）。
+              onPressed: saving
+                  ? null
+                  : () async {
+                      final ps = context.read<ProjectService>();
+                      final project = ps.projects
+                          .where((p) => p.id == projectId)
+                          .firstOrNull;
+                      if (project == null) {
+                        Navigator.pop(ctx);
+                        return;
+                      }
+                      setDialogState(() => saving = true);
+                      try {
+                        final comment = commentController.text.isEmpty
+                            ? null
+                            : commentController.text;
+                        final scenes = ps.scenesOf(projectId);
+                        final tileManager = ps.tileManagerOf(projectId);
+                        final thumb = await _generateSaveNodeThumbnail(
+                          ps,
+                          projectId,
+                        );
+                        await service.saveAsChild(
+                          projectId: projectId,
+                          project: project,
+                          scenes: scenes,
+                          tileManager: tileManager,
+                          parentId: parentId,
+                          comment: comment,
+                          thumbnailPngBytes: thumb,
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (context.mounted) {
+                          await _warnIfSaveTreeSizeLarge(context, projectId);
+                        }
+                      } catch (e, st) {
+                        AppErrorReporter.record(e, st);
+                        if (ctx.mounted) {
+                          setDialogState(() => saving = false);
+                          Navigator.pop(ctx);
+                        }
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n.saveTreeSaveFailedSnackbar('$e'),
+                              ),
+                              duration: const Duration(seconds: 6),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.commonSave),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: saving ? null : () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel)),
-          FilledButton(
-            // スロット方式の保存ダイアログと同じ方針：保存中は二重実行を
-            // 防ぐためボタンを無効化し、失敗は必ず画面へ出す（以前は
-            // try/catchが無く、失敗しても何の表示も出ないまま
-            // ダイアログが閉じずに固まって見えていた）。
-            onPressed: saving
-                ? null
-                : () async {
-                    final ps = context.read<ProjectService>();
-                    final project =
-                        ps.projects.where((p) => p.id == projectId).firstOrNull;
-                    if (project == null) {
-                      Navigator.pop(ctx);
-                      return;
-                    }
-                    setDialogState(() => saving = true);
-                    try {
-                      final comment = commentController.text.isEmpty
-                          ? null
-                          : commentController.text;
-                      final scenes = ps.scenesOf(projectId);
-                      final tileManager = ps.tileManagerOf(projectId);
-                      final thumb =
-                          await _generateSaveNodeThumbnail(ps, projectId);
-                      await service.saveAsChild(
-                        projectId: projectId,
-                        project: project,
-                        scenes: scenes,
-                        tileManager: tileManager,
-                        parentId: parentId,
-                        comment: comment,
-                        thumbnailPngBytes: thumb,
-                      );
-                      if (ctx.mounted) Navigator.pop(ctx);
-                      if (context.mounted) {
-                        await _warnIfSaveTreeSizeLarge(context, projectId);
-                      }
-                    } catch (e, st) {
-                      AppErrorReporter.record(e, st);
-                      if (ctx.mounted) {
-                        setDialogState(() => saving = false);
-                        Navigator.pop(ctx);
-                      }
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content:
-                                Text(l10n.saveTreeSaveFailedSnackbar('$e')),
-                            duration: const Duration(seconds: 6),
-                          ),
-                        );
-                      }
-                    }
-                  },
-            child: saving
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(l10n.commonSave),
-          ),
-        ],
         ),
       ),
     ),
@@ -297,7 +323,10 @@ void _showTreeSaveDialog(BuildContext context, String projectId,
 
 /// セーブツリーの合計容量が閾値を超えている場合に通知する
 /// 「容量が大きくなる場合はユーザーへ通知」するために使う。
-Future<void> _warnIfSaveTreeSizeLarge(BuildContext context, String projectId) async {
+Future<void> _warnIfSaveTreeSizeLarge(
+  BuildContext context,
+  String projectId,
+) async {
   final sizeBytes = await NiaproSerializer.saveTreeSizeBytes(projectId);
   if (sizeBytes < _saveTreeSizeWarningThresholdBytes) return;
   if (!context.mounted) return;
@@ -341,7 +370,10 @@ Future<void> _handleSaveNodeRestore(
         title: Text(nodeTitle),
         content: Text(l10n.saveTreeTimelineActionChoiceBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, _SaveNodeChoice.overwrite),
             child: Text(l10n.saveTreeOverwriteAction),
@@ -361,8 +393,14 @@ Future<void> _handleSaveNodeRestore(
           title: Text(l10n.saveTreeOverwriteAction),
           content: Text(l10n.saveTreeOverwriteConfirmBody),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonOk)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.commonOk),
+            ),
           ],
         ),
       );
@@ -375,8 +413,14 @@ Future<void> _handleSaveNodeRestore(
         title: Text(l10n.saveTreeResumeFromHereAction),
         content: Text(l10n.saveTreeResumeConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonOk)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonOk),
+          ),
         ],
       ),
     );
@@ -391,7 +435,10 @@ Future<void> _handleSaveNodeRestore(
       title: Text(nodeTitle),
       content: Text(l10n.saveTreeProjectDetailResumeBody),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(l10n.commonCancel),
+        ),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, true),
           child: Text(l10n.saveTreeResumeFromHereAction),
@@ -435,7 +482,8 @@ class _SlotView extends StatelessWidget {
               : null,
           onDelete: node != null
               ? () async {
-                  if (!await confirmDelete(context, itemName: node.comment)) return;
+                  if (!await confirmDelete(context, itemName: node.comment))
+                    return;
                   saveService.deleteNode(projectId, node.id);
                 }
               : null,
@@ -445,10 +493,14 @@ class _SlotView extends StatelessWidget {
   }
 
   void _showSlotSaveDialog(
-      BuildContext context, int slotIndex, SaveNode? existing) {
+    BuildContext context,
+    int slotIndex,
+    SaveNode? existing,
+  ) {
     final l10n = AppLocalizations.of(context)!;
-    final commentController =
-        TextEditingController(text: existing?.comment ?? '');
+    final commentController = TextEditingController(
+      text: existing?.comment ?? '',
+    );
     showDialog(
       context: context,
       builder: (ctx) => DisposeOnUnmount(
@@ -462,7 +514,9 @@ class _SlotView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
-                    l10n.saveTreeSlotOverwriteWarning(_formatDate(existing.savedAt)),
+                    l10n.saveTreeSlotOverwriteWarning(
+                      _formatDate(existing.savedAt),
+                    ),
                     style: const TextStyle(fontSize: 12, color: Colors.orange),
                   ),
                 ),
@@ -477,13 +531,15 @@ class _SlotView extends StatelessWidget {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.commonCancel)),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               onPressed: () async {
                 final ps = context.read<ProjectService>();
-                final project =
-                    ps.projects.where((p) => p.id == projectId).firstOrNull;
+                final project = ps.projects
+                    .where((p) => p.id == projectId)
+                    .firstOrNull;
                 if (project == null) {
                   Navigator.pop(ctx);
                   return;
@@ -528,17 +584,21 @@ class _SlotView extends StatelessWidget {
     final data = await saveService.loadNode(projectId, node.id);
     if (!context.mounted) return;
     if (data == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
       return;
     }
     context.read<ProjectService>().restoreFromAutosave(projectId, data);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(l10n.saveTreeRestoredSnackbar(
-              node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1)))),
+        content: Text(
+          l10n.saveTreeRestoredSnackbar(
+            node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
+          ),
+        ),
+      ),
     );
   }
 
@@ -573,20 +633,22 @@ class _SaveNodeThumbnail extends StatelessWidget {
               // 保存されているサムネイルは長辺200pxだが、ここでの表示は
               // 40〜48px。指定しないと200px相当のまま画像キャッシュに載る
               // ため、実際に表示する画素数へ落としてデコードする。
-              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
-              errorBuilder: (context, error, stackTrace) => _placeholderIcon(context),
+              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
+                  .round(),
+              errorBuilder: (context, error, stackTrace) =>
+                  _placeholderIcon(context),
             )
           : _placeholderIcon(context),
     );
   }
 
   Widget _placeholderIcon(BuildContext context) => Center(
-        child: Icon(
-          node != null ? Icons.image : Icons.add,
-          size: size / 2,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      );
+    child: Icon(
+      node != null ? Icons.image : Icons.add,
+      size: size / 2,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
 }
 
 class _SlotTile extends StatelessWidget {
@@ -617,11 +679,18 @@ class _SlotTile extends StatelessWidget {
         elevation: 1,
         shadowColor: Colors.black.withValues(alpha: 0.15),
         child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           leading: _SaveNodeThumbnail(node: node),
-          title: Text('${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+          title: Text(
+            '${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
           subtitle: node != null
               ? Text(_formatDate(node!.savedAt))
               : Text(l10n.saveTreeNoDataLabel),
@@ -689,18 +758,34 @@ class _TreeView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 88, height: 88,
-              decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
-              child: Icon(Icons.account_tree_outlined, size: 40, color: scheme.primary),
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.account_tree_outlined,
+                size: 40,
+                color: scheme.primary,
+              ),
             ),
             const SizedBox(height: 20),
-            Text(l10n.saveTreeEmptyTitle,
-                style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback, color: scheme.onSurface)),
+            Text(
+              l10n.saveTreeEmptyTitle,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                color: scheme.onSurface,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(l10n.saveTreeEmptyHint,
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-                textAlign: TextAlign.center),
+            Text(
+              l10n.saveTreeEmptyHint,
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       );
@@ -773,16 +858,17 @@ class _TreeView extends StatelessWidget {
         Expanded(
           child: ListTile(
             selected: isSelected,
-            selectedTileColor: Theme.of(context)
-                .colorScheme
-                .primaryContainer
-                .withValues(alpha: 0.3),
+            selectedTileColor: Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.3),
             leading: node.thumbnailPath != null
                 ? _SaveNodeThumbnail(node: node, size: 40)
                 : Icon(
                     Icons.commit,
                     size: 20,
-                    color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
                   ),
             title: Text(node.comment ?? l10n.saveTreeNodeDefaultTitle),
             subtitle: Text(_formatDate(node.savedAt)),
@@ -793,10 +879,17 @@ class _TreeView extends StatelessWidget {
                 // 過去のセーブへの復元は、タイムラインモード・プロジェクト
                 // 詳細画面からの2つの入口からのみ行える。
                 if (entryMode != SaveTreeEntryMode.quickSave)
-                  PopupMenuItem(value: 'restore', child: Text(l10n.saveTreeRestoreAction)),
+                  PopupMenuItem(
+                    value: 'restore',
+                    child: Text(l10n.saveTreeRestoreAction),
+                  ),
                 PopupMenuItem(
-                    value: 'delete',
-                    child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.red))),
+                  value: 'delete',
+                  child: Text(
+                    l10n.commonDelete,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
               ],
             ),
           ),
@@ -806,14 +899,18 @@ class _TreeView extends StatelessWidget {
   }
 
   Future<void> _handleAction(
-      BuildContext context, String action, SaveNode node) async {
+    BuildContext context,
+    String action,
+    SaveNode node,
+  ) async {
     switch (action) {
       case 'restore':
         await _handleSaveNodeRestore(
           context,
           entryMode,
           node,
-          onOverwrite: () => _showTreeSaveDialog(context, projectId, saveService, node.id),
+          onOverwrite: () =>
+              _showTreeSaveDialog(context, projectId, saveService, node.id),
           onResume: () => _doRestore(context, node),
         );
         break;
@@ -828,9 +925,9 @@ class _TreeView extends StatelessWidget {
     final data = await saveService.loadNode(projectId, node.id);
     if (!context.mounted) return;
     if (data == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
       return;
     }
     context.read<ProjectService>().restoreFromAutosave(projectId, data);
@@ -843,7 +940,13 @@ class _TreeView extends StatelessWidget {
     onNodeSelected(node.id);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.saveTreeRestoredSnackbar(node.comment ?? l10n.saveTreeNodeDefaultName))),
+      SnackBar(
+        content: Text(
+          l10n.saveTreeRestoredSnackbar(
+            node.comment ?? l10n.saveTreeNodeDefaultName,
+          ),
+        ),
+      ),
     );
   }
 
@@ -881,9 +984,17 @@ class _TreeConnectorPainter extends CustomPainter {
     final selfX = _colW * (continues.length - 1) + _colW / 2;
     canvas.drawLine(Offset(selfX, 0), Offset(selfX, size.height / 2), paint);
     if (continues.last) {
-      canvas.drawLine(Offset(selfX, size.height / 2), Offset(selfX, size.height), paint);
+      canvas.drawLine(
+        Offset(selfX, size.height / 2),
+        Offset(selfX, size.height),
+        paint,
+      );
     }
-    canvas.drawLine(Offset(selfX, size.height / 2), Offset(size.width, size.height / 2), paint);
+    canvas.drawLine(
+      Offset(selfX, size.height / 2),
+      Offset(size.width, size.height / 2),
+      paint,
+    );
   }
 
   @override
@@ -944,15 +1055,17 @@ Future<void> showSaveModeChangeFlowIfNeeded({
   }
 
   if (!context.mounted) return;
-  await Navigator.of(context).push(MaterialPageRoute(
-    builder: (_) => _SaveModeChangeScreen(
-      projectId: projectId,
-      saveService: saveService,
-      newIsTreeMode: false,
-      newSlotMax: limit,
-      projectName: projectName,
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => _SaveModeChangeScreen(
+        projectId: projectId,
+        saveService: saveService,
+        newIsTreeMode: false,
+        newSlotMax: limit,
+        projectName: projectName,
+      ),
     ),
-  ));
+  );
 }
 
 class _SaveModeChangeScreen extends StatefulWidget {
@@ -978,7 +1091,8 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
   final Set<String> _selectedIds = {};
   bool _showSelectionList = false;
   late final bool _initialIsTreeMode;
-  int get _limit => widget.newSlotMax ?? widget.saveService.getNodes(widget.projectId).length;
+  int get _limit =>
+      widget.newSlotMax ?? widget.saveService.getNodes(widget.projectId).length;
   int _effectiveLimit(int nodeCount) => nodeCount < _limit ? nodeCount : _limit;
 
   @override
@@ -993,9 +1107,11 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
     final nodes = widget.saveService.getNodes(widget.projectId);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.projectName == null
-            ? l10n.saveTreeChangeDataTitle
-            : l10n.saveTreeChangeDataTitleWithProject(widget.projectName!)),
+        title: Text(
+          widget.projectName == null
+              ? l10n.saveTreeChangeDataTitle
+              : l10n.saveTreeChangeDataTitleWithProject(widget.projectName!),
+        ),
         leading: _showSelectionList
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -1010,46 +1126,56 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
     );
   }
 
-  Widget _buildButtonBody(BuildContext context, AppLocalizations l10n, List<SaveNode> nodes) {
+  Widget _buildButtonBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<SaveNode> nodes,
+  ) {
     return desktopCentered(
       context,
       Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            l10n.saveTreeChangeExceedMessage,
-            style: const TextStyle(fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.saveTreeKeepableCountLabel(_limit),
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: () {
-              _autoSelectLatest(nodes);
-              _showDiscardDialog(context, nodes);
-            },
-            child: Text(l10n.saveTreeKeepLatestButton(_limit)),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: () => setState(() => _showSelectionList = true),
-            child: Text(l10n.saveTreeSelectDataButton),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.commonCancel),
-          ),
-        ],
-      ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.saveTreeChangeExceedMessage,
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.saveTreeKeepableCountLabel(_limit),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: () {
+                _autoSelectLatest(nodes);
+                _showDiscardDialog(context, nodes);
+              },
+              child: Text(l10n.saveTreeKeepLatestButton(_limit)),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => setState(() => _showSelectionList = true),
+              child: Text(l10n.saveTreeSelectDataButton),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.commonCancel),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSelectionBody(BuildContext context, AppLocalizations l10n, List<SaveNode> nodes) {
+  Widget _buildSelectionBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<SaveNode> nodes,
+  ) {
     final limitReached = _selectedIds.length >= _limit;
     return Column(
       children: [
@@ -1059,7 +1185,9 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
             l10n.saveTreeSelectedCountLabel(_selectedIds.length, _limit),
             style: TextStyle(
               fontSize: 12,
-              color: limitReached ? Colors.orange : Theme.of(context).colorScheme.onSurfaceVariant,
+              color: limitReached
+                  ? Colors.orange
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -1096,7 +1224,8 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton(
-                  onPressed: _selectedIds.length >= _effectiveLimit(nodes.length)
+                  onPressed:
+                      _selectedIds.length >= _effectiveLimit(nodes.length)
                       ? () => _showDiscardDialog(context, nodes)
                       : null,
                   child: Text(l10n.saveTreeNextButton),
@@ -1185,7 +1314,11 @@ class _SelectableSlotView extends StatelessWidget {
           ),
           title: Text(
             node.comment ?? l10n.saveTreeSlotFallbackName(slotIndex + 1),
-            style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
+            style: TextStyle(
+              color: isDisabled
+                  ? Theme.of(context).colorScheme.onSurfaceVariant
+                  : null,
+            ),
           ),
           subtitle: Text(_formatDate(node.savedAt)),
           onTap: isDisabled ? null : () => onToggle(node.id),
@@ -1246,7 +1379,12 @@ class _SelectableTreeView extends StatelessWidget {
     );
   }
 
-  Widget _buildNode(BuildContext context, AppLocalizations l10n, SaveNode node, int depth) {
+  Widget _buildNode(
+    BuildContext context,
+    AppLocalizations l10n,
+    SaveNode node,
+    int depth,
+  ) {
     final isSelected = selectedIds.contains(node.id);
     final isDisabled = limitReached && !isSelected;
     return Padding(
@@ -1259,7 +1397,11 @@ class _SelectableTreeView extends StatelessWidget {
         ),
         title: Text(
           node.comment ?? l10n.saveTreeNodeDefaultTitle,
-          style: TextStyle(color: isDisabled ? Theme.of(context).colorScheme.onSurfaceVariant : null),
+          style: TextStyle(
+            color: isDisabled
+                ? Theme.of(context).colorScheme.onSurfaceVariant
+                : null,
+          ),
         ),
         subtitle: Text(_formatDate(node.savedAt)),
         onTap: isDisabled ? null : () => onToggle(node.id),
@@ -1324,7 +1466,10 @@ class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: widget.onBack, child: Text(l10n.saveTreeBackButton)),
+        TextButton(
+          onPressed: widget.onBack,
+          child: Text(l10n.saveTreeBackButton),
+        ),
         FilledButton(
           onPressed: () => widget.onConfirm(_archive),
           child: Text(l10n.saveTreeApplyChangeButton),

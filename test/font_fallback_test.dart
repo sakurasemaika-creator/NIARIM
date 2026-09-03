@@ -18,8 +18,7 @@ import 'package:niarim/config/font_fallback.dart';
 
 Future<void> loadFont(String family, String path) async {
   final loader = FontLoader(family)
-    ..addFont(
-        Future.value(ByteData.sublistView(File(path).readAsBytesSync())));
+    ..addFont(Future.value(ByteData.sublistView(File(path).readAsBytesSync())));
   await loader.load();
 }
 
@@ -56,57 +55,86 @@ void main() {
   const inNotoOnly = '丂';
 
   test('代替フォント列が改変元フォントを先頭に持つ', () {
-    expect(kHeadingFontFallback.first, 'DelaGothicOne',
-        reason: 'くらむぼんの補完は、まず改変元のDela Gothic Oneで行う');
-    expect(kBodyFontFallback, contains('NotoSerifJP'),
-        reason: '白光明朝の補完には改変元のNoto Serif JPを含める');
+    expect(
+      kHeadingFontFallback.first,
+      'DelaGothicOne',
+      reason: 'くらむぼんの補完は、まず改変元のDela Gothic Oneで行う',
+    );
+    expect(
+      kBodyFontFallback,
+      contains('NotoSerifJP'),
+      reason: '白光明朝の補完には改変元のNoto Serif JPを含める',
+    );
   });
 
-  testWidgets('くらむぼん未収録の文字が改変元のDela Gothic Oneで補われる',
-      (WidgetTester tester) async {
-    final fallbackWidth =
-        widthOf(inDelaOnly, 'Kuramubon', fallback: kHeadingFontFallback);
+  testWidgets('くらむぼん未収録の文字が改変元のDela Gothic Oneで補われる', (
+    WidgetTester tester,
+  ) async {
+    final fallbackWidth = widthOf(
+      inDelaOnly,
+      'Kuramubon',
+      fallback: kHeadingFontFallback,
+    );
     final directWidth = widthOf(inDelaOnly, 'DelaGothicOne');
     final noFallbackWidth = widthOf(inDelaOnly, 'Kuramubon');
 
-    expect(fallbackWidth, closeTo(directWidth, 0.5),
-        reason: 'Dela Gothic Oneで描いた場合と字幅が一致しない＝補われていない');
-    expect(fallbackWidth, isNot(closeTo(noFallbackWidth, 0.5)),
-        reason: 'フォールバック有無で字幅が同じ＝そもそも補完が起きていない');
+    expect(
+      fallbackWidth,
+      closeTo(directWidth, 0.5),
+      reason: 'Dela Gothic Oneで描いた場合と字幅が一致しない＝補われていない',
+    );
+    expect(
+      fallbackWidth,
+      isNot(closeTo(noFallbackWidth, 0.5)),
+      reason: 'フォールバック有無で字幅が同じ＝そもそも補完が起きていない',
+    );
   });
 
-  testWidgets('本文用スタックではDela Gothic Oneにも無い文字がNoto Serif JPで補われる',
-      (WidgetTester tester) async {
-    final fallbackWidth =
-        widthOf(inNotoOnly, 'Kuramubon', fallback: kBodyFontFallback);
+  testWidgets('本文用スタックではDela Gothic Oneにも無い文字がNoto Serif JPで補われる', (
+    WidgetTester tester,
+  ) async {
+    final fallbackWidth = widthOf(
+      inNotoOnly,
+      'Kuramubon',
+      fallback: kBodyFontFallback,
+    );
     final directWidth = widthOf(inNotoOnly, 'NotoSerifJP');
-    expect(fallbackWidth, closeTo(directWidth, 0.5),
-        reason: 'Noto Serif JPで描いた場合と字幅が一致しない＝補われていない');
+    expect(
+      fallbackWidth,
+      closeTo(directWidth, 0.5),
+      reason: 'Noto Serif JPで描いた場合と字幅が一致しない＝補われていない',
+    );
   });
 
-  testWidgets('コード中で直接くらむぼんを指定した箇所もテーマから代替フォントを継承する',
-      (WidgetTester tester) async {
+  testWidgets('コード中で直接くらむぼんを指定した箇所もテーマから代替フォントを継承する', (
+    WidgetTester tester,
+  ) async {
     // アプリ全体で187箇所ある`TextStyle(fontFamily: 'Kuramubon')`のような
     // 直接指定は、fontFamilyFallbackを書いていなくても祖先のテキスト
     // スタイルから継承される。テーマ側の並びが正しければ全箇所が
     // 自動的に補われる、という前提を固定する。
-    await tester.pumpWidget(MaterialApp(
-      theme: ThemeData(
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(
-            fontFamily: 'HakkouMincho',
-            fontFamilyFallback: kBodyFontFallback,
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(
+          textTheme: const TextTheme(
+            bodyMedium: TextStyle(
+              fontFamily: 'HakkouMincho',
+              fontFamilyFallback: kBodyFontFallback,
+            ),
           ),
         ),
+        home: const Scaffold(
+          body: Text(inDelaOnly, style: TextStyle(fontFamily: 'Kuramubon')),
+        ),
       ),
-      home: const Scaffold(
-        body: Text(inDelaOnly, style: TextStyle(fontFamily: 'Kuramubon')),
-      ),
-    ));
+    );
     final richText = tester.widget<RichText>(find.byType(RichText).first);
     final resolved = (richText.text as TextSpan).style!;
     expect(resolved.fontFamily, 'Kuramubon');
-    expect(resolved.fontFamilyFallback, kBodyFontFallback,
-        reason: '直接指定した箇所が代替フォント列を引き継げていない');
+    expect(
+      resolved.fontFamilyFallback,
+      kBodyFontFallback,
+      reason: '直接指定した箇所が代替フォント列を引き継げていない',
+    );
   });
 }

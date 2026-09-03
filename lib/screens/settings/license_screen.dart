@@ -85,99 +85,109 @@ class LicenseScreen extends StatelessWidget {
       // 規約・ライセンス本文自体が説明そのものであり、対応する専用の
       // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない。
       appBar: AppBar(title: Text(l10n.licenseScreenTitle)),
-      body: SafeArea(child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _SectionTitle(l10n.licenseSectionTerms),
-          const _TermsBody(),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.licenseSectionFonts),
-          const _FontCredit(
-            usage: 'アプリ全体の基本フォント',
-            name: '白光明朝（はっこうみんちょう）',
-            author: 'lavsic',
-            license: 'SIL Open Font License 1.1',
-          ),
-          const _FontCredit(
-            usage: 'チュートリアル・説明テキスト',
-            name: 'くらむぼん',
-            author: 'Yoshikawa Kinomi（フロップデザイン）／The Dela Gothic Project Authors',
-            license: 'SIL Open Font License 1.1',
-          ),
-          const _FontCredit(
-            usage: '数値表示',
-            name: 'Android標準フォント（Roboto / Noto Sans）',
-            author: 'Google',
-            license: 'Apache License 2.0 / SIL Open Font License',
-          ),
-          const _FontCredit(
-            usage: '韓国語・簡体字の本文表示（同梱フォントが'
-                'ハングル・簡体字を持たないため）',
-            name: 'Noto Serif KR / Noto Serif SC（サブセット）',
-            author: 'Adobe',
-            license: 'SIL Open Font License 1.1',
-          ),
-          const _FontCredit(
-            usage: '韓国語・簡体字の見出し表示',
-            name: 'Noto Sans KR / Noto Sans SC Black（サブセット）',
-            author: 'Adobe',
-            license: 'SIL Open Font License 1.1',
-          ),
-          const _FontCredit(
-            usage: 'くらむぼんに無い文字の代替表示',
-            name: 'Dela Gothic One',
-            author: 'The Dela Gothic Project Authors',
-            license: 'SIL Open Font License 1.1',
-          ),
-          const _FontCredit(
-            usage: 'テキストツール同梱フォント',
-            name: 'Noto Serif JP',
-            author: 'Google Fonts',
-            license: 'SIL Open Font License 1.1',
-          ),
-          const _FontCredit(
-            usage: 'テキストツール追加フリーフォント（設定 → フォント管理 → '
-                '追加フリーフォントを探す、からダウンロードして利用可能。'
-                '初回のみネット接続が必要）',
-            name: 'Google Fonts 全書体（約2000書体。SIL Open Font License /'
-                ' Apache License 2.0 / Ubuntu Font License いずれかで'
-                '配布されているもの全て）',
-            author: 'Google Fonts（各フォントの制作者・詳細はダウンロード'
-                '画面から各フォント名で確認可能）',
-            license: 'SIL Open Font License 1.1 / Apache License 2.0 / '
-                'Ubuntu Font License 1.0（フォントごとに異なる。いずれも'
-                '個人・商用問わず無償で利用可能）',
-          ),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.licenseSectionIcons),
-          const _FontCredit(
-            usage: '消しゴム・バケツ塗り・図形ツールのアイコン',
-            name: 'Font Awesome Free',
-            author: 'Fonticons, Inc.',
-            license: 'アイコン：CC BY 4.0 / フォント：SIL Open Font License 1.1 '
-                '（font_awesome_flutterパッケージ自体はMIT License。'
-                'https://fontawesome.com/license/free）',
-          ),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.licenseSectionOss),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.code),
-            title: Text(l10n.licenseOssListTitle),
-            subtitle: Text(l10n.licenseOssListSubtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => showLicensePage(
-              context: context,
-              applicationName: 'NIARIM',
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _SectionTitle(l10n.licenseSectionTerms),
+            const _TermsBody(),
+            const SizedBox(height: 24),
+            _SectionTitle(l10n.licenseSectionFonts),
+            const _FontCredit(
+              usage: 'アプリ全体の基本フォント',
+              name: '白光明朝（はっこうみんちょう）',
+              author: 'lavsic',
+              license: 'SIL Open Font License 1.1',
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.licenseFfmpegNote,
-            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
-          ),
-        ],
-      )),
+            const _FontCredit(
+              usage: 'チュートリアル・説明テキスト',
+              name: 'くらむぼん',
+              author:
+                  'Yoshikawa Kinomi（フロップデザイン）／The Dela Gothic Project Authors',
+              license: 'SIL Open Font License 1.1',
+            ),
+            const _FontCredit(
+              usage: '数値表示',
+              name: 'Android標準フォント（Roboto / Noto Sans）',
+              author: 'Google',
+              license: 'Apache License 2.0 / SIL Open Font License',
+            ),
+            const _FontCredit(
+              usage:
+                  '韓国語・簡体字の本文表示（同梱フォントが'
+                  'ハングル・簡体字を持たないため）',
+              name: 'Noto Serif KR / Noto Serif SC（サブセット）',
+              author: 'Adobe',
+              license: 'SIL Open Font License 1.1',
+            ),
+            const _FontCredit(
+              usage: '韓国語・簡体字の見出し表示',
+              name: 'Noto Sans KR / Noto Sans SC Black（サブセット）',
+              author: 'Adobe',
+              license: 'SIL Open Font License 1.1',
+            ),
+            const _FontCredit(
+              usage: 'くらむぼんに無い文字の代替表示',
+              name: 'Dela Gothic One',
+              author: 'The Dela Gothic Project Authors',
+              license: 'SIL Open Font License 1.1',
+            ),
+            const _FontCredit(
+              usage: 'テキストツール同梱フォント',
+              name: 'Noto Serif JP',
+              author: 'Google Fonts',
+              license: 'SIL Open Font License 1.1',
+            ),
+            const _FontCredit(
+              usage:
+                  'テキストツール追加フリーフォント（設定 → フォント管理 → '
+                  '追加フリーフォントを探す、からダウンロードして利用可能。'
+                  '初回のみネット接続が必要）',
+              name:
+                  'Google Fonts 全書体（約2000書体。SIL Open Font License /'
+                  ' Apache License 2.0 / Ubuntu Font License いずれかで'
+                  '配布されているもの全て）',
+              author:
+                  'Google Fonts（各フォントの制作者・詳細はダウンロード'
+                  '画面から各フォント名で確認可能）',
+              license:
+                  'SIL Open Font License 1.1 / Apache License 2.0 / '
+                  'Ubuntu Font License 1.0（フォントごとに異なる。いずれも'
+                  '個人・商用問わず無償で利用可能）',
+            ),
+            const SizedBox(height: 24),
+            _SectionTitle(l10n.licenseSectionIcons),
+            const _FontCredit(
+              usage: '消しゴム・バケツ塗り・図形ツールのアイコン',
+              name: 'Font Awesome Free',
+              author: 'Fonticons, Inc.',
+              license:
+                  'アイコン：CC BY 4.0 / フォント：SIL Open Font License 1.1 '
+                  '（font_awesome_flutterパッケージ自体はMIT License。'
+                  'https://fontawesome.com/license/free）',
+            ),
+            const SizedBox(height: 24),
+            _SectionTitle(l10n.licenseSectionOss),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.code),
+              title: Text(l10n.licenseOssListTitle),
+              subtitle: Text(l10n.licenseOssListSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () =>
+                  showLicensePage(context: context, applicationName: 'NIARIM'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.licenseFfmpegNote,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -190,8 +200,15 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+        ),
+      ),
     );
   }
 }
@@ -226,8 +243,15 @@ class _TermsBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(body, style: const TextStyle(fontSize: 12, height: 1.5)),
               ],
@@ -266,11 +290,26 @@ class _FontCredit extends StatelessWidget {
             // コメント参照）。各フォントのライセンス条件に関する説明文（旧
             // note）は、フォント名・使用箇所・作者・
             // ライセンス・クレジット表示のみを残す形で削除した。
-            Text(usage,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
-            Text(l10n.licenseFontCreditMeta(author, license), style: const TextStyle(fontSize: 12)),
+            Text(
+              usage,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            Text(
+              name,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            Text(
+              l10n.licenseFontCreditMeta(author, license),
+              style: const TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),

@@ -39,7 +39,8 @@ class DownloadableFontEntry {
     required this.license,
   });
 
-  factory DownloadableFontEntry.fromJson(Map<String, dynamic> j) => DownloadableFontEntry(
+  factory DownloadableFontEntry.fromJson(Map<String, dynamic> j) =>
+      DownloadableFontEntry(
         id: j['id'] as String,
         displayName: j['displayName'] as String,
         fileName: j['fileName'] as String,
@@ -62,7 +63,9 @@ const kFontCategoryLabels = {
 /// [DownloadableFontEntry]のリストとして返す。
 Future<List<DownloadableFontEntry>> loadDownloadableFontCatalog() async {
   try {
-    final raw = await rootBundle.loadString('assets/font_catalog/font_catalog.json');
+    final raw = await rootBundle.loadString(
+      'assets/font_catalog/font_catalog.json',
+    );
     final list = jsonDecode(raw) as List<dynamic>;
     return list
         .map((e) => DownloadableFontEntry.fromJson(e as Map<String, dynamic>))

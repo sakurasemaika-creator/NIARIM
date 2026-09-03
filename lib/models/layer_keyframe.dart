@@ -7,12 +7,16 @@
 enum LayerKeyframeEasing {
   /// 等速（従来の挙動）。
   linear,
+
   /// ゆっくり始まり、加速しながら終わる。
   easeIn,
+
   /// 素早く始まり、減速しながら終わる。
   easeOut,
+
   /// ゆっくり始まり、ゆっくり終わる（中間だけ速い）。
   easeInOut,
+
   /// 終端でバウンドしてから収まる（弾むような動き）。
   bounceOut,
 }
@@ -69,22 +73,24 @@ class LayerKeyframe {
   }
 
   Map<String, dynamic> toJson() => {
-        'frameIndex': frameIndex,
-        'x': x,
-        'y': y,
-        'scale': scale,
-        'rotation': rotation,
-        'easing': easing.name,
-      };
+    'frameIndex': frameIndex,
+    'x': x,
+    'y': y,
+    'scale': scale,
+    'rotation': rotation,
+    'easing': easing.name,
+  };
 
   factory LayerKeyframe.fromJson(Map<String, dynamic> j) => LayerKeyframe(
-        frameIndex: j['frameIndex'] as int,
-        x: (j['x'] as num?)?.toDouble() ?? 0,
-        y: (j['y'] as num?)?.toDouble() ?? 0,
-        scale: (j['scale'] as num?)?.toDouble() ?? 1.0,
-        rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
-        // 未設定（古い保存データ）はlinear扱いにし、従来の挙動を保つ。
-        easing: LayerKeyframeEasing.values
-            .firstWhere((e) => e.name == j['easing'], orElse: () => LayerKeyframeEasing.linear),
-      );
+    frameIndex: j['frameIndex'] as int,
+    x: (j['x'] as num?)?.toDouble() ?? 0,
+    y: (j['y'] as num?)?.toDouble() ?? 0,
+    scale: (j['scale'] as num?)?.toDouble() ?? 1.0,
+    rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
+    // 未設定（古い保存データ）はlinear扱いにし、従来の挙動を保つ。
+    easing: LayerKeyframeEasing.values.firstWhere(
+      (e) => e.name == j['easing'],
+      orElse: () => LayerKeyframeEasing.linear,
+    ),
+  );
 }

@@ -28,8 +28,14 @@ void main() {
     );
     expect(engine.getVisibleFrameOffsets(settings), equals([-2, -4, 2, 4, 6]));
     expect(engine.getOpacityForFrame(settings, -1), 0);
-    expect(engine.getOpacityForFrame(settings, -2), closeTo(settings.prevOpacity, 1e-9));
-    expect(engine.getOpacityForFrame(settings, 6), closeTo(settings.nextOpacity, 1e-9));
+    expect(
+      engine.getOpacityForFrame(settings, -2),
+      closeTo(settings.prevOpacity, 1e-9),
+    );
+    expect(
+      engine.getOpacityForFrame(settings, 6),
+      closeTo(settings.nextOpacity, 1e-9),
+    );
     expect(engine.getOpacityForFrame(settings, 8), 0);
 
     final prevOnly = settings.copyWith(showNext: false);
@@ -62,9 +68,18 @@ void main() {
 
   test('組み込みトーン：市松・格子・散らしが仕様どおりの周期', () async {
     const size = 16;
-    final checker = generateBuiltInToneTexture(const Tone(id: 'c', name: '市松'), size: size);
-    final grid = generateBuiltInToneTexture(const Tone(id: 'g', name: '格子'), size: size);
-    final scatter = generateBuiltInToneTexture(const Tone(id: 's', name: '散らし'), size: size);
+    final checker = generateBuiltInToneTexture(
+      const Tone(id: 'c', name: '市松'),
+      size: size,
+    );
+    final grid = generateBuiltInToneTexture(
+      const Tone(id: 'g', name: '格子'),
+      size: size,
+    );
+    final scatter = generateBuiltInToneTexture(
+      const Tone(id: 's', name: '散らし'),
+      size: size,
+    );
 
     expect(_alpha(checker, size, 0, 0), 255);
     expect(_alpha(checker, size, 1, 0), 0);
@@ -79,9 +94,19 @@ void main() {
     expect(_alpha(scatter, size, 0, 1), 0);
     expect(_alpha(scatter, size, 2, 2), 255);
 
-    await _saveRgba(checker, size, size, '${out.path}/tone_builtin_checker.png');
+    await _saveRgba(
+      checker,
+      size,
+      size,
+      '${out.path}/tone_builtin_checker.png',
+    );
     await _saveRgba(grid, size, size, '${out.path}/tone_builtin_grid.png');
-    await _saveRgba(scatter, size, size, '${out.path}/tone_builtin_scatter.png');
+    await _saveRgba(
+      scatter,
+      size,
+      size,
+      '${out.path}/tone_builtin_scatter.png',
+    );
   });
 
   test('組み込みトーン：ディザ密度と粗モードの量子化が正しい', () async {
@@ -89,46 +114,98 @@ void main() {
 
     // 50%では4x4 Bayerと2x2 Bayerが同じ市松状配置になる場合があるので、
     // ここでは密度そのものだけを検証する。
-    final fine50 = generateBuiltInToneTexture(const Tone(id: 'd1', name: 'ピクセルディザ50%'), size: size);
-    final coarse50 = generateBuiltInToneTexture(const Tone(id: 'd2', name: 'ピクセルディザ50%粗'), size: size);
+    final fine50 = generateBuiltInToneTexture(
+      const Tone(id: 'd1', name: 'ピクセルディザ50%'),
+      size: size,
+    );
+    final coarse50 = generateBuiltInToneTexture(
+      const Tone(id: 'd2', name: 'ピクセルディザ50%粗'),
+      size: size,
+    );
     expect(_opaqueRatio(fine50), closeTo(0.5, 0.03));
     expect(_opaqueRatio(coarse50), closeTo(0.5, 0.03));
 
     // 37%では4x4版は6/16=37.5%、2x2粗版は1/4=25%へ量子化される。
     // 粗版が段階数の少ないディザとして働いていることをこの差で確認する。
-    final fine37 = generateBuiltInToneTexture(const Tone(id: 'd3', name: 'ピクセルディザ37%'), size: size);
-    final coarse37 = generateBuiltInToneTexture(const Tone(id: 'd4', name: 'ピクセルディザ37%粗'), size: size);
+    final fine37 = generateBuiltInToneTexture(
+      const Tone(id: 'd3', name: 'ピクセルディザ37%'),
+      size: size,
+    );
+    final coarse37 = generateBuiltInToneTexture(
+      const Tone(id: 'd4', name: 'ピクセルディザ37%粗'),
+      size: size,
+    );
     expect(_opaqueRatio(fine37), closeTo(0.375, 0.03));
     expect(_opaqueRatio(coarse37), closeTo(0.25, 0.03));
     expect(fine37, isNot(equals(coarse37)));
 
-    await _saveRgba(fine50, size, size, '${out.path}/tone_builtin_dither50.png');
-    await _saveRgba(coarse50, size, size, '${out.path}/tone_builtin_dither50_coarse.png');
-    await _saveRgba(fine37, size, size, '${out.path}/tone_builtin_dither37.png');
-    await _saveRgba(coarse37, size, size, '${out.path}/tone_builtin_dither37_coarse.png');
+    await _saveRgba(
+      fine50,
+      size,
+      size,
+      '${out.path}/tone_builtin_dither50.png',
+    );
+    await _saveRgba(
+      coarse50,
+      size,
+      size,
+      '${out.path}/tone_builtin_dither50_coarse.png',
+    );
+    await _saveRgba(
+      fine37,
+      size,
+      size,
+      '${out.path}/tone_builtin_dither37.png',
+    );
+    await _saveRgba(
+      coarse37,
+      size,
+      size,
+      '${out.path}/tone_builtin_dither37_coarse.png',
+    );
   });
 
   test('組み込みトーン：網点%が高いほどインク密度が増える', () {
     const size = 64;
-    final low = generateBuiltInToneTexture(const Tone(id: 'a', name: '網点20%'), size: size);
-    final high = generateBuiltInToneTexture(const Tone(id: 'b', name: '網点80%'), size: size);
+    final low = generateBuiltInToneTexture(
+      const Tone(id: 'a', name: '網点20%'),
+      size: size,
+    );
+    final high = generateBuiltInToneTexture(
+      const Tone(id: 'b', name: '網点80%'),
+      size: size,
+    );
     expect(_opaqueRatio(high), greaterThan(_opaqueRatio(low)));
   });
 
   test('組み込みスタンプ：代表形状をRGBAテクスチャとして生成', () async {
     const names = ['三角形', '五角形', '六角形', '星', 'ハート', '吹き出し', '矢印'];
     for (final name in names) {
-      final tex = await generateBuiltInStampTexture(Stamp(id: name, name: name), size: 64);
+      final tex = await generateBuiltInStampTexture(
+        Stamp(id: name, name: name),
+        size: 64,
+      );
       expect(tex.length, 64 * 64 * 4);
       expect(_opaqueRatio(tex), greaterThan(0.03), reason: name);
       expect(_opaqueRatio(tex), lessThan(0.9), reason: name);
-      await _saveRgba(tex, 64, 64, '${out.path}/stamp_builtin_${_safe(name)}.png');
+      await _saveRgba(
+        tex,
+        64,
+        64,
+        '${out.path}/stamp_builtin_${_safe(name)}.png',
+      );
     }
   });
 
   test('組み込みスタンプ：pixelModeでドット絵化される', () async {
-    final normal = await generateBuiltInStampTexture(const Stamp(id: 'star', name: '星'), size: 64);
-    final pixel = await generateBuiltInStampTexture(const Stamp(id: 'star-px', name: '星', pixelMode: true), size: 64);
+    final normal = await generateBuiltInStampTexture(
+      const Stamp(id: 'star', name: '星'),
+      size: 64,
+    );
+    final pixel = await generateBuiltInStampTexture(
+      const Stamp(id: 'star-px', name: '星', pixelMode: true),
+      size: 64,
+    );
     expect(pixel.length, normal.length);
     expect(pixel, isNot(equals(normal)));
     await _saveRgba(pixel, 64, 64, '${out.path}/stamp_builtin_star_pixel.png');
@@ -138,16 +215,20 @@ void main() {
     final manager = UndoManager();
     final values = <String>[];
 
-    manager.push(_CallbackAction(
-      descriptionText: 'A',
-      undoFn: () => values.add('undoA'),
-      redoFn: () => values.add('redoA'),
-    ));
-    manager.push(_CallbackAction(
-      descriptionText: 'B',
-      undoFn: () => values.add('undoB'),
-      redoFn: () => values.add('redoB'),
-    ));
+    manager.push(
+      _CallbackAction(
+        descriptionText: 'A',
+        undoFn: () => values.add('undoA'),
+        redoFn: () => values.add('redoA'),
+      ),
+    );
+    manager.push(
+      _CallbackAction(
+        descriptionText: 'B',
+        undoFn: () => values.add('undoB'),
+        redoFn: () => values.add('redoB'),
+      ),
+    );
 
     expect(manager.undoCount, 2);
     manager.undo();
@@ -157,12 +238,18 @@ void main() {
 
     manager.redo();
     expect(values.last, 'redoA');
-    manager.push(_CallbackAction(
-      descriptionText: 'C',
-      undoFn: () => values.add('undoC'),
-      redoFn: () => values.add('redoC'),
-    ));
-    expect(manager.redoCount, 0, reason: 'new action after undo must clear redo stack');
+    manager.push(
+      _CallbackAction(
+        descriptionText: 'C',
+        undoFn: () => values.add('undoC'),
+        redoFn: () => values.add('redoC'),
+      ),
+    );
+    expect(
+      manager.redoCount,
+      0,
+      reason: 'new action after undo must clear redo stack',
+    );
   });
 
   test('UndoManager：最大履歴数を超えた古い操作は破棄', () {
@@ -171,11 +258,13 @@ void main() {
     var value = 0;
     for (var i = 1; i <= 3; i++) {
       final n = i;
-      manager.push(_CallbackAction(
-        descriptionText: '$n',
-        undoFn: () => value -= n,
-        redoFn: () => value += n,
-      ));
+      manager.push(
+        _CallbackAction(
+          descriptionText: '$n',
+          undoFn: () => value -= n,
+          redoFn: () => value += n,
+        ),
+      );
     }
     expect(manager.undoCount, 2);
     manager.undo();
@@ -206,7 +295,12 @@ String _safe(String s) => s
     .replaceAll('吹き出し', 'bubble')
     .replaceAll('矢印', 'arrow');
 
-Future<void> _saveRgba(Uint8List rgba, int width, int height, String path) async {
+Future<void> _saveRgba(
+  Uint8List rgba,
+  int width,
+  int height,
+  String path,
+) async {
   final buffer = await ui.ImmutableBuffer.fromUint8List(rgba);
   final descriptor = ui.ImageDescriptor.raw(
     buffer,
@@ -229,7 +323,11 @@ class _CallbackAction extends UndoAction {
   final void Function() redoFn;
   final String descriptionText;
 
-  _CallbackAction({required this.undoFn, required this.redoFn, required this.descriptionText});
+  _CallbackAction({
+    required this.undoFn,
+    required this.redoFn,
+    required this.descriptionText,
+  });
 
   @override
   void undo() => undoFn();

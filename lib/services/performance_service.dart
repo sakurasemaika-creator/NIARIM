@@ -242,10 +242,13 @@ class PerformanceService extends ChangeNotifier {
     await prefs.setInt('custom_onion_prev', _customOnionSkinPrev);
     await prefs.setInt('custom_onion_next', _customOnionSkinNext);
     await prefs.setString(
-        'custom_save_mode', _customSaveMode == SaveMode.tree ? 'tree' : 'slot');
+      'custom_save_mode',
+      _customSaveMode == SaveMode.tree ? 'tree' : 'slot',
+    );
     await prefs.setInt('custom_slot_count', _customSlotCount);
   }
 }
 
 enum QualityLevel { low, medium, high, custom }
+
 enum SaveMode { slot, tree }

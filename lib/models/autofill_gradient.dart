@@ -1,7 +1,7 @@
 /// 自動塗りプリセットの塗り色グラデーション。
 /// nullの場合はAutofillPart.colorの単色塗りを使用する。
 enum AutofillGradientType {
-  linear,          // 直線（角度指定）
+  linear, // 直線（角度指定）
   radialCenterOut, // 放射状：中央→外側
   radialOutCenter, // 放射状：外側→中央
 }
@@ -28,10 +28,8 @@ class AutofillGradient {
   });
 
   /// 2色のデフォルトグラデーションを生成する。
-  factory AutofillGradient.defaultTwoColor(int colorA, int colorB) => AutofillGradient(
-        colors: [colorA, colorB],
-        stops: const [0.0, 1.0],
-      );
+  factory AutofillGradient.defaultTwoColor(int colorA, int colorB) =>
+      AutofillGradient(colors: [colorA, colorB], stops: const [0.0, 1.0]);
 
   AutofillGradient copyWith({
     AutofillGradientType? type,
@@ -54,23 +52,27 @@ class AutofillGradient {
   }
 
   Map<String, dynamic> toJson() => {
-        'type': type.name,
-        'angle': angle,
-        'centerX': centerX,
-        'centerY': centerY,
-        'colors': colors,
-        'stops': stops,
-        'feather': feather,
-      };
+    'type': type.name,
+    'angle': angle,
+    'centerX': centerX,
+    'centerY': centerY,
+    'colors': colors,
+    'stops': stops,
+    'feather': feather,
+  };
 
   factory AutofillGradient.fromJson(Map<String, dynamic> j) => AutofillGradient(
-        type: AutofillGradientType.values.firstWhere((e) => e.name == j['type'],
-            orElse: () => AutofillGradientType.linear),
-        angle: (j['angle'] as num?)?.toDouble() ?? 0,
-        centerX: (j['centerX'] as num?)?.toDouble() ?? 0.5,
-        centerY: (j['centerY'] as num?)?.toDouble() ?? 0.5,
-        colors: (j['colors'] as List<dynamic>).map((e) => e as int).toList(),
-        stops: (j['stops'] as List<dynamic>).map((e) => (e as num).toDouble()).toList(),
-        feather: (j['feather'] as num?)?.toDouble() ?? 1.0,
-      );
+    type: AutofillGradientType.values.firstWhere(
+      (e) => e.name == j['type'],
+      orElse: () => AutofillGradientType.linear,
+    ),
+    angle: (j['angle'] as num?)?.toDouble() ?? 0,
+    centerX: (j['centerX'] as num?)?.toDouble() ?? 0.5,
+    centerY: (j['centerY'] as num?)?.toDouble() ?? 0.5,
+    colors: (j['colors'] as List<dynamic>).map((e) => e as int).toList(),
+    stops: (j['stops'] as List<dynamic>)
+        .map((e) => (e as num).toDouble())
+        .toList(),
+    feather: (j['feather'] as num?)?.toDouble() ?? 1.0,
+  );
 }

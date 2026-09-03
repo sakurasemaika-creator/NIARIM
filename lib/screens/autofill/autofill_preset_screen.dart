@@ -103,7 +103,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           children: [
             if (_isSelectionMode)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: Row(
                   children: [
@@ -154,8 +157,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                   FilterChip(
                     label: Text(
                       l10n.homeFavoritesOnly,
-                      style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
                     selected: _showFavoritesOnly,
                     onSelected: (v) => setState(() => _showFavoritesOnly = v),
@@ -192,7 +197,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                              fontFamilyFallback: kHeadingFontFallback,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
@@ -237,7 +242,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                                 if (!_selectedIds.remove(preset.id)) {
                                   _selectedIds.add(preset.id);
                                 }
-                                if (_selectedIds.isEmpty) _isSelectionMode = false;
+                                if (_selectedIds.isEmpty)
+                                  _isSelectionMode = false;
                               });
                             } else {
                               _showPresetDetail(preset);
@@ -294,8 +300,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   void _bulkDuplicate(List<AutofillPreset> filtered) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<AutofillPresetService>();
-    final selected =
-        filtered.where((p) => _selectedIds.contains(p.id)).toList();
+    final selected = filtered
+        .where((p) => _selectedIds.contains(p.id))
+        .toList();
     final copies = selected
         .map(
           (p) => p.copyWith(
@@ -339,8 +346,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   /// 1件でも除外があった場合はスナックバーで知らせる）。
   Future<void> _bulkDelete(List<AutofillPreset> filtered) async {
     final l10n = AppLocalizations.of(context)!;
-    final selected =
-        filtered.where((p) => _selectedIds.contains(p.id)).toList();
+    final selected = filtered
+        .where((p) => _selectedIds.contains(p.id))
+        .toList();
     final deletable = selected.where((p) => !p.isFavorite).toList();
     if (!await confirmDelete(context)) return;
     if (!mounted) return;
@@ -353,9 +361,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
       service.removePreset(preset.id);
     }
     if (deletable.length < selected.length) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
     }
     setState(() {
       _selectedIds.clear();
@@ -366,8 +374,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   /// 選択中のプリセットをまとめて.niafillファイルへ書き出し、1回の共有で
   /// まとめて渡す。
   Future<void> _bulkExport(List<AutofillPreset> filtered) async {
-    final selected =
-        filtered.where((p) => _selectedIds.contains(p.id)).toList();
+    final selected = filtered
+        .where((p) => _selectedIds.contains(p.id))
+        .toList();
     await _exportPresets(selected);
     if (!mounted) return;
     setState(() {
@@ -395,7 +404,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.autofillPresetExportFailedSnackbar(e.toString()))),
+        SnackBar(
+          content: Text(l10n.autofillPresetExportFailedSnackbar(e.toString())),
+        ),
       );
     }
   }
@@ -433,12 +444,16 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     if (!mounted) return;
     if (imported > 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.autofillPresetImportSuccessSnackbar(imported))),
+        SnackBar(
+          content: Text(l10n.autofillPresetImportSuccessSnackbar(imported)),
+        ),
       );
     }
     if (lastError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.autofillPresetImportFailedSnackbar(lastError))),
+        SnackBar(
+          content: Text(l10n.autofillPresetImportFailedSnackbar(lastError)),
+        ),
       );
     }
   }
@@ -589,8 +604,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                       fit: BoxFit.cover,
                       // サムネイルは512x512で保存されている。88px表示の
                       // ために原寸でデコードして画像キャッシュへ載せない。
-                      cacheWidth:
-                          (88 * MediaQuery.devicePixelRatioOf(ctx)).round(),
+                      cacheWidth: (88 * MediaQuery.devicePixelRatioOf(ctx))
+                          .round(),
                       errorBuilder: (_, _, _) =>
                           const Icon(Icons.broken_image, size: 32),
                     )
@@ -737,14 +752,18 @@ class _PresetCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
+          ? Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.4)
           : null,
       child: ListTile(
         onLongPress: onLongPress,
         leading: isSelectionMode
             ? Icon(
                 isSelected ? Icons.check_circle : Icons.circle_outlined,
-                color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
               )
             : Container(
                 width: 48,
@@ -763,9 +782,9 @@ class _PresetCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         // 保存は512x512、ここでの表示は48px。一覧に並ぶぶん
                         // だけ効くので表示画素数へ落としてデコードする。
-                        cacheWidth: (48 *
-                                MediaQuery.devicePixelRatioOf(context))
-                            .round(),
+                        cacheWidth:
+                            (48 * MediaQuery.devicePixelRatioOf(context))
+                                .round(),
                         errorBuilder: (_, _, _) =>
                             const Icon(Icons.broken_image, size: 24),
                       )
@@ -817,7 +836,10 @@ class _PresetCard extends StatelessWidget {
                       if (v == 'delete') onDelete();
                     },
                     itemBuilder: (_) => [
-                      PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text(l10n.commonRename),
+                      ),
                       PopupMenuItem(
                         value: 'thumbnail',
                         child: Text(l10n.autofillThumbnailMenuItem),
@@ -1437,7 +1459,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       title: Text(l10n.autofillPartOutlineLabel),
                       value: current.outlineEnabled,
                       onChanged: (v) => setS(
-                        () => current = current.copyWith(outlineEnabled: v ?? false),
+                        () => current = current.copyWith(
+                          outlineEnabled: v ?? false,
+                        ),
                       ),
                     ),
                     if (current.outlineEnabled) ...[
@@ -1449,8 +1473,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                           context,
                           Color(current.outlineColor),
                           (c) => setS(
-                            () => current =
-                                current.copyWith(outlineColor: c.toARGB32()),
+                            () => current = current.copyWith(
+                              outlineColor: c.toARGB32(),
+                            ),
                           ),
                         ),
                         icon: Container(
@@ -1460,7 +1485,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             color: Color(current.outlineColor),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Theme.of(context).colorScheme.outlineVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
                             ),
                           ),
                         ),
@@ -1539,23 +1566,26 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         () => current = current.copyWith(lineColorMode: v),
                       ),
                       child: Column(
-                        children: AutofillLineColorMode.values.map(
-                      (m) => RadioListTile<AutofillLineColorMode>(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          lineColorModeLabels[m]!,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        secondary: m == AutofillLineColorMode.traceAdjust
-                            ? InfoIconTooltip(
-                                message:
-                                    l10n.autofillLineColorModeTraceAdjustInfo,
-                              )
-                            : null,
-                        value: m,
-                      ),
-                        ).toList(),
+                        children: AutofillLineColorMode.values
+                            .map(
+                              (m) => RadioListTile<AutofillLineColorMode>(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                  lineColorModeLabels[m]!,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                                secondary:
+                                    m == AutofillLineColorMode.traceAdjust
+                                    ? InfoIconTooltip(
+                                        message: l10n
+                                            .autofillLineColorModeTraceAdjustInfo,
+                                      )
+                                    : null,
+                                value: m,
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                     if (current.lineColorMode ==
@@ -1858,7 +1888,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                        fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                   ),
@@ -1920,7 +1950,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                       style: const TextStyle(
                                         fontSize: 10,
                                         fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                                        fontFamilyFallback:
+                                            kHeadingFontFallback,
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
@@ -2023,13 +2054,17 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Theme.of(context).colorScheme.outlineVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
                                 ),
                               ),
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
-                                  CustomPaint(painter: const _CheckerboardPainter()),
+                                  CustomPaint(
+                                    painter: const _CheckerboardPainter(),
+                                  ),
                                   DecoratedBox(
                                     decoration: BoxDecoration(
                                       gradient: _previewGradient(
@@ -2053,7 +2088,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                 final rad = isRadial
                                     ? 0.0
                                     : gradient.angle * math.pi / 180;
-                                final dir = Offset(math.cos(rad), math.sin(rad));
+                                final dir = Offset(
+                                  math.cos(rad),
+                                  math.sin(rad),
+                                );
 
                                 Widget handle(
                                   int i,
@@ -2082,14 +2120,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                         // 求める（円周上のどこにハンドルがあっても、
                                         // 直径の向きに沿ってドラッグした分だけ
                                         // 動くようにするため）。
-                                        final proj = d.delta.dx * dir.dx +
+                                        final proj =
+                                            d.delta.dx * dir.dx +
                                             d.delta.dy * dir.dy;
                                         if (isRadial) {
                                           final halfWidth = radius;
                                           final locked = centerDragSign[i];
                                           if (locked == 0 && proj != 0) {
-                                            centerDragSign[i] =
-                                                proj > 0 ? 1 : -1;
+                                            centerDragSign[i] = proj > 0
+                                                ? 1
+                                                : -1;
                                           }
                                           final sign = centerDragSign[i];
                                           final dt = (sign != null && sign != 0)

@@ -85,7 +85,9 @@ class _ProgressDialogState extends State<ProgressDialog> {
     final ad = adService.squareAd;
     final tips = _tips;
     final tipIndex = _tipIndex;
-    final tip = (tips != null && tipIndex != null && tipIndex < tips.length) ? tips[tipIndex] : null;
+    final tip = (tips != null && tipIndex != null && tipIndex < tips.length)
+        ? tips[tipIndex]
+        : null;
 
     return AlertDialog(
       // 無料会員は広告＋Tipsカードが縦に並び内容が長くなるため、画面が
@@ -94,16 +96,27 @@ class _ProgressDialogState extends State<ProgressDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+            Text(
+              widget.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
             const SizedBox(height: 16),
             LinearProgressIndicator(value: widget.progress),
             const SizedBox(height: 8),
             Text('${(widget.progress * 100).round()}%'),
             if (widget.subtitle != null) ...[
               const SizedBox(height: 4),
-              Text(widget.subtitle!,
-                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(
+                widget.subtitle!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
             // 処理中プログレスバー→Tips→広告の順に並べる（広告を中間に
             // 挟むと視線の邪魔になりやすいため、最後に配置する）。
@@ -116,7 +129,9 @@ class _ProgressDialogState extends State<ProgressDialog> {
                   width: 250,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
@@ -124,22 +139,44 @@ class _ProgressDialogState extends State<ProgressDialog> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.lightbulb_outline, size: 14, color: Theme.of(context).colorScheme.primary),
+                          Icon(
+                            Icons.lightbulb_outline,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                           const SizedBox(width: 4),
-                          Text(l10n.progressDialogTipLabel,
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
-                                  fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-                                  color: Theme.of(context).colorScheme.primary)),
+                          Text(
+                            l10n.progressDialogTipLabel,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Kuramubon',
+                              fontFamilyFallback: kHeadingFontFallback,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(tip.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                      Text(
+                        tip.$1,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(tip.$2,
-                          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                          maxLines: 3, overflow: TextOverflow.ellipsis),
+                      Text(
+                        tip.$2,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
@@ -153,7 +190,10 @@ class _ProgressDialogState extends State<ProgressDialog> {
                   height: 250,
                   color: Colors.grey[800],
                   child: Center(
-                    child: Text(l10n.progressDialogAdLoading, style: const TextStyle(color: Colors.grey)),
+                    child: Text(
+                      l10n.progressDialogAdLoading,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
                   ),
                 )
               else
@@ -165,8 +205,13 @@ class _ProgressDialogState extends State<ProgressDialog> {
             ],
             if (widget.cancelHint != null) ...[
               const SizedBox(height: 8),
-              Text(widget.cancelHint!,
-                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(
+                widget.cancelHint!,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ],
         ),

@@ -11,11 +11,16 @@ Future<bool> confirmDelete(BuildContext context, {String? itemName}) async {
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(l10n.commonDelete),
-      content: Text(itemName == null
-          ? l10n.confirmDeleteGenericBody
-          : l10n.confirmDeleteNamedBody(itemName)),
+      content: Text(
+        itemName == null
+            ? l10n.confirmDeleteGenericBody
+            : l10n.confirmDeleteNamedBody(itemName),
+      ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(l10n.commonCancel),
+        ),
         FilledButton(
           style: FilledButton.styleFrom(backgroundColor: Colors.red),
           onPressed: () => Navigator.pop(ctx, true),

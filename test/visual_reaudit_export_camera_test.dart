@@ -24,10 +24,14 @@ Uint8List _scenePixels() {
     for (var y = y0; y < y1; y++) {
       for (var x = x0; x < x1; x++) {
         final i = (y * _dw + x) * 4;
-        out[i] = r; out[i + 1] = g; out[i + 2] = b; out[i + 3] = 255;
+        out[i] = r;
+        out[i + 1] = g;
+        out[i + 2] = b;
+        out[i + 3] = 255;
       }
     }
   }
+
   // Dark background and asymmetric landmarks make crop/move/rotation/zoom obvious.
   rect(0, 0, _dw, _dh, 22, 28, 42);
   rect(38, 38, 116, 96, 240, 64, 70);
@@ -42,7 +46,10 @@ Uint8List _scenePixels() {
         final xx = x + dx;
         if (xx < 0 || xx >= _dw) continue;
         final i = (y * _dw + xx) * 4;
-        out[i] = 255; out[i + 1] = 130; out[i + 2] = 218; out[i + 3] = 255;
+        out[i] = 255;
+        out[i + 1] = 130;
+        out[i + 2] = 218;
+        out[i + 3] = 255;
       }
     }
   }
@@ -88,42 +95,60 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
 
   test('ExportEngineのクロップ・移動・回転・ズーム・補間・fadeをPNGで再監査する', () async {
-    await _save(_scenePixels(), _dw, _dh, '${out.path}/00_drawing_area_source.png');
+    await _save(
+      _scenePixels(),
+      _dw,
+      _dh,
+      '${out.path}/00_drawing_area_source.png',
+    );
 
     final crop = await _render();
     await _save(crop, _ew, _eh, '${out.path}/01_center_crop.png');
 
-    final moved = await _render(camera: const [
-      CameraKeyframe(frameIndex: 0, x: 36, y: -18, zoom: 1, rotation: 0),
-    ]);
+    final moved = await _render(
+      camera: const [
+        CameraKeyframe(frameIndex: 0, x: 36, y: -18, zoom: 1, rotation: 0),
+      ],
+    );
     await _save(moved, _ew, _eh, '${out.path}/02_camera_move_x36_y-18.png');
 
-    final rotated = await _render(camera: const [
-      CameraKeyframe(frameIndex: 0, rotation: 180),
-    ]);
+    final rotated = await _render(
+      camera: const [CameraKeyframe(frameIndex: 0, rotation: 180)],
+    );
     await _save(rotated, _ew, _eh, '${out.path}/03_camera_rotate_180.png');
 
-    final zoomed = await _render(camera: const [
-      CameraKeyframe(frameIndex: 0, zoom: 2),
-    ]);
+    final zoomed = await _render(
+      camera: const [CameraKeyframe(frameIndex: 0, zoom: 2)],
+    );
     await _save(zoomed, _ew, _eh, '${out.path}/04_camera_zoom_2x.png');
 
-    final interpolated = await _render(frame: 5, camera: const [
-      CameraKeyframe(frameIndex: 0, x: 0, y: 0, zoom: 1, rotation: 0),
-      CameraKeyframe(frameIndex: 10, x: 48, y: 28, zoom: 1, rotation: 0),
-    ]);
-    await _save(interpolated, _ew, _eh, '${out.path}/05_camera_interpolate_50pct.png');
+    final interpolated = await _render(
+      frame: 5,
+      camera: const [
+        CameraKeyframe(frameIndex: 0, x: 0, y: 0, zoom: 1, rotation: 0),
+        CameraKeyframe(frameIndex: 10, x: 48, y: 28, zoom: 1, rotation: 0),
+      ],
+    );
+    await _save(
+      interpolated,
+      _ew,
+      _eh,
+      '${out.path}/05_camera_interpolate_50pct.png',
+    );
 
     const fadeColor = Color.fromARGB(255, 230, 76, 30);
-    final faded = await _render(frame: 5, effects: const [
-      EffectFilterInstance(
-        id: 'fade-half',
-        type: EffectFilterType.fade,
-        startFrame: 0,
-        endFrame: 10,
-        fadeColor: fadeColor,
-      ),
-    ]);
+    final faded = await _render(
+      frame: 5,
+      effects: const [
+        EffectFilterInstance(
+          id: 'fade-half',
+          type: EffectFilterType.fade,
+          startFrame: 0,
+          endFrame: 10,
+          fadeColor: fadeColor,
+        ),
+      ],
+    );
     await _save(faded, _ew, _eh, '${out.path}/06_effect_fade_50pct.png');
 
     // Numeric guards only; visual acceptance is from the emitted PNG set.

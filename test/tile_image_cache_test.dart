@@ -16,7 +16,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   /// 合成結果から1画素を読む（RGBA）。
-  Future<List<int>> pixelAt(TileManager tm, String layerId, int x, int y) async {
+  Future<List<int>> pixelAt(
+    TileManager tm,
+    String layerId,
+    int x,
+    int y,
+  ) async {
     final image = await tm.compositeLayerToImage(layerId);
     final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();
@@ -25,7 +30,15 @@ void main() {
     return [bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3]];
   }
 
-  void paint(TileManager tm, String layerId, int x, int y, int r, int g, int b) {
+  void paint(
+    TileManager tm,
+    String layerId,
+    int x,
+    int y,
+    int r,
+    int g,
+    int b,
+  ) {
     final (tx, ty) = tm.getTileCoord(x.toDouble(), y.toDouble());
     final tile = tm.getOrCreateTile(layerId, tx, ty);
     tm.blendPixel(
@@ -48,22 +61,38 @@ void main() {
 
     await tester.runAsync(() async {
       paint(tm, layer, 10, 10, 255, 0, 0);
-      expect(await pixelAt(tm, layer, 10, 10), [255, 0, 0, 255],
-          reason: '最初の描画が出ていない');
+      expect(await pixelAt(tm, layer, 10, 10), [
+        255,
+        0,
+        0,
+        255,
+      ], reason: '最初の描画が出ていない');
 
       // 同じタイルへ別の色を重ねる。ここでタイル画像キャッシュが
       // 捨てられていないと、赤のままになる。
       paint(tm, layer, 20, 20, 0, 0, 255);
-      expect(await pixelAt(tm, layer, 20, 20), [0, 0, 255, 255],
-          reason: '2回目の描画がタイル画像キャッシュに隠されている');
-      expect(await pixelAt(tm, layer, 10, 10), [255, 0, 0, 255],
-          reason: '既存の画素が失われている');
+      expect(await pixelAt(tm, layer, 20, 20), [
+        0,
+        0,
+        255,
+        255,
+      ], reason: '2回目の描画がタイル画像キャッシュに隠されている');
+      expect(await pixelAt(tm, layer, 10, 10), [
+        255,
+        0,
+        0,
+        255,
+      ], reason: '既存の画素が失われている');
 
       // 別タイル（tx=2）へ描く。こちらは初回なのでキャッシュ無し経路。
       paint(tm, layer, 600, 300, 0, 255, 0);
       expect(await pixelAt(tm, layer, 600, 300), [0, 255, 0, 255]);
-      expect(await pixelAt(tm, layer, 20, 20), [0, 0, 255, 255],
-          reason: '他タイルへの描画で既存タイルが壊れている');
+      expect(await pixelAt(tm, layer, 20, 20), [
+        0,
+        0,
+        255,
+        255,
+      ], reason: '他タイルへの描画で既存タイルが壊れている');
     });
   });
 
@@ -91,8 +120,12 @@ void main() {
       expect(await pixelAt(tm, layer, 5, 5), [255, 0, 0, 255]);
 
       tm.invalidateTile(layer, tx, ty);
-      expect(await pixelAt(tm, layer, 5, 5), [0, 255, 0, 255],
-          reason: 'invalidateTile後も古いタイル画像が使われている');
+      expect(await pixelAt(tm, layer, 5, 5), [
+        0,
+        255,
+        0,
+        255,
+      ], reason: 'invalidateTile後も古いタイル画像が使われている');
     });
   });
 
@@ -113,8 +146,12 @@ void main() {
         green[i + 3] = 255;
       }
       tm.applyTileSnapshot(layer, {'$tx,$ty': green});
-      expect(await pixelAt(tm, layer, 5, 5), [0, 255, 0, 255],
-          reason: 'レイヤー差し替え後も古いタイル画像が使われている');
+      expect(await pixelAt(tm, layer, 5, 5), [
+        0,
+        255,
+        0,
+        255,
+      ], reason: 'レイヤー差し替え後も古いタイル画像が使われている');
     });
   });
 }

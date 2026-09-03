@@ -24,7 +24,8 @@ class BucketFillEngine {
     // 透けて隙間を埋める。falseなら拡張分もベタで上書きする。
     bool fillUnderLine = false,
   }) {
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height) return canvasData;
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+      return canvasData;
     final result = Uint8List.fromList(canvasData);
     final startIdx = (startY * width + startX) * 4;
     final targetR = result[startIdx];
@@ -37,7 +38,11 @@ class BucketFillEngine {
     final fillB = (fillColor.b * 255).round();
     final fillA = (fillColor.a * 255).round();
 
-    if (targetR == fillR && targetG == fillG && targetB == fillB && targetA == fillA) return result;
+    if (targetR == fillR &&
+        targetG == fillG &&
+        targetB == fillB &&
+        targetA == fillA)
+      return result;
 
     // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
     // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策：
@@ -58,8 +63,17 @@ class BucketFillEngine {
       if (selectionMask != null && selectionMask[pos] == 0) continue;
 
       final idx = pos * 4;
-      if (!_colorMatch(result[idx], result[idx + 1], result[idx + 2], result[idx + 3],
-          targetR, targetG, targetB, targetA, tolerance)) {
+      if (!_colorMatch(
+        result[idx],
+        result[idx + 1],
+        result[idx + 2],
+        result[idx + 3],
+        targetR,
+        targetG,
+        targetB,
+        targetA,
+        tolerance,
+      )) {
         continue;
       }
 
@@ -117,7 +131,8 @@ class BucketFillEngine {
     int expandPx = 0,
     bool fillUnderLine = false,
   }) {
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height) return canvasData;
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+      return canvasData;
     final result = Uint8List.fromList(canvasData);
     final startIdx = (startY * width + startX) * 4;
     final targetR = result[startIdx];
@@ -141,8 +156,17 @@ class BucketFillEngine {
       if (selectionMask != null && selectionMask[pos] == 0) continue;
 
       final idx = pos * 4;
-      if (!_colorMatch(result[idx], result[idx + 1], result[idx + 2], result[idx + 3],
-          targetR, targetG, targetB, targetA, tolerance)) {
+      if (!_colorMatch(
+        result[idx],
+        result[idx + 1],
+        result[idx + 2],
+        result[idx + 3],
+        targetR,
+        targetG,
+        targetB,
+        targetA,
+        tolerance,
+      )) {
         continue;
       }
       matched[pos] = 1;
@@ -232,10 +256,20 @@ class BucketFillEngine {
           if (underLine) {
             final srcA = result[idx + 3] / 255.0;
             final invA = 1.0 - srcA;
-            result[idx] = (result[idx] * srcA + fillR * invA).round().clamp(0, 255);
-            result[idx + 1] = (result[idx + 1] * srcA + fillG * invA).round().clamp(0, 255);
-            result[idx + 2] = (result[idx + 2] * srcA + fillB * invA).round().clamp(0, 255);
-            result[idx + 3] = (result[idx + 3] + fillA * invA).round().clamp(0, 255);
+            result[idx] = (result[idx] * srcA + fillR * invA).round().clamp(
+              0,
+              255,
+            );
+            result[idx + 1] = (result[idx + 1] * srcA + fillG * invA)
+                .round()
+                .clamp(0, 255);
+            result[idx + 2] = (result[idx + 2] * srcA + fillB * invA)
+                .round()
+                .clamp(0, 255);
+            result[idx + 3] = (result[idx + 3] + fillA * invA).round().clamp(
+              0,
+              255,
+            );
           } else {
             result[idx] = fillR;
             result[idx + 1] = fillG;
@@ -265,7 +299,8 @@ class BucketFillEngine {
     double tolerance = 30.0,
   }) {
     final mask = Uint8List(width * height);
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height) return mask;
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+      return mask;
     final startIdx = (startY * width + startX) * 4;
     final targetR = canvasData[startIdx];
     final targetG = canvasData[startIdx + 1];
@@ -283,8 +318,17 @@ class BucketFillEngine {
       final y = pos ~/ width;
 
       final idx = pos * 4;
-      if (!_colorMatch(canvasData[idx], canvasData[idx + 1], canvasData[idx + 2], canvasData[idx + 3],
-          targetR, targetG, targetB, targetA, tolerance)) {
+      if (!_colorMatch(
+        canvasData[idx],
+        canvasData[idx + 1],
+        canvasData[idx + 2],
+        canvasData[idx + 3],
+        targetR,
+        targetG,
+        targetB,
+        targetA,
+        tolerance,
+      )) {
         continue;
       }
 
@@ -305,7 +349,17 @@ class BucketFillEngine {
     return mask;
   }
 
-  bool _colorMatch(int r, int g, int b, int a, int tr, int tg, int tb, int ta, double tolerance) {
+  bool _colorMatch(
+    int r,
+    int g,
+    int b,
+    int a,
+    int tr,
+    int tg,
+    int tb,
+    int ta,
+    double tolerance,
+  ) {
     return (r - tr).abs() <= tolerance &&
         (g - tg).abs() <= tolerance &&
         (b - tb).abs() <= tolerance &&

@@ -25,7 +25,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final out = Directory('build/visual-reaudit/canvas-panels');
-  final appDocs = Directory('${Directory.systemTemp.path}/niarim_canvas_panel_audit_docs');
+  final appDocs = Directory(
+    '${Directory.systemTemp.path}/niarim_canvas_panel_audit_docs',
+  );
   const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
 
   setUpAll(() {
@@ -57,26 +59,22 @@ void main() {
         'timeline_preview_fullscreen',
       ],
     });
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      pathProviderChannel,
-      (call) async {
-        switch (call.method) {
-          case 'getApplicationDocumentsDirectory':
-          case 'getApplicationSupportDirectory':
-          case 'getTemporaryDirectory':
-            return appDocs.path;
-          default:
-            return appDocs.path;
-        }
-      },
-    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, (call) async {
+          switch (call.method) {
+            case 'getApplicationDocumentsDirectory':
+            case 'getApplicationSupportDirectory':
+            case 'getTemporaryDirectory':
+              return appDocs.path;
+            default:
+              return appDocs.path;
+          }
+        });
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      pathProviderChannel,
-      null,
-    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
   testWidgets('実CanvasScreenの主要オーバーレイパネルを実操作で開いてPNG保存する', (tester) async {
@@ -87,9 +85,12 @@ void main() {
 
     await tester.runAsync(() async {
       final loaders = <FontLoader>[
-        FontLoader('HakkouMincho')..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf')),
-        FontLoader('Kuramubon')..addFont(rootBundle.load('assets/fonts/Kuramubon.otf')),
-        FontLoader('NotoSerifJP')..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf')),
+        FontLoader('HakkouMincho')
+          ..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf')),
+        FontLoader('Kuramubon')
+          ..addFont(rootBundle.load('assets/fonts/Kuramubon.otf')),
+        FontLoader('NotoSerifJP')
+          ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf')),
       ];
       await Future.wait(loaders.map((e) => e.load()));
     });
@@ -125,14 +126,16 @@ void main() {
     await tester.pump();
     expect(ps, isNotNull, reason: '本番ProviderツリーからProjectServiceを取得できること');
 
-    final project = (await tester.runAsync(() => ps!.createProject(
-      name: 'panel-visual-audit',
-      fps: 24,
-      durationSeconds: 1,
-      backgroundColor: 0xFFFFFFFF,
-      exportWidth: 320,
-      exportHeight: 320,
-    )))!;
+    final project = (await tester.runAsync(
+      () => ps!.createProject(
+        name: 'panel-visual-audit',
+        fps: 24,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 320,
+        exportHeight: 320,
+      ),
+    ))!;
     projectId = project.id;
     rebuildHost!(() {});
     await tester.pump(const Duration(milliseconds: 1400));
@@ -204,7 +207,11 @@ void main() {
       }
       await tester.pump(const Duration(milliseconds: 500));
       _expectNoException(tester, file);
-      expect(find.byType(panelType), findsOneWidget, reason: '$file panel opened from real CanvasScreen control');
+      expect(
+        find.byType(panelType),
+        findsOneWidget,
+        reason: '$file panel opened from real CanvasScreen control',
+      );
       await capture(file);
     }
 
@@ -223,11 +230,28 @@ void main() {
     expect(find.byType(ColorPickerPanel), findsOneWidget);
     await capture('01_color_picker');
 
-    await tapPanel(control: find.byIcon(Icons.tune), panelType: BrushPanel, file: '02_brush_panel');
+    await tapPanel(
+      control: find.byIcon(Icons.tune),
+      panelType: BrushPanel,
+      file: '02_brush_panel',
+    );
     expect(find.byType(ColorPickerPanel), findsNothing);
-    await tapPanel(control: find.byIcon(Icons.layers), panelType: LayerPanel, file: '03_layer_panel');
-    await tapPanel(control: find.byIcon(Icons.straighten), panelType: RulerPanel, file: '04_ruler_panel');
-    await tapPanel(control: find.byIcon(Icons.loop), panelType: QuickToolPanel, file: '05_quick_tool_panel', longPress: true);
+    await tapPanel(
+      control: find.byIcon(Icons.layers),
+      panelType: LayerPanel,
+      file: '03_layer_panel',
+    );
+    await tapPanel(
+      control: find.byIcon(Icons.straighten),
+      panelType: RulerPanel,
+      file: '04_ruler_panel',
+    );
+    await tapPanel(
+      control: find.byIcon(Icons.loop),
+      panelType: QuickToolPanel,
+      file: '05_quick_tool_panel',
+      longPress: true,
+    );
 
     await openSettingsSheet();
     _expectNoException(tester, 'settings_edit_sheet');
@@ -258,11 +282,16 @@ void main() {
 
 void _expectNoException(WidgetTester tester, String operation) {
   final error = tester.takeException();
-  expect(error, isNull, reason: '$operation visual panel must not overflow/throw');
+  expect(
+    error,
+    isNull,
+    reason: '$operation visual panel must not overflow/throw',
+  );
 }
 
 Future<void> _capture(GlobalKey key, String path) async {
-  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
   await File(path).writeAsBytes(data!.buffer.asUint8List(), flush: true);

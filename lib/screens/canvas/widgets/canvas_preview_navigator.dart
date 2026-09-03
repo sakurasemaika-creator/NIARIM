@@ -43,7 +43,10 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
     _rebuild();
     // ストローク中も一定間隔で最新の状態へ更新する（毎フレーム合成は
     // 重いため、フル解像度ではなく縮小サイズでの合成に留めている）。
-    _timer = Timer.periodic(const Duration(milliseconds: 900), (_) => _rebuild());
+    _timer = Timer.periodic(
+      const Duration(milliseconds: 900),
+      (_) => _rebuild(),
+    );
   }
 
   @override
@@ -69,17 +72,28 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
     try {
       final ps = context.read<ProjectService>();
       final tm = ps.tileManagerOf(widget.projectId);
-      final layers = ps.layersOf(widget.projectId, widget.sceneId, widget.frameIndex);
+      final layers = ps.layersOf(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+      );
       // 概観確認用のため、縦横比を保ったまま長辺を200pxまで縮小して合成する
       // （フル解像度は不要かつ重い）。
       const maxSide = 200.0;
-      final scale = maxSide / (tm.canvasWidth > tm.canvasHeight ? tm.canvasWidth : tm.canvasHeight);
+      final scale =
+          maxSide /
+          (tm.canvasWidth > tm.canvasHeight ? tm.canvasWidth : tm.canvasHeight);
       final outW = (tm.canvasWidth * scale).round().clamp(1, 4096);
       final outH = (tm.canvasHeight * scale).round().clamp(1, 4096);
       final img = await LayerCompositor.composite(
         tm,
         layers,
-        (l) => ps.tileKeyFor(widget.projectId, widget.sceneId, widget.frameIndex, l.id),
+        (l) => ps.tileKeyFor(
+          widget.projectId,
+          widget.sceneId,
+          widget.frameIndex,
+          l.id,
+        ),
         outW,
         outH,
       );
@@ -118,12 +132,22 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                 Icon(Icons.map_outlined, size: 14, color: theme.textColor),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Text(l10n.canvasPreviewNavigatorTitle,
-                      style: TextStyle(fontSize: 11, color: theme.textColor, fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
-                      overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    l10n.canvasPreviewNavigatorTitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.textColor,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                InkWell(onTap: widget.onClose, child: Icon(Icons.close, size: 16, color: theme.textColor)),
+                InkWell(
+                  onTap: widget.onClose,
+                  child: Icon(Icons.close, size: 16, color: theme.textColor),
+                ),
               ],
             ),
           ),
@@ -132,7 +156,9 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
             child: Container(
               color: scheme.surfaceContainerHighest,
               child: _image == null
-                  ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : RawImage(image: _image, fit: BoxFit.contain),
             ),
           ),

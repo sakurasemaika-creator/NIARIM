@@ -263,7 +263,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 8),
@@ -289,7 +289,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                      fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                   const Spacer(),
@@ -553,7 +553,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -626,7 +626,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 8),
@@ -643,7 +643,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 subtitle: Text(l10n.newProjectDrawingAreaSubtitle),
@@ -659,7 +659,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                        fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
                     const SizedBox(width: 16),

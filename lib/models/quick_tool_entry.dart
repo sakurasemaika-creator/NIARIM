@@ -18,18 +18,18 @@ class QuickToolEntry {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'label': label,
-        'toolKey': toolKey,
-        'brushId': brushId,
-        'sizeOverride': sizeOverride,
-      };
+    'id': id,
+    'label': label,
+    'toolKey': toolKey,
+    'brushId': brushId,
+    'sizeOverride': sizeOverride,
+  };
 
   factory QuickToolEntry.fromJson(Map<String, dynamic> json) => QuickToolEntry(
-        id: json['id'] as String,
-        label: json['label'] as String,
-        toolKey: json['toolKey'] as String,
-        brushId: json['brushId'] as String?,
-        sizeOverride: (json['sizeOverride'] as num?)?.toDouble(),
-      );
+    id: json['id'] as String,
+    label: json['label'] as String,
+    toolKey: json['toolKey'] as String,
+    brushId: json['brushId'] as String?,
+    sizeOverride: (json['sizeOverride'] as num?)?.toDouble(),
+  );
 }

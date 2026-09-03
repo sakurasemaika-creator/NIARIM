@@ -22,15 +22,21 @@ void main() {
 
   test('共通レイヤー：ホームの実ピクセルを表示範囲先で共有描画', () async {
     const common = Layer(
-      id: 'common', name: 'common', type: LayerType.common,
+      id: 'common',
+      name: 'common',
+      type: LayerType.common,
       rangeMode: LayerRangeMode.allFrames,
     );
     const scenes = [
-      Scene(id: 's1', index: 0, frames: [
-        Frame(index: 0, layers: [common]),
-        Frame(index: 1),
-        Frame(index: 2),
-      ]),
+      Scene(
+        id: 's1',
+        index: 0,
+        frames: [
+          Frame(index: 0, layers: [common]),
+          Frame(index: 1),
+          Frame(index: 2),
+        ],
+      ),
       Scene(id: 's2', index: 1, frames: [Frame(index: 0), Frame(index: 1)]),
     ];
     final homes = buildLayerHomeIndex(scenes);
@@ -47,11 +53,27 @@ void main() {
     }
     tm.markDirty(homeKey, 0, 0);
 
-    for (final target in [('s1', 0), ('s1', 1), ('s1', 2), ('s2', 0), ('s2', 1)]) {
+    for (final target in [
+      ('s1', 0),
+      ('s1', 1),
+      ('s1', 2),
+      ('s2', 0),
+      ('s2', 1),
+    ]) {
       final scene = scenes.firstWhere((s) => s.id == target.$1);
       final own = scene.frames[target.$2].layers;
-      final resolved = resolveFrameLayers(scenes, homes, target.$1, target.$2, own);
-      expect(resolved.any((l) => l.id == 'common'), isTrue, reason: '$target common visible');
+      final resolved = resolveFrameLayers(
+        scenes,
+        homes,
+        target.$1,
+        target.$2,
+        own,
+      );
+      expect(
+        resolved.any((l) => l.id == 'common'),
+        isTrue,
+        reason: '$target common visible',
+      );
       final image = await LayerCompositor.composite(
         tm,
         resolved,
@@ -59,29 +81,48 @@ void main() {
         w,
         h,
       );
-      await _save(image, '${out.path}/common_all_${target.$1}_${target.$2}.png');
+      await _save(
+        image,
+        '${out.path}/common_all_${target.$1}_${target.$2}.png',
+      );
       final rgba = await _rgba(image);
-      expect(_pixel(rgba, 48, 48), equals([45, 120, 235, 255]), reason: '$target must use home pixels');
+      expect(
+        _pixel(rgba, 48, 48),
+        equals([45, 120, 235, 255]),
+        reason: '$target must use home pixels',
+      );
       image.dispose();
     }
     tm.dispose();
   });
 
   test('共通レイヤー：currentScene / sceneRange / frameRange が正しい範囲だけ表示', () {
-    const current = Layer(id: 'c', name: 'c', type: LayerType.common, rangeMode: LayerRangeMode.currentScene);
+    const current = Layer(
+      id: 'c',
+      name: 'c',
+      type: LayerType.common,
+      rangeMode: LayerRangeMode.currentScene,
+    );
     expect(rangeAppliesToFrame(current, 's1', 's1', 99), isTrue);
     expect(rangeAppliesToFrame(current, 's1', 's2', 0), isFalse);
 
     const sceneRange = Layer(
-      id: 's', name: 's', type: LayerType.common,
-      rangeMode: LayerRangeMode.sceneRange, rangeSceneId: 's2',
+      id: 's',
+      name: 's',
+      type: LayerType.common,
+      rangeMode: LayerRangeMode.sceneRange,
+      rangeSceneId: 's2',
     );
     expect(rangeAppliesToFrame(sceneRange, 's1', 's2', 0), isTrue);
     expect(rangeAppliesToFrame(sceneRange, 's1', 's1', 0), isFalse);
 
     const frameRange = Layer(
-      id: 'f', name: 'f', type: LayerType.common,
-      rangeMode: LayerRangeMode.frameRange, rangeStart: 2, rangeEnd: 4,
+      id: 'f',
+      name: 'f',
+      type: LayerType.common,
+      rangeMode: LayerRangeMode.frameRange,
+      rangeStart: 2,
+      rangeEnd: 4,
     );
     expect(rangeAppliesToFrame(frameRange, 's1', 's1', 0), isFalse);
     expect(rangeAppliesToFrame(frameRange, 's1', 's1', 1), isTrue);
@@ -93,24 +134,46 @@ void main() {
   test('自動塗り：閉領域だけを単色で塗り、外側と線画を侵食しない', () async {
     final lineart = _rectLineart();
     const part = AutofillPart(id: 'p', name: 'solid', color: 0xFFE05090);
-    final result = AutofillEngine().repaint(lineartData: lineart, width: w, height: h, part: part);
+    final result = AutofillEngine().repaint(
+      lineartData: lineart,
+      width: w,
+      height: h,
+      part: part,
+    );
     final image = await _image(result);
     await _save(image, '${out.path}/autofill_solid.png');
     image.dispose();
 
     expect(_pixel(result, 48, 48), equals([224, 80, 144, 255]));
-    expect(_pixel(result, 5, 5)[3], 0, reason: 'outside must remain transparent');
-    expect(_pixel(result, 20, 20)[3], 0, reason: 'lineart boundary must not be painted into fill layer');
+    expect(
+      _pixel(result, 5, 5)[3],
+      0,
+      reason: 'outside must remain transparent',
+    );
+    expect(
+      _pixel(result, 20, 20)[3],
+      0,
+      reason: 'lineart boundary must not be painted into fill layer',
+    );
   });
 
   test('自動塗り：線が一箇所開いていれば閉領域扱いしない', () async {
     final lineart = _rectLineart(gap: true);
     const part = AutofillPart(id: 'p', name: 'open', color: 0xFF30A060);
-    final result = AutofillEngine().repaint(lineartData: lineart, width: w, height: h, part: part);
+    final result = AutofillEngine().repaint(
+      lineartData: lineart,
+      width: w,
+      height: h,
+      part: part,
+    );
     final image = await _image(result);
     await _save(image, '${out.path}/autofill_open_gap.png');
     image.dispose();
-    expect(_countOpaque(result), 0, reason: 'open contour must not be autofilled');
+    expect(
+      _countOpaque(result),
+      0,
+      reason: 'open contour must not be autofilled',
+    );
   });
 
   test('自動塗り：線形グラデーションの向きと色変化', () async {
@@ -121,27 +184,70 @@ void main() {
       colors: [0xFFFF2020, 0xFF2040FF],
       stops: [0, 1],
     );
-    const part = AutofillPart(id: 'p', name: 'gradient', color: 0xFFFFFFFF, gradient: gradient);
-    final result = AutofillEngine().repaint(lineartData: lineart, width: w, height: h, part: part);
+    const part = AutofillPart(
+      id: 'p',
+      name: 'gradient',
+      color: 0xFFFFFFFF,
+      gradient: gradient,
+    );
+    final result = AutofillEngine().repaint(
+      lineartData: lineart,
+      width: w,
+      height: h,
+      part: part,
+    );
     final image = await _image(result);
     await _save(image, '${out.path}/autofill_gradient_linear.png');
     image.dispose();
     final left = _pixel(result, 28, 48);
     final right = _pixel(result, 68, 48);
-    expect(left[0], greaterThan(right[0]), reason: '0deg gradient red should be stronger at left');
-    expect(right[2], greaterThan(left[2]), reason: '0deg gradient blue should be stronger at right');
+    expect(
+      left[0],
+      greaterThan(right[0]),
+      reason: '0deg gradient red should be stronger at left',
+    );
+    expect(
+      right[2],
+      greaterThan(left[2]),
+      reason: '0deg gradient blue should be stronger at right',
+    );
   });
 
   test('自動塗り：トーンは閉領域内だけで2x2周期を維持', () async {
     final lineart = _rectLineart();
     final tone = Uint8List.fromList([
-      0, 0, 0, 255, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 255,
+      0,
+      0,
+      0,
+      255,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      255,
     ]);
-    const part = AutofillPart(id: 'p', name: 'tone', color: 0xFF7040D0, useTone: true, toneId: 'checker');
+    const part = AutofillPart(
+      id: 'p',
+      name: 'tone',
+      color: 0xFF7040D0,
+      useTone: true,
+      toneId: 'checker',
+    );
     final result = AutofillEngine().repaint(
-      lineartData: lineart, width: w, height: h, part: part,
-      toneTexture: tone, toneWidth: 2, toneHeight: 2,
+      lineartData: lineart,
+      width: w,
+      height: h,
+      part: part,
+      toneTexture: tone,
+      toneWidth: 2,
+      toneHeight: 2,
     );
     final image = await _image(result);
     await _save(image, '${out.path}/autofill_tone.png');
@@ -155,16 +261,29 @@ void main() {
   test('自動塗り：縁取りは塗り領域外周だけに形成される', () async {
     final lineart = _rectLineart();
     const part = AutofillPart(
-      id: 'p', name: 'outline', color: 0xFF40B060,
-      outlineEnabled: true, outlineColor: 0xFFFF3020, outlineWidth: 3,
+      id: 'p',
+      name: 'outline',
+      color: 0xFF40B060,
+      outlineEnabled: true,
+      outlineColor: 0xFFFF3020,
+      outlineWidth: 3,
     );
-    final result = AutofillEngine().repaint(lineartData: lineart, width: w, height: h, part: part);
+    final result = AutofillEngine().repaint(
+      lineartData: lineart,
+      width: w,
+      height: h,
+      part: part,
+    );
     final image = await _image(result);
     await _save(image, '${out.path}/autofill_outline.png');
     image.dispose();
     expect(_pixel(result, 48, 48).sublist(0, 3), equals([64, 176, 96]));
     final edge = _pixel(result, 20, 48);
-    expect(edge[0], greaterThan(200), reason: 'outline should be red around region edge');
+    expect(
+      edge[0],
+      greaterThan(200),
+      reason: 'outline should be red around region edge',
+    );
     expect(edge[1], lessThan(100));
     expect(_pixel(result, 5, 5)[3], 0);
   });
@@ -173,14 +292,28 @@ void main() {
     final lineart = _rectLineart();
     const first = AutofillPart(id: 'p', name: 'first', color: 0xFFE05090);
     final engine = AutofillEngine();
-    final initial = engine.repaint(lineartData: lineart, width: w, height: h, part: first);
+    final initial = engine.repaint(
+      lineartData: lineart,
+      width: w,
+      height: h,
+      part: first,
+    );
     const second = AutofillPart(id: 'p', name: 'second', color: 0xFF20A0E0);
-    final updated = engine.colorUpdate(existingData: initial, width: w, height: h, part: second);
+    final updated = engine.colorUpdate(
+      existingData: initial,
+      width: w,
+      height: h,
+      part: second,
+    );
     final image = await _image(updated);
     await _save(image, '${out.path}/autofill_color_update.png');
     image.dispose();
     for (var i = 3; i < initial.length; i += 4) {
-      expect(updated[i], initial[i], reason: 'color update must preserve alpha mask');
+      expect(
+        updated[i],
+        initial[i],
+        reason: 'color update must preserve alpha mask',
+      );
     }
     expect(_pixel(updated, 48, 48), equals([32, 160, 224, 255]));
   });
@@ -188,10 +321,18 @@ void main() {
   test('自動塗り：線画色変更は形状alphaを保持', () async {
     final lineart = _rectLineart();
     const specified = AutofillPart(
-      id: 'p', name: 'line', color: 0xFF60B080,
-      lineColorMode: AutofillLineColorMode.specified, lineColor: 0xFF8040E0,
+      id: 'p',
+      name: 'line',
+      color: 0xFF60B080,
+      lineColorMode: AutofillLineColorMode.specified,
+      lineColor: 0xFF8040E0,
     );
-    final result = AutofillEngine().recolorLineart(lineartData: lineart, width: w, height: h, part: specified);
+    final result = AutofillEngine().recolorLineart(
+      lineartData: lineart,
+      width: w,
+      height: h,
+      part: specified,
+    );
     final image = await _image(result);
     await _save(image, '${out.path}/autofill_line_recolor.png');
     image.dispose();
@@ -210,6 +351,7 @@ Uint8List _rectLineart({bool gap = false}) {
     data[i] = data[i + 1] = data[i + 2] = 20;
     data[i + 3] = 255;
   }
+
   for (var x = 20; x <= 75; x++) {
     if (!(gap && x >= 45 && x <= 51)) put(x, 20);
     put(x, 75);
@@ -229,7 +371,12 @@ int _countOpaque(List<int> rgba) {
 
 Future<ui.Image> _image(Uint8List rgba) async {
   final buffer = await ui.ImmutableBuffer.fromUint8List(rgba);
-  final descriptor = ui.ImageDescriptor.raw(buffer, width: w, height: h, pixelFormat: ui.PixelFormat.rgba8888);
+  final descriptor = ui.ImageDescriptor.raw(
+    buffer,
+    width: w,
+    height: h,
+    pixelFormat: ui.PixelFormat.rgba8888,
+  );
   final codec = await descriptor.instantiateCodec();
   final frame = await codec.getNextFrame();
   codec.dispose();

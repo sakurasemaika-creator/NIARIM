@@ -12,7 +12,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('同梱フォントのライセンス本文がアセットとして読み込める', () async {
-    final text = await rootBundle.loadString('assets/licenses/FONT_LICENSES.txt');
+    final text = await rootBundle.loadString(
+      'assets/licenses/FONT_LICENSES.txt',
+    );
     // 3書体すべての著作権表示が含まれていること。
     expect(text, contains('HakkouMincho'));
     expect(text, contains('Kuramubon.otf'));
@@ -33,31 +35,30 @@ void main() {
   test('LicenseRegistryへ同梱フォントのライセンスが登録されている', () async {
     LicenseRegistry.reset();
     LicenseRegistry.addLicense(() async* {
-      final text =
-          await rootBundle.loadString('assets/licenses/FONT_LICENSES.txt');
-      yield LicenseEntryWithLineBreaks(
-        const [
-          'HakkouMincho',
-          'Kuramubon',
-          'Noto Serif JP',
-          'Dela Gothic One',
-          'Noto Serif KR / SC',
-          'Noto Sans KR / SC',
-        ],
-        text,
+      final text = await rootBundle.loadString(
+        'assets/licenses/FONT_LICENSES.txt',
       );
+      yield LicenseEntryWithLineBreaks(const [
+        'HakkouMincho',
+        'Kuramubon',
+        'Noto Serif JP',
+        'Dela Gothic One',
+        'Noto Serif KR / SC',
+        'Noto Sans KR / SC',
+      ], text);
     });
     final entries = await LicenseRegistry.licenses.toList();
     final packages = entries.expand((e) => e.packages).toSet();
     expect(
-        packages,
-        containsAll([
-          'HakkouMincho',
-          'Kuramubon',
-          'Noto Serif JP',
-          'Dela Gothic One',
-          'Noto Serif KR / SC',
-          'Noto Sans KR / SC',
-        ]));
+      packages,
+      containsAll([
+        'HakkouMincho',
+        'Kuramubon',
+        'Noto Serif JP',
+        'Dela Gothic One',
+        'Noto Serif KR / SC',
+        'Noto Sans KR / SC',
+      ]),
+    );
   });
 }

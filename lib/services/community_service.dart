@@ -53,7 +53,8 @@ class CommunityService extends ChangeNotifier {
   // ランキング機能仕様.md 21.2節）でプライバシー面から既定非公開を推奨
   // したため、自分（kDummySelfAuthorId）は既定false。他のダミー作者は
   // 公開/非公開どちらの見た目も確認できるよう交互に割り当てている。
-  final Map<String, bool> _bookmarksPublicByAuthor = _buildDummyPublicVisibility();
+  final Map<String, bool> _bookmarksPublicByAuthor =
+      _buildDummyPublicVisibility();
   // 他のダミー作者（自分以外）が何をブックマークしているかの表示確認用
   // ダミーデータ。実際のマルチユーザーバックエンドが無いため、自分の
   // ブックマーク（_bookmarkedIds、実際にトグル可能）とは別に固定シードの
@@ -64,12 +65,14 @@ class CommunityService extends ChangeNotifier {
   // 他のダミー作者同士が誰をフォローしているかの表示確認用ダミーデータ
   // （固定シードの乱数で生成）。表示時はここへ「自分がフォローして
   // いれば自分自身のID」を加算する（followerIdsOf参照）。
-  late final Map<String, Set<String>> _dummyFollowersByAuthor = _buildDummyFollowersByAuthor(_works);
+  late final Map<String, Set<String>> _dummyFollowersByAuthor =
+      _buildDummyFollowersByAuthor(_works);
   // 各authorIdの「自分のフォロワー一覧を他ユーザーに公開するか」設定。
   // ブックマーク一覧の公開設定（_bookmarksPublicByAuthor）と同じパターン。
   // 既定は非公開、他のダミー作者は公開/非公開どちらの見た目も確認できる
   // よう交互に割り当てている。
-  final Map<String, bool> _followersPublicByAuthor = _buildDummyPublicVisibility();
+  final Map<String, bool> _followersPublicByAuthor =
+      _buildDummyPublicVisibility();
   // フォロー通知（Task#134継続：「フォローされたら通知が来るようにして
   // ほしい」という要望を受けた実装）。バックエンド未実装かつ実際の
   // マルチユーザー環境が無いため、新しいフォローをリアルタイムに検知
@@ -77,7 +80,8 @@ class CommunityService extends ChangeNotifier {
   // 「自分（kDummySelfAuthorId）を既にフォローしているダミー作者」を
   // 過去に届いた通知として初期化時に生成し、アプリ内通知一覧
   // （21.3節で推奨された方式）として表示する。詳細は22.6節参照。
-  late final List<CommunityFollowNotification> _followNotifications = _buildFollowNotifications();
+  late final List<CommunityFollowNotification> _followNotifications =
+      _buildFollowNotifications();
 
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
@@ -93,7 +97,8 @@ class CommunityService extends ChangeNotifier {
   /// （21.1節のBookmarkItem）へ置き換えること。現状はアプリ内一時状態
   /// なので再起動すると消える（ブックマーク自体が消えるので順序だけの
   /// 問題ではない）。
-  List<String> get bookmarkedIdsNewestFirst => _bookmarkedIds.toList().reversed.toList();
+  List<String> get bookmarkedIdsNewestFirst =>
+      _bookmarkedIds.toList().reversed.toList();
   Set<String> get favoriteAuthorIds => Set.unmodifiable(_favoriteAuthorIds);
 
   /// 新着・ランキングなど「発見」用の一覧に出す作品（NIARIM側で非公開に
@@ -112,8 +117,13 @@ class CommunityService extends ChangeNotifier {
   /// NIARIM側で非公開にした作品を除外する。投稿者本人が自分の投稿者別
   /// 作品一覧を開く場合のみ[includeHidden]をtrueにして、非公開中の作品も
   /// 確認・再公開できるようにする。
-  List<CommunityWork> worksByAuthor(String authorId, {bool includeHidden = false}) => _works
-      .where((w) => w.authorId == authorId && (includeHidden || w.isNiarimPublished))
+  List<CommunityWork> worksByAuthor(
+    String authorId, {
+    bool includeHidden = false,
+  }) => _works
+      .where(
+        (w) => w.authorId == authorId && (includeHidden || w.isNiarimPublished),
+      )
       .toList();
 
   int _indexOf(String workId) => _works.indexWhere((w) => w.id == workId);
@@ -178,7 +188,9 @@ class CommunityService extends ChangeNotifier {
     final index = _indexOf(workId);
     if (index == -1) return;
     final current = _works[index];
-    _works[index] = current.copyWith(isNiarimPublished: !current.isNiarimPublished);
+    _works[index] = current.copyWith(
+      isNiarimPublished: !current.isNiarimPublished,
+    );
     notifyListeners();
   }
 
@@ -190,7 +202,8 @@ class CommunityService extends ChangeNotifier {
   // あくまで閲覧者側の任意の個人設定（お気に入り作者の新着を見やすくする
   // ためのクライアント側フィルタ）として位置づける想定。
 
-  bool isFavoriteAuthor(String authorId) => _favoriteAuthorIds.contains(authorId);
+  bool isFavoriteAuthor(String authorId) =>
+      _favoriteAuthorIds.contains(authorId);
 
   void toggleFavoriteAuthor(String authorId) {
     if (_favoriteAuthorIds.contains(authorId)) {
@@ -227,8 +240,9 @@ class CommunityService extends ChangeNotifier {
       followerIdsOf(authorId).where(isFollowersPublic).toList();
 
   /// [authorId]の表示可能なフォロワー名一覧（[visibleFollowerIdsOf]参照）。
-  List<String> visibleFollowerNamesOf(String authorId) =>
-      visibleFollowerIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
+  List<String> visibleFollowerNamesOf(String authorId) => visibleFollowerIdsOf(
+    authorId,
+  ).map((id) => authorNameOf(id) ?? id).toList();
 
   /// [authorId]が誰をフォロー中かのID一覧。自分（kDummySelfAuthorId）に
   /// ついては実際にトグル操作した[_favoriteAuthorIds]をそのまま返す。
@@ -253,8 +267,10 @@ class CommunityService extends ChangeNotifier {
   int followingCountOf(String authorId) => followingIdsOf(authorId).length;
 
   /// 作者IDから表示名を引く（見つからなければnull）。
-  String? authorNameOf(String authorId) =>
-      _works.where((w) => w.authorId == authorId).map((w) => w.authorName).firstOrNull;
+  String? authorNameOf(String authorId) => _works
+      .where((w) => w.authorId == authorId)
+      .map((w) => w.authorName)
+      .firstOrNull;
 
   /// [authorId]のフォロワー数（数字のみ）。「誰がフォローしているか」の
   /// 一覧は既定で非公開のまま（[isFollowersPublic]がfalseの間は数字のみ
@@ -267,7 +283,8 @@ class CommunityService extends ChangeNotifier {
   /// [authorId]が自分のフォロワー一覧を他ユーザーに公開しているか。
   /// 既定は非公開（Task#134継続：本人選択制で一覧を公開できる妥協案。
   /// 22.5節参照）。
-  bool isFollowersPublic(String authorId) => _followersPublicByAuthor[authorId] ?? false;
+  bool isFollowersPublic(String authorId) =>
+      _followersPublicByAuthor[authorId] ?? false;
 
   /// 自分のフォロワー一覧の公開設定（ユーザー設定）。
   bool get selfFollowersPublic => isFollowersPublic(kDummySelfAuthorId);
@@ -282,12 +299,14 @@ class CommunityService extends ChangeNotifier {
 
   /// 自分（kDummySelfAuthorId）宛てのフォロー通知一覧（新着順）。
   List<CommunityFollowNotification> get followNotifications {
-    final list = [..._followNotifications]..sort((a, b) => b.followedAt.compareTo(a.followedAt));
+    final list = [..._followNotifications]
+      ..sort((a, b) => b.followedAt.compareTo(a.followedAt));
     return List.unmodifiable(list);
   }
 
   /// 未読のフォロー通知数（コミュニティ画面の通知ベルのバッジに使う）。
-  int get unreadFollowNotificationCount => _followNotifications.where((n) => !n.isRead).length;
+  int get unreadFollowNotificationCount =>
+      _followNotifications.where((n) => !n.isRead).length;
 
   /// フォロー通知を全て既読にする（通知一覧画面を開いたタイミングで
   /// 呼ぶ想定）。
@@ -301,14 +320,19 @@ class CommunityService extends ChangeNotifier {
 
   List<CommunityFollowNotification> _buildFollowNotifications() {
     final random = Random(31);
-    final followerIds = (_dummyFollowersByAuthor[kDummySelfAuthorId] ?? const <String>{}).toList()..sort();
+    final followerIds =
+        (_dummyFollowersByAuthor[kDummySelfAuthorId] ?? const <String>{})
+            .toList()
+          ..sort();
     return [
       for (final id in followerIds)
         CommunityFollowNotification(
           id: 'follow_$id',
           followerId: id,
           followerName: authorNameOf(id) ?? id,
-          followedAt: DateTime.now().subtract(Duration(hours: random.nextInt(240))),
+          followedAt: DateTime.now().subtract(
+            Duration(hours: random.nextInt(240)),
+          ),
         ),
     ];
   }
@@ -344,7 +368,8 @@ class CommunityService extends ChangeNotifier {
         );
       }
     }
-    final list = byWork.values.toList()..sort((a, b) => b.feedTime.compareTo(a.feedTime));
+    final list = byWork.values.toList()
+      ..sort((a, b) => b.feedTime.compareTo(a.feedTime));
     return list;
   }
 
@@ -357,11 +382,13 @@ class CommunityService extends ChangeNotifier {
   // ─── リポスト（Task#145の調査を受けた実装） ─────────────────────────
 
   /// 自分（kDummySelfAuthorId）がこの作品をリポスト済みかどうか。
-  bool isRepostedBySelf(String workId) =>
-      _reposts.any((r) => r.workId == workId && r.reposterId == kDummySelfAuthorId);
+  bool isRepostedBySelf(String workId) => _reposts.any(
+    (r) => r.workId == workId && r.reposterId == kDummySelfAuthorId,
+  );
 
   /// この作品をリポストした人数（自分・ダミー他作者を問わない）。
-  int repostCountOf(String workId) => _reposts.where((r) => r.workId == workId).length;
+  int repostCountOf(String workId) =>
+      _reposts.where((r) => r.workId == workId).length;
 
   /// リポストの追加・取り消しを切り替える。[authorId]を省略すると自分
   /// （kDummySelfAuthorId）としてリポストする。自分自身が投稿した作品も
@@ -370,19 +397,23 @@ class CommunityService extends ChangeNotifier {
   void toggleRepost(String workId, {String authorId = kDummySelfAuthorId}) {
     final work = byId(workId);
     if (work == null) return;
-    final existingIndex =
-        _reposts.indexWhere((r) => r.workId == workId && r.reposterId == authorId);
+    final existingIndex = _reposts.indexWhere(
+      (r) => r.workId == workId && r.reposterId == authorId,
+    );
     if (existingIndex != -1) {
       _reposts.removeAt(existingIndex);
     } else {
-      final reposterName =
-          _works.firstWhere((w) => w.authorId == authorId, orElse: () => work).authorName;
-      _reposts.add(CommunityRepost(
-        workId: workId,
-        reposterId: authorId,
-        reposterName: reposterName,
-        repostedAt: DateTime.now(),
-      ));
+      final reposterName = _works
+          .firstWhere((w) => w.authorId == authorId, orElse: () => work)
+          .authorName;
+      _reposts.add(
+        CommunityRepost(
+          workId: workId,
+          reposterId: authorId,
+          reposterName: reposterName,
+          repostedAt: DateTime.now(),
+        ),
+      );
     }
     notifyListeners();
   }
@@ -396,16 +427,24 @@ class CommunityService extends ChangeNotifier {
       if (reposterId == kDummySelfAuthorId) continue;
       // 全作者が毎回リポストしているわけではない見た目にする。
       if (random.nextDouble() > 0.6) continue;
-      final candidates = works.where((w) => w.authorId != reposterId && w.isNiarimPublished).toList();
+      final candidates = works
+          .where((w) => w.authorId != reposterId && w.isNiarimPublished)
+          .toList();
       if (candidates.isEmpty) continue;
       final target = candidates[random.nextInt(candidates.length)];
-      final reposterName = works.firstWhere((w) => w.authorId == reposterId).authorName;
-      reposts.add(CommunityRepost(
-        workId: target.id,
-        reposterId: reposterId,
-        reposterName: reposterName,
-        repostedAt: DateTime.now().subtract(Duration(hours: random.nextInt(72))),
-      ));
+      final reposterName = works
+          .firstWhere((w) => w.authorId == reposterId)
+          .authorName;
+      reposts.add(
+        CommunityRepost(
+          workId: target.id,
+          reposterId: reposterId,
+          reposterName: reposterName,
+          repostedAt: DateTime.now().subtract(
+            Duration(hours: random.nextInt(72)),
+          ),
+        ),
+      );
     }
     return reposts;
   }
@@ -414,7 +453,8 @@ class CommunityService extends ChangeNotifier {
   //     （Task#145の調査を受けた実装） ─────────────────────────────────
 
   /// [authorId]が自分のブックマーク一覧を他ユーザーに公開しているか。
-  bool isBookmarksPublic(String authorId) => _bookmarksPublicByAuthor[authorId] ?? false;
+  bool isBookmarksPublic(String authorId) =>
+      _bookmarksPublicByAuthor[authorId] ?? false;
 
   /// 自分のブックマーク一覧の公開設定（ユーザー設定）。
   bool get selfBookmarksPublic => isBookmarksPublic(kDummySelfAuthorId);
@@ -434,7 +474,9 @@ class CommunityService extends ChangeNotifier {
   /// [isBookmarksPublic]を確認してから表示するかどうかを判断すること。
   List<CommunityWork> bookmarkedWorksOf(String authorId) {
     final isSelf = authorId == kDummySelfAuthorId;
-    final ids = isSelf ? _bookmarkedIds : (_dummyBookmarksByOtherAuthor[authorId] ?? const {});
+    final ids = isSelf
+        ? _bookmarkedIds
+        : (_dummyBookmarksByOtherAuthor[authorId] ?? const {});
     final source = isSelf ? _works : discoverableWorks;
     final list = source.where((w) => ids.contains(w.id)).toList();
     list.sort((a, b) => b.postedAt.compareTo(a.postedAt));
@@ -447,7 +489,9 @@ class CommunityService extends ChangeNotifier {
   /// 互いのフォロー関係を割り当てる。自分（kDummySelfAuthorId）は
   /// 実際にフォローボタンで操作した分だけがfollowerIdsOfで加算される
   /// ため、ここでは自分を他作者のフォロワーとしては登録しない。
-  static Map<String, Set<String>> _buildDummyFollowersByAuthor(List<CommunityWork> works) {
+  static Map<String, Set<String>> _buildDummyFollowersByAuthor(
+    List<CommunityWork> works,
+  ) {
     final random = Random(21);
     final authorIds = works.map((w) => w.authorId).toSet().toList()..sort();
     final result = <String, Set<String>>{for (final id in authorIds) id: {}};
@@ -469,14 +513,22 @@ class CommunityService extends ChangeNotifier {
   /// 公開・非公開どちらの見た目も確認できるようにする）。
   static Map<String, bool> _buildDummyPublicVisibility() {
     final map = <String, bool>{kDummySelfAuthorId: false};
-    const others = ['author_02', 'author_03', 'author_04', 'author_05', 'author_06'];
+    const others = [
+      'author_02',
+      'author_03',
+      'author_04',
+      'author_05',
+      'author_06',
+    ];
     for (var i = 0; i < others.length; i++) {
       map[others[i]] = i.isEven;
     }
     return map;
   }
 
-  static Map<String, Set<String>> _buildDummyBookmarksByAuthor(List<CommunityWork> works) {
+  static Map<String, Set<String>> _buildDummyBookmarksByAuthor(
+    List<CommunityWork> works,
+  ) {
     final random = Random(7);
     final authorIds = works.map((w) => w.authorId).toSet().toList()
       ..remove(kDummySelfAuthorId)

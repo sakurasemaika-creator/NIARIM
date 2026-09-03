@@ -74,18 +74,19 @@ void main() {
         name: 'F$i',
       );
     }
-    expect(
-      frameTags(ps, project.id, sceneId),
-      ['F0', 'F1', 'F2', 'F3'],
-    );
+    expect(frameTags(ps, project.id, sceneId), ['F0', 'F1', 'F2', 'F3']);
 
     // フレーム1・3をコピーし、カーソル位置2（F1とF2の間）へ貼り付ける。
     pasteFrames(ps, project.id, sceneId, sceneId, [1, 3], 2);
 
-    expect(
-      frameTags(ps, project.id, sceneId),
-      ['F0', 'F1', 'F1', 'F3', 'F2', 'F3'],
-    );
+    expect(frameTags(ps, project.id, sceneId), [
+      'F0',
+      'F1',
+      'F1',
+      'F3',
+      'F2',
+      'F3',
+    ]);
   });
 
   test('別シーンへのフレーム貼り付けはインデックス補正が不要', () async {
@@ -120,10 +121,7 @@ void main() {
     // ソースシーンのフレーム0・1を、ターゲットシーンの末尾(1)へ貼り付ける。
     pasteFrames(ps, project.id, sourceSceneId, targetScene.id, [0, 1], 1);
 
-    expect(
-      frameTags(ps, project.id, targetScene.id),
-      ['T0', 'S0', 'S1'],
-    );
+    expect(frameTags(ps, project.id, targetScene.id), ['T0', 'S0', 'S1']);
     // ソース側は貼り付け（コピー）のみでは変化しない。
     expect(frameTags(ps, project.id, sourceSceneId), ['S0', 'S1']);
   });

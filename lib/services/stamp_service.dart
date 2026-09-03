@@ -13,18 +13,22 @@ class StampFolder {
   StampFolder({required this.id, required this.name, this.isFavorite = false});
 
   StampFolder copyWith({String? name, bool? isFavorite}) => StampFolder(
-        id: id,
-        name: name ?? this.name,
-        isFavorite: isFavorite ?? this.isFavorite,
-      );
+    id: id,
+    name: name ?? this.name,
+    isFavorite: isFavorite ?? this.isFavorite,
+  );
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'isFavorite': isFavorite};
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'isFavorite': isFavorite,
+  };
 
   factory StampFolder.fromJson(Map<String, dynamic> j) => StampFolder(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+  );
 }
 
 /// スタンプ管理サービス。SharedPreferencesへ永続化する
@@ -46,14 +50,14 @@ class StampService extends ChangeNotifier {
   Stamp? get currentStamp => _currentStamp;
 
   static List<Stamp> _defaultStamps() => [
-        const Stamp(id: 'Stamp0001', name: '三角形'),
-        const Stamp(id: 'Stamp0002', name: '五角形'),
-        const Stamp(id: 'Stamp0003', name: '六角形'),
-        const Stamp(id: 'Stamp0004', name: '星'),
-        const Stamp(id: 'Stamp0005', name: 'ハート'),
-        const Stamp(id: 'Stamp0006', name: '吹き出し'),
-        const Stamp(id: 'Stamp0007', name: '矢印'),
-      ];
+    const Stamp(id: 'Stamp0001', name: '三角形'),
+    const Stamp(id: 'Stamp0002', name: '五角形'),
+    const Stamp(id: 'Stamp0003', name: '六角形'),
+    const Stamp(id: 'Stamp0004', name: '星'),
+    const Stamp(id: 'Stamp0005', name: 'ハート'),
+    const Stamp(id: 'Stamp0006', name: '吹き出し'),
+    const Stamp(id: 'Stamp0007', name: '矢印'),
+  ];
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -63,25 +67,36 @@ class StampService extends ChangeNotifier {
       _stamps.addAll(_defaultStamps());
       await _persist();
     } else {
-      _stamps.addAll(raw.map((s) => Stamp.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      _stamps.addAll(
+        raw.map((s) => Stamp.fromJson(jsonDecode(s) as Map<String, dynamic>)),
+      );
     }
     final foldersRaw = prefs.getStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
       _folders.addAll(
-          foldersRaw.map((s) => StampFolder.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+        foldersRaw.map(
+          (s) => StampFolder.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
     }
     _currentStamp = _stamps.firstOrNull;
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _stamps.map((s) => jsonEncode(s.toJson())).toList());
+    await prefs.setStringList(
+      _prefsKey,
+      _stamps.map((s) => jsonEncode(s.toJson())).toList(),
+    );
   }
 
   Future<void> _persistFolders() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_foldersKey, _folders.map((f) => jsonEncode(f.toJson())).toList());
+    await prefs.setStringList(
+      _foldersKey,
+      _folders.map((f) => jsonEncode(f.toJson())).toList(),
+    );
   }
 
   void selectStamp(String id) {
@@ -92,7 +107,9 @@ class StampService extends ChangeNotifier {
   void toggleFavorite(String id) {
     final idx = _stamps.indexWhere((s) => s.id == id);
     if (idx >= 0) {
-      _stamps[idx] = _stamps[idx].copyWith(isFavorite: !_stamps[idx].isFavorite);
+      _stamps[idx] = _stamps[idx].copyWith(
+        isFavorite: !_stamps[idx].isFavorite,
+      );
       notifyListeners();
       _persist();
     }
@@ -101,7 +118,9 @@ class StampService extends ChangeNotifier {
   // プリインストールされている初期実装スタンプ（_defaultStamps()の7件）は
   // 編集・削除の対象外とする（複製したものは別IDになるため、複製後の
   // 編集・削除は可能）。
-  static final Set<String> _builtInIds = _defaultStamps().map((s) => s.id).toSet();
+  static final Set<String> _builtInIds = _defaultStamps()
+      .map((s) => s.id)
+      .toSet();
 
   bool isBuiltIn(String id) => _builtInIds.contains(id);
 
@@ -149,7 +168,9 @@ class StampService extends ChangeNotifier {
   void duplicateStamp(String id) {
     final stamp = _stamps.firstWhere((s) => s.id == id);
     final newId = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
-    _stamps.add(stamp.copyWith(id: newId, name: '${stamp.name} (コピー)', isFavorite: false));
+    _stamps.add(
+      stamp.copyWith(id: newId, name: '${stamp.name} (コピー)', isFavorite: false),
+    );
     notifyListeners();
     _persist();
   }
@@ -157,8 +178,10 @@ class StampService extends ChangeNotifier {
   // ─── フォルダ管理 ─────────────────────────────────────────
 
   Future<StampFolder> createFolder(String name) async {
-    final folder =
-        StampFolder(id: 'StampFolder${DateTime.now().millisecondsSinceEpoch}', name: name);
+    final folder = StampFolder(
+      id: 'StampFolder${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
+    );
     _folders.add(folder);
     notifyListeners();
     await _persistFolders();
@@ -176,7 +199,9 @@ class StampService extends ChangeNotifier {
   void toggleFolderFavorite(String id) {
     final idx = _folders.indexWhere((f) => f.id == id);
     if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(isFavorite: !_folders[idx].isFavorite);
+    _folders[idx] = _folders[idx].copyWith(
+      isFavorite: !_folders[idx].isFavorite,
+    );
     notifyListeners();
     _persistFolders();
   }
@@ -245,7 +270,8 @@ class StampService extends ChangeNotifier {
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(
-        ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(stamp.toJson()))));
+      ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(stamp.toJson()))),
+    );
     final imagePath = stamp.imagePath;
     if (imagePath != null && File(imagePath).existsSync()) {
       final bytes = await File(imagePath).readAsBytes();
@@ -261,10 +287,14 @@ class StampService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     final imported = Stamp.fromJson(json);
     final id = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
-    final imageFile = archive.files.where((f) => f.name.startsWith('image.')).firstOrNull;
+    final imageFile = archive.files
+        .where((f) => f.name.startsWith('image.'))
+        .firstOrNull;
     String? newImagePath;
     if (imageFile != null) {
       final ext = imageFile.name.split('.').last;

@@ -80,10 +80,11 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
         ),
         child: CustomPaint(
           painter: _PressureCurvePainter(
-              points: widget.points,
-              color: scheme.primary,
-              handleOutlineColor: scheme.surfaceContainerHighest,
-              gridColor: scheme.outlineVariant),
+            points: widget.points,
+            color: scheme.primary,
+            handleOutlineColor: scheme.surfaceContainerHighest,
+            gridColor: scheme.outlineVariant,
+          ),
         ),
       ),
     );
@@ -109,8 +110,16 @@ class _PressureCurvePainter extends CustomPainter {
       ..strokeWidth = 1;
     for (int i = 1; i < 4; i++) {
       final t = i / 4;
-      canvas.drawLine(Offset(size.width * t, 0), Offset(size.width * t, size.height), gridPaint);
-      canvas.drawLine(Offset(0, size.height * t), Offset(size.width, size.height * t), gridPaint);
+      canvas.drawLine(
+        Offset(size.width * t, 0),
+        Offset(size.width * t, size.height),
+        gridPaint,
+      );
+      canvas.drawLine(
+        Offset(0, size.height * t),
+        Offset(size.width, size.height * t),
+        gridPaint,
+      );
     }
     // 傾き1の参考対角線（筆圧をそのまま反映する基準線）
     canvas.drawLine(
@@ -124,7 +133,10 @@ class _PressureCurvePainter extends CustomPainter {
     final sorted = [...points]..sort((a, b) => a.$1.compareTo(b.$1));
     final path = Path();
     for (int i = 0; i < sorted.length; i++) {
-      final p = Offset(sorted[i].$1 * size.width, (1 - sorted[i].$2) * size.height);
+      final p = Offset(
+        sorted[i].$1 * size.width,
+        (1 - sorted[i].$2) * size.height,
+      );
       if (i == 0) {
         path.moveTo(p.dx, p.dy);
       } else {

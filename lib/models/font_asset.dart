@@ -28,33 +28,37 @@ class FontAsset {
 
   String get extension => fileName.split('.').last.toUpperCase();
 
-  FontAsset copyWith({String? displayName, bool? isFavorite, bool? pixelMode}) => FontAsset(
-        id: id,
-        displayName: displayName ?? this.displayName,
-        fileName: fileName,
-        sizeBytes: sizeBytes,
-        addedAt: addedAt,
-        isFavorite: isFavorite ?? this.isFavorite,
-        pixelMode: pixelMode ?? this.pixelMode,
-      );
+  FontAsset copyWith({
+    String? displayName,
+    bool? isFavorite,
+    bool? pixelMode,
+  }) => FontAsset(
+    id: id,
+    displayName: displayName ?? this.displayName,
+    fileName: fileName,
+    sizeBytes: sizeBytes,
+    addedAt: addedAt,
+    isFavorite: isFavorite ?? this.isFavorite,
+    pixelMode: pixelMode ?? this.pixelMode,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'displayName': displayName,
-        'fileName': fileName,
-        'sizeBytes': sizeBytes,
-        'addedAt': addedAt.toIso8601String(),
-        'isFavorite': isFavorite,
-        'pixelMode': pixelMode,
-      };
+    'id': id,
+    'displayName': displayName,
+    'fileName': fileName,
+    'sizeBytes': sizeBytes,
+    'addedAt': addedAt.toIso8601String(),
+    'isFavorite': isFavorite,
+    'pixelMode': pixelMode,
+  };
 
   factory FontAsset.fromJson(Map<String, dynamic> j) => FontAsset(
-        id: j['id'] as String,
-        displayName: j['displayName'] as String,
-        fileName: j['fileName'] as String,
-        sizeBytes: j['sizeBytes'] as int,
-        addedAt: DateTime.parse(j['addedAt'] as String),
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        pixelMode: j['pixelMode'] as bool? ?? false,
-      );
+    id: j['id'] as String,
+    displayName: j['displayName'] as String,
+    fileName: j['fileName'] as String,
+    sizeBytes: j['sizeBytes'] as int,
+    addedAt: DateTime.parse(j['addedAt'] as String),
+    isFavorite: j['isFavorite'] as bool? ?? false,
+    pixelMode: j['pixelMode'] as bool? ?? false,
+  );
 }

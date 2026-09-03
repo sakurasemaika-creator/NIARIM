@@ -22,7 +22,12 @@ void main() {
     final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     final bytes = data!.buffer.asUint8List();
     final idx = (y * width + x) * 4;
-    return ui.Color.fromARGB(bytes[idx + 3], bytes[idx], bytes[idx + 1], bytes[idx + 2]);
+    return ui.Color.fromARGB(
+      bytes[idx + 3],
+      bytes[idx],
+      bytes[idx + 1],
+      bytes[idx + 2],
+    );
   }
 
   test('duplicateLayerは複製元のピクセル内容を正しく引き継ぐ', () async {

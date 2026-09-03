@@ -57,7 +57,11 @@ void main() {
   test('importPaletteJsonはexportPaletteと同じJSON形式から復元できる（Task#142）', () async {
     final service = PixelArtPaletteService();
     await service.init();
-    final json = jsonEncode({'id': 'x', 'name': 'QR共有パレット', 'colors': [0xFF000000, 0xFFFFFFFF]});
+    final json = jsonEncode({
+      'id': 'x',
+      'name': 'QR共有パレット',
+      'colors': [0xFF000000, 0xFFFFFFFF],
+    });
 
     final imported = await service.importPaletteJson(json);
 

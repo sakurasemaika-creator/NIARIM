@@ -469,7 +469,7 @@ class ToolbarWidget extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 7,
                                     fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                                    fontFamilyFallback: kHeadingFontFallback,
                                   ),
                                   textAlign: TextAlign.center,
                                   maxLines: 2,
@@ -493,7 +493,7 @@ class ToolbarWidget extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 13,
                             fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                            fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
                         childrenPadding: const EdgeInsets.fromLTRB(

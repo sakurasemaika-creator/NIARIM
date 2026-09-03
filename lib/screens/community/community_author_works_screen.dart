@@ -37,12 +37,16 @@ class CommunityAuthorWorksScreen extends StatefulWidget {
   });
 
   @override
-  State<CommunityAuthorWorksScreen> createState() => _CommunityAuthorWorksScreenState();
+  State<CommunityAuthorWorksScreen> createState() =>
+      _CommunityAuthorWorksScreenState();
 }
 
 class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 2, vsync: this);
+  late final TabController _tabController = TabController(
+    length: 2,
+    vsync: this,
+  );
   // 「総合」「縦画面のみ」「横画面のみ」の絞り込み（「作品」タブが対象。
   // ブックマーク一覧は本来の投稿順ではないため、ショートモード同様に
   // 対象外とする）。
@@ -69,7 +73,8 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
         builder: (_) => CommunityShortsScreen(
           works: target,
           bookmarkedIds: bookmarkedIds,
-          onToggleBookmark: (w) => context.read<CommunityService>().toggleBookmark(w.id),
+          onToggleBookmark: (w) =>
+              context.read<CommunityService>().toggleBookmark(w.id),
         ),
       ),
     );
@@ -79,8 +84,12 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   /// 本人選択制公開）。呼び出し元で公開可否を確認してから呼ぶこと。
   /// [footerNote]は、フォロワー一覧で本人非公開設定のため除外した人数が
   /// あるときの補足表示に使う（22.7節）。
-  void _showNameListDialog(String title, String emptyMessage, List<String> names,
-      {String? footerNote}) {
+  void _showNameListDialog(
+    String title,
+    String emptyMessage,
+    List<String> names, {
+    String? footerNote,
+  }) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -94,15 +103,23 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 child: names.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(16),
-                        child: Text(emptyMessage,
-                            style: TextStyle(color: Theme.of(dialogContext).colorScheme.onSurfaceVariant)),
+                        child: Text(
+                          emptyMessage,
+                          style: TextStyle(
+                            color: Theme.of(
+                              dialogContext,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       )
                     : ListView.builder(
                         shrinkWrap: true,
                         itemCount: names.length,
                         itemBuilder: (_, i) => ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
+                            backgroundColor: Theme.of(
+                              dialogContext,
+                            ).colorScheme.primaryContainer,
                             child: Text(names[i].substring(0, 1)),
                           ),
                           title: Text(names[i]),
@@ -112,8 +129,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               if (footerNote != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Text(footerNote,
-                      style: TextStyle(fontSize: 12, color: Theme.of(dialogContext).colorScheme.onSurfaceVariant)),
+                  child: Text(
+                    footerNote,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(
+                        dialogContext,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -135,7 +159,10 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final communityService = context.watch<CommunityService>();
     final isSelf = widget.authorId == kDummySelfAuthorId;
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
-    final works = communityService.worksByAuthor(widget.authorId, includeHidden: isSelf);
+    final works = communityService.worksByAuthor(
+      widget.authorId,
+      includeHidden: isSelf,
+    );
     // 「作品」タブの一覧・縦画面モードにのみ「総合/縦画面のみ/横画面のみ」
     // 絞り込みを適用する。投稿数の表示（works.length）は絞り込みの影響を
     // 受けない総数のままにする。
@@ -153,8 +180,10 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
         ? communityService.bookmarkedWorksOf(widget.authorId)
         : const <CommunityWork>[];
 
-    void toggleBookmark(CommunityWork work) => communityService.toggleBookmark(work.id);
-    void openWork(CommunityWork work) => context.read<CommunityPreviewService>().show(work);
+    void toggleBookmark(CommunityWork work) =>
+        communityService.toggleBookmark(work.id);
+    void openWork(CommunityWork work) =>
+        context.read<CommunityPreviewService>().show(work);
 
     return Scaffold(
       appBar: AppBar(
@@ -193,25 +222,41 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: scheme.primaryContainer,
-                    child: Text(widget.authorName.substring(0, 1),
-                        style: TextStyle(fontSize: 18, color: scheme.onPrimaryContainer)),
+                    child: Text(
+                      widget.authorName.substring(0, 1),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.authorName,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                        Text(
+                          widget.authorName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Wrap(
                           spacing: 8,
                           runSpacing: 2,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Text(l10n.communityAuthorWorksCount(works.length),
-                                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                            Text(
+                              l10n.communityAuthorWorksCount(works.length),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
                             // フォロー中／フォロワー一覧（誰が誰をフォローして
                             // いるか）は本人選択制の公開設定に従う。数字自体は
                             // 特定個人を識別できずUGCリスクが小さいため常に
@@ -219,19 +264,28 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                             // 設定にした場合のみ（29_動画投稿・ランキング機能
                             // 仕様.md 22.4節・22.5節）。
                             InkWell(
-                              key: const Key('communityAuthorFollowingCountTap'),
+                              key: const Key(
+                                'communityAuthorFollowingCountTap',
+                              ),
                               onTap: canViewFollowerList
                                   ? () => _showNameListDialog(
                                       l10n.communityFollowingListTitle,
                                       l10n.communityFollowingListEmpty,
-                                      communityService.followingNamesOf(widget.authorId))
+                                      communityService.followingNamesOf(
+                                        widget.authorId,
+                                      ),
+                                    )
                                   : null,
                               child: Text(
-                                l10n.communityAuthorFollowingCount(followingCount),
+                                l10n.communityAuthorFollowingCount(
+                                  followingCount,
+                                ),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: scheme.onSurfaceVariant,
-                                  decoration: canViewFollowerList ? TextDecoration.underline : null,
+                                  decoration: canViewFollowerList
+                                      ? TextDecoration.underline
+                                      : null,
                                 ),
                               ),
                             ),
@@ -244,25 +298,34 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                       // authorId側が公開設定でもその人物
                                       // だけは表示しない（Task#134継続：
                                       // 22.7節）。
-                                      final visibleNames =
-                                          communityService.visibleFollowerNamesOf(widget.authorId);
-                                      final hiddenCount = followerCount - visibleNames.length;
+                                      final visibleNames = communityService
+                                          .visibleFollowerNamesOf(
+                                            widget.authorId,
+                                          );
+                                      final hiddenCount =
+                                          followerCount - visibleNames.length;
                                       _showNameListDialog(
                                         l10n.communityFollowersListTitle,
                                         l10n.communityFollowersListEmpty,
                                         visibleNames,
                                         footerNote: hiddenCount > 0
-                                            ? l10n.communityFollowersListHiddenNote(hiddenCount)
+                                            ? l10n.communityFollowersListHiddenNote(
+                                                hiddenCount,
+                                              )
                                             : null,
                                       );
                                     }
                                   : null,
                               child: Text(
-                                l10n.communityAuthorFollowerCount(followerCount),
+                                l10n.communityAuthorFollowerCount(
+                                  followerCount,
+                                ),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: scheme.onSurfaceVariant,
-                                  decoration: canViewFollowerList ? TextDecoration.underline : null,
+                                  decoration: canViewFollowerList
+                                      ? TextDecoration.underline
+                                      : null,
                                 ),
                               ),
                             ),
@@ -275,13 +338,24 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                   // （Task#144：お気に入り作者機能）。
                   if (!isSelf)
                     OutlinedButton.icon(
-                      onPressed: () => communityService.toggleFavoriteAuthor(widget.authorId),
-                      icon: Icon(isFavorite ? Icons.person_remove_alt_1 : Icons.person_add_alt_1, size: 18),
-                      label: Text(isFavorite
-                          ? l10n.communityFavoriteAuthorFollowing
-                          : l10n.communityFavoriteAuthorFollow),
+                      onPressed: () => communityService.toggleFavoriteAuthor(
+                        widget.authorId,
+                      ),
+                      icon: Icon(
+                        isFavorite
+                            ? Icons.person_remove_alt_1
+                            : Icons.person_add_alt_1,
+                        size: 18,
+                      ),
+                      label: Text(
+                        isFavorite
+                            ? l10n.communityFavoriteAuthorFollowing
+                            : l10n.communityFavoriteAuthorFollow,
+                      ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: isFavorite ? scheme.onSurfaceVariant : scheme.primary,
+                        foregroundColor: isFavorite
+                            ? scheme.onSurfaceVariant
+                            : scheme.primary,
                       ),
                     ),
                 ],
@@ -309,8 +383,12 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         ? Padding(
                             padding: const EdgeInsets.all(32),
                             child: Center(
-                              child: Text(l10n.communityNoWorksMessage,
-                                  style: TextStyle(color: scheme.onSurfaceVariant)),
+                              child: Text(
+                                l10n.communityNoWorksMessage,
+                                style: TextStyle(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           )
                         : CommunityWorkGrid(
@@ -330,9 +408,11 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                             child: _PublicVisibilityToggle(
                               value: communityService.selfBookmarksPublic,
-                              onChanged: communityService.setSelfBookmarksPublic,
+                              onChanged:
+                                  communityService.setSelfBookmarksPublic,
                               title: l10n.communityBookmarksPublicToggleTitle,
-                              description: l10n.communityBookmarksPublicToggleDesc,
+                              description:
+                                  l10n.communityBookmarksPublicToggleDesc,
                             ),
                           ),
                         if (!isSelf && !bookmarksPublic)
@@ -342,11 +422,19 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.lock_outline, size: 40, color: scheme.onSurfaceVariant),
+                                  Icon(
+                                    Icons.lock_outline,
+                                    size: 40,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
                                   const SizedBox(height: 12),
-                                  Text(l10n.communityBookmarksPrivateNotice,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: scheme.onSurfaceVariant)),
+                                  Text(
+                                    l10n.communityBookmarksPrivateNotice,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -355,8 +443,12 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                           Padding(
                             padding: const EdgeInsets.all(32),
                             child: Center(
-                              child: Text(l10n.communityBookmarksEmptyMessage,
-                                  style: TextStyle(color: scheme.onSurfaceVariant)),
+                              child: Text(
+                                l10n.communityBookmarksEmptyMessage,
+                                style: TextStyle(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           )
                         else
@@ -413,18 +505,32 @@ class _PublicVisibilityToggle extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(value ? Icons.public : Icons.lock_outline,
-                  color: value ? scheme.primary : scheme.onSurfaceVariant),
+              Icon(
+                value ? Icons.public : Icons.lock_outline,
+                color: value ? scheme.primary : scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(description, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               ),

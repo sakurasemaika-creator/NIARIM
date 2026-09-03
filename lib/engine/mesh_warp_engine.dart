@@ -21,10 +21,12 @@ class MeshWarpEngine {
     final points = <ui.Offset>[];
     for (int r = 0; r <= rows; r++) {
       for (int c = 0; c <= cols; c++) {
-        points.add(ui.Offset(
-          bounds.left + bounds.width * c / cols,
-          bounds.top + bounds.height * r / rows,
-        ));
+        points.add(
+          ui.Offset(
+            bounds.left + bounds.width * c / cols,
+            bounds.top + bounds.height * r / rows,
+          ),
+        );
       }
     }
     return points;
@@ -45,7 +47,8 @@ class MeshWarpEngine {
     final srcH = image.height.toDouble();
 
     int idxAt(int r, int c) => r * (cols + 1) + c;
-    ui.Offset srcPointAt(int r, int c) => ui.Offset(srcW * c / cols, srcH * r / rows);
+    ui.Offset srcPointAt(int r, int c) =>
+        ui.Offset(srcW * c / cols, srcH * r / rows);
 
     final positions = Float32List((rows + 1) * (cols + 1) * 2);
     final texCoords = Float32List((rows + 1) * (cols + 1) * 2);
@@ -90,10 +93,22 @@ class MeshWarpEngine {
   /// 単位行列（[ui.ImageShader]のmatrix4引数に渡す、テクスチャ座標を
   /// そのまま画像ピクセル座標として使うための恒等変換）。
   static final Float64List identityMatrix4 = Float64List.fromList(const [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
   ]);
 
   /// [image]を、規則的な格子（[regularGrid]相当）から[controlPoints]へ
@@ -108,13 +123,21 @@ class MeshWarpEngine {
     required int outputHeight,
   }) async {
     final vertices = buildVertices(
-      image: image, rows: rows, cols: cols, controlPoints: controlPoints);
+      image: image,
+      rows: rows,
+      cols: cols,
+      controlPoints: controlPoints,
+    );
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     final paint = ui.Paint()
       ..shader = ui.ImageShader(
-          image, ui.TileMode.clamp, ui.TileMode.clamp, identityMatrix4,
-          filterQuality: ui.FilterQuality.low);
+        image,
+        ui.TileMode.clamp,
+        ui.TileMode.clamp,
+        identityMatrix4,
+        filterQuality: ui.FilterQuality.low,
+      );
     canvas.drawVertices(vertices, ui.BlendMode.srcOver, paint);
     final picture = recorder.endRecording();
     final result = await picture.toImage(outputWidth, outputHeight);

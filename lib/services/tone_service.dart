@@ -13,18 +13,22 @@ class ToneFolder {
   ToneFolder({required this.id, required this.name, this.isFavorite = false});
 
   ToneFolder copyWith({String? name, bool? isFavorite}) => ToneFolder(
-        id: id,
-        name: name ?? this.name,
-        isFavorite: isFavorite ?? this.isFavorite,
-      );
+    id: id,
+    name: name ?? this.name,
+    isFavorite: isFavorite ?? this.isFavorite,
+  );
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'isFavorite': isFavorite};
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'isFavorite': isFavorite,
+  };
 
   factory ToneFolder.fromJson(Map<String, dynamic> j) => ToneFolder(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+  );
 }
 
 /// トーン管理サービス。SharedPreferencesへ永続化する
@@ -67,53 +71,53 @@ class ToneService extends ChangeNotifier {
   }
 
   static List<Tone> _defaultTones() => [
-        const Tone(id: 'Tone0001', name: '網点 10%'),
-        const Tone(id: 'Tone0002', name: '網点 30%'),
-        const Tone(id: 'Tone0003', name: '網点 50%'),
-        const Tone(id: 'Tone0004', name: '網点 70%'),
-        const Tone(id: 'Tone0005', name: 'ライン 細'),
-        const Tone(id: 'Tone0006', name: 'ライン 太'),
-        // ピクセルモード用トーン（1ピクセルごとに市松模様／格子柄／散らし
-        // 配置になっているトーン）。procedural_texture.dartの
-        // generateBuiltInToneTextureが名前に「市松」「格子」「散らし」を
-        // 含むかで判定する。「散らし」は格子（縦横の線がつながって網目状）
-        // とは逆に、1ピクセルずつ上下左右を1px空けて独立させたもの。
-        // 「ドット」という表記は丸い水玉模様と誤認されるため使わず、
-        // 四角い1ピクセル単位のパターンには「ピクセル」を使う
-        // （brush.dartのpixelMode改称と同じ理由・同じ命名規則）。
-        const Tone(id: 'Tone0007', name: 'ピクセル市松（1px）'),
-        const Tone(id: 'Tone0008', name: 'ピクセル格子（1px）'),
-        const Tone(id: 'Tone0009', name: 'ピクセル散らし（1px）'),
-        // ストッキング・タイツ：デニール数が低いほど生地が薄く目が細かい
-        // ため、パターンの格子間隔を詰めて再現する（procedural_texture.dartの
-        // generateBuiltInToneTextureが名前の「デニール」数値を読み取って
-        // 密度を決める）。デニール数が最も低いものは格子間隔を最小にし、
-        // 意図的に細かすぎてモアレが出るくらいの密度にしている。
-        const Tone(id: 'Tone0010', name: 'ストッキング 10デニール'),
-        const Tone(id: 'Tone0011', name: 'ストッキング 20デニール'),
-        const Tone(id: 'Tone0012', name: 'ストッキング 30デニール'),
-        const Tone(id: 'Tone0013', name: 'タイツ 40デニール'),
-        const Tone(id: 'Tone0014', name: 'タイツ 60デニール'),
-        const Tone(id: 'Tone0015', name: 'タイツ 80デニール'),
-        // ディザリングプリセット：Bayerオーダードディザ行列による、ドット絵・
-        // レトロゲーム風の規則的な階調表現（procedural_texture.dartの
-        // generateBuiltInToneTextureが名前の「ピクセルディザ」と「%」数値・
-        // 「(粗)」の有無で判定する）。網点（円が段々大きくなる連続的な
-        // 階調表現）とは異なり、行列内の固定パターンで塗るか塗らないかを
-        // 決めるため、ピクセルモードでの塗り分けに向く。4×4行列（16段階の
-        // うち代表的な7段階）と、より粗く単位が大きい2×2行列（4段階の
-        // うち代表的な3段階）の2系統を用意する。
-        const Tone(id: 'Tone0016', name: 'ピクセルディザ 12%（4×4）'),
-        const Tone(id: 'Tone0017', name: 'ピクセルディザ 25%（4×4）'),
-        const Tone(id: 'Tone0018', name: 'ピクセルディザ 37%（4×4）'),
-        const Tone(id: 'Tone0019', name: 'ピクセルディザ 50%（4×4）'),
-        const Tone(id: 'Tone0020', name: 'ピクセルディザ 62%（4×4）'),
-        const Tone(id: 'Tone0021', name: 'ピクセルディザ 75%（4×4）'),
-        const Tone(id: 'Tone0022', name: 'ピクセルディザ 87%（4×4）'),
-        const Tone(id: 'Tone0023', name: 'ピクセルディザ(粗) 25%（2×2）'),
-        const Tone(id: 'Tone0024', name: 'ピクセルディザ(粗) 50%（2×2）'),
-        const Tone(id: 'Tone0025', name: 'ピクセルディザ(粗) 75%（2×2）'),
-      ];
+    const Tone(id: 'Tone0001', name: '網点 10%'),
+    const Tone(id: 'Tone0002', name: '網点 30%'),
+    const Tone(id: 'Tone0003', name: '網点 50%'),
+    const Tone(id: 'Tone0004', name: '網点 70%'),
+    const Tone(id: 'Tone0005', name: 'ライン 細'),
+    const Tone(id: 'Tone0006', name: 'ライン 太'),
+    // ピクセルモード用トーン（1ピクセルごとに市松模様／格子柄／散らし
+    // 配置になっているトーン）。procedural_texture.dartの
+    // generateBuiltInToneTextureが名前に「市松」「格子」「散らし」を
+    // 含むかで判定する。「散らし」は格子（縦横の線がつながって網目状）
+    // とは逆に、1ピクセルずつ上下左右を1px空けて独立させたもの。
+    // 「ドット」という表記は丸い水玉模様と誤認されるため使わず、
+    // 四角い1ピクセル単位のパターンには「ピクセル」を使う
+    // （brush.dartのpixelMode改称と同じ理由・同じ命名規則）。
+    const Tone(id: 'Tone0007', name: 'ピクセル市松（1px）'),
+    const Tone(id: 'Tone0008', name: 'ピクセル格子（1px）'),
+    const Tone(id: 'Tone0009', name: 'ピクセル散らし（1px）'),
+    // ストッキング・タイツ：デニール数が低いほど生地が薄く目が細かい
+    // ため、パターンの格子間隔を詰めて再現する（procedural_texture.dartの
+    // generateBuiltInToneTextureが名前の「デニール」数値を読み取って
+    // 密度を決める）。デニール数が最も低いものは格子間隔を最小にし、
+    // 意図的に細かすぎてモアレが出るくらいの密度にしている。
+    const Tone(id: 'Tone0010', name: 'ストッキング 10デニール'),
+    const Tone(id: 'Tone0011', name: 'ストッキング 20デニール'),
+    const Tone(id: 'Tone0012', name: 'ストッキング 30デニール'),
+    const Tone(id: 'Tone0013', name: 'タイツ 40デニール'),
+    const Tone(id: 'Tone0014', name: 'タイツ 60デニール'),
+    const Tone(id: 'Tone0015', name: 'タイツ 80デニール'),
+    // ディザリングプリセット：Bayerオーダードディザ行列による、ドット絵・
+    // レトロゲーム風の規則的な階調表現（procedural_texture.dartの
+    // generateBuiltInToneTextureが名前の「ピクセルディザ」と「%」数値・
+    // 「(粗)」の有無で判定する）。網点（円が段々大きくなる連続的な
+    // 階調表現）とは異なり、行列内の固定パターンで塗るか塗らないかを
+    // 決めるため、ピクセルモードでの塗り分けに向く。4×4行列（16段階の
+    // うち代表的な7段階）と、より粗く単位が大きい2×2行列（4段階の
+    // うち代表的な3段階）の2系統を用意する。
+    const Tone(id: 'Tone0016', name: 'ピクセルディザ 12%（4×4）'),
+    const Tone(id: 'Tone0017', name: 'ピクセルディザ 25%（4×4）'),
+    const Tone(id: 'Tone0018', name: 'ピクセルディザ 37%（4×4）'),
+    const Tone(id: 'Tone0019', name: 'ピクセルディザ 50%（4×4）'),
+    const Tone(id: 'Tone0020', name: 'ピクセルディザ 62%（4×4）'),
+    const Tone(id: 'Tone0021', name: 'ピクセルディザ 75%（4×4）'),
+    const Tone(id: 'Tone0022', name: 'ピクセルディザ 87%（4×4）'),
+    const Tone(id: 'Tone0023', name: 'ピクセルディザ(粗) 25%（2×2）'),
+    const Tone(id: 'Tone0024', name: 'ピクセルディザ(粗) 50%（2×2）'),
+    const Tone(id: 'Tone0025', name: 'ピクセルディザ(粗) 75%（2×2）'),
+  ];
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -123,7 +127,9 @@ class ToneService extends ChangeNotifier {
       _tones.addAll(_defaultTones());
       await _persist();
     } else {
-      _tones.addAll(raw.map((s) => Tone.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      _tones.addAll(
+        raw.map((s) => Tone.fromJson(jsonDecode(s) as Map<String, dynamic>)),
+      );
       // 既存ユーザーにも新規追加した初期トーン（ピクセルモード2種）を
       // 反映する（既に同名IDのトーンが存在する場合は追加しない）。
       final existingIds = _tones.map((t) => t.id).toSet();
@@ -139,7 +145,9 @@ class ToneService extends ChangeNotifier {
       final defaults = {for (final t in _defaultTones()) t.id: t};
       for (int i = 0; i < _tones.length; i++) {
         final fresh = defaults[_tones[i].id];
-        if (fresh != null && _tones[i].name != fresh.name && _tones[i].name.contains('ドット')) {
+        if (fresh != null &&
+            _tones[i].name != fresh.name &&
+            _tones[i].name.contains('ドット')) {
           _tones[i] = _tones[i].copyWith(name: fresh.name);
           changed = true;
         }
@@ -150,19 +158,28 @@ class ToneService extends ChangeNotifier {
     _folders.clear();
     if (foldersRaw != null) {
       _folders.addAll(
-          foldersRaw.map((s) => ToneFolder.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+        foldersRaw.map(
+          (s) => ToneFolder.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
     }
     _currentTone = _tones.firstOrNull;
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _tones.map((t) => jsonEncode(t.toJson())).toList());
+    await prefs.setStringList(
+      _prefsKey,
+      _tones.map((t) => jsonEncode(t.toJson())).toList(),
+    );
   }
 
   Future<void> _persistFolders() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_foldersKey, _folders.map((f) => jsonEncode(f.toJson())).toList());
+    await prefs.setStringList(
+      _foldersKey,
+      _folders.map((f) => jsonEncode(f.toJson())).toList(),
+    );
   }
 
   void selectTone(String id) {
@@ -192,7 +209,9 @@ class ToneService extends ChangeNotifier {
   // プリインストールされている初期実装トーン（_defaultTones()の9件）は
   // 編集・削除の対象外とする（複製したものは別IDになるため、複製後の
   // 編集・削除は可能）。
-  static final Set<String> _builtInIds = _defaultTones().map((t) => t.id).toSet();
+  static final Set<String> _builtInIds = _defaultTones()
+      .map((t) => t.id)
+      .toSet();
 
   bool isBuiltIn(String id) => _builtInIds.contains(id);
 
@@ -240,7 +259,9 @@ class ToneService extends ChangeNotifier {
   void duplicateTone(String id) {
     final tone = _tones.firstWhere((t) => t.id == id);
     final newId = 'Tone${DateTime.now().millisecondsSinceEpoch}';
-    _tones.add(tone.copyWith(id: newId, name: '${tone.name} (コピー)', isFavorite: false));
+    _tones.add(
+      tone.copyWith(id: newId, name: '${tone.name} (コピー)', isFavorite: false),
+    );
     notifyListeners();
     _persist();
   }
@@ -248,7 +269,10 @@ class ToneService extends ChangeNotifier {
   // ─── フォルダ管理 ─────────────────────────────────────────
 
   Future<ToneFolder> createFolder(String name) async {
-    final folder = ToneFolder(id: 'ToneFolder${DateTime.now().millisecondsSinceEpoch}', name: name);
+    final folder = ToneFolder(
+      id: 'ToneFolder${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
+    );
     _folders.add(folder);
     notifyListeners();
     await _persistFolders();
@@ -266,7 +290,9 @@ class ToneService extends ChangeNotifier {
   void toggleFolderFavorite(String id) {
     final idx = _folders.indexWhere((f) => f.id == id);
     if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(isFavorite: !_folders[idx].isFavorite);
+    _folders[idx] = _folders[idx].copyWith(
+      isFavorite: !_folders[idx].isFavorite,
+    );
     notifyListeners();
     _persistFolders();
   }
@@ -335,7 +361,8 @@ class ToneService extends ChangeNotifier {
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(
-        ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(tone.toJson()))));
+      ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(tone.toJson()))),
+    );
     final texturePath = tone.texturePath;
     if (texturePath != null && File(texturePath).existsSync()) {
       final bytes = await File(texturePath).readAsBytes();
@@ -351,10 +378,14 @@ class ToneService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(utf8.decode(dataFile.content as List<int>)) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     final imported = Tone.fromJson(json);
     final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
-    final imageFile = archive.files.where((f) => f.name.startsWith('image.')).firstOrNull;
+    final imageFile = archive.files
+        .where((f) => f.name.startsWith('image.'))
+        .firstOrNull;
     String? newTexturePath;
     if (imageFile != null) {
       final ext = imageFile.name.split('.').last;

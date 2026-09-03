@@ -16,7 +16,11 @@ class DisposeOnUnmount extends StatefulWidget {
   final TextEditingController controller;
   final WidgetBuilder builder;
 
-  const DisposeOnUnmount({super.key, required this.controller, required this.builder});
+  const DisposeOnUnmount({
+    super.key,
+    required this.controller,
+    required this.builder,
+  });
 
   @override
   State<DisposeOnUnmount> createState() => _DisposeOnUnmountState();

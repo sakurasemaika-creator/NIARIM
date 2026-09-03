@@ -70,7 +70,8 @@ void main() {
       for (int x = 0; x < width; x++) {
         final idx = (y * width + x) * 4;
         final inside = mask[idx + 3] != 0;
-        final unchanged = result[idx] == data[idx] &&
+        final unchanged =
+            result[idx] == data[idx] &&
             result[idx + 1] == data[idx + 1] &&
             result[idx + 2] == data[idx + 2] &&
             result[idx + 3] == data[idx + 3];

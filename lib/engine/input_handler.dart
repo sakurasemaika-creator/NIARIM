@@ -26,13 +26,18 @@ class InputHandler {
 
   /// [pressureCurve]は筆圧カーブ（アプリ全体に適用）を掛けるための
   /// 変換関数。未指定の場合は生の筆圧値をそのまま使う。
-  StrokePoint toStrokePoint(PointerEvent event, {double Function(double)? pressureCurve}) {
+  StrokePoint toStrokePoint(
+    PointerEvent event, {
+    double Function(double)? pressureCurve,
+  }) {
     final type = _lastInputType; // classifyInput()は呼び出し元で既に実行済み
     final rawPressure = event.pressure.clamp(0.0, 1.0);
     return StrokePoint(
       x: event.localPosition.dx,
       y: event.localPosition.dy,
-      pressure: pressureCurve != null ? pressureCurve(rawPressure) : rawPressure,
+      pressure: pressureCurve != null
+          ? pressureCurve(rawPressure)
+          : rawPressure,
       tiltX: event.tilt * math.cos(event.orientation),
       tiltY: event.tilt * math.sin(event.orientation),
       inputType: type,
@@ -46,6 +51,7 @@ class InputHandler {
   bool shouldDraw(PointerEvent event, {required bool hasStylusSupport}) {
     // classifyInput()は呼び出し元で既に実行済みの前提で_lastInputTypeを参照
     if (!hasStylusSupport) return true;
-    return _lastInputType == InputType.stylus || _lastInputType == InputType.mouse;
+    return _lastInputType == InputType.stylus ||
+        _lastInputType == InputType.mouse;
   }
 }

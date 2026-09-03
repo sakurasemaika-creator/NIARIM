@@ -67,8 +67,10 @@ class ShortcutSettingsScreen extends StatelessWidget {
                             leading: _keyChip(context, b.comboLabel),
                             title: Text(
                               b.label,
-                              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+                              style: const TextStyle(
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline),
@@ -167,7 +169,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
             ),
@@ -175,8 +177,10 @@ class ShortcutSettingsScreen extends StatelessWidget {
             ListTile(
               title: Text(
                 l10n.shortcutActionTypeTool,
-                style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -187,8 +191,10 @@ class ShortcutSettingsScreen extends StatelessWidget {
             ListTile(
               title: Text(
                 l10n.shortcutActionTypeCommand,
-                style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {

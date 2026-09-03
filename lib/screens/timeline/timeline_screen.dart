@@ -1155,24 +1155,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 : ValueListenableBuilder<int>(
                     valueListenable: _currentFrameNotifier,
                     builder: (context, frameIndex, _) => _TimelinePreview(
-                    tileManager: ps.tileManagerOf(widget.projectId),
-                    layers: ps.layersOf(
-                      widget.projectId,
-                      sceneId,
-                      frameIndex,
-                    ),
-                    sceneId: sceneId,
-                    frameIndex: frameIndex,
-                    cameraKeyframes: ps.cameraKeyframesOf(
-                      widget.projectId,
-                      sceneId,
-                    ),
-                    effectFilters: ps.effectFiltersOf(
-                      widget.projectId,
-                      sceneId,
-                    ),
-                    layerHomes: ps.layerHomesOf(widget.projectId),
-                    groups: ps.layerGroupsOf(widget.projectId, sceneId),
+                      tileManager: ps.tileManagerOf(widget.projectId),
+                      layers: ps.layersOf(
+                        widget.projectId,
+                        sceneId,
+                        frameIndex,
+                      ),
+                      sceneId: sceneId,
+                      frameIndex: frameIndex,
+                      cameraKeyframes: ps.cameraKeyframesOf(
+                        widget.projectId,
+                        sceneId,
+                      ),
+                      effectFilters: ps.effectFiltersOf(
+                        widget.projectId,
+                        sceneId,
+                      ),
+                      layerHomes: ps.layerHomesOf(widget.projectId),
+                      groups: ps.layerGroupsOf(widget.projectId, sceneId),
                     ),
                   ),
           ),

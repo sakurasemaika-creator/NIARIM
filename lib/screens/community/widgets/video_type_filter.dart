@@ -18,10 +18,10 @@ extension VideoTypeFilterX on VideoTypeFilter {
   }
 
   String label(AppLocalizations l10n) => switch (this) {
-        VideoTypeFilter.all => l10n.communityVideoTypeFilterAll,
-        VideoTypeFilter.shortOnly => l10n.communityVideoTypeFilterShortOnly,
-        VideoTypeFilter.longOnly => l10n.communityVideoTypeFilterLongOnly,
-      };
+    VideoTypeFilter.all => l10n.communityVideoTypeFilterAll,
+    VideoTypeFilter.shortOnly => l10n.communityVideoTypeFilterShortOnly,
+    VideoTypeFilter.longOnly => l10n.communityVideoTypeFilterLongOnly,
+  };
 }
 
 /// 動画の種類（総合／縦画面のみ／横画面のみ）を切り替えるプルダウン。
@@ -30,7 +30,11 @@ class VideoTypeFilterButton extends StatelessWidget {
   final VideoTypeFilter value;
   final ValueChanged<VideoTypeFilter> onChanged;
 
-  const VideoTypeFilterButton({super.key, required this.value, required this.onChanged});
+  const VideoTypeFilterButton({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {

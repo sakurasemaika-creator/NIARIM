@@ -20,21 +20,45 @@ class QuickToolService extends ChangeNotifier {
     final raw = prefs.getStringList(_prefsKey);
     if (raw == null || raw.isEmpty) {
       _entries.addAll(const [
-        QuickToolEntry(id: 'qt1', label: 'Gペン 細', toolKey: 'pen', brushId: 'Brush0002', sizeOverride: 3),
-        QuickToolEntry(id: 'qt2', label: 'Gペン 太', toolKey: 'pen', brushId: 'Brush0002', sizeOverride: 8),
-        QuickToolEntry(id: 'qt3', label: 'エアブラシ', toolKey: 'pen', brushId: 'Brush0003'),
+        QuickToolEntry(
+          id: 'qt1',
+          label: 'Gペン 細',
+          toolKey: 'pen',
+          brushId: 'Brush0002',
+          sizeOverride: 3,
+        ),
+        QuickToolEntry(
+          id: 'qt2',
+          label: 'Gペン 太',
+          toolKey: 'pen',
+          brushId: 'Brush0002',
+          sizeOverride: 8,
+        ),
+        QuickToolEntry(
+          id: 'qt3',
+          label: 'エアブラシ',
+          toolKey: 'pen',
+          brushId: 'Brush0003',
+        ),
         QuickToolEntry(id: 'qt4', label: '消しゴム', toolKey: 'eraser'),
         QuickToolEntry(id: 'qt5', label: 'スポイト', toolKey: 'eyedropper'),
       ]);
       await _persist();
     } else {
-      _entries.addAll(raw.map((s) => QuickToolEntry.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      _entries.addAll(
+        raw.map(
+          (s) => QuickToolEntry.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
     }
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _entries.map((e) => jsonEncode(e.toJson())).toList());
+    await prefs.setStringList(
+      _prefsKey,
+      _entries.map((e) => jsonEncode(e.toJson())).toList(),
+    );
   }
 
   /// 次のツールへ進めて返す（登録が空の場合はnull）。

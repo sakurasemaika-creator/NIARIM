@@ -34,9 +34,9 @@ void main() {
     final dir = Directory.systemTemp.createTempSync('niarim_after_save');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (call) async => dir.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => dir.path,
+        );
   });
 
   /// 画面側の_generateThumbnailと同じ手順でサムネイルPNGを作る。
@@ -73,18 +73,21 @@ void main() {
   }
 
   for (final scale in [1.3]) {
-    testWidgets('保存後のセーブ画面が描画できる（文字$scale倍）',
-        (WidgetTester tester) async {
+    testWidgets('保存後のセーブ画面が描画できる（文字$scale倍）', (WidgetTester tester) async {
       final problems = <String>[];
       final original = FlutterError.onError;
       FlutterError.onError = (d) {
         final s = d.toString();
-        final loc =
-            RegExp(r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)').firstMatch(s);
-        final what = RegExp(r'(overflowed by [\d.]+ pixels on the \w+)')
-                .firstMatch(s)?.group(1) ??
-            s.split('\n').firstWhere((l) => l.contains('thrown'),
-                orElse: () => '?');
+        final loc = RegExp(
+          r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)',
+        ).firstMatch(s);
+        final what =
+            RegExp(
+              r'(overflowed by [\d.]+ pixels on the \w+)',
+            ).firstMatch(s)?.group(1) ??
+            s
+                .split('\n')
+                .firstWhere((l) => l.contains('thrown'), orElse: () => '?');
         problems.add('${loc?.group(1) ?? "?"}: $what');
       };
 
@@ -112,12 +115,14 @@ void main() {
       final ctx = tester.element(find.byType(Navigator).first);
       final ps = ctx.read<ProjectService>();
       final sts = ctx.read<SaveTreeService>();
-      final project = await tester.runAsync(() => ps.createProject(
-            name: '動作確認',
-            fps: 12,
-            durationSeconds: 10,
-            backgroundColor: 0xFFFFFFFF,
-          ));
+      final project = await tester.runAsync(
+        () => ps.createProject(
+          name: '動作確認',
+          fps: 12,
+          durationSeconds: 10,
+          backgroundColor: 0xFFFFFFFF,
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 300));
       final pid = project!.id;
 
@@ -139,8 +144,11 @@ void main() {
       expect(saved!.length, 1, reason: '保存できていない');
       final thumbPath = saved.first.thumbnailPath;
       expect(thumbPath, isNotNull, reason: 'サムネイルが作られていない');
-      expect(File(thumbPath!).lengthSync(), greaterThan(0),
-          reason: 'サムネイルが空ファイル');
+      expect(
+        File(thumbPath!).lengthSync(),
+        greaterThan(0),
+        reason: 'サムネイルが空ファイル',
+      );
 
       // 保存済みの状態でセーブ画面を描画する。
       problems.clear();
@@ -175,13 +183,19 @@ void main() {
       final countAfter = screenCount();
       FlutterError.onError = original;
 
-      expect(problems, isEmpty,
-          reason: '保存後の描画で問題:\n${problems.join("\n")}');
-      expect(countAfter, countBefore,
-          reason: 'ダイアログを閉じた後に画面の数が変化している'
-              '（Navigator.popが余分に呼ばれ、画面自体が剥がれた可能性）');
-      expect(find.byType(Scaffold), findsWidgets,
-          reason: '画面が1つも残っていない（何も表示されない状態）');
+      expect(problems, isEmpty, reason: '保存後の描画で問題:\n${problems.join("\n")}');
+      expect(
+        countAfter,
+        countBefore,
+        reason:
+            'ダイアログを閉じた後に画面の数が変化している'
+            '（Navigator.popが余分に呼ばれ、画面自体が剥がれた可能性）',
+      );
+      expect(
+        find.byType(Scaffold),
+        findsWidgets,
+        reason: '画面が1つも残っていない（何も表示されない状態）',
+      );
     }, timeout: const Timeout(Duration(seconds: 120)));
   }
 }

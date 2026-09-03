@@ -49,9 +49,7 @@ void main() {
       width: w,
       height: h,
       backgroundColor: 0x00000000,
-      cameraKeyframes: const [
-        CameraKeyframe(frameIndex: 0, rotation: 180),
-      ],
+      cameraKeyframes: const [CameraKeyframe(frameIndex: 0, rotation: 180)],
     );
 
     List<int> rgbaAt(int x, int y) {

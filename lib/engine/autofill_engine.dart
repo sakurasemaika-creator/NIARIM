@@ -11,17 +11,19 @@ enum AutofillMode { repaint, colorUpdate }
 /// スレッド（UIスレッド）で同期実行していたため、実行中は画面が固まって
 /// 見える不具合があった。lasso_fill_engine.dart等、他の重い処理と同じ設計。
 Uint8List? runAutofillExecuteInIsolate(
-    ({
-      AutofillMode mode,
-      Uint8List? lineartData,
-      Uint8List? existingData,
-      int width,
-      int height,
-      AutofillPart part,
-      Uint8List? toneTexture,
-      int toneWidth,
-      int toneHeight,
-    }) args) {
+  ({
+    AutofillMode mode,
+    Uint8List? lineartData,
+    Uint8List? existingData,
+    int width,
+    int height,
+    AutofillPart part,
+    Uint8List? toneTexture,
+    int toneWidth,
+    int toneHeight,
+  })
+  args,
+) {
   return AutofillEngine().execute(
     mode: args.mode,
     lineartData: args.lineartData,
@@ -38,12 +40,8 @@ Uint8List? runAutofillExecuteInIsolate(
 /// AutofillEngine.recolorLineartをcompute()経由で実行するためのトップレベル
 /// 関数（線画色設定の反映もキャンバス全体を走査するため、同様にisolate化する）。
 Uint8List runRecolorLineartInIsolate(
-    ({
-      Uint8List lineartData,
-      int width,
-      int height,
-      AutofillPart part,
-    }) args) {
+  ({Uint8List lineartData, int width, int height, AutofillPart part}) args,
+) {
   return AutofillEngine().recolorLineart(
     lineartData: args.lineartData,
     width: args.width,
@@ -54,15 +52,17 @@ Uint8List runRecolorLineartInIsolate(
 
 /// AutofillEngine.colorUpdateをcompute()経由で実行するためのトップレベル関数。
 Uint8List runAutofillColorUpdateInIsolate(
-    ({
-      Uint8List existingData,
-      int width,
-      int height,
-      AutofillPart part,
-      Uint8List? toneTexture,
-      int toneWidth,
-      int toneHeight,
-    }) args) {
+  ({
+    Uint8List existingData,
+    int width,
+    int height,
+    AutofillPart part,
+    Uint8List? toneTexture,
+    int toneWidth,
+    int toneHeight,
+  })
+  args,
+) {
   return AutofillEngine().colorUpdate(
     existingData: args.existingData,
     width: args.width,
@@ -89,8 +89,16 @@ class AutofillEngine {
     int toneHeight = 64,
   }) {
     final result = Uint8List(width * height * 4);
-    final regionMask = _floodFillRegion(lineartData, result, width, height, part,
-        toneTexture: toneTexture, toneWidth: toneWidth, toneHeight: toneHeight);
+    final regionMask = _floodFillRegion(
+      lineartData,
+      result,
+      width,
+      height,
+      part,
+      toneTexture: toneTexture,
+      toneWidth: toneWidth,
+      toneHeight: toneHeight,
+    );
     if (part.outlineEnabled) {
       // 縁取りは塗り範囲そのもの（regionMask、線画で囲まれた領域全体）の
       // 外周のみを対象にする。トーンONの場合resultのアルファはトーン柄で
@@ -98,8 +106,14 @@ class AutofillEngine {
       // トーンの穴1つ1つにも縁取りが付いてしまう。regionMask（トーンの
       // 影響を受けない、線画で区切られた領域そのもの）を使うことで、
       // 塗り範囲の本当の外周（線画に接する部分）だけに縁取りを描く。
-      _addOutlineRing(result, regionMask, width, height,
-          color: part.outlineColor, widthPx: part.outlineWidth);
+      _addOutlineRing(
+        result,
+        regionMask,
+        width,
+        height,
+        color: part.outlineColor,
+        widthPx: part.outlineWidth,
+      );
     }
     return result;
   }
@@ -127,7 +141,9 @@ class AutofillEngine {
     // わずかににじむ近似計算になる（正確な結果が欲しい場合は
     // 「塗りなおし」を使う。repaint()は線画で区切られた領域そのもの
     // ＝トーンの影響を受けないregionMaskを使うため常に正確）。
-    final outlineRadius = part.outlineEnabled ? part.outlineWidth.round().clamp(1, 100) : 0;
+    final outlineRadius = part.outlineEnabled
+        ? part.outlineWidth.round().clamp(1, 100)
+        : 0;
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         final i = (y * width + x) * 4;
@@ -141,14 +157,15 @@ class AutofillEngine {
             continue;
           }
         }
-        final isOutlinePixel = outlineRadius > 0 &&
+        final isOutlinePixel =
+            outlineRadius > 0 &&
             _isNearEdge(existingData, width, height, x, y, outlineRadius);
         final argb = isOutlinePixel
             ? part.outlineColor
             : gradient != null
-                ? _gradientColorAt(gradient, x, y, width, height)
-                : part.color;
-        result[i]     = (argb >> 16) & 0xFF;
+            ? _gradientColorAt(gradient, x, y, width, height)
+            : part.color;
+        result[i] = (argb >> 16) & 0xFF;
         result[i + 1] = (argb >> 8) & 0xFF;
         result[i + 2] = argb & 0xFF;
       }
@@ -161,7 +178,11 @@ class AutofillEngine {
   /// ピクセルへ[color]を描画し、指定色・指定太さの縁取りリングを重ねる
   /// （[data]の元々の不透明ピクセルは変更しない）。[regionMask]を使う
   /// ことで、トーン柄の穴1つ1つに縁取りが付いてしまうのを防いでいる。
-  void _addOutlineRing(Uint8List data, List<bool> regionMask, int width, int height, {
+  void _addOutlineRing(
+    Uint8List data,
+    List<bool> regionMask,
+    int width,
+    int height, {
     required int color,
     required double widthPx,
   }) {
@@ -207,7 +228,14 @@ class AutofillEngine {
   /// 持つか＝塗り範囲の外周付近（縁取りリングとして塗るべき範囲）かどうかを
   /// 判定する（[_addOutlineRing]の外側への拡張＝膨張と対になる、内側からの
   /// 侵食判定）。
-  bool _isNearEdge(Uint8List data, int width, int height, int x, int y, int radius) {
+  bool _isNearEdge(
+    Uint8List data,
+    int width,
+    int height,
+    int x,
+    int y,
+    int radius,
+  ) {
     final r2 = radius * radius;
     for (int dy = -radius; dy <= radius; dy++) {
       final ny = y + dy;
@@ -240,17 +268,37 @@ class AutofillEngine {
     if (lineartData == null && existingData == null) return null;
     if (existingData == null) {
       return repaint(
-          lineartData: lineartData!, width: width, height: height, part: part,
-          toneTexture: toneTexture, toneWidth: toneWidth, toneHeight: toneHeight);
+        lineartData: lineartData!,
+        width: width,
+        height: height,
+        part: part,
+        toneTexture: toneTexture,
+        toneWidth: toneWidth,
+        toneHeight: toneHeight,
+      );
     }
     return switch (mode) {
-      AutofillMode.repaint => lineartData != null
-          ? repaint(lineartData: lineartData, width: width, height: height, part: part,
-              toneTexture: toneTexture, toneWidth: toneWidth, toneHeight: toneHeight)
-          : Uint8List(width * height * 4),
+      AutofillMode.repaint =>
+        lineartData != null
+            ? repaint(
+                lineartData: lineartData,
+                width: width,
+                height: height,
+                part: part,
+                toneTexture: toneTexture,
+                toneWidth: toneWidth,
+                toneHeight: toneHeight,
+              )
+            : Uint8List(width * height * 4),
       AutofillMode.colorUpdate => colorUpdate(
-          existingData: existingData, width: width, height: height, part: part,
-          toneTexture: toneTexture, toneWidth: toneWidth, toneHeight: toneHeight),
+        existingData: existingData,
+        width: width,
+        height: height,
+        part: part,
+        toneTexture: toneTexture,
+        toneWidth: toneWidth,
+        toneHeight: toneHeight,
+      ),
     };
   }
 
@@ -265,7 +313,8 @@ class AutofillEngine {
     required int height,
     required AutofillPart part,
   }) {
-    if (part.lineColorMode == AutofillLineColorMode.specified && part.lineColor == 0xFF000000) {
+    if (part.lineColorMode == AutofillLineColorMode.specified &&
+        part.lineColor == 0xFF000000) {
       // デフォルト設定（変更なし）の場合はそのまま返す
       return lineartData;
     }
@@ -280,13 +329,21 @@ class AutofillEngine {
           case AutofillLineColorMode.specified:
             argb = part.lineColor;
           case AutofillLineColorMode.sameAsFill:
-            argb = gradient != null ? _gradientColorAt(gradient, x, y, width, height) : part.color;
+            argb = gradient != null
+                ? _gradientColorAt(gradient, x, y, width, height)
+                : part.color;
           case AutofillLineColorMode.traceAdjust:
-            final baseArgb =
-                gradient != null ? _gradientColorAt(gradient, x, y, width, height) : part.color;
-            argb = _traceAdjustColor(baseArgb, part.traceHue, part.traceSaturation, part.traceLightness);
+            final baseArgb = gradient != null
+                ? _gradientColorAt(gradient, x, y, width, height)
+                : part.color;
+            argb = _traceAdjustColor(
+              baseArgb,
+              part.traceHue,
+              part.traceSaturation,
+              part.traceLightness,
+            );
         }
-        result[idx]     = (argb >> 16) & 0xFF;
+        result[idx] = (argb >> 16) & 0xFF;
         result[idx + 1] = (argb >> 8) & 0xFF;
         result[idx + 2] = argb & 0xFF;
       }
@@ -339,18 +396,23 @@ class AutofillEngine {
             // 書き込む（塗り色の不透明度は100%固定だが、グラデーション
             // の各色は個別に不透明度を設定できる）。
             final argb = _gradientColorAt(gradient, cx, cy, width, height);
-            outputData[idx]     = (argb >> 16) & 0xFF;
+            outputData[idx] = (argb >> 16) & 0xFF;
             outputData[idx + 1] = (argb >> 8) & 0xFF;
             outputData[idx + 2] = argb & 0xFF;
             outputData[idx + 3] = (argb >> 24) & 0xFF;
           } else {
-            outputData[idx]     = fr;
+            outputData[idx] = fr;
             outputData[idx + 1] = fg;
             outputData[idx + 2] = fb;
             outputData[idx + 3] = 255;
           }
         }
-        for (final (nx, ny) in [(cx-1,cy),(cx+1,cy),(cx,cy-1),(cx,cy+1)]) {
+        for (final (nx, ny) in [
+          (cx - 1, cy),
+          (cx + 1, cy),
+          (cx, cy - 1),
+          (cx, cy + 1),
+        ]) {
           if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
           final ni = ny * width + nx;
           if (visited[ni] || isLineart(nx, ny)) continue;
@@ -363,16 +425,33 @@ class AutofillEngine {
     final outside = List<bool>.filled(width * height, false);
     final outerQueue = <(int, int)>[];
     for (int x = 0; x < width; x++) {
-      if (!isLineart(x, 0)) { outside[x] = true; outerQueue.add((x, 0)); }
-      if (!isLineart(x, height-1)) { outside[(height-1)*width+x] = true; outerQueue.add((x, height-1)); }
+      if (!isLineart(x, 0)) {
+        outside[x] = true;
+        outerQueue.add((x, 0));
+      }
+      if (!isLineart(x, height - 1)) {
+        outside[(height - 1) * width + x] = true;
+        outerQueue.add((x, height - 1));
+      }
     }
     for (int y = 1; y < height - 1; y++) {
-      if (!isLineart(0, y)) { outside[y*width] = true; outerQueue.add((0, y)); }
-      if (!isLineart(width-1, y)) { outside[y*width+width-1] = true; outerQueue.add((width-1, y)); }
+      if (!isLineart(0, y)) {
+        outside[y * width] = true;
+        outerQueue.add((0, y));
+      }
+      if (!isLineart(width - 1, y)) {
+        outside[y * width + width - 1] = true;
+        outerQueue.add((width - 1, y));
+      }
     }
     while (outerQueue.isNotEmpty) {
       final (cx, cy) = outerQueue.removeAt(0);
-      for (final (nx, ny) in [(cx-1,cy),(cx+1,cy),(cx,cy-1),(cx,cy+1)]) {
+      for (final (nx, ny) in [
+        (cx - 1, cy),
+        (cx + 1, cy),
+        (cx, cy - 1),
+        (cx, cy + 1),
+      ]) {
         if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
         final ni = ny * width + nx;
         if (outside[ni] || isLineart(nx, ny)) continue;
@@ -396,13 +475,18 @@ class AutofillEngine {
     required int lineartHash,
     required int presetHash,
     required int lastUpdateHash,
-  }) =>
-      (lineartHash ^ presetHash) == lastUpdateHash;
+  }) => (lineartHash ^ presetHash) == lastUpdateHash;
 
   // ─── グラデーション（塗り色設定・グラデーション） ─────────────
 
   /// キャンバス座標(x, y)におけるグラデーション色をARGB intで返す。
-  int _gradientColorAt(AutofillGradient g, int x, int y, int width, int height) {
+  int _gradientColorAt(
+    AutofillGradient g,
+    int x,
+    int y,
+    int width,
+    int height,
+  ) {
     double t;
     switch (g.type) {
       case AutofillGradientType.linear:
@@ -438,7 +522,12 @@ class AutofillEngine {
   /// の全区間を使い、隣の色の端（stops[i+1]）まで完全に混ざり切る滑らかな
   /// ブレンドにする。値を下げるほど境界の中央付近だけで急に切り替わる帯状
   /// 表示に近づき、0では中間色を持たない完全な帯（ハードエッジ）になる。
-  int _sampleGradient(List<int> colors, List<double> stops, double t, [double feather = 1.0]) {
+  int _sampleGradient(
+    List<int> colors,
+    List<double> stops,
+    double t, [
+    double feather = 1.0,
+  ]) {
     if (colors.isEmpty) return 0xFF000000;
     if (colors.length == 1) return colors.first;
     if (t <= stops.first) return colors.first;
@@ -469,8 +558,14 @@ class AutofillEngine {
 
   /// RGBだけでなくアルファ（色ごとの不透明度）も補間する。
   int _lerpColor(int a, int b, double t) {
-    final aa = (a >> 24) & 0xFF, ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
-    final ba = (b >> 24) & 0xFF, br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
+    final aa = (a >> 24) & 0xFF,
+        ar = (a >> 16) & 0xFF,
+        ag = (a >> 8) & 0xFF,
+        ab = a & 0xFF;
+    final ba = (b >> 24) & 0xFF,
+        br = (b >> 16) & 0xFF,
+        bg = (b >> 8) & 0xFF,
+        bb = b & 0xFF;
     final alpha = (aa + (ba - aa) * t).round().clamp(0, 255);
     final r = (ar + (br - ar) * t).round().clamp(0, 255);
     final g = (ag + (bg - ag) * t).round().clamp(0, 255);
@@ -483,7 +578,12 @@ class AutofillEngine {
   // 馴染ませた色へ変換する（色相・彩度・明度いずれも塗り色からのオフセット
   // として加算する）。
 
-  int _traceAdjustColor(int argb, double hueOffset, double saturationOffset, double lightnessOffset) {
+  int _traceAdjustColor(
+    int argb,
+    double hueOffset,
+    double saturationOffset,
+    double lightnessOffset,
+  ) {
     final r = ((argb >> 16) & 0xFF) / 255.0;
     final g = ((argb >> 8) & 0xFF) / 255.0;
     final b = (argb & 0xFF) / 255.0;
@@ -531,6 +631,7 @@ class AutofillEngine {
       if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
       return p;
     }
+
     return (hue2rgb(hk + 1 / 3), hue2rgb(hk), hue2rgb(hk - 1 / 3));
   }
 }

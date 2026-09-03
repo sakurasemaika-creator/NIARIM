@@ -72,7 +72,11 @@ void main() {
     });
 
     test('拡張表示範囲ONの場合はウィジェット全体を使う（レターボックスなし）', () {
-      final project = _project(exportWidth: 1920, exportHeight: 1080, drawingAreaScale: 1.5);
+      final project = _project(
+        exportWidth: 1920,
+        exportHeight: 1080,
+        drawingAreaScale: 1.5,
+      );
       const size = Size(500, 300);
       final rect = canvasDrawingRectFor(size, project);
       expect(rect, const Rect.fromLTWH(0, 0, 500, 300));

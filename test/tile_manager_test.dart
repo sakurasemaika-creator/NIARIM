@@ -14,7 +14,12 @@ void main() {
     final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     final bytes = data!.buffer.asUint8List();
     final idx = (y * width + x) * 4;
-    return ui.Color.fromARGB(bytes[idx + 3], bytes[idx], bytes[idx + 1], bytes[idx + 2]);
+    return ui.Color.fromARGB(
+      bytes[idx + 3],
+      bytes[idx],
+      bytes[idx + 1],
+      bytes[idx + 2],
+    );
   }
 
   test('compositeLayerToImageはブレンド後のピクセルを正しく反映する', () async {
@@ -23,7 +28,10 @@ void main() {
     tm.blendPixel(tile, 0, 0, 255, 0, 0, 255); // 赤・不透明
 
     final img1 = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(img1, 0, 0, 8), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(img1, 0, 0, 8),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
     img1.dispose();
   });
 
@@ -34,17 +42,26 @@ void main() {
 
     // 1回目：キャッシュへ格納される
     final img1 = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(img1, 0, 0, 8), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(img1, 0, 0, 8),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
     img1.dispose(); // 呼び出し元が自由にdispose()してよい設計であることを確認
 
     // 2回目：キャッシュヒット。img1をdisposeした後でも正しく読み出せる
     // （キャッシュ本体ではなくclone()されたハンドルが返っているため）。
     final img2 = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(img2, 0, 0, 8), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(img2, 0, 0, 8),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
 
     // 3回目：img2がまだ生きている状態で同時に取得しても問題ない
     final img3 = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(img3, 0, 0, 8), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(img3, 0, 0, 8),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
 
     img2.dispose();
     img3.dispose();
@@ -56,7 +73,10 @@ void main() {
     tm.blendPixel(tile1, 0, 0, 255, 0, 0, 255); // 赤
 
     final imgBefore = await tm.compositeLayerToImage('layerA'); // キャッシュされる
-    expect(await pixelAt(imgBefore, 0, 0, 8), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(imgBefore, 0, 0, 8),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
     imgBefore.dispose();
 
     // 同じピクセルを青で上書き（in-place変更）
@@ -65,9 +85,13 @@ void main() {
     tm.blendPixel(tile2, 0, 0, 0, 0, 255, 255); // 青
 
     final imgAfter = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgAfter, 0, 0, 8), const ui.Color.fromARGB(255, 0, 0, 255),
-        reason: 'getOrCreateTile経由の書き込み後は再合成され、キャッシュされた古い赤ピクセルを'
-            '返してはならない');
+    expect(
+      await pixelAt(imgAfter, 0, 0, 8),
+      const ui.Color.fromARGB(255, 0, 0, 255),
+      reason:
+          'getOrCreateTile経由の書き込み後は再合成され、キャッシュされた古い赤ピクセルを'
+          '返してはならない',
+    );
     imgAfter.dispose();
   });
 
@@ -76,7 +100,10 @@ void main() {
     final tile = tm.getOrCreateTile('layerA', 0, 0);
     tm.blendPixel(tile, 0, 0, 255, 0, 0, 255);
     final imgBefore = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgBefore, 0, 0, 4), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(imgBefore, 0, 0, 4),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
     imgBefore.dispose();
 
     final bytes = Uint8List(4 * 4 * 4);
@@ -90,7 +117,10 @@ void main() {
     tm.replaceLayerPixels('layerA', bytes);
 
     final imgAfter = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgAfter, 0, 0, 4), const ui.Color.fromARGB(255, 0, 255, 0));
+    expect(
+      await pixelAt(imgAfter, 0, 0, 4),
+      const ui.Color.fromARGB(255, 0, 255, 0),
+    );
     imgAfter.dispose();
   });
 
@@ -106,7 +136,10 @@ void main() {
     expect(tm.hasLayer('new'), isTrue);
 
     final imgNew = await tm.compositeLayerToImage('new');
-    expect(await pixelAt(imgNew, 0, 0, 4), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(imgNew, 0, 0, 4),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
     imgNew.dispose();
   });
 
@@ -123,7 +156,10 @@ void main() {
     final tile2 = tm.getOrCreateTile('layerA', 0, 0);
     tm.blendPixel(tile2, 0, 0, 0, 255, 0, 255); // 緑
     final imgAfter = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgAfter, 0, 0, 4), const ui.Color.fromARGB(255, 0, 255, 0));
+    expect(
+      await pixelAt(imgAfter, 0, 0, 4),
+      const ui.Color.fromARGB(255, 0, 255, 0),
+    );
     imgAfter.dispose();
   });
 
@@ -142,7 +178,10 @@ void main() {
     // 古いレイヤーを再度合成しても（キャッシュから追い出されていても）
     // タイルデータ自体は_tilesに残っているため正しく再構築できる
     final img0Again = await tm.compositeLayerToImage('layer0');
-    expect(await pixelAt(img0Again, 0, 0, 4), const ui.Color.fromARGB(255, 0, 0, 0));
+    expect(
+      await pixelAt(img0Again, 0, 0, 4),
+      const ui.Color.fromARGB(255, 0, 0, 0),
+    );
     img0Again.dispose();
   });
 
@@ -157,7 +196,10 @@ void main() {
     tm.applyTileSnapshot('layerA', {'0,0': null});
 
     final imgAfter = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgAfter, 0, 0, 4), const ui.Color.fromARGB(0, 0, 0, 0));
+    expect(
+      await pixelAt(imgAfter, 0, 0, 4),
+      const ui.Color.fromARGB(0, 0, 0, 0),
+    );
     imgAfter.dispose();
   });
 
@@ -170,7 +212,10 @@ void main() {
     final tile = tm.getOrCreateTile('layerA', 0, 0);
     tm.blendPixel(tile, 0, 0, 255, 0, 0, 255);
     final imgDuring = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgDuring, 0, 0, 4), const ui.Color.fromARGB(255, 255, 0, 0));
+    expect(
+      await pixelAt(imgDuring, 0, 0, 4),
+      const ui.Color.fromARGB(255, 255, 0, 0),
+    );
     imgDuring.dispose();
 
     // 巻き戻し：Undoスタックへは積まず、beforeスナップショットを直接適用する。
@@ -179,14 +224,16 @@ void main() {
     tm.applyTileSnapshot('layerA', snapshot.before);
 
     final imgAfter = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgAfter, 0, 0, 4), const ui.Color.fromARGB(0, 0, 0, 0));
+    expect(
+      await pixelAt(imgAfter, 0, 0, 4),
+      const ui.Color.fromARGB(0, 0, 0, 0),
+    );
     imgAfter.dispose();
   });
 
   test('recordingTouchedTilesはUndo記録中に変更されたタイルキー集合を返す'
       '（Task#151：ブラシのピクセルモード配色がストローク確定直後・'
-      'endUndoRecording前に「今回変更された範囲だけ」を特定するために使う）',
-      () {
+      'endUndoRecording前に「今回変更された範囲だけ」を特定するために使う）', () {
     final tm = TileManager(canvasWidth: 4, canvasHeight: 4);
     expect(tm.recordingTouchedTiles, isNull);
 
@@ -222,7 +269,10 @@ void main() {
     });
 
     final imgAfter = await tm.compositeLayerToImage('layerA');
-    expect(await pixelAt(imgAfter, 0, 0, 4), const ui.Color.fromARGB(255, 0, 0, 0));
+    expect(
+      await pixelAt(imgAfter, 0, 0, 4),
+      const ui.Color.fromARGB(255, 0, 0, 0),
+    );
     imgAfter.dispose();
   });
 }

@@ -97,7 +97,8 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 120));
     final boundary =
-        screenshotKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        screenshotKey.currentContext!.findRenderObject()
+            as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
       final image = await boundary.toImage(pixelRatio: 1.0);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);

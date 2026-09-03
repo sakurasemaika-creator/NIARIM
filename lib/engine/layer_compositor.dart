@@ -123,7 +123,12 @@ class LayerCompositor {
           keyframeOf,
           groupKeyframeOf,
         );
-        final subtracted = await _subtractImages(backdrop, source, width, height);
+        final subtracted = await _subtractImages(
+          backdrop,
+          source,
+          width,
+          height,
+        );
         backdrop.dispose();
         source.dispose();
 
@@ -210,16 +215,28 @@ class LayerCompositor {
 
     final groupKf = groupKeyframeOf?.call(layer);
     final kf = keyframeOf?.call(layer);
-    final hasGroupTransform = groupKf != null && !_layerKeyframeEngine.isIdentity(groupKf);
-    final hasLayerTransform = kf != null && !_layerKeyframeEngine.isIdentity(kf);
+    final hasGroupTransform =
+        groupKf != null && !_layerKeyframeEngine.isIdentity(groupKf);
+    final hasLayerTransform =
+        kf != null && !_layerKeyframeEngine.isIdentity(kf);
     final hasTransform = hasGroupTransform || hasLayerTransform;
     if (hasTransform) {
       canvas.save();
       if (hasGroupTransform) {
-        _layerKeyframeEngine.apply(canvas, groupKf, width.toDouble(), height.toDouble());
+        _layerKeyframeEngine.apply(
+          canvas,
+          groupKf,
+          width.toDouble(),
+          height.toDouble(),
+        );
       }
       if (hasLayerTransform) {
-        _layerKeyframeEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
+        _layerKeyframeEngine.apply(
+          canvas,
+          kf,
+          width.toDouble(),
+          height.toDouble(),
+        );
       }
     }
 
@@ -227,11 +244,22 @@ class LayerCompositor {
       final clipSourceId = findClipSourceLayerId(layers, index);
       if (clipSourceId != null) {
         final clipSourceLayer = layers.firstWhere((l) => l.id == clipSourceId);
-        final clipImg = await tileManager.compositeLayerToImage(keyOf(clipSourceLayer));
-        final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+        final clipImg = await tileManager.compositeLayerToImage(
+          keyOf(clipSourceLayer),
+        );
+        final rect = ui.Rect.fromLTWH(
+          0,
+          0,
+          width.toDouble(),
+          height.toDouble(),
+        );
         canvas.saveLayer(rect, layerPaint);
         canvas.drawImage(clipImg, ui.Offset.zero, ui.Paint());
-        canvas.drawImage(img, ui.Offset.zero, ui.Paint()..blendMode = ui.BlendMode.srcIn);
+        canvas.drawImage(
+          img,
+          ui.Offset.zero,
+          ui.Paint()..blendMode = ui.BlendMode.srcIn,
+        );
         canvas.restore();
         if (hasTransform) canvas.restore();
         clipImg.dispose();
@@ -249,13 +277,21 @@ class LayerCompositor {
   /// モードと同じsource-over規則で合成する。半透明レイヤー・半透明背景でも
   /// 正しい結果になるよう、W3C Compositing and Blendingの一般式を使う。
   static Future<ui.Image> _subtractImages(
-      ui.Image backdrop, ui.Image source, int width, int height) async {
+    ui.Image backdrop,
+    ui.Image source,
+    int width,
+    int height,
+  ) async {
     // rawRgba はpremultiplied alphaなので、半透明レイヤーではRGBにもalphaが
     // 既に掛かっている。それをstraight RGBとして扱うと、減算計算でalphaを
     // 二重適用してしまう（例：50%不透明の減算が薄すぎる）。
     // rawStraightRgbaを使い、ブレンド式へ渡すRGBとalphaを独立した値で取得する。
-    final backdropData = await backdrop.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
-    final sourceData = await source.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+    final backdropData = await backdrop.toByteData(
+      format: ui.ImageByteFormat.rawStraightRgba,
+    );
+    final sourceData = await source.toByteData(
+      format: ui.ImageByteFormat.rawStraightRgba,
+    );
     if (backdropData == null || sourceData == null) {
       // ネイティブ画像の読み出しに失敗した場合だけ、安全側として元の背景を返す。
       return backdrop.clone();
@@ -276,9 +312,7 @@ class LayerCompositor {
         final cs = s[i + c] / 255.0;
         final blended = (cb - cs).clamp(0.0, 1.0);
         final premultiplied =
-            as * (1.0 - ab) * cs +
-            as * ab * blended +
-            (1.0 - as) * ab * cb;
+            as * (1.0 - ab) * cs + as * ab * blended + (1.0 - as) * ab * cb;
         out[i + c] = (premultiplied / ao * 255).round().clamp(0, 255);
       }
       out[i + 3] = (ao * 255).round().clamp(0, 255);

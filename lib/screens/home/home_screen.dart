@@ -454,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   l10n.homeFavoritesOnly,
                                   style: const TextStyle(
                                     fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                                    fontFamilyFallback: kHeadingFontFallback,
                                   ),
                                 ),
                                 selected: _showFavoritesOnly,
@@ -804,7 +804,7 @@ class _HomeScreenState extends State<HomeScreen>
                     style: const TextStyle(
                       fontSize: 13,
                       fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                      fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                 ),
@@ -840,7 +840,7 @@ class _HomeTabBar extends StatelessWidget {
       fontSize: 14,
       fontWeight: FontWeight.w600,
       fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+      fontFamilyFallback: kHeadingFontFallback,
     );
     // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
     final naturalWidths = labels.map((label) {
@@ -978,8 +978,10 @@ class _SharedScreenState extends State<SharedScreen> {
                 FilterChip(
                   label: Text(
                     l10n.homeFavoritesOnly,
-                    style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+                    style: const TextStyle(
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
                   ),
                   selected: _showFavoritesOnly,
                   onSelected: (v) => setState(() => _showFavoritesOnly = v),
@@ -1137,8 +1139,10 @@ class _SharedTab extends StatelessWidget {
           ),
           title: Text(
             project.name,
-            style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+            style: const TextStyle(
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
           ),
           subtitle: Text(
             l10n.homeProjectMeta(project.fps, project.durationSeconds),
@@ -1231,8 +1235,10 @@ class _SharedFolderScreen extends StatelessWidget {
                     ),
                     title: Text(
                       project.name,
-                      style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
                     subtitle: Text(
                       l10n.homeProjectMeta(
@@ -1314,10 +1320,7 @@ class _FolderableList<T> extends StatelessWidget {
             ),
             onLongPress: () => _showFolderMenu(context, f),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: Theme.of(context).colorScheme.outlineVariant,
@@ -1335,9 +1338,7 @@ class _FolderableList<T> extends StatelessWidget {
                     '($count)',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -1482,8 +1483,10 @@ class _TrashTab extends StatelessWidget {
             ),
             title: Text(
               project.name,
-              style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             subtitle: Text(
               deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
@@ -1582,7 +1585,7 @@ class _BookmarkedTab extends StatelessWidget {
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               const SizedBox(height: 8),
@@ -1810,8 +1813,10 @@ class _WorkListItem extends StatelessWidget {
           file.path.split('/').last,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback),
+          style: const TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          ),
         ),
         subtitle: Text(
           '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
@@ -2044,7 +2049,7 @@ class _FirstLaunchDialog extends StatelessWidget {
             l10n.homeFirstLaunchStart,
             style: const TextStyle(
               fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+              fontFamilyFallback: kHeadingFontFallback,
               fontWeight: FontWeight.bold,
             ),
           ),

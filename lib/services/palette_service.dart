@@ -35,7 +35,11 @@ class PaletteService extends ChangeNotifier {
     final rawPalettes = prefs.getStringList(_palettesKey) ?? const [];
     _palettes
       ..clear()
-      ..addAll(rawPalettes.map((s) => ColorPalette.fromJson(jsonDecode(s) as Map<String, dynamic>)));
+      ..addAll(
+        rawPalettes.map(
+          (s) => ColorPalette.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
+      );
     if (_palettes.isEmpty) {
       // 初回起動時：デフォルトパレットを1つ用意する
       _palettes.add(const ColorPalette(id: 'default', name: 'マイパレット'));
@@ -48,12 +52,18 @@ class PaletteService extends ChangeNotifier {
 
   Future<void> _persistRecent() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_recentKey, _recentColors.map((c) => c.toString()).toList());
+    await prefs.setStringList(
+      _recentKey,
+      _recentColors.map((c) => c.toString()).toList(),
+    );
   }
 
   Future<void> _persistPalettes() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_palettesKey, _palettes.map((p) => jsonEncode(p.toJson())).toList());
+    await prefs.setStringList(
+      _palettesKey,
+      _palettes.map((p) => jsonEncode(p.toJson())).toList(),
+    );
     if (_activePaletteId != null) {
       await prefs.setString(_activeKey, _activePaletteId!);
     }
@@ -72,7 +82,10 @@ class PaletteService extends ChangeNotifier {
   }
 
   Future<void> createPalette(String name) async {
-    final palette = ColorPalette(id: 'palette_${DateTime.now().microsecondsSinceEpoch}', name: name);
+    final palette = ColorPalette(
+      id: 'palette_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+    );
     _palettes.add(palette);
     _activePaletteId = palette.id;
     await _persistPalettes();
@@ -151,7 +164,9 @@ class PaletteService extends ChangeNotifier {
   Future<void> toggleFavorite(String id) async {
     final idx = _palettes.indexWhere((p) => p.id == id);
     if (idx < 0) return;
-    _palettes[idx] = _palettes[idx].copyWith(isFavorite: !_palettes[idx].isFavorite);
+    _palettes[idx] = _palettes[idx].copyWith(
+      isFavorite: !_palettes[idx].isFavorite,
+    );
     await _persistPalettes();
     notifyListeners();
   }
@@ -176,7 +191,11 @@ class PaletteService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> reorderColorInPalette(String paletteId, int oldIndex, int newIndex) async {
+  Future<void> reorderColorInPalette(
+    String paletteId,
+    int oldIndex,
+    int newIndex,
+  ) async {
     final idx = _palettes.indexWhere((p) => p.id == paletteId);
     if (idx < 0) return;
     final colors = List<int>.from(_palettes[idx].colors);

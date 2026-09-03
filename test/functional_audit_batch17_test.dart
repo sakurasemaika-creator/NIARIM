@@ -60,9 +60,16 @@ void main() {
 
     await _save(once, w, h, '${out.path}/tone_same_once.png');
     await _save(tenTimes, w, h, '${out.path}/tone_same_ten_times.png');
-    expect(_opaquePositions(twice, w, h), orderedEquals(_opaquePositions(once, w, h)));
-    expect(_opaquePositions(tenTimes, w, h), orderedEquals(_opaquePositions(once, w, h)),
-        reason: 'same fixed tone must never fill its own transparent gaps on repeated strokes');
+    expect(
+      _opaquePositions(twice, w, h),
+      orderedEquals(_opaquePositions(once, w, h)),
+    );
+    expect(
+      _opaquePositions(tenTimes, w, h),
+      orderedEquals(_opaquePositions(once, w, h)),
+      reason:
+          'same fixed tone must never fill its own transparent gaps on repeated strokes',
+    );
   });
 
   test('ストローク開始位置が違ってもトーンの位相はキャンバス座標へ固定される', () async {
@@ -99,8 +106,11 @@ void main() {
       final aLeft = leftStroke[(48 * w + x) * 4 + 3];
       final aRight = rightStroke[(48 * w + x) * 4 + 3];
       if (aLeft != 0 || aRight != 0) {
-        expect(x % 7, 1,
-            reason: 'tone phase must be anchored to canvas x, not stroke origin');
+        expect(
+          x % 7,
+          1,
+          reason: 'tone phase must be anchored to canvas x, not stroke origin',
+        );
       }
     }
   });
@@ -109,7 +119,10 @@ void main() {
     const w = 128, h = 96;
     final toneA = _evenColumnTone(4, 4);
     final toneB = _oddColumnTone(4, 4);
-    final points = List<ui.Offset>.generate(80, (i) => ui.Offset(24 + i.toDouble(), 48));
+    final points = List<ui.Offset>.generate(
+      80,
+      (i) => ui.Offset(24 + i.toDouble(), 48),
+    );
     final blank = Uint8List(w * h * 4);
     final aOnly = ToneEngine().drawToneStroke(
       points: points,
@@ -136,8 +149,12 @@ void main() {
     await _save(aOnly, w, h, '${out.path}/tone_dither_a.png');
     await _save(aPlusB, w, h, '${out.path}/tone_dither_a_plus_b.png');
 
-    expect(_nonTransparentCount(aPlusB), greaterThan(_nonTransparentCount(aOnly)),
-        reason: 'a different tone may reveal positions that were gaps in the first tone');
+    expect(
+      _nonTransparentCount(aPlusB),
+      greaterThan(_nonTransparentCount(aOnly)),
+      reason:
+          'a different tone may reveal positions that were gaps in the first tone',
+    );
   });
 }
 
@@ -202,11 +219,17 @@ int _nonTransparentCount(Uint8List rgba) {
 Future<void> _save(Uint8List rgba, int w, int h, String path) async {
   final buffer = await ui.ImmutableBuffer.fromUint8List(rgba);
   final desc = ui.ImageDescriptor.raw(
-    buffer, width: w, height: h, pixelFormat: ui.PixelFormat.rgba8888,
+    buffer,
+    width: w,
+    height: h,
+    pixelFormat: ui.PixelFormat.rgba8888,
   );
   final codec = await desc.instantiateCodec();
   final frame = await codec.getNextFrame();
   final png = await frame.image.toByteData(format: ui.ImageByteFormat.png);
   await File(path).writeAsBytes(png!.buffer.asUint8List());
-  frame.image.dispose(); codec.dispose(); desc.dispose(); buffer.dispose();
+  frame.image.dispose();
+  codec.dispose();
+  desc.dispose();
+  buffer.dispose();
 }

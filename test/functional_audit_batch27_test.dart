@@ -15,7 +15,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaで矩形選択の右下ハンドルを2倍へ拡大しUndo/Redoまで全RGBA検証する', (tester) async {
+  testWidgets('実CanvasAreaで矩形選択の右下ハンドルを2倍へ拡大しUndo/Redoまで全RGBA検証する', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -24,10 +26,16 @@ void main() {
     final projects = ProjectService();
     final undo = app_undo.UndoManager();
     projects.setUndoManager(undo);
-    final project = await tester.runAsync(() => projects.createProject(
-      name: 'selection-scale-functional', fps: 24, durationSeconds: 1,
-      backgroundColor: 0x00000000, exportWidth: 96, exportHeight: 80,
-    ));
+    final project = await tester.runAsync(
+      () => projects.createProject(
+        name: 'selection-scale-functional',
+        fps: 24,
+        durationSeconds: 1,
+        backgroundColor: 0x00000000,
+        exportWidth: 96,
+        exportHeight: 80,
+      ),
+    );
     expect(project, isNotNull);
     final p = project!;
     final scene = projects.scenesOf(p.id).first;
@@ -40,7 +48,10 @@ void main() {
     for (var y = 22; y < 38; y++) {
       for (var x = 24; x < 40; x++) {
         final i = (y * 96 + x) * 4;
-        initial[i] = 41; initial[i + 1] = 157; initial[i + 2] = 223; initial[i + 3] = 255;
+        initial[i] = 41;
+        initial[i + 1] = 157;
+        initial[i + 2] = 223;
+        initial[i + 3] = 255;
       }
     }
     tm.replaceLayerPixels(key, initial);
@@ -48,29 +59,45 @@ void main() {
 
     final providers = await tester.runAsync(buildAppProviders);
     var selectionActive = false;
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ...providers!,
-        ChangeNotifierProvider<ProjectService>.value(value: projects),
-        ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
-      ],
-      child: MaterialApp(home: Scaffold(body: Center(child: SizedBox(
-        width: 288, height: 240,
-        child: CanvasArea(
-          project: p, currentLayerId: layer.id,
-          currentTool: DrawingTool.selectRect, currentFrame: 0, sceneId: scene.id,
-          onSelectionActiveChanged: (v) => selectionActive = v,
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: projects),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 288,
+                height: 240,
+                child: CanvasArea(
+                  project: p,
+                  currentLayerId: layer.id,
+                  currentTool: DrawingTool.selectRect,
+                  currentFrame: 0,
+                  sceneId: scene.id,
+                  onSelectionActiveChanged: (v) => selectionActive = v,
+                ),
+              ),
+            ),
+          ),
         ),
-      )))),
-    ));
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull);
 
     final origin = tester.getTopLeft(find.byType(CanvasArea));
-    Offset at(Offset canvasPx) => origin + Offset(canvasPx.dx * 3, canvasPx.dy * 3);
+    Offset at(Offset canvasPx) =>
+        origin + Offset(canvasPx.dx * 3, canvasPx.dy * 3);
 
     // 選択範囲を確定。
-    final select = await tester.startGesture(at(const Offset(16, 14)), kind: PointerDeviceKind.touch);
+    final select = await tester.startGesture(
+      at(const Offset(16, 14)),
+      kind: PointerDeviceKind.touch,
+    );
     await select.moveTo(at(const Offset(48, 46)));
     await tester.pump();
     await select.up();
@@ -79,11 +106,20 @@ void main() {
 
     // bounds=(16,14)-(48,46), center=(32,30), 右下ハンドル=(48,46)。
     // centerからのベクトル(16,16)を(32,32)へ伸ばし、scale=2を厳密に作る。
-    final scale = await tester.startGesture(at(const Offset(48, 46)), kind: PointerDeviceKind.touch);
+    final scale = await tester.startGesture(
+      at(const Offset(48, 46)),
+      kind: PointerDeviceKind.touch,
+    );
     await tester.pump();
-    expect(tm.recordingTouchedTiles, isNotNull, reason: '右下ハンドルで選択拡大縮小が開始されること');
+    expect(
+      tm.recordingTouchedTiles,
+      isNotNull,
+      reason: '右下ハンドルで選択拡大縮小が開始されること',
+    );
     await _waitForPixelAlpha(tester, tm, key, 24, 22, 0);
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
     await tester.pump();
     await scale.moveTo(at(const Offset(64, 62)));
     await tester.pump(const Duration(milliseconds: 40));
@@ -98,35 +134,64 @@ void main() {
     expect(_alpha(actual, 96, 18, 16), 255, reason: '2倍拡大で元矩形外まで実画素が広がること');
     expect(_alpha(actual, 96, 46, 44), 255, reason: '右下方向にも2倍拡大されること');
     expect(_alpha(actual, 96, 10, 10), 0);
-    expect(actual, isNot(orderedEquals(before)), reason: '拡大縮小が実レイヤー画素へ確定されること');
+    expect(
+      actual,
+      isNot(orderedEquals(before)),
+      reason: '拡大縮小が実レイヤー画素へ確定されること',
+    );
 
     undo.undo();
     await tester.pump(const Duration(milliseconds: 100));
-    expect(_readCanvas(tm, key, 96, 80), orderedEquals(before), reason: 'Undoで変形前全RGBAへ完全復元すること');
+    expect(
+      _readCanvas(tm, key, 96, 80),
+      orderedEquals(before),
+      reason: 'Undoで変形前全RGBAへ完全復元すること',
+    );
     undo.redo();
     await tester.pump(const Duration(milliseconds: 100));
-    expect(_readCanvas(tm, key, 96, 80), orderedEquals(actual), reason: 'Redoで拡大後全RGBAへ完全一致すること');
+    expect(
+      _readCanvas(tm, key, 96, 80),
+      orderedEquals(actual),
+      reason: 'Redoで拡大後全RGBAへ完全一致すること',
+    );
   });
 }
 
 int _alpha(Uint8List rgba, int w, int x, int y) => rgba[(y * w + x) * 4 + 3];
 
-Future<void> _waitForUndo(WidgetTester tester, app_undo.UndoManager undo, int count) async {
+Future<void> _waitForUndo(
+  WidgetTester tester,
+  app_undo.UndoManager undo,
+  int count,
+) async {
   final deadline = DateTime.now().add(const Duration(seconds: 3));
   while (DateTime.now().isBefore(deadline) && undo.undoCount < count) {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
     await tester.pump();
   }
   expect(undo.undoCount, count);
 }
 
-Future<void> _waitForPixelAlpha(WidgetTester tester, dynamic tm, String key, int x, int y, int expected) async {
+Future<void> _waitForPixelAlpha(
+  WidgetTester tester,
+  dynamic tm,
+  String key,
+  int x,
+  int y,
+  int expected,
+) async {
   final deadline = DateTime.now().add(const Duration(seconds: 3));
   while (DateTime.now().isBefore(deadline)) {
     final tile = tm.getTile(key, x ~/ 256, y ~/ 256) as Uint8List?;
-    final alpha = tile == null ? 0 : tile[((y % 256) * 256 + (x % 256)) * 4 + 3];
+    final alpha = tile == null
+        ? 0
+        : tile[((y % 256) * 256 + (x % 256)) * 4 + 3];
     if (alpha == expected) return;
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
     await tester.pump();
   }
   fail('pixel alpha did not become $expected at ($x,$y)');

@@ -99,13 +99,32 @@ List<CommunityWork> buildDummyCommunityWorks() {
     ('author_05', 'inkdrop'),
     ('author_06', 'よあけスタジオ'),
   ];
-  final titleParts1 = ['夜明けの', '小さな', '静かな', '走れ', '約束の', '君だけの', '雨上がりの', '最後の'];
+  final titleParts1 = [
+    '夜明けの',
+    '小さな',
+    '静かな',
+    '走れ',
+    '約束の',
+    '君だけの',
+    '雨上がりの',
+    '最後の',
+  ];
   final titleParts2 = ['冒険', '手紙', '約束', '街', '夏休み', 'メロディ', '記憶', '交差点'];
-  final tagPool = ['オリジナル', '手描き', 'コマ撮り風', 'ループ', 'BGMあり', '実験的', '風景', 'キャラクター'];
+  final tagPool = [
+    'オリジナル',
+    '手描き',
+    'コマ撮り風',
+    'ループ',
+    'BGMあり',
+    '実験的',
+    '風景',
+    'キャラクター',
+  ];
 
   return List.generate(24, (i) {
     final author = authors[i % authors.length];
-    final title = '${titleParts1[i % titleParts1.length]}${titleParts2[(i * 3) % titleParts2.length]}';
+    final title =
+        '${titleParts1[i % titleParts1.length]}${titleParts2[(i * 3) % titleParts2.length]}';
     final views = 50 + random.nextInt(200000);
     // 各作品に2〜3個のタグを割り当て、そのうち1個をロック状態にする
     // （投稿者ロックの見た目上の挙動を確認できるようにするため）。
@@ -129,10 +148,14 @@ List<CommunityWork> buildDummyCommunityWorks() {
       viewCount: views,
       likeCount: (views * (0.02 + random.nextDouble() * 0.08)).round(),
       bookmarkCount: 5 + random.nextInt(3000),
-      postedAt: DateTime.now().subtract(Duration(days: random.nextInt(400), hours: random.nextInt(24))),
+      postedAt: DateTime.now().subtract(
+        Duration(days: random.nextInt(400), hours: random.nextInt(24)),
+      ),
       // ショート動画は実際のYouTube Shorts同様、短尺（3〜60秒程度）に
       // 寄せる。横動画は従来どおりの幅を持たせる。
-      durationSeconds: isShort ? 3 + random.nextInt(58) : 15 + random.nextInt(105),
+      durationSeconds: isShort
+          ? 3 + random.nextInt(58)
+          : 15 + random.nextInt(105),
       thumbnailColorIndex: i % 6,
       tags: tagList,
       lockedTags: lockedTags,

@@ -30,9 +30,9 @@ void main() {
     final dir = Directory.systemTemp.createTempSync('niarim_playback');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (call) async => dir.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => dir.path,
+        );
   });
 
   /// プライベートクラスなので型名の文字列で探す。
@@ -60,22 +60,27 @@ void main() {
 
     final ctx = tester.element(find.byType(Navigator).first);
     final ps = ctx.read<ProjectService>();
-    final project = await tester.runAsync(() => ps.createProject(
-          name: 'playback',
-          fps: 12,
-          durationSeconds: 2,
-          backgroundColor: 0xFFFFFFFF,
-          exportWidth: 64,
-          exportHeight: 64,
-        ));
+    final project = await tester.runAsync(
+      () => ps.createProject(
+        name: 'playback',
+        fps: 12,
+        durationSeconds: 2,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
     final pid = project!.id;
 
     appRouter.go('/timeline/$pid');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
 
-    expect(byTypeName('_TimelinePreview'), findsOneWidget,
-        reason: 'タイムラインのプレビューが出ていない');
+    expect(
+      byTypeName('_TimelinePreview'),
+      findsOneWidget,
+      reason: 'タイムラインのプレビューが出ていない',
+    );
     expect(previewFrameOf(tester), 0);
 
     // 再生開始。play_arrowのタップ自体は setState(_isPlaying = true) を伴う
@@ -88,30 +93,39 @@ void main() {
     // リストは再生位置に依存しないので、再生タイマーが進むだけで作り直されて
     // はいけない。
     final frameListBefore = tester.widget(
-      find.descendant(
-        of: find.byType(Scaffold),
-        matching: find.byType(ListView),
-      ).first,
+      find
+          .descendant(
+            of: find.byType(Scaffold),
+            matching: find.byType(ListView),
+          )
+          .first,
     );
     final frameBefore = previewFrameOf(tester);
 
     // fps=12なので約83msごとに1フレーム進む。3フレームぶん進める。
     await tester.pump(const Duration(milliseconds: 260));
 
-    expect(previewFrameOf(tester), greaterThan(frameBefore),
-        reason: '再生してもプレビューのフレームが進んでいない'
-            '（ValueListenableBuilderで購読できていない）');
+    expect(
+      previewFrameOf(tester),
+      greaterThan(frameBefore),
+      reason:
+          '再生してもプレビューのフレームが進んでいない'
+          '（ValueListenableBuilderで購読できていない）',
+    );
 
     final frameListAfter = tester.widget(
-      find.descendant(
-        of: find.byType(Scaffold),
-        matching: find.byType(ListView),
-      ).first,
+      find
+          .descendant(
+            of: find.byType(Scaffold),
+            matching: find.byType(ListView),
+          )
+          .first,
     );
     expect(
       identical(frameListBefore, frameListAfter),
       isTrue,
-      reason: '再生中に画面全体が作り直されている'
+      reason:
+          '再生中に画面全体が作り直されている'
           '（再生タイマーがsetStateを呼ぶ実装に戻っている）',
     );
 
@@ -134,14 +148,16 @@ void main() {
 
     final ctx = tester.element(find.byType(Navigator).first);
     final ps = ctx.read<ProjectService>();
-    final project = await tester.runAsync(() => ps.createProject(
-          name: 'step',
-          fps: 12,
-          durationSeconds: 2,
-          backgroundColor: 0xFFFFFFFF,
-          exportWidth: 64,
-          exportHeight: 64,
-        ));
+    final project = await tester.runAsync(
+      () => ps.createProject(
+        name: 'step',
+        fps: 12,
+        durationSeconds: 2,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
     appRouter.go('/timeline/${project!.id}');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));

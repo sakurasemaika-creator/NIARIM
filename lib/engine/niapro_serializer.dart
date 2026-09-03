@@ -74,15 +74,19 @@ class NiaproSerializer {
       // 変換ステップを追加していく。現状は変換対象がないためフィールド構成は
       // そのまま引き継ぐ（欠落フィールドは各_deserialize*側の`??`デフォルトで
       // 補完される）。
-      debugPrint('[NiaproSerializer] 旧バージョン($version)のプロジェクトを読み込みました'
-          '（現行:$currentAppVersion）。既知の変換ステップはありません。');
+      debugPrint(
+        '[NiaproSerializer] 旧バージョン($version)のプロジェクトを読み込みました'
+        '（現行:$currentAppVersion）。既知の変換ステップはありません。',
+      );
     } else if (cmp > 0) {
       // 保存時のバージョンが現行より新しい：このアプリより新しいバージョンで
       // 保存されたファイルを開こうとしている（アプリの更新忘れ等）。未知の
       // 追加フィールドはJSONデコード時に単に無視されるため致命的ではないが、
       // 診断用にログへ残す。
-      debugPrint('[NiaproSerializer] 現行より新しいバージョン($version)のプロジェクトです'
-          '（現行:$currentAppVersion）。アプリの更新が必要な可能性があります。');
+      debugPrint(
+        '[NiaproSerializer] 現行より新しいバージョン($version)のプロジェクトです'
+        '（現行:$currentAppVersion）。アプリの更新が必要な可能性があります。',
+      );
     }
     return json;
   }
@@ -128,9 +132,16 @@ class NiaproSerializer {
     final dir = outputDir ?? (await _projectDir(project.id)).path;
     final safeName = project.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
     final filePath = '$dir/$safeName.niashare';
-    return _writeArchive(filePath, project, scenes, tileManager,
-        materialFiles: materialFiles, materialsManifest: materialsManifest,
-        fontFiles: fontFiles, fontsManifest: fontsManifest);
+    return _writeArchive(
+      filePath,
+      project,
+      scenes,
+      tileManager,
+      materialFiles: materialFiles,
+      materialsManifest: materialsManifest,
+      fontFiles: fontFiles,
+      fontsManifest: fontsManifest,
+    );
   }
 
   /// .niashare を読み込む（.niaproと同一形式なので load() をそのまま利用できる）。
@@ -138,7 +149,10 @@ class NiaproSerializer {
 
   /// .niashareに同梱された素材ファイルを、新規プロジェクトのMaterials/フォルダへ
   /// 書き出す（共有時の素材同梱）。同梱がない場合は何もしない。
-  static Future<void> restoreBundledMaterials(String projectId, NiaproData data) async {
+  static Future<void> restoreBundledMaterials(
+    String projectId,
+    NiaproData data,
+  ) async {
     if (data.materialFiles.isEmpty && data.materialsManifest == null) return;
     final dir = await _projectDir(projectId);
     final materialsDir = Directory('${dir.path}/Materials');
@@ -147,7 +161,9 @@ class NiaproSerializer {
       await File('${materialsDir.path}/${entry.key}').writeAsBytes(entry.value);
     }
     if (data.materialsManifest != null) {
-      await File('${materialsDir.path}/materials.json').writeAsString(data.materialsManifest!);
+      await File(
+        '${materialsDir.path}/materials.json',
+      ).writeAsString(data.materialsManifest!);
     }
   }
 
@@ -155,11 +171,14 @@ class NiaproSerializer {
   /// （プロジェクト共有時の「フォントを含める」）。実際の登録
   /// （FontLoaderへの読み込み・一覧への追加）はFontServiceが行うため、
   /// engine層であるここではアーカイブのパースのみ行う。
-  static List<({String id, String displayName, String fileName, Uint8List bytes})> bundledFonts(
-      NiaproData data) {
+  static List<
+    ({String id, String displayName, String fileName, Uint8List bytes})
+  >
+  bundledFonts(NiaproData data) {
     if (data.fontsManifest == null) return const [];
     final list = jsonDecode(data.fontsManifest!) as List<dynamic>;
-    final result = <({String id, String displayName, String fileName, Uint8List bytes})>[];
+    final result =
+        <({String id, String displayName, String fileName, Uint8List bytes})>[];
     for (final e in list) {
       final map = e as Map<String, dynamic>;
       final fileName = map['fileName'] as String?;
@@ -191,10 +210,18 @@ class NiaproSerializer {
     required int slotIndex,
   }) async {
     final dir = await _autosaveDir(project.id);
-    return _writeArchive('$dir/slot_$slotIndex.niapro', project, scenes, tileManager);
+    return _writeArchive(
+      '$dir/slot_$slotIndex.niapro',
+      project,
+      scenes,
+      tileManager,
+    );
   }
 
-  static Future<NiaproData> loadAutosave(String projectId, int slotIndex) async {
+  static Future<NiaproData> loadAutosave(
+    String projectId,
+    int slotIndex,
+  ) async {
     final dir = await _autosaveDir(projectId);
     return load('$dir/slot_$slotIndex.niapro');
   }
@@ -219,14 +246,20 @@ class NiaproSerializer {
     return _writeArchive('$dir/$nodeId.niapro', project, scenes, tileManager);
   }
 
-  static Future<NiaproData> loadSaveTreeNode(String projectId, String nodeId) async {
+  static Future<NiaproData> loadSaveTreeNode(
+    String projectId,
+    String nodeId,
+  ) async {
     final dir = await _saveTreeDir(projectId);
     return load('$dir/$nodeId.niapro');
   }
 
   /// セーブノードのサムネイル画像（PNG）を保存し、保存先パスを返す。
   static Future<String> saveSaveTreeThumbnail(
-      String projectId, String nodeId, Uint8List pngBytes) async {
+    String projectId,
+    String nodeId,
+    Uint8List pngBytes,
+  ) async {
     final dir = await _saveTreeDir(projectId);
     final path = '$dir/${nodeId}_thumb.png';
     await File(path).writeAsBytes(pngBytes);
@@ -235,7 +268,10 @@ class NiaproSerializer {
 
   /// プロジェクトカード表示用のサムネイル画像（PNG）を保存し、保存先パスを返す
   /// （プロジェクト一覧のカードサムネイル）。
-  static Future<String> saveProjectThumbnail(String projectId, Uint8List pngBytes) async {
+  static Future<String> saveProjectThumbnail(
+    String projectId,
+    Uint8List pngBytes,
+  ) async {
     final dir = await _projectDir(projectId);
     final path = '${dir.path}/thumbnail.png';
     await File(path).writeAsBytes(pngBytes);
@@ -243,7 +279,10 @@ class NiaproSerializer {
   }
 
   /// ノードの実データ（.niapro）とサムネイル画像を両方削除する。
-  static Future<void> deleteSaveTreeNode(String projectId, String nodeId) async {
+  static Future<void> deleteSaveTreeNode(
+    String projectId,
+    String nodeId,
+  ) async {
     final dir = await _saveTreeDir(projectId);
     final file = File('$dir/$nodeId.niapro');
     if (await file.exists()) await file.delete();
@@ -287,28 +326,34 @@ class NiaproSerializer {
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
 
-    encoder.addArchiveFile(ArchiveFile(
-      _manifestFile,
-      0,
-      utf8.encode(jsonEncode(_serializeManifest(project))),
-    ));
+    encoder.addArchiveFile(
+      ArchiveFile(
+        _manifestFile,
+        0,
+        utf8.encode(jsonEncode(_serializeManifest(project))),
+      ),
+    );
 
     for (final scene in scenes) {
-      encoder.addArchiveFile(ArchiveFile(
-        'Scene/${scene.id}/$_framesFile',
-        0,
-        utf8.encode(jsonEncode(_serializeScene(scene))),
-      ));
+      encoder.addArchiveFile(
+        ArchiveFile(
+          'Scene/${scene.id}/$_framesFile',
+          0,
+          utf8.encode(jsonEncode(_serializeScene(scene))),
+        ),
+      );
     }
 
     final allTiles = tileManager.exportAll();
     for (final layerEntry in allTiles.entries) {
       for (final tileEntry in layerEntry.value.entries) {
-        encoder.addArchiveFile(ArchiveFile(
-          _tilePath(layerEntry.key, tileEntry.key),
-          0,
-          tileEntry.value,
-        ));
+        encoder.addArchiveFile(
+          ArchiveFile(
+            _tilePath(layerEntry.key, tileEntry.key),
+            0,
+            tileEntry.value,
+          ),
+        );
       }
     }
 
@@ -316,25 +361,42 @@ class NiaproSerializer {
     if (materialFiles != null) {
       for (final entry in materialFiles.entries) {
         encoder.addArchiveFile(
-            ArchiveFile('$_materialsArchiveDir/${entry.key}', entry.value.length, entry.value));
+          ArchiveFile(
+            '$_materialsArchiveDir/${entry.key}',
+            entry.value.length,
+            entry.value,
+          ),
+        );
       }
     }
     if (materialsManifest != null) {
       final bytes = utf8.encode(materialsManifest);
       encoder.addArchiveFile(
-          ArchiveFile('$_materialsArchiveDir/materials.json', bytes.length, bytes));
+        ArchiveFile(
+          '$_materialsArchiveDir/materials.json',
+          bytes.length,
+          bytes,
+        ),
+      );
     }
 
     // 同梱フォント（.niashare作成時に選択した「フォントを含める」）
     if (fontFiles != null) {
       for (final entry in fontFiles.entries) {
         encoder.addArchiveFile(
-            ArchiveFile('$_fontsArchiveDir/${entry.key}', entry.value.length, entry.value));
+          ArchiveFile(
+            '$_fontsArchiveDir/${entry.key}',
+            entry.value.length,
+            entry.value,
+          ),
+        );
       }
     }
     if (fontsManifest != null) {
       final bytes = utf8.encode(fontsManifest);
-      encoder.addArchiveFile(ArchiveFile('$_fontsArchiveDir/fonts.json', bytes.length, bytes));
+      encoder.addArchiveFile(
+        ArchiveFile('$_fontsArchiveDir/fonts.json', bytes.length, bytes),
+      );
     }
 
     encoder.close();
@@ -369,18 +431,22 @@ class NiaproSerializer {
     final encoder = ZipFileEncoder();
     encoder.create(tmpPath);
 
-    encoder.addArchiveFile(ArchiveFile(
-      _manifestFile,
-      0,
-      utf8.encode(jsonEncode(_serializeManifest(project))),
-    ));
+    encoder.addArchiveFile(
+      ArchiveFile(
+        _manifestFile,
+        0,
+        utf8.encode(jsonEncode(_serializeManifest(project))),
+      ),
+    );
 
     for (final scene in scenes) {
-      encoder.addArchiveFile(ArchiveFile(
-        'Scene/${scene.id}/$_framesFile',
-        0,
-        utf8.encode(jsonEncode(_serializeScene(scene))),
-      ));
+      encoder.addArchiveFile(
+        ArchiveFile(
+          'Scene/${scene.id}/$_framesFile',
+          0,
+          utf8.encode(jsonEncode(_serializeScene(scene))),
+        ),
+      );
     }
 
     final allTiles = tileManager.exportAll();
@@ -397,7 +463,9 @@ class NiaproSerializer {
           encoder.addArchiveFile(ArchiveFile(entryName, 0, tileEntry.value));
         } else {
           // 未変更タイル：前回保存分をそのまま引き継ぐ
-          encoder.addArchiveFile(ArchiveFile(entryName, 0, oldEntry.content as List<int>));
+          encoder.addArchiveFile(
+            ArchiveFile(entryName, 0, oldEntry.content as List<int>),
+          );
         }
       }
     }
@@ -420,9 +488,11 @@ class NiaproSerializer {
     final archive = ArchiveSecurity.decodeZip(bytes);
 
     final manifestFile = archive.findFile(_manifestFile);
-    if (manifestFile == null) throw const FormatException('manifest.json not found');
+    if (manifestFile == null)
+      throw const FormatException('manifest.json not found');
     final manifestJson = _migrateManifestJson(
-      jsonDecode(utf8.decode(manifestFile.content as List<int>)) as Map<String, dynamic>,
+      jsonDecode(utf8.decode(manifestFile.content as List<int>))
+          as Map<String, dynamic>,
     );
     final project = _deserializeManifest(manifestJson);
 
@@ -436,10 +506,24 @@ class NiaproSerializer {
       final framesFile = archive.findFile('Scene/$sceneId/$_framesFile');
       if (framesFile == null) continue;
       final decoded = jsonDecode(utf8.decode(framesFile.content as List<int>));
-      final (name, frames, cameraKeyframes, effectFilters, audioClips,
-          imageRowNames, videoRowNames, audioRowNames, groups, markers) = _deserializeScene(decoded);
-      final sceneIndex = int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
-      scenes.add(Scene(
+      final (
+        name,
+        frames,
+        cameraKeyframes,
+        effectFilters,
+        audioClips,
+        imageRowNames,
+        videoRowNames,
+        audioRowNames,
+        groups,
+        markers,
+      ) = _deserializeScene(
+        decoded,
+      );
+      final sceneIndex =
+          int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+      scenes.add(
+        Scene(
           id: sceneId,
           index: sceneIndex - 1,
           frames: frames,
@@ -451,7 +535,9 @@ class NiaproSerializer {
           markers: markers,
           imageRowNames: imageRowNames,
           videoRowNames: videoRowNames,
-          audioRowNames: audioRowNames));
+          audioRowNames: audioRowNames,
+        ),
+      );
     }
     scenes.sort((a, b) => a.index.compareTo(b.index));
 
@@ -462,7 +548,10 @@ class NiaproSerializer {
     for (final scene in scenes) {
       for (final frame in scene.frames) {
         for (final layer in frame.layers) {
-          framesByLayerId.putIfAbsent(layer.id, () => []).add((scene.id, frame.index));
+          framesByLayerId.putIfAbsent(layer.id, () => []).add((
+            scene.id,
+            frame.index,
+          ));
         }
       }
     }
@@ -490,8 +579,11 @@ class NiaproSerializer {
         if (underscoreIdx < 0) continue;
         final layerId = withoutExt.substring(0, underscoreIdx);
         final tileKey = withoutExt.substring(underscoreIdx + 1);
-        addTile(frameLayerKey(sceneId, frameIndex, layerId), tileKey,
-            Uint8List.fromList(file.content as List<int>));
+        addTile(
+          frameLayerKey(sceneId, frameIndex, layerId),
+          tileKey,
+          Uint8List.fromList(file.content as List<int>),
+        );
       } else {
         final withoutExt = segments.last.replaceAll('.bin', '');
         final underscoreIdx = withoutExt.indexOf('_');
@@ -501,8 +593,11 @@ class NiaproSerializer {
         final targets = framesByLayerId[layerId];
         if (targets == null) continue;
         for (final target in targets) {
-          addTile(frameLayerKey(target.$1, target.$2, layerId), tileKey,
-              Uint8List.fromList(file.content as List<int>));
+          addTile(
+            frameLayerKey(target.$1, target.$2, layerId),
+            tileKey,
+            Uint8List.fromList(file.content as List<int>),
+          );
         }
       }
     }
@@ -520,8 +615,11 @@ class NiaproSerializer {
         final tileKey = withoutExt.substring(underscoreIdx + 1);
         for (final frame in scene.frames) {
           if (!frame.layers.any((l) => l.id == layerId)) continue;
-          addTile(frameLayerKey(scene.id, frame.index, layerId), tileKey,
-              Uint8List.fromList(file.content as List<int>));
+          addTile(
+            frameLayerKey(scene.id, frame.index, layerId),
+            tileKey,
+            Uint8List.fromList(file.content as List<int>),
+          );
         }
       }
     }
@@ -535,7 +633,8 @@ class NiaproSerializer {
     for (final file in archive.files) {
       if (!file.name.startsWith('$_materialsArchiveDir/')) continue;
       final name = file.name.substring(_materialsArchiveDir.length + 1);
-      if (name.contains('/')) throw const FormatException('Materials内のファイル名が不正です');
+      if (name.contains('/'))
+        throw const FormatException('Materials内のファイル名が不正です');
       if (name == 'materials.json') {
         materialsManifest = utf8.decode(file.content as List<int>);
       } else if (name.isNotEmpty) {
@@ -571,178 +670,205 @@ class NiaproSerializer {
   // ─── シリアライズ ─────────────────────────────────────────────────────
 
   static Map<String, dynamic> _serializeManifest(Project p) => {
-        'id': p.id,
-        'name': p.name,
-        'fps': p.fps,
-        'durationSeconds': p.durationSeconds,
-        'backgroundColor': p.backgroundColor,
-        'exportWidth': p.exportWidth,
-        'exportHeight': p.exportHeight,
-        'drawingAreaScale': p.drawingAreaScale,
-        'createdAt': p.createdAt.toIso8601String(),
-        'updatedAt': DateTime.now().toIso8601String(),
-        'totalWorkSeconds': p.totalWorkSeconds,
-        'appVersion': currentAppVersion,
-        // お気に入り登録・フォルダ管理・タグはホーム画面の永続状態の
-        // 一部であり、マニフェストへ保存しないとアプリ再起動のたびに失われる。
-        'isFavorite': p.isFavorite,
-        'folderId': p.folderId,
-        'sharedFolderId': p.sharedFolderId,
-        'isSharedImport': p.isSharedImport,
-        'enabledAutofillPresetIds': p.enabledAutofillPresetIds,
-        'tags': p.tags,
-        'thumbnailPath': p.thumbnailPath,
-      };
+    'id': p.id,
+    'name': p.name,
+    'fps': p.fps,
+    'durationSeconds': p.durationSeconds,
+    'backgroundColor': p.backgroundColor,
+    'exportWidth': p.exportWidth,
+    'exportHeight': p.exportHeight,
+    'drawingAreaScale': p.drawingAreaScale,
+    'createdAt': p.createdAt.toIso8601String(),
+    'updatedAt': DateTime.now().toIso8601String(),
+    'totalWorkSeconds': p.totalWorkSeconds,
+    'appVersion': currentAppVersion,
+    // お気に入り登録・フォルダ管理・タグはホーム画面の永続状態の
+    // 一部であり、マニフェストへ保存しないとアプリ再起動のたびに失われる。
+    'isFavorite': p.isFavorite,
+    'folderId': p.folderId,
+    'sharedFolderId': p.sharedFolderId,
+    'isSharedImport': p.isSharedImport,
+    'enabledAutofillPresetIds': p.enabledAutofillPresetIds,
+    'tags': p.tags,
+    'thumbnailPath': p.thumbnailPath,
+  };
 
   static Map<String, dynamic> _serializeScene(Scene scene) => {
-        'name': scene.name,
-        'frames': _serializeFrames(scene.frames),
-        'cameraKeyframes': scene.cameraKeyframes
-            .map((k) => {
-                  'frameIndex': k.frameIndex,
-                  'x': k.x,
-                  'y': k.y,
-                  'zoom': k.zoom,
-                  'rotation': k.rotation,
-                })
-            .toList(),
-        'effectFilters': scene.effectFilters
-            .map((e) => {
-                  'id': e.id,
-                  'type': e.type.name,
-                  'startFrame': e.startFrame,
-                  'endFrame': e.endFrame,
-                  'enabled': e.enabled,
-                  'param1': e.param1,
-                  'param2': e.param2,
-                  'param3': e.param3,
-                  'param4': e.param4,
-                  'fadeColor': e.fadeColor.toARGB32(),
-                  'pixelColorMode': e.pixelColorMode.name,
-                  'pixelExplicitColors': e.pixelExplicitColors,
-                })
-            .toList(),
-        'audioClips': scene.audioClips
-            .map((a) => {
-                  'id': a.id,
-                  'label': a.label,
-                  'materialId': a.materialId,
-                  'startFrame': a.startFrame,
-                  'lengthFrames': a.lengthFrames,
-                  'volume': a.volume,
-                  'fadeIn': a.fadeIn,
-                  'fadeOut': a.fadeOut,
-                  'trackRow': a.trackRow,
-                })
-            .toList(),
-        'imageRowNames': scene.imageRowNames,
-        'videoRowNames': scene.videoRowNames,
-        'audioRowNames': scene.audioRowNames,
-        'groups': scene.groups.map((g) => g.toJson()).toList(),
-        'markers': scene.markers.map((m) => m.toJson()).toList(),
-      };
+    'name': scene.name,
+    'frames': _serializeFrames(scene.frames),
+    'cameraKeyframes': scene.cameraKeyframes
+        .map(
+          (k) => {
+            'frameIndex': k.frameIndex,
+            'x': k.x,
+            'y': k.y,
+            'zoom': k.zoom,
+            'rotation': k.rotation,
+          },
+        )
+        .toList(),
+    'effectFilters': scene.effectFilters
+        .map(
+          (e) => {
+            'id': e.id,
+            'type': e.type.name,
+            'startFrame': e.startFrame,
+            'endFrame': e.endFrame,
+            'enabled': e.enabled,
+            'param1': e.param1,
+            'param2': e.param2,
+            'param3': e.param3,
+            'param4': e.param4,
+            'fadeColor': e.fadeColor.toARGB32(),
+            'pixelColorMode': e.pixelColorMode.name,
+            'pixelExplicitColors': e.pixelExplicitColors,
+          },
+        )
+        .toList(),
+    'audioClips': scene.audioClips
+        .map(
+          (a) => {
+            'id': a.id,
+            'label': a.label,
+            'materialId': a.materialId,
+            'startFrame': a.startFrame,
+            'lengthFrames': a.lengthFrames,
+            'volume': a.volume,
+            'fadeIn': a.fadeIn,
+            'fadeOut': a.fadeOut,
+            'trackRow': a.trackRow,
+          },
+        )
+        .toList(),
+    'imageRowNames': scene.imageRowNames,
+    'videoRowNames': scene.videoRowNames,
+    'audioRowNames': scene.audioRowNames,
+    'groups': scene.groups.map((g) => g.toJson()).toList(),
+    'markers': scene.markers.map((m) => m.toJson()).toList(),
+  };
 
-  static List<dynamic> _serializeFrames(List<Frame> frames) =>
-      frames.map((f) => {
-            'index': f.index,
-            'layers': f.layers.map(_serializeLayer).toList(),
-          }).toList();
+  static List<dynamic> _serializeFrames(List<Frame> frames) => frames
+      .map(
+        (f) => {
+          'index': f.index,
+          'layers': f.layers.map(_serializeLayer).toList(),
+        },
+      )
+      .toList();
 
   static Map<String, dynamic> _serializeLayer(Layer l) => {
-        'id': l.id,
-        'name': l.name,
-        'type': l.type.name,
-        'opacity': l.opacity,
-        'blendMode': l.blendMode.name,
-        'isVisible': l.isVisible,
-        'isLocked': l.isLocked,
-        'opacityLocked': l.opacityLocked,
-        'hasClipping': l.hasClipping,
-        'parentFolderId': l.parentFolderId,
-        'needsAutofillUpdate': l.needsAutofillUpdate,
-        'partId': l.partId,
-        'rangeMode': l.rangeMode.name,
-        'rangeStart': l.rangeStart,
-        'rangeEnd': l.rangeEnd,
-        'rangeSceneId': l.rangeSceneId,
-        'isExpanded': l.isExpanded,
-        'materialId': l.materialId,
-        'sourceTrimStart': l.sourceTrimStart,
-        'sourceTrimEnd': l.sourceTrimEnd,
-        'watermarkAssetId': l.watermarkAssetId,
-        'watermarkAngle': l.watermarkAngle,
-        'watermarkScale': l.watermarkScale,
-        'trackRow': l.trackRow,
-        if (l.keyframes.isNotEmpty) 'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
-        if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
-      };
+    'id': l.id,
+    'name': l.name,
+    'type': l.type.name,
+    'opacity': l.opacity,
+    'blendMode': l.blendMode.name,
+    'isVisible': l.isVisible,
+    'isLocked': l.isLocked,
+    'opacityLocked': l.opacityLocked,
+    'hasClipping': l.hasClipping,
+    'parentFolderId': l.parentFolderId,
+    'needsAutofillUpdate': l.needsAutofillUpdate,
+    'partId': l.partId,
+    'rangeMode': l.rangeMode.name,
+    'rangeStart': l.rangeStart,
+    'rangeEnd': l.rangeEnd,
+    'rangeSceneId': l.rangeSceneId,
+    'isExpanded': l.isExpanded,
+    'materialId': l.materialId,
+    'sourceTrimStart': l.sourceTrimStart,
+    'sourceTrimEnd': l.sourceTrimEnd,
+    'watermarkAssetId': l.watermarkAssetId,
+    'watermarkAngle': l.watermarkAngle,
+    'watermarkScale': l.watermarkScale,
+    'trackRow': l.trackRow,
+    if (l.keyframes.isNotEmpty)
+      'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
+    if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
+  };
 
   static Map<String, dynamic> _serializeTextObject(TextObject t) => {
-        'id': t.id,
-        'text': t.text,
-        'fontFamily': t.fontFamily,
-        'fontSize': t.fontSize,
-        'color': t.color.toARGB32(),
-        'isBold': t.isBold,
-        'isItalic': t.isItalic,
-        'lineHeight': t.lineHeight,
-        'letterSpacing': t.letterSpacing,
-        'direction': t.direction.name,
-        'align': t.align.name,
-        'positionX': t.position.dx,
-        'positionY': t.position.dy,
-        'rotation': t.rotation,
-        'scale': t.scale,
-        'opacity': t.opacity,
-        if (t.outline != null) 'outline': {
-          'enabled': t.outline!.enabled,
-          'color': t.outline!.color.toARGB32(),
-          'width': t.outline!.width,
-        },
-      };
+    'id': t.id,
+    'text': t.text,
+    'fontFamily': t.fontFamily,
+    'fontSize': t.fontSize,
+    'color': t.color.toARGB32(),
+    'isBold': t.isBold,
+    'isItalic': t.isItalic,
+    'lineHeight': t.lineHeight,
+    'letterSpacing': t.letterSpacing,
+    'direction': t.direction.name,
+    'align': t.align.name,
+    'positionX': t.position.dx,
+    'positionY': t.position.dy,
+    'rotation': t.rotation,
+    'scale': t.scale,
+    'opacity': t.opacity,
+    if (t.outline != null)
+      'outline': {
+        'enabled': t.outline!.enabled,
+        'color': t.outline!.color.toARGB32(),
+        'width': t.outline!.width,
+      },
+  };
 
   // ─── デシリアライズ ───────────────────────────────────────────────────
 
   static Project _deserializeManifest(Map<String, dynamic> j) => Project(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        fps: j['fps'] as int,
-        durationSeconds: j['durationSeconds'] as int,
-        backgroundColor: j['backgroundColor'] as int,
-        exportWidth: j['exportWidth'] as int? ?? 1920,
-        exportHeight: j['exportHeight'] as int? ?? 1080,
-        drawingAreaScale: (j['drawingAreaScale'] as num?)?.toDouble() ?? 1.0,
-        createdAt: DateTime.parse(j['createdAt'] as String),
-        updatedAt: DateTime.parse(j['updatedAt'] as String),
-        totalWorkSeconds: j['totalWorkSeconds'] as int? ?? 0,
-        isFavorite: j['isFavorite'] as bool? ?? false,
-        folderId: j['folderId'] as String?,
-        sharedFolderId: j['sharedFolderId'] as String?,
-        isSharedImport: j['isSharedImport'] as bool? ?? false,
-        enabledAutofillPresetIds:
-            (j['enabledAutofillPresetIds'] as List<dynamic>?)?.map((e) => e as String).toList(),
-        tags: (j['tags'] as List<dynamic>? ?? const []).map((e) => e as String).toList(),
-        thumbnailPath: j['thumbnailPath'] as String?,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    fps: j['fps'] as int,
+    durationSeconds: j['durationSeconds'] as int,
+    backgroundColor: j['backgroundColor'] as int,
+    exportWidth: j['exportWidth'] as int? ?? 1920,
+    exportHeight: j['exportHeight'] as int? ?? 1080,
+    drawingAreaScale: (j['drawingAreaScale'] as num?)?.toDouble() ?? 1.0,
+    createdAt: DateTime.parse(j['createdAt'] as String),
+    updatedAt: DateTime.parse(j['updatedAt'] as String),
+    totalWorkSeconds: j['totalWorkSeconds'] as int? ?? 0,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+    folderId: j['folderId'] as String?,
+    sharedFolderId: j['sharedFolderId'] as String?,
+    isSharedImport: j['isSharedImport'] as bool? ?? false,
+    enabledAutofillPresetIds: (j['enabledAutofillPresetIds'] as List<dynamic>?)
+        ?.map((e) => e as String)
+        .toList(),
+    tags: (j['tags'] as List<dynamic>? ?? const [])
+        .map((e) => e as String)
+        .toList(),
+    thumbnailPath: j['thumbnailPath'] as String?,
+  );
 
   /// シーンファイル（frames.json）を読み込む。新形式は
   /// `{'name': ..., 'frames': [...]}`、旧形式（nameフィールド追加前）は
   /// フレーム配列そのもの。どちらも読み込めるようにする。
-  static (String?, List<Frame>, List<CameraKeyframe>, List<EffectFilterInstance>, List<AudioClip>,
-      List<String?>, List<String?>, List<String?>, List<LayerGroup>, List<TimelineMarker>)
-      _deserializeScene(dynamic decoded) {
+  static (
+    String?,
+    List<Frame>,
+    List<CameraKeyframe>,
+    List<EffectFilterInstance>,
+    List<AudioClip>,
+    List<String?>,
+    List<String?>,
+    List<String?>,
+    List<LayerGroup>,
+    List<TimelineMarker>,
+  )
+  _deserializeScene(dynamic decoded) {
     if (decoded is Map<String, dynamic>) {
       final name = decoded['name'] as String?;
       final frames = _deserializeFrames(decoded['frames'] as List<dynamic>);
-      final cameraJson = decoded['cameraKeyframes'] as List<dynamic>? ?? const [];
+      final cameraJson =
+          decoded['cameraKeyframes'] as List<dynamic>? ?? const [];
       final cameraKeyframes = cameraJson
-          .map((j) => CameraKeyframe(
-                frameIndex: (j as Map<String, dynamic>)['frameIndex'] as int,
-                x: (j['x'] as num?)?.toDouble() ?? 0,
-                y: (j['y'] as num?)?.toDouble() ?? 0,
-                zoom: (j['zoom'] as num?)?.toDouble() ?? 1.0,
-                rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
-              ))
+          .map(
+            (j) => CameraKeyframe(
+              frameIndex: (j as Map<String, dynamic>)['frameIndex'] as int,
+              x: (j['x'] as num?)?.toDouble() ?? 0,
+              y: (j['y'] as num?)?.toDouble() ?? 0,
+              zoom: (j['zoom'] as num?)?.toDouble() ?? 1.0,
+              rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
+            ),
+          )
           .toList();
       final effectJson = decoded['effectFilters'] as List<dynamic>? ?? const [];
       final effectFilters = effectJson.map((j) {
@@ -759,8 +885,11 @@ class NiaproSerializer {
           param4: (m['param4'] as num?)?.toDouble() ?? 0.0,
           fadeColor: Color(m['fadeColor'] as int? ?? 0xFF000000),
           pixelColorMode: PixelColorMode.values.firstWhere(
-              (e) => e.name == m['pixelColorMode'], orElse: () => PixelColorMode.count),
-          pixelExplicitColors: (m['pixelExplicitColors'] as List<dynamic>?)
+            (e) => e.name == m['pixelColorMode'],
+            orElse: () => PixelColorMode.count,
+          ),
+          pixelExplicitColors:
+              (m['pixelExplicitColors'] as List<dynamic>?)
                   ?.map((e) => e as int)
                   .toList() ??
               const [0xFF000000],
@@ -781,21 +910,38 @@ class NiaproSerializer {
           trackRow: m['trackRow'] as int? ?? 0,
         );
       }).toList();
-      final imageRowNames = (decoded['imageRowNames'] as List<dynamic>? ?? const [])
-          .map((e) => e as String?)
-          .toList();
-      final videoRowNames = (decoded['videoRowNames'] as List<dynamic>? ?? const [])
-          .map((e) => e as String?)
-          .toList();
-      final audioRowNames = (decoded['audioRowNames'] as List<dynamic>? ?? const [])
-          .map((e) => e as String?)
-          .toList();
+      final imageRowNames =
+          (decoded['imageRowNames'] as List<dynamic>? ?? const [])
+              .map((e) => e as String?)
+              .toList();
+      final videoRowNames =
+          (decoded['videoRowNames'] as List<dynamic>? ?? const [])
+              .map((e) => e as String?)
+              .toList();
+      final audioRowNames =
+          (decoded['audioRowNames'] as List<dynamic>? ?? const [])
+              .map((e) => e as String?)
+              .toList();
       final groupsJson = decoded['groups'] as List<dynamic>? ?? const [];
-      final groups = groupsJson.map((j) => LayerGroup.fromJson(j as Map<String, dynamic>)).toList();
+      final groups = groupsJson
+          .map((j) => LayerGroup.fromJson(j as Map<String, dynamic>))
+          .toList();
       final markersJson = decoded['markers'] as List<dynamic>? ?? const [];
-      final markers = markersJson.map((j) => TimelineMarker.fromJson(j as Map<String, dynamic>)).toList();
-      return (name, frames, cameraKeyframes, effectFilters, audioClips,
-          imageRowNames, videoRowNames, audioRowNames, groups, markers);
+      final markers = markersJson
+          .map((j) => TimelineMarker.fromJson(j as Map<String, dynamic>))
+          .toList();
+      return (
+        name,
+        frames,
+        cameraKeyframes,
+        effectFilters,
+        audioClips,
+        imageRowNames,
+        videoRowNames,
+        audioRowNames,
+        groups,
+        markers,
+      );
     }
     return (
       null,
@@ -811,54 +957,57 @@ class NiaproSerializer {
     );
   }
 
-  static List<Frame> _deserializeFrames(List<dynamic> json) =>
-      json.map((f) {
-        final map = f as Map<String, dynamic>;
-        return Frame(
-          index: map['index'] as int,
-          layers: (map['layers'] as List<dynamic>)
-              .map((l) => _deserializeLayer(l as Map<String, dynamic>))
-              .toList(),
-        );
-      }).toList();
+  static List<Frame> _deserializeFrames(List<dynamic> json) => json.map((f) {
+    final map = f as Map<String, dynamic>;
+    return Frame(
+      index: map['index'] as int,
+      layers: (map['layers'] as List<dynamic>)
+          .map((l) => _deserializeLayer(l as Map<String, dynamic>))
+          .toList(),
+    );
+  }).toList();
 
   static Layer _deserializeLayer(Map<String, dynamic> j) => Layer(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        type: LayerType.values.firstWhere((e) => e.name == j['type'],
-            orElse: () => LayerType.normal),
-        opacity: j['opacity'] as int? ?? 100,
-        blendMode: LayerBlendMode.values.firstWhere(
-            (e) => e.name == j['blendMode'],
-            orElse: () => LayerBlendMode.normal),
-        isVisible: j['isVisible'] as bool? ?? true,
-        isLocked: j['isLocked'] as bool? ?? false,
-        opacityLocked: j['opacityLocked'] as bool? ?? false,
-        hasClipping: j['hasClipping'] as bool? ?? false,
-        parentFolderId: j['parentFolderId'] as String?,
-        needsAutofillUpdate: j['needsAutofillUpdate'] as bool? ?? false,
-        partId: j['partId'] as String?,
-        rangeMode: LayerRangeMode.values.firstWhere(
-            (e) => e.name == j['rangeMode'],
-            orElse: () => LayerRangeMode.allFrames),
-        rangeStart: j['rangeStart'] as int?,
-        rangeEnd: j['rangeEnd'] as int?,
-        rangeSceneId: j['rangeSceneId'] as String?,
-        isExpanded: j['isExpanded'] as bool? ?? true,
-        materialId: j['materialId'] as String?,
-        sourceTrimStart: j['sourceTrimStart'] as int?,
-        sourceTrimEnd: j['sourceTrimEnd'] as int?,
-        watermarkAssetId: j['watermarkAssetId'] as String?,
-        watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
-        watermarkScale: (j['watermarkScale'] as num?)?.toDouble() ?? 0.25,
-        trackRow: j['trackRow'] as int? ?? 0,
-        keyframes: (j['keyframes'] as List<dynamic>? ?? const [])
-            .map((k) => LayerKeyframe.fromJson(k as Map<String, dynamic>))
-            .toList(),
-        textObject: j['textObject'] != null
-            ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
-            : null,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    type: LayerType.values.firstWhere(
+      (e) => e.name == j['type'],
+      orElse: () => LayerType.normal,
+    ),
+    opacity: j['opacity'] as int? ?? 100,
+    blendMode: LayerBlendMode.values.firstWhere(
+      (e) => e.name == j['blendMode'],
+      orElse: () => LayerBlendMode.normal,
+    ),
+    isVisible: j['isVisible'] as bool? ?? true,
+    isLocked: j['isLocked'] as bool? ?? false,
+    opacityLocked: j['opacityLocked'] as bool? ?? false,
+    hasClipping: j['hasClipping'] as bool? ?? false,
+    parentFolderId: j['parentFolderId'] as String?,
+    needsAutofillUpdate: j['needsAutofillUpdate'] as bool? ?? false,
+    partId: j['partId'] as String?,
+    rangeMode: LayerRangeMode.values.firstWhere(
+      (e) => e.name == j['rangeMode'],
+      orElse: () => LayerRangeMode.allFrames,
+    ),
+    rangeStart: j['rangeStart'] as int?,
+    rangeEnd: j['rangeEnd'] as int?,
+    rangeSceneId: j['rangeSceneId'] as String?,
+    isExpanded: j['isExpanded'] as bool? ?? true,
+    materialId: j['materialId'] as String?,
+    sourceTrimStart: j['sourceTrimStart'] as int?,
+    sourceTrimEnd: j['sourceTrimEnd'] as int?,
+    watermarkAssetId: j['watermarkAssetId'] as String?,
+    watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
+    watermarkScale: (j['watermarkScale'] as num?)?.toDouble() ?? 0.25,
+    trackRow: j['trackRow'] as int? ?? 0,
+    keyframes: (j['keyframes'] as List<dynamic>? ?? const [])
+        .map((k) => LayerKeyframe.fromJson(k as Map<String, dynamic>))
+        .toList(),
+    textObject: j['textObject'] != null
+        ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
+        : null,
+  );
 
   static TextObject _deserializeTextObject(Map<String, dynamic> j) {
     final outlineMap = j['outline'] as Map<String, dynamic>?;
@@ -873,11 +1022,13 @@ class NiaproSerializer {
       lineHeight: (j['lineHeight'] as num?)?.toDouble() ?? 1.2,
       letterSpacing: (j['letterSpacing'] as num?)?.toDouble() ?? 0,
       direction: TextWritingDirection.values.firstWhere(
-          (e) => e.name == j['direction'],
-          orElse: () => TextWritingDirection.horizontal),
+        (e) => e.name == j['direction'],
+        orElse: () => TextWritingDirection.horizontal,
+      ),
       align: TextAlign.values.firstWhere(
-          (e) => e.name == j['align'],
-          orElse: () => TextAlign.left),
+        (e) => e.name == j['align'],
+        orElse: () => TextAlign.left,
+      ),
       position: Offset(
         (j['positionX'] as num?)?.toDouble() ?? 0,
         (j['positionY'] as num?)?.toDouble() ?? 0,

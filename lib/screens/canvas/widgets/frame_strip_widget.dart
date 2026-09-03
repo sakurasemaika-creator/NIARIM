@@ -233,8 +233,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                               ),
                             );
                           }
-                          final isChecked = widget.selectedFrames.contains(index);
-                          final isSelected = widget.multiSelectMode && isChecked;
+                          final isChecked = widget.selectedFrames.contains(
+                            index,
+                          );
+                          final isSelected =
+                              widget.multiSelectMode && isChecked;
                           final hold = service.frameHold(
                             widget.projectId,
                             widget.sceneId,
@@ -291,7 +294,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                                 .current
                                                 .menuBgColor
                                                 .withValues(alpha: 0.7),
-                                            borderRadius: BorderRadius.circular(3),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
                                           ),
                                           child: Text(
                                             '$hold',
@@ -316,7 +321,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                               : Icons.check_box_outline_blank,
                                           size: 14,
                                           color: isChecked
-                                              ? Theme.of(context).colorScheme.primary
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
                                               : Colors.grey[400],
                                         ),
                                       ),

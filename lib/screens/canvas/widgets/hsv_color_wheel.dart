@@ -42,7 +42,10 @@ class HsvColorWheel extends StatelessWidget {
     final squareSize = _squareSize;
     // マーカーの縁取りはテーマのメニュー背景色連動にする（ホイール自体は
     // 色相・彩度・明度を表す機能上のグラデーションのため色固定のまま）。
-    final markerOutlineColor = context.watch<ThemeService>().current.menuBgColor;
+    final markerOutlineColor = context
+        .watch<ThemeService>()
+        .current
+        .menuBgColor;
     return SizedBox(
       width: size,
       height: size,
@@ -58,7 +61,11 @@ class HsvColorWheel extends StatelessWidget {
             onTapUp: (_) => onChangeEnd?.call(),
             child: CustomPaint(
               size: Size(size, size),
-              painter: _HueRingPainter(hue: hue, thickness: ringThickness, markerOutlineColor: markerOutlineColor),
+              painter: _HueRingPainter(
+                hue: hue,
+                thickness: ringThickness,
+                markerOutlineColor: markerOutlineColor,
+              ),
             ),
           ),
           GestureDetector(
@@ -77,7 +84,10 @@ class HsvColorWheel extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
                       gradient: LinearGradient(
-                        colors: [Colors.white, HSVColor.fromAHSV(1, hue, 1, 1).toColor()],
+                        colors: [
+                          Colors.white,
+                          HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
+                        ],
                       ),
                     ),
                     foregroundDecoration: BoxDecoration(
@@ -144,7 +154,11 @@ class _HueRingPainter extends CustomPainter {
   final double thickness;
   final Color markerOutlineColor;
 
-  _HueRingPainter({required this.hue, required this.thickness, required this.markerOutlineColor});
+  _HueRingPainter({
+    required this.hue,
+    required this.thickness,
+    required this.markerOutlineColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -154,8 +168,13 @@ class _HueRingPainter extends CustomPainter {
     final rect = Rect.fromCircle(center: center, radius: outerRadius);
 
     const colors = [
-      Color(0xFFFF0000), Color(0xFFFFFF00), Color(0xFF00FF00),
-      Color(0xFF00FFFF), Color(0xFF0000FF), Color(0xFFFF00FF), Color(0xFFFF0000),
+      Color(0xFFFF0000),
+      Color(0xFFFFFF00),
+      Color(0xFF00FF00),
+      Color(0xFF00FFFF),
+      Color(0xFF0000FF),
+      Color(0xFFFF00FF),
+      Color(0xFFFF0000),
     ];
     final ringPaint = Paint()
       ..shader = SweepGradient(colors: colors).createShader(rect)
@@ -165,14 +184,34 @@ class _HueRingPainter extends CustomPainter {
 
     // 現在の色相位置のマーカー。
     final angle = hue * math.pi / 180;
-    final markerCenter = center + Offset(math.cos(angle), math.sin(angle)) * (outerRadius + innerRadius) / 2;
-    canvas.drawCircle(markerCenter, thickness / 2 - 2, Paint()..color = markerOutlineColor..style = PaintingStyle.stroke..strokeWidth = 3);
-    canvas.drawCircle(markerCenter, thickness / 2 - 2, Paint()..color = Colors.black26..style = PaintingStyle.stroke..strokeWidth = 1);
+    final markerCenter =
+        center +
+        Offset(math.cos(angle), math.sin(angle)) *
+            (outerRadius + innerRadius) /
+            2;
+    canvas.drawCircle(
+      markerCenter,
+      thickness / 2 - 2,
+      Paint()
+        ..color = markerOutlineColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+    canvas.drawCircle(
+      markerCenter,
+      thickness / 2 - 2,
+      Paint()
+        ..color = Colors.black26
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
   }
 
   @override
   bool shouldRepaint(_HueRingPainter old) =>
-      old.hue != hue || old.thickness != thickness || old.markerOutlineColor != markerOutlineColor;
+      old.hue != hue ||
+      old.thickness != thickness ||
+      old.markerOutlineColor != markerOutlineColor;
 }
 
 /// 透明色への切り替えボタン。チェッカー柄の円で「透明」を表現し、
@@ -192,16 +231,23 @@ class _TransparentToggleButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant,
+            color: isActive
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outlineVariant,
             width: isActive ? 2.5 : 1.5,
           ),
         ),
         child: ClipOval(
           child: Stack(
             children: [
-              CustomPaint(size: const Size(26, 26), painter: _MiniCheckerPainter()),
+              CustomPaint(
+                size: const Size(26, 26),
+                painter: _MiniCheckerPainter(),
+              ),
               if (isActive)
-                const Center(child: Icon(Icons.check, size: 14, color: Colors.black87)),
+                const Center(
+                  child: Icon(Icons.check, size: 14, color: Colors.black87),
+                ),
             ],
           ),
         ),

@@ -17,8 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('CanvasAreaのオニオンスキンを固定1点ではなく描画領域全体の色分布で検証する',
-      (tester) async {
+  testWidgets('CanvasAreaのオニオンスキンを固定1点ではなく描画領域全体の色分布で検証する', (tester) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
@@ -107,8 +106,11 @@ void main() {
     await _settleRealAsync(tester);
     final off = await _capture(tester, boundaryKey);
     final offCounts = _dominanceCounts(off.rgba);
-    expect(offCounts.green, greaterThan(100),
-        reason: 'OFFでも現在フレームの緑矩形が実CanvasAreaに描画されること');
+    expect(
+      offCounts.green,
+      greaterThan(100),
+      reason: 'OFFでも現在フレームの緑矩形が実CanvasAreaに描画されること',
+    );
     expect(offCounts.red, lessThan(40), reason: 'OFFでは前フレームを描画しないこと');
     expect(offCounts.blue, lessThan(40), reason: 'OFFでは後フレームを描画しないこと');
 
@@ -132,14 +134,20 @@ void main() {
     final on = await _capture(tester, boundaryKey);
     final onCounts = _dominanceCounts(on.rgba);
 
-    expect(onCounts.green, greaterThan(100),
-        reason: 'ONでも現在フレームの元色は維持されること');
-    expect(onCounts.red, greaterThan(offCounts.red + 100),
-        reason: 'ONで前フレーム由来の赤優勢画素が増えること');
-    expect(onCounts.blue, greaterThan(offCounts.blue + 100),
-        reason: 'ONで後フレーム由来の青優勢画素が増えること');
+    expect(onCounts.green, greaterThan(100), reason: 'ONでも現在フレームの元色は維持されること');
+    expect(
+      onCounts.red,
+      greaterThan(offCounts.red + 100),
+      reason: 'ONで前フレーム由来の赤優勢画素が増えること',
+    );
+    expect(
+      onCounts.blue,
+      greaterThan(offCounts.blue + 100),
+      reason: 'ONで後フレーム由来の青優勢画素が増えること',
+    );
 
-    final out = Directory('build/functional-visual')..createSync(recursive: true);
+    final out = Directory('build/functional-visual')
+      ..createSync(recursive: true);
     await tester.runAsync(() async {
       await File('${out.path}/onion_diagnostic_off.png').writeAsBytes(off.png);
       await File('${out.path}/onion_diagnostic_on.png').writeAsBytes(on.png);
@@ -164,7 +172,8 @@ typedef _Capture = ({Uint8List rgba, Uint8List png});
 
 Future<_Capture> _capture(WidgetTester tester, GlobalKey key) async {
   return (await tester.runAsync(() async {
-    final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final boundary =
+        key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 1);
     final raw = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     final png = await image.toByteData(format: ui.ImageByteFormat.png);

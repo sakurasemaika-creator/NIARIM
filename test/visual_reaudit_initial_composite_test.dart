@@ -28,10 +28,16 @@ void main() {
     final ps = ProjectService();
     final undo = app_undo.UndoManager();
     ps.setUndoManager(undo);
-    final p = (await tester.runAsync(() => ps.createProject(
-      name: 'initial-composite-visual', fps: 24, durationSeconds: 1,
-      backgroundColor: 0x00000000, exportWidth: 96, exportHeight: 80,
-    )))!;
+    final p = (await tester.runAsync(
+      () => ps.createProject(
+        name: 'initial-composite-visual',
+        fps: 24,
+        durationSeconds: 1,
+        backgroundColor: 0x00000000,
+        exportWidth: 96,
+        exportHeight: 80,
+      ),
+    ))!;
     final scene = ps.scenesOf(p.id).first;
     final layer = ps.layersOf(p.id, scene.id, 0).first;
     final key = ps.tileKeyFor(p.id, scene.id, 0, layer.id);
@@ -40,28 +46,45 @@ void main() {
     for (var y = 44; y < 68; y++) {
       for (var x = 54; x < 86; x++) {
         final i = (y * 96 + x) * 4;
-        initial[i] = 220; initial[i + 1] = 55; initial[i + 2] = 40; initial[i + 3] = 255;
+        initial[i] = 220;
+        initial[i + 1] = 55;
+        initial[i + 2] = 40;
+        initial[i + 3] = 255;
       }
     }
     tm.replaceLayerPixels(key, initial);
 
     final providers = await tester.runAsync(buildAppProviders);
     final boundaryKey = GlobalKey();
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ...providers!,
-        ChangeNotifierProvider<ProjectService>.value(value: ps),
-        ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
-      ],
-      child: MaterialApp(home: Scaffold(body: Center(child: RepaintBoundary(
-        key: boundaryKey,
-        child: SizedBox(
-          width: 288, height: 240,
-          child: CanvasArea(project: p, currentLayerId: layer.id,
-            currentTool: DrawingTool.transform, currentFrame: 0, sceneId: scene.id),
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: ps),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: SizedBox(
+                  width: 288,
+                  height: 240,
+                  child: CanvasArea(
+                    project: p,
+                    currentLayerId: layer.id,
+                    currentTool: DrawingTool.transform,
+                    currentFrame: 0,
+                    sceneId: scene.id,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
-      )))),
-    ));
+      ),
+    );
 
     final observations = <String>[];
     for (final checkpoint in const <(String, Duration)>[
@@ -70,25 +93,34 @@ void main() {
       ('3000ms', Duration(seconds: 2)),
     ]) {
       await tester.pump(checkpoint.$2);
-      final rgba = await tester.runAsync(() => _captureRgba(
-        boundaryKey, '${out.path}/${checkpoint.$1}.png'));
+      final rgba = await tester.runAsync(
+        () => _captureRgba(boundaryKey, '${out.path}/${checkpoint.$1}.png'),
+      );
       final pixel = _pixel(rgba!, 288, 200, 165);
       observations.add('${checkpoint.$1}: rgba=$pixel');
     }
     // This position lies inside the preloaded red rectangle in project coordinates.
     // By 3 seconds it must be visibly composited without requiring user interaction.
-    final finalRgba = await tester.runAsync(() => _captureRgba(
-      boundaryKey, '${out.path}/final.png'));
+    final finalRgba = await tester.runAsync(
+      () => _captureRgba(boundaryKey, '${out.path}/final.png'),
+    );
     final finalPixel = _pixel(finalRgba!, 288, 200, 165);
     // ignore: avoid_print
-    print('INITIAL_COMPOSITE_CHECKPOINTS ${observations.join(' | ')} final=$finalPixel');
+    print(
+      'INITIAL_COMPOSITE_CHECKPOINTS ${observations.join(' | ')} final=$finalPixel',
+    );
     expect(finalPixel.$1, greaterThan(140), reason: '既存の赤画素が初回表示へ合成されること');
-    expect(finalPixel.$1, greaterThan(finalPixel.$2 + 70), reason: '黒背景ではなく赤矩形が見えること');
+    expect(
+      finalPixel.$1,
+      greaterThan(finalPixel.$2 + 70),
+      reason: '黒背景ではなく赤矩形が見えること',
+    );
   }, timeout: const Timeout(Duration(seconds: 20)));
 }
 
 Future<Uint8List?> _captureRgba(GlobalKey key, String path) async {
-  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
   final png = await image.toByteData(format: ui.ImageByteFormat.png);
   await File(path).writeAsBytes(png!.buffer.asUint8List());
