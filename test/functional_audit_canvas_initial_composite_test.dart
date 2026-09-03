@@ -54,7 +54,7 @@ void main() {
                     currentLayerId: layerId,
                     currentTool: DrawingTool.pen,
                     currentFrame: 0,
-                    sceneId: sceneId,
+                    sceneId: sceneId!,
                   ),
                 ),
               ),
