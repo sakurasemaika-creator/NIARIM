@@ -690,6 +690,17 @@ class _HelpScreenState extends State<HelpScreen> {
         icon: Icons.cleaning_services_outlined,
       ),
     ),
+    _HelpEntry(
+      topicKey: 'ホーム画面ウィジェット',
+      title: l10n.helpWidgetSettingsTitle,
+      description: l10n.helpWidgetSettingsDesc,
+      category: l10n.helpCategorySettings,
+      diagram: const HelpDiagramSpec(
+        HelpScreenTemplate.cardGrid,
+        0,
+        icon: Icons.widgets_outlined,
+      ),
+    ),
   ];
 
   @override

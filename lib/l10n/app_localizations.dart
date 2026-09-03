@@ -3659,6 +3659,18 @@ abstract class AppLocalizations {
   /// **'自動塗りは生成AIを使った機能ではなく、レイヤーごとのバケツ塗りを応用したものです。そのため、長い髪のように同じパーツの中で線に囲まれた隙間ができていると、そこも一緒に塗りつぶされます。対策として、まずはパーツごとに彩度の高い目立つ色を割り当てて一度塗ってしまうのがおすすめです。塗り間違いがひと目で分かるので自動塗りレイヤーを手動で直しやすく、直したうえで本来の色に設定し直して上書きする形で自動塗りを再実行すれば、塗りミスをぐっと減らせます。'**
   String get tipsAutofillMisfillDesc;
 
+  /// No description provided for @tipsHomeWidgetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェットで作品を常に眺められる'**
+  String get tipsHomeWidgetTitle;
+
+  /// No description provided for @tipsHomeWidgetDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定の「ホーム画面ウィジェット」から作品を選ぶと、選んだ1コマをスマホのホーム画面に静止画として置けます。作品を選ぶ画面はプロジェクト一覧タブと同じ並び替え・検索・お気に入り絞り込みが使え、フレームを選ぶ画面ではタイムラインと同じ再生・シークバーで気に入った1コマを探せます。「作品をつくる」「作品広場」ウィジェットも合わせて置けば、ホーム画面からワンタップで制作や投稿作品の閲覧に入れます。'**
+  String get tipsHomeWidgetDesc;
+
   /// No description provided for @tipsAutofillTransparentFixTitle.
   ///
   /// In ja, this message translates to:
@@ -4228,6 +4240,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'表示したいフレームをタップして選んでください。'**
   String get widgetArtworkFramePickerHint;
+
+  /// No description provided for @widgetArtworkFramePickerConfirmButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだフレームに決定'**
+  String get widgetArtworkFramePickerConfirmButton;
 
   /// No description provided for @widgetArtworkNoFrames.
   ///
@@ -8864,7 +8882,7 @@ abstract class AppLocalizations {
   /// No description provided for @licenseTermsArt2Body.
   ///
   /// In ja, this message translates to:
-  /// **'1. 本アプリの対応OSや推奨動作環境の詳細は、各配布ストアおよび本アプリ内の表示に従います。\n2. 本アプリは、多様な性能の端末でも快適にご利用いただけるよう工夫していますが、端末の性能・OSのバージョン・空き容量・設定その他の利用環境によっては、一部機能が制限される、または正常に動作しない場合があります。'**
+  /// **'1. 本アプリの対応OSや推奨動作環境の詳細は、各配布ストアおよび本アプリ内の表示に従います。\n2. 本アプリは、多様な性能の端末でも快適にご利用いただけるよう工夫していますが、端末の性能・OSのバージョン・空き容量・設定その他の利用環境によっては、一部機能が制限される、または正常に動作しない場合があります。\n3. 未成年の方は、本アプリの利用（有料機能の利用を含みます）にあたり、保護者等の法定代理人の同意を得るものとします。'**
   String get licenseTermsArt2Body;
 
   /// No description provided for @licenseTermsArt3Title.
@@ -10810,6 +10828,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'端末容量に対するNIARIMの使用量と、NIARIM内部（プロジェクト・素材・書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・キャッシュ・ゴミ箱）の内訳を円グラフで確認できます。キャッシュの削除・未使用素材の一括削除（全プロジェクト）・ゴミ箱を空にする・プロジェクトの整理・全データ削除（初期化）が行えます。'**
   String get helpStorageDesc;
+
+  /// No description provided for @helpWidgetSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェット'**
+  String get helpWidgetSettingsTitle;
+
+  /// No description provided for @helpWidgetSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'スマホのホーム画面に置ける3種類のウィジェット（作品の1コマ表示／作品をつくる／作品広場）の設定です。ウィジェット自体の追加はホーム画面の長押しから行います（アプリ内には追加ボタンはありません）。「作品を選ぶ」では、プロジェクト一覧タブと同じ並び替え・表示方法・検索・お気に入り絞り込みを使って作品を選び、再生コントロール付きのプレビューで表示するフレームまで選べます。「作品をつくる」「作品広場」ウィジェットは、背景色をアプリのテーマに合わせるか個別に指定するかを選べます。'**
+  String get helpWidgetSettingsDesc;
 
   /// No description provided for @colorPickerImportPaletteTooltip.
   ///

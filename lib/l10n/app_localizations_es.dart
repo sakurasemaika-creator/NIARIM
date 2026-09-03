@@ -2049,6 +2049,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'El relleno automático no es una función de IA generativa: es una aplicación del bote de pintura por capas. Por eso, cuando una misma parte tiene un hueco cerrado por líneas —como dentro del pelo largo—, ese hueco también se rellena. Como medida preventiva, conviene asignar primero a cada parte un color llamativo de alta saturación y hacer una pasada. Los errores saltan a la vista y la capa de relleno automático resulta fácil de corregir a mano; una vez corregida, define los colores definitivos y vuelve a ejecutar el relleno automático para sobrescribirla: los fallos se reducen muchísimo.';
 
   @override
+  String get tipsHomeWidgetTitle =>
+      'Ten siempre a la vista una obra con un widget de pantalla de inicio';
+
+  @override
+  String get tipsHomeWidgetDesc =>
+      'Elige una obra desde Ajustes → Widgets de la pantalla de inicio, y un fotograma de ella aparecerá como imagen estática en la pantalla de inicio del teléfono. La pantalla «Elegir una obra» usa el mismo orden, búsqueda y filtro de favoritos que la pestaña de proyectos, y el selector de fotogramas ofrece los mismos controles de reproducción y búsqueda que la línea de tiempo para encontrar el fotograma perfecto. Añade también los widgets de crear obra y de la plaza para acceder con un toque a dibujar o ver las obras publicadas desde la pantalla de inicio.';
+
+  @override
   String get tipsAutofillTransparentFixTitle =>
       'Borra los desbordes del relleno automático con el bote de color transparente';
 
@@ -2244,7 +2252,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get toolbarBucketTooltip =>
-      'Cubo de pintura (mantén pulsado para cambiar el relleno)';
+      'Cubo de pintura (mantén pulsado para alternar relleno sólido/trama)';
 
   @override
   String get toolbarBucketFirstUseTip =>
@@ -2389,6 +2397,9 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get widgetArtworkFramePickerHint =>
       'Toca el fotograma que quieras mostrar.';
+
+  @override
+  String get widgetArtworkFramePickerConfirmButton => 'Usar este fotograma';
 
   @override
   String get widgetArtworkNoFrames =>
@@ -4116,7 +4127,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasEditMenuAutofillPresetsSubtitle =>
-      'Edita las combinaciones de color/tono de cada parte';
+      'Edita las combinaciones de color/trama de cada parte';
 
   @override
   String get canvasEditMenuBackgroundToggle => 'Cambiar fondo';
@@ -5055,7 +5066,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get licenseTermsArt2Body =>
-      '1. Para más información sobre las versiones de sistema operativo compatibles y el entorno operativo recomendado de la Aplicación, consulte la tienda de distribución correspondiente y la información mostrada dentro de la Aplicación.\n2. Procuramos que la Aplicación funcione de forma fluida en dispositivos de muy diversas prestaciones; no obstante, según el rendimiento del dispositivo, la versión del sistema operativo, el espacio de almacenamiento disponible, la configuración y otras condiciones de uso, algunas funciones pueden verse limitadas o no funcionar correctamente.';
+      '1. Para más información sobre las versiones de sistema operativo compatibles y el entorno operativo recomendado de la Aplicación, consulte la tienda de distribución correspondiente y la información mostrada dentro de la Aplicación.\n2. Procuramos que la Aplicación funcione de forma fluida en dispositivos de muy diversas prestaciones; no obstante, según el rendimiento del dispositivo, la versión del sistema operativo, el espacio de almacenamiento disponible, la configuración y otras condiciones de uso, algunas funciones pueden verse limitadas o no funcionar correctamente.\n3. Los menores de edad deberán contar con el consentimiento de sus padres o tutores legales antes de usar la Aplicación, incluidas sus funciones de pago.';
 
   @override
   String get licenseTermsArt3Title => 'Artículo 3 (Actos prohibidos)';
@@ -5078,7 +5089,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. Las fuentes y demás materiales incluidos en la Aplicación se utilizan conforme a las condiciones de licencia indicadas en esta pantalla, en «Acerca de las fuentes utilizadas».\n2. En cuanto a los derechos relativos a las fuentes, imágenes, tonos, sellos y demás materiales que el propio usuario registre o cargue en la Aplicación, este será responsable de obtener los derechos o permisos necesarios y de utilizarlos de forma lícita.\n3. Si surgiera una disputa con un tercero derivada del uso por parte del usuario de materiales de terceros, el desarrollador no asumirá responsabilidad alguna al respecto, salvo en los casos en que la ley así lo exija.';
+      '1. Las fuentes y demás materiales incluidos en la Aplicación se utilizan conforme a las condiciones de licencia indicadas en esta pantalla, en «Acerca de las fuentes utilizadas».\n2. En cuanto a los derechos relativos a las fuentes, imágenes, tramas, sellos y demás materiales que el propio usuario registre o cargue en la Aplicación, este será responsable de obtener los derechos o permisos necesarios y de utilizarlos de forma lícita.\n3. Si surgiera una disputa con un tercero derivada del uso por parte del usuario de materiales de terceros, el desarrollador no asumirá responsabilidad alguna al respecto, salvo en los casos en que la ley así lo exija.';
 
   @override
   String get licenseTermsArt6Title =>
@@ -5404,7 +5415,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get workspaceDockPanelLayer => 'Capas';
 
   @override
-  String get workspaceDockPanelTone => 'Tono';
+  String get workspaceDockPanelTone => 'Trama';
 
   @override
   String get workspaceDockPanelStamp => 'Sello';
@@ -5446,7 +5457,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get pcWorkspaceLayoutToolOrderHint =>
-      'El orden de apilado usado cuando hay varios paneles abiertos a la vez (pincel, tono, sello, etc.).';
+      'El orden de apilado usado cuando hay varios paneles abiertos a la vez (pincel, trama, sello, etc.).';
 
   @override
   String get pcWorkspaceLayoutRightOrderSection =>
@@ -6147,7 +6158,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get storageCategoryCustomAssets =>
-      'Pinceles/tonos/sellos/fuentes personalizados';
+      'Pinceles/tramas/sellos/fuentes personalizados';
 
   @override
   String get storageCategoryCache => 'Caché';
@@ -6181,7 +6192,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'Esto elimina permanentemente todos los datos de NIARIM: proyectos, materiales, archivos exportados, pinceles/tonos/sellos/fuentes personalizados y ajustes. No se puede deshacer. Reinicia la app después.';
+      'Esto elimina permanentemente todos los datos de NIARIM: proyectos, materiales, archivos exportados, pinceles/tramas/sellos/fuentes personalizados y ajustes. No se puede deshacer. Reinicia la app después.';
 
   @override
   String get storageEraseAllDoneSnackbar =>
@@ -6195,7 +6206,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpStorageDesc =>
-      'Consulta cuánto espacio usa NIARIM en tu dispositivo y un desglose de su contenido interno (proyectos, materiales, archivos exportados, pinceles/tonos/sellos/fuentes personalizados, caché y papelera) en gráficos circulares. Puedes borrar la caché, eliminar materiales sin usar en todos los proyectos, vaciar la papelera, organizar proyectos o borrar todos los datos (restablecer).';
+      'Consulta cuánto espacio usa NIARIM en tu dispositivo y un desglose de su contenido interno (proyectos, materiales, archivos exportados, pinceles/tramas/sellos/fuentes personalizados, caché y papelera) en gráficos circulares. Puedes borrar la caché, eliminar materiales sin usar en todos los proyectos, vaciar la papelera, organizar proyectos o borrar todos los datos (restablecer).';
+
+  @override
+  String get helpWidgetSettingsTitle => 'Widgets de la pantalla de inicio';
+
+  @override
+  String get helpWidgetSettingsDesc =>
+      'Ajustes de los tres tipos de widget que puedes colocar en la pantalla de inicio del teléfono: un fotograma de una obra (arranque), el widget de crear obra y el widget de la plaza. Los widgets en sí se añaden manteniendo pulsada la pantalla de inicio, no desde dentro de la app. «Elegir una obra» usa el mismo orden, modo de visualización, búsqueda y filtro de favoritos que la pestaña de proyectos, y luego te deja elegir el fotograma exacto en una vista previa con controles de reproducción. Los widgets de crear obra y de la plaza permiten elegir si el fondo sigue el tema de la app o usa un color que tú especifiques.';
 
   @override
   String get colorPickerImportPaletteTooltip => 'Importar paleta';

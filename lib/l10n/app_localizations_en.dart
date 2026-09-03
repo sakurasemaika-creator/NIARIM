@@ -1192,7 +1192,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpPenToolDesc =>
-      'The basic tool for drawing lines on the canvas. Long-press to change the brush type, size, and color (double-tap shows a quick summary). It supports pressure and tilt from stylus/tablet devices, and adjusting the pressure curve under Settings > Pen Input lets you finely customize how pressure translates into size and opacity changes. Switching pen sub-tools lets you apply tones or place stamps from the same pen tool.';
+      'The basic tool for drawing lines on the canvas. Long-press to change the brush type, size, and color (double-tap shows a quick summary). It supports pressure and tilt from stylus/tablet devices, and adjusting the pressure curve under Settings > Pen Input lets you finely customize how pressure translates into size and opacity changes. Switching pen sub-tools lets you apply screentones or place stamps from the same pen tool.';
 
   @override
   String get helpEraserToolTitle => 'Eraser Tool';
@@ -1206,7 +1206,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBucketToolDesc =>
-      'Fills an enclosed area all at once. Tap inside an area enclosed by line art and the whole area is filled with the selected color (or tone). If there are gaps in the line art, the fill can spread into unintended areas, so it helps to make sure the line art is properly closed before using it. You can switch between flat fill and tone fill in the settings. Detailed settings (tolerance, expand px, fill under lines) can be adjusted from the \"Bucket Fill\" section in Settings.';
+      'Fills an enclosed area all at once. Tap inside an area enclosed by line art and the whole area is filled with the selected color (or screentone). If there are gaps in the line art, the fill can spread into unintended areas, so it helps to make sure the line art is properly closed before using it. You can switch between flat fill and screentone fill in the settings. Detailed settings (tolerance, expand px, fill under lines) can be adjusted from the \"Bucket Fill\" section in Settings.';
 
   @override
   String get helpLassoFillTitle => 'Lasso Fill';
@@ -1269,7 +1269,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      'Changes how a layer is composited with the layers below it. Often used when layering tones or color effects.\nNormal: Layers as-is.\nMultiply: Darkens by multiplying with the layer below. The standard choice for shadows.\nScreen: Brightens by adding light. Good for glow effects.\nOverlay: Darkens dark areas and brightens light areas, increasing contrast.\nAddition: Simply adds colors together. Good for light streak effects.\nSubtract: Subtracts colors, producing a dark, sunken look.\nDarken: Keeps whichever color is darker between the two layers.\nLighten: Keeps whichever color is lighter between the two layers.\nColor Burn: Darkens and saturates the color below.\nColor Dodge: Brightens and saturates the color below.\nHard Light: A stronger version of Overlay contrast.\nSoft Light: A gentler version of Overlay contrast. Good for soft shading.\nDifference: Shows the difference between the two colors. Useful for checking color misalignment.\nHue / Saturation / Color / Luminosity: Applies only that one property (hue, saturation, color, or brightness) from this layer onto the one below.';
+      'Changes how a layer is composited with the layers below it. Often used when layering screentones or color effects.\nNormal: Layers as-is.\nMultiply: Darkens by multiplying with the layer below. The standard choice for shadows.\nScreen: Brightens by adding light. Good for glow effects.\nOverlay: Darkens dark areas and brightens light areas, increasing contrast.\nAddition: Simply adds colors together. Good for light streak effects.\nSubtract: Subtracts colors, producing a dark, sunken look.\nDarken: Keeps whichever color is darker between the two layers.\nLighten: Keeps whichever color is lighter between the two layers.\nColor Burn: Darkens and saturates the color below.\nColor Dodge: Brightens and saturates the color below.\nHard Light: A stronger version of Overlay contrast.\nSoft Light: A gentler version of Overlay contrast. Good for soft shading.\nDifference: Shows the difference between the two colors. Useful for checking color misalignment.\nHue / Saturation / Color / Luminosity: Applies only that one property (hue, saturation, color, or brightness) from this layer onto the one below.';
 
   @override
   String get helpClippingTitle => 'Clipping';
@@ -1290,7 +1290,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Creates an auto-fill layer beneath the auto-fill line art layer and automatically colors it based on a pre-made \"autofill setting\" (a combination of colors and tones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark (❗) appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied. Choosing \"Run autofill\" from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark (❗) at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from.';
+      'Creates an auto-fill layer beneath the auto-fill line art layer and automatically colors it based on a pre-made \"autofill setting\" (a combination of colors and screentones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark (❗) appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied. Choosing \"Run autofill\" from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark (❗) at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from.';
 
   @override
   String get helpOnionSkinTitle => 'Onion Skin';
@@ -1485,11 +1485,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Places a pre-registered image onto the canvas like a brush. Reuse speed lines, background patterns, and small props without redrawing them each time. With pixel mode on, stamped images are processed with mosaic downsampling plus color reduction for a pixel-art look. The stamp panel lets you adjust the rotation angle and size of the stamp you\'re placing. Varying the direction and size of the same stamp keeps speed lines and small props from looking monotonous.';
 
   @override
-  String get helpToneFillTitle => 'Tone fill';
+  String get helpToneFillTitle => 'Screentone fill';
 
   @override
   String get helpToneFillDesc =>
-      'Switching the bucket tool\'s setting from solid fill to tone fill lets you fill with a chosen halftone or line-pattern tone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture.';
+      'Switching the bucket tool\'s setting from solid fill to screentone fill lets you fill with a chosen halftone or line-pattern screentone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture.';
 
   @override
   String get helpPixelModeTitle => 'Pixel mode';
@@ -1658,7 +1658,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpPenSubToolDesc =>
-      'Long-pressing the pen tool switches it from regular drawing to the tone-fill or stamp-placement sub-tools. Lets you move between several tasks from the same pen without constantly switching tools.';
+      'Long-pressing the pen tool switches it from regular drawing to the screentone-fill or stamp-placement sub-tools. Lets you move between several tasks from the same pen without constantly switching tools.';
 
   @override
   String get helpTiltDetectionTitle => 'Tilt detection';
@@ -1876,11 +1876,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsPixelToneRetroTitle =>
-      'Pixel-mode stamps + tone fill for a unified retro look';
+      'Pixel-mode stamps + screentone fill for a unified retro look';
 
   @override
   String get tipsPixelToneRetroDesc =>
-      'Combining pixel-mode stamps with the checker and grid tones exclusive to pixel mode lets you unify the whole screen with a pixel-art texture. Great for a retro-game feel.';
+      'Combining pixel-mode stamps with the checker and grid screentones exclusive to pixel mode lets you unify the whole screen with a pixel-art texture. Great for a retro-game feel.';
 
   @override
   String get tipsMagicWandLassoTitle =>
@@ -2000,15 +2000,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsQuickToolPenSubDesc =>
-      'Register your most-used tools to the quick tool, and also make use of the pen sub-tools (long-press the pen to switch to tone fill or stamp placement) — you\'ll cut down how often you jump between panels and keep your rhythm going.';
+      'Register your most-used tools to the quick tool, and also make use of the pen sub-tools (long-press the pen to switch to screentone fill or stamp placement) — you\'ll cut down how often you jump between panels and keep your rhythm going.';
 
   @override
   String get tipsAutofillToneReuseTitle =>
-      'Reuse a tone fill just by redrawing the lineart, via autofill\'s tone setting';
+      'Reuse a screentone fill just by redrawing the lineart, via autofill\'s screentone setting';
 
   @override
   String get tipsAutofillToneReuseDesc =>
-      'Setting each part in an autofill setting to \"use tone\" reproduces the tone fill automatically every time you redraw the lineart — no need to reapply the tone frame by frame.';
+      'Setting each part in an autofill setting to \"use screentone\" reproduces the screentone fill automatically every time you redraw the lineart — no need to reapply the screentone frame by frame.';
 
   @override
   String get tipsAutofillMisfillTitle =>
@@ -2017,6 +2017,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tipsAutofillMisfillDesc =>
       'Autofill is not a generative-AI feature — it is an application of per-layer bucket fill. So when a single part has a gap enclosed by lines, such as inside long hair, that gap gets filled too. A good countermeasure is to first assign each part a bright, highly saturated colour and run one pass. Mistakes stand out immediately, making the autofill layer easy to correct by hand; once you have fixed it, set the real colours and run autofill again to overwrite, and misfills drop sharply.';
+
+  @override
+  String get tipsHomeWidgetTitle =>
+      'Keep a work in view with a home screen widget';
+
+  @override
+  String get tipsHomeWidgetDesc =>
+      'Pick a work from Settings → Home screen widgets, and a single frame from it appears as a static image on your phone\'s home screen. The \"Choose a work\" screen shares the same sort, search, and favorites filter as the project list tab, and the frame picker gives you the same playback and seek controls as the timeline so you can find just the right frame. Add the New work and Plaza widgets alongside it for one-tap access to drawing and browsing posted works from your home screen.';
 
   @override
   String get tipsAutofillTransparentFixTitle =>
@@ -2128,7 +2136,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsTransferDeviceDesc =>
-      'If you want to switch devices and keep drawing in the same environment, the transfer (.niatra) feature moves your settings, brushes, tones, stamps, palettes, and more all together. To hand over a project you\'re working on, use \"Share (.niashare)\" instead.';
+      'If you want to switch devices and keep drawing in the same environment, the transfer (.niatra) feature moves your settings, brushes, screentones, stamps, palettes, and more all together. To hand over a project you\'re working on, use \"Share (.niashare)\" instead.';
 
   @override
   String get fontSettingsTabDownloaded => 'Downloaded';
@@ -2209,15 +2217,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toolbarPenFirstUseTip =>
-      'Long-press the pen to switch between brush, tone, stamp, and lasso fill.';
+      'Long-press the pen to switch between brush, screentone, stamp, and lasso fill.';
 
   @override
   String get toolbarBucketTooltip =>
-      'Bucket (long-press to switch flat/tone fill)';
+      'Bucket (long-press to switch flat/screentone fill)';
 
   @override
   String get toolbarBucketFirstUseTip =>
-      'Long-press the bucket to switch between flat fill and tone fill.';
+      'Long-press the bucket to switch between flat fill and screentone fill.';
 
   @override
   String get toolbarSelectTooltip => 'Select (long-press to change type)';
@@ -2245,7 +2253,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      'A single tap on a toolbar icon switches to that tool. Long-press the same icon, or swipe up on it, to open its detailed settings. Behind that long-press or swipe you will find: brush / halftone / stamp / lasso fill for the pen, solid vs. halftone for the bucket, rectangle / lasso / magic wand for the selection tool, blur vs. mosaic for the finger tool, and the registered tool list for the quick-swap tool. Double-tapping an icon shows a short description at the bottom of the screen.\\nOn the canvas, pinch with two fingers to zoom, drag with two fingers to pan, tap with two fingers to undo and with three fingers to redo. Double-tap the left or right edge of the screen to move to the previous or next frame.\\nWith a mouse or pen tablet connected, the wheel zooms and dragging with the middle button pans.';
+      'A single tap on a toolbar icon switches to that tool. Long-press the same icon, or swipe up on it, to open its detailed settings. Behind that long-press or swipe you will find: brush / screentone / stamp / lasso fill for the pen, solid vs. screentone for the bucket, rectangle / lasso / magic wand for the selection tool, blur vs. mosaic for the finger tool, and the registered tool list for the quick-swap tool. Double-tapping an icon shows a short description at the bottom of the screen.\\nOn the canvas, pinch with two fingers to zoom, drag with two fingers to pan, tap with two fingers to undo and with three fingers to redo. Double-tap the left or right edge of the screen to move to the previous or next frame.\\nWith a mouse or pen tablet connected, the wheel zooms and dragging with the middle button pans.';
 
   @override
   String get toolbarStampColorLockedSnackbar =>
@@ -2268,7 +2276,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolbarBucketFlatFill => 'Flat Fill';
 
   @override
-  String get toolbarBucketToneListLabel => 'Tones';
+  String get toolbarBucketToneListLabel => 'Screentones';
 
   @override
   String get toolbarSelectRect => 'Rectangle Select';
@@ -2356,6 +2364,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get widgetArtworkFramePickerHint =>
       'Tap the frame you want to display.';
+
+  @override
+  String get widgetArtworkFramePickerConfirmButton => 'Use this frame';
 
   @override
   String get widgetArtworkNoFrames => 'This scene doesn’t have any frames yet.';
@@ -2462,31 +2473,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creativePanelEditAction => 'Edit';
 
   @override
-  String get toneTitle => 'Tones';
+  String get toneTitle => 'Screentones';
 
   @override
-  String get toneEmpty => 'No tones';
+  String get toneEmpty => 'No screentones';
 
   @override
-  String get toneSearchHint => 'Search by tone name';
+  String get toneSearchHint => 'Search by screentone name';
 
   @override
-  String get toneEditTitle => 'Edit Tone';
+  String get toneEditTitle => 'Edit Screentone';
 
   @override
   String get toneChangeTextureButton => 'Change Texture Image';
 
   @override
-  String get toneCreateDialogTitle => 'Custom Tone';
+  String get toneCreateDialogTitle => 'Custom Screentone';
 
   @override
   String toneImportFailedSnackbar(String error) {
-    return 'Failed to load the tone: $error';
+    return 'Failed to load the screentone: $error';
   }
 
   @override
   String toneExportFailedSnackbar(String error) {
-    return 'Failed to export the tone: $error';
+    return 'Failed to export the screentone: $error';
   }
 
   @override
@@ -2957,7 +2968,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get penSubToolTabBrush => 'Brush';
 
   @override
-  String get penSubToolTabTone => 'Tone';
+  String get penSubToolTabTone => 'Screentone';
 
   @override
   String get penSubToolTabStamp => 'Stamp';
@@ -2967,7 +2978,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get penSubToolToneTooltipMessage =>
-      'Choose a tone to paint screentone patterns with the bucket or pen.';
+      'Choose a screentone to paint screentone patterns with the bucket or pen.';
 
   @override
   String get penSubToolStampTooltipMessage =>
@@ -3648,7 +3659,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '$count part(s) are not yet set up: $names (no tone selected)\nYou can\'t close this screen until all are set up.';
+    return '$count part(s) are not yet set up: $names (no screentone selected)\nYou can\'t close this screen until all are set up.';
   }
 
   @override
@@ -3661,7 +3672,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredItem(String name) {
-    return '• $name: No tone selected';
+    return '• $name: No screentone selected';
   }
 
   @override
@@ -3671,7 +3682,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autofillPartEmpty => 'No parts\nTap + to add one';
 
   @override
-  String get autofillPartToneUnselected => 'No tone selected';
+  String get autofillPartToneUnselected => 'No screentone selected';
 
   @override
   String get autofillPartAddDialogTitle => 'Add part';
@@ -3786,10 +3797,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get autofillPartToneLabel => 'Tone';
+  String get autofillPartToneLabel => 'Screentone';
 
   @override
-  String get autofillPartUseToneCheckbox => 'Use tone';
+  String get autofillPartUseToneCheckbox => 'Use screentone';
 
   @override
   String get autofillPartBlendModeLabel => 'Blend mode';
@@ -4061,7 +4072,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasEditMenuAutofillPresetsSubtitle =>
-      'Edit the color/tone combinations for each part';
+      'Edit the color/screentone combinations for each part';
 
   @override
   String get canvasEditMenuBackgroundToggle => 'Switch background';
@@ -4984,7 +4995,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt2Body =>
-      '1. For details on the App\'s supported OS versions and recommended operating environments, please refer to the relevant distribution store and the information displayed within the App.\n2. The App aims to run comfortably on devices with a wide range of performance levels; however, depending on your device\'s performance, OS version, available storage, settings, and other conditions of use, some features may be limited or may not function correctly.';
+      '1. For details on the App\'s supported OS versions and recommended operating environments, please refer to the relevant distribution store and the information displayed within the App.\n2. The App aims to run comfortably on devices with a wide range of performance levels; however, depending on your device\'s performance, OS version, available storage, settings, and other conditions of use, some features may be limited or may not function correctly.\n3. Minors must obtain the consent of a parent or other legal guardian before using the App, including its paid features.';
 
   @override
   String get licenseTermsArt3Title => 'Article 3 (Prohibited Acts)';
@@ -5006,7 +5017,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. The fonts and other materials bundled with the App are used in accordance with the license terms listed on this screen under \"About Fonts Used.\"\n2. Regarding the rights relating to fonts, images, tones, stamps, and other materials that a user has additionally registered or loaded into the App, the user is responsible for obtaining any necessary rights or permissions and using them lawfully.\n3. If a dispute arises with a third party arising from a user\'s use of third-party materials, the developer bears no responsibility for it, except where legally required to do so.';
+      '1. The fonts and other materials bundled with the App are used in accordance with the license terms listed on this screen under \"About Fonts Used.\"\n2. Regarding the rights relating to fonts, images, screentones, stamps, and other materials that a user has additionally registered or loaded into the App, the user is responsible for obtaining any necessary rights or permissions and using them lawfully.\n3. If a dispute arises with a third party arising from a user\'s use of third-party materials, the developer bears no responsibility for it, except where legally required to do so.';
 
   @override
   String get licenseTermsArt6Title => 'Article 6 (Premium Features / Billing)';
@@ -5323,7 +5334,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workspaceDockPanelLayer => 'Layers';
 
   @override
-  String get workspaceDockPanelTone => 'Tone';
+  String get workspaceDockPanelTone => 'Screentone';
 
   @override
   String get workspaceDockPanelStamp => 'Stamp';
@@ -5364,7 +5375,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pcWorkspaceLayoutToolOrderHint =>
-      'The stacking order used when multiple panels (brush, tone, stamp, etc.) are open at once.';
+      'The stacking order used when multiple panels (brush, screentone, stamp, etc.) are open at once.';
 
   @override
   String get pcWorkspaceLayoutRightOrderSection => 'Layer panel etc. order';
@@ -5510,11 +5521,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsStockingDenierTitle =>
-      'Stocking/tights tones vary in mesh fineness by denier';
+      'Stocking/tights screentones vary in mesh fineness by denier';
 
   @override
   String get tipsStockingDenierDesc =>
-      'The new stocking/tights tones in the tone list have tighter mesh spacing for lower denier values (thinner fabric) — the lowest, 10 denier, is deliberately fine enough that it can produce moiré depending on display or export resolution. Higher denier tights use wider spacing for a more opaque look, so pick the one that matches the character\'s legs.';
+      'The new stocking/tights screentones in the screentone list have tighter mesh spacing for lower denier values (thinner fabric) — the lowest, 10 denier, is deliberately fine enough that it can produce moiré depending on display or export resolution. Higher denier tights use wider spacing for a more opaque look, so pick the one that matches the character\'s legs.';
 
   @override
   String get tipsFisheyeChromaticTitle =>
@@ -6039,7 +6050,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storageCategoryExports => 'Exported files';
 
   @override
-  String get storageCategoryCustomAssets => 'Custom brushes/tones/stamps/fonts';
+  String get storageCategoryCustomAssets =>
+      'Custom brushes/screentones/stamps/fonts';
 
   @override
   String get storageCategoryCache => 'Cache';
@@ -6073,7 +6085,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'This permanently deletes all NIARIM data — projects, materials, exported files, custom brushes/tones/stamps/fonts, and settings. This cannot be undone. Restart the app afterward.';
+      'This permanently deletes all NIARIM data — projects, materials, exported files, custom brushes/screentones/stamps/fonts, and settings. This cannot be undone. Restart the app afterward.';
 
   @override
   String get storageEraseAllDoneSnackbar =>
@@ -6087,7 +6099,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpStorageDesc =>
-      'See how much storage NIARIM is using on your device, and a breakdown of what\'s inside NIARIM (projects, materials, exported files, custom brushes/tones/stamps/fonts, cache, and trash) as pie charts. Clear the cache, bulk-remove unused materials across all projects, empty the trash, organize projects, or erase all data (reset).';
+      'See how much storage NIARIM is using on your device, and a breakdown of what\'s inside NIARIM (projects, materials, exported files, custom brushes/screentones/stamps/fonts, cache, and trash) as pie charts. Clear the cache, bulk-remove unused materials across all projects, empty the trash, organize projects, or erase all data (reset).';
+
+  @override
+  String get helpWidgetSettingsTitle => 'Home screen widgets';
+
+  @override
+  String get helpWidgetSettingsDesc =>
+      'Settings for the three widget types you can place on your phone\'s home screen: a single frame from a work (launch screen), the New work widget, and the Plaza widget. Widgets themselves are added by long-pressing the home screen, not from inside the app. \"Choose a work\" uses the same sort, display mode, search, and favorites filter as the project list tab, then lets you pick the exact frame to show in a preview with playback controls. The New work and Plaza widgets let you choose whether the background follows the app theme or uses a color you set.';
 
   @override
   String get colorPickerImportPaletteTooltip => 'Import palette';

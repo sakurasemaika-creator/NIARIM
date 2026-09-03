@@ -102,6 +102,20 @@ class ProjectListWidget extends StatelessWidget {
   // 現在開いているフォルダ（nullはルート直下、フォルダ階層）
   final String? currentFolderId;
   final ValueChanged<String> onOpenFolder;
+  // 非nullの場合、作品タップ時の動作が「詳細画面（'/project/:id'）へ遷移」
+  // ではなく「選んだ作品IDをこのコールバックへ渡すだけ」に変わる
+  // （ホーム画面ウィジェットの作品選択フロー等、一覧を「選ぶ専用画面」として
+  // 使う場合に指定する）。[isSelectionMode]（複数選択・チェックボックス表示）
+  // とは独立していて、サムネイルは常に通常表示のまま
+  // （チェックボックスには置き換わらない）。フォルダへ潜る操作は通常どおり
+  // [onOpenFolder]を使うため、このコールバックが呼ばれるのは作品を
+  // タップした時のみ。指定時はダブルタップでのキャンバス直接起動・
+  // 三点メニュー（リネーム／削除等の編集操作）も無効化する。
+  final ValueChanged<String>? onPickProject;
+  // 一覧が空のときの「＋ ボタンから新規作成」ヒント文言の表示可否。
+  // 選ぶ専用画面（[onPickProject]使用時）には＋ボタンが無いため、
+  // 存在しないボタンを指す文言を隠せるようにする。
+  final bool showEmptyCreateHint;
 
   const ProjectListWidget({
     super.key,
@@ -116,6 +130,8 @@ class ProjectListWidget extends StatelessWidget {
     this.projects,
     this.showFavoritesOnly = false,
     this.searchQuery = '',
+    this.onPickProject,
+    this.showEmptyCreateHint = true,
   });
 
   List<_Entry> _sorted(List<_Entry> src) {
@@ -198,11 +214,13 @@ class ProjectListWidget extends StatelessWidget {
                 fontFamilyFallback: kHeadingFontFallback,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.projectListEmptyHint,
-              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
-            ),
+            if (showEmptyCreateHint) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.projectListEmptyHint,
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
+              ),
+            ],
           ],
         ),
       );
@@ -298,9 +316,13 @@ class ProjectListWidget extends StatelessWidget {
       subtitle: Text(
         l10n.homeProjectMeta(project.fps, project.durationSeconds),
       ),
-      trailing: isSelectionMode ? null : _projectMenu(context, project),
+      trailing: (isSelectionMode || onPickProject != null)
+          ? null
+          : _projectMenu(context, project),
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
+          : onPickProject != null
+          ? () => onPickProject!(project.id)
           : () => context.push('/project/${project.id}'),
       onLongPress: () => onLongPress(project.id),
     );
@@ -333,9 +355,12 @@ class ProjectListWidget extends StatelessWidget {
               color: ThemeService.activeColorScheme.tertiary,
               size: 18,
             ),
-          if (!isSelectionMode) _folderMenu(context, folder),
+          if (!isSelectionMode && onPickProject == null)
+            _folderMenu(context, folder),
         ],
       ),
+      // フォルダは選ぶ専用画面でも通常どおり潜れる（[onPickProject]は
+      // 作品タップ時のみに関わる）。
       onTap: isSelectionMode
           ? () => onSelectionChanged(folder.id)
           : () => onOpenFolder(folder.id),
@@ -352,8 +377,12 @@ class ProjectListWidget extends StatelessWidget {
     return GestureDetector(
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
+          : onPickProject != null
+          ? () => onPickProject!(project.id)
           : () => context.push('/project/${project.id}'),
-      onDoubleTap: isSelectionMode
+      // 選ぶ専用画面ではダブルタップでのキャンバス直接起動は不要（誤操作の
+      // もとになる）ため無効化する。
+      onDoubleTap: (isSelectionMode || onPickProject != null)
           ? null
           : () => context.push('/canvas/${project.id}'),
       onLongPress: () => onLongPress(project.id),

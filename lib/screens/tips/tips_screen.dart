@@ -310,6 +310,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
       _Tip(
         TipDiagramSpec(
           TipDiagramKind.pairCombo,
+          iconA: Icons.widgets_outlined,
+          iconB: Icons.movie_creation_outlined,
+        ),
+        l10n.tipsHomeWidgetTitle,
+        l10n.tipsHomeWidgetDesc,
+      ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
           iconA: Icons.format_color_fill,
           iconB: Icons.opacity,
         ),

@@ -1171,7 +1171,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpPenToolDesc =>
-      '캔버스에 선을 그리는 기본 도구입니다. 길게 누르면 브러시 종류・굵기・색을 변경할 수 있습니다（더블탭은 간단 설명 표시）. 펜 태블릿・액정 태블릿의 필압・기울기를 지원하며, 설정 화면의 「펜 입력」에서 필압 곡선을 조정하면 필압이 반영되는 방식（약한 힘으로 굵기・불투명도가 얼마나 변하는지）을 세밀하게 커스터마이즈할 수 있습니다. 펜 서브 도구를 전환하면 같은 펜 도구로 톤 붙이기・스탬프 배치도 할 수 있습니다.';
+      '캔버스에 선을 그리는 기본 도구입니다. 길게 누르면 브러시 종류・굵기・색을 변경할 수 있습니다（더블탭은 간단 설명 표시）. 펜 태블릿・액정 태블릿의 필압・기울기를 지원하며, 설정 화면의 「펜 입력」에서 필압 곡선을 조정하면 필압이 반영되는 방식（약한 힘으로 굵기・불투명도가 얼마나 변하는지）을 세밀하게 커스터마이즈할 수 있습니다. 펜 서브 도구를 전환하면 같은 펜 도구로 스크린톤 붙이기・스탬프 배치도 할 수 있습니다.';
 
   @override
   String get helpEraserToolTitle => '지우개 도구';
@@ -1185,7 +1185,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBucketToolDesc =>
-      '둘러싸인 영역을 한 번에 채우는 도구입니다. 선화로 둘러싸인 범위 안을 탭하면 그 범위 전체가 선택 중인 색（또는 톤）으로 채워집니다. 선화에 틈이 있으면 의도치 않은 범위까지 채워질 수 있으므로, 선화가 제대로 닫혀 있는지 확인한 후 사용하는 것이 요령입니다. 설정에서 단색 채우기/톤 채우기를 전환할 수 있습니다. 상세 설정(허용 오차・확장 px・선 아래로 파고들기)은 설정 화면의 \"페인트 통 채우기\"에서 조정할 수 있습니다.';
+      '둘러싸인 영역을 한 번에 채우는 도구입니다. 선화로 둘러싸인 범위 안을 탭하면 그 범위 전체가 선택 중인 색（또는 스크린톤）으로 채워집니다. 선화에 틈이 있으면 의도치 않은 범위까지 채워질 수 있으므로, 선화가 제대로 닫혀 있는지 확인한 후 사용하는 것이 요령입니다. 설정에서 단색 채우기/스크린톤 채우기를 전환할 수 있습니다. 상세 설정(허용 오차・확장 px・선 아래로 파고들기)은 설정 화면의 \"페인트 통 채우기\"에서 조정할 수 있습니다.';
 
   @override
   String get helpLassoFillTitle => '올가미 채우기';
@@ -1248,7 +1248,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      '레이어의 합성 방법을 바꾸는 기능입니다. 톤이나 색상 효과를 레이어로 겹칠 때 자주 사용됩니다.\n표준: 그대로 겹칩니다.\n곱하기: 아래 레이어와 곱해 어둡게 합니다. 그림자, 음영 표현의 정석입니다.\n스크린: 밝기를 더해 밝게 합니다. 빛 표현에 적합합니다.\n오버레이: 어두운 부분은 더 어둡게, 밝은 부분은 더 밝게 해 대비를 강조합니다.\n더하기: 색을 단순히 더합니다. 빛 효과선 등에 적합합니다.\n빼기: 색을 뺀 값으로, 어둡게 가라앉은 효과가 됩니다.\n어둡게 비교: 위아래 레이어 중 어두운 쪽 색을 채택합니다.\n밝게 비교: 위아래 레이어 중 밝은 쪽 색을 채택합니다.\n색상 번: 아래 색을 어둡게 가라앉히며 진하게 발색시킵니다.\n색상 닷지: 아래 색을 밝게 날리며 발색시킵니다.\n하드 라이트: 오버레이보다 강하게 대비가 붙습니다.\n소프트 라이트: 오버레이보다 부드럽게 대비가 붙습니다. 부드러운 음영에 적합합니다.\n차이: 위아래 색의 차이를 표시합니다. 색상 어긋남 확인 등에 씁니다.\n색조, 채도, 색상, 광도: 각각 색조, 채도, 색감, 밝기만을 아래 레이어에 반영합니다.';
+      '레이어의 합성 방법을 바꾸는 기능입니다. 스크린톤이나 색상 효과를 레이어로 겹칠 때 자주 사용됩니다.\n표준: 그대로 겹칩니다.\n곱하기: 아래 레이어와 곱해 어둡게 합니다. 그림자, 음영 표현의 정석입니다.\n스크린: 밝기를 더해 밝게 합니다. 빛 표현에 적합합니다.\n오버레이: 어두운 부분은 더 어둡게, 밝은 부분은 더 밝게 해 대비를 강조합니다.\n더하기: 색을 단순히 더합니다. 빛 효과선 등에 적합합니다.\n빼기: 색을 뺀 값으로, 어둡게 가라앉은 효과가 됩니다.\n어둡게 비교: 위아래 레이어 중 어두운 쪽 색을 채택합니다.\n밝게 비교: 위아래 레이어 중 밝은 쪽 색을 채택합니다.\n색상 번: 아래 색을 어둡게 가라앉히며 진하게 발색시킵니다.\n색상 닷지: 아래 색을 밝게 날리며 발색시킵니다.\n하드 라이트: 오버레이보다 강하게 대비가 붙습니다.\n소프트 라이트: 오버레이보다 부드럽게 대비가 붙습니다. 부드러운 음영에 적합합니다.\n차이: 위아래 색의 차이를 표시합니다. 색상 어긋남 확인 등에 씁니다.\n색조, 채도, 색상, 광도: 각각 색조, 채도, 색감, 밝기만을 아래 레이어에 반영합니다.';
 
   @override
   String get helpClippingTitle => '클리핑';
@@ -1269,7 +1269,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      '자동 채색용 선화 레이어 아래에 자동 채색 레이어를 만들고, 미리 만들어 둔 「자동 채색 설정」（부위별 색・톤 조합）을 바탕으로 색을 자동으로 채우는 기능입니다. 선화를 다 그린 후 한 번에 채색할 수 있어, 같은 캐릭터를 여러 번 그리는 손그림 애니메이션에서 채색 작업을 크게 줄일 수 있습니다. 선화를 다시 그리면 타임라인・레이어 패널에 업데이트 표시（❗）가 나타나 자동 채색을 다시 실행해야 함을 알려줍니다. 타임라인 화면의 점 3개 메뉴에서 「자동 채색 실행」을 선택하면, 업데이트 표시（❗）가 붙은 자동 채색 레이어를 한꺼번에 다시 계산할 수 있습니다. 선화를 다시 그린 뒤 레이어 패널에서 한 장씩 실행하는 수고를 덜 수 있습니다. 자동 채색 설정의 각 부위에는 선화 색을 어떻게 처리할지에 대한 설정（지정 색・채색 색과 동일・색 트레이스）이 있습니다. 색 트레이스（선화 어우러짐）를 선택하면 선화 색을 채색 색에 맞춰 HSL 이동시켜, 선이 튀지 않고 자연스럽게 어우러집니다. 설정이 늘어나면 부위 할당 시 목록이 길어져 고르기 어려워집니다. 프로젝트 설정（또는 레이어 패널의 부위 할당 대화 상자）에서 이 프로젝트에서 사용하는 설정만 필터링해두면 목록이 깔끔해져 고르기 쉬워집니다.';
+      '자동 채색용 선화 레이어 아래에 자동 채색 레이어를 만들고, 미리 만들어 둔 「자동 채색 설정」（부위별 색・스크린톤 조합）을 바탕으로 색을 자동으로 채우는 기능입니다. 선화를 다 그린 후 한 번에 채색할 수 있어, 같은 캐릭터를 여러 번 그리는 손그림 애니메이션에서 채색 작업을 크게 줄일 수 있습니다. 선화를 다시 그리면 타임라인・레이어 패널에 업데이트 표시（❗）가 나타나 자동 채색을 다시 실행해야 함을 알려줍니다. 타임라인 화면의 점 3개 메뉴에서 「자동 채색 실행」을 선택하면, 업데이트 표시（❗）가 붙은 자동 채색 레이어를 한꺼번에 다시 계산할 수 있습니다. 선화를 다시 그린 뒤 레이어 패널에서 한 장씩 실행하는 수고를 덜 수 있습니다. 자동 채색 설정의 각 부위에는 선화 색을 어떻게 처리할지에 대한 설정（지정 색・채색 색과 동일・색 트레이스）이 있습니다. 색 트레이스（선화 어우러짐）를 선택하면 선화 색을 채색 색에 맞춰 HSL 이동시켜, 선이 튀지 않고 자연스럽게 어우러집니다. 설정이 늘어나면 부위 할당 시 목록이 길어져 고르기 어려워집니다. 프로젝트 설정（또는 레이어 패널의 부위 할당 대화 상자）에서 이 프로젝트에서 사용하는 설정만 필터링해두면 목록이 깔끔해져 고르기 쉬워집니다.';
 
   @override
   String get helpOnionSkinTitle => '어니언 스킨';
@@ -1464,11 +1464,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '미리 등록해 둔 이미지를 브러시처럼 캔버스에 배치하는 도구입니다. 효과선・배경 패턴・소품 등을 매번 다시 그리지 않고 재사용할 수 있습니다. 픽셀 모드를 켜면 붙인 스탬프를 모자이크 저해상도화＋색상 수 감소로 도트 그림풍으로 가공할 수 있습니다. 스탬프 패널에서는 배치할 스탬프의 회전 각도・크기를 조정할 수 있습니다. 같은 스탬프라도 방향과 크기를 바꿔가며 배치하면 단조롭지 않은 자연스러운 효과선・소품 배열을 만들 수 있습니다.';
 
   @override
-  String get helpToneFillTitle => '톤 채색';
+  String get helpToneFillTitle => '스크린톤 채색';
 
   @override
   String get helpToneFillDesc =>
-      '버킷 도구 설정에서 단색 채우기를 톤 채우기로 바꾸면 선택한 망점・선 무늬 등의 톤 패턴으로 채울 수 있습니다. 픽셀 모드 전용 체크무늬・격자무늬 톤도 준비되어 있어, 도트 그림 질감을 살린 채색이 가능합니다.';
+      '버킷 도구 설정에서 단색 채우기를 스크린톤 채우기로 바꾸면 선택한 망점・선 무늬 등의 스크린톤 패턴으로 채울 수 있습니다. 픽셀 모드 전용 체크무늬・격자무늬 스크린톤도 준비되어 있어, 도트 그림 질감을 살린 채색이 가능합니다.';
 
   @override
   String get helpPixelModeTitle => '픽셀 모드';
@@ -1636,7 +1636,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpPenSubToolDesc =>
-      '펜 도구를 길게 누르면 일반 그리기 외에 톤 붙이기・스탬프 배치 서브 도구로 전환할 수 있습니다. 도구를 일일이 바꾸지 않고도 같은 펜으로 여러 작업을 오갈 수 있습니다.';
+      '펜 도구를 길게 누르면 일반 그리기 외에 스크린톤 붙이기・스탬프 배치 서브 도구로 전환할 수 있습니다. 도구를 일일이 바꾸지 않고도 같은 펜으로 여러 작업을 오갈 수 있습니다.';
 
   @override
   String get helpTiltDetectionTitle => '기울기 감지';
@@ -1835,11 +1835,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '같은 작품의 여러 화를 만들 때는 폴더로 화별로 프로젝트를 묶고, 각 프로젝트에서 사용하는 자동 채색 설정을 필터링해두면 캐릭터별 배색을 혼동하지 않고 효율적으로 작업할 수 있습니다.';
 
   @override
-  String get tipsPixelToneRetroTitle => '스탬프 픽셀 모드×톤 채색으로 레트로 통일감';
+  String get tipsPixelToneRetroTitle => '스탬프 픽셀 모드×스크린톤 채색으로 레트로 통일감';
 
   @override
   String get tipsPixelToneRetroDesc =>
-      '픽셀 모드 스탬프와 픽셀 모드 전용 체크무늬・격자무늬 톤을 조합하면 화면 전체를 도트 그림풍 질감으로 통일할 수 있습니다. 레트로 게임풍 연출에 어울립니다.';
+      '픽셀 모드 스탬프와 픽셀 모드 전용 체크무늬・격자무늬 스크린톤을 조합하면 화면 전체를 도트 그림풍 질감으로 통일할 수 있습니다. 레트로 게임풍 연출에 어울립니다.';
 
   @override
   String get tipsMagicWandLassoTitle => '매직완드 선택×올가미 채색으로 채색 분리 효율화';
@@ -1944,14 +1944,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsQuickToolPenSubDesc =>
-      '자주 쓰는 도구를 빠른 도구에 등록해두고, 펜을 길게 눌러 톤 붙이기・스탬프로 전환할 수 있는 펜 서브 도구도 활용하면, 화면을 오가는 횟수를 줄여 작업 리듬을 유지할 수 있습니다.';
+      '자주 쓰는 도구를 빠른 도구에 등록해두고, 펜을 길게 눌러 스크린톤 붙이기・스탬프로 전환할 수 있는 펜 서브 도구도 활용하면, 화면을 오가는 횟수를 줄여 작업 리듬을 유지할 수 있습니다.';
 
   @override
-  String get tipsAutofillToneReuseTitle => '자동 채색의 톤 설정으로 선화만 다시 그려도 채색을 재현';
+  String get tipsAutofillToneReuseTitle => '자동 채색의 스크린톤 설정으로 선화만 다시 그려도 채색을 재현';
 
   @override
   String get tipsAutofillToneReuseDesc =>
-      '자동 채색 설정의 각 부위를 「톤 사용」으로 설정해두면, 선화를 다시 그릴 때마다 톤이 포함된 채색을 자동으로 재현할 수 있습니다. 프레임마다 톤을 다시 붙이는 수고를 줄일 수 있습니다.';
+      '자동 채색 설정의 각 부위를 「스크린톤 사용」으로 설정해두면, 선화를 다시 그릴 때마다 스크린톤이 포함된 채색을 자동으로 재현할 수 있습니다. 프레임마다 스크린톤을 다시 붙이는 수고를 줄일 수 있습니다.';
 
   @override
   String get tipsAutofillMisfillTitle => '자동 채색의 원리를 알면 칠하기 실수를 줄일 수 있습니다';
@@ -1959,6 +1959,13 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get tipsAutofillMisfillDesc =>
       '자동 채색은 생성형 AI를 쓴 기능이 아니라, 레이어별 페인트통 칠하기를 응용한 것입니다. 그래서 긴 머리카락처럼 같은 부위 안에 선으로 둘러싸인 틈이 생기면 그곳까지 함께 칠해집니다. 대책으로는 우선 부위마다 채도가 높은 눈에 띄는 색을 지정해 한 번 칠해 보는 것을 권합니다. 잘못 칠해진 곳이 한눈에 보여 자동 채색 레이어를 손으로 고치기 쉽고, 고친 뒤에 원래 색으로 다시 설정해 덮어쓰는 형태로 자동 채색을 재실행하면 칠하기 실수를 크게 줄일 수 있습니다.';
+
+  @override
+  String get tipsHomeWidgetTitle => '홈 화면 위젯으로 작품을 항상 볼 수 있어요';
+
+  @override
+  String get tipsHomeWidgetDesc =>
+      '설정 → 홈 화면 위젯에서 작품을 선택하면, 고른 한 컷이 휴대폰 홈 화면에 정지 이미지로 표시됩니다. 「작품 선택」 화면은 프로젝트 목록 탭과 동일한 정렬・검색・즐겨찾기 필터를 사용할 수 있고, 프레임 선택 화면에서는 타임라인과 같은 재생・이동 컨트롤로 마음에 드는 한 컷을 찾을 수 있습니다. 「작품 만들기」・「작품 광장」 위젯도 함께 두면 홈 화면에서 바로 제작이나 게시된 작품 감상으로 이동할 수 있습니다.';
 
   @override
   String get tipsAutofillTransparentFixTitle =>
@@ -2057,7 +2064,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsTransferDeviceDesc =>
-      '기기를 바꿔도 같은 환경에서 계속 그리고 싶을 때는 인계（.niatra）기능을 사용하면 설정・브러시・톤・스탬프・팔레트 등의 환경을 한꺼번에 옮길 수 있습니다. 작업 중인 프로젝트 자체를 전달하고 싶을 때는 「공유（.niashare）」를 사용하세요.';
+      '기기를 바꿔도 같은 환경에서 계속 그리고 싶을 때는 인계（.niatra）기능을 사용하면 설정・브러시・스크린톤・스탬프・팔레트 등의 환경을 한꺼번에 옮길 수 있습니다. 작업 중인 프로젝트 자체를 전달하고 싶을 때는 「공유（.niashare）」를 사용하세요.';
 
   @override
   String get fontSettingsTabDownloaded => '다운로드됨';
@@ -2135,14 +2142,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get toolbarPenFirstUseTip =>
-      '펜을 길게 누르면 브러시・톤・스탬프・올가미 채우기를 전환할 수 있습니다.';
+      '펜을 길게 누르면 브러시・스크린톤・스탬프・올가미 채우기를 전환할 수 있습니다.';
 
   @override
-  String get toolbarBucketTooltip => '페인트통（길게 눌러 단색/톤 전환）';
+  String get toolbarBucketTooltip => '페인트통（길게 눌러 단색/스크린톤 전환）';
 
   @override
   String get toolbarBucketFirstUseTip =>
-      '페인트통을 길게 누르면 단색 채우기와 톤 채우기를 전환할 수 있습니다.';
+      '페인트통을 길게 누르면 단색 채우기와 스크린톤 채우기를 전환할 수 있습니다.';
 
   @override
   String get toolbarSelectTooltip => '선택（길게 눌러 종류 변경）';
@@ -2170,7 +2177,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      '도구 모음의 아이콘은 한 번 탭하면 해당 도구로 전환됩니다. 같은 아이콘을 길게 누르거나 위로 쓸어올리면 세부 설정이 열립니다. 펜은 브러시・톤・스탬프・올가미 채우기 전환, 페인트통은 단색과 톤 채우기 전환, 선택 도구는 사각형・올가미・자동 선택 전환, 손가락 도구는 흐리기와 모자이크 전환, 빠른 전환 도구는 등록 내용 편집이 각각 길게 누르기・위로 쓸어올리기 뒤에 있습니다. 아이콘을 두 번 탭하면 그 도구의 간단한 설명이 화면 아래에 표시됩니다.\\n캔버스에서는 두 손가락으로 오므리면 확대・축소, 두 손가락으로 끌면 이동, 두 손가락 탭으로 실행 취소, 세 손가락 탭으로 다시 실행입니다. 화면 좌우 끝을 두 번 탭하면 앞뒤 프레임으로 이동합니다.\\n마우스나 펜 태블릿을 연결한 경우에는 휠로 확대・축소, 가운데 버튼 드래그로 이동할 수 있습니다.';
+      '도구 모음의 아이콘은 한 번 탭하면 해당 도구로 전환됩니다. 같은 아이콘을 길게 누르거나 위로 쓸어올리면 세부 설정이 열립니다. 펜은 브러시・스크린톤・스탬프・올가미 채우기 전환, 페인트통은 단색과 스크린톤 채우기 전환, 선택 도구는 사각형・올가미・자동 선택 전환, 손가락 도구는 흐리기와 모자이크 전환, 빠른 전환 도구는 등록 내용 편집이 각각 길게 누르기・위로 쓸어올리기 뒤에 있습니다. 아이콘을 두 번 탭하면 그 도구의 간단한 설명이 화면 아래에 표시됩니다.\\n캔버스에서는 두 손가락으로 오므리면 확대・축소, 두 손가락으로 끌면 이동, 두 손가락 탭으로 실행 취소, 세 손가락 탭으로 다시 실행입니다. 화면 좌우 끝을 두 번 탭하면 앞뒤 프레임으로 이동합니다.\\n마우스나 펜 태블릿을 연결한 경우에는 휠로 확대・축소, 가운데 버튼 드래그로 이동할 수 있습니다.';
 
   @override
   String get toolbarStampColorLockedSnackbar =>
@@ -2192,7 +2199,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get toolbarBucketFlatFill => '단색 채우기';
 
   @override
-  String get toolbarBucketToneListLabel => '톤 목록';
+  String get toolbarBucketToneListLabel => '스크린톤 목록';
 
   @override
   String get toolbarSelectRect => '사각형 선택';
@@ -2275,6 +2282,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get widgetArtworkFramePickerHint => '표시할 프레임을 선택해 주세요.';
+
+  @override
+  String get widgetArtworkFramePickerConfirmButton => '이 프레임으로 결정';
 
   @override
   String get widgetArtworkNoFrames => '이 씬에는 아직 프레임이 없습니다.';
@@ -2380,31 +2390,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creativePanelEditAction => '편집';
 
   @override
-  String get toneTitle => '톤';
+  String get toneTitle => '스크린톤';
 
   @override
-  String get toneEmpty => '톤이 없습니다';
+  String get toneEmpty => '스크린톤이 없습니다';
 
   @override
-  String get toneSearchHint => '톤 이름으로 검색';
+  String get toneSearchHint => '스크린톤 이름으로 검색';
 
   @override
-  String get toneEditTitle => '톤 편집';
+  String get toneEditTitle => '스크린톤 편집';
 
   @override
   String get toneChangeTextureButton => '텍스처 이미지 변경';
 
   @override
-  String get toneCreateDialogTitle => '직접 제작한 톤';
+  String get toneCreateDialogTitle => '직접 제작한 스크린톤';
 
   @override
   String toneImportFailedSnackbar(String error) {
-    return '톤을 불러오지 못했습니다: $error';
+    return '스크린톤을 불러오지 못했습니다: $error';
   }
 
   @override
   String toneExportFailedSnackbar(String error) {
-    return '톤 내보내기에 실패했습니다: $error';
+    return '스크린톤 내보내기에 실패했습니다: $error';
   }
 
   @override
@@ -2866,7 +2876,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get penSubToolTabBrush => '브러시';
 
   @override
-  String get penSubToolTabTone => '톤';
+  String get penSubToolTabTone => '스크린톤';
 
   @override
   String get penSubToolTabStamp => '스탬프';
@@ -3544,7 +3554,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '설정되지 않은 부위가 $count개 있습니다: $names(톤 미선택)\n모두 설정할 때까지 이 화면을 닫을 수 없습니다.';
+    return '설정되지 않은 부위가 $count개 있습니다: $names(스크린톤 미선택)\n모두 설정할 때까지 이 화면을 닫을 수 없습니다.';
   }
 
   @override
@@ -3555,7 +3565,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredItem(String name) {
-    return '・$name: 톤이 선택되지 않았습니다';
+    return '・$name: 스크린톤이 선택되지 않았습니다';
   }
 
   @override
@@ -3565,7 +3575,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get autofillPartEmpty => '부위가 없습니다\n＋ 버튼으로 추가해 주세요';
 
   @override
-  String get autofillPartToneUnselected => '톤이 선택되지 않았습니다';
+  String get autofillPartToneUnselected => '스크린톤이 선택되지 않았습니다';
 
   @override
   String get autofillPartAddDialogTitle => '부위 추가';
@@ -3678,10 +3688,10 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get autofillPartToneLabel => '톤';
+  String get autofillPartToneLabel => '스크린톤';
 
   @override
-  String get autofillPartUseToneCheckbox => '톤 사용';
+  String get autofillPartUseToneCheckbox => '스크린톤 사용';
 
   @override
   String get autofillPartBlendModeLabel => '블렌드 모드';
@@ -3947,7 +3957,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasEditMenuAutofillPresets => '자동 채색 설정';
 
   @override
-  String get canvasEditMenuAutofillPresetsSubtitle => '부위별 색・톤 조합을 편집';
+  String get canvasEditMenuAutofillPresetsSubtitle => '부위별 색・스크린톤 조합을 편집';
 
   @override
   String get canvasEditMenuBackgroundToggle => '배경 전환';
@@ -4848,7 +4858,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get licenseTermsArt2Body =>
-      '1. 지원 OS 및 권장 운영 환경의 상세 내용은 각 배포 스토어 및 본 앱 내 표시에 따릅니다.\n2. 본 앱은 다양한 성능의 단말기에서도 쾌적하게 이용하실 수 있도록 노력하고 있으나, 단말기의 성능・OS 버전・여유 용량・설정 등 이용 환경에 따라 일부 기능이 제한되거나 정상적으로 작동하지 않을 수 있습니다.';
+      '1. 지원 OS 및 권장 운영 환경의 상세 내용은 각 배포 스토어 및 본 앱 내 표시에 따릅니다.\n2. 본 앱은 다양한 성능의 단말기에서도 쾌적하게 이용하실 수 있도록 노력하고 있으나, 단말기의 성능・OS 버전・여유 용량・설정 등 이용 환경에 따라 일부 기능이 제한되거나 정상적으로 작동하지 않을 수 있습니다.\n3. 미성년자는 본 앱 이용(유료 기능 이용을 포함합니다)에 있어 보호자 등 법정대리인의 동의를 얻어야 합니다.';
 
   @override
   String get licenseTermsArt3Title => '제3조（금지 사항）';
@@ -4869,7 +4879,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. 본 앱에 내장된 폰트 기타 소재는 본 화면「사용 폰트에 관하여」에 기재된 각 라이선스 조건에 따라 이용되고 있습니다.\n2. 사용자가 본 앱에 추가 등록・불러오기한 폰트, 이미지, 톤, 스탬프 등 소재의 권리 관계에 대해서는 사용자 본인의 책임하에 필요한 권리 또는 허락을 취득한 후 적법하게 이용해 주십시오.\n3. 사용자의 제3자 소재 이용에 기인하여 제3자와의 사이에 분쟁 등이 발생한 경우, 개발자는 법령상 책임을 지는 경우를 제외하고 그 책임을 지지 않습니다.';
+      '1. 본 앱에 내장된 폰트 기타 소재는 본 화면「사용 폰트에 관하여」에 기재된 각 라이선스 조건에 따라 이용되고 있습니다.\n2. 사용자가 본 앱에 추가 등록・불러오기한 폰트, 이미지, 스크린톤, 스탬프 등 소재의 권리 관계에 대해서는 사용자 본인의 책임하에 필요한 권리 또는 허락을 취득한 후 적법하게 이용해 주십시오.\n3. 사용자의 제3자 소재 이용에 기인하여 제3자와의 사이에 분쟁 등이 발생한 경우, 개발자는 법령상 책임을 지는 경우를 제외하고 그 책임을 지지 않습니다.';
 
   @override
   String get licenseTermsArt6Title => '제6조（프리미엄 기능・결제）';
@@ -5168,7 +5178,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceDockPanelLayer => '레이어';
 
   @override
-  String get workspaceDockPanelTone => '톤';
+  String get workspaceDockPanelTone => '스크린톤';
 
   @override
   String get workspaceDockPanelStamp => '스탬프';
@@ -5209,7 +5219,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get pcWorkspaceLayoutToolOrderHint =>
-      '브러시·톤·스탬프 등을 동시에 열었을 때 쌓이는 순서입니다.';
+      '브러시·스크린톤·스탬프 등을 동시에 열었을 때 쌓이는 순서입니다.';
 
   @override
   String get pcWorkspaceLayoutRightOrderSection => '레이어 등 패널 순서';
@@ -5354,7 +5364,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsStockingDenierDesc =>
-      '새로 추가된 스타킹・타이츠 톤은 데니어 수가 낮을수록（천이 얇을수록）격자 간격을 좁게 설정했으며, 가장 낮은 10데니어는 표시・출력 해상도에 따라 무아레가 생길 정도로 일부러 세밀하게 만들었습니다. 데니어 수가 높은 타이츠는 간격이 넓어 더 불투명한 느낌을 주므로, 캐릭터의 다리에 맞게 구분해서 사용하세요.';
+      '새로 추가된 스타킹・타이츠 스크린톤은 데니어 수가 낮을수록（천이 얇을수록）격자 간격을 좁게 설정했으며, 가장 낮은 10데니어는 표시・출력 해상도에 따라 무아레가 생길 정도로 일부러 세밀하게 만들었습니다. 데니어 수가 높은 타이츠는 간격이 넓어 더 불투명한 느낌을 주므로, 캐릭터의 다리에 맞게 구분해서 사용하세요.';
 
   @override
   String get tipsFisheyeChromaticTitle => '어안 렌즈・색수차 필터로 렌즈 특유의 왜곡과 번짐을 연출';
@@ -5867,7 +5877,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get storageCategoryExports => '내보낸 파일';
 
   @override
-  String get storageCategoryCustomAssets => '커스텀 브러시/톤/스탬프/폰트';
+  String get storageCategoryCustomAssets => '커스텀 브러시/스크린톤/스탬프/폰트';
 
   @override
   String get storageCategoryCache => '캐시';
@@ -5900,7 +5910,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      '프로젝트, 소재, 내보낸 파일, 커스텀 브러시/톤/스탬프/폰트, 설정 등 NIARIM의 모든 데이터를 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다. 삭제 후 앱을 다시 시작해 주세요.';
+      '프로젝트, 소재, 내보낸 파일, 커스텀 브러시/스크린톤/스탬프/폰트, 설정 등 NIARIM의 모든 데이터를 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다. 삭제 후 앱을 다시 시작해 주세요.';
 
   @override
   String get storageEraseAllDoneSnackbar => '모든 데이터를 삭제했습니다. 앱을 다시 시작해 주세요.';
@@ -5913,7 +5923,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpStorageDesc =>
-      '기기에서 NIARIM이 사용하는 용량과, NIARIM 내부(프로젝트, 소재, 내보낸 파일, 커스텀 브러시/톤/스탬프/폰트, 캐시, 휴지통)의 세부 내역을 원 그래프로 확인할 수 있습니다. 캐시 삭제, 모든 프로젝트의 미사용 소재 일괄 삭제, 휴지통 비우기, 프로젝트 정리, 모든 데이터 삭제(초기화)를 수행할 수 있습니다.';
+      '기기에서 NIARIM이 사용하는 용량과, NIARIM 내부(프로젝트, 소재, 내보낸 파일, 커스텀 브러시/스크린톤/스탬프/폰트, 캐시, 휴지통)의 세부 내역을 원 그래프로 확인할 수 있습니다. 캐시 삭제, 모든 프로젝트의 미사용 소재 일괄 삭제, 휴지통 비우기, 프로젝트 정리, 모든 데이터 삭제(초기화)를 수행할 수 있습니다.';
+
+  @override
+  String get helpWidgetSettingsTitle => '홈 화면 위젯';
+
+  @override
+  String get helpWidgetSettingsDesc =>
+      '휴대폰 홈 화면에 배치할 수 있는 3종류의 위젯(작품의 한 컷 표시(시작 화면)·「작품 만들기」·「작품 광장」) 설정입니다. 위젯 자체는 앱 안이 아니라 홈 화면을 길게 눌러서 추가합니다. 「작품 선택」에서는 프로젝트 목록 탭과 동일한 정렬·보기 방식·검색·즐겨찾기 필터를 사용해 작품을 고른 뒤, 재생 컨트롤이 있는 미리보기로 표시할 프레임까지 선택할 수 있습니다. 「작품 만들기」・「작품 광장」 위젯은 배경색을 앱 테마에 맞출지 직접 지정할지 선택할 수 있습니다.';
 
   @override
   String get colorPickerImportPaletteTooltip => '팔레트 가져오기';

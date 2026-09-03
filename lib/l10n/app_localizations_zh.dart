@@ -1948,6 +1948,13 @@ class AppLocalizationsZh extends AppLocalizations {
       '自动上色并非使用生成式AI的功能，而是逐图层油漆桶填充的应用。因此，当同一个部位内部存在被线条围住的空隙（例如长发内侧）时，那里也会一起被填满。建议的对策是：先为每个部位指定一个高饱和度的醒目颜色填一遍。这样涂错的地方一眼就能看出来，便于手动修正自动上色图层；修正之后再设回原本的颜色，以覆盖的方式重新执行自动上色，涂错就会大幅减少。';
 
   @override
+  String get tipsHomeWidgetTitle => '用主屏幕小组件随时查看作品';
+
+  @override
+  String get tipsHomeWidgetDesc =>
+      '在设置的「主屏幕小组件」中选择作品后,选中的那一帧会以静态图片的形式显示在手机主屏幕上。「选择作品」画面可以使用与作品列表标签页相同的排序、搜索和收藏筛选;在选择帧的画面中,还能用与时间轴相同的播放和拖动控件,找到自己满意的那一帧。同时放置「创作作品」和「作品广场」小组件,就能从主屏幕一键进入创作或浏览已发布的作品。';
+
+  @override
   String get tipsAutofillTransparentFixTitle => '自动上色溢出的部分用透明色油漆桶擦掉';
 
   @override
@@ -2043,7 +2050,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsTransferDeviceDesc =>
-      '想换设备也保持相同环境继续绘制时，使用转移（.niatra）功能，可以把设置、笔刷、色调、印章、调色板等环境一起搬过去。如果想传递正在制作的项目本身，请改用「共享（.niashare）」。';
+      '想换设备也保持相同环境继续绘制时，使用转移（.niatra）功能，可以把设置、笔刷、网点、印章、调色板等环境一起搬过去。如果想传递正在制作的项目本身，请改用「共享（.niashare）」。';
 
   @override
   String get fontSettingsTabDownloaded => '已下载';
@@ -2255,6 +2262,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get widgetArtworkFramePickerHint => '点按想要显示的画面。';
+
+  @override
+  String get widgetArtworkFramePickerConfirmButton => '使用此帧';
 
   @override
   String get widgetArtworkNoFrames => '该场景还没有画面。';
@@ -4792,7 +4802,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get licenseTermsArt2Body =>
-      '1. 有关支持的操作系统及推荐运行环境的详细信息，请以各分发商店及本应用内的显示内容为准。\n2. 本应用力求在各种性能的设备上都能流畅使用，但根据设备性能、操作系统版本、剩余存储空间、设置等使用环境的不同，部分功能可能受到限制或无法正常运作。';
+      '1. 有关支持的操作系统及推荐运行环境的详细信息，请以各分发商店及本应用内的显示内容为准。\n2. 本应用力求在各种性能的设备上都能流畅使用，但根据设备性能、操作系统版本、剩余存储空间、设置等使用环境的不同，部分功能可能受到限制或无法正常运作。\n3. 未成年人在使用本应用（包括使用付费功能）前，应事先取得法定代理人的同意。';
 
   @override
   String get licenseTermsArt3Title => '第3条（禁止事项）';
@@ -4813,7 +4823,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. 本应用内置的字体及其他素材，均依照本画面「关于使用字体」中所记载的各许可条款进行使用。\n2. 关于用户自行添加注册或读取至本应用中的字体、图片、色调、印章等素材的权利关系，应由用户自行负责，在取得必要权利或许可的前提下合法使用。\n3. 因用户使用第三方素材而与第三方产生纠纷的，除法令另有规定应承担责任的情形外，开发者不承担责任。';
+      '1. 本应用内置的字体及其他素材，均依照本画面「关于使用字体」中所记载的各许可条款进行使用。\n2. 关于用户自行添加注册或读取至本应用中的字体、图片、网点、印章等素材的权利关系，应由用户自行负责，在取得必要权利或许可的前提下合法使用。\n3. 因用户使用第三方素材而与第三方产生纠纷的，除法令另有规定应承担责任的情形外，开发者不承担责任。';
 
   @override
   String get licenseTermsArt6Title => '第6条（高级功能・付费）';
@@ -5110,7 +5120,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceDockPanelLayer => '图层';
 
   @override
-  String get workspaceDockPanelTone => '色调';
+  String get workspaceDockPanelTone => '网点';
 
   @override
   String get workspaceDockPanelStamp => '貼纸';
@@ -5150,7 +5160,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pcWorkspaceLayoutToolOrderSection => '工具面板顺序';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint => '同时打开画笔、色调、图章等多个面板时的堆叠顺序。';
+  String get pcWorkspaceLayoutToolOrderHint => '同时打开画笔、网点、图章等多个面板时的堆叠顺序。';
 
   @override
   String get pcWorkspaceLayoutRightOrderSection => '图层等面板顺序';
@@ -5294,7 +5304,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsStockingDenierDesc =>
-      '新增的丝袜・连裤袜色调按照旦数越低（布料越薄）网格间距越密的设定制作，其中最低的10旦特意做得非常细密，根据显示或导出分辨率的不同甚至可能出现摩尔纹。旦数越高的连裤袜间距越宽、显得更不透明，请根据角色的腿部选用合适的一款。';
+      '新增的丝袜・连裤袜网点按照旦数越低（布料越薄）网格间距越密的设定制作，其中最低的10旦特意做得非常细密，根据显示或导出分辨率的不同甚至可能出现摩尔纹。旦数越高的连裤袜间距越宽、显得更不透明，请根据角色的腿部选用合适的一款。';
 
   @override
   String get tipsFisheyeChromaticTitle => '用鱼眼镜头・色差滤镜营造镜头般的畸变与色边';
@@ -5847,6 +5857,13 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get helpStorageDesc =>
       '以饼图查看NIARIM在设备上占用的容量，以及NIARIM内部（项目、素材、已导出文件、自制画笔/网点/图章/字体、缓存、回收站）的详细占比。可以清除缓存、批量删除所有项目中的未使用素材、清空回收站、整理项目，或删除全部数据（初始化）。';
+
+  @override
+  String get helpWidgetSettingsTitle => '主屏幕小组件';
+
+  @override
+  String get helpWidgetSettingsDesc =>
+      '可放置在手机主屏幕上的三种小组件(启动页的作品单帧画面／「创作作品」／「作品广场」)设置。添加小组件本身需要长按主屏幕进行,应用内没有添加按钮。「选择作品」使用与作品列表标签页相同的排序、显示方式、搜索和收藏筛选,选好作品后还可以在带播放控件的预览中选择要显示的具体帧。「创作作品」和「作品广场」小组件可以选择背景色跟随应用主题,还是自行指定颜色。';
 
   @override
   String get colorPickerImportPaletteTooltip => '导入调色板';
@@ -7866,6 +7883,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '自動上色並非使用生成式AI的功能，而是逐圖層油漆桶填色的應用。因此，當同一個部位內部存在被線條圍住的空隙（例如長髮內側）時，那裡也會一起被填滿。建議的對策是：先為每個部位指定一個高飽和度的醒目顏色填一遍。這樣塗錯的地方一眼就能看出來，便於手動修正自動上色圖層；修正之後再設回原本的顏色，以覆蓋的方式重新執行自動上色，塗錯就會大幅減少。';
 
   @override
+  String get tipsHomeWidgetTitle => '用主畫面小工具隨時查看作品';
+
+  @override
+  String get tipsHomeWidgetDesc =>
+      '在設定的「主畫面小工具」中選擇作品後,選中的那一格會以靜態圖片顯示在手機主畫面上。「選擇作品」畫面可以使用與作品列表分頁相同的排序、搜尋與收藏篩選;在選擇影格的畫面中,還能用與時間軸相同的播放與拖曳控制項,找到自己滿意的那一格。同時放置「創作作品」與「作品廣場」小工具,就能從主畫面一鍵進入創作或瀏覽已發布的作品。';
+
+  @override
   String get tipsAutofillTransparentFixTitle => '自動上色溢出的部分用透明色油漆桶擦掉';
 
   @override
@@ -7961,7 +7985,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsTransferDeviceDesc =>
-      '想換裝置也保持相同環境繼續繪製時，使用轉移（.niatra）功能，可以把設定、筆刷、色調、印章、調色盤等環境一起搬過去。如果想傳遞正在製作的專案本身，請改用「共用（.niashare）」。';
+      '想換裝置也保持相同環境繼續繪製時，使用轉移（.niatra）功能，可以把設定、筆刷、網點、印章、調色盤等環境一起搬過去。如果想傳遞正在製作的專案本身，請改用「共用（.niashare）」。';
 
   @override
   String get fontSettingsTabDownloaded => '已下載';
@@ -8173,6 +8197,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get widgetArtworkFramePickerHint => '點按想要顯示的畫面。';
+
+  @override
+  String get widgetArtworkFramePickerConfirmButton => '使用此格';
 
   @override
   String get widgetArtworkNoFrames => '此場景還沒有畫面。';
@@ -10709,7 +10736,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get licenseTermsArt2Body =>
-      '1. 關於支援的作業系統版本及建議操作環境的詳細資訊，請依各發布商店及本應用程式內之顯示內容為準。\n2. 本應用程式力求於各種效能之裝置皆能順暢使用，惟依裝置效能、作業系統版本、可用儲存空間、設定等使用環境之不同，部分功能可能受限或無法正常運作。';
+      '1. 關於支援的作業系統版本及建議操作環境的詳細資訊，請依各發布商店及本應用程式內之顯示內容為準。\n2. 本應用程式力求於各種效能之裝置皆能順暢使用，惟依裝置效能、作業系統版本、可用儲存空間、設定等使用環境之不同，部分功能可能受限或無法正常運作。\n3. 未成年人於使用本應用程式（包含使用付費功能）前，應事先取得法定代理人之同意。';
 
   @override
   String get licenseTermsArt3Title => '第3條（禁止事項）';
@@ -10730,7 +10757,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. 本應用程式內建之字型及其他素材，均依照本畫面「關於使用字型」所載各授權條款使用。\n2. 關於使用者自行新增登錄或載入本應用程式之字型、圖片、色調、印章等素材之權利關係，應由使用者自行負責，於取得必要權利或授權之前提下合法使用。\n3. 因使用者利用第三方素材而與第三方發生紛爭者，除法令另有規定應負責任之情形外，開發者不負任何責任。';
+      '1. 本應用程式內建之字型及其他素材，均依照本畫面「關於使用字型」所載各授權條款使用。\n2. 關於使用者自行新增登錄或載入本應用程式之字型、圖片、網點、印章等素材之權利關係，應由使用者自行負責，於取得必要權利或授權之前提下合法使用。\n3. 因使用者利用第三方素材而與第三方發生紛爭者，除法令另有規定應負責任之情形外，開發者不負任何責任。';
 
   @override
   String get licenseTermsArt6Title => '第6條（進階功能・付費）';
@@ -11027,7 +11054,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceDockPanelLayer => '圖層';
 
   @override
-  String get workspaceDockPanelTone => '色調';
+  String get workspaceDockPanelTone => '網點';
 
   @override
   String get workspaceDockPanelStamp => '貼紙';
@@ -11067,7 +11094,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get pcWorkspaceLayoutToolOrderSection => '工具面板順序';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint => '同時開啟畫筆、色調、印章等多個面板時的堆疊順序。';
+  String get pcWorkspaceLayoutToolOrderHint => '同時開啟畫筆、網點、印章等多個面板時的堆疊順序。';
 
   @override
   String get pcWorkspaceLayoutRightOrderSection => '圖層等面板順序';
@@ -11211,7 +11238,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsStockingDenierDesc =>
-      '新增的絲襪・褲襪色調依照丹數越低（布料越薄）網格間距越密的設定製作，其中最低的10丹刻意做得非常細密，依顯示或匯出解析度不同甚至可能出現摩爾紋。丹數越高的褲襪間距越寬、看起來更不透明，請依角色的腿部選用合適的一款。';
+      '新增的絲襪・褲襪網點依照丹數越低（布料越薄）網格間距越密的設定製作，其中最低的10丹刻意做得非常細密，依顯示或匯出解析度不同甚至可能出現摩爾紋。丹數越高的褲襪間距越寬、看起來更不透明，請依角色的腿部選用合適的一款。';
 
   @override
   String get tipsFisheyeChromaticTitle => '用魚眼鏡頭・色差濾鏡營造鏡頭般的變形與色邊';
@@ -11764,6 +11791,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get helpStorageDesc =>
       '以圓餅圖查看NIARIM在裝置上占用的容量，以及NIARIM內部（專案、素材、已匯出檔案、自製筆刷/網點/圖章/字型、快取、垃圾桶）的詳細佔比。可以清除快取、批次刪除所有專案中的未使用素材、清空垃圾桶、整理專案，或刪除全部資料（初始化）。';
+
+  @override
+  String get helpWidgetSettingsTitle => '主畫面小工具';
+
+  @override
+  String get helpWidgetSettingsDesc =>
+      '可放在手機主畫面上的三種小工具(啟動頁的作品單格畫面／「創作作品」／「作品廣場」)設定。小工具本身需要長按主畫面才能加入,App 內沒有加入按鈕。「選擇作品」會使用與作品列表分頁相同的排序、顯示方式、搜尋與收藏篩選,選好作品後還能在附播放控制項的預覽中選擇要顯示的確切影格。「創作作品」與「作品廣場」小工具可以選擇背景色要跟隨 App 主題,或自行指定顏色。';
 
   @override
   String get colorPickerImportPaletteTooltip => '匯入調色盤';

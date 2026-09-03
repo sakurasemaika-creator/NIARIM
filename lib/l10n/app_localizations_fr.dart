@@ -2044,6 +2044,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le remplissage automatique n\'est pas une fonction d\'IA générative : c\'est une application du pot de peinture par calque. Ainsi, lorsqu\'une même partie comporte un espace fermé par des traits — à l\'intérieur de cheveux longs, par exemple —, cet espace est lui aussi rempli. Une bonne parade consiste à attribuer d\'abord à chaque partie une couleur vive très saturée et à lancer une première passe. Les erreurs sautent aux yeux et le calque de remplissage automatique se corrige facilement à la main ; une fois corrigé, définissez les couleurs définitives et relancez le remplissage automatique pour l\'écraser : les ratés diminuent nettement.';
 
   @override
+  String get tipsHomeWidgetTitle =>
+      'Garder une œuvre sous les yeux grâce à un widget d’écran d’accueil';
+
+  @override
+  String get tipsHomeWidgetDesc =>
+      'Choisissez une œuvre depuis Réglages → Widgets de l’écran d’accueil, et une image de celle-ci s’affichera en image statique sur l’écran d’accueil du téléphone. L’écran « Choisir une œuvre » reprend le même tri, la même recherche et le même filtre des favoris que l’onglet des projets, et le sélecteur d’image propose les mêmes commandes de lecture et de recherche que la timeline pour trouver l’image idéale. Ajoutez aussi les widgets de création et de la place pour accéder en un geste au dessin ou à la consultation des œuvres publiées depuis l’écran d’accueil.';
+
+  @override
   String get tipsAutofillTransparentFixTitle =>
       'Effacez les débordements du remplissage automatique au pot de couleur transparente';
 
@@ -2240,7 +2248,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get toolbarBucketTooltip =>
-      'Pot de peinture (appui long pour changer de remplissage)';
+      'Pot de peinture (appui long pour alterner remplissage uni/trame)';
 
   @override
   String get toolbarBucketFirstUseTip =>
@@ -2387,6 +2395,9 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get widgetArtworkFramePickerHint =>
       'Touchez l’image que vous voulez afficher.';
+
+  @override
+  String get widgetArtworkFramePickerConfirmButton => 'Utiliser cette image';
 
   @override
   String get widgetArtworkNoFrames => 'Cette scène n’a pas encore d’images.';
@@ -4123,7 +4134,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasEditMenuAutofillPresetsSubtitle =>
-      'Modifier les combinaisons de couleur/teinte de chaque partie';
+      'Modifier les combinaisons de couleur/trame de chaque partie';
 
   @override
   String get canvasEditMenuBackgroundToggle => 'Changer l\'arrière-plan';
@@ -5067,7 +5078,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get licenseTermsArt2Body =>
-      '1. Pour plus de détails sur les versions du système d\'exploitation prises en charge et l\'environnement d\'exploitation recommandé de l\'Application, veuillez vous référer à la boutique de distribution concernée et aux informations affichées dans l\'Application.\n2. Nous nous efforçons de faire fonctionner l\'Application confortablement sur des appareils de performances variées ; toutefois, selon les performances de l\'appareil, la version du système d\'exploitation, l\'espace de stockage disponible, les paramètres et d\'autres conditions d\'utilisation, certaines fonctionnalités peuvent être limitées ou ne pas fonctionner correctement.';
+      '1. Pour plus de détails sur les versions du système d\'exploitation prises en charge et l\'environnement d\'exploitation recommandé de l\'Application, veuillez vous référer à la boutique de distribution concernée et aux informations affichées dans l\'Application.\n2. Nous nous efforçons de faire fonctionner l\'Application confortablement sur des appareils de performances variées ; toutefois, selon les performances de l\'appareil, la version du système d\'exploitation, l\'espace de stockage disponible, les paramètres et d\'autres conditions d\'utilisation, certaines fonctionnalités peuvent être limitées ou ne pas fonctionner correctement.\n3. Les mineurs doivent obtenir le consentement d\'un parent ou d\'un autre représentant légal avant d\'utiliser l\'Application, y compris ses fonctionnalités payantes.';
 
   @override
   String get licenseTermsArt3Title => 'Article 3 (Actes interdits)';
@@ -5089,7 +5100,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. Les polices et autres matériaux intégrés à l\'Application sont utilisés conformément aux conditions de licence indiquées sur cet écran, sous « À propos des polices utilisées ».\n2. En ce qui concerne les droits relatifs aux polices, images, tons, tampons et autres matériaux que l\'utilisateur ajoute ou charge lui-même dans l\'Application, celui-ci est responsable de l\'obtention des droits ou autorisations nécessaires et de leur utilisation licite.\n3. En cas de litige avec un tiers résultant de l\'utilisation par l\'utilisateur de matériaux tiers, le développeur n\'en assume aucune responsabilité, sauf dans les cas où la loi l\'exige.';
+      '1. Les polices et autres matériaux intégrés à l\'Application sont utilisés conformément aux conditions de licence indiquées sur cet écran, sous « À propos des polices utilisées ».\n2. En ce qui concerne les droits relatifs aux polices, images, trames, tampons et autres matériaux que l\'utilisateur ajoute ou charge lui-même dans l\'Application, celui-ci est responsable de l\'obtention des droits ou autorisations nécessaires et de leur utilisation licite.\n3. En cas de litige avec un tiers résultant de l\'utilisation par l\'utilisateur de matériaux tiers, le développeur n\'en assume aucune responsabilité, sauf dans les cas où la loi l\'exige.';
 
   @override
   String get licenseTermsArt6Title =>
@@ -5416,7 +5427,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get workspaceDockPanelLayer => 'Calques';
 
   @override
-  String get workspaceDockPanelTone => 'Ton';
+  String get workspaceDockPanelTone => 'Trame';
 
   @override
   String get workspaceDockPanelStamp => 'Tampon';
@@ -5458,7 +5469,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pcWorkspaceLayoutToolOrderHint =>
-      'L\'ordre d\'empilement utilisé quand plusieurs panneaux (pinceau, ton, tampon, etc.) sont ouverts en même temps.';
+      'L\'ordre d\'empilement utilisé quand plusieurs panneaux (pinceau, trame, tampon, etc.) sont ouverts en même temps.';
 
   @override
   String get pcWorkspaceLayoutRightOrderSection =>
@@ -6154,7 +6165,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageCategoryCustomAssets =>
-      'Brosses/tons/tampons/polices personnalisés';
+      'Brosses/trames/tampons/polices personnalisés';
 
   @override
   String get storageCategoryCache => 'Cache';
@@ -6189,7 +6200,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'Ceci supprime définitivement toutes les données de NIARIM : projets, matériaux, fichiers exportés, brosses/tons/tampons/polices personnalisés et paramètres. Action irréversible. Redémarrez l\'application ensuite.';
+      'Ceci supprime définitivement toutes les données de NIARIM : projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés et paramètres. Action irréversible. Redémarrez l\'application ensuite.';
 
   @override
   String get storageEraseAllDoneSnackbar =>
@@ -6203,7 +6214,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpStorageDesc =>
-      'Consultez l\'espace utilisé par NIARIM sur votre appareil, ainsi qu\'une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/tons/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (réinitialiser).';
+      'Consultez l\'espace utilisé par NIARIM sur votre appareil, ainsi qu\'une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (réinitialiser).';
+
+  @override
+  String get helpWidgetSettingsTitle => 'Widgets de l’écran d’accueil';
+
+  @override
+  String get helpWidgetSettingsDesc =>
+      'Réglages des trois types de widgets à placer sur l’écran d’accueil du téléphone : une image d’une œuvre (écran de démarrage), le widget de création et le widget de la place. Les widgets eux-mêmes s’ajoutent par appui long sur l’écran d’accueil, pas depuis l’application. « Choisir une œuvre » reprend le même tri, mode d’affichage, recherche et filtre des favoris que l’onglet des projets, puis permet de choisir l’image exacte à afficher dans un aperçu doté de commandes de lecture. Les widgets de création et de la place permettent de choisir si le fond suit le thème de l’application ou utilise une couleur définie par vous.';
 
   @override
   String get colorPickerImportPaletteTooltip => 'Importer une palette';
