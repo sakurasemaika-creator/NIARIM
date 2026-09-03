@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/settings/widget_artwork_picker_screen.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -93,6 +94,30 @@ void main() {
       });
     }
 
+    /// 画面がまだ非同期の準備中かどうか。
+    ///
+    /// `CircularProgressIndicator`だけを見ていると、
+    /// [ArtworkFrameThumbnail]のように「回転インジケーターを出さずに
+    /// 裏で実際のフレーム合成（`picture.toImage()`）を待っている」種類の
+    /// ウィジェットを取りこぼし、合成前のプレースホルダー
+    /// （`Icons.image_outlined`）のままスクリーンショットが撮れてしまう。
+    /// 合成が終わると`RawImage`へ差し替わるので、その有無で判定する。
+    bool stillPreparing() {
+      if (find.byType(CircularProgressIndicator).evaluate().isNotEmpty) {
+        return true;
+      }
+      final thumbnails = find.byType(ArtworkFrameThumbnail).evaluate().length;
+      if (thumbnails == 0) return false;
+      final rendered = find
+          .descendant(
+            of: find.byType(ArtworkFrameThumbnail),
+            matching: find.byType(RawImage),
+          )
+          .evaluate()
+          .length;
+      return rendered < thumbnails;
+    }
+
     Future<void> settleRoute({int maxRounds = 12}) async {
       for (var i = 0; i < maxRounds; i++) {
         await tester.pump(const Duration(milliseconds: 100));
@@ -100,10 +125,7 @@ void main() {
           () => Future<void>.delayed(const Duration(milliseconds: 100)),
         );
         await tester.pump();
-        if (i >= 2 &&
-            find.byType(CircularProgressIndicator).evaluate().isEmpty) {
-          break;
-        }
+        if (i >= 2 && !stillPreparing()) break;
       }
     }
 

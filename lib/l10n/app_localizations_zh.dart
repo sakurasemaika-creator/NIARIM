@@ -811,7 +811,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get materialUnusedLabel => '未使用';
 
   @override
-  String get materialMissingLabel => '⚠ 缺失';
+  String get materialMissingLabel => '缺失';
 
   @override
   String get materialDeleteTooltipUsed => '使用中，无法删除';
@@ -1257,7 +1257,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      '在自动上色专用线稿图层下方创建自动上色图层，并根据预先制作的「自动上色设置」（各部位的颜色、网点组合）自动进行上色的功能。由于可以在画完线稿后一次性上色，能大幅减少需要反复绘制同一角色的手绘动画中的上色工作量。重新绘制线稿后，时间轴和图层面板会显示更新标记（❗），提示需要重新执行自动上色。在时间轴画面的三点菜单中选择「执行自动上色」，即可一次性重新计算所有带有更新标记（❗）的自动上色图层，省去重新绘制线稿后逐个图层在图层面板中执行的麻烦。自动上色设置的每个部位都有关于如何处理线稿颜色的设置（指定颜色、与填充色相同、色彩描边）。选择色彩描边（贴合线稿）后，线稿颜色会按HSL偏移以匹配填充色，使线条不显突兀、自然融合。设置越积越多，分配部位时显示的列表就会变长、难以浏览。可以在项目设置（或图层面板的部位分配对话框）中，将列表筛选为只显示本项目使用的设置，让列表更简洁、更易于挑选。';
+      '在自动上色专用线稿图层下方创建自动上色图层，并根据预先制作的「自动上色设置」（各部位的颜色、网点组合）自动进行上色的功能。由于可以在画完线稿后一次性上色，能大幅减少需要反复绘制同一角色的手绘动画中的上色工作量。重新绘制线稿后，时间轴和图层面板会显示更新标记，提示需要重新执行自动上色。在时间轴画面的三点菜单中选择「执行自动上色」，即可一次性重新计算所有带有更新标记的自动上色图层，省去重新绘制线稿后逐个图层在图层面板中执行的麻烦。自动上色设置的每个部位都有关于如何处理线稿颜色的设置（指定颜色、与填充色相同、色彩描边）。选择色彩描边（贴合线稿）后，线稿颜色会按HSL偏移以匹配填充色，使线条不显突兀、自然融合。设置越积越多，分配部位时显示的列表就会变长、难以浏览。可以在项目设置（或图层面板的部位分配对话框）中，将列表筛选为只显示本项目使用的设置，让列表更简洁、更易于挑选。';
 
   @override
   String get helpOnionSkinTitle => '洋葱皮';
@@ -2276,6 +2276,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get widgetColorCustom => '选择颜色';
 
   @override
+  String get widgetColorBase => '背景色';
+
+  @override
+  String get widgetColorForeground => '文字与图标颜色';
+
+  @override
   String get widgetNoProjects => '还没有作品。创作后即可在这里选择。';
 
   @override
@@ -2465,6 +2471,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeColorUpdateMark => '更新标记颜色';
+
+  @override
+  String get themeContrastErrorTitle => '这个颜色会让文字无法辨认';
+
+  @override
+  String get themeContrastErrorBody =>
+      '文字颜色和背景颜色太接近，画面上的文字会几乎看不见。设置画面本身也会看不清而无法还原，因此无法保存这个组合。请更改其中一方的明暗。';
+
+  @override
+  String get themeUnreadableResetButton => '还原主题';
+
+  @override
+  String get themeUnreadableResetDone => '已将主题还原为默认配色。';
 
   @override
   String get themePresetSection => '主题列表';
@@ -6746,7 +6765,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get materialUnusedLabel => '未使用';
 
   @override
-  String get materialMissingLabel => '⚠ 缺少';
+  String get materialMissingLabel => '缺少';
 
   @override
   String get materialDeleteTooltipUsed => '使用中，無法刪除';
@@ -7192,7 +7211,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpAutoFillDesc =>
-      '在自動上色專用線稿圖層下方建立自動上色圖層，並依據預先製作的「自動上色設定」（各部位的顏色、網點組合）自動進行上色的功能。由於可以在畫完線稿後一次性上色，能大幅減少需要反覆繪製同一角色的手繪動畫中的上色工作量。重新繪製線稿後，時間軸和圖層面板會顯示更新標記（❗），提示需要重新執行自動上色。在時間軸畫面的三點選單中選擇「執行自動上色」，即可一次性重新計算所有帶有更新標記（❗）的自動上色圖層，省去重新繪製線稿後逐個圖層在圖層面板中執行的麻煩。自動上色設定的每個部位都有關於如何處理線稿顏色的設定（指定顏色、與填充色相同、色彩描邊）。選擇色彩描邊（貼合線稿）後，線稿顏色會按HSL偏移以符合填充色，使線條不顯突兀、自然融合。設定越積越多，分配部位時顯示的清單就會變長、難以瀏覽。可以在專案設定（或圖層面板的部位分配對話框）中，將清單篩選為只顯示本專案使用的設定，讓清單更簡潔、更易於挑選。';
+      '在自動上色專用線稿圖層下方建立自動上色圖層，並依據預先製作的「自動上色設定」（各部位的顏色、網點組合）自動進行上色的功能。由於可以在畫完線稿後一次性上色，能大幅減少需要反覆繪製同一角色的手繪動畫中的上色工作量。重新繪製線稿後，時間軸和圖層面板會顯示更新標記，提示需要重新執行自動上色。在時間軸畫面的三點選單中選擇「執行自動上色」，即可一次性重新計算所有帶有更新標記的自動上色圖層，省去重新繪製線稿後逐個圖層在圖層面板中執行的麻煩。自動上色設定的每個部位都有關於如何處理線稿顏色的設定（指定顏色、與填充色相同、色彩描邊）。選擇色彩描邊（貼合線稿）後，線稿顏色會按HSL偏移以符合填充色，使線條不顯突兀、自然融合。設定越積越多，分配部位時顯示的清單就會變長、難以瀏覽。可以在專案設定（或圖層面板的部位分配對話框）中，將清單篩選為只顯示本專案使用的設定，讓清單更簡潔、更易於挑選。';
 
   @override
   String get helpOnionSkinTitle => '洋蔥皮';
@@ -8211,6 +8230,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get widgetColorCustom => '選擇顏色';
 
   @override
+  String get widgetColorBase => '背景色';
+
+  @override
+  String get widgetColorForeground => '文字與圖示顏色';
+
+  @override
   String get widgetNoProjects => '還沒有作品。創作後即可在這裡選擇。';
 
   @override
@@ -8400,6 +8425,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get themeColorUpdateMark => '更新標記顏色';
+
+  @override
+  String get themeContrastErrorTitle => '這個顏色會讓文字無法辨認';
+
+  @override
+  String get themeContrastErrorBody =>
+      '文字顏色和背景顏色太接近，畫面上的文字會幾乎看不見。設定畫面本身也會看不清而無法還原，因此無法儲存這個組合。請更改其中一方的明暗。';
+
+  @override
+  String get themeUnreadableResetButton => '還原主題';
+
+  @override
+  String get themeUnreadableResetDone => '已將主題還原為預設配色。';
 
   @override
   String get themePresetSection => '主題清單';

@@ -23,10 +23,13 @@ enum _ColorMode { theme, custom }
 /// - 起動画面ウィジェットは「どのフレームを表示するか」だけを選ぶ
 ///   （タップで`WidgetArtworkPickerScreen`→`WidgetArtworkFramePickerScreen`
 ///   の2画面フローへ進む。背景色の指定はここには無い＝常にテーマに追従）。
-/// - 作品をつくる／作品広場ウィジェットは、背景色を「テーマに合わせる」
-///   「色を指定する」の2択のラジオボタンで選ぶ。
+/// - 作品をつくる／作品広場ウィジェットは、配色を「テーマに合わせる」
+///   「色を選ぶ」の2択のラジオボタンで選ぶ。「色を選ぶ」を選ぶと、
+///   **背景色と文字・アイコンの色の2つ**を個別に指定できる行が出る
+///   （背景だけ変えられると、濃い背景に濃い文字といった読めない
+///   組み合わせになりうるため）。
 ///
-/// 背景色は種類ごとに独立して持つ。3種を並べて置いたとき色を変えて
+/// 色は種類ごとに独立して持つ。3種を並べて置いたとき色を変えて
 /// 見分けたい、という使い方ができるようにするため。
 ///
 /// ウィジェットの追加そのものはホーム画面の長押しから行う（アプリからは
@@ -130,56 +133,96 @@ class WidgetSettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 1種類ぶんの背景色設定（テーマに合わせる／色を指定するのラジオボタン）。
+  /// 1種類ぶんの配色設定（テーマに合わせる／色を選ぶのラジオボタンと、
+  /// 「色を選ぶ」のときだけ出る背景色・文字色の2行）。
   Widget _colorRow(
     BuildContext context,
     HomeWidgetService widgets,
     HomeWidgetKind kind,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final mode = widgets.followsTheme(kind)
-        ? _ColorMode.theme
-        : _ColorMode.custom;
+    final isCustom = !widgets.followsTheme(kind);
+    final mode = isCustom ? _ColorMode.custom : _ColorMode.theme;
 
-    return RadioGroup<_ColorMode>(
-      groupValue: mode,
-      onChanged: (value) async {
-        if (value == _ColorMode.theme) {
-          await widgets.setBackgroundColor(kind, null);
-          if (context.mounted) await _push(context);
-        } else if (context.mounted) {
-          // 「色を指定する」は選ぶたび（既に選んでいる状態からの再タップも
-          // 含め）色選択ダイアログを開く。まだ指定していなければ現在の
-          // テーマカラーを初期値にする。ダイアログをそのまま閉じた場合は
-          // 何も変更されず、選択はテーマ追従のまま（＝ラジオも戻る）。
-          _pickColor(context, widgets, kind);
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RadioListTile<_ColorMode>(
-            value: _ColorMode.theme,
-            title: Text(l10n.widgetColorFollowTheme),
-          ),
-          RadioListTile<_ColorMode>(
-            value: _ColorMode.custom,
-            title: Text(l10n.widgetColorCustom),
-            secondary: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: Color(
-                  widgets.backgroundColorOf(kind) ?? _themeColor(context),
-                ),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: scheme.outlineVariant),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        RadioGroup<_ColorMode>(
+          groupValue: mode,
+          onChanged: (value) async {
+            if (value == _ColorMode.theme) {
+              await widgets.setBackgroundColor(kind, null);
+              if (context.mounted) await _push(context);
+            } else if (context.mounted) {
+              // 「色を選ぶ」は選ぶたび（既に選んでいる状態からの再タップも
+              // 含め）背景色の選択ダイアログを開く。まだ指定していなければ
+              // 現在のテーマカラーを初期値にする。ダイアログをそのまま
+              // 閉じた場合は何も変更されず、選択はテーマ追従のまま
+              // （＝ラジオも戻る）。
+              _pickColor(context, widgets, kind, foreground: false);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<_ColorMode>(
+                value: _ColorMode.theme,
+                title: Text(l10n.widgetColorFollowTheme),
               ),
+              RadioListTile<_ColorMode>(
+                value: _ColorMode.custom,
+                title: Text(l10n.widgetColorCustom),
+              ),
+            ],
+          ),
+        ),
+        // 色を選んでいるときだけ、背景色と文字・アイコンの色を個別に
+        // 出す。文字色まで選べないと、濃い背景に濃い文字といった読めない
+        // 組み合わせになりうるため。
+        if (isCustom) ...[
+          _swatchTile(
+            context,
+            label: l10n.widgetColorBase,
+            color: Color(
+              widgets.backgroundColorOf(kind) ?? _themeColor(context),
             ),
+            onTap: () => _pickColor(context, widgets, kind, foreground: false),
+          ),
+          _swatchTile(
+            context,
+            label: l10n.widgetColorForeground,
+            color: Color(
+              widgets.foregroundColorOf(kind) ?? _themeForegroundColor(context),
+            ),
+            onTap: () => _pickColor(context, widgets, kind, foreground: true),
           ),
         ],
+      ],
+    );
+  }
+
+  /// 色見本つきの1行（タップで色選択ダイアログを開く）。
+  Widget _swatchTile(
+    BuildContext context, {
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: const EdgeInsets.only(left: 32, right: 16),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
       ),
+      title: Text(label),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 
@@ -222,30 +265,42 @@ class WidgetSettingsScreen extends StatelessWidget {
   static int _themeColor(BuildContext context) =>
       Theme.of(context).colorScheme.primary.toARGB32();
 
+  /// テーマ追従時のアイコン・文字色（テーマの「メニュー背景色」。
+  /// 起動画面の導線ボタンと同じ色）。
+  static int _themeForegroundColor(BuildContext context) =>
+      context.read<ThemeService>().current.menuBgColor.toARGB32();
+
   /// 設定変更のたびにウィジェットへ反映する。
   static Future<void> _push(BuildContext context) async {
     await refreshHomeWidgets(
       widgets: context.read<HomeWidgetService>(),
       projects: context.read<ProjectService>(),
       theme: context.read<ThemeService>(),
+      l10n: AppLocalizations.of(context)!,
     );
   }
 
+  /// 色選択ダイアログ。[foreground]がtrueなら文字・アイコンの色、
+  /// falseなら背景色を選ぶ。
   void _pickColor(
     BuildContext context,
     HomeWidgetService widgets,
-    HomeWidgetKind kind,
-  ) {
+    HomeWidgetKind kind, {
+    required bool foreground,
+  }) {
+    final current = foreground
+        ? (widgets.foregroundColorOf(kind) ?? _themeForegroundColor(context))
+        : (widgets.backgroundColorOf(kind) ?? _themeColor(context));
     showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(16),
         child: ColorPickerPanel(
-          currentColor: Color(
-            widgets.backgroundColorOf(kind) ?? _themeColor(context),
-          ),
-          onColorChanged: (c) => widgets.setBackgroundColor(kind, c.toARGB32()),
+          currentColor: Color(current),
+          onColorChanged: (c) => foreground
+              ? widgets.setForegroundColor(kind, c.toARGB32())
+              : widgets.setBackgroundColor(kind, c.toARGB32()),
           onClose: () async {
             Navigator.pop(ctx);
             if (context.mounted) await _push(context);

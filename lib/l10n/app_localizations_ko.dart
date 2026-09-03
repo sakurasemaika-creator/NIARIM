@@ -816,7 +816,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get materialUnusedLabel => '미사용';
 
   @override
-  String get materialMissingLabel => '⚠ 누락';
+  String get materialMissingLabel => '누락';
 
   @override
   String get materialDeleteTooltipUsed => '사용 중이라 삭제할 수 없습니다';
@@ -1269,7 +1269,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      '자동 채색용 선화 레이어 아래에 자동 채색 레이어를 만들고, 미리 만들어 둔 「자동 채색 설정」（부위별 색・스크린톤 조합）을 바탕으로 색을 자동으로 채우는 기능입니다. 선화를 다 그린 후 한 번에 채색할 수 있어, 같은 캐릭터를 여러 번 그리는 손그림 애니메이션에서 채색 작업을 크게 줄일 수 있습니다. 선화를 다시 그리면 타임라인・레이어 패널에 업데이트 표시（❗）가 나타나 자동 채색을 다시 실행해야 함을 알려줍니다. 타임라인 화면의 점 3개 메뉴에서 「자동 채색 실행」을 선택하면, 업데이트 표시（❗）가 붙은 자동 채색 레이어를 한꺼번에 다시 계산할 수 있습니다. 선화를 다시 그린 뒤 레이어 패널에서 한 장씩 실행하는 수고를 덜 수 있습니다. 자동 채색 설정의 각 부위에는 선화 색을 어떻게 처리할지에 대한 설정（지정 색・채색 색과 동일・색 트레이스）이 있습니다. 색 트레이스（선화 어우러짐）를 선택하면 선화 색을 채색 색에 맞춰 HSL 이동시켜, 선이 튀지 않고 자연스럽게 어우러집니다. 설정이 늘어나면 부위 할당 시 목록이 길어져 고르기 어려워집니다. 프로젝트 설정（또는 레이어 패널의 부위 할당 대화 상자）에서 이 프로젝트에서 사용하는 설정만 필터링해두면 목록이 깔끔해져 고르기 쉬워집니다.';
+      '자동 채색용 선화 레이어 아래에 자동 채색 레이어를 만들고, 미리 만들어 둔 「자동 채색 설정」（부위별 색・스크린톤 조합）을 바탕으로 색을 자동으로 채우는 기능입니다. 선화를 다 그린 후 한 번에 채색할 수 있어, 같은 캐릭터를 여러 번 그리는 손그림 애니메이션에서 채색 작업을 크게 줄일 수 있습니다. 선화를 다시 그리면 타임라인・레이어 패널에 업데이트 표시가 나타나 자동 채색을 다시 실행해야 함을 알려줍니다. 타임라인 화면의 점 3개 메뉴에서 「자동 채색 실행」을 선택하면, 업데이트 표시가 붙은 자동 채색 레이어를 한꺼번에 다시 계산할 수 있습니다. 선화를 다시 그린 뒤 레이어 패널에서 한 장씩 실행하는 수고를 덜 수 있습니다. 자동 채색 설정의 각 부위에는 선화 색을 어떻게 처리할지에 대한 설정（지정 색・채색 색과 동일・색 트레이스）이 있습니다. 색 트레이스（선화 어우러짐）를 선택하면 선화 색을 채색 색에 맞춰 HSL 이동시켜, 선이 튀지 않고 자연스럽게 어우러집니다. 설정이 늘어나면 부위 할당 시 목록이 길어져 고르기 어려워집니다. 프로젝트 설정（또는 레이어 패널의 부위 할당 대화 상자）에서 이 프로젝트에서 사용하는 설정만 필터링해두면 목록이 깔끔해져 고르기 쉬워집니다.';
 
   @override
   String get helpOnionSkinTitle => '어니언 스킨';
@@ -2296,6 +2296,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get widgetColorCustom => '색 선택';
 
   @override
+  String get widgetColorBase => '배경색';
+
+  @override
+  String get widgetColorForeground => '글자·아이콘 색';
+
+  @override
   String get widgetNoProjects => '아직 작품이 없습니다. 작품을 만들면 여기에서 고를 수 있습니다.';
 
   @override
@@ -2486,6 +2492,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get themeColorUpdateMark => '업데이트 표시 색상';
+
+  @override
+  String get themeContrastErrorTitle => '이 색으로는 글자가 보이지 않습니다';
+
+  @override
+  String get themeContrastErrorBody =>
+      '글자색과 배경색이 너무 비슷해서 화면의 글자가 거의 보이지 않게 됩니다. 설정 화면 자체도 읽을 수 없게 되어 되돌릴 수 없으므로 이 조합은 저장할 수 없습니다. 둘 중 하나의 밝기를 바꿔 주세요.';
+
+  @override
+  String get themeUnreadableResetButton => '테마 되돌리기';
+
+  @override
+  String get themeUnreadableResetDone => '테마를 기본 색으로 되돌렸습니다.';
 
   @override
   String get themePresetSection => '테마 목록';

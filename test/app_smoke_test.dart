@@ -1621,7 +1621,20 @@ void main() {
     expect(videoTypeFilterFinder, findsOneWidget);
     await tester.tap(videoTypeFilterFinder);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('縦画面のみ').last);
+    // ラベルのTextを直接タップしないこと。CheckedPopupMenuItemは中身
+    // （チェックアイコン＋ラベルのListTile）をIgnorePointerで包む実装
+    // （FlutterのSDK側`_CheckedPopupMenuItemState.buildChild()`）のため、
+    // Textはヒットテスト対象にならない。Textを狙うと「タップ座標が対象
+    // ウィジェットに当たらない」という警告が出たうえで、たまたま背後の
+    // メニュー項目に当たって動いているだけの状態になる（レイアウトが
+    // 変わると黙って別の項目を押しかねない）。ヒットテスト可能な
+    // CheckedPopupMenuItem自体を対象にする。
+    final verticalOnlyItemFinder = find.ancestor(
+      of: find.text('縦画面のみ'),
+      matching: find.byWidgetPredicate((w) => w is CheckedPopupMenuItem),
+    );
+    expect(verticalOnlyItemFinder, findsOneWidget);
+    await tester.tap(verticalOnlyItemFinder);
     await tester.pumpAndSettle();
 
     // ダミーデータは約35%がショート動画になるよう生成しているため、

@@ -138,7 +138,10 @@ void main() {
     test('テーマ追従の種類はテーマカラーが背景色になる', () async {
       final service = HomeWidgetService();
       await service.init();
-      final payload = service.widgetPayload(themeColor: 0xFFABCDEF);
+      final payload = service.widgetPayload(
+        themeColor: 0xFFABCDEF,
+        themeForegroundColor: 0xFFFFFFFF,
+      );
       for (final kind in HomeWidgetKind.values) {
         expect(payload[HomeWidgetService.backgroundColorKey(kind)], 0xFFABCDEF);
       }
@@ -148,7 +151,10 @@ void main() {
       final service = HomeWidgetService();
       await service.init();
       await service.setBackgroundColor(HomeWidgetKind.plaza, 0xFF112233);
-      final payload = service.widgetPayload(themeColor: 0xFFABCDEF);
+      final payload = service.widgetPayload(
+        themeColor: 0xFFABCDEF,
+        themeForegroundColor: 0xFFFFFFFF,
+      );
       expect(
         payload[HomeWidgetService.backgroundColorKey(HomeWidgetKind.plaza)],
         0xFF112233,
@@ -165,6 +171,7 @@ void main() {
       await service.selectArtwork(projectId: 'p9');
       final payload = service.widgetPayload(
         themeColor: 0xFF000000,
+        themeForegroundColor: 0xFFFFFFFF,
         projectName: 'テスト作品',
         thumbnailPath: '/tmp/a.png',
       );
@@ -176,10 +183,42 @@ void main() {
       expect(payload['thumbnailPath'], '/tmp/a.png');
     });
 
+    test('文字色は種類ごとに指定でき、未指定ならテーマの色になる', () async {
+      final service = HomeWidgetService();
+      await service.init();
+      await service.setBackgroundColor(HomeWidgetKind.create, 0xFF112233);
+      await service.setForegroundColor(HomeWidgetKind.create, 0xFF445566);
+      final payload = service.widgetPayload(
+        themeColor: 0xFFABCDEF,
+        themeForegroundColor: 0xFFFFFFFF,
+      );
+      expect(
+        payload[HomeWidgetService.foregroundColorKey(HomeWidgetKind.create)],
+        0xFF445566,
+      );
+      expect(
+        payload[HomeWidgetService.foregroundColorKey(HomeWidgetKind.plaza)],
+        0xFFFFFFFF,
+      );
+    });
+
+    test('背景色をテーマ追従へ戻すと、文字色の指定も一緒に解除される', () async {
+      final service = HomeWidgetService();
+      await service.init();
+      await service.setBackgroundColor(HomeWidgetKind.plaza, 0xFF112233);
+      await service.setForegroundColor(HomeWidgetKind.plaza, 0xFF445566);
+      await service.setBackgroundColor(HomeWidgetKind.plaza, null);
+      expect(service.foregroundColorOf(HomeWidgetKind.plaza), isNull);
+      expect(service.followsTheme(HomeWidgetKind.plaza), isTrue);
+    });
+
     test('payloadはnullを含まない（ネイティブへ渡せる形にする）', () async {
       final service = HomeWidgetService();
       await service.init();
-      final payload = service.widgetPayload(themeColor: 0xFF000000);
+      final payload = service.widgetPayload(
+        themeColor: 0xFF000000,
+        themeForegroundColor: 0xFFFFFFFF,
+      );
       expect(payload.values.every((v) => v != null), isTrue);
     });
   });

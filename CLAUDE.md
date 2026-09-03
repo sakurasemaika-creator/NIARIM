@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**567 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**582 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -313,6 +313,35 @@
   200pxで保存しているが、一覧での表示は40〜58px。`cacheWidth:
   (size * MediaQuery.devicePixelRatioOf(context)).round()`のように
   表示画素数へ落とすこと。
+- **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
+  `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
+  する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の
+  子だけ**。つまりキャッシュ範囲にあるだけの行は、既定の`find.byKey`
+  （`skipOffstage: true`）から**見つからない**。症状は「確かに作ったはずの
+  Keyが`findsNothing`」で、原因が分かりにくい。テストでは一覧を十分広い
+  ビューポートへ載せるか、`skipOffstage: false`で探して
+  `scrollUntilVisible`で画面内へ持ってくること
+  （`test/frame_strip_gesture_test.dart`が実例）。
+- **`MultiProvider`自身のElementは、それが差し込むProviderより上にいる**：
+  `tester.element(find.byType(MultiProvider)).read<T>()`は必ず
+  `ProviderNotFoundException`で落ちる。`MaterialApp`と
+  `AppLocalizations.of()`の関係（後者がnullになる）とまったく同じ罠で、
+  **必ず子孫のcontext**（`find.byType(Scaffold)`や対象ウィジェット自身）
+  から読むこと。
+- **ポストフレームコールバックで始まるアニメーションは、pumpを1回
+  挟んでも進まない**：`didUpdateWidget`→`addPostFrameCallback`→
+  `animateTo`という定番の流れだと、次の`tester.pump(Duration)`は
+  Tickerの**開始時刻を決めるだけ**で値が動かない（＝アニメーション前の
+  値のまま止まって見える）。`pumpAndSettle()`を使うか、pumpを2回以上
+  重ねること。
+- **`tester.drag`はタッチスロップぶん短く動く／手動ジェスチャーは
+  まったく動かない**：Scrollableの`DragStartBehavior.start`は「スロップを
+  超えた地点」を起点に取り直すため、超えるまでの移動量はスクロールに
+  効かない。`tester.drag(finder, offset)`は既定で`kDragSlopDefault`(20px)を
+  内部で足して辻褄を合わせているので**実際に動くのは offset − 20px**。
+  `startGesture`＋`moveBy`を自分で書く場合はスロップぶんが丸ごと捨てられ、
+  **1回のmoveByだけだとスクロール量が0になる**。スロップ用と本番用の
+  2回に分けること。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。
@@ -352,6 +381,46 @@
   （`onReorder`は使わない）。正しさは`test/reorder_index_test.dart`が
   総当たりで検証している。
 
+- **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
+  すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
+  バージョン・フォント設定で字形も色も変わり、同梱フォント
+  （Kuramubon・HakkouMincho・Notoサブセット）にも入っていないため、
+  周囲の文字から明らかに浮く。過去に素材一覧の「⚠ 不足」とヘルプ本文の
+  「更新マーク（❗）」が混ざっていて、前者は`Icons.warning_amber_rounded`
+  へ、後者は記号を落として文章だけにした。`test/no_emoji_in_ui_test.dart`が
+  7言語のARBを走査して再発を防いでいる（ソースコードのコメント中の
+  「→」等は画面に出ないので対象外）。
+- **`RemoteViews`ではグラデーション背景も同梱フォントも使えない**：
+  ホーム画面ウィジェットの「作品をつくる」「作品広場」は、起動画面の
+  2つの導線ボタンと同じ意匠（角丸＋2色グラデーション＋影＋Materialアイコン
+  ＋見出しフォントKuramubon）にしてあるが、これは**アプリ側が1枚のPNGへ
+  焼いて渡している**（`lib/services/shortcut_widget_renderer.dart`）。
+  `RemoteViews.setInt(..., "setBackgroundColor", ...)`は単色しか受け付けず、
+  `GradientDrawable`はリソースに静的に書いた色しか使えず、`setTypeface`は
+  assetのフォントを読めないため、ネイティブ側だけでは再現できない。
+  ネイティブ（`widget_shortcut.xml`）は受け取った画像を`fitCenter`で出す
+  だけで、画像が無いときだけアイコン＋ラベルの簡易表示へ倒す。
+  **起動画面のボタンのデザインを変えたら、レンダラー側の定数
+  （`ShortcutWidgetDesign`）も必ず一緒に変えること**。一致は
+  `test/home_widget_shortcut_design_test.dart`が、本物の起動画面を
+  レンダリングした画素と焼いたPNGの画素を突き合わせて守っている。
+  なお文言もこの画像に焼き込まれるため、Androidの文字列リソースではなく
+  **アプリ内の表示言語設定に追従する**（`app.dart`の`_syncHomeWidgets`が
+  テーマ色と言語の両方をキーにして焼き直す）。
+- **テーマの文字色と背景色を同じ色にすると詰む（対策済み・壊さないこと）**：
+  テーマ・外観設定は文字色も背景色も自由に選べるため、同じ色にすると
+  設定画面の文字まで読めなくなり自力で戻せなくなる。対策は2段構え：
+  1. テーマ・外観設定がその組み合わせを保存しない
+     （`theme_settings_screen.dart`。判定は`lib/utils/color_contrast.dart`）
+  2. それでも読めないテーマになった場合（引き継ぎファイルの取り込み等）
+     に備え、起動画面の右上へ**テーマ色を一切使わない固定色**の
+     リセットボタンを条件付きで出す（`splash_screen.dart`の
+     `_ThemeRescueButton`）
+  しきい値`kMinReadableContrast`は**1.4**。組み込み28プリセットの最小値が
+  約1.75（水色のアクセント色に白抜き文字）なので、WCAGのAA基準
+  （4.5／大きい文字3.0）を使うと**既定テーマ自体が弾かれる**。
+  組み込みテーマが全て通ることは`test/theme_contrast_rescue_test.dart`が
+  検証しているので、しきい値を上げるときは必ずこのテストを見ること。
 - **ホーム画面ウィジェットのPendingIntentは`requestCode`を必ず変えること**：
   `NiarimWidgetProviders.kt`の3種のウィジェット（作品／作品をつくる／
   作品広場）は同じ`MainActivity`を起動するIntentを使うため、

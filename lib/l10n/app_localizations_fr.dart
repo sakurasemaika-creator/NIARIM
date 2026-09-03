@@ -845,7 +845,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get materialUnusedLabel => 'Inutilisé';
 
   @override
-  String get materialMissingLabel => '⚠ Manquant';
+  String get materialMissingLabel => 'Manquant';
 
   @override
   String get materialDeleteTooltipUsed =>
@@ -1309,7 +1309,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Crée un calque de coloriage automatique sous le calque de trait pour coloriage automatique et le colore automatiquement selon un « réglage de coloriage automatique » préétabli (une combinaison de couleurs et de trames par partie). Comme vous pouvez tout colorer en une fois après avoir terminé le trait, cela réduit considérablement l’effort de coloriage dans une animation dessinée à la main où le même personnage est dessiné à répétition. Si vous redessinez le trait, une marque de mise à jour (❗) apparaît sur la chronologie et le panneau de calques pour vous indiquer que le coloriage automatique doit être réappliqué. Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l’écran timeline recalcule d’un coup tous les calques de remplissage automatique marqués de l’indicateur de mise à jour (❗). Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait. Chaque partie d’un réglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou calque de couleur. Choisir le calque de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement. À mesure que les réglages s’accumulent, la liste affichée lors de l’attribution des parties s’allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d’attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls réglages utilisés dans ce projet, gardant la liste claire et facile à choisir.';
+      'Crée un calque de coloriage automatique sous le calque de trait pour coloriage automatique et le colore automatiquement selon un « réglage de coloriage automatique » préétabli (une combinaison de couleurs et de trames par partie). Comme vous pouvez tout colorer en une fois après avoir terminé le trait, cela réduit considérablement l’effort de coloriage dans une animation dessinée à la main où le même personnage est dessiné à répétition. Si vous redessinez le trait, une marque de mise à jour apparaît sur la chronologie et le panneau de calques pour vous indiquer que le coloriage automatique doit être réappliqué. Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l’écran timeline recalcule d’un coup tous les calques de remplissage automatique marqués de l’indicateur de mise à jour . Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait. Chaque partie d’un réglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou calque de couleur. Choisir le calque de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement. À mesure que les réglages s’accumulent, la liste affichée lors de l’attribution des parties s’allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d’attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls réglages utilisés dans ce projet, gardant la liste claire et facile à choisir.';
 
   @override
   String get helpOnionSkinTitle => 'Papier calque';
@@ -2409,6 +2409,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get widgetColorCustom => 'Choisir une couleur';
 
   @override
+  String get widgetColorBase => 'Couleur de fond';
+
+  @override
+  String get widgetColorForeground => 'Couleur du texte et des icônes';
+
+  @override
   String get widgetNoProjects =>
       'Aucune œuvre pour l’instant. Dès que vous en créez une, vous pourrez la choisir ici.';
 
@@ -2601,6 +2607,20 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get themeColorUpdateMark => 'Couleur de la marque de mise à jour';
+
+  @override
+  String get themeContrastErrorTitle => 'Le texte deviendrait illisible';
+
+  @override
+  String get themeContrastErrorBody =>
+      'La couleur du texte et celle du fond sont trop proches : le texte serait presque invisible. L’écran des réglages lui-même deviendrait illisible et vous ne pourriez plus revenir en arrière, cette combinaison ne peut donc pas être enregistrée. Modifiez la luminosité de l’une des deux.';
+
+  @override
+  String get themeUnreadableResetButton => 'Réinitialiser le thème';
+
+  @override
+  String get themeUnreadableResetDone =>
+      'Le thème est revenu aux couleurs par défaut.';
 
   @override
   String get themePresetSection => 'Thèmes';

@@ -830,7 +830,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get materialUnusedLabel => 'Unused';
 
   @override
-  String get materialMissingLabel => '⚠ Missing';
+  String get materialMissingLabel => 'Missing';
 
   @override
   String get materialDeleteTooltipUsed => 'Cannot delete while in use';
@@ -1290,7 +1290,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Creates an auto-fill layer beneath the auto-fill line art layer and automatically colors it based on a pre-made \"autofill setting\" (a combination of colors and screentones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark (❗) appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied. Choosing \"Run autofill\" from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark (❗) at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from.';
+      'Creates an auto-fill layer beneath the auto-fill line art layer and automatically colors it based on a pre-made \"autofill setting\" (a combination of colors and screentones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied. Choosing \"Run autofill\" from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from.';
 
   @override
   String get helpOnionSkinTitle => 'Onion Skin';
@@ -2378,6 +2378,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetColorCustom => 'Pick a colour';
 
   @override
+  String get widgetColorBase => 'Background color';
+
+  @override
+  String get widgetColorForeground => 'Text and icon color';
+
+  @override
   String get widgetNoProjects =>
       'No works yet. Once you create one, you can choose it here.';
 
@@ -2570,6 +2576,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeColorUpdateMark => 'Update Mark Color';
+
+  @override
+  String get themeContrastErrorTitle => 'Text would be unreadable';
+
+  @override
+  String get themeContrastErrorBody =>
+      'The text color and the background color are too close, so text would be almost invisible. The settings screen itself would become unreadable and you could not undo it, so this combination cannot be saved. Please change the brightness of one of them.';
+
+  @override
+  String get themeUnreadableResetButton => 'Reset theme';
+
+  @override
+  String get themeUnreadableResetDone =>
+      'The theme has been reset to the default colors.';
 
   @override
   String get themePresetSection => 'Themes';

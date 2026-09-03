@@ -1,7 +1,11 @@
+import 'package:flutter/material.dart';
+
+import '../l10n/app_localizations.dart';
 import 'frame_thumbnail_renderer.dart';
 import 'home_widget_bridge.dart';
 import 'home_widget_service.dart';
 import 'project_service.dart';
+import 'shortcut_widget_renderer.dart';
 import 'theme_service.dart';
 
 /// テーマ変更・作品選択変更・フレーム選択変更のいずれでも、ホーム画面
@@ -15,6 +19,12 @@ import 'theme_service.dart';
 /// プロジェクトの既定サムネイルではなく、ユーザーが選んだそのフレームを
 /// 出すため）。
 ///
+/// あわせて「作品をつくる」「作品広場」ウィジェットの意匠も、起動画面の
+/// 2つの導線ボタンと同じデザインでPNGへ焼き直す
+/// （`shortcut_widget_renderer.dart`）。文言・アイコン・配色は
+/// `splash_screen.dart`の`_SplashActionButton`の呼び出し側と1対1で
+/// 対応させてあるので、片方を変えたらもう片方も変えること。
+///
 /// UI層（`widget_settings_screen.dart`・`widget_artwork_picker_screen.dart`）
 /// の両方から呼ばれるため、それらのどちらにも依存しない独立ファイルに
 /// してある（UI側どうしを互いにimportし合う循環を避けるため）。
@@ -22,6 +32,7 @@ Future<void> refreshHomeWidgets({
   required HomeWidgetService widgets,
   required ProjectService projects,
   required ThemeService theme,
+  required AppLocalizations l10n,
 }) async {
   final id = widgets.projectId;
   final project = id == null
@@ -35,10 +46,81 @@ Future<void> refreshHomeWidgets({
           sceneId: widgets.sceneId,
           frameIndex: widgets.frameIndex,
         );
+
+  final shortcutImagePaths = <HomeWidgetKind, String>{};
+  for (final kind in const [HomeWidgetKind.create, HomeWidgetKind.plaza]) {
+    final path = await saveShortcutWidgetImage(
+      kind: kind,
+      icon: shortcutWidgetIcon(kind),
+      label: shortcutWidgetLabel(l10n, kind),
+      subLabel: shortcutWidgetSubLabel(l10n, kind),
+      colors: shortcutWidgetColors(widgets, kind),
+      foreground: shortcutWidgetForeground(widgets, theme, kind),
+    );
+    if (path != null) shortcutImagePaths[kind] = path;
+  }
+
   await HomeWidgetBridge().update(
     widgets,
     themeColor: theme.current.accentColor.toARGB32(),
+    themeForegroundColor: theme.current.menuBgColor.toARGB32(),
     thumbnailPath: thumbnailPath,
     projectName: project?.name,
+    shortcutImagePaths: shortcutImagePaths,
   );
+}
+
+/// ショートカットウィジェットのアイコン（起動画面のボタンと同じもの）。
+IconData shortcutWidgetIcon(HomeWidgetKind kind) => switch (kind) {
+  HomeWidgetKind.create => Icons.brush_outlined,
+  HomeWidgetKind.plaza => Icons.movie_filter_outlined,
+  HomeWidgetKind.artwork => Icons.image_outlined,
+};
+
+/// ショートカットウィジェットの1行目（起動画面のボタンと同じ文言）。
+String shortcutWidgetLabel(AppLocalizations l10n, HomeWidgetKind kind) =>
+    switch (kind) {
+      HomeWidgetKind.create => l10n.splashCreateButton,
+      HomeWidgetKind.plaza => l10n.splashCommunityButtonTitle,
+      HomeWidgetKind.artwork => l10n.widgetSectionArtwork,
+    };
+
+/// ショートカットウィジェットの2行目。起動画面と同じく、作品広場だけが
+/// 2行構成（「作品広場」＋「投稿作品をみる」）になる。
+String? shortcutWidgetSubLabel(AppLocalizations l10n, HomeWidgetKind kind) =>
+    kind == HomeWidgetKind.plaza ? l10n.splashCommunityButtonSubtitle : null;
+
+/// ショートカットウィジェットのグラデーション2色。
+///
+/// 「テーマに合わせる」ときは起動画面のボタンとまったく同じ組み合わせ
+/// （作品をつくる＝primary→primaryContainer、作品広場＝secondary→
+/// secondaryContainer）。ユーザーが色を指定しているときは、その色を起点に
+/// 白へ寄せた色を終点にして、同じグラデーションの見え方を保つ。
+List<Color> shortcutWidgetColors(
+  HomeWidgetService widgets,
+  HomeWidgetKind kind,
+) {
+  final custom = widgets.backgroundColorOf(kind);
+  if (custom != null) {
+    final base = Color(custom);
+    return [base, Color.lerp(base, Colors.white, 0.35)!];
+  }
+  final scheme = ThemeService.activeColorScheme;
+  return kind == HomeWidgetKind.plaza
+      ? [scheme.secondary, scheme.secondaryContainer]
+      : [scheme.primary, scheme.primaryContainer];
+}
+
+/// ショートカットウィジェットのアイコン・文字の色。
+///
+/// 既定はテーマの「メニュー背景色」（起動画面の導線ボタンと同じ）。
+/// 背景色を自分で選んだ種類では、文字色も個別に指定できる
+/// （濃い背景に濃い文字、という読めない組み合わせを避けるため）。
+Color shortcutWidgetForeground(
+  HomeWidgetService widgets,
+  ThemeService theme,
+  HomeWidgetKind kind,
+) {
+  final custom = widgets.foregroundColorOf(kind);
+  return custom != null ? Color(custom) : theme.current.menuBgColor;
 }

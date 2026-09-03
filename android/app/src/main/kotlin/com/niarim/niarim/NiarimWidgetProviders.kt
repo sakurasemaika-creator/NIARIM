@@ -5,7 +5,10 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.view.View
 import android.widget.RemoteViews
 import java.io.File
 
@@ -85,6 +88,24 @@ const val WIDGET_ROUTE_EXTRA = "niarim_widget_route"
 /** アプリのテーマ既定色（テーマ追従が読めなかった場合の保険）。 */
 internal const val FALLBACK_BACKGROUND = 0xFFFF5C7A.toInt()
 
+/**
+ * アイコン・文字の既定色。既定テーマの「メニュー背景色」＝白で、
+ * アクセント色の背景の上でいちばん読みやすい。
+ */
+internal const val FALLBACK_FOREGROUND = 0xFFFFFFFF.toInt()
+
+/**
+ * アプリが書き出したPNGを読む。パスが空・ファイルが無い・デコードに失敗
+ * （書き込み途中のファイルを読んだ等）のいずれでもnullを返し、呼び出し側で
+ * フォールバック表示へ倒せるようにする。
+ */
+internal fun decodeWidgetBitmap(path: String): Bitmap? {
+    if (path.isEmpty()) return null
+    val file = File(path)
+    if (!file.exists()) return null
+    return BitmapFactory.decodeFile(file.absolutePath)
+}
+
 /** 好きな作品のフレーム1枚を出し、タップでその作品を開くウィジェット。 */
 class NiarimArtworkWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(
@@ -104,11 +125,8 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_title, name)
             // 作品が未選択・サムネイル未生成でも空のウィジェットにしない
             // （選び直せるようアプリは開ける状態にしておく）。
-            val file = if (thumbnail.isNotEmpty()) File(thumbnail) else null
-            if (file != null && file.exists()) {
-                val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                if (bitmap != null) views.setImageViewBitmap(R.id.widget_image, bitmap)
-            }
+            val bitmap = decodeWidgetBitmap(thumbnail)
+            if (bitmap != null) views.setImageViewBitmap(R.id.widget_image, bitmap)
             views.setOnClickPendingIntent(R.id.widget_root, launchIntent(context, route))
             appWidgetManager.updateAppWidget(id, views)
         }
@@ -118,6 +136,19 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
 /**
  * ショートカット系ウィジェットの共通処理。
  *
+ * ## 見た目はアプリ側が焼いた画像
+ *
+ * 「起動画面にある2つのボタンと同じデザイン」（角丸＋2色グラデーション＋
+ * 影＋Materialアイコン＋見出しフォントKuramubon）は、`RemoteViews`では
+ * どれも指定できない。`setBackgroundColor`は単色しか受け付けず、
+ * `GradientDrawable`はリソースに静的に書いた色しか使えず、`setTypeface`は
+ * assetのフォントを読めない。そのため意匠はアプリ側
+ * （`shortcut_widget_renderer.dart`）が1枚のPNGへ焼き、ここではその画像を
+ * `fitCenter`で出すだけにしている。
+ *
+ * 画像がまだ無いとき（アプリを一度も起動せずにウィジェットを置いた等）は、
+ * 従来どおりアイコン＋ラベル＋単色背景へ倒す。
+ *
  * **privateにしないこと**。サブクラスはマニフェストの`<receiver>`から
  * クラス名で参照されるため必ずpublicで、Kotlinは「publicなサブクラスが
  * private/internalな親クラスを露出する」ことを禁じている
@@ -125,6 +156,8 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
  */
 abstract class ShortcutWidgetProvider : AppWidgetProvider() {
     abstract val colorKey: String
+    abstract val foregroundKey: String
+    abstract val imageKey: String
     abstract val routeKey: String
     abstract val fallbackRoute: String
     abstract val labelResId: Int
@@ -136,12 +169,27 @@ abstract class ShortcutWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray,
     ) {
         val background = prefColor(context, colorKey, FALLBACK_BACKGROUND)
+        val foreground = prefColor(context, foregroundKey, FALLBACK_FOREGROUND)
         val route = prefString(context, routeKey, fallbackRoute)
+        val design = decodeWidgetBitmap(prefString(context, imageKey))
         for (id in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_shortcut)
-            views.setInt(R.id.widget_root, "setBackgroundColor", background)
-            views.setTextViewText(R.id.widget_label, context.getString(labelResId))
-            views.setImageViewResource(R.id.widget_icon, iconResId)
+            if (design != null) {
+                // 画像自体が角丸・グラデーション・影を持つので、土台は
+                // 透明にしないと画像の外側に四角い色板が残ってしまう。
+                views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
+                views.setImageViewBitmap(R.id.widget_image, design)
+                views.setViewVisibility(R.id.widget_image, View.VISIBLE)
+                views.setViewVisibility(R.id.widget_fallback, View.GONE)
+            } else {
+                views.setInt(R.id.widget_root, "setBackgroundColor", background)
+                views.setViewVisibility(R.id.widget_image, View.GONE)
+                views.setViewVisibility(R.id.widget_fallback, View.VISIBLE)
+                views.setTextViewText(R.id.widget_label, context.getString(labelResId))
+                views.setTextColor(R.id.widget_label, foreground)
+                views.setImageViewResource(R.id.widget_icon, iconResId)
+                views.setInt(R.id.widget_icon, "setColorFilter", foreground)
+            }
             views.setOnClickPendingIntent(R.id.widget_root, launchIntent(context, route))
             appWidgetManager.updateAppWidget(id, views)
         }
@@ -151,6 +199,8 @@ abstract class ShortcutWidgetProvider : AppWidgetProvider() {
 /** ワンタップで「作品をつくる」へ。 */
 class NiarimCreateWidgetProvider : ShortcutWidgetProvider() {
     override val colorKey = "backgroundColor_create"
+    override val foregroundKey = "foregroundColor_create"
+    override val imageKey = "shortcutImage_create"
     override val routeKey = "routeCreate"
     override val fallbackRoute = "/new-project"
     override val labelResId = R.string.widget_create_label
@@ -160,6 +210,8 @@ class NiarimCreateWidgetProvider : ShortcutWidgetProvider() {
 /** ワンタップで「作品広場」へ。 */
 class NiarimPlazaWidgetProvider : ShortcutWidgetProvider() {
     override val colorKey = "backgroundColor_plaza"
+    override val foregroundKey = "foregroundColor_plaza"
+    override val imageKey = "shortcutImage_plaza"
     override val routeKey = "routePlaza"
     override val fallbackRoute = "/community"
     override val labelResId = R.string.widget_plaza_label

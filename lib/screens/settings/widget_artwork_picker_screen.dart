@@ -99,6 +99,7 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
         widgets: widgets,
         projects: context.read<ProjectService>(),
         theme: context.read<ThemeService>(),
+        l10n: AppLocalizations.of(context)!,
       );
     }
     if (context.mounted) context.pop();
@@ -688,6 +689,7 @@ class _WidgetArtworkFramePickerScreenState
         widgets: widgets,
         projects: context.read<ProjectService>(),
         theme: context.read<ThemeService>(),
+        l10n: AppLocalizations.of(context)!,
       );
     }
     if (context.mounted) {

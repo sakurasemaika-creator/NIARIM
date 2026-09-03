@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 「作品広場」ウィジェットのアイコン（再生の三角）。 -->
+<!--
+  「作品広場」ウィジェットのフォールバック用アイコン。
+  起動画面の同じボタンが使う Icons.movie_filter_outlined に合わせた
+  フィルム＋きらめきの意匠。通常はアプリが焼いたPNGが表示されるため、
+  これは画像がまだ無いときだけ出る。
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
@@ -8,5 +13,5 @@
     android:tint="#FFFFFFFF">
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M10,16.5l6,-4.5 -6,-4.5v9zM12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2z" />
+        android:pathData="M18,4l2,3h-3l-2,-3h-2l2,3h-3l-2,-3H8l2,3H7L5,4H4C2.9,4 2.01,4.9 2.01,6L2,18c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V4h-4zM13.11,16.11L12,18.5l-1.11,-2.39L8.5,15l2.39,-1.11L12,11.5l1.11,2.39L15.5,15l-2.39,1.11z" />
 </vector>

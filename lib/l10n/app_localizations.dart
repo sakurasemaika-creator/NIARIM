@@ -1616,7 +1616,7 @@ abstract class AppLocalizations {
   /// No description provided for @materialMissingLabel.
   ///
   /// In ja, this message translates to:
-  /// **'⚠ 不足'**
+  /// **'不足'**
   String get materialMissingLabel;
 
   /// No description provided for @materialDeleteTooltipUsed.
@@ -2468,7 +2468,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpAutoFillDesc.
   ///
   /// In ja, this message translates to:
-  /// **'自動塗り用線画レイヤーの下に自動塗りレイヤーを作り、あらかじめ作成した「自動塗り設定」（パーツごとの色・トーンの組み合わせ）に基づいて色を自動で塗る機能です。線画を描き終えた後に一括で色を塗れるため、同じキャラクターを何度も描く手描きアニメーションで色塗りの手間を大幅に減らせます。線画を描き直した場合はタイムライン・レイヤーパネルに更新マーク（❗）が表示され、自動塗りの再実行が必要なことを知らせます。 タイムライン画面の三点メニューから「自動塗り実行」を選ぶと、更新マーク（❗）が付いた自動塗りレイヤーをまとめて再計算できます。線画を描き直した後に1枚ずつレイヤーパネルで実行する手間を省けます。 自動塗り設定の各パーツには、線画の色をどう扱うかの設定（指定色・塗り色と同じ・色トレス）があります。色トレス（線画馴染ませ）を選ぶと、線画の色を塗り色に合わせてHSLシフトし、線が浮かずに馴染んだ仕上がりになります。 設定が増えてくると、パーツ割り当て時の一覧が長くなって選びにくくなります。プロジェクト設定（またはレイヤーパネルのパーツ割り当てダイアログ）から、このプロジェクトで使う設定だけに絞り込んでおくと、一覧がすっきりして選びやすくなります。'**
+  /// **'自動塗り用線画レイヤーの下に自動塗りレイヤーを作り、あらかじめ作成した「自動塗り設定」（パーツごとの色・トーンの組み合わせ）に基づいて色を自動で塗る機能です。線画を描き終えた後に一括で色を塗れるため、同じキャラクターを何度も描く手描きアニメーションで色塗りの手間を大幅に減らせます。線画を描き直した場合はタイムライン・レイヤーパネルに更新マークが表示され、自動塗りの再実行が必要なことを知らせます。 タイムライン画面の三点メニューから「自動塗り実行」を選ぶと、更新マークが付いた自動塗りレイヤーをまとめて再計算できます。線画を描き直した後に1枚ずつレイヤーパネルで実行する手間を省けます。 自動塗り設定の各パーツには、線画の色をどう扱うかの設定（指定色・塗り色と同じ・色トレス）があります。色トレス（線画馴染ませ）を選ぶと、線画の色を塗り色に合わせてHSLシフトし、線が浮かずに馴染んだ仕上がりになります。 設定が増えてくると、パーツ割り当て時の一覧が長くなって選びにくくなります。プロジェクト設定（またはレイヤーパネルのパーツ割り当てダイアログ）から、このプロジェクトで使う設定だけに絞り込んでおくと、一覧がすっきりして選びやすくなります。'**
   String get helpAutoFillDesc;
 
   /// No description provided for @helpOnionSkinTitle.
@@ -4265,6 +4265,18 @@ abstract class AppLocalizations {
   /// **'色を選ぶ'**
   String get widgetColorCustom;
 
+  /// ホーム画面ウィジェットの背景色を選ぶ行の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'背景色'**
+  String get widgetColorBase;
+
+  /// ホーム画面ウィジェットの文字・アイコンの色を選ぶ行の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'文字・アイコンの色'**
+  String get widgetColorForeground;
+
   /// No description provided for @widgetNoProjects.
   ///
   /// In ja, this message translates to:
@@ -4630,6 +4642,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'更新マーク色'**
   String get themeColorUpdateMark;
+
+  /// テーマ設定で文字色と背景色が近すぎるときのエラーダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'この色では文字が読めなくなります'**
+  String get themeContrastErrorTitle;
+
+  /// 同エラーの本文
+  ///
+  /// In ja, this message translates to:
+  /// **'文字の色と背景の色が近すぎるため、画面の文字がほとんど見えなくなります。設定画面自体も読めなくなり元に戻せなくなるので、この組み合わせは保存できません。どちらかの明るさを変えてください。'**
+  String get themeContrastErrorBody;
+
+  /// 読めないテーマになったとき起動画面に出る固定色のリセットボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマをもとに戻す'**
+  String get themeUnreadableResetButton;
+
+  /// テーマをリセットしたときの通知
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマを既定の配色に戻しました。'**
+  String get themeUnreadableResetDone;
 
   /// No description provided for @themePresetSection.
   ///

@@ -37,7 +37,11 @@ class NiarimApp extends StatefulWidget {
 
 class _NiarimAppState extends State<NiarimApp> {
   final _homeWidgetBridge = HomeWidgetBridge();
-  int? _lastPushedThemeColor;
+
+  /// 直近にウィジェットへ書き出した「テーマ色＋表示言語」。ウィジェットの
+  /// 意匠はテーマ配色と文言の両方を焼き込んだ画像なので、どちらが変わっても
+  /// 焼き直す必要がある。
+  String? _lastPushedWidgetKey;
 
   @override
   void initState() {
@@ -62,12 +66,22 @@ class _NiarimAppState extends State<NiarimApp> {
     });
   }
 
-  /// テーマカラーが変わったらウィジェットの色も追従させる
-  /// （HomeWidgetServiceが「テーマ追従」設定のときだけ見た目が変わる）。
-  void _syncHomeWidgets(BuildContext context, ThemeService themeService) {
-    final color = themeService.current.accentColor.toARGB32();
-    if (_lastPushedThemeColor == color) return;
-    _lastPushedThemeColor = color;
+  /// テーマカラー・表示言語が変わったらウィジェットの見た目も追従させる
+  /// （HomeWidgetServiceが「テーマ追従」設定のときだけ配色が変わるが、
+  /// ショートカットウィジェットの文言はどちらの設定でも言語に追従する）。
+  ///
+  /// ここの`context`は`MaterialApp.router`より**上**にいるため
+  /// `AppLocalizations.of(context)`はnullになる。表示言語はアプリ自身の
+  /// 設定（`SettingsService.language`）で決まるので、そのロケールから
+  /// 直接引く。
+  void _syncHomeWidgets(
+    BuildContext context,
+    ThemeService themeService,
+    Locale locale,
+  ) {
+    final key = '${themeService.current.accentColor.toARGB32()}/$locale';
+    if (_lastPushedWidgetKey == key) return;
+    _lastPushedWidgetKey = key;
     final widgets = context.read<HomeWidgetService>();
     final projects = context.read<ProjectService>();
     // build中に非同期処理を始めないよう、フレーム確定後に回す。
@@ -76,6 +90,7 @@ class _NiarimAppState extends State<NiarimApp> {
         widgets: widgets,
         projects: projects,
         theme: themeService,
+        l10n: lookupAppLocalizations(locale),
       );
     });
   }
@@ -83,9 +98,9 @@ class _NiarimAppState extends State<NiarimApp> {
   @override
   Widget build(BuildContext context) {
     final themeService = context.watch<ThemeService>();
-    _syncHomeWidgets(context, themeService);
     // 表示言語（日本語・English・简体中文・한국어・繁體中文・Français・Españolの7言語対応）。
     final language = context.watch<SettingsService>().language;
+    _syncHomeWidgets(context, themeService, _localeFromCode(language));
     return MaterialApp.router(
       title: 'NIARIM',
       debugShowCheckedModeBanner: false,

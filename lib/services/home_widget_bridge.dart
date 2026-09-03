@@ -53,13 +53,17 @@ class HomeWidgetBridge {
   Future<void> update(
     HomeWidgetService service, {
     required int themeColor,
+    required int themeForegroundColor,
     String? thumbnailPath,
     String? projectName,
+    Map<HomeWidgetKind, String>? shortcutImagePaths,
   }) async {
     final payload = service.widgetPayload(
       themeColor: themeColor,
+      themeForegroundColor: themeForegroundColor,
       thumbnailPath: thumbnailPath,
       projectName: projectName,
+      shortcutImagePaths: shortcutImagePaths,
     );
     try {
       for (final entry in payload.entries) {

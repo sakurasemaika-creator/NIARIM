@@ -47,11 +47,13 @@ String homeWidgetRoute(HomeWidgetKind kind) => switch (kind) {
 ///
 /// ## 色について
 ///
-/// 背景色は**ウィジェットの種類ごとに独立**して持つ（`Map<HomeWidgetKind,
+/// 色は**ウィジェットの種類ごとに独立**して持つ（`Map<HomeWidgetKind,
 /// int>`）。3種類を並べて置いたときに色を変えて見分けたい、という使い方が
-/// できるようにするため。任意のARGBを保存できる（`RemoteViews.setInt`は
-/// 任意の色を受け取れるのでプリセットに限定する必要がない）。既定は
-/// 「アプリのテーマカラーに追従」で、その種類の色がnullのときがその状態。
+/// できるようにするため。背景色（[backgroundColorOf]）に加えて、アイコンと
+/// 文字の色（[foregroundColorOf]）も指定できる。背景だけ変えられると、
+/// 濃い背景に濃い文字といった読めない組み合わせになりうるため。
+/// 任意のARGBを保存でき、既定は「アプリのテーマカラーに追従」
+/// （その種類の色がnullのときがその状態）。
 ///
 /// なお[HomeWidgetKind.artwork]の色は設定画面から変更する手段を設けて
 /// いない（作品ウィジェットは「どのフレームを出すか」だけを選ぶ設計とした
@@ -66,6 +68,10 @@ class HomeWidgetService extends ChangeNotifier {
 
   /// 種類ごとの背景色（ARGB）。値が無い種類は「テーマカラーに追従」。
   final Map<HomeWidgetKind, int> _backgroundColors = {};
+
+  /// 種類ごとのアイコン・文字の色（ARGB）。値が無い種類はテーマ追従
+  /// （＝テーマの「メニュー背景色」）。
+  final Map<HomeWidgetKind, int> _foregroundColors = {};
 
   /// 作品ウィジェットに表示するプロジェクトのID。未選択ならnull。
   String? get projectId => _projectId;
@@ -82,7 +88,11 @@ class HomeWidgetService extends ChangeNotifier {
   /// [kind]の背景色（ARGB）。nullなら「アプリのテーマカラーに追従」。
   int? backgroundColorOf(HomeWidgetKind kind) => _backgroundColors[kind];
 
-  /// [kind]がテーマ追従かどうか。
+  /// [kind]のアイコン・文字の色（ARGB）。nullなら「テーマに追従」。
+  int? foregroundColorOf(HomeWidgetKind kind) => _foregroundColors[kind];
+
+  /// [kind]がテーマ追従かどうか。背景色を指定した時点で「色を指定する」
+  /// 状態とみなす（文字色は、その状態のときだけ追加で選べる）。
   bool followsTheme(HomeWidgetKind kind) =>
       !_backgroundColors.containsKey(kind);
 
@@ -95,6 +105,13 @@ class HomeWidgetService extends ChangeNotifier {
       _projectId = json['projectId'] as String?;
       _sceneId = json['sceneId'] as String?;
       _frameIndex = json['frameIndex'] as int?;
+      final foregrounds = json['foregroundColors'];
+      if (foregrounds is Map) {
+        for (final kind in HomeWidgetKind.values) {
+          final value = foregrounds[kind.name];
+          if (value is int) _foregroundColors[kind] = value;
+        }
+      }
       final colors = json['backgroundColors'];
       if (colors is Map) {
         for (final kind in HomeWidgetKind.values) {
@@ -117,6 +134,7 @@ class HomeWidgetService extends ChangeNotifier {
       _sceneId = null;
       _frameIndex = null;
       _backgroundColors.clear();
+      _foregroundColors.clear();
     }
   }
 
@@ -142,12 +160,26 @@ class HomeWidgetService extends ChangeNotifier {
     await _persist();
   }
 
-  /// [kind]の背景色を指定する。nullを渡すと「テーマカラーに追従」へ戻す。
+  /// [kind]の背景色を指定する。nullを渡すと「テーマカラーに追従」へ戻す
+  /// （文字色の指定も一緒に解除する。背景がテーマ追従に戻ったのに文字色
+  /// だけ残っていると、意図しない組み合わせになるため）。
   Future<void> setBackgroundColor(HomeWidgetKind kind, int? argb) async {
     if (argb == null) {
       _backgroundColors.remove(kind);
+      _foregroundColors.remove(kind);
     } else {
       _backgroundColors[kind] = argb;
+    }
+    notifyListeners();
+    await _persist();
+  }
+
+  /// [kind]のアイコン・文字の色を指定する。nullでテーマ追従へ戻す。
+  Future<void> setForegroundColor(HomeWidgetKind kind, int? argb) async {
+    if (argb == null) {
+      _foregroundColors.remove(kind);
+    } else {
+      _foregroundColors[kind] = argb;
     }
     notifyListeners();
     await _persist();
@@ -164,6 +196,9 @@ class HomeWidgetService extends ChangeNotifier {
         'backgroundColors': {
           for (final e in _backgroundColors.entries) e.key.name: e.value,
         },
+        'foregroundColors': {
+          for (final e in _foregroundColors.entries) e.key.name: e.value,
+        },
       }),
     );
   }
@@ -172,20 +207,41 @@ class HomeWidgetService extends ChangeNotifier {
   static String backgroundColorKey(HomeWidgetKind kind) =>
       'backgroundColor_${kind.name}';
 
+  /// ネイティブ側が読むアイコン・文字色のキー（Kotlin側と一致させること）。
+  static String foregroundColorKey(HomeWidgetKind kind) =>
+      'foregroundColor_${kind.name}';
+
+  /// ショートカットウィジェット（作品をつくる／作品広場）の意匠を焼いた
+  /// PNGのパスを渡すキー（Kotlin側と一致させること）。
+  static String shortcutImageKey(HomeWidgetKind kind) =>
+      'shortcutImage_${kind.name}';
+
   /// ネイティブ側へ渡す値をまとめる。
   ///
   /// [themeColor]はアプリの現在のテーマカラー。テーマ追従の種類はこれを
-  /// そのまま背景色として使う。[thumbnailPath]は選んだフレームを実際に
+  /// そのまま背景色として使う。[themeForegroundColor]は同じくテーマ追従の
+  /// ときのアイコン・文字色（テーマの「メニュー背景色」）。[thumbnailPath]は選んだフレームを実際に
   /// 描画したPNGのパス（呼び出し側で`frame_thumbnail_renderer.dart`を
   /// 使って用意する。このサービス自体はDartの`dart:ui`合成処理へ依存させ
   /// たくないため関与しない）。
+  ///
+  /// [shortcutImagePaths]は「作品をつくる」「作品広場」ウィジェットの意匠を
+  /// 起動画面のボタンと同じデザインで焼いたPNGのパス
+  /// （`shortcut_widget_renderer.dart`が用意する）。ネイティブ側はこれが
+  /// あればそのまま表示し、無ければアイコン＋ラベルの簡易表示へ倒す。
   Map<String, Object?> widgetPayload({
     required int themeColor,
+    required int themeForegroundColor,
     String? thumbnailPath,
     String? projectName,
+    Map<HomeWidgetKind, String>? shortcutImagePaths,
   }) => {
     for (final kind in HomeWidgetKind.values)
       backgroundColorKey(kind): _backgroundColors[kind] ?? themeColor,
+    for (final kind in HomeWidgetKind.values)
+      foregroundColorKey(kind): _foregroundColors[kind] ?? themeForegroundColor,
+    for (final kind in HomeWidgetKind.values)
+      shortcutImageKey(kind): shortcutImagePaths?[kind] ?? '',
     'projectId': _projectId ?? '',
     'projectName': projectName ?? '',
     'thumbnailPath': thumbnailPath ?? '',

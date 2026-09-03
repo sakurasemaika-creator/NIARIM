@@ -12,6 +12,7 @@ import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/color_contrast.dart';
 import '../../utils/reorder_index.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
@@ -274,12 +275,18 @@ class ThemeSettingsScreen extends StatelessWidget {
   /// カラーピッカーダイアログを表示する（カラーカスタマイズ）。
   /// ドラッグ中は`ThemeService.previewCurrent()`でアプリ全体へ即時反映し
   /// （見た目確認用、未保存）、ダイアログを閉じた時点で確定保存する。
+  ///
+  /// ただし、**文字と背景が同じ（ごく近い）色になる組み合わせは保存
+  /// させない**。保存してしまうとこの設定画面の文字まで読めなくなり、
+  /// 自力で元に戻せなくなるため（判定は`color_contrast.dart`）。その場合は
+  /// 開く前の配色へ戻したうえで理由を出す。
   void _showColorPickerDialog(
     BuildContext context,
     ThemeService service,
     AppThemePreset Function(AppThemePreset preset, Color color) update,
     Color initialColor,
   ) {
+    final before = service.current;
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -290,10 +297,33 @@ class ThemeSettingsScreen extends StatelessWidget {
           onColorChanged: (c) =>
               service.previewCurrent(update(service.current, c)),
           onClose: () {
-            service.commitCurrent();
+            final rejected = !isThemeReadable(service.current);
+            if (rejected) {
+              service.previewCurrent(before);
+            } else {
+              service.commitCurrent();
+            }
             Navigator.pop(ctx);
+            if (rejected && context.mounted) _showContrastError(context);
           },
         ),
+      ),
+    );
+  }
+
+  void _showContrastError(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.themeContrastErrorTitle),
+        content: Text(l10n.themeContrastErrorBody),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonOk),
+          ),
+        ],
       ),
     );
   }

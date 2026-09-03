@@ -130,25 +130,42 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      subtitle: Text(
-                        [
-                          m.id,
-                          _formatSize(m.sizeBytes),
-                          if (m.width != null && m.height != null)
-                            '${m.width}×${m.height}',
-                          if (m.duration != null) _formatDuration(m.duration!),
-                          _formatDate(m.addedAt),
-                          used
-                              ? l10n.materialUsedLabel
-                              : l10n.materialUnusedLabel,
-                          if (isMissing) l10n.materialMissingLabel,
-                        ].join(' ・ '),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isMissing
-                              ? ThemeService.activeColorScheme.error
-                              : scheme.onSurfaceVariant,
-                        ),
+                      // ファイルが見つからない素材には警告アイコンを添える
+                      // （アプリ内では絵文字を使わず必ずアイコンで表す）。
+                      subtitle: Row(
+                        children: [
+                          if (isMissing) ...[
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 13,
+                              color: ThemeService.activeColorScheme.error,
+                            ),
+                            const SizedBox(width: 3),
+                          ],
+                          Expanded(
+                            child: Text(
+                              [
+                                m.id,
+                                _formatSize(m.sizeBytes),
+                                if (m.width != null && m.height != null)
+                                  '${m.width}×${m.height}',
+                                if (m.duration != null)
+                                  _formatDuration(m.duration!),
+                                _formatDate(m.addedAt),
+                                used
+                                    ? l10n.materialUsedLabel
+                                    : l10n.materialUnusedLabel,
+                                if (isMissing) l10n.materialMissingLabel,
+                              ].join(' ・ '),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isMissing
+                                    ? ThemeService.activeColorScheme.error
+                                    : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),

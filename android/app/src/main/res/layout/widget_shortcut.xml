@@ -1,26 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ショートカットウィジェット（作品をつくる／作品広場）。アイコン＋ラベル。 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  ショートカットウィジェット（作品をつくる／作品広場）。
+
+  通常はアプリ側が起動画面の導線ボタンと同じ意匠（角丸・2色グラデーション・
+  Materialアイコン・見出しフォント）を1枚のPNGへ焼いて渡し、それを
+  widget_image に fitCenter で出すだけにしている。RemoteViewsでは
+  グラデーション背景も同梱フォントも指定できないため、「起動画面と同じ
+  デザイン」はこの方法でしか実現できない（NiarimWidgetProviders.kt参照）。
+
+  画像がまだ無い場合（アプリを一度も起動せずにウィジェットを置いた等）は、
+  widget_fallback のアイコン＋ラベルへ倒す。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="8dp">
+    android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/widget_icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:id="@+id/widget_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
         android:contentDescription="@null" />
 
-    <TextView
-        android:id="@+id/widget_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:textColor="#FFFFFFFF"
-        android:textSize="12sp" />
-</LinearLayout>
+    <LinearLayout
+        android:id="@+id/widget_fallback"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="8dp">
+
+        <ImageView
+            android:id="@+id/widget_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/widget_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="#FFFFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+</FrameLayout>

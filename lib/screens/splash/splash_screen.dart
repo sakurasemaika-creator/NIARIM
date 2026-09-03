@@ -9,6 +9,8 @@ import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
 import '../../config/font_fallback.dart';
+import '../../models/app_theme_preset.dart';
+import '../../utils/color_contrast.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -118,8 +120,10 @@ class _SplashScreenState extends State<SplashScreen> {
           padding: EdgeInsets.all(logoSize * 0.08),
           child: SvgPicture.asset(
             'assets/logo/app_logo.svg',
+            // 導線ボタンのアイコン・文字と同じテーマの「メニュー背景色」で
+            // 白抜きにする（アクセント色の背景に載るのが同じ条件のため）。
             colorFilter: ColorFilter.mode(
-              ThemeService.activeColorScheme.onSurface,
+              context.watch<ThemeService>().current.menuBgColor,
               BlendMode.srcIn,
             ),
           ),
@@ -168,10 +172,71 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),
-            child: content,
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),
+                child: content,
+              ),
+            ),
+            // テーマの文字色と背景色が潰れていて画面が読めない状態のときだけ、
+            // 固定色（白地・黒文字・黒枠）のリセットボタンを右上に出す。
+            // テーマ・外観設定側でこの組み合わせは弾いているが、引き継ぎ
+            // ファイルの取り込みや、その判定を入れる前に保存された設定から
+            // 到達しうるため、最後の逃げ道として用意している。ふだんは
+            // 出ないので、起動画面の見た目を汚さない。
+            if (!isThemeReadable(context.watch<ThemeService>().current))
+              const Positioned(top: 8, right: 8, child: _ThemeRescueButton()),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// テーマが読めない状態になったときだけ起動画面に出る、テーマを既定へ
+/// 戻すボタン。**テーマ色を一切使わない固定色**で描くのが要件
+/// （テーマが壊れているからこそ出るボタンなので、テーマ色を使うと
+/// このボタン自体が読めなくなる）。
+class _ThemeRescueButton extends StatelessWidget {
+  const _ThemeRescueButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Material(
+      color: const Color(0xFFFFFFFF),
+      shape: const StadiumBorder(
+        side: BorderSide(color: Color(0xFF000000), width: 1.5),
+      ),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: () {
+          final service = context.read<ThemeService>();
+          service.previewCurrent(AppThemePreset.defaultLight);
+          service.commitCurrent();
+          service.applyPreset(AppThemePreset.defaultLight.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.themeUnreadableResetDone)),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.restart_alt, size: 18, color: Color(0xFF000000)),
+              const SizedBox(width: 6),
+              Text(
+                l10n.themeUnreadableResetButton,
+                style: const TextStyle(
+                  color: Color(0xFF000000),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -187,6 +252,14 @@ class _SplashScreenState extends State<SplashScreen> {
 /// 2行目にやや小さく添える2行構成になる（例：「作品広場」
 /// 「投稿作品をみる」）。省略時は[label]のみの1行構成（[createButton]
 /// が使う従来通りの表示）。
+///
+/// アイコン・文字の色はテーマの「メニュー背景色」
+/// （[AppThemePreset.menuBgColor]）。既定テーマでは白で、アクセント色の
+/// グラデーション上でいちばん読みやすい。`ColorScheme.onSurface`は
+/// `ColorScheme.fromSeed`の自動算出値でユーザーが選んだ配色との対応が
+/// 分かりにくいため使わない。この色は
+/// `shortcut_widget_renderer.dart`が焼くホーム画面ウィジェットの意匠とも
+/// 揃えてあり、`test/home_widget_shortcut_design_test.dart`が一致を守る。
 class _SplashActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -204,6 +277,7 @@ class _SplashActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = context.watch<ThemeService>().current.menuBgColor;
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(28),
@@ -234,17 +308,13 @@ class _SplashActionButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: ThemeService.activeColorScheme.onSurface,
-                size: 60,
-              ),
+              Icon(icon, color: foreground, size: 60),
               const SizedBox(height: 12),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: ThemeService.activeColorScheme.onSurface,
+                  color: foreground,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
@@ -258,7 +328,7 @@ class _SplashActionButton extends StatelessWidget {
                   subLabel!,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: ThemeService.activeColorScheme.onSurface,
+                    color: foreground,
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                     fontFamily: 'Kuramubon',

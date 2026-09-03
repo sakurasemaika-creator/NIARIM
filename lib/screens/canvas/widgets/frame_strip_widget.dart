@@ -320,6 +320,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                         itemBuilder: (context, index) {
                           if (index == total) {
                             return GestureDetector(
+                              // 自動テストがコマを番号指定でタップできるよう
+                              // にするためのKey（見た目・挙動には影響しない）。
+                              key: const ValueKey('frameStripAddCell'),
                               onTap: () {
                                 if (!_canAddFrames(context, service, 1)) return;
                                 service.addFrame(
@@ -356,6 +359,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                             index,
                           );
                           return GestureDetector(
+                            key: ValueKey('frameStripCell$index'),
                             onTap: widget.multiSelectMode
                                 ? () => widget.onFrameToggle?.call(index)
                                 : () => widget.onFrameSelected(index),

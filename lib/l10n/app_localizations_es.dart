@@ -848,7 +848,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get materialUnusedLabel => 'Sin usar';
 
   @override
-  String get materialMissingLabel => '⚠ Falta';
+  String get materialMissingLabel => 'Falta';
 
   @override
   String get materialDeleteTooltipUsed =>
@@ -1314,7 +1314,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Crea una capa de coloreado automático debajo de la capa de líneas para coloreado automático y la colorea automáticamente según un \"ajuste de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización (❗) en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización (❗). Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un ajuste de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan ajustes, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los ajustes usados en este proyecto, manteniendo la lista ordenada y fácil de elegir.';
+      'Crea una capa de coloreado automático debajo de la capa de líneas para coloreado automático y la colorea automáticamente según un \"ajuste de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización . Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un ajuste de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan ajustes, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los ajustes usados en este proyecto, manteniendo la lista ordenada y fácil de elegir.';
 
   @override
   String get helpOnionSkinTitle => 'Papel cebolla';
@@ -2412,6 +2412,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get widgetColorCustom => 'Elegir un color';
 
   @override
+  String get widgetColorBase => 'Color de fondo';
+
+  @override
+  String get widgetColorForeground => 'Color de texto e iconos';
+
+  @override
   String get widgetNoProjects =>
       'Aún no hay obras. Cuando crees una, podrás elegirla aquí.';
 
@@ -2604,6 +2610,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get themeColorUpdateMark => 'Color de la marca de actualización';
+
+  @override
+  String get themeContrastErrorTitle => 'El texto quedaría ilegible';
+
+  @override
+  String get themeContrastErrorBody =>
+      'El color del texto y el del fondo son demasiado parecidos, así que el texto sería casi invisible. La propia pantalla de ajustes quedaría ilegible y no podrías deshacerlo, por eso esta combinación no se puede guardar. Cambia el brillo de uno de los dos.';
+
+  @override
+  String get themeUnreadableResetButton => 'Restablecer tema';
+
+  @override
+  String get themeUnreadableResetDone =>
+      'El tema ha vuelto a los colores predeterminados.';
 
   @override
   String get themePresetSection => 'Temas';
