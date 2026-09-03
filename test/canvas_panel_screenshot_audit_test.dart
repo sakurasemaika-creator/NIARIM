@@ -139,12 +139,15 @@ void main() {
       await capture(file);
     }
 
-    final colorStack = find.descendant(
+    final colorControl = find.descendant(
       of: find.byType(ToolbarWidget),
-      matching: find.byType(Stack),
+      matching: find.byWidgetPredicate(
+        (widget) => widget is GestureDetector && widget.child is Stack,
+        description: 'toolbar color GestureDetector',
+      ),
     );
-    expect(colorStack, findsWidgets);
-    await tester.tap(colorStack.first);
+    expect(colorControl, findsOneWidget);
+    await tester.tap(colorControl);
     await tester.pump(const Duration(milliseconds: 500));
     _expectNoException(tester, 'color_picker');
     expect(find.byType(ColorPickerPanel), findsOneWidget);
