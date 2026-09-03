@@ -5203,7 +5203,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final canvas = ui.Canvas(recorder);
     canvas.drawRect(
       ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-      ui.Paint()..color = const ui.Color(0xFF1A1A1A),
+      ui.Paint()..color = ThemeService.activeColorScheme.surfaceContainerHighest,
     );
     final iconSize = (w < h ? w : h) * 0.15;
     final cx = w / 2;
@@ -5213,7 +5213,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ..lineTo(cx - iconSize / 2, cy + iconSize / 2)
       ..lineTo(cx + iconSize / 2, cy)
       ..close();
-    canvas.drawPath(path, ui.Paint()..color = const ui.Color(0xFF666666));
+    canvas.drawPath(path, ui.Paint()..color = ThemeService.activeColorScheme.onSurfaceVariant);
     final picture = recorder.endRecording();
     final rendered = await picture.toImage(w, h);
     final byteData = await rendered.toByteData(

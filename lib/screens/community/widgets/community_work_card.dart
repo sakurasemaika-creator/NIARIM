@@ -4,17 +4,6 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
 
-/// サムネイル画像の代わりに使うプレースホルダー配色（実サムネイル取得は
-/// バックエンド実装後に対応）。
-const List<List<Color>> kCommunityThumbnailGradients = [
-  [Color(0xFFFF8A65), Color(0xFFFF5252)],
-  [Color(0xFF4FC3F7), Color(0xFF2979FF)],
-  [Color(0xFFBA68C8), Color(0xFF7C4DFF)],
-  [Color(0xFF81C784), Color(0xFF00BFA5)],
-  [Color(0xFFFFD54F), Color(0xFFFF8F00)],
-  [Color(0xFFF06292), Color(0xFFC2185B)],
-];
-
 /// 動画の長さ（秒）を「m:ss」表記へ変換する。
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
@@ -49,9 +38,17 @@ class CommunityWorkCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final gradient =
-        kCommunityThumbnailGradients[work.thumbnailColorIndex %
-            kCommunityThumbnailGradients.length];
+    final placeholderGradients = <List<Color>>[
+      [scheme.primaryContainer, scheme.primary],
+      [scheme.secondaryContainer, scheme.secondary],
+      [scheme.tertiaryContainer, scheme.tertiary],
+      [scheme.primary.withValues(alpha: 0.55), scheme.secondary],
+      [scheme.secondary.withValues(alpha: 0.55), scheme.tertiary],
+      [scheme.tertiary.withValues(alpha: 0.55), scheme.primary],
+    ];
+    final gradient = placeholderGradients[
+      work.thumbnailColorIndex % placeholderGradients.length
+    ];
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 1,
