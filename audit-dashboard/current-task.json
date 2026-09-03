@@ -1,8 +1,8 @@
 {
   "status": "in_progress",
-  "title": "タイムライン縦方向はみ出しの自動修復を再実行中",
-  "detail": "Audit Continuous Queue の先頭ジョブは正常に生成されており、停止原因はWorkflow構文ではなく .github/scripts/repair_timeline_overflow.py の終了判定でした。現在の _buildPreviewWithHandle() は関数末尾に `);` の後 `}` がある正常なDart構造ですが、修復スクリプトが `);` だけで終わることを要求していたため `unexpected preview function ending` で誤停止していました。スクリプトを現在HEADの関数構造に対応させて dev_branch へコミットし、失敗した先頭ジョブを再実行しています。",
-  "next": "自動修復→タイムラインの失敗3ケース再テストをPASSさせ、続けて01以降の直列監査・全回帰・strict-v2視覚監査へ進む。途中でFAILが出た場合はその工程で停止して原因を修正してから再開する。",
-  "updated_at_jst": "2026-09-03 15:22 JST",
+  "title": "実操作相当監査 batch27〜38 を連続実行中",
+  "detail": "タイムライン縦方向はみ出しの自動修復は成功し、元々失敗していた3ケースも再テストでPASSしました。続く01 strict視覚監査もPASS済みです。現在は Audit Continuous Queue の02で、各機能へ実操作相当の入力を与える batch27〜38 を連続実行しています。",
+  "next": "02がPASSすれば03以降へ直列で進む。FAILが1件でも出た場合は後続へ進まず、そのジョブの失敗ログ・該当テスト・関連コードを読んで原因を修正し、同じ監査を再実行する。",
+  "updated_at_jst": "2026-09-03 15:24 JST",
   "next_check_jst": ""
 }
