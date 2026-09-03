@@ -41,7 +41,7 @@ class BrushService extends ChangeNotifier {
       name: 'ペン',
       size: 5,
       opacity: 100,
-      spacing: 10,
+      spacing: 1,
       blurRadius: 0,
       stabilization: true,
       stabilizationStrength: 50,
@@ -58,7 +58,7 @@ class BrushService extends ChangeNotifier {
       name: 'Gペン',
       size: 3,
       opacity: 100,
-      spacing: 5,
+      spacing: 1,
       blurRadius: 0,
       stabilization: true,
       stabilizationStrength: 60,
@@ -175,6 +175,16 @@ class BrushService extends ChangeNotifier {
       if (missing.isNotEmpty) {
         _brushes.addAll(missing);
         needsPersist = true;
+      }
+      // Brush0001/0002はプリインストールかつUI上編集不可。旧版の
+      // 保存済み標準値はブラシ径より間隔が広く点線になっていたため、
+      // 連続線の1px間隔へ安全に移行する。
+      for (final id in const ['Brush0001', 'Brush0002']) {
+        final index = _brushes.indexWhere((b) => b.id == id);
+        if (index != -1 && _brushes[index].spacing != 1) {
+          _brushes[index] = _brushes[index].copyWith(spacing: 1);
+          needsPersist = true;
+        }
       }
       // 「マーカーペン」（Brush0005）は後からcalligraphyAngle（チゼル先端の
       // 横太さ変化）を追加した。既にBrush0005を持つ既存ユーザーの端末には
