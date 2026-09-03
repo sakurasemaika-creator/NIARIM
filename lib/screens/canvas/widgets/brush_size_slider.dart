@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/editable_slider_value.dart';
@@ -10,7 +9,7 @@ import '../../../widgets/stepped_slider.dart';
 /// 展開時もスライダー同士の縦の間隔を詰め、省スペースにしている。
 ///
 /// キャンバス上の常設UIとして、帯状の背景は持たせず完全に透過する。
-/// 文字・アイコンは明色を維持し、描画内容の上でも判別しやすくする。
+/// 文字・アイコン色は現在のテーマから取得する。
 class BrushSizeSlider extends StatefulWidget {
   final double brushSize;
   final int opacity;
@@ -35,15 +34,15 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    fgColor = ThemeService.activeColorScheme.onSurface;
-    fgColorVariant = ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70);
+    final scheme = Theme.of(context).colorScheme;
+    final fgColor = scheme.onSurface;
+    final fgColorVariant = scheme.onSurfaceVariant;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       color: Colors.transparent,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 折りたたみ中も現在値が一目でわかる要約行。タップで開閉する。
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => setState(() => _expanded = !_expanded),
@@ -51,23 +50,23 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  const Icon(Icons.circle, size: 8, color: fgColor),
+                  Icon(Icons.circle, size: 8, color: fgColor),
                   const SizedBox(width: 4),
                   Text(
                     '${widget.brushSize.round()}',
-                    style: const TextStyle(fontSize: 11, color: fgColor),
+                    style: TextStyle(fontSize: 11, color: fgColor),
                   ),
                   const SizedBox(width: 10),
-                  const Icon(Icons.opacity, size: 12, color: fgColor),
+                  Icon(Icons.opacity, size: 12, color: fgColor),
                   const SizedBox(width: 4),
                   Text(
                     '${widget.opacity}%',
-                    style: const TextStyle(fontSize: 11, color: fgColor),
+                    style: TextStyle(fontSize: 11, color: fgColor),
                   ),
                   const Spacer(),
                   Text(
                     l10n.canvasBrushSliderToggleLabel,
-                    style: const TextStyle(fontSize: 10, color: fgColorVariant),
+                    style: TextStyle(fontSize: 10, color: fgColorVariant),
                   ),
                   Icon(
                     _expanded
@@ -107,7 +106,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.brushSize.round()}',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               color: fgColor,
                             ),
@@ -139,7 +138,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.opacity}%',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               color: fgColor,
                             ),
