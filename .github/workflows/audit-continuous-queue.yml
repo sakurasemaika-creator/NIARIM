@@ -1,0 +1,195 @@
+name: Audit Continuous Queue
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/audit-continuous-queue.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: audit-continuous-queue-dev
+  cancel-in-progress: false
+
+env:
+  DASHBOARD_WORKFLOW: audit-live-dashboard.yml
+
+jobs:
+  strict-visual:
+    name: '01 strict-v2: 機能固有Visual証拠'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: ダッシュボードへ現在ジョブを反映
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: strict-v2 Visual Evidence
+        run: flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
+      - name: 証拠画像を保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-01-strict-visual
+          path: build/strict-visual-evidence
+          if-no-files-found: warn
+          retention-days: 14
+
+  real-operation:
+    name: '02 実操作: functional batch27-38'
+    needs: strict-visual
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: ダッシュボードへ現在ジョブを反映
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: batch27-38を全件実行
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build/functional-visual build/audit-logs
+          failures=0
+          for n in $(seq 27 38); do
+            t="test/functional_audit_batch${n}_test.dart"
+            echo "===== $t ====="
+            if [ ! -f "$t" ]; then
+              echo "MISSING $t" | tee "build/audit-logs/batch${n}.log"
+              failures=$((failures+1)); continue
+            fi
+            timeout 300s flutter test "$t" --reporter expanded 2>&1 | tee "build/audit-logs/batch${n}.log"
+            rc=${PIPESTATUS[0]}
+            [ "$rc" -eq 0 ] || failures=$((failures+1))
+          done
+          echo "$failures" > build/audit-logs/failure-count.txt
+          test "$failures" -eq 0
+      - name: 実操作スクショを保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-02-real-operation
+          path: |
+            build/**/*.png
+            build/audit-logs/*
+          if-no-files-found: warn
+          retention-days: 14
+
+  canvas-panels:
+    name: '03 UI: Canvas主要パネル実操作＋SS'
+    needs: real-operation
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: ダッシュボードへ現在ジョブを反映
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - run: flutter test test/canvas_panel_screenshot_audit_test.dart --reporter expanded
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-03-canvas-panels
+          path: build/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+  routes-and-filters:
+    name: '04 Visual: 全ルート＋全フィルター'
+    needs: canvas-panels
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: ダッシュボードへ現在ジョブを反映
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: 全ルートスクショ
+        run: flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
+      - name: 全21フィルターVisual
+        run: flutter test test/visual_reaudit_filters_test.dart --reporter expanded
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-04-routes-filters
+          path: build/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+  coverage:
+    name: '05 Coverage: 全テスト実行＋LCOV'
+    needs: routes-and-filters
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: ダッシュボードへ現在ジョブを反映
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: 全テスト＋coverage
+        run: flutter test --coverage --reporter compact
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-05-coverage
+          path: coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 14
+
+  final-regression:
+    name: '06 Final: analyze＋全回帰'
+    needs: coverage
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dev_branch }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: ダッシュボードへ現在ジョブを反映
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: flutter analyze（errorsを禁止）
+        shell: bash
+        run: |
+          set +e
+          flutter analyze 2>&1 | tee analyze.log
+          rc=${PIPESTATUS[0]}
+          if grep -Eq '^[[:space:]]*error[[:space:]]' analyze.log; then exit 1; fi
+          exit 0
+      - name: 全回帰テスト
+        run: flutter test --reporter compact
+      - name: ダッシュボード最終更新
+        if: always()
+        run: gh workflow run "$DASHBOARD_WORKFLOW" --ref dev_branch || true
+        env: { GH_TOKEN: '${{ github.token }}' }
