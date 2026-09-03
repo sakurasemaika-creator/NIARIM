@@ -114,15 +114,24 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 children: [
                   Text(l10n.communityReportDialogBody),
                   const SizedBox(height: 8),
-                  for (final reason in reasons)
-                    RadioListTile<String>(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: Text(reason),
-                      value: reason,
-                      groupValue: selected,
-                      onChanged: (v) => setDialogState(() => selected = v!),
+                  // 選択状態と変更通知はRadioGroupがまとめて持つ
+                  // （groupValue/onChangedはFlutter 3.32で非推奨）。
+                  RadioGroup<String>(
+                    groupValue: selected,
+                    onChanged: (v) => setDialogState(() => selected = v!),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final reason in reasons)
+                          RadioListTile<String>(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            title: Text(reason),
+                            value: reason,
+                          ),
+                      ],
                     ),
+                  ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: detailController,

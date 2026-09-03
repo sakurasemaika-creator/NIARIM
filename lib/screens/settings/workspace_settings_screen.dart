@@ -77,8 +77,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                     // もう1つハンドルを追加してしまい、二重に表示されるバグに
                     // なっていた。テーマ設定の並べ替えと同じ不具合）。
                     buildDefaultDragHandles: false,
-                    onReorder: (oldIndex, newIndex) {
-                      if (newIndex > oldIndex) newIndex -= 1;
+                    // onReorderItemはnewIndexを「削除後の位置」へ調整済みで
+                    // 渡すため、従来の `newIndex -= 1` 補正は不要。
+                    onReorderItem: (oldIndex, newIndex) {
                       final order = List<ToolbarItemId>.of(
                         settings.toolbarOrder,
                       );
@@ -196,27 +197,27 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Column(
-                children: [
-                  RadioListTile<bool?>(
-                    title: Text(l10n.workspacePcModeAuto),
-                    value: null,
-                    groupValue: settings.forcePcMode,
-                    onChanged: (v) => settings.setForcePcMode(v),
-                  ),
-                  RadioListTile<bool?>(
-                    title: Text(l10n.workspacePcModeAlwaysPc),
-                    value: true,
-                    groupValue: settings.forcePcMode,
-                    onChanged: (v) => settings.setForcePcMode(v),
-                  ),
-                  RadioListTile<bool?>(
-                    title: Text(l10n.workspacePcModeAlwaysMobile),
-                    value: false,
-                    groupValue: settings.forcePcMode,
-                    onChanged: (v) => settings.setForcePcMode(v),
-                  ),
-                ],
+              // 選択状態と変更通知はRadioGroupがまとめて持つ
+              // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+              child: RadioGroup<bool?>(
+                groupValue: settings.forcePcMode,
+                onChanged: (v) => settings.setForcePcMode(v),
+                child: Column(
+                  children: [
+                    RadioListTile<bool?>(
+                      title: Text(l10n.workspacePcModeAuto),
+                      value: null,
+                    ),
+                    RadioListTile<bool?>(
+                      title: Text(l10n.workspacePcModeAlwaysPc),
+                      value: true,
+                    ),
+                    RadioListTile<bool?>(
+                      title: Text(l10n.workspacePcModeAlwaysMobile),
+                      value: false,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),

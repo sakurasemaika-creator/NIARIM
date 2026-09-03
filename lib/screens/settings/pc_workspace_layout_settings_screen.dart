@@ -168,8 +168,9 @@ class _OrderCard extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             buildDefaultDragHandles: false,
-            onReorder: (oldIndex, newIndex) {
-              if (newIndex > oldIndex) newIndex -= 1;
+            // onReorderItemはnewIndexを「削除後の位置」へ調整済みで渡すため、
+            // 従来必要だった `if (newIndex > oldIndex) newIndex -= 1;` は不要。
+            onReorderItem: (oldIndex, newIndex) {
               final next = List<CanvasDockPanel>.of(order);
               final item = next.removeAt(oldIndex);
               next.insert(newIndex, item);

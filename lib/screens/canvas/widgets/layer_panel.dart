@@ -1289,105 +1289,103 @@ class _LayerPanelState extends State<LayerPanel> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(title ?? l10n.layerPanelRangeDialogTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: startCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: l10n.layerPanelRangeStartFrameLabel,
-                          border: const OutlineInputBorder(),
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （groupValue/onChangedはFlutter 3.32で非推奨）。
+          content: RadioGroup<model.LayerRangeMode>(
+            groupValue: mode,
+            onChanged: (v) => setS(() => mode = v!),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: startCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: l10n.layerPanelRangeStartFrameLabel,
+                            border: const OutlineInputBorder(),
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(l10n.layerPanelRangeTilde),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: endCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: l10n.layerPanelRangeEndFrameLabel,
-                          border: const OutlineInputBorder(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(l10n.layerPanelRangeTilde),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: endCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: l10n.layerPanelRangeEndFrameLabel,
+                            border: const OutlineInputBorder(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                TextButton(
-                  onPressed: () => setS(() {
-                    startCtrl.text = '1';
-                    endCtrl.text = totalFrames > 0
-                        ? totalFrames.toString()
-                        : '1';
-                  }),
-                  child: Text(l10n.layerPanelRangeUseCurrentButton),
-                ),
-                const Divider(),
-                RadioListTile<model.LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.layerPanelRangeAllFrames),
-                  value: model.LayerRangeMode.allFrames,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-                RadioListTile<model.LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.layerPanelRangeCurrentScene),
-                  value: model.LayerRangeMode.currentScene,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-                RadioListTile<model.LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.layerPanelRangeSceneSpecified),
-                  value: model.LayerRangeMode.sceneRange,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-                if (mode == model.LayerRangeMode.sceneRange)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 8,
-                      bottom: 8,
-                    ),
-                    child: DropdownButtonFormField<String>(
-                      initialValue: scenes.any((s) => s.id == sceneId)
-                          ? sceneId
-                          : scenes.firstOrNull?.id,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: l10n.layerPanelRangeTargetSceneLabel,
-                        isDense: true,
-                      ),
-                      items: scenes
-                          .map(
-                            (s) => DropdownMenuItem(
-                              value: s.id,
-                              child: Text(s.displayName),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) => setS(() => sceneId = v),
-                    ),
+                    ],
                   ),
-                RadioListTile<model.LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.layerPanelRangeFrameRangeLabel),
-                  value: model.LayerRangeMode.frameRange,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-              ],
+                  TextButton(
+                    onPressed: () => setS(() {
+                      startCtrl.text = '1';
+                      endCtrl.text = totalFrames > 0
+                          ? totalFrames.toString()
+                          : '1';
+                    }),
+                    child: Text(l10n.layerPanelRangeUseCurrentButton),
+                  ),
+                  const Divider(),
+                  RadioListTile<model.LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.layerPanelRangeAllFrames),
+                    value: model.LayerRangeMode.allFrames,
+                  ),
+                  RadioListTile<model.LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.layerPanelRangeCurrentScene),
+                    value: model.LayerRangeMode.currentScene,
+                  ),
+                  RadioListTile<model.LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.layerPanelRangeSceneSpecified),
+                    value: model.LayerRangeMode.sceneRange,
+                  ),
+                  if (mode == model.LayerRangeMode.sceneRange)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 8,
+                        bottom: 8,
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: scenes.any((s) => s.id == sceneId)
+                            ? sceneId
+                            : scenes.firstOrNull?.id,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: l10n.layerPanelRangeTargetSceneLabel,
+                          isDense: true,
+                        ),
+                        items: scenes
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.displayName),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => setS(() => sceneId = v),
+                      ),
+                    ),
+                  RadioListTile<model.LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.layerPanelRangeFrameRangeLabel),
+                    value: model.LayerRangeMode.frameRange,
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -2019,30 +2017,32 @@ class _LayerPanelState extends State<LayerPanel> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.layerPanelConvertToCommonLabel),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<int>(
-                title: Text(l10n.layerPanelConvertOption1Title),
-                subtitle: Text(
-                  l10n.layerPanelConvertOption1Subtitle,
-                  style: const TextStyle(fontSize: 11),
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （groupValue/onChangedはFlutter 3.32で非推奨）。
+          content: RadioGroup<int>(
+            groupValue: selected,
+            onChanged: (v) => setS(() => selected = v!),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<int>(
+                  title: Text(l10n.layerPanelConvertOption1Title),
+                  subtitle: Text(
+                    l10n.layerPanelConvertOption1Subtitle,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  value: 0,
                 ),
-                value: 0,
-                groupValue: selected,
-                onChanged: (v) => setS(() => selected = v!),
-              ),
-              RadioListTile<int>(
-                title: Text(l10n.layerPanelConvertOption2Title),
-                subtitle: Text(
-                  l10n.layerPanelConvertOption2Subtitle,
-                  style: const TextStyle(fontSize: 11),
+                RadioListTile<int>(
+                  title: Text(l10n.layerPanelConvertOption2Title),
+                  subtitle: Text(
+                    l10n.layerPanelConvertOption2Subtitle,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  value: 1,
                 ),
-                value: 1,
-                groupValue: selected,
-                onChanged: (v) => setS(() => selected = v!),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -2257,67 +2257,69 @@ class _LayerPanelState extends State<LayerPanel> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.layerPanelAutofillMethodTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.layerPanelAutofillNote1,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （groupValue/onChangedはFlutter 3.32で非推奨）。
+          content: RadioGroup<int>(
+            groupValue: selected,
+            onChanged: (v) => setS(() => selected = v!),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.layerPanelAutofillNote1,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.layerPanelAutofillNote2,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                const SizedBox(height: 4),
+                Text(
+                  l10n.layerPanelAutofillNote2,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              RadioListTile<int>(
-                title: Text(l10n.layerPanelAutofillRepaintTitle),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.layerPanelAutofillRepaintHint,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    Text(
-                      l10n.layerPanelAutofillRepaintNote,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                RadioListTile<int>(
+                  title: Text(l10n.layerPanelAutofillRepaintTitle),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.layerPanelAutofillRepaintHint,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      Text(
+                        l10n.layerPanelAutofillRepaintNote,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ],
+                  ),
+                  value: 0,
+                  dense: true,
                 ),
-                value: 0,
-                groupValue: selected,
-                onChanged: (v) => setS(() => selected = v!),
-                dense: true,
-              ),
-              RadioListTile<int>(
-                title: Text(l10n.layerPanelAutofillColorUpdateTitle),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.layerPanelAutofillColorUpdateHint,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    Text(
-                      l10n.layerPanelAutofillColorUpdateNote,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ],
+                RadioListTile<int>(
+                  title: Text(l10n.layerPanelAutofillColorUpdateTitle),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.layerPanelAutofillColorUpdateHint,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      Text(
+                        l10n.layerPanelAutofillColorUpdateNote,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ],
+                  ),
+                  value: 1,
+                  dense: true,
                 ),
-                value: 1,
-                groupValue: selected,
-                onChanged: (v) => setS(() => selected = v!),
-                dense: true,
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(

@@ -611,8 +611,9 @@ class TileManager {
     for (final dirtyKey in _dirtyTiles) {
       if (dirtyKey.startsWith('$layerId:')) {
         final tileKey = dirtyKey.substring(layerId.length + 1);
-        if (layerTiles.containsKey(tileKey))
+        if (layerTiles.containsKey(tileKey)) {
           result[tileKey] = layerTiles[tileKey]!;
+        }
       }
     }
     return result;

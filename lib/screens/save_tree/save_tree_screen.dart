@@ -1296,30 +1296,32 @@ class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       title: Text(l10n.saveTreeDiscardDialogTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RadioListTile<bool>(
-            value: true,
-            groupValue: _archive,
-            onChanged: (v) => setState(() => _archive = v!),
-            title: Text(l10n.saveTreeArchiveOptionTitle),
-            subtitle: Text(
-              l10n.saveTreeArchiveOptionSubtitle,
-              style: const TextStyle(fontSize: 11),
+      // 選択状態と変更通知はRadioGroupがまとめて持つ（各RadioListTileの
+      // groupValue/onChangedはFlutter 3.32で非推奨になった）。
+      content: RadioGroup<bool>(
+        groupValue: _archive,
+        onChanged: (v) => setState(() => _archive = v!),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<bool>(
+              value: true,
+              title: Text(l10n.saveTreeArchiveOptionTitle),
+              subtitle: Text(
+                l10n.saveTreeArchiveOptionSubtitle,
+                style: const TextStyle(fontSize: 11),
+              ),
             ),
-          ),
-          RadioListTile<bool>(
-            value: false,
-            groupValue: _archive,
-            onChanged: (v) => setState(() => _archive = v!),
-            title: Text(l10n.saveTreeDeleteOptionTitle),
-            subtitle: Text(
-              l10n.saveTreeDeleteOptionSubtitle(widget.discardCount),
-              style: const TextStyle(fontSize: 11),
+            RadioListTile<bool>(
+              value: false,
+              title: Text(l10n.saveTreeDeleteOptionTitle),
+              subtitle: Text(
+                l10n.saveTreeDeleteOptionSubtitle(widget.discardCount),
+                style: const TextStyle(fontSize: 11),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(onPressed: widget.onBack, child: Text(l10n.saveTreeBackButton)),

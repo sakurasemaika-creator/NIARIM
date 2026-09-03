@@ -121,5 +121,12 @@ class _TryDrawPainter extends CustomPainter {
   }
 
   @override
+  // ここは`true`で正しい。[points]・[pressures]は呼び出し側が同じListの
+  // インスタンスを`add`/`clear`で直接書き換えて渡してくるため、
+  // `old.points != points`のような比較にすると**常にfalse**になり、
+  // 描いても線が出なくなる。「常にtrueは無駄」という一般則に引きずられて
+  // 比較へ変えないこと（変えるなら、呼び出し側を毎回新しいListを作る形に
+  // 直すのが先）。この図はペン入力設定の小さな試し描き欄で、親が再ビルド
+  // されるのは操作中だけなので、毎回描き直しても実害は無い。
   bool shouldRepaint(covariant _TryDrawPainter old) => true;
 }

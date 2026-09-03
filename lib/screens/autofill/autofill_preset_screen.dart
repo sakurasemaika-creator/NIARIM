@@ -1078,10 +1078,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             // （ブラシ・トーン・スタンプ・テーマ等）と操作方法を揃える。
             buildDefaultDragHandles: false,
             itemCount: _preset.parts.length,
-            onReorder: (oldIdx, newIdx) {
+            // onReorderItemはnewIndexを「削除後の位置」へ調整済みで渡すため、
+            // 従来の `newIdx > oldIdx ? newIdx - 1 : newIdx` 補正は不要。
+            onReorderItem: (oldIdx, newIdx) {
               final parts = List<AutofillPart>.from(_preset.parts);
               final item = parts.removeAt(oldIdx);
-              parts.insert(newIdx > oldIdx ? newIdx - 1 : newIdx, item);
+              parts.insert(newIdx, item);
               _save(_preset.copyWith(parts: parts));
             },
             itemBuilder: (context, index) =>
@@ -1529,7 +1531,15 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       l10n.autofillPartLineColorLabel,
                       style: Theme.of(ctx).textTheme.titleSmall,
                     ),
-                    ...AutofillLineColorMode.values.map(
+                    // 選択状態と変更通知はRadioGroupがまとめて持つ
+                    // （groupValue/onChangedはFlutter 3.32で非推奨）。
+                    RadioGroup<AutofillLineColorMode>(
+                      groupValue: current.lineColorMode,
+                      onChanged: (v) => setS(
+                        () => current = current.copyWith(lineColorMode: v),
+                      ),
+                      child: Column(
+                        children: AutofillLineColorMode.values.map(
                       (m) => RadioListTile<AutofillLineColorMode>(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
@@ -1544,10 +1554,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               )
                             : null,
                         value: m,
-                        groupValue: current.lineColorMode,
-                        onChanged: (v) => setS(
-                          () => current = current.copyWith(lineColorMode: v),
-                        ),
+                      ),
+                        ).toList(),
                       ),
                     ),
                     if (current.lineColorMode ==
@@ -2308,8 +2316,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       // 二重に表示されるバグがあった）。
                       buildDefaultDragHandles: false,
                       itemCount: gradient.colors.length,
-                      onReorder: (oldIndex, newIndex) {
-                        if (newIndex > oldIndex) newIndex -= 1;
+                      // onReorderItemはnewIndexを「削除後の位置」へ調整済みで
+                      // 渡すため、従来の `newIndex -= 1` 補正は不要。
+                      onReorderItem: (oldIndex, newIndex) {
                         final colors = List<int>.from(gradient.colors);
                         final item = colors.removeAt(oldIndex);
                         colors.insert(newIndex, item);

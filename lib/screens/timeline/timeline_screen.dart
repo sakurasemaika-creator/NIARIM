@@ -4024,96 +4024,94 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.layerPanelRangeDialogTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: startCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: l10n.layerPanelRangeStartFrameLabel,
-                          border: const OutlineInputBorder(),
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （groupValue/onChangedはFlutter 3.32で非推奨）。
+          content: RadioGroup<LayerRangeMode>(
+            groupValue: mode,
+            onChanged: (v) => setS(() => mode = v!),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: startCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: l10n.layerPanelRangeStartFrameLabel,
+                            border: const OutlineInputBorder(),
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(l10n.layerPanelRangeTilde),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: endCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: l10n.layerPanelRangeEndFrameLabel,
-                          border: const OutlineInputBorder(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(l10n.layerPanelRangeTilde),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: endCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: l10n.layerPanelRangeEndFrameLabel,
+                            border: const OutlineInputBorder(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                RadioListTile<LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.layerPanelRangeAllFrames),
-                  value: LayerRangeMode.allFrames,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-                RadioListTile<LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.layerPanelRangeCurrentScene),
-                  value: LayerRangeMode.currentScene,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-                RadioListTile<LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.timelineRangeSceneFixed),
-                  value: LayerRangeMode.sceneRange,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-                if (mode == LayerRangeMode.sceneRange)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 8,
-                      bottom: 8,
-                    ),
-                    child: DropdownButtonFormField<String>(
-                      initialValue: scenes.any((s) => s.id == rangeSceneId)
-                          ? rangeSceneId
-                          : scenes.firstOrNull?.id,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: l10n.layerPanelRangeTargetSceneLabel,
-                        isDense: true,
-                      ),
-                      items: scenes
-                          .map(
-                            (s) => DropdownMenuItem(
-                              value: s.id,
-                              child: Text(s.displayName),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) => setS(() => rangeSceneId = v),
-                    ),
+                    ],
                   ),
-                RadioListTile<LayerRangeMode>(
-                  dense: true,
-                  title: Text(l10n.layerPanelRangeFrameRangeLabel),
-                  value: LayerRangeMode.frameRange,
-                  groupValue: mode,
-                  onChanged: (v) => setS(() => mode = v!),
-                ),
-              ],
+                  const Divider(),
+                  RadioListTile<LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.layerPanelRangeAllFrames),
+                    value: LayerRangeMode.allFrames,
+                  ),
+                  RadioListTile<LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.layerPanelRangeCurrentScene),
+                    value: LayerRangeMode.currentScene,
+                  ),
+                  RadioListTile<LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.timelineRangeSceneFixed),
+                    value: LayerRangeMode.sceneRange,
+                  ),
+                  if (mode == LayerRangeMode.sceneRange)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 8,
+                        bottom: 8,
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: scenes.any((s) => s.id == rangeSceneId)
+                            ? rangeSceneId
+                            : scenes.firstOrNull?.id,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: l10n.layerPanelRangeTargetSceneLabel,
+                          isDense: true,
+                        ),
+                        items: scenes
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.displayName),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => setS(() => rangeSceneId = v),
+                      ),
+                    ),
+                  RadioListTile<LayerRangeMode>(
+                    dense: true,
+                    title: Text(l10n.layerPanelRangeFrameRangeLabel),
+                    value: LayerRangeMode.frameRange,
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [

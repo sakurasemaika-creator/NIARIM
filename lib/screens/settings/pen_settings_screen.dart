@@ -120,14 +120,18 @@ class PenSettingsScreen extends StatelessWidget {
       onTap: () => showModalBottomSheet(
         context: context,
         builder: (ctx) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: _penButtonActions.map((action) => RadioListTile<GestureAction>(
-              title: Text(_actionLabel(ctx, action)),
-              value: action,
-              groupValue: current,
-              onChanged: (v) { if (v != null) onChanged(v); Navigator.pop(ctx); },
-            )).toList(),
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+          child: RadioGroup<GestureAction>(
+            groupValue: current,
+            onChanged: (v) { if (v != null) onChanged(v); Navigator.pop(ctx); },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _penButtonActions.map((action) => RadioListTile<GestureAction>(
+                title: Text(_actionLabel(ctx, action)),
+                value: action,
+              )).toList(),
+            ),
           ),
         ),
       ),

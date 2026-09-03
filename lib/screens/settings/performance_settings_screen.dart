@@ -129,7 +129,17 @@ class _PerformanceSettingsScreenState
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
             fontFamilyFallback: kHeadingFontFallback)),
           const SizedBox(height: 8),
-          ...QualityLevel.values.map((level) => RadioListTile<QualityLevel>(
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる
+          // （ListViewの子としての並び方は spread と同じ）。
+          RadioGroup<QualityLevel>(
+            groupValue: perf.qualityLevel,
+            onChanged: (v) {
+              if (v != null) _onQualityChanged(v);
+            },
+            child: Column(
+              children: QualityLevel.values.map((level) => RadioListTile<QualityLevel>(
                 title: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -159,11 +169,9 @@ class _PerformanceSettingsScreenState
                 subtitle: Text(_qualityDesc(l10n, level),
                     style: const TextStyle(fontSize: 12)),
                 value: level,
-                groupValue: perf.qualityLevel,
-                onChanged: (v) {
-                  if (v != null) _onQualityChanged(v);
-                },
-              )),
+              )).toList(),
+            ),
+          ),
           const Divider(height: 32),
           // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
           // 移設。品質プリセットとは独立して常に変更可能）。
@@ -281,16 +289,22 @@ class _PerformanceSettingsScreenState
             Text(l10n.perfSettingsSaveModeLabel,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Kuramubon',
             fontFamilyFallback: kHeadingFontFallback)),
-            ...SaveMode.values.map((mode) => RadioListTile<SaveMode>(
-                  title: Text(_saveModeLabel(l10n, mode)),
-                  value: mode,
-                  groupValue: perf.saveMode,
-                  onChanged: (v) {
-                    if (v == null || v == perf.saveMode) return;
-                    _onCustomSaveModeChanged(context, v, perf);
-                  },
-                  dense: true,
-                )),
+            // 選択状態と変更通知はRadioGroupがまとめて持つ
+            // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+            RadioGroup<SaveMode>(
+              groupValue: perf.saveMode,
+              onChanged: (v) {
+                if (v == null || v == perf.saveMode) return;
+                _onCustomSaveModeChanged(context, v, perf);
+              },
+              child: Column(
+                children: SaveMode.values.map((mode) => RadioListTile<SaveMode>(
+                      title: Text(_saveModeLabel(l10n, mode)),
+                      value: mode,
+                      dense: true,
+                    )).toList(),
+              ),
+            ),
             if (perf.saveMode == SaveMode.slot) ...[
               const SizedBox(height: 8),
               Text(l10n.perfSettingsSlotCountLabel,
@@ -315,19 +329,23 @@ class _PerformanceSettingsScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.perfSettingsUndoLimitTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.map((n) => RadioListTile<int>(
-            title: Text(l10n.perfSettingsUndoLimitValue(n)),
-            value: n,
-            groupValue: settings.undoLimit,
-            onChanged: (v) {
-              if (v == null) return;
-              settings.setUndoLimit(v);
-              context.read<UndoManager>().setMaxUndoCount(v);
-              Navigator.pop(ctx);
-            },
-          )).toList(),
+        // 選択状態と変更通知はRadioGroupがまとめて持つ
+        // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+        content: RadioGroup<int>(
+          groupValue: settings.undoLimit,
+          onChanged: (v) {
+            if (v == null) return;
+            settings.setUndoLimit(v);
+            context.read<UndoManager>().setMaxUndoCount(v);
+            Navigator.pop(ctx);
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: options.map((n) => RadioListTile<int>(
+              title: Text(l10n.perfSettingsUndoLimitValue(n)),
+              value: n,
+            )).toList(),
+          ),
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose))],
       ),
@@ -346,19 +364,23 @@ class _PerformanceSettingsScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.entries.map((e) => RadioListTile<int>(
-            title: Text(e.value),
-            value: e.key,
-            groupValue: settings.trashAutoDeleteDays,
-            onChanged: (v) {
-              if (v == null) return;
-              settings.setTrashAutoDelete(v);
-              context.read<ProjectService>().sweepExpiredTrash(v);
-              Navigator.pop(ctx);
-            },
-          )).toList(),
+        // 選択状態と変更通知はRadioGroupがまとめて持つ
+        // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+        content: RadioGroup<int>(
+          groupValue: settings.trashAutoDeleteDays,
+          onChanged: (v) {
+            if (v == null) return;
+            settings.setTrashAutoDelete(v);
+            context.read<ProjectService>().sweepExpiredTrash(v);
+            Navigator.pop(ctx);
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: options.entries.map((e) => RadioListTile<int>(
+              title: Text(e.value),
+              value: e.key,
+            )).toList(),
+          ),
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonClose))],
       ),

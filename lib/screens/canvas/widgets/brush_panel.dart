@@ -440,8 +440,9 @@ class _BrushPanelState extends State<BrushPanel> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     if (!context.mounted) return;
     final name = await promptCreativeAssetName(
       context,
@@ -459,8 +460,9 @@ class _BrushPanelState extends State<BrushPanel> {
     );
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     try {
       await service.importBrushFile(result.files.first.path!);
     } catch (e) {
@@ -640,14 +642,21 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
-          ...PressureMode.values.map(
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
+          RadioGroup<PressureMode>(
+            groupValue: _brush.pressureMode,
+            onChanged: (v) =>
+                  setState(() => _brush = _brush.copyWith(pressureMode: v)),
+            child: Column(
+              children: PressureMode.values.map(
             (mode) => RadioListTile<PressureMode>(
               title: Text(_pressureLabel(l10n, mode)),
               value: mode,
-              groupValue: _brush.pressureMode,
-              onChanged: (v) =>
-                  setState(() => _brush = _brush.copyWith(pressureMode: v)),
               dense: true,
+            ),
+              ).toList(),
             ),
           ),
           const Divider(),
@@ -660,14 +669,21 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
-          ...FadeMode.values.map(
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
+          RadioGroup<FadeMode>(
+            groupValue: _brush.fadeMode,
+            onChanged: (v) =>
+                  setState(() => _brush = _brush.copyWith(fadeMode: v)),
+            child: Column(
+              children: FadeMode.values.map(
             (mode) => RadioListTile<FadeMode>(
               title: Text(_fadeModeLabel(l10n, mode)),
               value: mode,
-              groupValue: _brush.fadeMode,
-              onChanged: (v) =>
-                  setState(() => _brush = _brush.copyWith(fadeMode: v)),
               dense: true,
+            ),
+              ).toList(),
             ),
           ),
           if (_brush.fadeMode == FadeMode.custom) ...[
@@ -761,14 +777,21 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
-          ...BrushMixingMode.values.map(
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
+          RadioGroup<BrushMixingMode>(
+            groupValue: _brush.mixingMode,
+            onChanged: (v) =>
+                  setState(() => _brush = _brush.copyWith(mixingMode: v)),
+            child: Column(
+              children: BrushMixingMode.values.map(
             (mode) => RadioListTile<BrushMixingMode>(
               title: Text(_mixingModeLabel(l10n, mode)),
               value: mode,
-              groupValue: _brush.mixingMode,
-              onChanged: (v) =>
-                  setState(() => _brush = _brush.copyWith(mixingMode: v)),
               dense: true,
+            ),
+              ).toList(),
             ),
           ),
           if (_brush.mixingMode != BrushMixingMode.off) ...[
@@ -786,10 +809,11 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                       ),
                       selected: _brush.mixingRate == rate,
                       onSelected: (selected) {
-                        if (selected)
+                        if (selected) {
                           setState(
                             () => _brush = _brush.copyWith(mixingRate: rate),
                           );
+                        }
                       },
                     ),
                   )

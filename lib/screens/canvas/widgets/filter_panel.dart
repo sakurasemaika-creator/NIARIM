@@ -355,8 +355,11 @@ class _FilterPanelState extends State<FilterPanel> {
                           itemCount: filters.length,
                           itemBuilder: (context, index) =>
                               KeyedSubtree(key: ValueKey(filters[index].id), child: buildChip(index)),
-                          onReorder: (oldIndex, newIndex) {
-                            if (newIndex > oldIndex) newIndex -= 1;
+                          // onReorderItemはnewIndexを「削除後の位置」へ調整済みで
+                          // 渡すため、従来の `newIndex -= 1` 補正は不要。
+                          // reorderFilter側は挿入先indexをそのまま使う実装
+                          // （内部で補正しない）ので、この呼び方で整合する。
+                          onReorderItem: (oldIndex, newIndex) {
                             filterService.reorderFilter(filters[oldIndex].id, newIndex);
                           },
                         )
