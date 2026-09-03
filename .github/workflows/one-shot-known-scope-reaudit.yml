@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/one-shot-known-scope-reaudit.yml'
       - 'test/final_remaining_strict_evidence_test.dart'
+      - 'test/time_change_strict_evidence_test.dart'
+      - 'lib/screens/premium/premium_screen.dart'
+      - 'lib/screens/canvas/widgets/frame_strip_widget.dart'
 
 jobs:
   verify:
@@ -19,9 +22,28 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Analyze
+        id: analyze
+        continue-on-error: true
         run: flutter analyze
       - name: Strict remaining evidence must compile and pass
+        id: strict
+        continue-on-error: true
         run: flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+      - name: Time-change strict evidence
+        id: timechange
+        continue-on-error: true
+        run: |
+          if [ -f test/time_change_strict_evidence_test.dart ]; then
+            flutter test test/time_change_strict_evidence_test.dart --reporter expanded
+          else
+            echo 'time-change test not added yet'
+          fi
+      - name: Frame strip / Premium regression tests
+        id: regressions
+        continue-on-error: true
+        run: |
+          if [ -f test/frame_strip_widget_test.dart ]; then flutter test test/frame_strip_widget_test.dart --reporter expanded; fi
+          if [ -f test/premium_screen_test.dart ]; then flutter test test/premium_screen_test.dart --reporter expanded; fi
       - name: Audit fixed UI colors in app screens
         if: always()
         run: |
@@ -38,7 +60,7 @@ jobs:
                 if any(re.search(x,line) for x in pats): hits.append(f'{p}:{n}:{line.strip()}')
           Path('build').mkdir(exist_ok=True)
           Path('build/ui-fixed-colors.txt').write_text('\n'.join(hits),encoding='utf-8')
-          print('\n'.join(hits[:500])); print('FIXED_UI_COLOR_HITS=',len(hits))
+          print('\n'.join(hits)); print('FIXED_UI_COLOR_HITS=',len(hits))
           PY
       - name: Audit emoji-like UI literals
         if: always()
@@ -53,7 +75,7 @@ jobs:
               for n,line in enumerate(p.read_text(encoding='utf-8').splitlines(),1):
                 if rx.search(line): hits.append(f'{p}:{n}:{line.strip()}')
           Path('build/emoji-ui-literals.txt').write_text('\n'.join(hits),encoding='utf-8')
-          print('\n'.join(hits[:500])); print('EMOJI_UI_HITS=',len(hits))
+          print('\n'.join(hits)); print('EMOJI_UI_HITS=',len(hits))
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -61,6 +83,14 @@ jobs:
           name: known-scope-reaudit
           path: |
             build/final-remaining-strict/**
+            build/time-change-strict/**
             build/ui-fixed-colors.txt
             build/emoji-ui-literals.txt
           if-no-files-found: warn
+      - name: Final gate
+        if: always()
+        run: |
+          test '${{ steps.analyze.outcome }}' = 'success'
+          test '${{ steps.strict.outcome }}' = 'success'
+          test '${{ steps.timechange.outcome }}' = 'success'
+          test '${{ steps.regressions.outcome }}' = 'success'
