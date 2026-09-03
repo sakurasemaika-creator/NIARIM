@@ -1,0 +1,78 @@
+name: One-shot Resume Real Operation Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-resume-real-operation-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  real-operation-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+
+      - run: flutter pub get
+
+      - name: Run functional real-operation batches 27-38 independently
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build/functional-visual build/audit-logs
+          failures=0
+          for n in $(seq 27 38); do
+            t="test/functional_audit_batch${n}_test.dart"
+            echo "===== ${t} ====="
+            if [ ! -f "$t" ]; then
+              echo "MISSING ${t}" | tee "build/audit-logs/batch${n}.log"
+              failures=$((failures+1))
+              continue
+            fi
+            timeout 240s flutter test "$t" --reporter expanded 2>&1 | tee "build/audit-logs/batch${n}.log"
+            rc=${PIPESTATUS[0]}
+            if [ "$rc" -ne 0 ]; then
+              echo "FAILED batch${n} rc=${rc}"
+              failures=$((failures+1))
+            fi
+          done
+          echo "$failures" > build/audit-logs/failure-count.txt
+          exit 0
+
+      - name: Run all-route screenshot audit
+        continue-on-error: true
+        run: timeout 300s flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded 2>&1 | tee build/audit-logs/all-routes.log
+
+      - name: Run app smoke interaction audit
+        continue-on-error: true
+        run: timeout 420s flutter test test/app_smoke_test.dart --reporter expanded 2>&1 | tee build/audit-logs/app-smoke.log
+
+      - name: Upload screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: resume-real-operation-audit
+          path: |
+            build/functional-visual/**/*.png
+            build/**/*screenshot*.png
+            build/audit-logs/*
+          if-no-files-found: warn
+          retention-days: 5
+
+      - name: Fail if any functional batch failed
+        if: always()
+        shell: bash
+        run: |
+          n=$(cat build/audit-logs/failure-count.txt 2>/dev/null || echo 99)
+          echo "functional batch failures: $n"
+          test "$n" -eq 0
