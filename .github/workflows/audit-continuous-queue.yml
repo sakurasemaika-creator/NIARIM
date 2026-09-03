@@ -8,7 +8,7 @@ on:
       - '.github/workflows/audit-continuous-queue.yml'
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 concurrency:
@@ -19,8 +19,96 @@ env:
   DASHBOARD_WORKFLOW: audit-live-dashboard.yml
 
 jobs:
+  repair-known-failures:
+    name: '00 検出済みのタイムライン画面はみ出しを修正して再確認'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: 画面高が足りない時にプレビューが下部UIを押し出さないよう修正
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/screens/timeline/timeline_screen.dart')
+          s=p.read_text()
+          old='                      _buildPreviewWithHandle(outerConstraints.maxHeight),'
+          already='                        child: _buildPreviewWithHandle('
+          if old in s:
+            s=s.replace(old, '''                      Flexible(
+                        flex: 3,
+                        fit: FlexFit.loose,
+                        child: _buildPreviewWithHandle(
+                          outerConstraints.maxHeight,
+                        ),
+                      ),''', 1)
+
+            marker='  Widget _buildPreviewWithHandle(double maxAvailableHeight) {'
+            start=s.index(marker)
+            end=s.index('\n  /// プレビューと再生バーの間のシークバー。', start)
+            block=s[start:end]
+            old_return='    return Column(\n      mainAxisSize: MainAxisSize.min,\n'
+            if old_return not in block:
+              raise SystemExit('preview Column return not found')
+            block=block.replace(old_return, '''    // プレビューは親から実際に割り当てられた高さを超えて確保しない。
+    // 小さい画面や横幅変更時も、下部のタイムラインUIを画面外へ押し出さない。
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final allocatedPreviewHeight = constraints.hasBoundedHeight
+            ? math.max(0.0, constraints.maxHeight - 22.0)
+            : maxPreviewHeight;
+        final visiblePreviewHeight = math.min(
+          previewHeight,
+          allocatedPreviewHeight,
+        );
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+''', 1)
+            if '          height: previewHeight,' not in block:
+              raise SystemExit('preview SizedBox height not found')
+            block=block.replace('          height: previewHeight,','          height: visiblePreviewHeight,',1)
+            trimmed=block.rstrip()
+            if not trimmed.endswith('    );'):
+              raise SystemExit('unexpected preview function ending')
+            trimmed=trimmed[:-len('    );')]+'        );\n      },\n    );'
+            block=trimmed+'\n'
+            s=s[:start]+block+s[end:]
+            p.write_text(s)
+          elif already in s and 'visiblePreviewHeight' in s:
+            print('timeline layout fix already applied')
+          else:
+            raise SystemExit('timeline layout pattern changed; manual review required')
+          PY
+          dart format lib/screens/timeline/timeline_screen.dart
+      - name: 失敗していた3ケースを修正後コードで再実行
+        run: |
+          flutter test test/timeline_no_overflow_test.dart --reporter expanded
+          flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
+          flutter test test/app_web_reference_capture_exact_test.dart --reporter expanded
+      - name: 修正があればdev_branchへ反映
+        shell: bash
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/timeline/timeline_screen.dart
+          if git diff --cached --quiet; then
+            echo 'already fixed; no commit needed'
+            exit 0
+          fi
+          git commit -m "タイムラインの小画面縦オーバーフローを修正"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
+
   strict-visual:
     name: '01 以前に確認済みの描画機能を、より厳しい基準でもう一度確認'
+    needs: repair-known-failures
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -156,7 +244,7 @@ jobs:
 
   continue-if-needed:
     name: '07 未確認項目が残っていれば待たずに次の監査を開始'
-    needs: [strict-visual, real-operation, canvas-panels, routes-and-filters, coverage, final-regression]
+    needs: [repair-known-failures, strict-visual, real-operation, canvas-panels, routes-and-filters, coverage, final-regression]
     if: always()
     runs-on: ubuntu-latest
     steps:
