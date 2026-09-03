@@ -518,14 +518,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "全21フィルターを単なる画素差ではなく各効果固有の期待結果としてstrict-v2再確認"
+      "recheck_reason": "全21フィルターを単なる画素差ではなく各効果固有の期待結果としてstrict-v2再確認",
+      "evidence_note": "Audit Continuous Queue #24 visual_reaudit_filters passed; all 21 filter output images visually reviewed."
     },
     {
       "id": "autofill",
@@ -939,15 +940,16 @@
       "id": "ui.canvas_panels",
       "category": "UI/画面",
       "name": "Canvas主要パネル",
-      "interaction": false,
-      "output": false,
-      "screenshot": false,
-      "visual": false,
-      "final_pass": false,
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-canvas-panel-screenshot-audit.yml"
-      ]
+      ],
+      "evidence_note": "Audit Continuous Queue #24 canvas panel screenshot audit passed; 10 panel screenshots visually reviewed."
     },
     {
       "id": "ui.timeline",
