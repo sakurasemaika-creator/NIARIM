@@ -4169,6 +4169,12 @@ abstract class AppLocalizations {
   /// **'表示する作品'**
   String get widgetArtworkSection;
 
+  /// No description provided for @widgetArtworkPickButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を選ぶ'**
+  String get widgetArtworkPickButton;
+
   /// No description provided for @widgetSectionArtwork.
   ///
   /// In ja, this message translates to:
@@ -4210,6 +4216,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作品を選んでいません'**
   String get widgetArtworkNone;
+
+  /// No description provided for @widgetArtworkFrameNumberLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'{n}枚目のフレーム'**
+  String widgetArtworkFrameNumberLabel(int n);
+
+  /// No description provided for @widgetArtworkFramePickerHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示したいフレームをタップして選んでください。'**
+  String get widgetArtworkFramePickerHint;
+
+  /// No description provided for @widgetArtworkNoFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'このシーンにはまだフレームがありません。'**
+  String get widgetArtworkNoFrames;
 
   /// No description provided for @widgetColorFollowTheme.
   ///

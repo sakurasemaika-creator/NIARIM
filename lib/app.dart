@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'router.dart';
 import 'screens/community/widgets/community_floating_preview.dart';
-import 'screens/settings/widget_settings_screen.dart';
+import 'services/home_widget_refresh.dart';
 import 'services/home_widget_bridge.dart';
 import 'services/home_widget_service.dart';
 import 'services/project_service.dart';

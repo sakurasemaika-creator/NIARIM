@@ -729,6 +729,7 @@
   "widgetSettingsDescription": "Placez trois widgets sur votre écran d’accueil : une image d’une œuvre de votre choix, « Créer » et « Place ». Ajoutez-les par un appui long sur l’écran d’accueil.",
   "widgetSettingsSubtitle": "Œuvre à afficher, couleur du widget",
   "widgetArtworkSection": "Œuvre à afficher",
+  "widgetArtworkPickButton": "Choisir une œuvre",
   "widgetSectionArtwork": "Widget d’écran de démarrage",
   "widgetSectionArtworkDesc": "Affiche une image de l’œuvre que vous choisissez. Un appui ouvre NIARIM.",
   "widgetSectionCreate": "Widget de création",
@@ -736,6 +737,16 @@
   "widgetSectionPlaza": "Widget de la place",
   "widgetSectionPlazaDesc": "Un appui ouvre la Place.",
   "widgetArtworkNone": "Aucune œuvre sélectionnée",
+  "widgetArtworkFrameNumberLabel": "Image {n}",
+  "@widgetArtworkFrameNumberLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetArtworkFramePickerHint": "Touchez l’image que vous voulez afficher.",
+  "widgetArtworkNoFrames": "Cette scène n’a pas encore d’images.",
   "widgetColorFollowTheme": "Suivre le thème de l’application",
   "widgetColorCustom": "Choisir une couleur",
   "widgetNoProjects": "Aucune œuvre pour l’instant. Dès que vous en créez une, vous pourrez la choisir ici.",

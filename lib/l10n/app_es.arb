@@ -729,6 +729,7 @@
   "widgetSettingsDescription": "Coloca tres widgets en tu pantalla de inicio: un fotograma de la obra que elijas, «Crear obra» y «Plaza». Añádelos manteniendo pulsada la pantalla de inicio.",
   "widgetSettingsSubtitle": "Obra que mostrar, color del widget",
   "widgetArtworkSection": "Obra que mostrar",
+  "widgetArtworkPickButton": "Elegir una obra",
   "widgetSectionArtwork": "Widget de arranque",
   "widgetSectionArtworkDesc": "Muestra un fotograma de la obra que elijas. Al tocarlo se abre NIARIM.",
   "widgetSectionCreate": "Widget de crear obra",
@@ -736,6 +737,16 @@
   "widgetSectionPlaza": "Widget de la plaza",
   "widgetSectionPlazaDesc": "Al tocarlo se abre la Plaza.",
   "widgetArtworkNone": "Ninguna obra seleccionada",
+  "widgetArtworkFrameNumberLabel": "Fotograma {n}",
+  "@widgetArtworkFrameNumberLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetArtworkFramePickerHint": "Toca el fotograma que quieras mostrar.",
+  "widgetArtworkNoFrames": "Esta escena todavía no tiene fotogramas.",
   "widgetColorFollowTheme": "Seguir el tema de la app",
   "widgetColorCustom": "Elegir un color",
   "widgetNoProjects": "Aún no hay obras. Cuando crees una, podrás elegirla aquí.",

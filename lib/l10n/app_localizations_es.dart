@@ -2356,6 +2356,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get widgetArtworkSection => 'Obra que mostrar';
 
   @override
+  String get widgetArtworkPickButton => 'Elegir una obra';
+
+  @override
   String get widgetSectionArtwork => 'Widget de arranque';
 
   @override
@@ -2377,6 +2380,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get widgetArtworkNone => 'Ninguna obra seleccionada';
+
+  @override
+  String widgetArtworkFrameNumberLabel(int n) {
+    return 'Fotograma $n';
+  }
+
+  @override
+  String get widgetArtworkFramePickerHint =>
+      'Toca el fotograma que quieras mostrar.';
+
+  @override
+  String get widgetArtworkNoFrames =>
+      'Esta escena todavía no tiene fotogramas.';
 
   @override
   String get widgetColorFollowTheme => 'Seguir el tema de la app';

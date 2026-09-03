@@ -2323,6 +2323,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetArtworkSection => 'Work to display';
 
   @override
+  String get widgetArtworkPickButton => 'Choose a work';
+
+  @override
   String get widgetSectionArtwork => 'Launch screen widget';
 
   @override
@@ -2344,6 +2347,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetArtworkNone => 'No work selected';
+
+  @override
+  String widgetArtworkFrameNumberLabel(int n) {
+    return 'Frame $n';
+  }
+
+  @override
+  String get widgetArtworkFramePickerHint =>
+      'Tap the frame you want to display.';
+
+  @override
+  String get widgetArtworkNoFrames => 'This scene doesn’t have any frames yet.';
 
   @override
   String get widgetColorFollowTheme => 'Match the app theme';

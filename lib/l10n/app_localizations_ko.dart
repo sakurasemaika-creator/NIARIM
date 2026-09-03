@@ -2244,6 +2244,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get widgetArtworkSection => '표시할 작품';
 
   @override
+  String get widgetArtworkPickButton => '작품 선택';
+
+  @override
   String get widgetSectionArtwork => '시작 화면 위젯';
 
   @override
@@ -2264,6 +2267,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get widgetArtworkNone => '작품을 선택하지 않았습니다';
+
+  @override
+  String widgetArtworkFrameNumberLabel(int n) {
+    return '$n번째 프레임';
+  }
+
+  @override
+  String get widgetArtworkFramePickerHint => '표시할 프레임을 선택해 주세요.';
+
+  @override
+  String get widgetArtworkNoFrames => '이 씬에는 아직 프레임이 없습니다.';
 
   @override
   String get widgetColorFollowTheme => '앱 테마에 맞추기';

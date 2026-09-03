@@ -30,6 +30,7 @@ import 'screens/settings/privacy_policy_screen.dart';
 import 'screens/settings/storage_screen.dart';
 import 'widgets/ad_banner_mock_widget.dart';
 import 'screens/settings/widget_settings_screen.dart';
+import 'screens/settings/widget_artwork_picker_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -135,6 +136,19 @@ final appRouter = GoRouter(
       path: '/settings/widget',
       builder: (context, state) =>
           const AdMockPageFrame(child: WidgetSettingsScreen()),
+    ),
+    GoRoute(
+      path: '/settings/widget/artwork',
+      builder: (context, state) =>
+          const AdMockPageFrame(child: WidgetArtworkPickerScreen()),
+    ),
+    GoRoute(
+      path: '/settings/widget/artwork/:id',
+      builder: (context, state) => AdMockPageFrame(
+        child: WidgetArtworkFramePickerScreen(
+          projectId: state.pathParameters['id']!,
+        ),
+      ),
     ),
     GoRoute(
       path: '/settings/theme',

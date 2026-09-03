@@ -729,6 +729,7 @@
   "widgetSettingsDescription": "可在手机主屏幕放置三种小组件：所选作品的一帧画面、「创作作品」和「作品广场」。添加小组件请长按主屏幕。",
   "widgetSettingsSubtitle": "要显示的作品、小组件颜色",
   "widgetArtworkSection": "要显示的作品",
+  "widgetArtworkPickButton": "选择作品",
   "widgetSectionArtwork": "启动页小组件",
   "widgetSectionArtworkDesc": "显示所选作品的一帧画面。点按即可打开 NIARIM。",
   "widgetSectionCreate": "创作作品小组件",
@@ -736,6 +737,16 @@
   "widgetSectionPlaza": "作品广场小组件",
   "widgetSectionPlazaDesc": "点按即可打开“作品广场”。",
   "widgetArtworkNone": "尚未选择作品",
+  "widgetArtworkFrameNumberLabel": "第 {n} 帧",
+  "@widgetArtworkFrameNumberLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetArtworkFramePickerHint": "点按想要显示的画面。",
+  "widgetArtworkNoFrames": "该场景还没有画面。",
   "widgetColorFollowTheme": "跟随应用主题",
   "widgetColorCustom": "选择颜色",
   "widgetNoProjects": "还没有作品。创作后即可在这里选择。",

@@ -2355,6 +2355,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get widgetArtworkSection => 'Œuvre à afficher';
 
   @override
+  String get widgetArtworkPickButton => 'Choisir une œuvre';
+
+  @override
   String get widgetSectionArtwork => 'Widget d’écran de démarrage';
 
   @override
@@ -2375,6 +2378,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get widgetArtworkNone => 'Aucune œuvre sélectionnée';
+
+  @override
+  String widgetArtworkFrameNumberLabel(int n) {
+    return 'Image $n';
+  }
+
+  @override
+  String get widgetArtworkFramePickerHint =>
+      'Touchez l’image que vous voulez afficher.';
+
+  @override
+  String get widgetArtworkNoFrames => 'Cette scène n’a pas encore d’images.';
 
   @override
   String get widgetColorFollowTheme => 'Suivre le thème de l’application';

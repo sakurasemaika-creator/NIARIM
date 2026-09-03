@@ -2235,6 +2235,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get widgetArtworkSection => '表示する作品';
 
   @override
+  String get widgetArtworkPickButton => '作品を選ぶ';
+
+  @override
   String get widgetSectionArtwork => '起動画面ウィジェット';
 
   @override
@@ -2255,6 +2258,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get widgetArtworkNone => '作品を選んでいません';
+
+  @override
+  String widgetArtworkFrameNumberLabel(int n) {
+    return '$n枚目のフレーム';
+  }
+
+  @override
+  String get widgetArtworkFramePickerHint => '表示したいフレームをタップして選んでください。';
+
+  @override
+  String get widgetArtworkNoFrames => 'このシーンにはまだフレームがありません。';
 
   @override
   String get widgetColorFollowTheme => 'アプリのテーマに合わせる';

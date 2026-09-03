@@ -23,6 +23,8 @@ void main() {
       final service = HomeWidgetService();
       await service.init();
       expect(service.projectId, isNull);
+      expect(service.sceneId, isNull);
+      expect(service.frameIndex, isNull);
       for (final kind in HomeWidgetKind.values) {
         expect(service.backgroundColorOf(kind), isNull);
         expect(service.followsTheme(kind), isTrue);
@@ -32,14 +34,49 @@ void main() {
     test('設定は再起動をまたいで復元される', () async {
       final service = HomeWidgetService();
       await service.init();
-      await service.selectProject('p1');
+      await service.selectArtwork(
+        projectId: 'p1',
+        sceneId: 's1',
+        frameIndex: 3,
+      );
       await service.setBackgroundColor(HomeWidgetKind.create, 0xFF123456);
 
       final reloaded = HomeWidgetService();
       await reloaded.init();
       expect(reloaded.projectId, 'p1');
+      expect(reloaded.sceneId, 's1');
+      expect(reloaded.frameIndex, 3);
       expect(reloaded.backgroundColorOf(HomeWidgetKind.create), 0xFF123456);
       expect(reloaded.followsTheme(HomeWidgetKind.create), isFalse);
+    });
+
+    test('作品を選び直すとシーン・フレームも入れ替わる', () async {
+      final service = HomeWidgetService();
+      await service.init();
+      await service.selectArtwork(
+        projectId: 'p1',
+        sceneId: 's1',
+        frameIndex: 3,
+      );
+      await service.selectArtwork(projectId: 'p2', sceneId: 's9');
+      expect(service.projectId, 'p2');
+      expect(service.sceneId, 's9');
+      // frameIndexを省略すると先頭フレーム扱い（null）に戻る。
+      expect(service.frameIndex, isNull);
+    });
+
+    test('引数無しで選び直すと作品・シーン・フレームがすべてクリアされる', () async {
+      final service = HomeWidgetService();
+      await service.init();
+      await service.selectArtwork(
+        projectId: 'p1',
+        sceneId: 's1',
+        frameIndex: 3,
+      );
+      await service.selectArtwork();
+      expect(service.projectId, isNull);
+      expect(service.sceneId, isNull);
+      expect(service.frameIndex, isNull);
     });
 
     test('色は種類ごとに独立している', () async {
@@ -72,6 +109,10 @@ void main() {
       final service = HomeWidgetService();
       await service.init();
       expect(service.projectId, 'old');
+      // シーン・フレーム選択に対応する前のデータなので両方null
+      // （＝先頭シーン・先頭フレームとして扱われる）。
+      expect(service.sceneId, isNull);
+      expect(service.frameIndex, isNull);
       for (final kind in HomeWidgetKind.values) {
         expect(service.backgroundColorOf(kind), 4278255360);
       }
@@ -80,7 +121,7 @@ void main() {
     test('空文字のプロジェクトIDは未選択として扱う', () async {
       final service = HomeWidgetService();
       await service.init();
-      await service.selectProject('');
+      await service.selectArtwork(projectId: '');
       expect(service.projectId, isNull);
     });
 
@@ -121,7 +162,7 @@ void main() {
     test('payloadのルートはhomeWidgetRouteと一致する', () async {
       final service = HomeWidgetService();
       await service.init();
-      await service.selectProject('p9');
+      await service.selectArtwork(projectId: 'p9');
       final payload = service.widgetPayload(
         themeColor: 0xFF000000,
         projectName: 'テスト作品',

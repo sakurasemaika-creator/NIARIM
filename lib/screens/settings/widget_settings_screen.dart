@@ -1,24 +1,33 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/font_fallback.dart';
 import '../../l10n/app_localizations.dart';
-import '../../services/home_widget_bridge.dart';
+import '../../services/home_widget_refresh.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/project_service.dart';
 import '../../services/theme_service.dart';
 import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
+import 'widget_artwork_picker_screen.dart';
+
+/// 背景色の選び方（テーマに合わせる／色を指定する）の2択。
+enum _ColorMode { theme, custom }
 
 /// ホーム画面ウィジェットの設定画面。
 ///
 /// 置けるウィジェットは3種類（起動画面／作品をつくる／作品広場）。この画面は
-/// **ウィジェット1種類につき1節**という構成にしてある。3種を並べて置いたとき
-/// 色を変えて見分けたい、という使い方ができるよう背景色は種類ごとに独立して
-/// 持つ。起動画面ウィジェットだけは、加えて「どの作品のフレームを出すか」を
-/// 選ぶ。
+/// **ウィジェット1種類につき1節**という構成にしてある。
+///
+/// - 起動画面ウィジェットは「どのフレームを表示するか」だけを選ぶ
+///   （タップで`WidgetArtworkPickerScreen`→`WidgetArtworkFramePickerScreen`
+///   の2画面フローへ進む。背景色の指定はここには無い＝常にテーマに追従）。
+/// - 作品をつくる／作品広場ウィジェットは、背景色を「テーマに合わせる」
+///   「色を指定する」の2択のラジオボタンで選ぶ。
+///
+/// 背景色は種類ごとに独立して持つ。3種を並べて置いたとき色を変えて
+/// 見分けたい、という使い方ができるようにするため。
 ///
 /// ウィジェットの追加そのものはホーム画面の長押しから行う（アプリからは
 /// 追加できない）ため、その旨を画面上に書いてある。
@@ -52,8 +61,7 @@ class WidgetSettingsScreen extends StatelessWidget {
             _sectionTitle(context, l10n.widgetSectionArtwork),
             _sectionNote(context, l10n.widgetSectionArtworkDesc),
             _subLabel(context, l10n.widgetArtworkSection),
-            _artworkPicker(context, widgets),
-            _colorRow(context, widgets, HomeWidgetKind.artwork),
+            _artworkSummaryTile(context, widgets),
             const SizedBox(height: 20),
 
             _sectionTitle(context, l10n.widgetSectionCreate),
@@ -70,86 +78,59 @@ class WidgetSettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 起動画面ウィジェットに出す作品を選ぶ一覧。
-  Widget _artworkPicker(BuildContext context, HomeWidgetService widgets) {
+  /// 起動画面ウィジェットの「作品を選ぶ」行。
+  ///
+  /// 未選択なら[l10n.widgetArtworkPickButton]（「作品を選ぶ」）をタイトルに
+  /// 出す。選択済みなら選んだフレームのプレビュー・作品名・フレーム番号を
+  /// 出す。どちらもタップで作品→フレームの選択フローへ進む。
+  Widget _artworkSummaryTile(BuildContext context, HomeWidgetService widgets) {
     final l10n = AppLocalizations.of(context)!;
-    final projects = context.watch<ProjectService>().projects;
     final scheme = Theme.of(context).colorScheme;
+    final projectId = widgets.projectId;
 
-    if (projects.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(
-          l10n.widgetNoProjects,
-          style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+    return Card(
+      margin: EdgeInsets.zero,
+      color: scheme.surfaceContainerHigh,
+      child: ListTile(
+        leading: SizedBox(
+          width: 44,
+          height: 44,
+          child: projectId == null
+              ? Icon(Icons.add_photo_alternate_outlined, color: scheme.primary)
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: ArtworkFrameThumbnail(
+                    projectId: projectId,
+                    sceneId: widgets.sceneId,
+                    frameIndex: widgets.frameIndex,
+                  ),
+                ),
         ),
-      );
-    }
-
-    // 選択状態と変更通知はRadioGroupがまとめて持つ
-    // （groupValue/onChangedはFlutter 3.32で非推奨）。
-    return RadioGroup<String?>(
-      groupValue: widgets.projectId,
-      onChanged: (id) async {
-        await widgets.selectProject(id);
-        if (context.mounted) await _push(context);
-      },
-      // 作品が増えても全行のWidgetを毎回作らないようbuilderを使う
-      // （CLAUDE.mdの「ListView(children:)は半分しか遅延しない」）。
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        // 先頭の1行は「選んでいない」状態へ戻すための選択肢。
-        itemCount: projects.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return RadioListTile<String?>(
-              value: null,
-              title: Text(l10n.widgetArtworkNone),
-              secondary: SizedBox(
-                width: 44,
-                height: 44,
-                child: Icon(
-                  Icons.block_outlined,
-                  color: scheme.onSurfaceVariant,
+        title: Text(
+          projectId == null
+              ? l10n.widgetArtworkPickButton
+              : (context
+                        .watch<ProjectService>()
+                        .projects
+                        .where((p) => p.id == projectId)
+                        .firstOrNull
+                        ?.name ??
+                    l10n.widgetArtworkPickButton),
+        ),
+        subtitle: projectId == null
+            ? null
+            : Text(
+                l10n.widgetArtworkFrameNumberLabel(
+                  (widgets.frameIndex ?? 0) + 1,
                 ),
               ),
-            );
-          }
-          final p = projects[index - 1];
-          final path = p.thumbnailPath;
-          return RadioListTile<String?>(
-            value: p.id,
-            title: Text(p.name),
-            secondary: SizedBox(
-              width: 44,
-              height: 44,
-              child: path == null
-                  ? Icon(Icons.image_outlined, color: scheme.onSurfaceVariant)
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: Image.file(
-                        File(path),
-                        fit: BoxFit.cover,
-                        // 表示は44px。保存解像度のままデコードして
-                        // 画像キャッシュへ載せない。
-                        cacheWidth:
-                            (44 * MediaQuery.devicePixelRatioOf(context))
-                                .round(),
-                        errorBuilder: (_, _, _) => Icon(
-                          Icons.broken_image_outlined,
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-            ),
-          );
-        },
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push('/settings/widget/artwork'),
       ),
     );
   }
 
-  /// 1種類ぶんの背景色設定（テーマ追従スイッチ＋任意色）。
+  /// 1種類ぶんの背景色設定（テーマに合わせる／色を指定するのラジオボタン）。
   Widget _colorRow(
     BuildContext context,
     HomeWidgetService widgets,
@@ -157,36 +138,48 @@ class WidgetSettingsScreen extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final follows = widgets.followsTheme(kind);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SwitchListTile(
-          title: Text(l10n.widgetColorFollowTheme),
-          value: follows,
-          onChanged: (follow) async {
-            await widgets.setBackgroundColor(
-              kind,
-              follow ? null : _themeColor(context),
-            );
-            if (context.mounted) await _push(context);
-          },
-        ),
-        if (!follows)
-          ListTile(
+    final mode = widgets.followsTheme(kind)
+        ? _ColorMode.theme
+        : _ColorMode.custom;
+
+    return RadioGroup<_ColorMode>(
+      groupValue: mode,
+      onChanged: (value) async {
+        if (value == _ColorMode.theme) {
+          await widgets.setBackgroundColor(kind, null);
+          if (context.mounted) await _push(context);
+        } else if (context.mounted) {
+          // 「色を指定する」は選ぶたび（既に選んでいる状態からの再タップも
+          // 含め）色選択ダイアログを開く。まだ指定していなければ現在の
+          // テーマカラーを初期値にする。ダイアログをそのまま閉じた場合は
+          // 何も変更されず、選択はテーマ追従のまま（＝ラジオも戻る）。
+          _pickColor(context, widgets, kind);
+        }
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RadioListTile<_ColorMode>(
+            value: _ColorMode.theme,
+            title: Text(l10n.widgetColorFollowTheme),
+          ),
+          RadioListTile<_ColorMode>(
+            value: _ColorMode.custom,
             title: Text(l10n.widgetColorCustom),
-            trailing: Container(
+            secondary: Container(
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Color(widgets.backgroundColorOf(kind)!),
+                color: Color(
+                  widgets.backgroundColorOf(kind) ?? _themeColor(context),
+                ),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: scheme.outlineVariant),
               ),
             ),
-            onTap: () => _pickColor(context, widgets, kind),
           ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -261,26 +254,4 @@ class WidgetSettingsScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-/// テーマ変更にウィジェットを追従させるための共通処理。
-///
-/// `ThemeService`が変わったタイミングで呼ぶ想定。テーマ追従設定の種類だけ
-/// 色が変わるが、追従していない種類でも作品名・サムネイルの更新は要るので
-/// 常に書き出す。
-Future<void> refreshHomeWidgets({
-  required HomeWidgetService widgets,
-  required ProjectService projects,
-  required ThemeService theme,
-}) async {
-  final id = widgets.projectId;
-  final project = id == null
-      ? null
-      : projects.projects.where((p) => p.id == id).firstOrNull;
-  await HomeWidgetBridge().update(
-    widgets,
-    themeColor: theme.current.accentColor.toARGB32(),
-    thumbnailPath: project?.thumbnailPath,
-    projectName: project?.name,
-  );
 }

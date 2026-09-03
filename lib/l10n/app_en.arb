@@ -729,6 +729,7 @@
   "widgetSettingsDescription": "Place three widgets on your home screen: a single frame from a work you choose, “New work”, and “Plaza”. Add them by long-pressing your home screen.",
   "widgetSettingsSubtitle": "Work to display, widget colour",
   "widgetArtworkSection": "Work to display",
+  "widgetArtworkPickButton": "Choose a work",
   "widgetSectionArtwork": "Launch screen widget",
   "widgetSectionArtworkDesc": "Shows one frame from the work you pick. Tapping it opens NIARIM.",
   "widgetSectionCreate": "New work widget",
@@ -736,6 +737,16 @@
   "widgetSectionPlaza": "Plaza widget",
   "widgetSectionPlazaDesc": "Tapping it opens the Plaza.",
   "widgetArtworkNone": "No work selected",
+  "widgetArtworkFrameNumberLabel": "Frame {n}",
+  "@widgetArtworkFrameNumberLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetArtworkFramePickerHint": "Tap the frame you want to display.",
+  "widgetArtworkNoFrames": "This scene doesn’t have any frames yet.",
   "widgetColorFollowTheme": "Match the app theme",
   "widgetColorCustom": "Pick a colour",
   "widgetNoProjects": "No works yet. Once you create one, you can choose it here.",

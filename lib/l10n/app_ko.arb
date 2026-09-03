@@ -729,6 +729,7 @@
   "widgetSettingsDescription": "홈 화면에 좋아하는 작품의 한 프레임, 「작품 만들기」, 「작품 광장」 3종류의 위젯을 놓을 수 있습니다. 위젯 추가는 홈 화면을 길게 눌러서 하세요.",
   "widgetSettingsSubtitle": "표시할 작품 · 위젯 색상",
   "widgetArtworkSection": "표시할 작품",
+  "widgetArtworkPickButton": "작품 선택",
   "widgetSectionArtwork": "시작 화면 위젯",
   "widgetSectionArtworkDesc": "선택한 작품의 한 컷을 표시합니다. 누르면 NIARIM이 실행됩니다.",
   "widgetSectionCreate": "작품 만들기 위젯",
@@ -736,6 +737,16 @@
   "widgetSectionPlaza": "작품 광장 위젯",
   "widgetSectionPlazaDesc": "누르면 '작품 광장'이 열립니다.",
   "widgetArtworkNone": "작품을 선택하지 않았습니다",
+  "widgetArtworkFrameNumberLabel": "{n}번째 프레임",
+  "@widgetArtworkFrameNumberLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetArtworkFramePickerHint": "표시할 프레임을 선택해 주세요.",
+  "widgetArtworkNoFrames": "이 씬에는 아직 프레임이 없습니다.",
   "widgetColorFollowTheme": "앱 테마에 맞추기",
   "widgetColorCustom": "색 선택",
   "widgetNoProjects": "아직 작품이 없습니다. 작품을 만들면 여기에서 고를 수 있습니다.",

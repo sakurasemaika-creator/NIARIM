@@ -729,6 +729,7 @@
   "widgetSettingsDescription": "可在手機主畫面放置三種小工具：所選作品的一格畫面、「創作作品」與「作品廣場」。新增小工具請長按主畫面。",
   "widgetSettingsSubtitle": "要顯示的作品、小工具顏色",
   "widgetArtworkSection": "要顯示的作品",
+  "widgetArtworkPickButton": "選擇作品",
   "widgetSectionArtwork": "啟動頁小工具",
   "widgetSectionArtworkDesc": "顯示所選作品的一格畫面。點按即可開啟 NIARIM。",
   "widgetSectionCreate": "創作作品小工具",
@@ -736,6 +737,16 @@
   "widgetSectionPlaza": "作品廣場小工具",
   "widgetSectionPlazaDesc": "點按即可開啟「作品廣場」。",
   "widgetArtworkNone": "尚未選擇作品",
+  "widgetArtworkFrameNumberLabel": "第 {n} 格",
+  "@widgetArtworkFrameNumberLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetArtworkFramePickerHint": "點按想要顯示的畫面。",
+  "widgetArtworkNoFrames": "此場景還沒有畫面。",
   "widgetColorFollowTheme": "跟隨應用程式主題",
   "widgetColorCustom": "選擇顏色",
   "widgetNoProjects": "還沒有作品。創作後即可在這裡選擇。",

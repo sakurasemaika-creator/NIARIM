@@ -212,12 +212,17 @@ void main() {
       (name: '23_settings_transfer', route: '/settings/transfer'),
       (name: '24_settings_watermark', route: '/settings/watermark'),
       (name: '25_settings_widget', route: '/settings/widget'),
-      (name: '26_settings_workspace', route: '/settings/workspace'),
-      (name: '27_help', route: '/help'),
-      (name: '28_tips', route: '/tips'),
-      (name: '29_shared', route: '/shared'),
-      (name: '30_storage', route: '/storage'),
-      (name: '31_trash', route: '/trash'),
+      (name: '26_settings_widget_artwork', route: '/settings/widget/artwork'),
+      (
+        name: '27_settings_widget_artwork_frame',
+        route: '/settings/widget/artwork/${project.id}',
+      ),
+      (name: '28_settings_workspace', route: '/settings/workspace'),
+      (name: '29_help', route: '/help'),
+      (name: '30_tips', route: '/tips'),
+      (name: '31_shared', route: '/shared'),
+      (name: '32_storage', route: '/storage'),
+      (name: '33_trash', route: '/trash'),
     ];
 
     for (final entry in routes) {

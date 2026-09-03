@@ -2225,6 +2225,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get widgetArtworkSection => '要显示的作品';
 
   @override
+  String get widgetArtworkPickButton => '选择作品';
+
+  @override
   String get widgetSectionArtwork => '启动页小组件';
 
   @override
@@ -2244,6 +2247,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get widgetArtworkNone => '尚未选择作品';
+
+  @override
+  String widgetArtworkFrameNumberLabel(int n) {
+    return '第 $n 帧';
+  }
+
+  @override
+  String get widgetArtworkFramePickerHint => '点按想要显示的画面。';
+
+  @override
+  String get widgetArtworkNoFrames => '该场景还没有画面。';
 
   @override
   String get widgetColorFollowTheme => '跟随应用主题';
@@ -8129,6 +8143,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get widgetArtworkSection => '要顯示的作品';
 
   @override
+  String get widgetArtworkPickButton => '選擇作品';
+
+  @override
   String get widgetSectionArtwork => '啟動頁小工具';
 
   @override
@@ -8148,6 +8165,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get widgetArtworkNone => '尚未選擇作品';
+
+  @override
+  String widgetArtworkFrameNumberLabel(int n) {
+    return '第 $n 格';
+  }
+
+  @override
+  String get widgetArtworkFramePickerHint => '點按想要顯示的畫面。';
+
+  @override
+  String get widgetArtworkNoFrames => '此場景還沒有畫面。';
 
   @override
   String get widgetColorFollowTheme => '跟隨應用程式主題';
