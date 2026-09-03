@@ -47,16 +47,18 @@ void main() {
         '${out.path}/builtin_tone_${tone.id}_${_safe(tone.name)}.png',
       );
       var painted = 0, transparentInside = 0, hash = 2166136261;
-      for (var y = 22; y < 106; y++)
+      for (var y = 22; y < 106; y++) {
         for (var x = 22; x < 106; x++) {
           if ((x - 64) * (x - 64) + (y - 64) * (y - 64) > 40 * 40) continue;
           final i = (y * w + x) * 4, a = result[i + 3];
-          if (a > 0)
+          if (a > 0) {
             painted++;
-          else
+          } else {
             transparentInside++;
+          }
           hash = ((hash ^ a) * 16777619) & 0x7fffffff;
         }
+      }
       expect(
         painted,
         greaterThan(10),

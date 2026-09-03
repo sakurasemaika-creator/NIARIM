@@ -12,6 +12,7 @@ import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/reorder_index.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -127,7 +128,10 @@ class ThemeSettingsScreen extends StatelessWidget {
               // Flutterが自動でもう1つハンドルを追加してしまい、テーマ色の
               // スウォッチからはみ出た黒いハンドルが二重に見えるバグになっていた。
               buildDefaultDragHandles: false,
-              onReorder: themeService.reorder,
+              onReorderItem: (oldIndex, newIndex) => themeService.reorder(
+                oldIndex,
+                preRemovalIndex(oldIndex, newIndex),
+              ),
               children: [
                 // 他の画面（設定トップ・セーブツリー等）と統一した、影付き
                 // カードとして浮かせるデザイン（作り込みの一環）。選択中の
@@ -343,8 +347,9 @@ class ThemeSettingsScreen extends StatelessWidget {
     );
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
     try {

@@ -237,8 +237,9 @@ class MaterialService extends ChangeNotifier {
     Set<MaterialType> includeTypes,
   ) async {
     await ensureLoaded(projectId);
-    if (includeTypes.isEmpty)
+    if (includeTypes.isEmpty) {
       return (files: <String, Uint8List>{}, manifest: null);
+    }
     final selected = (_materials[projectId] ?? const []).where(
       (m) => includeTypes.contains(m.type),
     );

@@ -170,7 +170,7 @@ void _rect(
   int g,
   int b,
 ) {
-  for (var y = y0; y < y1; y++)
+  for (var y = y0; y < y1; y++) {
     for (var x = x0; x < x1; x++) {
       final i = (y * w + x) * 4;
       d[i] = r;
@@ -178,6 +178,7 @@ void _rect(
       d[i + 2] = b;
       d[i + 3] = 255;
     }
+  }
 }
 
 int _alpha(Uint8List d, int w, int x, int y) => d[(y * w + x) * 4 + 3];
@@ -233,7 +234,8 @@ Uint8List _readCanvas(dynamic tm, String key, int w, int h) {
   final out = Uint8List(w * h * 4);
   final tile = tm.getTile(key, 0, 0) as Uint8List?;
   if (tile == null) return out;
-  for (var y = 0; y < h; y++)
+  for (var y = 0; y < h; y++) {
     out.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
+  }
   return out;
 }

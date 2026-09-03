@@ -497,7 +497,7 @@ class _SlotThumbnail extends StatelessWidget {
               // 表示画素数に合わせてデコードして画像キャッシュを節約する。
               cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
                   .round(),
-              errorBuilder: (_, __, ___) =>
+              errorBuilder: (_, _, _) =>
                   Icon(Icons.image_outlined, color: scheme.onSurfaceVariant),
             ),
     );

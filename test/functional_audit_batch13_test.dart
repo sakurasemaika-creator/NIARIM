@@ -146,11 +146,12 @@ int _verticalSpan(
   required int threshold,
 }) {
   var minY = height, maxY = -1;
-  for (var y = 0; y < height; y++)
+  for (var y = 0; y < height; y++) {
     if (d[(y * width + x) * 4 + 3] >= threshold) {
       minY = math.min(minY, y);
       maxY = math.max(maxY, y);
     }
+  }
   return maxY < minY ? 0 : maxY - minY + 1;
 }
 

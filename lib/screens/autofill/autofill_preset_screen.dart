@@ -242,8 +242,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                                 if (!_selectedIds.remove(preset.id)) {
                                   _selectedIds.add(preset.id);
                                 }
-                                if (_selectedIds.isEmpty)
+                                if (_selectedIds.isEmpty) {
                                   _isSelectionMode = false;
+                                }
                               });
                             } else {
                               _showPresetDetail(preset);

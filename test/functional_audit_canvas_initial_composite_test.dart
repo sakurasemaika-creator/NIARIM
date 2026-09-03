@@ -122,7 +122,7 @@ void main() {
     }
 
     // 元画素自体があることと、初期合成が短時間で実Canvasへ反映されることを別々に確認。
-    final tile = tm.getTile(key, 0, 0) as Uint8List?;
+    final tile = tm.getTile(key, 0, 0);
     expect(tile, isNotNull);
     expect(
       tile![(40 * 256 + 30) * 4 + 3],

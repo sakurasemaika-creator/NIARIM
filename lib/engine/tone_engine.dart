@@ -83,11 +83,13 @@ class ToneEngine {
           if (dx * dx + dy * dy > radius * radius) continue;
           final px = cx + dx;
           final py = cy + dy;
-          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight)
+          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight) {
             continue;
+          }
           if (selectionMask != null &&
-              selectionMask[py * canvasWidth + px] == 0)
+              selectionMask[py * canvasWidth + px] == 0) {
             continue;
+          }
 
           final tx = px % toneWidth;
           final ty = py % toneHeight;
@@ -149,11 +151,13 @@ class ToneEngine {
           if (dx * dx + dy * dy > radius * radius) continue;
           final px = cx + dx;
           final py = cy + dy;
-          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight)
+          if (px < 0 || px >= canvasWidth || py < 0 || py >= canvasHeight) {
             continue;
+          }
           if (selectionMask != null &&
-              selectionMask[py * canvasWidth + px] == 0)
+              selectionMask[py * canvasWidth + px] == 0) {
             continue;
+          }
 
           final tx = px % toneWidth;
           final ty = py % toneHeight;

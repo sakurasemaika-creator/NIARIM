@@ -309,7 +309,9 @@ void main() {
     final tm = TileManager(canvasWidth: w, canvasHeight: h);
     final tile = tm.getOrCreateTile('layer', 0, 0);
     for (var y = 38; y < 58; y++) {
-      for (var x = 18; x < 38; x++) tm.setPixel(tile, x, y, 230, 70, 50, 255);
+      for (var x = 18; x < 38; x++) {
+        tm.setPixel(tile, x, y, 230, 70, 50, 255);
+      }
     }
     tm.markDirty('layer', 0, 0);
     const layer = Layer(id: 'layer', name: 'layer', type: LayerType.normal);

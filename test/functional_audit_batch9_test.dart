@@ -123,7 +123,9 @@ void main() {
       ..currentColor = const ui.Color(0xFF2030C0);
 
     final pts = <ui.Offset>[];
-    for (var x = 12.0; x <= 108; x += 4) pts.add(ui.Offset(x, 32));
+    for (var x = 12.0; x <= 108; x += 4) {
+      pts.add(ui.Offset(x, 32));
+    }
     engine.beginStroke(StrokePoint(x: pts.first.dx, y: pts.first.dy), 'fade');
     for (final p in pts.skip(1)) {
       engine.continueStroke(StrokePoint(x: p.dx, y: p.dy), 'fade');

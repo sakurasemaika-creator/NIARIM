@@ -106,7 +106,7 @@ Future<_Result> _operate(
   final key = projects.tileKeyFor(p.id, scene.id, 0, layer.id),
       tm = projects.tileManagerOf(p.id);
   final initial = Uint8List(96 * 80 * 4);
-  for (var y = 0; y < 80; y++)
+  for (var y = 0; y < 80; y++) {
     for (var x = 0; x < 96; x++) {
       final i = (y * 96 + x) * 4;
       final v = (x + y).isEven ? 20 : 235;
@@ -115,6 +115,7 @@ Future<_Result> _operate(
       initial[i + 2] = v;
       initial[i + 3] = 255;
     }
+  }
   tm.replaceLayerPixels(key, initial);
   final before = _read(tm, key, 96, 80);
   final providers = await tester.runAsync(buildAppProviders);
@@ -182,8 +183,9 @@ Uint8List _read(dynamic tm, String key, int w, int h) {
   final o = Uint8List(w * h * 4);
   final tile = tm.getTile(key, 0, 0) as Uint8List?;
   if (tile == null) return o;
-  for (var y = 0; y < h; y++)
+  for (var y = 0; y < h; y++) {
     o.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
+  }
   return o;
 }
 

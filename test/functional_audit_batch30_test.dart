@@ -135,13 +135,14 @@ void main() {
     final actual = _read(tm, key, 96, 80);
     final expected = Uint8List.fromList(before);
     // 赤矩形だけ+20,+10移動。元を透明化し新位置へコピー。
-    for (var y = 30; y < 39; y++)
+    for (var y = 30; y < 39; y++) {
       for (var x = 30; x < 39; x++) {
         final si = (y * 96 + x) * 4;
         final di = ((y + 10) * 96 + (x + 20)) * 4;
         expected.setRange(di, di + 4, before, si);
         expected.fillRange(si, si + 4, 0);
       }
+    }
     expect(
       actual,
       orderedEquals(expected),
@@ -183,7 +184,7 @@ void _rect(
   int g,
   int b,
 ) {
-  for (var y = y0; y < y1; y++)
+  for (var y = y0; y < y1; y++) {
     for (var x = x0; x < x1; x++) {
       final i = (y * w + x) * 4;
       d[i] = r;
@@ -191,6 +192,7 @@ void _rect(
       d[i + 2] = b;
       d[i + 3] = 255;
     }
+  }
 }
 
 Future<void> _waitUndo(WidgetTester t, app_undo.UndoManager u, int n) async {
@@ -229,7 +231,8 @@ Uint8List _read(dynamic tm, String key, int w, int h) {
   final o = Uint8List(w * h * 4);
   final tile = tm.getTile(key, 0, 0) as Uint8List?;
   if (tile == null) return o;
-  for (var y = 0; y < h; y++)
+  for (var y = 0; y < h; y++) {
     o.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
+  }
   return o;
 }

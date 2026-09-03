@@ -69,8 +69,9 @@ class LassoFillEngine {
         // 投げ縄座標は連続座標なので、各画素の左上端ではなく中心点で
         // 内外判定する。これにより斜辺の外側へ1pxだけはみ出すケースを防ぐ。
         if (!_isInsidePolygon(x + 0.5, y + 0.5, points)) continue;
-        if (selectionMask != null && selectionMask[y * width + x] == 0)
+        if (selectionMask != null && selectionMask[y * width + x] == 0) {
           continue;
+        }
 
         final idx = (y * width + x) * 4;
         if (isEraser) {
@@ -200,8 +201,9 @@ class LassoFillEngine {
     Uint8List? selectionMask,
   }) {
     final result = <ui.Offset>[];
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height) {
       return result;
+    }
     if (polygon != null &&
         !_isInsidePolygon(startX + 0.5, startY + 0.5, polygon)) {
       return result;
@@ -220,8 +222,9 @@ class LassoFillEngine {
       final y = pos ~/ width;
 
       if (selectionMask != null && selectionMask[pos] == 0) continue;
-      if (polygon != null && !_isInsidePolygon(x + 0.5, y + 0.5, polygon))
+      if (polygon != null && !_isInsidePolygon(x + 0.5, y + 0.5, polygon)) {
         continue;
+      }
 
       final idx = pos * 4;
       if (data[idx + 3] != 0) continue; // 不透明ピクセルは境界

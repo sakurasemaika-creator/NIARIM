@@ -69,8 +69,9 @@ void main() {
           equals([pairs[i].$1.red, pairs[i].$1.green, pairs[i].$1.blue]),
           reason: '${mode.name} must not affect non-overlap area',
         );
-        if (i == 0)
+        if (i == 0) {
           await _save(image, '${out.path}/blend_interaction_${mode.name}.png');
+        }
         image.dispose();
         tm.dispose();
       }
@@ -306,31 +307,33 @@ Future<(Uint8List, int)> _pixelStampMask({
 
 int _bboxWidth(Uint8List d, int width) {
   var minX = width, maxX = -1;
-  for (var y = 0; y < width; y++)
+  for (var y = 0; y < width; y++) {
     for (var x = 0; x < width; x++) {
       if (d[(y * width + x) * 4 + 3] > 0) {
         minX = math.min(minX, x);
         maxX = math.max(maxX, x);
       }
     }
+  }
   return maxX < minX ? 0 : maxX - minX + 1;
 }
 
 int _bboxHeight(Uint8List d, int width) {
   var minY = width, maxY = -1;
-  for (var y = 0; y < width; y++)
+  for (var y = 0; y < width; y++) {
     for (var x = 0; x < width; x++) {
       if (d[(y * width + x) * 4 + 3] > 0) {
         minY = math.min(minY, y);
         maxY = math.max(maxY, y);
       }
     }
+  }
   return maxY < minY ? 0 : maxY - minY + 1;
 }
 
 List<String> _normalizeMask(Uint8List d, int width) {
   var minX = width, maxX = -1, minY = width, maxY = -1;
-  for (var y = 0; y < width; y++)
+  for (var y = 0; y < width; y++) {
     for (var x = 0; x < width; x++) {
       if (d[(y * width + x) * 4 + 3] > 0) {
         minX = math.min(minX, x);
@@ -339,11 +342,13 @@ List<String> _normalizeMask(Uint8List d, int width) {
         maxY = math.max(maxY, y);
       }
     }
+  }
   final rows = <String>[];
   for (var y = minY; y <= maxY; y++) {
     final sb = StringBuffer();
-    for (var x = minX; x <= maxX; x++)
+    for (var x = minX; x <= maxX; x++) {
       sb.write(d[(y * width + x) * 4 + 3] > 0 ? '1' : '0');
+    }
     rows.add(sb.toString());
   }
   return rows;

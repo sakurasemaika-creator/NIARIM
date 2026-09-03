@@ -23,6 +23,7 @@ import '../../../widgets/stepped_slider.dart';
 import 'layer_keyframe_sheet.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/reorder_index.dart';
 
 class LayerPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -381,7 +382,7 @@ class _LayerPanelState extends State<LayerPanel> {
               // 代わりに専用のハンドルアイコンを一番右に明示的に配置する。
               buildDefaultDragHandles: false,
               itemCount: layers.length,
-              onReorder: (oldIdx, newIdx) {
+              onReorderItem: (oldIdx, newIdx) {
                 if (_searchQuery.trim().isNotEmpty) {
                   return; // 検索中はフィルタ表示のため並び替え不可
                 }
@@ -390,7 +391,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   sceneId: widget.sceneId,
                   frameIndex: widget.frameIndex,
                   oldIndex: oldIdx,
-                  newIndex: newIdx,
+                  newIndex: preRemovalIndex(oldIdx, newIdx),
                 );
               },
               itemBuilder: (context, index) {

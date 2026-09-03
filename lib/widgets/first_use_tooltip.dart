@@ -184,8 +184,9 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
   void _dismiss() {
     _entry?.remove();
     _entry = null;
-    if (mounted)
+    if (mounted) {
       context.read<FirstUseTooltipService>().markSeen(widget.tooltipKey);
+    }
   }
 
   @override

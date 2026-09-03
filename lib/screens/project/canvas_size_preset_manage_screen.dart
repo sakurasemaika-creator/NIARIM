@@ -5,6 +5,7 @@ import '../../models/canvas_size_preset.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/reorder_index.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -69,8 +70,11 @@ class CanvasSizePresetManageScreen extends StatelessWidget {
                 buildDefaultDragHandles: false,
                 padding: const EdgeInsets.all(12),
                 itemCount: presets.length,
-                onReorder: (oldIndex, newIndex) =>
-                    settings.reorderCustomSizePresets(oldIndex, newIndex),
+                onReorderItem: (oldIndex, newIndex) =>
+                    settings.reorderCustomSizePresets(
+                      oldIndex,
+                      preRemovalIndex(oldIndex, newIndex),
+                    ),
                 itemBuilder: (context, index) => _PresetTile(
                   key: ValueKey(presets[index].id),
                   preset: presets[index],

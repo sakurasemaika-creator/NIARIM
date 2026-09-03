@@ -68,8 +68,11 @@ void main() {
   test('バケツ：選択マスク外へ漏れない', () async {
     final data = Uint8List(w * h * 4);
     final mask = Uint8List(w * h);
-    for (var y = 24; y < 72; y++)
-      for (var x = 24; x < 48; x++) mask[y * w + x] = 1;
+    for (var y = 24; y < 72; y++) {
+      for (var x = 24; x < 48; x++) {
+        mask[y * w + x] = 1;
+      }
+    }
     final result = BucketFillEngine().fill(
       canvasData: data,
       width: w,
@@ -367,9 +370,11 @@ void _drawRectBoundary(Uint8List data, int l, int t, int r, int b) {
 
 int _countColor(List<int> rgba, List<int> rgb) {
   var n = 0;
-  for (var i = 0; i < rgba.length; i += 4)
-    if (rgba[i] == rgb[0] && rgba[i + 1] == rgb[1] && rgba[i + 2] == rgb[2])
+  for (var i = 0; i < rgba.length; i += 4) {
+    if (rgba[i] == rgb[0] && rgba[i + 1] == rgb[1] && rgba[i + 2] == rgb[2]) {
       n++;
+    }
+  }
   return n;
 }
 

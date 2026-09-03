@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
@@ -142,7 +141,7 @@ void main() {
           image.dispose();
           return data?.buffer.asUint8List();
         });
-        if (bytes == null || bytes!.isEmpty) {
+        if (bytes == null || bytes.isEmpty) {
           failures.add('$name: PNG capture empty');
         } else {
           await tester.runAsync(

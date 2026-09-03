@@ -10,6 +10,7 @@ import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/reorder_index.dart';
 
 /// スタンプの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -224,9 +225,13 @@ class _StampPanelState extends State<StampPanel> {
                         // ジェスチャーが競合するため）。
                         buildDefaultDragHandles: false,
                         itemCount: stampList.length,
-                        onReorder: (oldIndex, newIndex) {
-                          if (!isFiltering)
-                            stampService.reorderStamp(oldIndex, newIndex);
+                        onReorderItem: (oldIndex, newIndex) {
+                          if (!isFiltering) {
+                            stampService.reorderStamp(
+                              oldIndex,
+                              preRemovalIndex(oldIndex, newIndex),
+                            );
+                          }
                         },
                         itemBuilder: (context, index) {
                           final stamp = stampList[index];
@@ -416,8 +421,9 @@ class _StampPanelState extends State<StampPanel> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
     final name = await promptCreativeAssetName(
@@ -435,8 +441,9 @@ class _StampPanelState extends State<StampPanel> {
     );
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     try {
       await service.importStampFile(result.files.first.path!);
     } catch (e) {
@@ -572,8 +579,9 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
               );
               if (result == null ||
                   result.files.isEmpty ||
-                  result.files.first.path == null)
+                  result.files.first.path == null) {
                 return;
+              }
               if (!context.mounted) return;
               final service = context.read<StampService>();
               await service.createStampFromImage(

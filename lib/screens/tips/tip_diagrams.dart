@@ -1041,11 +1041,12 @@ class _TipDiagramPainter extends CustomPainter {
         RRect.fromRectAndRadius(rect, Radius.circular(5 * s)),
         i == 2 ? _fillPrimaryFaint : _strokeOutline,
       );
-      if (i == 2)
+      if (i == 2) {
         canvas.drawRRect(
           RRect.fromRectAndRadius(rect, Radius.circular(5 * s)),
           _strokePrimary,
         );
+      }
       _drawIcon(
         canvas,
         Icons.save,

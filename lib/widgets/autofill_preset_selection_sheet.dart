@@ -117,8 +117,9 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
       ),
     ),
   );
-  if (result == null)
+  if (result == null) {
     return const AutofillPresetSelectionResult(cancelled: true, ids: null);
+  }
   final allIds = allPresets.map((p) => p.id).toSet();
   // 全選択のままなら「すべて使用する」を意味するnullとして保存する
   // （今後プリセットが増えた場合も自動的に対象へ含まれるようにするため）。

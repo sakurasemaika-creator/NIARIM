@@ -114,8 +114,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     // 呼ばないため、ここで明示的に反映する（既にどれかのプロジェクトで
     // 反映済みの場合は冪等なので害はない）。
     saveService.setTreeMode(newIsTreeMode);
-    if (!newIsTreeMode && newSlotMax != null)
+    if (!newIsTreeMode && newSlotMax != null) {
       saveService.setSlotMax(newSlotMax);
+    }
   }
 
   @override
@@ -607,8 +608,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                     );
                   } else {
                     saveService.setTreeMode(newMode == SaveMode.tree);
-                    if (newMode == SaveMode.slot)
+                    if (newMode == SaveMode.slot) {
                       saveService.setSlotMax(newSlot);
+                    }
                   }
                 },
               ),

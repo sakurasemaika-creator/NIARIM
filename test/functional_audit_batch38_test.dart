@@ -150,7 +150,9 @@ Future<void> _capture(GlobalKey key, String path) async {
 
 int _opaque(Uint8List d) {
   var n = 0;
-  for (var i = 3; i < d.length; i += 4) if (d[i] != 0) n++;
+  for (var i = 3; i < d.length; i += 4) {
+    if (d[i] != 0) n++;
+  }
   return n;
 }
 
@@ -169,7 +171,8 @@ Uint8List _read(dynamic tm, String key, int w, int h) {
   final o = Uint8List(w * h * 4);
   final tile = tm.getTile(key, 0, 0) as Uint8List?;
   if (tile == null) return o;
-  for (var y = 0; y < h; y++)
+  for (var y = 0; y < h; y++) {
     o.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
+  }
   return o;
 }

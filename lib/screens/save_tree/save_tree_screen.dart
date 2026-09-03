@@ -482,8 +482,9 @@ class _SlotView extends StatelessWidget {
               : null,
           onDelete: node != null
               ? () async {
-                  if (!await confirmDelete(context, itemName: node.comment))
+                  if (!await confirmDelete(context, itemName: node.comment)) {
                     return;
+                  }
                   saveService.deleteNode(projectId, node.id);
                 }
               : null,

@@ -488,8 +488,9 @@ class NiaproSerializer {
     final archive = ArchiveSecurity.decodeZip(bytes);
 
     final manifestFile = archive.findFile(_manifestFile);
-    if (manifestFile == null)
+    if (manifestFile == null) {
       throw const FormatException('manifest.json not found');
+    }
     final manifestJson = _migrateManifestJson(
       jsonDecode(utf8.decode(manifestFile.content as List<int>))
           as Map<String, dynamic>,
@@ -633,8 +634,9 @@ class NiaproSerializer {
     for (final file in archive.files) {
       if (!file.name.startsWith('$_materialsArchiveDir/')) continue;
       final name = file.name.substring(_materialsArchiveDir.length + 1);
-      if (name.contains('/'))
+      if (name.contains('/')) {
         throw const FormatException('Materials内のファイル名が不正です');
+      }
       if (name == 'materials.json') {
         materialsManifest = utf8.decode(file.content as List<int>);
       } else if (name.isNotEmpty) {

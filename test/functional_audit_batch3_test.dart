@@ -365,7 +365,9 @@ Uint8List _rectLineart({bool gap = false}) {
 
 int _countOpaque(List<int> rgba) {
   var n = 0;
-  for (var i = 3; i < rgba.length; i += 4) if (rgba[i] > 0) n++;
+  for (var i = 3; i < rgba.length; i += 4) {
+    if (rgba[i] > 0) n++;
+  }
   return n;
 }
 

@@ -114,14 +114,16 @@ void main() {
     final tm = TileManager(canvasWidth: w, canvasHeight: h);
     final baseTile = tm.getOrCreateTile('clipBase', 0, 0);
     for (var y = 30; y < 66; y++) {
-      for (var x = 28; x < 68; x++)
+      for (var x = 28; x < 68; x++) {
         tm.setPixel(baseTile, x, y, 40, 160, 70, 255);
+      }
     }
     tm.markDirty('clipBase', 0, 0);
     final topTile = tm.getOrCreateTile('clipTop', 0, 0);
     for (var y = 10; y < 86; y++) {
-      for (var x = 10; x < 86; x++)
+      for (var x = 10; x < 86; x++) {
         tm.setPixel(topTile, x, y, 230, 50, 80, 255);
+      }
     }
     tm.markDirty('clipTop', 0, 0);
 

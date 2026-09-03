@@ -341,8 +341,9 @@ class FilterEngine {
   ) {
     var result = data;
     for (final e in effects) {
-      if (!e.enabled || frameIndex < e.startFrame || frameIndex > e.endFrame)
+      if (!e.enabled || frameIndex < e.startFrame || frameIndex > e.endFrame) {
         continue;
+      }
       result = switch (e.type) {
         EffectFilterType.fade => applyFade(
           result,
@@ -1584,8 +1585,9 @@ class FilterEngine {
     required double brightness,
     required double contrast,
   }) {
-    if (saturation == 0 && brightness == 0 && contrast == 0)
+    if (saturation == 0 && brightness == 0 && contrast == 0) {
       return Uint8List.fromList(data);
+    }
     final result = Uint8List.fromList(data);
     final satFactor = 1.0 + saturation / 100.0;
     final briOffset = brightness / 100.0 * 255.0;

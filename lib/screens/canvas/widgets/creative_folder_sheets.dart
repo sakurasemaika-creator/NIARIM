@@ -3,6 +3,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/reorder_index.dart';
 
 /// ブラシ・トーン・スタンプで共通のフォルダ管理UI。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
@@ -79,8 +80,8 @@ void showFolderManagementSheet(
                   buildDefaultDragHandles: false,
                   scrollController: controller,
                   itemCount: folders.length,
-                  onReorder: (oldIndex, newIndex) {
-                    onReorder(oldIndex, newIndex);
+                  onReorderItem: (oldIndex, newIndex) {
+                    onReorder(oldIndex, preRemovalIndex(oldIndex, newIndex));
                     setSheetState(() {});
                   },
                   itemBuilder: (context, index) {
@@ -137,8 +138,9 @@ void showFolderManagementSheet(
                                 );
                                 return;
                               }
-                              if (!await confirmDelete(ctx, itemName: f.name))
+                              if (!await confirmDelete(ctx, itemName: f.name)) {
                                 return;
+                              }
                               onDelete(f.id);
                               setSheetState(() {});
                             },

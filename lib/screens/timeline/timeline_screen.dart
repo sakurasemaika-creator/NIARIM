@@ -61,6 +61,7 @@ import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/reorder_index.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -6982,12 +6983,12 @@ class _EffectFilterSheet extends StatelessWidget {
                     // 無いままだった。他の並べ替え可能な一覧と操作方法を揃える）。
                     buildDefaultDragHandles: false,
                     itemCount: effects.length,
-                    onReorder: (oldIndex, newIndex) =>
+                    onReorderItem: (oldIndex, newIndex) =>
                         context.read<ProjectService>().reorderEffectFilters(
                           projectId,
                           sceneId,
                           oldIndex,
-                          newIndex,
+                          preRemovalIndex(oldIndex, newIndex),
                         ),
                     itemBuilder: (ctx, i) => _buildEffectTile(
                       context,

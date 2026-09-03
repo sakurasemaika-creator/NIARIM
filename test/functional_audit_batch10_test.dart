@@ -48,7 +48,9 @@ void main() {
     final tm = TileManager(canvasWidth: 80, canvasHeight: 80);
     final tile = tm.getOrCreateTile('erase', 0, 0);
     for (var y = 12; y < 68; y++) {
-      for (var x = 12; x < 68; x++) tm.setPixel(tile, x, y, 30, 120, 210, 255);
+      for (var x = 12; x < 68; x++) {
+        tm.setPixel(tile, x, y, 30, 120, 210, 255);
+      }
     }
     tm.markDirty('erase', 0, 0);
     final e = DrawingEngine(tileManager: tm)
@@ -84,7 +86,9 @@ void main() {
     await _saveRgba(b, 160, 160, '${out.path}/pixel_line_160.png');
 
     final alphaSet = <int>{};
-    for (var i = 3; i < a.length; i += 4) alphaSet.add(a[i]);
+    for (var i = 3; i < a.length; i += 4) {
+      alphaSet.add(a[i]);
+    }
     expect(
       alphaSet.every((v) => v == 0 || v == 255),
       isTrue,
@@ -121,7 +125,9 @@ void main() {
     final tm = TileManager(canvasWidth: 120, canvasHeight: 64);
     final tile = tm.getOrCreateTile('bleed', 0, 0);
     for (var y = 0; y < 64; y++) {
-      for (var x = 0; x < 120; x++) tm.setPixel(tile, x, y, 20, 60, 220, 255);
+      for (var x = 0; x < 120; x++) {
+        tm.setPixel(tile, x, y, 20, 60, 220, 255);
+      }
     }
     tm.markDirty('bleed', 0, 0);
     final e = DrawingEngine(tileManager: tm)
@@ -212,7 +218,9 @@ void main() {
     expect(pixel, isNotNull);
     await _saveRgba(pixel!, 240, 160, '${out.path}/text_pixel_mode.png');
     final alphas = <int>{};
-    for (var i = 3; i < pixel.length; i += 4) alphas.add(pixel[i]);
+    for (var i = 3; i < pixel.length; i += 4) {
+      alphas.add(pixel[i]);
+    }
     expect(
       alphas.every((v) => v == 0 || v == 255),
       isTrue,
@@ -333,7 +341,9 @@ ui.Rect _alphaBounds(Uint8List d, int width, int height) {
 
 int _countNonTransparent(Uint8List d) {
   var n = 0;
-  for (var i = 3; i < d.length; i += 4) if (d[i] > 0) n++;
+  for (var i = 3; i < d.length; i += 4) {
+    if (d[i] > 0) n++;
+  }
   return n;
 }
 

@@ -538,8 +538,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             ),
             FilledButton(
               onPressed: () {
-                if (ctrl.text.isNotEmpty)
+                if (ctrl.text.isNotEmpty) {
                   paletteService.createPalette(ctrl.text);
+                }
                 Navigator.pop(ctx);
               },
               child: Text(l10n.commonCreate),
@@ -603,11 +604,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         ),
                         FilledButton(
                           onPressed: () {
-                            if (ctrl.text.isNotEmpty)
+                            if (ctrl.text.isNotEmpty) {
                               paletteService.renamePalette(
                                 palette.id,
                                 ctrl.text,
                               );
+                            }
                             Navigator.pop(dctx);
                           },
                           child: Text(l10n.commonChange),
@@ -644,8 +646,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         );
                         return;
                       }
-                      if (!await confirmDelete(context, itemName: palette.name))
+                      if (!await confirmDelete(
+                        context,
+                        itemName: palette.name,
+                      )) {
                         return;
+                      }
                       paletteService.deletePalette(palette.id);
                     }
                   : null,

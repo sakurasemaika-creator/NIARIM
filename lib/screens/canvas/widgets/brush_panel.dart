@@ -12,6 +12,7 @@ import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/reorder_index.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -232,9 +233,12 @@ class _BrushPanelState extends State<BrushPanel> {
                         // ジェスチャーが競合するため）。
                         buildDefaultDragHandles: false,
                         itemCount: brushList.length,
-                        onReorder: (oldIndex, newIndex) {
+                        onReorderItem: (oldIndex, newIndex) {
                           if (!isFiltering) {
-                            brushService.reorderBrush(oldIndex, newIndex);
+                            brushService.reorderBrush(
+                              oldIndex,
+                              preRemovalIndex(oldIndex, newIndex),
+                            );
                           }
                         },
                         itemBuilder: (context, index) {

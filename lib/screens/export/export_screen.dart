@@ -360,12 +360,13 @@ class _ExportScreenState extends State<ExportScreen> {
       _showCancelledSnackBar();
     } catch (e) {
       _closeProgressDialog();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isExporting = false;
           _cancelToken = null;
           _error = l10n.exportFailedError(e.toString());
         });
+      }
     }
   }
 

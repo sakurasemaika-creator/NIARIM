@@ -97,8 +97,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     if (!await confirmDelete(
                       context,
                       itemName: assets[index].name,
-                    ))
+                    )) {
                       return;
+                    }
                     service.removeWatermark(assets[index].id);
                   },
                   // タップで編集。過去に作成したウォーターマークの
@@ -158,8 +159,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     await service.addWatermark(result.files.first.path!);
     if (!context.mounted) return;
     ScaffoldMessenger.of(

@@ -153,8 +153,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                           : null,
                     ),
                     onChanged: (_) {
-                      if (showDetailError)
+                      if (showDetailError) {
                         setDialogState(() => showDetailError = false);
+                      }
                     },
                   ),
                 ],

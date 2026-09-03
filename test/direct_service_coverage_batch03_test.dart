@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/widgets.dart';
 import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/models/shortcut_binding.dart';
 import 'package:niarim/services/community_preview_service.dart';

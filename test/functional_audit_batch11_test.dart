@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
@@ -224,7 +223,9 @@ void main() {
 
     final expectedMax = (0xCC / 255 * 0.8 * 255).round();
     final alphaSet = <int>{};
-    for (var i = 3; i < pixel.length; i += 4) alphaSet.add(pixel[i]);
+    for (var i = 3; i < pixel.length; i += 4) {
+      alphaSet.add(pixel[i]);
+    }
     expect(
       alphaSet.every((a) => a == 0 || (a - expectedMax).abs() <= 1),
       isTrue,
@@ -300,7 +301,9 @@ ui.Rect _alphaBounds(Uint8List d, int width, int height) {
 
 int _countNonTransparent(Uint8List d) {
   var n = 0;
-  for (var i = 3; i < d.length; i += 4) if (d[i] > 0) n++;
+  for (var i = 3; i < d.length; i += 4) {
+    if (d[i] > 0) n++;
+  }
   return n;
 }
 

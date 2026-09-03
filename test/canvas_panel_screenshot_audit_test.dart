@@ -116,7 +116,7 @@ void main() {
                 ps ??= context.read<ProjectService>();
                 rebuildHost = setState;
                 if (projectId == null) return const SizedBox.expand();
-                return CanvasScreen(projectId: projectId!);
+                return CanvasScreen(projectId: projectId);
               },
             ),
           ),

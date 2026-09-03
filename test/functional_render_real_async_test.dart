@@ -97,7 +97,9 @@ void main() {
     final d = await _rgba(image);
     final alphas = <int>{};
     for (var y = 34; y <= 62; y++) {
-      for (var x = 34; x <= 62; x++) alphas.add(_pixel(d, x, y)[3]);
+      for (var x = 34; x <= 62; x++) {
+        alphas.add(_pixel(d, x, y)[3]);
+      }
     }
     expect(alphas.every((a) => a == 0 || a == 255), isTrue);
     image.dispose();
@@ -363,8 +365,9 @@ List<int>? _reference(LayerBlendMode mode) {
     LayerBlendMode.saturation,
     LayerBlendMode.color,
     LayerBlendMode.luminosity,
-  }.contains(mode))
+  }.contains(mode)) {
     return null;
+  }
   double blend(double cb, double cs) => switch (mode) {
     LayerBlendMode.normal => cs,
     LayerBlendMode.multiply => cb * cs,

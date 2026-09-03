@@ -348,7 +348,9 @@ List<int> _pixel(List<int> rgba, int width, int x, int y) {
 
 int _opaqueCount(List<int> rgba) {
   var n = 0;
-  for (var i = 3; i < rgba.length; i += 4) if (rgba[i] > 0) n++;
+  for (var i = 3; i < rgba.length; i += 4) {
+    if (rgba[i] > 0) n++;
+  }
   return n;
 }
 

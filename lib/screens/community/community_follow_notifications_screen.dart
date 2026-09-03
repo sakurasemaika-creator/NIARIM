@@ -34,8 +34,9 @@ class _CommunityFollowNotificationsScreenState
     // 画面を開いたタイミングで全て既読にする（アプリ内通知の一般的な
     // 挙動。build中にnotifyListenersを誘発しないようフレーム後に行う）。
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted)
+      if (mounted) {
         context.read<CommunityService>().markAllFollowNotificationsRead();
+      }
     });
   }
 

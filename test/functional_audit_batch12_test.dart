@@ -293,11 +293,12 @@ int _verticalSpan(
   required int threshold,
 }) {
   var minY = height, maxY = -1;
-  for (var y = 0; y < height; y++)
+  for (var y = 0; y < height; y++) {
     if (d[(y * width + x) * 4 + 3] >= threshold) {
       minY = math.min(minY, y);
       maxY = math.max(maxY, y);
     }
+  }
   return maxY < minY ? 0 : maxY - minY + 1;
 }
 
@@ -308,14 +309,16 @@ ui.Rect _alphaBounds(
   required int threshold,
 }) {
   var minX = width, minY = height, maxX = -1, maxY = -1;
-  for (var y = 0; y < height; y++)
-    for (var x = 0; x < width; x++)
+  for (var y = 0; y < height; y++) {
+    for (var x = 0; x < width; x++) {
       if (d[(y * width + x) * 4 + 3] >= threshold) {
         minX = math.min(minX, x);
         minY = math.min(minY, y);
         maxX = math.max(maxX, x);
         maxY = math.max(maxY, y);
       }
+    }
+  }
   if (maxX < minX) return ui.Rect.zero;
   return ui.Rect.fromLTRB(
     minX.toDouble(),

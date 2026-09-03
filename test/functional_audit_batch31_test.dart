@@ -127,12 +127,13 @@ void main() {
 
     final actual = _read(tm, key, 96, 80);
     final expected = Uint8List.fromList(before);
-    for (var y = 25; y < 41; y++)
+    for (var y = 25; y < 41; y++) {
       for (var x = 22; x < 38; x++) {
         final si = (y * 96 + x) * 4, di = ((y + 22) * 96 + x) * 4;
         expected.setRange(di, di + 4, before, si);
         expected.fillRange(si, si + 4, 0);
       }
+    }
     expect(
       actual,
       orderedEquals(expected),
@@ -174,7 +175,7 @@ void _rect(
   int g,
   int b,
 ) {
-  for (var y = y0; y < y1; y++)
+  for (var y = y0; y < y1; y++) {
     for (var x = x0; x < x1; x++) {
       final i = (y * w + x) * 4;
       d[i] = r;
@@ -182,6 +183,7 @@ void _rect(
       d[i + 2] = b;
       d[i + 3] = 255;
     }
+  }
 }
 
 Future<void> _waitUntil(WidgetTester t, bool Function() f) async {
@@ -213,7 +215,8 @@ Uint8List _read(dynamic tm, String key, int w, int h) {
   final o = Uint8List(w * h * 4);
   final tile = tm.getTile(key, 0, 0) as Uint8List?;
   if (tile == null) return o;
-  for (var y = 0; y < h; y++)
+  for (var y = 0; y < h; y++) {
     o.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
+  }
   return o;
 }

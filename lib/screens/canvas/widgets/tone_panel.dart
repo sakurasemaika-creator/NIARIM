@@ -8,6 +8,7 @@ import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/reorder_index.dart';
 
 /// トーンの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -222,9 +223,13 @@ class _TonePanelState extends State<TonePanel> {
                         // ジェスチャーが競合するため）。
                         buildDefaultDragHandles: false,
                         itemCount: toneList.length,
-                        onReorder: (oldIndex, newIndex) {
-                          if (!isFiltering)
-                            toneService.reorderTone(oldIndex, newIndex);
+                        onReorderItem: (oldIndex, newIndex) {
+                          if (!isFiltering) {
+                            toneService.reorderTone(
+                              oldIndex,
+                              preRemovalIndex(oldIndex, newIndex),
+                            );
+                          }
                         },
                         itemBuilder: (context, index) {
                           final tone = toneList[index];
@@ -413,8 +418,9 @@ class _TonePanelState extends State<TonePanel> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
     final name = await promptCreativeAssetName(
@@ -432,8 +438,9 @@ class _TonePanelState extends State<TonePanel> {
     );
     if (result == null ||
         result.files.isEmpty ||
-        result.files.first.path == null)
+        result.files.first.path == null) {
       return;
+    }
     try {
       await service.importToneFile(result.files.first.path!);
     } catch (e) {
@@ -525,8 +532,9 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
                 );
                 if (result == null ||
                     result.files.isEmpty ||
-                    result.files.first.path == null)
+                    result.files.first.path == null) {
                   return;
+                }
                 if (!context.mounted) return;
                 final service = context.read<ToneService>();
                 await service.createToneFromImage(

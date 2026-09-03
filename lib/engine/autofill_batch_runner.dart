@@ -73,8 +73,9 @@ Future<AutofillBatchResult> runAutofillForLayer({
     final tone = toneService.tones
         .where((t) => t.id == part.toneId)
         .firstOrNull;
-    if (tone != null)
+    if (tone != null) {
       toneTexture = generateBuiltInToneTexture(tone, size: _toneSize);
+    }
   }
 
   // 新規生成時（対応する自動塗りレイヤーが存在しない場合）は色更新選択時でも必ず一から塗る。

@@ -90,7 +90,8 @@ String resolveTileKey(
   String layerId,
 ) {
   final home = homes[layerId];
-  if (home != null)
+  if (home != null) {
     return frameLayerKey(home.sceneId, home.frameIndex, layerId);
+  }
   return frameLayerKey(sceneId, frameIndex, layerId);
 }

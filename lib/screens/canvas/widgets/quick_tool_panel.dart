@@ -9,6 +9,7 @@ import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/reorder_index.dart';
 
 /// 早替えツール設定ポップアップ。
 /// ↺ボタンの長押しで表示する。ドラッグで順番変更・削除・追加ができる。
@@ -79,7 +80,10 @@ class QuickToolPanel extends StatelessWidget {
                         // 目印が無いままだった）。
                         buildDefaultDragHandles: false,
                         itemCount: entries.length,
-                        onReorder: service.reorder,
+                        onReorderItem: (oldIndex, newIndex) => service.reorder(
+                          oldIndex,
+                          preRemovalIndex(oldIndex, newIndex),
+                        ),
                         itemBuilder: (context, index) {
                           final e = entries[index];
                           return ListTile(

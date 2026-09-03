@@ -120,23 +120,9 @@ class LayerAddUndoAction extends UndoAction {
     required this.frameIndex,
     required this.layerId,
     required this.insertIndex,
-    required void Function(
-      String projectId,
-      String sceneId,
-      int frameIndex,
-      String layerId,
-      int insertIndex,
-    )
-    doAdd,
-    required void Function(
-      String projectId,
-      String sceneId,
-      int frameIndex,
-      String layerId,
-    )
-    doRemove,
-  }) : _doAdd = doAdd,
-       _doRemove = doRemove;
+    required this._doAdd,
+    required this._doRemove,
+  });
 
   @override
   void undo() => _doRemove(projectId, sceneId, frameIndex, layerId);
@@ -178,23 +164,9 @@ class LayerRemoveUndoAction extends UndoAction {
     required this.frameIndex,
     required this.layerId,
     required this.removedIndex,
-    required void Function(
-      String projectId,
-      String sceneId,
-      int frameIndex,
-      String layerId,
-      int insertIndex,
-    )
-    doAdd,
-    required void Function(
-      String projectId,
-      String sceneId,
-      int frameIndex,
-      String layerId,
-    )
-    doRemove,
-  }) : _doAdd = doAdd,
-       _doRemove = doRemove;
+    required this._doAdd,
+    required this._doRemove,
+  });
 
   @override
   void undo() => _doAdd(projectId, sceneId, frameIndex, layerId, removedIndex);

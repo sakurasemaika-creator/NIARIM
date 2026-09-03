@@ -77,8 +77,9 @@ class ExportEngine {
   static Future<List<File>> listExportedFiles({
     bool forceRefresh = false,
   }) async {
-    if (!forceRefresh && _cachedExportedFiles != null)
+    if (!forceRefresh && _cachedExportedFiles != null) {
       return _cachedExportedFiles!;
+    }
     final dir = await exportsDir();
     final files = dir.listSync().whereType<File>().toList();
     files.sort(
@@ -473,8 +474,9 @@ class ExportEngine {
 
     for (final scene in scenes) {
       for (final frame in scene.frames) {
-        if (cancelToken?.isCancelled == true)
+        if (cancelToken?.isCancelled == true) {
           throw const ExportCancelledException();
+        }
         final rgba = await renderFrame(
           layers: resolveFrameLayers(
             scenes,

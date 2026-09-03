@@ -287,10 +287,12 @@ Future<Uint8List> generateBuiltInStampTexture(
 ui.Path _shapePathForName(String name, double s) {
   final c = ui.Offset(s / 2, s / 2);
   final r = s * 0.42;
-  if (name.contains('三角'))
+  if (name.contains('三角')) {
     return _regularPolygon(c, r, 3, rotation: -math.pi / 2);
-  if (name.contains('五角'))
+  }
+  if (name.contains('五角')) {
     return _regularPolygon(c, r, 5, rotation: -math.pi / 2);
+  }
   if (name.contains('六角')) return _regularPolygon(c, r, 6);
   if (name.contains('星')) return _star(c, r, r * 0.42, 5);
   if (name.contains('ハート')) return _heart(c, r);

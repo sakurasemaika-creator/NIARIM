@@ -24,8 +24,9 @@ class BucketFillEngine {
     // 透けて隙間を埋める。falseなら拡張分もベタで上書きする。
     bool fillUnderLine = false,
   }) {
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height) {
       return canvasData;
+    }
     final result = Uint8List.fromList(canvasData);
     final startIdx = (startY * width + startX) * 4;
     final targetR = result[startIdx];
@@ -41,8 +42,9 @@ class BucketFillEngine {
     if (targetR == fillR &&
         targetG == fillG &&
         targetB == fillB &&
-        targetA == fillA)
+        targetA == fillA) {
       return result;
+    }
 
     // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
     // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策：
@@ -131,8 +133,9 @@ class BucketFillEngine {
     int expandPx = 0,
     bool fillUnderLine = false,
   }) {
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height) {
       return canvasData;
+    }
     final result = Uint8List.fromList(canvasData);
     final startIdx = (startY * width + startX) * 4;
     final targetR = result[startIdx];
@@ -299,8 +302,9 @@ class BucketFillEngine {
     double tolerance = 30.0,
   }) {
     final mask = Uint8List(width * height);
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height)
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height) {
       return mask;
+    }
     final startIdx = (startY * width + startX) * 4;
     final targetR = canvasData[startIdx];
     final targetG = canvasData[startIdx + 1];

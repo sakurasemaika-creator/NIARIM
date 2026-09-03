@@ -426,8 +426,9 @@ class _HelpDiagramPainter extends CustomPainter {
         size: 12,
         color: scheme.onSurfaceVariant.withValues(alpha: 0.55),
       );
-      if (isTarget)
+      if (isTarget) {
         _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
+      }
     }
   }
 
@@ -489,8 +490,9 @@ class _HelpDiagramPainter extends CustomPainter {
             ..strokeWidth = 2,
         );
       }
-      if (isTarget)
+      if (isTarget) {
         _highlightMarker(canvas, thumb.center, r: thumb.height * 0.6 + 4);
+      }
     }
   }
 
@@ -541,8 +543,9 @@ class _HelpDiagramPainter extends CustomPainter {
         ..color = scheme.onSurfaceVariant
         ..strokeWidth = 2.5,
     );
-    if (target == 0)
+    if (target == 0) {
       _highlightMarker(canvas, Offset(panel.left + 16, titleY), r: 10);
+    }
     // 1・2: 設定行
     final row1Y = panel.top + panel.height * 0.52;
     _rowMark(canvas, panel, row1Y, target == 1, target == 1 ? spec.icon : null);
@@ -660,8 +663,9 @@ class _HelpDiagramPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5,
       );
-      if (isTarget)
+      if (isTarget) {
         canvas.drawCircle(radioCenter, 3, Paint()..color = scheme.primary);
+      }
       // アイコン
       final icon = (isTarget ? spec.icon : null) ?? _exportIcons[i];
       _drawIcon(
@@ -755,7 +759,7 @@ class _HelpDiagramPainter extends CustomPainter {
     }
     final target = _clampSlot(2);
     if (target == 0) {
-      if (spec.icon != null)
+      if (spec.icon != null) {
         _drawIcon(
           canvas,
           spec.icon!,
@@ -763,6 +767,7 @@ class _HelpDiagramPainter extends CustomPainter {
           size: 20,
           color: scheme.primary,
         );
+      }
       _highlightMarker(canvas, canvasRect.center, r: 18);
     } else {
       _highlightMarker(canvas, toolbarRect.center, r: 10);
