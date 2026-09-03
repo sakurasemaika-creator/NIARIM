@@ -53,7 +53,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
-      tags: ['線画', '基本'],
+      tags: [AssetTagKeys.lineArt, AssetTagKeys.basic],
     ),
     const Brush(
       id: 'Brush0002',
@@ -71,7 +71,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
-      tags: ['線画', '主線'],
+      tags: [AssetTagKeys.lineArt, AssetTagKeys.mainLine],
     ),
     const Brush(
       id: 'Brush0003',
@@ -89,7 +89,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
-      tags: ['塗り', 'ぼかし'],
+      tags: [AssetTagKeys.paint, AssetTagKeys.blur],
     ),
     const Brush(
       id: 'Brush0004',
@@ -107,7 +107,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.simple,
       mixingRate: 50,
-      tags: ['塗り', '混色'],
+      tags: [AssetTagKeys.paint, AssetTagKeys.mixing],
     ),
     // マーカーペン：チゼル（斜め切り）先端の太めの半透明ペン先
     // （重ね塗りで色が濃くなる）。calligraphyAngle: 0（ペン先の扁平な
@@ -134,7 +134,7 @@ class BrushService extends ChangeNotifier {
       mixingRate: 15,
       calligraphyAngle: 0.0,
       edgeJitter: true,
-      tags: ['塗り', 'アナログ風'],
+      tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
     // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
     // （calligraphyAngle）。進行方向によって線の太さが変わる
@@ -156,7 +156,7 @@ class BrushService extends ChangeNotifier {
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
       calligraphyAngle: 45.0,
-      tags: ['線画', '装飾'],
+      tags: [AssetTagKeys.lineArt, AssetTagKeys.decoration],
     ),
     // ── ここから下は、よくあるイラスト制作ソフトに入っている定番の
     // 描き味を、既存のブラシパラメータの組み合わせで再現したもの。
@@ -183,7 +183,7 @@ class BrushService extends ChangeNotifier {
       mixingRate: 0,
       edgeJitter: true,
       edgeJitterStrength: 70,
-      tags: ['線画', 'ラフ', 'アナログ風'],
+      tags: [AssetTagKeys.lineArt, AssetTagKeys.rough, AssetTagKeys.analog],
     ),
     // 丸ペン：主線用。細く硬く、筆圧で太さがはっきり出る。
     // 手ブレ補正は強めにして、長い曲線を一息で引けるようにする。
@@ -203,7 +203,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
-      tags: ['線画', '主線'],
+      tags: [AssetTagKeys.lineArt, AssetTagKeys.mainLine],
     ),
     // 平筆：ペン先を90度に固定した扁平ブラシ。縦に引くと細く・横に引くと
     // 太くなる（カリグラフィーの角度違い）。塗りの面を作るのに向く。
@@ -224,7 +224,7 @@ class BrushService extends ChangeNotifier {
       mixingMode: BrushMixingMode.simple,
       mixingRate: 25,
       calligraphyAngle: 90.0,
-      tags: ['塗り', 'アナログ風'],
+      tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
     // 水彩：下の色をよく拾い（混色率高め）、ふちがにじんで薄く乗る。
     // 重ねるほど濃くなるよう不透明度は低めにしてある。
@@ -246,7 +246,7 @@ class BrushService extends ChangeNotifier {
       mixingRate: 70,
       edgeJitter: true,
       edgeJitterStrength: 40,
-      tags: ['塗り', '混色', 'アナログ風'],
+      tags: [AssetTagKeys.paint, AssetTagKeys.mixing, AssetTagKeys.analog],
     ),
     // ぼかし：ぼかし半径を最大近くまで上げ、輪郭を持たない柔らかい影を
     // 置くための筆。頬の赤み・光のにじみなどに。
@@ -266,7 +266,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
-      tags: ['塗り', 'ぼかし'],
+      tags: [AssetTagKeys.paint, AssetTagKeys.blur],
     ),
     // チョーク／木炭：粒が散ってざらつく質感。散布（scatter）と密度を
     // 上げ、ふち滲みも最大にして粉っぽさを出す。
@@ -290,7 +290,7 @@ class BrushService extends ChangeNotifier {
       scatter: 0.35,
       edgeJitter: true,
       edgeJitterStrength: 100,
-      tags: ['塗り', 'ラフ', 'アナログ風'],
+      tags: [AssetTagKeys.paint, AssetTagKeys.rough, AssetTagKeys.analog],
     ),
     // スプレー（ハイライトの粒・雪・星などの散布用）。間隔を広く取って
     // 粒を独立させ、進行方向へ大きく散らす。
@@ -312,7 +312,7 @@ class BrushService extends ChangeNotifier {
       mixingRate: 0,
       density: 2.5,
       scatter: 0.9,
-      tags: ['効果', 'ぼかし'],
+      tags: [AssetTagKeys.effect, AssetTagKeys.blur],
     ),
     // ピクセルペン：ドット絵用。アンチエイリアスの無い硬い1px単位の線に
     // なるよう、ピクセルモードをONにしてぼかしと筆圧を切る。
@@ -332,7 +332,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
-      tags: ['線画', 'ドット絵'],
+      tags: [AssetTagKeys.lineArt, AssetTagKeys.pixelArt],
     ),
     // 面相筆：入り抜き（fadeMode）を強くかけ、線の始まりと終わりが自然に
     // 細くなる筆。まつ毛・髪の毛先・和風の線に向く。
@@ -352,7 +352,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       mixingMode: BrushMixingMode.off,
       mixingRate: 0,
-      tags: ['線画', '入り抜き'],
+      tags: [AssetTagKeys.lineArt, AssetTagKeys.taper],
     ),
   ];
 
@@ -413,6 +413,14 @@ class BrushService extends ChangeNotifier {
           needsPersist = true;
         }
         _brushes[markerIndex] = m;
+      }
+      // 既定タグを日本語リテラルで保存していた版からの移行。
+      for (int i = 0; i < _brushes.length; i++) {
+        final migrated = migrateLegacyTags(_brushes[i].tags);
+        if (!identical(migrated, _brushes[i].tags)) {
+          _brushes[i] = _brushes[i].copyWith(tags: migrated);
+          needsPersist = true;
+        }
       }
       // 組み込みブラシへ後から既定タグを付けたので、保存済みデータにも
       // 反映する。**利用者が自分で付けたタグは絶対に上書きしない**ため、

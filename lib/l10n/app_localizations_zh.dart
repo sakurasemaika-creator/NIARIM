@@ -2212,6 +2212,78 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creativePanelTagClearFilter => '清除标签筛选';
 
   @override
+  String get assetTagLineArt => '线稿';
+
+  @override
+  String get assetTagBasic => '基础';
+
+  @override
+  String get assetTagMainLine => '主线';
+
+  @override
+  String get assetTagPaint => '上色';
+
+  @override
+  String get assetTagBlur => '模糊';
+
+  @override
+  String get assetTagMixing => '混色';
+
+  @override
+  String get assetTagAnalog => '仿手绘';
+
+  @override
+  String get assetTagDecoration => '装饰';
+
+  @override
+  String get assetTagRough => '草稿';
+
+  @override
+  String get assetTagEffect => '效果';
+
+  @override
+  String get assetTagTaper => '起收笔';
+
+  @override
+  String get assetTagPixelArt => '像素画';
+
+  @override
+  String get assetTagHalftone => '网点';
+
+  @override
+  String get assetTagShadow => '阴影';
+
+  @override
+  String get assetTagLine => '线条';
+
+  @override
+  String get assetTagGradient => '渐变';
+
+  @override
+  String get assetTagTexture => '质感';
+
+  @override
+  String get assetTagClothing => '服装';
+
+  @override
+  String get assetTagMesh => '网眼';
+
+  @override
+  String get assetTagBackground => '背景';
+
+  @override
+  String get assetTagPattern => '图案';
+
+  @override
+  String get assetTagShape => '图形';
+
+  @override
+  String get assetTagSymbol => '符号';
+
+  @override
+  String get assetTagManga => '漫画';
+
+  @override
   String get creativePanelFolderButton => '文件夹';
 
   @override
@@ -7996,6 +8068,78 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creativePanelTagClearFilter => '清除標籤篩選';
+
+  @override
+  String get assetTagLineArt => '線稿';
+
+  @override
+  String get assetTagBasic => '基本';
+
+  @override
+  String get assetTagMainLine => '主線';
+
+  @override
+  String get assetTagPaint => '上色';
+
+  @override
+  String get assetTagBlur => '模糊';
+
+  @override
+  String get assetTagMixing => '混色';
+
+  @override
+  String get assetTagAnalog => '仿手繪';
+
+  @override
+  String get assetTagDecoration => '裝飾';
+
+  @override
+  String get assetTagRough => '草稿';
+
+  @override
+  String get assetTagEffect => '效果';
+
+  @override
+  String get assetTagTaper => '起收筆';
+
+  @override
+  String get assetTagPixelArt => '像素畫';
+
+  @override
+  String get assetTagHalftone => '網點';
+
+  @override
+  String get assetTagShadow => '陰影';
+
+  @override
+  String get assetTagLine => '線條';
+
+  @override
+  String get assetTagGradient => '漸層';
+
+  @override
+  String get assetTagTexture => '質感';
+
+  @override
+  String get assetTagClothing => '服裝';
+
+  @override
+  String get assetTagMesh => '網眼';
+
+  @override
+  String get assetTagBackground => '背景';
+
+  @override
+  String get assetTagPattern => '圖案';
+
+  @override
+  String get assetTagShape => '圖形';
+
+  @override
+  String get assetTagSymbol => '符號';
+
+  @override
+  String get assetTagManga => '漫畫';
 
   @override
   String get creativePanelFolderButton => '資料夾';

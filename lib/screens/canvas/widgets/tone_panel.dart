@@ -11,6 +11,7 @@ import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
+import '../../../widgets/asset_tag_label.dart';
 
 /// トーンの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -56,7 +57,10 @@ class _TonePanelState extends State<TonePanel> {
       tones = tones.where(
         (t) => assetMatchesSearch(
           name: t.name,
-          tags: t.tags,
+          // 既定タグは言語非依存のキーで保存されているため、その言語での
+          // 表示文言へ直してから突き合わせる（英語UIで「pixel」と打って
+          // ドット絵向けの素材が出る、という当たり前の挙動にするため）。
+          tags: localizeAssetTags(l10n, t.tags),
           mode: _searchMode,
           query: query,
         ),
@@ -203,7 +207,7 @@ class _TonePanelState extends State<TonePanel> {
                 AssetSearchBar(
                   controller: _searchController,
                   mode: _searchMode,
-                  availableTags: toneService.allTags(),
+                  availableTags: localizeAssetTags(l10n, toneService.allTags()),
                   keywordHint: l10n.toneSearchHint,
                   onModeChanged: (m) => setState(() {
                     _searchMode = m;
@@ -375,6 +379,7 @@ class _TonePanelState extends State<TonePanel> {
 
   void _handleAction(BuildContext context, String action, Tone tone) {
     final service = context.read<ToneService>();
+    final l10n = AppLocalizations.of(context)!;
     switch (action) {
       case 'edit':
         _showToneSettings(context, tone);
@@ -392,9 +397,13 @@ class _TonePanelState extends State<TonePanel> {
         showAssetTagDialog(
           context,
           assetName: tone.name,
-          currentTags: tone.tags,
-          suggestions: service.allTags(),
-          onSave: (tags) => service.setTags(tone.id, tags),
+          currentTags: localizeAssetTags(l10n, tone.tags),
+          suggestions: localizeAssetTags(l10n, service.allTags()),
+          // ダイアログは表示文言で編集させるので、保存時にキーへ戻す。
+          // ここを通さないと既定タグがその言語の文字列として焼き付き、
+          // 言語を切り替えても元に戻らなくなる。
+          onSave: (tags) =>
+              service.setTags(tone.id, delocalizeAssetTags(l10n, tags)),
         );
       case 'export':
         _exportTone(context, service, tone);

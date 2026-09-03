@@ -13,6 +13,7 @@ import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
+import '../../../widgets/asset_tag_label.dart';
 
 /// スタンプの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -58,7 +59,10 @@ class _StampPanelState extends State<StampPanel> {
       stamps = stamps.where(
         (s) => assetMatchesSearch(
           name: s.name,
-          tags: s.tags,
+          // 既定タグは言語非依存のキーで保存されているため、その言語での
+          // 表示文言へ直してから突き合わせる（英語UIで「pixel」と打って
+          // ドット絵向けの素材が出る、という当たり前の挙動にするため）。
+          tags: localizeAssetTags(l10n, s.tags),
           mode: _searchMode,
           query: query,
         ),
@@ -205,7 +209,10 @@ class _StampPanelState extends State<StampPanel> {
                 AssetSearchBar(
                   controller: _searchController,
                   mode: _searchMode,
-                  availableTags: stampService.allTags(),
+                  availableTags: localizeAssetTags(
+                    l10n,
+                    stampService.allTags(),
+                  ),
                   keywordHint: l10n.stampSearchHint,
                   onModeChanged: (m) => setState(() {
                     _searchMode = m;
@@ -377,6 +384,7 @@ class _StampPanelState extends State<StampPanel> {
 
   void _handleAction(BuildContext context, String action, Stamp stamp) {
     final service = context.read<StampService>();
+    final l10n = AppLocalizations.of(context)!;
     switch (action) {
       case 'edit':
         _showStampSettings(context, stamp);
@@ -394,9 +402,13 @@ class _StampPanelState extends State<StampPanel> {
         showAssetTagDialog(
           context,
           assetName: stamp.name,
-          currentTags: stamp.tags,
-          suggestions: service.allTags(),
-          onSave: (tags) => service.setTags(stamp.id, tags),
+          currentTags: localizeAssetTags(l10n, stamp.tags),
+          suggestions: localizeAssetTags(l10n, service.allTags()),
+          // ダイアログは表示文言で編集させるので、保存時にキーへ戻す。
+          // ここを通さないと既定タグがその言語の文字列として焼き付き、
+          // 言語を切り替えても元に戻らなくなる。
+          onSave: (tags) =>
+              service.setTags(stamp.id, delocalizeAssetTags(l10n, tags)),
         );
       case 'export':
         _exportStamp(context, service, stamp);

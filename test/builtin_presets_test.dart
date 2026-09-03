@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/procedural_texture.dart';
+import 'package:niarim/models/asset_tags.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -214,14 +215,30 @@ void main() {
       await tone.init();
       await stamp.init();
       await brush.init();
+      // 既定タグは**言語非依存のキー**でなければならない。表示用の文字列を
+      // そのまま保存すると、英語・韓国語などの利用者にも日本語のタグが
+      // 出てしまう（実際に一度そう実装してしまった）。
+      void check(String label, String name, List<String> tags) {
+        expect(tags, isNotEmpty, reason: '$label「$name」にタグが無い');
+        for (final tag in tags) {
+          expect(
+            AssetTagKeys.all,
+            contains(tag),
+            reason:
+                '$label「$name」のタグ「$tag」が既定タグのキーでない'
+                '（表示文言を直接書いていないか確認すること）',
+          );
+        }
+      }
+
       for (final t in tone.tones) {
-        expect(t.tags, isNotEmpty, reason: 'トーン「${t.name}」にタグが無い');
+        check('トーン', t.name, t.tags);
       }
       for (final e in stamp.stamps) {
-        expect(e.tags, isNotEmpty, reason: 'スタンプ「${e.name}」にタグが無い');
+        check('スタンプ', e.name, e.tags);
       }
       for (final b in brush.brushes) {
-        expect(b.tags, isNotEmpty, reason: 'ブラシ「${b.name}」にタグが無い');
+        check('ブラシ', b.name, b.tags);
       }
     });
 
@@ -229,7 +246,9 @@ void main() {
       final tone = ToneService();
       await tone.init();
       // ドット絵向けのトーンだけを「ドット絵」タグで引けること。
-      final pixel = tone.tones.where((t) => t.tags.contains('ドット絵'));
+      final pixel = tone.tones.where(
+        (t) => t.tags.contains(AssetTagKeys.pixelArt),
+      );
       expect(pixel, isNotEmpty);
       expect(
         pixel.every((t) => t.name.contains('ピクセル')),
@@ -270,13 +289,42 @@ void main() {
       }, 'ToneService');
     });
 
-    test('タグ未設定の保存済み素材へ既定タグが後から付く', () async {
+    // 3サービスとも同じ処理を持つ必要があるので、まとめて検証する
+    // （StampServiceだけ後追い付与を書き忘れていたのを、1サービスしか
+    // 見ていないテストが素通りさせた実績があるため）。
+    test('タグ未設定の保存済み素材へ既定タグが後から付く（3サービス全て）', () async {
       SharedPreferences.setMockInitialValues({
         'tones': ['{"id":"Tone0001","name":"網点 10%"}'],
+        'stamps': ['{"id":"Stamp0001","name":"三角形"}'],
+        'brushes': [
+          '{"id":"Brush0001","name":"ペン","size":5,"opacity":100,'
+              '"spacing":1,"blurRadius":0,"stabilization":true,'
+              '"stabilizationStrength":50,"pixelMode":false,'
+              '"pressureMode":"size","pressureStrength":80,"fadeMode":"off",'
+              '"strokeDecay":false,"mixingMode":"off","mixingRate":0}',
+        ],
       });
-      final s = ToneService();
-      await s.init();
-      expect(s.tones.firstWhere((t) => t.id == 'Tone0001').tags, isNotEmpty);
+      final tone = ToneService();
+      final stamp = StampService();
+      final brush = BrushService();
+      await tone.init();
+      await stamp.init();
+      await brush.init();
+      expect(
+        tone.tones.firstWhere((t) => t.id == 'Tone0001').tags,
+        isNotEmpty,
+        reason: 'ToneService',
+      );
+      expect(
+        stamp.stamps.firstWhere((e) => e.id == 'Stamp0001').tags,
+        isNotEmpty,
+        reason: 'StampService',
+      );
+      expect(
+        brush.brushes.firstWhere((b) => b.id == 'Brush0001').tags,
+        isNotEmpty,
+        reason: 'BrushService',
+      );
     });
 
     test('利用者が付けたタグは既定タグで上書きされない', () async {
@@ -286,6 +334,20 @@ void main() {
       final s = ToneService();
       await s.init();
       expect(s.tones.firstWhere((t) => t.id == 'Tone0001').tags, ['自分のタグ']);
+    });
+
+    test('日本語リテラルで保存されていた既定タグがキーへ移行される', () async {
+      // タグ機能を入れた直後の版は既定タグを日本語のまま保存していた。
+      // その版のデータを読んだら言語非依存のキーへ読み替える。
+      SharedPreferences.setMockInitialValues({
+        'tones': ['{"id":"Tone0001","name":"網点 10%","tags":["網点","影"]}'],
+      });
+      final s = ToneService();
+      await s.init();
+      expect(s.tones.firstWhere((t) => t.id == 'Tone0001').tags, [
+        AssetTagKeys.halftone,
+        AssetTagKeys.shadow,
+      ]);
     });
   });
 }

@@ -2343,6 +2343,78 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creativePanelTagClearFilter => 'Quitar el filtro de etiquetas';
 
   @override
+  String get assetTagLineArt => 'Línea';
+
+  @override
+  String get assetTagBasic => 'Básico';
+
+  @override
+  String get assetTagMainLine => 'Línea principal';
+
+  @override
+  String get assetTagPaint => 'Pintura';
+
+  @override
+  String get assetTagBlur => 'Difuminado';
+
+  @override
+  String get assetTagMixing => 'Mezcla';
+
+  @override
+  String get assetTagAnalog => 'Analógico';
+
+  @override
+  String get assetTagDecoration => 'Decoración';
+
+  @override
+  String get assetTagRough => 'Boceto';
+
+  @override
+  String get assetTagEffect => 'Efectos';
+
+  @override
+  String get assetTagTaper => 'Entrada y salida';
+
+  @override
+  String get assetTagPixelArt => 'Pixel art';
+
+  @override
+  String get assetTagHalftone => 'Semitono';
+
+  @override
+  String get assetTagShadow => 'Sombra';
+
+  @override
+  String get assetTagLine => 'Líneas';
+
+  @override
+  String get assetTagGradient => 'Degradado';
+
+  @override
+  String get assetTagTexture => 'Textura';
+
+  @override
+  String get assetTagClothing => 'Ropa';
+
+  @override
+  String get assetTagMesh => 'Malla';
+
+  @override
+  String get assetTagBackground => 'Fondo';
+
+  @override
+  String get assetTagPattern => 'Patrón';
+
+  @override
+  String get assetTagShape => 'Formas';
+
+  @override
+  String get assetTagSymbol => 'Símbolos';
+
+  @override
+  String get assetTagManga => 'Manga';
+
+  @override
   String get creativePanelFolderButton => 'Carpeta';
 
   @override

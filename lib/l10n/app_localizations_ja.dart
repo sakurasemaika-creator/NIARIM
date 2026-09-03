@@ -2222,6 +2222,78 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creativePanelTagClearFilter => 'タグの絞り込みを解除';
 
   @override
+  String get assetTagLineArt => '線画';
+
+  @override
+  String get assetTagBasic => '基本';
+
+  @override
+  String get assetTagMainLine => '主線';
+
+  @override
+  String get assetTagPaint => '塗り';
+
+  @override
+  String get assetTagBlur => 'ぼかし';
+
+  @override
+  String get assetTagMixing => '混色';
+
+  @override
+  String get assetTagAnalog => 'アナログ風';
+
+  @override
+  String get assetTagDecoration => '装飾';
+
+  @override
+  String get assetTagRough => 'ラフ';
+
+  @override
+  String get assetTagEffect => '効果';
+
+  @override
+  String get assetTagTaper => '入り抜き';
+
+  @override
+  String get assetTagPixelArt => 'ドット絵';
+
+  @override
+  String get assetTagHalftone => '網点';
+
+  @override
+  String get assetTagShadow => '影';
+
+  @override
+  String get assetTagLine => '線';
+
+  @override
+  String get assetTagGradient => 'グラデ';
+
+  @override
+  String get assetTagTexture => '質感';
+
+  @override
+  String get assetTagClothing => '服';
+
+  @override
+  String get assetTagMesh => '網目';
+
+  @override
+  String get assetTagBackground => '背景';
+
+  @override
+  String get assetTagPattern => '模様';
+
+  @override
+  String get assetTagShape => '図形';
+
+  @override
+  String get assetTagSymbol => '記号';
+
+  @override
+  String get assetTagManga => 'マンガ';
+
+  @override
   String get creativePanelFolderButton => 'フォルダ';
 
   @override

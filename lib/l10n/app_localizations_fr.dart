@@ -2342,6 +2342,78 @@ class AppLocalizationsFr extends AppLocalizations {
   String get creativePanelTagClearFilter => 'Effacer le filtre par étiquette';
 
   @override
+  String get assetTagLineArt => 'Trait';
+
+  @override
+  String get assetTagBasic => 'Basique';
+
+  @override
+  String get assetTagMainLine => 'Trait principal';
+
+  @override
+  String get assetTagPaint => 'Peinture';
+
+  @override
+  String get assetTagBlur => 'Flou';
+
+  @override
+  String get assetTagMixing => 'Mélange';
+
+  @override
+  String get assetTagAnalog => 'Analogique';
+
+  @override
+  String get assetTagDecoration => 'Décoration';
+
+  @override
+  String get assetTagRough => 'Brouillon';
+
+  @override
+  String get assetTagEffect => 'Effets';
+
+  @override
+  String get assetTagTaper => 'Attaque et sortie';
+
+  @override
+  String get assetTagPixelArt => 'Pixel art';
+
+  @override
+  String get assetTagHalftone => 'Trame';
+
+  @override
+  String get assetTagShadow => 'Ombre';
+
+  @override
+  String get assetTagLine => 'Lignes';
+
+  @override
+  String get assetTagGradient => 'Dégradé';
+
+  @override
+  String get assetTagTexture => 'Texture';
+
+  @override
+  String get assetTagClothing => 'Vêtements';
+
+  @override
+  String get assetTagMesh => 'Maille';
+
+  @override
+  String get assetTagBackground => 'Arrière-plan';
+
+  @override
+  String get assetTagPattern => 'Motif';
+
+  @override
+  String get assetTagShape => 'Formes';
+
+  @override
+  String get assetTagSymbol => 'Symboles';
+
+  @override
+  String get assetTagManga => 'Manga';
+
+  @override
   String get creativePanelFolderButton => 'Dossier';
 
   @override

@@ -2231,6 +2231,78 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creativePanelTagClearFilter => '태그 필터 해제';
 
   @override
+  String get assetTagLineArt => '선화';
+
+  @override
+  String get assetTagBasic => '기본';
+
+  @override
+  String get assetTagMainLine => '주선';
+
+  @override
+  String get assetTagPaint => '채색';
+
+  @override
+  String get assetTagBlur => '흐림';
+
+  @override
+  String get assetTagMixing => '혼색';
+
+  @override
+  String get assetTagAnalog => '아날로그풍';
+
+  @override
+  String get assetTagDecoration => '장식';
+
+  @override
+  String get assetTagRough => '러프';
+
+  @override
+  String get assetTagEffect => '효과';
+
+  @override
+  String get assetTagTaper => '인입출';
+
+  @override
+  String get assetTagPixelArt => '픽셀아트';
+
+  @override
+  String get assetTagHalftone => '망점';
+
+  @override
+  String get assetTagShadow => '그림자';
+
+  @override
+  String get assetTagLine => '선';
+
+  @override
+  String get assetTagGradient => '그러데이션';
+
+  @override
+  String get assetTagTexture => '질감';
+
+  @override
+  String get assetTagClothing => '의상';
+
+  @override
+  String get assetTagMesh => '그물';
+
+  @override
+  String get assetTagBackground => '배경';
+
+  @override
+  String get assetTagPattern => '무늬';
+
+  @override
+  String get assetTagShape => '도형';
+
+  @override
+  String get assetTagSymbol => '기호';
+
+  @override
+  String get assetTagManga => '만화';
+
+  @override
   String get creativePanelFolderButton => '폴더';
 
   @override

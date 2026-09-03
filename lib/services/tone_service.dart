@@ -72,12 +72,36 @@ class ToneService extends ChangeNotifier {
   }
 
   static List<Tone> _defaultTones() => [
-    const Tone(id: 'Tone0001', name: '網点 10%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0002', name: '網点 30%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0003', name: '網点 50%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0004', name: '網点 70%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0005', name: 'ライン 細', tags: ['線', '影']),
-    const Tone(id: 'Tone0006', name: 'ライン 太', tags: ['線', '影']),
+    const Tone(
+      id: 'Tone0001',
+      name: '網点 10%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0002',
+      name: '網点 30%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0003',
+      name: '網点 50%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0004',
+      name: '網点 70%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0005',
+      name: 'ライン 細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0006',
+      name: 'ライン 太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
     // ピクセルモード用トーン（1ピクセルごとに市松模様／格子柄／散らし
     // 配置になっているトーン）。procedural_texture.dartの
     // generateBuiltInToneTextureが名前に「市松」「格子」「散らし」を
@@ -86,20 +110,56 @@ class ToneService extends ChangeNotifier {
     // 「ドット」という表記は丸い水玉模様と誤認されるため使わず、
     // 四角い1ピクセル単位のパターンには「ピクセル」を使う
     // （brush.dartのpixelMode改称と同じ理由・同じ命名規則）。
-    const Tone(id: 'Tone0007', name: 'ピクセル市松（1px）', tags: ['ドット絵']),
-    const Tone(id: 'Tone0008', name: 'ピクセル格子（1px）', tags: ['ドット絵']),
-    const Tone(id: 'Tone0009', name: 'ピクセル散らし（1px）', tags: ['ドット絵']),
+    const Tone(
+      id: 'Tone0007',
+      name: 'ピクセル市松（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0008',
+      name: 'ピクセル格子（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0009',
+      name: 'ピクセル散らし（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
     // ストッキング・タイツ：デニール数が低いほど生地が薄く目が細かい
     // ため、パターンの格子間隔を詰めて再現する（procedural_texture.dartの
     // generateBuiltInToneTextureが名前の「デニール」数値を読み取って
     // 密度を決める）。デニール数が最も低いものは格子間隔を最小にし、
     // 意図的に細かすぎてモアレが出るくらいの密度にしている。
-    const Tone(id: 'Tone0010', name: 'ストッキング 10デニール', tags: ['服', '網目']),
-    const Tone(id: 'Tone0011', name: 'ストッキング 20デニール', tags: ['服', '網目']),
-    const Tone(id: 'Tone0012', name: 'ストッキング 30デニール', tags: ['服', '網目']),
-    const Tone(id: 'Tone0013', name: 'タイツ 40デニール', tags: ['服', '網目']),
-    const Tone(id: 'Tone0014', name: 'タイツ 60デニール', tags: ['服', '網目']),
-    const Tone(id: 'Tone0015', name: 'タイツ 80デニール', tags: ['服', '網目']),
+    const Tone(
+      id: 'Tone0010',
+      name: 'ストッキング 10デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0011',
+      name: 'ストッキング 20デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0012',
+      name: 'ストッキング 30デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0013',
+      name: 'タイツ 40デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0014',
+      name: 'タイツ 60デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0015',
+      name: 'タイツ 80デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
     // ディザリングプリセット：Bayerオーダードディザ行列による、ドット絵・
     // レトロゲーム風の規則的な階調表現（procedural_texture.dartの
     // generateBuiltInToneTextureが名前の「ピクセルディザ」と「%」数値・
@@ -108,27 +168,55 @@ class ToneService extends ChangeNotifier {
     // 決めるため、ピクセルモードでの塗り分けに向く。4×4行列（16段階の
     // うち代表的な7段階）と、より粗く単位が大きい2×2行列（4段階の
     // うち代表的な3段階）の2系統を用意する。
-    const Tone(id: 'Tone0016', name: 'ピクセルディザ 12%（4×4）', tags: ['ドット絵', 'グラデ']),
-    const Tone(id: 'Tone0017', name: 'ピクセルディザ 25%（4×4）', tags: ['ドット絵', 'グラデ']),
-    const Tone(id: 'Tone0018', name: 'ピクセルディザ 37%（4×4）', tags: ['ドット絵', 'グラデ']),
-    const Tone(id: 'Tone0019', name: 'ピクセルディザ 50%（4×4）', tags: ['ドット絵', 'グラデ']),
-    const Tone(id: 'Tone0020', name: 'ピクセルディザ 62%（4×4）', tags: ['ドット絵', 'グラデ']),
-    const Tone(id: 'Tone0021', name: 'ピクセルディザ 75%（4×4）', tags: ['ドット絵', 'グラデ']),
-    const Tone(id: 'Tone0022', name: 'ピクセルディザ 87%（4×4）', tags: ['ドット絵', 'グラデ']),
+    const Tone(
+      id: 'Tone0016',
+      name: 'ピクセルディザ 12%（4×4）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0017',
+      name: 'ピクセルディザ 25%（4×4）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0018',
+      name: 'ピクセルディザ 37%（4×4）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0019',
+      name: 'ピクセルディザ 50%（4×4）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0020',
+      name: 'ピクセルディザ 62%（4×4）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0021',
+      name: 'ピクセルディザ 75%（4×4）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0022',
+      name: 'ピクセルディザ 87%（4×4）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
     const Tone(
       id: 'Tone0023',
       name: 'ピクセルディザ(粗) 25%（2×2）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0024',
       name: 'ピクセルディザ(粗) 50%（2×2）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0025',
       name: 'ピクセルディザ(粗) 75%（2×2）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     // ── ここから下は「よくあるイラスト制作ソフトなら入っている定番」を
     // 一般的な幾何・数式から起こしたもの。既製品のパターン画像は使わず、
@@ -136,85 +224,197 @@ class ToneService extends ChangeNotifier {
     //
     // 網点の中間段階。既存は10/30/50/70%の4段階しか無く、影の濃さを
     // 詰めたいときに刻みが粗すぎた。
-    const Tone(id: 'Tone0026', name: '網点 20%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0027', name: '網点 40%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0028', name: '網点 60%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0029', name: '網点 80%', tags: ['網点', '影']),
-    const Tone(id: 'Tone0030', name: '網点 90%', tags: ['網点', '影']),
+    const Tone(
+      id: 'Tone0026',
+      name: '網点 20%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0027',
+      name: '網点 40%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0028',
+      name: '網点 60%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0029',
+      name: '網点 80%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0030',
+      name: '網点 90%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
     // 線トーンの向き違い。既存は横線の細/太だけだった。
-    const Tone(id: 'Tone0031', name: 'ライン 縦細', tags: ['線', '影']),
-    const Tone(id: 'Tone0032', name: 'ライン 縦太', tags: ['線', '影']),
-    const Tone(id: 'Tone0033', name: 'ライン 斜め細', tags: ['線', '影']),
-    const Tone(id: 'Tone0034', name: 'ライン 斜め太', tags: ['線', '影']),
+    const Tone(
+      id: 'Tone0031',
+      name: 'ライン 縦細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0032',
+      name: 'ライン 縦太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0033',
+      name: 'ライン 斜め細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0034',
+      name: 'ライン 斜め太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
     // クロスハッチ：線を交差させる陰影表現。ペン画・銅版画風の質感に。
-    const Tone(id: 'Tone0035', name: 'クロスハッチ 細', tags: ['線', '影', 'アナログ風']),
-    const Tone(id: 'Tone0036', name: 'クロスハッチ 中', tags: ['線', '影', 'アナログ風']),
-    const Tone(id: 'Tone0037', name: 'クロスハッチ 太', tags: ['線', '影', 'アナログ風']),
-    const Tone(id: 'Tone0038', name: 'クロスハッチ 斜め細', tags: ['線', '影', 'アナログ風']),
-    const Tone(id: 'Tone0039', name: 'クロスハッチ 斜め太', tags: ['線', '影', 'アナログ風']),
+    const Tone(
+      id: 'Tone0035',
+      name: 'クロスハッチ 細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0036',
+      name: 'クロスハッチ 中',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0037',
+      name: 'クロスハッチ 太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0038',
+      name: 'クロスハッチ 斜め細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0039',
+      name: 'クロスハッチ 斜め太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
     // 砂目：アナログのスクリーントーンでは定番の、ざらついた不規則な粒。
     // 粒の大きさ違いで3種類。
-    const Tone(id: 'Tone0040', name: '砂目 細', tags: ['質感', 'アナログ風']),
-    const Tone(id: 'Tone0041', name: '砂目 中', tags: ['質感', 'アナログ風']),
-    const Tone(id: 'Tone0042', name: '砂目 粗', tags: ['質感', 'アナログ風']),
+    const Tone(
+      id: 'Tone0040',
+      name: '砂目 細',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0041',
+      name: '砂目 中',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0042',
+      name: '砂目 粗',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
     // 背景・小物向けの幾何パターン。
-    const Tone(id: 'Tone0043', name: '同心円', tags: ['背景', '模様']),
-    const Tone(id: 'Tone0044', name: '波線', tags: ['背景', '模様']),
-    const Tone(id: 'Tone0045', name: 'レンガ', tags: ['背景', '模様']),
-    const Tone(id: 'Tone0046', name: '方眼 細', tags: ['背景', '模様']),
-    const Tone(id: 'Tone0047', name: '方眼 太', tags: ['背景', '模様']),
+    const Tone(
+      id: 'Tone0043',
+      name: '同心円',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0044',
+      name: '波線',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0045',
+      name: 'レンガ',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0046',
+      name: '方眼 細',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0047',
+      name: '方眼 太',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
     // ── ピクセルモード用の追加分 ──
     // 1px単位の縞。市松・格子・散らしと違い、向きを選べる。
-    const Tone(id: 'Tone0048', name: 'ピクセル横縞（1px）', tags: ['ドット絵']),
-    const Tone(id: 'Tone0049', name: 'ピクセル縦縞（1px）', tags: ['ドット絵']),
-    const Tone(id: 'Tone0050', name: 'ピクセル斜め縞（1px）', tags: ['ドット絵']),
+    const Tone(
+      id: 'Tone0048',
+      name: 'ピクセル横縞（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0049',
+      name: 'ピクセル縦縞（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0050',
+      name: 'ピクセル斜め縞（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
     // 1px単位のノイズ。規則的なディザと違って不規則なので、砂・岩肌・
     // 汚れなどの表現に向く。
-    const Tone(id: 'Tone0051', name: 'ピクセル砂目 25%', tags: ['ドット絵', '質感']),
-    const Tone(id: 'Tone0052', name: 'ピクセル砂目 50%', tags: ['ドット絵', '質感']),
-    const Tone(id: 'Tone0053', name: 'ピクセル砂目 75%', tags: ['ドット絵', '質感']),
-    const Tone(id: 'Tone0054', name: 'ピクセルレンガ', tags: ['ドット絵']),
+    const Tone(
+      id: 'Tone0051',
+      name: 'ピクセル砂目 25%',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.texture],
+    ),
+    const Tone(
+      id: 'Tone0052',
+      name: 'ピクセル砂目 50%',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.texture],
+    ),
+    const Tone(
+      id: 'Tone0053',
+      name: 'ピクセル砂目 75%',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.texture],
+    ),
+    const Tone(id: 'Tone0054', name: 'ピクセルレンガ', tags: [AssetTagKeys.pixelArt]),
     // 8×8 Bayer行列によるディザ。4×4（16段階）より刻みが4倍細かいので、
     // なだらかなグラデーションをドット絵として落とし込める。
     const Tone(
       id: 'Tone0055',
       name: 'ピクセルディザ(細) 6%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0056',
       name: 'ピクセルディザ(細) 19%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0057',
       name: 'ピクセルディザ(細) 31%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0058',
       name: 'ピクセルディザ(細) 44%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0059',
       name: 'ピクセルディザ(細) 56%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0060',
       name: 'ピクセルディザ(細) 69%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0061',
       name: 'ピクセルディザ(細) 81%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0062',
       name: 'ピクセルディザ(細) 94%（8×8）',
-      tags: ['ドット絵', 'グラデ'],
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
   ];
 
@@ -248,6 +448,14 @@ class ToneService extends ChangeNotifier {
             _tones[i].name != fresh.name &&
             _tones[i].name.contains('ドット')) {
           _tones[i] = _tones[i].copyWith(name: fresh.name);
+          changed = true;
+        }
+      }
+      // 既定タグを日本語リテラルで保存していた版からの移行。
+      for (int i = 0; i < _tones.length; i++) {
+        final migrated = migrateLegacyTags(_tones[i].tags);
+        if (!identical(migrated, _tones[i].tags)) {
+          _tones[i] = _tones[i].copyWith(tags: migrated);
           changed = true;
         }
       }

@@ -2310,6 +2310,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creativePanelTagClearFilter => 'Clear tag filter';
 
   @override
+  String get assetTagLineArt => 'Line art';
+
+  @override
+  String get assetTagBasic => 'Basic';
+
+  @override
+  String get assetTagMainLine => 'Main line';
+
+  @override
+  String get assetTagPaint => 'Painting';
+
+  @override
+  String get assetTagBlur => 'Blur';
+
+  @override
+  String get assetTagMixing => 'Blending';
+
+  @override
+  String get assetTagAnalog => 'Analog';
+
+  @override
+  String get assetTagDecoration => 'Decoration';
+
+  @override
+  String get assetTagRough => 'Rough';
+
+  @override
+  String get assetTagEffect => 'Effects';
+
+  @override
+  String get assetTagTaper => 'Taper';
+
+  @override
+  String get assetTagPixelArt => 'Pixel art';
+
+  @override
+  String get assetTagHalftone => 'Halftone';
+
+  @override
+  String get assetTagShadow => 'Shadow';
+
+  @override
+  String get assetTagLine => 'Lines';
+
+  @override
+  String get assetTagGradient => 'Gradient';
+
+  @override
+  String get assetTagTexture => 'Texture';
+
+  @override
+  String get assetTagClothing => 'Clothing';
+
+  @override
+  String get assetTagMesh => 'Mesh';
+
+  @override
+  String get assetTagBackground => 'Background';
+
+  @override
+  String get assetTagPattern => 'Pattern';
+
+  @override
+  String get assetTagShape => 'Shapes';
+
+  @override
+  String get assetTagSymbol => 'Symbols';
+
+  @override
+  String get assetTagManga => 'Manga';
+
+  @override
   String get creativePanelFolderButton => 'Folder';
 
   @override

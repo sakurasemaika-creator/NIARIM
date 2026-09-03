@@ -51,32 +51,72 @@ class StampService extends ChangeNotifier {
   Stamp? get currentStamp => _currentStamp;
 
   static List<Stamp> _defaultStamps() => [
-    const Stamp(id: 'Stamp0001', name: '三角形', tags: ['図形']),
-    const Stamp(id: 'Stamp0002', name: '五角形', tags: ['図形']),
-    const Stamp(id: 'Stamp0003', name: '六角形', tags: ['図形']),
-    const Stamp(id: 'Stamp0004', name: '星', tags: ['装飾', '効果']),
-    const Stamp(id: 'Stamp0005', name: 'ハート', tags: ['装飾']),
-    const Stamp(id: 'Stamp0006', name: '吹き出し', tags: ['記号', 'マンガ']),
-    const Stamp(id: 'Stamp0007', name: '矢印', tags: ['記号']),
+    const Stamp(id: 'Stamp0001', name: '三角形', tags: [AssetTagKeys.shape]),
+    const Stamp(id: 'Stamp0002', name: '五角形', tags: [AssetTagKeys.shape]),
+    const Stamp(id: 'Stamp0003', name: '六角形', tags: [AssetTagKeys.shape]),
+    const Stamp(
+      id: 'Stamp0004',
+      name: '星',
+      tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
+    ),
+    const Stamp(id: 'Stamp0005', name: 'ハート', tags: [AssetTagKeys.decoration]),
+    const Stamp(
+      id: 'Stamp0006',
+      name: '吹き出し',
+      tags: [AssetTagKeys.symbol, AssetTagKeys.manga],
+    ),
+    const Stamp(id: 'Stamp0007', name: '矢印', tags: [AssetTagKeys.symbol]),
     // ── ここから下は定番図形の追加分。既製品の素材は使わず、
     // procedural_texture.dartの_shapePathForName()が数式から生成する。
-    const Stamp(id: 'Stamp0008', name: '円', tags: ['図形']),
-    const Stamp(id: 'Stamp0009', name: '四角形', tags: ['図形']),
-    const Stamp(id: 'Stamp0010', name: '丸角四角', tags: ['図形']),
-    const Stamp(id: 'Stamp0011', name: '菱形', tags: ['図形']),
-    const Stamp(id: 'Stamp0012', name: '八角形', tags: ['図形']),
-    const Stamp(id: 'Stamp0013', name: 'ドーナツ', tags: ['図形']),
-    const Stamp(id: 'Stamp0014', name: '十字', tags: ['図形', '記号']),
-    const Stamp(id: 'Stamp0015', name: '四芒星', tags: ['装飾', '効果']),
-    const Stamp(id: 'Stamp0016', name: '六芒星', tags: ['装飾', '効果']),
-    const Stamp(id: 'Stamp0017', name: '八芒星', tags: ['装飾', '効果']),
-    const Stamp(id: 'Stamp0018', name: 'キラキラ', tags: ['装飾', '効果']),
-    const Stamp(id: 'Stamp0019', name: '三日月', tags: ['背景', '装飾']),
-    const Stamp(id: 'Stamp0020', name: '雲', tags: ['背景', '装飾']),
-    const Stamp(id: 'Stamp0021', name: '稲妻', tags: ['効果', '装飾']),
-    const Stamp(id: 'Stamp0022', name: '花', tags: ['装飾']),
-    const Stamp(id: 'Stamp0023', name: 'チェックマーク', tags: ['記号']),
-    const Stamp(id: 'Stamp0024', name: '両矢印', tags: ['記号']),
+    const Stamp(id: 'Stamp0008', name: '円', tags: [AssetTagKeys.shape]),
+    const Stamp(id: 'Stamp0009', name: '四角形', tags: [AssetTagKeys.shape]),
+    const Stamp(id: 'Stamp0010', name: '丸角四角', tags: [AssetTagKeys.shape]),
+    const Stamp(id: 'Stamp0011', name: '菱形', tags: [AssetTagKeys.shape]),
+    const Stamp(id: 'Stamp0012', name: '八角形', tags: [AssetTagKeys.shape]),
+    const Stamp(id: 'Stamp0013', name: 'ドーナツ', tags: [AssetTagKeys.shape]),
+    const Stamp(
+      id: 'Stamp0014',
+      name: '十字',
+      tags: [AssetTagKeys.shape, AssetTagKeys.symbol],
+    ),
+    const Stamp(
+      id: 'Stamp0015',
+      name: '四芒星',
+      tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
+    ),
+    const Stamp(
+      id: 'Stamp0016',
+      name: '六芒星',
+      tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
+    ),
+    const Stamp(
+      id: 'Stamp0017',
+      name: '八芒星',
+      tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
+    ),
+    const Stamp(
+      id: 'Stamp0018',
+      name: 'キラキラ',
+      tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
+    ),
+    const Stamp(
+      id: 'Stamp0019',
+      name: '三日月',
+      tags: [AssetTagKeys.background, AssetTagKeys.decoration],
+    ),
+    const Stamp(
+      id: 'Stamp0020',
+      name: '雲',
+      tags: [AssetTagKeys.background, AssetTagKeys.decoration],
+    ),
+    const Stamp(
+      id: 'Stamp0021',
+      name: '稲妻',
+      tags: [AssetTagKeys.effect, AssetTagKeys.decoration],
+    ),
+    const Stamp(id: 'Stamp0022', name: '花', tags: [AssetTagKeys.decoration]),
+    const Stamp(id: 'Stamp0023', name: 'チェックマーク', tags: [AssetTagKeys.symbol]),
+    const Stamp(id: 'Stamp0024', name: '両矢印', tags: [AssetTagKeys.symbol]),
   ];
 
   Future<void> init() async {
@@ -98,10 +138,34 @@ class StampService extends ChangeNotifier {
       final missing = _defaultStamps().where(
         (e) => !existingIds.contains(e.id),
       );
+      var changed = false;
       if (missing.isNotEmpty) {
         _stamps.addAll(missing);
-        await _persist();
+        changed = true;
       }
+      // 既定タグを日本語リテラルで保存していた版からの移行。
+      for (int i = 0; i < _stamps.length; i++) {
+        final migrated = migrateLegacyTags(_stamps[i].tags);
+        if (!identical(migrated, _stamps[i].tags)) {
+          _stamps[i] = _stamps[i].copyWith(tags: migrated);
+          changed = true;
+        }
+      }
+      // 組み込み素材へ後から既定タグを付けたので、保存済みデータにも
+      // 反映する。**利用者が自分で付けたタグは絶対に上書きしない**ため、
+      // タグが1件も無いものだけを対象にする。
+      final defaultTags = {
+        for (final e in _defaultStamps())
+          if (e.tags.isNotEmpty) e.id: e.tags,
+      };
+      for (int i = 0; i < _stamps.length; i++) {
+        final tags = defaultTags[_stamps[i].id];
+        if (tags != null && _stamps[i].tags.isEmpty) {
+          _stamps[i] = _stamps[i].copyWith(tags: tags);
+          changed = true;
+        }
+      }
+      if (changed) await _persist();
     }
     final foldersRaw = prefs.getStringList(_foldersKey);
     _folders.clear();

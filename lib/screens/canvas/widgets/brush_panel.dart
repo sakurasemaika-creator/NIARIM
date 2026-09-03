@@ -15,6 +15,7 @@ import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
+import '../../../widgets/asset_tag_label.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -59,7 +60,10 @@ class _BrushPanelState extends State<BrushPanel> {
       brushes = brushes.where(
         (b) => assetMatchesSearch(
           name: b.name,
-          tags: b.tags,
+          // 既定タグは言語非依存のキーで保存されているため、その言語での
+          // 表示文言へ直してから突き合わせる（英語UIで「pixel」と打って
+          // ドット絵向けの素材が出る、という当たり前の挙動にするため）。
+          tags: localizeAssetTags(l10n, b.tags),
           mode: _searchMode,
           query: query,
         ),
@@ -213,7 +217,10 @@ class _BrushPanelState extends State<BrushPanel> {
                 AssetSearchBar(
                   controller: _searchController,
                   mode: _searchMode,
-                  availableTags: brushService.allTags(),
+                  availableTags: localizeAssetTags(
+                    l10n,
+                    brushService.allTags(),
+                  ),
                   keywordHint: l10n.brushSearchHint,
                   onModeChanged: (m) => setState(() {
                     _searchMode = m;
@@ -402,6 +409,7 @@ class _BrushPanelState extends State<BrushPanel> {
 
   void _handleBrushAction(BuildContext context, String action, Brush brush) {
     final service = context.read<BrushService>();
+    final l10n = AppLocalizations.of(context)!;
     switch (action) {
       case 'edit':
         _showBrushSettings(context, brush);
@@ -419,9 +427,13 @@ class _BrushPanelState extends State<BrushPanel> {
         showAssetTagDialog(
           context,
           assetName: brush.name,
-          currentTags: brush.tags,
-          suggestions: service.allTags(),
-          onSave: (tags) => service.setTags(brush.id, tags),
+          currentTags: localizeAssetTags(l10n, brush.tags),
+          suggestions: localizeAssetTags(l10n, service.allTags()),
+          // ダイアログは表示文言で編集させるので、保存時にキーへ戻す。
+          // ここを通さないと既定タグがその言語の文字列として焼き付き、
+          // 言語を切り替えても元に戻らなくなる。
+          onSave: (tags) =>
+              service.setTags(brush.id, delocalizeAssetTags(l10n, tags)),
         );
       case 'export':
         _exportBrush(context, service, brush);

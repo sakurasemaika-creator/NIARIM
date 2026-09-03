@@ -4145,6 +4145,150 @@ abstract class AppLocalizations {
   /// **'タグの絞り込みを解除'**
   String get creativePanelTagClearFilter;
 
+  /// No description provided for @assetTagLineArt.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画'**
+  String get assetTagLineArt;
+
+  /// No description provided for @assetTagBasic.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本'**
+  String get assetTagBasic;
+
+  /// No description provided for @assetTagMainLine.
+  ///
+  /// In ja, this message translates to:
+  /// **'主線'**
+  String get assetTagMainLine;
+
+  /// No description provided for @assetTagPaint.
+  ///
+  /// In ja, this message translates to:
+  /// **'塗り'**
+  String get assetTagPaint;
+
+  /// No description provided for @assetTagBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし'**
+  String get assetTagBlur;
+
+  /// No description provided for @assetTagMixing.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色'**
+  String get assetTagMixing;
+
+  /// No description provided for @assetTagAnalog.
+  ///
+  /// In ja, this message translates to:
+  /// **'アナログ風'**
+  String get assetTagAnalog;
+
+  /// No description provided for @assetTagDecoration.
+  ///
+  /// In ja, this message translates to:
+  /// **'装飾'**
+  String get assetTagDecoration;
+
+  /// No description provided for @assetTagRough.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラフ'**
+  String get assetTagRough;
+
+  /// No description provided for @assetTagEffect.
+  ///
+  /// In ja, this message translates to:
+  /// **'効果'**
+  String get assetTagEffect;
+
+  /// No description provided for @assetTagTaper.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り抜き'**
+  String get assetTagTaper;
+
+  /// No description provided for @assetTagPixelArt.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵'**
+  String get assetTagPixelArt;
+
+  /// No description provided for @assetTagHalftone.
+  ///
+  /// In ja, this message translates to:
+  /// **'網点'**
+  String get assetTagHalftone;
+
+  /// No description provided for @assetTagShadow.
+  ///
+  /// In ja, this message translates to:
+  /// **'影'**
+  String get assetTagShadow;
+
+  /// No description provided for @assetTagLine.
+  ///
+  /// In ja, this message translates to:
+  /// **'線'**
+  String get assetTagLine;
+
+  /// No description provided for @assetTagGradient.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデ'**
+  String get assetTagGradient;
+
+  /// No description provided for @assetTagTexture.
+  ///
+  /// In ja, this message translates to:
+  /// **'質感'**
+  String get assetTagTexture;
+
+  /// No description provided for @assetTagClothing.
+  ///
+  /// In ja, this message translates to:
+  /// **'服'**
+  String get assetTagClothing;
+
+  /// No description provided for @assetTagMesh.
+  ///
+  /// In ja, this message translates to:
+  /// **'網目'**
+  String get assetTagMesh;
+
+  /// No description provided for @assetTagBackground.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景'**
+  String get assetTagBackground;
+
+  /// No description provided for @assetTagPattern.
+  ///
+  /// In ja, this message translates to:
+  /// **'模様'**
+  String get assetTagPattern;
+
+  /// No description provided for @assetTagShape.
+  ///
+  /// In ja, this message translates to:
+  /// **'図形'**
+  String get assetTagShape;
+
+  /// No description provided for @assetTagSymbol.
+  ///
+  /// In ja, this message translates to:
+  /// **'記号'**
+  String get assetTagSymbol;
+
+  /// No description provided for @assetTagManga.
+  ///
+  /// In ja, this message translates to:
+  /// **'マンガ'**
+  String get assetTagManga;
+
   /// No description provided for @creativePanelFolderButton.
   ///
   /// In ja, this message translates to:
