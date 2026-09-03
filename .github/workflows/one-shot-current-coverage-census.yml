@@ -19,8 +19,11 @@ jobs:
           cache: false
       - run: flutter pub get
       - name: Run complete Flutter suite with coverage
+        id: tests
+        continue-on-error: true
         run: timeout 2400s flutter test --coverage --reporter compact
       - name: Build production coverage census
+        if: always() && hashFiles('coverage/lcov.info') != ''
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -77,11 +80,15 @@ jobs:
           print('\n'.join(out))
           PY
       - uses: actions/upload-artifact@v4
+        if: always() && hashFiles('coverage/lcov.info') != ''
         with:
           name: current-coverage-census
           path: |
             build/current-coverage-census.md
             coverage/lcov.info
           retention-days: 7
+      - name: Preserve strict suite result
+        if: always() && steps.tests.outcome != 'success'
+        run: exit 1
 
-# Audit trigger revision 5: current HEAD after built-in Pen/G-Pen continuity fix.
+# Audit trigger revision 6: provider-safe canvas panel audit and artifact-preserving census.
