@@ -2011,6 +2011,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Setting each part in an autofill setting to \"use tone\" reproduces the tone fill automatically every time you redraw the lineart — no need to reapply the tone frame by frame.';
 
   @override
+  String get tipsAutofillMisfillTitle =>
+      'Knowing how autofill works cuts down on fill mistakes';
+
+  @override
+  String get tipsAutofillMisfillDesc =>
+      'Autofill is not a generative-AI feature — it is an application of per-layer bucket fill. So when a single part has a gap enclosed by lines, such as inside long hair, that gap gets filled too. A good countermeasure is to first assign each part a bright, highly saturated colour and run one pass. Mistakes stand out immediately, making the autofill layer easy to correct by hand; once you have fixed it, set the real colours and run autofill again to overwrite, and misfills drop sharply.';
+
+  @override
+  String get tipsAutofillTransparentFixTitle =>
+      'Erase autofill overflow with a transparent-colour bucket fill';
+
+  @override
+  String get tipsAutofillTransparentFixDesc =>
+      'When autofill spills into an area you did not want filled, a bucket fill with the drawing colour set to transparent is easier than scrubbing with the eraser. Bucket fill processes a whole line-enclosed region at once, so a single tap wipes out just the overflow cleanly.';
+
+  @override
   String get tipsRadialVignetteTitle =>
       'Radial ruler + vignette for speed-line impact';
 

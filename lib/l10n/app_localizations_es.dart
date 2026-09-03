@@ -2041,6 +2041,22 @@ class AppLocalizationsEs extends AppLocalizations {
       'Configurar cada parte de un ajuste de relleno automático como \"usar trama\" reproduce el relleno con tramas automáticamente cada vez que redibujas la línea, sin necesidad de volver a aplicar la trama fotograma a fotograma.';
 
   @override
+  String get tipsAutofillMisfillTitle =>
+      'Entender cómo funciona el relleno automático reduce los errores';
+
+  @override
+  String get tipsAutofillMisfillDesc =>
+      'El relleno automático no es una función de IA generativa: es una aplicación del bote de pintura por capas. Por eso, cuando una misma parte tiene un hueco cerrado por líneas —como dentro del pelo largo—, ese hueco también se rellena. Como medida preventiva, conviene asignar primero a cada parte un color llamativo de alta saturación y hacer una pasada. Los errores saltan a la vista y la capa de relleno automático resulta fácil de corregir a mano; una vez corregida, define los colores definitivos y vuelve a ejecutar el relleno automático para sobrescribirla: los fallos se reducen muchísimo.';
+
+  @override
+  String get tipsAutofillTransparentFixTitle =>
+      'Borra los desbordes del relleno automático con el bote de color transparente';
+
+  @override
+  String get tipsAutofillTransparentFixDesc =>
+      'Cuando el relleno automático invade una zona que no querías pintar, resulta más cómodo usar el bote de pintura con el color de dibujo en transparente que repasar con la goma. El bote procesa de una vez toda la región delimitada por líneas, así que un solo toque elimina limpiamente solo lo que sobra.';
+
+  @override
   String get tipsRadialVignetteTitle =>
       'Regla radial + viñeteado para un impacto de líneas de velocidad';
 

@@ -1950,6 +1950,20 @@ class AppLocalizationsJa extends AppLocalizations {
       '自動塗り設定の各パーツを「トーンを使う」設定にしておくと、線画を描き直すたびにトーン込みの塗りを自動で再現できます。フレームごとにトーンを貼り直す手間を省けます。';
 
   @override
+  String get tipsAutofillMisfillTitle => '自動塗りの仕組みを知ると塗りミスを減らせる';
+
+  @override
+  String get tipsAutofillMisfillDesc =>
+      '自動塗りは生成AIを使った機能ではなく、レイヤーごとのバケツ塗りを応用したものです。そのため、長い髪のように同じパーツの中で線に囲まれた隙間ができていると、そこも一緒に塗りつぶされます。対策として、まずはパーツごとに彩度の高い目立つ色を割り当てて一度塗ってしまうのがおすすめです。塗り間違いがひと目で分かるので自動塗りレイヤーを手動で直しやすく、直したうえで本来の色に設定し直して上書きする形で自動塗りを再実行すれば、塗りミスをぐっと減らせます。';
+
+  @override
+  String get tipsAutofillTransparentFixTitle => '自動塗りのはみ出しは透明色のバケツ塗りで消す';
+
+  @override
+  String get tipsAutofillTransparentFixDesc =>
+      '自動塗りで本来塗られたくないところまで塗られてしまったときは、消しゴムでなぞるより、描画色に透明色を指定したうえでその範囲をバケツ塗りするのが簡単です。バケツ塗りは線で囲まれた領域をまとめて処理するので、はみ出した部分だけを一度のタップできれいに消せます。';
+
+  @override
   String get tipsRadialVignetteTitle => '放射定規×周辺減光で集中線演出';
 
   @override

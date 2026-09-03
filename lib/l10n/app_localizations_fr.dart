@@ -2036,6 +2036,22 @@ class AppLocalizationsFr extends AppLocalizations {
       'Régler chaque partie d’un réglage de remplissage automatique sur « utiliser une trame » reproduit automatiquement le remplissage en trame à chaque fois que vous retracez le trait — plus besoin de la réappliquer image par image.';
 
   @override
+  String get tipsAutofillMisfillTitle =>
+      'Comprendre le remplissage automatique réduit les erreurs';
+
+  @override
+  String get tipsAutofillMisfillDesc =>
+      'Le remplissage automatique n\'est pas une fonction d\'IA générative : c\'est une application du pot de peinture par calque. Ainsi, lorsqu\'une même partie comporte un espace fermé par des traits — à l\'intérieur de cheveux longs, par exemple —, cet espace est lui aussi rempli. Une bonne parade consiste à attribuer d\'abord à chaque partie une couleur vive très saturée et à lancer une première passe. Les erreurs sautent aux yeux et le calque de remplissage automatique se corrige facilement à la main ; une fois corrigé, définissez les couleurs définitives et relancez le remplissage automatique pour l\'écraser : les ratés diminuent nettement.';
+
+  @override
+  String get tipsAutofillTransparentFixTitle =>
+      'Effacez les débordements du remplissage automatique au pot de couleur transparente';
+
+  @override
+  String get tipsAutofillTransparentFixDesc =>
+      'Quand le remplissage automatique déborde sur une zone que vous ne vouliez pas peindre, le pot de peinture avec la couleur de dessin réglée sur transparent est plus pratique que de repasser à la gomme. Le pot traite d\'un coup toute la région délimitée par les traits : une seule pression efface proprement le seul débordement.';
+
+  @override
   String get tipsRadialVignetteTitle =>
       'Règle radiale + vignettage pour un impact de lignes de vitesse';
 

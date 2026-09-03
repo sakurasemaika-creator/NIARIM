@@ -1954,6 +1954,21 @@ class AppLocalizationsKo extends AppLocalizations {
       '자동 채색 설정의 각 부위를 「톤 사용」으로 설정해두면, 선화를 다시 그릴 때마다 톤이 포함된 채색을 자동으로 재현할 수 있습니다. 프레임마다 톤을 다시 붙이는 수고를 줄일 수 있습니다.';
 
   @override
+  String get tipsAutofillMisfillTitle => '자동 채색의 원리를 알면 칠하기 실수를 줄일 수 있습니다';
+
+  @override
+  String get tipsAutofillMisfillDesc =>
+      '자동 채색은 생성형 AI를 쓴 기능이 아니라, 레이어별 페인트통 칠하기를 응용한 것입니다. 그래서 긴 머리카락처럼 같은 부위 안에 선으로 둘러싸인 틈이 생기면 그곳까지 함께 칠해집니다. 대책으로는 우선 부위마다 채도가 높은 눈에 띄는 색을 지정해 한 번 칠해 보는 것을 권합니다. 잘못 칠해진 곳이 한눈에 보여 자동 채색 레이어를 손으로 고치기 쉽고, 고친 뒤에 원래 색으로 다시 설정해 덮어쓰는 형태로 자동 채색을 재실행하면 칠하기 실수를 크게 줄일 수 있습니다.';
+
+  @override
+  String get tipsAutofillTransparentFixTitle =>
+      '자동 채색이 삐져나온 곳은 투명색 페인트통으로 지웁니다';
+
+  @override
+  String get tipsAutofillTransparentFixDesc =>
+      '자동 채색이 칠하지 말아야 할 곳까지 칠했을 때는, 지우개로 문지르기보다 그리기 색을 투명색으로 지정한 뒤 그 범위를 페인트통으로 칠하는 편이 간단합니다. 페인트통은 선으로 둘러싸인 영역을 한 번에 처리하므로, 한 번의 탭으로 삐져나온 부분만 깔끔하게 지울 수 있습니다.';
+
+  @override
   String get tipsRadialVignetteTitle => '방사형 자×비네트로 집중선 연출';
 
   @override

@@ -1941,6 +1941,20 @@ class AppLocalizationsZh extends AppLocalizations {
       '将自动上色设置的每个部位设为「使用网点」，每次重新绘制线稿时都能自动重现含网点的上色效果，省去逐帧重新贴网点的麻烦。';
 
   @override
+  String get tipsAutofillMisfillTitle => '了解自动上色的原理就能减少涂错';
+
+  @override
+  String get tipsAutofillMisfillDesc =>
+      '自动上色并非使用生成式AI的功能，而是逐图层油漆桶填充的应用。因此，当同一个部位内部存在被线条围住的空隙（例如长发内侧）时，那里也会一起被填满。建议的对策是：先为每个部位指定一个高饱和度的醒目颜色填一遍。这样涂错的地方一眼就能看出来，便于手动修正自动上色图层；修正之后再设回原本的颜色，以覆盖的方式重新执行自动上色，涂错就会大幅减少。';
+
+  @override
+  String get tipsAutofillTransparentFixTitle => '自动上色溢出的部分用透明色油漆桶擦掉';
+
+  @override
+  String get tipsAutofillTransparentFixDesc =>
+      '当自动上色填到了不该填的地方时，比起用橡皮反复擦，把绘图色设为透明色再对该范围使用油漆桶更为简便。油漆桶会一次性处理被线条围住的整个区域，因此轻点一下就能干净地只清除溢出的部分。';
+
+  @override
   String get tipsRadialVignetteTitle => '放射尺×暗角，营造集中线效果';
 
   @override
@@ -7690,6 +7704,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get tipsAutofillToneReuseDesc =>
       '將自動上色設定的每個部位設為「使用網點」，每次重新繪製線稿時都能自動重現含網點的上色效果，省去逐格重新貼網點的麻煩。';
+
+  @override
+  String get tipsAutofillMisfillTitle => '了解自動上色的原理就能減少塗錯';
+
+  @override
+  String get tipsAutofillMisfillDesc =>
+      '自動上色並非使用生成式AI的功能，而是逐圖層油漆桶填色的應用。因此，當同一個部位內部存在被線條圍住的空隙（例如長髮內側）時，那裡也會一起被填滿。建議的對策是：先為每個部位指定一個高飽和度的醒目顏色填一遍。這樣塗錯的地方一眼就能看出來，便於手動修正自動上色圖層；修正之後再設回原本的顏色，以覆蓋的方式重新執行自動上色，塗錯就會大幅減少。';
+
+  @override
+  String get tipsAutofillTransparentFixTitle => '自動上色溢出的部分用透明色油漆桶擦掉';
+
+  @override
+  String get tipsAutofillTransparentFixDesc =>
+      '當自動上色填到了不該填的地方時，比起用橡皮反覆擦，把繪圖色設為透明色再對該範圍使用油漆桶更為簡便。油漆桶會一次性處理被線條圍住的整個區域，因此輕點一下就能乾淨地只清除溢出的部分。';
 
   @override
   String get tipsRadialVignetteTitle => '放射尺×暗角，營造集中線效果';

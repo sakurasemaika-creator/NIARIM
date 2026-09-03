@@ -298,6 +298,24 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
         l10n.tipsAutofillToneReuseDesc,
       ),
       _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.flowArrow,
+          iconA: Icons.palette_outlined,
+          iconB: Icons.auto_fix_high,
+        ),
+        l10n.tipsAutofillMisfillTitle,
+        l10n.tipsAutofillMisfillDesc,
+      ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
+          iconA: Icons.format_color_fill,
+          iconB: Icons.opacity,
+        ),
+        l10n.tipsAutofillTransparentFixTitle,
+        l10n.tipsAutofillTransparentFixDesc,
+      ),
+      _Tip(
         TipDiagramSpec(TipDiagramKind.saveSlot),
         l10n.tipsSaveSlotAutoSaveTitle,
         l10n.tipsSaveSlotAutoSaveDesc,
