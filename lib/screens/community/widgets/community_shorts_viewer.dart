@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../router.dart';
-import 'community_work_card.dart' show kCommunityThumbnailGradients;
+import 'community_work_card.dart' show communityThumbnailGradient;
 
 /// 「ショートモード」：新着・ランキング・投稿者別作品一覧の各画面から
 /// ボタン1つで切り替えられる、YouTubeショート／TikTok／Instagramリール
@@ -103,8 +103,7 @@ class _ShortsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final gradient =
-        kCommunityThumbnailGradients[work.thumbnailColorIndex %
-            kCommunityThumbnailGradients.length];
+        communityThumbnailGradient(Theme.of(context).colorScheme, work.thumbnailColorIndex);
     return Stack(
       fit: StackFit.expand,
       children: [

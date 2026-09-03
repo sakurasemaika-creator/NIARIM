@@ -111,9 +111,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors:
-                                kCommunityThumbnailGradients[work
-                                        .thumbnailColorIndex %
-                                    kCommunityThumbnailGradients.length],
+                                communityThumbnailGradient(Theme.of(context).colorScheme, work.thumbnailColorIndex),
                           ),
                         ),
                         child: Center(

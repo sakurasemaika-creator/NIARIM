@@ -272,9 +272,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors:
-                            kCommunityThumbnailGradients[work
-                                    .thumbnailColorIndex %
-                                kCommunityThumbnailGradients.length],
+                            communityThumbnailGradient(Theme.of(context).colorScheme, work.thumbnailColorIndex),
                       ),
                     ),
                     child: Center(
