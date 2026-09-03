@@ -1003,11 +1003,12 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-direct-service-coverage.yml"
-      ]
+      ],
+      "evidence_note": "direct_service_coverage_batch10_test.dart verifies write, reset/reorder/visibility/dock behavior and fresh SettingsService round-trip restoration; full suite passed in Audit Continuous Queue #24."
     },
     {
       "id": "settings.gestures",
@@ -1031,11 +1032,12 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-direct-service-coverage.yml"
-      ]
+      ],
+      "evidence_note": "direct_service_coverage_batch10_test.dart verifies write, reset/reorder/visibility/dock behavior and fresh SettingsService round-trip restoration; full suite passed in Audit Continuous Queue #24."
     },
     {
       "id": "font.import",
