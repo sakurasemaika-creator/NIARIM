@@ -27,7 +27,8 @@ jobs:
           BRANCH: dev_branch
         run: |
           python3 - <<'PY'
-          import json, os, time, urllib.request, urllib.error
+          import base64, json, os, time, urllib.request
+          from collections import defaultdict
           from datetime import datetime, timezone
 
           token = os.environ['GH_TOKEN']
@@ -80,35 +81,52 @@ jobs:
                   return '⚪ SKIP'
               return f'⚪ {co or st or "不明"}'
 
+          def yes(v):
+              return '✅' if v else '—'
+
+          def bar(pct, blocks=20):
+              filled = round(pct * blocks / 100)
+              return '█' * filled + '░' * (blocks - filled)
+
+          def load_manifest():
+              obj = request(f'/repos/{repo}/contents/audit-dashboard/feature-audit-manifest.json?ref={branch}')
+              raw = base64.b64decode(obj['content']).decode('utf-8')
+              return json.loads(raw)
+
+          def latest_for_paths(runs, paths):
+              candidates = [r for r in runs if any((r.get('path') or '').endswith(p) for p in paths)]
+              return candidates[0] if candidates else None
+
           def update_once():
               runs_obj = request(f'/repos/{repo}/actions/runs?branch={branch}&per_page=100')
               runs = runs_obj.get('workflow_runs', [])
-              # 自分自身は監査進捗から除外
               audit_runs = [r for r in runs if r.get('path') != '.github/workflows/audit-live-dashboard.yml']
+              manifest = load_manifest()
+              features = manifest.get('features', [])
 
               head = request(f'/repos/{repo}/branches/{branch}')['commit']['sha']
               head_short = head[:10]
-              by_category = []
-              success = running = failed = missing = 0
-              for label, paths in tracked:
-                  candidates = [r for r in audit_runs if any((r.get('path') or '').endswith(p) for p in paths)]
-                  latest = candidates[0] if candidates else None
-                  icon = state_icon(latest)
-                  if icon.startswith('🟢'): success += 1
-                  elif icon.startswith('🟡'): running += 1
-                  elif icon.startswith('🔴'): failed += 1
-                  else: missing += 1
-                  by_category.append((label, latest, icon))
+              now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
 
-              total = len(tracked)
-              pct = round(success * 100 / total) if total else 0
-              blocks = 20
-              filled = round(pct * blocks / 100)
-              bar = '█' * filled + '░' * (blocks - filled)
+              total = len(features)
+              phase_keys = ['interaction', 'output', 'screenshot', 'visual', 'final_pass']
+              phase_counts = {k: sum(1 for f in features if f.get(k)) for k in phase_keys}
+              final_pct = round(phase_counts['final_pass'] * 100 / total) if total else 0
+              interaction_pct = round(phase_counts['interaction'] * 100 / total) if total else 0
+              output_pct = round(phase_counts['output'] * 100 / total) if total else 0
+              screenshot_targets = [f for f in features if not f.get('device_required') or f.get('screenshot') or f.get('visual')]
+              screenshot_den = total
+              screenshot_pct = round(phase_counts['screenshot'] * 100 / screenshot_den) if screenshot_den else 0
+              visual_pct = round(phase_counts['visual'] * 100 / total) if total else 0
+              device_pending = sum(1 for f in features if f.get('device_required') and not f.get('final_pass'))
+              pending = total - phase_counts['final_pass']
+
+              by_category = defaultdict(list)
+              for f in features:
+                  by_category[f.get('category', 'その他')].append(f)
 
               active = [r for r in audit_runs if r.get('status') in ('queued','in_progress','waiting','requested','pending')]
               latest_runs = audit_runs[:12]
-              now = datetime.now(timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
 
               lines = []
               lines.append('# NIARIM Audit Live Dashboard')
@@ -117,24 +135,42 @@ jobs:
               lines.append('')
               lines.append(f'**Branch:** `{branch}`  ·  **HEAD:** [`{head_short}`](https://github.com/{repo}/commit/{head})')
               lines.append('')
-              lines.append('## 主要監査カテゴリ進捗')
+
+              lines.append('## 全機能監査カバレッジ')
               lines.append('')
-              lines.append(f'`{bar}` **{pct}%**  —  🟢 {success} / 🟡 {running} / 🔴 {failed} / ⚪ {missing}')
+              lines.append(f'`{bar(final_pct)}` **{final_pct}%**  —  **{phase_counts["final_pass"]} / {total} 機能 最終PASS**  ·  残り **{pending}**')
               lines.append('')
-              lines.append('> この%は「主要監査パイプラインの最新成功率」です。アプリ全機能の網羅率そのものではありません。最終完了条件は、未検証機能ゼロ＋必要なスクショ目視＋最新HEADで全体回帰PASSです。')
+              lines.append('> **この%が「全機能の動作が意図通りかを、必要な実操作・出力・スクショ・目視まで含めて確認できた割合」です。** 主要Workflowの成功率とは別です。')
               lines.append('')
-              lines.append('| 監査カテゴリ | 状態 | 最新Run | 更新 |')
-              lines.append('|---|---|---|---|')
-              for label, r, icon in by_category:
-                  if r:
-                      url = r.get('html_url', '')
-                      title = esc(r.get('display_title') or r.get('name') or 'run')
-                      upd = esc(r.get('updated_at') or r.get('created_at') or '')
-                      run_link = f'[{title}]({url})'
-                  else:
-                      run_link = '—'
-                      upd = '—'
-                  lines.append(f'| {label} | {icon} | {run_link} | `{upd}` |')
+              lines.append('| 工程 | 完了 | 進捗 |')
+              lines.append('|---|---:|---:|')
+              lines.append(f'| 実操作 | {phase_counts["interaction"]}/{total} | **{interaction_pct}%** |')
+              lines.append(f'| 実出力/状態確認 | {phase_counts["output"]}/{total} | **{output_pct}%** |')
+              lines.append(f'| スクショ取得 | {phase_counts["screenshot"]}/{total} | **{screenshot_pct}%** |')
+              lines.append(f'| 目視確認 | {phase_counts["visual"]}/{total} | **{visual_pct}%** |')
+              lines.append(f'| **最終PASS** | **{phase_counts["final_pass"]}/{total}** | **{final_pct}%** |')
+              lines.append('')
+              lines.append(f'- 📱 実機確認がまだ必要な項目: **{device_pending}**')
+              lines.append('- `最終PASS` は、当該機能に必要な工程をすべて満たしたものだけを数えます。テストだけ通過・スクショ未確認は完了に数えません。')
+              lines.append('')
+
+              lines.append('## 機能別監査台帳')
+              lines.append('')
+              lines.append('| カテゴリ | 機能 | 実操作 | 出力 | SS | 目視 | 最終 | Live Action |')
+              lines.append('|---|---|:---:|:---:|:---:|:---:|:---:|---|')
+              for category in sorted(by_category):
+                  for f in by_category[category]:
+                      paths = f.get('workflows') or []
+                      latest = latest_for_paths(audit_runs, paths) if paths else None
+                      live = state_icon(latest)
+                      if latest:
+                          live = f'[{live}]({latest.get("html_url")})'
+                      elif f.get('device_required') and not f.get('final_pass'):
+                          live = '📱 実機待ち'
+                      lines.append(
+                          f'| {esc(category)} | {esc(f.get("name"))} | {yes(f.get("interaction"))} | {yes(f.get("output"))} | '
+                          f'{yes(f.get("screenshot"))} | {yes(f.get("visual"))} | {"🟢" if f.get("final_pass") else "⚪"} | {live} |'
+                      )
 
               lines.append('')
               lines.append('## 現在動いている監査')
@@ -144,6 +180,21 @@ jobs:
                       lines.append(f'- 🟡 [{esc(r.get("name") or r.get("display_title") or "run")}]({r.get("html_url")}) — `{esc(r.get("status"))}`')
               else:
                   lines.append('- 現在 `in_progress / queued` の監査Actionはありません。')
+
+              lines.append('')
+              lines.append('## 主要監査パイプライン（参考）')
+              lines.append('')
+              lines.append('| 監査カテゴリ | 状態 | 最新Run |')
+              lines.append('|---|---|---|')
+              for label, paths in tracked:
+                  r = latest_for_paths(audit_runs, paths)
+                  icon = state_icon(r)
+                  if r:
+                      title = esc(r.get('display_title') or r.get('name') or 'run')
+                      run_link = f'[{title}]({r.get("html_url")})'
+                  else:
+                      run_link = '—'
+                  lines.append(f'| {label} | {icon} | {run_link} |')
 
               lines.append('')
               lines.append('## 直近のActions')
@@ -162,15 +213,15 @@ jobs:
               lines.append('## リンク')
               lines.append('')
               lines.append(f'- [GitHub Actions](https://github.com/{repo}/actions?query=branch%3A{branch})')
+              lines.append(f'- [機能監査台帳 JSON](https://github.com/{repo}/blob/{branch}/audit-dashboard/feature-audit-manifest.json)')
               lines.append(f'- [dev_branch](https://github.com/{repo}/tree/{branch})')
               lines.append('')
               lines.append('---')
-              lines.append('_このIssueは `.github/workflows/audit-live-dashboard.yml` が自動更新しています。監視Workflow自身は監査進捗の集計から除外しています。_')
+              lines.append('_このIssueは `.github/workflows/audit-live-dashboard.yml` が自動更新しています。機能監査率は `audit-dashboard/feature-audit-manifest.json` を正として集計します。_')
 
               request(f'/repos/{repo}/issues/{issue}', method='PATCH', data={'body': '\n'.join(lines)})
-              print(f'[{now}] dashboard updated: success={success}, running={running}, failed={failed}, missing={missing}, active={len(active)}', flush=True)
+              print(f'[{now}] feature dashboard updated: final={phase_counts["final_pass"]}/{total} ({final_pct}%), active={len(active)}', flush=True)
 
-          # 最初に即時更新し、その後約1分ごと。最大約5時間半。
           for i in range(325):
               try:
                   update_once()
