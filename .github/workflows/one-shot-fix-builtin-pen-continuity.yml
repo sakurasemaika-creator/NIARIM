@@ -1,0 +1,88 @@
+name: One-shot Fix Built-in Pen Continuity
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-fix-builtin-pen-continuity.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+
+      - run: flutter pub get
+
+      - name: Apply narrowly-scoped built-in spacing migration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/services/brush_service.dart')
+          s = p.read_text(encoding='utf-8')
+
+          pen_old = """      id: 'Brush0001',\n      name: 'ペン',\n      size: 5,\n      opacity: 100,\n      spacing: 10,"""
+          pen_new = """      id: 'Brush0001',\n      name: 'ペン',\n      size: 5,\n      opacity: 100,\n      spacing: 1,"""
+          g_old = """      id: 'Brush0002',\n      name: 'Gペン',\n      size: 3,\n      opacity: 100,\n      spacing: 5,"""
+          g_new = """      id: 'Brush0002',\n      name: 'Gペン',\n      size: 3,\n      opacity: 100,\n      spacing: 1,"""
+          anchor = """      if (missing.isNotEmpty) {\n        _brushes.addAll(missing);\n        needsPersist = true;\n      }\n      // 「マーカーペン」（Brush0005）は後からcalligraphyAngle"""
+          replacement = """      if (missing.isNotEmpty) {\n        _brushes.addAll(missing);\n        needsPersist = true;\n      }\n      // Brush0001/0002はプリインストールかつUI上編集不可。旧版の\n      // 保存済み標準値はブラシ径より間隔が広く点線になっていたため、\n      // 連続線の1px間隔へ安全に移行する。\n      for (final id in const ['Brush0001', 'Brush0002']) {\n        final index = _brushes.indexWhere((b) => b.id == id);\n        if (index != -1 && _brushes[index].spacing != 1) {\n          _brushes[index] = _brushes[index].copyWith(spacing: 1);\n          needsPersist = true;\n        }\n      }\n      // 「マーカーペン」（Brush0005）は後からcalligraphyAngle"""
+
+          for old, new, label in [(pen_old, pen_new, 'Pen'), (g_old, g_new, 'G-Pen'), (anchor, replacement, 'migration')]:
+              if old not in s:
+                  raise SystemExit(f'expected {label} anchor not found; refusing broad edit')
+              if s.count(old) != 1:
+                  raise SystemExit(f'{label} anchor count != 1; refusing broad edit')
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+          git diff --check
+          git diff -- lib/services/brush_service.dart
+
+      - name: Run continuity and visual regressions
+        shell: bash
+        run: |
+          mkdir -p build/functional-visual
+          flutter test test/functional_audit_builtin_pen_continuity_test.dart --reporter expanded
+          flutter test test/functional_audit_batch28_test.dart --reporter expanded
+          flutter test test/functional_audit_batch36_test.dart --reporter expanded
+          for t in test/*brush*test.dart; do
+            [ -f "$t" ] || continue
+            [ "$t" = "test/functional_audit_builtin_pen_continuity_test.dart" ] && continue
+            flutter test "$t" --reporter compact
+          done
+
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: builtin-pen-continuity-visual
+          path: build/functional-visual/**/*.png
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Commit fix only after all regressions pass
+        shell: bash
+        run: |
+          git config user.name 'NIARIM Audit Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add lib/services/brush_service.dart
+          if git diff --cached --quiet; then
+            echo 'No source change required.'
+            exit 0
+          fi
+          git commit -m 'fix: make built-in Pen and G-Pen strokes continuous'
+          git push origin HEAD:dev_branch
