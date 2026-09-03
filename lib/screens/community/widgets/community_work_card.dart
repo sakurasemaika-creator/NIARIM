@@ -4,15 +4,12 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
 
-/// 動画の長さ（秒）を「m:ss」表記へ変換する。
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
   final s = seconds % 60;
   return '$m:${s.toString().padLeft(2, '0')}';
 }
 
-/// Communityの実動画サムネイルが無い間に表示するアプリUI用パレット。
-/// ユーザー作品色ではないため、常に現在のテーマから導出する。
 List<List<Color>> communityThumbnailGradients(ColorScheme scheme) => <List<Color>>[
   [scheme.primaryContainer, scheme.primary],
   [scheme.secondaryContainer, scheme.secondary],
@@ -22,7 +19,6 @@ List<List<Color>> communityThumbnailGradients(ColorScheme scheme) => <List<Color
   [scheme.tertiary.withValues(alpha: 0.55), scheme.primary],
 ];
 
-/// 作品広場の一覧（新着・ランキング・作者別）で共通して使う作品カード。
 class CommunityWorkCard extends StatelessWidget {
   final CommunityWork work;
   final bool isBookmarked;
@@ -72,126 +68,186 @@ class CommunityWorkCard extends StatelessWidget {
                           colors: gradient,
                         ),
                       ),
+                      child: Center(
+                        child: Icon(
+                          Icons.play_circle_fill_rounded,
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.70),
+                          size: 40,
+                        ),
+                      ),
                     ),
                   ),
+                  if (rankNumber != null)
+                    Positioned(
+                      left: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '#$rankNumber',
+                          style: TextStyle(
+                            color: ThemeService.activeColorScheme.onSurface,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (!work.isNiarimPublished)
+                    Positioned(
+                      left: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.lock_outline, color: ThemeService.activeColorScheme.onSurface, size: 11),
+                            const SizedBox(width: 3),
+                            Text(
+                              AppLocalizations.of(context)!.communityVisibilityHiddenBadge,
+                              style: TextStyle(
+                                color: ThemeService.activeColorScheme.onSurface,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   Positioned(
                     right: 6,
                     bottom: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.65),
+                        color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         formatDurationLabel(work.durationSeconds),
-                        style: TextStyle(
-                          color: ThemeService.activeColorScheme.surface,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: TextStyle(color: ThemeService.activeColorScheme.onSurface, fontSize: 10),
                       ),
                     ),
                   ),
                   if (work.isShort)
                     Positioned(
                       left: 6,
-                      top: 6,
+                      bottom: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: scheme.primaryContainer.withValues(alpha: 0.92),
-                          borderRadius: BorderRadius.circular(6),
+                          color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          AppLocalizations.of(context)!.communityShortBadge,
+                          AppLocalizations.of(context)!.communityShortsBadge,
                           style: TextStyle(
-                            color: scheme.onPrimaryContainer,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
+                            color: ThemeService.activeColorScheme.onSurface,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
+                  Positioned(
+                    right: 4,
+                    top: 4,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: IconButton(
+                        visualDensity: VisualDensity.compact,
+                        onPressed: onBookmarkToggle,
+                        icon: Icon(
+                          isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                          color: ThemeService.activeColorScheme.onSurface,
+                          shadows: [
+                            Shadow(color: ThemeService.activeColorScheme.onSurface.withValues(alpha: 0.54), blurRadius: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 6, 8),
-              child: Row(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  if (repostedByAuthorName != null) ...[
+                    Row(
                       children: [
-                        if (rankNumber != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
-                            child: Text(
-                              '#$rankNumber',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: scheme.primary,
-                              ),
-                            ),
-                          ),
-                        Text(
-                          work.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                        Icon(Icons.repeat, size: 12, color: scheme.primary),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)!.communityRepostedByBadge(repostedByAuthorName!),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 10, color: scheme.primary, fontWeight: FontWeight.w600),
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        InkWell(
-                          onTap: onAuthorTap,
-                          borderRadius: BorderRadius.circular(4),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 1),
-                            child: Text(
-                              work.authorName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
-                            ),
-                          ),
-                        ),
-                        if (repostedByAuthorName != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Row(
-                              children: [
-                                Icon(Icons.repeat_rounded, size: 11, color: scheme.onSurfaceVariant),
-                                const SizedBox(width: 3),
-                                Expanded(
-                                  child: Text(
-                                    repostedByAuthorName!,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 10, color: scheme.onSurfaceVariant),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                       ],
                     ),
-                  ),
-                  IconButton(
-                    tooltip: AppLocalizations.of(context)!.communityBookmarkTooltip,
-                    visualDensity: VisualDensity.compact,
-                    iconSize: 20,
-                    icon: Icon(
-                      isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                      color: isBookmarked ? scheme.primary : scheme.onSurfaceVariant,
+                    const SizedBox(height: 3),
+                  ],
+                  Text(
+                    work.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
                     ),
-                    onPressed: onBookmarkToggle,
+                  ),
+                  const SizedBox(height: 4),
+                  GestureDetector(
+                    onTap: onAuthorTap,
+                    child: Text(
+                      work.authorName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.play_arrow_rounded, size: 13, color: scheme.onSurfaceVariant),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          formatCompactCount(work.viewCount, Localizations.localeOf(context).languageCode),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.bookmark, size: 13, color: scheme.onSurfaceVariant),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          formatCompactCount(work.bookmarkCount, Localizations.localeOf(context).languageCode),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -199,6 +255,60 @@ class CommunityWorkCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class CommunityWorkGrid extends StatelessWidget {
+  final List<CommunityWork> works;
+  final Set<String> bookmarkedIds;
+  final void Function(CommunityWork work) onTapWork;
+  final void Function(CommunityWork work) onToggleBookmark;
+  final void Function(CommunityWork work)? onTapAuthor;
+  final Map<String, int>? rankNumbers;
+  final Map<String, String>? repostedByNames;
+
+  const CommunityWorkGrid({
+    super.key,
+    required this.works,
+    required this.bookmarkedIds,
+    required this.onTapWork,
+    required this.onToggleBookmark,
+    this.onTapAuthor,
+    this.rankNumbers,
+    this.repostedByNames,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = (constraints.maxWidth / 200).floor().clamp(2, 6);
+        return GridView.builder(
+          padding: const EdgeInsets.all(12),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 0.72,
+          ),
+          itemCount: works.length,
+          itemBuilder: (context, index) {
+            final work = works[index];
+            return CommunityWorkCard(
+              work: work,
+              isBookmarked: bookmarkedIds.contains(work.id),
+              onTap: () => onTapWork(work),
+              onBookmarkToggle: () => onToggleBookmark(work),
+              onAuthorTap: onTapAuthor == null ? null : () => onTapAuthor!(work),
+              rankNumber: rankNumbers?[work.id],
+              repostedByAuthorName: repostedByNames?[work.id],
+            );
+          },
+        );
+      },
     );
   }
 }
