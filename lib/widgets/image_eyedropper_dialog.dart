@@ -38,6 +38,7 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
     _sourceBytes = bytes;
     final codec = await ui.instantiateImageCodec(bytes);
     final frame = await codec.getNextFrame();
+    codec.dispose();
     final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
     if (!mounted) {
       frame.image.dispose();

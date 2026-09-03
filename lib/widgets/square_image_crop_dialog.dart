@@ -72,6 +72,7 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
         allowUpscaling: false,
       );
       final frame = await codec.getNextFrame();
+      codec.dispose();
       if (!mounted) {
         frame.image.dispose();
         return;

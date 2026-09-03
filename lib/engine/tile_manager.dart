@@ -70,8 +70,56 @@ class TileManager {
   final Map<String, ui.Image> _compositeCache =
       {}; // 挿入順=LRU順（Dart既定のMapはLinkedHashMap）
 
-  void _invalidateCache(String layerId) {
+  // タイル画像キャッシュ：タイル1枚（256x256）をデコードしたui.Imageを
+  // 「レイヤーキー|タイルキー」単位でキャッシュする。
+  //
+  // 上の合成キャッシュはレイヤー1枚ぶんの画像なので、そのレイヤーへ1ドット
+  // でも描くと丸ごと無効になる。無効化後の再合成は全タイルを1枚ずつ
+  // ImageDescriptor→instantiateCodec→getNextFrameでデコードし直しており、
+  // 1080x1920のキャンバスなら最大40枚ぶんのネイティブ往復が、ストローク中の
+  // 再合成のたびに走っていた（実際に触れたタイルは1〜2枚だけでも）。
+  // タイル単位でもデコード結果を持ち、書き込みのあったタイルだけ捨てる
+  // ことで、再合成時のデコードを変更ぶんのみに絞る。
+  //
+  // 1枚あたり256*256*4≒256KB。合成キャッシュと同様にLRUで件数を抑える。
+  final int tileImageCacheMax;
+  final Map<String, ui.Image> _tileImageCache = {};
+
+  String _tileImageKey(String layerId, String tileKey) => '$layerId|$tileKey';
+
+  /// レイヤー1枚ぶんの合成結果のみを捨てる（タイル画像は残す）。
+  void _invalidateComposite(String layerId) {
     _compositeCache.remove(layerId)?.dispose();
+  }
+
+  /// 指定タイルのデコード済み画像だけを捨てる。
+  void _invalidateTileImage(String layerId, String tileKey) {
+    _tileImageCache.remove(_tileImageKey(layerId, tileKey))?.dispose();
+  }
+
+  void _invalidateTileImagesWhere(bool Function(String key) test) {
+    final keys = _tileImageCache.keys.where(test).toList();
+    for (final k in keys) {
+      _tileImageCache.remove(k)?.dispose();
+    }
+  }
+
+  void _touchTileImage(String key, ui.Image image) {
+    _tileImageCache.remove(key);
+    _tileImageCache[key] = image;
+    while (_tileImageCache.length > tileImageCacheMax) {
+      final oldest = _tileImageCache.keys.first;
+      _tileImageCache.remove(oldest)?.dispose();
+    }
+  }
+
+  /// レイヤーの内容がまとめて変わったときの無効化（合成結果＋そのレイヤーの
+  /// 全タイル画像）。タイル単位の書き込みでこれを呼ぶとタイル画像キャッシュが
+  /// 毎回全滅するため、[getOrCreateTile]だけは狭い無効化を使う。
+  void _invalidateCache(String layerId) {
+    _invalidateComposite(layerId);
+    final prefix = '$layerId|';
+    _invalidateTileImagesWhere((k) => k.startsWith(prefix));
   }
 
   void _touchCache(String layerId, ui.Image image) {
@@ -91,6 +139,9 @@ class TileManager {
     for (final k in keys) {
       _compositeCache.remove(k)?.dispose();
     }
+    // タイル画像のキーは「レイヤーキー|タイルキー」なので、レイヤーキーへの
+    // 前方一致がそのまま使える。
+    _invalidateTileImagesWhere((k) => k.startsWith(prefix));
   }
 
   void _invalidateCacheAll() {
@@ -98,6 +149,10 @@ class TileManager {
       img.dispose();
     }
     _compositeCache.clear();
+    for (final img in _tileImageCache.values) {
+      img.dispose();
+    }
+    _tileImageCache.clear();
   }
 
   /// このTileManagerが保持するネイティブリソース（キャッシュ画像）を解放する。
@@ -120,8 +175,17 @@ class TileManager {
     required this.canvasWidth,
     required this.canvasHeight,
     this.compositeCacheMax = 16,
+    int? tileImageCacheMax,
   }) : tilesX = (canvasWidth / tileSize).ceil(),
-       tilesY = (canvasHeight / tileSize).ceil();
+       tilesY = (canvasHeight / tileSize).ceil(),
+       // 既定はキャンバス2枚ぶんのタイル数（合成キャッシュの上限に連動させず、
+       // 「今描いているレイヤーと直前のレイヤー」が丸ごと載る程度）に収める。
+       tileImageCacheMax =
+           tileImageCacheMax ??
+           ((canvasWidth / tileSize).ceil() *
+                   (canvasHeight / tileSize).ceil() *
+                   2)
+               .clamp(8, 128);
 
   String _tileKey(int tx, int ty) => '$tx,$ty';
 
@@ -137,8 +201,11 @@ class TileManager {
     _recordBeforeIfNeeded(layerId, key);
     // 呼び出し規約上、getOrCreateTileは必ず書き込み目的で呼ばれる
     // （返したバッファへ直後にblendPixel/erasePixelで書き込まれる）ため、
-    // ここでキャッシュを無効化する。
-    _invalidateCache(layerId);
+    // ここでキャッシュを無効化する。ただし無効になるのは「レイヤー1枚ぶんの
+    // 合成結果」と「これから書き込むタイルのデコード済み画像」だけで、
+    // 同じレイヤーの他のタイルの画像はそのまま使い回せる。
+    _invalidateComposite(layerId);
+    _invalidateTileImage(layerId, key);
     final layerMap = _tiles.putIfAbsent(layerId, () => {});
     final existing = layerMap[key];
     if (existing == null) {
@@ -154,8 +221,21 @@ class TileManager {
     return existing;
   }
 
+  /// 指定タイルのピクセルバッファを読み取り用に返す。
+  ///
+  /// 返るのはキャッシュ本体ではなく実バッファそのものなので、**書き換えた
+  /// 場合は必ず[invalidateTile]を呼ぶこと**。呼ばないと、そのタイルの
+  /// デコード済み画像・レイヤーの合成結果が古いまま再利用され、変更が
+  /// 画面に出ない。
   Uint8List? getTile(String layerId, int tx, int ty) =>
       _tiles[layerId]?[_tileKey(tx, ty)];
+
+  /// [getTile]で得たバッファを直接書き換えたあとに呼び、そのタイルの
+  /// キャッシュ（デコード済み画像とレイヤーの合成結果）を捨てる。
+  void invalidateTile(String layerId, int tx, int ty) {
+    _invalidateComposite(layerId);
+    _invalidateTileImage(layerId, _tileKey(tx, ty));
+  }
 
   void markDirty(String layerId, int tx, int ty) {
     _dirtyTiles.add('$layerId:${_tileKey(tx, ty)}');
@@ -245,13 +325,12 @@ class TileManager {
         final parts = entry.key.split(',');
         final tx = int.parse(parts[0]);
         final ty = int.parse(parts[1]);
-        final img = await _tileToImage(entry.value);
+        final img = await _tileImage(layerId, entry.key, entry.value);
         canvas.drawImage(
           img,
           ui.Offset(tx * tileSize.toDouble(), ty * tileSize.toDouble()),
           ui.Paint(),
         );
-        img.dispose();
       }
     }
     final picture = recorder.endRecording();
@@ -259,6 +338,27 @@ class TileManager {
     picture.dispose();
     _touchCache(layerId, image);
     return image.clone();
+  }
+
+  /// タイル1枚のデコード済み画像を返す（キャッシュ済みならそれを使う）。
+  ///
+  /// 返す画像はキャッシュ本体なので**呼び出し側でdisposeしてはいけない**
+  /// （破棄はキャッシュの追い出し・無効化側で行う）。合成へdrawImageする
+  /// だけの用途を想定している。
+  Future<ui.Image> _tileImage(
+    String layerId,
+    String tileKey,
+    Uint8List pixels,
+  ) async {
+    final cacheKey = _tileImageKey(layerId, tileKey);
+    final cached = _tileImageCache[cacheKey];
+    if (cached != null) {
+      _touchTileImage(cacheKey, cached); // LRU順を更新
+      return cached;
+    }
+    final image = await _tileToImage(pixels);
+    _touchTileImage(cacheKey, image);
+    return image;
   }
 
   Future<ui.Image> _tileToImage(Uint8List pixels) async {
@@ -269,6 +369,10 @@ class TileManager {
       pixelFormat: ui.PixelFormat.rgba8888,
     ).instantiateCodec();
     final frame = await codec.getNextFrame();
+    // Codecはネイティブ資源を持つ。フレームを取り出したら必ず解放する
+    // （ここはタイルキャッシュが外れるたびにタイル枚数ぶん通る最も熱い経路で、
+    // 取り出したframe.imageはCodecを破棄しても有効なまま）。
+    codec.dispose();
     return frame.image;
   }
 

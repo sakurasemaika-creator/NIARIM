@@ -21,6 +21,7 @@ Future<Uint8List?> _loadImageRgba(String path, int size) async {
     final bytes = await file.readAsBytes();
     final codec = await ui.instantiateImageCodec(bytes, targetWidth: size, targetHeight: size);
     final frame = await codec.getNextFrame();
+    codec.dispose();
     final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
     frame.image.dispose();
     return byteData?.buffer.asUint8List();

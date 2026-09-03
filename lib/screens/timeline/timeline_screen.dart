@@ -1719,6 +1719,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final bytes = await File(path).readAsBytes();
     final codec = await ui.instantiateImageCodec(bytes);
     final frame = await codec.getNextFrame();
+    codec.dispose();
     final image = frame.image;
     if (!mounted) {
       image.dispose();
@@ -5102,6 +5103,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final fileBytes = await File(filePath).readAsBytes();
     final codec = await ui.instantiateImageCodec(fileBytes);
     final frame = await codec.getNextFrame();
+    codec.dispose();
     final image = frame.image;
     final scale = (w / image.width < h / image.height)
         ? w / image.width

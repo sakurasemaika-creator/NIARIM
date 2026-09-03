@@ -36,6 +36,7 @@ Future<void> preloadBrushTexture(String path) async {
       targetHeight: brushTextureSize,
     );
     final frame = await codec.getNextFrame();
+    codec.dispose();
     final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
     frame.image.dispose();
     if (byteData == null) return;

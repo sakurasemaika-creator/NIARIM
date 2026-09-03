@@ -1237,6 +1237,9 @@ class _CanvasAreaState extends State<CanvasArea> {
         paletteColors: brush.pixelExplicitColors,
       );
       tile.setAll(0, quantized);
+      // getTileのバッファを直接書き換えているため、TileManager側の
+      // 無効化フックを通っていない。明示的にこのタイルのキャッシュを捨てる。
+      _tileManager.invalidateTile(touched.layerId, tx, ty);
     }
   }
 

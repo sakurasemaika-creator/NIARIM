@@ -2519,6 +2519,7 @@ class _LayerPanelState extends State<LayerPanel> {
     final bytes = await File(path).readAsBytes();
     final codec = await ui.instantiateImageCodec(bytes);
     final frame = await codec.getNextFrame();
+    codec.dispose();
     final image = frame.image;
     if (!context.mounted) {
       image.dispose();
@@ -2593,6 +2594,7 @@ class _LayerPanelState extends State<LayerPanel> {
     final bytes = await File(path).readAsBytes();
     final codec = await ui.instantiateImageCodec(bytes);
     final frame = await codec.getNextFrame();
+    codec.dispose();
     final image = frame.image;
     if (!context.mounted) {
       image.dispose();
