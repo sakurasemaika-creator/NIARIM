@@ -927,7 +927,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   return Column(
                     children: [
                       _buildTopBar(),
-                      _buildPreviewWithHandle(outerConstraints.maxHeight),
+                      Flexible(
+                        flex: 3,
+                        fit: FlexFit.loose,
+                        child: _buildPreviewWithHandle(
+                          outerConstraints.maxHeight,
+                        ),
+                      ),
                       _buildSeekBar(),
                       _buildPlaybackControls(),
                       _buildToolbar(),
@@ -1250,63 +1256,77 @@ class _TimelineScreenState extends State<TimelineScreen> {
       0.0,
       maxPreviewHeight,
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // ドラッグハンドルで指定した高さぶん、プレビュー画像自体が実際に
-        // 拡大縮小されるようにする（以前は外枠の高さだけが変わり、内側の
-        // 画像はBoxFit.containの都合で横幅が頭打ちになるとそれ以上大きく
-        // ならず、「ハンドルが下のタイムラインにしか効いていないように
-        // 見える」問題があった）。AspectRatioでキャンバスの実際の縦横比に
-        // 合わせて幅も高さに追従させ、画面幅を超える場合のみ幅が頭打ちに
-        // なるようにする。
-        SizedBox(
-          height: previewHeight,
-          width: double.infinity,
-          child: Center(
-            child: AspectRatio(
-              aspectRatio: aspect,
-              child: _buildPreviewContent(),
-            ),
-          ),
-        ),
-        // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
-        // グリップより広めに取っている（ドラッグ開始位置が少しずれても
-        // 確実にリサイズとして認識されるようにするため）。
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          dragStartBehavior: DragStartBehavior.down,
-          onVerticalDragUpdate: (d) {
-            setState(() {
-              final current =
-                  (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
-              _previewHeightDragOverride = current.clamp(0.0, maxPreviewHeight);
-            });
-          },
-          onVerticalDragEnd: (_) {
-            final h = _previewHeightDragOverride;
-            if (h != null) {
-              context.read<SettingsService>().setTimelinePreviewHeightFraction(
-                h / maxH,
-              );
-            }
-          },
-          child: Container(
-            color: Colors.transparent,
-            height: 22,
-            child: Center(
-              child: Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(3),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final allocatedPreviewHeight = constraints.hasBoundedHeight
+            ? math.max(0.0, constraints.maxHeight - 22.0)
+            : maxPreviewHeight;
+        final visiblePreviewHeight = math.min(
+          previewHeight,
+          allocatedPreviewHeight,
+        );
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ドラッグハンドルで指定した高さぶん、プレビュー画像自体が実際に
+            // 拡大縮小されるようにする（以前は外枠の高さだけが変わり、内側の
+            // 画像はBoxFit.containの都合で横幅が頭打ちになるとそれ以上大きく
+            // ならず、「ハンドルが下のタイムラインにしか効いていないように
+            // 見える」問題があった）。AspectRatioでキャンバスの実際の縦横比に
+            // 合わせて幅も高さに追従させ、画面幅を超える場合のみ幅が頭打ちに
+            // なるようにする。
+            SizedBox(
+              height: visiblePreviewHeight,
+              width: double.infinity,
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: aspect,
+                  child: _buildPreviewContent(),
                 ),
               ),
             ),
-          ),
-        ),
-      ],
+            // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
+            // グリップより広めに取っている（ドラッグ開始位置が少しずれても
+            // 確実にリサイズとして認識されるようにするため）。
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              dragStartBehavior: DragStartBehavior.down,
+              onVerticalDragUpdate: (d) {
+                setState(() {
+                  final current =
+                      (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
+                  _previewHeightDragOverride = current.clamp(
+                    0.0,
+                    maxPreviewHeight,
+                  );
+                });
+              },
+              onVerticalDragEnd: (_) {
+                final h = _previewHeightDragOverride;
+                if (h != null) {
+                  context
+                      .read<SettingsService>()
+                      .setTimelinePreviewHeightFraction(h / maxH);
+                }
+              },
+              child: Container(
+                color: Colors.transparent,
+                height: 22,
+                child: Center(
+                  child: Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
