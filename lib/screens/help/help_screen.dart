@@ -40,6 +40,12 @@ class _HelpScreenState extends State<HelpScreen> {
   // あるため、表示言語に関わらず固定の日本語文字列のまま維持する
   // （翻訳対象は title/description/category のみ）。
   List<_HelpEntry> _buildEntries(AppLocalizations l10n) => [
+        // ── 基本操作 ────────────────────────────────────────────
+        // 個々のツールの説明より前に、ツールバーの操作体系そのもの
+        // （タップで切り替え／長押し・上スワイプで詳細設定）を置く。
+        // ここが分かっていないと個別の説明も効かないため、一覧の先頭に
+        // 固定し、初回チュートリアルからも同じ内容へ辿り着けるようにする。
+        _HelpEntry(topicKey: '基本操作', title: l10n.helpBasicGestureTitle, description: l10n.helpBasicGestureDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 0)),
         // ── 描画ツール ──────────────────────────────────────────
         _HelpEntry(topicKey: 'ペンツール', title: l10n.helpPenToolTitle, description: l10n.helpPenToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 0)),
         _HelpEntry(topicKey: '消しゴムツール', title: l10n.helpEraserToolTitle, description: l10n.helpEraserToolDesc, category: l10n.helpCategoryTool, diagram: const HelpDiagramSpec(HelpScreenTemplate.toolbarRow, 1)),

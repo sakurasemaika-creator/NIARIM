@@ -2242,6 +2242,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap to cycle through your registered tools in order. Long-press or swipe up to edit your registered tools.';
 
   @override
+  String get firstUseTipOperationGuideTitle => 'Basic controls';
+
+  @override
+  String get firstUseTipOperationGuideBody =>
+      'A single tap on a toolbar icon switches to that tool. Long-press the same icon, or swipe up on it, to open that tool’s detailed settings (brush type, fill mode, selection mode and so on). Double-tap an icon for a short description of the tool. You can read all of this again from the \"?\" button in the top right of each screen.';
+
+  @override
+  String get helpBasicGestureTitle => 'Basic controls (tap, long-press, swipe)';
+
+  @override
+  String get helpBasicGestureDesc =>
+      'A single tap on a toolbar icon switches to that tool. Long-press the same icon, or swipe up on it, to open its detailed settings. Behind that long-press or swipe you will find: brush / halftone / stamp / lasso fill for the pen, solid vs. halftone for the bucket, rectangle / lasso / magic wand for the selection tool, blur vs. mosaic for the finger tool, and the registered tool list for the quick-swap tool. Double-tapping an icon shows a short description at the bottom of the screen.\\nOn the canvas, pinch with two fingers to zoom, drag with two fingers to pan, tap with two fingers to undo and with three fingers to redo. Double-tap the left or right edge of the screen to move to the previous or next frame.\\nWith a mouse or pen tablet connected, the wheel zooms and dragging with the middle button pans.';
+
+  @override
   String get toolbarStampColorLockedSnackbar =>
       'Stamps carry their own color, so the color can\'t be changed';
 

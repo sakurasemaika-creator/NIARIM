@@ -2275,6 +2275,21 @@ class AppLocalizationsEs extends AppLocalizations {
       'Toca para recorrer tus herramientas registradas en orden. Mantén pulsado o desliza hacia arriba para editar tus herramientas registradas.';
 
   @override
+  String get firstUseTipOperationGuideTitle => 'Controles básicos';
+
+  @override
+  String get firstUseTipOperationGuideBody =>
+      'Un toque simple en un icono de la barra de herramientas cambia a esa herramienta. Mantén pulsado ese mismo icono, o deslízalo hacia arriba, para abrir sus ajustes detallados (tipo de pincel, modo de relleno, modo de selección, etc.). Toca dos veces un icono para ver una breve descripción de la herramienta. Puedes volver a leer todo esto desde el botón «?» de la esquina superior derecha de cada pantalla.';
+
+  @override
+  String get helpBasicGestureTitle =>
+      'Controles básicos (toque, pulsación larga, deslizamiento)';
+
+  @override
+  String get helpBasicGestureDesc =>
+      'Un toque simple en un icono de la barra de herramientas cambia a esa herramienta. Mantén pulsado ese icono, o deslízalo hacia arriba, para abrir sus ajustes detallados. Tras esa pulsación larga o ese deslizamiento encontrarás: pincel, trama, sello o relleno con lazo para la pluma; relleno sólido o con trama para el bote; rectángulo, lazo o selección automática para la herramienta de selección; desenfoque o mosaico para la herramienta de dedo; y la lista de herramientas registradas para el cambio rápido. Al tocar dos veces un icono aparece una breve descripción en la parte inferior de la pantalla.\\nEn el lienzo, pellizca con dos dedos para ampliar o reducir, arrastra con dos dedos para desplazar, toca con dos dedos para deshacer y con tres para rehacer. Toca dos veces el borde izquierdo o derecho de la pantalla para ir al fotograma anterior o siguiente.\\nSi tienes conectado un ratón o una tableta gráfica, la rueda amplía y el arrastre con el botón central desplaza.';
+
+  @override
   String get toolbarStampColorLockedSnackbar =>
       'Los sellos conservan su propio color, por lo que no se puede cambiar';
 

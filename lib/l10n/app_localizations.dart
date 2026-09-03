@@ -4031,6 +4031,30 @@ abstract class AppLocalizations {
   /// **'タップで登録したツールを順番に切り替えられます。長押しまたは上にスワイプで登録内容を編集できます。'**
   String get toolbarQuickToolFirstUseTip;
 
+  /// Heading of the shared operation guide shown in every first-use tutorial card
+  ///
+  /// In ja, this message translates to:
+  /// **'基本の操作'**
+  String get firstUseTipOperationGuideTitle;
+
+  /// Shared operation guide shown in every first-use tutorial card
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバーのアイコンは、シングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると、そのツールの詳細設定（ブラシの種類・塗り方・選択方法など）が開きます。アイコンをダブルタップすると、そのツールの短い説明が出ます。ここで閉じたあとも、各画面右上の「？」ボタンからヘルプで読み直せます。'**
+  String get firstUseTipOperationGuideBody;
+
+  /// Help entry title for basic tap / long-press / swipe controls
+  ///
+  /// In ja, this message translates to:
+  /// **'基本の操作（タップ・長押し・スワイプ）'**
+  String get helpBasicGestureTitle;
+
+  /// Help entry body describing tap, long-press, swipe and canvas gestures
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバーのアイコンはシングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると詳細設定が開きます。ペンならブラシ・トーン・スタンプ・投げ縄塗りの切り替え、バケツならベタ塗りとトーン塗りの切り替え、選択ツールなら矩形・投げ縄・自動選択の切り替え、指ツールならぼかしとモザイクの切り替え、早替えツールなら登録内容の編集が、それぞれ長押し・上スワイプの先にあります。アイコンのダブルタップでは、そのツールの短い説明が画面下に出ます。\\nキャンバスでは、2本指でつまむと拡大縮小、2本指でなぞると移動、2本指のタップで元に戻す、3本指のタップでやり直しです。画面の左右の端をダブルタップすると、前後のフレームへ移動します。\\nマウスやペンタブレットを繋いでいる場合は、ホイールで拡大縮小、中ボタンのドラッグで移動できます。'**
+  String get helpBasicGestureDesc;
+
   /// No description provided for @toolbarStampColorLockedSnackbar.
   ///
   /// In ja, this message translates to:

@@ -2151,6 +2151,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toolbarQuickToolFirstUseTip => '点击可依次切换已注册的工具。长按或向上滑动可编辑已注册的内容。';
 
   @override
+  String get firstUseTipOperationGuideTitle => '基本操作';
+
+  @override
+  String get firstUseTipOperationGuideBody =>
+      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开该工具的详细设置（笔刷种类、填充方式、选择方式等）。双击图标会显示该工具的简短说明。关闭之后，也可以从各画面右上角的「?」按钮在帮助中重新阅读。';
+
+  @override
+  String get helpBasicGestureTitle => '基本操作（点击・长按・上滑）';
+
+  @override
+  String get helpBasicGestureDesc =>
+      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开详细设置。钢笔可切换笔刷・网点・图章・套索填充，油漆桶可切换纯色填充与网点填充，选择工具可切换矩形・套索・自动选择，手指工具可切换模糊与马赛克，快速切换工具可编辑已登记的内容，这些都在长按或上滑之后。双击图标时，画面下方会显示该工具的简短说明。\\n在画布上，双指捏合可缩放，双指拖动可平移，双指点击撤销，三指点击重做。双击画面左右边缘可移动到前后一帧。\\n连接鼠标或数位板时，可用滚轮缩放、按住中键拖动平移。';
+
+  @override
   String get toolbarStampColorLockedSnackbar => '图章保留了自身的颜色信息，因此无法更改颜色';
 
   @override
@@ -7999,6 +8013,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get toolbarQuickToolFirstUseTip => '點擊可依序切換已登錄的工具。長按或向上滑動可編輯已登錄的內容。';
+
+  @override
+  String get firstUseTipOperationGuideTitle => '基本操作';
+
+  @override
+  String get firstUseTipOperationGuideBody =>
+      '單擊工具列圖示即可切換到該工具。長按同一圖示或向上滑動，可開啟該工具的詳細設定（筆刷種類、填色方式、選取方式等）。雙擊圖示會顯示該工具的簡短說明。關閉之後，也可以從各畫面右上角的「?」按鈕在說明中重新閱讀。';
+
+  @override
+  String get helpBasicGestureTitle => '基本操作（點擊・長按・上滑）';
+
+  @override
+  String get helpBasicGestureDesc =>
+      '單擊工具列圖示即可切換到該工具。長按同一圖示或向上滑動，可開啟詳細設定。鋼筆可切換筆刷・網點・印章・套索填色，油漆桶可切換純色填色與網點填色，選取工具可切換矩形・套索・自動選取，手指工具可切換模糊與馬賽克，快速切換工具可編輯已登記的內容，這些都在長按或上滑之後。雙擊圖示時，畫面下方會顯示該工具的簡短說明。\\n在畫布上，雙指捏合可縮放，雙指拖曳可平移，雙指點擊復原，三指點擊重做。雙擊畫面左右邊緣可移動到前後一格。\\n連接滑鼠或繪圖板時，可用滾輪縮放、按住中鍵拖曳平移。';
 
   @override
   String get toolbarStampColorLockedSnackbar => '印章保留了自身的顏色資訊，因此無法變更顏色';

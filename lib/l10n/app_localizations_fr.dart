@@ -2272,6 +2272,21 @@ class AppLocalizationsFr extends AppLocalizations {
       'Appuyez pour parcourir vos outils enregistrés dans l\'ordre. Appui long ou balayage vers le haut pour modifier vos outils enregistrés.';
 
   @override
+  String get firstUseTipOperationGuideTitle => 'Commandes de base';
+
+  @override
+  String get firstUseTipOperationGuideBody =>
+      'Une simple pression sur une icône de la barre d’outils bascule vers cet outil. Appuyez longuement sur cette même icône, ou faites-la glisser vers le haut, pour ouvrir ses réglages détaillés (type de pinceau, mode de remplissage, mode de sélection, etc.). Appuyez deux fois sur une icône pour afficher une brève description de l’outil. Vous pouvez relire tout cela depuis le bouton « ? » en haut à droite de chaque écran.';
+
+  @override
+  String get helpBasicGestureTitle =>
+      'Commandes de base (appui, appui long, balayage)';
+
+  @override
+  String get helpBasicGestureDesc =>
+      'Une simple pression sur une icône de la barre d’outils bascule vers cet outil. Appuyez longuement sur cette icône, ou faites-la glisser vers le haut, pour ouvrir ses réglages détaillés. Derrière cet appui long ou ce balayage se trouvent : pinceau, trame, tampon ou remplissage au lasso pour le stylo ; remplissage uni ou tramé pour le pot ; rectangle, lasso ou sélection automatique pour l’outil de sélection ; flou ou mosaïque pour l’outil doigt ; et la liste des outils enregistrés pour le changement rapide. Un double appui sur une icône affiche une brève description en bas de l’écran.\\nSur le canevas, pincez à deux doigts pour zoomer, faites glisser à deux doigts pour vous déplacer, touchez à deux doigts pour annuler et à trois doigts pour rétablir. Appuyez deux fois sur le bord gauche ou droit de l’écran pour passer à l’image précédente ou suivante.\\nAvec une souris ou une tablette graphique, la molette zoome et le glissement avec le bouton central déplace la vue.';
+
+  @override
   String get toolbarStampColorLockedSnackbar =>
       'Les tampons ont leur propre couleur, celle-ci ne peut donc pas être modifiée';
 
