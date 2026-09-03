@@ -158,13 +158,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "現在の画像だけでは同じ揺れ入力に対して補正ONが実際に平滑化したことを視覚的に比較できないためstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
     },
     {
       "id": "brush.mix",
@@ -173,14 +174,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "混色率0〜100の複数値で境界色が段階変化することを画像と色値でstrict-v2再証明"
+      "recheck_reason": "混色率0〜100の複数値で境界色が段階変化することを画像と色値でstrict-v2再証明",
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
     },
     {
       "id": "brush.color_extension",
@@ -189,14 +191,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
-      "recheck_reason": "色伸び率とストローク進行に応じた既存色の引きずり量を画像と色値でstrict-v2再証明"
+      "recheck_reason": "色伸び率とストローク進行に応じた既存色の引きずり量を画像と色値でstrict-v2再証明",
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
     },
     {
       "id": "eraser.opacity",
@@ -363,13 +366,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "複数線が1消失点へ収束することを画像で証明するstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
     },
     {
       "id": "ruler.perspective2",
@@ -378,13 +382,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "左右の線群が2消失点へ収束することを画像で証明するstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
     },
     {
       "id": "ruler.perspective3",
@@ -393,13 +398,14 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "recheck_reason": "3方向の線群が3消失点へ収束することを画像で証明するstrict-v2再監査",
       "workflows": [
         "one-shot-strict-visual-evidence-audit.yml"
-      ]
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
     },
     {
       "id": "shape.line",
