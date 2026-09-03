@@ -3,7 +3,18 @@ name: Audit Live Dashboard
 on:
   push:
     branches: [dev_branch]
+    paths:
+      - 'audit-dashboard/**'
+      - '.github/workflows/**'
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - 'One-shot Strict Visual Evidence Audit'
+      - 'One-shot Screenshot-first Visual Reaudit'
+      - 'One-shot Resume Real Operation Audit'
+      - 'One-shot Canvas Panel Screenshot Audit'
+      - 'One-shot Current Coverage Census'
+    types: [requested, completed]
 
 permissions:
   actions: read
@@ -15,219 +26,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  monitor:
+  update:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'dev_branch'
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 5
     steps:
-      - name: Update AI audit dashboard every minute
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - name: Update dashboard once
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           ISSUE_NUMBER: '3'
           BRANCH: dev_branch
-        run: |
-          python3 - <<'PY'
-          import base64, json, os, time, urllib.request
-          from collections import defaultdict
-          from datetime import datetime, timezone, timedelta
-
-          token = os.environ['GH_TOKEN']
-          repo = os.environ['REPO']
-          issue = os.environ['ISSUE_NUMBER']
-          branch = os.environ['BRANCH']
-          api = 'https://api.github.com'
-          JST = timezone(timedelta(hours=9), name='JST')
-
-          tracked = [
-              ('全体回帰', ['one-shot-close-blockers-and-full-suite.yml', 'one-shot-exhaustive-real-operation-audit.yml']),
-              ('実操作 batch27-38', ['one-shot-resume-real-operation-audit.yml', 'one-shot-gap-audit.yml']),
-              ('Canvasパネル実操作＋スクショ', ['one-shot-canvas-panel-screenshot-audit.yml']),
-              ('Canvas初期合成', ['one-shot-canvas-initial-composite-audit.yml']),
-              ('全ルートスクショ', ['one-shot-all-routes-screenshot-audit.yml']),
-              ('Functional Visual', ['functional-visual.yml']),
-              ('Strict Visual Evidence', ['one-shot-strict-visual-evidence-audit.yml']),
-              ('Screenshot-first Visual', ['one-shot-screenshot-first-visual-reaudit.yml']),
-              ('Visual Delta', ['one-shot-visual-delta-audit.yml']),
-              ('Coverage census', ['one-shot-current-coverage-census.yml']),
-              ('Service直接監査', ['one-shot-direct-service-coverage.yml']),
-              ('Engine直接監査', ['one-shot-direct-engine-coverage.yml']),
-          ]
-
-          def request(path, method='GET', data=None):
-              body = None if data is None else json.dumps(data).encode()
-              req = urllib.request.Request(api + path, data=body, method=method)
-              req.add_header('Authorization', f'Bearer {token}')
-              req.add_header('Accept', 'application/vnd.github+json')
-              req.add_header('X-GitHub-Api-Version', '2022-11-28')
-              if body is not None:
-                  req.add_header('Content-Type', 'application/json')
-              with urllib.request.urlopen(req, timeout=30) as r:
-                  return json.load(r)
-
-          def esc(s):
-              return str(s).replace('|', '\\|').replace('\n', ' ')
-
-          def yes(v):
-              return '✅' if v else '—'
-
-          def bar(pct, blocks=20):
-              filled = round(pct * blocks / 100)
-              return '█' * filled + '░' * (blocks - filled)
-
-          def state_icon(run):
-              if not run:
-                  return '⚪ 未実行'
-              st = run.get('status')
-              co = run.get('conclusion')
-              if st in ('queued', 'in_progress', 'waiting', 'requested', 'pending'):
-                  return '🟡 実行中'
-              if co == 'success':
-                  return '🟢 PASS'
-              if co in ('failure', 'timed_out', 'cancelled', 'action_required', 'startup_failure'):
-                  return '🔴 要対応'
-              if co == 'skipped':
-                  return '⚪ SKIP'
-              return f'⚪ {co or st or "不明"}'
-
-          def related_action(run):
-              if not run:
-                  return '—'
-              label = state_icon(run)
-              return f'[{label}]({run.get("html_url")})'
-
-          def latest_for_paths(runs, paths):
-              candidates = [r for r in runs if any((r.get('path') or '').endswith(p) for p in paths)]
-              return candidates[0] if candidates else None
-
-          def load_manifest():
-              obj = request(f'/repos/{repo}/contents/audit-dashboard/feature-audit-manifest.json?ref={branch}')
-              raw = base64.b64decode(obj['content']).decode('utf-8')
-              return json.loads(raw)
-
-          def update_once():
-              runs = request(f'/repos/{repo}/actions/runs?branch={branch}&per_page=100').get('workflow_runs', [])
-              audit_runs = [r for r in runs if r.get('path') != '.github/workflows/audit-live-dashboard.yml']
-              manifest = load_manifest()
-              all_features = manifest.get('features', [])
-
-              # 今回の完了条件はAI/CIで確認可能な範囲のみ。
-              # device_required=true かつ AI監査で final_pass に到達していない項目は
-              # 実機側の別工程として、分母・残件数・一覧から完全に除外する。
-              features = [
-                  f for f in all_features
-                  if not (f.get('device_required') and not f.get('final_pass'))
-              ]
-              excluded_device_only = len(all_features) - len(features)
-
-              head = request(f'/repos/{repo}/branches/{branch}')['commit']['sha']
-              now = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S JST')
-
-              total = len(features)
-              keys = ['interaction', 'output', 'screenshot', 'visual', 'final_pass']
-              counts = {k: sum(1 for f in features if f.get(k)) for k in keys}
-              pct = {k: (round(counts[k] * 100 / total) if total else 0) for k in keys}
-              pending = total - counts['final_pass']
-
-              by_category = defaultdict(list)
-              for f in features:
-                  by_category[f.get('category', 'その他')].append(f)
-
-              active = [r for r in audit_runs if r.get('status') in ('queued','in_progress','waiting','requested','pending')]
-              latest_runs = audit_runs[:12]
-
-              lines = []
-              lines.append('# NIARIM Audit Live Dashboard')
-              lines.append('')
-              lines.append(f'> **自動更新:** 約1分ごと  ·  **最終更新:** `{now}`')
-              lines.append('')
-              lines.append(f'**Branch:** `{branch}`  ·  **HEAD:** [`{head[:10]}`](https://github.com/{repo}/commit/{head})')
-              lines.append('')
-              lines.append('## AI監査カバレッジ')
-              lines.append('')
-              lines.append(f'`{bar(pct["final_pass"])}` **{pct["final_pass"]}%**  —  **{counts["final_pass"]} / {total} 機能 最終PASS**  ·  残り **{pending}**')
-              lines.append('')
-              lines.append('> **この%が今回の監査進捗です。AI/CIで確認可能な画面・動作だけを母数にし、実機専用確認は完了条件から除外しています。**')
-              lines.append('> **strict-v2:** 見た目が重要な機能は「PNGがある／画素差が出た」だけではPASSにせず、その機能固有の正しさ（必要なら設定値に応じた段階変化）が証拠画像から判断できることを要求します。')
-              lines.append('')
-              lines.append('| 工程 | 完了 | 進捗 |')
-              lines.append('|---|---:|---:|')
-              lines.append(f'| 実操作 | {counts["interaction"]}/{total} | **{pct["interaction"]}%** |')
-              lines.append(f'| 実出力/状態確認 | {counts["output"]}/{total} | **{pct["output"]}%** |')
-              lines.append(f'| スクショ取得 | {counts["screenshot"]}/{total} | **{pct["screenshot"]}%** |')
-              lines.append(f'| 目視確認 | {counts["visual"]}/{total} | **{pct["visual"]}%** |')
-              lines.append(f'| **最終PASS** | **{counts["final_pass"]}/{total}** | **{pct["final_pass"]}%** |')
-              lines.append('')
-              lines.append(f'- 実機専用として今回のIssueから除外: **{excluded_device_only}項目**')
-              lines.append('- `最終PASS` は、その機能に必要なAI監査工程をすべて満たしたものだけを数えます。')
-              lines.append('- 右端の「関連Action」は参考情報です。`—` は「未監査」ではなく、直近100 Run内に専用Workflowを紐付けられなかったことを意味します。監査結果そのものは左側の各工程と最終PASSを見てください。')
-              lines.append('')
-
-              lines.append('## 機能別AI監査台帳')
-              lines.append('')
-              lines.append('| カテゴリ | 機能 | 実操作 | 出力 | SS | 目視 | 最終 | 関連Action（参考） |')
-              lines.append('|---|---|:---:|:---:|:---:|:---:|:---:|---|')
-              for category in sorted(by_category):
-                  for f in by_category[category]:
-                      paths = f.get('workflows') or []
-                      latest = latest_for_paths(audit_runs, paths) if paths else None
-                      lines.append(
-                          f'| {esc(category)} | {esc(f.get("name"))} | {yes(f.get("interaction"))} | {yes(f.get("output"))} | '
-                          f'{yes(f.get("screenshot"))} | {yes(f.get("visual"))} | {"🟢" if f.get("final_pass") else "⚪"} | {related_action(latest)} |'
-                      )
-
-              lines.append('')
-              lines.append('## 現在動いている監査')
-              lines.append('')
-              if active:
-                  for r in active:
-                      lines.append(f'- 🟡 [{esc(r.get("name") or r.get("display_title") or "run")}]({r.get("html_url")}) — `{esc(r.get("status"))}`')
-              else:
-                  lines.append('- 現在 `in_progress / queued` の監査Actionはありません。')
-
-              lines.append('')
-              lines.append('## 主要監査パイプライン（参考）')
-              lines.append('')
-              lines.append('| 監査カテゴリ | 状態 | 最新Run |')
-              lines.append('|---|---|---|')
-              for label, paths in tracked:
-                  r = latest_for_paths(audit_runs, paths)
-                  icon = state_icon(r)
-                  if r:
-                      title = esc(r.get('display_title') or r.get('name') or 'run')
-                      link = f'[{title}]({r.get("html_url")})'
-                  else:
-                      link = '—'
-                  lines.append(f'| {label} | {icon} | {link} |')
-
-              lines.append('')
-              lines.append('## 直近のActions')
-              lines.append('')
-              lines.append('| 状態 | Workflow | Run | Commit |')
-              lines.append('|---|---|---|---|')
-              for r in latest_runs:
-                  lines.append(
-                      f'| {state_icon(r)} | `{esc(r.get("name") or "")}` | '
-                      f'[{esc(r.get("display_title") or "")}]({r.get("html_url") or ""}) | `{(r.get("head_sha") or "")[:8]}` |'
-                  )
-
-              lines.append('')
-              lines.append('## リンク')
-              lines.append('')
-              lines.append(f'- [GitHub Actions](https://github.com/{repo}/actions?query=branch%3A{branch})')
-              lines.append(f'- [機能監査台帳 JSON](https://github.com/{repo}/blob/{branch}/audit-dashboard/feature-audit-manifest.json)')
-              lines.append(f'- [dev_branch](https://github.com/{repo}/tree/{branch})')
-              lines.append('')
-              lines.append('---')
-              lines.append('_実機専用項目はこのIssueの進捗・残件数・100%条件には含みません。_')
-
-              request(f'/repos/{repo}/issues/{issue}', method='PATCH', data={'body': '\n'.join(lines)})
-              print(f'[{now}] AI dashboard updated: final={counts["final_pass"]}/{total} ({pct["final_pass"]}%), excluded_device_only={excluded_device_only}, active={len(active)}', flush=True)
-
-          for i in range(325):
-              try:
-                  update_once()
-              except Exception as e:
-                  print(f'dashboard update failed: {type(e).__name__}: {e}', flush=True)
-              if i < 324:
-                  time.sleep(60)
-          PY
+        run: python3 audit-dashboard/update_dashboard.py
