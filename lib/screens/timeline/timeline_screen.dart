@@ -173,7 +173,22 @@ class TimelineScreen extends StatefulWidget {
 }
 
 class _TimelineScreenState extends State<TimelineScreen> {
-  int _currentFrame = 0;
+  // 再生位置。再生タイマーはfps間隔（24fpsなら約41ms）でこれを進めるため、
+  // ここをただのフィールドにして`setState`で更新すると、そのたびに
+  // タイムライン画面のウィジェットツリー全体（フレーム一覧・各トラック・
+  // シーンタブ・ツールバー）が作り直される。実際に再生位置へ追従する
+  // 必要があるのはプレビューとシークバーだけなので、ValueNotifierにして
+  // その2箇所だけ`ValueListenableBuilder`で購読する。
+  //
+  // 読み書きは従来どおり`_currentFrame`で行える（getter/setter）。
+  // 操作系（コマ送り・タップ移動・シーン切替等）は今までどおり
+  // `setState(() => _currentFrame = x)`のままでよい。setStateで画面全体を
+  // 作り直しても、離散的な操作なら毎フレームのコストにはならない。
+  // 再生タイマーだけがsetStateを使わず、この値の更新だけで済ませる。
+  final ValueNotifier<int> _currentFrameNotifier = ValueNotifier<int>(0);
+
+  int get _currentFrame => _currentFrameNotifier.value;
+  set _currentFrame(int value) => _currentFrameNotifier.value = value;
   String? _selectedSceneId;
   bool _isPlaying = false;
   // プレビュー再生をループさせるかどうか。既定はON（従来どおり最終フレーム
@@ -375,6 +390,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // ここでのスクロールは共通レイヤー・素材トラック等にも連動する。
   int? _lastCenteredFrame;
 
+  /// 再生位置が変わったときの追従処理（フレーム一覧の中央寄せ）。
+  void _onCurrentFrameChanged() {
+    if (!mounted) return;
+    _maybeCenterCurrentFrame();
+  }
+
   void _maybeCenterCurrentFrame() {
     if (_isFrameCursorActive) return; // 移動・貼り付けモード中はレイアウトが異なるため対象外
     if (_lastCenteredFrame == _currentFrame) return;
@@ -434,6 +455,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   @override
   void initState() {
     super.initState();
+    // 再生位置の変化でフレーム一覧を中央へ寄せる。以前は_buildFrameList()
+    // の中から呼んでいたが、再生中は画面全体を作り直さなくなったため
+    // build任せにできない。そもそもbuildの中で副作用（スクロール）を
+    // 起こすのは筋が悪いので、値の変化に紐づける形へ移した。
+    _currentFrameNotifier.addListener(_onCurrentFrameChanged);
     // タイムライン編集に作業領域を広く使えるよう、既定でAndroid標準の
     // ナビゲーションバーを最小化する。
     ImmersiveMode.enterWorkspace();
@@ -497,6 +523,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       v.dispose();
     }
     _moveThumbnail?.dispose();
+    _currentFrameNotifier.removeListener(_onCurrentFrameChanged);
+    _currentFrameNotifier.dispose();
     _projectService.endWorkTracking();
     super.dispose();
   }
@@ -575,9 +603,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _pauseAllMedia();
             return;
           }
-          setState(() {
-            _currentFrame = (_currentFrame + 1) % total;
-          });
+          // ここはsetStateを使わない。再生位置に追従する必要があるのは
+          // プレビューとシークバーだけで、その2つは
+          // _currentFrameNotifierをValueListenableBuilderで購読している。
+          // setStateにすると、フレーム一覧・各トラック・シーンタブまで
+          // 含めた画面全体を毎秒24〜60回作り直すことになる。
+          _currentFrame = (_currentFrame + 1) % total;
           _syncMediaPlayback();
         },
       );
@@ -1118,15 +1149,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       style: const TextStyle(color: Colors.grey),
                     ),
                   )
-                : _TimelinePreview(
+                // 再生位置に追従して作り直すのはこの1枚だけでよい。
+                // 再生タイマーはsetStateを呼ばないので、ここを
+                // ValueListenableBuilderで包まないとプレビューが止まる。
+                : ValueListenableBuilder<int>(
+                    valueListenable: _currentFrameNotifier,
+                    builder: (context, frameIndex, _) => _TimelinePreview(
                     tileManager: ps.tileManagerOf(widget.projectId),
                     layers: ps.layersOf(
                       widget.projectId,
                       sceneId,
-                      _currentFrame,
+                      frameIndex,
                     ),
                     sceneId: sceneId,
-                    frameIndex: _currentFrame,
+                    frameIndex: frameIndex,
                     cameraKeyframes: ps.cameraKeyframesOf(
                       widget.projectId,
                       sceneId,
@@ -1137,6 +1173,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
                     layerHomes: ps.layerHomesOf(widget.projectId),
                     groups: ps.layerGroupsOf(widget.projectId, sceneId),
+                    ),
                   ),
           ),
           // プレビュー全画面化ボタン（確認・仕上がり
@@ -1291,16 +1328,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ),
         // コマ送りボタンは再生ボタンの左右に既にあるため、シークバー自体には
         // ±ボタンを表示しない（役割が重複するため）。
-        child: SteppedSlider(
-          value: _currentFrame.clamp(0, maxFrame).toDouble(),
-          min: 0,
-          max: maxFrame.toDouble(),
-          divisions: maxFrame > 0 ? maxFrame : null,
-          showSteppers: false,
-          onChanged: (v) => setState(() {
-            _currentFrame = v.round();
-            _isPlaying = false;
-          }),
+        // つまみの位置も再生位置に追従させる必要があるため、ここだけを
+        // 購読する（再生タイマーはsetStateを呼ばない）。
+        child: ValueListenableBuilder<int>(
+          valueListenable: _currentFrameNotifier,
+          builder: (context, frame, _) => SteppedSlider(
+            value: frame.clamp(0, maxFrame).toDouble(),
+            min: 0,
+            max: maxFrame.toDouble(),
+            divisions: maxFrame > 0 ? maxFrame : null,
+            showSteppers: false,
+            onChanged: (v) => setState(() {
+              _currentFrame = v.round();
+              _isPlaying = false;
+            }),
+          ),
         ),
       ),
     );
@@ -2453,7 +2495,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final total = _totalFrames;
     final projectService = context.watch<ProjectService>();
     final frameListSceneId = _selectedSceneId;
-    _maybeCenterCurrentFrame();
+    // 中央寄せは_currentFrameNotifierのリスナー（_onCurrentFrameChanged）で
+    // 行う。以前はここで呼んでいたが、buildの中でスクロールという副作用を
+    // 起こすのは筋が悪く、再生中に画面全体を作り直さなくなると呼ばれなく
+    // なるという問題もあった。
     return SizedBox(
       height: _isFrameCursorActive ? 92 : 50,
       child: Stack(
