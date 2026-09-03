@@ -11,7 +11,6 @@ import 'package:niarim/engine/mesh_warp_engine.dart';
 import 'package:niarim/engine/ruler_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
-import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/models/ruler.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -126,19 +125,11 @@ void main() {
     }
     final energies = <int, double>{};
     for (final strength in [1, 4, 10]) {
-      final effect = EffectFilterInstance(
-        id: 'b$strength',
-        type: EffectFilterType.blur,
-        startFrame: 0,
-        endFrame: 0,
-        param1: strength.toDouble(),
-      );
-      final got = FilterEngine().applyEffectFilters(
+      final got = FilterEngine().applyGaussianBlur(
         Uint8List.fromList(input),
         w,
         h,
-        [effect],
-        0,
+        strength.toDouble(),
       );
       energies[strength] = _edgeEnergy(got, w, h);
       await _saveRgba(got, w, h, '${out.path}/blur_strength_$strength.png');
