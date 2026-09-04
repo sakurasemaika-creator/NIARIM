@@ -9,20 +9,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  patch-and-verify:
+  clean-patch-and-verify:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      CLEAN_BASE: 71bc3eeaebf18928af2a3b3683d29ba38006c396
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-      - name: Apply popup close standard
+      - name: Restore app source before noisy full-lib format
+        shell: bash
+        run: |
+          git checkout "$CLEAN_BASE" -- lib
+      - name: Apply popup close standard only
         run: python3 .github/scripts/standardize_popup_close.py
-      - name: Format
-        run: dart format lib
+      - name: Format only changed Dart files
+        shell: bash
+        run: |
+          mapfile -t files < <(git diff --name-only --diff-filter=ACM -- 'lib/**/*.dart' 'lib/*.dart')
+          printf 'Changed Dart files (%s):\n' "${#files[@]}"
+          printf '  %s\n' "${files[@]}"
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo 'No Dart implementation changes found'; exit 1
+          fi
+          dart format "${files[@]}"
       - name: Install dependencies
         run: flutter pub get
       - name: Static analysis
@@ -43,14 +59,22 @@ jobs:
           # Deliberately non-dismissible progress/processing dialogs remain protected.
           assert 'barrierDismissible: false' in joined
           PY
-      - name: Commit implementation
+      - name: Guard against unrelated formatting churn
         shell: bash
         run: |
-          if git diff --quiet; then
-            echo 'No implementation changes'; exit 1
-          fi
+          python3 - <<'PY'
+          import subprocess
+          changed=subprocess.check_output(['git','diff','--name-only','--','lib'],text=True).splitlines()
+          print('LIB_CHANGED_FILES',len(changed))
+          for p in changed: print(p)
+          if len(changed) > 30:
+              raise SystemExit(f'too many lib files changed: {len(changed)}')
+          PY
+      - name: Commit cleaned implementation
+        shell: bash
+        run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add lib
-          git commit -m 'fix: move popup close controls to top right'
+          git commit -m 'fix: clean popup close controls diff'
           git push
